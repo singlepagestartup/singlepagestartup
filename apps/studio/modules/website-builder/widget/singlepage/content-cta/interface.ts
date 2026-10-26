@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 export const variant = "content-cta";
 
 export type ContentCtaProps = {
@@ -13,6 +14,10 @@ type IVariantInputs = NonNullable<
 
 export interface IComponentProps extends Omit<IVariantInputs, "variant"> {
   variant?: "content-cta";
+  id?: string;
+  eyebrow?: string;
+  appearance?: "default" | "primary";
+  actions?: ReactNode;
 }
 
 export interface IComponentPropsExtended extends IComponentProps {}

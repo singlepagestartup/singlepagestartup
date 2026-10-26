@@ -1,3 +1,8 @@
+import { Component as ContextNote } from "./context-note";
+import { Component as ContextHeading } from "./context-heading";
+import { Component as Document } from "./document";
+import { Component as PreviewScroll } from "./preview-scroll";
+import { Component as Selectable } from "./selectable";
 import { Component as DefinitionCard } from "./definition-card";
 import { Component as DefinitionItem } from "./definition-item";
 import { Component as DefinitionChecklist } from "./definition-checklist";
@@ -19,6 +24,11 @@ import { Component as AdminTableRow } from "./admin/table-row";
 import { Component as Default } from "./default";
 
 export const variants = {
+  "context-note": ContextNote,
+  "context-heading": ContextHeading,
+  document: Document,
+  "preview-scroll": PreviewScroll,
+  selectable: Selectable,
   "definition-card": DefinitionCard,
   "definition-item": DefinitionItem,
   "definition-checklist": DefinitionChecklist,

@@ -38,6 +38,8 @@ export function Component(props: IComponentPropsExtended) {
                 dataSource="props"
                 data={entity}
                 language={props.language}
+                selectionGroupId={props.selectionGroupId}
+                initiallySelected={props.initiallySelected}
               />
             );
           });

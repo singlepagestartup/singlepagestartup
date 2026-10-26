@@ -46,6 +46,49 @@ export function ContentFaq(props?: IComponentProps) {
     ...defaultContentFaqProps,
     ...props,
   };
+  if (props?.appearance === "plain")
+    return (
+      <section
+        aria-labelledby={props.id ? `${props.id}-title` : undefined}
+        className="mx-auto max-w-7xl px-5 py-14 @3xl:px-8 @3xl:py-20"
+        data-module="website-builder"
+        data-model="widget"
+        data-variant="content-faq"
+        data-ds-block="website-builder.widget.content-faq"
+      >
+        <div className="grid items-start gap-8 @3xl:grid-cols-[0.8fr_1.2fr] @3xl:gap-12">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+              {eyebrow}
+            </p>
+            <h2 className="mt-4 font-default text-3xl font-semibold leading-tight">
+              {title}
+            </h2>
+            <div className="mt-4 max-w-sm text-sm leading-6 text-muted-foreground">
+              {description}
+            </div>
+          </div>
+          <div>
+            <h2
+              id={props.id ? `${props.id}-title` : undefined}
+              className="mb-5 text-xl font-semibold"
+            >
+              {props.questionsTitle}
+            </h2>
+            {faq.map((item) => (
+              <Feature
+                key={item.q}
+                variant="dropdown"
+                appearance="card"
+                open={false}
+                question={item.q}
+                answer={item.a}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
   return (
     <section
       className="w-full bg-background py-12 @3xl:py-16"

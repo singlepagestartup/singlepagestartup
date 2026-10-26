@@ -51,3 +51,27 @@ it("retains public rich header/body and all media while using the supplied order
   expect(html).toContain("Scoped ordered content");
   expect(mockWidgetLinks).not.toHaveBeenCalled();
 });
+
+/**
+ * BDD Scenario: A public Article loads its saved public sections.
+ * Given an Article without a scoped content slot.
+ * When its overview is composed on the server.
+ * Then the association read is restricted to that Article and public links.
+ */
+it("loads only exact public Article widget associations", () => {
+  mockWidgetLinks.mockClear();
+  renderToStaticMarkup(
+    <Component
+      isServer={true}
+      variant="overview-default"
+      language="ru"
+      data={{ id: "public-article", title: { ru: "Открытая статья" } } as any}
+    />,
+  );
+  const props = mockWidgetLinks.mock.calls[0][0];
+  expect(props.isServer).toBe(true);
+  expect(props.apiProps.params.filters.and).toEqual([
+    { column: "articleId", method: "eq", value: "public-article" },
+    { column: "variant", method: "eq", value: "default" },
+  ]);
+});

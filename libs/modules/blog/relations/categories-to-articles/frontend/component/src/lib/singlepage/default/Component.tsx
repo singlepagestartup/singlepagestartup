@@ -38,7 +38,7 @@ export function Component(props: IComponentPropsExtended) {
               <Article
                 key={entity.id}
                 isServer={props.isServer}
-                variant={entity.variant as any}
+                variant="default"
                 dataSource="props"
                 data={entity}
                 language={props.language}

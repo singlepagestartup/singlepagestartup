@@ -1,3 +1,4 @@
+import { Component as Card } from "./card";
 import { Component as PrivateContentDefault } from "./private-content-default";
 import { Component as Loading } from "./loading";
 import { Component as Find } from "./find";
@@ -16,6 +17,7 @@ import { Component as OverviewDefault } from "./overview-default";
 import { Component as OverviewWithPrivateContentDefault } from "./overview-with-private-content-default";
 
 export const variants = {
+  card: Card,
   "private-content-default": PrivateContentDefault,
   loading: Loading,
   find: Find,

@@ -1,122 +1,102 @@
 import { TipTap } from "@sps/shared-ui-shadcn";
 import { cn } from "@sps/shared-frontend-client-utils";
+import type { IComponentPropsExtended } from "./interface";
 import { Component as WidgetsToFeatures } from "@sps/website-builder/relations/widgets-to-features/frontend/component";
 import { Component as WidgetsToButtonsArrays } from "@sps/website-builder/relations/widgets-to-buttons-arrays/frontend/component";
-import type { IComponentPropsExtended } from "./interface";
 export function Component(props: IComponentPropsExtended) {
-  const title = props.data.title?.[props.language] || props.data.title?.en;
-  const subtitle =
-    props.data.subtitle?.[props.language] || props.data.subtitle?.en;
-  const description =
-    props.data.description?.[props.language] || props.data.description?.en;
+  const { data, language, isServer } = props;
+  const title = data.title?.[language] || data.title?.en;
+  const subtitle = data.subtitle?.[language] || data.subtitle?.en;
+  const description = data.description?.[language] || data.description?.en;
   return (
     <section
-      id={props.data.anchor || undefined}
-      tabIndex={props.data.anchor ? -1 : undefined}
-      aria-labelledby={title ? `${props.data.id}-title` : undefined}
+      id={data.anchor || undefined}
+      tabIndex={data.anchor ? -1 : undefined}
       data-module="website-builder"
       data-model="widget"
-      data-id={props.data.id}
+      data-id={data.id}
       data-variant={props.variant}
       className={cn(
-        "@container mx-auto w-full min-w-0 max-w-7xl px-5 py-12 outline-none @3xl:px-8 @3xl:py-16",
-        props.data.className,
+        "@container bg-default text-default-foreground outline-none",
+        data.className,
         props.className,
       )}
     >
-      <div className="rounded-3xl bg-default p-6 text-default-foreground @3xl:p-8 @5xl:p-10">
-        {subtitle ? (
-          <p className="text-sm font-medium text-default-muted-foreground">
-            {subtitle}
-          </p>
-        ) : null}
-        {title ? (
-          <h2
-            id={`${props.data.id}-title`}
-            className="mt-3 max-w-2xl text-balance font-default text-3xl font-semibold leading-[1.15] tracking-normal @4xl:text-4xl"
-          >
-            {title}
-          </h2>
-        ) : null}
-        {description ? (
-          <div className="mt-5 text-sm leading-7 text-default-muted-foreground [&_.prose]:text-default-muted-foreground">
-            <TipTap value={description} />
-          </div>
-        ) : null}
-        <div className="mt-8 grid gap-6 @3xl:grid-cols-3 [&>[data-relation=widgets-to-features]:has([data-variant=copy-request])]:col-span-full">
+      <div className="mx-auto max-w-7xl px-5 py-14 @3xl:px-8 @3xl:py-20">
+        <p className="text-xs font-medium uppercase tracking-widest text-default-muted-foreground">
+          {subtitle}
+        </p>
+        <h2 className="mt-4 max-w-2xl text-balance font-default text-3xl font-semibold leading-tight @3xl:text-4xl">
+          {title}
+        </h2>
+        {description ? <TipTap value={description ?? ""} /> : null}
+        <div className="mt-10 grid gap-3 @3xl:grid-cols-3 @3xl:gap-x-8 [&>[data-relation]:has([data-variant=copy-request])]:col-span-full @3xl:[&>[data-relation]:has([data-variant=document])]:col-start-2 @3xl:[&>[data-relation]:nth-child(1)]:row-start-1 @3xl:[&>[data-relation]:nth-child(2)]:row-start-1 @3xl:[&>[data-relation]:has([data-variant=step]):nth-last-child(2)]:col-start-3 @3xl:[&>[data-relation]:has([data-variant=step]):nth-last-child(2)]:row-start-1 [&_[data-variant=document]]:bg-default-foreground/5 [&_[data-variant=document]_.prose]:text-default-muted-foreground">
           <WidgetsToFeatures
-            isServer={props.isServer}
+            isServer={isServer}
             variant="find"
             apiProps={{
               params: {
                 filters: {
+                  and: [{ column: "widgetId", method: "eq", value: data.id }],
+                },
+                orderBy: {
                   and: [
-                    {
-                      column: "widgetId",
-                      method: "eq",
-                      value: props.data.id,
-                    },
+                    { column: "orderIndex", method: "asc" },
+                    { column: "id", method: "asc" },
                   ],
                 },
               },
             }}
           >
             {({ data: links }) =>
-              links
-                ?.toSorted(
-                  (a, b) =>
-                    a.orderIndex - b.orderIndex || a.id.localeCompare(b.id),
-                )
-                .map((link) => (
-                  <WidgetsToFeatures
-                    key={link.id}
-                    isServer={props.isServer}
-                    variant="default"
-                    dataSource="props"
-                    data={link}
-                    language={props.language}
-                    className="block min-w-0"
-                  />
-                ))
+              links?.map((link, index) => (
+                <WidgetsToFeatures
+                  key={link.id}
+                  isServer={isServer}
+                  variant="default"
+                  dataSource="props"
+                  data={link}
+                  language={language}
+                  className="block min-w-0"
+                />
+              ))
             }
           </WidgetsToFeatures>
-          {props.children}
         </div>
-        <WidgetsToButtonsArrays
-          isServer={props.isServer}
-          variant="find"
-          apiProps={{
-            params: {
-              filters: {
-                and: [
-                  { column: "widgetId", method: "eq", value: props.data.id },
-                ],
+        <div className="mt-6">
+          <WidgetsToButtonsArrays
+            isServer={isServer}
+            variant="find"
+            apiProps={{
+              params: {
+                filters: {
+                  and: [{ column: "widgetId", method: "eq", value: data.id }],
+                },
+                orderBy: {
+                  and: [
+                    { column: "orderIndex", method: "asc" },
+                    { column: "id", method: "asc" },
+                  ],
+                },
               },
-            },
-          }}
-        >
-          {({ data: links }) =>
-            links?.length ? (
-              <div className="mt-6 flex flex-wrap gap-4">
-                {links
-                  .toSorted(
-                    (a, b) =>
-                      a.orderIndex - b.orderIndex || a.id.localeCompare(b.id),
-                  )
-                  .map((link) => (
-                    <WidgetsToButtonsArrays
-                      key={link.id}
-                      isServer={props.isServer}
-                      variant="default"
-                      dataSource="props"
-                      data={link}
-                      language={props.language}
-                    />
-                  ))}
-              </div>
-            ) : null
-          }
-        </WidgetsToButtonsArrays>
+            }}
+          >
+            {({ data: links }) =>
+              links?.map((link, index) => (
+                <WidgetsToButtonsArrays
+                  key={link.id}
+                  isServer={isServer}
+                  variant="default"
+                  dataSource="props"
+                  data={link}
+                  language={language}
+                  className="block min-w-0"
+                />
+              ))
+            }
+          </WidgetsToButtonsArrays>
+        </div>
+        {props.children}
       </div>
     </section>
   );

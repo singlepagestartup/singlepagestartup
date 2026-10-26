@@ -19,9 +19,10 @@ Articles are the primary content entries in the blog, storing localized text and
 
 ## Variants
 
+- `card`: module/guide card with exact saved media. `layout="guide"` selects the `guide-cover` association and falls back to the default cover. Links retain the current language.
 - `default`: article card with localized rich subtitle, ordered media, linked categories, creation date and an optional author JSX slot. One stretched link covers the card; category and rich-text links keep their own destinations.
-- `overview-default`: light article introduction with actual category links, creation date and optional author JSX; all ordered media sit with the rich body. A client view builds its contents from the rendered public-body headings and moves keyboard focus to the chosen heading. Public fallback reads only `default` Article→Widget associations.
-- `overview-with-private-content-default`: the same public article view with a higher-module content slot.
+- `overview-default`: light article introduction with actual category links, creation date and optional author JSX; all ordered media sit with the rich body. A client view builds its contents from the rendered public-body headings and moves keyboard focus to the chosen heading. Public fallback reads only `default` Article→Widget associations and includes their headings in the contents. A supplied scoped stream stays outside that public heading observer.
+- `overview-with-private-content-default`: the public article introduction with a higher-module scoped content stream. Save this variant on Articles that require the scoped stream; the shared Blog detail Widget selects it from the loaded Article without probing protected relation metadata.
 - `private-content-default`: presentation for guest, locked, expired, checking, error and granted states; children mount only for granted access.
 - `loading`: one article skeleton; collection Widgets compose the grid.
 - `find`: data-fetch wrapper for querying articles.

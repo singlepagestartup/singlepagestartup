@@ -1,3 +1,4 @@
+import { Component as FeaturesToButtonsArrays } from "@sps/website-builder/relations/features-to-buttons-arrays/frontend/component";
 import { memo } from "react";
 import { TipTap } from "@sps/shared-ui-shadcn";
 import { cn } from "@sps/shared-frontend-client-utils";
@@ -22,16 +23,49 @@ export const Component = memo<IComponentPropsExtended>(
         )}
       >
         {subtitle ? (
-          <p className="text-sm font-medium text-primary">{subtitle}</p>
+          <p className="text-4xl font-medium text-primary">{subtitle}</p>
         ) : null}
-        {title ? (
-          <h3 className="mt-3 text-base font-semibold">{title}</h3>
-        ) : null}
+        {title ? <h3 className="mt-5 text-lg font-semibold">{title}</h3> : null}
         {description ? (
           <div className="mt-2 text-sm leading-6 text-default-muted-foreground [&_.prose]:text-default-muted-foreground">
-            <TipTap value={description} />
+            <TipTap value={description ?? ""} />
           </div>
         ) : null}
+        <div className="mt-5">
+          <FeaturesToButtonsArrays
+            isServer={props.isServer}
+            variant="find"
+            apiProps={{
+              params: {
+                filters: {
+                  and: [
+                    { column: "featureId", method: "eq", value: props.data.id },
+                  ],
+                },
+                orderBy: {
+                  and: [
+                    { column: "orderIndex", method: "asc" },
+                    { column: "id", method: "asc" },
+                  ],
+                },
+              },
+            }}
+          >
+            {({ data: links }) =>
+              links?.map((link, index) => (
+                <FeaturesToButtonsArrays
+                  key={link.id}
+                  isServer={props.isServer}
+                  variant="default"
+                  dataSource="props"
+                  data={link}
+                  language={props.language}
+                  className="block min-w-0"
+                />
+              ))
+            }
+          </FeaturesToButtonsArrays>
+        </div>
         {props.children}
       </div>
     );

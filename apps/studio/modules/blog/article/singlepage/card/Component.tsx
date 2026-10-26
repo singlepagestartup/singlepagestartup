@@ -1,4 +1,5 @@
 import { memo } from "react";
+import { Component as SharedIcon } from "../../../../shared/icon";
 import type {
   IComponentProps,
   ArticleCardProps,
@@ -34,6 +35,56 @@ export const ArticleCard = memo<IComponentProps>(function ArticleCard(
     target,
     layout = "balanced",
   } = { ...defaultArticleCardProps, ...props };
+  if (layout === "module" || layout === "guide")
+    return (
+      <article
+        className={`group relative min-w-0 overflow-hidden rounded-2xl border border-border bg-card hover:border-foreground ${layout === "guide" ? "flex flex-col p-5" : "p-4"}`}
+        data-module="blog"
+        data-model="article"
+        data-variant="card"
+        data-ds-block="blog.article.card"
+        data-card-layout={layout}
+      >
+        <img
+          src={media?.[0]?.src ?? coverImage}
+          alt={media?.[0]?.alt ?? ""}
+          width={1254}
+          height={1254}
+          loading="lazy"
+          className={
+            layout === "guide"
+              ? "mb-4 aspect-[4/3] w-full rounded-xl bg-default object-contain"
+              : "aspect-square w-full object-contain"
+          }
+        />
+        {layout === "guide" ? (
+          <span className="text-xs text-muted-foreground">{category}</span>
+        ) : null}
+        <h3
+          className={`${layout === "guide" ? "mt-3 text-lg" : "mt-2 text-base leading-6"} font-semibold`}
+        >
+          <a
+            href={href ?? `/blog/articles/${slug}`}
+            target={target}
+            rel={target === "_blank" ? "noreferrer" : undefined}
+            className="after:absolute after:inset-0 after:rounded-2xl focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-foreground"
+          >
+            {title}
+          </a>
+        </h3>
+        {excerpt ? (
+          <p className="mt-2 text-xs leading-5 text-muted-foreground">
+            {excerpt}
+          </p>
+        ) : null}
+        {props?.actionLabel ? (
+          <span className="mt-5 inline-flex items-center gap-2 text-sm">
+            {props.actionLabel}
+            <SharedIcon variant="phosphor" name="arrow-right" size={20} />
+          </span>
+        ) : null}
+      </article>
+    );
   const compact = layout === "compact";
   const editorial = layout === "editorial";
   const metadata = (

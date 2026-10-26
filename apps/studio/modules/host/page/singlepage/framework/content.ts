@@ -193,3 +193,49 @@ export function parseCodeFrameworkWebsite(
     ),
   };
 }
+
+/** Page-owned identities and screenshot assets; Widget variants receive these as records. */
+export const landingModuleIds = [
+  "rbac",
+  "social",
+  "blog",
+  "knowledge",
+  "ecommerce",
+  "billing",
+  "website-builder",
+  "crm",
+];
+export const launchStepIds = ["account", "design", "publish"];
+export const projectDocumentKeys = [
+  "document-one",
+  "document-two",
+  "document-three",
+  "document-four",
+  "document-five",
+];
+export const productExamplePreviews = [
+  {
+    id: "contacts",
+    name: "contact",
+    height: 1908,
+    alt: "Снимок страницы вебинара Firstship: темы, запись и ведущий.",
+  },
+  {
+    id: "community",
+    name: "community",
+    height: 998,
+    alt: "Снимок сообщества Buildfolk: профили участников, проекты и обсуждения.",
+  },
+  {
+    id: "courses",
+    name: "courses",
+    height: 995,
+    alt: "Снимок магазина Lessonloop: курсы и кнопки добавления в корзину.",
+  },
+  {
+    id: "journal",
+    name: "journal",
+    height: 1572,
+    alt: "Снимок блога Signalnote: статьи, авторы и материалы по подписке.",
+  },
+];

@@ -38,7 +38,8 @@ export interface IClientComponentProps {
   authorCard?: ReactNode;
   media: ReactNode;
   body?: ReactNode;
-  content: ReactNode;
+  content?: ReactNode;
+  publicContent?: ReactNode;
   navigation?: ReactNode;
   commentsContent?: ReactNode;
 }

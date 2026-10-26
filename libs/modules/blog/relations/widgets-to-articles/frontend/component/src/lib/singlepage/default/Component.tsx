@@ -38,10 +38,11 @@ export function Component(props: IComponentPropsExtended) {
               <Article
                 key={entity.id}
                 isServer={props.isServer}
-                variant={entity.variant as any}
+                variant={(props.articleVariant || entity.variant) as any}
                 dataSource="props"
                 data={entity}
                 language={props.language}
+                layout={props.cardLayout}
                 author={props.renderAuthor?.({ data: entity, size: "xs" })}
               />
             );

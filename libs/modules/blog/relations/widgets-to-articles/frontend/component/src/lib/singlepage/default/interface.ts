@@ -11,6 +11,8 @@ export const variant = "default" as const;
 export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
   language: string;
+  cardLayout?: "module" | "guide";
+  articleVariant?: "default" | "card" | "overview-default";
   renderAuthor?: TRenderAuthor;
 }
 

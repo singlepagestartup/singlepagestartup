@@ -11,6 +11,7 @@ export type ArticleCardProps = {
   title: string;
   excerpt: string;
   excerptContent?: ReactNode;
+  actionLabel?: string;
   media?: { id: string; src: string; alt: string }[];
   authorName: string;
   authorAvatar: string;
@@ -21,7 +22,7 @@ export type ArticleCardProps = {
   target: ArticleCardTarget | undefined;
 } & {
   /** Presentation choice only; the article record contract stays unchanged. */
-  layout?: "balanced" | "editorial" | "compact";
+  layout?: "balanced" | "editorial" | "compact" | "module" | "guide";
 };
 
 export interface IArticlePreview extends ArticleCardProps {

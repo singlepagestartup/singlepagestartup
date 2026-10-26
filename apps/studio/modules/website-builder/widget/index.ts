@@ -14,3 +14,7 @@ export type {
   IContentDefinitionItem,
   IContentStep,
 } from "./interface";
+
+export type { IShowcaseItem } from "./singlepage/content-showcase/interface";
+
+export type { IProjectDocument } from "./singlepage/content-project-context/interface";

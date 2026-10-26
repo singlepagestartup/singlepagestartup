@@ -34,7 +34,7 @@ function ButtonGroups(props: IButtonGroupsProps) {
             <WidgetsToButtonsArrays
               key={link.id}
               isServer={props.isServer}
-              variant={link.variant as any}
+              variant="default"
               dataSource="props"
               data={link}
               language={props.language}
@@ -90,7 +90,7 @@ export function Component(props: IComponentPropsExtended) {
                     <WidgetsToLogotypes
                       key={link.id}
                       isServer={props.isServer}
-                      variant={link.variant as any}
+                      variant="default"
                       dataSource="props"
                       data={link}
                       language={props.language}
@@ -100,7 +100,7 @@ export function Component(props: IComponentPropsExtended) {
             </WidgetsToLogotypes>
             {description ? (
               <div className="mt-5 max-w-xs text-sm leading-6 text-muted-foreground [&_.prose]:text-muted-foreground">
-                <TipTap value={description} />
+                <TipTap value={description ?? ""} />
               </div>
             ) : null}
             <div className="mt-5 flex flex-wrap gap-3">

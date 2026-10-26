@@ -40,7 +40,7 @@ export function Component(props: IClientComponentProps) {
       characterData: true,
     });
     return () => observer.disconnect();
-  }, [props.articleId, props.body]);
+  }, [props.articleId, props.body, props.publicContent]);
   function readSection(id: string) {
     const index = headings.findIndex((heading) => heading.id === id);
     const heading = [
@@ -109,16 +109,16 @@ export function Component(props: IClientComponentProps) {
         )}
       >
         <div className="min-w-0 space-y-8">
-          <div className="min-w-0 rounded-3xl border border-border bg-card p-5 sm:p-8">
-            {props.media}
-            {props.body && (
-              <div
-                ref={body}
-                className="mt-8 min-w-0 break-words [&_a]:[overflow-wrap:anywhere] [&_h2]:scroll-mt-28 [&_h3]:scroll-mt-28 [&_pre]:max-w-full [&_pre]:overflow-x-auto"
-              >
-                {props.body}
-              </div>
-            )}
+          <div ref={body} className="min-w-0 space-y-8">
+            <div className="min-w-0 rounded-3xl border border-border bg-card p-5 sm:p-8">
+              {props.media}
+              {props.body && (
+                <div className="mt-8 min-w-0 break-words [&_a]:[overflow-wrap:anywhere] [&_h2]:scroll-mt-28 [&_h3]:scroll-mt-28 [&_pre]:max-w-full [&_pre]:overflow-x-auto">
+                  {props.body}
+                </div>
+              )}
+            </div>
+            {props.publicContent}
           </div>
           {props.content}
           {props.commentsContent}

@@ -124,7 +124,12 @@ export function Component(props: IContentProps) {
           <Article
             key={entity.id}
             isServer={props.isServer}
-            variant={props.articleVariant ?? "overview-default"}
+            variant={
+              props.articleVariant ??
+              (entity.variant === "overview-with-private-content-default"
+                ? "overview-with-private-content-default"
+                : "overview-default")
+            }
             dataSource="props"
             data={entity}
             language={props.language}
@@ -151,7 +156,10 @@ export function Component(props: IContentProps) {
               )
             }
           >
-            {props.renderContent?.({ data: entity })}
+            {(props.articleVariant ?? entity.variant) ===
+            "overview-with-private-content-default"
+              ? props.renderContent?.({ data: entity })
+              : undefined}
           </Article>
         ));
       }}

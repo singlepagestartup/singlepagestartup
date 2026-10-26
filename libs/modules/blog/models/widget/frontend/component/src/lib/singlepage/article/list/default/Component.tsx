@@ -34,6 +34,7 @@ export function Component(props: IComponentPropsExtended) {
               key={link.id}
               isServer={props.isServer}
               variant="default"
+              articleVariant="default"
               dataSource="props"
               data={link}
               language={props.language}

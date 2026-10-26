@@ -1,3 +1,4 @@
+import type { IComponentProps as ICard } from "./card/interface";
 import type { IComponentProps as IPrivateContentDefault } from "./private-content-default/interface";
 import type { IComponentProps as ILoading } from "./loading/interface";
 import { IComponentProps as IFindComponentProps } from "./find/interface";
@@ -16,6 +17,7 @@ import { IComponentProps as IOverviewDefaultComponentProps } from "./overview-de
 import { IComponentProps as IOverviewWithPrivateContentDefaultComponentProps } from "./overview-with-private-content-default/interface";
 
 export type IComponentProps =
+  | ICard
   | IPrivateContentDefault
   | ILoading
   | IFindComponentProps

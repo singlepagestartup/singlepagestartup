@@ -1,3 +1,5 @@
+import { Component as ContentProjectContext } from "./content-project-context";
+import { Component as ContentShowcase } from "./content-showcase";
 import { Component as ContentCollection } from "./content-collection";
 import { Component as ContentFeatureSplit } from "./content-feature-split";
 import { Component as ContentFeatureSplitReverse } from "./content-feature-split-reverse";
@@ -45,6 +47,8 @@ import { Component as NavbarAiChat } from "./navbar/ai-chat/index";
 import { Component as NavbarAiChatLanding } from "./navbar/ai-chat-landing/index";
 
 export const variants = {
+  "content-project-context": ContentProjectContext,
+  "content-showcase": ContentShowcase,
   "content-feature-split": ContentFeatureSplit,
   "content-feature-split-reverse": ContentFeatureSplitReverse,
   "content-offer-card": ContentOfferCard,

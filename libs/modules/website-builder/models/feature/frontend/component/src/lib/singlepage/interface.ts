@@ -1,3 +1,8 @@
+import type { IComponentProps as IContextNote } from "./context-note/interface";
+import type { IComponentProps as IContextHeading } from "./context-heading/interface";
+import type { IComponentProps as IDocument } from "./document/interface";
+import type { IComponentProps as IPreviewScroll } from "./preview-scroll/interface";
+import type { IComponentProps as ISelectable } from "./selectable/interface";
 import type { IComponentProps as IDefinitionCardProps } from "./definition-card/interface";
 import type { IComponentProps as IDefinitionItemProps } from "./definition-item/interface";
 import type { IComponentProps as IDefinitionChecklistProps } from "./definition-checklist/interface";
@@ -19,6 +24,11 @@ import { IComponentProps as IAdminTableRowComponentProps } from "./admin/table-r
 import { IComponentProps as IDefaultComponentProps } from "./default/interface";
 
 export type IComponentProps =
+  | IContextNote
+  | IContextHeading
+  | IDocument
+  | IPreviewScroll
+  | ISelectable
   | IDefinitionCardProps
   | IDefinitionItemProps
   | IDefinitionChecklistProps

@@ -66,7 +66,7 @@ it("does not issue an unfiltered read for a missing slug or treat pending undefi
   );
   expect(mockNotFound).not.toHaveBeenCalled();
 });
-it("supplies the same scoped content slot to both article compositions", () => {
+it("supplies scoped content only for an explicitly private article composition", () => {
   mockData = [{ id: "article" }];
   const slot = () => <div>Scoped ordered stream</div>;
   for (const View of [PublicContent, PrivateContent]) {
@@ -78,7 +78,9 @@ it("supplies the same scoped content slot to both article compositions", () => {
         renderContent={slot}
       />,
     );
-    expect(html).toContain("Scoped ordered stream");
+    if (View === PrivateContent)
+      expect(html).toContain("Scoped ordered stream");
+    else expect(html).not.toContain("Scoped ordered stream");
   }
 });
 it.each([true, false])(
@@ -202,3 +204,29 @@ it.each([PublicContent, PrivateContent])(
     ).toHaveLength(1);
   },
 );
+
+/**
+ * BDD Scenario: A saved private Article selects its scoped content.
+ * Given a private Article opened through the shared public route.
+ * When the Widget renders the loaded record.
+ * Then the scoped stream is supplied without reading private relation metadata.
+ */
+it("uses the saved private Article variant on the shared route", () => {
+  mockData = [
+    { id: "article", variant: "overview-with-private-content-default" },
+  ];
+  const html = renderToStaticMarkup(
+    <PublicContent
+      isServer={true}
+      language="ru"
+      articleSlug="existing"
+      renderContent={() => <div>Scoped private stream</div>}
+    />,
+  );
+  expect(html).toContain("Scoped private stream");
+  const view = mockRead.mock.calls
+    .map(([p]) => p)
+    .find((p) => p.variant === "overview-with-private-content-default");
+  expect(view.dataSource).toBe("props");
+  expect(view.isServer).toBe(true);
+});

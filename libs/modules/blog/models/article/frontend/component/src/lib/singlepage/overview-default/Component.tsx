@@ -66,6 +66,7 @@ export function Component(props: IComponentPropsExtended) {
               filters: {
                 and: [
                   { column: "articleId", method: "eq", value: props.data.id },
+                  { column: "variant", method: "eq", value: "default" },
                 ],
               },
               orderBy: { and: [{ column: "orderIndex", method: "asc" }] },
@@ -91,8 +92,9 @@ export function Component(props: IComponentPropsExtended) {
         </ArticlesToFileStorageModuleFiles>
       }
       body={description ? <TipTap value={description} /> : undefined}
-      content={
-        props.children ?? (
+      content={props.children}
+      publicContent={
+        props.children ? undefined : (
           <ArticlesToWebsiteBuilderModuleWidgets
             isServer={props.isServer}
             variant="find"

@@ -3,6 +3,7 @@ import { Component as Feature } from "../../../feature";
 
 export function Component({
   id,
+  appearance = "contained",
   eyebrow,
   title,
   steps,
@@ -14,15 +15,31 @@ export function Component({
       id={id}
       tabIndex={id ? -1 : undefined}
       aria-labelledby={id ? `${id}-title` : undefined}
-      className="mx-auto w-full min-w-0 max-w-7xl px-5 py-12 outline-none @3xl:px-8 @3xl:py-16"
+      className={
+        appearance === "full"
+          ? "bg-default text-default-foreground outline-none"
+          : "mx-auto w-full min-w-0 max-w-7xl px-5 py-12 outline-none @3xl:px-8 @3xl:py-16"
+      }
       data-ds-block="website-builder.widget.content-steps"
       data-module="website-builder"
       data-model="widget"
       data-variant="content-steps"
     >
-      <div className="rounded-3xl bg-default p-6 text-default-foreground @3xl:p-8 @5xl:p-10">
+      <div
+        className={
+          appearance === "full"
+            ? "mx-auto max-w-7xl px-5 py-14 @3xl:px-8 @3xl:py-20"
+            : "rounded-3xl bg-default p-6 text-default-foreground @3xl:p-8 @5xl:p-10"
+        }
+      >
         {eyebrow ? (
-          <p className="text-sm font-medium text-default-muted-foreground">
+          <p
+            className={
+              appearance === "full"
+                ? "text-xs font-medium uppercase tracking-widest text-default-muted-foreground"
+                : "text-sm font-medium text-default-muted-foreground"
+            }
+          >
             {eyebrow}
           </p>
         ) : null}
@@ -32,7 +49,13 @@ export function Component({
         >
           {title}
         </h2>
-        <ol className="mt-8 grid gap-6 @3xl:grid-cols-3">
+        <ol
+          className={
+            appearance === "full"
+              ? "mt-10 grid gap-8 @3xl:grid-cols-3"
+              : "mt-8 grid gap-6 @3xl:grid-cols-3"
+          }
+        >
           {children ??
             steps?.map((step, index) => (
               <Feature

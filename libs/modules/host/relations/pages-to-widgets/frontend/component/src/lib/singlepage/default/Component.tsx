@@ -33,12 +33,13 @@ export function Component(props: IComponentPropsExtended) {
         }}
       >
         {({ data }) => {
-          return data?.map((entity, index) => {
+          return data?.map((entity) => {
             return (
               <Widget
-                key={index}
+                key={entity.id}
                 isServer={props.isServer}
                 variant={entity.variant as any}
+                dataSource="props"
                 data={entity}
                 url={props.url}
                 language={props.language}

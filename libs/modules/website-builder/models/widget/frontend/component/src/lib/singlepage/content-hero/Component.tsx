@@ -19,7 +19,7 @@ export function Component(props: IComponentPropsExtended) {
       data-id={props.data.id}
       data-variant={props.variant}
       className={cn(
-        "@container w-full min-w-0 bg-background py-10 @3xl:py-14",
+        "@container w-full min-w-0 bg-card py-10 @3xl:py-12",
         props.data.className,
         props.className,
       )}
@@ -27,7 +27,7 @@ export function Component(props: IComponentPropsExtended) {
       <div className="mx-auto grid w-full max-w-7xl items-center gap-8 px-5 @3xl:grid-cols-2 @3xl:gap-10 @3xl:px-8">
         <div className="min-w-0 py-2">
           {subtitle ? (
-            <p className="inline-flex min-h-8 max-w-full items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium leading-5 text-foreground">
+            <p className="inline-flex max-w-full items-center gap-2 text-xs font-medium uppercase tracking-widest text-foreground">
               <span
                 aria-hidden="true"
                 className="h-2 w-2 shrink-0 rounded-full bg-primary"
@@ -38,14 +38,14 @@ export function Component(props: IComponentPropsExtended) {
           {title ? (
             <h1
               id={`${props.data.id}-title`}
-              className="mt-5 max-w-2xl text-balance font-default text-4xl font-semibold leading-[1.08] tracking-normal text-foreground @3xl:text-5xl @5xl:text-[56px]"
+              className="mt-5 max-w-2xl text-balance font-default text-4xl font-semibold leading-[1.08] tracking-normal text-foreground @3xl:text-5xl @5xl:text-[62px]"
             >
               {title}
             </h1>
           ) : null}
           {description ? (
             <div className="mt-5 max-w-lg space-y-4 text-base leading-7 text-muted-foreground [&_.prose]:text-muted-foreground [&_a]:text-foreground">
-              <TipTap value={description} />
+              <TipTap value={description ?? ""} />
             </div>
           ) : null}
           <WidgetsToButtonsArrays

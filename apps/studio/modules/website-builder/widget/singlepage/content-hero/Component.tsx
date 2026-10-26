@@ -52,9 +52,10 @@ export function ContentHero(props?: IComponentProps) {
     statusFeature,
     actions,
   } = { ...defaultContentHeroProps, ...props };
+  const editorial = props?.appearance === "editorial";
   return (
     <section
-      className="w-full min-w-0 bg-background py-10 @3xl:py-14"
+      className={`w-full min-w-0 ${editorial ? "bg-card py-10 @3xl:py-12" : "bg-background py-10 @3xl:py-14"}`}
       data-ds-block="website-builder.widget.content-hero"
       data-ds-layer="singlepage"
       data-module="website-builder"
@@ -64,9 +65,18 @@ export function ContentHero(props?: IComponentProps) {
       <div className="mx-auto grid w-full max-w-7xl items-center gap-8 px-5 @3xl:grid-cols-2 @3xl:gap-10 @3xl:px-8">
         <div className="min-w-0 py-2">
           {feature?.label ? (
-            <Feature {...feature} variant="badge-default" />
+            editorial ? (
+              <p className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-widest">
+                <span className="size-2 shrink-0 rounded-full bg-primary" />
+                {feature.label}
+              </p>
+            ) : (
+              <Feature {...feature} variant="badge-default" />
+            )
           ) : null}
-          <h1 className="mt-5 max-w-2xl text-balance font-default text-4xl font-semibold leading-[1.08] tracking-normal @3xl:text-5xl @5xl:text-[56px]">
+          <h1
+            className={`mt-5 max-w-2xl text-balance font-default text-4xl font-semibold leading-[1.08] tracking-normal @3xl:text-5xl ${editorial ? "@5xl:text-[62px]" : "@5xl:text-[56px]"}`}
+          >
             {title}
           </h1>
           <div className="mt-5 max-w-lg space-y-4 text-base leading-7 text-muted-foreground">

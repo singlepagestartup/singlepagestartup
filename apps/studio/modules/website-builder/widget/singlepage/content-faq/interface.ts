@@ -21,6 +21,8 @@ type IVariantInputs = NonNullable<
 
 export interface IComponentProps extends Omit<IVariantInputs, "variant"> {
   variant?: "content-faq";
+  appearance?: "default" | "plain";
+  id?: string;
   aside?: ReactNode;
   actions?: ReactNode;
   questionsTitle?: string;

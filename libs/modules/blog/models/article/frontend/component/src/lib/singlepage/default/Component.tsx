@@ -43,6 +43,7 @@ export const Component = memo(function Component(
             filters: {
               and: [
                 { column: "articleId", method: "eq", value: props.data.id },
+                { column: "variant", method: "eq", value: "default" },
               ],
             },
             orderBy: { and: [{ column: "orderIndex", method: "asc" }] },

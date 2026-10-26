@@ -1,122 +1,104 @@
 import { TipTap } from "@sps/shared-ui-shadcn";
 import { cn } from "@sps/shared-frontend-client-utils";
+import type { IComponentPropsExtended } from "./interface";
 import { Component as WidgetsToFeatures } from "@sps/website-builder/relations/widgets-to-features/frontend/component";
 import { Component as WidgetsToButtonsArrays } from "@sps/website-builder/relations/widgets-to-buttons-arrays/frontend/component";
-import type { IComponentPropsExtended } from "./interface";
 export function Component(props: IComponentPropsExtended) {
-  const title = props.data.title?.[props.language] || props.data.title?.en;
-  const subtitle =
-    props.data.subtitle?.[props.language] || props.data.subtitle?.en;
-  const description =
-    props.data.description?.[props.language] || props.data.description?.en;
-  const questionsTitle =
-    props.language === "ru" ? "Перед началом" : "Before you start";
+  const { data, language, isServer } = props;
+  const title = data.title?.[language] || data.title?.en;
+  const subtitle = data.subtitle?.[language] || data.subtitle?.en;
+  const description = data.description?.[language] || data.description?.en;
   return (
     <section
-      id={props.data.anchor || undefined}
+      id={data.anchor || undefined}
       data-module="website-builder"
       data-model="widget"
-      data-id={props.data.id}
+      data-id={data.id}
       data-variant={props.variant}
       className={cn(
-        "@container w-full bg-background py-12 @3xl:py-16",
-        props.data.className,
+        "@container mx-auto max-w-7xl px-5 py-14 @3xl:px-8 @3xl:py-20",
+        data.className,
         props.className,
       )}
     >
-      <div className="mx-auto grid w-full max-w-7xl gap-8 px-5 @3xl:grid-cols-[0.9fr_1.1fr] @3xl:gap-12 @3xl:px-8">
-        <div className="self-start rounded-3xl border border-border bg-muted p-6 @3xl:p-8">
-          {subtitle ? (
-            <p className="text-sm text-muted-foreground">{subtitle}</p>
-          ) : null}
-          {title ? (
-            <h2 className="mt-3 font-default text-5xl font-semibold leading-tight tracking-normal @4xl:text-6xl">
-              {title}
-            </h2>
-          ) : null}
-          {description ? (
-            <div className="mt-5 max-w-md space-y-4 text-base leading-7 text-muted-foreground [&_.prose]:text-muted-foreground">
-              <TipTap value={description} />
-            </div>
-          ) : null}
-          <WidgetsToButtonsArrays
-            isServer={props.isServer}
-            variant="find"
-            apiProps={{
-              params: {
-                filters: {
-                  and: [
-                    { column: "widgetId", method: "eq", value: props.data.id },
-                  ],
-                },
-              },
-            }}
-          >
-            {({ data: links }) =>
-              links?.length ? (
-                <div className="mt-6 flex flex-wrap gap-4">
-                  {links
-                    .toSorted(
-                      (a, b) =>
-                        a.orderIndex - b.orderIndex || a.id.localeCompare(b.id),
-                    )
-                    .map((link) => (
-                      <WidgetsToButtonsArrays
-                        key={link.id}
-                        isServer={props.isServer}
-                        variant="default"
-                        dataSource="props"
-                        data={link}
-                        language={props.language}
-                      />
-                    ))}
-                </div>
-              ) : null
-            }
-          </WidgetsToButtonsArrays>
-        </div>
-        <div className="min-w-0 self-start">
-          <h2 className="mb-6 font-default text-3xl font-semibold leading-tight tracking-normal @4xl:text-4xl">
-            {questionsTitle}
+      <div className="grid items-start gap-8 @3xl:grid-cols-[0.8fr_1.2fr] @3xl:gap-12">
+        <div>
+          <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+            {subtitle}
+          </p>
+          <h2 className="mt-4 font-default text-3xl font-semibold leading-tight">
+            {title}
           </h2>
-          <div className="min-w-0 rounded-2xl border border-border bg-card p-2">
-            <WidgetsToFeatures
-              isServer={props.isServer}
+          <div className="mt-4 max-w-sm text-sm leading-6 text-muted-foreground">
+            <TipTap value={description ?? ""} />
+          </div>
+          <div className="mt-6">
+            <WidgetsToButtonsArrays
+              isServer={isServer}
               variant="find"
               apiProps={{
                 params: {
                   filters: {
+                    and: [{ column: "widgetId", method: "eq", value: data.id }],
+                  },
+                  orderBy: {
                     and: [
-                      {
-                        column: "widgetId",
-                        method: "eq",
-                        value: props.data.id,
-                      },
+                      { column: "orderIndex", method: "asc" },
+                      { column: "id", method: "asc" },
                     ],
                   },
                 },
               }}
             >
               {({ data: links }) =>
-                links
-                  ?.toSorted(
-                    (a, b) =>
-                      a.orderIndex - b.orderIndex || a.id.localeCompare(b.id),
-                  )
-                  .map((link) => (
-                    <WidgetsToFeatures
-                      key={link.id}
-                      isServer={props.isServer}
-                      variant="default"
-                      dataSource="props"
-                      data={link}
-                      language={props.language}
-                    />
-                  ))
+                links?.map((link, index) => (
+                  <WidgetsToButtonsArrays
+                    key={link.id}
+                    isServer={isServer}
+                    variant="default"
+                    dataSource="props"
+                    data={link}
+                    language={language}
+                    className="block min-w-0"
+                  />
+                ))
               }
-            </WidgetsToFeatures>
-            {props.children}
+            </WidgetsToButtonsArrays>
           </div>
+        </div>
+        <div className="min-w-0 space-y-3">
+          <WidgetsToFeatures
+            isServer={isServer}
+            variant="find"
+            apiProps={{
+              params: {
+                filters: {
+                  and: [{ column: "widgetId", method: "eq", value: data.id }],
+                },
+                orderBy: {
+                  and: [
+                    { column: "orderIndex", method: "asc" },
+                    { column: "id", method: "asc" },
+                  ],
+                },
+              },
+            }}
+          >
+            {({ data: links }) =>
+              links?.map((link, index) => (
+                <WidgetsToFeatures
+                  key={link.id}
+                  isServer={isServer}
+                  variant="default"
+                  dataSource="props"
+                  data={link}
+                  language={language}
+                  className="block min-w-0"
+                />
+              ))
+            }
+          </WidgetsToFeatures>
+          {props.children}
         </div>
       </div>
     </section>

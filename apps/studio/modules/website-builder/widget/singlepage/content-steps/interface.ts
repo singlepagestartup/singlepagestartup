@@ -11,6 +11,7 @@ export interface IContentStep {
 export interface IComponentProps {
   variant?: typeof variant;
   id?: string;
+  appearance?: "contained" | "full";
   eyebrow?: string;
   title: string;
   steps?: IContentStep[];

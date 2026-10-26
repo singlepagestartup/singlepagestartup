@@ -46,6 +46,22 @@ describe("Module-owned Framework pages", () => {
         ),
       ).toBe(true);
   });
+  test("landing sections use owning Widgets and repeated records use model entries", () => {
+    const html = render({ variant: "framework" });
+    expect(html.match(/data-module="blog" data-model="widget"/g)).toHaveLength(
+      2,
+    );
+    expect(html.match(/data-module="blog" data-model="article"/g)).toHaveLength(
+      11,
+    );
+    expect(html.match(/data-variant="selectable"/g)).toHaveLength(4);
+    expect(html.match(/data-variant="step"/g)).toHaveLength(3);
+    expect(html.match(/data-variant="dropdown"/g)).toHaveLength(16);
+    expect(html).toContain('data-variant="preview-scroll"');
+    expect(html).toContain("framework-example-previews/contact.png");
+    expect(html).not.toContain("sps-demo-study-format");
+    expect(html).not.toContain("<form");
+  });
   test("business tasks and technical names find the same catalogue destinations", () => {
     expect(frameworkModules).toHaveLength(15);
     expect(

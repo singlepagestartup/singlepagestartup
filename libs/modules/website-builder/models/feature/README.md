@@ -19,6 +19,11 @@ Features describe highlighted content blocks with text and optional media.
 
 ## Variants
 
+- `selectable`: native radio selector with description and the same record rendered as `preview-scroll`; inherits the reader mode.
+- `preview-scroll`: focusable phone preview with exact linked media and vertical scrolling.
+- `document`: saved disclosure with rich description.
+- `context-heading` and `context-note`: ordered headings and task/result notes inside a project context Widget.
+
 - `default`: renders title/description and linked media files.
 - `definition-card`: one capability card with saved subtitle, title, rich description and exact linked action groups.
 - `definition-item`: the same saved content in a compact ruled layout.

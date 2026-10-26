@@ -1,5 +1,7 @@
-import { BylineSkeleton as SocialModuleProfileBylineSkeleton } from "@sps/social/models/profile/frontend/component";
-import { Component as SocialModuleProfile } from "@sps/social/models/profile/frontend/component";
+import {
+  BylineSkeleton as SocialModuleProfileBylineSkeleton,
+  Component as SocialModuleProfile,
+} from "@sps/social/models/profile/frontend/component";
 import { Component as SocialModuleProfilesToBlogModuleArticles } from "@sps/social/relations/profiles-to-blog-module-articles/frontend/component";
 import { Component as Page } from "@sps/host/models/page/frontend/component";
 import type { IExternalWidgetProps } from "../interface";

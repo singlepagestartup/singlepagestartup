@@ -75,3 +75,24 @@ export const Framework: Story = {
     ],
   },
 };
+
+export const Module: Story = {
+  args: {
+    layout: "module",
+    title: "Аккаунты и доступ",
+    excerpt: "Вход в аккаунт и доступ к личным данным.",
+    coverImage:
+      "/module-assets/images/singlepage/generated/framework-acquisition-v2/accounts.png",
+  },
+};
+export const Guide: Story = {
+  args: {
+    layout: "guide",
+    title: "Профили и общение",
+    excerpt: "",
+    category: "01 / Social",
+    actionLabel: "Как работает модуль",
+    coverImage:
+      "/module-assets/images/singlepage/generated/framework-article-covers-dark-v1/social.png",
+  },
+};

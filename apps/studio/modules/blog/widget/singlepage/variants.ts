@@ -1,3 +1,4 @@
+import { Component as ArticleFindGrid } from "./article-find-grid";
 import { Component as ArticleFeedDefault } from "./article-feed-default";
 import { Component as AdminV2Card } from "./admin-v2-card/index";
 import { Component as AdminV2Table } from "./admin-v2-table/index";
@@ -13,6 +14,7 @@ import { Component as List } from "./list/index";
 import { Component as TagFindButton } from "./tag-find-button/index";
 
 export const variants = {
+  "article-find-grid": ArticleFindGrid,
   "article-feed-default": ArticleFeedDefault,
   "admin-v2-card": AdminV2Card,
   "admin-v2-table": AdminV2Table,

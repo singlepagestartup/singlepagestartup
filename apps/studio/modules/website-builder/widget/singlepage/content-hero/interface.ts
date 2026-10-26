@@ -20,6 +20,7 @@ type IVariantInputs = NonNullable<
 
 export interface IComponentProps extends Omit<IVariantInputs, "variant"> {
   variant?: "content-hero";
+  appearance?: "default" | "editorial";
 }
 
 export interface IComponentPropsExtended extends IComponentProps {}

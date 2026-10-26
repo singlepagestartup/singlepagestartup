@@ -761,3 +761,22 @@ header, and Thread `download-ai-chat` exports its supplied Knowledge Sources.
 Thread render variants `id/ai-chat` and `id/ai-chat-settings` occupy sibling
 folders. Message render variants `list` and `list-ai-chat` also occupy sibling
 folders; a render variant does not contain another render variant.
+
+Framework Landing in Modules uses six Website Builder Widgets and two Blog Widgets.
+Host Page selects the Russian copy from its `page.md`, record IDs, artwork and
+Storybook destinations; it does not render section layouts or article cards.
+
+- Website Builder Widget: `content-hero` (editorial), `content-showcase`,
+  `content-steps` (full), `content-project-context`, `content-cta` (primary),
+  `content-faq` (plain).
+- Website Builder Feature: `selectable` for each scenario, `preview-scroll`
+  for its screenshot, `step` for each launch step, `dropdown` for document
+  explanations and FAQ entries, `copy-request` for the optional setup prompt.
+- Blog Widget: `article-find-grid`; Blog Article: `card` with `module` or `guide`
+  layout. The two collections receive independent records and destinations.
+
+Product examples share one screenshot renderer. Their images are static local
+captures in `runtime/assets/images/singlepage/generated/framework-example-previews`.
+The phone viewport supports pointer and keyboard scrolling; pictured forms and
+buttons do not perform actions. Selecting a scenario starts its preview at the top.
+These props-driven Studio records have no API reads or production relations.

@@ -1,3 +1,6 @@
+import { Component as ArticleOverviewLinked } from "./article-overview-linked";
+import { Component as ArticleFindGuides } from "./article-find-guides";
+import { Component as ArticleFindGrid } from "./article-find-grid";
 import { Component as ArticleFeedDefault } from "./article-feed-default";
 import { Component as CategoryOverviewDefault } from "./category/overview/default";
 import { Component as CategoryListDefault } from "./category/list/default";
@@ -19,6 +22,9 @@ import { Component as ArticleOverviewDefault } from "./article/overview/default"
 import { Component as ArticleOverviewWithPrivateContentDefault } from "./article/overview/with-private-content-default";
 
 export const variants = {
+  "article-overview-linked": ArticleOverviewLinked,
+  "article-find-guides": ArticleFindGuides,
+  "article-find-grid": ArticleFindGrid,
   "article-feed-default": ArticleFeedDefault,
   "category-overview-default": CategoryOverviewDefault,
   "category-list-default": CategoryListDefault,

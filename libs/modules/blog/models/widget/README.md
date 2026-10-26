@@ -19,6 +19,9 @@ Blog widgets are reusable content blocks that render article and category lists 
 
 ## Variants
 
+- `article-find-grid` and `article-find-guides`: exact ordered Widget→Article membership rendered as module or guide cards inside linked Website Builder frames.
+- `article-overview-linked`: exact curated Article membership for saved module guide pages; uses the same Article records as Blog detail routes.
+
 - `default`: placeholder widget view.
 - `category-list-default`: renders a card with all categories listed.
 - `category-overview-default`: selects and renders the Category identified by its explicit slug.

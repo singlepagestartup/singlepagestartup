@@ -39,6 +39,68 @@ export function FeatureDropdown(props?: IComponentProps) {
     ...defaultFeatureDropdownProps,
     ...props,
   };
+  if (props?.appearance === "document")
+    return (
+      <details
+        open={open}
+        className={`group w-full min-w-0 rounded-xl ${props.tone === "dark" ? "bg-default-foreground/5" : "bg-muted"}`}
+        data-module="website-builder"
+        data-model="feature"
+        data-variant="dropdown"
+        data-ds-block="website-builder.feature.dropdown"
+      >
+        <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-xl px-3 py-2 text-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary [&::-webkit-details-marker]:hidden">
+          <SharedIcon variant="phosphor" name="file-text" size={20} />
+          <span className="flex-1">{question}</span>
+          <SharedIcon variant="phosphor" name="question" size={20} />
+        </summary>
+        <div
+          className={`border-t px-3 pb-4 pt-3 text-xs leading-6 ${props.tone === "dark" ? "border-default-foreground/10 text-default-muted-foreground" : "border-border text-muted-foreground"}`}
+        >
+          <p>{answer}</p>
+          {props.example ? (
+            <p className="mt-3 rounded-lg bg-card/10 p-3">
+              <span className="block text-[10px] font-semibold uppercase tracking-wider">
+                {props.exampleLabel}
+              </span>
+              {props.example}
+            </p>
+          ) : null}
+        </div>
+      </details>
+    );
+  if (props?.appearance === "card")
+    return (
+      <details
+        open={open}
+        className="group mb-3 rounded-2xl border border-border bg-card open:border-primary/50 open:bg-primary/10"
+        data-module="website-builder"
+        data-model="feature"
+        data-variant="dropdown"
+        data-ds-block="website-builder.feature.dropdown"
+      >
+        <summary className="flex min-h-[76px] cursor-pointer list-none items-center justify-between gap-4 rounded-2xl p-4 text-sm font-semibold leading-6 hover:bg-primary/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground [&::-webkit-details-marker]:hidden">
+          <span>{question}</span>
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground group-open:bg-default group-open:text-primary">
+            <SharedIcon
+              variant="phosphor"
+              name="plus"
+              size={20}
+              className="group-open:hidden"
+            />
+            <SharedIcon
+              variant="phosphor"
+              name="minus"
+              size={20}
+              className="hidden group-open:block"
+            />
+          </span>
+        </summary>
+        <div className="px-4 pb-5 text-sm leading-7 text-muted-foreground">
+          {answer}
+        </div>
+      </details>
+    );
   return (
     <details
       className="group min-w-0 border-b border-border last:border-0"
