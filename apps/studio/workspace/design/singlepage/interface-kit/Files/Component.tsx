@@ -1,49 +1,7 @@
-import { memo, useCallback, useId, useRef, useState } from "react";
-import { Button, Icon, kit, Specimen } from "./primitives";
-
-export interface ILocalFile {
-  id: string;
-  name: string;
-  size: number;
-  type: string;
-}
-
-interface IFileRowProps {
-  file: ILocalFile;
-  onRemove?: (id: string) => void;
-}
-
-export const FileRow = memo(function FileRow({
-  file,
-  onRemove,
-}: IFileRowProps) {
-  return (
-    <li className="flex items-center gap-3 rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-3">
-      <span className="rounded-lg bg-[var(--workspace-brand-background)] p-2">
-        <Icon name="file-text" />
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="break-words text-sm font-medium">{file.name}</p>
-        <p className={`mt-1 break-words text-xs ${kit.muted}`}>
-          {file.size < 1024
-            ? `${file.size} B`
-            : `${new Intl.NumberFormat("en", { maximumFractionDigits: 1 }).format(file.size / 1024)} KB`}{" "}
-          · {file.type || "File type not supplied"} · local only
-        </p>
-      </div>
-      {onRemove ? (
-        <Button
-          variant="plain"
-          className="shrink-0 px-3"
-          aria-label={`Remove ${file.name} from selection`}
-          onClick={() => onRemove(file.id)}
-        >
-          <Icon name="x" />
-        </Button>
-      ) : null}
-    </li>
-  );
-});
+import { useCallback, useId, useRef, useState } from "react";
+import { Button, Icon, kit, Specimen } from "../primitives";
+import { FileRow } from "./FileRow";
+import type { ILocalFile } from "./interface";
 
 export default function Files() {
   const input = useRef<HTMLInputElement>(null);
@@ -85,6 +43,7 @@ export default function Files() {
           name: file.name,
           size: file.size,
           type: file.type,
+          localFile: file,
         });
     }
     setErrors([...new Set(rejected)]);
@@ -115,7 +74,7 @@ export default function Files() {
           "Too large",
           "Removed",
         ]}
-        usage="Name accepted types and limits before selection. This demo reads file metadata only and never uploads or saves file contents."
+        usage="Name accepted types and limits before selection. Selected files can be previewed locally; their contents are never uploaded or saved."
         recipe="rounded-2xl border border-dashed border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] p-6 text-center"
       >
         <div
