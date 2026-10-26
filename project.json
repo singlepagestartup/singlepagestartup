@@ -73,7 +73,7 @@
       "options": {
         "commands": [
           "bun tools/studio/design-system/inventory.ts",
-          "storybook dev -c apps/studio/.storybook -p 4320 -h 127.0.0.1"
+          "storybook dev -c apps/studio/.storybook -p 4320 -h 127.0.0.1 --no-open"
         ],
         "parallel": false
       }

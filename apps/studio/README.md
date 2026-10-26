@@ -61,6 +61,10 @@ npm run studio:storybook:build
 npm run studio:presentation:export
 ```
 
+`studio:storybook` serves Studio at `http://localhost:4320/`. Open that URL
+manually; automatic browser opening is disabled because Storybook's synchronous
+macOS browser script can block startup while waiting for Chrome.
+
 `studio:validate` type-checks Workspace stories and checks runnable manifests,
 module/page/Figma metadata, both canonical workspace layers, inheritance rules,
 dependency cycles, and isolated validator fixtures. Once a downstream project's
