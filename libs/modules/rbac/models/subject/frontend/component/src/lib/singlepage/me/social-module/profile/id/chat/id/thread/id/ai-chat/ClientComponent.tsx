@@ -86,7 +86,6 @@ export function Component(props: IClientComponentProps) {
         }
         messages={
           <Subject
-            language={props.language}
             {...actionProps}
             variant="me-social-module-profile-id-chat-id-thread-id-message-list-ai-chat"
             onProfileOpen={openProfile}
@@ -94,7 +93,6 @@ export function Component(props: IClientComponentProps) {
         }
         composer={
           <Subject
-            language={props.language}
             {...actionProps}
             variant="me-social-module-profile-id-chat-id-thread-id-message-create-ai-chat"
             target={target}
@@ -104,7 +102,6 @@ export function Component(props: IClientComponentProps) {
         knowledge={
           isDocument && (
             <Subject
-              language={props.language}
               {...actionProps}
               variant="me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-list-document-ai-chat"
               onDiscuss={onDiscuss}
@@ -114,7 +111,6 @@ export function Component(props: IClientComponentProps) {
         documentDownload={
           isDocument && (
             <Subject
-              language={props.language}
               {...actionProps}
               variant="me-social-module-profile-id-chat-id-thread-id-download-ai-chat"
             />
@@ -123,7 +119,7 @@ export function Component(props: IClientComponentProps) {
       />
       {profileId && (
         <Subject
-          language={props.language}
+          language={language}
           isServer={false}
           variant="me-social-module-profile-id-sidebar-ai-chat"
           data={props.data}
