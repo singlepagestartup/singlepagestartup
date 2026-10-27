@@ -7,11 +7,19 @@ export function Component(props: IComponentPropsExtended) {
     props.field === "string"
       ? props.data.string?.[props.language]
       : props.data[props.field as keyof typeof props.data];
+  const numericValue =
+    typeof raw === "number"
+      ? raw
+      : props.field === "number" && typeof raw === "string" && raw.trim()
+        ? Number(raw)
+        : undefined;
   const value =
-    typeof raw === "number" && props.maximumFractionDigits !== undefined
+    numericValue !== undefined &&
+    Number.isFinite(numericValue) &&
+    props.maximumFractionDigits !== undefined
       ? new Intl.NumberFormat(props.language === "ru" ? "ru-RU" : "en-US", {
           maximumFractionDigits: props.maximumFractionDigits,
-        }).format(raw)
+        }).format(numericValue)
       : raw instanceof Date
         ? raw.toLocaleString(props.language === "ru" ? "ru-RU" : "en-US")
         : typeof raw === "boolean"
