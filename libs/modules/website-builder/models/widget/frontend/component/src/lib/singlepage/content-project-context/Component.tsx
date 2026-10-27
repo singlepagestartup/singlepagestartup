@@ -18,7 +18,7 @@ export function Component(props: IComponentPropsExtended) {
       data-id={data.id}
       data-variant={props.variant}
       className={cn(
-        "@container mx-auto max-w-7xl px-5 py-14 outline-none @3xl:px-8 @3xl:py-20",
+        "@container mx-auto w-full min-w-0 max-w-7xl px-5 py-14 outline-none @3xl:px-8 @3xl:py-20",
         data.className,
         props.className,
       )}
@@ -34,7 +34,7 @@ export function Component(props: IComponentPropsExtended) {
           >
             {title}
           </h2>
-          <div className="mt-4 text-sm leading-6 text-muted-foreground">
+          <div className="mt-4 max-w-sm text-sm leading-6 text-muted-foreground">
             <TipTap value={description ?? ""} />
           </div>
           <div className="mt-6">

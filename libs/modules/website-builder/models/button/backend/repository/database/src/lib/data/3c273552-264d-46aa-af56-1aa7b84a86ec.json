@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Blog",
+    "ru": "Блог"
+  },
+  "subtitle": {},
+  "url": "/blog",
+  "className": "w-fit",
+  "id": "3c273552-264d-46aa-af56-1aa7b84a86ec",
+  "createdAt": "2026-10-23T20:18:02.989Z",
+  "updatedAt": "2026-10-23T20:18:02.989Z",
+  "variant": "ghost",
+  "adminTitle": "Blog",
+  "slug": "framework-footer-resources-blog"
+}

@@ -8,6 +8,7 @@ import type { IModel as IIdentity } from "@sps/rbac/models/identity/sdk/model";
 export const variant = "me-identity-change-password" as const;
 
 export interface IComponentProps extends IParent<IModel, typeof variant> {
+  language?: string;
   identity: IIdentity;
 }
 

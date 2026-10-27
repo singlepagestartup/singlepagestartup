@@ -1,0 +1,18 @@
+{
+  "className": "",
+  "id": "935bd412-d357-4756-8aa1-114c1298679f",
+  "createdAt": "2026-10-24T01:05:55.604Z",
+  "updatedAt": "2026-10-24T01:05:55.604Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Keep a clear owner.",
+    "ru": "Сохраните ответственность модуля."
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Use Website Builder for its own records and operations. Connect other capabilities through their public interfaces and explicit relations; keep the business task in its owning domain.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Используйте Website Builder для его записей и операций. Подключайте другие возможности через публичные интерфейсы и явные связи; бизнес-задача остаётся в своём домене.\"}]}]}"
+  },
+  "adminTitle": "Keep a clear owner.",
+  "slug": "framework-journey-guide-website-builder-owner"
+}

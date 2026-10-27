@@ -77,6 +77,7 @@ export function Component(props: IComponentPropsExtended) {
                         dataSource="props"
                         data={link}
                         language={props.language}
+                        className="w-auto max-w-full"
                       />
                     ))}
                 </div>
@@ -151,6 +152,7 @@ export function Component(props: IComponentPropsExtended) {
                         dataSource="props"
                         data={link}
                         language={props.language}
+                        className="w-auto max-w-full"
                       />
                     ))}
                 </div>

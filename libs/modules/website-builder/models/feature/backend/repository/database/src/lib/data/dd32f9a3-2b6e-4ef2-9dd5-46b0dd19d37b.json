@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "dd32f9a3-2b6e-4ef2-9dd5-46b0dd19d37b",
+  "createdAt": "2026-10-26T00:11:59.993Z",
+  "updatedAt": "2026-10-27T14:59:59.015Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Different materials are supported",
+    "ru": "Подходят разные материалы"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"You can use text, PDFs, images, audio and video. Content is analysed so it can be used in search.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Можно использовать текст, PDF, изображения, аудио и видео. Содержимое анализируется, чтобы его можно было использовать при поиске.\"}]}]}"
+  },
+  "adminTitle": "Подходят разные материалы",
+  "slug": "framework-reviewed-article-knowledge-introduction-feature-1"
+}

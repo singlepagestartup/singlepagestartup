@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "All modules",
+    "ru": "Все модули"
+  },
+  "subtitle": {},
+  "url": "/framework/modules",
+  "className": "w-fit",
+  "id": "ed2503db-85a6-4116-a8af-7532e9a87d9d",
+  "createdAt": "2026-10-24T01:06:09.593Z",
+  "updatedAt": "2026-10-24T01:06:09.593Z",
+  "variant": "secondary",
+  "adminTitle": "All modules",
+  "slug": "framework-journey-guide-file-storage-actions-0"
+}

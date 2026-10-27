@@ -103,13 +103,13 @@ describe("Paid purchase details", () => {
   it("does not invent a downloadable receipt when no receipt file exists", () => {
     mockReceipts = [];
     const html = renderPurchase();
-    expect(html).toContain('title="Receipt is not available yet."');
+    expect(html).toContain('title="Чек пока недоступен."');
     expect(html).not.toContain("href=");
   });
   it("keeps total failures local to the purchase details", () => {
     mockTotal.mockReturnValue({ isPending: false, isError: true });
     const html = renderPurchase();
-    expect(html).toContain("Total unavailable");
+    expect(html).toContain("Сумма недоступна");
     expect(html).toContain("SPS-2026-1042");
   });
   it("renders parent-owned purchase details without generic totals or receipt queries", () => {
@@ -178,7 +178,7 @@ describe("Paid purchase details", () => {
         },
       }),
     );
-    expect(html).toContain("Expired");
+    expect(html).toContain("Срок истёк");
     expect(html).toContain("SPS-EXPIRED");
     expect(html).toContain("42 USD");
     expect(html).toContain("/public/file-storage/static/expired.pdf");

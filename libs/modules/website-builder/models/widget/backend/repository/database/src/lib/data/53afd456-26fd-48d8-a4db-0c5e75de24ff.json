@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "A request for your project",
+    "ru": "Запрос для вашего проекта"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"After a service enquiry, send the customer a receipt confirmation and the administrator a message with the request details. Confirm the appointment time after speaking to the customer.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"После заявки на услугу отправляйте клиенту подтверждение получения, а администратору — сообщение с деталями запроса. Время записи подтверждается после разговора.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "53afd456-26fd-48d8-a4db-0c5e75de24ff",
+  "createdAt": "2026-10-26T00:12:05.578Z",
+  "updatedAt": "2026-10-27T14:58:59.923Z",
+  "variant": "content-rich",
+  "adminTitle": "Запрос для вашего проекта",
+  "slug": "framework-reviewed-article-notification-task"
+}

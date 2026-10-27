@@ -1,0 +1,18 @@
+{
+  "className": "",
+  "id": "f09ce01c-bf52-42b6-a16c-5db9203ebec3",
+  "createdAt": "2026-10-24T01:06:01.778Z",
+  "updatedAt": "2026-10-24T01:06:01.778Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Give your agent a concrete task.",
+    "ru": "Дайте агенту конкретную задачу."
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Provide your reviewed product description, the customer action to support and the result you expect. Ask the agent to inspect this module's README and preserve existing access and data behavior.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Передайте проверенное описание продукта, действие клиента и ожидаемый результат. Попросите агента изучить README этого модуля и сохранить существующие правила доступа и работы с данными.\"}]}]}"
+  },
+  "adminTitle": "Give your agent a concrete task.",
+  "slug": "framework-journey-guide-rbac-task"
+}

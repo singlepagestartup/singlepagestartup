@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "908dd3bb-60ee-42a9-a158-864101b816b3",
+  "createdAt": "2026-10-26T00:11:26.416Z",
+  "updatedAt": "2026-10-27T14:59:44.361Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Payment is linked to an offer",
+    "ru": "Оплата связана с предложением"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Connect an order, access purchase or another paid workflow. Define the period and renewal rules for the particular offer.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Подключите заказ, покупку доступа или другой платный сценарий. Период и правила продления определяются для конкретного предложения.\"}]}]}"
+  },
+  "adminTitle": "Оплата связана с предложением",
+  "slug": "framework-reviewed-article-billing-introduction-feature-2"
+}

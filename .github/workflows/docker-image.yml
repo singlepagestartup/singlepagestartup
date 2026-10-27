@@ -2,6 +2,16 @@ name: Build Docker image
 
 on:
   workflow_dispatch:
+    inputs:
+      TAG:
+        description: Docker image tag
+        required: true
+        type: string
+      PRERELEASE:
+        description: Use preview image repositories
+        required: true
+        default: true
+        type: boolean
   workflow_call:
     inputs:
       TAG:

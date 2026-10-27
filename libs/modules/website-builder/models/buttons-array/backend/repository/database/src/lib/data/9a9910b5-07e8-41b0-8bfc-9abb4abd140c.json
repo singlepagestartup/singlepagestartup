@@ -1,0 +1,14 @@
+{
+  "id": "9a9910b5-07e8-41b0-8bfc-9abb4abd140c",
+  "createdAt": "2026-10-27T08:55:55.884Z",
+  "updatedAt": "2026-10-27T15:00:20.822Z",
+  "variant": "navigation-inline",
+  "className": "",
+  "title": {
+    "en": "What happens next",
+    "ru": "Что будет дальше"
+  },
+  "description": {},
+  "adminTitle": "content-ai-chat-help-links",
+  "slug": "ai-chat-editable-content-ai-chat-help-links"
+}

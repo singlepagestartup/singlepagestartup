@@ -1,0 +1,14 @@
+{
+  "id": "6cde0869-17e9-4cb5-911d-586451639bb3",
+  "createdAt": "2026-10-27T08:55:53.984Z",
+  "updatedAt": "2026-10-27T15:00:19.455Z",
+  "variant": "navigation-inline",
+  "className": "",
+  "title": {
+    "en": "Before uploading files",
+    "ru": "Перед загрузкой файлов"
+  },
+  "description": {},
+  "adminTitle": "content-ai-chat-registration-links",
+  "slug": "ai-chat-editable-content-ai-chat-registration-links"
+}

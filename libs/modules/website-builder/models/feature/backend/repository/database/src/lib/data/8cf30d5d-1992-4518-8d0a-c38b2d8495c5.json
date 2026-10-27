@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "8cf30d5d-1992-4518-8d0a-c38b2d8495c5",
+  "createdAt": "2026-10-26T00:12:04.752Z",
+  "updatedAt": "2026-10-27T14:59:43.859Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "crm",
+    "ru": "crm"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Trigger a message after receiving an enquiry.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Запускайте сообщение после получения заявки.\"}]}]}"
+  },
+  "adminTitle": "crm",
+  "slug": "framework-reviewed-article-notification-connections-feature-0"
+}

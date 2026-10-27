@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "How profiles, chats, threads and messages connect",
+    "ru": "Как связаны профили, чаты, ветки и сообщения"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Imagine a school with authors and an assistant. Profile answers who, Chat answers where we talk, Thread answers what topic and Message answers what was said. Relations connect these records.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Представьте школу с авторами и помощником. Профиль отвечает на вопрос «кто», чат — «где общаемся», ветка — «о чём», сообщение — «что сказано». Связи соединяют эти записи.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "8491bb7f-c814-4327-ba1e-3e8293677e84",
+  "createdAt": "2026-10-26T00:11:51.158Z",
+  "updatedAt": "2026-10-27T14:59:06.003Z",
+  "variant": "content-rich",
+  "adminTitle": "Как связаны профили, чаты, ветки и сообщения",
+  "slug": "framework-reviewed-article-social-structure"
+}

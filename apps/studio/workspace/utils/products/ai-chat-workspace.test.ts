@@ -115,6 +115,7 @@ describe("AI Chat project workflow", () => {
       "Product identity",
       "Customer Segments",
       "Problem and desired progress",
+      "Competitors",
       "Value Propositions",
       "Offer and usage",
       "Revenue Streams",

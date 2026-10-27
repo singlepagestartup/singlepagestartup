@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "All modules",
+    "ru": "Все модули"
+  },
+  "subtitle": {},
+  "url": "/framework/modules",
+  "className": "w-fit",
+  "id": "dc27d83b-d04a-485f-a0c0-088a019107e6",
+  "createdAt": "2026-10-24T01:06:12.676Z",
+  "updatedAt": "2026-10-24T01:06:12.676Z",
+  "variant": "secondary",
+  "adminTitle": "All modules",
+  "slug": "framework-journey-guide-broadcast-actions-0"
+}

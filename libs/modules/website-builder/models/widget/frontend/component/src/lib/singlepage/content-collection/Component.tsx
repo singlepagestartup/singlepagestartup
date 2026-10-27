@@ -38,7 +38,9 @@ export function Component(props: IComponentPropsExtended) {
             <header className="flex flex-wrap items-end justify-between gap-5">
               <div className="space-y-3">
                 {subtitle ? (
-                  <p className="text-sm text-muted-foreground">{subtitle}</p>
+                  <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                    {subtitle}
+                  </p>
                 ) : null}
                 {title ? (
                   <h2
@@ -67,6 +69,7 @@ export function Component(props: IComponentPropsExtended) {
                     dataSource="props"
                     data={link}
                     language={props.language}
+                    className="w-auto max-w-full shrink-0"
                   />
                 ))}
             </header>
@@ -100,6 +103,7 @@ export function Component(props: IComponentPropsExtended) {
                     dataSource="props"
                     data={link}
                     language={props.language}
+                    className="w-auto max-w-full shrink-0"
                   />
                 ))}
             </div>

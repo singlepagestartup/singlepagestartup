@@ -58,7 +58,9 @@ export function PdfPreview(props: IPdfPreviewProps) {
       } catch {
         if (active)
           setError(
-            "This PDF could not be displayed. Open or download the original.",
+            props.language === "ru"
+              ? "Не удалось показать PDF. Откройте или скачайте оригинал."
+              : "This PDF could not be displayed. Open or download the original.",
           );
       }
     })();
@@ -67,7 +69,7 @@ export function PdfPreview(props: IPdfPreviewProps) {
       controller.abort();
       void task?.destroy();
     };
-  }, [props.localFile, props.onDownload]);
+  }, [props.localFile, props.onDownload, props.language]);
 
   useEffect(() => {
     if (!document || !width || !canvas.current) return;
@@ -90,7 +92,9 @@ export function PdfPreview(props: IPdfPreviewProps) {
       } catch {
         if (active)
           setError(
-            "This PDF page could not be displayed. Open or download the original.",
+            props.language === "ru"
+              ? "Не удалось показать страницу PDF. Откройте или скачайте оригинал."
+              : "This PDF page could not be displayed. Open or download the original.",
           );
       } finally {
         if (active) setRendering(false);
@@ -100,18 +104,20 @@ export function PdfPreview(props: IPdfPreviewProps) {
       active = false;
       task?.cancel();
     };
-  }, [document, page, width, zoom]);
+  }, [document, page, width, zoom, props.language]);
 
   return (
     <div
       className="flex min-h-0 flex-1 flex-col"
-      aria-label={`PDF preview: ${props.name}`}
+      aria-label={`${props.language === "ru" ? "Предпросмотр PDF" : "PDF preview"}: ${props.name}`}
     >
       {document && (
         <div className="flex shrink-0 flex-wrap items-center justify-center gap-2 border-b border-border p-2">
           <button
             type="button"
-            aria-label="Previous page"
+            aria-label={
+              props.language === "ru" ? "Предыдущая страница" : "Previous page"
+            }
             disabled={page === 1}
             onClick={() => setPage((value) => value - 1)}
             className="grid size-9 place-items-center rounded-lg hover:bg-muted disabled:opacity-40"
@@ -119,11 +125,14 @@ export function PdfPreview(props: IPdfPreviewProps) {
             <ChevronLeft className="size-4" />
           </button>
           <span className="text-xs tabular-nums" aria-live="polite">
-            Page {page} of {document.numPages}
+            {props.language === "ru" ? "Страница" : "Page"} {page}{" "}
+            {props.language === "ru" ? "из" : "of"} {document.numPages}
           </span>
           <button
             type="button"
-            aria-label="Next page"
+            aria-label={
+              props.language === "ru" ? "Следующая страница" : "Next page"
+            }
             disabled={page === document.numPages}
             onClick={() => setPage((value) => value + 1)}
             className="grid size-9 place-items-center rounded-lg hover:bg-muted disabled:opacity-40"
@@ -132,7 +141,7 @@ export function PdfPreview(props: IPdfPreviewProps) {
           </button>
           <button
             type="button"
-            aria-label="Zoom out"
+            aria-label={props.language === "ru" ? "Уменьшить" : "Zoom out"}
             disabled={zoom <= 0.5}
             onClick={() => setZoom((value) => Math.max(0.5, value - 0.25))}
             className="grid size-9 place-items-center rounded-lg hover:bg-muted disabled:opacity-40"
@@ -144,7 +153,7 @@ export function PdfPreview(props: IPdfPreviewProps) {
           </span>
           <button
             type="button"
-            aria-label="Zoom in"
+            aria-label={props.language === "ru" ? "Увеличить" : "Zoom in"}
             disabled={zoom >= 2}
             onClick={() => setZoom((value) => Math.min(2, value + 0.25))}
             className="grid size-9 place-items-center rounded-lg hover:bg-muted disabled:opacity-40"
@@ -164,13 +173,13 @@ export function PdfPreview(props: IPdfPreviewProps) {
         )}
         {!error && (!document || rendering) && (
           <p role="status" className="mb-3 text-sm text-muted-foreground">
-            Loading PDF…
+            {props.language === "ru" ? "Загрузка PDF…" : "Loading PDF…"}
           </p>
         )}
         <canvas
           ref={canvas}
           role="img"
-          aria-label={`Page ${page} of ${props.name}`}
+          aria-label={`${props.language === "ru" ? "Страница" : "Page"} ${page}: ${props.name}`}
           className={
             document && !error ? "mx-auto block bg-white shadow-sm" : "hidden"
           }

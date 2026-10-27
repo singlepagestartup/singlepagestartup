@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "",
+    "ru": ""
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Upload product photos, videos, covers and documents. Use them on pages, in articles and offer cards. A file can be linked to several parts of the project.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The school has teacher photos, course covers and exercise PDFs. If they live in conversations and separate folders, preparing a page means searching for the right version. The file module gives the project records of uploaded materials and where they are used.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Загрузите фотографии товаров, видео, обложки и документы. Используйте их на страницах, в статьях и карточках предложений. Файл можно связать с несколькими частями проекта.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"У школы есть фотографии преподавателей, обложки курсов и PDF с заданиями. Если хранить их в переписках и отдельных папках, при подготовке страницы приходится искать нужную версию. Модуль файлов даёт проекту записи о загруженных материалах и местах их использования.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "f1c8f560-7574-401f-a2c5-a040a8836960",
+  "createdAt": "2026-10-26T00:11:46.611Z",
+  "updatedAt": "2026-10-27T14:59:19.469Z",
+  "variant": "content-rich",
+  "adminTitle": "framework-reviewed-article-file-storage-introduction",
+  "slug": "framework-reviewed-article-file-storage-introduction"
+}

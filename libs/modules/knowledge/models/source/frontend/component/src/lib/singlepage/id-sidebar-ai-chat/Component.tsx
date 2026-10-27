@@ -4,6 +4,8 @@ import type { IComponentPropsExtended } from "./interface";
 export const Component = memo(function Component(
   props: IComponentPropsExtended,
 ) {
+  const language = props.language || internationalization.defaultLanguage.code;
+  const ru = language === "ru";
   return (
     <details
       data-module="knowledge"
@@ -17,7 +19,10 @@ export const Component = memo(function Component(
       </summary>
       <div className="prose prose-sm mt-3 max-w-none break-words text-muted-foreground">
         <Markdown options={{ disableParsingRawHTML: true }}>
-          {props.data.content || "No knowledge content provided."}
+          {props.data.content ||
+            (ru
+              ? "Содержание знаний не добавлено."
+              : "No knowledge content provided.")}
         </Markdown>
       </div>
       {props.children}

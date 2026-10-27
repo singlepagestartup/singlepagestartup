@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Three steps to launch your project",
+    "ru": "Три шага до запуска вашего проекта"
+  },
+  "subtitle": {
+    "en": "From describing your idea to a link for customers",
+    "ru": "От описания идеи до ссылки для клиентов"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[]}",
+    "ru": "{\"type\":\"doc\",\"content\":[]}"
+  },
+  "anchor": "cf-start",
+  "className": "",
+  "id": "6c93688d-2c9a-46f2-9ca0-844691f1d51b",
+  "createdAt": "2026-10-26T00:12:30.069Z",
+  "updatedAt": "2026-10-27T14:59:04.314Z",
+  "variant": "content-steps",
+  "adminTitle": "Три шага до запуска вашего проекта",
+  "slug": "framework-reviewed-steps"
+}

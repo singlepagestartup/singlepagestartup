@@ -1,13 +1,13 @@
 import { TipTap } from "@sps/shared-ui-shadcn";
 import { cn } from "@sps/shared-frontend-client-utils";
-import type { IComponentPropsExtended } from "./interface";
+import { type IComponentPropsExtended, type IMediaProps } from "./interface";
 import { memo } from "react";
 import Link from "next/link";
 import { internationalization } from "@sps/shared-configuration";
 import { saveLanguageContext } from "@sps/shared-utils";
 import { Icon } from "@sps/ui-adapter";
 import { Component as ArticlesToFileStorageModuleFiles } from "@sps/blog/relations/articles-to-file-storage-module-files/frontend/component";
-import type { IMediaProps } from "./interface";
+
 function Media({ articleId, language, isServer, guide }: IMediaProps) {
   return (
     <ArticlesToFileStorageModuleFiles

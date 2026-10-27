@@ -1,0 +1,14 @@
+{
+  "id": "b6e8bdc8-2dbf-4d84-a344-a76db159ba6d",
+  "createdAt": "2026-10-24T01:05:51.130Z",
+  "updatedAt": "2026-10-24T01:05:51.130Z",
+  "variant": "default",
+  "className": "w-full",
+  "title": {
+    "en": "Actions",
+    "ru": "Действия"
+  },
+  "description": {},
+  "adminTitle": "Actions",
+  "slug": "framework-journey-articles-actions"
+}

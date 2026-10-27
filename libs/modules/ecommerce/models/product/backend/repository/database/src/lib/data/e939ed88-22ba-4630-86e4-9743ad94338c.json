@@ -1,20 +1,21 @@
 {
   "id": "e939ed88-22ba-4630-86e4-9743ad94338c",
   "createdAt": "2025-01-24T23:47:55.624Z",
-  "updatedAt": "2026-03-19T00:27:17.457Z",
+  "updatedAt": "2026-10-23T21:20:18.216Z",
   "variant": "default",
   "type": "subscription",
   "slug": "pro",
   "title": {
-    "en": "Pro Subscription",
-    "ru": "Подписка Про"
+    "en": "Pro",
+    "ru": "Pro"
   },
   "shortDescription": {
-    "en": "Pro subscription for getting all the features",
-    "ru": "Подписка для получения доступа к нейронным сетят"
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"5000 tokens for each paid month. 29 USD or 1900 RUB per month.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"5000 токенов за каждый оплаченный месяц. 29 USD или 1900 ₽ в месяц.\"}]}]}"
   },
   "description": {
-    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Subscription!\"}]}]}"
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Monthly Pro includes 5000 tokens for each accepted paid billing cycle and subscription access to closed content. Unused tokens remain in your balance. Choose 29 USD or 1900 RUB per month. Initial Free tokens and one-time top-ups stay in the same balance.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Ежемесячная подписка Pro даёт 5000 токенов за каждый подтверждённый оплаченный период и доступ к закрытому контенту по подписке. Неиспользованные токены остаются на балансе. Выберите оплату 29 USD или 1900 ₽ в месяц. Начальные бесплатные токены и разовые пополнения учитываются в том же балансе.\"}]}]}"
   },
   "adminTitle": "Pro Subscription"
 }

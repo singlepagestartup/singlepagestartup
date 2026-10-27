@@ -1,0 +1,21 @@
+{
+  "id": "b0929dd6-b345-4574-976e-4c1cbb40e094",
+  "createdAt": "2026-10-23T20:18:07.855Z",
+  "updatedAt": "2026-10-23T20:18:07.855Z",
+  "variant": "default",
+  "type": "one_off",
+  "slug": "framework-landing",
+  "title": {
+    "en": "Landing page",
+    "ru": "Лендинг"
+  },
+  "shortDescription": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"A landing page built on SPS with AI-assisted development. The service price is USD 100.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Лендинг на SPS с разработкой при помощи нейросети. Стоимость услуги — 100 USD.\"}]}]}"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"A landing page built on SPS with AI-assisted development. The service price is USD 100. The framework code is free.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Лендинг на SPS с разработкой при помощи нейросети. Стоимость услуги — 100 USD. Код фреймворка бесплатный.\"}]}]}"
+  },
+  "adminTitle": "Landing page"
+}

@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "97b77803-0596-40f0-96e8-817181b7f4ef",
+  "createdAt": "2026-10-26T00:11:44.972Z",
+  "updatedAt": "2026-10-27T14:59:46.352Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "ecommerce",
+    "ru": "ecommerce"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Link materials to a course or product.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Свяжите материал с курсом или товаром.\"}]}]}"
+  },
+  "adminTitle": "ecommerce",
+  "slug": "framework-reviewed-article-blog-connections-feature-1"
+}

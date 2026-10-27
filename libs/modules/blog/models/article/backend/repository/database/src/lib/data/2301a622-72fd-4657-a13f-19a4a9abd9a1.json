@@ -1,0 +1,21 @@
+{
+  "id": "2301a622-72fd-4657-a13f-19a4a9abd9a1",
+  "className": "",
+  "createdAt": "2026-10-26T00:11:59.225Z",
+  "updatedAt": "2026-10-27T15:00:23.051Z",
+  "variant": "card",
+  "adminTitle": "Пусть ИИ отвечает с учётом ваших материалов",
+  "slug": "framework-knowledge",
+  "title": {
+    "en": "Let AI answer using your materials",
+    "ru": "Пусть ИИ отвечает с учётом ваших материалов"
+  },
+  "subtitle": {
+    "en": "AI knowledge base",
+    "ru": "База знаний для ИИ"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Give the assistant documents, notes and recordings. It can search them for information to answer a question.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Передайте помощнику документы, заметки и записи. Он сможет искать в них сведения для ответа на вопрос.\"}]}]}"
+  }
+}

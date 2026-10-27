@@ -1,0 +1,18 @@
+{
+  "className": null,
+  "id": "8393232d-b09e-414d-83ca-a19b42b20a6e",
+  "createdAt": "2026-10-23T20:18:06.149Z",
+  "updatedAt": "2026-10-23T20:18:06.149Z",
+  "variant": "card",
+  "title": {
+    "en": "Functional and presentation Widgets",
+    "ru": "Функциональные и визуальные Widgets"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Domain Widgets own queries, forms and mutations. Website Builder owns saved copy, imagery and layout.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Доменные Widgets отвечают за запросы, формы и мутации. Website Builder хранит тексты, изображения и компоновку.\"}]}]}"
+  },
+  "adminTitle": "Functional and presentation Widgets",
+  "slug": "framework-about-architecture-feature-5"
+}

@@ -452,6 +452,15 @@ The second audience is novice AI-assisted makers, or vibe coders. They work main
 
 Code Framework supplies common functions, among them registration, product carts and payments, already configured and tested against each other. Reusing them is intended to spend less build and test time and fewer AI tokens on the foundation, which leaves more of both for the product's own rules.
 
+## Competitors
+
+The two products have different alternatives: reusable code foundations and site
+builders for Code Framework; project chats and document-based planning for AI
+Chat. Each Product keeps its own competitor list and references its research.
+The owner's business-wide competitor list and examples of their promotion have
+not yet been supplied. This remains open input for later research and keyword
+planning, rather than a statement that there are no competitors.
+
 ## Current state
 
 A team has developed the codebase over several years and tested installation and the module integrations. The inspected repository snapshot holds source code and documentation for 15 modules, 61 models and 94 relations, among them identity and access, ecommerce and payments. These counts describe the source inventory; they do not verify deployed behavior.

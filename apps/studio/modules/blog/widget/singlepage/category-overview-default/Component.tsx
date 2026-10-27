@@ -1,6 +1,9 @@
 import type { IComponentProps } from "./interface";
-import { Component as Category } from "../../../category";
-import { frameworkCategoryPreviews } from "../../../category";
+import {
+  Component as Category,
+  frameworkCategoryPreviews,
+} from "../../../category";
+
 import {
   ArticleFindCardDefault as ArticleWidget,
   defaultArticleFindCardDefaultProps,

@@ -1,3 +1,7 @@
+import { Component as NavigationInline } from "./navigation-inline";
+import { Component as Navigation } from "./navigation";
+import { Component as ActionsFull } from "./actions-full";
+import { Component as Actions } from "./actions";
 import { Component as FooterColumn } from "./footer-column";
 import { Component as AdminV2SidebarItem } from "./admin-v2/sidebar-item";
 import { Component as AdminV2Card } from "./admin-v2/card";
@@ -13,6 +17,10 @@ import { Component as AdminForm } from "./admin/form";
 import { Component as Default } from "./default";
 
 export const variants = {
+  "navigation-inline": NavigationInline,
+  navigation: Navigation,
+  "actions-full": ActionsFull,
+  actions: Actions,
   "footer-column": FooterColumn,
 
   find: Find,

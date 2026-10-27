@@ -9,6 +9,7 @@ import type { IModel as IIdentity } from "@sps/rbac/models/identity/sdk/model";
 import type { ISpsComponentBase } from "@sps/ui-adapter";
 export const variant = "me-identity-id-settings-ai-chat" as const;
 export interface IComponentProps extends IParent<IModel, typeof variant> {
+  language?: string;
   identity: IIdentity;
   canRemove: boolean;
 }

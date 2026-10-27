@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Open the repository",
+    "ru": "Открыть репозиторий"
+  },
+  "subtitle": {},
+  "url": "https://github.com/singlepagestartup/singlepagestartup",
+  "className": "w-fit",
+  "id": "26d33e67-10b0-46dd-84f3-b682b8a82cad",
+  "createdAt": "2026-10-23T20:18:04.506Z",
+  "updatedAt": "2026-10-23T20:18:04.506Z",
+  "variant": "primary",
+  "adminTitle": "Open the repository",
+  "slug": "framework-about-github"
+}

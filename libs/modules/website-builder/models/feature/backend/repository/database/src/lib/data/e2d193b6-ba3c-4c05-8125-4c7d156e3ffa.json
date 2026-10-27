@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "e2d193b6-ba3c-4c05-8125-4c7d156e3ffa",
+  "createdAt": "2026-10-26T00:12:04.201Z",
+  "updatedAt": "2026-10-27T15:00:00.327Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Team",
+    "ru": "Команда"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"New grooming enquiry\\n\\nAn example staff notification.\\n\\nCustomer: Anna\\n\\nPreference: weekend\\n\\nOpen the enquiry and confirm a time\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Новая заявка на стрижку\\n\\nПример уведомления сотруднику.\\n\\nКлиент: Анна\\n\\nПожелание: в выходные\\n\\nОткройте заявку и уточните время\"}]}]}"
+  },
+  "adminTitle": "Команда",
+  "slug": "framework-reviewed-article-notification-example-feature-1"
+}

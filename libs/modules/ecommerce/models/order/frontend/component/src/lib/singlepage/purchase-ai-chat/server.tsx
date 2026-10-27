@@ -19,6 +19,7 @@ export async function Component(props: IComponentPropsExtended) {
 
   return (
     <ChildComponent
+      language={props.language}
       isServer={true}
       variant={props.variant}
       data={props.data}

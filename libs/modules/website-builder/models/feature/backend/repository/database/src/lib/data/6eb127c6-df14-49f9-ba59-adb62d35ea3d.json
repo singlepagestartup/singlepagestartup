@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "6eb127c6-df14-49f9-ba59-adb62d35ea3d",
+  "createdAt": "2026-10-26T00:11:44.129Z",
+  "updatedAt": "2026-10-27T14:59:40.361Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Author",
+    "ru": "Автор"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Teacher materials\\n\\nArticles linked to the author's profile.\\n\\nHow to shoot by a window\\n\\nThree reflector exercises\\n\\nPortrait photography workshop\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Материалы преподавателя\\n\\nСтатьи связаны с профилем автора.\\n\\nКак снимать у окна\\n\\nТри упражнения с отражателем\\n\\nПрактикум по портретной съёмке\"}]}]}"
+  },
+  "adminTitle": "Автор",
+  "slug": "framework-reviewed-article-blog-example-feature-1"
+}

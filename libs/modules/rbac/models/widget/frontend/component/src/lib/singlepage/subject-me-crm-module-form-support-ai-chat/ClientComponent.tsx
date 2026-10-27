@@ -1,4 +1,5 @@
 "use client";
+import { internationalization } from "@sps/shared-configuration";
 import type { IComponentPropsExtended } from "./interface";
 import { Component as WidgetsToWebsiteBuilderModuleWidgets } from "@sps/rbac/relations/widgets-to-website-builder-module-widgets/frontend/component";
 import { Component as WidgetsToCrmModuleWidgets } from "@sps/rbac/relations/widgets-to-crm-module-widgets/frontend/component";
@@ -108,27 +109,47 @@ export function Component(props: IComponentPropsExtended) {
                                     </Subject>
                                   ) : (
                                     <p role="alert">
-                                      Support form configuration is unavailable.
+                                      {(props.language ||
+                                        internationalization.defaultLanguage
+                                          .code) === "ru"
+                                        ? "Настройки формы обращения недоступны."
+                                        : "Support form configuration is unavailable."}
                                     </p>
                                   )
                                 }
                               </CrmModuleWidgetsToForms>
                             ))
                           ) : (
-                            <p role="alert">Support widget is unavailable.</p>
+                            <p role="alert">
+                              {(props.language ||
+                                internationalization.defaultLanguage.code) ===
+                              "ru"
+                                ? "Виджет обращения недоступен."
+                                : "Support widget is unavailable."}
+                            </p>
                           )
                         }
                       </CrmModuleWidget>
                     ))
                   ) : (
-                    <p role="alert">Support configuration is unavailable.</p>
+                    <p role="alert">
+                      {(props.language ||
+                        internationalization.defaultLanguage.code) === "ru"
+                        ? "Настройки обращений недоступны."
+                        : "Support configuration is unavailable."}
+                    </p>
                   )
                 }
               </WidgetsToCrmModuleWidgets>
             </WidgetsToWebsiteBuilderModuleWidgets>
           ))
         ) : (
-          <p role="alert">Support content is unavailable.</p>
+          <p role="alert">
+            {(props.language || internationalization.defaultLanguage.code) ===
+            "ru"
+              ? "Страница обращений недоступна."
+              : "Support content is unavailable."}
+          </p>
         )
       }
     </WidgetsToWebsiteBuilderModuleWidgets>

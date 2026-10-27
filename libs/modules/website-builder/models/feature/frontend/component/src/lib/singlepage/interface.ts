@@ -1,3 +1,12 @@
+import type { IComponentProps as IDemoHandoff } from "./demo-handoff/interface";
+import type { IComponentProps as IDemoDocument } from "./demo-document/interface";
+import type { IComponentProps as IDemoProject } from "./demo-project/interface";
+import type { IComponentProps as ILandingDisclosure } from "./landing-disclosure/interface";
+import type { IComponentProps as ILandingFollowup } from "./landing-followup/interface";
+import type { IComponentProps as ILandingWorkflow } from "./landing-workflow/interface";
+import type { IComponentProps as ILandingIntroduction } from "./landing-introduction/interface";
+import type { IComponentProps as IContextProjectHeading } from "./context-project-heading/interface";
+import type { IComponentProps as IContextResult } from "./context-result/interface";
 import type { IComponentProps as IContextNote } from "./context-note/interface";
 import type { IComponentProps as IContextHeading } from "./context-heading/interface";
 import type { IComponentProps as IDocument } from "./document/interface";
@@ -24,6 +33,15 @@ import { IComponentProps as IAdminTableRowComponentProps } from "./admin/table-r
 import { IComponentProps as IDefaultComponentProps } from "./default/interface";
 
 export type IComponentProps =
+  | IDemoHandoff
+  | IDemoDocument
+  | IDemoProject
+  | ILandingDisclosure
+  | ILandingFollowup
+  | ILandingWorkflow
+  | ILandingIntroduction
+  | IContextProjectHeading
+  | IContextResult
   | IContextNote
   | IContextHeading
   | IDocument

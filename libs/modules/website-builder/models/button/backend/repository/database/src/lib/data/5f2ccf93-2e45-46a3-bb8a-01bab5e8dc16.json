@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "All modules",
+    "ru": "Все модули"
+  },
+  "subtitle": {},
+  "url": "/framework/modules",
+  "className": "w-fit",
+  "id": "5f2ccf93-2e45-46a3-bb8a-01bab5e8dc16",
+  "createdAt": "2026-10-24T01:06:03.471Z",
+  "updatedAt": "2026-10-24T01:06:03.471Z",
+  "variant": "secondary",
+  "adminTitle": "All modules",
+  "slug": "framework-journey-guide-ecommerce-actions-0"
+}

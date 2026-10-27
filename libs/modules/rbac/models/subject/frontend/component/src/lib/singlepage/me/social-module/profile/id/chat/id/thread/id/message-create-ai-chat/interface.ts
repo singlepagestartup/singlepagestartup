@@ -14,6 +14,7 @@ import type { ISpsComponentBase } from "@sps/ui-adapter";
 export const variant =
   "me-social-module-profile-id-chat-id-thread-id-message-create-ai-chat" as const;
 export interface IComponentProps extends IParent<IModel, typeof variant> {
+  language?: string;
   project: IAIChatProject;
   thread: IThread;
   target: string;
@@ -38,6 +39,7 @@ export interface IAttachment {
 }
 
 export interface IAttachmentProps {
+  language: string;
   attachment: IAttachment;
   first: boolean;
   last: boolean;

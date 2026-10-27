@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "AI Chat plans and tokens",
+    "ru": "Тарифы и токены AI-чата"
+  },
+  "subtitle": {
+    "en": "Free includes 3000 tokens once at registration.",
+    "ru": "Бесплатный тариф включает 3000 токенов один раз при регистрации."
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Pro adds 5000 tokens each month for 29 USD or 1900 RUB.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Top up with the saved 100, 300, 500, 1000 or 3000 RUB products. The rate remains 0.13 RUB per internal token.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"AI Chat charges usage at provider cost. Your balance uses internal tokens, separate from the input and output tokens counted by an AI model. Failed or cancelled AI requests return all token deductions.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Purchased tokens do not expire. Cash refunds are considered case by case. Review the token and payment terms before paying.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Use AI Chat to prepare and review project documents, then export them for your coding agent. Code Framework remains available independently under MIT.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Pro добавляет 5000 токенов каждый месяц за 29 USD или 1900 RUB.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Для пополнения доступны сохранённые товары на 100, 300, 500, 1000 и 3000 RUB. Курс — 0,13 RUB за внутренний токен.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"AI-чат списывает стоимость использования по цене провайдера. Баланс выражен во внутренних токенах, отдельно от входных и выходных токенов модели. При ошибке или отмене AI-запроса все списания токенов возвращаются.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Купленные токены не сгорают. Возврат денег рассматривается отдельно для каждого случая. Ознакомьтесь с условиями токенов и оплаты перед покупкой.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Подготовьте и проверьте документы проекта в AI-чате, затем экспортируйте их для coding agent. Code Framework доступен отдельно по MIT.\"}]}]}"
+  },
+  "anchor": "ai-chat-plans",
+  "className": "",
+  "id": "abe23c8e-8ff5-4f81-b496-e582954a949f",
+  "createdAt": "2026-10-24T01:06:17.924Z",
+  "updatedAt": "2026-10-24T01:06:17.924Z",
+  "variant": "content-ecommerce-default",
+  "adminTitle": "AI Chat plans and tokens",
+  "slug": "framework-journey-token-catalog-frame"
+}

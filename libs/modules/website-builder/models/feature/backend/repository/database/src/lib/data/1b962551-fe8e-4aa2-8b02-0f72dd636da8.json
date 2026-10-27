@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "1b962551-fe8e-4aa2-8b02-0f72dd636da8",
+  "createdAt": "2026-10-26T00:11:53.924Z",
+  "updatedAt": "2026-10-27T14:59:26.716Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Author page",
+    "ru": "Страница автора"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"An author's name and description with linked Blog articles. Open a heading to read an excerpt.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Имя и описание автора, связанные статьи Blog. Откройте заголовок, чтобы прочитать фрагмент.\"}]}]}"
+  },
+  "adminTitle": "Страница автора",
+  "slug": "framework-reviewed-article-social-components-feature-1"
+}

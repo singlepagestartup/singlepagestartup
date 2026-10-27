@@ -3,8 +3,8 @@ import { Component as WidgetsToButtonsArrays } from "@sps/website-builder/relati
 
 export function Component(props: IComponentPropsExtended) {
   return (
-    <div className="flex min-w-0 w-full flex-col gap-3 lg:flex-row lg:items-center lg:justify-between [&_[data-relation=widgets-to-buttons-arrays]]:w-auto [&_[data-model=buttons-array]]:w-auto [&_[data-model=buttons-array]]:gap-1 [&_[data-relation=buttons-arrays-to-buttons]]:w-auto [&_[data-model=button]]:min-h-11 [&_[data-model=button]]:w-full [&_[data-model=button]]:justify-start [&_[data-model=button]]:rounded-xl [&_[data-model=button]]:border-0 [&_[data-model=button]]:bg-transparent [&_[data-model=button]]:px-3 [&_[data-model=button]]:py-2 [&_[data-model=button]]:text-sm [&_[data-model=button]]:font-medium [&_[data-model=button]]:text-muted-foreground [&_[data-model=button]]:no-underline [&_[data-model=button]]:shadow-none [&_[data-model=button]]:transition [&_[data-model=button]:hover]:bg-muted [&_[data-model=button]:hover]:text-foreground [&_[data-model=button]:focus-visible]:outline-2 [&_[data-model=button]:focus-visible]:outline-offset-2 [&_[data-model=button]:focus-visible]:outline-foreground [&_[data-model=button][aria-current=page]]:bg-muted [&_[data-model=button][aria-current=page]]:text-foreground lg:[&_[data-model=button]]:w-auto lg:[&_[data-model=button]]:justify-center">
-      <div className="flex min-w-0 flex-col gap-1 lg:flex-row lg:flex-wrap lg:items-center [&_[data-model=buttons-array]]:flex-col lg:[&_[data-model=buttons-array]]:flex-row">
+    <div className="flex min-w-0 w-full flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex min-w-0 flex-col gap-1 lg:flex-row lg:flex-wrap lg:items-center">
         <WidgetsToButtonsArrays
           isServer={props.isServer}
           variant="find"
@@ -40,6 +40,7 @@ export function Component(props: IComponentPropsExtended) {
                     key={entity.id}
                     isServer={props.isServer}
                     variant="default"
+                    className="w-auto max-w-full"
                     dataSource="props"
                     data={entity}
                     language={props.language}
@@ -85,6 +86,7 @@ export function Component(props: IComponentPropsExtended) {
                     key={entity.id}
                     isServer={props.isServer}
                     variant="default"
+                    className="w-auto max-w-full"
                     dataSource="props"
                     data={entity}
                     language={props.language}

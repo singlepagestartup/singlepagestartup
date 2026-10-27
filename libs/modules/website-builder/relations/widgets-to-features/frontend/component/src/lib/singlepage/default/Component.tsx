@@ -40,6 +40,7 @@ export function Component(props: IComponentPropsExtended) {
                 language={props.language}
                 selectionGroupId={props.selectionGroupId}
                 initiallySelected={props.initiallySelected}
+                children={props.children}
               />
             );
           });

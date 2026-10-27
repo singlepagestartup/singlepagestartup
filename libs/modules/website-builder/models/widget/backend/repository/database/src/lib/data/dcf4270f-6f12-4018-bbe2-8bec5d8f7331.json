@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Work with Host.",
+    "ru": "Работайте с Host."
+  },
+  "subtitle": {
+    "en": "Experience",
+    "ru": "Интерфейс"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Pages, layouts, metadata and the exact Widget instances that make a page.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Страницы, layouts, метаданные и точные экземпляры Widget, из которых состоит страница.\"}]}]}"
+  },
+  "anchor": "module-host",
+  "className": "@5xl:grid-cols-2",
+  "id": "dcf4270f-6f12-4018-bbe2-8bec5d8f7331",
+  "createdAt": "2026-10-24T01:05:54.018Z",
+  "updatedAt": "2026-10-24T01:05:54.018Z",
+  "variant": "content-definition-grid-page",
+  "adminTitle": "Work with Host.",
+  "slug": "framework-journey-guide-host-overview"
+}

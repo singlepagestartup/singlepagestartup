@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "4acda07c-53ed-4f18-9087-6a1d3eb2b13f",
+  "createdAt": "2026-10-26T00:11:47.174Z",
+  "updatedAt": "2026-10-27T14:59:35.122Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Messages can include documents",
+    "ru": "К сообщению можно приложить документ"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"A file can be a chat attachment or an AI source. Other modules handle the conversation and content analysis.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Файл может быть вложением в чате или источником для ИИ. Сам разговор и анализ содержимого выполняют другие модули.\"}]}]}"
+  },
+  "adminTitle": "К сообщению можно приложить документ",
+  "slug": "framework-reviewed-article-file-storage-introduction-feature-2"
+}

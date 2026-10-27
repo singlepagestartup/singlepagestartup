@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Source guide",
+    "ru": "Документация модуля"
+  },
+  "subtitle": {},
+  "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/modules/rbac/README.md",
+  "className": "w-fit",
+  "id": "f6ef5299-a980-4205-bbe5-b38dc6a4af0a",
+  "createdAt": "2026-10-24T01:06:01.275Z",
+  "updatedAt": "2026-10-24T01:06:01.275Z",
+  "variant": "ghost",
+  "adminTitle": "Source guide",
+  "slug": "framework-journey-module-rbac-actions-1"
+}

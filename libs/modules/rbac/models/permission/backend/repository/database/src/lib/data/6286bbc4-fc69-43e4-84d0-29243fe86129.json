@@ -1,0 +1,9 @@
+{
+  "id": "6286bbc4-fc69-43e4-84d0-29243fe86129",
+  "createdAt": "2026-10-14T21:36:34.633Z",
+  "updatedAt": "2026-10-14T21:36:34.633Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "POST",
+  "path": "/api/rbac/subjects/904d996c-aaaf-4cc6-9559-3413245e0e87/social-module/profiles/[social.profiles.id]/chats/[social.chats.id]/profiles/1c1a1e41-86cb-4e43-b9a2-69efaedb04b5/avatar"
+}

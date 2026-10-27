@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Give your coding agent a brief it can use.",
+    "ru": "Подготовьте бриф для coding agent."
+  },
+  "subtitle": {
+    "en": "Prepare the decisions, run the project and review the result.",
+    "ru": "Подготовьте решения, запустите проект и проверьте результат."
+  },
+  "description": {},
+  "anchor": "start-locally",
+  "className": "",
+  "id": "7d71508d-07fa-4510-90a4-11ae1dfbc2f4",
+  "createdAt": "2026-10-24T01:05:50.332Z",
+  "updatedAt": "2026-10-24T01:05:50.332Z",
+  "variant": "content-steps",
+  "adminTitle": "Give your coding agent a brief it can use.",
+  "slug": "framework-journey-setup"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "f280a49d-d361-4a89-b228-1f278597b7d9",
+  "createdAt": "2026-10-24T01:35:39.897Z",
+  "updatedAt": "2026-10-24T01:35:39.897Z",
+  "variant": "default",
+  "className": "",
+  "title": {
+    "en": "Prepare and build",
+    "ru": "Подготовка и разработка"
+  },
+  "description": {},
+  "adminTitle": "Prepare and build",
+  "slug": "framework-journal-preparation-actions"
+}

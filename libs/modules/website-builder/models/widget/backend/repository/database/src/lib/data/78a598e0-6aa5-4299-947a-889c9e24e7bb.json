@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Work with RBAC.",
+    "ru": "Работайте с RBAC."
+  },
+  "subtitle": {
+    "en": "Business",
+    "ru": "Бизнес"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Accounts, authentication, roles and current-user operations with access scope.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Аккаунты, аутентификация, роли и операции с доступом текущего пользователя.\"}]}]}"
+  },
+  "anchor": "module-rbac",
+  "className": "@5xl:grid-cols-2",
+  "id": "78a598e0-6aa5-4299-947a-889c9e24e7bb",
+  "createdAt": "2026-10-24T01:06:01.575Z",
+  "updatedAt": "2026-10-24T01:06:01.575Z",
+  "variant": "content-definition-grid-page",
+  "adminTitle": "Work with RBAC.",
+  "slug": "framework-journey-guide-rbac-overview"
+}

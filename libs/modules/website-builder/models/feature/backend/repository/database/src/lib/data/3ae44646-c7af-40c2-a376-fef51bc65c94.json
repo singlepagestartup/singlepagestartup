@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "3ae44646-c7af-40c2-a376-fef51bc65c94",
+  "createdAt": "2026-10-26T00:11:22.873Z",
+  "updatedAt": "2026-10-27T14:59:32.083Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Content leads to a purchase",
+    "ru": "Контент ведёт к покупке"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Link an article or expert profile to an offer. Customers can move from an introduction to a product card.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Свяжите статью или профиль эксперта с его предложением. Клиент сможет перейти от знакомства к карточке товара.\"}]}]}"
+  },
+  "adminTitle": "Контент ведёт к покупке",
+  "slug": "framework-reviewed-article-ecommerce-introduction-feature-2"
+}

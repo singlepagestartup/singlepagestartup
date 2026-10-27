@@ -1,10 +1,13 @@
 "use client";
+import { internationalization } from "@sps/shared-configuration";
 import { api as subjectApi } from "@sps/rbac/models/subject/sdk/client";
 import { Component as EcommerceModuleOrder } from "@sps/ecommerce/models/order/frontend/component";
 import { Icon } from "@sps/ui-adapter";
 import type { IComponentPropsExtended } from "./interface";
 
 export function Component(props: IComponentPropsExtended) {
+  const language = props.language || internationalization.defaultLanguage.code;
+  const ru = language === "ru";
   const orders = subjectApi.ecommerceModuleOrderList({
     id: props.data.id,
     params: {
@@ -35,7 +38,7 @@ export function Component(props: IComponentPropsExtended) {
       data-module="rbac"
       data-model="subject"
       data-variant={props.variant}
-      aria-label="Purchases"
+      aria-label={ru ? "Покупки" : "Purchases"}
     >
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
@@ -43,30 +46,42 @@ export function Component(props: IComponentPropsExtended) {
             <span className="grid size-10 place-items-center rounded-xl bg-muted">
               <Icon name="wallet" />
             </span>
-            Purchases
+
+            {ru ? "Покупки" : "Purchases"}
           </h2>
           <div className="mt-3 text-sm leading-6 text-muted-foreground">
-            <p>View purchases and receipts.</p>
+            <p>
+              {ru
+                ? "Посмотрите свои покупки и чеки."
+                : "View purchases and receipts."}
+            </p>
           </div>
         </div>
       </header>
       {orders.isPending ? (
         <p role="status" className="mt-5 rounded-xl bg-muted p-4 text-sm">
-          Loading purchases…
+          {ru ? "Загрузка покупок…" : "Loading purchases…"}
         </p>
       ) : orders.isError ? (
         <div role="alert" className="mt-5 rounded-xl bg-muted p-4 text-sm">
-          <p>Purchases could not be loaded.</p>
+          <p>
+            {ru
+              ? "Не удалось загрузить покупки."
+              : "Purchases could not be loaded."}
+          </p>
           <button
             type="button"
             onClick={() => void orders.refetch()}
             className="mt-3 min-h-11 rounded-xl border border-border bg-card px-4 font-medium"
           >
-            Try again
+            {ru ? "Повторить" : "Try again"}
           </button>
         </div>
       ) : orders.data?.length ? (
-        <ul aria-label="Paid purchases" className="mt-5">
+        <ul
+          aria-label={ru ? "Оплаченные покупки" : "Paid purchases"}
+          className="mt-5"
+        >
           {[...orders.data]
             .sort(
               (a, b) =>
@@ -75,6 +90,7 @@ export function Component(props: IComponentPropsExtended) {
             )
             .map((order) => (
               <EcommerceModuleOrder
+                language={props.language}
                 key={order.id}
                 isServer={false}
                 variant="purchase-ai-chat"
@@ -86,7 +102,7 @@ export function Component(props: IComponentPropsExtended) {
         </ul>
       ) : (
         <p role="status" className="mt-5 rounded-xl bg-muted p-4 text-sm">
-          No purchases yet.
+          {ru ? "Покупок пока нет." : "No purchases yet."}
         </p>
       )}
     </section>

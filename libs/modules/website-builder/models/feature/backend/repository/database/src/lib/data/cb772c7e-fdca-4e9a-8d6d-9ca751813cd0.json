@@ -1,0 +1,18 @@
+{
+  "className": "",
+  "id": "cb772c7e-fdca-4e9a-8d6d-9ca751813cd0",
+  "createdAt": "2026-10-24T01:05:49.746Z",
+  "updatedAt": "2026-10-24T01:05:49.746Z",
+  "variant": "definition-item",
+  "title": {
+    "en": "Forms and background work",
+    "ru": "Формы и фоновые задачи"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"CRM captures form requests; Agent defines scheduled jobs and their configuration.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"CRM сохраняет заявки из форм; Agent описывает фоновые задачи и их конфигурацию.\"}]}]}"
+  },
+  "adminTitle": "Forms and background work",
+  "slug": "framework-journey-module-group-7"
+}

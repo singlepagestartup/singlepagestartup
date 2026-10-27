@@ -30,7 +30,6 @@ function WebsiteBuilderModuleFeature({
   );
 }
 
-import type IconGlyphs from "../../../../../website-builder/feature/singlepage/icon/icons.json";
 import { memo } from "react";
 import {
   type IProjectMessage,
@@ -40,7 +39,7 @@ import { Component as FileStorageModuleFile } from "../../../../../file-storage/
 import { type IProjectAgent } from "../../../../profile/singlepage/agent/overview/ai-chat/resolver";
 import { Component as SocialModuleProfile } from "../../../../profile/index";
 function Icon(props: {
-  name: keyof typeof IconGlyphs;
+  name: keyof typeof Glyphs;
   size?: 20 | 24;
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;

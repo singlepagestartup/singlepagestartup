@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Read Ecommerce source guide",
+    "ru": "Документация Ecommerce"
+  },
+  "subtitle": {},
+  "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/modules/ecommerce/README.md",
+  "className": "w-fit",
+  "id": "8bf7275b-dec4-465d-9d7c-094a27118c9b",
+  "createdAt": "2026-10-24T01:06:03.591Z",
+  "updatedAt": "2026-10-24T01:06:03.591Z",
+  "variant": "primary",
+  "adminTitle": "Read Ecommerce source guide",
+  "slug": "framework-journey-guide-ecommerce-actions-1"
+}

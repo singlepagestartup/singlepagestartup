@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "413aa316-9991-4999-9166-338787a829fd",
+  "createdAt": "2026-10-26T00:12:03.300Z",
+  "updatedAt": "2026-10-27T14:59:33.111Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "A message refers to a specific event",
+    "ru": "Сообщение относится к конкретному событию"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Configure a notification about an enquiry or payment. Include data from that event in the text.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Настройте уведомление о заявке или платеже. В текст можно передать данные нужного события.\"}]}]}"
+  },
+  "adminTitle": "Сообщение относится к конкретному событию",
+  "slug": "framework-reviewed-article-notification-introduction-feature-0"
+}

@@ -33,7 +33,11 @@ import type {
   IMarkdownImageProps,
 } from "./interface";
 
-export function FilePreviewText({ text, kind }: IFilePreviewTextProps) {
+export function FilePreviewText({
+  text,
+  kind,
+  language,
+}: IFilePreviewTextProps) {
   const [source, setSource] = useState(false);
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
@@ -45,7 +49,7 @@ export function FilePreviewText({ text, kind }: IFilePreviewTextProps) {
             onClick={() => setSource(false)}
             className={cn("min-h-9 rounded-lg px-3", !source && "bg-muted")}
           >
-            Preview
+            {language === "ru" ? "Предпросмотр" : "Preview"}
           </button>
           <button
             type="button"
@@ -53,7 +57,7 @@ export function FilePreviewText({ text, kind }: IFilePreviewTextProps) {
             onClick={() => setSource(true)}
             className={cn("min-h-9 rounded-lg px-3", source && "bg-muted")}
           >
-            Source
+            {language === "ru" ? "Исходный текст" : "Source"}
           </button>
         </div>
       )}
@@ -86,7 +90,8 @@ export function FilePreviewText({ text, kind }: IFilePreviewTextProps) {
                   img: {
                     component: ({ alt }: IMarkdownImageProps) => (
                       <span className="text-muted-foreground">
-                        [Image{alt ? `: ${alt}` : ""}]
+                        [{language === "ru" ? "Изображение" : "Image"}
+                        {alt ? `: ${alt}` : ""}]
                       </span>
                     ),
                   },
@@ -102,14 +107,16 @@ export function FilePreviewText({ text, kind }: IFilePreviewTextProps) {
           </pre>
         )}
         {!text && (
-          <p className="text-sm text-muted-foreground">This file is empty.</p>
+          <p className="text-sm text-muted-foreground">
+            {language === "ru" ? "Файл пуст." : "This file is empty."}
+          </p>
         )}
       </div>
     </div>
   );
 }
 
-function LocalText({ file, kind }: ILocalTextProps) {
+function LocalText({ file, kind, language }: ILocalTextProps) {
   const [result, setResult] = useState<{ text?: string; error?: string }>({});
   useEffect(() => {
     let active = true;
@@ -117,7 +124,9 @@ function LocalText({ file, kind }: ILocalTextProps) {
     if (file.size > FILE_PREVIEW_TEXT_MAX_BYTES) {
       setResult({
         error:
-          "This file is too large for text preview. Open or download the original.",
+          language === "ru"
+            ? "Файл слишком большой для предпросмотра текста. Откройте или скачайте оригинал."
+            : "This file is too large for text preview. Open or download the original.",
       });
       return;
     }
@@ -127,7 +136,10 @@ function LocalText({ file, kind }: ILocalTextProps) {
     reader.onerror = () => {
       if (active)
         setResult({
-          error: "This file could not be read. Open or download the original.",
+          error:
+            language === "ru"
+              ? "Не удалось прочитать файл. Откройте или скачайте оригинал."
+              : "This file could not be read. Open or download the original.",
         });
     };
     reader.readAsText(file);
@@ -135,7 +147,7 @@ function LocalText({ file, kind }: ILocalTextProps) {
       active = false;
       if (reader.readyState === FileReader.LOADING) reader.abort();
     };
-  }, [file]);
+  }, [file, language]);
   if (result.error)
     return (
       <p role="alert" className="p-6 text-sm text-muted-foreground">
@@ -145,10 +157,10 @@ function LocalText({ file, kind }: ILocalTextProps) {
   if (result.text === undefined)
     return (
       <p role="status" className="p-6 text-sm text-muted-foreground">
-        Loading preview…
+        {language === "ru" ? "Загрузка предпросмотра…" : "Loading preview…"}
       </p>
     );
-  return <FilePreviewText text={result.text} kind={kind} />;
+  return <FilePreviewText text={result.text} kind={kind} language={language} />;
 }
 
 export function FilePreview(props: IFilePreviewProps) {
@@ -192,7 +204,7 @@ export function FilePreview(props: IFilePreviewProps) {
       <DialogTrigger asChild>
         <button
           type="button"
-          aria-label={`Preview ${props.name}`}
+          aria-label={`${props.language === "ru" ? "Открыть" : "Preview"} ${props.name}`}
           className={cn(
             "block w-full min-w-0 overflow-hidden rounded-xl border border-border bg-card text-left text-foreground transition hover:border-foreground/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground",
             props.className,
@@ -229,7 +241,10 @@ export function FilePreview(props: IFilePreviewProps) {
           </span>
         </button>
       </DialogTrigger>
-      <DialogContent className="flex h-[min(88dvh,900px)] w-[calc(100%-2rem)] max-w-5xl flex-col gap-0 overflow-hidden rounded-2xl border-border bg-card p-0 text-foreground sm:rounded-2xl">
+      <DialogContent
+        closeLabel={props.language === "ru" ? "Закрыть" : "Close"}
+        className="flex h-[min(88dvh,900px)] w-[calc(100%-2rem)] max-w-5xl flex-col gap-0 overflow-hidden rounded-2xl border-border bg-card p-0 text-foreground sm:rounded-2xl"
+      >
         <div className="shrink-0 border-b border-border p-4 pr-12">
           <DialogTitle
             className="truncate text-base leading-6"
@@ -238,20 +253,25 @@ export function FilePreview(props: IFilePreviewProps) {
             {props.name}
           </DialogTitle>
           <DialogDescription className="mt-1 text-xs">
-            {extension} · File preview
+            {extension} ·{" "}
+            {props.language === "ru" ? "Предпросмотр файла" : "File preview"}
           </DialogDescription>
         </div>
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-background">
           {!src || failed ? (
             <p role="alert" className="p-6 text-sm text-muted-foreground">
-              Preview is unavailable. Open or download the original.
+              {props.language === "ru"
+                ? "Предпросмотр недоступен. Откройте или скачайте оригинал."
+                : "Preview is unavailable. Open or download the original."}
             </p>
           ) : kind === "image" ? (
             <>
               <div className="flex shrink-0 items-center justify-end gap-2 border-b border-border p-2">
                 <button
                   type="button"
-                  aria-label="Zoom out"
+                  aria-label={
+                    props.language === "ru" ? "Уменьшить" : "Zoom out"
+                  }
                   disabled={zoom <= 1}
                   onClick={() => setZoom((value) => Math.max(1, value - 0.5))}
                   className="grid size-9 place-items-center rounded-lg hover:bg-muted disabled:opacity-40"
@@ -263,7 +283,7 @@ export function FilePreview(props: IFilePreviewProps) {
                 </span>
                 <button
                   type="button"
-                  aria-label="Zoom in"
+                  aria-label={props.language === "ru" ? "Увеличить" : "Zoom in"}
                   disabled={zoom >= 3}
                   onClick={() => setZoom((value) => Math.min(3, value + 0.5))}
                   className="grid size-9 place-items-center rounded-lg hover:bg-muted disabled:opacity-40"
@@ -297,20 +317,26 @@ export function FilePreview(props: IFilePreviewProps) {
             </>
           ) : kind === "pdf" ? (
             <PdfPreview
+              language={props.language}
               name={props.name}
               localFile={props.localFile}
               onDownload={props.onDownload}
             />
           ) : text ? (
             props.localFile ? (
-              <LocalText file={props.localFile} kind={kind} />
+              <LocalText
+                file={props.localFile}
+                kind={kind}
+                language={props.language}
+              />
             ) : (
               props.textContent
             )
           ) : (
             <p className="p-6 text-sm text-muted-foreground">
-              Preview is not available for this format. Open or download the
-              original.
+              {props.language === "ru"
+                ? "Предпросмотр этого формата недоступен. Откройте или скачайте оригинал."
+                : "Preview is not available for this format. Open or download the original."}
             </p>
           )}
         </div>
@@ -329,7 +355,7 @@ export function FilePreview(props: IFilePreviewProps) {
                 className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-border px-3 text-xs font-semibold"
               >
                 <ExternalLink className="size-4" />
-                Open original
+                {props.language === "ru" ? "Открыть оригинал" : "Open original"}
               </a>
               {(props.localFile || props.onDownload) && (
                 <button
@@ -349,7 +375,9 @@ export function FilePreview(props: IFilePreviewProps) {
                       setTimeout(() => URL.revokeObjectURL(url), 1000);
                     } catch {
                       setDownloadError(
-                        "Download failed. Try again or open the original.",
+                        props.language === "ru"
+                          ? "Не удалось скачать файл. Повторите попытку или откройте оригинал."
+                          : "Download failed. Try again or open the original.",
                       );
                     } finally {
                       setDownloading(false);
@@ -358,7 +386,13 @@ export function FilePreview(props: IFilePreviewProps) {
                   className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground"
                 >
                   <Download className="size-4" />
-                  {downloading ? "Downloading…" : "Download"}
+                  {props.language === "ru"
+                    ? downloading
+                      ? "Скачивание…"
+                      : "Скачать"
+                    : downloading
+                      ? "Downloading…"
+                      : "Download"}
                 </button>
               )}
             </>

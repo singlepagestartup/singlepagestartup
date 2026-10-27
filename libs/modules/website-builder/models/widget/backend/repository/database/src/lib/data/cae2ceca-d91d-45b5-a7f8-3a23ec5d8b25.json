@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "See how the framework works",
+    "ru": "Узнайте, как работает фреймворк"
+  },
+  "subtitle": {
+    "en": "Choose modules for your task",
+    "ru": "Выберите модули для своей задачи"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[]}",
+    "ru": "{\"type\":\"doc\",\"content\":[]}"
+  },
+  "anchor": "cf-articles",
+  "className": "",
+  "id": "cae2ceca-d91d-45b5-a7f8-3a23ec5d8b25",
+  "createdAt": "2026-10-26T00:12:47.044Z",
+  "updatedAt": "2026-10-27T14:59:16.076Z",
+  "variant": "content-collection",
+  "adminTitle": "Узнайте, как работает фреймворк",
+  "slug": "framework-reviewed-articles-frame"
+}

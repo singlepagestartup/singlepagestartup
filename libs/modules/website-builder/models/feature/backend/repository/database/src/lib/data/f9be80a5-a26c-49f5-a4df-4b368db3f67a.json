@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "f9be80a5-a26c-49f5-a4df-4b368db3f67a",
+  "createdAt": "2026-10-26T00:11:55.653Z",
+  "updatedAt": "2026-10-27T15:00:03.510Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Ecommerce",
+    "ru": "Ecommerce"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Products linked to an author or thread. Orders and payments additionally use Ecommerce and Billing.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Продукты, связанные с автором или веткой. Для заказов и оплаты дополнительно используются Ecommerce и Billing.\"}]}]}"
+  },
+  "adminTitle": "Ecommerce",
+  "slug": "framework-reviewed-article-social-connections-feature-4"
+}

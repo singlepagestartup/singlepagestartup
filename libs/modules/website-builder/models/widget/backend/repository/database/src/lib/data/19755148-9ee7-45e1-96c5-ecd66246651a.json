@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Pass an already loaded record",
+    "ru": "Передайте уже загруженную запись"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"If the parent already has an SDK result, \"},{\"type\":\"text\",\"text\":\"dataSource=&quot;props&quot;\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" lets a child render it without another request. The parent retains subscriptions, loading and error ownership. A refetch supplies updated props.\"}]},{\"type\":\"codeBlock\",\"attrs\":{\"language\":\"tsx\"},\"content\":[{\"type\":\"text\",\"text\":\"<Article variant=\\\"overview-default\\\" isServer={props.isServer} dataSource=\\\"props\\\" data={props.data} language={props.language}>\\n  {props.children}\\n</Article>\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Pass only declared UI props across the server/client boundary. An arbitrary spread can carry SDKs, a Provider or a component constructor. A TypeScript cast does not make a function serializable. Resolve a server callback on the server and pass the resulting React node to the client.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Если родитель уже получил результат SDK, \"},{\"type\":\"text\",\"text\":\"dataSource=&quot;props&quot;\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" позволяет дочернему компоненту вывести его без второго запроса. Подписки, загрузка и ошибки остаются у родителя. После повторного запроса он передаст обновлённые параметры.\"}]},{\"type\":\"codeBlock\",\"attrs\":{\"language\":\"tsx\"},\"content\":[{\"type\":\"text\",\"text\":\"<Article variant=\\\"overview-default\\\" isServer={props.isServer} dataSource=\\\"props\\\" data={props.data} language={props.language}>\\n  {props.children}\\n</Article>\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Через границу сервера и клиента передавайте только объявленные параметры интерфейса. Произвольный spread может перенести SDK, Provider или конструктор компонента. Приведение TypeScript не делает функцию сериализуемой. Серверный callback нужно выполнить на сервере, а клиенту передать готовый React-узел.\"}]}]}"
+  },
+  "anchor": "ru-section-nextjs-server-client-readers-and-widget-slots-5",
+  "className": "",
+  "id": "19755148-9ee7-45e1-96c5-ecd66246651a",
+  "createdAt": "2026-10-26T07:34:00.763Z",
+  "updatedAt": "2026-10-27T14:58:50.181Z",
+  "variant": "content-rich",
+  "adminTitle": "Передайте уже загруженную запись",
+  "slug": "ru-section-nextjs-server-client-readers-and-widget-slots-5"
+}

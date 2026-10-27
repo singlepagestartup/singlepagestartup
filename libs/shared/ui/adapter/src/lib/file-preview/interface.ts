@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import type { FilePreviewKind } from "@sps/shared-frontend-client-utils";
 
 export interface IFilePreviewProps {
+  language?: string;
   name: string;
   mimeType?: string | null;
   extension?: string | null;
@@ -15,11 +16,13 @@ export interface IFilePreviewProps {
 }
 
 export interface IFilePreviewTextProps {
+  language?: string;
   text: string;
   kind: FilePreviewKind;
 }
 
 export interface ILocalTextProps {
+  language?: string;
   file: File;
   kind: FilePreviewKind;
 }
@@ -34,6 +37,7 @@ export interface IMarkdownImageProps {
 }
 
 export interface IPdfPreviewProps {
+  language?: string;
   name: string;
   localFile?: File;
   onDownload?: (signal?: AbortSignal) => Promise<Blob>;

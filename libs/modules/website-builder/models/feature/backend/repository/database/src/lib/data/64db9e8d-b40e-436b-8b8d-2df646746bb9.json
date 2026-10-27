@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "64db9e8d-b40e-436b-8b8d-2df646746bb9",
+  "createdAt": "2026-10-27T08:40:58.262Z",
+  "updatedAt": "2026-10-27T14:59:38.581Z",
+  "variant": "demo-handoff",
+  "title": {
+    "en": "Use this document to create your product",
+    "ru": "Используйте этот документ для создания продукта"
+  },
+  "subtitle": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"From documents to development\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"От документов к разработке\"}]}]}"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Check the information, download the document and use it to create your product.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Проверьте сведения, скачайте документ и используйте его при создании своего продукта.\"}]}]}"
+  },
+  "adminTitle": "AI Chat: demo-handoff",
+  "slug": "ai-chat-editable-demo-handoff"
+}

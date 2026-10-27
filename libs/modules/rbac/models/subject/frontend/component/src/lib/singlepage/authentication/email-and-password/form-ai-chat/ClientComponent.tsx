@@ -1,4 +1,5 @@
 "use client";
+import { internationalization } from "@sps/shared-configuration";
 
 import Link from "next/link";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
@@ -9,17 +10,28 @@ import { api as subjectApi } from "@sps/rbac/models/subject/sdk/client";
 
 import type { IComponentProps } from "./interface";
 
-export function Component({ mode }: IComponentProps) {
+export function Component(props: IComponentProps) {
+  const language = props.language || internationalization.defaultLanguage.code;
+  const ru = language === "ru";
+  const { mode } = props;
   const registration = mode === "registration";
   const forgot = mode === "forgot-password";
   const reset = mode === "reset-password";
   const heading = registration
-    ? "Create an account"
+    ? ru
+      ? "Создать аккаунт"
+      : "Create an account"
     : forgot
-      ? "Reset your password"
+      ? ru
+        ? "Восстановить пароль"
+        : "Reset your password"
       : reset
-        ? "Choose a new password"
-        : "Sign in";
+        ? ru
+          ? "Задайте новый пароль"
+          : "Choose a new password"
+        : ru
+          ? "Войти"
+          : "Sign in";
   const router = useRouter();
   const pathname = usePathname();
   const search = useSearchParams();
@@ -52,7 +64,7 @@ export function Component({ mode }: IComponentProps) {
           event.preventDefault();
           setStatus("");
           if ((reset || registration) && password !== confirmation) {
-            setStatus("Passwords do not match.");
+            setStatus(ru ? "Пароли не совпадают." : "Passwords do not match.");
             return;
           }
           if (
@@ -64,7 +76,9 @@ export function Component({ mode }: IComponentProps) {
             if (forgot) {
               await recover.mutateAsync({ data: { email } });
               setStatus(
-                "If this email is registered, we will send a password reset link.",
+                ru
+                  ? "Если эта почта зарегистрирована, мы отправим ссылку для восстановления пароля."
+                  : "If this email is registered, we will send a password reset link.",
               );
               return;
             }
@@ -76,7 +90,11 @@ export function Component({ mode }: IComponentProps) {
                   code: search.get("code") || "",
                 },
               });
-              setStatus("Password updated. You can sign in.");
+              setStatus(
+                ru
+                  ? "Пароль обновлён. Можно войти."
+                  : "Password updated. You can sign in.",
+              );
               return;
             }
             await (registration ? register : login).mutateAsync({
@@ -88,14 +106,16 @@ export function Component({ mode }: IComponentProps) {
             setStatus(
               error instanceof Error
                 ? error.message
-                : "Authentication failed. Please try again.",
+                : ru
+                  ? "Не удалось войти. Повторите попытку."
+                  : "Authentication failed. Please try again.",
             );
           }
         }}
       >
         {!reset && (
           <label className="grid gap-2 text-sm font-semibold">
-            Email
+            {ru ? "Электронная почта" : "Email"}
             <input
               type="email"
               className={field}
@@ -109,7 +129,7 @@ export function Component({ mode }: IComponentProps) {
         )}
         {!forgot && (
           <label className="grid gap-2 text-sm font-semibold">
-            Password
+            {ru ? "Пароль" : "Password"}
             <span className="relative">
               <input
                 type={visible ? "text" : "password"}
@@ -123,7 +143,15 @@ export function Component({ mode }: IComponentProps) {
                 required
               />
               <button
-                aria-label={visible ? "Hide password" : "Show password"}
+                aria-label={
+                  visible
+                    ? ru
+                      ? "Скрыть пароль"
+                      : "Hide password"
+                    : ru
+                      ? "Показать пароль"
+                      : "Show password"
+                }
                 aria-pressed={visible}
                 type="button"
                 className="absolute right-1 top-1 flex size-10 items-center justify-center text-muted-foreground"
@@ -140,7 +168,7 @@ export function Component({ mode }: IComponentProps) {
         )}
         {(reset || registration) && (
           <label className="grid gap-2 text-sm font-semibold">
-            Confirm password
+            {ru ? "Повторите пароль" : "Confirm password"}
             <input
               type="password"
               className={field}
@@ -157,7 +185,7 @@ export function Component({ mode }: IComponentProps) {
             className="text-sm underline"
             href={getLocalizedHref(pathname, "/ai-chat/forgot-password")}
           >
-            Forgot password?
+            {ru ? "Забыли пароль?" : "Forgot password?"}
           </Link>
         )}
         {registration && (
@@ -170,19 +198,19 @@ export function Component({ mode }: IComponentProps) {
               required
             />
             <span>
-              I agree to the{" "}
+              {ru ? "Я принимаю" : "I agree to the"}{" "}
               <Link
                 href={getLocalizedHref(pathname, "/terms")}
                 className="text-foreground underline"
               >
-                Terms of Service
+                {ru ? "Условия использования" : "Terms of Service"}
               </Link>{" "}
-              and{" "}
+              {ru ? "и" : "and"}{" "}
               <Link
                 href={getLocalizedHref(pathname, "/privacy")}
                 className="text-foreground underline"
               >
-                Privacy Policy
+                {ru ? "Политику конфиденциальности" : "Privacy Policy"}
               </Link>
               .
             </span>
@@ -190,7 +218,9 @@ export function Component({ mode }: IComponentProps) {
         )}
         {reset && !search.get("code") && (
           <p role="alert" className="text-sm text-destructive">
-            Open the password reset link from your email to continue.
+            {ru
+              ? "Откройте ссылку для восстановления пароля из письма, чтобы продолжить."
+              : "Open the password reset link from your email to continue."}
           </p>
         )}
         <button
@@ -203,11 +233,17 @@ export function Component({ mode }: IComponentProps) {
           className="flex min-h-11 items-center justify-center gap-3 rounded-xl bg-primary text-primary-foreground px-5 text-sm font-semibold disabled:opacity-50"
         >
           {pending
-            ? "Please wait…"
+            ? ru
+              ? "Подождите…"
+              : "Please wait…"
             : forgot
-              ? "Send reset link"
+              ? ru
+                ? "Отправить ссылку"
+                : "Send reset link"
               : reset
-                ? "Save password"
+                ? ru
+                  ? "Сохранить пароль"
+                  : "Save password"
                 : heading}
           <ArrowRight className="size-4" />
         </button>
@@ -222,11 +258,17 @@ export function Component({ mode }: IComponentProps) {
           href={getLocalizedHref(pathname, "/ai-chat/sign-in")}
           className="mt-6 block text-center text-sm font-semibold underline"
         >
-          Back to sign in
+          {ru ? "Вернуться ко входу" : "Back to sign in"}
         </Link>
       ) : (
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          {registration ? "Already have an account? " : "No account yet? "}
+          {registration
+            ? ru
+              ? "Уже есть аккаунт? "
+              : "Already have an account? "
+            : ru
+              ? "Ещё нет аккаунта? "
+              : "No account yet? "}
           <Link
             className="font-semibold text-foreground underline"
             href={getLocalizedHref(
@@ -234,7 +276,13 @@ export function Component({ mode }: IComponentProps) {
               registration ? "/ai-chat/sign-in" : "/ai-chat/create-account",
             )}
           >
-            {registration ? "Sign in" : "Create an account"}
+            {registration
+              ? ru
+                ? "Войти"
+                : "Sign in"
+              : ru
+                ? "Создать аккаунт"
+                : "Create an account"}
           </Link>
         </p>
       )}

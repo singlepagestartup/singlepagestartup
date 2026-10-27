@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "",
+    "ru": ""
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Customers register on your website and return under their own names. Their account can bring together purchases, conversations and available materials. You decide what visitors, buyers and staff see.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"You sell courses. Any visitor should see the programme, paying students should see lessons and your team should see the order list. When these actions happen on one site, the project needs to identify the person and check what they can do. The customer accounts module handles this part.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Клиент регистрируется на вашем сайте и возвращается под своим именем. В его кабинете можно собрать покупки, переписку и доступные ему материалы. Вы определяете, что увидит посетитель, покупатель и сотрудник.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Вы продаёте курсы. Программу должен увидеть любой посетитель, уроки — купивший курс ученик, а список заказов — ваша команда. Когда эти действия происходят на одном сайте, проекту нужно узнавать человека и проверять, что ему разрешено. За эту часть отвечает модуль личных аккаунтов.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "3d2ec40c-0d44-4ec9-b22b-0954eaa68180",
+  "createdAt": "2026-10-26T00:11:18.868Z",
+  "updatedAt": "2026-10-27T14:58:56.337Z",
+  "variant": "content-rich",
+  "adminTitle": "framework-reviewed-article-rbac-introduction",
+  "slug": "framework-reviewed-article-rbac-introduction"
+}

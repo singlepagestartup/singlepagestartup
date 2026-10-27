@@ -18,7 +18,7 @@ export function Component(props: IComponentPropsExtended) {
       data-id={data.id}
       data-variant={props.variant}
       className={cn(
-        "@container bg-primary text-primary-foreground",
+        "@container w-full min-w-0 bg-primary text-primary-foreground",
         data.className,
         props.className,
       )}
@@ -63,7 +63,7 @@ export function Component(props: IComponentPropsExtended) {
                   dataSource="props"
                   data={link}
                   language={language}
-                  className="block min-w-0"
+                  className="w-auto min-w-0"
                 />
               ))
             }

@@ -1,4 +1,5 @@
 "use client";
+import { internationalization } from "@sps/shared-configuration";
 import { memo, useEffect, useId, useRef, useState } from "react";
 import Markdown from "markdown-to-jsx";
 import { MessageCircle, Upload } from "lucide-react";
@@ -14,6 +15,8 @@ import {
 } from "@sps/shared-utils";
 
 export const Component = memo(function Component(props: IClientComponentProps) {
+  const language = props.language || internationalization.defaultLanguage.code;
+  const ru = language === "ru";
   const id = useId();
   const [title, setTitle] = useState(props.data?.title ?? props.title ?? "");
   const [content, setContent] = useState(
@@ -45,12 +48,14 @@ export const Component = memo(function Component(props: IClientComponentProps) {
     try {
       const result = await props.onSave({ title, content });
       dirty.current = false;
-      setStatus(result || "Saved");
+      setStatus(result || (ru ? "Сохранено" : "Saved"));
     } catch (error) {
       setStatus(
         error instanceof Error
           ? error.message
-          : "Save failed. Your last saved document stays in place.",
+          : ru
+            ? "Не удалось сохранить. Предыдущая сохранённая версия документа осталась на месте."
+            : "Save failed. Your last saved document stays in place.",
       );
     } finally {
       setPending(false);
@@ -62,7 +67,7 @@ export const Component = memo(function Component(props: IClientComponentProps) {
       data-model="source"
       data-variant={props.variant}
       data-id={saved?.id}
-      aria-label={`${title} knowledge`}
+      aria-label={ru ? `Знания: ${title}` : `${title} knowledge`}
       className={cn(
         "min-w-0 rounded-xl border border-border bg-card p-3",
         props.data?.className,
@@ -72,8 +77,10 @@ export const Component = memo(function Component(props: IClientComponentProps) {
       <div className="mb-3 flex items-center justify-between gap-2">
         <div className="min-w-0 flex-1">
           <input
-            aria-label="Knowledge section title"
-            placeholder="Name this knowledge"
+            aria-label={
+              ru ? "Название раздела знаний" : "Knowledge section title"
+            }
+            placeholder={ru ? "Назовите раздел знаний" : "Name this knowledge"}
             className="min-h-10 min-w-0 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground focus-visible:outline-2 focus-visible:outline-offset-2"
             value={title}
             onChange={(event) => {
@@ -92,7 +99,7 @@ export const Component = memo(function Component(props: IClientComponentProps) {
             aria-pressed={!preview}
             onClick={() => setPreview(false)}
           >
-            Editor
+            {ru ? "Редактор" : "Editor"}
           </button>
           <button
             type="button"
@@ -100,17 +107,18 @@ export const Component = memo(function Component(props: IClientComponentProps) {
             aria-pressed={preview}
             onClick={() => setPreview(true)}
           >
-            Preview
+            {ru ? "Предпросмотр" : "Preview"}
           </button>
         </div>
       </div>
       <label className="sr-only" htmlFor={id}>
-        {title} content
+        {ru ? `Текст: ${title}` : `${title} content`}
       </label>
       {preview ? (
         <div className="prose min-h-44 max-w-none break-words rounded-xl border border-border p-3 text-sm">
           <Markdown options={{ disableParsingRawHTML: true }}>
-            {readKnowledgeDocumentContent(content) || "No knowledge saved yet."}
+            {readKnowledgeDocumentContent(content) ||
+              (ru ? "Знания ещё не сохранены." : "No knowledge saved yet.")}
           </Markdown>
         </div>
       ) : (
@@ -118,7 +126,12 @@ export const Component = memo(function Component(props: IClientComponentProps) {
           id={id}
           disabled={pending}
           className="min-h-44 w-full resize-y rounded-xl border border-border bg-card p-3 font-mono text-sm leading-6 text-muted-foreground focus:outline-2"
-          placeholder={props.placeholder || "Add knowledge for this section."}
+          placeholder={
+            props.placeholder ||
+            (ru
+              ? "Добавьте знания для этого раздела."
+              : "Add knowledge for this section.")
+          }
           value={notes}
           onChange={(event) => {
             dirty.current = true;
@@ -132,7 +145,7 @@ export const Component = memo(function Component(props: IClientComponentProps) {
       {!preview && materials && (
         <details className="mt-2 rounded-xl border border-border p-3 text-sm">
           <summary className="cursor-pointer font-semibold">
-            Analyzed materials
+            {ru ? "Проанализированные материалы" : "Analyzed materials"}
           </summary>
           <div className="prose mt-3 max-w-none break-words text-sm">
             <Markdown options={{ disableParsingRawHTML: true }}>
@@ -149,7 +162,8 @@ export const Component = memo(function Component(props: IClientComponentProps) {
             className="flex min-h-10 items-center gap-2 text-xs font-semibold text-muted-foreground"
           >
             <MessageCircle className="size-4" />
-            Discuss this section
+
+            {ru ? "Обсудить раздел" : "Discuss this section"}
           </button>
         )}
         <button
@@ -163,7 +177,13 @@ export const Component = memo(function Component(props: IClientComponentProps) {
           onClick={save}
           className="min-h-10 rounded-xl bg-primary text-primary-foreground px-3 text-xs font-semibold disabled:opacity-50"
         >
-          {pending ? "Saving…" : "Save knowledge"}
+          {pending
+            ? ru
+              ? "Сохраняем…"
+              : "Saving…"
+            : ru
+              ? "Сохранить знания"
+              : "Save knowledge"}
         </button>
       </div>
       {status && (
@@ -173,14 +193,17 @@ export const Component = memo(function Component(props: IClientComponentProps) {
       )}
       {saved && saved.contentHash !== saved.indexedContentHash && (
         <p role="status" className="mt-2 text-xs text-destructive">
-          Saved; this version is not indexed for AI retrieval yet.
+          {ru
+            ? "Сохранено; эта версия ещё не подготовлена для поиска ИИ."
+            : "Saved; this version is not indexed for AI retrieval yet."}
         </p>
       )}
       {props.attachments}
       {props.onAttach && (
         <label className="mt-4 flex min-h-10 cursor-pointer items-center gap-2 border-t border-border pt-3 text-xs font-semibold text-muted-foreground">
           <Upload className="size-4" />
-          Upload files
+
+          {ru ? "Загрузить файлы" : "Upload files"}
           <input
             aria-label={`Upload files for ${title}`}
             type="file"
@@ -200,10 +223,14 @@ export const Component = memo(function Component(props: IClientComponentProps) {
                   dirty.current = false;
                 }
                 const result = await props.onAttach!(files);
-                setStatus(result || "Files saved");
+                setStatus(result || (ru ? "Файлы сохранены" : "Files saved"));
               } catch (error) {
                 setStatus(
-                  error instanceof Error ? error.message : "Upload failed",
+                  error instanceof Error
+                    ? error.message
+                    : ru
+                      ? "Не удалось загрузить файлы"
+                      : "Upload failed",
                 );
               } finally {
                 input.value = "";

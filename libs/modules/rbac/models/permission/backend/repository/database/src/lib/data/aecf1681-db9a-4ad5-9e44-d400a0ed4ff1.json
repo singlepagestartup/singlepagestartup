@@ -1,0 +1,9 @@
+{
+  "id": "aecf1681-db9a-4ad5-9e44-d400a0ed4ff1",
+  "createdAt": "2026-10-13T22:03:41.812Z",
+  "updatedAt": "2026-10-13T22:03:41.812Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "POST",
+  "path": "/api/rbac/subjects/973e0fde-4786-413e-bc8f-2eecf4488e9d/social-module/profiles/[social.profiles.id]/chats/[social.chats.id]/profiles/ce2b37c1-3494-4f18-8de6-f51fbf7de384/knowledge/sources/[knowledge.sources.id]/files"
+}

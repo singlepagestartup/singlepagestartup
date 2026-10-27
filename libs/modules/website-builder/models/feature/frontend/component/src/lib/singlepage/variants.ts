@@ -1,3 +1,12 @@
+import { Component as DemoHandoff } from "./demo-handoff";
+import { Component as DemoDocument } from "./demo-document";
+import { Component as DemoProject } from "./demo-project";
+import { Component as LandingDisclosure } from "./landing-disclosure";
+import { Component as LandingFollowup } from "./landing-followup";
+import { Component as LandingWorkflow } from "./landing-workflow";
+import { Component as LandingIntroduction } from "./landing-introduction";
+import { Component as ContextProjectHeading } from "./context-project-heading";
+import { Component as ContextResult } from "./context-result";
 import { Component as ContextNote } from "./context-note";
 import { Component as ContextHeading } from "./context-heading";
 import { Component as Document } from "./document";
@@ -24,6 +33,15 @@ import { Component as AdminTableRow } from "./admin/table-row";
 import { Component as Default } from "./default";
 
 export const variants = {
+  "demo-handoff": DemoHandoff,
+  "demo-document": DemoDocument,
+  "demo-project": DemoProject,
+  "landing-disclosure": LandingDisclosure,
+  "landing-followup": LandingFollowup,
+  "landing-workflow": LandingWorkflow,
+  "landing-introduction": LandingIntroduction,
+  "context-project-heading": ContextProjectHeading,
+  "context-result": ContextResult,
   "context-note": ContextNote,
   "context-heading": ContextHeading,
   document: Document,

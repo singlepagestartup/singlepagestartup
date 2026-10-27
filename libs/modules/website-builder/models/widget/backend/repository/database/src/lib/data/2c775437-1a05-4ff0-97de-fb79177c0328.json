@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Check scope independence",
+    "ru": "Проверьте независимость областей"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Read the page as two users and open two private blocks. Expiry or closure of one must not remove the other's data. On reopening, cancellation from the previous instance must not affect the new request.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Use per-item pending IDs and stable callbacks for row actions. Form subscriptions stay in the lowest component that needs their values. After a reload, \"},{\"type\":\"text\",\"text\":\"sessionStorage\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" containing an action snapshot is not restored as entity data.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Прочитайте страницу от двух пользователей и откройте два закрытых блока. Истечение доступа или закрытие одного не должно удалять данные другого. При повторном открытии отмена прежнего экземпляра не должна затрагивать новый запрос.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Для действий строк используйте отдельные ID ожидания и стабильные callbacks. Подписка формы остаётся в нижнем компоненте, которому нужны значения. После перезагрузки \"},{\"type\":\"text\",\"text\":\"sessionStorage\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" со снимком действий не восстанавливается как данные сущностей.\"}]}]}"
+  },
+  "anchor": "ru-section-react-query-realtime-and-principal-scopes-9",
+  "className": "",
+  "id": "2c775437-1a05-4ff0-97de-fb79177c0328",
+  "createdAt": "2026-10-26T07:34:02.651Z",
+  "updatedAt": "2026-10-27T14:58:54.357Z",
+  "variant": "content-rich",
+  "adminTitle": "Проверьте независимость областей",
+  "slug": "ru-section-react-query-realtime-and-principal-scopes-9"
+}

@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "94faa1d4-466a-4199-a201-57bae7ae2580",
+  "createdAt": "2026-10-26T00:12:01.384Z",
+  "updatedAt": "2026-10-27T14:59:45.654Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "social",
+    "ru": "social"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Give students a chat with an assistant.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Дайте ученикам чат с помощником.\"}]}]}"
+  },
+  "adminTitle": "social",
+  "slug": "framework-reviewed-article-knowledge-connections-feature-0"
+}

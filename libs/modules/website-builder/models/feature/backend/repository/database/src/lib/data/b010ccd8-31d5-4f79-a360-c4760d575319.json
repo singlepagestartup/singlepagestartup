@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "b010ccd8-31d5-4f79-a360-c4760d575319",
+  "createdAt": "2026-10-24T01:06:13.205Z",
+  "updatedAt": "2026-10-24T01:06:13.205Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Analytic",
+    "ru": "Analytic"
+  },
+  "subtitle": {
+    "en": "Foundation",
+    "ru": "Основа"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Metric records and widgets for presenting their values.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Записи метрик и Widgets для отображения их значений.\"}]}]}"
+  },
+  "adminTitle": "Analytic",
+  "slug": "framework-journey-module-analytic"
+}

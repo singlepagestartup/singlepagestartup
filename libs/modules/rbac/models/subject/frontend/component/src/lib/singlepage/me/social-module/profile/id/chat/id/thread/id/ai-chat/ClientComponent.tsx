@@ -1,4 +1,5 @@
 "use client";
+import { internationalization } from "@sps/shared-configuration";
 import { useCallback, useState } from "react";
 import { Menu } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -7,6 +8,8 @@ import { Component as Subject } from "@sps/rbac/models/subject/frontend/componen
 import { Component as SocialModuleThread } from "@sps/social/models/thread/frontend/component";
 import type { IClientComponentProps } from "./interface";
 export function Component(props: IClientComponentProps) {
+  const language = props.language || internationalization.defaultLanguage.code;
+  const ru = language === "ru";
   const project = props.project;
   const router = useRouter();
   const [target, setTarget] = useState("whole");
@@ -22,7 +25,7 @@ export function Component(props: IClientComponentProps) {
     return (
       props.loading ?? (
         <p role="status" className="p-8">
-          Loading thread…
+          {ru ? "Загрузка обсуждения…" : "Loading thread…"}
         </p>
       )
     );
@@ -38,7 +41,9 @@ export function Component(props: IClientComponentProps) {
     return (
       <p role="alert" className="p-8 text-destructive">
         {props.threadsError ||
-          "This Thread does not belong to the selected Chat."}
+          (ru
+            ? "Это обсуждение не относится к выбранному чату."
+            : "This Thread does not belong to the selected Chat.")}
       </p>
     );
   }
@@ -49,7 +54,7 @@ export function Component(props: IClientComponentProps) {
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       {navigationOpen && (
         <nav
-          aria-label="Project navigation"
+          aria-label={ru ? "Навигация по проекту" : "Project navigation"}
           className="bg-default p-4 text-default-foreground lg:hidden"
         >
           {props.navigation}
@@ -64,7 +69,7 @@ export function Component(props: IClientComponentProps) {
         navigation={
           <button
             type="button"
-            aria-label="Project navigation"
+            aria-label={ru ? "Навигация по проекту" : "Project navigation"}
             aria-expanded={navigationOpen}
             className="flex size-11 items-center justify-center lg:hidden"
             onClick={() => setNavigationOpen(!navigationOpen)}
@@ -74,6 +79,7 @@ export function Component(props: IClientComponentProps) {
         }
         messages={
           <Subject
+            language={props.language}
             {...actionProps}
             variant="me-social-module-profile-id-chat-id-thread-id-message-list-ai-chat"
             onProfileOpen={openProfile}
@@ -81,6 +87,7 @@ export function Component(props: IClientComponentProps) {
         }
         composer={
           <Subject
+            language={props.language}
             {...actionProps}
             variant="me-social-module-profile-id-chat-id-thread-id-message-create-ai-chat"
             target={target}
@@ -90,6 +97,7 @@ export function Component(props: IClientComponentProps) {
         knowledge={
           isDocument && (
             <Subject
+              language={props.language}
               {...actionProps}
               variant="me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-list-document-ai-chat"
               onDiscuss={onDiscuss}
@@ -99,6 +107,7 @@ export function Component(props: IClientComponentProps) {
         documentDownload={
           isDocument && (
             <Subject
+              language={props.language}
               {...actionProps}
               variant="me-social-module-profile-id-chat-id-thread-id-download-ai-chat"
             />
@@ -107,6 +116,7 @@ export function Component(props: IClientComponentProps) {
       />
       {profileId && (
         <Subject
+          language={props.language}
           isServer={false}
           variant="me-social-module-profile-id-sidebar-ai-chat"
           data={props.data}

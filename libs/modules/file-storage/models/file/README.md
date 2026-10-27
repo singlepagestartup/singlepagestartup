@@ -42,8 +42,11 @@ The effective File service exposes stored-byte reads, path imports and transacti
 `attachment-ai-chat` uses the shared record reader and `FilePreview` UI adapter
 for Knowledge and message attachments. A parent with an authorized File result
 passes `dataSource="props"`; the card does not repeat the metadata query or
-mount another Provider. `Component.tsx` passes explicit display props and a
-lazy JSX text-reader slot to `ClientComponent.tsx`.
+mount another Provider. The shared reader passes the loaded File to the
+`index.tsx` renderer, which selects only the File, variant and language for
+`client.tsx`. The client reader composes a lazy JSX text-reader slot and passes
+it through `Component.tsx` to `ClientComponent.tsx`. Views do not import the
+local reader; SDK bindings and request options stay above the client boundary.
 
 The local `client.tsx` reads original text only while its preview is open using
 `fileApi.previewText`. This separate byte query belongs to the shared React

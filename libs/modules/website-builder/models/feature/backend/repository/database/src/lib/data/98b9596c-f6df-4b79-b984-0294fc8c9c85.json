@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "98b9596c-f6df-4b79-b984-0294fc8c9c85",
+  "createdAt": "2026-10-26T00:11:33.150Z",
+  "updatedAt": "2026-10-27T14:59:46.845Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "notification",
+    "ru": "notification"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Tell the team about a new enquiry.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Сообщите команде о новой заявке.\"}]}]}"
+  },
+  "adminTitle": "notification",
+  "slug": "framework-reviewed-article-crm-connections-feature-1"
+}

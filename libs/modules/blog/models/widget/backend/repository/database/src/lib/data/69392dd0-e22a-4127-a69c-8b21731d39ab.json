@@ -1,0 +1,21 @@
+{
+  "id": "69392dd0-e22a-4127-a69c-8b21731d39ab",
+  "className": "",
+  "createdAt": "2026-10-26T00:13:04.497Z",
+  "updatedAt": "2026-10-27T15:00:28.008Z",
+  "variant": "article-find-grid",
+  "adminTitle": "Что нужно вашему проекту?",
+  "slug": "framework-reviewed-catalogue",
+  "title": {
+    "en": "What does your project need?",
+    "ru": "Что нужно вашему проекту?"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "",
+    "ru": ""
+  }
+}

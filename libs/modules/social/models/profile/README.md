@@ -33,7 +33,7 @@ connection parameters for additional servers.
 ## Variants
 
 - `sidebar-ai-chat-project`: shared project navigation with Settings and New thread links, current-page states, and slots for Documents and Thread rows.
-- `id-ai-chat-project`: server project frame with navigation and content slots.
+- `id-ai-chat-project`: server project frame with navigation and content slots, rendered through the shared UI adapter `ChatWorkspace` also used by the landing preview.
 - `id-settings-ai-chat`: personal Profile editor receiving an avatar slot and save callback from RBAC Subject.
 
 - `byline`: Studio avatar/name presentation using the stored localized title and first ordered Profile→File attachment. The larger size includes the stored subtitle. Missing media shows initials derived from the stored title or slug; names and roles have no fixture fallback.

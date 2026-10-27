@@ -139,6 +139,15 @@ The qualifying need is a project whose scattered material and unsettled decision
 | Social and emotional forces | Distinct emotional or social drivers are not supplied. The intended experience reduces the sense that the whole business must be designed before work can begin.                                                                                                                                                                  |
 | Pains and gains             | Avoid fragmented files, repeated explanations and generic AI answers. Gain maintained project and product descriptions, a clear account of missing or contradictory information and documents usable inside or outside the service as a first step toward customers. No quantitative time saving or market result is established. |
 
+## Competitors
+
+The existing [Research](research.md#alternatives-and-competition) considers
+ChatGPT Projects and Chatbase as alternatives for working with business
+information. These are research candidates, not an owner-confirmed competitor
+list or evidence of customer preference. The owner's examples of competing
+project-description products, their offer pages and promotion remain unknown.
+This product's list is separate from Code Framework's competitors.
+
 ## Value Propositions
 
 The user names a project, uploads notes, documents, screenshots and images on the material screen and follows the analysis. Each prepared document then opens as a chat for discussion and editing. AI Chat keeps the framework's shortened Workspace structure: Brief, Strategy, Brand, Design and Products. Brief supplies the project brief; Strategy and Brand describe the direction and meaning; Design describes the intended appearance in words. Each product has its own Product/customer/offer, Operations & Economics, Sales, Promotion, Analytics and research or evidence where applicable. Promotion is a short written description of the intended public presentation, with Website, Creative and Presentation text where relevant; it does not deliver finished visual assets or a built landing page. Compactness reduces the initial detail without combining all products into one shared offer or removing their decisions.

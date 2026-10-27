@@ -1,5 +1,5 @@
-import { forwardRef as forwardRef } from "react";
-import { type SVGProps as SVGProps } from "react";
+import { forwardRef as forwardRef, type SVGProps as SVGProps } from "react";
+
 import { twMerge as twMerge } from "tailwind-merge";
 import IconGlyphs from "../../../feature/singlepage/icon/icons.json";
 import { Component as WebsiteBuilderModuleButton } from "../../../button/index";

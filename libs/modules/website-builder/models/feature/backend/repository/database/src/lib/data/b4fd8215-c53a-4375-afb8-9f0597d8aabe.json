@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "b4fd8215-c53a-4375-afb8-9f0597d8aabe",
+  "createdAt": "2026-10-26T00:11:29.627Z",
+  "updatedAt": "2026-10-27T14:59:52.025Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Requests stay available after submission",
+    "ru": "Запрос не теряется после отправки"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Submitted answers become an enquiry. The owner can open it and continue working with the customer.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Отправленные ответы становятся заявкой. Владелец может открыть её и продолжить работу с клиентом.\"}]}]}"
+  },
+  "adminTitle": "Запрос не теряется после отправки",
+  "slug": "framework-reviewed-article-crm-introduction-feature-2"
+}

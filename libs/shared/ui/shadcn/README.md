@@ -114,3 +114,19 @@ Components are tested using Jest and React Testing Library. Test configuration i
 ## License
 
 MIT
+
+## Local source and upstream updates
+
+Import dialogs, sheets and other primitives from `@sps/shared-ui-shadcn` in
+module views. Radix imports belong inside these shared components.
+
+shadcn distributes source files that the application owns. Its CLI can supply
+upstream changes; those changes still need a diff review and interaction checks
+before replacing local files. These files do not update through a shadcn runtime
+package. See the [shadcn introduction](https://ui.shadcn.com/docs).
+
+`DialogContent` and `SheetContent` accept an optional `closeLabel` for the hidden
+close-button text. The default remains `Close`; portal, focus, dismissal and
+Radix props keep their existing contracts. The cart uses `SheetContent` with a
+Russian label and local layout classes. This extension needs to be retained or
+reconciled when importing a new upstream version.

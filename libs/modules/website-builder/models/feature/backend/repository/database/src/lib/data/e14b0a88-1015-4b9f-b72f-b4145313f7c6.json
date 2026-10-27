@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "e14b0a88-1015-4b9f-b72f-b4145313f7c6",
+  "createdAt": "2026-10-26T00:11:19.475Z",
+  "updatedAt": "2026-10-27T14:59:59.433Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Private content has access rules",
+    "ru": "У закрытого содержимого есть правила"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"For paid lessons, configure access through a purchase or subscription. Accounts work together with payments and course content; registration alone does not confirm a purchase.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Для платных уроков настройте доступ по покупке или подписке. Аккаунты работают вместе с оплатой и содержимым курса; сама регистрация не подтверждает покупку.\"}]}]}"
+  },
+  "adminTitle": "У закрытого содержимого есть правила",
+  "slug": "framework-reviewed-article-rbac-introduction-feature-2"
+}

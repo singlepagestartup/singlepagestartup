@@ -1,0 +1,21 @@
+{
+  "id": "323006a6-3148-40f3-9272-711d7f82a1c2",
+  "className": "",
+  "createdAt": "2026-10-26T00:11:22.104Z",
+  "updatedAt": "2026-10-27T15:00:23.289Z",
+  "variant": "card",
+  "adminTitle": "Превратите предложение в каталог, который можно заказать",
+  "slug": "framework-ecommerce",
+  "title": {
+    "en": "Turn your offer into a catalogue customers can order from",
+    "ru": "Превратите предложение в каталог, который можно заказать"
+  },
+  "subtitle": {
+    "en": "Catalogue and orders",
+    "ru": "Каталог и заказы"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Show products, services or courses. Customers can choose what they need, add it to the cart and place an order.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Покажите товары, услуги или курсы. Покупатель выберет нужное, положит в корзину и оформит заказ.\"}]}]}"
+  }
+}

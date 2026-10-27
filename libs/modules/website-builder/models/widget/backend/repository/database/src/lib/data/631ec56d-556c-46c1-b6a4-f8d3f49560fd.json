@@ -1,12 +1,15 @@
 {
-  "title": {},
+  "title": {
+    "en": "Your notes, photos and plans in one project chat",
+    "ru": "Ваши заметки, фотографии и планы — в чате проекта"
+  },
   "subtitle": {},
   "description": {},
   "anchor": null,
   "className": null,
   "id": "631ec56d-556c-46c1-b6a4-f8d3f49560fd",
   "createdAt": "2026-10-11T21:17:36.094Z",
-  "updatedAt": "2026-10-11T21:17:36.094Z",
+  "updatedAt": "2026-10-27T14:59:02.445Z",
   "variant": "landing-ai-chat",
   "adminTitle": "AI Chat · landing content",
   "slug": "ai-chat-landing-content"

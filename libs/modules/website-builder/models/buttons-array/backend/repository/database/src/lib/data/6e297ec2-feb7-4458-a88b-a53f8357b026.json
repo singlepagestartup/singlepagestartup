@@ -1,0 +1,14 @@
+{
+  "id": "6e297ec2-feb7-4458-a88b-a53f8357b026",
+  "createdAt": "2026-10-24T01:06:02.582Z",
+  "updatedAt": "2026-10-24T01:06:02.582Z",
+  "variant": "default",
+  "className": "w-full",
+  "title": {
+    "en": "Actions",
+    "ru": "Действия"
+  },
+  "description": {},
+  "adminTitle": "Actions",
+  "slug": "framework-journey-module-ecommerce-actions"
+}

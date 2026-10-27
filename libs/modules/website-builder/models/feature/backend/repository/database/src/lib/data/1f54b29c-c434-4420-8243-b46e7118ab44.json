@@ -1,0 +1,18 @@
+{
+  "className": "",
+  "id": "1f54b29c-c434-4420-8243-b46e7118ab44",
+  "createdAt": "2026-10-24T01:05:46.406Z",
+  "updatedAt": "2026-10-24T01:05:46.406Z",
+  "variant": "definition-checklist",
+  "title": {
+    "en": "Accounts and access",
+    "ru": "Аккаунты и доступ"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Give people an account and control access to their data and private content.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Создавайте аккаунты и управляйте доступом к личным данным и закрытому контенту.\"}]}]}"
+  },
+  "adminTitle": "Accounts and access",
+  "slug": "framework-journey-foundation-0"
+}

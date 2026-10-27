@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "fde8fba0-cf1e-4435-b0a0-7a0a7cf8cb58",
+  "createdAt": "2026-10-26T00:11:35.817Z",
+  "updatedAt": "2026-10-27T15:00:04.613Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Content can be reused",
+    "ru": "Содержимое можно использовать повторно"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"One block can be linked to several pages. Shared information does not need to be rewritten in each place.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Один блок можно связать с несколькими страницами. Общую информацию не придётся переписывать в каждом месте.\"}]}]}"
+  },
+  "adminTitle": "Содержимое можно использовать повторно",
+  "slug": "framework-reviewed-article-website-builder-introduction-feature-2"
+}

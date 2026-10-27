@@ -1,0 +1,21 @@
+{
+  "id": "d6eac784-4774-47ec-a089-51fb54e39e04",
+  "className": "",
+  "createdAt": "2026-10-26T00:12:09.959Z",
+  "updatedAt": "2026-10-27T15:00:25.167Z",
+  "variant": "card",
+  "adminTitle": "Показывайте изменения, пока человек работает на сайте",
+  "slug": "framework-broadcast",
+  "title": {
+    "en": "Show changes while people use your site",
+    "ru": "Показывайте изменения, пока человек работает на сайте"
+  },
+  "subtitle": {
+    "en": "Updates without reloading",
+    "ru": "Обновления без перезагрузки"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"New messages and status changes appear in the open interface. Customers do not need to keep refreshing the page.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Новое сообщение или изменившийся статус появляется в открытом интерфейсе. Клиенту не нужно каждый раз обновлять страницу.\"}]}]}"
+  }
+}

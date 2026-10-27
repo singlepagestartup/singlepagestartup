@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "dfe1c77b-c4dc-46ab-ae80-b37aca16f9a1",
+  "createdAt": "2026-10-26T00:12:14.486Z",
+  "updatedAt": "2026-10-27T14:59:59.232Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Last week",
+    "ru": "Прошлая неделя"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Previous period\\n\\nAn example comparison of two periods.\\n\\nEnquiries: 18\\n\\nOrders: 6\\n\\nNew articles: 2\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Предыдущий период\\n\\nПример сравнения двух периодов.\\n\\nЗаявки: 18\\n\\nЗаказы: 6\\n\\nНовые статьи: 2\"}]}]}"
+  },
+  "adminTitle": "Прошлая неделя",
+  "slug": "framework-reviewed-article-analytic-example-feature-1"
+}

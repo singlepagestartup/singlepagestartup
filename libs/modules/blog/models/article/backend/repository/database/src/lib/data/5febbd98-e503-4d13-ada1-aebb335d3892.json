@@ -1,0 +1,21 @@
+{
+  "id": "5febbd98-e503-4d13-ada1-aebb335d3892",
+  "className": "",
+  "createdAt": "2026-10-26T00:12:13.261Z",
+  "updatedAt": "2026-10-27T15:00:23.521Z",
+  "variant": "card",
+  "adminTitle": "Соберите нужные бизнесу числа в своём проекте",
+  "slug": "framework-analytic",
+  "title": {
+    "en": "Keep the numbers your business needs in your project",
+    "ru": "Соберите нужные бизнесу числа в своём проекте"
+  },
+  "subtitle": {
+    "en": "Business metrics",
+    "ru": "Показатели бизнеса"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Store selected metrics and display them in your project: enquiries, orders or other numbers needed for your work.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Храните выбранные показатели и показывайте их в проекте: заявки, заказы или другие числа, которые нужны для работы.\"}]}]}"
+  }
+}

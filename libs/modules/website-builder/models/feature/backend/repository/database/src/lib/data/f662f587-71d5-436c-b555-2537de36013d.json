@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "f662f587-71d5-436c-b555-2537de36013d",
+  "createdAt": "2026-10-26T00:11:43.509Z",
+  "updatedAt": "2026-10-27T15:00:03.093Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "An article can lead to an offer",
+    "ru": "Статья может вести к предложению"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Link useful materials to a course or product. Readers can see where to apply what they have just learned.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Свяжите полезный материал с курсом или товаром. Читатель увидит, где применить то, о чём только что узнал.\"}]}]}"
+  },
+  "adminTitle": "Статья может вести к предложению",
+  "slug": "framework-reviewed-article-blog-introduction-feature-2"
+}

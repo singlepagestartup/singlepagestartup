@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Read implementation notes",
+    "ru": "Читать статьи об устройстве проекта"
+  },
+  "subtitle": {},
+  "url": "/blog",
+  "className": "w-fit",
+  "id": "5101f05e-c636-48e6-9219-b4e56228353e",
+  "createdAt": "2026-10-23T20:18:06.856Z",
+  "updatedAt": "2026-10-23T20:18:06.856Z",
+  "variant": "secondary",
+  "adminTitle": "Read implementation notes",
+  "slug": "framework-about-blog"
+}

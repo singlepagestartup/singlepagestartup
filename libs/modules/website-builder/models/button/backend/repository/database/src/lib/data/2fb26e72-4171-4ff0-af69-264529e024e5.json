@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Authors",
+    "ru": "Авторы"
+  },
+  "subtitle": {},
+  "url": "/authors",
+  "className": "w-fit",
+  "id": "2fb26e72-4171-4ff0-af69-264529e024e5",
+  "createdAt": "2026-10-24T01:06:22.469Z",
+  "updatedAt": "2026-10-24T01:06:22.469Z",
+  "variant": "ghost",
+  "adminTitle": "Authors",
+  "slug": "framework-journey-footer-group-2-4"
+}

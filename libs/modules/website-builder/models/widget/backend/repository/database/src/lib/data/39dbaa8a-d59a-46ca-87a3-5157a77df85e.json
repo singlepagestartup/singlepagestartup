@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Check middleware order",
+    "ru": "Проверьте порядок middleware"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Hono runs middleware in registration order before the handler and unwinds through it after \"},{\"type\":\"text\",\"text\":\"await next()\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\". \"},{\"type\":\"text\",\"text\":\"The Hono guide\",\"marks\":[{\"type\":\"link\",\"attrs\":{\"href\":\"https://hono.dev/docs/guides/middleware\",\"target\":\"_blank\",\"rel\":\"noopener noreferrer\"}}]},{\"type\":\"text\",\"text\":\" describes early responses and result handling. In SPS, request parsing creates typed inputs; resource checks may add constraints; a protected-response cache must not run before those checks.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Route middleware belongs in its module's \"},{\"type\":\"text\",\"text\":\"backend/app/middlewares\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" directory. The controller composes definitions, middleware instances and handlers. Reading your own cart, another person's cart and an operator action have different access conditions even when they use the same model.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Hono выполняет middleware в порядке регистрации до обработчика и возвращается через них после \"},{\"type\":\"text\",\"text\":\"await next()\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\". \"},{\"type\":\"text\",\"text\":\"Руководство Hono\",\"marks\":[{\"type\":\"link\",\"attrs\":{\"href\":\"https://hono.dev/docs/guides/middleware\",\"target\":\"_blank\",\"rel\":\"noopener noreferrer\"}}]},{\"type\":\"text\",\"text\":\" описывает ранние ответы и обработку результата. В SPS разбор запроса создаёт типизированные параметры; проверка ресурса может добавить ограничения; кеш защищённого ответа не должен срабатывать до этой проверки.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Middleware маршрута принадлежит \"},{\"type\":\"text\",\"text\":\"backend/app/middlewares\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" своего модуля. Контроллер соединяет определения, экземпляры middleware и обработчики. Чтение своей корзины, чужой корзины и действие оператора имеют разные условия доступа, даже если используют одну модель.\"}]}]}"
+  },
+  "anchor": "ru-section-hono-api-layers-di-and-owned-middleware-3",
+  "className": "",
+  "id": "39dbaa8a-d59a-46ca-87a3-5157a77df85e",
+  "createdAt": "2026-10-26T07:34:01.884Z",
+  "updatedAt": "2026-10-27T14:58:55.578Z",
+  "variant": "content-rich",
+  "adminTitle": "Проверьте порядок middleware",
+  "slug": "ru-section-hono-api-layers-di-and-owned-middleware-3"
+}

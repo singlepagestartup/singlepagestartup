@@ -17,15 +17,18 @@ let quantityValue: number | null = 0;
 
 jest.mock("lucide-react", () => ({
   ShoppingCart: () => <svg data-testid="cart-icon" />,
+  X: () => <svg />,
 }));
 
 jest.mock("@sps/shared-ui-shadcn", () => ({
-  Sheet: ({ children }: any) => <div data-testid="sheet">{children}</div>,
+  Sheet: ({ children }: any) => <div>{children}</div>,
   SheetTrigger: ({ children }: any) => <div>{children}</div>,
+  Portal: ({ children }: any) => <div>{children}</div>,
+  Overlay: () => null,
   SheetContent: ({ children }: any) => <div>{children}</div>,
-  SheetHeader: ({ children }: any) => <div>{children}</div>,
   SheetTitle: ({ children }: any) => <div>{children}</div>,
   SheetDescription: ({ children }: any) => <div>{children}</div>,
+  Close: ({ children }: any) => <button>{children}</button>,
 }));
 
 jest.mock("@sps/rbac/models/subject/frontend/component", () => ({

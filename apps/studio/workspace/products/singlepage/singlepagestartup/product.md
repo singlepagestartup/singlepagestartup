@@ -139,6 +139,16 @@ A maker wants to turn a business idea into a useful product without repeatedly c
 
 The desired progress is to spend development time and AI tokens on the product's own logic, reach the market sooner and keep improving the product. The person should be able to express the desired result in ordinary language and stay in control of the direction.
 
+## Competitors
+
+The existing [comparison](research/competitors.md) considers source-code
+starters such as Next.js SaaS Starter and Open SaaS, as well as managed builders
+and project generation. It records the sources and limits of that research;
+these candidates are not an owner-confirmed competitor list. The owner's
+priority examples, specific competing offers and promotion references remain
+unknown. AI Chat has its own competitor list because it addresses a different
+customer task.
+
 ## Value Propositions
 
 **Build your product on a foundation you can reuse.**

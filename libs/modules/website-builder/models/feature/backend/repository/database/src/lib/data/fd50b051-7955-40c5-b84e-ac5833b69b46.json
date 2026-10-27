@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "fd50b051-7955-40c5-b84e-ac5833b69b46",
+  "createdAt": "2026-10-24T01:05:54.908Z",
+  "updatedAt": "2026-10-24T01:05:54.908Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Website Builder",
+    "ru": "Website Builder"
+  },
+  "subtitle": {
+    "en": "Experience",
+    "ru": "Интерфейс"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Editable copy, media, navigation and presentation sections with slots for domain content.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Редактируемый текст, медиа, навигация и секции со слотами для контента доменных модулей.\"}]}]}"
+  },
+  "adminTitle": "Website Builder",
+  "slug": "framework-journey-module-website-builder"
+}

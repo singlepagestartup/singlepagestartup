@@ -1,0 +1,18 @@
+{
+  "className": "",
+  "id": "da6e2b92-bb74-4129-83a1-a8caad3a03b4",
+  "createdAt": "2026-10-24T01:05:47.566Z",
+  "updatedAt": "2026-10-24T01:05:47.566Z",
+  "variant": "definition-item",
+  "title": {
+    "en": "Profiles and conversations",
+    "ru": "Профили и общение"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Social connects public profiles, authors, chats, threads and messages.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Social связывает публичные профили, авторов, чаты, ветки и сообщения.\"}]}]}"
+  },
+  "adminTitle": "Profiles and conversations",
+  "slug": "framework-journey-module-group-1"
+}

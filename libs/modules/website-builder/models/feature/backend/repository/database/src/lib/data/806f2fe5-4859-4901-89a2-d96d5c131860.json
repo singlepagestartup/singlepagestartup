@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "806f2fe5-4859-4901-89a2-d96d5c131860",
+  "createdAt": "2026-10-26T00:12:34.132Z",
+  "updatedAt": "2026-10-27T14:59:41.855Z",
+  "variant": "document",
+  "title": {
+    "en": "Product",
+    "ru": "Продукт"
+  },
+  "subtitle": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"heading\",\"attrs\":{\"level\":4},\"content\":[{\"type\":\"text\",\"text\":\"Example content\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"A visitor chooses a course, registers and pays for access. Classes become available after the order is confirmed.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"heading\",\"attrs\":{\"level\":4},\"content\":[{\"type\":\"text\",\"text\":\"Пример содержания\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Посетитель выбирает курс, регистрируется и оплачивает доступ. После подтверждения заказа ему доступны занятия.\"}]}]}"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The product document describes what your customers will be able to do: choose a course, pay for it and open classes, for example. Use it to check that everything works as intended.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Документ о продукте описывает, что смогут делать ваши клиенты: например, выбрать курс, оплатить его и открыть занятия. По нему вы проверяете, работает ли всё так, как задумано.\"}]}]}"
+  },
+  "adminTitle": "Продукт",
+  "slug": "framework-reviewed-step-doc-document-five"
+}

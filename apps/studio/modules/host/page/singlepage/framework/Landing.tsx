@@ -110,7 +110,7 @@ export default function CodeFrameworkLanding({
             title: content.foundation.items[index].title,
             description: content.foundation.items[index].text,
             preview: {
-              src: `/module-assets/images/singlepage/generated/framework-example-previews/${preview.name}.png`,
+              src: `/module-assets/images/singlepage/generated/framework-example-previews/${preview.name}-hd.jpg`,
               alt: preview.alt,
               width: 340,
               height: preview.height,

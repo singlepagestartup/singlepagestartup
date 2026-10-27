@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "A request for your project",
+    "ru": "Запрос для вашего проекта"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"I need a booking enquiry form for a grooming salon. Ask about the service, breed, preferences and phone number. Save the answers so the administrator can contact the customer.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Нужна форма записи в груминг-салон. Спросите услугу, породу, пожелания и телефон. Сохраняйте ответы, чтобы администратор мог связаться с клиентом.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "92631124-c8ba-4ac1-82d9-5209dffc550f",
+  "createdAt": "2026-10-26T00:11:33.866Z",
+  "updatedAt": "2026-10-27T14:59:08.511Z",
+  "variant": "content-rich",
+  "adminTitle": "Запрос для вашего проекта",
+  "slug": "framework-reviewed-article-crm-task"
+}

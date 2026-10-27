@@ -1,5 +1,5 @@
 import { frameworkArticlePreviews } from "../../../article";
-import type { IComponentProps } from "./interface";
+import { type IComponentProps, type BlogCategoryTab } from "./interface";
 import { Component as ClientComponent } from "./ClientComponent";
 export function ArticleFindCardDefault(props: IComponentProps = {}) {
   const p = { ...defaultArticleFindCardDefaultProps, ...props };
@@ -23,4 +23,3 @@ export const defaultArticleFindCardDefaultProps = {
   ] as BlogCategoryTab[],
   articles: frameworkArticlePreviews,
 };
-import type { BlogCategoryTab } from "./interface";

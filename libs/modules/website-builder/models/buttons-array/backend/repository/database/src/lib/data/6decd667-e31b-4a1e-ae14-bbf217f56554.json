@@ -1,0 +1,17 @@
+{
+  "id": "6decd667-e31b-4a1e-ae14-bbf217f56554",
+  "createdAt": "2026-10-26T00:12:30.592Z",
+  "updatedAt": "2026-10-26T22:07:04.703Z",
+  "variant": "actions-full",
+  "className": "",
+  "title": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "",
+    "ru": ""
+  },
+  "adminTitle": "framework-reviewed-step-register",
+  "slug": "framework-reviewed-step-register"
+}

@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Try the chat",
+    "ru": "Попробовать чат"
+  },
+  "subtitle": {},
+  "url": "#workflow",
+  "className": "",
+  "id": "53805421-0135-40d8-af6f-37218e75c231",
+  "createdAt": "2026-10-27T08:40:55.397Z",
+  "updatedAt": "2026-10-27T15:00:09.942Z",
+  "variant": "action-outline-inverse",
+  "adminTitle": "Попробовать чат",
+  "slug": "ai-chat-editable-hero-button-1"
+}

@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Start with your materials",
+    "ru": "Начать со своих материалов"
+  },
+  "subtitle": {},
+  "url": "/ai-chat/create-account",
+  "className": "",
+  "id": "613a0706-662f-4386-9e1a-b808d9174d44",
+  "createdAt": "2026-10-27T08:40:59.026Z",
+  "updatedAt": "2026-10-27T15:00:11.195Z",
+  "variant": "action",
+  "adminTitle": "Начать со своих материалов",
+  "slug": "ai-chat-editable-followup-button-0"
+}

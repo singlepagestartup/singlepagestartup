@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Profile knowledge",
+    "ru": "Знания профиля"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[]}",
+    "ru": "{\"type\":\"doc\",\"content\":[]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "c6db78d2-e735-4158-946b-bf411b4070a3",
+  "createdAt": "2026-10-26T00:11:57.485Z",
+  "updatedAt": "2026-10-27T14:59:15.835Z",
+  "variant": "content-rich",
+  "adminTitle": "Знания профиля",
+  "slug": "framework-reviewed-article-social-profile-knowledge"
+}

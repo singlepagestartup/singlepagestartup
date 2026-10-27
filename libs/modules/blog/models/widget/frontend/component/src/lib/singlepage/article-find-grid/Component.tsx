@@ -1,8 +1,11 @@
 import { cn } from "@sps/shared-frontend-client-utils";
-import type { IComponentPropsExtended } from "./interface";
+import {
+  type IComponentPropsExtended,
+  type IPresentationProps,
+} from "./interface";
 import { Component as WidgetsToArticles } from "@sps/blog/relations/widgets-to-articles/frontend/component";
 import { Component as WidgetsToWebsiteBuilderModuleWidgets } from "@sps/blog/relations/widgets-to-website-builder-module-widgets/frontend/component";
-import type { IPresentationProps } from "./interface";
+
 export function Presentation(props: IPresentationProps) {
   const { data, language, isServer } = props;
   const title = data.title?.[language] || data.title?.en;

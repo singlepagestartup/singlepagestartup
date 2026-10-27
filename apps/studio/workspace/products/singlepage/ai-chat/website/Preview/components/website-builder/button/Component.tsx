@@ -1,5 +1,10 @@
-import { forwardRef } from "react";
-import type { ComponentProps, ComponentType, RefAttributes } from "react";
+import {
+  forwardRef,
+  type ComponentProps,
+  type ComponentType,
+  type RefAttributes,
+} from "react";
+
 import { Component as Control } from "./singlepage/control/index";
 import { Component as Link } from "./singlepage/link/index";
 import { Component as Secondary } from "./singlepage/secondary/index";

@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "1fb5bd7c-d5d5-4713-9124-4b3a9e1fe37c",
+  "createdAt": "2026-10-26T00:11:39.775Z",
+  "updatedAt": "2026-10-27T14:59:27.741Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Each page has its own title",
+    "ru": "У страницы есть своё название"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Set a title and description. They are used in page metadata; they do not guarantee search rankings.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Задайте заголовок и описание. Они используются в метаданных страницы; это не гарантия позиции в поиске.\"}]}]}"
+  },
+  "adminTitle": "У страницы есть своё название",
+  "slug": "framework-reviewed-article-host-introduction-feature-2"
+}

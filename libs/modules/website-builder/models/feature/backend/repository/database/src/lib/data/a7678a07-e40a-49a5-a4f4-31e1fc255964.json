@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "a7678a07-e40a-49a5-a4f4-31e1fc255964",
+  "createdAt": "2026-10-26T00:11:55.268Z",
+  "updatedAt": "2026-10-27T14:59:50.066Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Blog",
+    "ru": "Blog"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Author articles. Linking a profile to articles creates a list of its publications.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Статьи автора. Связь профиля со статьёй формирует список его публикаций.\"}]}]}"
+  },
+  "adminTitle": "Blog",
+  "slug": "framework-reviewed-article-social-connections-feature-2"
+}

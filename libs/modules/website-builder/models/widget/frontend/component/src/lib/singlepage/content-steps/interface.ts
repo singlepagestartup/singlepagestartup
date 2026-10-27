@@ -9,3 +9,13 @@ export interface IComponentProps extends IParentProps<IModel, typeof variant> {
 }
 export interface IComponentPropsExtended
   extends IParentPropsExtended<IModel, typeof variant, IComponentProps> {}
+
+export interface IStepFeaturesProps {
+  links: import("@sps/website-builder/relations/widgets-to-features/sdk/model").IModel[];
+  language: string;
+  isServer: boolean;
+}
+export interface IStepGroup {
+  link: IStepFeaturesProps["links"][number];
+  items: IStepFeaturesProps["links"];
+}

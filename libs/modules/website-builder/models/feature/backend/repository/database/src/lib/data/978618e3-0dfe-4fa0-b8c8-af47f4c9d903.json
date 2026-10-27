@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "978618e3-0dfe-4fa0-b8c8-af47f4c9d903",
+  "createdAt": "2026-10-26T00:12:10.584Z",
+  "updatedAt": "2026-10-27T14:59:46.125Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "The team sees changes while working",
+    "ru": "Команда видит изменения в работе"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"With list updates configured, new enquiries and changed statuses appear for employees who already have the section open.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"При настроенном обновлении списка новая заявка или изменённый статус появляется у сотрудников, которые уже открыли этот раздел.\"}]}]}"
+  },
+  "adminTitle": "Команда видит изменения в работе",
+  "slug": "framework-reviewed-article-broadcast-introduction-feature-1"
+}

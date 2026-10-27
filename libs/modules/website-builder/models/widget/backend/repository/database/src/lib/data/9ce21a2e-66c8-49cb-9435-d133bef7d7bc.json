@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Prepare the business before you build the page.",
+    "ru": "Подготовьте бизнес перед разработкой страницы."
+  },
+  "subtitle": {
+    "en": "AI Chat → reviewed documents → development brief",
+    "ru": "AI-чат → проверенные документы → задача на разработку"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Bring notes, a business model, a plan or an idea to AI Chat. Discuss the gaps and review written Brief, Strategy, Brand, Design and Product documents.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Export the documents you have reviewed and give them to your coding agent. Use Code Framework to develop the landing page or product those documents describe.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"AI Chat prepares written material. You and your coding agent develop the product; automated website publication is a future service.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Добавьте в AI-чат заметки, бизнес-модель, план или идею. Обсудите пробелы и проверьте документы Brief, Strategy, Brand, Design и Product.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Экспортируйте проверенные документы и передайте их coding agent. Используйте Code Framework для разработки описанной в них страницы или продукта.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"AI-чат готовит письменные материалы. Вы и coding agent разрабатываете продукт; автоматическая публикация сайтов относится к будущим сервисам.\"}]}]}"
+  },
+  "anchor": "prepare-business",
+  "className": "",
+  "id": "9ce21a2e-66c8-49cb-9435-d133bef7d7bc",
+  "createdAt": "2026-10-24T01:05:45.778Z",
+  "updatedAt": "2026-10-24T01:05:45.778Z",
+  "variant": "content-feature-split",
+  "adminTitle": "Prepare the business before you build the page.",
+  "slug": "framework-journey-preparation"
+}

@@ -2,7 +2,6 @@ import { TipTap } from "@sps/shared-ui-shadcn";
 import { cn } from "@sps/shared-frontend-client-utils";
 import type { IComponentPropsExtended } from "./interface";
 import { Component as WidgetsToFeatures } from "@sps/website-builder/relations/widgets-to-features/frontend/component";
-import { Component as WidgetsToButtonsArrays } from "@sps/website-builder/relations/widgets-to-buttons-arrays/frontend/component";
 export function Component(props: IComponentPropsExtended) {
   const { data, language, isServer } = props;
   const title = data.title?.[language] || data.title?.en;
@@ -18,7 +17,7 @@ export function Component(props: IComponentPropsExtended) {
       data-id={data.id}
       data-variant={props.variant}
       className={cn(
-        "@container mx-auto max-w-7xl px-5 py-14 outline-none @3xl:px-8 @3xl:py-20",
+        "@container mx-auto w-full min-w-0 max-w-7xl px-5 py-14 outline-none @3xl:px-8 @3xl:py-20",
         data.className,
         props.className,
       )}

@@ -1,0 +1,21 @@
+{
+  "id": "13422b19-3a8c-4412-b101-812ec2218fc7",
+  "className": "",
+  "createdAt": "2026-10-26T00:12:59.259Z",
+  "updatedAt": "2026-10-27T15:00:27.146Z",
+  "variant": "article-overview-linked",
+  "adminTitle": "Статьи и блог",
+  "slug": "framework-reviewed-linked-blog",
+  "title": {
+    "en": "Articles and blog",
+    "ru": "Статьи и блог"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "",
+    "ru": ""
+  }
+}

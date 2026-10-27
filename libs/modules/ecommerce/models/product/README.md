@@ -22,7 +22,7 @@ Products represent sellable items with localized content, attributes, and media 
 - `default`: product card with media, attributes, and short description.
 - `overview-default`: detailed product overview with media and attributes.
 - `price-default`: renders price attributes for a selected currency.
-- `cart-default`: compact product view for cart listings.
+- `cart-default`: compact product row with the first ordered default media, product link and slots for cart actions. The owning RBAC cart supplies quantities and authorized order totals.
 - `currency-toggle-group-default`: currency selector based on price attributes.
 - `find`: data-fetch wrapper for querying products.
 - `admin-form`: admin create/edit form for localized fields and metadata.

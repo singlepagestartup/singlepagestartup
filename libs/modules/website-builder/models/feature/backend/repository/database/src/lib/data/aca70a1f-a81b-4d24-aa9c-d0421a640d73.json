@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "aca70a1f-a81b-4d24-aa9c-d0421a640d73",
+  "createdAt": "2026-10-26T00:11:31.582Z",
+  "updatedAt": "2026-10-27T14:59:51.084Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Enquiry",
+    "ru": "Заявка"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"A new salon enquiry\\n\\nAll answers are available in one record.\\n\\nAnna · Pomeranian grooming\\n\\nPreference: weekend\\n\\nNext step: contact the customer\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Новая заявка в салон\\n\\nВсе ответы доступны в одной записи.\\n\\nАнна · стрижка шпица\\n\\nПожелание: в выходные\\n\\nСледующий шаг: связаться с клиентом\"}]}]}"
+  },
+  "adminTitle": "Заявка",
+  "slug": "framework-reviewed-article-crm-example-feature-1"
+}

@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Switch exact saved relations",
+    "ru": "Переключайте точные сохранённые связи"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The Framework transfer tool separates prepare, apply, verify and rollback. Its input specifies exact Host, CRM, Article and presentation relations. The shared hero frame is separated from the contact form before switching its consumer. Resulting relations are read back; repeating a completed manifest skips satisfied operations.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Unsupported sharing of a private graph is blocked during preparation. The graph is isolated before marking it private. Presentation rollback preserves security classification and the accepted period where the manifest specifies it: restoring the previous frame does not make subscriber materials public.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Инструмент переноса Framework разделяет prepare, apply, verify и rollback. Его вход задаёт конкретные связи Host, CRM, Article и представлений. Общая hero-рамка отделяется от контактной формы до переключения потребителя. Результирующие связи читаются обратно; повтор уже выполненного манифеста пропускает удовлетворённые операции.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Неподдерживаемое совместное использование приватного графа блокируется на подготовке. Перед приватной отметкой граф изолируется. Откат оформления сохраняет классификацию безопасности и принятый период там, где это предусмотрено манифестом: возврат прежней рамки не разрешает открыть материалы подписчиков.\"}]}]}"
+  },
+  "anchor": "ru-section-building-and-revalidating-sps-with-safe-content-cutovers-7",
+  "className": "",
+  "id": "e778f0e9-3c23-4606-ae51-3a3294c22f05",
+  "createdAt": "2026-10-26T07:34:01.501Z",
+  "updatedAt": "2026-10-27T14:59:18.780Z",
+  "variant": "content-rich",
+  "adminTitle": "Переключайте точные сохранённые связи",
+  "slug": "ru-section-building-and-revalidating-sps-with-safe-content-cutovers-7"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "f02caac6-7325-4cf1-a416-1fab8ff22247",
+  "className": "",
+  "createdAt": "2026-10-26T00:12:02.842Z",
+  "updatedAt": "2026-10-27T15:00:26.091Z",
+  "variant": "card",
+  "adminTitle": "Сообщайте клиентам о событиях в вашем проекте",
+  "slug": "framework-notification",
+  "title": {
+    "en": "Tell customers about events in your project",
+    "ru": "Сообщайте клиентам о событиях в вашем проекте"
+  },
+  "subtitle": {
+    "en": "Customer notifications",
+    "ru": "Уведомления клиентам"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Send updates about enquiries, orders and events. Prepare message templates and connect the delivery method you need.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Сообщайте о заявках, заказах и событиях. Подготовьте шаблоны сообщений и подключите нужный способ доставки.\"}]}]}"
+  }
+}

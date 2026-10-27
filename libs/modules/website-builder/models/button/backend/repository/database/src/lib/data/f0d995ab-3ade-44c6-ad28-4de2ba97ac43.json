@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "All modules",
+    "ru": "Все модули"
+  },
+  "subtitle": {},
+  "url": "/framework/modules",
+  "className": "w-fit",
+  "id": "f0d995ab-3ade-44c6-ad28-4de2ba97ac43",
+  "createdAt": "2026-10-24T01:06:11.160Z",
+  "updatedAt": "2026-10-24T01:06:11.160Z",
+  "variant": "secondary",
+  "adminTitle": "All modules",
+  "slug": "framework-journey-guide-notification-actions-0"
+}

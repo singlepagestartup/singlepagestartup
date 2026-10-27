@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "6bad0149-4474-4e84-90dd-cc2cca95b94d",
+  "createdAt": "2026-10-26T00:12:07.920Z",
+  "updatedAt": "2026-10-27T14:59:39.353Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Actions",
+    "ru": "Действия"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"What the task will do\\n\\nConfigure this workflow for your project.\\n\\nRetrieve new enquiries\\n\\nPrepare a summary\\n\\nPass the message for delivery\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Что выполнит задача\\n\\nЭтот сценарий нужно настроить для вашего проекта.\\n\\nПолучить новые заявки\\n\\nПодготовить сводку\\n\\nПередать сообщение на отправку\"}]}]}"
+  },
+  "adminTitle": "Действия",
+  "slug": "framework-reviewed-article-agent-example-feature-1"
+}

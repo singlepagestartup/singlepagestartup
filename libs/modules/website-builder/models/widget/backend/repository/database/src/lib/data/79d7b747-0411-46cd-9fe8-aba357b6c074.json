@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Development services",
+    "ru": "Разработка проектов"
+  },
+  "subtitle": {
+    "en": "Build with Code Framework.",
+    "ru": "Разрабатывайте на Code Framework."
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Start with a landing page for your offer or develop your first product on SinglePageStartup. Open a service to choose its currency and review the order.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Начните с посадочной страницы для своего предложения или разработайте первый продукт на SinglePageStartup. Откройте услугу, чтобы выбрать валюту и проверить заказ.\"}]}]}"
+  },
+  "anchor": "development-services",
+  "className": "",
+  "id": "79d7b747-0411-46cd-9fe8-aba357b6c074",
+  "createdAt": "2026-10-24T01:06:18.526Z",
+  "updatedAt": "2026-10-24T01:06:18.526Z",
+  "variant": "content-ecommerce-default",
+  "adminTitle": "Development services",
+  "slug": "framework-journey-service-catalog-frame"
+}

@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "ed661698-c649-4b97-a63e-800044be6dec",
+  "createdAt": "2026-10-26T00:11:58.439Z",
+  "updatedAt": "2026-10-27T15:00:01.249Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "/lesson-check · Prepare for a class",
+    "ru": "/lesson-check · Подготовиться к занятию"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Checks preparation against the course programme and lists remaining steps. Add @knowledge to the same request to search knowledge.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Сверяет подготовку с программой курса и составляет список оставшихся шагов. Для поиска по знаниям добавьте @knowledge в тот же запрос.\"}]}]}"
+  },
+  "adminTitle": "/lesson-check · Подготовиться к занятию",
+  "slug": "framework-reviewed-article-social-profile-skills-feature-1"
+}

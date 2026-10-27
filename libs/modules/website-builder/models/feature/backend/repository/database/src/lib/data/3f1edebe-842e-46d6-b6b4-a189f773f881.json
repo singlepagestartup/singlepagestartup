@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "3f1edebe-842e-46d6-b6b4-a189f773f881",
+  "createdAt": "2026-10-24T01:05:56.407Z",
+  "updatedAt": "2026-10-24T01:05:56.407Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Blog",
+    "ru": "Blog"
+  },
+  "subtitle": {
+    "en": "Experience",
+    "ru": "Интерфейс"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Articles, categories, covers and content blocks for searchable explanations.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Статьи, категории, обложки и блоки контента для публикаций.\"}]}]}"
+  },
+  "adminTitle": "Blog",
+  "slug": "framework-journey-module-blog"
+}

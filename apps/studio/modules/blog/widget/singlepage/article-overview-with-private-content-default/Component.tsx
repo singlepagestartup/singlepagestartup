@@ -1,6 +1,9 @@
 import type { IComponentProps } from "./interface";
-import { Component as Article } from "../../../article";
-import { frameworkArticlePreviews } from "../../../article";
+import {
+  Component as Article,
+  frameworkArticlePreviews,
+} from "../../../article";
+
 import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget";
 export function Component({ access = "locked", article }: IComponentProps) {
   const example = frameworkArticlePreviews.find(

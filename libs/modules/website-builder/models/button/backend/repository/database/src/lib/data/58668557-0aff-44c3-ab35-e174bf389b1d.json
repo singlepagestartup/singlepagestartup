@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Read CRM source guide",
+    "ru": "Документация CRM"
+  },
+  "subtitle": {},
+  "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/modules/crm/README.md",
+  "className": "w-fit",
+  "id": "58668557-0aff-44c3-ab35-e174bf389b1d",
+  "createdAt": "2026-10-24T01:06:00.556Z",
+  "updatedAt": "2026-10-24T01:06:00.556Z",
+  "variant": "primary",
+  "adminTitle": "Read CRM source guide",
+  "slug": "framework-journey-guide-crm-actions-1"
+}

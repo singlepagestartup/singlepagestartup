@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "AI Chat",
+    "ru": "AI-чат"
+  },
+  "subtitle": {},
+  "url": "/",
+  "className": "w-fit",
+  "id": "045875d7-2409-4e23-9242-2ff599629c4f",
+  "createdAt": "2026-10-24T01:06:20.112Z",
+  "updatedAt": "2026-10-24T01:06:20.112Z",
+  "variant": "primary",
+  "adminTitle": "AI Chat",
+  "slug": "framework-journey-navbar-4-0"
+}

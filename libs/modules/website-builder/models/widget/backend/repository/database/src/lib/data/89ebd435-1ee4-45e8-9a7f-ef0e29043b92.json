@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Module structure",
+    "ru": "Устройство модуля"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Article and Category store text, translations and addresses. Relations connect files, content blocks and products. Social owns authorship by linking profiles to articles.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Article и Category хранят текст, переводы и адреса. Связи подключают файлы, контентные блоки и товары. Авторство принадлежит Social: профиль связывается со статьями.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "89ebd435-1ee4-45e8-9a7f-ef0e29043b92",
+  "createdAt": "2026-10-26T00:11:45.497Z",
+  "updatedAt": "2026-10-27T14:59:07.074Z",
+  "variant": "content-rich",
+  "adminTitle": "Устройство модуля",
+  "slug": "framework-reviewed-article-blog-technical"
+}

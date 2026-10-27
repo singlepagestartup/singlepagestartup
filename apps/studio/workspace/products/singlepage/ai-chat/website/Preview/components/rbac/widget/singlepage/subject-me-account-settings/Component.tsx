@@ -1,19 +1,26 @@
 "use client";
-import { forwardRef as forwardRef } from "react";
-import * as SelectPrimitive from "@radix-ui/react-select";
-import { useState as useStatePresentation } from "react";
-import { twMerge as twMerge } from "tailwind-merge";
-import { forwardRef as forwardRefPresentation } from "react";
-import { type SVGProps as SVGProps } from "react";
-import { twMerge as twMergePresentation } from "tailwind-merge";
-import { Component as WebsiteBuilderModuleButton } from "../../../../website-builder/button/index";
 import {
+  forwardRef as forwardRef,
+  useState as useStatePresentation,
+  forwardRef as forwardRefPresentation,
+  type SVGProps as SVGProps,
   forwardRef as forwardRefControl,
   type ButtonHTMLAttributes as ButtonControlProps,
+  useId,
+  useState,
 } from "react";
+import * as SelectPrimitive from "@radix-ui/react-select";
+
+import {
+  twMerge as twMerge,
+  twMerge as twMergePresentation,
+} from "tailwind-merge";
+
+import { Component as WebsiteBuilderModuleButton } from "../../../../website-builder/button/index";
+
 import IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
 import type { IAIChatServicePageContent } from "../../../../website-builder/widget/singlepage/content/ai-chat/content";
-import { useId, useState } from "react";
+
 import { Component as RbacModuleSubject } from "../../../subject/index";
 import { useStudioAccount } from "../../../subject/singlepage/account/Account";
 interface IModuleIconProps extends SVGProps<SVGSVGElement> {

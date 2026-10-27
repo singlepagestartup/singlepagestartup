@@ -29,7 +29,7 @@ Widgets store reusable content blocks (text, media, structured sections) for bui
 - `content-ai-chat-reset-password`: password reset presentation with its own RBAC form slot.
 - `navbar-ai-chat`: server navigation presentation with children for project and account controls composed by Host. Host supplies `language` and `helpSelected`; the Widget does not receive or parse the current Page URL.
 - `footer-ai-chat`: server footer presentation with locale-aware destinations.
-- `landing-ai-chat`: landing presentation with its own local interactive demonstration. The walkthrough uses prepared copy and local state without a Social Chat record, API writes or AI calls. It imports no Social or RBAC components.
+- `landing-ai-chat`: Russian landing presentation with a local demonstration using the production Social views’ shared `ChatWorkspace` and `ChatThreadPanel` from `@sps/ui-adapter`: all five documents in the canonical `AI_CHAT_DOCUMENTS` order (Brief, Strategy, Brand, Design, Products), chat, editable Markdown with explicit local saving, local file previews and new discussions. Each document retains its own draft, saved text, attachments and conversation while switching between sections. The dark navigation, responsive Chat/Document switch, 360px editor column and independent scroll areas use the production layout. The demonstration uses prepared copy and local state without a Social Chat record, API writes or AI calls. It imports no Social or RBAC components. Its links target saved Host pages and preserve the current URL language. Russian default copy lives in `AI_CHAT_LANDING_CONTENT`; localized saved Widget titles remain editable.
 
 - `default`: sample component, for debugging.
 - `content-default`: saved hero copy, ordered media, sliders, features and CTA groups.
@@ -43,7 +43,7 @@ Widgets store reusable content blocks (text, media, structured sections) for bui
 - `content-feature-split-reverse`: the same section with a left illustration using `object-contain`.
 - `content-definition-grid`: an h2 capability collection with ordered saved Features and action groups. The Widget's `className` controls its grid.
 - `content-definition-grid-page`: an h1 page-level collection using the same saved fields and associations.
-- `content-steps`: a numbered process. Ordered `step` Features and a `copy-request` Feature share the grid; the copy request spans all columns through presentation CSS.
+- `content-steps`: a numbered process. Each ordered `step` Feature starts a column; subsequent document Features belong to that step until the next step. A `copy-request` Feature opens in a disclosure below the process. The Widget reads exact linked Feature records for grouping and renders each through the default relation, forwarding nested content as a JSX slot. Column placement does not depend on the number of documents.
 - `content-offer`: a dark h2 panel with saved subtitle, title, description, Feature content and actions.
 - `content-offer-card`: a light offer panel over the same persisted fields.
 - `content-faq`: saved introduction and actions on the left, ordered `dropdown` Features on the right. The generic questions heading is localized for English and Russian.
@@ -80,6 +80,7 @@ Ecommerce models and performs no session, cart or order reads.
 
 ## Framework presentation
 
+Content sections declare their full width inside generic flex relation wrappers.
 Content sections, navbar and footer share a `max-w-7xl` grid with responsive
 horizontal padding. Ecommerce children occupy that grid without a second card
 container. Saved relation order and IDs determine content order and React keys.
@@ -107,3 +108,32 @@ that client boundary.
 Lucide React supplies the navigation glyphs: Menu ☰ and X ×. They are decorative
 inside buttons with localized accessible names. Slider arrows use the same
 library, ArrowLeft ← and ArrowRight →. No new photographic assets are bundled.
+
+### Editable AI Chat landing
+
+`landing-ai-chat` reads its exact `widgets-to-features` associations in order.
+The Feature variants `landing-introduction`, `landing-workflow`,
+`landing-followup` and `landing-disclosure` own the section layouts. Their
+localized title, subtitle and rich description are saved records. Hero media
+uses `features-to-file-storage-module-files`; links use
+`features-to-buttons-arrays` and saved Button variants.
+
+The workflow receives a local demo built from linked `demo-project` and
+`demo-document` Features. Project title and prepared reply come from the project
+record. Each document uses its UUID as its local key, title as its filename,
+subtitle as its introduction and description as its rich document source, converted to Markdown for the local editor. Associated
+File Storage records supply previewable attachments. `demo-project` buttons
+supply sidebar links; `demo-handoff` supplies the editable continuation card.
+The demo does not create a live project or call an AI provider. Generic editor
+controls are interface translations; example business content is stored in the
+records. No source-side catalog supplies missing landing records.
+
+`navbar-ai-chat` and `footer-ai-chat` render their own ordered
+`widgets-to-buttons-arrays` associations. Host supplies the account control as a
+rendered child; the presentation does not choose a session operation.
+
+Authentication, registration, password recovery, project creation, help and
+materials-processing views read their saved Widget title, subtitle and
+description. Their media and navigation use the same exact-instance file and
+ButtonsArray relations. The content is editable through the existing localized
+admin fields.

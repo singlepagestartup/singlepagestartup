@@ -1,0 +1,14 @@
+{
+  "id": "c16e642c-19a8-4617-bba7-7fc6e62edfe3",
+  "createdAt": "2026-10-27T08:55:54.569Z",
+  "updatedAt": "2026-10-27T15:00:21.229Z",
+  "variant": "navigation-inline",
+  "className": "",
+  "title": {
+    "en": "Need help signing in?",
+    "ru": "Нужна помощь со входом?"
+  },
+  "description": {},
+  "adminTitle": "content-ai-chat-forgot-password-links",
+  "slug": "ai-chat-editable-content-ai-chat-forgot-password-links"
+}

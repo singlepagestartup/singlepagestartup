@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Module structure",
+    "ru": "Устройство модуля"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Widget stores localized section content. Singlepage/Startup views adapt its presentation to the project. Business operations stay in the module that owns their data.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Widget хранит локализованное содержимое раздела. Представления Singlepage/Startup позволяют менять оформление под проект. Отдельные бизнес-операции должны оставаться в модуле, который владеет их данными.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "54ccc56e-00ed-4d5e-ab9f-9cf72cf45fa8",
+  "createdAt": "2026-10-26T00:12:22.092Z",
+  "updatedAt": "2026-10-27T14:59:00.356Z",
+  "variant": "content-rich",
+  "adminTitle": "Устройство модуля",
+  "slug": "framework-reviewed-article-startup-technical"
+}

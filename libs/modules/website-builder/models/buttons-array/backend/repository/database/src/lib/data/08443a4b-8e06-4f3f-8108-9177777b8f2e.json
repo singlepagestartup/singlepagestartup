@@ -1,0 +1,14 @@
+{
+  "id": "08443a4b-8e06-4f3f-8108-9177777b8f2e",
+  "createdAt": "2026-10-24T01:06:09.535Z",
+  "updatedAt": "2026-10-24T01:06:09.535Z",
+  "variant": "default",
+  "className": "w-full",
+  "title": {
+    "en": "Actions",
+    "ru": "Действия"
+  },
+  "description": {},
+  "adminTitle": "Actions",
+  "slug": "framework-journey-guide-file-storage-actions"
+}

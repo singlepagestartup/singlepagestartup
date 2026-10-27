@@ -16,7 +16,7 @@ export function Component(props: IComponentPropsExtended) {
       data-id={data.id}
       data-variant={props.variant}
       className={cn(
-        "@container mx-auto max-w-7xl px-5 py-14 @3xl:px-8 @3xl:py-20",
+        "@container mx-auto w-full min-w-0 max-w-7xl px-5 py-14 @3xl:px-8 @3xl:py-20",
         data.className,
         props.className,
       )}

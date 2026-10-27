@@ -702,3 +702,15 @@ uses SDK `ecommerceModuleOrderFreezeSubscriptionPeriod`. It accepts an expected
 stored update timestamp, verifies the exact owned Order and current complete
 Product Roles, and delegates period freezing to Ecommerce. Callers cannot
 supply arbitrary period timestamps.
+
+### Shared account menu and cart
+
+`me-account` resolves the current session and delegates its authenticated view to
+`me-account-ai-chat`, so public pages and AI Chat use the same profile, token
+balance and account actions. Its guest link uses `/ai-chat/sign-in`.
+
+The cart drawer uses compact Product rows and totals from the authorized
+`includeCartDetails` response. Quantity controls update one exact order line
+through the Subject SDK, then invalidate that Subject’s order collection.
+Pending state and failures remain within the changed line; payment links are
+shown only after checkout returns them.

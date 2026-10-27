@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "46680d77-4141-4a5b-9734-dad5a25e5090",
+  "createdAt": "2026-10-26T00:11:30.896Z",
+  "updatedAt": "2026-10-27T14:59:34.380Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Questions",
+    "ru": "Вопросы"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Tell us about your pet\\n\\nAn example completed form before submission.\\n\\nService: grooming\\n\\nBreed: Pomeranian\\n\\nContact: by phone\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Расскажите о питомце\\n\\nПример заполненной формы перед отправкой.\\n\\nУслуга: стрижка\\n\\nПорода: шпиц\\n\\nСвязь: по телефону\"}]}]}"
+  },
+  "adminTitle": "Вопросы",
+  "slug": "framework-reviewed-article-crm-example-feature-0"
+}

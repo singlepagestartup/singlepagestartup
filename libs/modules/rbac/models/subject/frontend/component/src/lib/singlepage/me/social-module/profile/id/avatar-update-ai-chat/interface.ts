@@ -11,6 +11,7 @@ import type { ISpsComponentBase } from "@sps/ui-adapter";
 export const variant =
   "me-social-module-profile-id-avatar-update-ai-chat" as const;
 export interface IComponentProps extends IParent<IModel, typeof variant> {
+  language?: string;
   profile: IProfile;
 }
 export interface IComponentPropsExtended

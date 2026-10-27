@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "A page for a school's first intake",
+    "ru": "Страница первого набора в школу"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The school is opening its first cohort. Alongside the catalogue, it needs a description of the format, participation terms and a founder's message. These can form a separate launch section.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Startup is a content module, rather than a complete system for any industry. For bookings, delivery or special calculations, first define the data and rules, then extend a suitable module or create a new one.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Школа открывает первый поток. Помимо каталога ей нужны рассказ о формате, условия участия и обращение основателя. Эти сведения можно собрать в отдельном разделе запуска.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Startup — модуль содержимого, а не готовая система для любой отрасли. Если нужны бронирования, доставка или особые расчёты, сначала определяют данные и правила, затем дорабатывают подходящий модуль или создают новый.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "2c579ae5-0b47-480b-a79d-84cba1e720e9",
+  "createdAt": "2026-10-26T00:12:17.270Z",
+  "updatedAt": "2026-10-27T14:58:54.106Z",
+  "variant": "content-rich",
+  "adminTitle": "Страница первого набора в школу",
+  "slug": "framework-reviewed-article-startup-example"
+}

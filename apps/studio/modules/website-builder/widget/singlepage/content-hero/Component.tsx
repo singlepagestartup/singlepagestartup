@@ -1,4 +1,8 @@
-import type { IComponentProps, ContentHeroProps } from "./interface";
+import {
+  type IComponentProps,
+  type ContentHeroProps,
+  type IModuleIconProps,
+} from "./interface";
 export type { ContentHeroProps } from "./interface";
 
 import { Component as SharedIcon } from "../../../../shared/icon";
@@ -135,5 +139,3 @@ export const defaultContentHeroProps = {
   mediaSrc: heroImageUrl,
   mediaAlt: "Editorial image of two people discussing their work",
 };
-
-import type { IModuleIconProps } from "./interface";

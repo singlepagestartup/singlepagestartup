@@ -5,6 +5,11 @@ import { Component as WebsiteBuilderModuleButton } from "../../../../../../websi
 import {
   forwardRef as forwardRefControl,
   type ButtonHTMLAttributes as ButtonControlProps,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type ReactNode,
 } from "react";
 import IconGlyphs from "../../../../../../website-builder/feature/singlepage/icon/icons.json";
 import { Component as ProfileScope } from "../../../scope/ai-chat/project/index";
@@ -12,7 +17,7 @@ import {
   Component as ProfileSidebar,
   type IProfileSidebarProps,
 } from "../../../sidebar/ai-chat/project/index";
-import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+
 function Icon({
   name,
   size = 20,

@@ -1,13 +1,17 @@
 "use client";
-import { type ReactNode as ReactNodePresentation } from "react";
-import { Component as WebsiteBuilderModuleButton } from "../../../../../website-builder/button/index";
 import {
+  type ReactNode as ReactNodePresentation,
   forwardRef as forwardRefControl,
   type ButtonHTMLAttributes as ButtonControlProps,
+  useEffect,
+  useRef,
+  type ReactNode,
 } from "react";
+import { Component as WebsiteBuilderModuleButton } from "../../../../../website-builder/button/index";
+
 import IconGlyphs from "../../../../../website-builder/feature/singlepage/icon/icons.json";
 import { Component as KnowledgeModuleSource } from "../../../../../knowledge/source/index";
-import { useEffect, useRef, type ReactNode } from "react";
+
 import { useSource } from "../../../../../knowledge/source/singlepage/overview/document/ai-chat/Source";
 import { Component as ThreadMessageList } from "../../message/list/ai-chat/index";
 import { ThreadProvider, useThread } from "./Thread";

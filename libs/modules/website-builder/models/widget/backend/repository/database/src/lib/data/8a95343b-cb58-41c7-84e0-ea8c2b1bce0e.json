@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Send updates after persistence",
+    "ru": "Отправляйте обновления после записи"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The shared mutation-effects publisher invalidates API topics before emitting the legacy revalidation event. Call it after transaction commit. Otherwise another browser may receive the event and reread stale cache or an unfinished write. Consistency tracks actual read dependencies and retains delivery if a subsequent refresh fails.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The Host revalidation route accepts paths or a bounded set of tags. \"},{\"type\":\"text\",\"text\":\"Next.js revalidateTag\",\"marks\":[{\"type\":\"link\",\"attrs\":{\"href\":\"https://nextjs.org/docs/15/app/api-reference/functions/revalidateTag\",\"target\":\"_blank\",\"rel\":\"noopener noreferrer\"}}]},{\"type\":\"text\",\"text\":\" invalidates data associated with a tag. Use the existing route and transport; a separate endpoint for one Widget creates another path. Cache-refresh failure is tracked separately from a successful database write.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Общий publisher mutation-effects инвалидирует темы API до отправки прежнего события revalidation. Вызывайте его после commit транзакции. Иначе другой браузер может получить событие и перечитать прежний кеш или незавершённую запись. Механизм согласованности учитывает реальные зависимости чтений и сохраняет доставку при сбое последующего обновления.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Маршрут Host revalidation принимает пути или ограниченный набор тегов. \"},{\"type\":\"text\",\"text\":\"Next.js revalidateTag\",\"marks\":[{\"type\":\"link\",\"attrs\":{\"href\":\"https://nextjs.org/docs/15/app/api-reference/functions/revalidateTag\",\"target\":\"_blank\",\"rel\":\"noopener noreferrer\"}}]},{\"type\":\"text\",\"text\":\" инвалидирует связанные с тегом данные. Используйте действующий маршрут и транспорт; отдельный endpoint для одного Widget создаёт ещё один путь. Сбой обновления кеша учитывается отдельно от успешной записи в базу.\"}]}]}"
+  },
+  "anchor": "ru-section-building-and-revalidating-sps-with-safe-content-cutovers-5",
+  "className": "",
+  "id": "8a95343b-cb58-41c7-84e0-ea8c2b1bce0e",
+  "createdAt": "2026-10-26T07:34:01.419Z",
+  "updatedAt": "2026-10-27T14:59:07.320Z",
+  "variant": "content-rich",
+  "adminTitle": "Отправляйте обновления после записи",
+  "slug": "ru-section-building-and-revalidating-sps-with-safe-content-cutovers-5"
+}

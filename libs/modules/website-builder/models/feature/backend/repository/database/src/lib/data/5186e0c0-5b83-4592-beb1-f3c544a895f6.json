@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "5186e0c0-5b83-4592-beb1-f3c544a895f6",
+  "createdAt": "2026-10-26T00:11:51.581Z",
+  "updatedAt": "2026-10-27T14:59:35.876Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Chat · where",
+    "ru": "Chat · где"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"A project conversation. Chat groups messages and topic threads.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Переписка по проекту. Чат объединяет сообщения и тематические ветки.\"}]}]}"
+  },
+  "adminTitle": "Chat · где",
+  "slug": "framework-reviewed-article-social-structure-feature-1"
+}

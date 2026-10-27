@@ -1,0 +1,12 @@
+{
+  "id": "b8a60687-4937-4ee1-ab74-1bdcbe800beb",
+  "title": "Agent · Code Framework",
+  "url": "/framework/modules/agent",
+  "description": "Agent definitions, task orchestration and conversation commands.",
+  "createdAt": "2026-10-24T01:06:07.519Z",
+  "updatedAt": "2026-10-24T01:06:07.519Z",
+  "variant": "default",
+  "className": "",
+  "language": "en",
+  "adminTitle": "Agent · Code Framework"
+}

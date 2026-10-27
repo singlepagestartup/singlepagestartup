@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "A school owner's dashboard",
+    "ru": "Панель владельца школы"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"In this example, the school compares two sets of weekly metrics. The numbers are fictional. A working project must connect calculations to actual enquiries and orders.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The module does not automatically track visits or build reports. Data sources, metric calculations and refresh schedules need configuration. External web analytics is connected separately.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"В примере школа сравнивает два набора показателей за неделю. Числа вымышлены. В рабочем проекте расчёт нужно связать с фактическими заявками и заказами.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Модуль не подключает сбор посещений и не строит отчёты автоматически. Источники данных, расчёт показателей и расписание обновления нужно настроить. Внешнюю веб-аналитику подключают отдельно.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "4a38b521-be87-4653-8654-77099a999db4",
+  "createdAt": "2026-10-26T00:12:14.077Z",
+  "updatedAt": "2026-10-27T14:58:58.669Z",
+  "variant": "content-rich",
+  "adminTitle": "Панель владельца школы",
+  "slug": "framework-reviewed-article-analytic-example"
+}

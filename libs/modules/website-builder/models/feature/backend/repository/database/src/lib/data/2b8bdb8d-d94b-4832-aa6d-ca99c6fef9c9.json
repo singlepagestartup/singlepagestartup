@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "2b8bdb8d-d94b-4832-aa6d-ca99c6fef9c9",
+  "createdAt": "2026-10-26T00:12:06.887Z",
+  "updatedAt": "2026-10-27T14:59:29.579Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Recurring work has a schedule",
+    "ru": "У повторения есть расписание"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Set how often to run a configured operation. The operation itself and its input data must be configured in the project.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Задайте, как часто выполнять предусмотренную операцию. Сама операция и её входные данные должны быть настроены в проекте.\"}]}]}"
+  },
+  "adminTitle": "У повторения есть расписание",
+  "slug": "framework-reviewed-article-agent-introduction-feature-0"
+}

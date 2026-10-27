@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "A different account means a different data lifetime",
+    "ru": "Сменился аккаунт — изменился срок жизни данных"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Changing users clears private results, subscriptions and the event cursor. Refreshing the same user's JWT may preserve the interface until data is reconciled. A 401 or 403 clears inaccessible content: hiding a block is insufficient if the previous record remains in the shared cache.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Private Article content uses \"},{\"type\":\"text\",\"text\":\"QueryScopeProvider\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" with the existing QueryClient. The scope contains a non-secret resource key and a unique owner for the mounted instance. Nested requests inherit the scope and \"},{\"type\":\"text\",\"text\":\"gcTime: 0\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\". Removing a scope cancels only its own requests, preserving public lists and adjacent private blocks. The server checks access on every protected read.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"При смене пользователя сбрасываются приватные результаты, подписки и курсор событий. Обновление JWT того же пользователя может сохранить интерфейс до согласования данных. Ответы 401 и 403 очищают недоступное содержимое: одного скрытого блока недостаточно, если прежняя запись осталась в общем кеше.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Закрытый контент Article использует \"},{\"type\":\"text\",\"text\":\"QueryScopeProvider\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" с существующим QueryClient. Область содержит несекретный ключ ресурса и уникального владельца смонтированного экземпляра. Вложенные запросы наследуют область и \"},{\"type\":\"text\",\"text\":\"gcTime: 0\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\". Удаление области отменяет только её запросы, сохраняя публичные списки и соседние закрытые блоки. Сервер проверяет доступ при каждом защищённом чтении.\"}]}]}"
+  },
+  "anchor": "ru-section-react-query-realtime-and-principal-scopes-7",
+  "className": "",
+  "id": "9fe28d96-2206-4900-84ae-44bc69fbf3d9",
+  "createdAt": "2026-10-26T07:34:02.569Z",
+  "updatedAt": "2026-10-27T14:59:10.163Z",
+  "variant": "content-rich",
+  "adminTitle": "Сменился аккаунт — изменился срок жизни данных",
+  "slug": "ru-section-react-query-realtime-and-principal-scopes-7"
+}

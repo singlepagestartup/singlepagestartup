@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "All 15 modules",
+    "ru": "Все 15 модулей"
+  },
+  "subtitle": {},
+  "url": "/framework/modules",
+  "className": "w-fit",
+  "id": "b6c39141-8cdb-4e19-add2-daf0358ed6a4",
+  "createdAt": "2026-10-24T01:05:50.155Z",
+  "updatedAt": "2026-10-24T01:05:50.155Z",
+  "variant": "primary",
+  "adminTitle": "All 15 modules",
+  "slug": "framework-journey-modules-actions-0"
+}

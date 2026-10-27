@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Explore the framework",
+    "ru": "Изучить фреймворк"
+  },
+  "subtitle": {},
+  "url": "/framework",
+  "className": "w-fit",
+  "id": "2443bc51-eeec-4bf7-bf7a-ed63b15bd8c3",
+  "createdAt": "2026-10-23T20:18:04.599Z",
+  "updatedAt": "2026-10-23T20:18:04.599Z",
+  "variant": "secondary",
+  "adminTitle": "Explore the framework",
+  "slug": "framework-about-demo"
+}

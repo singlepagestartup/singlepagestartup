@@ -1,9 +1,10 @@
+import { internationalization } from "@sps/shared-configuration";
 import { TipTap } from "@sps/shared-ui-shadcn";
 import { cn } from "@sps/shared-frontend-client-utils";
 import type { IComponentPropsExtended } from "./interface";
 
 export function Component(props: IComponentPropsExtended) {
-  const language = props.language || "en";
+  const language = props.language || internationalization.defaultLanguage.code;
   const title = props.data.title?.[language];
   return (
     <section

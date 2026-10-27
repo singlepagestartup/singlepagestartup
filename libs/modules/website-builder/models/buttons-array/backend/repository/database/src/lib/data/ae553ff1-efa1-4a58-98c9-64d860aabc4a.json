@@ -1,0 +1,14 @@
+{
+  "id": "ae553ff1-efa1-4a58-98c9-64d860aabc4a",
+  "createdAt": "2026-10-27T08:41:01.824Z",
+  "updatedAt": "2026-10-27T15:00:21.027Z",
+  "variant": "navigation",
+  "className": "",
+  "title": {
+    "en": "Navigation",
+    "ru": "Навигация"
+  },
+  "description": {},
+  "adminTitle": "Navigation for framework-reviewed-navigation",
+  "slug": "ai-chat-editable-nav-364cb9a2-924c-4cbb-b132-fff0f939851d"
+}

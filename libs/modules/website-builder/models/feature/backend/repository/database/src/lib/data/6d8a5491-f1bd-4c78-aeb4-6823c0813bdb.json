@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "6d8a5491-f1bd-4c78-aeb4-6823c0813bdb",
+  "createdAt": "2026-10-26T00:11:20.237Z",
+  "updatedAt": "2026-10-27T14:59:40.106Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Owner",
+    "ru": "Владелец"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"School workspace\\n\\nThe owner sees management sections their account is permitted to access.\\n\\nCourses and prices\\n\\nStudent orders\\n\\nStaff and their capabilities\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Рабочее место школы\\n\\nВладелец видит разделы управления, доступ к которым выдали его аккаунту.\\n\\nКурсы и цены\\n\\nЗаказы учеников\\n\\nСотрудники и их возможности\"}]}]}"
+  },
+  "adminTitle": "Владелец",
+  "slug": "framework-reviewed-article-rbac-example-feature-2"
+}

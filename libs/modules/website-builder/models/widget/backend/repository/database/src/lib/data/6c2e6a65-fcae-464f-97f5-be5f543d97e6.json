@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Module structure",
+    "ru": "Устройство модуля"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Form defines a form; Step defines its steps; Input defines fields; Option defines answer choices; Request stores submitted enquiries. Administrative views let you change this data.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Form описывает форму, Step — её шаги, Input — поля, Option — варианты ответа, Request — отправленную заявку. Эти данные можно менять через административные представления.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "6c2e6a65-fcae-464f-97f5-be5f543d97e6",
+  "createdAt": "2026-10-26T00:11:33.621Z",
+  "updatedAt": "2026-10-27T14:59:04.057Z",
+  "variant": "content-rich",
+  "adminTitle": "Устройство модуля",
+  "slug": "framework-reviewed-article-crm-technical"
+}

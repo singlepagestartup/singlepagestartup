@@ -28,6 +28,7 @@ jest.mock("@sps/file-storage/models/file/frontend/component", () => ({
 }));
 import Component from "./client";
 const props = {
+  language: "en",
   data: { id: "subject" },
   project: {
     requesterProfileId: "requester",

@@ -21,7 +21,9 @@ Features describe highlighted content blocks with text and optional media.
 
 - `selectable`: native radio selector with description and the same record rendered as `preview-scroll`; inherits the reader mode.
 - `preview-scroll`: focusable phone preview with exact linked media and vertical scrolling.
-- `document`: saved disclosure with rich description.
+- `document`: saved disclosure with its main text in `description` and an optional example in `subtitle`. Both accept localized rich text; the example has its own inset surface.
+- `context-project-heading`: project card header with a border and a saved subheading.
+- `context-result`: result heading and a lime-tinted description after a downward arrow.
 - `context-heading` and `context-note`: ordered headings and task/result notes inside a project context Widget.
 
 - `default`: renders title/description and linked media files.
@@ -57,3 +59,10 @@ the browser clipboard and local feedback.
 The shared Phosphor adapter supplies `file-text` ▤, `check` ✓,
 `check-circle` ✓ and `plus` +. Disclosure and copy controls retain keyboard
 focus styles and visible pending or result feedback.
+
+AI Chat landing layouts use `landing-introduction`, `landing-workflow`,
+`landing-followup` and `landing-disclosure`. `demo-project`, `demo-document` and
+`demo-handoff` are saved presentation records used by the local workflow demo.
+Description and subtitle fields retain the admin editor's TipTap JSON format;
+the demo converts rich document content to Markdown while preserving headings
+and lists. The records carry no real customer account or live chat.

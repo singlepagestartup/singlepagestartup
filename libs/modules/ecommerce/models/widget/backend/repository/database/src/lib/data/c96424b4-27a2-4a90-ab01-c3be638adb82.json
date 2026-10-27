@@ -1,0 +1,19 @@
+{
+  "id": "c96424b4-27a2-4a90-ab01-c3be638adb82",
+  "createdAt": "2026-10-23T20:18:07.813Z",
+  "updatedAt": "2026-10-23T20:18:07.813Z",
+  "variant": "product-list-default",
+  "className": null,
+  "anchor": null,
+  "adminTitle": "Development services",
+  "slug": "framework-catalog",
+  "title": {
+    "en": "Development services",
+    "ru": "Разработка проектов"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Development services for products built on the SPS framework.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Услуги разработки продуктов на базе фреймворка SPS.\"}]}]}"
+  }
+}

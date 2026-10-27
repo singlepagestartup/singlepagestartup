@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Extend the use case",
+    "ru": "Дополните сценарий"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[]}",
+    "ru": "{\"type\":\"doc\",\"content\":[]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "0de83a2b-b93c-4fa3-bcc0-cb31e0cb515a",
+  "createdAt": "2026-10-26T00:11:20.618Z",
+  "updatedAt": "2026-10-27T14:58:47.250Z",
+  "variant": "content-rich",
+  "adminTitle": "Дополните сценарий",
+  "slug": "framework-reviewed-article-rbac-connections"
+}

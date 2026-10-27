@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Read Analytic source guide",
+    "ru": "Документация Analytic"
+  },
+  "subtitle": {},
+  "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/modules/analytic/README.md",
+  "className": "w-fit",
+  "id": "07fae7cf-8f78-4ef8-bbc5-aff2543d6155",
+  "createdAt": "2026-10-24T01:06:14.332Z",
+  "updatedAt": "2026-10-24T01:06:14.332Z",
+  "variant": "primary",
+  "adminTitle": "Read Analytic source guide",
+  "slug": "framework-journey-guide-analytic-actions-1"
+}

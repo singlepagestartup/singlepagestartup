@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Open AI Chat",
+    "ru": "Открыть AI-чат"
+  },
+  "subtitle": {},
+  "url": "/",
+  "className": "w-fit",
+  "id": "49001ffb-35b2-460b-b553-42b01d741eca",
+  "createdAt": "2026-10-24T01:06:17.607Z",
+  "updatedAt": "2026-10-24T01:06:17.607Z",
+  "variant": "primary",
+  "adminTitle": "Open AI Chat",
+  "slug": "framework-journey-tokens-introduction-actions-0"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "bbe59812-8bb0-45da-a0d8-75d99f353f43",
+  "className": "",
+  "createdAt": "2026-10-26T00:12:06.349Z",
+  "updatedAt": "2026-10-27T15:00:24.713Z",
+  "variant": "card",
+  "adminTitle": "Передайте повторяющиеся действия фоновым задачам",
+  "slug": "framework-agent",
+  "title": {
+    "en": "Run recurring actions as background tasks",
+    "ru": "Передайте повторяющиеся действия фоновым задачам"
+  },
+  "subtitle": {
+    "en": "Recurring tasks",
+    "ru": "Повторяющиеся задачи"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Set up actions triggered by a schedule or event: processing messages, preparing materials or sending notifications.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Настройте действия, которые запускаются по расписанию или событию: обработку сообщений, подготовку материалов, отправку уведомлений.\"}]}]}"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "The assistant answers questions about classes",
+    "ru": "Помощник отвечает на вопросы о занятиях"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The school provided the assistant with its programme and preparation list. A student asks what to bring to the first class. The example answer uses the saved programme.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Connect materials to the relevant assistant. In an ordinary chat, request a search explicitly with @knowledge. Check AI answers against sources, especially after changes to the programme or service terms.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Школа передала помощнику программу и список подготовки. Ученик спрашивает, что взять на первое занятие. В примере ответ опирается на сохранённую программу.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Подключите материалы к нужному помощнику. В обычном чате поиск можно явно запросить через @knowledge. Ответы ИИ стоит сверять с источниками, особенно после изменений программы или условий услуги.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "726e00de-61bb-4572-ad7e-78c1ea3be2bb",
+  "createdAt": "2026-10-26T00:12:00.436Z",
+  "updatedAt": "2026-10-27T14:59:05.112Z",
+  "variant": "content-rich",
+  "adminTitle": "Помощник отвечает на вопросы о занятиях",
+  "slug": "framework-reviewed-article-knowledge-example"
+}

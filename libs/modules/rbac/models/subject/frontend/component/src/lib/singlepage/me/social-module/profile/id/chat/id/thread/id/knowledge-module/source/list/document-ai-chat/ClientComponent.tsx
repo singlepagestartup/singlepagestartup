@@ -1,4 +1,5 @@
 "use client";
+import { internationalization } from "@sps/shared-configuration";
 import {
   memo,
   useCallback,
@@ -19,6 +20,7 @@ import {
 } from "@sps/rbac/models/subject/sdk/model";
 import {
   AI_CHAT_DOCUMENTS,
+  AI_CHAT_COMPETITOR_INTAKE,
   assertSupportedAiChatAttachments,
   readKnowledgeDocumentContent,
 } from "@sps/shared-utils";
@@ -32,6 +34,8 @@ import type {
   IDevelopmentCopyFeedback,
 } from "./interface";
 export function Component(props: IComponentPropsExtended) {
+  const language = props.language || internationalization.defaultLanguage.code;
+  const ru = language === "ru";
   const pathname = usePathname();
   const project = props.project;
   const thread = props.thread;
@@ -79,6 +83,9 @@ export function Component(props: IComponentPropsExtended) {
   const prompt = AI_CHAT_DOCUMENTS.find(
     (definition) => definition.key === document?.key,
   )?.prompt;
+  const competitorIntake = document
+    ? AI_CHAT_COMPETITOR_INTAKE[document.key]
+    : undefined;
   const documentRef = useRef(document);
   useEffect(() => {
     documentRef.current = document;
@@ -128,7 +135,11 @@ export function Component(props: IComponentPropsExtended) {
         !documentRef.current ||
         documentRef.current.profileId !== project.profile.id
       )
-        throw new Error("Knowledge sections belong to project documents.");
+        throw new Error(
+          ru
+            ? "Разделы знаний относятся к документам проекта."
+            : "Knowledge sections belong to project documents.",
+        );
       assertSupportedAiChatAttachments(files);
       let source = savedDrafts.current.get(draftId);
       if (!source) {
@@ -185,14 +196,16 @@ export function Component(props: IComponentPropsExtended) {
         await attachment;
       } catch (error) {
         throw new Error(
-          `Knowledge was saved, but could not be attached to this Thread. Retry Save knowledge to attach the saved section. ${error instanceof Error ? error.message : ""}`,
+          `${ru ? "Знания сохранены, но их не удалось прикрепить к обсуждению. Нажмите «Сохранить знания» ещё раз, чтобы прикрепить сохранённый раздел." : "Knowledge was saved, but could not be attached to this Thread. Retry Save knowledge to attach the saved section."} ${error instanceof Error ? error.message : ""}`,
         );
       }
       if (processingError)
-        return `Saved; file analysis failed: ${processingError}`;
+        return `${ru ? "Сохранено; не удалось проанализировать файлы" : "Saved; file analysis failed"}: ${processingError}`;
       return savedSource.indexingError
-        ? `Saved; indexing failed: ${savedSource.indexingError}`
-        : "Saved";
+        ? `${ru ? "Сохранено; не удалось подготовить поиск" : "Saved; indexing failed"}: ${savedSource.indexingError}`
+        : ru
+          ? "Сохранено"
+          : "Saved";
     },
     [
       createSource.mutateAsync,
@@ -202,6 +215,8 @@ export function Component(props: IComponentPropsExtended) {
       scope,
       selectedThreadId,
       project.profile.id,
+      ,
+      ru,
     ],
   );
 
@@ -210,20 +225,29 @@ export function Component(props: IComponentPropsExtended) {
       <div role="alert">
         <p>{sources.error.message}</p>
         <button type="button" onClick={() => void sources.refetch()}>
-          Retry
+          {ru ? "Повторить" : "Retry"}
         </button>
       </div>
     ) : (
       <p role="status" aria-busy="true">
-        Loading knowledge sections…
+        {ru ? "Загрузка разделов знаний…" : "Loading knowledge sections…"}
       </p>
     );
 
   return (
     <>
       {sources.error && <p role="alert">{sources.error.message}</p>}
+      {competitorIntake && (
+        <section className="mb-3 rounded-xl bg-muted p-3">
+          <h4 className="text-sm font-semibold">{competitorIntake.title}</h4>
+          <p className="mt-2 text-xs leading-5 text-muted-foreground">
+            {competitorIntake.prompt}
+          </p>
+        </section>
+      )}
       {documentSources.map((source) => (
         <Subject
+          language={props.language}
           key={source.id}
           source={source}
           isServer={false}
@@ -235,6 +259,7 @@ export function Component(props: IComponentPropsExtended) {
       ))}
       {draftIds.map((id) => (
         <DraftSource
+          language={language}
           key={id}
           id={id}
           hasSavedSources={documentSources.length > 0}
@@ -249,9 +274,11 @@ export function Component(props: IComponentPropsExtended) {
         onClick={() => setDraftIds((ids) => [...ids, crypto.randomUUID()])}
       >
         <Plus className="size-4" />
-        Add knowledge section
+
+        {ru ? "Добавить раздел знаний" : "Add knowledge section"}
       </button>
       <DevelopmentHandoff
+        language={language}
         key={handoffRevision}
         fileName={fileName}
         revision={handoffRevision}
@@ -267,21 +294,28 @@ export function Component(props: IComponentPropsExtended) {
 }
 
 const DraftSource = memo(function DraftSource({
+  language = internationalization.defaultLanguage.code,
   id,
   hasSavedSources,
   title,
   placeholder,
   onSave,
 }: IDraftSourceProps) {
+  const ru = language === "ru";
   const [files, setFiles] = useState<File[]>([]);
   const touched = useRef(false);
   const markTouched = useCallback(() => {
     touched.current = true;
   }, []);
-  const attach = useCallback(async (selected: FileList) => {
-    setFiles((current) => [...current, ...Array.from(selected)]);
-    return "Files selected. Save knowledge to attach them.";
-  }, []);
+  const attach = useCallback(
+    async (selected: FileList) => {
+      setFiles((current) => [...current, ...Array.from(selected)]);
+      return ru
+        ? "Файлы выбраны. Сохраните знания, чтобы прикрепить их."
+        : "Files selected. Save knowledge to attach them.";
+    },
+    [ru],
+  );
   const save = useCallback(
     (value: { title: string; content: string }) => onSave(id, value, files),
     [id, onSave, files],
@@ -291,6 +325,7 @@ const DraftSource = memo(function DraftSource({
   return (
     <div className="contents" onChangeCapture={markTouched}>
       <KnowledgeModuleSource
+        language={language}
         isServer={false}
         variant="form-ai-chat"
         title={title}
@@ -300,14 +335,19 @@ const DraftSource = memo(function DraftSource({
         attachments={
           files.length > 0 ? (
             <div className="mt-3 border-t border-border pt-3 text-xs text-muted-foreground">
-              <p>Files · {files.length}</p>
+              <p>
+                {ru ? "Файлы ·" : "Files ·"}
+                {files.length}
+              </p>
               {files.map((file, index) => (
                 <p key={`${file.name}:${file.lastModified}:${index}`}>
                   {file.name}
                 </p>
               ))}
               <p className="mt-2">
-                Selected files are attached when you save this knowledge.
+                {ru
+                  ? "Выбранные файлы прикрепятся при сохранении знаний."
+                  : "Selected files are attached when you save this knowledge."}
               </p>
             </div>
           ) : undefined
@@ -318,6 +358,7 @@ const DraftSource = memo(function DraftSource({
 });
 
 function DevelopmentHandoff({
+  language = internationalization.defaultLanguage.code,
   fileName,
   revision,
   hasContent,
@@ -325,6 +366,7 @@ function DevelopmentHandoff({
   unavailable,
   frameworkHref,
 }: IDevelopmentHandoffProps) {
+  const ru = language === "ru";
   const id = useId();
   const generation = useRef(0);
   const [feedback, setFeedback] = useState<IDevelopmentCopyFeedback>({
@@ -341,12 +383,17 @@ function DevelopmentHandoff({
     return () => {
       generation.current += 1;
     };
-  }, [fileName, revision, hasContent, hasPendingProposal, unavailable]);
+  }, [fileName, revision, hasContent, hasPendingProposal, unavailable, ru]);
 
   async function copyRequest() {
     if (!hasContent || unavailable || feedback.state === "pending") return;
     const currentGeneration = generation.current;
-    setFeedback({ state: "pending", text: "Copying development request…" });
+    setFeedback({
+      state: "pending",
+      text: ru
+        ? "Копируем запрос для разработки…"
+        : "Copying development request…",
+    });
     const request = [
       "Use SinglePageStartup Code Framework to plan a first landing page or web product.",
       `Read the attached ${fileName} document. I must review its saved text, save any notes I want included, then export and attach the file separately. Unsaved edits and unconfirmed proposals are not part of the saved export.`,
@@ -358,18 +405,24 @@ function DevelopmentHandoff({
     ].join("\n\n");
     try {
       if (!navigator.clipboard?.writeText)
-        throw new Error("Clipboard unavailable");
+        throw new Error(
+          ru ? "Буфер обмена недоступен" : "Clipboard unavailable",
+        );
       await navigator.clipboard.writeText(request);
       if (generation.current !== currentGeneration) return;
       setFeedback({
         state: "success",
-        text: `Request copied. Review and save the text you want, export ${fileName}, then attach that file in your coding agent.`,
+        text: ru
+          ? `Запрос скопирован. Проверьте и сохраните нужный текст, скачайте ${fileName} и прикрепите файл в кодинговом агенте.`
+          : `Request copied. Review and save the text you want, export ${fileName}, then attach that file in your coding agent.`,
       });
     } catch {
       if (generation.current !== currentGeneration) return;
       setFeedback({
         state: "error",
-        text: "The request could not be copied. Allow clipboard access and try again. The document’s export action is still available.",
+        text: ru
+          ? "Не удалось скопировать запрос. Разрешите доступ к буферу обмена и повторите попытку. Документ по-прежнему можно скачать."
+          : "The request could not be copied. Allow clipboard access and try again. The document’s export action is still available.",
       });
     }
   }
@@ -384,29 +437,35 @@ function DevelopmentHandoff({
     >
       <p className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground">
         <Icon name="file-text" />
-        From documents to development
+        {ru ? "От документов к разработке" : "From documents to development"}
       </p>
       <h4 id={`${id}-title`} className="mt-3 text-xl font-semibold leading-7">
-        Ready to turn this document into a product?
+        {ru
+          ? "Хотите превратить этот документ в продукт?"
+          : "Ready to turn this document into a product?"}
       </h4>
       <p
         id={`${id}-description`}
         className="mt-3 text-sm leading-6 text-muted-foreground"
       >
-        Review the facts and open questions, save any notes you want to include,
-        then export {fileName} with the document’s download action. Give the
-        file to your coding agent and use Code Framework for the accounts,
-        content, orders or payments your product needs.
+        {ru
+          ? "Проверьте факты и открытые вопросы, сохраните нужные заметки, затем скачайте"
+          : "Review the facts and open questions, save any notes you want to include, then export"}{" "}
+        {fileName}{" "}
+        {ru
+          ? "с помощью кнопки скачивания документа. Передайте файл кодинговому агенту и используйте Code Framework для аккаунтов, контента, заказов или платежей вашего продукта."
+          : "with the document’s download action. Give the file to your coding agent and use Code Framework for the accounts, content, orders or payments your product needs."}
       </p>
       <p className="mt-3 text-sm leading-6 text-muted-foreground">
-        Editable text is not automatically reviewed. The saved export excludes
-        unsaved notes and unconfirmed proposals. Copying adds instructions to
-        your clipboard; attach the exported file separately.
+        {ru
+          ? "Редактируемый текст не проходит проверку автоматически. В скачанном документе нет несохранённых заметок и неподтверждённых предложений. Копирование добавляет инструкции в буфер обмена; скачанный файл нужно прикрепить отдельно."
+          : "Editable text is not automatically reviewed. The saved export excludes unsaved notes and unconfirmed proposals. Copying adds instructions to your clipboard; attach the exported file separately."}
       </p>
       {hasPendingProposal ? (
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          An unconfirmed proposal is waiting in chat. Review it before choosing
-          which saved text to export.
+          {ru
+            ? "В чате есть неподтверждённое предложение. Проверьте его, прежде чем выбрать сохранённый текст для скачивания."
+            : "An unconfirmed proposal is waiting in chat. Review it before choosing which saved text to export."}
         </p>
       ) : null}
       <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -420,14 +479,18 @@ function DevelopmentHandoff({
         >
           <Icon name={feedback.state === "success" ? "check" : "file-text"} />
           {feedback.state === "pending"
-            ? "Copying request…"
-            : "Copy development request"}
+            ? ru
+              ? "Копируем запрос…"
+              : "Copying request…"
+            : ru
+              ? "Копировать запрос для разработки"
+              : "Copy development request"}
         </button>
         <a
           href={frameworkHref}
           className={`inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl px-4 py-2 text-center text-sm font-semibold text-foreground hover:underline ${focus}`}
         >
-          Explore Code Framework
+          {ru ? "Посмотреть Code Framework" : "Explore Code Framework"}
           <Icon name="arrow-right" />
         </a>
       </div>
@@ -438,9 +501,13 @@ function DevelopmentHandoff({
         className={`mt-3 min-h-6 text-sm leading-6 ${feedback.state === "error" ? "text-destructive" : "text-muted-foreground"}`}
       >
         {unavailable
-          ? "Reload the saved document before copying a development request."
+          ? ru
+            ? "Загрузите сохранённый документ заново перед копированием запроса для разработки."
+            : "Reload the saved document before copying a development request."
           : !hasContent
-            ? "Save document text before copying a development request."
+            ? ru
+              ? "Сохраните текст документа перед копированием запроса для разработки."
+              : "Save document text before copying a development request."
             : feedback.text}
       </p>
     </section>

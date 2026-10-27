@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "5f1a27a0-eb8a-45a7-905f-eaecee88bdb0",
+  "createdAt": "2026-10-26T00:11:20.833Z",
+  "updatedAt": "2026-10-27T14:59:37.624Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "ecommerce",
+    "ru": "ecommerce"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Show courses and save student orders.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Покажите курсы и сохраняйте заказы учеников.\"}]}]}"
+  },
+  "adminTitle": "ecommerce",
+  "slug": "framework-reviewed-article-rbac-connections-feature-0"
+}

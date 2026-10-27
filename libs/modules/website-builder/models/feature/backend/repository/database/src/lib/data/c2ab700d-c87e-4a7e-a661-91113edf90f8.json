@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "c2ab700d-c87e-4a7e-a661-91113edf90f8",
+  "createdAt": "2026-10-26T00:11:52.429Z",
+  "updatedAt": "2026-10-27T14:59:54.748Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Skill",
+    "ru": "Skill"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Reusable AI instructions. A skill is linked to a profile; an explicit /skill-slug command activates the connected skill for an AI Chat request. The AI Chat workflow manages execution.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Повторно используемые инструкции для ИИ. Навык связан с профилем; в AI Chat явная команда /skill-slug включает подключённый навык для запроса. Само выполнение организует сценарий AI Chat.\"}]}]}"
+  },
+  "adminTitle": "Skill",
+  "slug": "framework-reviewed-article-social-models-feature-0"
+}

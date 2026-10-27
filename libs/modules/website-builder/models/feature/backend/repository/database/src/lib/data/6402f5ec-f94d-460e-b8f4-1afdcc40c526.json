@@ -1,0 +1,18 @@
+{
+  "className": "",
+  "id": "6402f5ec-f94d-460e-b8f4-1afdcc40c526",
+  "createdAt": "2026-10-24T01:06:01.662Z",
+  "updatedAt": "2026-10-24T01:06:01.662Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Keep a clear owner.",
+    "ru": "Сохраните ответственность модуля."
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Use RBAC for its own records and operations. Connect other capabilities through their public interfaces and explicit relations; keep the business task in its owning domain.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Используйте RBAC для его записей и операций. Подключайте другие возможности через публичные интерфейсы и явные связи; бизнес-задача остаётся в своём домене.\"}]}]}"
+  },
+  "adminTitle": "Keep a clear owner.",
+  "slug": "framework-journey-guide-rbac-owner"
+}

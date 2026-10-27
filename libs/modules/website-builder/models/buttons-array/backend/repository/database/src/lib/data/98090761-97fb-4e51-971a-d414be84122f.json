@@ -1,0 +1,14 @@
+{
+  "id": "98090761-97fb-4e51-971a-d414be84122f",
+  "createdAt": "2026-10-24T01:05:46.874Z",
+  "updatedAt": "2026-10-24T01:05:46.874Z",
+  "variant": "default",
+  "className": "w-full",
+  "title": {
+    "en": "Actions",
+    "ru": "Действия"
+  },
+  "description": {},
+  "adminTitle": "Actions",
+  "slug": "framework-journey-foundation-actions"
+}

@@ -1,6 +1,7 @@
 import {
   documentConfirmation,
   type IDocumentConfirmation,
+  parseDocument,
 } from "../../../../../tools/studio/workspace/document";
 import type { ComponentType } from "react";
 
@@ -18,7 +19,7 @@ import {
   salesOverviewMarkdown,
   validateSalesSegments,
 } from "./sales";
-import { parseDocument } from "../../../../../tools/studio/workspace/document";
+
 import { salesSegmentPages } from "../components/SalesSegment";
 import { splitProductDocument } from "./economics";
 import { parseProductPresentation } from "./presentation-data";

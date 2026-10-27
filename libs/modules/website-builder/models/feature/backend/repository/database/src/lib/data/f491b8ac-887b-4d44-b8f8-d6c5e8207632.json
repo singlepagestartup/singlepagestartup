@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "f491b8ac-887b-4d44-b8f8-d6c5e8207632",
+  "createdAt": "2026-10-26T00:12:11.052Z",
+  "updatedAt": "2026-10-27T15:00:02.113Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Before the change",
+    "ru": "До изменения"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Salon enquiries\\n\\nThe open list before a new record arrives.\\n\\nAnna's enquiry\\n\\nMichael's enquiry\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Заявки салона\\n\\nОткрытый список до появления новой записи.\\n\\nЗаявка Анны\\n\\nЗаявка Михаила\"}]}]}"
+  },
+  "adminTitle": "До изменения",
+  "slug": "framework-reviewed-article-broadcast-example-feature-0"
+}

@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "",
+    "ru": ""
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Prepare messages about orders, enquiries and other events. Use templates to insert the necessary data, and connect delivery through a channel suited to your project.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"A customer submits an enquiry and does not know whether you received it. An employee may also miss a new record. A notification connects an event to a message for its recipient, showing what happened and what to do next.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Подготовьте сообщения о заказах, заявках и других событиях. Используйте шаблоны, чтобы подставлять нужные данные, и подключите доставку по подходящему для вашего проекта каналу.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Клиент отправил заявку и не знает, получили ли вы её. Сотрудник тоже может не заметить новую запись. Уведомление связывает событие с сообщением адресату: человеку видно, что произошло и что делать дальше.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "b173112f-9155-4a00-84ba-f9dada147618",
+  "createdAt": "2026-10-26T00:12:03.125Z",
+  "updatedAt": "2026-10-27T14:59:14.033Z",
+  "variant": "content-rich",
+  "adminTitle": "framework-reviewed-article-notification-introduction",
+  "slug": "framework-reviewed-article-notification-introduction"
+}

@@ -1,6 +1,7 @@
-import type {
-  IComponentProps,
-  ContentFilesFindDefaultProps,
+import {
+  type IComponentProps,
+  type ContentFilesFindDefaultProps,
+  type IModuleIconProps,
 } from "./interface";
 export type { ContentFilesFindDefaultProps } from "./interface";
 
@@ -120,5 +121,3 @@ export const defaultContentFilesFindDefaultProps = {
     { label: "Rich-text editor", icon: FileText },
   ] satisfies FeatureListItem[],
 };
-
-import type { IModuleIconProps } from "./interface";

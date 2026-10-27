@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Module structure",
+    "ru": "Устройство модуля"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Channel groups events; Message stores their content and expiry. Current framework data updates also use the shared WebSocket and repeated authorized queries. Broadcast does not replace the owner of the underlying data.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Channel группирует события, Message хранит их содержимое и срок действия. В текущем фреймворке обновления данных также используют общий WebSocket и повторные авторизованные запросы. Broadcast не заменяет владельца исходных данных.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "fa3fbfa9-d0ef-497e-a602-71e4c99d0dac",
+  "createdAt": "2026-10-26T00:12:12.440Z",
+  "updatedAt": "2026-10-27T14:59:20.384Z",
+  "variant": "content-rich",
+  "adminTitle": "Устройство модуля",
+  "slug": "framework-reviewed-article-broadcast-technical"
+}

@@ -58,7 +58,7 @@ describe("Module-owned Framework pages", () => {
     expect(html.match(/data-variant="step"/g)).toHaveLength(3);
     expect(html.match(/data-variant="dropdown"/g)).toHaveLength(16);
     expect(html).toContain('data-variant="preview-scroll"');
-    expect(html).toContain("framework-example-previews/contact.png");
+    expect(html).toContain("framework-example-previews/contact-hd.jpg");
     expect(html).not.toContain("sps-demo-study-format");
     expect(html).not.toContain("<form");
   });

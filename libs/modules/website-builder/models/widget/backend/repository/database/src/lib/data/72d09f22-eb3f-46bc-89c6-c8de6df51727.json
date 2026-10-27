@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "A request for your project",
+    "ru": "Запрос для вашего проекта"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"I want to sell a course, a practical workshop and an exercise collection. I need offer cards, categories, a cart and orders. Customers should see the total before paying.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Хочу продавать курс, практикум и сборник заданий. Нужны карточки предложений, категории, корзина и заказ. Клиент должен видеть итоговую сумму перед оплатой.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "72d09f22-eb3f-46bc-89c6-c8de6df51727",
+  "createdAt": "2026-10-26T00:11:24.979Z",
+  "updatedAt": "2026-10-27T14:59:05.442Z",
+  "variant": "content-rich",
+  "adminTitle": "Запрос для вашего проекта",
+  "slug": "framework-reviewed-article-ecommerce-task"
+}

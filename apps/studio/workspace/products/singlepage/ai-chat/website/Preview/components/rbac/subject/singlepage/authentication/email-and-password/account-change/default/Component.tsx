@@ -1,18 +1,22 @@
 "use client";
-import { type InputHTMLAttributes as InputHTMLAttributes } from "react";
-import { useId as useIdPresentation } from "react";
-import { useState as useStatePresentation } from "react";
-import { forwardRef as forwardRef } from "react";
-import { type SVGProps as SVGProps } from "react";
-import { twMerge as twMerge } from "tailwind-merge";
-import { Component as WebsiteBuilderModuleButton } from "../../../../../../../website-builder/button/index";
 import {
+  type InputHTMLAttributes as InputHTMLAttributes,
+  useId as useIdPresentation,
+  useState as useStatePresentation,
+  forwardRef as forwardRef,
+  type SVGProps as SVGProps,
   forwardRef as forwardRefControl,
   type ButtonHTMLAttributes as ButtonControlProps,
+  useId,
+  useState,
+  type FormEvent,
 } from "react";
+
+import { twMerge as twMerge } from "tailwind-merge";
+import { Component as WebsiteBuilderModuleButton } from "../../../../../../../website-builder/button/index";
+
 import IconGlyphs from "../../../../../../../website-builder/feature/singlepage/icon/icons.json";
-import IconPresentationGlyphs from "../../../../../../../website-builder/feature/singlepage/icon/icons.json";
-import { useId, useState, type FormEvent } from "react";
+
 interface IModuleIconProps extends SVGProps<SVGSVGElement> {
   size?: number;
 }
@@ -221,12 +225,12 @@ function IconPresentation({
   className = "",
   svgProps,
 }: {
-  name: keyof typeof IconPresentationGlyphs;
+  name: keyof typeof IconGlyphs;
   size?: 20 | 24;
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  const geometry = IconPresentationGlyphs[name]
+  const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
   if (!geometry) throw new Error("Missing Phosphor icon: " + name);

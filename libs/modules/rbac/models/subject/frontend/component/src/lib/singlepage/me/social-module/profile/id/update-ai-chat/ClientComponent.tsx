@@ -38,6 +38,7 @@ export function Component(props: IComponentPropsExtended) {
   );
   return (
     <SocialModuleProfile
+      language={props.language}
       isServer={false}
       variant="id-settings-ai-chat"
       data={props.profile}
@@ -45,6 +46,7 @@ export function Component(props: IComponentPropsExtended) {
       pending={update.isPending}
     >
       <Subject
+        language={props.language}
         isServer={false}
         variant="me-social-module-profile-id-avatar-update-ai-chat"
         data={props.data}

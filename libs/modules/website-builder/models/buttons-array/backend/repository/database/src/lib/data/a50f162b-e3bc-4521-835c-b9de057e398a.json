@@ -1,0 +1,14 @@
+{
+  "id": "a50f162b-e3bc-4521-835c-b9de057e398a",
+  "createdAt": "2026-10-24T01:05:55.837Z",
+  "updatedAt": "2026-10-24T01:05:55.837Z",
+  "variant": "default",
+  "className": "w-full",
+  "title": {
+    "en": "Actions",
+    "ru": "Действия"
+  },
+  "description": {},
+  "adminTitle": "Actions",
+  "slug": "framework-journey-guide-website-builder-actions"
+}

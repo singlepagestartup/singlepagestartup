@@ -1,0 +1,14 @@
+{
+  "id": "6f18dc7f-2c3e-4d4f-a434-f94ce9586495",
+  "createdAt": "2026-10-23T20:18:04.219Z",
+  "updatedAt": "2026-10-23T20:18:04.219Z",
+  "variant": "default",
+  "className": "",
+  "title": {
+    "en": "Source license",
+    "ru": "Лицензия на код"
+  },
+  "description": {},
+  "adminTitle": "Source license",
+  "slug": "framework-footer-legal"
+}

@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "a5384561-3c40-42cd-a178-7e084c99757d",
+  "createdAt": "2026-10-26T00:12:27.456Z",
+  "updatedAt": "2026-10-27T14:59:49.558Z",
+  "variant": "selectable",
+  "title": {
+    "en": "Vibe coding community",
+    "ru": "Сообщество вайб-кодеров"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Members show their projects, discover creators and discuss solutions in chat.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Участники показывают свои проекты, находят авторов и обсуждают решения в чате.\"}]}]}"
+  },
+  "adminTitle": "Сообщество вайб-кодеров",
+  "slug": "framework-reviewed-showcase-community"
+}

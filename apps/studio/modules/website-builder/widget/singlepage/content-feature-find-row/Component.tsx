@@ -1,4 +1,8 @@
-import type { IComponentProps, ContentFeatureFindRowProps } from "./interface";
+import {
+  type IComponentProps,
+  type ContentFeatureFindRowProps,
+  type IModuleIconProps,
+} from "./interface";
 export type { ContentFeatureFindRowProps } from "./interface";
 
 import { Component as SharedIcon } from "../../../../shared/icon";
@@ -102,5 +106,3 @@ export const defaultContentFeatureFindRowProps = {
     { icon: MapPin, label: "San Francisco, CA" },
   ] satisfies ContactItem[],
 };
-
-import type { IModuleIconProps } from "./interface";

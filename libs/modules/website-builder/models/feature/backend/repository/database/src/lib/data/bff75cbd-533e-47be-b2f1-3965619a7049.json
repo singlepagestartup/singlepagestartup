@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "bff75cbd-533e-47be-b2f1-3965619a7049",
+  "createdAt": "2026-10-26T00:12:28.653Z",
+  "updatedAt": "2026-10-27T14:59:54.353Z",
+  "variant": "selectable",
+  "title": {
+    "en": "AI blog",
+    "ru": "Блог об ИИ"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Readers find an article on a topic, save it and learn about its author. Additional materials are available by subscription.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Читатель находит статью по теме, сохраняет её и знакомится с автором. Дополнительные материалы доступны по подписке.\"}]}]}"
+  },
+  "adminTitle": "Блог об ИИ",
+  "slug": "framework-reviewed-showcase-journal"
+}

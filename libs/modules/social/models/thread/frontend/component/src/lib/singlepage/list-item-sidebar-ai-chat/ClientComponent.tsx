@@ -1,4 +1,5 @@
 "use client";
+import { internationalization } from "@sps/shared-configuration";
 import Link from "next/link";
 
 import { memo } from "react";
@@ -9,7 +10,7 @@ import type { IComponentPropsExtended } from "./interface";
 export const Component = memo(function Component(
   props: IComponentPropsExtended,
 ) {
-  const localeBase = `/${props.language || "en"}`;
+  const localeBase = `/${props.language || internationalization.defaultLanguage.code}`;
   return (
     <Link
       prefetch={false}

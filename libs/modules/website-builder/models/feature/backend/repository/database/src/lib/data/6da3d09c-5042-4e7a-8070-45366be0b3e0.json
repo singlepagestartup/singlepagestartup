@@ -1,0 +1,18 @@
+{
+  "className": null,
+  "id": "6da3d09c-5042-4e7a-8070-45366be0b3e0",
+  "createdAt": "2026-10-23T20:18:05.733Z",
+  "updatedAt": "2026-10-23T20:18:05.733Z",
+  "variant": "card",
+  "title": {
+    "en": "Next.js server and client readers",
+    "ru": "Server и client readers в Next.js"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"SDK readers load records. Views receive typed data, and browser interactions stay in client components.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"SDK readers загружают записи. Представления получают типизированные данные, а действия в браузере остаются в клиентских компонентах.\"}]}]}"
+  },
+  "adminTitle": "Next.js server and client readers",
+  "slug": "framework-about-architecture-feature-1"
+}

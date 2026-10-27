@@ -44,6 +44,7 @@ jest.mock("@sps/file-storage/models/file/sdk/client", () => ({
 }));
 jest.mock("@sps/file-storage/models/file/sdk/server", () => ({ api: {} }));
 import { Component as FileStorageFile } from "@sps/file-storage/models/file/frontend/component";
+import * as attachmentReader from "./client";
 
 const file = {
   id: "stored-file",
@@ -103,6 +104,64 @@ it("reads stored Markdown only on open, switches to source, closes and restores 
   expect(mockMetadata).not.toHaveBeenCalled();
 });
 
+it("passes only display inputs from the loaded server record to the client reader", () => {
+  const Client = attachmentReader.default;
+  const reader = jest
+    .spyOn(attachmentReader, "default")
+    .mockImplementation((props) => <Client {...props} />);
+  try {
+    render(
+      <FileStorageFile
+        {...({
+          isServer: true,
+          variant: "attachment-ai-chat",
+          dataSource: "props",
+          data: file,
+          language: "ru",
+          apiProps: {
+            options: { headers: { Authorization: "server-only credential" } },
+            reactQueryOptions: { select: jest.fn() },
+          },
+        } as any)}
+      />,
+    );
+    expect(reader.mock.calls[0][0]).toEqual({
+      data: file,
+      variant: "attachment-ai-chat",
+      language: "ru",
+    });
+    expect(mockText).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Открыть Brief.md" }));
+    expect(screen.getByRole("heading", { name: "Saved brief" })).toBeTruthy();
+    expect(mockText).toHaveBeenCalledWith({ file });
+    expect(mockMetadata).not.toHaveBeenCalled();
+    expect(mockProvider).not.toHaveBeenCalled();
+  } finally {
+    reader.mockRestore();
+  }
+});
+
+it("shows the text loading state only after opening the preview", () => {
+  mockText.mockReturnValue({ isPending: true, isError: false });
+  render(
+    <FileStorageFile
+      {...({
+        isServer: false,
+        variant: "attachment-ai-chat",
+        dataSource: "props",
+        data: file,
+        language: "ru",
+      } as any)}
+    />,
+  );
+  expect(screen.queryByRole("status")).toBeNull();
+  expect(mockText).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("button", { name: "Открыть Brief.md" }));
+  expect(screen.getByRole("status").textContent).toBe(
+    "Загрузка предпросмотра…",
+  );
+});
+
 it("renders PDF pages with zoom through the byte SDK without text or metadata reads", async () => {
   render(
     <FileStorageFile
@@ -128,9 +187,7 @@ it("renders PDF pages with zoom through the byte SDK without text or metadata re
   });
   fireEvent.click(screen.getByRole("button", { name: "Next page" }));
   await waitFor(() =>
-    expect(
-      screen.getByRole("img", { name: "Page 2 of Guide.pdf" }),
-    ).toBeTruthy(),
+    expect(screen.getByRole("img", { name: "Page 2: Guide.pdf" })).toBeTruthy(),
   );
   fireEvent.click(screen.getByRole("button", { name: "Zoom in" }));
   expect(screen.getByText("125%")).toBeTruthy();
@@ -206,7 +263,7 @@ it("can move past a PDF page that failed to render", async () => {
   fireEvent.click(screen.getByRole("button", { name: "Next page" }));
   await waitFor(() => expect(screen.queryByRole("status")).toBeNull());
   expect(screen.queryByRole("alert")).toBeNull();
-  expect(screen.getByRole("img", { name: "Page 2 of Guide.pdf" })).toBeTruthy();
+  expect(screen.getByRole("img", { name: "Page 2: Guide.pdf" })).toBeTruthy();
 });
 
 it("shows a readable error and a retry while keeping the original available", () => {

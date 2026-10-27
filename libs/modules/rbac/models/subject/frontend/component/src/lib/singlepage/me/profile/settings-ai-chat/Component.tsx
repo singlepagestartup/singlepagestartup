@@ -3,6 +3,7 @@ import type { IComponentPropsExtended } from "./interface";
 export function Component(props: IComponentPropsExtended) {
   return (
     <Subject
+      language={props.language}
       isServer={props.isServer}
       variant="me-social-module-profile-list-settings-ai-chat"
       data={props.data}

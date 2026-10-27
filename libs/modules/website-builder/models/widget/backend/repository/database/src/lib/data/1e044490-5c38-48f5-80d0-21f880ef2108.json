@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Start with module bootstrap",
+    "ru": "Начните с bootstrap модуля"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Article bootstrap creates the Inversify container and binds App, Controller, Service, Repository, Configuration and the exception handler to shared DI tokens. It loads relations, resolves App and starts it. An ordinary model uses \"},{\"type\":\"text\",\"text\":\"CRUDService\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" and \"},{\"type\":\"text\",\"text\":\"DatabaseRepository\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\".\"}]},{\"type\":\"codeBlock\",\"attrs\":{\"language\":\"ts\"},\"content\":[{\"type\":\"text\",\"text\":\"@injectable()\\nexport class Service extends CRUDService<(typeof Table)[\\\"$inferSelect\\\"]> {}\\n\\n@injectable()\\nexport class Repository extends DatabaseRepository<typeof Table> {}\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"A specialized operation belongs beside services of the same kind. The controller parses HTTP input and invokes the operation. Filtering, schema validation and persistence go through the owning repository. Copying a database query into a view or controller bypasses the expected behaviour of that layer.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Bootstrap Article создаёт контейнер Inversify и связывает App, Controller, Service, Repository, Configuration и обработчик исключений с общими DI-токенами. Он загружает связи, получает App и запускает его. Обычная модель использует \"},{\"type\":\"text\",\"text\":\"CRUDService\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" и \"},{\"type\":\"text\",\"text\":\"DatabaseRepository\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\".\"}]},{\"type\":\"codeBlock\",\"attrs\":{\"language\":\"ts\"},\"content\":[{\"type\":\"text\",\"text\":\"@injectable()\\nexport class Service extends CRUDService<(typeof Table)[\\\"$inferSelect\\\"]> {}\\n\\n@injectable()\\nexport class Repository extends DatabaseRepository<typeof Table> {}\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Особая операция располагается рядом с сервисами того же вида. Контроллер разбирает вход HTTP и вызывает операцию. Фильтрация, проверка схемы и сохранение проходят через владеющий репозиторий. Запрос базы данных, скопированный в представление или контроллер, обходит ожидаемое поведение этого слоя.\"}]}]}"
+  },
+  "anchor": "ru-section-hono-api-layers-di-and-owned-middleware-1",
+  "className": "",
+  "id": "1e044490-5c38-48f5-80d0-21f880ef2108",
+  "createdAt": "2026-10-26T07:34:01.802Z",
+  "updatedAt": "2026-10-27T14:58:51.219Z",
+  "variant": "content-rich",
+  "adminTitle": "Начните с bootstrap модуля",
+  "slug": "ru-section-hono-api-layers-di-and-owned-middleware-1"
+}

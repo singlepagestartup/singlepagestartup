@@ -20,11 +20,12 @@ import {
   useCallback,
   useMemo,
   useState,
+  memo,
 } from "react";
 import { Component as WebsiteBuilderModuleButton } from "../../../../website-builder/button/index";
 import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
 import { defaultProductCardProps } from "../../../product";
-import { memo } from "react";
+
 import { Component as Product } from "../../../product/index";
 interface ICollectionPaginationProps {
   page: number;

@@ -45,6 +45,7 @@ it("accumulates file selections, removes files, reorders with arrows and draggin
   send.mockResolvedValue({ id: "sent" });
   render(
     <Component
+      language="en"
       {...({
         data: { id: "subject" },
         project: {
@@ -97,6 +98,7 @@ it("sends file-only messages with Ctrl Enter and retains attachments when sendin
   send.mockRejectedValue(new Error("Upload failed"));
   render(
     <Component
+      language="en"
       {...({
         data: { id: "subject" },
         project: {
@@ -129,6 +131,7 @@ it("keeps project Knowledge search for ordinary conversations without showing do
   send.mockResolvedValue({ id: "message" });
   render(
     <Component
+      language="en"
       {...({
         data: { id: "subject" },
         project: {
@@ -163,6 +166,7 @@ it("sends through the requester profile and preserves the selected Knowledge con
   send.mockResolvedValue({ id: "message" });
   render(
     <Component
+      language="en"
       {...({
         isServer: false,
         variant:
@@ -219,6 +223,7 @@ it("falls back to the whole document when a selected Source is not connected to 
   send.mockResolvedValue({ id: "message" });
   render(
     <Component
+      language="en"
       {...({
         data: { id: "subject" },
         project: {
@@ -262,6 +267,7 @@ it("rejects new SVG attachments without replacing earlier supported files", asyn
   send.mockResolvedValue({ id: "sent" });
   render(
     <Component
+      language="en"
       {...({
         data: { id: "subject" },
         project: {
@@ -313,6 +319,7 @@ it("previews staged Markdown and PDF locally without submitting, then keeps remo
   URL.revokeObjectURL = jest.fn();
   const { unmount } = render(
     <Component
+      language="en"
       {...({
         data: { id: "subject" },
         project: {

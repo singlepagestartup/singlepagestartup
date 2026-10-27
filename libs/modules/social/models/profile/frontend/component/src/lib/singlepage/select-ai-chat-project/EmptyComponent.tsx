@@ -5,6 +5,7 @@ export function Component(props: IEmptyComponentProps) {
     <ClientComponent
       isServer={props.isServer}
       variant="select-ai-chat-project"
+      language={props.language}
       createHref={props.createHref}
       className={props.className}
       pending={props.pending}

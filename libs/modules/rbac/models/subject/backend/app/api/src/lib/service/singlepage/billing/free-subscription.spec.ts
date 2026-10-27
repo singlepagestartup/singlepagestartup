@@ -331,6 +331,20 @@ it("rejects multiple unaccepted pending Free histories, a nonzero price and gues
   );
 });
 
+it.each([undefined, "день"])(
+  "uses the canonical billing interval when its Russian display value is %s",
+  async (ru) => {
+    const { service, product, tables } = fixture();
+    (product.productsToAttributes[1].attribute as any).string = {
+      en: "day",
+      ru,
+    };
+    await service.execute({ id: "owner" });
+    expect(tables.balances).toEqual([{ amount: "3000" }]);
+    expect(tables.order).toHaveLength(1);
+  },
+);
+
 it("rejects a caller-owned ambient transaction before any writes or effects", async () => {
   const { service, dependencies } = fixture();
   await expect(

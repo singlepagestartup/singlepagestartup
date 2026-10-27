@@ -1,0 +1,18 @@
+{
+  "className": "",
+  "id": "256a332a-d12d-4edb-bac5-aeffa4b85719",
+  "createdAt": "2026-10-24T01:05:58.610Z",
+  "updatedAt": "2026-10-24T01:05:58.610Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Keep a clear owner.",
+    "ru": "Сохраните ответственность модуля."
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Use Social for its own records and operations. Connect other capabilities through their public interfaces and explicit relations; keep the business task in its owning domain.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Используйте Social для его записей и операций. Подключайте другие возможности через публичные интерфейсы и явные связи; бизнес-задача остаётся в своём домене.\"}]}]}"
+  },
+  "adminTitle": "Keep a clear owner.",
+  "slug": "framework-journey-guide-social-owner"
+}

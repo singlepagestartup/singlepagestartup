@@ -3,7 +3,6 @@ import {
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
 import { consistencyContext } from "@sps/shared-backend-api";
-import { internationalization } from "@sps/shared-configuration";
 import { isSupportedOrderInterval } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service/singlepage/find-by-id/checkout-attributes";
 import type { IResult as IProduct } from "@sps/ecommerce/models/product/backend/app/api/src/lib/service/singlepage/get-extended";
 import type { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
@@ -236,9 +235,7 @@ export class Service {
     if (
       !currency ||
       intervals.length !== 1 ||
-      !isSupportedOrderInterval(
-        intervals[0].string?.[internationalization.defaultLanguage.code] ?? "",
-      )
+      !isSupportedOrderInterval(intervals[0].string?.en ?? "")
     )
       throw new Error(
         "Configuration error. Initial Free requires a Currency and a valid interval",

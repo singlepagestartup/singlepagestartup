@@ -14,6 +14,7 @@ import type { ISpsComponentBase } from "@sps/ui-adapter";
 export const variant =
   "me-social-module-profile-id-chat-id-thread-id-message-list-ai-chat" as const;
 export interface IComponentProps extends IParent<IModel, typeof variant> {
+  language?: string;
   project: IAIChatProject;
   thread: IThread;
   onProfileOpen?: (profileId: string) => void;

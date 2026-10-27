@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "92582c78-9749-487e-85c0-7cb17f1e587a",
+  "createdAt": "2026-10-26T00:12:40.708Z",
+  "updatedAt": "2026-10-27T14:59:44.860Z",
+  "variant": "context-project-heading",
+  "title": {
+    "en": "Project: a school for creating AI products",
+    "ru": "Проект: школа создания ИИ-продуктов"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"1. Saved project knowledge\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"1. Сохранённые знания о проекте\"}]}]}"
+  },
+  "adminTitle": "Проект: школа создания ИИ-продуктов",
+  "slug": "framework-reviewed-context-heading"
+}

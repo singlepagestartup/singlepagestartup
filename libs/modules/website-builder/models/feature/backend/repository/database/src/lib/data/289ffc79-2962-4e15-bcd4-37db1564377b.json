@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "289ffc79-2962-4e15-bcd4-37db1564377b",
+  "createdAt": "2026-10-26T00:11:26.926Z",
+  "updatedAt": "2026-10-27T14:59:29.036Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "After payment",
+    "ru": "После оплаты"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Payment confirmed\\n\\nIn this example, the payment service confirmed receipt.\\n\\nAmount: 2,900 RUB\\n\\nPayment linked to order 104\\n\\nThe next order step can proceed\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Платёж подтверждён\\n\\nВ примере платёжный сервис подтвердил поступление денег.\\n\\nСумма: 2 900 ₽\\n\\nПлатёж связан с заказом № 104\\n\\nМожно выполнить следующий шаг заказа\"}]}]}"
+  },
+  "adminTitle": "После оплаты",
+  "slug": "framework-reviewed-article-billing-example-feature-1"
+}

@@ -68,6 +68,7 @@ beforeEach(() => {
 });
 
 const loadingProps: any = {
+  language: "en",
   isServer: false,
   variant:
     "me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-list-document-ai-chat",
@@ -187,6 +188,7 @@ it("retries attachment without duplicating the already saved Knowledge source", 
       },
     });
   const props: any = {
+    language: "en",
     isServer: false,
     variant:
       "me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-list-document-ai-chat",
@@ -263,6 +265,7 @@ it("uploads selected files to the saved Source before attaching it and never dup
   render(
     <Component
       {...({
+        language: "en",
         isServer: false,
         variant:
           "me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-list-document-ai-chat",
