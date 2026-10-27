@@ -1,5 +1,6 @@
 import { memo } from "react";
 import Markdown from "markdown-to-jsx";
+import { internationalization } from "@sps/shared-configuration";
 import type { IComponentPropsExtended } from "./interface";
 export const Component = memo(function Component(
   props: IComponentPropsExtended,
