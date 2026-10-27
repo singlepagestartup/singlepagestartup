@@ -32,6 +32,38 @@ export class Configuration
           module: "rbac",
           name: "widgets-to-ecommerce-module-widgets",
           type: "relation",
+          filters: [
+            {
+              column: "widgetId",
+              method: "eq",
+              value: ({ seeds, entity }) =>
+                seeds
+                  .find(
+                    (seed) =>
+                      seed.module === "rbac" &&
+                      seed.type === "model" &&
+                      seed.name === "widget",
+                  )
+                  ?.seeds.find((seed) => seed.dump.id === entity.dump.widgetId)
+                  ?.new?.id ?? entity.dump.widgetId,
+            },
+            {
+              column: "ecommerceModuleWidgetId",
+              method: "eq",
+              value: ({ seeds, entity }) =>
+                seeds
+                  .find(
+                    (seed) =>
+                      seed.module === "ecommerce" &&
+                      seed.type === "model" &&
+                      seed.name === "widget",
+                  )
+                  ?.seeds.find(
+                    (seed) =>
+                      seed.dump.id === entity.dump.ecommerceModuleWidgetId,
+                  )?.new?.id ?? entity.dump.ecommerceModuleWidgetId,
+            },
+          ],
           transformers: [
             {
               field: "widgetId",

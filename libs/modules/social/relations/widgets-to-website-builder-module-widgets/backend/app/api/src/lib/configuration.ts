@@ -32,6 +32,38 @@ export class Configuration
           module: "social",
           name: "widgets-to-website-builder-module-widgets",
           type: "relation",
+          filters: [
+            {
+              column: "widgetId",
+              method: "eq",
+              value: ({ seeds, entity }) =>
+                seeds
+                  .find(
+                    (seed) =>
+                      seed.module === "social" &&
+                      seed.type === "model" &&
+                      seed.name === "widget",
+                  )
+                  ?.seeds.find((seed) => seed.dump.id === entity.dump.widgetId)
+                  ?.new?.id ?? entity.dump.widgetId,
+            },
+            {
+              column: "websiteBuilderModuleWidgetId",
+              method: "eq",
+              value: ({ seeds, entity }) =>
+                seeds
+                  .find(
+                    (seed) =>
+                      seed.module === "website-builder" &&
+                      seed.type === "model" &&
+                      seed.name === "widget",
+                  )
+                  ?.seeds.find(
+                    (seed) =>
+                      seed.dump.id === entity.dump.websiteBuilderModuleWidgetId,
+                  )?.new?.id ?? entity.dump.websiteBuilderModuleWidgetId,
+            },
+          ],
           transformers: [
             {
               field: "widgetId",
