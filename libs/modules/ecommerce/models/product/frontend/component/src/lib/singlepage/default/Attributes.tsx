@@ -86,6 +86,11 @@ export function Component(props: IProductAttributesProps) {
                                     dataSource="props"
                                     data={productToAttribute}
                                     attributeField={attributeKey.field}
+                                    maximumFractionDigits={
+                                      attributeKey.type === "topup"
+                                        ? 0
+                                        : undefined
+                                    }
                                     language={props.language}
                                   />
                                 </div>

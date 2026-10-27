@@ -8,21 +8,25 @@ export function Component(props: IComponentPropsExtended) {
       ? props.data.string?.[props.language]
       : props.data[props.field as keyof typeof props.data];
   const value =
-    raw instanceof Date
-      ? raw.toLocaleString(props.language === "ru" ? "ru-RU" : "en-US")
-      : typeof raw === "boolean"
-        ? raw
-          ? props.language === "ru"
-            ? "Да"
-            : "Yes"
-          : props.language === "ru"
-            ? "Нет"
-            : "No"
-        : raw == null
-          ? "—"
-          : typeof raw === "object"
-            ? JSON.stringify(raw)
-            : String(raw);
+    typeof raw === "number" && props.maximumFractionDigits !== undefined
+      ? new Intl.NumberFormat(props.language === "ru" ? "ru-RU" : "en-US", {
+          maximumFractionDigits: props.maximumFractionDigits,
+        }).format(raw)
+      : raw instanceof Date
+        ? raw.toLocaleString(props.language === "ru" ? "ru-RU" : "en-US")
+        : typeof raw === "boolean"
+          ? raw
+            ? props.language === "ru"
+              ? "Да"
+              : "Yes"
+            : props.language === "ru"
+              ? "Нет"
+              : "No"
+          : raw == null
+            ? "—"
+            : typeof raw === "object"
+              ? JSON.stringify(raw)
+              : String(raw);
   return (
     <div
       data-module="ecommerce"

@@ -11,6 +11,7 @@ export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
   field: string;
   language: string;
+  maximumFractionDigits?: number;
 }
 
 export interface IComponentPropsExtended
