@@ -19,10 +19,16 @@ jest.mock("@sps/shared-frontend-client-utils", () => ({
   saturateHeaders: () => ({}),
 }));
 jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
-  Component: () => <div>Private actions</div>,
+  Component: (props: any) => (
+    <div data-action-language={props.language}>Private actions</div>
+  ),
 }));
 jest.mock("@sps/social/models/thread/frontend/component", () => ({
-  Component: () => <div>Private messages</div>,
+  Component: (props: any) => (
+    <div data-thread-language={props.language}>
+      {props.composer}Private messages
+    </div>
+  ),
 }));
 
 import Component from "./client";
@@ -39,6 +45,17 @@ beforeEach(() => {
   mockRefetch.mockClear();
   mockThreads = { data: [], isPending: false, refetch: mockRefetch };
 });
+it.each(["ru", "en"])(
+  "keeps the selected %s locale in the thread and its actions",
+  (language) => {
+    mockThreads.data = [{ id: "thread", title: "Project thread" }];
+    const html = renderToStaticMarkup(
+      <Component {...props} language={language} />,
+    );
+    expect(html).toContain(`data-thread-language="${language}"`);
+    expect(html).toContain(`data-action-language="${language}"`);
+  },
+);
 it("renders the supplied loading slot before messages or actions", () => {
   mockThreads.isPending = true;
   const html = renderToStaticMarkup(<Component {...props} />);

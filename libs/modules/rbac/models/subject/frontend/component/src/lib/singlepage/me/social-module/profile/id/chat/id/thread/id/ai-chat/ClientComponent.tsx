@@ -47,7 +47,13 @@ export function Component(props: IClientComponentProps) {
       </p>
     );
   }
-  const actionProps = { isServer: false, data: props.data, project, thread };
+  const actionProps = {
+    isServer: false,
+    language,
+    data: props.data,
+    project,
+    thread,
+  };
   const document = getAIChatDocument(thread.metadata);
   const isDocument = document?.profileId === project.profile.id;
   return (
@@ -62,6 +68,7 @@ export function Component(props: IClientComponentProps) {
       )}
       <SocialModuleThread
         isServer={false}
+        language={language}
         data={thread}
         dataSource="props"
         variant="id-ai-chat"

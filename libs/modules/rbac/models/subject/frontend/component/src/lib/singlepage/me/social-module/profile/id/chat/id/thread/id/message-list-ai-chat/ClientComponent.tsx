@@ -28,6 +28,7 @@ export function Component(props: IComponentPropsExtended) {
   return (
     <SocialModuleMessage
       isServer={false}
+      language={language}
       variant="list-ai-chat"
       threadId={props.thread.id}
       keepDataWhileFetching
