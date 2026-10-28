@@ -1,7 +1,7 @@
 ---
 repository: singlepagestartup
 issue_number: 380
-status: In Dev
+status: Code Review
 created: 2026-10-28
 ---
 
@@ -10,7 +10,7 @@ created: 2026-10-28
 ## Metadata
 
 **URL**: https://github.com/singlepagestartup/singlepagestartup/issues/380
-**Status**: In Dev
+**Status**: Code Review
 **Created**: 2026-10-28
 **Priority**: high
 **Size**: large
@@ -35,11 +35,11 @@ created: 2026-10-28
 - m2commerce.ru — production-пример downstream-проекта; этот checkout принадлежит singlepagestartup/singlepagestartup. Локальные исправления сами по себе не обновляют production.
 - Не изменять repository data snapshots. Развёртывание и изменение содержимого production требуют отдельного конкретного действия после проверки общего кода.
 
-## Уточнения для проверки плана
+## Согласованный объём
 
-- Текущий результат — вторая редакция плана для повторной проверки. Продолжение кода, коммит и PR ожидают согласования.
+- Редакция 2 реализована и проверена; [PR #382](https://github.com/singlepagestartup/singlepagestartup/pull/382) передан на Code Review.
 - Маски используют квадратные скобки и имена module/models/field, учитывают локаль и реальные связи. Хранение SEO — существующая модель Metadata и связь с Page.
-- JSON metadata у контентных моделей рассматривается как расширение для keywords и других дополнительных данных. Пользователь запросил оценку выгод и проблем; добавление поля во все модели не утверждено.
+- JSON metadata добавлено в Article/Product/Profile для SEO и дополнительных секций. Остальные модели сохраняют свои схемы.
 - У всех моделей и связей требуется hidden. Скрытая основная сущность страницы возвращает 404 и исключается из индексации; отдельный draft не нужен.
 - Для изображений нужны маски и связь Metadata → File с запасной обложкой. План должен объяснять author, viewport и структурированные данные.
 

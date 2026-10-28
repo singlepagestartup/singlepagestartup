@@ -3,7 +3,7 @@ issue_number: 380
 issue_title: SEO сборки страниц
 start_date: 2026-10-28
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-380.md
-status: in_progress
+status: completed
 ---
 
 # Implementation progress: ISSUE-380
@@ -21,7 +21,7 @@ status: in_progress
 - [x] SSR: Article/Product H1 и текст до сессии/гидратации, alt, true404.
 - [x] Миграции, API/SDK/MCP, браузер, прогретые ответы и отказ API.
 - [x] Заключительная production-сборка и повторная HTTP-матрица.
-- [ ] SEO-коммит, PR и Code Review.
+- [x] SEO-коммит, PR и Code Review.
 
 ## Verification
 
@@ -32,8 +32,9 @@ module-dependencies. Полная новая БД и upgrade с записями
 
 ## Remaining
 
-Зафиксировать проверенное SEO отдельным коммитом и
-передать #380 на Code Review. Production и данные m2commerce.ru не изменены.
+Реализация `a3694a93a8`, [PR #382](https://github.com/singlepagestartup/singlepagestartup/pull/382).
+Статус #380 подтверждён как Code Review. Production и данные m2commerce.ru не изменены.
+Тестовая среда остановлена и удалена; дальнейший выпуск описан в process.
 Приёмка владельцем интерфейса не отмечена как завершённая.
 
 ## Incident Log
@@ -79,7 +80,7 @@ module-dependencies. Полная новая БД и upgrade с записями
 ### Incident 5 — Ресурсы проверки
 
 - **Phase**: Implement
-- **Occurrences**: 2
+- **Occurrences**: 3
 - **Symptom**: ENOSPC при записи webpack cache; ESLint исчерпал 4 GiB heap.
 - **Root Cause**: большой монорепозиторий и ограниченный свободный диск.
 - **Fix**: удалён только SEO build output, webpack cache отключён, build cpus=1; ESLint scoped с 8 GiB.

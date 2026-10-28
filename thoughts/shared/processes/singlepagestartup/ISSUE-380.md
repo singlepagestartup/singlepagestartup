@@ -4,8 +4,8 @@ issue_title: "SEO для сборки страниц Host, блога и кат�
 repository: singlepagestartup
 created_at: 2026-10-28
 last_updated: 2026-10-28
-status: in_progress
-current_phase: implement
+status: completed
+current_phase: code_review
 ---
 
 # Process log: SEO для сборки страниц
@@ -19,9 +19,9 @@ current_phase: implement
 - Create: completed
 - Research: completed
 - Plan: completed
-- Implement: in_progress
-- Current phase: implement
-- Next step: завершить внедрение и проверки, подготовить коммит и PR в текущей ветке
+- Implement: completed
+- Current phase: code_review
+- Next step: Code Review PR #382; приёмка и выпуск в дочернем проекте отдельно
 
 ## Phase Notes
 
@@ -150,6 +150,9 @@ noindex исключены; неверная часть sitemap даёт 404. Ca
 показывает ошибку JSON, восстанавливает правку title и сохраняет campaign и другую
 локаль. Studio Product имеет один H1. Приёмка владельцем интерфейса отдельно от
 агентской браузерной проверки; она не объявляется выполненной.
+Финальный браузерный прогон товара подтвердил H1 и описание. Тестовые права не
+покрывают чтение двух связей атрибутов checkout; соответствующие уведомления
+зафиксированы как ограничение fixture, полный checkout этим прогоном не проверялся.
 
 ### Incident 4 — ISR fallback и текущий запрос
 
@@ -163,7 +166,7 @@ noindex исключены; неверная часть sitemap даёт 404. Ca
 ### Incident 5 — Ресурсы проверки
 
 - **Phase**: Implement
-- **Occurrences**: 2
+- **Occurrences**: 3
 - **Symptom**: ENOSPC при записи webpack cache; ESLint исчерпал 4 GiB heap.
 - **Root Cause**: большой монорепозиторий и ограниченный свободный диск.
 - **Fix**: удалён только SEO build output, webpack cache отключён, build cpus=1; ESLint scoped с 8 GiB.
@@ -224,3 +227,12 @@ noindex исключены; неверная часть sitemap даёт 404. Ca
 
 Production m2commerce.ru не развёрнут и его данные не изменены. Существующие отчёты
 Яндекса не объявляются исправленными до выпуска и переобхода.
+
+## Передача на Code Review
+
+- Реализация: `a3694a93a8` в `codex/studio-linear-workflow`.
+- PR: [#382](https://github.com/singlepagestartup/singlepagestartup/pull/382).
+- `submit_pr_for_code_review.sh 380 382` связал PR с задачей и повторным чтением подтвердил `Code Review`.
+- Pre-commit прошёл. После форматирования повторены File PATCH regression-тест и ESLint с 8 GiB heap; оба прошли.
+- Исходные незакоммиченные изменения Studio/workflow сохранены.
+- Тестовые Host/API/Storybook остановлены; три временные SEO-базы, тестовая загрузка и изолированный build output удалены. Рабочая БД и production сохранены.
