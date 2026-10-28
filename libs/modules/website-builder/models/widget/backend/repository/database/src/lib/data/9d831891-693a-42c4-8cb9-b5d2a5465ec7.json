@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "What product do you want to create?",
+    "ru": "Какой продукт вы хотите создать?"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Choose a use case and try its interface. Below, we explain the parts it uses.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Выберите сценарий и попробуйте его интерфейс. Ниже разберём, из каких частей он складывается.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "9d831891-693a-42c4-8cb9-b5d2a5465ec7",
+  "createdAt": "2026-10-26T00:11:50.358Z",
+  "updatedAt": "2026-10-27T14:59:09.444Z",
+  "variant": "content-rich",
+  "adminTitle": "Какой продукт вы хотите создать?",
+  "slug": "framework-reviewed-article-social-cases"
+}

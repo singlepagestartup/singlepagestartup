@@ -1,0 +1,21 @@
+{
+  "id": "dfa45af1-a9f4-4197-80e8-1bd7dc4a758d",
+  "className": "",
+  "createdAt": "2026-10-26T00:11:35.020Z",
+  "updatedAt": "2026-10-27T15:00:25.623Z",
+  "variant": "card",
+  "adminTitle": "Соберите страницу из блоков под своё предложение",
+  "slug": "framework-website-builder",
+  "title": {
+    "en": "Build a page from blocks for your offer",
+    "ru": "Соберите страницу из блоков под своё предложение"
+  },
+  "subtitle": {
+    "en": "Website builder",
+    "ru": "Конструктор сайта"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Assemble a page from blocks: a cover, description, images and buttons. Change the content to suit your offer.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Соберите страницу из блоков: обложка, описание, изображения и кнопки. Меняйте содержимое под своё предложение.\"}]}]}"
+  }
+}

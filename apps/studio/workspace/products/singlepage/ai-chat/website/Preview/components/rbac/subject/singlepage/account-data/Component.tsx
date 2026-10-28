@@ -1,21 +1,29 @@
 "use client";
-import { type ReactNode as ReactNode } from "react";
-import { useContext as useContext } from "react";
-import { createContext as createContext } from "react";
+import {
+  type ReactNode as ReactNode,
+  useContext as useContext,
+  createContext as createContext,
+  forwardRef as forwardRefControl,
+  type ButtonHTMLAttributes as ButtonControlProps,
+  useId,
+  useRef,
+  useState,
+} from "react";
+
 import { twMerge as twMerge } from "tailwind-merge";
 import Markdown from "markdown-to-jsx";
 import { Component as WebsiteBuilderModuleButton } from "../../../../website-builder/button/index";
-import {
-  forwardRef as forwardRefControl,
-  type ButtonHTMLAttributes as ButtonControlProps,
-} from "react";
+
 import IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
-import { IWebsiteSection as IWebsiteSection } from "../../../../website-builder/widget/singlepage/content/ai-chat/content";
-import { useId, useRef, useState } from "react";
+import {
+  IWebsiteSection as IWebsiteSection,
+  type IAIChatServicePageContent,
+} from "../../../../website-builder/widget/singlepage/content/ai-chat/content";
+
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import defaultCopy from "./content.json";
 import { useAIChatAccount } from "../account/Account";
-import type { IAIChatServicePageContent } from "../../../../website-builder/widget/singlepage/content/ai-chat/content";
+
 function MarkdownDocument({
   children,
   hideTitle = false,
@@ -337,8 +345,8 @@ export function Component({
               showTokens
                 ? sections.purchases
                 : {
-                    title: "Purchases",
-                    paragraphs: ["Review your purchase history and receipts."],
+                    title: "Покупки",
+                    paragraphs: ["Посмотрите историю покупок и чеки."],
                     items: [],
                     links: [],
                   }
@@ -348,8 +356,8 @@ export function Component({
             {showTokens && (
               <p className="mt-4 text-sm text-[color:var(--workspace-brand-muted)]">
                 {aiChatAccount.balance
-                  ? `${(aiChatAccount.balance.free + aiChatAccount.balance.purchased).toLocaleString("en-US")} tokens available`
-                  : "Balance unavailable"}
+                  ? `${(aiChatAccount.balance.free + aiChatAccount.balance.purchased).toLocaleString("ru-RU")} доступных токенов`
+                  : "Баланс недоступен"}
               </p>
             )}
             <div className="mt-5 flex flex-wrap gap-3">
@@ -455,8 +463,8 @@ export function Component({
               {deletionChecked && (
                 <div className="mt-4">
                   <Feedback>
-                    Deletion request confirmed in this preview. No account or
-                    project data was deleted.
+                    В примере запрос на удаление подтверждён. Данные аккаунта и
+                    проектов не удалялись.
                   </Feedback>
                 </div>
               )}

@@ -59,7 +59,7 @@ export function Component({ label = ".md" }: ISourceDownloadProps) {
     <Button
       data-ds-block="knowledge.source.download-ai-chat"
       variant="secondary"
-      aria-label={`Download ${source.title}.md`}
+      aria-label={`Скачать ${source.title}.md`}
       onClick={download}
     >
       <Icon name="arrow-down" />

@@ -6,6 +6,7 @@ export const variant = "id-ai-chat-project";
 
 export interface IIdAiChatProjectProps {
   variant?: "id-ai-chat-project";
+  embedded?: boolean;
   profileId: string;
   chatId?: string;
   selected: IProfileSidebarProps["selected"];

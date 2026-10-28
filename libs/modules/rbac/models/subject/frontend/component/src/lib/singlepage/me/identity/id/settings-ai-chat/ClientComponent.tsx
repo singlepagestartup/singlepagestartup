@@ -1,4 +1,5 @@
 "use client";
+import { internationalization } from "@sps/shared-configuration";
 import { memo, useState } from "react";
 import { api as subjectApi } from "@sps/rbac/models/subject/sdk/client";
 import { Component as ChangeEmail } from "../../change-email";
@@ -7,6 +8,8 @@ import type { IComponentPropsExtended } from "./interface";
 export const Component = memo(function Component(
   props: IComponentPropsExtended,
 ) {
+  const language = props.language || internationalization.defaultLanguage.code;
+  const ru = language === "ru";
   const remove = subjectApi.identityDelete({});
   const [confirm, setConfirm] = useState(false);
   const [error, setError] = useState("");
@@ -14,7 +17,9 @@ export const Component = memo(function Component(
     <article className="mb-4 rounded-xl border border-border p-4">
       <h3 className="text-sm font-semibold">
         {props.identity.provider === "email_and_password"
-          ? "Email & password"
+          ? ru
+            ? "Почта и пароль"
+            : "Email & password"
           : props.identity.provider}
       </h3>
       <p className="mt-2 break-words text-sm text-muted-foreground">
@@ -22,6 +27,7 @@ export const Component = memo(function Component(
       </p>
       <div className="mt-4 flex flex-wrap gap-2">
         <ChangeEmail
+          language={props.language}
           data={props.data}
           identity={props.identity}
           isServer={false}
@@ -29,6 +35,7 @@ export const Component = memo(function Component(
           className="contents"
         />
         <ChangePassword
+          language={props.language}
           data={props.data}
           identity={props.identity}
           isServer={false}
@@ -41,17 +48,19 @@ export const Component = memo(function Component(
           className="min-h-10 rounded-lg px-3 text-sm font-semibold text-muted-foreground disabled:opacity-50"
           onClick={() => setConfirm(true)}
         >
-          Remove identity
+          {ru ? "Удалить способ входа" : "Remove identity"}
         </button>
       </div>
       {confirm && (
         <div
           role="alertdialog"
-          aria-label="Remove identity"
+          aria-label={ru ? "Удалить способ входа" : "Remove identity"}
           className="mt-4 border-t border-border pt-4"
         >
           <p className="text-sm">
-            Remove this sign-in method from your account?
+            {ru
+              ? "Удалить этот способ входа из аккаунта?"
+              : "Remove this sign-in method from your account?"}
           </p>
           <div className="mt-3 flex gap-3">
             <button
@@ -59,7 +68,7 @@ export const Component = memo(function Component(
               onClick={() => setConfirm(false)}
               className="min-h-10 rounded-lg border border-border px-4"
             >
-              Cancel
+              {ru ? "Отмена" : "Cancel"}
             </button>
             <button
               type="button"
@@ -76,12 +85,14 @@ export const Component = memo(function Component(
                   setError(
                     error instanceof Error
                       ? error.message
-                      : "Identity removal failed",
+                      : ru
+                        ? "Не удалось удалить способ входа"
+                        : "Identity removal failed",
                   );
                 }
               }}
             >
-              Remove identity
+              {ru ? "Удалить способ входа" : "Remove identity"}
             </button>
           </div>
         </div>

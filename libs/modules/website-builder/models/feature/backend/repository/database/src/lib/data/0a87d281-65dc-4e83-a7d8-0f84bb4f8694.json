@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "0a87d281-65dc-4e83-a7d8-0f84bb4f8694",
+  "createdAt": "2026-10-26T00:12:08.951Z",
+  "updatedAt": "2026-10-27T14:59:22.811Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "knowledge",
+    "ru": "knowledge"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Connect materials when a task uses AI.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Подключайте материалы, если задача работает с ИИ.\"}]}]}"
+  },
+  "adminTitle": "knowledge",
+  "slug": "framework-reviewed-article-agent-connections-feature-2"
+}

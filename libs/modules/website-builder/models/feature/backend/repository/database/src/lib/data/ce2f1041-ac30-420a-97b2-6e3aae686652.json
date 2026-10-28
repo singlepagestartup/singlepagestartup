@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "ce2f1041-ac30-420a-97b2-6e3aae686652",
+  "createdAt": "2026-10-26T00:11:51.380Z",
+  "updatedAt": "2026-10-27T14:59:55.767Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Profile · who",
+    "ru": "Profile · кто"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Daria or the school assistant. A name and description represent a person or assistant; relations add articles, knowledge and skills.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Дарья или помощник школы. Имя и описание представляют человека или помощника; связи добавляют статьи, знания и навыки.\"}]}]}"
+  },
+  "adminTitle": "Profile · кто",
+  "slug": "framework-reviewed-article-social-structure-feature-0"
+}

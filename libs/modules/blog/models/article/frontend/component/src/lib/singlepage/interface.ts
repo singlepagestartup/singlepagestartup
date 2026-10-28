@@ -1,4 +1,7 @@
 import { IComponentProps as IHiddenComponentProps } from "@sps/shared-frontend-components/singlepage/hidden/interface";
+import type { IComponentProps as ICard } from "./card/interface";
+import type { IComponentProps as IPrivateContentDefault } from "./private-content-default/interface";
+import type { IComponentProps as ILoading } from "./loading/interface";
 import { IComponentProps as IFindComponentProps } from "./find/interface";
 import { IComponentProps as IAdminFormComponentProps } from "./admin/form/interface";
 import { IComponentProps as IAdminTableRowComponentProps } from "./admin/table-row/interface";
@@ -16,6 +19,9 @@ import { IComponentProps as IOverviewWithPrivateContentDefaultComponentProps } f
 
 export type IComponentProps =
   | IHiddenComponentProps
+  | ICard
+  | IPrivateContentDefault
+  | ILoading
   | IFindComponentProps
   | IAdminFormComponentProps
   | IAdminTableRowComponentProps

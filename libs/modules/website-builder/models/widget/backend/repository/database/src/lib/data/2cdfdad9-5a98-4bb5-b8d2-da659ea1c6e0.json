@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Common functions. Your own logic.",
+    "ru": "Общие функции. Ваша бизнес-логика."
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Use the existing modules together and extend the rules your product needs.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Используйте готовые модули вместе и добавляйте правила своего продукта.\"}]}]}"
+  },
+  "anchor": "foundation",
+  "className": "[&_.grid]:xl:grid-cols-3",
+  "id": "2cdfdad9-5a98-4bb5-b8d2-da659ea1c6e0",
+  "createdAt": "2026-10-23T20:18:05.012Z",
+  "updatedAt": "2026-10-23T20:18:05.012Z",
+  "variant": "content-feature-find-card",
+  "adminTitle": "Common functions. Your own logic.",
+  "slug": "framework-about-foundation"
+}

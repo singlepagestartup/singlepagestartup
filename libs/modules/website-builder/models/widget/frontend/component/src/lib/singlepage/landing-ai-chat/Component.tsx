@@ -1,132 +1,248 @@
-import Link from "next/link";
-import { cn } from "@sps/shared-frontend-client-utils";
+import {
+  cn,
+  getRichTextPlainText,
+  getRichTextMarkdown,
+} from "@sps/shared-frontend-client-utils";
+import { Component as WidgetsToFeatures } from "@sps/website-builder/relations/widgets-to-features/frontend/component";
+import { Component as FeaturesToFileStorageModuleFiles } from "@sps/website-builder/relations/features-to-file-storage-module-files/frontend/component";
+import { Component as FileStorageModuleFile } from "@sps/file-storage/models/file/frontend/component";
+import { Component as Feature } from "@sps/website-builder/models/feature/frontend/component";
 import { Component as Demo } from "./ClientComponent";
-import { ArrowRight, ChevronDown } from "lucide-react";
-import { AI_CHAT_WEBSITE_CONTENT as content } from "@sps/shared-utils";
-import type { IComponentPropsExtended } from "./interface";
-import { getLocalizedHref } from "@sps/shared-frontend-client-utils";
+import { internationalization } from "@sps/shared-configuration";
+import type {
+  IComponentPropsExtended,
+  ISectionsProps,
+  IDemoContentProps,
+  IDemoFiles,
+} from "./interface";
 
+function DemoContent({ features, isServer, language }: IDemoContentProps) {
+  const project = features.find(
+    (feature) => feature.variant === "demo-project",
+  );
+  const documents = features.filter(
+    (feature) => feature.variant === "demo-document",
+  );
+  const handoff = features.find(
+    (feature) => feature.variant === "demo-handoff",
+  );
+  if (!project || !documents.length) return null;
+  return (
+    <FeaturesToFileStorageModuleFiles
+      isServer={isServer}
+      variant="find"
+      apiProps={{
+        params: {
+          filters: {
+            and: [
+              {
+                column: "featureId",
+                method: "inArray",
+                value: documents.map((doc) => doc.id),
+              },
+            ],
+          },
+          orderBy: {
+            and: [
+              { column: "orderIndex", method: "asc" },
+              { column: "id", method: "asc" },
+            ],
+          },
+          limit: 1000,
+        },
+      }}
+    >
+      {({ data: fileLinks }) => {
+        const render = (files: IDemoFiles) => (
+          <Demo
+            key={language}
+            language={language}
+            projectTitle={project.title?.[language] || project.title?.en || ""}
+            reply={getRichTextPlainText(
+              project.subtitle?.[language] || project.subtitle?.en,
+            )}
+            settings={
+              <Feature
+                isServer={isServer}
+                variant="demo-project"
+                dataSource="props"
+                data={project}
+                language={language}
+              />
+            }
+            handoff={
+              handoff ? (
+                <Feature
+                  isServer={isServer}
+                  variant="demo-handoff"
+                  dataSource="props"
+                  data={handoff}
+                  language={language}
+                />
+              ) : undefined
+            }
+            documents={documents.map((doc) => {
+              const text = getRichTextMarkdown(
+                doc.description?.[language] || doc.description?.en,
+              );
+              return {
+                key: doc.id,
+                title: doc.title?.[language] || doc.title?.en || "",
+                text,
+                section:
+                  text.match(/^#+\s+(.+)/m)?.[1] ||
+                  doc.title?.[language] ||
+                  doc.title?.en ||
+                  "",
+                intro: getRichTextPlainText(
+                  doc.subtitle?.[language] || doc.subtitle?.en,
+                ),
+                files: (fileLinks || [])
+                  .filter((link) => link.featureId === doc.id)
+                  .flatMap((link) => {
+                    const record = files.find(
+                      (file) => file.id === link.fileStorageModuleFileId,
+                    );
+                    return record
+                      ? [
+                          {
+                            id: record.id,
+                            name: record.alt || record.adminTitle,
+                            record,
+                          },
+                        ]
+                      : [];
+                  }),
+              };
+            })}
+          />
+        );
+        if (!fileLinks) return null;
+        if (!fileLinks.length) return render([]);
+        return (
+          <FileStorageModuleFile
+            isServer={isServer}
+            variant="find"
+            apiProps={{
+              params: {
+                filters: {
+                  and: [
+                    {
+                      column: "id",
+                      method: "inArray",
+                      value: fileLinks.map(
+                        (link) => link.fileStorageModuleFileId,
+                      ),
+                    },
+                  ],
+                },
+                limit: 1000,
+              },
+            }}
+          >
+            {({ data: files }) => (files ? render(files) : null)}
+          </FileStorageModuleFile>
+        );
+      }}
+    </FeaturesToFileStorageModuleFiles>
+  );
+}
+function Sections({ links, features, isServer, language }: ISectionsProps) {
+  const ordered = links.flatMap((link) => {
+    const feature = features.find((item) => item.id === link.featureId);
+    return feature ? [feature] : [];
+  });
+  return links.map((link) => {
+    const feature = features.find((item) => item.id === link.featureId);
+    if (!feature || feature.variant.startsWith("demo-")) return null;
+    return (
+      <WidgetsToFeatures
+        key={link.id}
+        isServer={isServer}
+        variant="default"
+        dataSource="props"
+        data={link}
+        language={language}
+        className="block min-w-0"
+      >
+        {feature.variant === "landing-workflow" ? (
+          <DemoContent
+            features={ordered}
+            isServer={isServer}
+            language={language}
+          />
+        ) : undefined}
+      </WidgetsToFeatures>
+    );
+  });
+}
 export function Component({
-  language = "en",
+  language = internationalization.defaultLanguage.code,
   data,
   className,
+  isServer,
 }: IComponentPropsExtended) {
-  const pathname = `/${language}`;
   return (
     <main
       id="ai-chat-main"
       data-module="website-builder"
       data-model="widget"
       data-variant="landing-ai-chat"
-      data-id={data?.id}
-      className={cn(data?.className, className)}
+      data-id={data.id}
+      className={cn("w-full min-w-0 pb-10", data.className, className)}
     >
-      <section className="mx-auto max-w-6xl px-5 pb-6 pt-4 md:px-8 md:pt-6">
-        <div className="grid overflow-hidden rounded-2xl bg-default text-default-foreground md:grid-cols-[1.1fr_0.9fr]">
-          <div className="flex flex-col justify-center p-6 md:p-8">
-            <p className="text-sm leading-6 text-default-muted-foreground">
-              <span className="mb-4 block h-1 w-10 bg-primary text-primary-foreground" />
-              {content.hero.paragraphs[0]}
-            </p>
-            <h1 className="mt-5 max-w-md text-4xl font-semibold leading-tight tracking-normal">
-              {data?.title?.[language] || data?.title?.en || content.hero.title}
-            </h1>
-            <p className="mt-5 max-w-md text-base leading-7 text-default-muted-foreground">
-              {content.hero.paragraphs[1]}
-            </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Link
-                href={getLocalizedHref(pathname, "/ai-chat/projects")}
-                className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary text-primary-foreground px-5 text-sm font-semibold"
-              >
-                {content.hero.links[0].text}
-                <ArrowRight className="size-4" />
-              </Link>
-              <a
-                href="#workflow"
-                className="inline-flex min-h-11 items-center rounded-xl border border-default-foreground/20 px-5 text-sm font-semibold"
-              >
-                {content.labels["navigation-foundation"]}
-              </a>
-            </div>
-            <p className="mt-4 max-w-md text-xs leading-5 text-default-muted-foreground">
-              {content.hero.paragraphs[2]}
-            </p>
-          </div>
-          <figure className="flex items-center justify-center md:p-5 md:pl-0">
-            <img
-              src="/images/ai-chat/singlepagestartup-photography-solo-founder-v1-square.png"
-              alt={content.labels["hero-photo-alt"]}
-              width={1254}
-              height={1254}
-              className="block aspect-square h-auto w-full object-contain md:rounded-xl"
-            />
-          </figure>
-        </div>
-      </section>
-      <section
-        id="workflow"
-        className="mx-auto max-w-6xl scroll-mt-24 px-5 pb-10 pt-8 md:px-8 md:pb-14"
+      <WidgetsToFeatures
+        isServer={isServer}
+        variant="find"
+        apiProps={{
+          params: {
+            filters: {
+              and: [{ column: "widgetId", method: "eq", value: data.id }],
+            },
+            orderBy: {
+              and: [
+                { column: "orderIndex", method: "asc" },
+                { column: "id", method: "asc" },
+              ],
+            },
+            limit: 1000,
+          },
+        }}
       >
-        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-          <div className="max-w-xl">
-            <h2 className="text-3xl font-semibold leading-tight">
-              {content.workflow.title}
-            </h2>
-            <p className="mt-3 text-base leading-7 text-muted-foreground">
-              {content.workflow.paragraphs[0]}
-            </p>
-          </div>
-          <p className="max-w-xs text-xs leading-5 text-muted-foreground">
-            {content.labels["demo-upload-note"]}
-          </p>
-        </div>
-        <Demo />
-      </section>
-      <section id="help" className="mx-auto max-w-6xl px-5 pb-10 md:px-8">
-        <div className="flex flex-wrap items-center justify-between gap-6 border-t border-border py-8">
-          <div className="max-w-xl">
-            <h2 className="text-2xl font-semibold">{content.continue.title}</h2>
-            <p className="mt-3 text-base leading-7 text-muted-foreground">
-              {content.continue.paragraphs[0]}
-            </p>
-          </div>
-          <Link
-            href={getLocalizedHref(pathname, "/ai-chat/projects")}
-            className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary text-primary-foreground px-5 text-sm font-semibold"
-          >
-            {content.hero.links[0].text}
-            <ArrowRight className="size-4" />
-          </Link>
-        </div>
-        <details className="group border-t border-border">
-          <summary className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-5 py-5 text-sm font-semibold">
-            {content.terms.title}
-            <ChevronDown className="size-5 group-open:rotate-180" />
-          </summary>
-          <div className="pb-7">
-            <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
-              {content.terms.paragraphs[0]}
-            </p>
-            <dl className="mt-5 grid gap-5 md:grid-cols-2">
-              {content.terms.items.map((item) => (
-                <div key={item.title}>
-                  <dt className="text-sm font-semibold">{item.title}</dt>
-                  <dd className="mt-2 text-sm leading-6 text-muted-foreground">
-                    {item.text}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-            <Link
-              href={getLocalizedHref(pathname, "/ai-chat/settings")}
-              className="mt-5 inline-block text-sm underline"
+        {({ data: links }) =>
+          !links?.length ? null : (
+            <Feature
+              isServer={isServer}
+              variant="find"
+              apiProps={{
+                params: {
+                  filters: {
+                    and: [
+                      {
+                        column: "id",
+                        method: "inArray",
+                        value: links.map((link) => link.featureId),
+                      },
+                    ],
+                  },
+                  limit: 1000,
+                },
+              }}
             >
-              Account settings and purchases
-            </Link>
-          </div>
-        </details>
-      </section>
+              {({ data: features }) =>
+                features ? (
+                  <Sections
+                    links={links}
+                    features={features}
+                    language={language}
+                    isServer={isServer}
+                  />
+                ) : null
+              }
+            </Feature>
+          )
+        }
+      </WidgetsToFeatures>
     </main>
   );
 }

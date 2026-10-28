@@ -1,0 +1,33 @@
+{
+  "$schema": "../../../../../block.schema.json",
+  "id": "rbac.subject.me-blog-module-article-create-default",
+  "title": "me-blog-module-article-create-default",
+  "description": "me-blog-module-article-create-default presentation.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "subject",
+    "variant": "me-blog-module-article-create-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "rbac.subject",
+    "pageName": "rbac",
+    "variantName": "me-blog-module-article-create-default",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": [
+    "rbac",
+    "subject",
+    "me-blog-module-article-create-default"
+  ]
+}

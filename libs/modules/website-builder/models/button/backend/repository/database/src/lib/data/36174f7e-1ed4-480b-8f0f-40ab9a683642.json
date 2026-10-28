@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Read architecture articles",
+    "ru": "Статьи об архитектуре"
+  },
+  "subtitle": {},
+  "url": "/blog",
+  "className": "w-fit",
+  "id": "36174f7e-1ed4-480b-8f0f-40ab9a683642",
+  "createdAt": "2026-10-24T01:05:57.626Z",
+  "updatedAt": "2026-10-24T01:05:57.626Z",
+  "variant": "ghost",
+  "adminTitle": "Read architecture articles",
+  "slug": "framework-journey-guide-blog-actions-2"
+}

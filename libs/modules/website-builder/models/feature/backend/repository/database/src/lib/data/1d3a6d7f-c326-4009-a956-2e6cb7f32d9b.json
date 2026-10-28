@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "1d3a6d7f-c326-4009-a956-2e6cb7f32d9b",
+  "createdAt": "2026-10-26T00:12:52.645Z",
+  "updatedAt": "2026-10-27T14:59:27.216Z",
+  "variant": "dropdown",
+  "title": {
+    "en": "Can I develop the project further?",
+    "ru": "Можно ли дорабатывать проект потом?"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Yes. Return to the same chat, describe the changes you need and add to the project knowledge. If you need a specific feature, you can extend the code with an AI assistant or a developer.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Да. Возвращайтесь в тот же чат, описывайте нужные изменения и дополняйте знания о проекте. Если потребуется особая функция, можно доработать код с ИИ-помощником или подключить разработчика.\"}]}]}"
+  },
+  "adminTitle": "Можно ли дорабатывать проект потом?",
+  "slug": "framework-reviewed-faq-3"
+}

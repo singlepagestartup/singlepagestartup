@@ -1,4 +1,5 @@
 import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
+import { Component as AuthorDefault } from "./author-default";
 import { Component as AdminV2Form } from "./admin-v2/form";
 import { Component as AdminV2SelectInput } from "./admin-v2/select-input";
 import { Component as AdminV2Table } from "./admin-v2/table";
@@ -11,6 +12,7 @@ import { Component as Find } from "./find";
 import { Component as Default } from "./default";
 export const variants = {
   hidden: Hidden,
+  "author-default": AuthorDefault,
   "admin-v2-form": AdminV2Form,
   "admin-v2-select-input": AdminV2SelectInput,
   "admin-v2-table": AdminV2Table,

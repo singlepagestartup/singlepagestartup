@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "A request for your project",
+    "ru": "Запрос для вашего проекта"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"I want to sell photography courses. Visitors view the programme, buyers open their materials and my team manages courses and orders. I need registration, sign-in and customer accounts.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Хочу продавать курсы фотографии. Посетители смотрят программу, покупатели открывают свои материалы, а моя команда управляет курсами и заказами. Нужны регистрация, вход и личные кабинеты.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "9950f76e-94af-4c99-a9a9-1f53a26cf8d7",
+  "createdAt": "2026-10-26T00:11:21.552Z",
+  "updatedAt": "2026-10-27T14:59:09.246Z",
+  "variant": "content-rich",
+  "adminTitle": "Запрос для вашего проекта",
+  "slug": "framework-reviewed-article-rbac-task"
+}

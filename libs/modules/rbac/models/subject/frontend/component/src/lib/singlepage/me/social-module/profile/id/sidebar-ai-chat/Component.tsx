@@ -3,6 +3,7 @@ import type { IComponentPropsExtended } from "./interface";
 export function Component(props: IComponentPropsExtended) {
   return (
     <ClientComponent
+      language={props.language}
       profilesRead={props.profilesRead}
       skillsRead={props.skillsRead}
       knowledgeRead={props.knowledgeRead}

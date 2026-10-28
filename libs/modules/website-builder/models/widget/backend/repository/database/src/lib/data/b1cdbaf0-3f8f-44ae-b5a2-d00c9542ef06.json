@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "",
+    "ru": ""
+  },
+  "subtitle": {},
+  "description": {
+    "en": "",
+    "ru": ""
+  },
+  "anchor": null,
+  "className": "grid-cols-1",
+  "id": "b1cdbaf0-3f8f-44ae-b5a2-d00c9542ef06",
+  "createdAt": "2026-10-23T20:18:08.675Z",
+  "updatedAt": "2026-10-23T20:18:08.675Z",
+  "variant": "content-collection",
+  "adminTitle": "framework-author-detail-frame",
+  "slug": "framework-author-detail-frame"
+}

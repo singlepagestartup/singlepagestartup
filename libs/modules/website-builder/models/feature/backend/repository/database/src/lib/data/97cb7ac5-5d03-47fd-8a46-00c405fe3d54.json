@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "97cb7ac5-5d03-47fd-8a46-00c405fe3d54",
+  "createdAt": "2026-10-24T01:05:50.441Z",
+  "updatedAt": "2026-10-24T01:05:50.441Z",
+  "variant": "step",
+  "title": {
+    "en": "Bring a reviewed brief",
+    "ru": "Подготовьте проверенный бриф"
+  },
+  "subtitle": {
+    "en": "01",
+    "ru": "01"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Export your business and product documents from AI Chat, or use a brief you already have.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Экспортируйте документы о бизнесе и продукте из AI-чата или используйте готовый бриф.\"}]}]}"
+  },
+  "adminTitle": "Bring a reviewed brief",
+  "slug": "framework-journey-setup-step-0"
+}

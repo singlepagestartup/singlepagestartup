@@ -1,4 +1,8 @@
 import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
+import { Component as AuthorOverviewDefault } from "./author-overview-default";
+import { Component as AuthorBylineDefault } from "./author-byline-default";
+import { Component as AuthorCardDefault } from "./author-card-default";
+import { Component as Byline } from "./byline";
 import { Component as AgentIdAiChat } from "./agent-id-ai-chat";
 import { Component as IdSettingsAiChat } from "./id-settings-ai-chat";
 import { Component as SidebarAiChatProject } from "./sidebar-ai-chat-project";
@@ -26,6 +30,10 @@ import { Component as Default } from "./default";
 import { Component as Find } from "./find";
 export const variants = {
   hidden: Hidden,
+  "author-overview-default": AuthorOverviewDefault,
+  "author-byline-default": AuthorBylineDefault,
+  "author-card-default": AuthorCardDefault,
+  byline: Byline,
   "agent-id-ai-chat": AgentIdAiChat,
   "id-settings-ai-chat": IdSettingsAiChat,
   "sidebar-ai-chat-project": SidebarAiChatProject,

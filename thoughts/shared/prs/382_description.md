@@ -7,15 +7,15 @@ Resolves #380. Work stays on `codex/studio-linear-workflow`; unrelated local Stu
 ## Changes
 
 - Square masks with allowlisted fields, exact ID/slug roots, explicit relation chains, locale-specific text and whole-field fallbacks. The first visible linked Metadata wins by orderIndex/ID.
-- Validated JSONB `metadata.seo` on Article/Product/Profile; both admin generations and Studio editors; atomic `_expectedMetadata` conflict checks through API/SDK/MCP.
+- Validated JSONB `metadata.seo` on Article/Product/Profile; both admin generations and Studio editors; atomic `_expectedMetadata` conflict checks through API/SDK/MCP. Public Profile SEO uses the Author DTO and UUID routes, exposing only metadata.seo from JSON.
 - Metadata image fields and a generated Metadata→File relation, ordered covers, alt/dimensions and draft preview. Metadata-only File PATCH now updates the existing upload.
-- `hidden` across 61 models and 95 relations, generator support, filtering before count/pagination, true 404 for primary content and separate authorized admin reads.
+- `hidden` across 61 models and 98 relations, generator support, filtering before count/pagination, true 404 for primary content and separate authorized admin reads.
 - Language-aware Page uniqueness/lookup, `indexing`, canonical, robots, factual JSON-LD and bounded sitemap chunks with 503 on upstream failure.
 - Server-rendered rich text and H1 for article/product content. Product cart/checkout remain session-owned client actions. Request rendering avoids the reproduced ISR fallback 500 and settles route visibility before streaming.
 
 ## Verification
 
-- [x] Focused Jest suites: 467 passed; one pre-existing backend test skipped. Covers Host module/app, shared API/components/utils, middleware, MCP, File Storage, TipTap and anonymous product SSR.
+- [x] Focused Jest suites: 554 passed; one pre-existing backend test skipped. Covers Host module/app, shared API/components/utils, middleware, MCP, File Storage, TipTap and anonymous product SSR.
 - [x] `tsc -p apps/host/tsconfig.json --noEmit`; scoped ESLint with the repository configuration; `git diff --check`.
 - [x] `bun tools/studio/design-system/validate.ts`; `node tools/agents/module-dependencies.mjs` — 0 dependency violations.
 - [x] Production Next build with isolated output, one CPU and webpack cache disabled.
@@ -28,7 +28,9 @@ Resolves #380. Work stays on `codex/studio-linear-workflow`; unrelated local Stu
 
 ## Notes
 
-The diff is broad because every model/relation receives the requested hidden contract. Existing variants and database data snapshots are preserved. The runtime change to request rendering has a performance tradeoff; final local fixture responses were 13–841 ms (841 ms for the first home request), which is not a production load benchmark.
+Reconciled current main in the same branch, retaining its Article/Product presentation and public Author API. Added hidden to its three new relations and regenerated consistency capture as 0010. Original local Studio/workflow edits are restored byte-for-byte and remain unstaged.
+
+The diff is broad because every model/relation receives the requested hidden contract. Existing variants and database data snapshots are preserved. The runtime change to request rendering has a performance tradeoff; final local fixture responses were 9–255 ms after reconciliation, which is not a production load benchmark.
 
 One pre-existing local database has an inconsistent migration baseline; it was not changed. Migration verification used isolated databases. A fresh full API migration currently omits Analytic, so its existing target was run separately for the test environment.
 
@@ -39,6 +41,8 @@ Production m2commerce.ru and its data are unchanged. Existing literal Metadata t
 Back up and reconcile each project's migration baseline; apply the generated content JSON, Metadata image, Page locale/indexing, Metadata→File and provider capture migrations. Audit duplicate URL/language pairs and legacy viewport settings.
 
 Adapt owned components and SDK readers to hidden/publicOnly/includeHidden behavior. Admin hidden reads require collection POST permission or operator credentials and must remain separate from anonymous caches. Keep public product content available before session initialization.
+
+Public author Pages use `[social.profiles.id]`, explicit visible Article/Product links and GET permission for `/api/social/profiles/authors`; private slugs and non-SEO Profile JSON are not public.
 
 Link real Pages to Metadata, replace shared literals with square masks, populate requested locales and `metadata.seo`, and attach real covers. Preserve unrelated JSON sections and send `_expectedMetadata` for concurrent API/MCP/editor updates. Set public Host/API origins and define a policy for content-changing query parameters.
 

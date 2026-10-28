@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Backend articles",
+    "ru": "Статьи о Backend"
+  },
+  "subtitle": {},
+  "url": "/blog/categories/backend",
+  "className": "w-fit",
+  "id": "7122b4c8-12fc-47eb-8396-0378cc368dd5",
+  "createdAt": "2026-10-24T01:06:22.227Z",
+  "updatedAt": "2026-10-24T01:06:22.227Z",
+  "variant": "ghost",
+  "adminTitle": "Backend articles",
+  "slug": "framework-journey-footer-group-2-2"
+}

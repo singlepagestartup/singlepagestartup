@@ -84,7 +84,19 @@ export function createMetadataContext(page: IResolvedPage, language: string) {
     "blog.categories": blogCategoryApi,
     "ecommerce.products": ecommerceProductApi,
     "ecommerce.categories": ecommerceCategoryApi,
-    "social.profiles": socialProfileApi,
+    "social.profiles": {
+      find: async ({ params, options }: Parameters<IReader["find"]>[0]) => {
+        const id = params.filters.and.find(
+          (filter) => filter.column === "id" && filter.method === "eq",
+        );
+        return id
+          ? socialProfileApi.authorFind({
+              params: { profileId: id.value },
+              options,
+            })
+          : [];
+      },
+    },
     "file-storage.files": fileStorageFileApi,
   } as unknown as Record<string, IReader>;
   const relations: Record<string, IRelation> = {
@@ -211,6 +223,13 @@ export function createMetadataContext(page: IResolvedPage, language: string) {
       if (!api) throw new MetadataMaskError(`Unavailable target: ${target}`);
       const linked: IRecord[] = [];
       for (const entity of records) {
+        if (
+          forward &&
+          name === "social.profiles-to-file-storage-module-files"
+        ) {
+          if (entity.avatar) linked.push(entity.avatar as IRecord);
+          continue;
+        }
         const links = await read(
           name,
           relation.api,
@@ -335,7 +354,14 @@ export function createMetadataContext(page: IResolvedPage, language: string) {
           ["metadata", "seo", "keywords"],
           language,
         ) as string[] | undefined,
-        image: relation ? await image(name, entity, relation) : undefined,
+        image:
+          kind === "profile"
+            ? entity.avatar
+              ? fileImage(entity.avatar as IRecord)
+              : undefined
+            : relation
+              ? await image(name, entity, relation)
+              : undefined,
       };
     }
     return undefined;

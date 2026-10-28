@@ -14,7 +14,7 @@ export function Component(props: IComponentPropsExtended) {
       data={props.ecommerceModuleProduct}
       language={props.language}
       topSlot={
-        <CardHeader className="pb-0">
+        <CardHeader className="p-0">
           <CategoryRowButtonDefault
             isServer={props.isServer}
             language={props.language}
@@ -24,7 +24,7 @@ export function Component(props: IComponentPropsExtended) {
         </CardHeader>
       }
       middleSlot={
-        <CardContent>
+        <CardContent className="p-0">
           <SocialModuleProfileButtonDefault
             isServer={props.isServer}
             language={props.language}
@@ -34,7 +34,7 @@ export function Component(props: IComponentPropsExtended) {
         </CardContent>
       }
     >
-      <div className="w-full flex flex-col gap-4">
+      <div className="grid min-w-0 gap-4">
         <Subject
           isServer={props.isServer}
           ecommerceModuleProduct={props.ecommerceModuleProduct}

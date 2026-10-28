@@ -1,0 +1,14 @@
+{
+  "id": "5285ab68-9457-4736-a9b9-1cd419130200",
+  "createdAt": "2026-10-24T01:05:58.016Z",
+  "updatedAt": "2026-10-24T01:05:58.016Z",
+  "variant": "default",
+  "className": "w-full",
+  "title": {
+    "en": "Actions",
+    "ru": "Действия"
+  },
+  "description": {},
+  "adminTitle": "Actions",
+  "slug": "framework-journey-module-social-actions"
+}

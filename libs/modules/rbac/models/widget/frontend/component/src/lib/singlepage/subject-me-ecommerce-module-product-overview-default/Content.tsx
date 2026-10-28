@@ -1,3 +1,5 @@
+import { Component as CollectionSkeleton } from "./Skeleton";
+import { notFound } from "next/navigation";
 import { Component as EcommerceModuleProduct } from "@sps/ecommerce/models/product/frontend/component";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import { CardContent, CardHeader } from "@sps/shared-ui-shadcn";
@@ -11,6 +13,7 @@ export function Component(props: IContentProps) {
     <EcommerceModuleProduct
       isServer={props.isServer}
       variant="find"
+      skeleton={<CollectionSkeleton />}
       apiProps={{
         params: {
           filters: {
@@ -26,6 +29,7 @@ export function Component(props: IContentProps) {
       }}
     >
       {({ data: products }) => {
+        if (products?.length === 0) notFound();
         return products?.map((product) => {
           return (
             <EcommerceModuleProduct

@@ -1,0 +1,12 @@
+{
+  "id": "1c422506-a044-4dd6-965b-1249bbc3be27",
+  "title": "Broadcast · Code Framework",
+  "url": "/framework/modules/broadcast",
+  "description": "Channels and messages for realtime or queued delivery.",
+  "createdAt": "2026-10-24T01:06:12.136Z",
+  "updatedAt": "2026-10-24T01:06:12.136Z",
+  "variant": "default",
+  "className": "",
+  "language": "en",
+  "adminTitle": "Broadcast · Code Framework"
+}

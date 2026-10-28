@@ -84,7 +84,7 @@ export function SubjectMeIdentityFindInformation(props: IComponentProps = {}) {
     setIdentities((current) =>
       current.filter((item) => item.id !== identity.id),
     );
-    setResult("Sign-in method removed in this preview.");
+    setResult("Способ входа отключён в этом примере.");
   }, []);
   const connect = useCallback(
     (provider: string, account: string) => {
@@ -107,7 +107,7 @@ export function SubjectMeIdentityFindInformation(props: IComponentProps = {}) {
         },
       ]);
       setAdding(false);
-      setResult("Sign-in method connected in this preview.");
+      setResult("Способ входа подключён в этом примере.");
     },
     [updateEmail, props.identities],
   );
@@ -127,7 +127,7 @@ export function SubjectMeIdentityFindInformation(props: IComponentProps = {}) {
           </p>
         </div>
         <span className="rounded-full bg-muted px-3 py-1.5 text-xs text-muted-foreground">
-          {identities.length} connected
+          {identities.length} подключено
         </span>
       </div>
       <div className="mt-6 space-y-4">
@@ -158,11 +158,11 @@ export function SubjectMeIdentityFindInformation(props: IComponentProps = {}) {
           aria-expanded={adding}
           onClick={() => setAdding((value) => !value)}
         >
-          Add sign-in method
+          Добавить способ входа
         </Button>
         {adding && (
           <div className="mt-5">
-            <h3 className="text-sm font-semibold">Choose a method</h3>
+            <h3 className="text-sm font-semibold">Выберите способ</h3>
             <div className="mt-3 grid min-w-0 gap-2 sm:grid-cols-2">
               {connectors.map((Connect, index) => (
                 <Connect
@@ -276,8 +276,8 @@ function Button({
 }
 export const defaultSubjectMeIdentityFindInformationProps: SubjectMeIdentityFindInformationProps =
   {
-    title: "Sign-in methods",
+    title: "Способы входа",
     description:
-      "Choose how you sign in. Manage each connected account separately.",
-    emptyLabel: "No sign-in methods connected to this account.",
+      "Выберите, как входить в аккаунт. Каждое подключение можно настроить отдельно.",
+    emptyLabel: "К этому аккаунту пока не подключены способы входа.",
   };

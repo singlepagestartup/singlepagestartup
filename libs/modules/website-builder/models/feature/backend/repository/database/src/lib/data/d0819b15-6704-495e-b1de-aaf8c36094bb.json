@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "d0819b15-6704-495e-b1de-aaf8c36094bb",
+  "createdAt": "2026-10-26T00:12:50.964Z",
+  "updatedAt": "2026-10-27T14:59:56.420Z",
+  "variant": "dropdown",
+  "title": {
+    "en": "Do I need programming skills to start?",
+    "ru": "Нужно ли уметь программировать, чтобы начать?"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Start by describing your idea in your own words. The AI assistant will help you choose features, prepare pages and publish the first version. Review how the project works and say what to change.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Для начала достаточно описать идею своими словами. ИИ-помощник поможет выбрать функции, подготовить страницы и опубликовать первую версию. Вы смотрите, как работает проект, и говорите, что изменить.\"}]}]}"
+  },
+  "adminTitle": "Нужно ли уметь программировать, чтобы начать?",
+  "slug": "framework-reviewed-faq-0"
+}

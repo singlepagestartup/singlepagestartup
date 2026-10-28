@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Explore module",
+    "ru": "Изучить модуль"
+  },
+  "subtitle": {},
+  "url": "/framework/modules/knowledge",
+  "className": "w-fit",
+  "id": "ee674d7b-9d80-443c-8deb-7da43e2e7edf",
+  "createdAt": "2026-10-24T01:05:48.486Z",
+  "updatedAt": "2026-10-24T01:05:48.486Z",
+  "variant": "secondary",
+  "adminTitle": "Explore module",
+  "slug": "framework-journey-module-group-3-actions-0"
+}

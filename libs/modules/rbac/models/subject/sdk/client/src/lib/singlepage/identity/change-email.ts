@@ -1,8 +1,8 @@
 "use client";
 import { useMutation } from "@tanstack/react-query";
 import { clientHost, route } from "@sps/rbac/models/subject/sdk/model";
-import { api } from "@sps/rbac/models/subject/sdk/server";
-import type { IProps } from "@sps/rbac/models/subject/sdk/server";
+import { api, type IProps } from "@sps/rbac/models/subject/sdk/server";
+
 type IRequestProps = IProps["IIdentityChangeEmailRequestProps"];
 type IVerifyProps = IProps["IIdentityChangeEmailVerifyProps"];
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";

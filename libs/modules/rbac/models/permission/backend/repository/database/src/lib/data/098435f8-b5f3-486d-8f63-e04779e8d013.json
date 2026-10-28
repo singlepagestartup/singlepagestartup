@@ -1,0 +1,9 @@
+{
+  "id": "098435f8-b5f3-486d-8f63-e04779e8d013",
+  "createdAt": "2026-10-15T13:47:45.611Z",
+  "updatedAt": "2026-10-15T13:47:45.611Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/rbac/widgets-to-crm-module-widgets"
+}

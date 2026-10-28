@@ -18,6 +18,8 @@ import { Service as BillingInvoiceService } from "@sps/billing/models/invoice/ba
 import { Service as FileStorageFileService } from "@sps/file-storage/models/file/backend/app/api/src/lib/service";
 import {
   Service as FindByIdCheckoutAttributesService,
+  isSupportedOrderInterval,
+  isSupportedOrderType,
   type IResult as IFindByIdCheckoutAttributesResult,
 } from "./checkout-attributes";
 import { type IExtendedEcommerceModuleProduct } from "@sps/ecommerce/models/product/backend/app/api/src/lib/service";
@@ -237,13 +239,6 @@ export class Service {
       (fileStorageModuleFiles ?? []).map((item) => [item.id, item]),
     );
 
-    const checkoutAttributesByCurrency =
-      await this.findByIdCheckoutAttributes.execute({
-        id: props.id,
-        billingModuleCurrencyId:
-          ordersToBillingModuleCurrencies[0].billingModuleCurrencyId,
-      });
-
     const billingModulePaymentIntents =
       ordersToBillingModulePaymentIntents?.length
         ? await this.billingModule.paymentIntent.find({
@@ -411,6 +406,23 @@ export class Service {
       }),
     );
 
+    const extendedPaymentIntents: IResult["ordersToBillingModulePaymentIntents"] =
+      ordersToBillingModulePaymentIntents.map((item) => {
+        const billingModulePaymentIntent = billingModulePaymentIntentsById.get(
+          item.billingModulePaymentIntentId,
+        );
+        if (!billingModulePaymentIntent)
+          throw new Error(
+            "Not found error. 'billingModulePaymentIntent' not found.",
+          );
+        return { ...item, billingModulePaymentIntent };
+      });
+    const checkoutAttributesByCurrency = await this.checkoutPresentation({
+      order,
+      currency: ordersToBillingModuleCurrencies[0],
+      payments: extendedPaymentIntents,
+    });
+
     return {
       ...order,
       checkoutAttributesByCurrency,
@@ -445,24 +457,140 @@ export class Service {
             ),
           };
         }) ?? [],
-      ordersToBillingModulePaymentIntents:
-        ordersToBillingModulePaymentIntents?.map((item) => {
-          const billingModulePaymentIntent =
-            billingModulePaymentIntentsById.get(
-              item.billingModulePaymentIntentId,
-            );
-
-          if (!billingModulePaymentIntent) {
-            throw new Error(
-              "Not found error. 'billingModulePaymentIntent' not found.",
-            );
-          }
-
-          return {
-            ...item,
-            billingModulePaymentIntent,
-          };
-        }) ?? [],
+      ordersToBillingModulePaymentIntents: extendedPaymentIntents,
     };
+  }
+
+  /** Read existing payment terms without making a retired currency purchasable. */
+  private async checkoutPresentation(props: {
+    order: IEcommerceModuleOrder;
+    currency: IEcommerceModuleOrdersToBillingModuleCurrencies;
+    payments: IResult["ordersToBillingModulePaymentIntents"];
+  }): Promise<IFindByIdCheckoutAttributesResult> {
+    const { order, currency, payments } = props;
+    const candidates = new Map<
+      string,
+      { intent: IBillingModulePaymentIntent; invoice: IBillingModuleInvoice }
+    >();
+    for (const { billingModulePaymentIntent: intent } of payments) {
+      const currencyIds = new Set(
+        intent.paymentIntentsToCurrencies.map((link) => link.currency.id),
+      );
+      if (!currencyIds.has(currency.billingModuleCurrencyId)) {
+        // Period acceptance considers every paid Invoice on the Order. Do not
+        // pair its newest Invoice with another currency's saved interval here.
+        if (
+          intent.paymentIntentsToInvoices.some(
+            ({ invoice }) => invoice.status === "paid",
+          )
+        )
+          throw new Error(
+            "Validation error. Paid Invoice currency does not match this Order",
+          );
+        continue;
+      }
+      if (currencyIds.size !== 1)
+        throw new Error(
+          "Validation error. Stored payment currency is ambiguous",
+        );
+      for (const { invoice } of intent.paymentIntentsToInvoices) {
+        const previous = candidates.get(invoice.id);
+        if (previous && previous.intent.id !== intent.id)
+          throw new Error(
+            "Validation error. Stored Invoice has multiple payment contexts",
+          );
+        candidates.set(invoice.id, { intent, invoice });
+      }
+    }
+    const paid = [...candidates.values()].filter(
+      ({ invoice }) => invoice.status === "paid",
+    );
+    for (const { invoice } of paid)
+      if (!Number.isFinite(new Date(invoice.createdAt).getTime()))
+        throw new Error("Validation error. Stored Invoice date is invalid");
+    if (
+      order.subscriptionPeriodInvoiceId &&
+      !paid.some(
+        ({ invoice }) => invoice.id === order.subscriptionPeriodInvoiceId,
+      )
+    )
+      throw new Error(
+        "Validation error. Accepted Invoice is missing from this Order payment context",
+      );
+    paid.sort((a, b) => {
+      const first = new Date(a.invoice.createdAt).getTime();
+      const second = new Date(b.invoice.createdAt).getTime();
+      return first - second || a.invoice.id.localeCompare(b.invoice.id);
+    });
+    if (!paid.length && candidates.size > 1)
+      throw new Error(
+        "Validation error. Unpaid Order has multiple Invoice contexts",
+      );
+    const selected = paid.at(-1) ?? [...candidates.values()][0];
+    if (selected) {
+      const { intent, invoice } = selected;
+      if (!Number.isFinite(invoice.amount) || invoice.amount < 0)
+        throw new Error("Validation error. Stored Invoice amount is invalid");
+      if (!isSupportedOrderType(intent.type))
+        throw new Error("Validation error. Stored payment type is unsupported");
+      // Commerce Product type owns delivery. Telegram can settle a subscription
+      // with a one_off Intent while retaining the saved subscription interval.
+      const configured = await this.findByIdCheckoutAttributes.execute({
+        id: order.id,
+      });
+      if (configured.type === "subscription") {
+        if (intent.interval && isSupportedOrderInterval(intent.interval))
+          return {
+            amount: invoice.amount,
+            type: configured.type,
+            interval: intent.interval,
+          };
+        // Initial Free intentionally has a zero one_off settlement with no
+        // provider renewal contract. Keep its Product's delivery interval.
+        if (
+          invoice.amount !== 0 ||
+          intent.type !== "one_off" ||
+          intent.interval
+        )
+          throw new Error(
+            "Validation error. Stored subscription interval is unsupported",
+          );
+      }
+      return { ...configured, amount: invoice.amount };
+    }
+    if (
+      payments.some(
+        ({ billingModulePaymentIntent }) =>
+          billingModulePaymentIntent.paymentIntentsToInvoices.length,
+      )
+    )
+      throw new Error(
+        "Validation error. Stored Invoice currency does not match this Order",
+      );
+
+    if (order.type === "cart" && order.status === "new") {
+      try {
+        return await this.findByIdCheckoutAttributes.execute({
+          id: order.id,
+          billingModuleCurrencyId: currency.billingModuleCurrencyId,
+        });
+      } catch (error) {
+        if (
+          !(error instanceof Error) ||
+          error.message !==
+            "Not Found error. Product does not have any target price attributes"
+        )
+          throw error;
+      }
+    }
+    // An unbilled legacy cart can still be inspected after its currency retires.
+    // This is its saved amount, not a quote accepted by the checkout command.
+    const amount = Number(currency.amount);
+    if (!currency.amount.trim() || !Number.isFinite(amount) || amount < 0)
+      throw new Error("Validation error. Stored Order amount is invalid");
+    const configured = await this.findByIdCheckoutAttributes.execute({
+      id: order.id,
+    });
+    return { ...configured, amount };
   }
 }

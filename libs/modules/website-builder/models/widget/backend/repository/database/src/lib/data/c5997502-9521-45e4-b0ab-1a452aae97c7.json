@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Check the complete page",
+    "ru": "Проверьте страницу целиком"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Use an article with a cover, localized text and ordered Widget relations. Check exact records, loading and errors, then open the built Host. A browser session and a cached public page may require different reading paths.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Named URL values are selected in the leaf Host Page callback. Give Blog the specific article slug; keep the full route map inside that callback.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Используйте статью с обложкой, локализованным текстом и упорядоченными связями Widget. Проверьте конкретные записи, загрузку и ошибки, затем откройте собранный Host. Сессия браузера и кешируемая публичная страница могут требовать разных путей чтения.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Именованные значения URL выбираются в callback конечной Host Page. Передайте Blog конкретный slug статьи; полная карта маршрута остаётся в этом callback.\"}]}]}"
+  },
+  "anchor": "ru-section-nextjs-server-client-readers-and-widget-slots-9",
+  "className": "",
+  "id": "c5997502-9521-45e4-b0ab-1a452aae97c7",
+  "createdAt": "2026-10-26T07:34:01.035Z",
+  "updatedAt": "2026-10-27T14:59:15.569Z",
+  "variant": "content-rich",
+  "adminTitle": "Проверьте страницу целиком",
+  "slug": "ru-section-nextjs-server-client-readers-and-widget-slots-9"
+}

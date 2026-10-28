@@ -12,6 +12,7 @@ import type {
   IAccountMenuProps,
 } from "./interface";
 import { Icon } from "@sps/ui-adapter";
+import { internationalization } from "@sps/shared-configuration";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -66,7 +67,7 @@ function AccountTokenBalance({ balance, language }: IAccountTokenBalanceProps) {
       : "—";
   return (
     <span className="block text-xs font-normal text-muted-foreground">
-      {label} tokens
+      {label} {language === "ru" ? "токенов" : "tokens"}
     </span>
   );
 }
@@ -75,7 +76,7 @@ function AccountMenu({
   subjectId,
   subjectSlug,
   profile,
-  language = "en",
+  language = internationalization.defaultLanguage.code,
   settingsSelected,
   accountIdentities,
   accountAvatar,
@@ -88,7 +89,7 @@ function AccountMenu({
     profile?.title?.en ||
     profile?.slug ||
     subjectSlug ||
-    "My account";
+    (language === "ru" ? "Мой аккаунт" : "My account");
   const fallbackAvatar = (
     <span className="grid size-8 shrink-0 place-items-center overflow-hidden rounded-full bg-muted">
       <Icon name="user-circle" size={24} className="size-6" />
@@ -105,7 +106,7 @@ function AccountMenu({
         <DropdownMenu.Trigger asChild>
           <button
             type="button"
-            aria-label={`${name}, account menu`}
+            aria-label={`${name}, ${language === "ru" ? "меню аккаунта" : "account menu"}`}
             className="inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-xl px-2 py-2 text-left hover:bg-muted data-[state=open]:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
           >
             {profile ? (
@@ -161,7 +162,7 @@ function AccountMenu({
                 className={menuItemClassName}
               >
                 <Settings className="size-5" />
-                Settings
+                {language === "ru" ? "Настройки" : "Settings"}
               </Link>
             </DropdownMenu.Item>
             <DropdownMenu.Separator className="my-1 h-px bg-border" />
@@ -175,7 +176,13 @@ function AccountMenu({
                 className={`${menuItemClassName} w-full disabled:opacity-50`}
               >
                 <LogOut className="size-5" />
-                {logout.isPending ? "Signing out…" : "Sign out"}
+                {logout.isPending
+                  ? language === "ru"
+                    ? "Выход…"
+                    : "Signing out…"
+                  : language === "ru"
+                    ? "Выйти"
+                    : "Sign out"}
               </button>
             </DropdownMenu.Item>
           </DropdownMenu.Content>

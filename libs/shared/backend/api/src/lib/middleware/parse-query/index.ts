@@ -19,6 +19,9 @@ export class Middleware {
 
   init(): MiddlewareHandler<any, any, {}> {
     return createMiddleware(async (c, next) => {
+      // A parent API reader may already have added a trusted authorization scope.
+      // A nested model app must not parse the URL again and discard that scope.
+      if (c.get("parsedQuery")) return next();
       const query = c.req.query();
 
       const parsedQuery: {

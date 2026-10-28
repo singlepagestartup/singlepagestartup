@@ -4,6 +4,8 @@ import type { IProjectFile } from "../../../apps/studio/modules/social/profile/s
 import { SourceProvider } from "../../../apps/studio/modules/knowledge/source/singlepage/id/ai-chat/Source";
 import { FilesProvider } from "../../../apps/studio/modules/file-storage/file/singlepage/list-attachments-ai-chat/Files";
 import { Component as SourceSection } from "../../../apps/studio/modules/knowledge/source/singlepage/id/ai-chat/index";
+import { Component as Subject } from "../../../apps/studio/modules/rbac/subject";
+import { ThreadProvider } from "../../../apps/studio/modules/social/thread/singlepage/id/ai-chat/Thread";
 const files: IProjectFile[] = [
   {
     id: "a",
@@ -23,6 +25,64 @@ const files: IProjectFile[] = [
   },
 ];
 
+test("development handoff ignores empty storage markers and accepts generated material", () => {
+  const emptyWrapper =
+    "## Контекст пользователя\n<!-- knowledge:user -->\n\n<!-- /knowledge:user -->";
+  for (const { content, disabled } of [
+    { content: "", disabled: true },
+    { content: emptyWrapper, disabled: true },
+    {
+      content: `${emptyWrapper}\n\n## Сведения из материалов\nSix workshop places.`,
+      disabled: false,
+    },
+    { content: "Weekend pottery workshops.", disabled: false },
+  ]) {
+    const html = renderToStaticMarkup(
+      <FilesProvider initialFiles={[]}>
+        <SourceProvider
+          profileId="pottery"
+          initialSource={{
+            id: "products",
+            slug: "products",
+            variant: "id-ai-chat",
+            title: "Products",
+            content,
+          }}
+        >
+          <ThreadProvider
+            data={{
+              id: "thread",
+              slug: "thread",
+              title: "Launch plan.md",
+              variant: "id-ai-chat",
+            }}
+          >
+            <Subject
+              variant="me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-list-document-ai-chat"
+              subjectId="operator"
+              profileId="pottery"
+              chatId="chat"
+              threadId="thread"
+            />
+          </ThreadProvider>
+        </SourceProvider>
+      </FilesProvider>,
+    );
+    const action = [...html.matchAll(/<button\b[^>]*>[\s\S]*?<\/button>/g)]
+      .map(([button]) => button)
+      .find((button) => button.includes("Скопировать запрос для разработки"));
+    expect(action).toBeDefined();
+    expect(/^<button[^>]*\sdisabled(?:=|\s|>)/.test(action ?? "")).toBe(
+      disabled,
+    );
+    expect(html.match(/Скопировать запрос для разработки/g)).toHaveLength(1);
+    expect(html).toContain("скачайте Launch plan.md");
+    expect(html).toContain(
+      "Скачивается сохранённый документ без несохранённых заметок и неподтверждённых предложений",
+    );
+  }
+});
+
 test("Source variant renders multiple scoped Files and excludes another section's attachment", () => {
   const data = {
     id: "pottery:brief:Project and products",
@@ -30,7 +90,7 @@ test("Source variant renders multiple scoped Files and excludes another section'
     variant: "overview-ai-chat",
     title: "Project and products",
     content:
-      "## Контекст пользователя\n<!-- knowledge:user -->\nNotes\n<!-- /knowledge:user -->\n\n## Сведения из материалов\nRead-only description",
+      "## Контекст пользователя\n<!-- knowledge:user -->\nNotes\n<!-- /knowledge:user -->\n\n## Сведения из материалов\nОписание для справки",
   };
   const html = renderToStaticMarkup(
     <FilesProvider
@@ -57,12 +117,12 @@ test("Source variant renders multiple scoped Files and excludes another section'
   expect(html).toContain('data-id="pottery:brief:Project and products"');
   expect(html).toContain("Workshop notes.txt");
   expect(html).toContain("Audience.txt");
-  expect(html).toContain("Files · 2");
-  expect(html).toContain("Analyzed materials");
-  expect(html).toContain("Read-only description");
+  expect(html).toContain("Файлы · 2");
+  expect(html).toContain("Изученные материалы");
+  expect(html).toContain("Описание для справки");
   expect(html).not.toContain("Foreign material.txt");
   expect(html).not.toContain("Generated files");
   expect(html).not.toContain("References ·");
   expect(html).not.toContain("Approve file");
-  expect(html).toContain("Upload files");
+  expect(html).toContain("Загрузить файлы");
 });

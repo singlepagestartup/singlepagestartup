@@ -60,6 +60,10 @@ export function Component(props: IComponentPropsExtended) {
     >
       <div className="flex flex-col gap-6">
         {" "}
+        {props.widgetsToEcommerceModuleWidgets?.({
+          data: props.data,
+          isServer: false,
+        })}
         {props.widgetsToCrmModuleWidgets
           ? props.widgetsToCrmModuleWidgets({
               data: props.data,

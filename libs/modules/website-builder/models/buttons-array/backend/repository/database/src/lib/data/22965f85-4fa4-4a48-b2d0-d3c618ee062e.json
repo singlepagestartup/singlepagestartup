@@ -1,0 +1,14 @@
+{
+  "id": "22965f85-4fa4-4a48-b2d0-d3c618ee062e",
+  "createdAt": "2026-10-24T01:05:58.859Z",
+  "updatedAt": "2026-10-24T01:05:58.859Z",
+  "variant": "default",
+  "className": "w-full",
+  "title": {
+    "en": "Actions",
+    "ru": "Действия"
+  },
+  "description": {},
+  "adminTitle": "Actions",
+  "slug": "framework-journey-guide-social-actions"
+}

@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "2f84cd94-477d-4682-a5cd-387bbdb7bfea",
+  "createdAt": "2026-10-26T00:12:16.883Z",
+  "updatedAt": "2026-10-27T14:59:30.095Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "A special offer gets its own place",
+    "ru": "Особое предложение получает своё место"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Add launch text and materials that do not need to become a separate product or article.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Добавьте текст и материалы запуска, которые не нужно оформлять как отдельный товар или статью.\"}]}]}"
+  },
+  "adminTitle": "Особое предложение получает своё место",
+  "slug": "framework-reviewed-article-startup-introduction-feature-0"
+}

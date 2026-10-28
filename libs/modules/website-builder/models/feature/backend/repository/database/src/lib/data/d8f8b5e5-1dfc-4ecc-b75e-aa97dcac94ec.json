@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "d8f8b5e5-1dfc-4ecc-b75e-aa97dcac94ec",
+  "createdAt": "2026-10-24T01:06:00.989Z",
+  "updatedAt": "2026-10-24T01:06:00.989Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "RBAC",
+    "ru": "RBAC"
+  },
+  "subtitle": {
+    "en": "Business",
+    "ru": "Бизнес"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Accounts, authentication, roles and current-user operations with access scope.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Аккаунты, аутентификация, роли и операции с доступом текущего пользователя.\"}]}]}"
+  },
+  "adminTitle": "RBAC",
+  "slug": "framework-journey-module-rbac"
+}

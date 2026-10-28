@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "fc556f1d-b870-4435-965b-92a2d33f4014",
+  "createdAt": "2026-10-26T00:11:41.276Z",
+  "updatedAt": "2026-10-27T15:00:04.366Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "ecommerce",
+    "ru": "ecommerce"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Create catalogue and product pages.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Создайте страницы каталога и товаров.\"}]}]}"
+  },
+  "adminTitle": "ecommerce",
+  "slug": "framework-reviewed-article-host-connections-feature-2"
+}

@@ -38,11 +38,17 @@ import { Service as BillingPaymentIntentsToCurrenciesService } from "@sps/billin
 import { Service as BillingPaymentIntentsToInvoicesService } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/service";
 import { Service as BillingInvoiceService } from "@sps/billing/models/invoice/backend/app/api/src/lib/service";
 import { Service as FileStorageFileService } from "@sps/file-storage/models/file/backend/app/api/src/lib/service";
+import {
+  Service as SubscriptionPeriodService,
+  type IExecuteProps as ISubscriptionPeriodProps,
+  type IFreezeProps as ISubscriptionPeriodFreezeProps,
+} from "./subscription-period";
 
 export type IExtendedEcommerceModuleOrder = IGetExtendedResult;
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  declare repository: Repository;
   billingModule: {
     currency: BillingCurrencyService;
     paymentIntent: BillingPaymentIntentService;
@@ -124,6 +130,61 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       product: this.product,
       total: (input) => this.findByIdTotal(input),
     }).execute(props);
+  }
+
+  async acceptSubscriptionPeriod(props: ISubscriptionPeriodProps) {
+    return this.subscriptionPeriodService().execute(props);
+  }
+
+  async assertSubscriptionPayment(props: { id: string }) {
+    return this.subscriptionPeriodService().assertPayment(props);
+  }
+
+  async revokeSubscription(props: { id: string }) {
+    const order = await this.findByIdExtended(props);
+    if (
+      order.type !== "history" ||
+      order.checkoutAttributesByCurrency.type !== "subscription"
+    )
+      return undefined;
+    return this.repository.revokeSubscription(props);
+  }
+
+  async lockForLifecycle(props: { id: string }) {
+    return this.repository.lockForLifecycle(props);
+  }
+
+  async expireSubscriptionPeriod(props: {
+    id: string;
+    expectedInvoiceId: string;
+    expectedEndsAt: string;
+  }) {
+    const order = await this.findById({ id: props.id });
+    const now = new Date();
+    if (
+      !order ||
+      !["delivering", "requested_cancelation"].includes(order.status) ||
+      order.subscriptionPeriodInvoiceId !== props.expectedInvoiceId ||
+      !order.subscriptionPeriodEndsAt ||
+      new Date(order.subscriptionPeriodEndsAt).getTime() !==
+        new Date(props.expectedEndsAt).getTime() ||
+      new Date(order.subscriptionPeriodEndsAt) > now
+    )
+      return undefined;
+    return this.repository.expireSubscriptionPeriod({ before: order, now });
+  }
+
+  async freezeSubscriptionPeriod(props: ISubscriptionPeriodFreezeProps) {
+    return this.subscriptionPeriodService().freeze(props);
+  }
+
+  private subscriptionPeriodService() {
+    return new SubscriptionPeriodService({
+      findByIdExtended: (props) => this.findByIdExtended(props),
+      findById: (props) => this.findById(props),
+      writeSubscriptionPeriod: (props) =>
+        this.repository.writeSubscriptionPeriod(props),
+    });
   }
 
   async findByIdExtended(

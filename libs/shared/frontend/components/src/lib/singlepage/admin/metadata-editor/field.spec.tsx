@@ -8,6 +8,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { entityMetadataSchema } from "@sps/shared-utils/metadata";
 import { MetadataField } from "./field";
+jest.mock("@sps/shared-configuration", () => ({
+  internationalization: {
+    defaultLanguage: { code: "en" },
+    languages: [{ code: "en" }, { code: "ru" }],
+  },
+}));
 const save = jest.fn();
 function Form() {
   const form = useForm({

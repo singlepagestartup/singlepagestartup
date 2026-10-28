@@ -1,0 +1,28 @@
+{
+  "$schema": "../../../../../block.schema.json",
+  "id": "ecommerce.widget.token-find",
+  "title": "Ecommerce Widget / token-find",
+  "description": "AI Chat monthly Pro and five token top-ups composed with existing Product controls; all selections stay in the local preview.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "ecommerce",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "token-find"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "ecommerce.widget",
+    "pageName": "ecommerce",
+    "variantName": "token-find",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "id": "3dcd9ab7-e3f0-4c25-a563-bb526565b215",
+  "createdAt": "2026-10-15T13:47:45.597Z",
+  "updatedAt": "2026-10-15T13:47:45.597Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/rbac/widgets-to-website-builder-module-widgets/[rbac.widgets-to-website-builder-module-widgets.id]"
+}

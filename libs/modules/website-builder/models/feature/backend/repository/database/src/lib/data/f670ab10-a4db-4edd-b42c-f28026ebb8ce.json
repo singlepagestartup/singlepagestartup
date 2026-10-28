@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "f670ab10-a4db-4edd-b42c-f28026ebb8ce",
+  "createdAt": "2026-10-26T00:11:36.190Z",
+  "updatedAt": "2026-10-27T15:00:03.297Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Cover",
+    "ru": "Обложка"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Shoot portraits in daylight\\n\\nThe first screen explains the offer.\\n\\nPhotography workshop\\n\\nPractice with a teacher\\n\\nBook a class\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Снимайте портреты при дневном свете\\n\\nПервый экран объясняет предложение.\\n\\nМастер-класс по фотографии\\n\\nПрактика с преподавателем\\n\\nЗапись на занятие\"}]}]}"
+  },
+  "adminTitle": "Обложка",
+  "slug": "framework-reviewed-article-website-builder-example-feature-0"
+}

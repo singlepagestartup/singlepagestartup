@@ -1,5 +1,5 @@
-import { forwardRef as forwardRef } from "react";
-import { type SVGProps as SVGProps } from "react";
+import { forwardRef as forwardRef, type SVGProps as SVGProps } from "react";
+
 import { twMerge as twMerge } from "tailwind-merge";
 import IconGlyphs from "../../../feature/singlepage/icon/icons.json";
 type ModuleIcon = ReturnType<typeof createIcon>;
@@ -191,7 +191,7 @@ const kit = {
   focus: focus,
 };
 export const defaultButtonSecondaryProps: ButtonSecondaryProps = {
-  label: "Learn more",
+  label: "Подробнее",
   href: "#features",
   icon: Play,
 };

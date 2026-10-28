@@ -1,0 +1,21 @@
+{
+  "componentName": "rbac.widget",
+  "pageName": "rbac",
+  "variantName": "subject-me-blog-module-article-create",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "rbac.widget.subject-me-blog-module-article-create",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "rbac/widget/singlepage/subject-me-blog-module-article-create",
+    "sps.figma.component": "rbac.widget",
+    "sps.figma.variant": "subject-me-blog-module-article-create",
+    "sps.source.module": "rbac",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "subject-me-blog-module-article-create",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/rbac/widget/singlepage/subject-me-blog-module-article-create/Component.tsx",
+    "sps.code.story": "apps/studio/modules/rbac/widget/singlepage/subject-me-blog-module-article-create/Component.stories.tsx"
+  }
+}

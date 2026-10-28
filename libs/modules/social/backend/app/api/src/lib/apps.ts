@@ -1,3 +1,4 @@
+import { app as widgetsToWebsiteBuilderModuleWidgets } from "@sps/social/relations/widgets-to-website-builder-module-widgets/backend/app/api";
 import { app as skillsToKnowledgeModuleSources } from "@sps/social/relations/skills-to-knowledge-module-sources/backend/app/api";
 import { app as messagesToKnowledgeModuleSources } from "@sps/social/relations/messages-to-knowledge-module-sources/backend/app/api";
 import { app as profilesToBlogModuleArticles } from "@sps/social/relations/profiles-to-blog-module-articles/backend/app/api";
@@ -38,6 +39,11 @@ export class Apps {
   }
 
   bindApps() {
+    this.apps.push({
+      type: "relation",
+      route: "/widgets-to-website-builder-module-widgets",
+      app: widgetsToWebsiteBuilderModuleWidgets,
+    });
     this.apps.push({
       type: "relation",
       route: "/skills-to-knowledge-module-sources",

@@ -1,0 +1,9 @@
+{
+  "id": "0256a99e-023d-42e8-be90-0437882be144",
+  "createdAt": "2026-10-23T20:18:01.621Z",
+  "updatedAt": "2026-10-23T20:18:01.621Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/social/profiles/authors/count"
+}

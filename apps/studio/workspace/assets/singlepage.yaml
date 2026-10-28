@@ -5650,8 +5650,10 @@ assets:
     alt: "A man reviewing a project sketch beside his laptop."
 
   - id: singlepage-generated-account-mascot
-    path: apps/studio/workspace/assets/singlepage/generated/living-focus/singlepagestartup-account-mascot.png
+    path: assets/singlepage/generated/living-focus/singlepagestartup-account-mascot.png
     source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
     evidence: false
     rights_status: AI-generated illustrative draft for Studio preview.
     purpose: Original user-avatar mascot master.
@@ -5673,8 +5675,10 @@ assets:
     source_or_tool: Built-in image_gen, text generation.
 
   - id: singlepage-generated-account-mascot-square
-    path: apps/studio/workspace/assets/singlepage/generated/living-focus/singlepagestartup-account-mascot-square.png
+    path: assets/singlepage/generated/living-focus/singlepagestartup-account-mascot-square.png
     source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
     evidence: false
     rights_status: AI-generated illustrative draft for Studio preview.
     purpose: Square delivery avatar from the preserved mascot master.
@@ -5686,3 +5690,1120 @@ assets:
       Preserve the whole mascot without cropping or redesign; center it with
       transparent breathing room for a circular UI avatar.
     source_or_tool: Built-in image_gen, referenced-image edit.
+
+  - id: singlepage-blog-next-server-client-master
+    design_role: null
+    design_key: null
+    path: assets/singlepage/generated/living-focus/blog/next-server-client-master.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status: AI-generated conceptual editorial imagery; no actual team or
+      customer is depicted.
+    purpose: Preserved original blog cover source for next-server-client.
+    related_artifacts:
+      - singlepage.products
+    allowed_use:
+      - Conceptual imagery for the Framework blog examples requested by the
+        operator.
+    prohibited_use:
+      - Do not present the people as actual staff or customers.
+    reference_asset_ids:
+      - singlepage-generated-living-focus-photography-business-conversation-square
+      - singlepage-generated-living-focus-photography-moment-of-focus-square
+    dimensions:
+      width: 1536
+      height: 1024
+    content_sha256: f99999a060ae5500423a1124612b424ffca1c97e2ef5c23ffb721b5c8c811d7e
+    production_stage: original-master
+    prompt:
+      "Use case: photorealistic-natural. Asset type: original editorial blog
+      cover photograph for SinglePageStartup's Living Focus visual system. Style
+      master: Candid editorial photography of people at work, with cool blue or
+      teal daylight balanced by warm natural skin tones. Use close human
+      framing, a present gesture and a clear point of attention. Keep the image
+      photographic and contemporary, with soft foreground or background depth;
+      allow natural motion blur when the action calls for it. Quiet blue-grey
+      interiors, real wood, practical clothes, authentic skin and hair texture,
+      soft window reflections. Generate a full-bleed original master with
+      natural scene-driven framing; do not constrain the aspect ratio to a
+      square. No text, logos, readable screens, watermark, UI overlays or
+      science-fiction glow. Conceptual editorial imagery, not documentary
+      evidence of the actual team. Scene brief: A woman developer in her
+      thirties with short dark curly hair and a charcoal knitted sweater
+      discusses a laptop prototype with a bespectacled colleague at a wooden
+      table beside a tall studio window. She gestures at the laptop edge while
+      listening; an intimate side view shows her face and the two natural hands.
+      Focus on the human boundary between explaining and building, quiet
+      greenery and cool daylight in the background. Visually distinguish the
+      scene with a low over-the-shoulder camera angle."
+    source_or_tool:
+      Built-in image_gen.imagegen; source and square output visually
+      inspected by the implementation agent. Exact prompts and original tool-output
+      paths are recorded in utils/media/issue-376-blog-prompts.json.
+  - id: singlepage-blog-next-server-client-square
+    design_role: null
+    design_key: null
+    path: assets/singlepage/generated/living-focus/blog/next-server-client-square.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status: AI-generated conceptual editorial imagery; no actual team or
+      customer is depicted.
+    purpose: Square blog cover delivery for next-server-client.
+    related_artifacts:
+      - singlepage.products
+    allowed_use:
+      - Conceptual imagery for the Framework blog examples requested by the
+        operator.
+    prohibited_use:
+      - Do not present the people as actual staff or customers.
+    reference_asset_ids:
+      - singlepage-blog-next-server-client-master
+    dimensions:
+      width: 1254
+      height: 1254
+    content_sha256: 6fcf83114f37beb3a8b9e3c9e419a31062468bc83ff647d4c538dea3b5b2087e
+    production_stage: square-delivery
+    prompt: "Use case: identity-preserve. Edit target: supplied original Living
+      Focus blog photograph. Prepare a square 1:1 delivery derivative by
+      OUTPAINTING ONLY: extend the shorter vertical canvas dimension above and
+      below the complete original horizontal photograph until the result is
+      square. Preserve the ENTIRE original frame inside the central horizontal
+      band, at its full original width. Do not crop, zoom, stretch, move or
+      recompose any original person, hand, laptop, notebook, table or meaningful
+      scene detail. Keep every face, expression, anatomy, pose, clothing, cool
+      daylight, warm skin, reflected teal glass and photographic texture
+      unchanged. Add only plausible quiet continuation of the same room/window
+      above and table/foreground below, with matching perspective and light. No
+      borders, new objects, text, logos, UI or watermark. This is the SAME
+      photograph on a larger square canvas."
+    source_or_tool:
+      Built-in image_gen.imagegen; source and square output visually
+      inspected by the implementation agent. Exact prompts and original tool-output
+      paths are recorded in utils/media/issue-376-blog-adaptation.json.
+    source_master_asset_id: singlepage-blog-next-server-client-master
+    adaptation:
+      operation: canvas-outpainting
+      tool: image_gen.imagegen
+      source: next-server-client-master.png
+      crop: false
+      stretch: false
+  - id: singlepage-blog-react-query-realtime-master
+    design_role: null
+    design_key: null
+    path: assets/singlepage/generated/living-focus/blog/react-query-realtime-master.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status: AI-generated conceptual editorial imagery; no actual team or
+      customer is depicted.
+    purpose: Preserved original blog cover source for react-query-realtime.
+    related_artifacts:
+      - singlepage.products
+    allowed_use:
+      - Conceptual imagery for the Framework blog examples requested by the
+        operator.
+    prohibited_use:
+      - Do not present the people as actual staff or customers.
+    reference_asset_ids:
+      - singlepage-generated-living-focus-photography-business-conversation-square
+      - singlepage-generated-living-focus-photography-moment-of-focus-square
+    dimensions:
+      width: 1672
+      height: 941
+    content_sha256: 4c9c5711d05d92cf0e2fe57d8fe3e356d17f6255083eb1b0de435d8bc636e536
+    production_stage: original-master
+    prompt:
+      "Use case: photorealistic-natural. Asset type: original editorial blog
+      cover photograph for SinglePageStartup's Living Focus visual system. Style
+      master: Candid editorial photography of people at work, with cool blue or
+      teal daylight balanced by warm natural skin tones. Use close human
+      framing, a present gesture and a clear point of attention. Keep the image
+      photographic and contemporary, with soft foreground or background depth;
+      allow natural motion blur when the action calls for it. Quiet blue-grey
+      interiors, real wood, practical clothes, authentic skin and hair texture,
+      soft window reflections. Generate a full-bleed original master with
+      natural scene-driven framing; do not constrain the aspect ratio to a
+      square. No text, logos, readable screens, watermark, UI overlays or
+      science-fiction glow. Conceptual editorial imagery, not documentary
+      evidence of the actual team. Scene brief: A thoughtful Black male
+      developer in his forties with close-cropped hair and a deep blue work
+      shirt checks a laptop and a handwritten notebook beside a large bright
+      window. Seen through a soft translucent teal glass reflection, his eyes
+      are sharp; one hand rests naturally on the trackpad. Capture a quiet
+      moment of confirming that two views agree, with another out-of-focus work
+      station behind him. Screen content is blurred and unreadable."
+    source_or_tool:
+      Built-in image_gen.imagegen; source and square output visually
+      inspected by the implementation agent. Exact prompts and original tool-output
+      paths are recorded in utils/media/issue-376-blog-prompts.json.
+  - id: singlepage-blog-react-query-realtime-square
+    design_role: null
+    design_key: null
+    path: assets/singlepage/generated/living-focus/blog/react-query-realtime-square.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status: AI-generated conceptual editorial imagery; no actual team or
+      customer is depicted.
+    purpose: Square blog cover delivery for react-query-realtime.
+    related_artifacts:
+      - singlepage.products
+    allowed_use:
+      - Conceptual imagery for the Framework blog examples requested by the
+        operator.
+    prohibited_use:
+      - Do not present the people as actual staff or customers.
+    reference_asset_ids:
+      - singlepage-blog-react-query-realtime-master
+    dimensions:
+      width: 1254
+      height: 1254
+    content_sha256: 0914221e5a106a38c65d2bb8fdfe8a8e53ac097058884f3b374da8fc82788c7a
+    production_stage: square-delivery
+    prompt: "Use case: identity-preserve. Edit target: supplied original Living
+      Focus blog photograph. Prepare a square 1:1 delivery derivative by
+      OUTPAINTING ONLY: extend the shorter vertical canvas dimension above and
+      below the complete original horizontal photograph until the result is
+      square. Preserve the ENTIRE original frame inside the central horizontal
+      band, at its full original width. Do not crop, zoom, stretch, move or
+      recompose any original person, hand, laptop, notebook, table or meaningful
+      scene detail. Keep every face, expression, anatomy, pose, clothing, cool
+      daylight, warm skin, reflected teal glass and photographic texture
+      unchanged. Add only plausible quiet continuation of the same room/window
+      above and table/foreground below, with matching perspective and light. No
+      borders, new objects, text, logos, UI or watermark. This is the SAME
+      photograph on a larger square canvas."
+    source_or_tool:
+      Built-in image_gen.imagegen; source and square output visually
+      inspected by the implementation agent. Exact prompts and original tool-output
+      paths are recorded in utils/media/issue-376-blog-adaptation.json.
+    source_master_asset_id: singlepage-blog-react-query-realtime-master
+    adaptation:
+      operation: canvas-outpainting
+      tool: image_gen.imagegen
+      source: react-query-realtime-master.png
+      crop: false
+      stretch: false
+  - id: singlepage-blog-hono-layered-api-master
+    design_role: null
+    design_key: null
+    path: assets/singlepage/generated/living-focus/blog/hono-layered-api-master.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status: AI-generated conceptual editorial imagery; no actual team or
+      customer is depicted.
+    purpose: Preserved original blog cover source for hono-layered-api.
+    related_artifacts:
+      - singlepage.products
+    allowed_use:
+      - Conceptual imagery for the Framework blog examples requested by the
+        operator.
+    prohibited_use:
+      - Do not present the people as actual staff or customers.
+    reference_asset_ids:
+      - singlepage-generated-living-focus-photography-business-conversation-square
+      - singlepage-generated-living-focus-photography-moment-of-focus-square
+    dimensions:
+      width: 1536
+      height: 1024
+    content_sha256: 20b203b31dae072f98ab715acba8ba6f7651a355a5264f26c03ba6c86ba3599d
+    production_stage: original-master
+    prompt:
+      "Use case: photorealistic-natural. Asset type: original editorial blog
+      cover photograph for SinglePageStartup's Living Focus visual system. Style
+      master: Candid editorial photography of people at work, with cool blue or
+      teal daylight balanced by warm natural skin tones. Use close human
+      framing, a present gesture and a clear point of attention. Keep the image
+      photographic and contemporary, with soft foreground or background depth;
+      allow natural motion blur when the action calls for it. Quiet blue-grey
+      interiors, real wood, practical clothes, authentic skin and hair texture,
+      soft window reflections. Generate a full-bleed original master with
+      natural scene-driven framing; do not constrain the aspect ratio to a
+      square. No text, logos, readable screens, watermark, UI overlays or
+      science-fiction glow. Conceptual editorial imagery, not documentary
+      evidence of the actual team. Scene brief: Two software developers, a short
+      dark curly-haired woman in a charcoal sweater and a Black man in a blue
+      shirt, work together at a compact studio table arranging a few plain paper
+      cards into an orderly sequence next to a laptop. No text or diagram is
+      readable. One explains a step with a natural open-hand gesture while the
+      other listens. Cool morning daylight, green plant out of focus, honest
+      editorial energy; medium framing with both faces and hands visible."
+    source_or_tool:
+      Built-in image_gen.imagegen; source and square output visually
+      inspected by the implementation agent. Exact prompts and original tool-output
+      paths are recorded in utils/media/issue-376-blog-prompts.json.
+  - id: singlepage-blog-hono-layered-api-square
+    design_role: null
+    design_key: null
+    path: assets/singlepage/generated/living-focus/blog/hono-layered-api-square.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status: AI-generated conceptual editorial imagery; no actual team or
+      customer is depicted.
+    purpose: Square blog cover delivery for hono-layered-api.
+    related_artifacts:
+      - singlepage.products
+    allowed_use:
+      - Conceptual imagery for the Framework blog examples requested by the
+        operator.
+    prohibited_use:
+      - Do not present the people as actual staff or customers.
+    reference_asset_ids:
+      - singlepage-blog-hono-layered-api-master
+    dimensions:
+      width: 1254
+      height: 1254
+    content_sha256: bb7f24c77ce845914998c95f7553ebe841684f7b32bb8a30288ae9548e5e2656
+    production_stage: square-delivery
+    prompt: "Use case: identity-preserve. Edit target: supplied original Living
+      Focus blog photograph. Prepare a square 1:1 delivery derivative by
+      OUTPAINTING ONLY: extend the shorter vertical canvas dimension above and
+      below the complete original horizontal photograph until the result is
+      square. Preserve the ENTIRE original frame inside the central horizontal
+      band, at its full original width. Do not crop, zoom, stretch, move or
+      recompose any original person, hand, laptop, notebook, table or meaningful
+      scene detail. Keep every face, expression, anatomy, pose, clothing, cool
+      daylight, warm skin, reflected teal glass and photographic texture
+      unchanged. Add only plausible quiet continuation of the same room/window
+      above and table/foreground below, with matching perspective and light. No
+      borders, new objects, text, logos, UI or watermark. This is the SAME
+      photograph on a larger square canvas."
+    source_or_tool:
+      Built-in image_gen.imagegen; source and square output visually
+      inspected by the implementation agent. Exact prompts and original tool-output
+      paths are recorded in utils/media/issue-376-blog-adaptation.json.
+    source_master_asset_id: singlepage-blog-hono-layered-api-master
+    adaptation:
+      operation: canvas-outpainting
+      tool: image_gen.imagegen
+      source: hono-layered-api-master.png
+      crop: false
+      stretch: false
+  - id: singlepage-blog-subscription-access-master
+    design_role: null
+    design_key: null
+    path: assets/singlepage/generated/living-focus/blog/subscription-access-master.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status: AI-generated conceptual editorial imagery; no actual team or
+      customer is depicted.
+    purpose: Preserved original blog cover source for subscription-access.
+    related_artifacts:
+      - singlepage.products
+    allowed_use:
+      - Conceptual imagery for the Framework blog examples requested by the
+        operator.
+    prohibited_use:
+      - Do not present the people as actual staff or customers.
+    reference_asset_ids:
+      - singlepage-generated-living-focus-photography-business-conversation-square
+      - singlepage-generated-living-focus-photography-moment-of-focus-square
+    dimensions:
+      width: 1536
+      height: 1024
+    content_sha256: ded42e3554a028bcd3675bade36b98ee78ed08bb1a3b87f7180047c0eb837471
+    production_stage: original-master
+    prompt:
+      "Use case: photorealistic-natural. Asset type: original editorial blog
+      cover photograph for SinglePageStartup's Living Focus visual system. Style
+      master: Candid editorial photography of people at work, with cool blue or
+      teal daylight balanced by warm natural skin tones. Use close human
+      framing, a present gesture and a clear point of attention. Keep the image
+      photographic and contemporary, with soft foreground or background depth;
+      allow natural motion blur when the action calls for it. Quiet blue-grey
+      interiors, real wood, practical clothes, authentic skin and hair texture,
+      soft window reflections. Generate a full-bleed original master with
+      natural scene-driven framing; do not constrain the aspect ratio to a
+      square. No text, logos, readable screens, watermark, UI overlays or
+      science-fiction glow. Conceptual editorial imagery, not documentary
+      evidence of the actual team. Scene brief: A dark curly-haired woman
+      engineer, charcoal textured sweater, leans forward thoughtfully during a
+      code review with a colleague whose shoulder is softly out of focus. One
+      hand holds a pencil over an open notebook beside a closed plain folder and
+      laptop. A careful, attentive expression suggests checking access before
+      sharing work. Cool side-window light, natural warm skin, detailed hair rim
+      light, no staged business smile, no padlock props or security graphics."
+    source_or_tool:
+      Built-in image_gen.imagegen; source and square output visually
+      inspected by the implementation agent. Exact prompts and original tool-output
+      paths are recorded in utils/media/issue-376-blog-prompts.json.
+  - id: singlepage-blog-subscription-access-square
+    design_role: null
+    design_key: null
+    path: assets/singlepage/generated/living-focus/blog/subscription-access-square.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status: AI-generated conceptual editorial imagery; no actual team or
+      customer is depicted.
+    purpose: Square blog cover delivery for subscription-access.
+    related_artifacts:
+      - singlepage.products
+    allowed_use:
+      - Conceptual imagery for the Framework blog examples requested by the
+        operator.
+    prohibited_use:
+      - Do not present the people as actual staff or customers.
+    reference_asset_ids:
+      - singlepage-blog-subscription-access-master
+    dimensions:
+      width: 1254
+      height: 1254
+    content_sha256: 14636c86b9bc6b1c7b93ccf542524913e43e32077746d2a36f68f6aea75a9e8b
+    production_stage: square-delivery
+    prompt: "Use case: identity-preserve. Edit target: supplied original Living
+      Focus blog photograph. Prepare a square 1:1 delivery derivative by
+      OUTPAINTING ONLY: extend the shorter vertical canvas dimension above and
+      below the complete original horizontal photograph until the result is
+      square. Preserve the ENTIRE original frame inside the central horizontal
+      band, at its full original width. Do not crop, zoom, stretch, move or
+      recompose any original person, hand, laptop, notebook, table or meaningful
+      scene detail. Keep every face, expression, anatomy, pose, clothing, cool
+      daylight, warm skin, reflected teal glass and photographic texture
+      unchanged. Add only plausible quiet continuation of the same room/window
+      above and table/foreground below, with matching perspective and light. No
+      borders, new objects, text, logos, UI or watermark. This is the SAME
+      photograph on a larger square canvas."
+    source_or_tool:
+      Built-in image_gen.imagegen; source and square output visually
+      inspected by the implementation agent. Exact prompts and original tool-output
+      paths are recorded in utils/media/issue-376-blog-adaptation.json.
+    source_master_asset_id: singlepage-blog-subscription-access-master
+    adaptation:
+      operation: canvas-outpainting
+      tool: image_gen.imagegen
+      source: subscription-access-master.png
+      crop: false
+      stretch: false
+  - id: singlepage-blog-nx-bun-docker-master
+    design_role: null
+    design_key: null
+    path: assets/singlepage/generated/living-focus/blog/nx-bun-docker-master.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status: AI-generated conceptual editorial imagery; no actual team or
+      customer is depicted.
+    purpose: Preserved original blog cover source for nx-bun-docker.
+    related_artifacts:
+      - singlepage.products
+    allowed_use:
+      - Conceptual imagery for the Framework blog examples requested by the
+        operator.
+    prohibited_use:
+      - Do not present the people as actual staff or customers.
+    reference_asset_ids:
+      - singlepage-generated-living-focus-photography-business-conversation-square
+      - singlepage-generated-living-focus-photography-moment-of-focus-square
+    dimensions:
+      width: 1672
+      height: 941
+    content_sha256: 2fdd6ce7f54928ec4797f27fc0c24e8fd3ece1ba19c9152bc506f469bfedc75e
+    production_stage: original-master
+    prompt:
+      "Use case: photorealistic-natural. Asset type: original editorial blog
+      cover photograph for SinglePageStartup's Living Focus visual system. Style
+      master: Candid editorial photography of people at work, with cool blue or
+      teal daylight balanced by warm natural skin tones. Use close human
+      framing, a present gesture and a clear point of attention. Keep the image
+      photographic and contemporary, with soft foreground or background depth;
+      allow natural motion blur when the action calls for it. Quiet blue-grey
+      interiors, real wood, practical clothes, authentic skin and hair texture,
+      soft window reflections. Generate a full-bleed original master with
+      natural scene-driven framing; do not constrain the aspect ratio to a
+      square. No text, logos, readable screens, watermark, UI overlays or
+      science-fiction glow. Conceptual editorial imagery, not documentary
+      evidence of the actual team. Scene brief: Two developers prepare a small
+      shared workbench in a sunlit creative studio: a Black man in a deep blue
+      shirt connects a neat cable to a laptop while a woman with dark wavy hair
+      checks a notebook nearby. A small unbranded desktop computer and neatly
+      grouped practical equipment suggest a repeatable development workspace.
+      Candid action, softly blurred nearest hand, faces clear, cool blue
+      daylight and warm skin, no server-rack glamour, no technical logos."
+    source_or_tool:
+      Built-in image_gen.imagegen; source and square output visually
+      inspected by the implementation agent. Exact prompts and original tool-output
+      paths are recorded in utils/media/issue-376-blog-prompts.json.
+  - id: singlepage-blog-nx-bun-docker-square
+    design_role: null
+    design_key: null
+    path: assets/singlepage/generated/living-focus/blog/nx-bun-docker-square.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status: AI-generated conceptual editorial imagery; no actual team or
+      customer is depicted.
+    purpose: Square blog cover delivery for nx-bun-docker.
+    related_artifacts:
+      - singlepage.products
+    allowed_use:
+      - Conceptual imagery for the Framework blog examples requested by the
+        operator.
+    prohibited_use:
+      - Do not present the people as actual staff or customers.
+    reference_asset_ids:
+      - singlepage-blog-nx-bun-docker-master
+    dimensions:
+      width: 1254
+      height: 1254
+    content_sha256: 535fc76fdc4b7966ae0a29d8bfa7d209a540d47df4f59a1e336e6b9bef5b1640
+    production_stage: square-delivery
+    prompt: "Use case: identity-preserve. Edit target: supplied original Living
+      Focus blog photograph. Prepare a square 1:1 delivery derivative by
+      OUTPAINTING ONLY: extend the shorter vertical canvas dimension above and
+      below the complete original horizontal photograph until the result is
+      square. Preserve the ENTIRE original frame inside the central horizontal
+      band, at its full original width. Do not crop, zoom, stretch, move or
+      recompose any original person, hand, laptop, notebook, table or meaningful
+      scene detail. Keep every face, expression, anatomy, pose, clothing, cool
+      daylight, warm skin, reflected teal glass and photographic texture
+      unchanged. Add only plausible quiet continuation of the same room/window
+      above and table/foreground below, with matching perspective and light. No
+      borders, new objects, text, logos, UI or watermark. This is the SAME
+      photograph on a larger square canvas."
+    source_or_tool:
+      Built-in image_gen.imagegen; source and square output visually
+      inspected by the implementation agent. Exact prompts and original tool-output
+      paths are recorded in utils/media/issue-376-blog-adaptation.json.
+    source_master_asset_id: singlepage-blog-nx-bun-docker-master
+    adaptation:
+      operation: canvas-outpainting
+      tool: image_gen.imagegen
+      source: nx-bun-docker-master.png
+      crop: false
+      stretch: false
+  - id: singlepage-blog-safe-build-rollout-master
+    design_role: null
+    design_key: null
+    path: assets/singlepage/generated/living-focus/blog/safe-build-rollout-master.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status: AI-generated conceptual editorial imagery; no actual team or
+      customer is depicted.
+    purpose: Preserved original blog cover source for safe-build-rollout.
+    related_artifacts:
+      - singlepage.products
+    allowed_use:
+      - Conceptual imagery for the Framework blog examples requested by the
+        operator.
+    prohibited_use:
+      - Do not present the people as actual staff or customers.
+    reference_asset_ids:
+      - singlepage-generated-living-focus-photography-business-conversation-square
+      - singlepage-generated-living-focus-photography-moment-of-focus-square
+    dimensions:
+      width: 1672
+      height: 941
+    content_sha256: 69e1635428ef03de700b661444d4ab9eb507b3522cc8740d00ea06018e43acf4
+    production_stage: original-master
+    prompt:
+      "Use case: photorealistic-natural. Asset type: original editorial blog
+      cover photograph for SinglePageStartup's Living Focus visual system. Style
+      master: Candid editorial photography of people at work, with cool blue or
+      teal daylight balanced by warm natural skin tones. Use close human
+      framing, a present gesture and a clear point of attention. Keep the image
+      photographic and contemporary, with soft foreground or background depth;
+      allow natural motion blur when the action calls for it. Quiet blue-grey
+      interiors, real wood, practical clothes, authentic skin and hair texture,
+      soft window reflections. Generate a full-bleed original master with
+      natural scene-driven framing; do not constrain the aspect ratio to a
+      square. No text, logos, readable screens, watermark, UI overlays or
+      science-fiction glow. Conceptual editorial imagery, not documentary
+      evidence of the actual team. Scene brief: A small software team pauses
+      together after reviewing a release on a laptop at a wooden window-side
+      table. A Black man with close-cropped hair in a deep blue shirt points
+      calmly to a notebook while a dark curly-haired woman in a charcoal sweater
+      studies it. An unbranded monitor sits blurred in the background. The mood
+      is attentive and composed, no celebration or claims of success; late cool
+      daylight, teal glass foreground reflections and natural human detail."
+    source_or_tool:
+      Built-in image_gen.imagegen; source and square output visually
+      inspected by the implementation agent. Exact prompts and original tool-output
+      paths are recorded in utils/media/issue-376-blog-prompts.json.
+  - id: singlepage-blog-safe-build-rollout-square
+    design_role: null
+    design_key: null
+    path: assets/singlepage/generated/living-focus/blog/safe-build-rollout-square.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status: AI-generated conceptual editorial imagery; no actual team or
+      customer is depicted.
+    purpose: Square blog cover delivery for safe-build-rollout.
+    related_artifacts:
+      - singlepage.products
+    allowed_use:
+      - Conceptual imagery for the Framework blog examples requested by the
+        operator.
+    prohibited_use:
+      - Do not present the people as actual staff or customers.
+    reference_asset_ids:
+      - singlepage-blog-safe-build-rollout-master
+    dimensions:
+      width: 1254
+      height: 1254
+    content_sha256: 1d5523553057411d590db2ce0d158bce62c3cecc208b5870da94de54a0d2e787
+    production_stage: square-delivery
+    prompt: "Use case: identity-preserve. Edit target: supplied original Living
+      Focus blog photograph. Prepare a square 1:1 delivery derivative by
+      OUTPAINTING ONLY: extend the shorter vertical canvas dimension above and
+      below the complete original horizontal photograph until the result is
+      square. Preserve the ENTIRE original frame inside the central horizontal
+      band, at its full original width. Do not crop, zoom, stretch, move or
+      recompose any original person, hand, laptop, notebook, table or meaningful
+      scene detail. Keep every face, expression, anatomy, pose, clothing, cool
+      daylight, warm skin, reflected teal glass and photographic texture
+      unchanged. Add only plausible quiet continuation of the same room/window
+      above and table/foreground below, with matching perspective and light. No
+      borders, new objects, text, logos, UI or watermark. This is the SAME
+      photograph on a larger square canvas."
+    source_or_tool:
+      Built-in image_gen.imagegen; source and square output visually
+      inspected by the implementation agent. Exact prompts and original tool-output
+      paths are recorded in utils/media/issue-376-blog-adaptation.json.
+    source_master_asset_id: singlepage-blog-safe-build-rollout-master
+    adaptation:
+      operation: canvas-outpainting
+      tool: image_gen.imagegen
+      source: safe-build-rollout-master.png
+      crop: false
+      stretch: false
+
+  - id: singlepage-generated-framework-acquisition-v2-hero
+    path: "assets/singlepage/generated/framework-acquisition-v2/hero.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-acquisition-v2"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration using the existing operator-supplied illustration style."
+    purpose: "Product-only Code Framework acquisition landing: hero"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present as a real product screenshot or claim of automatic website generation.",
+      ]
+    reference_asset_ids:
+      [
+        "singlepage-generated-living-focus-illustration-module-hierarchy-cool-square",
+      ]
+    dimensions: { "width": 1254, "height": 1254 }
+    content_sha256: "2d3a194116fa5fd0abb4eabbdbd4780a8d886c5fd305a8a8ff18eca13796aacc"
+    prompt: "Use case: infographic-diagram.\nAsset type: Code Framework landing hero illustration, consumer-facing software reuse.\nPrimary request: show a finished small web product made from reusable ready-made functions, not people talking.\nStyle master (use verbatim): Create airy isometric line art on a flat pure white background, using fine graphite contours, cool light-gray secondary lines, dotted connections and restrained #BFEF61 details. Keep forms simple, unshaded and open, with generous breathing room and only meaningful connections. Derive the objects from the content brief.\nReference image is STYLE ONLY. Replace its entire old cube hierarchy with the following clear new scene.\nSubject: one prominent isometric browser window showing a polished small business website with a contact form and a few product/article tiles. Around its lower edge are a few separate reusable feature cards with clear pictograms for an account, shopping bag and article. One selected lime-accent feature card visibly fits into the website window, explaining \"keep the ready-made essentials and adapt your own product\". The website is the focal subject, not a person, robot, computer hardware or generic abstract cubes.\nComposition: natural free proportions; generous clean margins; entire browser and cards visible. Simple large forms legible at small web display sizes. White interiors, restrained lime tabs, refined dark graphite outlines; no shadows, gradients, tinted background, tiny illegible text, brand logos, title text or claims. This is a conceptual illustration, not a screenshot of an existing feature."
+    source_or_tool: "Built-in image_gen. Original already square; preserved and reused unchanged as delivery. No crop, resize or outpainting."
+
+  - id: singlepage-generated-framework-acquisition-v2-accounts
+    path: "assets/singlepage/generated/framework-acquisition-v2/accounts.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-acquisition-v2"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration using the existing operator-supplied illustration style."
+    purpose: "Product-only Code Framework acquisition landing: accounts"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present as a real product screenshot or claim of automatic website generation.",
+      ]
+    reference_asset_ids:
+      [
+        "singlepage-generated-living-focus-illustration-module-hierarchy-cool-square",
+      ]
+    dimensions: { "width": 1254, "height": 1254 }
+    content_sha256: "d980553ca35c38a3f48b86a43b76a3dc6d477bda62b40c3b300e7b7d2844f1d3"
+    prompt: "Use case: infographic-diagram.\nAsset type: one small standalone Code Framework feature illustration for accounts.\nStyle master: Create airy isometric line art on a flat pure white background, using fine graphite contours, cool light-gray secondary lines, dotted connections and restrained #BFEF61 details. Keep forms simple, unshaded and open, with generous breathing room and only meaningful connections. Derive the objects from the content brief.\nUse the attached image only for its existing illustration STYLE; do not repeat the cube hierarchy or code symbol. Content: One upright isometric personal account card with a simple head-and-shoulders profile glyph, accompanied by a small shield with a check and a key. Explain a ready-made account and protected access, with clear distinct objects.\nNatural free proportions. One compact coherent subject with breathing room, large easily recognised forms. Entire objects visible, pure white background and object faces, no gradient or shading. Fine graphite contours, cool light-gray construction lines, a few restrained lime #BFEF61 accents. No headings, readable text, numbers, logos, watermark, decorative sparkles or generic cube network. This must look like one member of the same eight-illustration family."
+    source_or_tool: "Built-in image_gen. Original already square; preserved and reused unchanged as delivery. No crop, resize or outpainting."
+
+  - id: singlepage-generated-framework-acquisition-v2-social
+    path: "assets/singlepage/generated/framework-acquisition-v2/social.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-acquisition-v2"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration using the existing operator-supplied illustration style."
+    purpose: "Product-only Code Framework acquisition landing: social"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present as a real product screenshot or claim of automatic website generation.",
+      ]
+    reference_asset_ids:
+      [
+        "singlepage-generated-living-focus-illustration-module-hierarchy-cool-square",
+      ]
+    dimensions: { "width": 1254, "height": 1254 }
+    content_sha256: "34e27e319e4c289bca7bc9902e37f7c49ff5da88cd0094299e1f91229f370efe"
+    prompt: "Use case: infographic-diagram.\nAsset type: one small standalone Code Framework feature illustration for social.\nStyle master: Create airy isometric line art on a flat pure white background, using fine graphite contours, cool light-gray secondary lines, dotted connections and restrained #BFEF61 details. Keep forms simple, unshaded and open, with generous breathing room and only meaningful connections. Derive the objects from the content brief.\nUse the attached image only for its existing illustration STYLE; do not repeat the cube hierarchy or code symbol. Content: Two small isometric profile cards connected by a pair of open conversation bubbles. Explain profiles and conversations; no people in a room.\nNatural free proportions. One compact coherent subject with breathing room, large easily recognised forms. Entire objects visible, pure white background and object faces, no gradient or shading. Fine graphite contours, cool light-gray construction lines, a few restrained lime #BFEF61 accents. No headings, readable text, numbers, logos, watermark, decorative sparkles or generic cube network. This must look like one member of the same eight-illustration family."
+    source_or_tool: "Built-in image_gen. Original already square; preserved and reused unchanged as delivery. No crop, resize or outpainting."
+
+  - id: singlepage-generated-framework-acquisition-v2-blog
+    path: "assets/singlepage/generated/framework-acquisition-v2/blog.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-acquisition-v2"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration using the existing operator-supplied illustration style."
+    purpose: "Product-only Code Framework acquisition landing: blog"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present as a real product screenshot or claim of automatic website generation.",
+      ]
+    reference_asset_ids:
+      [
+        "singlepage-generated-living-focus-illustration-module-hierarchy-cool-square",
+      ]
+    dimensions: { "width": 1254, "height": 1254 }
+    content_sha256: "9922899a4dc45d75db0311998f863f498769ab376de042682c417c1769d2c877"
+    prompt: "Use case: infographic-diagram.\nAsset type: one small standalone Code Framework feature illustration for blog.\nStyle master: Create airy isometric line art on a flat pure white background, using fine graphite contours, cool light-gray secondary lines, dotted connections and restrained #BFEF61 details. Keep forms simple, unshaded and open, with generous breathing room and only meaningful connections. Derive the objects from the content brief.\nUse the attached image only for its existing illustration STYLE; do not repeat the cube hierarchy or code symbol. Content: A short overlapping stack of isometric article cards: a clear large image block and a few text rules, plus a small category tab. Explain a ready-made blog and organised articles.\nNatural free proportions. One compact coherent subject with breathing room, large easily recognised forms. Entire objects visible, pure white background and object faces, no gradient or shading. Fine graphite contours, cool light-gray construction lines, a few restrained lime #BFEF61 accents. No headings, readable text, numbers, logos, watermark, decorative sparkles or generic cube network. This must look like one member of the same eight-illustration family."
+    source_or_tool: "Built-in image_gen. Original already square; preserved and reused unchanged as delivery. No crop, resize or outpainting."
+
+  - id: singlepage-generated-framework-acquisition-v2-knowledge
+    path: "assets/singlepage/generated/framework-acquisition-v2/knowledge.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-acquisition-v2"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration using the existing operator-supplied illustration style."
+    purpose: "Product-only Code Framework acquisition landing: knowledge"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present as a real product screenshot or claim of automatic website generation.",
+      ]
+    reference_asset_ids:
+      [
+        "singlepage-generated-living-focus-illustration-module-hierarchy-cool-square",
+      ]
+    dimensions: { "width": 1254, "height": 1254 }
+    content_sha256: "2c28f6ba2c9fa7fb930d77dbe2bc3b13e1403dd30e503650d09b9311d47254b6"
+    prompt: "Use case: infographic-diagram.\nAsset type: one small standalone Code Framework feature illustration for knowledge.\nStyle master: Create airy isometric line art on a flat pure white background, using fine graphite contours, cool light-gray secondary lines, dotted connections and restrained #BFEF61 details. Keep forms simple, unshaded and open, with generous breathing room and only meaningful connections. Derive the objects from the content brief.\nUse the attached image only for its existing illustration STYLE; do not repeat the cube hierarchy or code symbol. Content: An open isometric folder holding three paper documents, with a magnifying glass beside one selected lime tab. Explain keeping and finding project materials.\nNatural free proportions. One compact coherent subject with breathing room, large easily recognised forms. Entire objects visible, pure white background and object faces, no gradient or shading. Fine graphite contours, cool light-gray construction lines, a few restrained lime #BFEF61 accents. No headings, readable text, numbers, logos, watermark, decorative sparkles or generic cube network. This must look like one member of the same eight-illustration family."
+    source_or_tool: "Built-in image_gen. Original already square; preserved and reused unchanged as delivery. No crop, resize or outpainting."
+
+  - id: singlepage-generated-framework-acquisition-v2-ecommerce
+    path: "assets/singlepage/generated/framework-acquisition-v2/ecommerce.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-acquisition-v2"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration using the existing operator-supplied illustration style."
+    purpose: "Product-only Code Framework acquisition landing: ecommerce"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present as a real product screenshot or claim of automatic website generation.",
+      ]
+    reference_asset_ids:
+      [
+        "singlepage-generated-living-focus-illustration-module-hierarchy-cool-square",
+      ]
+    dimensions: { "width": 1254, "height": 1254 }
+    content_sha256: "6e6314e4af0085be38e79bbeb2b8d3c181750d5f6416c6912ef786c11c0bc122"
+    prompt: "Use case: infographic-diagram.\nAsset type: one small standalone Code Framework feature illustration for ecommerce.\nStyle master: Create airy isometric line art on a flat pure white background, using fine graphite contours, cool light-gray secondary lines, dotted connections and restrained #BFEF61 details. Keep forms simple, unshaded and open, with generous breathing room and only meaningful connections. Derive the objects from the content brief.\nUse the attached image only for its existing illustration STYLE; do not repeat the cube hierarchy or code symbol. Content: A small isometric storefront product card with a simple package, a shopping bag and a compact cart. Explain a ready-made product catalogue and orders. A coherent compact group.\nNatural free proportions. One compact coherent subject with breathing room, large easily recognised forms. Entire objects visible, pure white background and object faces, no gradient or shading. Fine graphite contours, cool light-gray construction lines, a few restrained lime #BFEF61 accents. No headings, readable text, numbers, logos, watermark, decorative sparkles or generic cube network. This must look like one member of the same eight-illustration family."
+    source_or_tool: "Built-in image_gen. Original already square; preserved and reused unchanged as delivery. No crop, resize or outpainting."
+
+  - id: singlepage-generated-framework-acquisition-v2-billing
+    path: "assets/singlepage/generated/framework-acquisition-v2/billing.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-acquisition-v2"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration using the existing operator-supplied illustration style."
+    purpose: "Product-only Code Framework acquisition landing: billing"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present as a real product screenshot or claim of automatic website generation.",
+      ]
+    reference_asset_ids:
+      [
+        "singlepage-generated-living-focus-illustration-module-hierarchy-cool-square",
+      ]
+    dimensions: { "width": 1254, "height": 1254 }
+    content_sha256: "a00c228e0488a763dca0b1ded770be0cb7549b6caf9dc76c265d58023449f9b7"
+    prompt: "Use case: infographic-diagram.\nAsset type: one small standalone Code Framework feature illustration for billing.\nStyle master: Create airy isometric line art on a flat pure white background, using fine graphite contours, cool light-gray secondary lines, dotted connections and restrained #BFEF61 details. Keep forms simple, unshaded and open, with generous breathing room and only meaningful connections. Derive the objects from the content brief.\nUse the attached image only for its existing illustration STYLE; do not repeat the cube hierarchy or code symbol. Content: A clean isometric payment card and short receipt beside two simple coins, with one restrained lime confirmation check. Explain payments and currency choices, not financial success.\nNatural free proportions. One compact coherent subject with breathing room, large easily recognised forms. Entire objects visible, pure white background and object faces, no gradient or shading. Fine graphite contours, cool light-gray construction lines, a few restrained lime #BFEF61 accents. No headings, readable text, numbers, logos, watermark, decorative sparkles or generic cube network. This must look like one member of the same eight-illustration family."
+    source_or_tool: "Built-in image_gen. Original already square; preserved and reused unchanged as delivery. No crop, resize or outpainting."
+
+  - id: singlepage-generated-framework-acquisition-v2-pages
+    path: "assets/singlepage/generated/framework-acquisition-v2/pages.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-acquisition-v2"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration using the existing operator-supplied illustration style."
+    purpose: "Product-only Code Framework acquisition landing: pages"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present as a real product screenshot or claim of automatic website generation.",
+      ]
+    reference_asset_ids:
+      [
+        "singlepage-generated-living-focus-illustration-module-hierarchy-cool-square",
+      ]
+    dimensions: { "width": 1254, "height": 1254 }
+    content_sha256: "8a6c1eb07d7f71c329d1270f903c30c1c7869ba06b3115a0671fcf49147244b2"
+    prompt: "Use case: infographic-diagram.\nAsset type: one small standalone Code Framework feature illustration for pages.\nStyle master: Create airy isometric line art on a flat pure white background, using fine graphite contours, cool light-gray secondary lines, dotted connections and restrained #BFEF61 details. Keep forms simple, unshaded and open, with generous breathing room and only meaningful connections. Derive the objects from the content brief.\nUse the attached image only for its existing illustration STYLE; do not repeat the cube hierarchy or code symbol. Content: A single isometric web browser frame with a large heading-shaped rule, a picture panel and three clean content blocks, one lime block slightly offset ready to fit into its place. Explain choosing and arranging website content.\nNatural free proportions. One compact coherent subject with breathing room, large easily recognised forms. Entire objects visible, pure white background and object faces, no gradient or shading. Fine graphite contours, cool light-gray construction lines, a few restrained lime #BFEF61 accents. No headings, readable text, numbers, logos, watermark, decorative sparkles or generic cube network. This must look like one member of the same eight-illustration family."
+    source_or_tool: "Built-in image_gen. Original already square; preserved and reused unchanged as delivery. No crop, resize or outpainting."
+
+  - id: singlepage-generated-framework-acquisition-v2-forms
+    path: "assets/singlepage/generated/framework-acquisition-v2/forms.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-acquisition-v2"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration using the existing operator-supplied illustration style."
+    purpose: "Product-only Code Framework acquisition landing: forms"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present as a real product screenshot or claim of automatic website generation.",
+      ]
+    reference_asset_ids:
+      [
+        "singlepage-generated-living-focus-illustration-module-hierarchy-cool-square",
+      ]
+    dimensions: { "width": 1254, "height": 1254 }
+    content_sha256: "5cb7dcab79b4a39870ca36b0f2c7c6b05944e64477e60b73ccd2be92da5efd81"
+    prompt: "Use case: infographic-diagram.\nAsset type: one small standalone Code Framework feature illustration for forms.\nStyle master: Create airy isometric line art on a flat pure white background, using fine graphite contours, cool light-gray secondary lines, dotted connections and restrained #BFEF61 details. Keep forms simple, unshaded and open, with generous breathing room and only meaningful connections. Derive the objects from the content brief.\nUse the attached image only for its existing illustration STYLE; do not repeat the cube hierarchy or code symbol. Content: An isometric contact form card with a few short input rules and a lime submit button, connected to a small clock and an outgoing paper plane. Explain collecting requests and follow-up tasks.\nNatural free proportions. One compact coherent subject with breathing room, large easily recognised forms. Entire objects visible, pure white background and object faces, no gradient or shading. Fine graphite contours, cool light-gray construction lines, a few restrained lime #BFEF61 accents. No headings, readable text, numbers, logos, watermark, decorative sparkles or generic cube network. This must look like one member of the same eight-illustration family."
+    source_or_tool: "Built-in image_gen. Original already square; preserved and reused unchanged as delivery. No crop, resize or outpainting."
+
+  - id: "singlepage-generated-framework-example-firstship"
+    path: "assets/singlepage/generated/framework-example-brands-v1/firstship.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-example-brands-v1"
+    evidence: false
+    rights_status: "AI-generated fictional example identity. No trademark clearance or claim of a real operating brand."
+    purpose: "Independent horizontal wordmark in Product Storybook mobile example."
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product example review."]
+    prohibited_use:
+      [
+        "Do not present as a client brand, portfolio project or cleared commercial identity.",
+      ]
+    dimensions: { "width": 1983, "height": 793 }
+    content_sha256: "056bc06e5c424dfb430271b3623588cdbd0808e090d4e833b4944c1759addca8"
+    prompt: 'Use case: logo-brand. Generate ONE polished horizontal wordmark logo for fictional concept brand "Firstship": a school for launching a first AI product. Custom confident lowercase dark-violet lettering with an ascending launch stroke integrated into the f, a single soft lavender accent; friendly precise contemporary typography. Exact text only: "Firstship". Transparent background with genuine alpha. Composition wide 5:1, lettering large, tightly framed with modest 5% clear margin. Logo must remain legible at 140 pixels wide. Bespoke professional typography and a distinctive detail within the lettering. No square badge, no separate icon tile on the left, no mockup, no paper texture, no gradients, no shadows, no tagline, no additional text. Flat sharp clean edges, dark lettering suitable on white. Final asset for a mobile website header.'
+    source_or_tool: "Built-in image_gen; original transparent horizontal output copied unchanged. No external reference image supplied; separate new identity requested by operator."
+
+  - id: "singlepage-generated-framework-example-buildfolk"
+    path: "assets/singlepage/generated/framework-example-brands-v1/buildfolk.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-example-brands-v1"
+    evidence: false
+    rights_status: "AI-generated fictional example identity. No trademark clearance or claim of a real operating brand."
+    purpose: "Independent horizontal wordmark in Product Storybook mobile example."
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product example review."]
+    prohibited_use:
+      [
+        "Do not present as a client brand, portfolio project or cleared commercial identity.",
+      ]
+    dimensions: { "width": 1983, "height": 793 }
+    content_sha256: "de43f46bc5047b8fe8f0cd174dc9380537b75bf3c9ea11663d154c705034ae24"
+    prompt: 'Use case: logo-brand. Generate ONE polished horizontal wordmark logo for fictional concept brand "Buildfolk": a community of independent vibe coders. Warm rounded forest-green lowercase custom lettering, two letters connecting like people collaborating, one playful mint ligature, ownable friendly rhythm. Exact text only: "Buildfolk". Transparent background with genuine alpha. Composition wide 5:1, lettering large, tightly framed with modest 5% clear margin. Logo must remain legible at 140 pixels wide. Bespoke professional typography and a distinctive detail within the lettering. No square badge, no separate icon tile on the left, no mockup, no paper texture, no gradients, no shadows, no tagline, no additional text. Flat sharp clean edges, dark lettering suitable on white. Final asset for a mobile website header.'
+    source_or_tool: "Built-in image_gen; original transparent horizontal output copied unchanged. No external reference image supplied; separate new identity requested by operator."
+
+  - id: "singlepage-generated-framework-example-lessonloop"
+    path: "assets/singlepage/generated/framework-example-brands-v1/lessonloop.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-example-brands-v1"
+    evidence: false
+    rights_status: "AI-generated fictional example identity. No trademark clearance or claim of a real operating brand."
+    purpose: "Independent horizontal wordmark in Product Storybook mobile example."
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product example review."]
+    prohibited_use:
+      [
+        "Do not present as a client brand, portfolio project or cleared commercial identity.",
+      ]
+    dimensions: { "width": 2172, "height": 724 }
+    content_sha256: "7bcc497b9f486045f7b1f4ca6a4f6fb9ced927e09a1eae1e093dbaa19196b6ba"
+    prompt: 'Use case: logo-brand. Generate ONE polished horizontal wordmark logo for fictional concept brand "Lessonloop": a shop selling practical AI courses. Custom burnt-orange lettering with the two o letters forming a continuous learning loop, expressive but clean modern educational wordmark. Exact text only: "Lessonloop". Transparent background with genuine alpha. Composition wide 5:1, lettering large, tightly framed with modest 5% clear margin. Logo must remain legible at 140 pixels wide. Bespoke professional typography and a distinctive detail within the lettering. No square badge, no separate icon tile on the left, no mockup, no paper texture, no gradients, no shadows, no tagline, no additional text. Flat sharp clean edges, dark lettering suitable on white. Final asset for a mobile website header.'
+    source_or_tool: "Built-in image_gen; original transparent horizontal output copied unchanged. No external reference image supplied; separate new identity requested by operator."
+
+  - id: "singlepage-generated-framework-example-signalnote"
+    path: "assets/singlepage/generated/framework-example-brands-v1/signalnote.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-example-brands-v1"
+    evidence: false
+    rights_status: "AI-generated fictional example identity. No trademark clearance or claim of a real operating brand."
+    purpose: "Independent horizontal wordmark in Product Storybook mobile example."
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product example review."]
+    prohibited_use:
+      [
+        "Do not present as a client brand, portfolio project or cleared commercial identity.",
+      ]
+    dimensions: { "width": 2172, "height": 724 }
+    content_sha256: "5753166c88287404da06d3a18483eccda781b5d4dbb8bf213d243c9615654495"
+    prompt: 'Use case: logo-brand. Generate ONE polished horizontal wordmark logo for fictional concept brand "Signalnote": an editorial magazine about artificial intelligence. Elegant deep-blue custom serif/sans hybrid lettering, subtle annotation/signal stroke integrated into the word, sophisticated magazine masthead. Exact text only: "Signalnote". Transparent background with genuine alpha. Composition wide 5:1, lettering large, tightly framed with modest 5% clear margin. Logo must remain legible at 140 pixels wide. Bespoke professional typography and a distinctive detail within the lettering. No square badge, no separate icon tile on the left, no mockup, no paper texture, no gradients, no shadows, no tagline, no additional text. Flat sharp clean edges, dark lettering suitable on white. Final asset for a mobile website header.'
+    source_or_tool: "Built-in image_gen; original transparent horizontal output copied unchanged. No external reference image supplied; separate new identity requested by operator."
+
+  - id: "singlepage-generated-framework-webinar-v1-idea-master"
+    path: "assets/singlepage/generated/framework-webinar-v1/idea-master.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-webinar-v1"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration for Product Storybook."
+    purpose: "Original free-aspect master: idea"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present fictional people, course offers or interface concepts as verified real-world evidence.",
+      ]
+    dimensions: { "width": 1536, "height": 1024 }
+    content_sha256: "f0cff10611ceee57153e46931e369d54ce06efb4389b4c0116c17e663a815b7c"
+    prompt: "Use case: infographic-diagram. Asset: illustrated lesson topic for fictional Firstship webinar. Create a refined tactile 3D editorial miniature, matte lavender and deep violet, warm white background, soft natural shadow, simple legible forms, restrained tiny lime accent. No readable text, no logo, no people, no watermark. Natural free composition and aspect ratio; keep the complete scene and generous breathing room. Subject: a single blank idea card with a violet lightbulb connected to two smaller audience and goal cards, like a tiny product-planning tabletop. Visually explain turning an idea into a clear brief."
+    source_or_tool: "Built-in image_gen. Original retained unchanged."
+
+  - id: "singlepage-generated-framework-webinar-v1-idea"
+    path: "assets/singlepage/generated/framework-webinar-v1/idea.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-webinar-v1"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration for Product Storybook."
+    purpose: "Square delivery: idea"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present fictional people, course offers or interface concepts as verified real-world evidence.",
+      ]
+    dimensions: { "width": 1254, "height": 1254 }
+    content_sha256: "9b14dbff5beb8550c3eab077bf551acfd32d101b344ec7345e56544c886917b4"
+    prompt: "Use case: precise-object-edit. Prepare a square delivery of the attached original by OUTPAINTING ONLY the shorter canvas dimension. Preserve the complete original composition, all subjects, their proportions, colors and details; do not crop, zoom or stretch. Expand above and below with the same warm white backdrop and continuation of the ground plane; keep all original objects unchanged and fully visible. Deliver a 1536 by 1536 pixel square image. No new objects, logos or text."
+    source_or_tool: "Built-in image_gen. Shorter canvas dimension expanded to square; complete source composition preserved. Delivered native 1254 x 1254 despite the requested 1536 x 1536."
+    reference_asset_ids:
+      ["singlepage-generated-framework-webinar-v1-idea-master"]
+
+  - id: "singlepage-generated-framework-webinar-v1-build-master"
+    path: "assets/singlepage/generated/framework-webinar-v1/build-master.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-webinar-v1"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration for Product Storybook."
+    purpose: "Original free-aspect master: build"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present fictional people, course offers or interface concepts as verified real-world evidence.",
+      ]
+    dimensions: { "width": 1536, "height": 1024 }
+    content_sha256: "948aff536a4211c27232fb9b2ddc33aa56f4130da6af04f4e3bef9844e0b8678"
+    prompt: "Use case: infographic-diagram. Asset: illustrated lesson topic for fictional Firstship webinar. Create a refined tactile 3D editorial miniature, matte lavender and deep violet, warm white background, soft natural shadow, simple legible forms, restrained tiny lime accent. No readable text, no logo, no people, no watermark. Natural free composition and aspect ratio; keep the complete scene and generous breathing room. Subject: a small browser window assembled from three plug-in blocks: user profile silhouette, chat bubble, payment card. Show the blocks fitting together into one coherent product. Precise and friendly, clearly visible at thumbnail size."
+    source_or_tool: "Built-in image_gen. Original retained unchanged."
+
+  - id: "singlepage-generated-framework-webinar-v1-build"
+    path: "assets/singlepage/generated/framework-webinar-v1/build.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-webinar-v1"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration for Product Storybook."
+    purpose: "Square delivery: build"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present fictional people, course offers or interface concepts as verified real-world evidence.",
+      ]
+    dimensions: { "width": 1254, "height": 1254 }
+    content_sha256: "7f45863f58daf6f24ef5788c69fe0f49c2b92810cb90acd7e41c9ad34212f6ae"
+    prompt: "Use case: precise-object-edit. Prepare a square delivery of the attached original by OUTPAINTING ONLY the shorter canvas dimension. Preserve the complete original composition, all subjects, their proportions, colors and details; do not crop, zoom or stretch. Expand above and below with the same warm white backdrop and continuation of the ground plane; keep all original objects unchanged and fully visible. Deliver a 1536 by 1536 pixel square image. No new objects, logos or text."
+    source_or_tool: "Built-in image_gen. Shorter canvas dimension expanded to square; complete source composition preserved. Delivered native 1254 x 1254 despite the requested 1536 x 1536."
+    reference_asset_ids:
+      ["singlepage-generated-framework-webinar-v1-build-master"]
+
+  - id: "singlepage-generated-framework-webinar-v1-launch-master"
+    path: "assets/singlepage/generated/framework-webinar-v1/launch-master.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-webinar-v1"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration for Product Storybook."
+    purpose: "Original free-aspect master: launch"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present fictional people, course offers or interface concepts as verified real-world evidence.",
+      ]
+    dimensions: { "width": 1536, "height": 1024 }
+    content_sha256: "4aa81214c34df69421207b2842f93864ad86b40ea56287617982ea05ae4d36ad"
+    prompt: "Use case: infographic-diagram. Asset: illustrated lesson topic for fictional Firstship webinar. Create a refined tactile 3D editorial miniature, matte lavender and deep violet, warm white background, soft natural shadow, simple legible forms, restrained tiny lime accent. No readable text, no logo, no people, no watermark. Natural free composition and aspect ratio; keep the complete scene and generous breathing room. Subject: a small website window sitting on a launch platform, a lavender paper rocket lifting off beside it, and one green checkmark. Explain checking and publishing a first product. Beautiful simple still-life."
+    source_or_tool: "Built-in image_gen. Original retained unchanged."
+
+  - id: "singlepage-generated-framework-webinar-v1-launch"
+    path: "assets/singlepage/generated/framework-webinar-v1/launch.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-webinar-v1"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration for Product Storybook."
+    purpose: "Square delivery: launch"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present fictional people, course offers or interface concepts as verified real-world evidence.",
+      ]
+    dimensions: { "width": 1254, "height": 1254 }
+    content_sha256: "cd8e45c955ebfcdfd54ffb1c0116b0af9153fa5caf43481493a4321e0f3abf85"
+    prompt: "Use case: precise-object-edit. Prepare a square delivery of the attached original by OUTPAINTING ONLY the shorter canvas dimension. Preserve the complete original composition, all subjects, their proportions, colors and details; do not crop, zoom or stretch. Expand above and below with the same warm white backdrop and continuation of the ground plane; keep all original objects unchanged and fully visible. Deliver a 1536 by 1536 pixel square image. No new objects, logos or text."
+    source_or_tool: "Built-in image_gen. Shorter canvas dimension expanded to square; complete source composition preserved. Delivered native 1254 x 1254 despite the requested 1536 x 1536."
+    reference_asset_ids:
+      ["singlepage-generated-framework-webinar-v1-launch-master"]
+
+  - id: "singlepage-generated-framework-webinar-v1-mentor-master"
+    path: "assets/singlepage/generated/framework-webinar-v1/mentor-master.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-webinar-v1"
+    evidence: false
+    rights_status: "AI-generated fictional portrait; no real instructor reference or evidence of credentials."
+    purpose: "Original free-aspect master: mentor"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present fictional people, course offers or interface concepts as verified real-world evidence.",
+      ]
+    dimensions: { "width": 1145, "height": 1374 }
+    content_sha256: "e726a1a4fdc03da3dcd2dedb5097fa1c4d1bafdb543f973e601aa3db9699a1f8"
+    prompt: "Use case: photorealistic-natural. Asset: portrait of a fictional male programming webinar instructor for the fictional Firstship school. Invent a person, no real-person reference. An approachable experienced software developer around 38, short dark curly hair, neatly trimmed beard, casual dark-violet overshirt over white T-shirt, seated at a tidy desk with a laptop in a daylight studio, pale lavender background. Candid editorial portrait, natural skin texture and realistic anatomy, relaxed slight smile, eye contact with camera. Head and torso fully framed, natural free aspect ratio, no text, logos or watermark."
+    source_or_tool: "Built-in image_gen. Original retained unchanged."
+
+  - id: "singlepage-generated-framework-webinar-v1-mentor"
+    path: "assets/singlepage/generated/framework-webinar-v1/mentor.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-webinar-v1"
+    evidence: false
+    rights_status: "AI-generated fictional portrait; no real instructor reference or evidence of credentials."
+    purpose: "Square delivery: mentor"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present fictional people, course offers or interface concepts as verified real-world evidence.",
+      ]
+    dimensions: { "width": 1254, "height": 1254 }
+    content_sha256: "db87a1f32623634fd8dfeb840682c2807b312a17f34acd7221319b56282a5459"
+    prompt: "Use case: precise-object-edit. Prepare a square delivery of the attached original by OUTPAINTING ONLY the shorter canvas dimension. Preserve the complete original composition, all subjects, their proportions, colors and details; do not crop, zoom or stretch. Extend the studio background horizontally on both sides; keep the entire head, torso, hands, laptop and existing desk. Preserve this exact fictional person's face and natural anatomy. Deliver a 1536 by 1536 pixel square image. No new objects, logos or text."
+    source_or_tool: "Built-in image_gen. Shorter canvas dimension expanded to square; complete source composition preserved. Delivered native 1254 x 1254 despite the requested 1536 x 1536."
+    reference_asset_ids:
+      ["singlepage-generated-framework-webinar-v1-mentor-master"]
+
+  - id: "singlepage-generated-framework-webinar-v1-knowledge-ai"
+    path: "assets/singlepage/generated/framework-webinar-v1/knowledge-ai.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-webinar-v1"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration for Product Storybook."
+    purpose: "Square delivery: knowledge-ai"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present fictional people, course offers or interface concepts as verified real-world evidence.",
+      ]
+    dimensions: { "width": 1254, "height": 1254 }
+    content_sha256: "98d6c09bea8430acd2ee9b60a7be67316210086bb7c5d38e6855b51ec9bc259d"
+    prompt: "Use case: infographic-diagram. Asset: Code Framework capability illustration, knowledge base FOR an AI assistant. Use the attached image only as line-art STYLE reference. Replace the subject with a small friendly robot head / AI processing chip connected by fine dotted lines to three source documents in an open archive; one document excerpt travels into a small answer bubble beside the robot. This must clearly show an AI finding information in documents, no human and no handheld magnifying glass. Airy isometric line art, fine graphite contours, cool light-gray construction lines, pure white background and object faces, a few lime #BFEF61 accents. Flat unshaded open forms, compact coherent scene, entire objects visible, no readable text or watermark. Free natural proportions."
+    source_or_tool: "Built-in image_gen. Already-square original reused unchanged."
+    reference_asset_ids:
+      ["singlepage-generated-framework-acquisition-v2-knowledge"]
+
+  - id: "singlepage-generated-framework-article-covers-dark-v1-social"
+    path: "assets/singlepage/generated/framework-article-covers-dark-v1/social.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-article-covers-dark-v1"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration for Product Storybook."
+    purpose: "Dark module-guide cover: social"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      ["Do not present conceptual illustrations as real product evidence."]
+    dimensions: { "width": 1254, "height": 1254 }
+    content_sha256: "c802fbe951e75e9cd6b5338cc5d0b1c7e423301144837b9c5dde975c68128479"
+    prompt: "Use case: style-transfer. Asset type: SinglePageStartup article cover. Input image is the edit target. Change ONLY its color treatment into a clean high-contrast dark illustration: uniform deep graphite #18232a background and graphite object surfaces, crisp white and cool light gray linework, vivid lime #BFEF61 accents. Preserve all objects, their exact geometry, perspective, relationships, relative scale, placements, dotted connections and generous margins. Keep the existing square canvas and complete composition, without cropping or zooming. Background must be flat and consistent to the very edges, without gradients, vignette, texture or glow. Secondary construction lines may be muted gray. All green details stay lime, never invert to magenta. No text, no labels, no logos, no new objects. Minimal technical isometric line illustration, legible as a small editorial cover."
+    source_or_tool: "Built-in image_gen. Color edit of an existing square asset; original retained unchanged."
+    reference_asset_ids:
+      ["singlepage-generated-framework-acquisition-v2-social"]
+
+  - id: "singlepage-generated-framework-article-covers-dark-v1-billing"
+    path: "assets/singlepage/generated/framework-article-covers-dark-v1/billing.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-article-covers-dark-v1"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration for Product Storybook."
+    purpose: "Dark module-guide cover: billing"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      ["Do not present conceptual illustrations as real product evidence."]
+    dimensions: { "width": 1254, "height": 1254 }
+    content_sha256: "da200c05d607a260fd47168d70004bdf32890e09dab8c16b6a2ac8a95cb0aa7b"
+    prompt: "Use case: style-transfer. Asset type: SinglePageStartup article cover. Input image is the edit target. Change ONLY its color treatment into a clean high-contrast dark illustration: uniform deep graphite #18232a background and graphite object surfaces, crisp white and cool light gray linework, vivid lime #BFEF61 accents. Preserve all objects, their exact geometry, perspective, relationships, relative scale, placements, dotted connections and generous margins. Keep the existing square canvas and complete composition, without cropping or zooming. Background must be flat and consistent to the very edges, without gradients, vignette, texture or glow. Secondary construction lines may be muted gray. All green details stay lime, never invert to magenta. No text, no labels, no logos, no new objects. Minimal technical isometric line illustration, legible as a small editorial cover."
+    source_or_tool: "Built-in image_gen. Color edit of an existing square asset; original retained unchanged."
+    reference_asset_ids:
+      ["singlepage-generated-framework-acquisition-v2-billing"]
+
+  - id: "singlepage-generated-framework-article-covers-dark-v1-knowledge"
+    path: "assets/singlepage/generated/framework-article-covers-dark-v1/knowledge.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-article-covers-dark-v1"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration for Product Storybook."
+    purpose: "Dark module-guide cover: knowledge"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      ["Do not present conceptual illustrations as real product evidence."]
+    dimensions: { "width": 1254, "height": 1254 }
+    content_sha256: "8796b2c378f4a3b3347657f855ab3c03c03901e6cda0a061451d407e9c801c8b"
+    prompt: "Use case: style-transfer. Asset type: SinglePageStartup article cover. Input image is the edit target. Change ONLY its color treatment into a clean high-contrast dark illustration: uniform deep graphite #18232a background and graphite object surfaces, crisp white and cool light gray linework, vivid lime #BFEF61 accents. Preserve all objects, their exact geometry, perspective, relationships, relative scale, placements, dotted connections and generous margins. Keep the existing square canvas and complete composition, without cropping or zooming. Background must be flat and consistent to the very edges, without gradients, vignette, texture or glow. Secondary construction lines may be muted gray. All green details stay lime, never invert to magenta. No text, no labels, no logos, no new objects. Minimal technical isometric line illustration, legible as a small editorial cover."
+    source_or_tool: "Built-in image_gen. Color edit of an existing square asset; original retained unchanged."
+    reference_asset_ids:
+      ["singlepage-generated-framework-webinar-v1-knowledge-ai"]

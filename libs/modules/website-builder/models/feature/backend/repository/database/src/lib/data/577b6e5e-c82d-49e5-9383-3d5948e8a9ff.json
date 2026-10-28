@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "577b6e5e-c82d-49e5-9383-3d5948e8a9ff",
+  "createdAt": "2026-10-26T00:11:57.889Z",
+  "updatedAt": "2026-10-27T14:59:37.118Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Brief template.md",
+    "ru": "Шаблон брифа.md"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Who the product is for, which problem it solves and what users should do in the first version. Search this knowledge by including @knowledge in a message.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Для кого продукт, какую задачу решает и что пользователь должен сделать в первой версии. Поиск по этим знаниям включается в сообщении через @knowledge.\"}]}]}"
+  },
+  "adminTitle": "Шаблон брифа.md",
+  "slug": "framework-reviewed-article-social-profile-knowledge-feature-1"
+}

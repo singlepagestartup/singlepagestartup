@@ -1,3 +1,4 @@
+import type { TRenderAuthor } from "@sps/blog/models/article/frontend/component";
 import type { ReactNode } from "react";
 export { type IModel } from "@sps/blog/models/widget/sdk/model";
 import { IModel } from "@sps/blog/models/widget/sdk/model";
@@ -12,7 +13,12 @@ export const variant = "article-overview-with-private-content-default" as const;
 export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
   language: string;
+  renderAuthor?: TRenderAuthor;
+  renderAuthorCard?: TRenderAuthor;
+  renderCommentsContent?: (props: { data: IArticle }) => ReactNode;
+  renderNavigation?: (props: { data: IArticle }) => ReactNode;
   articleSlug?: string;
+  renderContent?: (props: { data: IArticle }) => ReactNode;
   renderPrivateContent?: (props: { data: IArticle }) => ReactNode;
 }
 
@@ -26,6 +32,11 @@ export interface IComponentPropsExtended
 export interface IContentProps {
   isServer: boolean;
   language: string;
+  renderAuthor?: TRenderAuthor;
+  renderAuthorCard?: TRenderAuthor;
+  renderCommentsContent?: IComponentProps["renderCommentsContent"];
+  renderNavigation?: IComponentProps["renderNavigation"];
   articleSlug?: string;
+  renderContent?: (props: { data: IArticle }) => ReactNode;
   renderPrivateContent?: IComponentProps["renderPrivateContent"];
 }

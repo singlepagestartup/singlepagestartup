@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "dae73b92-71af-4996-878e-2dbc7b5ecd53",
+  "createdAt": "2026-10-26T00:11:22.511Z",
+  "updatedAt": "2026-10-27T14:59:57.906Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Offers can be compared",
+    "ru": "Предложения можно сравнивать"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Group products into categories and add attributes. For a course, an attribute might be the learning format; for a product, size or material.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Объединяйте товары в категории и добавляйте характеристики. Для курса это может быть формат обучения, для товара — размер или материал.\"}]}]}"
+  },
+  "adminTitle": "Предложения можно сравнивать",
+  "slug": "framework-reviewed-article-ecommerce-introduction-feature-0"
+}

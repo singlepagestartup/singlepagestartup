@@ -5,6 +5,10 @@
  * Then: parameters remain exact and only public masks are expanded.
  */
 import { Service } from "./index";
+import { api as profilesApi } from "@sps/social/models/profile/sdk/server";
+jest.mock("@sps/social/models/profile/sdk/server", () => ({
+  api: { authorFind: jest.fn() },
+}));
 
 jest.mock("@sps/shared-utils", () => ({
   ...jest.requireActual("@sps/shared-utils"),
@@ -54,7 +58,7 @@ it("returns all keys with the resolved page without a second lookup", async () =
     { id: filters[0].value },
   ]);
   await expect(
-    service.findByUrl({ url: "/chats/c/threads/t" }),
+    service.findByUrl({ url: "/chats/c/threads/t", language: "en" }),
   ).resolves.toEqual({
     ...page,
     routeParams: { "social.chats.id": "c", "social.threads.id": "t" },
@@ -200,3 +204,37 @@ it.each([401, 403])(
     ]);
   },
 );
+
+it("enumerates and resolves public author UUIDs through the public DTO API", async () => {
+  const service = Object.create(Service.prototype) as Service;
+  const id = "61ed455d-8cce-458f-9992-a12e1fcb449a";
+  const page = {
+    id: "author-page",
+    language: "en",
+    url: "/authors/[social.profiles.id]",
+  };
+  service.find = jest.fn(async () => [page]) as any;
+  service.findById = jest.fn(async () => page) as any;
+  jest.mocked(profilesApi.authorFind).mockResolvedValue([{ id }] as any);
+  expect(await service.urls()).toEqual([
+    { url: `/authors/${id}`, language: "en" },
+  ]);
+  expect(
+    await service.findByUrl({ url: `/authors/${id}`, language: "en" }),
+  ).toEqual({ ...page, routeParams: { "social.profiles.id": id } });
+  expect(profilesApi.authorFind).toHaveBeenLastCalledWith({
+    params: { profileId: id, limit: 100, offset: 0 },
+    options: { cache: "no-store" },
+  });
+});
+it("does not resolve a private Profile slug through an operator read on a public route", async () => {
+  const service = Object.create(Service.prototype) as Service;
+  service.find = jest.fn(async () => [
+    { id: "page", language: "en", url: "/authors/[social.profiles.slug]" },
+  ]) as any;
+  jest.mocked(profilesApi.authorFind).mockClear();
+  await expect(
+    service.findByUrl({ url: "/authors/private-slug", language: "en" }),
+  ).rejects.toThrow("Not Found");
+  expect(profilesApi.authorFind).not.toHaveBeenCalled();
+});

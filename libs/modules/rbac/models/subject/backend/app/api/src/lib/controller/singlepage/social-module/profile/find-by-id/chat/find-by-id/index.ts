@@ -5,6 +5,7 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../../service";
 import { getHttpErrorType } from "@sps/backend-utils";
+import { Service as Presentations } from "../../../../../../../service/singlepage/social-module/chat/presentations";
 
 export class Handler {
   service: Service;
@@ -139,7 +140,20 @@ export class Handler {
             socialModuleChatId: chat.id,
           })
         : undefined;
-    return c.json({ data: participants ? { ...chat, participants } : chat });
+    const participantPresentations = participants
+      ? [
+          ...(
+            await new Presentations(this.service).find(
+              participants.map((profile) => profile.id),
+            )
+          ).values(),
+        ]
+      : undefined;
+    return c.json({
+      data: participants
+        ? { ...chat, participants, participantPresentations }
+        : chat,
+    });
   }
 
   protected async isSubjectAdmin(subjectId: string): Promise<boolean> {

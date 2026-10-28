@@ -34,7 +34,7 @@ export function Component({
           href={file.fileUrl}
           target="_blank"
           rel="noreferrer"
-          aria-label={`Open ${file.name}`}
+          aria-label={`Открыть ${file.name}`}
           className={`block ${kit.focus}`}
         >
           <img
@@ -58,7 +58,7 @@ export function Component({
             href={file.fileUrl}
             target="_blank"
             rel="noreferrer"
-            aria-label={`Open ${file.name}`}
+            aria-label={`Открыть ${file.name}`}
             className={`${kit.plain} min-h-9 shrink-0 px-2 ${compact ? "col-span-2 justify-self-end" : ""}`}
           >
             Open
@@ -68,7 +68,7 @@ export function Component({
           <a
             href={file.fileUrl}
             download={file.name}
-            aria-label={`Download ${file.name}`}
+            aria-label={`Скачать ${file.name}`}
             className={`${kit.plain} min-h-9 shrink-0 px-2 ${compact ? "col-span-2 justify-self-end" : ""}`}
           >
             <Icon name="arrow-down" className="size-4" />

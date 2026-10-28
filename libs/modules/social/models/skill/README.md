@@ -39,6 +39,12 @@ shared catalogue and cannot be linked to another profile through the scoped API.
 Already linked legacy shared commands remain readable for existing assistants;
 when both versions are linked, document requests use the profile's own record.
 
+Brief's initial instructions include business competitors. Products asks for a
+separate competitor list per product, including offer links, reasons for
+comparison and known promotion examples. An explicit "not yet known" is valid
+intake; it is not evidence that competitors do not exist. The document editor
+also shows this guidance for existing projects without changing saved notes.
+
 The server gives document messages the profile's actual slash command and Skill ID.
 Generation reads the current instructions once for each request. Ordinary
 AI Chat threads can read all profile Knowledge but do not automatically

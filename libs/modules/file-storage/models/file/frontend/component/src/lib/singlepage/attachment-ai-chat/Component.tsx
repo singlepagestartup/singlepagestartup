@@ -1,8 +1,11 @@
 import { FileText } from "lucide-react";
 import { NEXT_PUBLIC_API_SERVICE_URL } from "@sps/shared-utils";
-import type { IComponentPropsExtended } from "./interface";
+import { FilePreviewText } from "@sps/ui-adapter";
+import type {
+  IComponentPropsExtended,
+  ITextContentViewProps,
+} from "./interface";
 import { Component as ClientComponent } from "./ClientComponent";
-import TextContent from "./client";
 
 export function Component(props: IComponentPropsExtended) {
   const file = props.data;
@@ -37,13 +40,47 @@ export function Component(props: IComponentPropsExtended) {
     );
   return (
     <ClientComponent
+      language={props.language}
       fileId={file.id}
       variant={props.variant}
       name={title}
       src={src}
       mimeType={file.mimeType}
       extension={extension}
-      textContent={<TextContent file={file} />}
+      textContent={props.textContent}
+    />
+  );
+}
+
+export function TextContent(props: ITextContentViewProps) {
+  if (props.isPending)
+    return (
+      <p role="status" className="p-6 text-sm text-muted-foreground">
+        {props.language === "ru"
+          ? "Загрузка предпросмотра…"
+          : "Loading preview…"}
+      </p>
+    );
+  if (props.error)
+    return (
+      <div className="space-y-3 p-6">
+        <p role="alert" className="text-sm text-muted-foreground">
+          {props.error}
+        </p>
+        <button
+          type="button"
+          onClick={props.onRetry}
+          className="min-h-10 rounded-lg border border-border px-3 text-sm font-semibold"
+        >
+          {props.language === "ru" ? "Повторить" : "Try again"}
+        </button>
+      </div>
+    );
+  return (
+    <FilePreviewText
+      language={props.language}
+      text={props.text}
+      kind={props.kind}
     />
   );
 }

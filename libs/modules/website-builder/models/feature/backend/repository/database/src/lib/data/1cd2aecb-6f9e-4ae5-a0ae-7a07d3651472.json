@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "1cd2aecb-6f9e-4ae5-a0ae-7a07d3651472",
+  "createdAt": "2026-10-27T08:40:57.885Z",
+  "updatedAt": "2026-10-27T14:59:26.961Z",
+  "variant": "demo-document",
+  "title": {
+    "en": "Products.md",
+    "ru": "Продукты.md"
+  },
+  "subtitle": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Describe each product, its customers, offer and current availability. Add competitors and links to similar offers for each product. These may differ from the business competitors in the brief.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Опишите каждый продукт, его клиентов, предложение и текущую доступность. Для каждого добавьте конкурентов и ссылки на похожие предложения. Они могут отличаться от конкурентов бизнеса в брифе.\"}]}]}"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"## Pottery workshops\\nWeekend classes for beginners.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"### Competitors for this product\\nNot known yet. Add similar classes, links to their offers and reasons for comparison. This list may differ from the studio's competitors in the brief.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"## Мастер-классы по керамике\\nЗанятия для начинающих по выходным.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"### Конкуренты этого продукта\\nПока не знаю. Нужно указать похожие занятия, ссылки на предложения и причины сравнения. Этот список может отличаться от конкурентов мастерской в брифе.\"}]}]}"
+  },
+  "adminTitle": "AI Chat: demo-products",
+  "slug": "ai-chat-editable-demo-products"
+}

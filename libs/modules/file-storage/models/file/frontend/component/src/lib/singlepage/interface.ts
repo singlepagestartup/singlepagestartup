@@ -13,6 +13,8 @@ import { IComponentProps as IAdminFormComponentProps } from "./admin/form/interf
 import { IComponentProps as IDefaultComponentProps } from "./default/interface";
 import { IComponentProps as IAttachmentAiChatComponentProps } from "./attachment-ai-chat/interface";
 
+import type { IComponentProps as IAuthenticatedContentComponentProps } from "./authenticated-content/interface";
+
 export type IComponentProps =
   | IHiddenComponentProps
   | IFindComponentProps
@@ -27,4 +29,5 @@ export type IComponentProps =
   | IAdminV2TableComponentProps
   | IAdminV2TableRowComponentProps
   | IDefaultComponentProps
-  | IAttachmentAiChatComponentProps;
+  | IAttachmentAiChatComponentProps
+  | IAuthenticatedContentComponentProps;

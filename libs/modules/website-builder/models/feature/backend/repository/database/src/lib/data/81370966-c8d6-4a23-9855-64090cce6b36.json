@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "81370966-c8d6-4a23-9855-64090cce6b36",
+  "createdAt": "2026-10-26T00:12:18.113Z",
+  "updatedAt": "2026-10-27T14:59:42.373Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "About the project",
+    "ru": "О проекте"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"How the school works\\n\\nAnother block containing project information.\\n\\nA founder's message\\n\\nLearning principles\\n\\nFeedback format\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Как устроена школа\\n\\nДругой блок с содержимым проекта.\\n\\nОбращение основателя\\n\\nПринципы обучения\\n\\nФормат обратной связи\"}]}]}"
+  },
+  "adminTitle": "О проекте",
+  "slug": "framework-reviewed-article-startup-example-feature-1"
+}

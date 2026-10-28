@@ -1,0 +1,21 @@
+{
+  "componentName": "website-builder.feature",
+  "pageName": "website-builder",
+  "variantName": "copy-request",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "website-builder.feature.copy-request",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "website-builder/feature/singlepage/copy-request",
+    "sps.figma.component": "website-builder.feature",
+    "sps.figma.variant": "copy-request",
+    "sps.source.module": "website-builder",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "feature",
+    "sps.source.variant": "copy-request",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/website-builder/feature/singlepage/copy-request/Component.tsx",
+    "sps.code.story": "apps/studio/modules/website-builder/feature/singlepage/copy-request/Component.stories.tsx"
+  }
+}

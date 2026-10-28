@@ -20,4 +20,12 @@ export const options = {
     revalidate: REVALIDATE,
   },
 } as NextRequestOptions;
-export const variants = ["hidden", "default"] as const;
+export const variants = [
+  "hidden",
+  "navigation-inline",
+  "navigation",
+  "actions-full",
+  "actions",
+  "footer-column",
+  "default",
+] as const;

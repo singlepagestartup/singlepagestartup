@@ -40,14 +40,15 @@ Profile/article links are managed from the Social profile admin.
 
 ## 3. Relations
 
-| Relation                                                                                                           | Purpose                                      |
-| ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------- |
-| [articles-to-ecommerce-module-products](./relations/articles-to-ecommerce-module-products/README.md)               | Link articles to ecommerce products          |
-| [articles-to-file-storage-module-files](./relations/articles-to-file-storage-module-files/README.md)               | Attach files to articles                     |
-| [articles-to-website-builder-module-widgets](./relations/articles-to-website-builder-module-widgets/README.md)     | Attach website-builder widgets to articles   |
-| [categories-to-articles](./relations/categories-to-articles/README.md)                                             | Assign articles to categories                |
-| [categories-to-website-builder-module-widgets](./relations/categories-to-website-builder-module-widgets/README.md) | Attach website-builder widgets to categories |
-| [widgets-to-articles](./relations/widgets-to-articles/README.md)                                                   | Curate article lists inside widgets          |
-| [widgets-to-categories](./relations/widgets-to-categories/README.md)                                               | Curate category lists inside widgets         |
+| Relation                                                                                                           | Purpose                                                         |
+| ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------- |
+| [articles-to-ecommerce-module-products](./relations/articles-to-ecommerce-module-products/README.md)               | Link articles to ecommerce products                             |
+| [articles-to-file-storage-module-files](./relations/articles-to-file-storage-module-files/README.md)               | Attach files to articles                                        |
+| [articles-to-website-builder-module-widgets](./relations/articles-to-website-builder-module-widgets/README.md)     | Attach website-builder widgets to articles                      |
+| [categories-to-articles](./relations/categories-to-articles/README.md)                                             | Assign articles to categories                                   |
+| [categories-to-website-builder-module-widgets](./relations/categories-to-website-builder-module-widgets/README.md) | Attach website-builder widgets to categories                    |
+| [widgets-to-articles](./relations/widgets-to-articles/README.md)                                                   | Curate article lists inside widgets                             |
+| [widgets-to-categories](./relations/widgets-to-categories/README.md)                                               | Curate category lists inside widgets                            |
+| [widgets-to-website-builder-module-widgets](./relations/widgets-to-website-builder-module-widgets/README.md)       | Connect Widget operations to saved Website Builder presentation |
 
 ---

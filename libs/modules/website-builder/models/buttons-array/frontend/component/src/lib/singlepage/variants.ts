@@ -1,4 +1,9 @@
 import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
+import { Component as NavigationInline } from "./navigation-inline";
+import { Component as Navigation } from "./navigation";
+import { Component as ActionsFull } from "./actions-full";
+import { Component as Actions } from "./actions";
+import { Component as FooterColumn } from "./footer-column";
 import { Component as AdminV2SidebarItem } from "./admin-v2/sidebar-item";
 import { Component as AdminV2Card } from "./admin-v2/card";
 import { Component as AdminV2Form } from "./admin-v2/form";
@@ -14,6 +19,12 @@ import { Component as Default } from "./default";
 
 export const variants = {
   hidden: Hidden,
+  "navigation-inline": NavigationInline,
+  navigation: Navigation,
+  "actions-full": ActionsFull,
+  actions: Actions,
+  "footer-column": FooterColumn,
+
   find: Find,
   "admin-table-row": AdminTableRow,
   "admin-table": AdminTable,

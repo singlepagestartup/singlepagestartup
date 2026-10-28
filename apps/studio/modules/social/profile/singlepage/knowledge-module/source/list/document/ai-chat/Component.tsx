@@ -11,7 +11,7 @@ export function Component({
 }: IComponentProps = {}) {
   return (
     <section
-      aria-label="Document knowledge"
+      aria-label="Знания документа"
       className="grid min-w-0 gap-4"
       data-module="social"
       data-model="profile"

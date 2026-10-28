@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "916576a2-3730-4aee-985f-a49ee79049c0",
+  "createdAt": "2026-10-26T00:11:47.760Z",
+  "updatedAt": "2026-10-27T14:59:44.616Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Usage",
+    "ru": "Использование"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Where a file is needed\\n\\nThe cover is linked to several records.\\n\\nA course card in the catalogue\\n\\nAn article announcing enrolment\\n\\nA home page block\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Где нужен файл\\n\\nОбложка связана с несколькими записями.\\n\\nКарточка курса в каталоге\\n\\nСтатья о начале набора\\n\\nБлок на главной странице\"}]}]}"
+  },
+  "adminTitle": "Использование",
+  "slug": "framework-reviewed-article-file-storage-example-feature-1"
+}

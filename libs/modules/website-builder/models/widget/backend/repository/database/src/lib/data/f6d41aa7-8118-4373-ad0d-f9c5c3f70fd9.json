@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Extend the use case",
+    "ru": "Дополните сценарий"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[]}",
+    "ru": "{\"type\":\"doc\",\"content\":[]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "f6d41aa7-8118-4373-ad0d-f9c5c3f70fd9",
+  "createdAt": "2026-10-26T00:11:36.877Z",
+  "updatedAt": "2026-10-27T14:59:20.158Z",
+  "variant": "content-rich",
+  "adminTitle": "Дополните сценарий",
+  "slug": "framework-reviewed-article-website-builder-connections"
+}

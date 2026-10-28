@@ -41,7 +41,7 @@ function ThreadWorkspaceContent({
   if (state === "loading-chat")
     return <WorkspaceSkeleton stage="loading-chat" embedded />;
   if (thread.id !== selected)
-    return <p role="status">Thread unavailable in this project preview.</p>;
+    return <p role="status">Обсуждение недоступно в этом примере проекта.</p>;
   return (
     <SocialModuleChat
       variant="id-ai-chat"
@@ -100,6 +100,7 @@ function SubjectThreadWorkspace({
   chatId,
   threadId,
   state,
+  embedded,
 }: ISubjectThreadWorkspaceProps) {
   const { account } = useStudioAccount();
   const actor = subjectId ?? account.subject?.id;
@@ -121,6 +122,7 @@ function SubjectThreadWorkspace({
         profileId={profileId}
         chatId={chatId}
         selected="products"
+        embedded={embedded}
       >
         {(navigation) => (
           <ThreadWorkspaceContent

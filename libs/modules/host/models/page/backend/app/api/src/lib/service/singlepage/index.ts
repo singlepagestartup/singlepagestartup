@@ -4,6 +4,7 @@ import { internationalization } from "@sps/shared-configuration";
 import { injectable } from "inversify";
 import { CRUDService, FindByIdServiceProps } from "@sps/shared-backend-api";
 import { Table } from "@sps/host/models/page/backend/repository/database";
+import { api as socialProfileApi } from "@sps/social/models/profile/sdk/server";
 import {
   API_SERVICE_URL,
   buildTreePaths,
@@ -13,6 +14,7 @@ import {
   isSeoIndexablePage,
   SEO_SITEMAP_MAX_CANDIDATES,
   SEO_ROUTE_RELATIONS,
+  SEO_NON_INDEXABLE_PATHS,
 } from "@sps/shared-utils";
 
 export type EntityWithUrls = typeof Table.$inferSelect & {
@@ -72,7 +74,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         const records = await this.fetchAllModuleEntities({
           moduleName: match[1],
           modelName: match[2],
-          secretKey: RBAC_SECRET_KEY,
+          secretKey:
+            match[1] === "social" &&
+            match[2] === "profiles" &&
+            !SEO_NON_INDEXABLE_PATHS.some((pattern) => pattern.test(page.url))
+              ? undefined
+              : RBAC_SECRET_KEY,
           filters: [{ column: match[3], method: "eq", value }],
         });
         if (records.length !== 1) {
@@ -303,6 +310,39 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     secretKey?: string;
     filters?: Array<{ column: string; method: string; value: string }>;
   }): Promise<any[]> {
+    if (
+      props.moduleName === "social" &&
+      props.modelName === "profiles" &&
+      !props.secretKey
+    ) {
+      const filter = props.filters?.[0];
+      if (
+        filter &&
+        (filter.column !== "id" ||
+          filter.method !== "eq" ||
+          !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+            filter.value,
+          ))
+      )
+        return [];
+      const authors: any[] = [];
+      for (let offset = 0; ; offset += 100) {
+        const batch = await socialProfileApi.authorFind({
+          params: {
+            ...(filter ? { profileId: filter.value } : {}),
+            limit: 100,
+            offset,
+          },
+          options: { cache: "no-store" },
+        });
+        authors.push(...batch);
+        if (authors.length > SEO_SITEMAP_MAX_CANDIDATES)
+          throw new Error(
+            "Validation error. Author enumeration exceeds the URL limit",
+          );
+        if (batch.length < 100) return authors;
+      }
+    }
     const response = await fetch(
       `${API_SERVICE_URL}/api/${props.moduleName}/${props.modelName}?${QueryString.stringify({ filters: { and: [...(props.filters || []), { column: "variant", method: "ne", value: "hidden" }] } }, { encodeValuesOnly: true })}`,
       {

@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "9f60bb31-ed35-4f0b-ab46-3545e78a786c",
+  "createdAt": "2026-10-26T00:12:31.340Z",
+  "updatedAt": "2026-10-27T14:59:47.595Z",
+  "variant": "step",
+  "title": {
+    "en": "Plan your project with AI",
+    "ru": "Спроектируйте проект с ИИ"
+  },
+  "subtitle": {
+    "en": "02",
+    "ru": "02"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Choose features and pages with the AI assistant and prepare text and images. The assistant will assemble the first version from existing blocks so you can review it and say what to change.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Вместе с ИИ-помощником выберите функции и страницы, подготовьте тексты и изображения. Помощник соберёт первую версию из готовых блоков, а вы сможете посмотреть её и сказать, что изменить.\"}]}]}"
+  },
+  "adminTitle": "Спроектируйте проект с ИИ",
+  "slug": "framework-reviewed-step-design"
+}

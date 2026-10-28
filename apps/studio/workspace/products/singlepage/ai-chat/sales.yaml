@@ -29,6 +29,10 @@ pricing: The AI Chat Product records token purchases in Revenue Streams. The
   2,000 internal tokens or below, equivalent to USD 2 of provider-cost debt,
   further paid AI requests are restricted until a top-up raises the balance above
   that threshold. This does not cap the final cost of an already submitted request.
+  Registration grants 3000 internal tokens once; Free is the default allowance,
+  not a public product to purchase. Monthly Pro grants 5000 internal tokens for
+  29 USD or 1900 roubles per month. Pro and top-ups retain the same existing
+  request deductions and full token returns for failed or cancelled requests.
 capacity: One project owner runs the service and processes support requests
   within 24 hours. Continuous live support and higher service levels have not
   been defined.
@@ -66,6 +70,8 @@ segments:
       - Create project discussion topics and attach selected saved documents
         without explaining their contents again.
       - Export the resulting structure and freely use it outside the service.
+      - Give a coding agent reviewed business material and use Code Framework
+        when the next task is a landing page or software product.
       - Add detail without creating copies that must be updated by hand.
     motivations:
       - Turn scattered project material into a usable model.
@@ -77,8 +83,8 @@ segments:
       - Pay for continued use only when the product has proved useful.
     purchase_trigger: The balance reaches the negative limit and further
       requests are restricted, or the person chooses to top up earlier. The
-      person chooses a clearly priced package to continue the saved setup,
-      document work, discussion or material creation.
+      person chooses a clearly priced top-up or monthly Pro to continue the
+      saved setup, document work, discussion or material creation.
     decision_criteria:
       - Existing materials and guided answers become coherent written project
         descriptions and separate product documents in ordinary language.
@@ -132,7 +138,9 @@ segments:
         evidence:
           Show the written deliverables and the first-stage boundary. Any future
           publication example must be labeled as a future requirement, not an
-          available action or an observed result.
+          available action or an observed result. Show the separate current
+          route by exporting useful reviewed documents and briefing a coding agent to
+          build on free Code Framework.
       - concern: A short description may hide missing business decisions.
         response:
           Shortened project documents preserve their structure, and every
@@ -239,9 +247,9 @@ segments:
           - The person wants to use the hosted workspace.
         required_fields:
           - Email address and password.
-        action:
-          Register or authenticate the account, show the available token balance
-          and open the project chat for material upload.
+        action: Register or authenticate the account, show the token balance and
+          one-time registration allowance, and open the project chat for material
+          upload. Do not present Free as a product to buy or a daily reset.
         exit_condition: The person accepts the conditions and enters, requests
           clarification or declines.
         failure:
@@ -308,20 +316,21 @@ segments:
           Projects described, draft documents produced, per-product section
           coverage, questions, unknowns, contradictions and abandonment points.
       - id: purchase
-        name: Top up tokens and return to work
+        name: Choose hosted AI credits and return to work
         customer_goal:
           Continue the current task without losing uploaded material or
           completed work.
         customer_action:
-          Open the token page, compare the available packages, choose
-          one, pay and return to the interrupted task.
+          Open the token page, compare one-off top-ups with monthly Pro, review
+          the full price and credit amount, pay and return to the interrupted task.
         customer_question:
           What am I buying, what will it cost and where will I return
           after payment?
         experience:
-          The current balance, package contents, full price and purchase terms
-          are visible before payment. After a successful payment, the person
-          returns to the saved task.
+          The current balance, credit amount, full price and purchase terms
+          are visible before payment. Monthly Pro shows its monthly period and
+          currency choice; top-ups retain their fixed rouble amounts and token
+          rate. After successful payment, the person returns to the saved task.
         touchpoint: Token balance and purchase page
         owner:
           The user chooses and pays for a package; the project owner operates
@@ -330,19 +339,20 @@ segments:
           - The balance reaches the negative limit and further requests are
             restricted, or the user chooses to top up earlier.
         required_fields:
-          - Selected token package and payment details required by the
-            configured payment flow.
+          - Selected top-up or monthly Pro, currency and payment details required
+            by the configured payment flow.
         action:
-          Preserve the current work, show the configured packages and terms,
-          accept payment, credit tokens and return to the interrupted task.
+          Preserve the current work, show the configured top-ups, monthly Pro
+          and their terms, accept payment, credit tokens and return to the
+          interrupted task. A token purchase does not buy access to MIT code.
         exit_condition:
           Tokens are credited and the user resumes work, chooses another
-          package, defers purchase or leaves.
+          offer, defers purchase or leaves.
         failure:
           If the person declines or cannot complete the purchase, they can
           choose another package, seek help, defer or return without buying.
         metric: Purchase-page entries, successful purchases, failures, package
-          selection, return to task and repeat purchases.
+          selection, Pro starts or continuation, return to task and repeat purchases.
       - id: review
         name: Correct, accept and export the documents
         customer_goal:
@@ -442,6 +452,37 @@ segments:
           Useful later results, idea discussions rated useful, criticism acted on,
           return use, repeat purchases, repeated-input problems and reasons for
           stopping.
+      - id: framework-handoff
+        name: Turn reviewed material into a development brief
+        customer_goal: Build a landing page or product from the business context already prepared.
+        customer_action:
+          Export useful reviewed documents, identify the page's desired action
+          or product behavior, and open the Code Framework explanation and the
+          relevant module or Blog guide before briefing a coding agent.
+        customer_question: How does my business description become something an agent can build?
+        experience:
+          The next step names the material to carry forward and the free code
+          foundation to use. Buying tokens supports hosted preparation; the
+          repository and local setup remain accessible without a purchase.
+        touchpoint: Reviewed documents, export, contextual Code Framework link and local setup guide.
+        owner: The user reviews the brief and directs the coding agent; the project owner supplies the foundation and guidance.
+        entry_conditions:
+          - The person wants a landing page or software product and has useful reviewed business material.
+        required_fields:
+          - Audience, offer, intended action, applicable business rules and remaining unknowns.
+          - Useful reviewed project and product documents selected by the user for export.
+        action:
+          Connect the exported context to a concrete coding-agent request and
+          explain the relevant Code Framework responsibilities. Retain the
+          distinction between this manual development route and future hosted
+          automatic page assembly and deployment.
+        exit_condition:
+          The user briefs the agent, returns to a document question, continues
+          in AI Chat or postpones development.
+        failure:
+          If development is premature or another foundation fits better, keep
+          working with the documents, choose another approach or defer.
+        metric: Contextual Framework visits, exports used for a brief and voluntarily reported independent adaptations.
       - id: manage
         name: Manage the account and project
         customer_goal:
@@ -588,6 +629,22 @@ segments:
           connections, deployments, public addresses and updates require their
           own measurement scope; none indicates current description-flow success.
 sources:
+  framework-preparation-journey:
+    type: client-claim
+    resolution: operator-fact
+    date: "2026-10-24"
+    source: Brief intake.framework_preparation_journey; current operator goal-objective.md.
+    scope: Reviewed business and product material becomes a coding-agent brief
+      for a landing page or product on free Code Framework. The route does not
+      make hosted automatic generation or deployment available.
+  allowance-and-pro:
+    type: client-claim
+    resolution: operator-fact
+    date: "2026-10-24"
+    source: Brief sources.ai_chat_allowance_and_pro and explicit operator pricing replies.
+    scope: Free 3000 internal tokens once on registration; Pro 5000 per month
+      for 29 USD or 1900 roubles per month; existing top-up and deduction terms
+      remain unchanged.
   chat-workflow:
     type: constraint
     date: "2026-10-06"
@@ -627,4 +684,4 @@ confirmation:
   content_sha256: 9ce83a549912024d0916ae119c2f6ddb55502ed0d727983f60dfc89e63b60400
 review:
   dependencies:
-    product.ai-chat.product: 5212a0163b9d453689340ff925ed6d6d94d729e0c890e8e0d75209b6e6eb50bb
+    product.ai-chat.product: 49726d69fab8cad21164c4df5e568d4e6e1a2abb60d7d2fa3dee1f2bfebe7c70

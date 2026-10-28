@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "010fd80a-82e6-44e0-9b6f-2abddfeafa7e",
+  "createdAt": "2026-10-26T00:11:20.066Z",
+  "updatedAt": "2026-10-27T14:59:21.105Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Student",
+    "ru": "Ученица"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Hello, Anna\\n\\nAnna is signed in. In this example, her course purchase is already confirmed.\\n\\nMy course: photography basics\\n\\nFirst-class materials\\n\\nMessages with the teacher\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Здравствуйте, Анна\\n\\nАнна вошла в аккаунт. В этом примере покупка курса уже подтверждена.\\n\\nМой курс: основы фотографии\\n\\nМатериалы первого занятия\\n\\nПереписка с преподавателем\"}]}]}"
+  },
+  "adminTitle": "Ученица",
+  "slug": "framework-reviewed-article-rbac-example-feature-1"
+}

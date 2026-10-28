@@ -1,4 +1,5 @@
 "use client";
+import { internationalization } from "@sps/shared-configuration";
 import { memo, useEffect, useId, useRef, useState } from "react";
 import { Icon } from "@sps/ui-adapter";
 import { toast } from "sonner";
@@ -6,10 +7,18 @@ import type { IComponentPropsExtended } from "./interface";
 export const Component = memo(function Component(
   props: IComponentPropsExtended,
 ) {
+  const language = props.language || internationalization.defaultLanguage.code;
+  const ru = language === "ru";
   const profile = props.data;
-  const [name, setName] = useState(profile.title?.en || "");
-  const [headline, setHeadline] = useState(profile.subtitle?.en || "");
-  const [description, setDescription] = useState(profile.description?.en || "");
+  const [name, setName] = useState(
+    profile.title?.[language] || profile.title?.en || "",
+  );
+  const [headline, setHeadline] = useState(
+    profile.subtitle?.[language] || profile.subtitle?.en || "",
+  );
+  const [description, setDescription] = useState(
+    profile.description?.[language] || profile.description?.en || "",
+  );
   const [slug, setSlug] = useState(profile.slug);
   const [error, setError] = useState("");
   const errorId = useId();
@@ -29,31 +38,37 @@ export const Component = memo(function Component(
         setError("");
         try {
           await props.onSave({
-            title: { ...profile.title, en: name },
-            subtitle: { ...profile.subtitle, en: headline },
-            description: { ...profile.description, en: description },
+            title: { ...profile.title, [language]: name },
+            subtitle: { ...profile.subtitle, [language]: headline },
+            description: { ...profile.description, [language]: description },
             slug,
           });
-          toast.success("Profile saved", {
-            description: "Your profile changes have been saved.",
+          toast.success(ru ? "Профиль сохранён" : "Profile saved", {
+            description: ru
+              ? "Изменения профиля сохранены."
+              : "Your profile changes have been saved.",
           });
         } catch (error) {
           setError(
             error instanceof Error
               ? error.message
-              : "Profile could not be saved",
+              : ru
+                ? "Не удалось сохранить профиль"
+                : "Profile could not be saved",
           );
         }
       }}
     >
-      <h2 className="text-xl font-semibold">Profile</h2>
+      <h2 className="text-xl font-semibold">{ru ? "Профиль" : "Profile"}</h2>
       <p className="mt-2 text-sm leading-6 text-muted-foreground">
-        Edit the name, headline and information on your public profile.
+        {ru
+          ? "Измените имя, заголовок и информацию в своём публичном профиле."
+          : "Edit the name, headline and information on your public profile."}
       </p>
       {props.children}
       <div className="mt-6 grid gap-5 sm:grid-cols-2">
         <label className="grid gap-3 text-sm font-semibold">
-          Name
+          {ru ? "Имя" : "Name"}
           <input
             className={field}
             value={name}
@@ -62,7 +77,7 @@ export const Component = memo(function Component(
           />
         </label>
         <label className="grid gap-3 text-sm font-semibold">
-          Headline
+          {ru ? "Заголовок" : "Headline"}
           <input
             className={field}
             value={headline}
@@ -70,7 +85,7 @@ export const Component = memo(function Component(
           />
         </label>
         <label className="grid gap-3 text-sm font-semibold sm:col-span-2">
-          Description
+          {ru ? "Описание" : "Description"}
           <textarea
             className={`${field} min-h-32 p-4`}
             value={description}
@@ -78,7 +93,7 @@ export const Component = memo(function Component(
           />
         </label>
         <label className="grid gap-3 text-sm font-semibold sm:col-span-2">
-          Slug
+          {ru ? "Адрес профиля" : "Slug"}
           <input
             className={field}
             value={slug}
@@ -89,8 +104,9 @@ export const Component = memo(function Component(
         </label>
       </div>
       <p className="mt-2 text-xs text-muted-foreground">
-        Lowercase letters, numbers and single hyphens. Availability is checked
-        when you save.
+        {ru
+          ? "Строчные латинские буквы, цифры и одиночные дефисы. Доступность проверяется при сохранении."
+          : "Lowercase letters, numbers and single hyphens. Availability is checked when you save."}
       </p>
       <div className="mt-6 flex justify-end">
         <button
@@ -99,7 +115,13 @@ export const Component = memo(function Component(
           className={`inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border px-5 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground disabled:cursor-not-allowed disabled:opacity-50 ${error ? "border-destructive bg-destructive-surface text-destructive hover:brightness-95" : "border-transparent bg-primary text-primary-foreground hover:brightness-95"}`}
         >
           <Icon name="floppy-disk" />
-          {props.pending ? "Saving…" : "Save profile"}
+          {props.pending
+            ? ru
+              ? "Сохраняем…"
+              : "Saving…"
+            : ru
+              ? "Сохранить профиль"
+              : "Save profile"}
         </button>
       </div>
       {error && (
@@ -109,7 +131,9 @@ export const Component = memo(function Component(
           role="alert"
           className="mt-4 rounded-xl border border-destructive bg-destructive-surface p-4 text-sm text-destructive"
         >
-          <p className="font-semibold">Profile could not be saved</p>
+          <p className="font-semibold">
+            {ru ? "Не удалось сохранить профиль" : "Profile could not be saved"}
+          </p>
           <p className="mt-1 break-words leading-6">{error}</p>
         </div>
       )}

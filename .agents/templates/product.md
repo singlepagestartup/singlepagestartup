@@ -41,6 +41,19 @@ criteria. -->
 | Social and emotional forces | Confidence, accountability, reputation, anxiety, or control when material            |
 | Pains and gains             | What must become easier, safer, faster, or more valuable, and how that is recognized |
 
+## Competitors
+
+For this product, name the offers a customer might choose instead. Record the
+competitor and specific offer, its website or product page, the shared customer
+need, and why it is an alternative. Include price, differences and examples of
+promotion only when supplied or verified, with their sources. This product's
+list can differ from the business competitors in Brief and from other products;
+do not copy those lists without checking their relevance.
+
+Invite the owner to bring examples before later research and keyword planning.
+"Not yet known" is an acceptable answer and does not block the other sections.
+Keep it distinct from "no competitors"; do not invent competitors or search data.
+
 ## Value Propositions
 
 | Element                     | Required answer                                                                    |

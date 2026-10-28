@@ -1,0 +1,28 @@
+{
+  "$schema": "../../../../../block.schema.json",
+  "id": "blog.widget.article-overview-with-private-content-default",
+  "title": "Blog Widget / article-overview-with-private-content-default",
+  "description": "Framework presentation with explicit content and composition slots.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "blog",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "article-overview-with-private-content-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "blog.widget",
+    "pageName": "blog",
+    "variantName": "article-overview-with-private-content-default",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

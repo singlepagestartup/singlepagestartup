@@ -16,7 +16,7 @@ status: completed
 - [x] Studio: маски, локализованный JSON, ошибки и предпросмотр.
 - [x] Схемы: Article/Product/Profile JSONB, Metadata image, Metadata→File, Page indexing/locale.
 - [x] Runtime: точные маски, локали, fallback, OG, canonical, JSON-LD.
-- [x] Hidden: 61 модель, 95 связей, генератор, публичный API/SDK/рендеринг, admin isolation.
+- [x] Hidden: 61 модель, 98 связей, генератор, публичный API/SDK/рендеринг, admin isolation.
 - [x] Sitemap: XML/части/ошибки, pagination, noindex, required associations.
 - [x] SSR: Article/Product H1 и текст до сессии/гидратации, alt, true404.
 - [x] Миграции, API/SDK/MCP, браузер, прогретые ответы и отказ API.
@@ -26,7 +26,7 @@ status: completed
 ## Verification
 
 Подробные результаты и перенос: [process](../../processes/singlepagestartup/ISSUE-380.md).
-467 focused tests, один прежний skipped; Host tsc, scoped ESLint, Studio validation,
+554 focused tests, один прежний skipped; Host tsc, scoped ESLint, Studio validation,
 module-dependencies. Полная новая БД и upgrade с записями проверены. HTTP-матрица
 содержит 18 маршрутов; sitemap содержит 20 публичных URL. Ошибки API сохраняют 5xx.
 
@@ -39,7 +39,7 @@ module-dependencies. Полная новая БД и upgrade с записями
 
 ## Incident Log
 
-<!-- incident-count: 9 -->
+<!-- incident-count: 12 -->
 
 ### Incident 1 — GitHub недоступен из sandbox
 
@@ -122,3 +122,30 @@ module-dependencies. Полная новая БД и upgrade с записями
 - **Root Cause**: транспортный токен отсутствует в схеме хранения.
 - **Fix**: update-схема MCP принимает валидированный токен без добавления колонки БД.
 - **Preventive Action**: проверять конфликт через полный MCP round-trip, не только REST.
+
+### Incident 10 — CodeQL после публикации PR
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: три замечания к регулярным выражениям HTML и маски пагинации.
+- **Root Cause**: неполный набор закрывающих HTML-тегов; динамическая сборка regex из имени коллекции.
+- **Fix**: варианты регистра и закрывающих тегов учтены, имя коллекции сравнивается буквально; добавлены regression-тесты.
+- **Preventive Action**: проверять итоговый CodeQL вместе с локальными тестами.
+
+### Incident 11 — Конфликт с обновлённой main
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: PR конфликтует с main после включения framework visual/API изменений.
+- **Root Cause**: общие регистры вариантов, презентации Article/Product и история consistency capture изменены в обеих ветках.
+- **Fix**: конфликты сведены в текущей ветке; новые презентации сохранены, hidden добавлен трём новым связям; capture сгенерирован target как 0010. 284 исходных файла Studio/workflow восстановлены побайтно и остаются незакоммиченными.
+- **Preventive Action**: сверять mergeability и проверять новые публичные API при совмещении изменений.
+
+### Incident 12 — Занятый Git index и прерванный hook
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: git add получает index.lock, а следующий commit запускает hook с прежним индексом.
+- **Root Cause**: блок команд не остановился после ошибки staging; индекс кратковременно занят фоновым Git.
+- **Fix**: commit прерван; индекс и скрытые hook-файлы восстановлены из автоматического snapshot. Контрольные суммы 284 пользовательских файлов совпали.
+- **Preventive Action**: staging и commit связывать успешным exit code; ожидать освобождения индекса, не удалять активный lock.

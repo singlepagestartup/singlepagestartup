@@ -6,8 +6,8 @@ import { Component as Card } from "./card/index";
 import { Component as Cover } from "./cover/index";
 import { Component as Detail } from "./detail/index";
 import { Component as Featured } from "./featured/index";
-import { Component as List } from "./list/index";
 import { Component as OverviewDefault } from "./overview-default/index";
+import { Component as PrivateContentDefault } from "./private-content-default/index";
 import { Component as RelatedDefault } from "./related-default/index";
 import { Component as Row } from "./row/index";
 
@@ -20,8 +20,8 @@ export const variants = {
   cover: Cover,
   detail: Detail,
   featured: Featured,
-  list: List,
   "overview-default": OverviewDefault,
+  "private-content-default": PrivateContentDefault,
   "related-default": RelatedDefault,
   row: Row,
 };

@@ -1,0 +1,21 @@
+{
+  "id": "897ac157-6d62-417c-8a1c-42a8901b8e3c",
+  "className": "",
+  "createdAt": "2026-10-26T00:11:38.455Z",
+  "updatedAt": "2026-10-27T15:00:24.483Z",
+  "variant": "card",
+  "adminTitle": "Дайте каждому разделу сайта своё место",
+  "slug": "framework-host",
+  "title": {
+    "en": "Give each section of your site its own place",
+    "ru": "Дайте каждому разделу сайта своё место"
+  },
+  "subtitle": {
+    "en": "Pages and navigation",
+    "ru": "Страницы и навигация"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Organise your home page, catalogue, blog and account area. Each page has its own address, title and set of sections.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Организуйте главную, каталог, блог и кабинет. У каждой страницы будет свой адрес, заголовок и набор разделов.\"}]}]}"
+  }
+}

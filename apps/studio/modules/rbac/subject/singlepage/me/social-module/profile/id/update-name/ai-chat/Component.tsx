@@ -35,7 +35,7 @@ export function Component({
     >
       <div className="min-w-0 flex-1">
         <label htmlFor={id} className="text-sm font-semibold">
-          Project name
+          Название проекта
         </label>
         <input
           id={id}
@@ -53,11 +53,11 @@ export function Component({
         type="submit"
         disabled={!profile || !name.trim() || name.trim() === profile.name}
       >
-        Save name
+        Сохранить название
       </Button>
       {saved && (
         <p role="status" className="w-full text-sm">
-          Project name saved.
+          Название проекта сохранено.
         </p>
       )}
     </form>

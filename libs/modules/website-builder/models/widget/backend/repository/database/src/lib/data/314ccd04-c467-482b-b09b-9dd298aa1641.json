@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Latest articles",
+    "ru": "Новые статьи"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"New publications from the SPS community.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Публикации сообщества SPS.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "sm:grid-cols-2 lg:grid-cols-3",
+  "id": "314ccd04-c467-482b-b09b-9dd298aa1641",
+  "createdAt": "2026-10-23T20:18:08.765Z",
+  "updatedAt": "2026-10-23T20:18:08.765Z",
+  "variant": "content-collection",
+  "adminTitle": "framework-blog-feed-frame",
+  "slug": "framework-blog-feed-frame"
+}

@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "",
+    "ru": ""
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The home page, catalogue, articles and customer account work as parts of one site. Each page has an address and content, while the header and footer can be shared across the site.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Once a project has several sections, one long page is no longer enough. Customers need links to particular courses or articles, while you need to change section order and shared site elements. The pages module assembles this structure.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Главная, каталог, статья и кабинет клиента работают как части одного сайта. У каждой страницы есть адрес и содержимое, а шапка и подвал могут повторяться на всём сайте.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Когда у проекта появляется несколько разделов, одной длинной страницы становится недостаточно. Клиенту нужна ссылка на конкретный курс или статью, а вам — возможность менять порядок разделов и общие элементы сайта. Модуль страниц собирает эту структуру.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "9f4ab261-b117-487e-95a7-e86b154ceb4f",
+  "createdAt": "2026-10-26T00:11:38.801Z",
+  "updatedAt": "2026-10-27T14:59:09.914Z",
+  "variant": "content-rich",
+  "adminTitle": "framework-reviewed-article-host-introduction",
+  "slug": "framework-reviewed-article-host-introduction"
+}

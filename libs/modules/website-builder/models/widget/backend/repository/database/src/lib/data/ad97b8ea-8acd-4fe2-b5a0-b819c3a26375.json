@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "",
+    "ru": ""
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Ask customers about the service, their preferences and how to contact them. Answers are saved as an enquiry in your project. Put the form on a service page or divide it into several steps.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"A message asking how much it costs is not enough to prepare an offer. A groomer, for example, needs the dog's breed, the service requested and the owner's contact details. A form collects this information before the first conversation and stores it together.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Спросите клиента об услуге, пожеланиях и способе связи. Ответы сохранятся как заявка в вашем проекте. Форму можно разместить на странице услуги или разбить на несколько шагов.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Сообщения «Сколько стоит?» недостаточно, чтобы подготовить предложение. Например, грумеру нужны порода собаки, желаемая услуга и контакты хозяина. Форма собирает эти сведения до первого разговора и сохраняет их вместе.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "ad97b8ea-8acd-4fe2-b5a0-b819c3a26375",
+  "createdAt": "2026-10-26T00:11:29.024Z",
+  "updatedAt": "2026-10-27T14:59:13.037Z",
+  "variant": "content-rich",
+  "adminTitle": "framework-reviewed-article-crm-introduction",
+  "slug": "framework-reviewed-article-crm-introduction"
+}

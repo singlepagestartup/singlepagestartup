@@ -34,7 +34,7 @@ export function Component(props: IComponentPropsExtended) {
           }}
         >
           {({ data }) => {
-            if (!props.billingModuleCurrencyId) {
+            if (!props.billingModuleCurrencyId || !data?.length) {
               return;
             }
 
@@ -63,7 +63,7 @@ export function Component(props: IComponentPropsExtended) {
                   return data?.map((attribute, index) => {
                     return (
                       <AttributesToBillingModuleCurrencies
-                        key={index}
+                        key={attribute.id}
                         isServer={props.isServer}
                         variant="find"
                         apiProps={{
@@ -90,7 +90,7 @@ export function Component(props: IComponentPropsExtended) {
                             (attributeToBillingModuleCurrency, index) => {
                               return (
                                 <AttributeKeysToAttributes
-                                  key={index}
+                                  key={attributeToBillingModuleCurrency.id}
                                   isServer={props.isServer}
                                   variant="find"
                                   apiProps={{
@@ -112,7 +112,7 @@ export function Component(props: IComponentPropsExtended) {
                                       (attributeKeyToAttribute, index) => {
                                         return (
                                           <AttributeKey
-                                            key={index}
+                                            key={attributeKeyToAttribute.id}
                                             isServer={props.isServer}
                                             variant="find"
                                             apiProps={{
@@ -143,7 +143,7 @@ export function Component(props: IComponentPropsExtended) {
                                                       isServer={props.isServer}
                                                       variant="default"
                                                       data={attribute}
-                                                      key={index}
+                                                      key={attributeKey.id}
                                                       className="w-fit flex gap-2"
                                                       field={attributeKey.field}
                                                       language={props.language}

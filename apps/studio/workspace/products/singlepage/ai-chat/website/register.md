@@ -1,6 +1,6 @@
 ---
 confirmation:
-  confirmed: true
+  confirmed: false
   by: operator
   at: 2026-09-17
   source: "Operator confirmed the complete current AI Chat registration page in
@@ -11,59 +11,59 @@ review:
     product.ai-chat.website: db31acbb2f6bff59d196207b3f6245f4fc7674dbe685f71a18c890fef7e2d2cf
 ---
 
-# Create your workspace
+# Создайте свой проект
 
 <!-- section: hero -->
 
-## Bring your project into chat.
+## Начните работу над проектом в чате
 
-Create an account to add your notes, files and images. Work with AI in each document's thread, then use saved documents in new project conversations.
+Создайте аккаунт и добавьте заметки, файлы и изображения. Обсуждайте документы с ИИ-помощником и используйте сохранённые знания в новых задачах.
 
 <!-- section: account -->
 
-## Create an account
+## Создать аккаунт
 
-Your free token balance appears in the workspace.
+После регистрации в аккаунте появятся бесплатные токены для работы с ИИ.
 
 <!-- section: materials -->
 
-## Before you add files
+## Перед загрузкой файлов
 
-Read [How your materials are processed and stored](/ai-chat/social/profiles/create#how-your-materials-are-processed-and-stored), including external AI processing and backup retention after deletion.
+Прочитайте, [как обрабатываются и хранятся материалы](/ai-chat/social/profiles/create#how-your-materials-are-processed-and-stored): какие сведения передаются провайдерам ИИ и как долго резервные копии могут храниться после удаления.
 
 <!-- section: success -->
 
-## Your account is ready
+## Аккаунт создан
 
-Continue to your project chat and add your notes, files and images.
+Перейдите к проекту и добавьте заметки, файлы и изображения.
 
 <!-- section: controls -->
 
-## Interface labels
+## Подписи интерфейса
 
 | Control                  | Text                                                                                                             |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------------- |
-| back-label               | Back to AI Chat                                                                                                  |
+| back-label               | К AI Chat                                                                                                        |
 | back-href                | /ai-chat/                                                                                                        |
-| email-label              | Email                                                                                                            |
+| email-label              | Электронная почта                                                                                                |
 | email-placeholder        | you@example.com                                                                                                  |
-| password-label           | Password                                                                                                         |
-| repeat-password-label    | Repeat password                                                                                                  |
-| terms-label              | How your materials are processed and stored                                                                      |
+| password-label           | Пароль                                                                                                           |
+| repeat-password-label    | Повторите пароль                                                                                                 |
+| terms-label              | Обработка и хранение материалов                                                                                  |
 | terms-href               | /ai-chat/social/profiles/create#how-your-materials-are-processed-and-stored                                      |
-| submit                   | Create account                                                                                                   |
-| sign-in-label            | Sign in                                                                                                          |
+| submit                   | Создать аккаунт                                                                                                  |
+| sign-in-label            | Войти                                                                                                            |
 | sign-in-href             | /ai-chat/rbac/subjects/authentication/select-method                                                              |
-| existing-account         | Already have an account?                                                                                         |
-| continue-label           | Open project chat                                                                                                |
+| existing-account         | Уже есть аккаунт?                                                                                                |
+| continue-label           | Открыть чат проекта                                                                                              |
 | continue-href            | /ai-chat/social/profiles/create                                                                                  |
-| email-error              | Enter a valid email address.                                                                                     |
-| password-error           | Enter a password.                                                                                                |
-| repeat-password-error    | Enter the same password in both fields.                                                                          |
-| success-message          | Your account is ready.                                                                                           |
+| email-error              | Укажите адрес электронной почты.                                                                                 |
+| password-error           | Придумайте пароль.                                                                                               |
+| repeat-password-error    | Пароли в обоих полях должны совпадать.                                                                           |
+| success-message          | Аккаунт создан.                                                                                                  |
 | photo-src                | /workspace-assets/singlepage/generated/living-focus/singlepagestartup-photography-project-start-v1-square.png    |
 | photo-asset-id           | singlepage-generated-living-focus-photography-project-start-v1-square                                            |
-| photo-alt                | A woman working on her project with a laptop and notebook.                                                       |
+| photo-alt                | Женщина работает над проектом с ноутбуком и блокнотом.                                                           |
 | secondary-photo-src      | /workspace-assets/singlepage/generated/living-focus/singlepagestartup-photography-project-progress-v1-square.png |
 | secondary-photo-asset-id | singlepage-generated-living-focus-photography-project-progress-v1-square                                         |
-| secondary-photo-alt      | A man reviewing a project sketch beside his laptop.                                                              |
+| secondary-photo-alt      | Мужчина изучает эскиз проекта рядом с ноутбуком.                                                                 |

@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Check the saved result",
+    "ru": "Проверьте сохранённый результат"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"An acceptance test sends an SDK form request through middleware, controller and service to local PostgreSQL. It reads back saved relations and checks denial for another Subject. Multi-record cases check rollback and retry within the transaction boundary.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Within one process, a service uses the capabilities supplied to it directly. Calling your own HTTP API from a controller repeats authentication, parsing and caching. The \"},{\"type\":\"text\",\"text\":\"audit:controller-read-self-http\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" command helps locate these boundaries; compare its output with the actual request path.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Приёмочный тест отправляет запрос формы SDK через middleware, контроллер и сервис в локальный PostgreSQL. Он читает сохранённые связи и проверяет отказ другому Subject. Для нескольких записей проверяются откат и повтор операции в границах транзакции.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Внутри одного процесса сервис читает переданные ему возможности напрямую. Вызов своего HTTP API из контроллера добавляет повторные авторизацию, разбор и кеширование. Команда \"},{\"type\":\"text\",\"text\":\"audit:controller-read-self-http\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" помогает найти такие границы; её вывод сопоставляют с реальным путём запроса.\"}]}]}"
+  },
+  "anchor": "ru-section-hono-api-layers-di-and-owned-middleware-9",
+  "className": "",
+  "id": "5bc554ae-5b60-466e-9a7e-93b944ef2a5e",
+  "createdAt": "2026-10-26T07:34:02.135Z",
+  "updatedAt": "2026-10-27T14:59:01.153Z",
+  "variant": "content-rich",
+  "adminTitle": "Проверьте сохранённый результат",
+  "slug": "ru-section-hono-api-layers-di-and-owned-middleware-9"
+}

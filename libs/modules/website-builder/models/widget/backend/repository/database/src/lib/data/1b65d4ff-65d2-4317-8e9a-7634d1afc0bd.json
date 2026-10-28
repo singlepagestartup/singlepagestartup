@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Check actions and recovery",
+    "ru": "Проверьте действия и восстановление"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Use multiple attributes, two currencies, a persisted cart quantity and checkout that returns a real Invoice link. Change the saved price before checkout and read back its relations afterwards. After an authorized private-content read, check that another user is denied.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Finish by checking wide and narrow screens, console, network, exact relations and a repeated operation. Check restored relations just as carefully during rollback. Report the build, routes, real provider or test transport and verification limits.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Используйте несколько атрибутов, две валюты, сохранённое количество в корзине и checkout, возвращающий реальную ссылку Invoice. Измените сохранённую цену перед checkout и прочитайте связи после него. После разрешённого чтения закрытого материала проверьте отказ другому пользователю.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Завершите проверкой широкого и узкого экранов, консоли, сети, точных связей и повторной операции. При rollback так же внимательно проверьте восстановленные связи. Укажите сборку, маршруты, реальный провайдер или тестовый транспорт и пределы проверки.\"}]}]}"
+  },
+  "anchor": "ru-section-building-and-revalidating-sps-with-safe-content-cutovers-9",
+  "className": "",
+  "id": "1b65d4ff-65d2-4317-8e9a-7634d1afc0bd",
+  "createdAt": "2026-10-26T07:34:01.580Z",
+  "updatedAt": "2026-10-27T14:58:50.448Z",
+  "variant": "content-rich",
+  "adminTitle": "Проверьте действия и восстановление",
+  "slug": "ru-section-building-and-revalidating-sps-with-safe-content-cutovers-9"
+}

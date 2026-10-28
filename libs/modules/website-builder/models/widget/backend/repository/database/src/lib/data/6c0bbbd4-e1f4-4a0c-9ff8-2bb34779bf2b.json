@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Work with File Storage.",
+    "ru": "Работайте с File Storage."
+  },
+  "subtitle": {
+    "en": "Foundation",
+    "ru": "Основа"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Stored file metadata, original bytes and media presentation.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Метаданные файлов, исходные байты и отображение медиа.\"}]}]}"
+  },
+  "anchor": "module-file-storage",
+  "className": "@5xl:grid-cols-2",
+  "id": "6c0bbbd4-e1f4-4a0c-9ff8-2bb34779bf2b",
+  "createdAt": "2026-10-24T01:06:09.199Z",
+  "updatedAt": "2026-10-24T01:06:09.199Z",
+  "variant": "content-definition-grid-page",
+  "adminTitle": "Work with File Storage.",
+  "slug": "framework-journey-guide-file-storage-overview"
+}

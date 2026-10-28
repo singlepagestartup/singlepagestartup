@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "",
+    "ru": ""
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"New messages, enquiries and status changes can appear in an already open interface. People do not need to reload the page manually to see changes.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"An administrator opens the enquiry list in the morning. If new records appear only after a reload, they may work from an outdated list. The project needs a way to tell the open interface that data has changed.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Новое сообщение, заявка или смена состояния могут появляться в уже открытом интерфейсе. Человеку не нужно обновлять страницу вручную, чтобы увидеть, что изменилось.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Администратор открыл список заявок утром. Если новые записи становятся видны только после перезагрузки, он может работать с устаревшим списком. Проекту нужен способ сообщить открытому интерфейсу, что данные изменились.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "e421e681-c64d-44c4-a636-88b31f978348",
+  "createdAt": "2026-10-26T00:12:10.241Z",
+  "updatedAt": "2026-10-27T14:59:18.542Z",
+  "variant": "content-rich",
+  "adminTitle": "framework-reviewed-article-broadcast-introduction",
+  "slug": "framework-reviewed-article-broadcast-introduction"
+}

@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "a366b33d-c913-4669-8c2a-1b0085cb9115",
+  "createdAt": "2026-10-26T00:12:01.846Z",
+  "updatedAt": "2026-10-27T14:59:48.793Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "rbac",
+    "ru": "rbac"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Define who can access knowledge and conversations.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Определите, кому доступны знания и переписка.\"}]}]}"
+  },
+  "adminTitle": "rbac",
+  "slug": "framework-reviewed-article-knowledge-connections-feature-2"
+}

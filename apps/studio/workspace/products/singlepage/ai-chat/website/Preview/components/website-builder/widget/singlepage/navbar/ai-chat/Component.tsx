@@ -120,8 +120,8 @@ export function Component({
               ref={navigationTrigger}
               aria-label={
                 navigationOpen
-                  ? "Close navigation menu"
-                  : "Open navigation menu"
+                  ? "Закрыть меню навигации"
+                  : "Открыть меню навигации"
               }
               aria-expanded={navigationOpen}
               aria-controls={navigationId}

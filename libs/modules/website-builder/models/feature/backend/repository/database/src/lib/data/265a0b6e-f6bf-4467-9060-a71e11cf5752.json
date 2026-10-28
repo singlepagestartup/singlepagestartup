@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "265a0b6e-f6bf-4467-9060-a71e11cf5752",
+  "createdAt": "2026-10-26T00:11:50.543Z",
+  "updatedAt": "2026-10-27T14:59:28.520Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Community",
+    "ru": "Сообщество"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Meet members, discuss projects and return to a relevant topic.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Знакомится с участниками, обсуждает проекты и возвращается к нужной теме.\"}]}]}"
+  },
+  "adminTitle": "Сообщество",
+  "slug": "framework-reviewed-article-social-cases-feature-0"
+}

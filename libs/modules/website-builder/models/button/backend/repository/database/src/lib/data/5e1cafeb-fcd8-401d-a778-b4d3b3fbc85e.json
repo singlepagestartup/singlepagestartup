@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "All modules",
+    "ru": "Все модули"
+  },
+  "subtitle": {},
+  "url": "/framework/modules",
+  "className": "w-fit",
+  "id": "5e1cafeb-fcd8-401d-a778-b4d3b3fbc85e",
+  "createdAt": "2026-10-24T01:06:15.746Z",
+  "updatedAt": "2026-10-24T01:06:15.746Z",
+  "variant": "secondary",
+  "adminTitle": "All modules",
+  "slug": "framework-journey-guide-startup-actions-0"
+}

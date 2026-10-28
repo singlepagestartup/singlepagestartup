@@ -1,27 +1,42 @@
+import { internationalization } from "@sps/shared-configuration";
 import Link from "next/link";
 import type { IWorkspaceNoticeProps } from "./interface";
 export function Component({
+  language = internationalization.defaultLanguage.code,
   state,
   embedded = false,
   message,
-  signInHref = "/ai-chat/sign-in",
-  projectsHref = "/ai-chat/projects",
+  signInHref = `/${language}/ai-chat/sign-in`,
+  projectsHref = `/${language}/ai-chat/projects`,
   onRetry,
 }: IWorkspaceNoticeProps) {
+  const ru = language === "ru";
   const failed = state === "error";
   const needsSignIn = state === "sign-in-required";
   const title = failed
-    ? "Couldn't load your workspace."
+    ? ru
+      ? "Не удалось загрузить рабочее пространство."
+      : "Couldn't load your workspace."
     : needsSignIn
-      ? "Sign in to open your workspace"
-      : "This project is unavailable in your workspace.";
+      ? ru
+        ? "Войдите, чтобы открыть рабочее пространство"
+        : "Sign in to open your workspace"
+      : ru
+        ? "Этот проект недоступен в вашем аккаунте."
+        : "This project is unavailable in your workspace.";
   const description =
     message ??
     (failed
-      ? "Try again to reconnect to your workspace."
+      ? ru
+        ? "Повторите попытку загрузить рабочее пространство."
+        : "Try again to reconnect to your workspace."
       : needsSignIn
-        ? "Sign in to your account to access your projects and conversations."
-        : "Choose one of your projects or sign in with a different account.");
+        ? ru
+          ? "Войдите в аккаунт, чтобы открыть свои проекты и обсуждения."
+          : "Sign in to your account to access your projects and conversations."
+        : ru
+          ? "Выберите свой проект или войдите в другой аккаунт."
+          : "Choose one of your projects or sign in with a different account.");
   const control =
     "inline-flex min-h-11 items-center justify-center rounded-xl border border-border bg-card px-5 py-2 text-sm font-semibold text-foreground no-underline hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
   const content = (
@@ -46,19 +61,25 @@ export function Component({
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           {failed ? (
             <button type="button" className={control} onClick={onRetry}>
-              Try again
+              {ru ? "Повторить" : "Try again"}
             </button>
           ) : (
             <Link
               href={needsSignIn ? signInHref : projectsHref}
               className={control}
             >
-              {needsSignIn ? "Sign in" : "My projects"}
+              {needsSignIn
+                ? ru
+                  ? "Войти"
+                  : "Sign in"
+                : ru
+                  ? "Мои проекты"
+                  : "My projects"}
             </Link>
           )}
           {state === "access-denied" && (
             <Link href={signInHref} className={control}>
-              Switch account
+              {ru ? "Сменить аккаунт" : "Switch account"}
             </Link>
           )}
         </div>

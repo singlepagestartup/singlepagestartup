@@ -1,60 +1,60 @@
 {
   "continue": {
-    "title": "Keep working in chat.",
+    "title": "Продолжайте работу в чате",
     "paragraphs": [
-      "Open a topic for your next task. Choose which saved documents to attach, then discuss the project with AI Chat."
+      "Создайте тему для следующей задачи. ИИ-помощник сможет использовать знания о проекте в новом разговоре."
     ],
     "items": [],
     "links": []
   },
   "terms": {
-    "title": "Access, tokens and your materials",
+    "title": "Доступ, токены и ваши материалы",
     "paragraphs": [
-      "Registration shows the current free token allowance. Paid AI work uses the token balance."
+      "При регистрации вы увидите доступное количество бесплатных токенов. Платная работа ИИ расходует токены на вашем балансе."
     ],
     "items": [
       {
-        "title": "Token cost",
-        "text": "0.13 roubles per internal token. One token is charged when input is sent; a successful request settles at actual provider cost, rounded up to a whole internal token, with a minimum of one token."
+        "title": "Стоимость токенов",
+        "text": "0,13 рубля за внутренний токен. При отправке запроса списывается один токен. После успешного ответа расход рассчитывается по фактической стоимости ИИ и округляется вверх до целого токена. Минимальный расход — один токен."
       },
       {
-        "title": "Top-ups",
-        "text": "100, 300, 500, 1,000 or 3,000 roubles, at the same rate without package discounts. Tokens do not expire. Cash refunds for purchases are decided case by case."
+        "title": "Пополнение",
+        "text": "100, 300, 500, 1 000 или 3 000 рублей по одной ставке, без скидок за размер пакета. Купленные токены не сгорают. Возврат денег рассматривается индивидуально."
       },
       {
-        "title": "Balance limit",
-        "text": "The balance can go below zero. At −2,000 internal tokens or lower, new paid AI requests are restricted. Top up above the threshold to return to your saved task."
+        "title": "Ограничение баланса",
+        "text": "Баланс может быть отрицательным. При −2 000 внутренних токенов или ниже новые платные запросы недоступны. Пополните баланс выше этого уровня, чтобы продолжить сохранённую задачу."
       },
       {
-        "title": "Failed or cancelled AI requests",
-        "text": "All token deductions are restored, including the initial token and any settlement. The net charge is zero; the service pays the provider expense."
+        "title": "Ошибка или отмена запроса",
+        "text": "Все списанные за запрос токены возвращаются, включая первоначальный токен и итоговое списание. Расход для вас равен нулю; затраты провайдера оплачивает сервис."
       },
       {
-        "title": "Support",
-        "text": "Initial support requests are processed within 24 hours, without continuous live coverage or a promised resolution time."
+        "title": "Поддержка",
+        "text": "Первое обращение обрабатывается в течение 24 часов. Это срок первого ответа; срок решения зависит от вопроса. Круглосуточного чата поддержки сейчас нет."
       },
       {
-        "title": "Materials",
-        "text": "Review how your materials are processed and stored before uploading. Account deletion removes active data; infrastructure backups may retain copies for up to six months."
+        "title": "Материалы",
+        "text": "Перед загрузкой прочитайте, как обрабатываются и хранятся ваши материалы. При удалении аккаунта активные данные удаляются. Резервные копии инфраструктуры могут храниться до шести месяцев."
       }
     ],
     "links": [
       {
-        "text": "Buy tokens",
+        "text": "Купить токены",
         "href": "/ai-chat/rbac/subjects/tokens"
       },
       {
-        "text": "How your materials are processed and stored",
+        "text": "Обработка и хранение материалов",
         "href": "/ai-chat/social/profiles/create#how-your-materials-are-processed-and-stored"
       },
       {
-        "text": "Get help",
+        "text": "Помощь",
         "href": "/ai-chat/help"
       }
     ]
   },
   "startLink": {
-    "text": "Start with my files",
+    "text": "Начать со своих материалов",
     "href": "/ai-chat/rbac/subjects/authentication/registration"
   }
 }

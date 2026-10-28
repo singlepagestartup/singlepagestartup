@@ -204,18 +204,24 @@ fi
    - **Record incidents while implementing**: whenever you hit an unexpected error, type error, runtime failure, or wrong assumption that required debugging — after resolving it, append an entry to `## Incident Log` in the progress file using the format defined in step 5. Check first if the same root cause is already logged; if so, increment `Occurrences` instead of adding a duplicate. Update the `<!-- incident-count: N -->` counter accordingly.
    - Mirror the same incident into the persistent process file at `thoughts/shared/processes/REPO_NAME/ISSUE-{NUMBER}.md` using `.agents/contracts/engineering/process-artifact.md`. Reuse the existing process-file incident entry when the root cause matches; increment `Occurrences` instead of duplicating.
 
-   c. Run automated verification (as specified in the phase's Success Criteria):
+   c. Collect automated verification from the phase's Success Criteria. Follow
+   `AGENTS.md`, "Validation timing and machine resources": run these checks only
+   after the requested changes are complete, before a commit or final results
+   message. If more phases remain in the current task, leave their checks pending
+   and continue implementation without launching them.
 
-   - Type checking: `npm run typecheck`
-   - Linting: `npm run lint`
-   - Tests: `npm test`
+   - Relevant type checks
+   - Relevant lint targets
+   - Relevant tests
    - Other checks specified in the plan
-   - Fix any issues before proceeding
+   - Run checks sequentially with resource monitoring; finish fixes before rerunning affected checks
 
-   d. Update progress file with verification results (PASSED/FAILED) and notes. If verification failed and required a fix, record the failure as an incident in `## Incident Log` (same format as step 7b — increment `Occurrences` if it is a recurrence of a known issue).
+   d. Update progress file with verification results (PENDING/PASSED/FAILED) and notes. If verification failed and required a fix, record the failure as an incident in `## Incident Log` (same format as step 7b — increment `Occurrences` if it is a recurrence of a known issue).
    Also mirror the verification-related incident into the persistent process file.
 
-   e. **Pause for manual verification** (after automated checks pass):
+   e. **Pause for manual verification** when handing completed work back to the
+   user, after the required automated checks pass. Continue without this pause
+   when more phases remain in the current authorized task:
 
    ```
    Phase [N] Complete - Ready for Manual Verification
@@ -248,6 +254,10 @@ fi
       ```
 
 8. **After all phases complete**:
+
+   Before step 8a, run the collected pending checks following `AGENTS.md`,
+   "Validation timing and machine resources". Record the results and resolve
+   failures before committing or reporting completion.
 
    a. **Create commit**:
 

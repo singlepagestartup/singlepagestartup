@@ -38,7 +38,7 @@ export default function Client(props: IComponentProps) {
     balance.isPending ||
     (!!profile && avatar.isPending)
   )
-    return props.skeleton ?? <Skeleton />;
+    return props.skeleton ?? <Skeleton language={props.language} />;
   return (
     <ChildComponent
       {...props}

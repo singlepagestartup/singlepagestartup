@@ -1,5 +1,5 @@
 {
-  "fingerprint": "a33f636ba809c7333b8991255ee53d89c67c14ddcf10dd6072b0c1db5b6edecb",
+  "fingerprint": "3d48293bf9fa1efa5586aed2944967a91ab2c0ac2ac4385e7976935f726d98cd",
   "resources": [
     {
       "resource": "public.bg_as_to_ee_me_ps_bd9",
@@ -196,6 +196,20 @@
         "className": "class_name",
         "widgetId": "wt_id",
         "crmModuleWidgetId": "cm_me_wt_id"
+      }
+    },
+    {
+      "resource": "public.rc_ws_to_em_me_ws_c76",
+      "topic": "rbac.widgets-to-ecommerce-module-widgets",
+      "columns": {
+        "id": "id",
+        "createdAt": "created_at",
+        "updatedAt": "updated_at",
+        "variant": "variant",
+        "orderIndex": "order_index",
+        "className": "class_name",
+        "widgetId": "wt_id",
+        "ecommerceModuleWidgetId": "em_me_wt_id"
       }
     },
     {
@@ -640,6 +654,20 @@
       }
     },
     {
+      "resource": "public.sl_ws_to_we_br_me_ws_c76",
+      "topic": "social.widgets-to-website-builder-module-widgets",
+      "columns": {
+        "id": "id",
+        "createdAt": "created_at",
+        "updatedAt": "updated_at",
+        "variant": "variant",
+        "orderIndex": "order_index",
+        "className": "class_name",
+        "widgetId": "wt_id",
+        "websiteBuilderModuleWidgetId": "we_br_me_wt_id"
+      }
+    },
+    {
       "resource": "public.sp_widget",
       "topic": "startup.widgets",
       "columns": {
@@ -905,6 +933,20 @@
         "title": "title",
         "subtitle": "subtitle",
         "description": "description"
+      }
+    },
+    {
+      "resource": "public.sps_blog_ws_to_we_br_me_ws_c76",
+      "topic": "blog.widgets-to-website-builder-module-widgets",
+      "columns": {
+        "id": "id",
+        "createdAt": "created_at",
+        "updatedAt": "updated_at",
+        "variant": "variant",
+        "orderIndex": "order_index",
+        "className": "class_name",
+        "widgetId": "wt_id",
+        "websiteBuilderModuleWidgetId": "we_br_me_wt_id"
       }
     },
     {
@@ -1182,7 +1224,11 @@
         "status": "status",
         "type": "type",
         "receipt": "receipt",
-        "comment": "comment"
+        "comment": "comment",
+        "subscriptionPeriodStartsAt": "subscription_period_starts_at",
+        "subscriptionPeriodEndsAt": "subscription_period_ends_at",
+        "subscriptionPeriodInvoiceId": "subscription_period_invoice_id",
+        "subscriptionRevokedAt": "subscription_revoked_at"
       }
     },
     {

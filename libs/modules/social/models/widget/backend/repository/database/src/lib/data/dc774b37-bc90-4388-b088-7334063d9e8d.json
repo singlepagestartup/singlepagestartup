@@ -1,0 +1,15 @@
+{
+  "id": "dc774b37-bc90-4388-b088-7334063d9e8d",
+  "createdAt": "2026-10-23T20:18:07.316Z",
+  "updatedAt": "2026-10-23T20:18:07.316Z",
+  "className": null,
+  "variant": "author-list-default",
+  "title": {
+    "en": "Authors",
+    "ru": "Авторы"
+  },
+  "subtitle": {},
+  "description": {},
+  "adminTitle": "Authors",
+  "slug": "framework-authors-widget"
+}

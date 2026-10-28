@@ -44,12 +44,12 @@ function MessageContext({ documents, label }: IMessageContextProps) {
               </span>
               <span className="ml-2">
                 {document.status === "draft"
-                  ? "Current draft"
-                  : "Source material"}
+                  ? "Текущий черновик"
+                  : "Исходный материал"}
               </span>
             </summary>
             <div className="mt-3 max-h-48 overflow-y-auto whitespace-pre-wrap break-words leading-5">
-              {document.text || "No text supplied yet."}
+              {document.text || "Текст пока не добавлен."}
             </div>
             {Boolean(document.assets?.length) && (
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -87,7 +87,7 @@ export const Component = memo(function Component({
     <article
       data-ds-block="social.message.id-ai-chat"
       data-id={message.id}
-      className={`flex min-w-0 gap-3 ${message.role === "user" ? "ml-6" : ""}`}
+      className={`flex min-w-0 gap-3 p-5 ${message.role === "user" ? "bg-muted/50" : "bg-card"}`}
       data-module="social"
       data-model="message"
       data-variant={variant}
@@ -107,20 +107,18 @@ export const Component = memo(function Component({
             <Icon name="robot" className="size-4" />
           </span>
         ))}
-      <div
-        className={`min-w-0 flex-1 ${message.role === "user" ? "rounded-2xl bg-muted p-4" : ""}`}
-      >
+      <div className="min-w-0 flex-1">
         <p className={`text-xs font-semibold ${kit.muted}`}>
           {message.role === "user"
-            ? "You"
-            : (replyingAgent?.name ?? "AI assistant")}
+            ? "Вы"
+            : (replyingAgent?.name ?? "ИИ-помощник")}
         </p>
         {message.workingOn && (
           <p className="mt-2 text-xs leading-5 text-muted-foreground">
-            Working on {message.workingOn.documentName} ·{" "}
+            Рабочий контекст {message.workingOn.documentName} ·{" "}
             {message.workingOn.sections.length
               ? message.workingOn.sections.join(" · ")
-              : "Whole document"}
+              : "Весь документ"}
           </p>
         )}
         {message.text && (
@@ -131,11 +129,10 @@ export const Component = memo(function Component({
         {Boolean(message.files?.length) && (
           <div className="mt-3 min-w-0">
             <p className="mb-2 text-xs text-muted-foreground">
-              {message.files!.length}{" "}
-              {message.files!.length === 1 ? "attachment" : "attachments"}
+              Вложений: {message.files!.length}
             </p>
             <ul
-              aria-label="Message attachments"
+              aria-label="Вложения сообщения"
               tabIndex={0}
               className="flex gap-2 overflow-x-auto pb-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-foreground"
             >
@@ -153,7 +150,7 @@ export const Component = memo(function Component({
         {Boolean(message.filesUsed?.length) && (
           <details className={`mt-3 text-xs ${kit.muted}`}>
             <summary className={`min-h-8 cursor-pointer ${kit.focus}`}>
-              Files used · {message.filesUsed!.length}
+              Использованные файлы · {message.filesUsed!.length}
             </summary>
             <div className="mt-2 grid gap-2 @[640px]:grid-cols-2">
               {message.filesUsed!.map((file) => (
@@ -175,7 +172,10 @@ export const Component = memo(function Component({
         )}
         {showContext && message.context && (
           <div className="mt-3">
-            <MessageContext documents={message.context} label="Context used" />
+            <MessageContext
+              documents={message.context}
+              label="Использованные знания"
+            />
           </div>
         )}
       </div>

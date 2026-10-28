@@ -11,7 +11,8 @@ export default function Client(props: IComponentProps) {
     id: props.data.id,
     socialModuleChatId: project.chat.id,
   });
-  if (threads.isPending) return props.skeleton ?? <Skeleton />;
+  if (threads.isPending)
+    return props.skeleton ?? <Skeleton language={props.language} />;
   return (
     <ChildComponent
       {...props}

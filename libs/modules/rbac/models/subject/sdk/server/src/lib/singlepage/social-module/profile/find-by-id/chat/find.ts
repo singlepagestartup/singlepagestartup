@@ -6,7 +6,10 @@ import {
   transformResponseItem,
 } from "@sps/shared-utils";
 import QueryString from "qs";
-import type { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
+import type {
+  IModel as ISocialModuleProfile,
+  IProfilePresentation,
+} from "@sps/social/models/profile/sdk/model";
 import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
 
 export interface IProps {
@@ -25,6 +28,7 @@ export interface IProps {
 
 export type IResult = (ISocialModuleChat & {
   participants?: ISocialModuleProfile[];
+  participantPresentations?: IProfilePresentation[];
 })[];
 
 export async function action(props: IProps): Promise<IResult> {

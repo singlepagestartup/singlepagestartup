@@ -3,7 +3,7 @@
   "title": "Social Profile Find By Id Overview Author",
   "layer": "singlepage",
   "state": "draft",
-  "description": "Host page recipe for a social profile author overview page.",
+  "description": "Editorial author profile and its supplied Framework guides, selected by explicit author slug.",
   "files": {
     "component": "Component.tsx",
     "story": "Component.stories.tsx"
@@ -14,8 +14,12 @@
       "path": "../../../layout/singlepage/website"
     },
     {
-      "id": "social.profile.author-find-by-id-overview-default",
-      "path": "../../../../social/profile/singlepage/author-find-by-id-overview-default"
+      "id": "social.profile.author-overview-default",
+      "path": "../../../../social/profile/singlepage/author-overview-default"
+    },
+    {
+      "id": "blog.widget.article-find-card-default",
+      "path": "../../../../blog/widget/singlepage/article-find-card-default"
     }
   ],
   "figma": {

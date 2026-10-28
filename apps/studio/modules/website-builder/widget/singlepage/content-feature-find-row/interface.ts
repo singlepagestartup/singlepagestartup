@@ -1,5 +1,4 @@
-import type { SVGProps } from "react";
-import type { ReactNode } from "react";
+import { type SVGProps, type ReactNode } from "react";
 
 export const variant = "content-feature-find-row";
 

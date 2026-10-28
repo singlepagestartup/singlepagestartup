@@ -1,0 +1,14 @@
+{
+  "id": "0ed60995-933e-4529-9cf6-aff91eb0f0ac",
+  "createdAt": "2026-10-24T01:05:51.662Z",
+  "updatedAt": "2026-10-24T01:05:51.662Z",
+  "variant": "default",
+  "className": "w-full",
+  "title": {
+    "en": "Actions",
+    "ru": "Действия"
+  },
+  "description": {},
+  "adminTitle": "Actions",
+  "slug": "framework-journey-handoff-actions"
+}

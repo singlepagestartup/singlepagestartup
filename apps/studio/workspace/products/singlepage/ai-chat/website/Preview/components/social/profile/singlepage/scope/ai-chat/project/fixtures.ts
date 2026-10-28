@@ -6,9 +6,9 @@ import {
 } from "./state";
 import definitions from "./definitions.json";
 export function aiChatProjectFixture(): IProjectProfile {
-  const project = createProjectProfile("pottery", "Pottery workshops");
+  const project = createProjectProfile("pottery", "Мастерская керамики");
   project.notes =
-    "Weekend pottery workshops for adults trying pottery for the first time. A small group makes a cup by hand.";
+    "Мастер-классы по выходным для взрослых, которые впервые пробуют керамику. Участники небольшой группы лепят чашку вручную.";
   return {
     ...prepareProjectDocuments(
       project,
@@ -21,7 +21,7 @@ export function aiChatProjectFixture(): IProjectProfile {
 export function aiChatWorkspaceFixture() {
   const project = {
     id: "pottery",
-    name: "Pottery workshops",
+    name: "Мастерская керамики",
     variant: "scope-ai-chat-project" as const,
   };
   return {
@@ -35,13 +35,13 @@ export function aiChatProjectSourceFixture(): IProjectProfile {
   const files = [
     {
       id: "workshop-notes",
-      name: "Workshop notes.txt",
-      text: "Six places per weekend workshop.",
+      name: "Заметки о мастерской.txt",
+      text: "На каждом мастер-классе в выходные — шесть мест.",
     },
     {
       id: "audience-notes",
-      name: "Audience notes.txt",
-      text: "Adults trying pottery for the first time.",
+      name: "Заметки об аудитории.txt",
+      text: "Взрослые, которые впервые пробуют керамику.",
     },
   ].map((file) => ({
     ...file,
@@ -67,21 +67,21 @@ export function aiChatSourceFixture() {
     id: "pottery:products:products",
     slug: "pottery:products:products",
     variant: "overview-ai-chat",
-    title: "Products",
-    content: "Weekend pottery workshops for first-time potters.",
+    title: "Продукты",
+    content: "Мастер-классы по керамике для начинающих по выходным.",
     description:
-      "Describe the products, their customers, value and current availability.",
+      "Опишите продукты, их клиентов, предложение и текущую доступность.",
   };
   const files = [
     {
       id: "workshop-notes",
-      name: "Workshop notes.txt",
-      text: "Six places per weekend workshop.",
+      name: "Заметки о мастерской.txt",
+      text: "На каждом мастер-классе в выходные — шесть мест.",
     },
     {
       id: "audience-notes",
-      name: "Audience notes.txt",
-      text: "Adults trying pottery for the first time.",
+      name: "Заметки об аудитории.txt",
+      text: "Взрослые, которые впервые пробуют керамику.",
     },
   ].map((file) => ({
     ...file,

@@ -1,0 +1,230 @@
+{
+  "repository": "singlepagestartup/singlepagestartup",
+  "ref": "main",
+  "files": {
+    ".agents/contracts/engineering/code-placement.md": {
+      "kind": "blob",
+      "target": ".agents/contracts/engineering/code-placement.md",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/.agents/contracts/engineering/code-placement.md",
+      "sha": "4b294ac101355142f5589fc952ceb64c38ec8b0d"
+    },
+    ".agents/contracts/engineering/frontend-components.md": {
+      "kind": "blob",
+      "target": ".agents/contracts/engineering/frontend-components.md",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/.agents/contracts/engineering/frontend-components.md",
+      "sha": "805c739c824e8332be069e210d7526476e442833"
+    },
+    ".agents/contracts/engineering/module-dependencies.md": {
+      "kind": "blob",
+      "target": ".agents/contracts/engineering/module-dependencies.md",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/.agents/contracts/engineering/module-dependencies.md",
+      "sha": "f031fef0de57b13f2038f882efb138a4a6777066"
+    },
+    "AGENTS.md": {
+      "kind": "blob",
+      "target": "AGENTS.md",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/AGENTS.md",
+      "sha": "4ae712c2ae159bab7b37dd77022a97172ea5574e"
+    },
+    "apps/api/app.ts": {
+      "kind": "blob",
+      "target": "apps/api/app.ts",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/apps/api/app.ts",
+      "sha": "df47ab42043e09cce174c8a0d7cd21d668c25169"
+    },
+    "apps/api/package.json": {
+      "kind": "blob",
+      "target": "apps/api/package.json",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/apps/api/package.json",
+      "sha": "9f933226ffc44033eb86fbd4a90f5923aa7185b7"
+    },
+    "apps/api/project.json": {
+      "kind": "blob",
+      "target": "apps/api/project.json",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/apps/api/project.json",
+      "sha": "04ddbb08d3d6d0e612ffe1409c76ef7f32dce7ab"
+    },
+    "apps/api/specs/integration/commerce-checkout.integration.spec.ts": {
+      "kind": "tree",
+      "target": "apps/api/specs/integration",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/tree/main/apps/api/specs/integration"
+    },
+    "apps/api/specs/integration/private-content.integration.spec.ts": {
+      "kind": "tree",
+      "target": "apps/api/specs/integration",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/tree/main/apps/api/specs/integration"
+    },
+    "apps/db/docker-compose.yaml": {
+      "kind": "blob",
+      "target": "apps/db/docker-compose.yaml",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/apps/db/docker-compose.yaml",
+      "sha": "f4489596061fa389c26cc24244efddc0ccbdc110"
+    },
+    "apps/host/app/api/revalidate/route.ts": {
+      "kind": "blob",
+      "target": "apps/host/app/api/revalidate/route.ts",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/apps/host/app/api/revalidate/route.ts",
+      "sha": "13403c67d1b9c92716d7f61fdda4cf095b398065"
+    },
+    "apps/redis/docker-compose.yaml": {
+      "kind": "blob",
+      "target": "apps/redis/docker-compose.yaml",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/apps/redis/docker-compose.yaml",
+      "sha": "c0cfd952d8f4f3989d1d23387a5ff0a078665763"
+    },
+    "libs/middlewares/src/lib/revalidation/README.md": {
+      "kind": "blob",
+      "target": "libs/middlewares/src/lib/revalidation/README.md",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/middlewares/src/lib/revalidation/README.md",
+      "sha": "464c4b5fe53908a205455571eed05c43ef55b4c8"
+    },
+    "libs/modules/blog/models/article/backend/app/api/src/lib/bootstrap.ts": {
+      "kind": "blob",
+      "target": "libs/modules/blog/models/article/backend/app/api/src/lib/bootstrap.ts",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/modules/blog/models/article/backend/app/api/src/lib/bootstrap.ts",
+      "sha": "0269b705d1015ee057814dfe80a7f86ea9356cc3"
+    },
+    "libs/modules/blog/models/article/backend/app/api/src/lib/repository.ts": {
+      "kind": "blob",
+      "target": "libs/modules/blog/models/article/backend/app/api/src/lib/repository.ts",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/modules/blog/models/article/backend/app/api/src/lib/repository.ts",
+      "sha": "7bfec4729854aa9b922aa6ff6a42099ac685ed1f"
+    },
+    "libs/modules/blog/models/article/backend/app/api/src/lib/service/index.ts": {
+      "kind": "blob",
+      "target": "libs/modules/blog/models/article/backend/app/api/src/lib/service/index.ts",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/modules/blog/models/article/backend/app/api/src/lib/service/index.ts",
+      "sha": "d53fbf03bd060859ecbca6a6fb6cdccc11e45d8a"
+    },
+    "libs/modules/blog/models/article/frontend/component/src/lib/singlepage/default/index.tsx": {
+      "kind": "blob",
+      "target": "libs/modules/blog/models/article/frontend/component/src/lib/singlepage/default/index.tsx",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/modules/blog/models/article/frontend/component/src/lib/singlepage/default/index.tsx",
+      "sha": "d1921d80e395904c0e7a117eb38d85b5e7177d28"
+    },
+    "libs/modules/blog/models/article/frontend/component/src/lib/singlepage/overview-default/Component.tsx": {
+      "kind": "blob",
+      "target": "libs/modules/blog/models/article/frontend/component/src/lib/singlepage/overview-default/Component.tsx",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/modules/blog/models/article/frontend/component/src/lib/singlepage/overview-default/Component.tsx",
+      "sha": "f9927a7912cddf9d3124fd2ef5cb60a0aafcc84b"
+    },
+    "libs/modules/blog/relations/articles-to-website-builder-module-widgets/frontend/component/src/lib/singlepage/default/Component.tsx": {
+      "kind": "blob",
+      "target": "libs/modules/blog/relations/articles-to-website-builder-module-widgets/frontend/component/src/lib/singlepage/default/Component.tsx",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/modules/blog/relations/articles-to-website-builder-module-widgets/frontend/component/src/lib/singlepage/default/Component.tsx",
+      "sha": "3ceacec41d562868de320d36f2b5bb9d3db3b376"
+    },
+    "libs/modules/ecommerce/models/order/backend/app/api/src/lib/service/singlepage/subscription-period/index.ts": {
+      "kind": "tree",
+      "target": "libs/modules/ecommerce/models/order/backend/app/api/src/lib/service/singlepage",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/tree/main/libs/modules/ecommerce/models/order/backend/app/api/src/lib/service/singlepage"
+    },
+    "libs/modules/file-storage/models/file/sdk/server/src/lib/singlepage/content.ts": {
+      "kind": "tree",
+      "target": "libs/modules/file-storage/models/file/sdk/server/src/lib/singlepage",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/tree/main/libs/modules/file-storage/models/file/sdk/server/src/lib/singlepage"
+    },
+    "libs/modules/rbac/models/subject/backend/app/api/src/lib/service/singlepage/blog/article/access.ts": {
+      "kind": "tree",
+      "target": "libs/modules/rbac/models/subject/backend/app/api/src/lib/service/singlepage",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/tree/main/libs/modules/rbac/models/subject/backend/app/api/src/lib/service/singlepage"
+    },
+    "libs/modules/rbac/models/subject/backend/app/api/src/lib/service/singlepage/blog/article/graph.ts": {
+      "kind": "tree",
+      "target": "libs/modules/rbac/models/subject/backend/app/api/src/lib/service/singlepage",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/tree/main/libs/modules/rbac/models/subject/backend/app/api/src/lib/service/singlepage"
+    },
+    "libs/modules/rbac/models/subject/backend/app/middlewares/src/lib/protected-blog-content/index.ts": {
+      "kind": "tree",
+      "target": "libs/modules/rbac/models/subject/backend/app/middlewares/src/lib",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/tree/main/libs/modules/rbac/models/subject/backend/app/middlewares/src/lib"
+    },
+    "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me/blog-module/article/private-content-default/ClientComponent.tsx": {
+      "kind": "blob",
+      "target": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me/blog-module/article/private-content-default/ClientComponent.tsx",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me/blog-module/article/private-content-default/ClientComponent.tsx",
+      "sha": "b522f0eced41faa635c35fcfa5c119922fc9d0a8"
+    },
+    "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me/blog-module/article/private-content-default/client.tsx": {
+      "kind": "tree",
+      "target": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me/blog-module/article/private-content-default",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/tree/main/libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me/blog-module/article/private-content-default"
+    },
+    "libs/modules/rbac/models/subject/sdk/model/src/lib/blog-article-content.ts": {
+      "kind": "tree",
+      "target": "libs/modules/rbac/models/subject/sdk/model/src/lib",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/tree/main/libs/modules/rbac/models/subject/sdk/model/src/lib"
+    },
+    "libs/shared/backend/api/src/lib/middleware/parse-query/index.ts": {
+      "kind": "blob",
+      "target": "libs/shared/backend/api/src/lib/middleware/parse-query/index.ts",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/shared/backend/api/src/lib/middleware/parse-query/index.ts",
+      "sha": "f1f12eaf1f675836861bf229306721854f6fe9ea"
+    },
+    "libs/shared/backend/api/src/lib/mutation-effects/index.ts": {
+      "kind": "blob",
+      "target": "libs/shared/backend/api/src/lib/mutation-effects/index.ts",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/shared/backend/api/src/lib/mutation-effects/index.ts",
+      "sha": "535d2cbe08a0f5363c82c032a2f4ffa0f3871187"
+    },
+    "libs/shared/backend/api/src/lib/service/crud/actions/find/index.ts": {
+      "kind": "blob",
+      "target": "libs/shared/backend/api/src/lib/service/crud/actions/find/index.ts",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/shared/backend/api/src/lib/service/crud/actions/find/index.ts",
+      "sha": "92eb170cd28e51f41d24d3d11d8fa306b420f4a5"
+    },
+    "libs/shared/backend/database/config/src/lib/postgres.ts": {
+      "kind": "blob",
+      "target": "libs/shared/backend/database/config/src/lib/postgres.ts",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/shared/backend/database/config/src/lib/postgres.ts",
+      "sha": "3646638ae991e1ffdde560ffe2f33105a78fbca1"
+    },
+    "libs/shared/frontend/client/api/README.md": {
+      "kind": "blob",
+      "target": "libs/shared/frontend/client/api/README.md",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/shared/frontend/client/api/README.md",
+      "sha": "65f028092838af24b0bf7c29d31a87a4c782b2d8"
+    },
+    "libs/shared/frontend/client/store/README.md": {
+      "kind": "blob",
+      "target": "libs/shared/frontend/client/store/README.md",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/shared/frontend/client/store/README.md",
+      "sha": "788d086a8d6c85df60ebba96c8ad61e23ddaae3d"
+    },
+    "nx.json": {
+      "kind": "blob",
+      "target": "nx.json",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/nx.json",
+      "sha": "daf7d94a38d734d9881fc29fe492d282c746c3c7"
+    },
+    "package.json": {
+      "kind": "blob",
+      "target": "package.json",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/package.json",
+      "sha": "587976eea42401d553ec71a87df298ad681cad4b"
+    },
+    "tools/runtime/README.md": {
+      "kind": "blob",
+      "target": "tools/runtime/README.md",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/tools/runtime/README.md",
+      "sha": "7184d4892ba39c68265dfa26d958511fc636497a"
+    },
+    "tools/runtime/framework-widget-links.ts": {
+      "kind": "tree",
+      "target": "tools/runtime",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/tree/main/tools/runtime"
+    },
+    "tools/runtime/host.mjs": {
+      "kind": "blob",
+      "target": "tools/runtime/host.mjs",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/tools/runtime/host.mjs",
+      "sha": "574954f91190adbd9f73d5256f098c90e32f8d71"
+    },
+    "up.sh": {
+      "kind": "blob",
+      "target": "up.sh",
+      "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/up.sh",
+      "sha": "6c0886eab36af63e9ef4ec46d20c258d5b20e77c"
+    }
+  }
+}

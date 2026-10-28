@@ -44,6 +44,13 @@ Product; it does not establish demand or require another document.
   intended usage, rights, support promises, business goals and metrics.
   Preserve user, buyer, payer, beneficiary and decision-maker, material social
   and emotional forces, and alternatives.
+- Capture competitors for each Product: specific offers, names, links, the
+  shared customer need and reasons for comparison. Keep supplied prices,
+  differences and promotion examples attributed. Product competitors can
+  differ from Brief's business-wide list and other products; do not inherit
+  them without checking relevance. Ask for examples before later research and
+  keyword planning. Accept "not yet known" and continue; do not infer that
+  competition is absent or invent names, links or search data.
 - Operations & Economics owns Revenue Streams, Key Resources, Key Activities,
   Key Partnerships and Cost Structure, with funding separate from revenue.
   Shared resources keep one owner, scope and allocation basis; a reference does

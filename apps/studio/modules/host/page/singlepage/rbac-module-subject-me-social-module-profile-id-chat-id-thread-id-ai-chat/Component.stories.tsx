@@ -1,8 +1,11 @@
 import { AIChatPreview, type IAIChatPreviewProps } from "../ai-chat/Preview";
 import { aiChatAccount } from "../../../../rbac/subject/singlepage/me/account/fixture";
-import { aiChatWorkspaceFixture } from "../../../../social/profile/singlepage/scope/ai-chat/project/fixtures";
+import {
+  aiChatWorkspaceFixture,
+  aiChatAttachmentWorkspaceFixture,
+} from "../../../../social/profile/singlepage/scope/ai-chat/project/fixtures";
 import { ProjectProvider } from "../../../../social/profile/singlepage/scope/ai-chat/project/Profile";
-import { aiChatAttachmentWorkspaceFixture } from "../../../../social/profile/singlepage/scope/ai-chat/project/fixtures";
+
 import type { Meta, StoryObj } from "@storybook/react";
 type IPageStoryProps = Pick<
   IAIChatPreviewProps,

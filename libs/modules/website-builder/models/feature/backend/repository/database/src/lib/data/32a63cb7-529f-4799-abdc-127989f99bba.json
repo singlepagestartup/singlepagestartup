@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "32a63cb7-529f-4799-abdc-127989f99bba",
+  "createdAt": "2026-10-26T00:11:51.955Z",
+  "updatedAt": "2026-10-27T14:59:30.603Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Message · what",
+    "ru": "Message · что"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"A question, answer or message with a file. Relations identify the author, thread and attachments.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Вопрос, ответ или сообщение с файлом. Связи указывают автора, ветку и вложения.\"}]}]}"
+  },
+  "adminTitle": "Message · что",
+  "slug": "framework-reviewed-article-social-structure-feature-3"
+}

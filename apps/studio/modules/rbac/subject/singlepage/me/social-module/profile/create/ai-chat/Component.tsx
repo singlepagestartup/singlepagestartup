@@ -30,17 +30,17 @@ export function Component({
         className="mt-8 grid gap-3 rounded-xl border border-destructive-border bg-destructive-surface p-4 text-sm"
       >
         <p className="font-semibold text-destructive">
-          Couldn't load your projects.
+          Не удалось загрузить проекты.
         </p>
         <p className="text-muted-foreground">
-          Try again to reconnect to your workspace.
+          Попробуйте снова подключиться к проекту.
         </p>
         <button
           type="button"
           onClick={retry}
           className="min-h-11 w-fit rounded-xl border border-border bg-card px-4 font-semibold hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
         >
-          Try again
+          Попробовать ещё раз
         </button>
       </div>
     );
@@ -52,11 +52,11 @@ export function Component({
         data-variant={variant}
         data-subject-id={subjectId ?? account.subject?.id}
         role="status"
-        aria-label="Loading projects"
+        aria-label="Загружаем проекты"
         aria-busy="true"
         className="mt-8 grid gap-4"
       >
-        <span className="sr-only">Loading projects…</span>
+        <span className="sr-only">Загружаем проекты…</span>
         <div
           aria-hidden="true"
           className="grid gap-4 motion-safe:animate-pulse"
@@ -81,28 +81,28 @@ export function Component({
       className="mt-8 grid gap-4"
     >
       <label htmlFor={id} className="text-sm font-semibold">
-        Project name
+        Название проекта
       </label>
       <input
         id={id}
         className="min-h-12 w-full rounded-xl border border-border bg-card px-4 text-base text-foreground outline-none focus:border-foreground focus:ring-2 focus:ring-foreground focus:ring-offset-2 focus:ring-offset-card"
         value={name}
         onChange={(event) => setName(event.target.value)}
-        placeholder="What are you working on?"
+        placeholder="Над чем вы работаете?"
         required
         maxLength={100}
         autoComplete="off"
       />
       <Button type="submit" disabled={!name.trim()}>
         <SharedIcon variant="phosphor" name="plus" />
-        Create project
+        Создать проект
       </Button>
       {!hideBackLink && (
         <Button
           appearance="plain"
           onClick={() => navigate("/ai-chat/projects")}
         >
-          Back to projects
+          К проектам
         </Button>
       )}
     </form>

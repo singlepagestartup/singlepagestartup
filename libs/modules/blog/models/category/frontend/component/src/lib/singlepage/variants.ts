@@ -1,4 +1,5 @@
 import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
+import { Component as Loading } from "./loading";
 import { Component as OverviewDefault } from "./overview-default";
 import { Component as Find } from "./find";
 import { Component as AdminForm } from "./admin/form";
@@ -14,6 +15,7 @@ import { Component as AdminV2SidebarItem } from "./admin-v2/sidebar-item";
 import { Component as Default } from "./default";
 export const variants = {
   hidden: Hidden,
+  loading: Loading,
   "overview-default": OverviewDefault,
   find: Find,
   "admin-form": AdminForm,

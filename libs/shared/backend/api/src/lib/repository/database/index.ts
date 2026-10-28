@@ -419,6 +419,7 @@ export class Database<T extends PgTableWithColumns<any>>
 
     const directory = this.configuration.repository.dump.directory;
 
+    await fs.mkdir(directory, { recursive: true });
     const seedFiles = await fs.readdir(directory);
 
     const sanitizedFiles = seedFiles.filter((file) => file.endsWith(".json"));

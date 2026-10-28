@@ -1,0 +1,18 @@
+{
+  "className": "",
+  "id": "82ef928d-92e3-4349-ac87-06558e589d91",
+  "createdAt": "2026-10-24T01:05:52.460Z",
+  "updatedAt": "2026-10-24T01:05:52.460Z",
+  "variant": "dropdown",
+  "title": {
+    "en": "Must I buy AI Chat tokens first?",
+    "ru": "Обязательно ли покупать токены AI-чата?"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"No. The framework is available independently under MIT. Tokens pay for hosted AI Chat work with your project material.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Нет. Фреймворк доступен отдельно по MIT. Токены используются для работы AI-чата с материалами вашего проекта.\"}]}]}"
+  },
+  "adminTitle": "Must I buy AI Chat tokens first?",
+  "slug": "framework-journey-faq-3"
+}

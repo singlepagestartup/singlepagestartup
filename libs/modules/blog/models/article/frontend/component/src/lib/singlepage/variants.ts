@@ -1,4 +1,7 @@
 import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
+import { Component as Card } from "./card";
+import { Component as PrivateContentDefault } from "./private-content-default";
+import { Component as Loading } from "./loading";
 import { Component as Find } from "./find";
 import { Component as AdminForm } from "./admin/form";
 import { Component as AdminTableRow } from "./admin/table-row";
@@ -16,6 +19,9 @@ import { Component as OverviewWithPrivateContentDefault } from "./overview-with-
 
 export const variants = {
   hidden: Hidden,
+  card: Card,
+  "private-content-default": PrivateContentDefault,
+  loading: Loading,
   find: Find,
   "admin-form": AdminForm,
   "admin-table-row": AdminTableRow,

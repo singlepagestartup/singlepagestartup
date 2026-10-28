@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "What you can offer customers",
+    "ru": "Что вы сможете предложить клиентам"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[]}",
+    "ru": "{\"type\":\"doc\",\"content\":[]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "4a36898c-dd6b-4338-86b1-60d6b6b24906",
+  "createdAt": "2026-10-26T00:11:23.813Z",
+  "updatedAt": "2026-10-27T14:58:58.413Z",
+  "variant": "content-rich",
+  "adminTitle": "Что вы сможете предложить клиентам",
+  "slug": "framework-reviewed-article-ecommerce-possibilities"
+}

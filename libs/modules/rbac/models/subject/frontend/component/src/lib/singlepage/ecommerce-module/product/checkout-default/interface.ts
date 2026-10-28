@@ -22,3 +22,17 @@ export interface IComponentPropsExtended
     typeof variant,
     IComponentProps
   > {}
+
+export interface ICheckoutFields {
+  provider: string;
+  email: string;
+  quantity: number;
+  comment?: string;
+  storeId?: string;
+  billingModule: { currency: { id?: string } };
+}
+export interface ICheckoutPriceProps {
+  form: import("react-hook-form").UseFormReturn<ICheckoutFields>;
+  product: IEcommerceModuleProduct;
+  language: string;
+}

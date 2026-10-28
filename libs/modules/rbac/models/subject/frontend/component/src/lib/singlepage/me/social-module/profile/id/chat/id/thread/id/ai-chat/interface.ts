@@ -12,6 +12,7 @@ import type { IResult } from "@sps/rbac/models/subject/sdk/server";
 export const variant =
   "me-social-module-profile-id-chat-id-thread-id-ai-chat" as const;
 export interface IComponentProps extends IParent<IModel, typeof variant> {
+  language?: string;
   projects?: IAIChatProject[];
   project?: IAIChatProject;
   socialModuleThreadId?: string;

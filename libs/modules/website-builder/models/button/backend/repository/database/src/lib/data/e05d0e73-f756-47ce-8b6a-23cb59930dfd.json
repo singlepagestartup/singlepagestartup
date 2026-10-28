@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "All modules",
+    "ru": "Все модули"
+  },
+  "subtitle": {},
+  "url": "/framework/modules",
+  "className": "w-fit",
+  "id": "e05d0e73-f756-47ce-8b6a-23cb59930dfd",
+  "createdAt": "2026-10-24T01:05:58.915Z",
+  "updatedAt": "2026-10-24T01:05:58.915Z",
+  "variant": "secondary",
+  "adminTitle": "All modules",
+  "slug": "framework-journey-guide-social-actions-0"
+}

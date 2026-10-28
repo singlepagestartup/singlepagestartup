@@ -34,7 +34,11 @@ sections:
           title: Overlays,
           source: interface-kit/Overlays.tsx,
         }
-      - { id: kit-files, title: Files, source: interface-kit/Files.tsx }
+      - {
+          id: kit-files,
+          title: Files,
+          source: interface-kit/Files/Component.tsx,
+        }
       - {
           id: kit-conversation,
           title: Conversation,

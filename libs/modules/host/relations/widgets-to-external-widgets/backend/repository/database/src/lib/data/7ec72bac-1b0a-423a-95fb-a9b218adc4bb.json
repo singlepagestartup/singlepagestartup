@@ -1,11 +1,11 @@
 {
   "id": "7ec72bac-1b0a-423a-95fb-a9b218adc4bb",
   "createdAt": "2026-10-11T01:57:01.755Z",
-  "updatedAt": "2026-10-11T21:17:54.889Z",
+  "updatedAt": "2026-10-15T13:49:10.366Z",
   "variant": "default",
   "orderIndex": 0,
   "className": "",
   "widgetId": "e09d0410-5c69-4111-ac68-18032e12b0ce",
-  "externalModule": "website-builder",
-  "externalWidgetId": "cfff32c1-462c-432c-8bd2-c747ecf62430"
+  "externalModule": "rbac",
+  "externalWidgetId": "eff12691-8a05-4f49-80b4-ef3dcfa79077"
 }

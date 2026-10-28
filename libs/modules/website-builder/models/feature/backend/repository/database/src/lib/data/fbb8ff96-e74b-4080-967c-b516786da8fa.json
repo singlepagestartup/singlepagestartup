@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "fbb8ff96-e74b-4080-967c-b516786da8fa",
+  "createdAt": "2026-10-26T00:12:20.320Z",
+  "updatedAt": "2026-10-27T15:00:04.160Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "website-builder",
+    "ru": "website-builder"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Assemble page presentation from blocks.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Соберите оформление страницы из блоков.\"}]}]}"
+  },
+  "adminTitle": "website-builder",
+  "slug": "framework-reviewed-article-startup-connections-feature-0"
+}

@@ -1,3 +1,4 @@
+import { Skeleton } from "./Skeleton";
 import { IComponentPropsExtended } from "./interface";
 import { Component as ClientComponent } from "./ClientComponent";
 import { Component as SlidersToSlides } from "@sps/website-builder/relations/sliders-to-slides/frontend/component";
@@ -7,6 +8,7 @@ export function Component(props: IComponentPropsExtended) {
     <SlidersToSlides
       isServer={props.isServer}
       variant="find"
+      skeleton={<Skeleton />}
       apiProps={{
         params: {
           filters: {
@@ -29,17 +31,27 @@ export function Component(props: IComponentPropsExtended) {
             data={props.data}
             language={props.language}
             className={props.className}
-            sliderToSlides={data?.map((entity, index) => {
-              return (
-                <SlidersToSlides
-                  key={index}
-                  isServer={props.isServer}
-                  variant={entity.variant as any}
-                  data={entity}
-                  language={props.language}
-                />
-              );
-            })}
+            navigation={props.navigation}
+            slides={data
+              ?.toSorted(
+                (a, b) =>
+                  a.orderIndex - b.orderIndex || a.id.localeCompare(b.id),
+              )
+              .map((entity) => {
+                return {
+                  id: entity.id,
+                  content: (
+                    <SlidersToSlides
+                      key={entity.id}
+                      isServer={props.isServer}
+                      variant={entity.variant as any}
+                      dataSource="props"
+                      data={entity}
+                      language={props.language}
+                    />
+                  ),
+                };
+              })}
           />
         );
       }}

@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "abc4d4b4-87a8-497d-a11e-a27e777642cb",
+  "createdAt": "2026-10-26T00:12:07.081Z",
+  "updatedAt": "2026-10-27T14:59:50.584Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "A task can respond to an event",
+    "ru": "Задача может реагировать на событие"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Start processing when the required data appears. Existing workflows use this to make AI profiles respond to messages.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Запускайте обработку после появления нужных данных. В существующих сценариях так организована реакция ИИ-профилей на сообщения.\"}]}]}"
+  },
+  "adminTitle": "Задача может реагировать на событие",
+  "slug": "framework-reviewed-article-agent-introduction-feature-1"
+}

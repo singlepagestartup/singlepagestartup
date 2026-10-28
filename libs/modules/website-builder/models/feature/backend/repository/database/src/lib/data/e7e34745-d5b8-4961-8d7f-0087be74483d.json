@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "e7e34745-d5b8-4961-8d7f-0087be74483d",
+  "createdAt": "2026-10-26T00:12:00.218Z",
+  "updatedAt": "2026-10-27T15:00:00.567Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Knowledge can grow",
+    "ru": "Знания можно пополнять"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Correct notes and add materials. After processing, updated information is used in subsequent answers.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Исправляйте заметки и добавляйте материалы. После обработки обновлённые сведения участвуют в последующих ответах.\"}]}]}"
+  },
+  "adminTitle": "Знания можно пополнять",
+  "slug": "framework-reviewed-article-knowledge-introduction-feature-2"
+}

@@ -23,7 +23,7 @@ export function Component(props: IComponentPropsExtended) {
         },
       }}
     >
-      {({ data }) => {
+      {({ data: links }) => {
         return (
           <Option
             variant={"find"}
@@ -35,7 +35,7 @@ export function Component(props: IComponentPropsExtended) {
                     {
                       column: "id",
                       method: "inArray",
-                      value: data?.map((relation) => relation.optionId) || [],
+                      value: links?.map((relation) => relation.optionId) || [],
                     },
                   ],
                 },
@@ -54,19 +54,25 @@ export function Component(props: IComponentPropsExtended) {
                   disabled={props.disabled}
                   path={props.path}
                   options={
-                    data?.map((option) => {
+                    links?.flatMap((relation) => {
+                      const option = data?.find(
+                        (entity) => entity.id === relation.optionId,
+                      );
+                      if (!option) return [];
                       return [
-                        option.id,
-                        option.title?.[props.language] ||
-                          option.title?.en ||
-                          "",
-                        <Option
-                          isServer={false}
-                          variant={option.variant as any}
-                          data={option}
-                          dataSource="props"
-                          language={props.language}
-                        />,
+                        [
+                          option.id,
+                          option.title?.[props.language] ||
+                            option.title?.en ||
+                            "",
+                          <Option
+                            isServer={false}
+                            variant={option.variant as any}
+                            data={option}
+                            dataSource="props"
+                            language={props.language}
+                          />,
+                        ] as [string, string, import("react").ReactNode],
                       ];
                     }) || []
                   }

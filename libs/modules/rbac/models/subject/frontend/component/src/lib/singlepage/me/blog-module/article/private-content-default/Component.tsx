@@ -1,12 +1,14 @@
-import type { IComponentProps } from "./interface";
+import type { IComponentPropsExtended } from "./interface";
 import { Component as ClientComponent } from "./ClientComponent";
-export function Component(props: IComponentProps) {
+export function Component(props: IComponentPropsExtended) {
   return (
     <ClientComponent
-      isServer={false}
-      variant={props.variant}
       blogModuleArticle={props.blogModuleArticle}
       language={props.language}
+      queryScopePrefix={props.queryScopePrefix}
+      content={props.content}
+      state={props.state}
+      onRetry={props.onRetry}
     />
   );
 }

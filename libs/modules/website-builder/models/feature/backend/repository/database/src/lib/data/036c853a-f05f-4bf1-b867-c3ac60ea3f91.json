@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "036c853a-f05f-4bf1-b867-c3ac60ea3f91",
+  "createdAt": "2026-10-26T00:11:36.350Z",
+  "updatedAt": "2026-10-27T14:59:21.335Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Programme",
+    "ru": "Программа"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"What we will practise\\n\\nThis section explains the class content.\\n\\nWorking with window light\\n\\nPositioning the model in the frame\\n\\nReviewing the photos taken\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Что будем практиковать\\n\\nСекция раскрывает содержание занятия.\\n\\nРабота со светом у окна\\n\\nПоложение модели в кадре\\n\\nРазбор сделанных снимков\"}]}]}"
+  },
+  "adminTitle": "Программа",
+  "slug": "framework-reviewed-article-website-builder-example-feature-1"
+}

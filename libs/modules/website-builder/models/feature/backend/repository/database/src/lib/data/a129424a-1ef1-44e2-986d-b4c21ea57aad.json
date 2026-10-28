@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "a129424a-1ef1-44e2-986d-b4c21ea57aad",
+  "createdAt": "2026-10-26T00:12:05.158Z",
+  "updatedAt": "2026-10-27T14:59:47.843Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "agent",
+    "ru": "agent"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Run configured actions on a schedule.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Запускайте подготовленные действия по расписанию.\"}]}]}"
+  },
+  "adminTitle": "agent",
+  "slug": "framework-reviewed-article-notification-connections-feature-2"
+}

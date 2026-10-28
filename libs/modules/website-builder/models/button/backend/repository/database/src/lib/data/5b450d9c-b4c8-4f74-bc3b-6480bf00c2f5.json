@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Frontend articles",
+    "ru": "Статьи о фронтенде"
+  },
+  "subtitle": {},
+  "url": "/blog/categories/frontend",
+  "className": "",
+  "id": "5b450d9c-b4c8-4f74-bc3b-6480bf00c2f5",
+  "createdAt": "2026-10-26T00:11:17.614Z",
+  "updatedAt": "2026-10-27T15:00:10.985Z",
+  "variant": "link",
+  "adminTitle": "Статьи о фронтенде",
+  "slug": "framework-reviewed-footer-2-1"
+}

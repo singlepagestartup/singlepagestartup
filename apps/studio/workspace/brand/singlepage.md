@@ -7,7 +7,7 @@ confirmation:
   content_sha256: 8dbe5a27b000710a03ca504b7a56040516cfdb9b54be0a95d910ee4506361590
 review:
   dependencies:
-    strategy: 52e2689631863b62a99a9bc849739ff248247183179044a87fc6fdff2e2a6cbc
+    strategy: 75701c732f48b6bbe5574855fed8d5d05aa7e8a18741d2eec1f14125fa023fd5
 sources:
   brand_identity:
     classification: constraint
@@ -46,13 +46,16 @@ sources:
     source: apps/studio/workspace/brief/singlepage.md
     source_keys:
       - intake.product_direction
-    date: 2026-10-06
+      - intake.framework_preparation_journey
+    date: 2026-10-24
     supports: The connected project description is the first-stage result.
-      Subsequent development can turn accepted documents into a landing page
-      intended to collect initial enquiries and test a hypothesis, with paid
-      server deployment following evaluation and improvement of project
-      description. “Start with one page” is not the value proposition or a
-      literal translation of the brand name.
+      Reviewed or exported business material can brief a coding agent that adapts
+      the existing free Code Framework into a landing page or product. Automatic
+      landing-page assembly, a hosted editor and server publication through AI
+      Chat remain future development, intended to collect initial enquiries and
+      test a hypothesis. Paid hosted deployment follows evaluation and improvement
+      of project description. “Start with one page” is not the value proposition
+      or a literal translation of the brand name.
     limitation: Intended product structure and naming meaning; implementation
       details, separate-site setup time and customer preference remain
       unverified.
@@ -71,15 +74,19 @@ sources:
     source: apps/studio/workspace/brief/singlepage.md
     source_keys:
       - intake.product_direction
-    date: 2026-10-06
+      - intake.framework_preparation_journey
+    date: 2026-10-24
     crosschecks:
       - apps/studio/workspace/strategy/singlepage.md
       - apps/studio/workspace/products/singlepage/ai-chat/sales.yaml
       - apps/studio/workspace/products/singlepage/singlepagestartup/sales.yaml
     supports: Begin with supplied material or guided answers, review the draft
       project and product documents, correct shortcomings, accept or export the
-      result and continue through project-aware discussion. Landing assembly,
-      editing and server publication belong to subsequent development.
+      result and continue through project-aware discussion. For software
+      development, use the reviewed material to brief a coding agent working
+      with the existing free Code Framework. Automatic landing-page assembly,
+      hosted editing and server publication through AI Chat belong to subsequent
+      development.
     limitation: Intended first-stage journey, not verified service readiness or
       customer results. Future deployment prices and commercial terms remain
       unselected.
@@ -126,6 +133,7 @@ sources:
     source: apps/studio/workspace/brief/singlepage.md
     source_keys:
       - intake.product_direction
+      - intake.framework_preparation_journey
       - sources.funding
       - sources.current_business
       - sources.license
@@ -154,7 +162,7 @@ A permanent slogan is unnecessary. Use the audience messages below where they ex
 
 SinglePageStartup should be understood as a way to write a project description from an idea, notes and partial decisions. The person supplies material in its current form or answers guided questions. AI Chat drafts the sections, points out missing or contradictory decisions and returns the documents for review.
 
-The business user should remember, “I can give it what I already have, correct the resulting description and keep working with the same project context.” The founder should remember, “I can check my project with an agent that knows its decisions and points out what needs work.” When a site, chatbot or another digital product is needed, Code Framework offers relevant common functions for adaptation.
+The business user should remember, “I can give it what I already have, correct the resulting description and keep working with the same project context.” The founder should remember, “I can check my project with an agent that knows its decisions and points out what needs work.” When a site, chatbot or another digital product is needed, the reviewed or exported documents become a brief for a coding agent. Code Framework offers relevant common functions for adaptation.
 
 The character is practical, calm and direct. Make the next useful step clear. Let the interface and the result show that the system understands the project; do not make the person learn how the underlying context or retrieval works.
 
@@ -164,16 +172,16 @@ The character is practical, calm and direct. Make the next useful step clear. Le
 2. **Describe the project and each product.** AI Chat drafts a project brief, Strategy, Brand, a written Design description and separate Products in a shortened Workspace structure. Each product has its own sections for customers, offer, Operations & Economics, Sales, Promotion, Analytics and research where needed. Promotion describes how the product will be presented publicly, including Website, Creative and Presentation where relevant. The result is text the user can inspect, edit and export.
 3. **Correct the shortcomings the agent identifies.** Review the proposed descriptions, check missing or contradictory decisions and correct the sections. Facts supplied by the user, assumptions and unanswered questions remain distinguishable. Acceptance records what the user is ready to use; it does not prove demand or guarantee a successful business.
 4. **Keep working with the project.** Accepted documents remain context for later questions, idea assessment, comparisons and criticism. The agent uses settled information and asks for what the current decision still needs. Users can freely export their results and use them outside the service.
-5. **Connect later work to the accepted documents.** Subsequent development includes agent-built landing pages intended to collect first enquiries and test a hypothesis. The owner evaluates and improves project description before selling server deployments. Code Framework is available when a person has a concrete software need; name the relevant common functions and what must be adapted.
+5. **Build from the reviewed documents.** Use the accepted or exported business material to give a coding agent a concrete task. The agent adapts the existing free Code Framework into a landing page or product while the person directs the work and checks the result. Name the relevant common functions and what must be adapted. Automatic assembly, a hosted editor and server publication through AI Chat remain future development; the owner evaluates and improves project description before selling that deployment service.
 
-| Audience concern                                           | Response and proof to show                                                                                                                                                          |
-| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| “Do I need to sort all my information before I can start?” | Show mixed notes and guided answers becoming attributed project and product sections, followed by correction and acceptance.                                                        |
-| “Will the chat only agree with my ideas?”                  | Show an idea discussion that exposes an assumption, offers a reasoned objection and keeps the accepted project context visible.                                                     |
-| “Can I use the result outside the chat?”                   | Show editable project documents and a separate description for each product, with export for use outside the service.                                                               |
-| “What happens when I need a site, chatbot or system?”      | Present Code Framework when it fits a concrete software need. Label hosted landing-page assembly and deployment as subsequent development and demonstrate only available functions. |
+| Audience concern                                           | Response and proof to show                                                                                                                                                              |
+| ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| “Do I need to sort all my information before I can start?” | Show mixed notes and guided answers becoming attributed project and product sections, followed by correction and acceptance.                                                            |
+| “Will the chat only agree with my ideas?”                  | Show an idea discussion that exposes an assumption, offers a reasoned objection and keeps the accepted project context visible.                                                         |
+| “Can I use the result outside the chat?”                   | Show editable project documents and a separate description for each product, with export for use outside the service.                                                                   |
+| “What happens when I need a site, chatbot or system?”      | Show reviewed documents becoming a coding-agent brief for adaptation of Code Framework. Label automatic assembly, hosted editing and publication through AI Chat as future development. |
 
-The primary action is **Organize my materials**. It leads to registration and upload. The next actions are **Review my project**, **Correct a section**, **Export my documents** and **Continue with my project**. Public first-stage copy sells the work of describing the project and its products. Landing-page editing, GitHub connection and server publication are future capabilities, not active CTAs for this offer.
+The primary action is **Organize my materials**. It leads to registration and upload. The next actions are **Review my project**, **Correct a section**, **Export my documents** and **Continue with my project**. Public first-stage copy sells the work of describing the project and its products. When the person is ready to develop software, **Explore Code Framework** connects that material to the existing code and coding-agent guidance. Automatic landing-page assembly, a hosted editor, GitHub authorization and server publication through AI Chat remain future capabilities, not active CTAs for the hosted offer.
 
 ## Voice and language
 
@@ -193,7 +201,7 @@ Introduce a “coding agent,” such as Claude Code or Codex Desktop, only when 
 
 - Use a concise project overview to connect the documents. Each product retains its own structure and sections. Do not promise that all project and product work fits on one literal page or use “start with one page” as the value proposition.
 - Lead with the person's existing material and the written project and product descriptions produced from it. A written Design description is part of this result; generated design assets and a rendered landing page are not first-stage deliverables.
-- Label landing-page assembly, editing and server publication as subsequent development. First enquiries and a hypothesis test describe the purpose of a future page, not guaranteed outcomes. Future deployment prices and commercial terms remain unselected.
+- Use reviewed or exported documents to connect AI Chat preparation to coding-agent development with the existing free Code Framework. Label automatic assembly, a hosted editor and server publication through AI Chat as future development. Initial enquiries and a hypothesis test describe intended uses of a landing page, not guaranteed outcomes. Future hosted deployment prices and commercial terms remain unselected.
 - Treat the accepted project as the context for later discussion, comparison and criticism. Do not make the assistant uniformly agreeable or require the person to repeat settled information.
 - Let relevant responses demonstrate that the system understands the project. Do not sell relevance as a separate feature or require the person to instruct the chat to use information they have already provided.
 - Recommend Code Framework in response to a concrete product need. Name only the functions relevant to that need, distinguish what is already available from what must be built and use the person's server as the deployment destination.

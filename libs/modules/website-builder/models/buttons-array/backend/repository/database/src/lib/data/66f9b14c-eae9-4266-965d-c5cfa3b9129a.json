@@ -1,0 +1,14 @@
+{
+  "id": "66f9b14c-eae9-4266-965d-c5cfa3b9129a",
+  "createdAt": "2026-10-24T01:06:21.937Z",
+  "updatedAt": "2026-10-24T01:06:21.937Z",
+  "variant": "footer-column",
+  "className": "",
+  "title": {
+    "en": "Learn",
+    "ru": "Изучение"
+  },
+  "description": {},
+  "adminTitle": "Learn",
+  "slug": "framework-journey-footer-group-2"
+}

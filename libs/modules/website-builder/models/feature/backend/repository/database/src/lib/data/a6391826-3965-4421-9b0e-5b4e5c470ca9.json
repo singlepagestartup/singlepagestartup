@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "a6391826-3965-4421-9b0e-5b4e5c470ca9",
+  "createdAt": "2026-10-26T00:11:19.031Z",
+  "updatedAt": "2026-10-27T14:59:49.816Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Customers return to their own information",
+    "ru": "Клиент возвращается к своему"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"After signing in, people do not need to introduce themselves again. The project identifies them and can show their orders, messages and materials.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"После входа человеку не нужно заново представляться. Проект узнаёт его и может показать связанные с ним заказы, сообщения и материалы.\"}]}]}"
+  },
+  "adminTitle": "Клиент возвращается к своему",
+  "slug": "framework-reviewed-article-rbac-introduction-feature-0"
+}

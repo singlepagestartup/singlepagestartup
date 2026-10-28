@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "A page for a new workshop",
+    "ru": "Страница нового мастер-класса"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Launching a class needs a cover, programme and booking. See what each part of the page does. In your project, populate these blocks with your own text and images.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The first version uses existing block variants. A different arrangement or a new interactive block requires code changes. Payments and enquiry processing remain separate modules' capabilities.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Для запуска занятия нужны обложка, программа и запись. Посмотрите, какую задачу выполняет каждая часть страницы. В проекте вы наполните эти блоки своими текстами и изображениями.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"В первую версию выбирают существующие варианты блоков. Особое расположение элементов или новый интерактивный блок потребуют доработки кода. Оплата и обработка заявок остаются возможностями отдельных модулей.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "6e8c9db6-50a2-4eba-99bf-242822946d63",
+  "createdAt": "2026-10-26T00:11:36.021Z",
+  "updatedAt": "2026-10-27T14:59:04.573Z",
+  "variant": "content-rich",
+  "adminTitle": "Страница нового мастер-класса",
+  "slug": "framework-reviewed-article-website-builder-example"
+}

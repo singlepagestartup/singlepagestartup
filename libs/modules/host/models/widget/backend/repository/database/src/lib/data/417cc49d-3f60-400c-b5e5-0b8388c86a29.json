@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Code Framework landing",
+    "ru": "Посадочная страница Code Framework"
+  },
+  "subtitle": {},
+  "description": {},
+  "id": "417cc49d-3f60-400c-b5e5-0b8388c86a29",
+  "createdAt": "2026-10-24T01:05:45.132Z",
+  "updatedAt": "2026-10-24T01:05:45.132Z",
+  "variant": "default",
+  "className": "",
+  "adminTitle": "Code Framework landing",
+  "slug": "framework-journey-landing-host"
+}

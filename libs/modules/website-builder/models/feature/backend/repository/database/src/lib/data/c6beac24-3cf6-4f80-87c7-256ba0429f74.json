@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "c6beac24-3cf6-4f80-87c7-256ba0429f74",
+  "createdAt": "2026-10-24T01:06:08.607Z",
+  "updatedAt": "2026-10-24T01:06:08.607Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "File Storage",
+    "ru": "File Storage"
+  },
+  "subtitle": {
+    "en": "Foundation",
+    "ru": "Основа"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Stored file metadata, original bytes and media presentation.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Метаданные файлов, исходные байты и отображение медиа.\"}]}]}"
+  },
+  "adminTitle": "File Storage",
+  "slug": "framework-journey-module-file-storage"
+}

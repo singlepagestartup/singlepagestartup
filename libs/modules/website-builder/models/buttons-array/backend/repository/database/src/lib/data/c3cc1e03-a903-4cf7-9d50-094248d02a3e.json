@@ -1,0 +1,14 @@
+{
+  "id": "c3cc1e03-a903-4cf7-9d50-094248d02a3e",
+  "createdAt": "2026-10-24T01:05:52.800Z",
+  "updatedAt": "2026-10-24T01:05:52.800Z",
+  "variant": "default",
+  "className": "w-full",
+  "title": {
+    "en": "Actions",
+    "ru": "Действия"
+  },
+  "description": {},
+  "adminTitle": "Actions",
+  "slug": "framework-journey-faq-actions"
+}

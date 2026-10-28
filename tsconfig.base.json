@@ -34,6 +34,9 @@
       "@sps/backend-utils": ["libs/shared/backend/utils/src/index.ts"],
       "@sps/billing/*": ["libs/modules/billing/*"],
       "@sps/blog/*": ["libs/modules/blog/*"],
+      "@sps/blog/frontend/component/provider": [
+        "libs/modules/blog/frontend/component/src/lib/provider/index.tsx"
+      ],
       "@sps/broadcast/*": ["libs/modules/broadcast/*"],
       "@sps/crm/*": ["libs/modules/crm/*"],
       "@sps/ecommerce/*": ["libs/modules/ecommerce/*"],

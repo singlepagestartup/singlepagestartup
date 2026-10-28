@@ -3,7 +3,7 @@ export type { IAIChatPageProps } from "./interface";
 import { Component as Layout } from "../../../layout/index";
 import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget/index";
 
-import { Component as SocialModuleChat } from "../../../../social/chat/index";
+import { LandingDemo } from "./LandingDemo";
 import { Component as RbacModuleSubject } from "../../../../rbac/subject/index";
 import type { IAIChatWebsiteContent } from "../../../../website-builder/widget/singlepage/content/ai-chat/content";
 
@@ -37,7 +37,7 @@ export function Component({
               }
             }
           >
-            <SocialModuleChat variant="id-preview-ai-chat" content={content} />
+            <LandingDemo />
           </WebsiteBuilderModuleWidget>
           <WebsiteBuilderModuleWidget
             variant="content-ai-chat-continue"

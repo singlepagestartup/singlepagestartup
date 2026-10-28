@@ -19,9 +19,12 @@ Articles are the primary content entries in the blog, storing localized text and
 
 ## Variants
 
-- `default`: article card with title, subtitle, attached media, and link to the article page.
-- `overview-default`: overview card with description and attached website-builder widgets.
-- `overview-with-private-content-default`: wrapper variant for private/child content.
+- `card`: module/guide card with exact saved media. `layout="guide"` selects the `guide-cover` association and falls back to the default cover. Links retain the current language.
+- `default`: article card with localized rich subtitle, ordered media, linked categories, creation date and an optional author JSX slot. One stretched link covers the card; category and rich-text links keep their own destinations.
+- `overview-default`: light article introduction with actual category links, creation date and optional author JSX; all ordered media sit with the rich body. A client view builds its contents from the rendered public-body headings and moves keyboard focus to the chosen heading. Public fallback reads only `default` Article→Widget associations and includes their headings in the contents. A supplied scoped stream stays outside that public heading observer.
+- `overview-with-private-content-default`: the public article introduction with a higher-module scoped content stream. Save this variant on Articles that require the scoped stream; the shared Blog detail Widget selects it from the loaded Article without probing protected relation metadata.
+- `private-content-default`: presentation for guest, locked, expired, checking, error and granted states; children mount only for granted access.
+- `loading`: one article skeleton; collection Widgets compose the grid.
 - `find`: data-fetch wrapper for querying articles.
 - `admin-form`: admin create/edit form for localized fields and metadata.
 - `admin-select-input`: admin select input for choosing an article.
@@ -66,3 +69,22 @@ updates without this guard retain the ordinary full-field replacement behavior.
 The `hidden` variant makes a primary public route return 404 and removes the
 record from public lists/counts and sitemap. Admin access remains subject to
 RBAC. Changing presentation variants does not rename saved values.
+
+Host supplies author presentation through Blog Widget `renderAuthor` slots after
+Article loading. Cards and detail receive the rendered `author` node. The
+callback stays in the composing runtime; Blog does not import Social or resolve
+profiles. `TRenderAuthor` and `IAuthorSlotProps` are exported by the public
+Article frontend entrypoint. An article without linked authors has no invented
+byline. Category labels use the current Category records linked through
+`categories-to-articles`, preserving relation order.
+
+The overview keeps SDK selection and relation readers in its server-compatible
+`Component.tsx`. Its `ClientComponent.tsx` receives explicit display strings and
+rendered nodes for media, body, author and ordered content. `authorCard`,
+`navigation` and `commentsContent` are JSX slots for higher consumers. The contents observer
+only watches the public description; protected child widgets retain their
+existing access and cache owner. No reading-time value is invented: Article
+has no reading-time field.
+
+The comments slot carries a supplied Social composition; Blog does not own a
+comment model or invent persisted discussions. An absent slot stays empty.

@@ -70,6 +70,13 @@ and must preserve meaning, uncertainty, terminology, formatting, and voice.
 - Start API server: `npm run api:dev`
 - Start host (Next.js) server: `npm run host:dev`
 
+## Validation timing and machine resources
+
+- Run implementation checks only after the requested changes are complete, before a commit or the final message reporting results. This includes tests, type checks, lint, builds, browser checks, and HTTP requests that trigger compilation. Do not run them between edits or after each phase when continuing with more phases in the same task. Reading source, diffs, and existing logs remains part of implementation.
+- Collect the required checks while implementing and run them at that completion boundary. If a check fails, finish the related fixes before rerunning the affected checks. Report any checks that could not run; do not claim unverified work passed.
+- Run resource-intensive checks one at a time. Do not overlap builds, type checks, test suites, or browser-triggered compilation. Keep only the local services needed for the current check running, and reuse existing instances.
+- Before starting checks, inspect available memory, swap use, free disk space, and running development processes. Set supported memory and worker limits, and monitor resource use during the check. A JavaScript heap limit alone does not limit total system memory use. If memory pressure or swap use keeps rising, stop the agent-started check and resolve the resource constraint before retrying.
+
 ## Test format (BDD)
 
 All test files (`*.spec.*`, `*.test.*`, `*.e2e.*`) must use the repository BDD format:

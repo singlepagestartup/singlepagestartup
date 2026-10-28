@@ -1,0 +1,27 @@
+{
+  "id": "rbac.widget.subject-me-ecommerce-module-product-list-default",
+  "title": "RBAC curated product catalog",
+  "description": "Configured, empty and unavailable curated catalog states; static presentation only.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "subject-me-ecommerce-module-product-list-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "rbac.widget",
+    "pageName": "rbac",
+    "variantName": "subject-me-ecommerce-module-product-list-default",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

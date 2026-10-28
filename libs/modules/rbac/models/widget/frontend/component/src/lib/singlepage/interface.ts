@@ -1,10 +1,13 @@
 import { IComponentProps as IHiddenComponentProps } from "@sps/shared-frontend-components/singlepage/hidden/interface";
+import type { IComponentProps as ISubjectMeBlogModuleArticleCreateProps } from "./subject/me/blog-module/article/create/interface";
+import type { IComponentProps as ISubjectMeCrmModuleFormRequestCreate } from "./subject-me-crm-module-form-request-create/interface";
 import type { IComponentProps as ISubjectMeSocialModuleProfileChatOverviewDefault } from "./subject/me/social-module/profile/chat/overview-default/interface";
 import type { IComponentProps as ISubjectMeSocialModuleProfileChatListDefault } from "./subject/me/social-module/profile/chat/list-default/interface";
 import type { IComponentProps as ISubjectMeEcommerceModuleStoreOverviewDefault } from "./subject-me-ecommerce-module-store-overview-default/interface";
 import type { IComponentProps as ISubjectMeEcommerceModuleCategoryOverviewDefault } from "./subject-me-ecommerce-module-category-overview-default/interface";
 import type { IComponentProps as ISubjectMeEcommerceModuleProductOverviewDefault } from "./subject-me-ecommerce-module-product-overview-default/interface";
 import type { IComponentProps as ISubjectMeEcommerceModuleProductListDefault } from "./subject-me-ecommerce-module-product-list-default/interface";
+import type { IComponentProps as ISubjectMeEcommerceModuleTokenFind } from "./subject-me-ecommerce-module-token-find/interface";
 import type { IComponentProps as ISubjectEcommerceOrderInterface } from "./subject-ecommerce-order/interface";
 import type { IComponentProps as ISubjectEcommerceProductListDefaultInterface } from "./subject-ecommerce-product-list-default/interface";
 import type { IComponentProps as ISubjectMeCrmModuleFormSupportAiChat } from "./subject-me-crm-module-form-support-ai-chat/interface";
@@ -43,12 +46,15 @@ import { IComponentProps as ISubjectListDefaultComponentProps } from "./subject/
 
 export type IComponentProps =
   | IHiddenComponentProps
+  | ISubjectMeBlogModuleArticleCreateProps
+  | ISubjectMeCrmModuleFormRequestCreate
   | ISubjectMeSocialModuleProfileChatOverviewDefault
   | ISubjectMeSocialModuleProfileChatListDefault
   | ISubjectMeEcommerceModuleStoreOverviewDefault
   | ISubjectMeEcommerceModuleCategoryOverviewDefault
   | ISubjectMeEcommerceModuleProductOverviewDefault
   | ISubjectMeEcommerceModuleProductListDefault
+  | ISubjectMeEcommerceModuleTokenFind
   | ISubjectEcommerceOrderInterface
   | ISubjectEcommerceProductListDefaultInterface
   | ISubjectMeCrmModuleFormSupportAiChat

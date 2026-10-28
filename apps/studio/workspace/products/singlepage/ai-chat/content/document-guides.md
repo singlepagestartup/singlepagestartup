@@ -16,7 +16,7 @@ Visual reference intake records supplied identity and taste, with the actual fil
 
 ## Basis
 
-Studio's six-section Brief is a compact intake format. The [SBA's business-planning guidance](https://www.sba.gov/counseling/plan-your-business/) covers customers, value, operations and finances in lean plans. Studio uses those concerns at intake and elaborates the model in each Product. A completed Brief records reviewed inputs; customer demand still needs evidence.
+Studio's seven-section Brief is a compact intake format. The [SBA's business-planning guidance](https://www.sba.gov/counseling/plan-your-business/) covers customers, value, operations and finances in lean plans. Studio uses those concerns at intake and elaborates the model in each Product. A completed Brief records reviewed inputs; customer demand still needs evidence.
 
 <!-- section: Project and products -->
 
@@ -45,6 +45,20 @@ Describe known customers, their situation and problem, and the benefit currently
 ## Review boundary
 
 An owner's belief about demand remains a claim. Customer research and the Product's value proposition can examine it without turning it into a measured finding.
+
+<!-- section: Competitors -->
+
+## Why this section exists
+
+Record the competitors known to the business owner. These examples provide a starting point for research into their offers, promotion and search queries.
+
+## What to record
+
+Record the name, website or page link, comparable offer and why you consider the business a competitor. If known, describe its customers and region, and add links to ads, publications or examples of search queries used to find it.
+
+## Review boundary
+
+Write "I don't know yet" and continue filling in Brief. Missing examples do not establish that there is no competition. Keep a separate list for each product; it may differ from the business-level list. Treat your observations as intake. Verifying offers and selecting search queries belong to later research.
 
 <!-- section: Current state -->
 
@@ -436,7 +450,7 @@ Confirm new products with the owner. Supporting examples and channels remain con
 
 # Product document
 
-Each Product describes one offer's customers, problem, value, intended experience, operating resources and economics. Business Analyst maintains attributed intake; Strategist forms the offer within the reviewed Strategy. The first twelve sections follow Studio's Product template. Sales, Promotion and Analytics & Research retain related product work in this editor.
+Each Product describes one offer's customers, problem, value, intended experience, operating resources and economics. Business Analyst maintains attributed intake; Strategist forms the offer within the reviewed Strategy. The first thirteen sections follow Studio's Product template. Sales, Promotion and Analytics & Research retain related product work in this editor.
 
 ## Concepts and use
 
@@ -489,6 +503,20 @@ Describe the circumstance and trigger, progress sought, functional constraints a
 ## Review boundary
 
 [Jobs to Be Done](https://www.christenseninstitute.org/theory/jobs-to-be-done/) examines decisions through circumstance and desired progress. A proposed motive is reasoning to investigate; an interview finding needs the actual source. Keep the customer outcome separate from the implementation solution.
+
+<!-- section: Competitors -->
+
+## Why this section exists
+
+Customers compare specific offers. A competitor of one product may not compete with another, so each product needs its own list.
+
+## What to record
+
+Record the competitor and product names, a link to the offer, the customer need both products address and the reason for comparison. Add known prices, differences and promotion examples with source links. Check which competitors from Brief apply to this product and add other examples where relevant.
+
+## Review boundary
+
+Write "I don't know yet" and return to this section later. Missing examples do not establish that there is no competition. Links and observations support later research and search-query selection. Unverified information remains an assumption.
 
 <!-- section: Value Propositions -->
 

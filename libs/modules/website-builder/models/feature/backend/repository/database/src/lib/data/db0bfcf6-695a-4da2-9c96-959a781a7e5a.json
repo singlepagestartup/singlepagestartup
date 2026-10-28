@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "db0bfcf6-695a-4da2-9c96-959a781a7e5a",
+  "createdAt": "2026-10-24T01:05:50.691Z",
+  "updatedAt": "2026-10-24T01:05:50.691Z",
+  "variant": "step",
+  "title": {
+    "en": "Develop your product",
+    "ru": "Разрабатывайте свой продукт"
+  },
+  "subtitle": {
+    "en": "03",
+    "ru": "03"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Describe the first page and business rules. Review the interface, ask for changes and check how it works.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Опишите первую страницу и бизнес-правила. Изучите интерфейс, запросите изменения и проверьте работу сценариев.\"}]}]}"
+  },
+  "adminTitle": "Develop your product",
+  "slug": "framework-journey-setup-step-2"
+}

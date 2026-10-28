@@ -4,6 +4,12 @@ interface IWebsiteAsset {
   alt: string;
 }
 
+interface ILandingArtwork {
+  hero: IWebsiteAsset;
+  modules: IWebsiteAsset[];
+  articles: Record<string, IWebsiteAsset>;
+}
+
 export interface IWebsiteItem {
   title: string;
   text: string;
@@ -29,6 +35,9 @@ export interface ICodeFrameworkWebsiteContent {
   request: IWebsiteSection;
   change: IWebsiteSection;
   chat: IWebsiteSection;
+  modules: IWebsiteSection;
+  articles: IWebsiteSection;
+  handoff: IWebsiteSection;
   price: IWebsiteSection;
   questions: IWebsiteSection;
   footer: IWebsiteSection;
@@ -36,6 +45,48 @@ export interface ICodeFrameworkWebsiteContent {
 }
 
 const generated = "/workspace-assets/singlepage/generated/living-focus";
+
+const acquisition =
+  "/workspace-assets/singlepage/generated/framework-acquisition-v2";
+
+/** Product-only artwork; the existing Modules/runtime asset choices are untouched. */
+export const landingArtwork: ILandingArtwork = {
+  hero: {
+    id: "singlepage-generated-framework-acquisition-v2-hero",
+    src: `${acquisition}/hero.png`,
+    alt: "A website assembled from ready-made account, shop and article features.",
+  },
+  modules: [
+    "accounts",
+    "social",
+    "blog",
+    "knowledge",
+    "ecommerce",
+    "billing",
+    "pages",
+    "forms",
+  ].map((key) => ({
+    id:
+      key === "knowledge"
+        ? "singlepage-generated-framework-webinar-v1-knowledge-ai"
+        : `singlepage-generated-framework-acquisition-v2-${key}`,
+    src:
+      key === "knowledge"
+        ? "/workspace-assets/singlepage/generated/framework-webinar-v1/knowledge-ai.png"
+        : `${acquisition}/${key}.png`,
+    alt: "",
+  })),
+  articles: Object.fromEntries(
+    ["social", "billing", "knowledge"].map((key) => [
+      key,
+      {
+        id: `singlepage-generated-framework-article-covers-dark-v1-${key}`,
+        src: `/workspace-assets/singlepage/generated/framework-article-covers-dark-v1/${key}.png`,
+        alt: "",
+      },
+    ]),
+  ),
+};
 
 /** Asset choices only. All visible page copy is authored in page.md. */
 export const websiteAssets: Record<
@@ -62,6 +113,21 @@ export const websiteAssets: Record<
     src: `${generated}/singlepagestartup-illustration-coordinated-agents-cool-square.png`,
     alt: "Conceptual drawing of a person directing coding assistants toward a shared task.",
   },
+};
+
+/** Reuse the registered acquisition masters in the Product module catalogue. */
+export const moduleArtwork: Record<string, IWebsiteAsset> = {
+  host: landingArtwork.hero,
+  "website-builder": landingArtwork.modules[6],
+  blog: landingArtwork.modules[2],
+  social: landingArtwork.modules[1],
+  crm: landingArtwork.modules[7],
+  rbac: landingArtwork.modules[0],
+  ecommerce: landingArtwork.modules[4],
+  billing: landingArtwork.modules[5],
+  knowledge: landingArtwork.modules[3],
+  agent: websiteAssets.agents,
+  startup: websiteAssets.modules,
 };
 
 function parseSection(markdown: string): IWebsiteSection {
@@ -116,6 +182,9 @@ export function parseCodeFrameworkWebsite(
     request: section("request"),
     change: section("change"),
     chat: section("chat"),
+    modules: section("modules"),
+    articles: section("articles"),
+    handoff: section("handoff"),
     price: section("price"),
     questions: section("questions"),
     footer: section("footer"),

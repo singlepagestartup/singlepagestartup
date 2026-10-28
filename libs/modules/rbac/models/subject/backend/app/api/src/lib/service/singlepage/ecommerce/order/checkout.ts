@@ -1,5 +1,6 @@
 import { Service as SubjectsToEcommerceModuleOrdersService } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/service";
 import {
+  INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
   NEXT_PUBLIC_API_SERVICE_URL,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
@@ -146,6 +147,15 @@ export class Service {
     if (!ecommerceModuleProducts?.length) {
       throw new Error("Not Found error. No ecommerce module products found");
     }
+
+    if (
+      ecommerceModuleProducts.some(
+        (product) => product.slug === INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
+      )
+    )
+      throw new Error(
+        "Permission error. Initial Free is available only through authentication bootstrap",
+      );
 
     const ecommerceModuleProductsToAttributes =
       await this.ecommerceModule.productsToAttributes.find({

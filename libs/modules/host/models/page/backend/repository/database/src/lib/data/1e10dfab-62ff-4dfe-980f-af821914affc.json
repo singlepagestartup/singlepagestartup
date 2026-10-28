@@ -1,0 +1,12 @@
+{
+  "id": "1e10dfab-62ff-4dfe-980f-af821914affc",
+  "title": "Framework private article demo",
+  "url": "/framework/blog/articles/[blog.articles.slug]",
+  "description": "Local audit fixture for public and subscriber content",
+  "createdAt": "2026-10-22T20:30:17.228Z",
+  "updatedAt": "2026-10-22T20:30:17.228Z",
+  "variant": "default",
+  "className": null,
+  "language": "en",
+  "adminTitle": "Framework audit — private article route"
+}

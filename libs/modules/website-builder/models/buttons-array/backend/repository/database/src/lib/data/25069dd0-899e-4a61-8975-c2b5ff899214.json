@@ -1,0 +1,14 @@
+{
+  "id": "25069dd0-899e-4a61-8975-c2b5ff899214",
+  "createdAt": "2026-10-23T20:18:06.963Z",
+  "updatedAt": "2026-10-23T20:18:06.963Z",
+  "variant": "default",
+  "className": "",
+  "title": {
+    "en": "Explore",
+    "ru": "Изучить"
+  },
+  "description": {},
+  "adminTitle": "Explore",
+  "slug": "framework-about-next-actions"
+}

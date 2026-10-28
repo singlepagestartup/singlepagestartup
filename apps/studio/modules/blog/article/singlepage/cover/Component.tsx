@@ -1,9 +1,9 @@
 import type { IComponentProps, ArticleCoverProps } from "./interface";
 export type { ArticleCoverProps } from "./interface";
+import { defaultArticleCardProps } from "../card/Component";
 export const defaultArticleCoverProps = {
-  coverImage:
-    "/module-assets/images/singlepage/generated/living-focus/singlepagestartup-photography-business-conversation-square.png",
-  title: "How to Choose the Right Plan for Your Business",
+  coverImage: defaultArticleCardProps.coverImage,
+  title: defaultArticleCardProps.title,
 };
 
 export function ArticleCover(props?: IComponentProps) {

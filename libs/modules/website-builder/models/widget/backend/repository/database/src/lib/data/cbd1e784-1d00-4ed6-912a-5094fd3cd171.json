@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Distinguish the caches",
+    "ru": "Различайте кеши"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Nx caches task results. The API caches HTTP responses. React Query stores mounted query results. Host also has Next.js data and page caches. Clearing one does not refresh the others. Identify which layer returns the old article before deleting state.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The API registers request parsing and private-content checks before response caching. Protected resources are excluded from both legacy and new caching paths. File-byte access is checked before static delivery.\"}]},{\"type\":\"codeBlock\",\"attrs\":{\"language\":\"ts\"},\"content\":[{\"type\":\"text\",\"text\":\"app.use(parseQueryMiddleware.init());\\napp.use(protectedBlogContent.init());\\n// The response cache is registered after these guards.\\napp.route(\\\"/api/blog\\\", blogApp.hono);\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"This excerpt shows relative ordering, rather than the entire app. Conditional cache registration and the remaining middleware are in \"},{\"type\":\"text\",\"text\":\"apps/api/app.ts\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\".\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Nx кеширует результаты задач. API кеширует ответы HTTP. React Query хранит результаты смонтированных запросов. В Host также есть кеши Next.js для данных и страниц. Очистка одного не делает остальные актуальными. Определите слой, который возвращает прежнюю статью, до удаления состояния.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"API регистрирует разбор запроса и проверку закрытого содержимого до кеша ответа. Защищённые ресурсы исключены из прежнего и нового путей кеширования. Проверка байтов файла выполняется до статической отдачи.\"}]},{\"type\":\"codeBlock\",\"attrs\":{\"language\":\"ts\"},\"content\":[{\"type\":\"text\",\"text\":\"app.use(parseQueryMiddleware.init());\\napp.use(protectedBlogContent.init());\\n// The response cache is registered after these guards.\\napp.route(\\\"/api/blog\\\", blogApp.hono);\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Отрывок показывает относительный порядок, а не всё приложение. Условная регистрация кешей и остальные middleware находятся в \"},{\"type\":\"text\",\"text\":\"apps/api/app.ts\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\".\"}]}]}"
+  },
+  "anchor": "ru-section-building-and-revalidating-sps-with-safe-content-cutovers-3",
+  "className": "",
+  "id": "cbd1e784-1d00-4ed6-912a-5094fd3cd171",
+  "createdAt": "2026-10-26T07:34:01.338Z",
+  "updatedAt": "2026-10-27T14:59:16.323Z",
+  "variant": "content-rich",
+  "adminTitle": "Различайте кеши",
+  "slug": "ru-section-building-and-revalidating-sps-with-safe-content-cutovers-3"
+}

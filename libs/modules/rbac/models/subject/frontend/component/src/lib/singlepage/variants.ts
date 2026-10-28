@@ -1,4 +1,6 @@
 import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
+import { Component as MeBlogModuleArticleCreateDefault } from "./me/blog-module/article/create-default";
+import { Component as MeAccount } from "./me/account";
 import { Component as SocialModuleProfileFind } from "./social-module/profile/find";
 import { Component as MeBlogModuleArticlePrivateContentDefault } from "./me/blog-module/article/private-content-default";
 import { Component as MeNavigationControlsAiChat } from "./me/navigation/controls-ai-chat";
@@ -86,6 +88,8 @@ import { Component as SocialModuleProfileChatOverviewDefault } from "./social-mo
 
 export const variants = {
   hidden: Hidden,
+  "me-blog-module-article-create-default": MeBlogModuleArticleCreateDefault,
+  "me-account": MeAccount,
   "social-module-profile-find": SocialModuleProfileFind,
   "me-blog-module-article-private-content-default":
     MeBlogModuleArticlePrivateContentDefault,

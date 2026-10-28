@@ -16,6 +16,7 @@ export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/social/actions";
 export const variants = ["hidden", "default", "ai-execution"] as const;
 export const query = {};
+export type { IChatAction } from "./chat-action";
 export const options = {
   next: {
     revalidate: REVALIDATE,

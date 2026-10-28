@@ -79,7 +79,7 @@ export const Component = memo(function Component({
     >
       <button
         type="button"
-        aria-label={`Remove ${file.name}`}
+        aria-label={`Удалить ${file.name}`}
         disabled={disabled}
         onClick={remove}
         className="absolute right-1 top-1 z-10 grid size-6 place-items-center rounded-full bg-foreground text-background hover:opacity-80 disabled:opacity-30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
@@ -119,7 +119,7 @@ export const Component = memo(function Component({
               <button
                 key={direction}
                 type="button"
-                aria-label={`Move ${file.name} ${direction === -1 ? "earlier" : "later"}`}
+                aria-label={`Переместить ${file.name} ${direction === -1 ? "earlier" : "later"}`}
                 disabled={disabled || (direction === -1 ? first : last)}
                 onClick={() => onMove(file.id, direction)}
                 className="grid size-8 place-items-center rounded-md hover:bg-muted disabled:opacity-30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-foreground"

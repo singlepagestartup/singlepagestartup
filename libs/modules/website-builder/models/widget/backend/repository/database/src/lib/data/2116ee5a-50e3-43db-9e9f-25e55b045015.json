@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "The salon received a new enquiry",
+    "ru": "Салон получил новую заявку"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"A visitor requested a dog grooming appointment. They need confirmation, while the administrator needs details for a call. Choose a recipient to see different messages about the same event.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Sending requires a delivery channel, recipient address and trigger event. Timed reminders require scheduling. The module does not decide by itself which customers to message or when.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Посетитель оставил запрос на стрижку собаки. Ему нужно подтверждение, а администратору — сведения для звонка. Выберите получателя, чтобы увидеть разные тексты об одном событии.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Для отправки нужно настроить канал доставки, адрес получателя и событие запуска. Напоминания по времени требуют расписания. Модуль сам не определяет, каким клиентам и когда нужно писать.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "2116ee5a-50e3-43db-9e9f-25e55b045015",
+  "createdAt": "2026-10-26T00:12:03.807Z",
+  "updatedAt": "2026-10-27T14:58:52.266Z",
+  "variant": "content-rich",
+  "adminTitle": "Салон получил новую заявку",
+  "slug": "framework-reviewed-article-notification-example"
+}

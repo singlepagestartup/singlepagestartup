@@ -1,3 +1,4 @@
+import { Handler as Content } from "./content";
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import { DI, RESTController } from "@sps/shared-backend-api";
@@ -18,6 +19,16 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     super(service);
     this.service = service;
     this.bindHttpRoutes([
+      {
+        method: "GET",
+        path: "/:uuid/content",
+        handler: (c) => new Content(this.service).execute(c),
+      },
+      {
+        method: "HEAD",
+        path: "/:uuid/content",
+        handler: (c) => new Content(this.service).execute(c),
+      },
       {
         method: "GET",
         path: "/",

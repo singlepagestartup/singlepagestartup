@@ -1,5 +1,9 @@
 import { documentConfirmation } from "../../../../../tools/studio/workspace/document";
-import type { IWorkspacePageView } from "../pages";
+import {
+  canNavigateWorkspacePage,
+  type IWorkspacePageView,
+  type WorkspaceLinkResolver,
+} from "../pages";
 import { MarkdownDocument } from "./ArtifactBrowser";
 import { ConfirmationBadge } from "./DocumentStatus";
 import { PresentationPdfDownload } from "./PresentationPdfDownload";
@@ -15,13 +19,48 @@ export function WorkspacePage({
   hideTitle?: boolean;
   hideConfirmation?: boolean;
   navigationHref?: string;
-  resolveLink?: (url: string) => string | { href: string; target: "_top" };
+  resolveLink?: WorkspaceLinkResolver;
 }) {
   const Component = page.Component;
   if (Component) {
     const content = (
-      <div className="overflow-x-auto">
-        <Component text={page.text} navigationHref={navigationHref} />
+      <div
+        className="overflow-x-auto"
+        onClick={(event) => {
+          if (event.defaultPrevented || !resolveLink) return;
+          const link = (event.target as Element).closest<HTMLAnchorElement>(
+            "a[href]",
+          );
+          if (
+            !link ||
+            !canNavigateWorkspacePage({
+              button: event.button,
+              metaKey: event.metaKey,
+              ctrlKey: event.ctrlKey,
+              shiftKey: event.shiftKey,
+              altKey: event.altKey,
+              target: link.getAttribute("target"),
+              download: link.hasAttribute("download"),
+            })
+          )
+            return;
+          const destination = new URL(link.href, window.location.href);
+          if (destination.origin !== window.location.origin) return;
+          const resolved = resolveLink(
+            destination.pathname + destination.search + destination.hash,
+          );
+          if (typeof resolved === "string" || resolved.target !== "_top")
+            return;
+          // Keep the original anchor's native activation and browser history.
+          link.href = resolved.href;
+          link.target = resolved.target;
+        }}
+      >
+        <Component
+          text={page.text}
+          navigationHref={navigationHref}
+          resolveLink={resolveLink}
+        />
       </div>
     );
     return page.export === "pdf" ? (

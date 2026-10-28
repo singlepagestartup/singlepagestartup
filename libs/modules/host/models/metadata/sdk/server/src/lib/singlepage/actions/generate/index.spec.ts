@@ -5,7 +5,7 @@ jest.mock(
 );
 import { api as profilesApi } from "@sps/social/models/profile/sdk/server";
 jest.mock("@sps/social/models/profile/sdk/server", () => ({
-  api: { find: jest.fn() },
+  api: { find: jest.fn(), authorFind: jest.fn() },
 }));
 import { api as profileFilesApi } from "@sps/social/relations/profiles-to-file-storage-module-files/sdk/server";
 jest.mock(
@@ -124,6 +124,7 @@ beforeEach(() => {
   jest.resetAllMocks();
   jest.mocked(metadataToFilesApi.find).mockResolvedValue([]);
   jest.mocked(profilesApi.find).mockResolvedValue([]);
+  jest.mocked(profilesApi.authorFind).mockResolvedValue([]);
   jest.mocked(profileFilesApi.find).mockResolvedValue([]);
   jest.mocked(profileArticlesApi.find).mockResolvedValue([]);
   jest.mocked(categoryArticlesApi.find).mockResolvedValue([]);
@@ -645,4 +646,36 @@ it("does not leak unresolved masks in social handles or locale", async () => {
   expect(result.diagnostics).toContain(
     "No social cover is configured for this page",
   );
+});
+
+it("uses only the public author DTO for Profile metadata and avatar", async () => {
+  const id = "61ed455d-8cce-458f-9992-a12e1fcb449a";
+  jest.mocked(profilesApi.authorFind).mockResolvedValue([
+    {
+      id,
+      title: { en: "Public author" },
+      subtitle: {},
+      description: {},
+      metadata: {
+        seo: { title: { en: "Author SEO" }, keywords: { en: ["writing"] } },
+      },
+      avatar: { id: "avatar", file: "/avatar.png", mimeType: "image/png" },
+    },
+  ] as any);
+  const result = await generatePageSeo({
+    url: `/authors/${id}`,
+    language: "en",
+    page: page({
+      url: "/authors/[social.profiles.id]",
+      routeParams: { "social.profiles.id": id },
+    }),
+  });
+  expect(result.metadata.title).toBe("Author SEO");
+  expect(result.metadata.keywords).toEqual(["writing"]);
+  expect(profilesApi.authorFind).toHaveBeenCalledWith({
+    params: { profileId: id },
+    options: { cache: "no-store" },
+  });
+  expect(profilesApi.find).not.toHaveBeenCalled();
+  expect(profileFilesApi.find).not.toHaveBeenCalled();
 });

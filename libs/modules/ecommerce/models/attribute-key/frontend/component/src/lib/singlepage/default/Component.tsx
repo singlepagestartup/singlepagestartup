@@ -8,9 +8,12 @@ export function Component(props: IComponentPropsExtended) {
       data-model="attribute-key"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className={cn("w-full flex flex-col", props.className)}
+      className={cn(
+        "min-w-0 break-words text-muted-foreground",
+        props.className,
+      )}
     >
-      <p className="font-bold">{props.data.title?.[props.language]}</p>
+      <p className="font-normal">{props.data.title?.[props.language]}</p>
     </div>
   );
 }

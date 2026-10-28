@@ -1,7 +1,13 @@
+import {
+  BylineSkeleton as SocialModuleProfileBylineSkeleton,
+  Component as SocialModuleProfile,
+} from "@sps/social/models/profile/frontend/component";
+import { Component as SocialModuleProfilesToBlogModuleArticles } from "@sps/social/relations/profiles-to-blog-module-articles/frontend/component";
 import { Component as Page } from "@sps/host/models/page/frontend/component";
 import type { IExternalWidgetProps } from "../interface";
 import { Component as BlogModuleWidget } from "@sps/blog/models/widget/frontend/component";
 import { Component as RbacModuleSubject } from "@sps/rbac/models/subject/frontend/component";
+import { Component as ClientComposition } from "./ClientComponent";
 export function Component(props: IExternalWidgetProps) {
   return (
     <Page
@@ -30,32 +36,119 @@ export function Component(props: IExternalWidgetProps) {
         >
           {({ data }) =>
             data?.map((entity) => (
-              <BlogModuleWidget
-                key={entity.id}
-                isServer={props.isServer}
-                dataSource="props"
-                data={entity}
-                language={props.language}
-                articleSlug={routeParams?.["blog.articles.slug"]}
-                categorySlug={routeParams?.["blog.categories.slug"]}
-                variant={entity.variant as any}
-                renderPrivateContent={({ data }) => (
-                  <RbacModuleSubject
-                    isServer={props.isServer}
-                    variant="me-blog-module-article-private-content-default"
-                    blogModuleArticle={data}
-                    language={props.language}
-                  />
-                )}
-                renderProduct={({ data }) => (
-                  <RbacModuleSubject
-                    isServer={false}
-                    variant="me-ecommerce-module-product-card-default"
-                    ecommerceModuleProduct={data}
-                    language={props.language}
-                  />
-                )}
-              />
+              <ClientComposition key={entity.id} language={props.language}>
+                <BlogModuleWidget
+                  isServer={props.isServer}
+                  dataSource="props"
+                  data={entity}
+                  language={props.language}
+                  articleSlug={routeParams?.["blog.articles.slug"]}
+                  categorySlug={routeParams?.["blog.categories.slug"]}
+                  variant={entity.variant as any}
+                  renderAuthor={({ data, size, inverse }) => (
+                    <SocialModuleProfilesToBlogModuleArticles
+                      isServer={props.isServer}
+                      variant="find"
+                      skeleton={
+                        <SocialModuleProfileBylineSkeleton
+                          size={size}
+                          inverse={inverse}
+                        />
+                      }
+                      apiProps={{
+                        params: {
+                          filters: {
+                            and: [
+                              {
+                                column: "blogModuleArticleId",
+                                method: "eq",
+                                value: data.id,
+                              },
+                            ],
+                          },
+                          orderBy: {
+                            and: [{ column: "orderIndex", method: "asc" }],
+                          },
+                        },
+                      }}
+                    >
+                      {({ data: links }) =>
+                        links?.length ? (
+                          <div className="flex min-w-0 flex-wrap gap-4">
+                            {links.map((link) => (
+                              <SocialModuleProfilesToBlogModuleArticles
+                                key={link.id}
+                                isServer={props.isServer}
+                                variant="author-default"
+                                dataSource="props"
+                                data={link}
+                                language={props.language}
+                                size={size}
+                                inverse={inverse}
+                              />
+                            ))}
+                          </div>
+                        ) : null
+                      }
+                    </SocialModuleProfilesToBlogModuleArticles>
+                  )}
+                  renderAuthorCard={({ data }) => (
+                    <SocialModuleProfilesToBlogModuleArticles
+                      isServer={props.isServer}
+                      variant="find"
+                      skeleton={<SocialModuleProfileBylineSkeleton size="sm" />}
+                      apiProps={{
+                        params: {
+                          filters: {
+                            and: [
+                              {
+                                column: "blogModuleArticleId",
+                                method: "eq",
+                                value: data.id,
+                              },
+                            ],
+                          },
+                          orderBy: {
+                            and: [{ column: "orderIndex", method: "asc" }],
+                          },
+                        },
+                      }}
+                    >
+                      {({ data: links }) =>
+                        links?.length ? (
+                          <div className="space-y-4">
+                            {links.map((link) => (
+                              <SocialModuleProfile
+                                key={link.id}
+                                isServer={props.isServer}
+                                variant="author-card-default"
+                                profileId={link.profileId}
+                                language={props.language}
+                              />
+                            ))}
+                          </div>
+                        ) : null
+                      }
+                    </SocialModuleProfilesToBlogModuleArticles>
+                  )}
+                  renderContent={({ data }) => (
+                    <RbacModuleSubject
+                      isServer={false}
+                      variant="me-blog-module-article-private-content-default"
+                      blogModuleArticle={data}
+                      language={props.language}
+                    />
+                  )}
+                  renderProduct={({ data }) => (
+                    <RbacModuleSubject
+                      isServer={false}
+                      variant="me-ecommerce-module-product-card-default"
+                      ecommerceModuleProduct={data}
+                      language={props.language}
+                    />
+                  )}
+                />
+              </ClientComposition>
             ))
           }
         </BlogModuleWidget>

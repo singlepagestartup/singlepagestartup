@@ -11,6 +11,7 @@ export const variant = "default" as const;
 export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
   language: string;
+  navigation?: "arrows" | "numbers" | "dots";
 }
 
 export interface IComponentPropsExtended
@@ -19,5 +20,10 @@ export interface IComponentPropsExtended
     typeof variant,
     IComponentProps
   > {
-  sliderToSlides?: ReactNode[];
+  slides?: IRenderedSlide[];
+}
+
+export interface IRenderedSlide {
+  id: string;
+  content: ReactNode;
 }

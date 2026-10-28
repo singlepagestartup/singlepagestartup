@@ -16,6 +16,8 @@ export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/social/widgets";
 export const variants = [
   "hidden",
+  "author-list-default",
+  "author-overview-default",
   "default",
   "chat-list-default",
   "chat-overview-default",

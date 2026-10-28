@@ -12,6 +12,10 @@
         "prompt": "Who uses, buys or benefits from the offer? Describe their situation, problem and the value currently delivered or intended."
       },
       {
+        "title": "Competitors",
+        "prompt": "Which businesses do you consider competitors? Give their names, links, comparable offers and why customers might choose them. If known, include examples of ads, publications or search queries used to find them. You can answer \"I don't know yet\" and return to this later."
+      },
+      {
         "title": "Current state",
         "prompt": "What exists or has been observed? Attribute supplied statements, tested work, results and assets; distinguish them from intentions."
       },
@@ -144,6 +148,10 @@
       {
         "title": "Problem and desired progress",
         "prompt": "Describe the customer's circumstance, desired progress, functional, social and emotional forces, pains and gains."
+      },
+      {
+        "title": "Competitors",
+        "prompt": "Which offers could a customer choose instead of this product? Name the competitor and specific product, link to the offer and explain the comparison. Add known prices, differences and promotion examples with source links. This list may differ from the business competitors in Brief and those of other products. State when you do not know yet."
       },
       {
         "title": "Value Propositions",

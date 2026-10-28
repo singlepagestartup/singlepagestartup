@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "bdbf9ea9-1c84-4e19-8966-6fbcfa0d4f0d",
+  "createdAt": "2026-10-26T00:11:54.133Z",
+  "updatedAt": "2026-10-27T14:59:53.755Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Thread list",
+    "ru": "Список веток"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Topics inside a chat. Choosing a thread changes the heading and displayed discussion excerpt.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Темы внутри чата. Выбор ветки меняет заголовок и показанный фрагмент обсуждения.\"}]}]}"
+  },
+  "adminTitle": "Список веток",
+  "slug": "framework-reviewed-article-social-components-feature-2"
+}

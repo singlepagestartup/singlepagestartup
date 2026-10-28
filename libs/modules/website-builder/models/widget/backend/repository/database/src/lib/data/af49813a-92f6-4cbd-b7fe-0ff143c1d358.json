@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "15 modules are ready to connect",
+    "ru": "15 модулей уже готовы к подключению"
+  },
+  "subtitle": {
+    "en": "Use code tested in projects",
+    "ru": "Используйте проверенный код"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Modules add features to your project: accounts, chat, a product catalogue, payments and more. Choose what your business needs. The SinglePageStartup team maintains these modules and releases updates.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Модули добавляют в проект функции: аккаунты, чат, каталог товаров, оплату и другие. Выберите нужные для своего бизнеса. Команда SinglePageStartup поддерживает эти модули и выпускает обновления.\"}]}]}"
+  },
+  "anchor": "cf-modules",
+  "className": "",
+  "id": "af49813a-92f6-4cbd-b7fe-0ff143c1d358",
+  "createdAt": "2026-10-26T00:12:29.208Z",
+  "updatedAt": "2026-10-27T14:59:13.785Z",
+  "variant": "content-collection",
+  "adminTitle": "15 модулей уже готовы к подключению",
+  "slug": "framework-reviewed-modules-frame"
+}

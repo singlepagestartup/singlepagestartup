@@ -40,8 +40,7 @@ export function Component({
             onClick={onCancel}
             className={`${control} border border-border bg-card text-foreground hover:bg-muted`}
           >
-            <Glyph name="arrow-left" />
-            Back to projects
+            <Glyph name="arrow-left" />К проектам
           </button>
         </div>
         <WebsiteBuilderModuleWidget variant="content-ai-chat-profile-create">
@@ -62,9 +61,10 @@ export function Component({
             aria-hidden="true"
             className="mb-5 block h-1 w-10 rounded-full bg-primary"
           />
-          <h1 className="text-3xl font-semibold tracking-tight">My projects</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">Мои проекты</h1>
           <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
-            Choose a project to continue with its documents and conversations.
+            Выберите проект, чтобы продолжить работу с его документами и
+            обсуждениями.
           </p>
         </div>
         <button
@@ -74,16 +74,16 @@ export function Component({
           className={`${control} bg-primary text-primary-foreground hover:brightness-95`}
         >
           <Glyph name="plus" />
-          Create project
+          Создать проект
         </button>
       </div>
       {pending ? (
         <section
           role="status"
-          aria-label="Loading your projects"
+          aria-label="Загружаем ваши проекты"
           aria-busy="true"
         >
-          <span className="sr-only">Loading your projects…</span>
+          <span className="sr-only">Загружаем ваши проекты…</span>
           <div
             aria-hidden="true"
             className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
@@ -107,22 +107,22 @@ export function Component({
           className="rounded-2xl border border-destructive-border bg-destructive-surface p-6"
         >
           <h2 className="font-semibold text-destructive">
-            Couldn't load your projects.
+            Не удалось загрузить проекты.
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Try again to reconnect to your workspace.
+            Попробуйте снова подключиться к проекту.
           </p>
           <button
             type="button"
             onClick={onRetry}
             className={`${control} mt-5 border border-border bg-card text-foreground hover:bg-muted`}
           >
-            Try again
+            Попробовать ещё раз
           </button>
         </section>
       ) : projects.length ? (
         <ul
-          aria-label="Your projects"
+          aria-label="Ваши проекты"
           className="grid list-none gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3"
         >
           {projects.map((project) => (
@@ -135,10 +135,10 @@ export function Component({
             <span className="mx-auto mb-5 grid size-14 place-items-center rounded-2xl bg-muted">
               <Glyph name="folder-open" />
             </span>
-            <h2 className="text-xl font-semibold">No projects yet</h2>
+            <h2 className="text-xl font-semibold">Проектов пока нет</h2>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              Create your first project to keep its files, documents and
-              conversations together.
+              Создайте первый проект, чтобы хранить вместе его файлы, документы
+              и обсуждения.
             </p>
           </div>
         </section>
@@ -163,7 +163,7 @@ const ProjectCard = memo(function ProjectCard({
     >
       <a
         href={project.href}
-        aria-label={`Open ${project.name}`}
+        aria-label={`Открыть ${project.name}`}
         className="group flex h-full min-h-52 flex-col rounded-2xl border border-border bg-card p-6 text-foreground no-underline transition hover:border-foreground/30 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
       >
         <span className="mb-5 grid size-11 place-items-center rounded-xl bg-muted">
@@ -171,10 +171,10 @@ const ProjectCard = memo(function ProjectCard({
         </span>
         <h2 className="break-words text-lg font-semibold">{project.name}</h2>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          Your documents, files and conversations.
+          Ваши документы, файлы и обсуждения.
         </p>
         <span className="mt-6 flex items-center gap-2 text-sm font-semibold">
-          Open project <Glyph name="arrow-right" />
+          Открыть проект <Glyph name="arrow-right" />
         </span>
       </a>
     </li>

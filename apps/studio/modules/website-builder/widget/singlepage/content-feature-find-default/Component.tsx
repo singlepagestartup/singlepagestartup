@@ -1,8 +1,9 @@
-import type {
-  IComponentProps,
-  ContentFeatureFindDefaultProps,
-  StatItem,
-  ModuleIcon,
+import {
+  type IComponentProps,
+  type ContentFeatureFindDefaultProps,
+  type StatItem,
+  type ModuleIcon,
+  type IModuleIconProps,
 } from "./interface";
 export type {
   ContentFeatureFindDefaultProps,
@@ -118,5 +119,3 @@ export const defaultContentFeatureFindDefaultProps = {
     },
   ] satisfies StatItem[],
 };
-
-import type { IModuleIconProps } from "./interface";

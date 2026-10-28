@@ -43,6 +43,7 @@ function example(initialProjects?: any[]) {
       <Component
         {...({
           isServer: false,
+          language: "en",
           variant: "me-social-module-profile-list-ai-chat",
           data: { id: "new-subject" },
           initialProjects,

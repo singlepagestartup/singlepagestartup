@@ -20,3 +20,14 @@ export type { IAuthenticationContent } from "./singlepage/content/ai-chat/authen
 export type { INavbarAiChatProps } from "./singlepage/navbar/ai-chat/index";
 
 export type { NavbarDefaultProps } from "./singlepage/navbar-default/interface";
+
+export type {
+  IContentFeatureItem,
+  IContentFeatureMedia,
+} from "./singlepage/content-feature-split/interface";
+export type { IContentDefinitionItem } from "./singlepage/content-definition-grid/interface";
+export type { IContentStep } from "./singlepage/content-steps/interface";
+
+export type { IShowcaseItem } from "./singlepage/content-showcase/interface";
+
+export type { IProjectDocument } from "./singlepage/content-project-context/interface";

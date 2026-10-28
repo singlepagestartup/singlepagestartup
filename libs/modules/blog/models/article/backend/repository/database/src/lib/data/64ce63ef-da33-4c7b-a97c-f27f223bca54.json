@@ -1,0 +1,21 @@
+{
+  "id": "64ce63ef-da33-4c7b-a97c-f27f223bca54",
+  "className": "",
+  "createdAt": "2026-10-26T00:11:28.801Z",
+  "updatedAt": "2026-10-27T15:00:24.016Z",
+  "variant": "card",
+  "adminTitle": "Получайте заявки с теми деталями, которые нужны для работы",
+  "slug": "framework-crm",
+  "title": {
+    "en": "Receive enquiries with the details you need for your work",
+    "ru": "Получайте заявки с теми деталями, которые нужны для работы"
+  },
+  "subtitle": {
+    "en": "Enquiries and service bookings",
+    "ru": "Заявки и запись на услуги"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Collect contact details and requests in a form. Enquiries are saved in your project so you can work with them.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Соберите контакты и детали запроса в форме. Заявки сохранятся в проекте, чтобы вы могли с ними работать.\"}]}]}"
+  }
+}

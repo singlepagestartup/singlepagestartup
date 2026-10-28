@@ -1,0 +1,9 @@
+{
+  "id": "ee08a73d-3e04-4272-b23b-5b8eb4c96e62",
+  "createdAt": "2026-10-23T20:38:40.118Z",
+  "updatedAt": "2026-10-23T20:38:40.118Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/ecommerce/widgets-to-categories"
+}

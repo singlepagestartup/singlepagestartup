@@ -1,9 +1,9 @@
-import Link from "next/link";
-import { getLocalizedHref } from "@sps/shared-frontend-client-utils";
+import { Component as WidgetsToButtonsArrays } from "@sps/website-builder/relations/widgets-to-buttons-arrays/frontend/component";
 import { Component as WidgetLogotypes } from "@sps/website-builder/relations/widgets-to-logotypes/frontend/component";
 import type { IComponentPropsExtended } from "./interface";
+import { internationalization } from "@sps/shared-configuration";
 export function Component(props: IComponentPropsExtended) {
-  const pathname = `/${props.language || "en"}`;
+  const language = props.language || internationalization.defaultLanguage.code;
   return (
     <footer
       data-module="website-builder"
@@ -30,23 +30,51 @@ export function Component(props: IComponentPropsExtended) {
               isServer={props.isServer}
               variant="default"
               className="w-auto"
+              dataSource="props"
               data={link}
-              language={props.language || "en"}
+              language={language}
             />
           ))
         }
       </WidgetLogotypes>
-      <div className="flex flex-wrap gap-4">
-        <Link href={getLocalizedHref(pathname, "/ai-chat/projects")}>
-          Start with my files
-        </Link>
-        <Link href={getLocalizedHref(pathname, "/ai-chat/sign-in")}>
-          Sign in
-        </Link>
-        <Link href={getLocalizedHref(pathname, "/framework")}>
-          Code Framework
-        </Link>
-      </div>
+      <nav
+        aria-label={language === "ru" ? "Ссылки AI Chat" : "AI Chat links"}
+        className="flex flex-wrap gap-4"
+      >
+        <WidgetsToButtonsArrays
+          isServer={props.isServer}
+          variant="find"
+          apiProps={{
+            params: {
+              filters: {
+                and: [
+                  { column: "widgetId", method: "eq", value: props.data.id },
+                ],
+              },
+              orderBy: {
+                and: [
+                  { column: "orderIndex", method: "asc" },
+                  { column: "id", method: "asc" },
+                ],
+              },
+            },
+          }}
+        >
+          {({ data }) =>
+            data?.map((link) => (
+              <WidgetsToButtonsArrays
+                key={link.id}
+                isServer={props.isServer}
+                variant="default"
+                dataSource="props"
+                data={link}
+                language={language}
+                className="w-auto max-w-full"
+              />
+            ))
+          }
+        </WidgetsToButtonsArrays>
+      </nav>
     </footer>
   );
 }

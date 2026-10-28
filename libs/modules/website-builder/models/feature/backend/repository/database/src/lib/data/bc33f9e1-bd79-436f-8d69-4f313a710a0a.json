@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "bc33f9e1-bd79-436f-8d69-4f313a710a0a",
+  "createdAt": "2026-10-26T00:12:45.113Z",
+  "updatedAt": "2026-10-27T14:59:53.557Z",
+  "variant": "document",
+  "title": {
+    "en": "Design",
+    "ru": "Дизайн"
+  },
+  "subtitle": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"heading\",\"attrs\":{\"level\":4},\"content\":[{\"type\":\"text\",\"text\":\"Example content\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Course page: learning outcome, programme and enquiry form. After submission: confirmation and the next step.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"heading\",\"attrs\":{\"level\":4},\"content\":[{\"type\":\"text\",\"text\":\"Пример содержания\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Страница курса: результат обучения, программа и форма заявки. После отправки — подтверждение и следующий шаг.\"}]}]}"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The design describes pages, their blocks, colours and images. It shows how the project will look and what visitors will see.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Дизайн описывает страницы, их блоки, цвета и изображения. По нему можно посмотреть, как будет выглядеть проект и что увидит посетитель.\"}]}]}"
+  },
+  "adminTitle": "Дизайн",
+  "slug": "framework-reviewed-context-doc-document-four"
+}

@@ -16,10 +16,26 @@ export const defaultFooterCompactProps = {
   brand: "SinglePageStartup",
   copyright: "© 2026 SinglePageStartup",
   links: [
-    { label: "Privacy", href: "/privacy" },
-    { label: "Terms", href: "/terms" },
-    { label: "Services", href: "/ecommerce/products" },
-    { label: "Blog", href: "/blog" },
+    {
+      label: "Privacy",
+      href: "/?path=/story/modules-host-models-page-singlepage-privacy--default",
+    },
+    {
+      label: "Terms",
+      href: "/?path=/story/modules-host-models-page-singlepage-terms--default",
+    },
+    {
+      label: "Framework",
+      href: "/?path=/story/modules-host-models-page-singlepage-framework--default",
+    },
+    {
+      label: "AI Chat",
+      href: "/?path=/story/modules-host-models-page-singlepage-ai-chat--default",
+    },
+    {
+      label: "Blog",
+      href: "/?path=/story/modules-host-models-page-singlepage-blog-module-article-find--default",
+    },
   ] satisfies StudioLink[],
 };
 
@@ -29,6 +45,7 @@ export function FooterCompact(props?: IComponentProps) {
     (link) =>
       ({
         ...link,
+        target: link.href.startsWith("/?path=") ? "_top" : undefined,
         variant: "link",
       }) satisfies ButtonsArrayItem,
   );

@@ -10,7 +10,7 @@ export function Component(props: IComponentPropsExtended) {
       data-id={props.data?.id || ""}
       data-variant={props.variant}
       className={cn(
-        "w-full flex flex-col",
+        "flex min-h-screen w-full min-w-0 flex-col bg-muted text-foreground",
         props.data.className,
         props.className,
       )}
@@ -55,7 +55,7 @@ export function Component(props: IComponentPropsExtended) {
       ) : (
         props.before
       )}
-      {props.children}
+      <div className="min-w-0 w-full flex-1 pb-12">{props.children}</div>
       {props.after === undefined ? (
         <LayoutsToWidgets
           isServer={props.isServer}

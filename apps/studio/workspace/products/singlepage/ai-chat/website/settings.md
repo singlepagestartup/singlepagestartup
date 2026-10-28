@@ -6,86 +6,86 @@ review:
     product.ai-chat.website: db31acbb2f6bff59d196207b3f6245f4fc7674dbe685f71a18c890fef7e2d2cf
 ---
 
-# Settings
+# Настройки
 
 <!-- section: hero -->
 
-## Your account.
+## Ваш аккаунт
 
-Change your password, view purchases or manage account data. Choose and manage projects in [the project chat](/ai-chat/social/profiles/example).
+Измените пароль, посмотрите покупки или удалите аккаунт. Выбирать и настраивать проекты можно [в чате проекта](/ai-chat/social/profiles/example).
 
 <!-- section: account -->
 
-## Change password
+## Изменить пароль
 
-Enter your current password, then enter the new password twice.
+Введите текущий пароль, затем дважды введите новый.
 
-| Setting          | Purpose                           |
-| ---------------- | --------------------------------- |
-| Current password | Verify access to this account.    |
-| New password     | Replace the current password.     |
-| Repeat password  | Check that the two entries match. |
+| Setting          | Purpose                          |
+| ---------------- | -------------------------------- |
+| Текущий пароль   | Подтвердить доступ к аккаунту.   |
+| Новый пароль     | Задать новый пароль.             |
+| Повторите пароль | Проверить, что пароли совпадают. |
 
 <!-- section: purchases -->
 
-## Tokens and purchases
+## Токены и покупки
 
-View your current token balance, purchase history and receipts. [Buy tokens](/ai-chat/rbac/subjects/tokens) to continue a saved task when the balance restricts new paid AI requests.
+Посмотрите баланс токенов, историю покупок и чеки. [Пополните баланс](/ai-chat/rbac/subjects/tokens), чтобы продолжить сохранённую задачу, если новые платные запросы недоступны.
 
 <!-- section: privacy -->
 
-## Materials and deletion
+## Материалы и удаление данных
 
-The service sends relevant material to external AI providers for your requested work. Read [How your materials are processed and stored](/ai-chat/social/profiles/create#how-your-materials-are-processed-and-stored) before deleting your account.
+Для выполнения ваших задач сервис передаёт нужные фрагменты материалов внешним провайдерам ИИ. Перед удалением аккаунта прочитайте [об обработке и хранении материалов](/ai-chat/social/profiles/create#how-your-materials-are-processed-and-stored).
 
-Deletion removes your account and the active data the service controls across all your projects, including uploaded material, documents and conversations. Contabo backups may retain copies for up to six months; the service cannot shorten that period.
+При удалении аккаунта сервис удаляет доступные ему активные данные всех ваших проектов: загруженные материалы, документы и переписку. Резервные копии Contabo могут храниться до шести месяцев. Сервис не может сократить этот срок.
 
 <!-- section: danger -->
 
-## Delete account and project data
+## Удалить аккаунт и данные проектов
 
-Review the account and all project data that will be removed before you confirm. Choose **Cancel** to keep your account and data.
+Перед подтверждением проверьте, какой аккаунт и какие данные будут удалены. Нажмите **«Отмена»**, чтобы сохранить аккаунт и данные.
 
 <!-- section: recovery -->
 
-## When a change cannot be saved
+## Если изменения не сохраняются
 
-If a change fails, your previous setting or last saved document stays in place. Retry the change or ask for help. If deletion fails, check the result before trying again.
+Если сохранить изменение не удалось, предыдущие настройки и сохранённые документы остаются на месте. Попробуйте ещё раз или обратитесь за помощью. Если не удалось удалить аккаунт, сначала проверьте результат операции.
 
 <!-- section: success -->
 
-## Password changed
+## Пароль изменён
 
-Your new password is saved. Return to your workspace to keep working.
+Новый пароль сохранён. Вернитесь к проекту, чтобы продолжить работу.
 
 <!-- section: controls -->
 
-## Interface labels
+## Подписи интерфейса
 
-| Control                | Text                                                                                                                                              |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| back-label             | Back to workspace                                                                                                                                 |
-| back-href              | /ai-chat/social/profiles/example                                                                                                                  |
-| current-password-label | Current password                                                                                                                                  |
-| repeat-password-label  | Repeat new password                                                                                                                               |
-| password-label         | New password                                                                                                                                      |
-| save-account           | Change password                                                                                                                                   |
-| purchases-label        | View purchases and receipts                                                                                                                       |
-| purchases-empty        | No purchases yet.                                                                                                                                 |
-| account-summary-label  | Account                                                                                                                                           |
-| project-summary-label  | Projects                                                                                                                                          |
-| buy-tokens             | Buy tokens                                                                                                                                        |
-| tokens-href            | /ai-chat/rbac/subjects/tokens                                                                                                                     |
-| delete-label           | Delete account and project data                                                                                                                   |
-| deletion-title         | Delete this account and its project data?                                                                                                         |
-| deletion-description   | Deletion removes the account and active data from all your projects the service controls. Contabo backups may retain copies for up to six months. |
-| cancel                 | Cancel                                                                                                                                            |
-| confirm-delete         | Confirm deletion                                                                                                                                  |
-| deletion-message       | Deletion confirmed.                                                                                                                               |
-| retry                  | Try again                                                                                                                                         |
-| help-label             | Ask for help                                                                                                                                      |
-| help-href              | /help                                                                                                                                             |
-| success-message        | Password changed.                                                                                                                                 |
-| password-mismatch      | The new passwords do not match.                                                                                                                   |
-| password-unchanged     | Choose a password different from your current one.                                                                                                |
-| all-projects-summary   | All projects, uploaded materials, documents and conversations.                                                                                    |
+| Control                | Text                                                                                                                               |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| back-label             | К проекту                                                                                                                          |
+| back-href              | /ai-chat/social/profiles/example                                                                                                   |
+| current-password-label | Текущий пароль                                                                                                                     |
+| repeat-password-label  | Повторите новый пароль                                                                                                             |
+| password-label         | Новый пароль                                                                                                                       |
+| save-account           | Изменить пароль                                                                                                                    |
+| purchases-label        | Покупки и чеки                                                                                                                     |
+| purchases-empty        | Покупок пока нет.                                                                                                                  |
+| account-summary-label  | Аккаунт                                                                                                                            |
+| project-summary-label  | Проекты                                                                                                                            |
+| buy-tokens             | Купить токены                                                                                                                      |
+| tokens-href            | /ai-chat/rbac/subjects/tokens                                                                                                      |
+| delete-label           | Удалить аккаунт и данные проектов                                                                                                  |
+| deletion-title         | Удалить аккаунт и все его проекты?                                                                                                 |
+| deletion-description   | Будут удалены аккаунт и доступные сервису активные данные всех проектов. Резервные копии Contabo могут храниться до шести месяцев. |
+| cancel                 | Отмена                                                                                                                             |
+| confirm-delete         | Подтвердить удаление                                                                                                               |
+| deletion-message       | Удаление подтверждено.                                                                                                             |
+| retry                  | Попробовать ещё раз                                                                                                                |
+| help-label             | Обратиться за помощью                                                                                                              |
+| help-href              | /ai-chat/help                                                                                                                      |
+| success-message        | Пароль изменён.                                                                                                                    |
+| password-mismatch      | Новые пароли не совпадают.                                                                                                         |
+| password-unchanged     | Новый пароль должен отличаться от текущего.                                                                                        |
+| all-projects-summary   | Все проекты, загруженные материалы, документы и переписка.                                                                         |

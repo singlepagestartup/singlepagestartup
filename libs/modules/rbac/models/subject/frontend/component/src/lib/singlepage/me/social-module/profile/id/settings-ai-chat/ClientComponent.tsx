@@ -1,4 +1,5 @@
 "use client";
+import { internationalization } from "@sps/shared-configuration";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api as subjectApi } from "@sps/rbac/models/subject/sdk/client";
@@ -8,9 +9,14 @@ import { getProjectsQueryKey } from "../chat/id/thread/id/ai-chat/utils";
 import type { IClientComponentProps } from "./interface";
 
 export function Component(props: IClientComponentProps) {
+  const language = props.language || internationalization.defaultLanguage.code;
+  const ru = language === "ru";
   const { project } = props;
   const router = useRouter();
-  const savedName = project.profile.title?.en || project.profile.adminTitle;
+  const savedName =
+    project.profile.title?.[language] ||
+    project.profile.title?.en ||
+    project.profile.adminTitle;
   const [name, setName] = useState(savedName);
   const [status, setStatus] = useState("");
   const scope = {
@@ -26,8 +32,12 @@ export function Component(props: IClientComponentProps) {
   return (
     <div className="min-w-0 flex-1">
       <header className="border-b border-border p-5">
-        <p className="text-xs text-muted-foreground">Project</p>
-        <h1 className="mt-1 text-base font-semibold">Project settings</h1>
+        <p className="text-xs text-muted-foreground">
+          {ru ? "Проект" : "Project"}
+        </p>
+        <h1 className="mt-1 text-base font-semibold">
+          {ru ? "Настройки проекта" : "Project settings"}
+        </h1>
       </header>
       <form
         className="p-5"
@@ -39,7 +49,7 @@ export function Component(props: IClientComponentProps) {
               ...scope,
               data: {
                 adminTitle: name.trim(),
-                title: { ...project.profile.title, en: name.trim() },
+                title: { ...project.profile.title, [language]: name.trim() },
               },
             });
             await queryClient.invalidateQueries({
@@ -52,13 +62,15 @@ export function Component(props: IClientComponentProps) {
             await queryClient.invalidateQueries({
               queryKey: getProjectsQueryKey(scope.id),
             });
-            setStatus("Project name saved");
+            setStatus(ru ? "Название проекта сохранено" : "Project name saved");
             router.refresh();
           } catch (error) {
             setStatus(
               error instanceof Error
                 ? error.message
-                : "Could not save the project name",
+                : ru
+                  ? "Не удалось сохранить название проекта"
+                  : "Could not save the project name",
             );
           }
         }}
@@ -67,7 +79,7 @@ export function Component(props: IClientComponentProps) {
           htmlFor="project-settings-name"
           className="text-sm font-semibold"
         >
-          Project name
+          {ru ? "Название проекта" : "Project name"}
         </label>
         <div className="mt-3 flex flex-wrap gap-3">
           <input
@@ -82,7 +94,13 @@ export function Component(props: IClientComponentProps) {
             disabled={update.isPending || !name.trim() || name === savedName}
             className="min-h-11 rounded-xl bg-primary text-primary-foreground px-5 text-sm font-semibold disabled:opacity-50"
           >
-            {update.isPending ? "Saving…" : "Save name"}
+            {update.isPending
+              ? ru
+                ? "Сохраняем…"
+                : "Saving…"
+              : ru
+                ? "Сохранить название"
+                : "Save name"}
           </button>
         </div>
         {status && (

@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "3a3279e3-5a37-4a47-b312-2e7cda0e22dd",
+  "createdAt": "2026-10-24T01:06:05.557Z",
+  "updatedAt": "2026-10-24T01:06:05.557Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Knowledge",
+    "ru": "Knowledge"
+  },
+  "subtitle": {
+    "en": "Business",
+    "ru": "Бизнес"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Editable Sources, their attached Files and derived Chunks for scoped retrieval.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Редактируемые Sources, прикреплённые Files и производные Chunks для поиска в заданной области.\"}]}]}"
+  },
+  "adminTitle": "Knowledge",
+  "slug": "framework-journey-module-knowledge"
+}

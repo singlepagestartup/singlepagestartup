@@ -16,6 +16,7 @@ it("edits confirmed notes without exposing delimiters or overwriting file analys
   const onSave = jest.fn().mockResolvedValue("Saved");
   render(
     <Component
+      language="en"
       {...({
         isServer: false,
         variant: "id-ai-chat",

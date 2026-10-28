@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Build on your project knowledge and use it in your work",
+    "ru": "Дополняйте знания о проекте и используйте их в работе"
+  },
+  "subtitle": {
+    "en": "Your business in digital form",
+    "ru": "Ваш бизнес в цифровом виде"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Your idea, business description, customer information, features and design are saved in project documents. Return to them, add details and use them in new tasks. You will not have to explain what you are creating to the AI assistant every time.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Идея, описание бизнеса, сведения о клиентах, функции и оформление сохраняются в документах проекта. Возвращайтесь к ним, дополняйте и используйте в новых задачах. Вам не придётся каждый раз заново объяснять ИИ-помощнику, что вы создаёте.\"}]}]}"
+  },
+  "anchor": "cf-chat",
+  "className": "",
+  "id": "296a384b-520a-4793-9d0e-150885a476e3",
+  "createdAt": "2026-10-26T00:12:37.434Z",
+  "updatedAt": "2026-10-27T14:58:53.311Z",
+  "variant": "content-project-context",
+  "adminTitle": "Дополняйте знания о проекте и используйте их в работе",
+  "slug": "framework-reviewed-context"
+}

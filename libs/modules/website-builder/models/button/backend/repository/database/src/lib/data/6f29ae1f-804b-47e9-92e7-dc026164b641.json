@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Blog",
+    "ru": "Блог"
+  },
+  "subtitle": {},
+  "url": "/blog",
+  "className": "w-fit",
+  "id": "6f29ae1f-804b-47e9-92e7-dc026164b641",
+  "createdAt": "2026-10-24T01:06:19.613Z",
+  "updatedAt": "2026-10-24T01:06:19.613Z",
+  "variant": "ghost",
+  "adminTitle": "Blog",
+  "slug": "framework-journey-navbar-2-0"
+}

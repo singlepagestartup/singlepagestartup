@@ -1,0 +1,16 @@
+{
+  "title": {
+    "en": "Navigation",
+    "ru": "Навигация"
+  },
+  "subtitle": {},
+  "description": {},
+  "anchor": "",
+  "className": "",
+  "id": "c653437a-9166-4dfa-9bdc-cf8a5539b5dc",
+  "createdAt": "2026-10-24T01:06:18.874Z",
+  "updatedAt": "2026-10-24T01:06:18.874Z",
+  "variant": "navbar-default",
+  "adminTitle": "Navigation",
+  "slug": "framework-journey-navbar"
+}

@@ -134,6 +134,7 @@ it.each([
     <QueryClientProvider client={queryClient}>
       <CookiesProvider cookies={new Cookies({})}>
         <Component
+          language="ru"
           variant="authentication-email-and-password-form-ai-chat"
           mode={mode}
         />
@@ -156,6 +157,7 @@ it("renders the registered form entrypoint in its explicitly selected mode", () 
   render(
     <QueryClientProvider client={queryClient}>
       <PublicForm
+        language="en"
         isServer={false}
         variant="authentication-email-and-password-form-ai-chat"
         mode="forgot-password"
@@ -209,6 +211,7 @@ it.each([
             }
           </Client>
           <Component
+            language="en"
             variant="authentication-email-and-password-form-ai-chat"
             mode={mode}
           />

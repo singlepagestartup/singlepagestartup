@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "009e4a80-ce24-484e-9860-fcc11b854546",
+  "createdAt": "2026-10-24T01:06:02.467Z",
+  "updatedAt": "2026-10-24T01:06:02.467Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Ecommerce",
+    "ru": "Ecommerce"
+  },
+  "subtitle": {
+    "en": "Business",
+    "ru": "Бизнес"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Products, attributes, categories, carts and orders.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Товары, атрибуты, категории, корзины и заказы.\"}]}]}"
+  },
+  "adminTitle": "Ecommerce",
+  "slug": "framework-journey-module-ecommerce"
+}

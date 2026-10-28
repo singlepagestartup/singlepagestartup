@@ -83,7 +83,8 @@ export function isSeoIndexablePage(props: { url: string }): boolean {
       return SEO_PUBLIC_ROUTE_COLLECTIONS.some((collection) => {
         const paginationPrefix = `${collection}.:pagination:`;
         return (
-          match[1] === `${collection}.slug` ||
+          (collection !== "social.profiles" &&
+            match[1] === `${collection}.slug`) ||
           match[1] === `${collection}.id` ||
           (match[1].startsWith(paginationPrefix) &&
             /^[1-9]\d*$/.test(match[1].slice(paginationPrefix.length)))

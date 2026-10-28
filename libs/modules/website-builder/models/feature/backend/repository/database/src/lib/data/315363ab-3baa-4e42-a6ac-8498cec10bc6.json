@@ -1,0 +1,18 @@
+{
+  "className": "",
+  "id": "315363ab-3baa-4e42-a6ac-8498cec10bc6",
+  "createdAt": "2026-10-24T01:05:48.303Z",
+  "updatedAt": "2026-10-24T01:05:48.303Z",
+  "variant": "definition-item",
+  "title": {
+    "en": "Project materials",
+    "ru": "Материалы проекта"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Knowledge stores editable sources and supports retrieval from the material a person supplies.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Knowledge хранит редактируемые источники и поддерживает поиск по добавленным материалам.\"}]}]}"
+  },
+  "adminTitle": "Project materials",
+  "slug": "framework-journey-module-group-3"
+}

@@ -92,15 +92,15 @@ export function SubjectMeInformation(props?: IComponentProps) {
       </div>
 
       <div className="mt-6 grid min-w-0 gap-5 border-t border-border pt-6 sm:grid-cols-2">
-        <MetadataValue label="Subject ID" mono value={subject.id} />
-        <MetadataValue label="Slug" value={subject.slug} />
-        <MetadataValue label="Variant" value={subject.variant} />
+        <MetadataValue label="ID аккаунта" mono value={subject.id} />
+        <MetadataValue label="Адрес профиля" value={subject.slug} />
+        <MetadataValue label="Вариант" value={subject.variant} />
         <MetadataValue
-          label="Created"
+          label="Создан"
           value={formatRbacDateTime(subject.createdAt)}
         />
         <MetadataValue
-          label="Updated"
+          label="Обновлён"
           value={formatRbacDateTime(subject.updatedAt)}
         />
       </div>
@@ -110,6 +110,6 @@ export function SubjectMeInformation(props?: IComponentProps) {
 const Shield = createIcon("shield");
 export const defaultSubjectMeInformationProps: SubjectMeInformationProps = {
   subject: defaultRbacSubject,
-  title: "Account details",
-  description: "Identifiers and dates for your account.",
+  title: "Данные аккаунта",
+  description: "Идентификаторы и даты вашего аккаунта.",
 };

@@ -16,6 +16,15 @@ export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/website-builder/buttons";
 export const variants = [
   "hidden",
+  "action-outline-inverse",
+  "footer-link",
+  "navigation-inverse",
+  "navigation",
+  "action",
+  "action-inverse",
+  "repository",
+  "repository-link",
+  "text-action",
   "default",
   "destructive",
   "primary",

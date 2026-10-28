@@ -1,7 +1,9 @@
 import type { ReactNode } from "react";
-import type { IComponentPropsExtended as IParentExtended } from "@sps/shared-frontend-components/singlepage/default/interface";
+import {
+  type IComponentPropsExtended as IParentExtended,
+  type IComponentProps as IParent,
+} from "@sps/shared-frontend-components/singlepage/default/interface";
 import type { IModel } from "@sps/rbac/models/widget/sdk/model";
-import type { IComponentProps as IParent } from "@sps/shared-frontend-components/singlepage/default/interface";
 
 export const variant =
   "subject-me-social-module-profile-create-ai-chat" as const;
@@ -17,6 +19,7 @@ export interface IProjectSummary {
   href: string;
 }
 export interface IProjectsOverviewProps {
+  language?: string;
   variant?: typeof variant;
   projects: IProjectSummary[];
   pending?: boolean;
@@ -26,4 +29,10 @@ export interface IProjectsOverviewProps {
   onCancel?: () => void;
   onRetry?: () => void;
   children?: ReactNode;
+}
+
+export interface IProjectCardProps {
+  project: IProjectSummary;
+  variant: string;
+  language: string;
 }

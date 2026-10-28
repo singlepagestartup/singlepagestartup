@@ -1,0 +1,18 @@
+{
+  "className": "",
+  "id": "4e9e33af-778a-4bc1-bd2f-96d87581ec86",
+  "createdAt": "2026-10-24T01:05:52.683Z",
+  "updatedAt": "2026-10-24T01:05:52.683Z",
+  "variant": "dropdown",
+  "title": {
+    "en": "Can I get help?",
+    "ru": "Где получить помощь?"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Use GitHub to ask questions or suggest improvements. Help and maintenance are provided as time permits.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Задавайте вопросы и предлагайте улучшения на GitHub. Помощь и сопровождение предоставляются по мере возможности.\"}]}]}"
+  },
+  "adminTitle": "Can I get help?",
+  "slug": "framework-journey-faq-5"
+}

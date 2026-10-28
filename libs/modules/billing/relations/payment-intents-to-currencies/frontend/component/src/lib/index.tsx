@@ -3,6 +3,13 @@ import { IComponentProps } from "./interface";
 import { variants } from "./variants";
 
 export function Component(props: IComponentProps) {
+  if (
+    shouldHideRecord(
+      "data" in props ? props.data : undefined,
+      (props as any).variant,
+    )
+  )
+    return null;
   const Comp = variants[(props as any).variant as keyof typeof variants];
 
   if (!Comp) {

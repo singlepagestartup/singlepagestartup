@@ -16,6 +16,7 @@ export interface IComponentPropsExtended
   extends IParentExtended<IModel, typeof variant, IComponentProps> {}
 
 export interface IWorkspaceNoticeProps {
+  language?: string;
   embedded?: boolean;
   state: "sign-in-required" | "access-denied" | "error";
   message?: string;
@@ -28,4 +29,10 @@ export interface IClientComponentProps extends IComponentPropsExtended {
   socialModuleProfileId?: string;
   socialModuleChatId?: string;
   socialModuleThreadId?: string;
+}
+
+export interface IWorkspaceSkeletonProps {
+  language?: string;
+  stage?: "checking-session" | "loading-projects" | "loading-chat";
+  embedded?: boolean;
 }

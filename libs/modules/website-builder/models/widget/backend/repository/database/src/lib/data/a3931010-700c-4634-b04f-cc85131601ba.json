@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Module structure",
+    "ru": "Устройство модуля"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Payment Intent stores the amount, currency, status and period information. Invoice stores invoice details and the provider's payment link. Currency defines project currencies. A payment and an order are related but distinct records.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Payment Intent хранит сумму, валюту, статус и сведения о периоде. Invoice содержит сведения о счёте и ссылку на оплату у провайдера. Currency задаёт валюты проекта. Платёж не равен заказу: это связанные записи.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "a3931010-700c-4634-b04f-cc85131601ba",
+  "createdAt": "2026-10-26T00:11:28.014Z",
+  "updatedAt": "2026-10-27T14:59:11.131Z",
+  "variant": "content-rich",
+  "adminTitle": "Устройство модуля",
+  "slug": "framework-reviewed-article-billing-technical"
+}

@@ -1,24 +1,31 @@
 "use client";
-import { type ReactNode as ReactNode } from "react";
-import { useContext as useContext } from "react";
-import { createContext as createContext } from "react";
+import {
+  type ReactNode as ReactNode,
+  useContext as useContext,
+  createContext as createContext,
+  forwardRef as forwardRefControl,
+  type ButtonHTMLAttributes as ButtonControlProps,
+  useId,
+  useState,
+} from "react";
+
 import { twMerge as twMerge } from "tailwind-merge";
 import Markdown from "markdown-to-jsx";
 import { Component as WebsiteBuilderModuleButton } from "../../../../../../website-builder/button/index";
-import {
-  forwardRef as forwardRefControl,
-  type ButtonHTMLAttributes as ButtonControlProps,
-} from "react";
+
 import IconGlyphs from "../../../../../../website-builder/feature/singlepage/icon/icons.json";
-import { IWebsiteSection as IWebsiteSection } from "../../../../../../website-builder/widget/singlepage/content/ai-chat/content";
-import { IAIChatServicePageContent as IAIChatServicePageContentPresentation } from "../../../../../../website-builder/widget/singlepage/content/ai-chat/content";
-import { useId, useState } from "react";
+import {
+  IWebsiteSection as IWebsiteSection,
+  IAIChatServicePageContent as IAIChatServicePageContentPresentation,
+  type IAIChatServicePageContent,
+} from "../../../../../../website-builder/widget/singlepage/content/ai-chat/content";
+
 import {
   useAIChatAccount,
   useAIChatProjectHref,
 } from "../../../../../../rbac/subject/singlepage/account/Account";
 import defaultCopy from "./content.json";
-import type { IAIChatServicePageContent } from "../../../../../../website-builder/widget/singlepage/content/ai-chat/content";
+
 function PageIntro({ section }: { section: IWebsiteSection }) {
   return (
     <div className="mb-8 max-w-2xl">
@@ -363,7 +370,7 @@ export function Component({ copy = defaultCopy }: ITokensProps = {}) {
   const amount = price ? Number(price.title) : 0;
   const rate = price ? Number(price.text) : 0;
   const number = (value: number) =>
-    value.toLocaleString("en-US", { maximumFractionDigits: 2 });
+    value.toLocaleString("ru-RU", { maximumFractionDigits: 0 });
   return (
     <ServicePage copy={copy} projectHref={projectHref}>
       <div className="grid min-w-0 items-start gap-6 @[900px]:grid-cols-[minmax(0,1fr)_320px]">
@@ -388,22 +395,12 @@ export function Component({ copy = defaultCopy }: ITokensProps = {}) {
                 </p>
               </div>
             </div>
-            <dl className="mt-5 grid grid-cols-2 gap-4 border-t border-white/15 pt-5">
-              {[
-                [labels["free-balance-label"], aiChatAccount.balance?.free],
-                [
-                  labels["paid-balance-label"],
-                  aiChatAccount.balance?.purchased,
-                ],
-              ].map(([label, balance]) => (
-                <div key={label}>
-                  <dt className="text-xs text-white/70">{label}</dt>
-                  <dd className="mt-2 text-2xl font-semibold">
-                    {typeof balance === "number" ? number(balance) : "—"}
-                  </dd>
-                </div>
-              ))}
-            </dl>
+            <div className="mt-5 space-y-2 border-t border-white/15 pt-5">
+              <p className="text-sm font-medium">{labels["balance-source"]}</p>
+              <p className="text-xs leading-5 text-white/70">
+                {labels["balance-scope-note"]}
+              </p>
+            </div>
           </section>
           <PageSection section={sections.packages} icon="plus">
             <fieldset>
@@ -462,7 +459,7 @@ export function Component({ copy = defaultCopy }: ITokensProps = {}) {
             <div className="flex items-center justify-between gap-3">
               <dt className={kit.muted}>{labels["token-amount-label"]}</dt>
               <dd className="text-right font-semibold">
-                {selected ? `≈ ${number(amount / rate)}` : "—"}
+                {selected ? `≈ ${number(Math.round(amount / rate))}` : "—"}
               </dd>
             </div>
             <div className="flex items-center justify-between gap-3">

@@ -16,6 +16,7 @@ export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/blog/widgets";
 export const variants = [
   "hidden",
+  "article-feed-default",
   "default",
   "article-list-default",
   "article-overview-default",

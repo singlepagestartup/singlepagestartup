@@ -1,4 +1,8 @@
-import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
+import {
+  INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
+  RBAC_JWT_SECRET,
+  RBAC_SECRET_KEY,
+} from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import * as jwt from "hono/jwt";
@@ -55,6 +59,14 @@ export class Handler {
       }
 
       const productId = data["productId"];
+      const product = await this.service.ecommerceModule.product.findById({
+        id: productId,
+      });
+      if (!product) throw new Error("Not Found error. Product not found");
+      if (product.slug === INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG)
+        throw new Error(
+          "Permission error. Initial Free is available only through authentication bootstrap",
+        );
       let billingModuleCurrencyId = data["billingModule"]?.currency?.id;
 
       let storeId = data.storeId;

@@ -1,10 +1,13 @@
 import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
+import { Component as SubjectMeBlogModuleArticleCreate } from "./subject/me/blog-module/article/create";
+import { Component as SubjectMeCrmModuleFormRequestCreate } from "./subject-me-crm-module-form-request-create";
 import { Component as SubjectMeSocialModuleProfileChatOverviewDefault } from "./subject/me/social-module/profile/chat/overview-default";
 import { Component as SubjectMeSocialModuleProfileChatListDefault } from "./subject/me/social-module/profile/chat/list-default";
 import { Component as SubjectMeEcommerceModuleStoreOverviewDefault } from "./subject-me-ecommerce-module-store-overview-default";
 import { Component as SubjectMeEcommerceModuleCategoryOverviewDefault } from "./subject-me-ecommerce-module-category-overview-default";
 import { Component as SubjectMeEcommerceModuleProductOverviewDefault } from "./subject-me-ecommerce-module-product-overview-default";
 import { Component as SubjectMeEcommerceModuleProductListDefault } from "./subject-me-ecommerce-module-product-list-default";
+import { Component as SubjectMeEcommerceModuleTokenFind } from "./subject-me-ecommerce-module-token-find";
 import { Component as SubjectEcommerceOrder } from "./subject-ecommerce-order";
 import { Component as SubjectEcommerceProductListDefault } from "./subject-ecommerce-product-list-default";
 import { Component as SubjectMeCrmModuleFormSupportAiChat } from "./subject-me-crm-module-form-support-ai-chat";
@@ -43,6 +46,9 @@ import { Component as SubjectListDefault } from "./subject/list/default";
 
 export const variants = {
   hidden: Hidden,
+  "subject-me-blog-module-article-create": SubjectMeBlogModuleArticleCreate,
+  "subject-me-crm-module-form-request-create":
+    SubjectMeCrmModuleFormRequestCreate,
   "subject-me-social-module-profile-chat-overview-default":
     SubjectMeSocialModuleProfileChatOverviewDefault,
   "subject-me-social-module-profile-chat-list-default":
@@ -55,6 +61,7 @@ export const variants = {
     SubjectMeEcommerceModuleProductOverviewDefault,
   "subject-me-ecommerce-module-product-list-default":
     SubjectMeEcommerceModuleProductListDefault,
+  "subject-me-ecommerce-module-token-find": SubjectMeEcommerceModuleTokenFind,
   "subject-ecommerce-order": SubjectEcommerceOrder,
   "subject-ecommerce-product-list-default": SubjectEcommerceProductListDefault,
   "subject-me-crm-module-form-support-ai-chat":

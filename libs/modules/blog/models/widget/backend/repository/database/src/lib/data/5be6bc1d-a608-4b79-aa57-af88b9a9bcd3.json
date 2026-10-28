@@ -1,0 +1,15 @@
+{
+  "id": "5be6bc1d-a608-4b79-aa57-af88b9a9bcd3",
+  "className": null,
+  "createdAt": "2026-10-22T20:30:17.157Z",
+  "updatedAt": "2026-10-22T20:30:17.157Z",
+  "variant": "article-overview-with-private-content-default",
+  "adminTitle": "Framework audit — authorized article composition",
+  "slug": "framework-private-content-audit-overview",
+  "title": {
+    "en": "Subscriber article example",
+    "ru": "Пример статьи для подписчиков"
+  },
+  "subtitle": {},
+  "description": {}
+}

@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Keep the decisions with the development task.",
+    "ru": "Передайте решения вместе с задачей на разработку."
+  },
+  "subtitle": {
+    "en": "Your reviewed documents are the starting material.",
+    "ru": "Начните с проверенных документов."
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Attach the customer, offer, business rules, page description and visual references your coding agent needs. Keep open questions visible and choose what to build first.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Приложите описание клиента, предложения, бизнес-правил, страницы и визуальные референсы для coding agent. Сохраните открытые вопросы и выберите, что разрабатывать первым.\"}]}]}"
+  },
+  "anchor": "development-handoff",
+  "className": "",
+  "id": "74577672-c00f-4282-9e38-acf80d73b0bc",
+  "createdAt": "2026-10-24T01:05:51.570Z",
+  "updatedAt": "2026-10-24T01:05:51.570Z",
+  "variant": "content-offer",
+  "adminTitle": "Keep the decisions with the development task.",
+  "slug": "framework-journey-handoff"
+}

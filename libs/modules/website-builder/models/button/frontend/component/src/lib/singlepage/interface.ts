@@ -1,4 +1,13 @@
 import { IComponentProps as IHiddenComponentProps } from "@sps/shared-frontend-components/singlepage/hidden/interface";
+import type { IComponentProps as IActionOutlineInverse } from "./action-outline-inverse/interface";
+import type { IComponentProps as IFooterLink } from "./footer-link/interface";
+import type { IComponentProps as INavigationInverse } from "./navigation-inverse/interface";
+import type { IComponentProps as INavigation } from "./navigation/interface";
+import type { IComponentProps as IAction } from "./action/interface";
+import type { IComponentProps as IActionInverse } from "./action-inverse/interface";
+import type { IComponentProps as IRepository } from "./repository/interface";
+import type { IComponentProps as IRepositoryLink } from "./repository-link/interface";
+import type { IComponentProps as ITextAction } from "./text-action/interface";
 import { IComponentProps as IAdminV2SidebarItemComponentProps } from "./admin-v2/sidebar-item/interface";
 import { IComponentProps as IAdminV2CardComponentProps } from "./admin-v2/card/interface";
 import { IComponentProps as IAdminV2FormComponentProps } from "./admin-v2/form/interface";
@@ -21,6 +30,15 @@ import { IComponentProps as IChildrenComponentProps } from "./children/interface
 
 export type IComponentProps =
   | IHiddenComponentProps
+  | IActionOutlineInverse
+  | IFooterLink
+  | INavigationInverse
+  | INavigation
+  | IAction
+  | IActionInverse
+  | IRepository
+  | IRepositoryLink
+  | ITextAction
   | IFindComponentProps
   | IAdminTableRowComponentProps
   | IAdminTableComponentProps

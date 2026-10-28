@@ -1,15 +1,15 @@
 {
   "labels": {
-    "submit": "Send request",
-    "edit-request": "Edit request",
-    "return-label": "Return to workspace",
+    "submit": "Отправить обращение",
+    "edit-request": "Изменить обращение",
+    "return-label": "Вернуться к проекту",
     "return-href": "/ai-chat/social/profiles/example",
-    "topic-error": "Choose a topic.",
-    "details-error": "Describe what happened.",
-    "result-error": "Tell us what result you need.",
-    "success-message": "Support request submitted."
+    "topic-error": "Выберите тему обращения.",
+    "details-error": "Опишите, что произошло.",
+    "result-error": "Укажите, какой результат нужен.",
+    "success-message": "Обращение в поддержку сохранено."
   },
   "successParagraphs": [
-    "We’ll respond within 24 hours. You can keep working in your workspace while you wait."
+    "Обращение сохранено. Пока его рассматривают, вы можете продолжать работу. Сохранение обращения не подтверждает доставку уведомления по электронной почте."
   ]
 }

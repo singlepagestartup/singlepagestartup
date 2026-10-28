@@ -1,0 +1,14 @@
+{
+  "id": "22b000b9-bbb2-4b5a-8e28-99e4778772bd",
+  "createdAt": "2026-10-27T08:41:00.286Z",
+  "updatedAt": "2026-10-27T08:41:00.286Z",
+  "variant": "navigation-inline",
+  "className": "",
+  "title": {
+    "en": "navbar",
+    "ru": "navbar"
+  },
+  "description": {},
+  "adminTitle": "AI Chat: navbar",
+  "slug": "ai-chat-editable-navbar-actions"
+}

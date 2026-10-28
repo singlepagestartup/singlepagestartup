@@ -1,3 +1,6 @@
+import type { ReactNode } from "react";
+import type { GalleryImage } from "../gallery/interface";
+import type { ProductCardCategory } from "../card/interface";
 import type { ProductOverviewCtaProps } from "../overview-cta/interface";
 
 import type { ProductOverviewPurchaseProps } from "../overview-purchase/interface";
@@ -39,6 +42,9 @@ export interface ProductOverviewRelatedProduct {
 export interface ProductOverviewDefaultProps {
   variant?: "overview-default";
   hero: ProductOverviewHero;
+  descriptionContent?: ReactNode;
+  gallery?: GalleryImage[];
+  categories?: ProductCardCategory[];
   stats: ProductOverviewStat[];
   related: ProductOverviewRelatedProduct[];
   purchase: Partial<ProductOverviewPurchaseProps>;

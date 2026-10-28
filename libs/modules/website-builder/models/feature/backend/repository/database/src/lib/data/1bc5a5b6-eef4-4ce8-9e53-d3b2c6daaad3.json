@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "1bc5a5b6-eef4-4ce8-9e53-d3b2c6daaad3",
+  "createdAt": "2026-10-24T01:05:50.558Z",
+  "updatedAt": "2026-10-24T01:05:50.558Z",
+  "variant": "step",
+  "title": {
+    "en": "Open and run the code",
+    "ru": "Откройте и запустите код"
+  },
+  "subtitle": {
+    "en": "02",
+    "ru": "02"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Give the documents and repository to Claude Code or Codex Desktop. Ask it to run the project locally.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Передайте документы и репозиторий Claude Code или Codex Desktop. Попросите запустить проект локально.\"}]}]}"
+  },
+  "adminTitle": "Open and run the code",
+  "slug": "framework-journey-setup-step-1"
+}

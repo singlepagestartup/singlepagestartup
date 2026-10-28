@@ -9,12 +9,8 @@
     "jest:test": {},
     "jest:integration": {
       "executor": "@nx/jest:jest",
-      "outputs": [
-        "{projectRoot}/coverage"
-      ],
-      "inputs": [
-        "{projectRoot}"
-      ],
+      "outputs": ["{projectRoot}/coverage"],
+      "inputs": ["{projectRoot}"],
       "options": {
         "jestConfig": "libs/modules/blog/jest.integration.config.ts",
         "passWithNoTests": true
@@ -92,6 +88,9 @@
           },
           {
             "command": "nx run @sps/blog:relations:widgets-to-categories:repository-generate"
+          },
+          {
+            "command": "nx run @sps/blog:relations:widgets-to-website-builder-module-widgets:repository-generate"
           }
         ]
       }
@@ -143,6 +142,9 @@
           },
           {
             "command": "nx run @sps/blog:relations:widgets-to-categories:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/blog:relations:widgets-to-website-builder-module-widgets:repository-migrate"
           }
         ]
       }
@@ -430,6 +432,35 @@
         "parallel": false,
         "envFile": "apps/api/.env",
         "cwd": "libs/modules/blog/relations/widgets-to-categories/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "relations:widgets-to-website-builder-module-widgets:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/blog/relations/widgets-to-website-builder-module-widgets/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "relations:widgets-to-website-builder-module-widgets:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/blog/relations/widgets-to-website-builder-module-widgets/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"

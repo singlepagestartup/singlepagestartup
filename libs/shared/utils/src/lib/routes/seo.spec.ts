@@ -55,6 +55,7 @@ describe("SEO URL policy", () => {
     "/admin-guide",
     "/blog/articles/[blog.articles.slug]",
     "/catalog/[ecommerce.products.slug]",
+    "/authors/[social.profiles.id]",
     "/blog/[blog.articles.:pagination:10]",
   ])("allows public Page %s", (url) => {
     expect(isSeoIndexablePage({ url })).toBe(true);
@@ -66,6 +67,7 @@ describe("SEO URL policy", () => {
     "/ai-chat/projects",
     "/ecommerce/orders/123",
     "/social/chats/[social.chats.id]",
+    "/authors/[social.profiles.slug]",
     "/blog/[blog.articles.:pagination:0]",
     "/blog/[blog.articles.:pagination:10suffix]",
     "/blog/[blogXarticles.:pagination:10]",

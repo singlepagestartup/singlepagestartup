@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Separate operations from presentation",
+    "ru": "Разделите операцию и оформление"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The domain Widget owns the user, forms, data mutations and operation state. The Website Builder Widget owns text, images, layout and slots. The domain Widget reads an exact saved presentation relation and supplies rendered content through its \"},{\"type\":\"text\",\"text\":\"default\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\".\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"A relation stores IDs, ordering and references. It does not choose a business screen or create a payment form. A lower module receives rendered JSX in a slot when dependency order prevents it from importing the operation's owner.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Доменный Widget отвечает за пользователя, формы, изменения данных и состояние операции. Website Builder Widget — за тексты, изображения, раскладку и слоты. Доменный Widget читает точную сохранённую связь с оформлением и передаёт в него готовое содержимое через renderer связи \"},{\"type\":\"text\",\"text\":\"default\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\".\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Связь хранит идентификаторы, порядок и ссылки. Она не выбирает экран бизнеса и не создаёт форму оплаты. Нижележащий модуль принимает готовый JSX в слот, когда не может импортировать владельца операции по порядку зависимостей.\"}]}]}"
+  },
+  "anchor": "ru-section-nextjs-server-client-readers-and-widget-slots-7",
+  "className": "",
+  "id": "4636324f-de3d-4c83-a1b2-6856cc2bf061",
+  "createdAt": "2026-10-26T07:34:00.939Z",
+  "updatedAt": "2026-10-27T14:58:57.379Z",
+  "variant": "content-rich",
+  "adminTitle": "Разделите операцию и оформление",
+  "slug": "ru-section-nextjs-server-client-readers-and-widget-slots-7"
+}

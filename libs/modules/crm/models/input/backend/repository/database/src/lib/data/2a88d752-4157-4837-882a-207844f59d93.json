@@ -1,0 +1,22 @@
+{
+  "id": "2a88d752-4157-4837-882a-207844f59d93",
+  "createdAt": "2026-10-15T13:47:45.450Z",
+  "updatedAt": "2026-10-15T13:47:45.450Z",
+  "variant": "textarea-default",
+  "type": "string",
+  "isRequired": true,
+  "title": {
+    "en": "What happened?"
+  },
+  "subtitle": {},
+  "description": {},
+  "className": null,
+  "adminTitle": "What happened?",
+  "slug": "ai-chat-support-3d00218e-2511-4526-8cc0-f8913faf4c0f-details",
+  "placeholder": {
+    "en": "Describe what you tried and what happened."
+  },
+  "label": {
+    "en": "What happened?"
+  }
+}

@@ -1,4 +1,5 @@
 import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
+import { Component as Wordmark } from "./wordmark";
 import { Component as BrandAiChat } from "./brand-ai-chat";
 import { Component as AdminV2SidebarItem } from "./admin-v2/sidebar-item";
 import { Component as AdminV2Card } from "./admin-v2/card";
@@ -15,6 +16,7 @@ import { Component as Default } from "./default";
 
 export const variants = {
   hidden: Hidden,
+  wordmark: Wordmark,
   "brand-ai-chat": BrandAiChat,
   find: Find,
   "admin-table-row": AdminTableRow,

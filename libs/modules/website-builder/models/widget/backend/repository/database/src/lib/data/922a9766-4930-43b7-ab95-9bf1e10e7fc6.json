@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Buying a place at a workshop",
+    "ru": "Покупка места на мастер-классе"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"A visitor chose a class costing 2,900 RUB. The project creates an invoice and sends them to the payment page. See what changes before payment and after confirmation.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Before launch, you need an account with a supported payment service and a configured connection. Material access, subscriptions and refunds follow rules defined for your product. This mockup does not accept money.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Посетитель выбрал занятие за 2 900 рублей. Проект выставляет счёт и направляет его на платёжную страницу. Посмотрите, что меняется до оплаты и после подтверждения.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Перед запуском нужен аккаунт в поддерживаемом платёжном сервисе и настройка его подключения. Правила выдачи материалов, подписки и возвратов задаются для вашего продукта. Макет не принимает деньги.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "922a9766-4930-43b7-ab95-9bf1e10e7fc6",
+  "createdAt": "2026-10-26T00:11:26.582Z",
+  "updatedAt": "2026-10-27T14:59:08.298Z",
+  "variant": "content-rich",
+  "adminTitle": "Покупка места на мастер-классе",
+  "slug": "framework-reviewed-article-billing-example"
+}

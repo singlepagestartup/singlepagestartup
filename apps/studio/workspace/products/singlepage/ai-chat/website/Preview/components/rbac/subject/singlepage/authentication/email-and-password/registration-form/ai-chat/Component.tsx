@@ -1,25 +1,36 @@
 "use client";
-import { type ReactNode as ReactNode } from "react";
-import { createContext as createContext } from "react";
-import { useContext as useContext } from "react";
-import { twMerge as twMerge } from "tailwind-merge";
-import Markdown from "markdown-to-jsx";
-import { type ImgHTMLAttributes as ImgHTMLAttributes } from "react";
-import { twMerge as twMergePresentation } from "tailwind-merge";
-import { type InputHTMLAttributes as InputHTMLAttributes } from "react";
-import { useId as useIdPresentation } from "react";
-import { useState as useStatePresentation } from "react";
-import { Component as WebsiteBuilderModuleButton } from "../../../../../../../website-builder/button/index";
 import {
+  type ReactNode as ReactNode,
+  createContext as createContext,
+  useContext as useContext,
+  type ImgHTMLAttributes as ImgHTMLAttributes,
+  type InputHTMLAttributes as InputHTMLAttributes,
+  useId as useIdPresentation,
+  useState as useStatePresentation,
   forwardRef as forwardRefControl,
   type ButtonHTMLAttributes as ButtonControlProps,
+  useId,
+  useState,
+  type FormEvent,
 } from "react";
+
+import {
+  twMerge as twMerge,
+  twMerge as twMergePresentation,
+} from "tailwind-merge";
+import Markdown from "markdown-to-jsx";
+
+import { Component as WebsiteBuilderModuleButton } from "../../../../../../../website-builder/button/index";
+
 import IconGlyphs from "../../../../../../../website-builder/feature/singlepage/icon/icons.json";
-import { IAIChatServicePageContent as IAIChatServicePageContentPresentation } from "../../../../../../../website-builder/widget/singlepage/content/ai-chat/content";
-import { IWebsiteSection as IWebsiteSection } from "../../../../../../../website-builder/widget/singlepage/content/ai-chat/content";
-import { useId, useState, type FormEvent } from "react";
+import {
+  IAIChatServicePageContent as IAIChatServicePageContentPresentation,
+  IWebsiteSection as IWebsiteSection,
+  type IAIChatServicePageContent,
+} from "../../../../../../../website-builder/widget/singlepage/content/ai-chat/content";
+
 import defaultCopy from "./content.json";
-import type { IAIChatServicePageContent } from "../../../../../../../website-builder/widget/singlepage/content/ai-chat/content";
+
 function TextField({
   label,
   hint,
@@ -98,7 +109,7 @@ function PasswordField({
         <Button
           variant="plain"
           onClick={() => setVisible(!visible)}
-          aria-label={`${visible ? "Hide" : "Show"} ${label.toLowerCase()}`}
+          aria-label={`${visible ? "Скрыть" : "Показать"} ${label.toLowerCase()}`}
           aria-pressed={visible}
           className="absolute top-0.5 right-1 min-h-11 w-11 px-2"
         >

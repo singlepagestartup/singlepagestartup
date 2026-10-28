@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "07630e10-6889-4568-be4a-0a6feaad0af0",
+  "createdAt": "2026-10-26T00:11:50.966Z",
+  "updatedAt": "2026-10-27T14:59:22.322Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "AI assistant",
+    "ru": "ИИ-помощник"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Discuss tasks with an assistant that uses connected materials.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Обсуждает задачу с помощником, который обращается к подключённым материалам.\"}]}]}"
+  },
+  "adminTitle": "ИИ-помощник",
+  "slug": "framework-reviewed-article-social-cases-feature-2"
+}

@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "5825b2bd-0021-4315-89e6-aeb8976af266",
+  "createdAt": "2026-10-26T00:12:21.539Z",
+  "updatedAt": "2026-10-27T14:59:37.379Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "crm",
+    "ru": "crm"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Connect an enquiry form for the first cohort.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Подключите форму записи на первый поток.\"}]}]}"
+  },
+  "adminTitle": "crm",
+  "slug": "framework-reviewed-article-startup-connections-feature-2"
+}

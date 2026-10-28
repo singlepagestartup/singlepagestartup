@@ -54,3 +54,35 @@ it("keeps the mounted form, draft, focus and selection during background fetch/e
   view.rerender(<Component {...props} keepDataWhileFetching={false} />);
   expect(screen.queryByRole("textbox", { name: "Draft" })).toBeNull();
 });
+
+it("renders the supplied collection skeleton only while data is unavailable", () => {
+  const find = jest.fn(() => ({
+    data: undefined,
+    isFetching: true,
+    isLoading: true,
+  }));
+  const props: any = {
+    api: { find },
+    skeleton: <div role="status">Loading collection</div>,
+    children: ({ data }: any) => <p>{data?.[0]?.id}</p>,
+  };
+  const view = render(<Component {...props} />);
+  expect(screen.getByRole("status").textContent).toBe("Loading collection");
+  find.mockReturnValue({
+    data: [{ id: "loaded" }] as any,
+    isFetching: false,
+    isLoading: false,
+  });
+  view.rerender(<Component {...props} />);
+  expect(screen.queryByRole("status")).toBeNull();
+  expect(screen.getByText("loaded")).toBeTruthy();
+  find.mockReturnValue({
+    data: [{ id: "loaded" }] as any,
+    isFetching: true,
+    isLoading: false,
+  });
+  view.rerender(<Component {...props} />);
+  expect(screen.queryByRole("status")).toBeNull();
+  view.rerender(<Component {...props} keepDataWhileFetching={false} />);
+  expect(screen.getByRole("status")).toBeTruthy();
+});

@@ -1,18 +1,22 @@
 "use client";
-import { type InputHTMLAttributes as InputHTMLAttributes } from "react";
-import { useId as useIdPresentation } from "react";
-import { useState as useStatePresentation } from "react";
-import { forwardRef as forwardRef } from "react";
-import { type SVGProps as SVGProps } from "react";
-import { twMerge as twMerge } from "tailwind-merge";
-import { Component as WebsiteBuilderModuleButton } from "../../../../../../../website-builder/button/index";
 import {
+  type InputHTMLAttributes as InputHTMLAttributes,
+  useId as useIdPresentation,
+  useState as useStatePresentation,
+  forwardRef as forwardRef,
+  type SVGProps as SVGProps,
   forwardRef as forwardRefControl,
   type ButtonHTMLAttributes as ButtonControlProps,
+  useId,
+  useState,
+  type FormEvent,
 } from "react";
+
+import { twMerge as twMerge } from "tailwind-merge";
+import { Component as WebsiteBuilderModuleButton } from "../../../../../../../website-builder/button/index";
+
 import IconGlyphs from "../../../../../../../website-builder/feature/singlepage/icon/icons.json";
-import IconPresentationGlyphs from "../../../../../../../website-builder/feature/singlepage/icon/icons.json";
-import { useId, useState, type FormEvent } from "react";
+
 interface IModuleIconProps extends SVGProps<SVGSVGElement> {
   size?: number;
 }
@@ -157,7 +161,7 @@ function PasswordField({
         <ButtonPresentation
           variant="plain"
           onClick={() => setVisible(!visible)}
-          aria-label={`${visible ? "Hide" : "Show"} ${label.toLowerCase()}`}
+          aria-label={`${visible ? "Скрыть" : "Показать"} ${label.toLowerCase()}`}
           aria-pressed={visible}
           className="absolute top-0.5 right-1 min-h-11 w-11 px-2"
         >
@@ -221,12 +225,12 @@ function IconPresentation({
   className = "",
   svgProps,
 }: {
-  name: keyof typeof IconPresentationGlyphs;
+  name: keyof typeof IconGlyphs;
   size?: 20 | 24;
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  const geometry = IconPresentationGlyphs[name]
+  const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
   if (!geometry) throw new Error("Missing Phosphor icon: " + name);
@@ -270,11 +274,11 @@ export function Component({
   const [error, setError] = useState("");
   const [resent, setResent] = useState(false);
   const id = useId();
-  const title = kind === "email" ? "Change email" : "Change password";
+  const title = kind === "email" ? "Изменить почту" : "Изменить пароль";
   const steps =
     kind === "email"
-      ? ["Verify current email", "New email", "Verify new email"]
-      : ["Verify email", "New password"];
+      ? ["Подтвердите текущую почту", "Новая почта", "Подтвердите новую почту"]
+      : ["Подтвердить почту", "Новый пароль"];
   const active = step === "details" ? 1 : step === "verify-new" ? 2 : 0;
   function advance(next: typeof step) {
     setStep(next);
@@ -286,7 +290,7 @@ export function Component({
     try {
       onComplete?.(nextEmail);
     } catch {
-      setError("Could not save the change. Try again.");
+      setError("Не удалось сохранить изменения. Попробуйте ещё раз.");
       return;
     }
     setCurrentPassword("");
@@ -298,24 +302,24 @@ export function Component({
     event.preventDefault();
     if (step === "verify-current" || step === "verify-new") {
       if (code.trim() !== "123456") {
-        setError("That code is incorrect. Use the preview code 123456.");
+        setError("Код неверный. В этом примере используйте 123456.");
         return;
       }
       if (step === "verify-new") complete(newEmail.trim().toLowerCase());
       else advance("details");
     } else if (kind === "email") {
       if (newEmail.trim().toLowerCase() === email.toLowerCase()) {
-        setError("Enter a different email address.");
+        setError("Укажите другой адрес электронной почты.");
         return;
       }
       advance("verify-new");
     } else {
       if (password !== repeat) {
-        setError("The new passwords do not match.");
+        setError("Новые пароли не совпадают.");
         return;
       }
       if (password === currentPassword) {
-        setError("Choose a password different from your current one.");
+        setError("Новый пароль должен отличаться от текущего.");
         return;
       }
       complete();
@@ -333,17 +337,17 @@ export function Component({
           <p role="status" className="flex items-start gap-2 text-sm">
             <CheckCircle2 className="size-5 shrink-0" />
             {kind === "email"
-              ? `Email updated to ${newEmail.trim().toLowerCase()} in this preview.`
-              : "Password change completed in this preview. Passwords are not stored."}
+              ? `В примере почта изменена на ${newEmail.trim().toLowerCase()}.`
+              : "В примере пароль изменён. Введённые пароли не сохраняются."}
           </p>
           <Button variant="secondary" onClick={onCancel}>
-            Done
+            Готово
           </Button>
         </div>
       ) : (
         <>
           <ol
-            aria-label="Change progress"
+            aria-label="Этапы изменения"
             className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-xs text-[color:var(--workspace-brand-muted)]"
           >
             {steps.map((label, index) => (
@@ -363,18 +367,18 @@ export function Component({
           {step === "start" ? (
             <div className="mt-5 space-y-4">
               <p className="break-words text-sm leading-6 text-[color:var(--workspace-brand-muted)]">
-                First, confirm access to {email}. Then{" "}
+                Сначала подтвердите доступ к {email}. Затем{" "}
                 {kind === "email"
-                  ? "enter and verify your new email address."
-                  : "enter your current password and choose a new one."}
+                  ? "укажите и подтвердите новую почту."
+                  : "введите текущий пароль и придумайте новый."}
               </p>
               <div className="flex flex-wrap gap-2">
                 <Button onClick={() => advance("verify-current")}>
                   <Mail className="size-4" />
-                  Send verification code
+                  Отправить код
                 </Button>
                 <Button variant="secondary" onClick={onCancel}>
-                  Cancel
+                  Отмена
                 </Button>
               </div>
             </div>
@@ -387,7 +391,7 @@ export function Component({
               {step === "verify-current" || step === "verify-new" ? (
                 <>
                   <p className="break-words text-sm leading-6 text-[color:var(--workspace-brand-muted)]">
-                    Enter the verification code for{" "}
+                    Введите код подтверждения для{" "}
                     <strong className="font-medium text-[color:var(--workspace-brand-foreground)]">
                       {step === "verify-new"
                         ? newEmail.trim().toLowerCase()
@@ -399,7 +403,7 @@ export function Component({
                     className="grid min-w-0 gap-2 text-sm font-medium"
                     htmlFor={`${id}-code`}
                   >
-                    Verification code
+                    Код подтверждения
                     <input
                       autoFocus
                       id={`${id}-code`}
@@ -422,7 +426,7 @@ export function Component({
                     id={`${id}-hint`}
                     className="text-xs text-[color:var(--workspace-brand-muted)]"
                   >
-                    Preview code: 123456. No email is sent.
+                    Код для примера: 123456. Письмо не отправляется.
                   </p>
                   <div>
                     <Button
@@ -434,21 +438,21 @@ export function Component({
                         setError("");
                       }}
                     >
-                      Resend code
+                      Отправить код повторно
                     </Button>
                     {resent && (
                       <p
                         role="status"
                         className="mt-1 text-xs text-[color:var(--workspace-brand-muted)]"
                       >
-                        A new preview code is ready: 123456.
+                        Новый код для примера: 123456.
                       </p>
                     )}
                   </div>
                 </>
               ) : kind === "email" ? (
                 <label className="grid min-w-0 gap-2 text-sm font-medium">
-                  New email
+                  Новая почта
                   <input
                     autoFocus
                     type="email"
@@ -465,7 +469,7 @@ export function Component({
               ) : (
                 <>
                   <PasswordField
-                    label="Current password"
+                    label="Текущий пароль"
                     name="current-password"
                     autoComplete="current-password"
                     required
@@ -476,7 +480,7 @@ export function Component({
                     }}
                   />
                   <PasswordField
-                    label="New password"
+                    label="Новый пароль"
                     name="new-password"
                     autoComplete="new-password"
                     required
@@ -487,7 +491,7 @@ export function Component({
                     }}
                   />
                   <PasswordField
-                    label="Repeat new password"
+                    label="Повторите новый пароль"
                     name="repeat-password"
                     autoComplete="new-password"
                     required
@@ -510,12 +514,12 @@ export function Component({
               <div className="flex flex-wrap gap-2">
                 <Button type="submit">
                   {step === "verify-new"
-                    ? "Confirm new email"
+                    ? "Подтвердить новую почту"
                     : step === "details"
                       ? kind === "email"
-                        ? "Verify new email"
-                        : "Change password"
-                      : "Verify code"}
+                        ? "Подтвердите новую почту"
+                        : "Изменить пароль"
+                      : "Подтвердить код"}
                 </Button>
                 <Button
                   type="button"
@@ -533,7 +537,7 @@ export function Component({
                   Back
                 </Button>
                 <Button type="button" variant="plain" onClick={onCancel}>
-                  Cancel
+                  Отмена
                 </Button>
               </div>
             </form>

@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "A request for your project",
+    "ru": "Запрос для вашего проекта"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"I need a school website with a home page, course catalogue, class pages and blog. Each course should have its own link, with a shared menu and footer.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Нужен сайт школы с главной, каталогом курсов, страницами занятий и блогом. У каждого курса должна быть отдельная ссылка, а меню и подвал — общие.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "a88bb939-9c55-482e-80f3-0f31b9971898",
+  "createdAt": "2026-10-26T00:11:41.618Z",
+  "updatedAt": "2026-10-27T14:59:11.631Z",
+  "variant": "content-rich",
+  "adminTitle": "Запрос для вашего проекта",
+  "slug": "framework-reviewed-article-host-task"
+}

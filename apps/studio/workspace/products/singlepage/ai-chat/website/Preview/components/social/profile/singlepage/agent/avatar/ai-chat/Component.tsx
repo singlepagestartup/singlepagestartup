@@ -47,8 +47,8 @@ export function Component({ agent, onSelect }: IAgentAvatarProps) {
       data-id={agent.id}
       data-variant="agent-avatar-ai-chat"
       onClick={() => onSelect(agent)}
-      aria-label={`About ${agent.name}`}
-      title={`About ${agent.name}`}
+      aria-label={`О помощнике ${agent.name}`}
+      title={`О помощнике ${agent.name}`}
       className={`grid size-8 shrink-0 place-items-center rounded-lg bg-[color:var(--workspace-brand-accent)] text-[color:var(--workspace-brand-foreground)] transition hover:bg-[color:var(--workspace-brand-accent)]/80 ${kit.focus}`}
     >
       <Icon name="robot" className="size-4" />

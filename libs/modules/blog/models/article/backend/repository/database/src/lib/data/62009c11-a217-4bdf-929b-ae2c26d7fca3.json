@@ -1,0 +1,21 @@
+{
+  "id": "62009c11-a217-4bdf-929b-ae2c26d7fca3",
+  "className": "",
+  "createdAt": "2026-10-26T00:11:25.534Z",
+  "updatedAt": "2026-10-27T15:00:23.765Z",
+  "variant": "card",
+  "adminTitle": "Принимайте оплату и проверяйте её результат",
+  "slug": "framework-billing",
+  "title": {
+    "en": "Accept payments and check the results",
+    "ru": "Принимайте оплату и проверяйте её результат"
+  },
+  "subtitle": {
+    "en": "Accepting payments",
+    "ru": "Приём оплаты"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Give customers a payment link and see whether the payment succeeded. Set prices in the currency you need.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Дайте клиенту ссылку для оплаты и узнайте, прошёл ли платёж. Указывайте цены в нужной валюте.\"}]}]}"
+  }
+}

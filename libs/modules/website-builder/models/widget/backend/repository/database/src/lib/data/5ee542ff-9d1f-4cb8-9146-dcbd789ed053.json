@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "",
+    "ru": ""
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Publish analyses, instructions and answers to customer questions. Group articles by topic, add covers and link publications to their author and your offer.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Before buying, people often want to understand your approach. A groomer can explain how to prepare a dog for an appointment; a teacher can analyse a common student mistake. The blog gives such materials a permanent place and separate links on your website.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Публикуйте разборы, инструкции и ответы на вопросы клиентов. Объединяйте статьи по темам, добавляйте обложки и связывайте публикации с автором и вашим предложением.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Перед покупкой человеку часто нужно понять ваш подход. Грумер может объяснить подготовку собаки к стрижке, преподаватель — разобрать типичную ошибку ученика. Блог даёт таким материалам постоянное место и отдельные ссылки на вашем сайте.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "5ee542ff-9d1f-4cb8-9146-dcbd789ed053",
+  "createdAt": "2026-10-26T00:11:42.830Z",
+  "updatedAt": "2026-10-27T14:59:02.150Z",
+  "variant": "content-rich",
+  "adminTitle": "framework-reviewed-article-blog-introduction",
+  "slug": "framework-reviewed-article-blog-introduction"
+}

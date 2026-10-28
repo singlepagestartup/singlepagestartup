@@ -51,7 +51,7 @@ current_phase: code_review
 
 ## Incident Log
 
-<!-- incident-count: 9 -->
+<!-- incident-count: 12 -->
 
 ### Incident 1 — GitHub недоступен из sandbox
 
@@ -99,7 +99,7 @@ current_phase: code_review
   значения. Оба admin-редактора и MCP сохраняют соседние секции; конфликт даёт 409.
 - Metadata → File: сгенерированная связь, загрузка обложки, alt/размеры/MIME,
   приоритет явного поля и связанных обложек. Favicon не становится OG-обложкой.
-- Hidden есть у 61 модели и 95 связей, включая новую. REST, публичные SDK readers,
+- Hidden есть у 61 модели и 98 связей, включая новую. REST, публичные SDK readers,
   рендеринг, счётчики, маршруты и sitemap применяют правила видимости.
 - Языковая уникальность Page, indexing auto/noindex, canonical, robots, JSON-LD,
   корректный sitemap с разделением на части и HTTP 503 при отказе API.
@@ -114,21 +114,21 @@ current_phase: code_review
 
 | Проверка                         | Результат                                                                    |
 | -------------------------------- | ---------------------------------------------------------------------------- |
-| Host module Jest                 | 90 тестов                                                                    |
+| Host module Jest                 | 101 тест                                                                     |
 | Host app Jest                    | 63 теста                                                                     |
-| Shared backend API Jest          | 77 passed, 1 existing skipped                                                |
-| Shared frontend components Jest  | 56 тестов                                                                    |
-| Middleware auth/cache Jest       | 51 тест                                                                      |
-| Shared metadata/routes Jest      | 35 тестов                                                                    |
+| Shared backend API Jest          | 79 passed, 1 existing skipped                                                |
+| Shared frontend components Jest  | 57 тестов                                                                    |
+| Middleware auth/cache Jest       | 99 тестов                                                                    |
+| Shared metadata/routes Jest      | 39 тестов                                                                    |
 | MCP Jest                         | 57 тестов                                                                    |
-| File Storage Jest                | 19 тестов                                                                    |
+| File Storage Jest                | 33 теста                                                                     |
 | Product anonymous SSR regression | 2 теста                                                                      |
 | TipTap SSR/browser Jest          | 17 тестов                                                                    |
 | TypeScript Host и MCP            | passed                                                                       |
 | ESLint изменённых SEO-файлов     | passed, 8 GiB heap                                                           |
 | Studio design-system validation  | passed                                                                       |
 | Module dependencies              | 0 нарушений                                                                  |
-| Каталог hidden                   | 61 модель, 95 связей, пропусков нет                                          |
+| Каталог hidden                   | 61 модель, 98 связей, пропусков нет                                          |
 | Изменения data snapshots         | отсутствуют                                                                  |
 | Полная миграция новой БД         | passed; analytic применён отдельным target                                   |
 | Upgrade с записями               | 3 статьи, 3 товара, 1 профиль, 9 страниц сохранены; новые defaults корректны |
@@ -143,7 +143,7 @@ noindex, две страницы пагинации, вложенная кате
 несуществующий адрес и выход за пагинацию. В sitemap 20 ожидаемых URL, скрытые и
 noindex исключены; неверная часть sitemap даёт 404. Canonical очищен от tracking.
 Финальная production-сборка прошла вместе с проверкой типов и повторной HTTP-матрицей.
-Ответы в финальном прогоне: 13–841 мс (841 мс — первый запрос главной); это небольшая
+Ответы в финальном прогоне: 9–255 мс в повторном прогоне после слияния; это небольшая
 тестовая БД, не нагрузочная оценка m2commerce.ru.
 
 Браузер: статья показывает H1 и текст после гидратации без ошибок; Studio SEO
@@ -236,3 +236,51 @@ Production m2commerce.ru не развёрнут и его данные не и�
 - Pre-commit прошёл. После форматирования повторены File PATCH regression-тест и ESLint с 8 GiB heap; оба прошли.
 - Исходные незакоммиченные изменения Studio/workflow сохранены.
 - Тестовые Host/API/Storybook остановлены; три временные SEO-базы, тестовая загрузка и изолированный build output удалены. Рабочая БД и production сохранены.
+
+### Incident 10 — CodeQL после публикации PR
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: три замечания к регулярным выражениям HTML и маски пагинации.
+- **Root Cause**: неполный набор закрывающих HTML-тегов; динамическая сборка regex из имени коллекции.
+- **Fix**: варианты регистра и закрывающих тегов учтены, имя коллекции сравнивается буквально; добавлены regression-тесты.
+- **Preventive Action**: проверять итоговый CodeQL вместе с локальными тестами.
+
+### Incident 11 — Конфликт с обновлённой main
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: PR конфликтует с main после включения framework visual/API изменений.
+- **Root Cause**: общие регистры вариантов, презентации Article/Product и история consistency capture изменены в обеих ветках.
+- **Fix**: конфликты сведены в текущей ветке; новые презентации сохранены, hidden добавлен трём новым связям; capture сгенерирован target как 0010. 284 исходных файла Studio/workflow восстановлены побайтно и остаются незакоммиченными.
+- **Preventive Action**: сверять mergeability и проверять новые публичные API при совмещении изменений.
+
+## Проверка после совмещения с main
+
+Повторены 554 теста: Host module 101, Host app 63, shared API 79, middleware 99,
+shared components 57, MCP 57, metadata/routes 39, File Storage 33, TipTap 17,
+Product SSR 2, public Author 7. Один прежний тест shared API пропущен. Проверки
+типов Host, новая БД с полной историей миграций и Studio validation прошли.
+
+Main использует публичный Author DTO: публичные Page-маски профиля используют
+`[social.profiles.id]`. Профиль должен быть связан с видимой статьёй или товаром,
+а проекту нужны GET-права `/api/social/profiles/authors`. В DTO доступны локализованные
+поля и `metadata.seo`; slug, настройки приватного профиля и другие JSON-секции не
+публикуются. Sitemap и разрешение SEO используют этот API. Проверены отсутствие
+посторонней JSON-секции, 404 при hidden профиля/связи и восстановление.
+
+После совмещения hidden охватывает 61 модель и 98 связей. Новая capture-миграция —
+`0010_consistency-capture.sql`; неизданная версия 0007 из SEO-коммита заменена
+историей main при слиянии. При переносе нужно сверить фактический журнал целевой БД.
+
+Итоговая production-сборка и повторная HTTP-матрица прошли: 18 маршрутов, 20 URL
+в sitemap, профиль по UUID, preview и tracking canonical. TypeScript MCP также прошёл.
+
+### Incident 12 — Занятый Git index и прерванный hook
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: git add получает index.lock, а следующий commit запускает hook с прежним индексом.
+- **Root Cause**: блок команд не остановился после ошибки staging; индекс кратковременно занят фоновым Git.
+- **Fix**: commit прерван; индекс и скрытые hook-файлы восстановлены из автоматического snapshot. Контрольные суммы 284 пользовательских файлов совпали.
+- **Preventive Action**: staging и commit связывать успешным exit code; ожидать освобождения индекса, не удалять активный lock.

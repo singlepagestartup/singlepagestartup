@@ -1,4 +1,15 @@
 "use client";
+
+import {
+  action as blogModuleArticleCreate,
+  type IProps as IBlogModuleArticleCreateProps,
+  type IResult as IBlogModuleArticleCreateResult,
+} from "./blog-module/article/create";
+import {
+  action as blogModuleArticleFindByIdContentFind,
+  type IProps as IBlogModuleArticleFindByIdContentFindProps,
+  type IResult as IBlogModuleArticleFindByIdContentFindResult,
+} from "./blog-module/article/content";
 import {
   action as socialModuleProfileProjects,
   type IProps as ISocialModuleProfileProjectsProps,
@@ -424,6 +435,8 @@ import {
 } from "./social-module/chat/find-by-id/profile/delete";
 
 export type IProps = {
+  IBlogModuleArticleCreateProps: IBlogModuleArticleCreateProps;
+  IBlogModuleArticleFindByIdContentFindProps: IBlogModuleArticleFindByIdContentFindProps;
   IBillingModuleBalanceProps: IBillingModuleBalanceProps;
   ISocialModuleProfileFindByIdAvatarFindProps: ISocialModuleProfileFindByIdAvatarFindProps;
   ISocialModuleProfileFindByIdAvatarUpdateProps: ISocialModuleProfileFindByIdAvatarUpdateProps;
@@ -511,6 +524,8 @@ export type IProps = {
 };
 
 export type IResult = {
+  IBlogModuleArticleCreateResult: IBlogModuleArticleCreateResult;
+  IBlogModuleArticleFindByIdContentFindResult: IBlogModuleArticleFindByIdContentFindResult;
   IBillingModuleBalanceResult: IBillingModuleBalanceResult;
   ISocialModuleProfileFindByIdAvatarFindResult: ISocialModuleProfileFindByIdAvatarFindResult;
   ISocialModuleProfileFindByIdAvatarUpdateResult: ISocialModuleProfileFindByIdAvatarUpdateResult;
@@ -598,6 +613,8 @@ export type IResult = {
 };
 
 export const api = {
+  blogModuleArticleCreate,
+  blogModuleArticleFindByIdContentFind,
   socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdate,
   socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesFind,
   ...factory<IModel>({

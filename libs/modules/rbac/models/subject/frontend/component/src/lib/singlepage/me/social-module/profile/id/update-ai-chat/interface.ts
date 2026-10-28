@@ -9,6 +9,7 @@ import type { IModel as IIdentity } from "@sps/rbac/models/identity/sdk/model";
 import type { ISpsComponentBase } from "@sps/ui-adapter";
 export const variant = "me-social-module-profile-id-update-ai-chat" as const;
 export interface IComponentProps extends IParent<IModel, typeof variant> {
+  language?: string;
   profile: IProfile;
 }
 export interface IComponentPropsExtended

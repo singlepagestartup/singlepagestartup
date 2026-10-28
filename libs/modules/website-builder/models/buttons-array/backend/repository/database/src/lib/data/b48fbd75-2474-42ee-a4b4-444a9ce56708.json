@@ -1,0 +1,14 @@
+{
+  "id": "b48fbd75-2474-42ee-a4b4-444a9ce56708",
+  "createdAt": "2026-10-24T01:06:01.891Z",
+  "updatedAt": "2026-10-24T01:06:01.891Z",
+  "variant": "default",
+  "className": "w-full",
+  "title": {
+    "en": "Actions",
+    "ru": "Действия"
+  },
+  "description": {},
+  "adminTitle": "Actions",
+  "slug": "framework-journey-guide-rbac-actions"
+}
