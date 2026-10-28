@@ -714,3 +714,7 @@ The cart drawer uses compact Product rows and totals from the authorized
 through the Subject SDK, then invalidate that Subject’s order collection.
 Pending state and failures remain within the changed line; payment links are
 shown only after checkout returns them.
+
+## Order notification recipients
+
+Order processing resolves its service through `service/startup/ecommerce/order/proceed`. Override protected `getAdminNotificationSubjectIds()` there to select a project channel; the shared default selects unique admin subjects. A dedicated notification recipient does not need an admin role. Configure service actors with `variant="agent"` and an identity through runtime SDKs.

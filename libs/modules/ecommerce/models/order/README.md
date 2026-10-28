@@ -111,3 +111,9 @@ Products and totals through existing services. It does not establish a Subject
 or bypass caller authorization. The RBAC Subject order-list endpoint supplies
 ownership scope and a consistent read snapshot before invoking this capability.
 The SDK model exports ICartDetails; no database field or migration is needed.
+
+## Payment success extension
+
+The payment check handler calls protected `onPaymentSucceeded({ order })` before persisting `paid`. The default hook does nothing. Projects extend the Startup handler for domain effects, using idempotent SDK operations: a failed hook leaves the order retryable. Keep payment confirmation independent of notification delivery.
+
+Runtime SDK create calls generate IDs. For partial retries, find an existing side effect by a stable unique key, such as a slug, and use the returned ID in relations. Include all required relation fields when updating a link.

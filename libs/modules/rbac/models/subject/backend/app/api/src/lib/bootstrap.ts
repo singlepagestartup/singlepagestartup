@@ -64,7 +64,7 @@ import { Service as SubjectsToBillingModuleCurrenciesService } from "@sps/rbac/r
 import { Repository as SubjectsToBillingModuleCurrenciesRepository } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/app/api/src/lib/repository";
 import { Configuration as SubjectsToBillingModuleCurrenciesConfiguration } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/app/api/src/lib/configuration";
 import { Service as BillRouteService } from "./service/singlepage/billing/route";
-import { Service as EcommerceOrderProceedService } from "./service/singlepage/ecommerce/order/proceed";
+import { Service as EcommerceOrderProceedService } from "./service/startup/ecommerce/order/proceed";
 import type {
   ICheckout as IEcommerceProductCheckout,
   IExecuteProps as IEcommerceProductCheckoutProps,
