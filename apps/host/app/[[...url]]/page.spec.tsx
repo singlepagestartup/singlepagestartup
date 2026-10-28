@@ -86,7 +86,7 @@ describe("resolved Host routes and SEO", () => {
     expect(html).toContain('<main lang="ru">Article</main>');
     expect(html).toContain('type="application/ld+json"');
     expect(html).not.toContain("</script><script>");
-    const json = html.match(/<script[^>]*>(.*?)<\/script>/)?.[1];
+    const json = html.match(/<script\b[^>]*>([\s\S]*?)<\/script[^>]*>/i)?.[1];
     expect(JSON.parse(json!)[0].headline).toBe(
       "Safe </script><script>alert(1)</script>",
     );

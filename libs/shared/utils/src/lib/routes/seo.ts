@@ -80,14 +80,15 @@ export function isSeoIndexablePage(props: { url: string }): boolean {
       if (!/[\[\]]/.test(segment)) return true;
       const match = /^\[([^\[\]]+)\]$/.exec(segment);
       if (!match) return false;
-      return SEO_PUBLIC_ROUTE_COLLECTIONS.some(
-        (collection) =>
+      return SEO_PUBLIC_ROUTE_COLLECTIONS.some((collection) => {
+        const paginationPrefix = `${collection}.:pagination:`;
+        return (
           match[1] === `${collection}.slug` ||
           match[1] === `${collection}.id` ||
-          new RegExp(
-            `^${collection.replace(/\./g, "\\.")}\\.:pagination:[1-9]\\d*$`,
-          ).test(match[1]),
-      );
+          (match[1].startsWith(paginationPrefix) &&
+            /^[1-9]\d*$/.test(match[1].slice(paginationPrefix.length)))
+        );
+      });
     });
 }
 

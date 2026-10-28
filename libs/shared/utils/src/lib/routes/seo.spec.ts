@@ -67,6 +67,8 @@ describe("SEO URL policy", () => {
     "/ecommerce/orders/123",
     "/social/chats/[social.chats.id]",
     "/blog/[blog.articles.:pagination:0]",
+    "/blog/[blog.articles.:pagination:10suffix]",
+    "/blog/[blogXarticles.:pagination:10]",
     "/broken/[blog.articles.slug",
     "https://example.test",
     "//example.test",

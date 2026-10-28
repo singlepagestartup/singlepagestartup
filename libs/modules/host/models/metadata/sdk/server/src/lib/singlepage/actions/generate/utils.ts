@@ -31,8 +31,8 @@ export function plainText(value?: string | null): string | undefined {
     // Plain strings and legacy HTML descriptions are also stored by the CMS.
   }
   text = text
-    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
-    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script[^>]*>/gi, " ")
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style[^>]*>/gi, " ")
     .replace(/<[^>]*>/g, " ")
     .replace(/&#(x[\da-f]+|\d+);/gi, (match, code: string) => {
       const number =
