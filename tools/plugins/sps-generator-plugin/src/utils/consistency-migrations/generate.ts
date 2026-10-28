@@ -35,6 +35,12 @@ for await (const file of new Bun.Glob(
 catalog.sort((a, b) => a.resource.localeCompare(b.resource));
 if (new Set(catalog.map((v) => v.resource)).size !== catalog.length)
   throw new Error("Duplicate physical resource");
+// Migration startup reads the effective Tables without writing generated files.
+if (process.argv.includes("--catalog")) {
+  console.log(JSON.stringify({ resources: catalog }));
+  process.exit(0);
+}
+
 const generated =
   captureFunctionsSQL() +
   "\n" +

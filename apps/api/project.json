@@ -77,58 +77,8 @@
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
-        "parallel": false,
         "cwd": ".",
-        "commands": [
-          {
-            "command": "npx nx run @sps/providers-db:repository-migrate"
-          },
-          {
-            "command": "npx nx run @sps/file-storage:repository-migrate"
-          },
-          {
-            "command": "npx nx run @sps/broadcast:repository-migrate"
-          },
-          {
-            "command": "npx nx run @sps/website-builder:repository-migrate"
-          },
-          {
-            "command": "npx nx run @sps/notification:repository-migrate"
-          },
-          {
-            "command": "npx nx run @sps/crm:repository-migrate"
-          },
-          {
-            "command": "npx nx run @sps/billing:repository-migrate"
-          },
-          {
-            "command": "npx nx run @sps/ecommerce:repository-migrate"
-          },
-          {
-            "command": "npx nx run @sps/knowledge:repository-migrate"
-          },
-          {
-            "command": "npx nx run @sps/rbac:repository-natural-key-repair-apply"
-          },
-          {
-            "command": "npx nx run @sps/blog:repository-migrate"
-          },
-          {
-            "command": "npx nx run @sps/social:repository-migrate"
-          },
-          {
-            "command": "npx nx run @sps/startup:repository-migrate"
-          },
-          {
-            "command": "npx nx run @sps/rbac:repository-migrate"
-          },
-          {
-            "command": "npx nx run @sps/host:repository-migrate"
-          },
-          {
-            "command": "npx nx run @sps/agent:repository-migrate"
-          }
-        ]
+        "command": "bash migrate.sh"
       }
     },
     "db:dump": {

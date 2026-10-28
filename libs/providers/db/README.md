@@ -14,7 +14,11 @@ npx nx run @sps/providers-db:consistency-check
 
 `api:db:migrate` applies infrastructure first. Each model/relation migrator
 installs capture after its own table migration. The infrastructure migrator
-also reconciles the generated catalog with deployed tables. The generator
+also discovers the effective project Tables and SDK routes, reconciles their
+catalog with deployed tables and removes retired resource registrations.
+Startup overrides take effect without copying the upstream catalog's physical
+table names. Catalog changes invalidate existing consistency capabilities;
+application records and historical generation rows remain intact. The generator
 reads effective Tables and SDK routes; no second relation graph is maintained.
 A new generator template runs infrastructure generation after model generation.
 An existing manually configured repository target must also run the
@@ -23,7 +27,7 @@ infrastructure generation command when its Table changes.
 Drizzle creates schema migrations and custom migration entries. The capture
 extension fills only a newly generated custom migration and records a catalog
 fingerprint. Repeating generation without Table/function changes creates no
-migration. Coverage checking fails when a catalog table lacks its capture
+migration. Coverage checking reads the same effective catalog and fails when a current table lacks its capture
 trigger; uncovered reads cannot receive cache capabilities.
 
 ## Writes and delivery

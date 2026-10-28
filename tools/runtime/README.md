@@ -1,5 +1,11 @@
 # Runtime maintenance
 
+Direct `npm run api:dev`, `npm run api:start` and their Nx targets launch the
+API using the prepared database. They do not run migrations or seed data.
+`./up.sh` applies migrations during local setup. After an upstream update that
+changes database schemas, run `npx nx run api:db:migrate` before starting the
+API. This explicit command uses `migrate.sh` without seeding application data.
+
 API release startup runs `migrate.sh seed` before opening its HTTP listener.
 Consistency infrastructure migrates first, followed by the module migrations
 and seed. The deployment health check keeps a new API task in startup while
