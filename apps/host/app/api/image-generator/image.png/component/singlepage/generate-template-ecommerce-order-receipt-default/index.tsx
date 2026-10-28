@@ -101,16 +101,6 @@ export function Component(props: IComponentPropsExtended) {
           }
           {props.data.ecommerce.order.checkoutAttributesByCurrency.amount}
         </p>
-        <p
-          style={{
-            fontFamily: "Default",
-            fontSize: "1.5rem",
-            width: "90%",
-            margin: "0 auto",
-          }}
-        >
-          props.data: {JSON.stringify(props.data, null, 2)}
-        </p>
       </div>
     </div>
   );
