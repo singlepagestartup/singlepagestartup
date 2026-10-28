@@ -7,6 +7,7 @@ import { api } from "@sps/host/models/page/sdk/client";
 
 export default function Client(props: IComponentProps) {
   const { data, isLoading } = api.urlSegmentValue({
+    language: props.language,
     segment: props.segment,
     url: props.url,
   });

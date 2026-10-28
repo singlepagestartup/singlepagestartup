@@ -10,6 +10,9 @@ import { ISpsComponentBase } from "@sps/ui-adapter";
 export const variant = "admin-v2-form" as const;
 
 export type IComponentProps = IParentComponentProps<IModel, typeof variant> & {
+  metadataToFileStorageModuleFiles?: (
+    props: ISpsComponentBase & { data?: IModel },
+  ) => ReactNode;
   pagesToMetadata?: (props: ISpsComponentBase & { data?: IModel }) => ReactNode;
 };
 

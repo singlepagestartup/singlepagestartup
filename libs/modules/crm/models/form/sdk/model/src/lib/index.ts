@@ -14,7 +14,7 @@ import {
 export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/crm/forms";
-export const variants = ["support-ai-chat", "default"];
+export const variants = ["hidden", "support-ai-chat", "default"];
 export const query = {};
 export const options = {
   next: {

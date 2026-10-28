@@ -1,5 +1,5 @@
 {
-  "fingerprint": "d2b8fdeb5e483f912463e3d8780f002143aff38c239ebea5a6fcdf39ab7ef50b",
+  "fingerprint": "a33f636ba809c7333b8991255ee53d89c67c14ddcf10dd6072b0c1db5b6edecb",
   "resources": [
     {
       "resource": "public.bg_as_to_ee_me_ps_bd9",
@@ -127,6 +127,20 @@
         "className": "class_name",
         "categoryId": "cy_id",
         "websiteBuilderModuleWidgetId": "we_br_me_wt_id"
+      }
+    },
+    {
+      "resource": "public.ht_ma_to_fe_se_me_fs_5ax",
+      "topic": "host.metadata-to-file-storage-module-files",
+      "columns": {
+        "id": "id",
+        "createdAt": "created_at",
+        "updatedAt": "updated_at",
+        "variant": "variant",
+        "orderIndex": "order_index",
+        "className": "class_name",
+        "metadataId": "ma_id",
+        "fileStorageModuleFileId": "fe_se_me_fe_id"
       }
     },
     {
@@ -380,6 +394,7 @@
       "resource": "public.sl_profile",
       "topic": "social.profiles",
       "columns": {
+        "metadata": "metadata",
         "id": "id",
         "createdAt": "created_at",
         "updatedAt": "updated_at",
@@ -791,6 +806,7 @@
       "resource": "public.sps_blog_article",
       "topic": "blog.articles",
       "columns": {
+        "metadata": "metadata",
         "id": "id",
         "className": "class_name",
         "createdAt": "created_at",
@@ -1231,6 +1247,7 @@
       "resource": "public.sps_ee_product",
       "topic": "ecommerce.products",
       "columns": {
+        "metadata": "metadata",
         "id": "id",
         "createdAt": "created_at",
         "updatedAt": "updated_at",
@@ -1507,6 +1524,8 @@
         "keywords": "keywords",
         "author": "author",
         "viewport": "viewport",
+        "opengraphImage": "opengraph_image",
+        "twitterImage": "twitter_image",
         "opengraphTitle": "opengraph_title",
         "opengraphDescription": "opengraph_description",
         "opengraphUrl": "opengraph_url",
@@ -1535,6 +1554,7 @@
         "updatedAt": "updated_at",
         "variant": "variant",
         "className": "class_name",
+        "indexing": "indexing",
         "language": "language",
         "adminTitle": "admin_title"
       }

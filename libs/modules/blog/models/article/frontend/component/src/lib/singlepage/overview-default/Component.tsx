@@ -1,13 +1,7 @@
 import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as ArticlesToWebsiteBuilderModuleWidgets } from "@sps/blog/relations/articles-to-website-builder-module-widgets/frontend/component";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  TipTap,
-} from "@sps/shared-ui-shadcn";
+import { Card, CardContent, CardHeader, TipTap } from "@sps/shared-ui-shadcn";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -25,7 +19,9 @@ export function Component(props: IComponentPropsExtended) {
       <Card className="w-full flex flex-col gap-3">
         <CardHeader>
           {props.data.title ? (
-            <CardTitle>{props.data.title?.[props.language]}</CardTitle>
+            <h1 className="text-2xl font-semibold leading-none tracking-tight">
+              {props.data.title?.[props.language]}
+            </h1>
           ) : null}
         </CardHeader>
         <CardContent>
@@ -53,7 +49,7 @@ export function Component(props: IComponentPropsExtended) {
               return data?.map((entity, index) => {
                 return (
                   <ArticlesToWebsiteBuilderModuleWidgets
-                    key={index}
+                    key={entity.id}
                     isServer={props.isServer}
                     variant={entity.variant as any}
                     data={entity}

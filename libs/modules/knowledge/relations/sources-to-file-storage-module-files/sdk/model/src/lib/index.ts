@@ -14,7 +14,7 @@ import {
 export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/knowledge/sources-to-file-storage-module-files";
-export const variants = ["default"];
+export const variants = ["hidden", "default"];
 export const query = {};
 export const options = {
   next: {

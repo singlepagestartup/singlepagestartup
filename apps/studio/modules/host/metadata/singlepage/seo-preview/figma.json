@@ -1,0 +1,21 @@
+{
+  "componentName": "host.metadata",
+  "pageName": "host",
+  "variantName": "seo-preview",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "host.metadata.seo-preview",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "host/metadata/singlepage/seo-preview",
+    "sps.figma.component": "host.metadata",
+    "sps.figma.variant": "seo-preview",
+    "sps.source.module": "host",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "metadata",
+    "sps.source.variant": "seo-preview",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/host/metadata/singlepage/seo-preview/Component.tsx",
+    "sps.code.story": "apps/studio/modules/host/metadata/singlepage/seo-preview/Component.stories.tsx"
+  }
+}

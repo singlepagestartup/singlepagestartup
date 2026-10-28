@@ -1,4 +1,6 @@
 "use client";
+
+import { adminReadOptions } from "@sps/shared-utils/public-read";
 import "client-only";
 
 import { factory } from "@sps/shared-frontend-client-api";
@@ -26,10 +28,12 @@ export function Component<
     return typedProps.Skeleton ?? <Skeleton />;
   }
 
-  const { data, isLoading } = typedProps.api.findById({
-    id: dataId,
-    ...typedProps.apiProps,
-  });
+  const { data, isLoading } = typedProps.api.findById(
+    adminReadOptions({
+      id: dataId,
+      ...typedProps.apiProps,
+    }),
+  );
 
   if (isLoading || !data) {
     return typedProps.Skeleton ?? <Skeleton />;

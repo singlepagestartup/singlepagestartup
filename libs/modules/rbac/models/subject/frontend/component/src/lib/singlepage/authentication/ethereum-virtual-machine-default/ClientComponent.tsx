@@ -1,5 +1,6 @@
 "use client";
 
+import { publicReadOptions } from "@sps/shared-utils/public-read";
 import React, { useEffect, useState } from "react";
 import { IComponentPropsExtended } from "./interface";
 import { z } from "zod";
@@ -92,19 +93,21 @@ export function Component(props: IComponentPropsExtended) {
   useEffect(() => {
     if (tokenDecoded.decodedToken?.subject?.id) {
       subjectsToIdentitiesApi
-        .find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "subjectId",
-                  method: "eq",
-                  value: tokenDecoded.decodedToken.subject.id,
-                },
-              ],
+        .find(
+          publicReadOptions({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "subjectId",
+                    method: "eq",
+                    value: tokenDecoded.decodedToken.subject.id,
+                  },
+                ],
+              },
             },
-          },
-        })
+          }),
+        )
         .then((res) => {
           if (account.isConnected && !res?.length) {
             form.handleSubmit(onSubmit)();

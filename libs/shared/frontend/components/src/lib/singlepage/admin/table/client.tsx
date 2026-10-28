@@ -1,4 +1,6 @@
 "use client";
+
+import { adminReadOptions } from "@sps/shared-utils/public-read";
 import "client-only";
 
 import { factory } from "@sps/shared-frontend-client-api";
@@ -90,21 +92,25 @@ export function Component<
     searchField,
   ]);
 
-  const { data: totalData, isLoading: isTotalLoading } = props.api.find({
-    options: {
-      headers: {
-        "Cache-Control": "no-store",
+  const { data: totalData, isLoading: isTotalLoading } = props.api.find(
+    adminReadOptions({
+      options: {
+        headers: {
+          "Cache-Control": "no-store",
+        },
       },
-    },
-  });
-  const { data, isLoading } = props.api.find({
-    params,
-    options: {
-      headers: {
-        "Cache-Control": "no-store",
+    }),
+  );
+  const { data, isLoading } = props.api.find(
+    adminReadOptions({
+      params,
+      options: {
+        headers: {
+          "Cache-Control": "no-store",
+        },
       },
-    },
-  });
+    }),
+  );
 
   useEffect(() => {
     if (!totalData || !Array.isArray(totalData) || !setState) {

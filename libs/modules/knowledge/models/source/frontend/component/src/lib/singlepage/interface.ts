@@ -1,3 +1,4 @@
+import { IComponentProps as IHiddenComponentProps } from "@sps/shared-frontend-components/singlepage/hidden/interface";
 import type { IComponentProps as IIdSidebarAiChat } from "./id-sidebar-ai-chat/interface";
 import type { IComponentProps as IFormAiChat } from "./form-ai-chat/interface";
 import type { IComponentProps as IIdAiChat } from "./id-ai-chat/interface";
@@ -16,6 +17,7 @@ import { IComponentProps as IAdminV2SidebarItemComponentProps } from "./admin-v2
 import { IComponentProps as IDefaultComponentProps } from "./default/interface";
 import { IComponentProps as IFindComponentProps } from "./find/interface";
 export type IComponentProps =
+  | IHiddenComponentProps
   | IIdSidebarAiChat
   | IFormAiChat
   | IIdAiChat

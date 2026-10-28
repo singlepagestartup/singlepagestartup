@@ -1,3 +1,4 @@
+import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
 import { Component as CategoryOverviewDefault } from "./category/overview/default";
 import { Component as CategoryListDefault } from "./category/list/default";
 import { Component as ArticleOverviewEcommerceModuleProductListDefault } from "./article/overview/ecommerce-module/product/list/default";
@@ -18,6 +19,7 @@ import { Component as ArticleOverviewDefault } from "./article/overview/default"
 import { Component as ArticleOverviewWithPrivateContentDefault } from "./article/overview/with-private-content-default";
 
 export const variants = {
+  hidden: Hidden,
   "category-overview-default": CategoryOverviewDefault,
   "category-list-default": CategoryListDefault,
   "article-overview-ecommerce-module-product-list-default":

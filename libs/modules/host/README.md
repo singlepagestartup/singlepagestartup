@@ -27,13 +27,14 @@ The Host module serves as the core of the project, acting as the central hub tha
 
 ## 3. Relations
 
-| Relation                                                                         | Purpose                                      |
-| -------------------------------------------------------------------------------- | -------------------------------------------- |
-| [layouts-to-widgets](./relations/layouts-to-widgets/README.md)                   | Connect layouts to widgets and order them    |
-| [pages-to-layouts](./relations/pages-to-layouts/README.md)                       | Connect pages to layouts and order them      |
-| [pages-to-metadata](./relations/pages-to-metadata/README.md)                     | Connect pages to metadata entries            |
-| [pages-to-widgets](./relations/pages-to-widgets/README.md)                       | Connect pages to widgets and order them      |
-| [widgets-to-external-widgets](./relations/widgets-to-external-widgets/README.md) | Link host widgets to external module widgets |
+| Relation                                                                                             | Purpose                                      |
+| ---------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| [layouts-to-widgets](./relations/layouts-to-widgets/README.md)                                       | Connect layouts to widgets and order them    |
+| [pages-to-layouts](./relations/pages-to-layouts/README.md)                                           | Connect pages to layouts and order them      |
+| [metadata-to-file-storage-module-files](./relations/metadata-to-file-storage-module-files/README.md) | Attach fallback social covers to Metadata    |
+| [pages-to-metadata](./relations/pages-to-metadata/README.md)                                         | Connect pages to metadata entries            |
+| [pages-to-widgets](./relations/pages-to-widgets/README.md)                                           | Connect pages to widgets and order them      |
+| [widgets-to-external-widgets](./relations/widgets-to-external-widgets/README.md)                     | Link host widgets to external module widgets |
 
 ---
 

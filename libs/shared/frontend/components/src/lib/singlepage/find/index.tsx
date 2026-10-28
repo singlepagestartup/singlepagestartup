@@ -1,3 +1,4 @@
+import { isHiddenRecord } from "@sps/shared-utils/public-read";
 import { ReactNode, Suspense } from "react";
 import { IComponentProps, IComponentPropsExtended } from "./interface";
 import {
@@ -23,7 +24,9 @@ export function Component<M, V>(
   },
 ) {
   if (props.dataSource === "props") {
-    return props.children?.({ data: props.data });
+    return props.children?.({
+      data: props.data?.filter((record) => !isHiddenRecord(record)),
+    });
   }
 
   const Comp: any = props.isServer ? Server : Client;

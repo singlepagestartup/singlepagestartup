@@ -1,1 +1,2 @@
-export type IComponentProps = never;
+import { IComponentProps as IHiddenComponentProps } from "@sps/shared-frontend-components/singlepage/hidden/interface";
+export type IComponentProps = IHiddenComponentProps | never;

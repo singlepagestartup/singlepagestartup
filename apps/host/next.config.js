@@ -27,9 +27,15 @@ function makeConfig() {
     distDir: process.env.SPS_HOST_DIST_DIR || ".next",
     experimental: {
       webpackMemoryOptimizations: true,
+      ...(process.env.SPS_HOST_BUILD_CPUS
+        ? { cpus: Number(process.env.SPS_HOST_BUILD_CPUS) }
+        : {}),
     },
     // Preserve the public origin in locale redirects, including loopback hosts.
     skipMiddlewareUrlNormalize: true,
+    // Keep canonical, robots and social metadata in the initial head for all
+    // crawlers; metadata/page absence must be settled before streaming HTML.
+    htmlLimitedBots: /.*/,
     deploymentId: process.env.NEXT_DEPLOYMENT_ID || undefined,
     staticPageGenerationTimeout: 6000,
     images: {

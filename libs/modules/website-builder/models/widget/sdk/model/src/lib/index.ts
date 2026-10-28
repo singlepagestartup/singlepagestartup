@@ -21,6 +21,7 @@ export const options = {
   },
 } as NextRequestOptions;
 export const variants = [
+  "hidden",
   "content-social-chat-default",
   "content-ecommerce-default",
   "content-ai-chat-authentication",

@@ -73,7 +73,7 @@ describe("GIVEN: admin-v2 card client data integration", () => {
     );
 
     expect(count).toHaveBeenCalledWith({
-      params: { filters },
+      params: { includeHidden: "1", filters },
       options: {
         headers: {
           Authorization: "Bearer test",

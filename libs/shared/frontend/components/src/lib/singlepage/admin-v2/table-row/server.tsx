@@ -1,4 +1,6 @@
 "use server";
+
+import { adminReadOptions } from "@sps/shared-utils/public-read";
 import "server-only";
 
 import { IComponentPropsExtended, IComponentProps } from "./interface";
@@ -24,10 +26,12 @@ export async function Component<
     return <></>;
   }
 
-  const data = await typedProps.api.findById({
-    id: dataId,
-    ...typedProps.apiProps,
-  });
+  const data = await typedProps.api.findById(
+    adminReadOptions({
+      id: dataId,
+      ...typedProps.apiProps,
+    }),
+  );
 
   if (!data) {
     return <></>;

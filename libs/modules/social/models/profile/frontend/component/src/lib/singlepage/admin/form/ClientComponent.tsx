@@ -2,6 +2,8 @@
 
 import { IComponentPropsExtended, variant, IModel } from "./interface";
 import { api } from "@sps/social/models/profile/sdk/client";
+import { MetadataField } from "@sps/shared-frontend-components/singlepage/admin/metadata-editor/field";
+import { useRef } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,6 +22,7 @@ import { normalizeLocalizedPlainTextFields } from "../../plain-text";
 import { AllowedMcpServersField } from "../../admin-v2/form/AllowedMcpServersField";
 
 export function Component(props: IComponentPropsExtended) {
+  const expectedMetadata = useRef(props.data?.metadata || {});
   const updateEntity = api.update();
   const createEntity = api.create();
 
@@ -31,6 +34,7 @@ export function Component(props: IComponentPropsExtended) {
   const form = useForm<z.infer<typeof insertSchema>>({
     resolver: zodResolver(insertSchema),
     defaultValues: {
+      metadata: props.data?.metadata || {},
       title: props.data?.title ?? {},
       subtitle: props.data?.subtitle ?? {},
       description: normalizeLocalizedPlainTextFields(props.data?.description),
@@ -47,7 +51,17 @@ export function Component(props: IComponentPropsExtended) {
 
   async function onSubmit(data: z.infer<typeof insertSchema>) {
     if (props.data?.id) {
-      updateEntity.mutate({ id: props.data?.id, data });
+      updateEntity.mutate(
+        {
+          id: props.data.id,
+          data: { ...data, _expectedMetadata: expectedMetadata.current },
+        },
+        {
+          onSuccess: (record) => {
+            expectedMetadata.current = record.metadata;
+          },
+        },
+      );
       return;
     }
 
@@ -79,6 +93,7 @@ export function Component(props: IComponentPropsExtended) {
             })
           : null}
 
+        <MetadataField form={form} />
         <FormField
           ui="shadcn"
           type="text"

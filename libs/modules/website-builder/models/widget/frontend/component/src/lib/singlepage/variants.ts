@@ -1,3 +1,4 @@
+import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
 import { Component as ContentSocialChatDefault } from "./content/social/chat-default";
 import { Component as ContentEcommerceDefault } from "./content-ecommerce-default";
 import { Component as ContentAiChatResetPassword } from "./content-ai-chat-reset-password";
@@ -26,6 +27,7 @@ import { Component as ContentDefaultComponent } from "./content-default";
 import { Component as FooterDefaultComponent } from "./footer-default";
 import { Component as NavbarDefaultComponent } from "./navbar-default";
 export const variants = {
+  hidden: Hidden,
   "content-social-chat-default": ContentSocialChatDefault,
   "content-ecommerce-default": ContentEcommerceDefault,
   "content-ai-chat-reset-password": ContentAiChatResetPassword,

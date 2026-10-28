@@ -90,6 +90,7 @@ describe("GIVEN: admin-v2 table client integration", () => {
 
     expect(count).toHaveBeenCalledWith({
       params: {
+        includeHidden: "1",
         filters: {
           and: [
             {
@@ -109,6 +110,7 @@ describe("GIVEN: admin-v2 table client integration", () => {
 
     expect(find).toHaveBeenCalledWith({
       params: {
+        includeHidden: "1",
         filters: {
           and: [
             {
@@ -166,6 +168,7 @@ describe("GIVEN: admin-v2 table client integration", () => {
 
     expect(count).toHaveBeenCalledWith({
       params: {
+        includeHidden: "1",
         filters: {
           and: [
             {
@@ -185,6 +188,7 @@ describe("GIVEN: admin-v2 table client integration", () => {
 
     expect(find).toHaveBeenCalledWith({
       params: {
+        includeHidden: "1",
         filters: {
           and: [
             {
@@ -266,6 +270,7 @@ describe("GIVEN: admin-v2 table client integration", () => {
 
     expect(count).toHaveBeenCalledWith({
       params: {
+        includeHidden: "1",
         filters: {
           and: [baseFilter],
         },
@@ -283,6 +288,7 @@ describe("GIVEN: admin-v2 table client integration", () => {
 
     expect(find).toHaveBeenCalledWith({
       params: {
+        includeHidden: "1",
         filters: {
           and: [baseFilter],
         },

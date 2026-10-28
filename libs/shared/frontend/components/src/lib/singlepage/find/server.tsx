@@ -1,4 +1,6 @@
 "use server";
+
+import { publicReadOptions } from "@sps/shared-utils/public-read";
 import "server-only";
 
 import { IComponentProps } from "./interface";
@@ -10,7 +12,20 @@ export async function Component<
   A extends { api: ReturnType<typeof factory<M>> },
   CP extends IComponentProps<M, V>,
 >(props: CP & A) {
-  const data = await props.api.find(props.apiProps);
+  const data = await props.api.find(
+    publicReadOptions({
+      ...props.apiProps,
+      params: {
+        ...props.apiProps?.params,
+        filters: {
+          and: [
+            ...(props.apiProps?.params?.filters?.and || []),
+            { column: "variant", method: "ne", value: "hidden" },
+          ],
+        },
+      },
+    }),
+  );
 
   if (!data) {
     return <></>;

@@ -15,6 +15,7 @@ export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/rbac/subjects";
 export const variants = [
+  "hidden",
   "me-social-module-profile-id-sidebar-ai-chat",
   "me-authentication-email-and-password-reset-password-form-ai-chat",
   "me-authentication-email-and-password-forgot-password-form-ai-chat",

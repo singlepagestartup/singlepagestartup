@@ -15,7 +15,12 @@ import {
   GOOGLE_ANALYTICS_ID,
   GOOGLE_TAG_MANAGER_ID,
   YANDEX_METRIKA_ID,
+  resolveSeoRoute,
 } from "@sps/shared-utils";
+import { internationalization } from "@sps/shared-configuration";
+import { api as pageApi } from "@sps/host/models/page/sdk/server";
+import { headers } from "next/headers";
+import { notFound } from "next/navigation";
 import { Component as Revalidation } from "../src/components/revalidation";
 import http from "http";
 import https from "https";
@@ -29,8 +34,26 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = (await headers()).get("x-sps-pathname");
+  const { pathname: pagePath, language } = resolveSeoRoute(
+    pathname || "/",
+    internationalization.languages.map((item) => item.code),
+    internationalization.defaultLanguage.code,
+  );
+
+  // A notFound inside the streamed page/Suspense tree cannot change a 200
+  // status already sent. Validate the route before returning the root shell.
+  if (pathname && !/^\/admin(?:\/|$)/.test(pagePath)) {
+    const page = await pageApi.findByUrl({
+      url: pagePath,
+      language,
+      silentNotFound: true,
+    });
+    if (!page) notFound();
+  }
+
   return (
-    <html className="scroll-smooth">
+    <html className="scroll-smooth" lang={language}>
       {GOOGLE_TAG_MANAGER_ID ? (
         <GoogleTagManager gtmId={GOOGLE_TAG_MANAGER_ID} />
       ) : null}

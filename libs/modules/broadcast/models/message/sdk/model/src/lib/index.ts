@@ -15,7 +15,7 @@ export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const tag = "message";
 export const route = "/api/broadcast/messages";
-export const variants = ["default"] as const;
+export const variants = ["hidden", "default"] as const;
 export const query = {};
 export const options = {
   next: {

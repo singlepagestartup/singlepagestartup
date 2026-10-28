@@ -5,15 +5,11 @@ import { IComponentProps } from "./interface";
 import { api } from "@sps/host/models/page/sdk/server";
 
 export default async function Server(props: IComponentProps) {
-  const data = await api
-    .findByUrl({
-      url: props.url,
-      catchErrors: true,
-      silentErrorStatuses: props.silentNotFound ? [404] : undefined,
-    })
-    .catch((error) => {
-      //
-    });
+  const data = await api.findByUrl({
+    language: props.language,
+    url: props.url,
+    silentNotFound: props.silentNotFound,
+  });
 
   if (!props.children || typeof props.children !== "function") {
     return;

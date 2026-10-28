@@ -41,6 +41,9 @@ export class Middleware {
     return createMiddleware(async (c, next) => {
       const reqMethod = c.req.method.toUpperCase();
       const reqPath = c.req.path.toLowerCase();
+      const includeHidden =
+        reqMethod === "GET" && c.req.query("includeHidden") === "1";
+      const collection = /^\/api\/[^/]+\/[^/]+/.exec(reqPath)?.[0];
       const secretKey =
         c.req.header("X-RBAC-SECRET-KEY") || getCookie(c, "rbac.secret-key");
       const authorization =
@@ -69,11 +72,20 @@ export class Middleware {
         return next();
       }
 
-      if (this.allowedRoutesMatcher.matches(reqPath, reqMethod)) {
+      if (
+        !includeHidden &&
+        this.allowedRoutesMatcher.matches(reqPath, reqMethod)
+      ) {
         return next();
       }
 
       try {
+        if (includeHidden && (!authorization || !collection))
+          throw new HTTPException(403, {
+            message: "Administrative read requires authentication",
+          });
+        const permissionMethod = includeHidden ? "POST" : reqMethod;
+        const permissionPath = includeHidden ? collection! : reqPath;
         const headers: Record<string, string> = {
           ...(secretKey ? { "X-RBAC-SECRET-KEY": secretKey } : {}),
           ...(authorization ? { Authorization: authorization } : {}),
@@ -81,8 +93,9 @@ export class Middleware {
           "X-SPS-Consistency": "1",
         };
 
-        const cacheKey = `${reqMethod}:${reqPath}:${authorization || ""}:${secretKey || ""}`;
+        const cacheKey = `${permissionMethod}:${permissionPath}:${authorization || ""}:${secretKey || ""}`;
         if (await cache.getAsync<boolean>(cacheKey)) {
+          if (includeHidden) c.set("sps.includeHidden", true);
           return next();
         }
 
@@ -96,8 +109,8 @@ export class Middleware {
               await subjectApi.authenticationIsAuthorized({
                 params: {
                   permission: {
-                    route: reqPath,
-                    method: reqMethod,
+                    route: permissionPath,
+                    method: permissionMethod,
                     type: "HTTP",
                   },
                 },
@@ -112,6 +125,7 @@ export class Middleware {
           await promise;
           cache.set(cacheKey, true);
         }
+        if (includeHidden) c.set("sps.includeHidden", true);
       } catch (error: any) {
         const { status, message, details } = getHttpErrorType(error);
         throw new HTTPException(status, { message, cause: details });

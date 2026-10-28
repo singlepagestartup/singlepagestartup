@@ -6,7 +6,9 @@ import {
   query,
   options,
 } from "@sps/host/models/metadata/sdk/model";
-import { action as generate } from "./actions/generate";
+import { action as generate, generatePageSeo } from "./actions/generate";
+
+export type { IGeneratePageSeoProps, IPageSeoResult } from "./actions/generate";
 
 export type IProps = {};
 
@@ -20,4 +22,5 @@ export const api = {
     options,
   }),
   generate,
+  generatePageSeo,
 };

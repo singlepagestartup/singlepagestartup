@@ -2,6 +2,8 @@
 
 import { Component as ParentComponent } from "@sps/host/models/metadata/frontend/component";
 import { Component as PagesToMetadata } from "@sps/host/relations/pages-to-metadata/frontend/component";
+import { Component as File } from "@sps/file-storage/models/file/frontend/component";
+import { Component as MetadataToFiles } from "@sps/host/relations/metadata-to-file-storage-module-files/frontend/component";
 import { IComponentProps } from "./interface";
 import { Component as Metadata } from "../";
 import { Component as Page } from "../../page";
@@ -12,6 +14,33 @@ export function Component(props: IComponentProps) {
       isServer={false}
       data={props.data}
       variant="admin-v2-form"
+      metadataToFileStorageModuleFiles={({ data }) =>
+        data ? (
+          <MetadataToFiles
+            isServer={false}
+            variant="admin-v2-table"
+            rightModelAdminFormLabel="Cover file"
+            rightModelAdminForm={({ data }) => (
+              <File
+                isServer={false}
+                variant="admin-v2-form"
+                data={
+                  data?.fileStorageModuleFileId
+                    ? ({ id: data.fileStorageModuleFileId } as any)
+                    : undefined
+                }
+              />
+            )}
+            apiProps={{
+              params: {
+                filters: {
+                  and: [{ column: "metadataId", method: "eq", value: data.id }],
+                },
+              },
+            }}
+          />
+        ) : null
+      }
       pagesToMetadata={({ data }) => {
         if (!data) {
           return;

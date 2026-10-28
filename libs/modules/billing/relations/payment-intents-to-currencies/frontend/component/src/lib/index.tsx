@@ -1,3 +1,4 @@
+import { shouldHideRecord } from "@sps/shared-utils/public-read";
 import { IComponentProps } from "./interface";
 import { variants } from "./variants";
 

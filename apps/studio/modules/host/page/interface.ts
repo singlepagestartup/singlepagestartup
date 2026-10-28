@@ -5,6 +5,7 @@ export interface IModel extends IHostRecord {
   url: string;
   description: string | null;
   language: string;
+  indexing?: "auto" | "noindex";
   className: string | null;
 }
 

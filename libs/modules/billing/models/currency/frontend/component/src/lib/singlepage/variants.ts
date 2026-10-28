@@ -1,3 +1,4 @@
+import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
 import { Component as find } from "./find";
 import { Component as AdminTableRow } from "./admin/table-row";
 import { Component as AdminTable } from "./admin/table";
@@ -14,6 +15,7 @@ import { Component as ToggleGroupDefault } from "./toggle-group-default";
 import { Component as Symbol } from "./symbol";
 
 export const variants = {
+  hidden: Hidden,
   "admin-table-row": AdminTableRow,
   "admin-table": AdminTable,
   "admin-select-input": AdminSelectInput,

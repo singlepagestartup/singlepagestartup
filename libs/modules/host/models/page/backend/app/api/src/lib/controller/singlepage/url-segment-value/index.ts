@@ -28,6 +28,7 @@ export class Handler {
       const segmentValue = await this.service.urlSegmentValue({
         url: sanitizedUrl,
         segment,
+        language: c.req.query("language"),
       });
 
       return c.json({

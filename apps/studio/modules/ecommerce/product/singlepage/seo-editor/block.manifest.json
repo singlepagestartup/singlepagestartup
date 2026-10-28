@@ -1,0 +1,29 @@
+{
+  "$schema": "../../../../../block.schema.json",
+  "id": "ecommerce.product.seo-editor",
+  "title": "Product / seo-editor",
+  "description": "Localized SEO editing and preview.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "ecommerce",
+    "entityType": "model",
+    "entity": "product",
+    "variant": "seo-editor"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "ecommerce.product",
+    "pageName": "ecommerce",
+    "variantName": "seo-editor",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["ecommerce", "product", "seo"]
+}

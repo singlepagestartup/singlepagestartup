@@ -7,6 +7,7 @@ import { Component as ChildComponent } from "./Component";
 
 export default async function Server(props: IComponentProps) {
   const data = await api.findByUrl({
+    language: props.language,
     url: props.url,
     catchErrors: true,
     silentErrorStatuses: [404],

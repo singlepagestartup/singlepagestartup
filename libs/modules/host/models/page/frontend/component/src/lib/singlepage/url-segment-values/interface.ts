@@ -7,6 +7,7 @@ export const variant = "url-segment-values" as const;
 export interface IComponentProps extends Omit<ISpsComponentBase, "children"> {
   variant: typeof variant;
   url: string;
+  language?: string;
   /** Uses Page.findByUrl; every named value comes from the matched URL mask. */
   children?: (props: {
     data: IResolvedPage["routeParams"] | undefined;

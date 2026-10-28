@@ -1,4 +1,6 @@
 "use server";
+
+import { adminReadOptions } from "@sps/shared-utils/public-read";
 import "server-only";
 
 import { IComponentProps, IComponentPropsExtended } from "./interface";
@@ -19,10 +21,12 @@ export async function Component<
   const { Component: Child } = props;
 
   if (props.data?.id) {
-    const data = await props.api.findById({
-      id: props.data.id,
-      ...props.apiProps,
-    });
+    const data = await props.api.findById(
+      adminReadOptions({
+        id: props.data.id,
+        ...props.apiProps,
+      }),
+    );
 
     return (
       <Child variant={props.variant} isServer={props.isServer} data={data} />

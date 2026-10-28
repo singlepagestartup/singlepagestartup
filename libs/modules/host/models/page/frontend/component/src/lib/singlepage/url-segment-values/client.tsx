@@ -7,7 +7,10 @@ import { Component as ChildComponent } from "./Component";
 import { Skeleton } from "./Skeleton";
 
 export default function Client(props: IComponentProps) {
-  const { data, isLoading } = api.findByUrl({ url: props.url });
+  const { data, isLoading } = api.findByUrl({
+    language: props.language,
+    url: props.url,
+  });
 
   if (isLoading) return <Skeleton />;
 

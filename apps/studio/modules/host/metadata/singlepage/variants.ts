@@ -7,6 +7,7 @@ import { Component as Default } from "./default/index";
 import { Component as List } from "./list/index";
 
 export const variants = {
+  "seo-preview": SeoPreview,
   "admin-v2-card": AdminV2Card,
   "admin-v2-form": AdminV2Form,
   "admin-v2-list": AdminV2List,
@@ -15,3 +16,4 @@ export const variants = {
   default: Default,
   list: List,
 };
+import { Component as SeoPreview } from "./seo-preview";

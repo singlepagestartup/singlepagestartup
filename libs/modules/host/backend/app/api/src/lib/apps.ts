@@ -1,3 +1,4 @@
+import { app as metadataToFileStorageModuleFiles } from "@sps/host/relations/metadata-to-file-storage-module-files/backend/app/api";
 import { app as layout } from "@sps/host/models/layout/backend/app/api";
 import { app as metadata } from "@sps/host/models/metadata/backend/app/api";
 import { app as page } from "@sps/host/models/page/backend/app/api";
@@ -18,6 +19,11 @@ export class Apps {
   }
 
   bindApps() {
+    this.apps.push({
+      type: "relation",
+      route: "/metadata-to-file-storage-module-files",
+      app: metadataToFileStorageModuleFiles,
+    });
     this.apps.push({
       type: "model",
       route: "/layouts",

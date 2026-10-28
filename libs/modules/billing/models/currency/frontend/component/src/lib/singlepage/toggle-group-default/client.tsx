@@ -1,4 +1,6 @@
 "use client";
+
+import { publicReadOptions } from "@sps/shared-utils/public-read";
 import "client-only";
 
 import { IComponentProps } from "./interface";
@@ -7,9 +9,11 @@ import { api } from "@sps/billing/models/currency/sdk/client";
 import { Component as Child } from "./Component";
 
 export function Component(props: IComponentProps) {
-  const { data, isLoading } = api.find({
-    ...props.apiProps,
-  });
+  const { data, isLoading } = api.find(
+    publicReadOptions({
+      ...props.apiProps,
+    }),
+  );
 
   if (isLoading || !data) {
     return props.skeleton ?? <Skeleton />;

@@ -15,6 +15,13 @@
       "when": 1738272313227,
       "tag": "0001_keen_ser_duncan",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793200383417,
+      "tag": "0002_useful_moon_knight",
+      "breakpoints": true
     }
   ]
 }

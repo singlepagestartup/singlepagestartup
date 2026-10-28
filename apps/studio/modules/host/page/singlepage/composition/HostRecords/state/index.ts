@@ -29,6 +29,7 @@ export function createHostModel<K extends HostModel>(
       url: "/new-page",
       description: null,
       language: "en",
+      indexing: "auto",
       className: null,
     },
     layout: {
@@ -54,6 +55,8 @@ export function createHostModel<K extends HostModel>(
       keywords: null,
       author: null,
       viewport: null,
+      opengraphImage: null,
+      twitterImage: null,
       opengraphTitle: null,
       opengraphDescription: null,
       opengraphUrl: null,
@@ -138,7 +141,10 @@ export function validateHostModel(
     state.models[kind].some(
       (item) =>
         item.id !== record.id &&
-        hostFieldValue(item, unique) === hostFieldValue(record, unique),
+        hostFieldValue(item, unique) === hostFieldValue(record, unique) &&
+        (kind !== "page" ||
+          hostFieldValue(item, "language") ===
+            hostFieldValue(record, "language")),
     )
   )
     return `${unique} already exists.`;

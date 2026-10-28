@@ -1,4 +1,6 @@
 "use client";
+
+import { adminReadOptions } from "@sps/shared-utils/public-read";
 import "client-only";
 
 import { factory } from "@sps/shared-frontend-client-api";
@@ -18,16 +20,18 @@ export function Component<
   CP extends IComponentProps<M, V>,
 >(props: CP & A) {
   const { Component: Child } = props;
-  const { data: count } = props.api.count({
-    params: props.apiProps?.params,
-    options: {
-      ...props.apiProps?.options,
-      headers: {
-        ...props.apiProps?.options?.headers,
-        "Cache-Control": "no-store",
+  const { data: count } = props.api.count(
+    adminReadOptions({
+      params: props.apiProps?.params,
+      options: {
+        ...props.apiProps?.options,
+        headers: {
+          ...props.apiProps?.options?.headers,
+          "Cache-Control": "no-store",
+        },
       },
-    },
-  });
+    }),
+  );
 
   return <Child {...props} isServer={false} data={[]} count={count ?? 0} />;
 }

@@ -14,7 +14,7 @@ import {
 export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/social/messages";
-export const variants = ["list-ai-chat", "default"];
+export const variants = ["hidden", "list-ai-chat", "default"];
 export const query = {};
 export const options = {
   next: {

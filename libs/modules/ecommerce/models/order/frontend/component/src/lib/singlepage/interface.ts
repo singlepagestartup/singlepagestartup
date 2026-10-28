@@ -1,3 +1,4 @@
+import { IComponentProps as IHiddenComponentProps } from "@sps/shared-frontend-components/singlepage/hidden/interface";
 import type { IComponentProps as IPurchaseAiChat } from "./purchase-ai-chat/interface";
 import { IComponentProps as IOrdersToProductsQuantityDefaultComponentProps } from "./orders-to-products/quantity/default/interface";
 import { IComponentProps as IFindComponentProps } from "./find/interface";
@@ -17,6 +18,7 @@ import { IComponentProps as IDeleteComponentProps } from "./delete/interface";
 import { IComponentProps as ICartDefaultComponentProps } from "./cart-default/interface";
 import { IComponentProps as IFormFieldDefaultComponentProps } from "./form-field-default/interface";
 export type IComponentProps =
+  | IHiddenComponentProps
   | IPurchaseAiChat
   | IOrdersToProductsQuantityDefaultComponentProps
   | IFindComponentProps

@@ -1,0 +1,21 @@
+{
+  "componentName": "blog.article",
+  "pageName": "blog",
+  "variantName": "seo-editor",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "blog.article.seo-editor",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "blog/article/singlepage/seo-editor",
+    "sps.figma.component": "blog.article",
+    "sps.figma.variant": "seo-editor",
+    "sps.source.module": "blog",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "article",
+    "sps.source.variant": "seo-editor",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/blog/article/singlepage/seo-editor/Component.tsx",
+    "sps.code.story": "apps/studio/modules/blog/article/singlepage/seo-editor/Component.stories.tsx"
+  }
+}

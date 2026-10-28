@@ -30,6 +30,7 @@ export class Handler {
 
       const entity = await this.service.findByUrl({
         url,
+        language: c.req.query("language"),
         params: c.var.parsedQuery,
       });
 

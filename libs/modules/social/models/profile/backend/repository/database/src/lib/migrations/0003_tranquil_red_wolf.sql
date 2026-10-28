@@ -1,0 +1,1 @@
+ALTER TABLE "sl_profile" ADD COLUMN "metadata" jsonb DEFAULT '{}'::jsonb NOT NULL;

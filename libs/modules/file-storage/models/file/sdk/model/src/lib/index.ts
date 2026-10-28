@@ -17,6 +17,7 @@ export const route = "/api/file-storage/files";
 export const defaultSocialModulePersonalAssistantVariant =
   "default-social-module-personal-assistant";
 export const variants = [
+  "hidden",
   "default",
   "generate-template-opengraph-image-default",
   "generate-template-ecommerce-order-receipt-default",

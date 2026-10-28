@@ -1,4 +1,6 @@
 "use client";
+
+import { publicReadOptions } from "@sps/shared-utils/public-read";
 import "client-only";
 
 import { factory } from "@sps/shared-frontend-client-api";
@@ -22,13 +24,15 @@ export function Component<
 >(props: CP & A) {
   const { Component: Child } = props;
 
-  const { data, isLoading, refetch } = props.api.findById({
-    id: props.data.id,
-    ...props.apiProps,
-    reactQueryOptions: {
-      enabled: false,
-    },
-  });
+  const { data, isLoading, refetch } = props.api.findById(
+    publicReadOptions({
+      id: props.data.id,
+      ...props.apiProps,
+      reactQueryOptions: {
+        enabled: false,
+      },
+    }),
+  );
 
   const passProps: any = { ...props, data };
   delete passProps.Component;

@@ -1,3 +1,4 @@
+import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
 import { Component as CartDefault } from "./cart/default";
 import { Component as Find } from "./find";
 import { Component as AdminTableRow } from "./admin/table-row";
@@ -16,6 +17,7 @@ import { Component as AdminV2SidebarItem } from "./admin-v2/sidebar-item";
 import { Component as AdminV2Card } from "./admin-v2/card";
 
 export const variants = {
+  hidden: Hidden,
   "cart-default": CartDefault,
   find: Find,
   "admin-table-row": AdminTableRow,

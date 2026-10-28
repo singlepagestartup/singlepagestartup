@@ -1,83 +1,76 @@
 # Host Page Model
 
-## Purpose
+Pages own localized URL masks and compose layouts, widgets and Metadata through
+explicit relations. Fields are `id`, `title`, `description`, `url`, `language`,
+`indexing`, `variant`, `className`, `adminTitle`, `createdAt` and `updatedAt`.
+The database enforces uniqueness of `(url, language)`.
 
-Pages represent routable site pages and act as containers for layouts, widgets,
-and metadata. The default variant assembles layout structure and in-page widgets
-for the page. Page resolves the Layout's default and additional Widget links,
-composes their Host Widgets with the current route, and supplies ready nodes to
-the Layout. The Layout and its relation presenters receive no URL. Host leaf
-compositions use the Page url-segment-values render-reader to obtain named URL
-values. Domain Widgets receive the complete readonly routeParams map and select
-explicit resource props for their Content and model views. Host retains
-presentation flags without interpreting business screens.
+## Route lookup
 
-## Fields
+`findByUrl({ url, language })` selects the exact language (defaulting to the
+configured default language), then tries static pages before dynamic masks.
+It returns `IResolvedPage`: the saved Page and a computed `routeParams` map.
+Keys are complete placeholders such as `blog.articles.slug`; values retain
+encoded pathname segments. ID/slug lookups target the exact entity. Hidden Page,
+main entity or required nested association means 404. Unknown masks are rejected.
+The map is not stored. Queries and fragments are not route parameters.
 
-- `id`: unique identifier (UUID).
-- `title`: page title.
-- `url`: page URL path.
-- `description`: page description.
-- `createdAt`: creation timestamp.
-- `updatedAt`: last update timestamp.
-- `variant`: display variant/style.
-- `className`: custom CSS classes.
-- `language`: language code.
-- `adminTitle`: title shown in admin interface.
+Host leaf compositions use Page `variant="url-segment-values"` callbacks and
+pass explicit IDs/slugs to domain components. Keep the complete map in that
+callback. The scalar `url-segment-value` API remains compatible. Client lookup
+keys include language and URL; unresolved pages return undefined, static pages
+return an empty map. Missing keys remain undefined.
 
-## Variants
+`default` composes the page; `hidden` renders nothing and is unavailable as a
+public route. `find`, `find-by-url`, both URL readers and both admin generations
+retain their ordinary roles. Admin reads explicitly request `includeHidden=1`.
 
-- `default`: renders page layouts and page widgets for the current page.
-- `find`: data-fetch wrapper for querying pages.
-- `find-by-url`: resolves a page by URL path (routing helper).
-- `url-segment-value`: exposes one URL value through a render callback (compatibility).
-- `url-segment-values`: exposes all named URL values through one render callback using the shared findByUrl query.
-- `admin-select-input`: admin UI select input for linking pages.
-- `admin-table-row`: admin UI row for page listings.
-- `admin-form`: admin UI create/edit form.
-- `admin-table`: admin UI table for browsing pages.
+## Visibility and caching
 
-## URL lookup cache
+`indexing="auto"` applies the public/private route policy. `noindex` keeps a page
+accessible but removes it from search candidates and emits noindex. `hidden`
+takes precedence and returns 404. Hidden optional widgets/files/links suppress
+only their element. Hidden is publication state, not a replacement for RBAC.
 
-The client `findByUrl` query key includes the URL and query parameters, so
-different destinations have separate entries. Both URL lookup readers subscribe
-to Page changes through `host.pages`.
+Shared REST reads exclude hidden before pagination/count. Operator reads may
+include it; editor reads use `includeHidden=1` and require the collection's POST
+permission. `publicOnly=1` enforces visible data even with privileged credentials.
+Administrative reads bypass the legacy anonymous HTTP cache. Public browser
+readers request publicOnly and do not reuse admin query keys.
 
-HTTP response caching excludes `find-by-url`, `url-segment-value` and `urls`.
-These operations expand Page masks against other modules' records; a fixed
-Page-only cache topic cannot describe all changes to dynamic route values.
-The exclusions are defined in
-`libs/middlewares/src/lib/http-cache/routes/singlepage.ts`.
+HTTP cache excludes dependent Page operations `find-by-url`, `url-segment-value`
+and `urls`. Host currently renders the catch-all per request: its root checks
+locale and existence before streaming, and its admin/session compositions read
+request state. Production verification exposed DYNAMIC_SERVER_USAGE when an ISR
+fallback tried these reads. Page/SEO SDK reads use no-store; ordinary public
+API reads keep their existing generation-checked caching and invalidation.
+Any future return to ISR must preserve true 404, session isolation and immediate
+hidden transitions in a built Host, not just in development.
 
-## Resolved route parameters
+## Sitemap and robots
 
-`findByUrl` returns `IResolvedPage`: the saved Page plus a computed routeParams
-map. Full placeholder names from Page.url are the keys; values retain their
-encoded pathname representation. The field is not stored in the Page table.
-Static pages return an empty map. Locale is removed by the Host entrypoint and
-passed separately. Query/hash do not become route parameters.
+Anonymous `GET /api/host/pages/urls` lists public candidates with saved Page
+language. It excludes hidden/noindex Pages and private routes before expansion.
+Supported public masks cover Blog, Ecommerce and Profile ID/slug routes and
+pagination. Nested associations must exist and be visible. Values are encoded;
+hidden records are removed before pagination. Unknown masks are not enumerated.
+Public enumeration sends no admin credential or session. Unauthorized collections
+are omitted; temporary failures propagate. The enumeration safety cap is one
+million candidates, not the per-file sitemap limit.
 
-Host leaf compositions use the public Page component:
+Host `/sitemap.xml` uses the standard sitemap namespace, absolute public URLs,
+supported saved languages and deterministic deduplication. It emits a urlset or
+an index of `/sitemap.xml?part=N` chunks, each within 50,000 URLs and 50 MiB.
+Invalid chunk numbers return 404. API failure returns no-store HTTP 503 with
+Retry-After; a successful empty collection is a valid empty sitemap. No dates
+or hreflang alternatives are inferred from timestamps/configuration alone.
 
-```tsx
-<Page isServer={props.isServer} variant="url-segment-values" url={props.url}>
-  {({ data }) => <RbacModuleWidget isServer={props.isServer} variant="subject-me-social-module-profile-id-chat-id-thread-id-ai-chat" dataSource="props" data={widget} routeParams={data} />}
-</Page>
-```
+Pagination sizes must be positive safe integers. Page 1 uses the unnumbered
+URL; subsequent pages keep separate canonical URLs. Locale redirects use 308.
+Robots publishes Yandex Clean-param for known tracking fields. Content selectors
+such as segment, intent and offer remain significant; projects whose query
+changes indexable content must define its canonical policy. Accessible private
+pages stay crawlable so robots can observe noindex.
 
-The leaf callback passes the map unchanged to the module Widget. Upper Page,
-Layout and Host Widget compositions do not drill it through the tree. The module
-Widget selects full keys and supplies explicit IDs/slugs to its lower views.
-`IRouteParams` lives in shared route utilities and represents missing keys as
-undefined. Repeated readers for the same URL share the client SDK query;
-background refetch retains the mounted child. The server path uses the same
-findByUrl SDK operation. A static Page supplies `{}`, and an unresolved Page
-supplies `undefined`. A profile/chat/thread screen needs one map read instead
-of three nested scalar reads. The scalar urlSegmentValue API and its client/server
-component remain supported for external consumers and use the common parser.
-Legacy partial-name selection remains; an unrelated missing key returns null,
-including on a route with omitted pagination.
-
-Route parsing does not validate resource access. Existing Page resolution and
-scoped backend authorization remain active; this change does not replace
-withUrls/urls expansion or enable legacy caching for those dependent reads.
+Before migration, audit saved Page languages and duplicate `(url, language)`
+values. A default language value does not prove the content is translated.

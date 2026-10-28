@@ -58,7 +58,7 @@ export function Component(props: IComponentPropsExtended) {
       {isImage ? (
         <Image
           src={src}
-          alt=""
+          alt={props.data.alt || ""}
           fill={props.data.containerClassName?.includes("aspect-")}
           width={
             !props.data.containerClassName?.includes("aspect-")

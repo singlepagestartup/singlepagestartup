@@ -29,6 +29,9 @@ export function Component(props: IComponentPropsExtended) {
   const form = useForm<z.infer<typeof insertSchema>>({
     resolver: zodResolver(insertSchema),
     defaultValues: {
+      language: props.data?.language || "en",
+      indexing: props.data?.indexing || "auto",
+      description: props.data?.description || "",
       title: props.data?.title || "",
       url: props.data?.url || "/",
       variant: props.data?.variant || "default",
@@ -138,6 +141,31 @@ export function Component(props: IComponentPropsExtended) {
 
         <TabsContent value="details" className="mt-0 pt-6">
           <div className="flex flex-col gap-6">
+            <FormField
+              ui="shadcn"
+              type="text"
+              name="language"
+              label="Language"
+              form={form}
+            />
+            <FormField
+              ui="shadcn"
+              type="text"
+              name="description"
+              label="Description"
+              form={form}
+            />
+            <FormField
+              ui="shadcn"
+              type="select"
+              name="indexing"
+              label="Search indexing"
+              form={form}
+              options={[
+                ["auto", "Automatic"],
+                ["noindex", "No index"],
+              ]}
+            />
             <FormField
               ui="shadcn"
               type="text"

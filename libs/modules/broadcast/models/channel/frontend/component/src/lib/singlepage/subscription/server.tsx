@@ -1,4 +1,6 @@
 "use server";
+
+import { publicReadOptions } from "@sps/shared-utils/public-read";
 import "server-only";
 
 import { ErrorBoundary } from "@sps/ui-adapter";
@@ -13,10 +15,12 @@ export async function Component(props: IComponentProps) {
       return <></>;
     }
 
-    const data = await api.findById({
-      id: props.data.id,
-      ...props.apiProps,
-    });
+    const data = await api.findById(
+      publicReadOptions({
+        id: props.data.id,
+        ...props.apiProps,
+      }),
+    );
 
     if (!data) {
       return <></>;

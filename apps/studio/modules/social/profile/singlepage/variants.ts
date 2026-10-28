@@ -1,3 +1,4 @@
+import { Component as SeoEditor } from "./seo-editor";
 import { Component as AccountMenu } from "./account-menu/index";
 import { Component as AdminV2Card } from "./admin-v2-card/index";
 import { Component as AdminV2Table } from "./admin-v2-table/index";
@@ -23,6 +24,7 @@ import { Component as SettingsAiChatProject } from "./settings/ai-chat/project/i
 import { Component as SidebarAiChatProject } from "./sidebar/ai-chat/project/index";
 
 export const variants = {
+  "seo-editor": SeoEditor,
   "account-menu": AccountMenu,
   "admin-v2-card": AdminV2Card,
   "admin-v2-table": AdminV2Table,

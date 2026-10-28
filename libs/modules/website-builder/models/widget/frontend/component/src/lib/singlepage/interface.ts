@@ -1,3 +1,4 @@
+import { IComponentProps as IHiddenComponentProps } from "@sps/shared-frontend-components/singlepage/hidden/interface";
 import type { IComponentProps as IContentSocialChatDefault } from "./content/social/chat-default/interface";
 import type { IComponentProps as IContentEcommerceDefault } from "./content-ecommerce-default/interface";
 import type { IComponentProps as IContentAiChatResetPassword } from "./content-ai-chat-reset-password/interface";
@@ -26,6 +27,7 @@ import { IComponentProps as IContentDefaultComponentProps } from "./content-defa
 import { IComponentProps as IFooterDefaultComponentProps } from "./footer-default/interface";
 import { IComponentProps as INavbarDefaultComponentProps } from "./navbar-default/interface";
 export type IComponentProps =
+  | IHiddenComponentProps
   | IContentSocialChatDefault
   | IContentEcommerceDefault
   | IContentAiChatResetPassword

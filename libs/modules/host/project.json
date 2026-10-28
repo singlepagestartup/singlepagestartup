@@ -9,12 +9,8 @@
     "jest:test": {},
     "jest:integration": {
       "executor": "@nx/jest:jest",
-      "outputs": [
-        "{projectRoot}/coverage"
-      ],
-      "inputs": [
-        "{projectRoot}"
-      ],
+      "outputs": ["{projectRoot}/coverage"],
+      "inputs": ["{projectRoot}"],
       "options": {
         "jestConfig": "libs/modules/host/jest.integration.config.ts",
         "passWithNoTests": true
@@ -89,6 +85,9 @@
           },
           {
             "command": "nx run @sps/host:relations:widgets-to-external-widgets:repository-generate"
+          },
+          {
+            "command": "nx run @sps/host:relations:metadata-to-file-storage-module-files:repository-generate"
           }
         ]
       }
@@ -134,6 +133,9 @@
           },
           {
             "command": "nx run @sps/host:relations:widgets-to-external-widgets:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/host:relations:metadata-to-file-storage-module-files:repository-migrate"
           }
         ]
       }
@@ -410,6 +412,38 @@
         "parallel": false,
         "envFile": "apps/api/.env",
         "cwd": "libs/modules/host/relations/widgets-to-external-widgets/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "relations:metadata-to-file-storage-module-files:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/host/relations/metadata-to-file-storage-module-files/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          },
+          {
+            "command": "npx nx run @sps/providers-db:repository-generate"
+          }
+        ]
+      }
+    },
+    "relations:metadata-to-file-storage-module-files:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/host/relations/metadata-to-file-storage-module-files/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"

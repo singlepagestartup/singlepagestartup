@@ -3,7 +3,13 @@ import { internationalization } from "@sps/shared-configuration";
 
 export default async function NotFoundPage() {
   return (
-    <HostModulePage isServer={true} variant="find-by-url" url="/404">
+    <HostModulePage
+      isServer={true}
+      variant="find-by-url"
+      url="/404"
+      language={internationalization.defaultLanguage.code}
+      silentNotFound={true}
+    >
       {({ data }) => {
         if (!data) {
           return (

@@ -23,6 +23,7 @@ describe("Locale redirects preserve the browser origin", () => {
         headers: { host },
       });
       const response = await middleware(request);
+      expect(response.status).toBe(308);
       expect(response.headers.get("location")).toBe(
         `http://${host}/ru?check=origin`,
       );
@@ -69,5 +70,19 @@ describe("Locale redirects preserve the browser origin", () => {
     );
     expect(response.headers.get("location")).toBeNull();
     expect(response.headers.get("x-middleware-next")).toBe("1");
+    expect(response.headers.get("x-middleware-request-x-sps-pathname")).toBe(
+      "/ru/account/profile",
+    );
+  });
+
+  it("overwrites caller-supplied routing context", async () => {
+    const response = await middleware(
+      new NextRequest("https://example.com/ru/missing?utm_source=test", {
+        headers: { "x-sps-pathname": "/ru/admin" },
+      }),
+    );
+    expect(response.headers.get("x-middleware-request-x-sps-pathname")).toBe(
+      "/ru/missing",
+    );
   });
 });

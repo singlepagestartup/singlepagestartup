@@ -1,3 +1,4 @@
+import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
 import { Component as AdminV2SidebarItem } from "./admin-v2/sidebar-item";
 import { Component as AdminV2Card } from "./admin-v2/card";
 import { Component as AdminV2Form } from "./admin-v2/form";
@@ -14,6 +15,7 @@ import { Component as AdminTableRow } from "./admin/table-row";
 import { Component as Find } from "./find";
 import { Component as Default } from "./default";
 export const variants = {
+  hidden: Hidden,
   "profile-overview-default": ProfileOverviewDefault,
   "chat-list-default": ChatListDefault,
   "chat-overview-default": ChatOverviewDefault,

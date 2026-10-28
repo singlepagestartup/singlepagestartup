@@ -1,7 +1,12 @@
 import * as pgCore from "drizzle-orm/pg-core";
-import { randomWordsGenerator } from "@sps/shared-utils";
+import { type IEntityMetadata, randomWordsGenerator } from "@sps/shared-utils";
 
 export const fields = {
+  metadata: pgCore
+    .jsonb("metadata")
+    .$type<IEntityMetadata>()
+    .notNull()
+    .default({}),
   id: pgCore.uuid("id").primaryKey().defaultRandom(),
   className: pgCore.text("class_name"),
   createdAt: pgCore.timestamp("created_at").notNull().defaultNow(),

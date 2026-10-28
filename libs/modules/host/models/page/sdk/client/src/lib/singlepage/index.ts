@@ -30,6 +30,7 @@ import { PHASE_PRODUCTION_BUILD } from "next/constants";
 
 export interface IFindByUrlProps {
   url: string;
+  language?: string;
   params?: {
     [key: string]: any;
   };
@@ -38,6 +39,7 @@ export interface IFindByUrlProps {
 
 export interface IUrlSegmentValueProps {
   url: string;
+  language?: string;
   segment: string;
   params?: {
     [key: string]: any;
@@ -65,7 +67,11 @@ export const api = {
   }),
   findByUrl: (props: IFindByUrlProps) => {
     const stringifiedQuery = QueryString.stringify(
-      { ...props.params, url: props.url },
+      {
+        ...props.params,
+        url: props.url,
+        language: props.language ?? props.params?.language,
+      },
       { encodeValuesOnly: true },
     );
     const queryKey = `${route}/find-by-url?${stringifiedQuery}`;
@@ -129,7 +135,12 @@ export const api = {
     const { url, segment } = props;
 
     const stringifiedQuery = QueryString.stringify(
-      { ...props?.params, url, segment },
+      {
+        ...props?.params,
+        url,
+        segment,
+        language: props.language ?? props.params?.language,
+      },
       {
         encodeValuesOnly: true,
       },

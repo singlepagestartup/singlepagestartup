@@ -1,3 +1,4 @@
+import { IComponentProps as IHiddenComponentProps } from "@sps/shared-frontend-components/singlepage/hidden/interface";
 import { IComponentProps as ICartDefaultComponentProps } from "./cart/default/interface";
 import { IComponentProps as IFindComponentProps } from "./find/interface";
 import { IComponentProps as IAdminTableRowComponentProps } from "./admin/table-row/interface";
@@ -16,6 +17,7 @@ import { IComponentProps as IPriceDefaultComponentProps } from "./price-default/
 import { IComponentProps as ICurrencyToggleGroupDefaultComponentProps } from "./currency/toggle-group-default/interface";
 
 export type IComponentProps =
+  | IHiddenComponentProps
   | ICartDefaultComponentProps
   | IFindComponentProps
   | IAdminTableRowComponentProps

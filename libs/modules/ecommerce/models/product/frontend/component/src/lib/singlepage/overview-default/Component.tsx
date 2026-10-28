@@ -9,7 +9,6 @@ import {
   CardContent,
   CardFooter,
   CardHeader,
-  CardTitle,
   TipTap,
 } from "@sps/shared-ui-shadcn";
 import { TIPTAP_EMPTY_DOC } from "@sps/shared-utils";
@@ -57,7 +56,9 @@ export function Component(props: IComponentPropsExtended) {
         </ProductsToFileStorageModuleFiles>
       </CardHeader>
       <CardContent>
-        <CardTitle>{props.data.title?.[props.language]}</CardTitle>
+        <h1 className="text-2xl font-semibold leading-none tracking-tight">
+          {props.data.title?.[props.language]}
+        </h1>
       </CardContent>
       {props.middleSlot}
       <CardContent className="flex flex-col gap-3">

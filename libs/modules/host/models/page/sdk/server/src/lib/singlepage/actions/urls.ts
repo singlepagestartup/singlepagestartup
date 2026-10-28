@@ -1,64 +1,34 @@
-import { route, IModel, serverHost } from "@sps/host/models/page/sdk/model";
-import {
-  NextRequestOptions,
-  responsePipe,
-  transformResponseItem,
-} from "@sps/shared-utils";
-import { PHASE_PRODUCTION_BUILD } from "next/constants";
+import { route, serverHost } from "@sps/host/models/page/sdk/model";
+import { responsePipe } from "@sps/shared-utils";
 
-export async function action(props: { catchErrors?: boolean; host?: string }) {
+interface IUrlRecord {
+  url: string;
+  language?: string;
+}
+
+interface IUrlsProps {
+  catchErrors?: boolean;
+  host?: string;
+}
+
+export async function action({
+  host = serverHost,
+  catchErrors = false,
+}: IUrlsProps) {
   try {
-    const productionBuild = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
-    const { host = serverHost } = props;
-
-    const noCache = productionBuild;
-
-    const cacheControlOptions: NextRequestOptions["headers"] = noCache
-      ? { "Cache-Control": "no-store" }
-      : {};
-
-    const options: NextRequestOptions = {
-      headers: {
-        ...cacheControlOptions,
-      },
-      next: {
-        tags: [route],
-      },
-    };
-
-    const res = await fetch(`${host}${route}/urls`, options);
-
-    const json = await responsePipe<{
-      data: IModel & { urls: { url: string }[] };
-    }>({
-      res,
-      catchErrors: props.catchErrors || productionBuild,
-    });
-
-    if (!json) {
-      return;
+    const res = await fetch(`${host}${route}/urls`, { cache: "no-store" });
+    const json = await responsePipe<{ data: { urls: IUrlRecord[] } }>({ res });
+    if (!Array.isArray(json?.data?.urls)) {
+      throw new Error("Invalid page URL enumeration response");
     }
-
-    const transformedData = transformResponseItem<
-      IModel & {
-        urls: { url: string }[];
+    return json.data.urls.map((entry) => {
+      if (typeof entry.url !== "string" || !entry.url.startsWith("/")) {
+        throw new Error("Invalid URL in page enumeration response");
       }
-    >(json);
-
-    const paths =
-      transformedData?.urls?.map((pageParams: { url: string }) => {
-        return {
-          ...pageParams,
-          url:
-            pageParams.url === "/"
-              ? []
-              : pageParams.url.split("/").filter((p) => p !== ""),
-        };
-      }) || [];
-
-    return paths;
+      return { ...entry, url: entry.url.split("/").filter(Boolean) };
+    });
   } catch (error) {
-    console.error(error);
-    return [];
+    if (catchErrors) return undefined;
+    throw error;
   }
 }

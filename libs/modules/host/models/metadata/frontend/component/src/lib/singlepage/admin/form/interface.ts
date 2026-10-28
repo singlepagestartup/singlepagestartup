@@ -11,6 +11,9 @@ export const variant = "admin-form" as const;
 
 export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
+  metadataToFileStorageModuleFiles?: (
+    props: ISpsComponentBase & { data?: IModel },
+  ) => ReactNode;
   pagesToMetadata?: (props: ISpsComponentBase & { data?: IModel }) => ReactNode;
 }
 

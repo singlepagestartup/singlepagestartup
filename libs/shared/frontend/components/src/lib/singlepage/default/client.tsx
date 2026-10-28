@@ -1,4 +1,9 @@
 "use client";
+
+import {
+  publicReadOptions,
+  shouldHideRecord,
+} from "@sps/shared-utils/public-read";
 import "client-only";
 
 import { factory } from "@sps/shared-frontend-client-api";
@@ -20,10 +25,12 @@ export function Component<
 >(props: CP & A) {
   const { Component: Child } = props;
 
-  const { data, isLoading } = props.api.findById({
-    id: props.data.id,
-    ...props.apiProps,
-  });
+  const { data, isLoading } = props.api.findById(
+    publicReadOptions({
+      id: props.data.id,
+      ...props.apiProps,
+    }),
+  );
 
   const passProps: any = { ...props, data };
   delete passProps.Component;
@@ -37,5 +44,6 @@ export function Component<
     return props.Skeleton ?? <Skeleton />;
   }
 
+  if (shouldHideRecord(data, props.variant)) return null;
   return <Child {...passProps} data={data} />;
 }

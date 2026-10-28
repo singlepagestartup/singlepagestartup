@@ -1000,3 +1000,46 @@ describe("bounded cache generations", () => {
     );
   });
 });
+
+/** An admin response on a public collection must never populate the anonymous cache. */
+describe("hidden/admin collection cache isolation", () => {
+  it.each([
+    { query: "?includeHidden=1", headers: {} },
+    { query: "", headers: { Authorization: "Bearer editor" } },
+    { query: "", headers: { "X-RBAC-SECRET-KEY": "operator" } },
+    { query: "", headers: { Cookie: "rbac.subject.jwt=editor" } },
+    { query: "", headers: { Cookie: "rbac.secret-key=operator" } },
+  ])(
+    "does not cache privileged GET $headers $query",
+    async ({ query, headers }) => {
+      const values = new Map<string, string>();
+      const middleware = new Middleware();
+      middleware.storeProvider = {
+        async get({ prefix, key }: any) {
+          return values.get(`${prefix}:${key}`) ?? null;
+        },
+        async set({ prefix, key, value }: any) {
+          values.set(`${prefix}:${key}`, value);
+        },
+      } as any;
+      const app = new Hono();
+      app.use(middleware.init());
+      const read = jest.fn((c: any) => c.json({ data: [{ id: SID }] }));
+      app.get("/api/blog/articles", read);
+      for (let i = 0; i < 2; i++) {
+        expect(
+          (
+            await app.request(`/api/blog/articles${query}`, {
+              headers: headers as Record<string, string>,
+            })
+          ).status,
+        ).toBe(200);
+        await new Promise((resolve) => setImmediate(resolve));
+      }
+      expect(read).toHaveBeenCalledTimes(2);
+      expect(
+        [...values.keys()].some((key) => key.startsWith("http-cache:data:")),
+      ).toBe(false);
+    },
+  );
+});

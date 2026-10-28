@@ -1,4 +1,6 @@
 "use client";
+
+import { adminReadOptions } from "@sps/shared-utils/public-read";
 import "client-only";
 
 import { cn } from "@sps/shared-frontend-client-utils";
@@ -175,32 +177,38 @@ function SelectInputDataLoader<M extends { id?: string }, V>(
       normalizedSearch,
     );
 
-  const { data, isLoading, isFetching } = api.find({
-    ...childProps.apiProps,
-    params: buildParams(shouldPreferIdSearch ? "id" : searchField),
-    reactQueryOptions: {
-      placeholderData: (previousData: M[] | undefined) => previousData,
-    },
-  });
+  const { data, isLoading, isFetching } = api.find(
+    adminReadOptions({
+      ...childProps.apiProps,
+      params: buildParams(shouldPreferIdSearch ? "id" : searchField),
+      reactQueryOptions: {
+        placeholderData: (previousData: M[] | undefined) => previousData,
+      },
+    }),
+  );
 
-  const idSearchQuery = api.find({
-    ...childProps.apiProps,
-    params: buildParams("id"),
-    reactQueryOptions: {
-      enabled: searchByIdEnabled && !shouldPreferIdSearch,
-    },
-  });
+  const idSearchQuery = api.find(
+    adminReadOptions({
+      ...childProps.apiProps,
+      params: buildParams("id"),
+      reactQueryOptions: {
+        enabled: searchByIdEnabled && !shouldPreferIdSearch,
+      },
+    }),
+  );
 
   const selectedId =
     typeof selectedValue === "string" && selectedValue.length
       ? selectedValue
       : "";
-  const selectedEntityQuery = api.findById({
-    id: (selectedId || "__select-input-empty-id__") as any,
-    reactQueryOptions: {
-      enabled: Boolean(selectedId),
-    },
-  });
+  const selectedEntityQuery = api.findById(
+    adminReadOptions({
+      id: (selectedId || "__select-input-empty-id__") as any,
+      reactQueryOptions: {
+        enabled: Boolean(selectedId),
+      },
+    }),
+  );
 
   useEffect(() => {
     if (!isLoading) {

@@ -8,6 +8,7 @@ export interface IComponentProps extends ISpsComponentBase {
   variant: typeof variant;
   segment: string;
   url: string;
+  language?: string;
   children?: (props: { data: string | undefined }) => any;
 }
 

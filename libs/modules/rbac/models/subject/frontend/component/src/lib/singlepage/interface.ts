@@ -1,3 +1,4 @@
+import { IComponentProps as IHiddenComponentProps } from "@sps/shared-frontend-components/singlepage/hidden/interface";
 import type { IComponentProps as ISocialModuleProfileFindProps } from "./social-module/profile/find/interface";
 import type { IComponentProps as IMeBlogModuleArticlePrivateContentDefault } from "./me/blog-module/article/private-content-default/interface";
 import type { IComponentProps as IMeNavigationControlsAiChatInterface } from "./me/navigation/controls-ai-chat/interface";
@@ -85,6 +86,7 @@ import { IComponentProps as ISocialModuleProfileChatListDefaultComponentProps } 
 import { IComponentProps as ISocialModuleProfileChatOverviewDefaultComponentProps } from "./social-module/profile/chat/overview/default/interface";
 
 export type IComponentProps =
+  | IHiddenComponentProps
   | ISocialModuleProfileFindProps
   | IMeBlogModuleArticlePrivateContentDefault
   | IMeNavigationControlsAiChatInterface

@@ -1,3 +1,4 @@
+import { shouldHideRecord } from "@sps/shared-utils/public-read";
 import { ReactNode, Suspense } from "react";
 import { IComponentProps, IComponentPropsExtended } from "./interface";
 import {
@@ -36,6 +37,7 @@ export function Component<
     children?: ReactNode;
   },
 ) {
+  if (shouldHideRecord(props.data, props.variant)) return null;
   if (props.dataSource === "props") {
     const {
       Component: ChildComponent,

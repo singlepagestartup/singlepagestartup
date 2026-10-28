@@ -263,6 +263,12 @@ export class Middleware {
       const isCacheExcluded = this.excludedRoutesMatcher.matches(pathname);
       const isCacheableGet =
         method === "GET" &&
+        new URLSearchParams(params).get("includeHidden") !== "1" &&
+        !c.req.header("Authorization") &&
+        !c.req.header("X-RBAC-SECRET-KEY") &&
+        !/(?:^|;\s*)rbac\.(?:subject\.jwt|secret-key)=/.test(
+          c.req.header("Cookie") || "",
+        ) &&
         cacheControl !== "no-store" &&
         !isCacheExcluded &&
         c.req.header("X-SPS-Consistency") !== "1";

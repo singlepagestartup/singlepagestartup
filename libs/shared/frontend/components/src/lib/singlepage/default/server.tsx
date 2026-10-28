@@ -1,4 +1,9 @@
 "use server";
+
+import {
+  publicReadOptions,
+  shouldHideRecord,
+} from "@sps/shared-utils/public-read";
 import "server-only";
 
 import { IComponentProps, IComponentPropsExtended } from "./interface";
@@ -22,10 +27,12 @@ export async function Component<
     return <></>;
   }
 
-  const data = await props.api.findById({
-    id: props.data.id,
-    ...props.apiProps,
-  });
+  const data = await props.api.findById(
+    publicReadOptions({
+      id: props.data.id,
+      ...props.apiProps,
+    }),
+  );
 
   if (!data) {
     return <></>;
@@ -39,5 +46,6 @@ export async function Component<
   delete passProps.clientApi;
   delete passProps.serverApi;
 
+  if (shouldHideRecord(data, props.variant)) return null;
   return <Child {...passProps} data={data} />;
 }

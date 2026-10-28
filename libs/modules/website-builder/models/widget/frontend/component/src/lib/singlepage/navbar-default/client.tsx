@@ -1,4 +1,6 @@
 "use client";
+
+import { publicReadOptions } from "@sps/shared-utils/public-read";
 import "client-only";
 
 import { Component } from "./Component";
@@ -9,10 +11,12 @@ import { Component as Logotype } from "./assets/logotype";
 import { Component as Content } from "./assets/content";
 
 export default function Client(props: IComponentProps) {
-  const { data, isFetching, isLoading } = api.findById({
-    id: props.data.id,
-    ...props.apiProps,
-  });
+  const { data, isFetching, isLoading } = api.findById(
+    publicReadOptions({
+      id: props.data.id,
+      ...props.apiProps,
+    }),
+  );
 
   if (isFetching || isLoading || !data) {
     return <Skeleton />;
