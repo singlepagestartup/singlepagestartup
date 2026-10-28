@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Development services",
+    "ru": "Разработка проектов"
+  },
+  "subtitle": {},
+  "url": "/ecommerce",
+  "className": "w-fit",
+  "id": "adf87d11-5fba-439d-be4c-e65152603199",
+  "createdAt": "2026-10-23T20:18:03.664Z",
+  "updatedAt": "2026-10-23T20:18:03.664Z",
+  "variant": "ghost",
+  "adminTitle": "Development services",
+  "slug": "framework-footer-products-catalog"
+}

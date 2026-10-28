@@ -1,11 +1,13 @@
+import { internationalization } from "@sps/shared-configuration";
 import Link from "next/link";
 import { memo } from "react";
 import { Icon, type IconName } from "@sps/ui-adapter";
-import type { IProjectSummary, IProjectsOverviewProps } from "./interface";
+import type { IProjectCardProps, IProjectsOverviewProps } from "./interface";
 const control =
   "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground disabled:cursor-not-allowed disabled:opacity-50";
 export function Component({
   variant = "subject-me-social-module-profile-create-ai-chat",
+  language = internationalization.defaultLanguage.code,
   projects,
   pending = false,
   error = false,
@@ -15,6 +17,7 @@ export function Component({
   onRetry,
   children,
 }: IProjectsOverviewProps) {
+  const ru = language === "ru";
   if (creating)
     return (
       <div className="w-full min-w-0">
@@ -25,7 +28,7 @@ export function Component({
             className={`${control} border border-border bg-card text-foreground hover:bg-muted`}
           >
             <Glyph name="arrow-left" />
-            Back to projects
+            {ru ? "К проектам" : "Back to projects"}
           </button>
         </div>
         {children}
@@ -44,9 +47,13 @@ export function Component({
             aria-hidden="true"
             className="mb-5 block h-1 w-10 rounded-full bg-primary"
           />
-          <h1 className="text-3xl font-semibold tracking-tight">My projects</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">
+            {ru ? "Мои проекты" : "My projects"}
+          </h1>
           <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
-            Choose a project to continue with its documents and conversations.
+            {ru
+              ? "Выберите проект, чтобы продолжить работу с его документами и обсуждениями."
+              : "Choose a project to continue with its documents and conversations."}
           </p>
         </div>
         <button
@@ -56,16 +63,18 @@ export function Component({
           className={`${control} bg-primary text-primary-foreground hover:brightness-95`}
         >
           <Glyph name="plus" />
-          Create project
+          {ru ? "Создать проект" : "Create project"}
         </button>
       </div>
       {pending ? (
         <section
           role="status"
-          aria-label="Loading your projects"
+          aria-label={ru ? "Загрузка проектов" : "Loading your projects"}
           aria-busy="true"
         >
-          <span className="sr-only">Loading your projects…</span>
+          <span className="sr-only">
+            {ru ? "Загрузка проектов…" : "Loading your projects\u2026"}
+          </span>
           <div
             aria-hidden="true"
             className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
@@ -89,26 +98,35 @@ export function Component({
           className="rounded-2xl border border-destructive-border bg-destructive-surface p-6"
         >
           <h2 className="font-semibold text-destructive">
-            Couldn't load your projects.
+            {ru
+              ? "Не удалось загрузить проекты."
+              : "Couldn't load your projects."}
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Try again to reconnect to your workspace.
+            {ru
+              ? "Повторите попытку загрузить рабочее пространство."
+              : "Try again to reconnect to your workspace."}
           </p>
           <button
             type="button"
             onClick={onRetry}
             className={`${control} mt-5 border border-border bg-card text-foreground hover:bg-muted`}
           >
-            Try again
+            {ru ? "Повторить" : "Try again"}
           </button>
         </section>
       ) : projects.length ? (
         <ul
-          aria-label="Your projects"
+          aria-label={ru ? "Ваши проекты" : "Your projects"}
           className="grid list-none gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3"
         >
           {projects.map((project) => (
-            <ProjectCard key={project.id} project={project} variant={variant} />
+            <ProjectCard
+              key={project.id}
+              project={project}
+              variant={variant}
+              language={language}
+            />
           ))}
         </ul>
       ) : (
@@ -117,10 +135,13 @@ export function Component({
             <span className="mx-auto mb-5 grid size-14 place-items-center rounded-2xl bg-muted">
               <Glyph name="folder-open" />
             </span>
-            <h2 className="text-xl font-semibold">No projects yet</h2>
+            <h2 className="text-xl font-semibold">
+              {ru ? "Проектов пока нет" : "No projects yet"}
+            </h2>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              Create your first project to keep its files, documents and
-              conversations together.
+              {ru
+                ? "Создайте первый проект, чтобы хранить его файлы, документы и обсуждения вместе."
+                : "Create your first project to keep its files, documents and conversations together."}
             </p>
           </div>
         </section>
@@ -131,10 +152,9 @@ export function Component({
 const ProjectCard = memo(function ProjectCard({
   project,
   variant,
-}: {
-  project: IProjectSummary;
-  variant: string;
-}) {
+  language,
+}: IProjectCardProps) {
+  const ru = language === "ru";
   return (
     <li
       data-module="rbac"
@@ -145,7 +165,7 @@ const ProjectCard = memo(function ProjectCard({
     >
       <Link
         href={project.href}
-        aria-label={`Open ${project.name}`}
+        aria-label={ru ? `Открыть ${project.name}` : `Open ${project.name}`}
         className="group flex h-full min-h-52 flex-col rounded-2xl border border-border bg-card p-6 text-foreground no-underline transition hover:border-foreground/30 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
       >
         <span className="mb-5 grid size-11 place-items-center rounded-xl bg-muted">
@@ -153,10 +173,12 @@ const ProjectCard = memo(function ProjectCard({
         </span>
         <h2 className="break-words text-lg font-semibold">{project.name}</h2>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          Your documents, files and conversations.
+          {ru
+            ? "Документы, файлы и обсуждения проекта."
+            : "Your documents, files and conversations."}
         </p>
         <span className="mt-6 flex items-center gap-2 text-sm font-semibold">
-          Open project <Glyph name="arrow-right" />
+          {ru ? "Открыть проект" : "Open project"} <Glyph name="arrow-right" />
         </span>
       </Link>
     </li>

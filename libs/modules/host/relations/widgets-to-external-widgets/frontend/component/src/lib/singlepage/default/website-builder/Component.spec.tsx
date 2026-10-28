@@ -5,6 +5,14 @@
  * When: Host resolves the external Widget variant.
  * Then: Website Builder owns the content shell and receives the module form through its child slot.
  */
+jest.mock(
+  "@sps/website-builder/relations/widgets-to-buttons-arrays/frontend/component",
+  () => ({
+    Component: (props: any) =>
+      props.variant === "find" ? props.children({ data: [] }) : null,
+  }),
+);
+jest.mock("@sps/shared-ui-shadcn", () => ({ TipTap: () => null }));
 import { renderToStaticMarkup } from "react-dom/server";
 const widgets = [{ id: "website-widget", variant: "landing-ai-chat" }];
 const widgetReads = jest.fn();
@@ -140,7 +148,7 @@ it.each([
     false,
   ],
 ])(
-  "passes a presentation flag to the Navbar for %s without exposing the URL",
+  "keeps URL and active-link selection out of the Navbar adapter for %s",
   (url, helpSelected) => {
     widgets[0].variant = "navbar-ai-chat";
     renderToStaticMarkup(<Component {...props} url={url} />);
@@ -149,7 +157,6 @@ it.each([
       expect.objectContaining({
         variant: "navbar-ai-chat",
         language: "en",
-        helpSelected,
         data: expect.objectContaining({ id: "website-widget" }),
       }),
     );
@@ -172,13 +179,13 @@ it.each([
   },
 );
 
-it("shows Sign in for an anonymous default Subject without reading account or project views", () => {
+it("shows the sign-in control for an anonymous default Subject without reading account or project views", () => {
   widgets[0].variant = "navbar-ai-chat";
   authenticated = false;
   const html = renderToStaticMarkup(
     <Component {...props} url="/ai-chat/projects" />,
   );
-  expect(html).toContain("Sign in");
+  expect(html).toContain("Войти");
   expect(html).not.toContain("Projects unavailable");
   expect(subjectCalls.mock.calls.map(([call]) => call.variant)).toEqual([
     "me-navigation-controls-ai-chat",

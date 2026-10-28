@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "b506da85-a3ee-4d2b-bb0c-6bf5616267dc",
+  "createdAt": "2026-10-26T00:12:34.855Z",
+  "updatedAt": "2026-10-27T14:59:52.223Z",
+  "variant": "step",
+  "title": {
+    "en": "Publish your project",
+    "ru": "Опубликуйте проект"
+  },
+  "subtitle": {
+    "en": "03",
+    "ru": "03"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Register with a hosting service where your website will run. Then ask the AI assistant to publish the project directly from the SinglePageStartup chat. You will get a link for customers and access to the code.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Зарегистрируйтесь на хостинге — сервисе, где будет работать ваш сайт. Затем попросите ИИ-помощника опубликовать проект прямо из чата SinglePageStartup. Вы получите ссылку для клиентов и доступ к коду.\"}]}]}"
+  },
+  "adminTitle": "Опубликуйте проект",
+  "slug": "framework-reviewed-step-publish"
+}

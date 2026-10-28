@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Work with Social.",
+    "ru": "Работайте с Social."
+  },
+  "subtitle": {
+    "en": "Experience",
+    "ru": "Интерфейс"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Profiles, authorship, chats, threads, messages and their associations.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Профили, авторство, чаты, ветки, сообщения и их связи.\"}]}]}"
+  },
+  "anchor": "module-social",
+  "className": "@5xl:grid-cols-2",
+  "id": "fea5c8f0-881d-4e72-bf00-89232cbd1516",
+  "createdAt": "2026-10-24T01:05:58.523Z",
+  "updatedAt": "2026-10-24T01:05:58.523Z",
+  "variant": "content-definition-grid-page",
+  "adminTitle": "Work with Social.",
+  "slug": "framework-journey-guide-social-overview"
+}

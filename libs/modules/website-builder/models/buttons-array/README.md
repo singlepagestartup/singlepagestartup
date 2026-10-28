@@ -18,9 +18,16 @@ ButtonsArray groups multiple buttons into a single ordered set.
 
 ## Variants
 
+- `actions`: ordered action group with content-width children and a wrapping row.
+- `actions-full`: the same ordered group with full-width action relations for a registration or form CTA.
+
 - `default`: renders buttons via `buttons-arrays-to-buttons` relation.
 - `find`: data-fetch wrapper for querying arrays.
 - `admin-select-input`: admin UI select input for linking arrays.
 - `admin-table-row`: admin UI row for array listings.
 - `admin-form`: admin UI create/edit form.
 - `admin-table`: admin UI table for browsing arrays.
+
+`navigation` owns the responsive column/row layout for a main navbar;
+`navigation-inline` owns wrapping links for compact navigation and footers.
+Their default associations render the exact saved Button variants in order.

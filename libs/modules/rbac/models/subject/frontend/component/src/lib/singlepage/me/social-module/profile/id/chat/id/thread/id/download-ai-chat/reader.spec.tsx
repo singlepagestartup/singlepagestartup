@@ -57,6 +57,7 @@ import { Component } from "./index";
 
 const props = {
   isServer: false,
+  language: "en",
   variant: "me-social-module-profile-id-chat-id-thread-id-download-ai-chat",
   data: subject,
   project: {

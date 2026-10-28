@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Module structure",
+    "ru": "Устройство модуля"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Widget composes a block; Feature, Button, Slide and other models store its content. The component variant defines its appearance. Functional components from other modules are passed into the block through JSX slots.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Widget собирает блок; Feature, Button, Slide и другие модели хранят его содержимое. Вариант компонента задаёт оформление. Функциональные компоненты других модулей передаются в блок через JSX slots.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "150cab95-c182-4f86-a700-8ff4930c77c1",
+  "createdAt": "2026-10-26T00:11:37.560Z",
+  "updatedAt": "2026-10-27T14:58:48.912Z",
+  "variant": "content-rich",
+  "adminTitle": "Устройство модуля",
+  "slug": "framework-reviewed-article-website-builder-technical"
+}

@@ -1,0 +1,45 @@
+{
+  "$schema": "../../../../../block.schema.json",
+  "id": "website-builder.widget.content-collection",
+  "title": "content-collection",
+  "description": "Collection frame with editable heading, content grid and footer slots.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "content-collection"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "children",
+      "type": "richText",
+      "required": false
+    },
+    {
+      "name": "footer",
+      "type": "richText",
+      "required": false
+    },
+    {
+      "name": "actions",
+      "type": "richText",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "website-builder.widget",
+    "pageName": "website-builder",
+    "variantName": "content-collection",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["website-builder", "widget", "content-collection"]
+}

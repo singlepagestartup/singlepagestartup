@@ -1,0 +1,21 @@
+{
+  "id": "34da615d-433a-4e1a-b424-9dac843d98b3",
+  "createdAt": "2026-10-23T20:18:08.182Z",
+  "updatedAt": "2026-10-23T20:18:08.182Z",
+  "variant": "default",
+  "type": "one_off",
+  "slug": "framework-startup",
+  "title": {
+    "en": "Startup development",
+    "ru": "Разработка стартапа"
+  },
+  "shortDescription": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"A startup project built on SPS. Development starts at USD 2000; the final scope is agreed separately.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Стартап на базе SPS. Разработка — от 2000 USD; итоговый состав работ согласуется отдельно.\"}]}]}"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"A startup project built on SPS. Development starts at USD 2000; the final scope is agreed separately. The framework code is free.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Стартап на базе SPS. Разработка — от 2000 USD; итоговый состав работ согласуется отдельно. Код фреймворка бесплатный.\"}]}]}"
+  },
+  "adminTitle": "Startup development"
+}

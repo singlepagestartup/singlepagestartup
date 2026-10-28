@@ -1,5 +1,6 @@
 import type { Service as SubjectService } from "../../index";
 import { Service as Participants } from "./participants";
+import { Service as Presentations } from "./presentations";
 
 export interface IFindProps {
   subjectId: string;
@@ -73,9 +74,20 @@ export class Service {
     const participants = await new Participants(this.service).findForChats(
       chats.map((chat) => chat.id),
     );
+    const presentations = await new Presentations(this.service).find(
+      [...participants.values()].flatMap((profiles) =>
+        profiles.map((profile) => profile.id),
+      ),
+    );
     return chats.map((chat) => ({
       ...chat,
       participants: participants.get(chat.id) || [],
+      participantPresentations: (participants.get(chat.id) || []).flatMap(
+        (profile) => {
+          const presentation = presentations.get(profile.id);
+          return presentation ? [presentation] : [];
+        },
+      ),
     }));
   }
 }

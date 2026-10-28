@@ -177,8 +177,8 @@ project-specific indexes. Changing a natural key requires coordinated changes
 to repository fields, service lookup filters, the repair operation, and a
 generated migration.
 
-Telegram bootstrap and free-subscription provisioning do not serialize
-requests with application or advisory locks. Concurrent requests execute
+Telegram identity bootstrap uses permanent unique indexes rather than an
+application-wide lock. Concurrent requests execute
 independently: permanent unique indexes reject a conflicting insert, and the
 request that loses that insert replays bootstrap instead of failing. Every
 bootstrap step is find-or-create, so the replay observes the row the winning
@@ -198,19 +198,26 @@ Email/password, OAuth and wallet authentication ensure the shared
 `free-subscription` product after creating the personal profile. Existing
 active subscriptions retain their terms; signing in again does not create a
 second order or grant another allowance. A new free order completes local
-zero-price invoice settlement and delivery before authentication returns,
-so its role and token balance are ready for the first assistant request.
+zero-price invoice settlement and delivery before authentication returns.
+Personal Profile creation and the initial Free grant use a Subject-scoped
+transaction lock; fulfillment also locks the Order. The graph, accepted
+Invoice, Role and initial 3000 credits commit together. Free provisioning owns
+that transaction and dispatches effects after commit; it makes no loopback
+checkout or payment-provider call inside the transaction.
 
 Configure the free product through the runtime API or admin interface: price
 zero, interval `day`, token top-up `3000`, and the associated access role.
 Keep its interval and top-up attributes separate from other tariffs. The
-internal `dummy` provider must be allowed for web provisioning. Free invoices
-settle locally and do not call a payment provider. The existing Order check
-and RBAC Subject check jobs expire and renew each daily period; renewal resets
-the single token balance to 3000 and delivers the next daily allowance.
-All requests continue to debit that balance through the existing BillRoute.
-These jobs must run in the deployment. Repository data snapshots are not the
-configuration interface.
+internal `dummy` provider records the local zero-price settlement. Free grants
+3000 credits once per registered account and cannot be repurchased or renewed
+through self-service checkout. Its interval remains Order metadata, not a
+daily credit schedule. Paid subscription cycles and one-off top-ups add their
+configured credits once per accepted Invoice; pack quantities multiply the
+credit amount. Expiry, cancellation and revocation do not reset wallets or
+remove previously granted credits. Requests continue to debit the balance
+through the existing BillRoute calculation. Order and Subject jobs still
+manage paid subscription lifecycle and access. Repository data snapshots are
+not the configuration interface.
 
 ### Repair and rollout
 

@@ -13,6 +13,9 @@ export interface IAccountMenuProps {
   showTokens?: boolean;
   page?: string;
   settingsHref?: string;
+  createArticleHref?: string;
+  authorHref?: string;
+  chatsHref?: string;
   settingsTarget?: "_top";
   onNavigate?: () => void;
   onSignOut?: () => void;

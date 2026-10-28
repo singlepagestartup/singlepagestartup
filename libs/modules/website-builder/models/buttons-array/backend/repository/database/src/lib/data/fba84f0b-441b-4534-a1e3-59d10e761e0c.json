@@ -1,0 +1,14 @@
+{
+  "id": "fba84f0b-441b-4534-a1e3-59d10e761e0c",
+  "createdAt": "2026-10-24T01:06:10.251Z",
+  "updatedAt": "2026-10-24T01:06:10.251Z",
+  "variant": "default",
+  "className": "w-full",
+  "title": {
+    "en": "Actions",
+    "ru": "Действия"
+  },
+  "description": {},
+  "adminTitle": "Actions",
+  "slug": "framework-journey-module-notification-actions"
+}

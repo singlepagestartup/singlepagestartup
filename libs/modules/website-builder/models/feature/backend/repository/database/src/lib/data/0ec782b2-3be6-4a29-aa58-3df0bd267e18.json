@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "0ec782b2-3be6-4a29-aa58-3df0bd267e18",
+  "createdAt": "2026-10-26T00:12:08.502Z",
+  "updatedAt": "2026-10-27T14:59:23.774Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "crm",
+    "ru": "crm"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Use enquiries as input data.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Используйте заявки как входные данные.\"}]}]}"
+  },
+  "adminTitle": "crm",
+  "slug": "framework-reviewed-article-agent-connections-feature-0"
+}

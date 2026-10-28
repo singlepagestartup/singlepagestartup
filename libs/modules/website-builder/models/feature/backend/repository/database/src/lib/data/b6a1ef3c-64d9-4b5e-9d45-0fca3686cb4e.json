@@ -1,0 +1,18 @@
+{
+  "className": null,
+  "id": "b6a1ef3c-64d9-4b5e-9d45-0fca3686cb4e",
+  "createdAt": "2026-10-23T20:18:06.044Z",
+  "updatedAt": "2026-10-23T20:18:06.044Z",
+  "variant": "card",
+  "title": {
+    "en": "Shared cache and realtime",
+    "ru": "Общий кеш и realtime"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"SDK results use React Query. Database changes invalidate dependent reads through the shared consistency pipeline.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Результаты SDK хранятся в React Query. Изменения базы инвалидируют зависимые запросы через общий механизм consistency.\"}]}]}"
+  },
+  "adminTitle": "Shared cache and realtime",
+  "slug": "framework-about-architecture-feature-4"
+}

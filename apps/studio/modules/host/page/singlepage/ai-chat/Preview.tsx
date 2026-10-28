@@ -118,7 +118,7 @@ function Pages({
   | "onCreatingProjectChange"
 >) {
   const { projects } = useProfiles();
-  if (!route) return <main role="status">Page unavailable.</main>;
+  if (!route) return <main role="status">Страница недоступна.</main>;
   const serviceVariant = servicePages[route.page as keyof typeof servicePages];
   const available = projects.some((profile) => profile.id === route.profileId);
   return (

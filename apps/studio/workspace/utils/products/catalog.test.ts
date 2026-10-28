@@ -90,17 +90,18 @@ describe("product catalog", () => {
     ]);
     expect(pages?.title).toBe("Pages");
     expect(pages?.children.map(({ route }) => route)).toEqual([
-      "/ai-chat/",
+      "/",
       "/ai-chat/rbac/subjects/authentication/registration",
       "/ai-chat/rbac/subjects/authentication/select-method",
       "/ai-chat/social/profiles/[social.profiles.id]",
       "/ai-chat/rbac/subjects/tokens",
+      "/ai-chat/rbac/subjects/subscriptions/pro",
       "/ai-chat/rbac/subjects/settings",
       "/ai-chat/help",
     ]);
     expect(
       pages?.children.find(({ id }) => id === "project-workspace")?.title,
-    ).toBe("Project chat");
+    ).toBe("Чат проекта");
     expect(
       pages?.children.find(({ id }) => id === "project-workspace")?.uses,
     ).toEqual([

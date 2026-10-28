@@ -1,0 +1,21 @@
+{
+  "id": "e93ef7fc-4619-4c66-a71a-46e4bae7ed2a",
+  "className": "",
+  "createdAt": "2026-10-26T00:12:16.385Z",
+  "updatedAt": "2026-10-27T15:00:25.857Z",
+  "variant": "card",
+  "adminTitle": "Добавляйте разделы с содержимым вашего бизнеса",
+  "slug": "framework-startup",
+  "title": {
+    "en": "Add sections with content for your business",
+    "ru": "Добавляйте разделы с содержимым вашего бизнеса"
+  },
+  "subtitle": {
+    "en": "Sections for your business",
+    "ru": "Разделы под ваш бизнес"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Present a special offer or a separate launch page. Add blocks with the content your particular project needs.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Оформите особое предложение или отдельную страницу запуска. Добавляйте блоки с содержимым, которое нужно именно вашему проекту.\"}]}]}"
+  }
+}

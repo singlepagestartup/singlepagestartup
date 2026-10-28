@@ -10,6 +10,7 @@ export const variant = "overview-default" as const;
 export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
   language: string;
+  embedded?: boolean;
 }
 
 export interface IComponentPropsExtended

@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Explore module",
+    "ru": "Изучить модуль"
+  },
+  "subtitle": {},
+  "url": "/framework/modules/host",
+  "className": "w-fit",
+  "id": "e6ea1f3c-70c3-4a6a-ae5f-a2e3e553984a",
+  "createdAt": "2026-10-24T01:05:49.563Z",
+  "updatedAt": "2026-10-24T01:05:49.563Z",
+  "variant": "secondary",
+  "adminTitle": "Explore module",
+  "slug": "framework-journey-module-group-6-actions-0"
+}

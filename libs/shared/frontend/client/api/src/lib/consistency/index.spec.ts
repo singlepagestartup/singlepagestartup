@@ -163,3 +163,61 @@ it("clears a previously loaded private result when reconciliation loses access",
   state.destroy();
   client.clear();
 });
+
+it("keeps addressed realtime refetch attached when private scope follows the principal/host key partition", async () => {
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  const state = queryConsistency(client);
+  state.setConnected(true);
+  const firstFetch = jest.fn(async () => {
+    response("http://localhost/api/records?slot=first", "private-first");
+    return [{ id: "first" }];
+  });
+  const secondFetch = jest.fn(async () => {
+    response("http://localhost/api/records?slot=second", "private-second");
+    return [{ id: "second" }];
+  });
+  const first = new QueryObserver(client, {
+    queryKey: [
+      "/api/records",
+      { slot: "first" },
+      { principal: "subject", host: "http://localhost" },
+      { protectedContentScope: "first" },
+    ],
+    queryFn: firstFetch,
+    meta: { protectedContentScope: "first" },
+  });
+  const second = new QueryObserver(client, {
+    queryKey: [
+      "/api/records",
+      { slot: "second" },
+      { principal: "subject", host: "http://localhost" },
+      { protectedContentScope: "second" },
+    ],
+    queryFn: secondFetch,
+    meta: { protectedContentScope: "second" },
+  });
+  const unsubscribeFirst = first.subscribe(() => {});
+  const unsubscribeSecond = second.subscribe(() => {});
+  await flush();
+  unsubscribeFirst();
+  client.removeQueries({
+    predicate: (query) => query.meta?.protectedContentScope === "first",
+  });
+  state.receive({
+    protocol: 1,
+    type: "invalidate",
+    epoch: "test",
+    cursor: "2",
+    refs: ["private-second"],
+  });
+  await flush();
+  expect(firstFetch).toHaveBeenCalledTimes(1);
+  expect(secondFetch).toHaveBeenCalledTimes(2);
+  expect(client.getQueryCache().getAll()).toHaveLength(1);
+  expect(second.getCurrentResult().data).toEqual([{ id: "second" }]);
+  unsubscribeSecond();
+  state.destroy();
+  client.clear();
+});

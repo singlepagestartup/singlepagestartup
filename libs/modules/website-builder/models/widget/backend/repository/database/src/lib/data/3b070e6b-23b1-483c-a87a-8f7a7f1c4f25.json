@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Recover access to your account",
+    "ru": "Восстановите доступ к аккаунту"
+  },
+  "subtitle": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Enter the email address you used to register.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Укажите почту, которую использовали при регистрации.\"}]}]}"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"heading\",\"attrs\":{\"level\":2},\"content\":[{\"type\":\"text\",\"text\":\"Need help signing in?\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Contact support if you cannot recover access.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"heading\",\"attrs\":{\"level\":2},\"content\":[{\"type\":\"text\",\"text\":\"Нужна помощь со входом?\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Если не получается восстановить доступ, напишите в поддержку.\"}]}]}"
+  },
+  "anchor": null,
+  "className": null,
+  "id": "3b070e6b-23b1-483c-a87a-8f7a7f1c4f25",
+  "createdAt": "2026-10-17T21:43:19.740Z",
+  "updatedAt": "2026-10-27T14:58:56.088Z",
+  "variant": "content-ai-chat-forgot-password",
+  "adminTitle": "AI Chat authentication content",
+  "slug": "ai-chat-219564c8-5ea5-4a75-a844-143ebc42d626-content"
+}

@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Describe the change that matters.",
+    "ru": "Опишите нужное изменение."
+  },
+  "subtitle": {
+    "en": "Example request",
+    "ru": "Пример задачи"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"My store has a minimum order of six units. Add that rule while keeping the existing account and cart flow. Show me how the ordering experience changes.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Explore the result and ask for refinements. Keep using the foundation for this product and the next one when it fits.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"В моём магазине минимальный заказ — шесть единиц. Добавь это правило, сохранив существующие сценарии аккаунта и корзины. Покажи, как изменится оформление заказа.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Изучите результат и запросите доработки. Используйте эту основу для текущего и следующего продукта, когда она подходит для задачи.\"}]}]}"
+  },
+  "anchor": "develop-your-product",
+  "className": "",
+  "id": "56e7a58f-e56b-4554-8bfc-2f9fd202b3bc",
+  "createdAt": "2026-10-24T01:05:50.913Z",
+  "updatedAt": "2026-10-24T01:05:50.913Z",
+  "variant": "content-feature-split-reverse",
+  "adminTitle": "Describe the change that matters.",
+  "slug": "framework-journey-change"
+}

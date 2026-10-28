@@ -33,8 +33,10 @@ connection parameters for additional servers.
 ## Variants
 
 - `sidebar-ai-chat-project`: shared project navigation with Settings and New thread links, current-page states, and slots for Documents and Thread rows.
-- `id-ai-chat-project`: server project frame with navigation and content slots.
+- `id-ai-chat-project`: server project frame with navigation and content slots, rendered through the shared UI adapter `ChatWorkspace` also used by the landing preview.
 - `id-settings-ai-chat`: personal Profile editor receiving an avatar slot and save callback from RBAC Subject.
+
+- `byline`: Studio avatar/name presentation using the stored localized title and first ordered Profile→File attachment. The larger size includes the stored subtitle. Missing media shows initials derived from the stored title or slug; names and roles have no fixture fallback.
 
 - `default`: profile card with title.
 - `overview-default`: profile hero section with description and widgets.
@@ -52,6 +54,10 @@ Documents and topic rows use Social Thread `list-item-sidebar-ai-chat`.
 - `admin-table`: admin table listing profiles.
 - `admin-table-row`: admin row showing profile fields.
 
+The public `BylineSkeleton` presentation renders one pending avatar/name entity
+for both byline sizes. The byline reader, author association reader and Host
+author lookup use this same skeleton; it owns no SDK or Provider.
+
 ## Blog articles
 
 [profiles-to-blog-module-articles](../../relations/profiles-to-blog-module-articles/README.md)
@@ -65,3 +71,9 @@ profile types unchanged.
 ```
 
 The caller needs RBAC access to the relation and linked Blog articles.
+
+## Public authors
+
+`authorFind`, `authorFindCount` and `authorFindById` use the named `/api/social/profiles/authors` routes. A default or Telegram Profile appears publicly after an explicit link to an existing Article or Product. Public URLs use the Profile UUID; the DTO omits private slugs, Subject/Identity identifiers, administrative fields and AI workspace configuration. Article and Product references contain only their public summary fields.
+
+The `author-card-default`, `author-byline-default` and `author-overview-default` variants consume these DTOs. Already loaded results use props mode. Own-account and private Chat reads retain their Subject/Chat scope, including historical sender and actor avatar presentation. Generic Profile list/count/detail reads require an operator or a current explicit administrative Role binding. Public author reads bypass the legacy route-topic cache; the consistency cache records the owning Service dependencies.

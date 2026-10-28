@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Extend the use case",
+    "ru": "Дополните сценарий"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[]}",
+    "ru": "{\"type\":\"doc\",\"content\":[]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "7060406c-718c-4b00-bed9-8ca04ce117a7",
+  "createdAt": "2026-10-26T00:11:32.631Z",
+  "updatedAt": "2026-10-27T14:59:04.843Z",
+  "variant": "content-rich",
+  "adminTitle": "Дополните сценарий",
+  "slug": "framework-reviewed-article-crm-connections"
+}

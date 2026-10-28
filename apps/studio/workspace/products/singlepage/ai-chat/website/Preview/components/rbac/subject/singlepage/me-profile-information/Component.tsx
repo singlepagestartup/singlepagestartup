@@ -1,15 +1,21 @@
-import { forwardRef as forwardRef } from "react";
-import { type SVGProps as SVGProps } from "react";
-import { twMerge as twMerge } from "tailwind-merge";
-import { Component as WebsiteBuilderModuleButton } from "../../../../website-builder/button/index";
 import {
+  forwardRef as forwardRef,
+  type SVGProps as SVGProps,
   forwardRef as forwardRefControl,
   type ButtonHTMLAttributes as ButtonControlProps,
+  useEffect,
+  useId,
+  useRef,
+  useState,
 } from "react";
+
+import { twMerge as twMerge } from "tailwind-merge";
+import { Component as WebsiteBuilderModuleButton } from "../../../../website-builder/button/index";
+
 import IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
 import { useStudioAccount } from "../account/Account";
 import { aiChatAccount } from "../account/fixture";
-import { useEffect, useId, useRef, useState } from "react";
+
 import {
   defaultRbacProfiles,
   defaultRbacUser,
@@ -214,7 +220,7 @@ export function SubjectMeProfileInformation(
       slugInput.current?.reportValidity();
       setInvalid(true);
       setMessage(
-        "Use lowercase letters, numbers and single hyphens for the slug.",
+        "Используйте строчные латинские буквы, цифры и одиночные дефисы.",
       );
       return false;
     }
@@ -250,21 +256,19 @@ export function SubjectMeProfileInformation(
           type="button"
           onClick={() => setViewOpen(true)}
         >
-          View profile
+          Открыть профиль
         </Button>
       </div>
       <form
         className="mt-6"
         onInvalidCapture={() => {
           setInvalid(true);
-          setMessage("Check the name and slug before saving.");
+          setMessage("Проверьте имя и адрес профиля перед сохранением.");
         }}
         onSubmit={(event) => {
           event.preventDefault();
           if (!checkSlug()) {
-            setMessage(
-              "This slug is already used by another profile in this preview.",
-            );
+            setMessage("Этот адрес уже занят другим профилем в примере.");
             slugInput.current?.focus();
             return;
           }
@@ -279,24 +283,26 @@ export function SubjectMeProfileInformation(
               });
           } catch {
             setInvalid(true);
-            setMessage("Could not save this profile. Try a smaller image.");
+            setMessage(
+              "Не удалось сохранить профиль. Попробуйте изображение меньшего размера.",
+            );
             return;
           }
           setSavedProfile(draft);
           setInvalid(false);
           setMessage(
-            "Profile saved in this preview. No server data was changed.",
+            "Профиль сохранён в примере. Данные на сервере не изменялись.",
           );
         }}
       >
         <fieldset className="min-w-0 border-0 p-0">
-          <legend className="text-sm font-medium">Avatar</legend>
+          <legend className="text-sm font-medium">Аватар</legend>
           <div className="mt-3 flex flex-wrap items-center gap-4">
             <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-2xl bg-[var(--workspace-brand-background)]">
               {avatar ? (
                 <img
                   src={avatar}
-                  alt={draft.title || "Profile avatar"}
+                  alt={draft.title || "Аватар профиля"}
                   className="h-full w-full object-cover"
                   onError={() => setAvatar("")}
                 />
@@ -311,7 +317,7 @@ export function SubjectMeProfileInformation(
                   type="button"
                   onClick={() => fileInput.current?.click()}
                 >
-                  Choose image
+                  Выбрать изображение
                 </Button>
                 <Button
                   variant="plain"
@@ -321,14 +327,15 @@ export function SubjectMeProfileInformation(
                     reader.current?.abort();
                     setAvatar("");
                     if (fileInput.current) fileInput.current.value = "";
-                    setMessage("Avatar removed in this preview.");
+                    setMessage("Аватар удалён в этом примере.");
                   }}
                 >
-                  Remove
+                  Удалить
                 </Button>
               </div>
               <p className="mt-2 text-xs leading-5 text-[var(--workspace-brand-muted)]">
-                PNG, JPEG, WebP or GIF, up to 2 MB. Save to apply changes.
+                PNG, JPEG, WebP или GIF до 2 МБ. Сохраните профиль, чтобы
+                применить изменения.
               </p>
             </div>
             <input
@@ -336,7 +343,7 @@ export function SubjectMeProfileInformation(
               type="file"
               accept="image/png,image/jpeg,image/webp,image/gif"
               className="sr-only"
-              aria-label="Choose avatar image"
+              aria-label="Выберите изображение для аватара"
               tabIndex={-1}
               onChange={(event) => {
                 const file = event.target.files?.[0];
@@ -353,7 +360,7 @@ export function SubjectMeProfileInformation(
                   file.size > 2 * 1024 * 1024
                 ) {
                   setInvalid(true);
-                  setMessage("Choose a PNG, JPEG, WebP or GIF up to 2 MB.");
+                  setMessage("Выберите PNG, JPEG, WebP или GIF до 2 МБ.");
                   return;
                 }
                 const upload = new FileReader();
@@ -362,11 +369,15 @@ export function SubjectMeProfileInformation(
                   if (typeof upload.result !== "string") return;
                   setAvatar(upload.result);
                   setInvalid(false);
-                  setMessage("Image selected. Save your profile to apply it.");
+                  setMessage(
+                    "Изображение выбрано. Сохраните профиль, чтобы применить его.",
+                  );
                 };
                 upload.onerror = () => {
                   setInvalid(true);
-                  setMessage("Could not read this image. Try another file.");
+                  setMessage(
+                    "Не удалось прочитать изображение. Попробуйте другой файл.",
+                  );
                 };
                 upload.readAsDataURL(file);
               }}
@@ -375,7 +386,7 @@ export function SubjectMeProfileInformation(
         </fieldset>
         <div className="mt-6 grid min-w-0 gap-5 lg:grid-cols-2">
           <label className="block min-w-0">
-            <span className="text-sm font-medium">Name</span>
+            <span className="text-sm font-medium">Имя</span>
             <input
               name="title"
               required
@@ -385,7 +396,7 @@ export function SubjectMeProfileInformation(
             />
           </label>
           <label className="block min-w-0">
-            <span className="text-sm font-medium">Headline</span>
+            <span className="text-sm font-medium">Подзаголовок</span>
             <input
               name="subtitle"
               className={fieldClass}
@@ -394,7 +405,7 @@ export function SubjectMeProfileInformation(
             />
           </label>
           <label className="block min-w-0 lg:col-span-2">
-            <span className="text-sm font-medium">Description</span>
+            <span className="text-sm font-medium">Описание</span>
             <textarea
               name="description"
               className={`${fieldClass} min-h-32`}
@@ -406,7 +417,7 @@ export function SubjectMeProfileInformation(
           </label>
           <div className="min-w-0 lg:col-span-2">
             <label htmlFor={`${id}-slug`} className="text-sm font-medium">
-              Slug
+              Адрес профиля
             </label>
             <div className="mt-2 flex min-w-0 flex-wrap items-start gap-3">
               <input
@@ -422,15 +433,15 @@ export function SubjectMeProfileInformation(
                 onChange={(event) => updateDraft("slug", event.target.value)}
               />
               <Button variant="secondary" type="button" onClick={checkSlug}>
-                Check availability
+                Проверить адрес
               </Button>
             </div>
             <p
               id={`${id}-slug-help`}
               className="mt-2 text-xs leading-5 text-[var(--workspace-brand-muted)]"
             >
-              Lowercase letters, numbers and single hyphens. Availability is
-              checked only against profiles in this preview.
+              Строчные латинские буквы, цифры и одиночные дефисы. Проверяем
+              адрес только среди профилей этого примера.
             </p>
             <p
               role="status"
@@ -438,8 +449,8 @@ export function SubjectMeProfileInformation(
             >
               {slugCheck
                 ? slugCheck.available
-                  ? "Available in this preview. Server availability has not been checked."
-                  : "Already used by another profile in this preview."
+                  ? "Адрес свободен в примере. Доступность на сервере не проверялась."
+                  : "Адрес уже занят другим профилем в примере."
                 : ""}
             </p>
           </div>
@@ -465,7 +476,7 @@ export function SubjectMeProfileInformation(
           <section
             role="dialog"
             aria-modal="true"
-            aria-label="Profile preview"
+            aria-label="Предпросмотр профиля"
             className="relative max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-3xl bg-[var(--workspace-brand-surface)] p-6"
             onClick={(event) => event.stopPropagation()}
             onKeyDown={(event) => {
@@ -486,7 +497,7 @@ export function SubjectMeProfileInformation(
               onClick={closePreview}
             >
               <X className="h-5 w-5" />
-              Close preview
+              Закрыть предпросмотр
             </Button>
             {avatar ? (
               <img
@@ -506,7 +517,7 @@ export function SubjectMeProfileInformation(
               {savedProfile.slug}
             </p>
             <p className="mt-6 text-xs text-[var(--workspace-brand-muted)]">
-              Local profile preview
+              Предпросмотр профиля в примере
             </p>
           </section>
         </div>
@@ -535,13 +546,12 @@ const Button = forwardRefControl<
 export const defaultSubjectMeProfileInformationProps: SubjectMeProfileInformationProps =
   {
     user: defaultRbacUser,
-    title: "Profile",
+    title: "Профиль",
     bio: defaultRbacProfiles[0].description ?? "",
-    saveLabel: "Save profile",
+    saveLabel: "Сохранить профиль",
     profile: defaultRbacProfiles[0],
     profiles: defaultRbacProfiles,
-    description:
-      "Edit the name, headline and information on your public profile.",
+    description: "Измените имя, заголовок и описание публичного профиля.",
   };
 const fieldClass =
   "mt-2 min-h-12 w-full rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] px-4 py-2.5 text-base text-[var(--workspace-brand-foreground)] outline-none transition focus-visible:border-[var(--workspace-brand-foreground)] focus-visible:ring-2 focus-visible:ring-[var(--workspace-brand-foreground)] aria-[invalid=true]:border-[var(--workspace-brand-danger)]";

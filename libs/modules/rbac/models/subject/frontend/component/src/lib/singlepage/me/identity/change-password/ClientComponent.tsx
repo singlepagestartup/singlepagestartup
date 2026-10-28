@@ -1,4 +1,5 @@
 "use client";
+import { internationalization } from "@sps/shared-configuration";
 
 import { memo, useId, useRef, useState, type InputHTMLAttributes } from "react";
 import { Icon } from "@sps/ui-adapter";
@@ -8,6 +9,8 @@ import type { IComponentPropsExtended } from "./interface";
 export const Component = memo(function Component(
   props: IComponentPropsExtended,
 ) {
+  const language = props.language || internationalization.defaultLanguage.code;
+  const ru = language === "ru";
   const [open, setOpen] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [password, setPassword] = useState("");
@@ -53,15 +56,17 @@ export const Component = memo(function Component(
           }
         }}
       >
-        Change password
+        {ru ? "Изменить пароль" : "Change password"}
       </button>
       {open && (
         <section
           id={id}
-          aria-label="Change password"
+          aria-label={ru ? "Изменить пароль" : "Change password"}
           className="order-last mt-5 min-w-0 basis-full rounded-xl border border-border bg-muted p-4 sm:p-5"
         >
-          <h4 className="text-base font-semibold">Change password</h4>
+          <h4 className="text-base font-semibold">
+            {ru ? "Изменить пароль" : "Change password"}
+          </h4>
           <form
             className="mt-5 grid min-w-0 max-w-xl gap-4"
             onChangeCapture={() => setError("")}
@@ -69,11 +74,19 @@ export const Component = memo(function Component(
               event.preventDefault();
               if (update.isPending) return;
               if (password !== repeat) {
-                setError("The new passwords do not match.");
+                setError(
+                  ru
+                    ? "Новые пароли не совпадают."
+                    : "The new passwords do not match.",
+                );
                 return;
               }
               if (password === currentPassword) {
-                setError("Choose a password different from your current one.");
+                setError(
+                  ru
+                    ? "Выберите пароль, который отличается от текущего."
+                    : "Choose a password different from your current one.",
+                );
                 return;
               }
               setError("");
@@ -84,18 +97,20 @@ export const Component = memo(function Component(
                   data: { password: currentPassword, newPassword: password },
                 });
                 close();
-                setNotice("Password updated.");
+                setNotice(ru ? "Пароль обновлён." : "Password updated.");
               } catch (error) {
                 setError(
                   error instanceof Error
                     ? error.message
-                    : "The password could not be updated.",
+                    : ru
+                      ? "Не удалось изменить пароль."
+                      : "The password could not be updated.",
                 );
               }
             }}
           >
             <PasswordField
-              label="Current password"
+              label={ru ? "Текущий пароль" : "Current password"}
               name="current-password"
               autoComplete="current-password"
               autoFocus
@@ -105,18 +120,18 @@ export const Component = memo(function Component(
               onChange={(event) => setCurrentPassword(event.target.value)}
             />
             <PasswordField
-              label="New password"
+              label={ru ? "Новый пароль" : "New password"}
               name="new-password"
               autoComplete="new-password"
               required
               minLength={8}
-              hint="Use at least 8 characters."
+              hint={ru ? "Не менее 8 символов." : "Use at least 8 characters."}
               disabled={update.isPending}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
             />
             <PasswordField
-              label="Repeat new password"
+              label={ru ? "Повторите новый пароль" : "Repeat new password"}
               name="repeat-password"
               autoComplete="new-password"
               required
@@ -142,7 +157,13 @@ export const Component = memo(function Component(
                 disabled={update.isPending}
                 className={`${buttonClass} bg-primary text-primary-foreground hover:brightness-95 focus-visible:brightness-95`}
               >
-                {update.isPending ? "Updating…" : "Change password"}
+                {update.isPending
+                  ? ru
+                    ? "Обновляем…"
+                    : "Updating…"
+                  : ru
+                    ? "Изменить пароль"
+                    : "Change password"}
               </button>
               <button
                 type="button"
@@ -150,7 +171,7 @@ export const Component = memo(function Component(
                 onClick={close}
                 className={`${buttonClass} border border-border bg-card hover:bg-muted`}
               >
-                Cancel
+                {ru ? "Отмена" : "Cancel"}
               </button>
             </div>
           </form>

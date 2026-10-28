@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Preserve dependency direction",
+    "ru": "Сохраните направление зависимостей"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"RBAC Subject operations may coordinate lower Blog, Ecommerce and Billing modules. Blog does not import RBAC to check a user's subscription. The API Host composes the integration and supplies owning services. Infrastructure holds shared transport, database and cache rules.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The restriction also applies to types, exports and schemas. Authorship between a profile and an article belongs to Social, which sits above Blog. Composition stays with a consumer allowed to read both sides.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Операции RBAC Subject могут координировать нижележащие Blog, Ecommerce и Billing. Сам Blog не импортирует RBAC, чтобы узнать подписку пользователя. API Host соединяет интеграцию и передаёт владеющие сервисы. Инфраструктура хранит общие правила транспорта, базы и кеша.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Ограничение действует и для типов, экспортов и схем. Авторство между профилем и статьёй принадлежит Social, который расположен выше Blog. Композиция остаётся у потребителя, которому разрешено читать обе стороны.\"}]}]}"
+  },
+  "anchor": "ru-section-hono-api-layers-di-and-owned-middleware-7",
+  "className": "",
+  "id": "41ce85ee-8d30-45a2-a111-214a9d8526ed",
+  "createdAt": "2026-10-26T07:34:02.047Z",
+  "updatedAt": "2026-10-27T14:58:56.862Z",
+  "variant": "content-rich",
+  "adminTitle": "Сохраните направление зависимостей",
+  "slug": "ru-section-hono-api-layers-di-and-owned-middleware-7"
+}

@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Module structure",
+    "ru": "Устройство модуля"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"File stores file metadata and location; Widget displays groups of files. Relations identify where a file is used. File Storage owns uploads and originals; Knowledge handles analysis of materials.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"File хранит сведения о файле и его расположении; Widget показывает группы файлов. Связи указывают, где файл используется. File Storage владеет загрузкой и оригиналами; анализ материалов принадлежит Knowledge.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "06382d84-5b12-4644-a8e8-7758e6ddc254",
+  "createdAt": "2026-10-26T00:11:49.038Z",
+  "updatedAt": "2026-10-27T14:58:46.082Z",
+  "variant": "content-rich",
+  "adminTitle": "Устройство модуля",
+  "slug": "framework-reviewed-article-file-storage-technical"
+}

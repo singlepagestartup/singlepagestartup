@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "934afcda-9620-4893-b6f9-2bc0eeb7e5bf",
+  "createdAt": "2026-10-26T00:12:03.630Z",
+  "updatedAt": "2026-10-27T14:59:45.123Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Delivery has a status",
+    "ru": "У доставки есть состояние"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The project saves notification and delivery information. This helps investigate messages that did not arrive.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Проект сохраняет сведения об уведомлении и его доставке. Это позволяет разбирать ситуации, когда сообщение не дошло.\"}]}]}"
+  },
+  "adminTitle": "У доставки есть состояние",
+  "slug": "framework-reviewed-article-notification-introduction-feature-2"
+}

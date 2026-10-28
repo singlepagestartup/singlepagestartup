@@ -1,0 +1,17 @@
+{
+  "id": "581a67c8-6b7b-47c4-9382-f1378bbdbf6d",
+  "createdAt": "2026-10-26T00:11:15.952Z",
+  "updatedAt": "2026-10-27T15:00:18.999Z",
+  "variant": "footer-column",
+  "className": "",
+  "title": {
+    "en": "Development",
+    "ru": "Разработка"
+  },
+  "description": {
+    "en": "",
+    "ru": ""
+  },
+  "adminTitle": "Разработка",
+  "slug": "framework-reviewed-footer-0"
+}

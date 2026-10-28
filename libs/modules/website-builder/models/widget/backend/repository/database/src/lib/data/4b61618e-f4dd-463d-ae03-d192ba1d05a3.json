@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Module structure",
+    "ru": "Устройство модуля"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Agent stores task definitions and execution metadata; Widget stores their presentation. Schedules and handlers determine execution. Domain commands and assistant reactions are organised through Agent workflows.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Agent хранит определение задачи и метаданные запуска, Widget — её представление. Расписание и обработчики определяют выполнение. Доменные команды и реакции помощников организуются через сценарии Agent.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "4b61618e-f4dd-463d-ae03-d192ba1d05a3",
+  "createdAt": "2026-10-26T00:12:09.182Z",
+  "updatedAt": "2026-10-27T14:58:58.917Z",
+  "variant": "content-rich",
+  "adminTitle": "Устройство модуля",
+  "slug": "framework-reviewed-article-agent-technical"
+}

@@ -1,12 +1,21 @@
 {
-  "title": {},
-  "subtitle": {},
-  "description": {},
+  "title": {
+    "en": "Start with a name",
+    "ru": "Начните с названия"
+  },
+  "subtitle": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Create a project with a brief, strategy, brand, design and product descriptions. Start with the brief and add knowledge and files as you work.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Создайте проект с брифом, стратегией, брендом, дизайном и описанием продуктов. Начните с брифа, добавляйте знания и файлы по мере работы.\"}]}]}"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"heading\",\"attrs\":{\"level\":2},\"content\":[{\"type\":\"text\",\"text\":\"Your files and your project\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Describe your business, attach the files you need and work with the assistant in your project.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"heading\",\"attrs\":{\"level\":2},\"content\":[{\"type\":\"text\",\"text\":\"Ваши файлы и ваш проект\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Опишите бизнес, приложите нужные файлы и работайте с помощником в своём проекте.\"}]}]}"
+  },
   "anchor": null,
   "className": null,
   "id": "cfff32c1-462c-432c-8bd2-c747ecf62430",
   "createdAt": "2026-10-11T21:17:54.865Z",
-  "updatedAt": "2026-10-11T21:17:54.865Z",
+  "updatedAt": "2026-10-27T14:59:16.803Z",
   "variant": "content-ai-chat-profile-create",
   "adminTitle": "AI Chat · projects content",
   "slug": "ai-chat-projects-content"

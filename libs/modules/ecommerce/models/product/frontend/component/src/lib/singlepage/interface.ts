@@ -1,3 +1,5 @@
+import type { IComponentProps as ILoading } from "./loading/interface";
+import type { IComponentProps as IGallery } from "./gallery/interface";
 import { IComponentProps as ICartDefaultComponentProps } from "./cart/default/interface";
 import { IComponentProps as IFindComponentProps } from "./find/interface";
 import { IComponentProps as IAdminTableRowComponentProps } from "./admin/table-row/interface";
@@ -16,6 +18,8 @@ import { IComponentProps as IPriceDefaultComponentProps } from "./price-default/
 import { IComponentProps as ICurrencyToggleGroupDefaultComponentProps } from "./currency/toggle-group-default/interface";
 
 export type IComponentProps =
+  | ILoading
+  | IGallery
   | ICartDefaultComponentProps
   | IFindComponentProps
   | IAdminTableRowComponentProps

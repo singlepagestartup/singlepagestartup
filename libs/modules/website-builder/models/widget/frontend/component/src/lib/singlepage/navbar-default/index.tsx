@@ -1,22 +1,22 @@
-import { Provider } from "@sps/website-builder/models/widget/sdk/client";
+import {
+  Provider,
+  api as clientApi,
+} from "@sps/website-builder/models/widget/sdk/client";
+import { api as serverApi } from "@sps/website-builder/models/widget/sdk/server";
 import { IComponentProps } from "./interface";
-import { ErrorBoundary } from "@sps/ui-adapter";
-import { Error } from "./Error";
-import Server from "./server";
-import Client from "./client";
+import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/default";
+import { Component as ChildComponent } from "./Component";
 import { Skeleton } from "./Skeleton";
-import { Suspense } from "react";
 
 export function Component(props: IComponentProps) {
-  const Comp: any = props.isServer ? Server : Client;
-
   return (
-    <ErrorBoundary>
-      <Suspense fallback={<Skeleton />}>
-        <Provider>
-          <Comp {...props} />
-        </Provider>
-      </Suspense>
-    </ErrorBoundary>
+    <ParentComponent
+      Component={ChildComponent as any}
+      Skeleton={<Skeleton />}
+      Provider={Provider}
+      clientApi={clientApi}
+      serverApi={serverApi}
+      {...props}
+    />
   );
 }

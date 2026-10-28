@@ -16,6 +16,8 @@ import { DI } from "../../di/constants";
 import { Database } from ".";
 import { IRepository } from "../interface";
 import fs from "fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { z } from "zod";
 
@@ -344,6 +346,34 @@ describe("Database", () => {
   });
 
   describe("dump", () => {
+    it("writes a new module's first snapshot when its data directory does not exist", async () => {
+      const root = await fs.mkdtemp(join(tmpdir(), "sps-dump-"));
+      try {
+        const directory = join(root, "new-module", "data");
+        const configuration = new Configuration({
+          repository: {
+            ...baseConfiguration,
+            dump: { ...baseConfiguration.dump, directory },
+          },
+        });
+        const container = new Container();
+        container
+          .bind<IConfiguration>(DI.IConfiguration)
+          .toConstantValue(configuration);
+        container.bind<IRepository>(DI.IRepository).to(Database);
+        const repository = container.get<IRepository>(DI.IRepository);
+        repository.find = jest.fn().mockResolvedValue([{ id: "new-record" }]);
+        await repository.dump();
+        expect(
+          JSON.parse(
+            await fs.readFile(join(directory, "new-record.json"), "utf8"),
+          ),
+        ).toEqual({ id: "new-record" });
+      } finally {
+        await fs.rm(root, { recursive: true, force: true });
+      }
+    });
+
     it("should create files in config.repository.directory", async () => {
       const configuration = new Configuration({
         repository: baseConfiguration,
@@ -357,6 +387,7 @@ describe("Database", () => {
       const repository = container.get<IRepository>(DI.IRepository);
 
       const spys = [
+        jest.spyOn(fs, "mkdir").mockResolvedValueOnce(undefined),
         jest.spyOn(fs, "readdir").mockResolvedValueOnce(["1.json"] as any),
         jest.spyOn(fs, "unlink").mockResolvedValueOnce(undefined as any),
         jest.spyOn(fs, "writeFile").mockResolvedValueOnce(undefined as any),
@@ -403,6 +434,7 @@ describe("Database", () => {
       const repository = container.get<IRepository>(DI.IRepository);
 
       const spys = [
+        jest.spyOn(fs, "mkdir").mockResolvedValueOnce(undefined),
         jest.spyOn(fs, "readdir").mockResolvedValueOnce(["1.json"] as any),
         jest.spyOn(fs, "unlink").mockResolvedValueOnce(undefined as any),
         jest.spyOn(fs, "writeFile").mockResolvedValueOnce(undefined as any),
@@ -417,6 +449,7 @@ describe("Database", () => {
       const dumpResult = await repository.dump();
 
       expect(fs.unlink).not.toHaveBeenCalled();
+      expect(fs.mkdir).not.toHaveBeenCalled();
       expect(fs.writeFile).not.toHaveBeenCalled();
       expect(dumpResult).toEqual({
         dumps: [],

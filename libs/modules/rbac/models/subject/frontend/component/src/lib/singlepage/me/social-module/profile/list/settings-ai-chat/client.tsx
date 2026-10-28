@@ -13,7 +13,8 @@ export default function Client(props: IComponentProps) {
     },
     reactQueryOptions: { retry: false },
   });
-  if (profiles.isPending) return props.skeleton ?? <Skeleton />;
+  if (profiles.isPending)
+    return props.skeleton ?? <Skeleton language={props.language} />;
   return (
     <ChildComponent
       {...props}

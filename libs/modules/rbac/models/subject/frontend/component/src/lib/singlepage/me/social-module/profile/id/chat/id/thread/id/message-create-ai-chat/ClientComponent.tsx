@@ -1,4 +1,5 @@
 "use client";
+import { internationalization } from "@sps/shared-configuration";
 import { memo, useCallback, useRef, useState } from "react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { ChevronLeft, ChevronRight, Paperclip, Send, X } from "lucide-react";
@@ -23,6 +24,7 @@ import type {
 
 const Attachment = memo(function Attachment(props: IAttachmentProps) {
   const { attachment } = props;
+  const ru = props.language === "ru";
   return (
     <li
       draggable={!props.disabled}
@@ -47,7 +49,11 @@ const Attachment = memo(function Attachment(props: IAttachmentProps) {
     >
       <button
         type="button"
-        aria-label={`Remove ${attachment.file.name}`}
+        aria-label={
+          ru
+            ? `Удалить ${attachment.file.name}`
+            : `Remove ${attachment.file.name}`
+        }
         disabled={props.disabled}
         onClick={() => props.onRemove(attachment.id)}
         className="absolute right-1 top-1 z-10 grid size-6 place-items-center rounded-full bg-foreground text-background hover:opacity-80 disabled:opacity-30"
@@ -55,6 +61,7 @@ const Attachment = memo(function Attachment(props: IAttachmentProps) {
         <X className="size-4" />
       </button>
       <FilePreview
+        language={props.language}
         name={attachment.file.name}
         mimeType={attachment.file.type}
         localFile={attachment.file}
@@ -63,12 +70,17 @@ const Attachment = memo(function Attachment(props: IAttachmentProps) {
       />
       <div className="mt-1 flex items-center justify-between gap-1">
         <span className="text-xs text-muted-foreground">
-          {Math.max(1, Math.ceil(attachment.file.size / 1024))} KB
+          {Math.max(1, Math.ceil(attachment.file.size / 1024))}{" "}
+          {ru ? "КБ" : "KB"}
         </span>
         <div className="flex">
           <button
             type="button"
-            aria-label={`Move ${attachment.file.name} earlier`}
+            aria-label={
+              ru
+                ? `Переместить ${attachment.file.name} раньше`
+                : `Move ${attachment.file.name} earlier`
+            }
             disabled={props.disabled || props.first}
             onClick={() => props.onMove(attachment.id, -1)}
             className="grid size-8 place-items-center rounded-md hover:bg-muted disabled:opacity-30"
@@ -77,7 +89,11 @@ const Attachment = memo(function Attachment(props: IAttachmentProps) {
           </button>
           <button
             type="button"
-            aria-label={`Move ${attachment.file.name} later`}
+            aria-label={
+              ru
+                ? `Переместить ${attachment.file.name} позже`
+                : `Move ${attachment.file.name} later`
+            }
             disabled={props.disabled || props.last}
             onClick={() => props.onMove(attachment.id, 1)}
             className="grid size-8 place-items-center rounded-md hover:bg-muted disabled:opacity-30"
@@ -91,6 +107,8 @@ const Attachment = memo(function Attachment(props: IAttachmentProps) {
 });
 
 export function Component(props: IComponentPropsExtended) {
+  const language = props.language || internationalization.defaultLanguage.code;
+  const ru = language === "ru";
   const project = props.project;
   const messageScope = {
     id: props.data.id,
@@ -162,15 +180,19 @@ export function Component(props: IComponentPropsExtended) {
         setError("");
         try {
           assertSupportedAiChatAttachments(files.map((item) => item.file));
-          const submittedMessage = message.trim() ? message : "Attached files.";
+          const submittedMessage = message.trim()
+            ? message
+            : ru
+              ? "Файлы прикреплены."
+              : "Attached files.";
           await createMessage.mutateAsync({
             ...messageScope,
             data: {
               description: isDocument
                 ? `${
                     selectedSource
-                      ? `Working on knowledge: ${selectedSource.title} (Source ID: ${selectedSource.id}) in ${props.thread.title || "this document"}.`
-                      : `Working on the whole document: ${props.thread.title || "this document"}.`
+                      ? `Working on knowledge: ${selectedSource.title} (Source ID: ${selectedSource.id}) in ${props.thread.title || (ru ? "этот документ" : "this document")}.`
+                      : `Working on the whole document: ${props.thread.title || (ru ? "этот документ" : "this document")}.`
                   }\n\n${submittedMessage}`
                 : submittedMessage,
               files: files.map((item) => item.file),
@@ -201,7 +223,9 @@ export function Component(props: IComponentPropsExtended) {
           setError(
             error instanceof Error
               ? error.message
-              : "Message could not be sent",
+              : ru
+                ? "Не удалось отправить сообщение"
+                : "Message could not be sent",
           );
         } finally {
           sending.current = false;
@@ -210,20 +234,24 @@ export function Component(props: IComponentPropsExtended) {
     >
       {isDocument && (
         <div hidden className="hidden">
-          <span className="text-xs text-muted-foreground">Working on</span>
+          <span className="text-xs text-muted-foreground">
+            {ru ? "Рабочий контекст" : "Working on"}
+          </span>
           <DropdownMenu.Root modal={false}>
             <DropdownMenu.Trigger asChild>
               <button
                 type="button"
-                aria-label="Working on"
+                aria-label={ru ? "Рабочий контекст" : "Working on"}
                 className="inline-flex min-h-9 min-w-0 max-w-full items-center justify-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-xs font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
               >
                 <Icon name="file-text" className="size-4" />
                 <span className="truncate">
                   {target === "whole"
-                    ? "Whole document"
+                    ? ru
+                      ? "Весь документ"
+                      : "Whole document"
                     : documentSources.find((source) => source.id === target)
-                        ?.title || "Whole document"}
+                        ?.title || (ru ? "Весь документ" : "Whole document")}
                 </span>
                 <Icon name="caret-down" className="size-4" />
               </button>
@@ -236,14 +264,18 @@ export function Component(props: IComponentPropsExtended) {
                 className="z-50 max-h-80 w-72 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-lg border border-border bg-card p-1 font-default text-foreground shadow-md"
               >
                 <DropdownMenu.Label className="px-3 py-2 text-xs font-semibold text-muted-foreground">
-                  {props.thread.title || "Products.md"} · working context
+                  {props.thread.title || "Products.md"}{" "}
+                  {ru ? "· рабочий контекст" : "· working context"}
                 </DropdownMenu.Label>
                 <DropdownMenu.RadioGroup
                   value={target}
                   onValueChange={setTarget}
                 >
                   {[
-                    { id: "whole", title: "Whole document" },
+                    {
+                      id: "whole",
+                      title: ru ? "Весь документ" : "Whole document",
+                    },
                     ...documentSources,
                   ].map((item) => (
                     <DropdownMenu.RadioItem
@@ -267,15 +299,18 @@ export function Component(props: IComponentPropsExtended) {
         {!!files.length && (
           <>
             <p className="mb-2 text-xs text-muted-foreground">
-              {files.length} {files.length === 1 ? "file" : "files"} · Drag to
-              reorder
+              {ru
+                ? `Файлы: ${files.length}`
+                : `${files.length} ${files.length === 1 ? "file" : "files"}`}{" "}
+              {ru ? "· Перетащите для смены порядка" : "· Drag to reorder"}
             </p>
             <ul
-              aria-label="Message attachments"
+              aria-label={ru ? "Вложения сообщения" : "Message attachments"}
               className="mb-3 flex gap-2 overflow-x-auto pb-2"
             >
               {files.map((attachment, index) => (
                 <Attachment
+                  language={language}
                   key={attachment.id}
                   attachment={attachment}
                   first={index === 0}
@@ -290,11 +325,15 @@ export function Component(props: IComponentPropsExtended) {
           </>
         )}
         <textarea
-          aria-label="Message"
+          aria-label={ru ? "Сообщение" : "Message"}
           placeholder={
             isDocument
-              ? "Discuss this knowledge or request a change."
-              : "What do you want to work on?"
+              ? ru
+                ? "Обсудите знания или предложите изменение."
+                : "Discuss this knowledge or request a change."
+              : ru
+                ? "Какую задачу хотите обсудить?"
+                : "What do you want to work on?"
           }
           className="h-32 min-h-24 max-h-[min(50dvh,480px)] w-full resize-y bg-transparent text-sm outline-none"
           value={message}
@@ -315,10 +354,13 @@ export function Component(props: IComponentPropsExtended) {
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
           <label className="flex min-h-10 cursor-pointer items-center gap-2 text-xs font-semibold text-muted-foreground">
             <Paperclip className="size-4" />
-            Attach files
+
+            {ru ? "Прикрепить файлы" : "Attach files"}
             <input
               ref={fileInput}
-              aria-label="Attach files to message"
+              aria-label={
+                ru ? "Прикрепить файлы к сообщению" : "Attach files to message"
+              }
               className="sr-only"
               type="file"
               accept={AI_CHAT_ATTACHMENT_ACCEPT}
@@ -331,7 +373,7 @@ export function Component(props: IComponentPropsExtended) {
                 );
                 setError(
                   rejected.length
-                    ? `Unsupported files: ${rejected.map((file) => file.name).join(", ")}. Allowed formats: ${AI_CHAT_ATTACHMENT_FORMAT_LABEL}.`
+                    ? `${ru ? "Неподдерживаемые файлы" : "Unsupported files"}: ${rejected.map((file) => file.name).join(", ")}. ${ru ? "Допустимые форматы" : "Allowed formats"}: ${AI_CHAT_ATTACHMENT_FORMAT_LABEL}.`
                     : "",
                 );
                 const selected = incoming
@@ -363,11 +405,19 @@ export function Component(props: IComponentPropsExtended) {
             className="flex min-h-10 items-center gap-2 rounded-xl bg-primary text-primary-foreground px-4 text-sm font-semibold disabled:opacity-50"
           >
             <Send className="size-4" />
-            {createMessage.isPending ? "Sending…" : "Send"}
+            {createMessage.isPending
+              ? ru
+                ? "Отправляем…"
+                : "Sending…"
+              : ru
+                ? "Отправить"
+                : "Send"}
           </button>
         </div>
         <p className="mt-2 text-xs text-muted-foreground">
-          ⌘ Enter / Ctrl Enter to send. Enter adds a new line.
+          {ru
+            ? "⌘ Enter / Ctrl Enter — отправить. Enter — новая строка."
+            : "⌘ Enter / Ctrl Enter to send. Enter adds a new line."}
         </p>
       </div>
       {error && (

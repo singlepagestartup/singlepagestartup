@@ -21,7 +21,7 @@ export function Component({
       </summary>
       <div className="prose prose-sm mt-3 max-w-none break-words text-muted-foreground">
         <Markdown options={{ disableParsingRawHTML: true }}>
-          {data.content || "No knowledge content provided."}
+          {data.content || "Содержимое документа пока не добавлено."}
         </Markdown>
       </div>
       {children}

@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "053ab3e8-1c8c-4355-acc5-c5dab565c033",
+  "createdAt": "2026-10-24T01:06:14.752Z",
+  "updatedAt": "2026-10-24T01:06:14.752Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Startup",
+    "ru": "Startup"
+  },
+  "subtitle": {
+    "en": "Foundation",
+    "ru": "Основа"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Project-specific widgets for the product you build on this foundation.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Widgets конкретного продукта, который разрабатывается на этой основе.\"}]}]}"
+  },
+  "adminTitle": "Startup",
+  "slug": "framework-journey-module-startup"
+}

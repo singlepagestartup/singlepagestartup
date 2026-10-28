@@ -102,7 +102,7 @@ export function Component({
       <summary
         className={`min-h-9 cursor-pointer underline underline-offset-4 ${kit.focus}`}
       >
-        How your materials are processed and stored
+        Обработка и хранение материалов
       </summary>
       <div className={`${kit.card} mt-3 text-sm`}>
         <MarkdownDocument>{disclosure}</MarkdownDocument>

@@ -31,7 +31,7 @@ export function Component(props: IClientComponentProps) {
       }
       options={props.options}
       className={cn(
-        "flex w-full flex-col",
+        "flex w-full min-w-0 flex-col gap-2 [&_label]:text-sm [&_label]:font-medium [&_input]:min-h-11 [&_input]:rounded-xl [&_input]:bg-card [&_textarea]:min-h-28 [&_textarea]:rounded-xl [&_textarea]:bg-card [&_button]:min-h-11 [&_button]:rounded-xl [&_button]:bg-card",
         props.data.className,
         props.className,
       )}

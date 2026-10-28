@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "234792bc-5712-4686-8500-55e3934fa792",
+  "createdAt": "2026-10-27T08:40:55.772Z",
+  "updatedAt": "2026-10-27T14:59:28.012Z",
+  "variant": "landing-workflow",
+  "title": {
+    "en": "Try the chat",
+    "ru": "Попробуйте чат"
+  },
+  "subtitle": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Interactive example. Changes stay on this page only.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Интерактивный пример. Изменения сохраняются только на этой странице.\"}]}]}"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Open the pottery studio example. Discuss it with the assistant, add a message or file, switch to a document and edit the text. Your project's workspace follows the same layout.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Откройте пример проекта мастерской. Обсудите его с помощником, добавьте сообщение или файл, переключитесь на документ и отредактируйте текст. Так же устроено рабочее пространство вашего проекта.\"}]}]}"
+  },
+  "adminTitle": "AI Chat: workflow",
+  "slug": "ai-chat-editable-workflow"
+}

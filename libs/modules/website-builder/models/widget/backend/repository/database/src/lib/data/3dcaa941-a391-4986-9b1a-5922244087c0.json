@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Apply changes to the cache",
+    "ru": "Применяйте изменения к кешу"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The shared mutation factory updates the cache before the caller's \"},{\"type\":\"text\",\"text\":\"onSuccess\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" callback. Creation deduplicates by ID and keeps counts consistent; updates patch existing records; deletion removes matching entries. Hand-written SDKs use the same helpers and retain action tracking.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"A new article does not necessarily belong to the current category or list page. Insert directly only where membership is known; otherwise refetch. Unchanged rows retain their object references so \"},{\"type\":\"text\",\"text\":\"memo\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" and ID-based keys work when a neighbouring row changes.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Общая фабрика мутаций обновляет кеш до пользовательского \"},{\"type\":\"text\",\"text\":\"onSuccess\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\". Создание исключает дубли по ID и согласует количество записей; изменение обновляет существующие записи; удаление убирает совпадения. Самописные SDK используют те же helpers и сохраняют учёт действий.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Новая статья не обязательно относится к текущей категории или странице списка. Прямая вставка допустима только там, где принадлежность известна; в остальных случаях нужен повторный запрос. Неизменённые строки сохраняют ссылки на объекты, чтобы \"},{\"type\":\"text\",\"text\":\"memo\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" и ключи по ID работали при изменении соседней строки.\"}]}]}"
+  },
+  "anchor": "ru-section-react-query-realtime-and-principal-scopes-3",
+  "className": "",
+  "id": "3dcaa941-a391-4986-9b1a-5922244087c0",
+  "createdAt": "2026-10-26T07:34:02.405Z",
+  "updatedAt": "2026-10-27T14:58:56.597Z",
+  "variant": "content-rich",
+  "adminTitle": "Применяйте изменения к кешу",
+  "slug": "ru-section-react-query-realtime-and-principal-scopes-3"
+}

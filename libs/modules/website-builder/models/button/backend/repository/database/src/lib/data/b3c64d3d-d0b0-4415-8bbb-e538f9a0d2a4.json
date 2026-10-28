@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Return to your project",
+    "ru": "Вернуться к проекту"
+  },
+  "subtitle": {},
+  "url": "/ai-chat/social/profiles/example",
+  "className": "",
+  "id": "b3c64d3d-d0b0-4415-8bbb-e538f9a0d2a4",
+  "createdAt": "2026-10-27T08:55:55.972Z",
+  "updatedAt": "2026-10-27T15:00:14.700Z",
+  "variant": "footer-link",
+  "adminTitle": "Вернуться к проекту",
+  "slug": "ai-chat-editable-content-ai-chat-help-links-0"
+}

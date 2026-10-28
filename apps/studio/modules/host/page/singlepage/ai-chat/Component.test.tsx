@@ -58,14 +58,14 @@ describe("Local AI Chat components", () => {
         }}
       />,
     );
-    expect(html).toContain("My projects</h1>");
-    expect(html).toContain('aria-label="Open First project"');
+    expect(html).toContain("Мои проекты</h1>");
+    expect(html).toContain('aria-label="Открыть First project"');
     expect(html).toContain('href="/ai-chat/social/profiles/one"');
     expect(html).toContain('href="/ai-chat/social/profiles/two"');
-    expect(html).toContain("Create project");
-    expect(html).not.toContain("Products.md");
-    expect(html).not.toContain('aria-label="Messages"');
-    expect(html).not.toContain("Project name");
+    expect(html).toContain("Создать проект");
+    expect(html).not.toContain("Продукты.md");
+    expect(html).not.toContain('aria-label="Сообщения"');
+    expect(html).not.toContain("Название проекта");
   });
   test("project list states never expose supplied private names while unavailable", () => {
     for (const flag of ["loading", "error"] as const) {
@@ -87,7 +87,7 @@ describe("Local AI Chat components", () => {
       expect(html).not.toContain("Private project");
       expect(html).not.toContain('href="/ai-chat/social/profiles/one"');
       expect(html).toContain(
-        flag === "loading" ? 'aria-busy="true"' : "Try again",
+        flag === "loading" ? 'aria-busy="true"' : "Попробовать ещё раз",
       );
     }
     const guest = renderToStaticMarkup(
@@ -97,27 +97,27 @@ describe("Local AI Chat components", () => {
         projectsState="sign-in-required"
       />,
     );
-    expect(guest).toContain("Sign in to open your workspace");
-    expect(guest).not.toContain("Pottery workshops");
-    expect(guest).not.toContain('aria-label="Your projects"');
-    expect(guest).not.toContain("Create project");
+    expect(guest).toContain("Войдите, чтобы открыть проект");
+    expect(guest).not.toContain("Мастерская керамики");
+    expect(guest).not.toContain('aria-label="Ваши проекты"');
+    expect(guest).not.toContain("Создать проект");
     const empty = renderToStaticMarkup(
       <AIChatPreview
         initialHref="/ai-chat/projects"
         profiles={{ initialProjects: [] }}
       />,
     );
-    expect(empty).toContain("No projects yet");
-    expect(empty).toContain("Create project");
+    expect(empty).toContain("Проектов пока нет");
+    expect(empty).toContain("Создать проект");
   });
   test("the creation state returns to the project chooser rather than a first project", () => {
     const html = renderToStaticMarkup(
       <AIChatPreview initialHref="/ai-chat/projects" creatingProject />,
     );
-    expect(html).toContain("Project name");
-    expect(html).toContain("Back to projects");
-    expect(html).not.toContain('aria-label="Your projects"');
-    expect(html).not.toContain("Back to my project");
+    expect(html).toContain("Название проекта");
+    expect(html).toContain("К проектам");
+    expect(html).not.toContain('aria-label="Ваши проекты"');
+    expect(html).not.toContain("К моему проекту");
   });
 
   test("document and thread creation stories render their selected page for either header state", () => {
@@ -136,7 +136,7 @@ describe("Local AI Chat components", () => {
           signedIn={signedIn}
         />,
       );
-      expect(create).toContain("Thread name");
+      expect(create).toContain("Название обсуждения");
       expect(create).not.toContain('name="password"');
     }
   });
@@ -157,9 +157,9 @@ describe("Local AI Chat components", () => {
         />,
       );
       expect(html).toContain(`data-workspace-state="${workspaceState}"`);
-      expect(html).not.toContain("Pottery workshops");
-      expect(html).not.toContain("Products.md is ready");
-      expect(html).not.toContain('aria-label="Messages"');
+      expect(html).not.toContain("Мастерская керамики");
+      expect(html).not.toContain("Продукты.md готов к работе");
+      expect(html).not.toContain('aria-label="Сообщения"');
       expect(html).not.toContain('name="password"');
       if (
         workspaceState === "checking-session" ||
@@ -175,9 +175,9 @@ describe("Local AI Chat components", () => {
         workspaceState="loading-chat"
       />,
     );
-    expect(loading).toContain("Pottery workshops");
+    expect(loading).toContain("Мастерская керамики");
     expect(loading).toContain('data-workspace-state="loading-chat"');
-    expect(loading).not.toContain("Products.md is ready");
+    expect(loading).not.toContain("Продукты.md готов к работе");
     expect(loading).not.toContain("<textarea");
     const ready = renderToStaticMarkup(
       <AIChatPreview
@@ -185,7 +185,7 @@ describe("Local AI Chat components", () => {
         workspaceState="ready"
       />,
     );
-    expect(ready).toContain("Products.md is ready");
+    expect(ready).toContain("Продукты.md готов к работе");
   });
 
   test("guest fixtures for thread creation and project settings show no private navigation or forms", () => {
@@ -205,14 +205,14 @@ describe("Local AI Chat components", () => {
     ];
     for (const html of views) {
       expect(html).toContain('data-workspace-state="sign-in-required"');
-      expect(html).toContain("Sign in to open your workspace");
-      expect(html).not.toContain("Pottery workshops");
-      expect(html).not.toContain("Products.md");
-      expect(html).not.toContain('aria-label="Project conversations"');
-      expect(html).not.toContain('aria-label="Project threads"');
-      expect(html).not.toContain("Thread name");
-      expect(html).not.toContain("Create thread");
-      expect(html).not.toContain("Save project");
+      expect(html).toContain("Войдите, чтобы открыть проект");
+      expect(html).not.toContain("Мастерская керамики");
+      expect(html).not.toContain("Продукты.md");
+      expect(html).not.toContain('aria-label="Обсуждения проекта"');
+      expect(html).not.toContain('aria-label="Обсуждения проекта"');
+      expect(html).not.toContain("Название обсуждения");
+      expect(html).not.toContain("Создать обсуждение");
+      expect(html).not.toContain("Сохранить проект");
     }
   });
 
@@ -234,8 +234,8 @@ describe("Local AI Chat components", () => {
       expect(html).not.toContain("<img");
       expect(html).not.toContain("<h1");
       expect(html).not.toContain("Back to AI Chat");
-      expect(html).not.toContain("Trouble signing in?");
-      expect(html).not.toContain("Before you add files");
+      expect(html).not.toContain("Не получается войти?");
+      expect(html).not.toContain("Перед загрузкой файлов");
     }
   });
 
@@ -265,8 +265,8 @@ describe("Local AI Chat components", () => {
       expect(html).toContain("<img");
       expect(html).toContain(
         method === "registration"
-          ? "Before you add files"
-          : "Trouble signing in?",
+          ? "Перед загрузкой файлов"
+          : "Не получается войти?",
       );
     }
   });
@@ -308,7 +308,7 @@ describe("Local AI Chat components", () => {
     expect(html).toContain('name="result"');
     expect(html).not.toContain('data-module="website-builder"');
     expect(html).not.toContain("<h2");
-    expect(html).not.toContain("Support request</");
+    expect(html).not.toContain("Обращение в поддержку</");
   });
 
   test("Help submits through Subject and renders CRM form, step and inputs", () => {
@@ -329,13 +329,13 @@ describe("Local AI Chat components", () => {
     expect(
       html.match(/data-model="input" data-variant="support-ai-chat"/g),
     ).toHaveLength(3);
-    const heading = html.indexOf("Support request</h2>");
+    const heading = html.indexOf("Обращение в поддержку</h2>");
     const form = html.indexOf(
       'data-variant="me-crm-module-form-support-ai-chat"',
     );
     expect(heading).toBeGreaterThan(-1);
     expect(heading).toBeLessThan(form);
-    expect(html).toContain('aria-label="Support request"');
+    expect(html).toContain('aria-label="Обращение в поддержку"');
     expect(html).toContain('type="submit"');
     expect(html).not.toContain('data-model="button" data-variant="control"');
   });
@@ -373,7 +373,7 @@ describe("Local AI Chat components", () => {
       'data-variant="me-ecommerce-module-order-list-ai-chat"',
     );
     expect(settings).toContain('data-variant="me-delete-ai-chat"');
-    expect(settings).toContain('aria-label="Paid purchases"');
+    expect(settings).toContain('aria-label="Покупки"');
     expect(settings.match(/download="SPS-[^"]+-receipt.txt"/g)).toHaveLength(3);
     expect(settings).not.toContain("Back to workspace");
     const tokens = renderToStaticMarkup(
@@ -410,8 +410,10 @@ describe("Local AI Chat components", () => {
       /<article[^>]*data-module="knowledge"[^>]*data-model="source"[^>]*data-variant="id-ai-chat"/,
     );
     expect(profile).not.toContain('data-variant="overview-document-ai-chat"');
-    expect(profile.match(/aria-label="Products.md editor"/g)).toHaveLength(1);
-    expect(profile.match(/aria-label="Download Products.md"/g)).toHaveLength(1);
+    expect(profile.match(/aria-label="Продукты.md — редактор"/g)).toHaveLength(
+      1,
+    );
+    expect(profile.match(/aria-label="Скачать Продукты.md"/g)).toHaveLength(1);
     expect(
       profile.match(/data-ds-block="knowledge.source.id-ai-chat"/g),
     ).toHaveLength(1);
@@ -445,11 +447,11 @@ describe("Local AI Chat components", () => {
     expect(matched).toContain(
       'data-thread-id="pottery:products:products:thread"',
     );
-    expect(matched).toContain('aria-label="Document knowledge"');
-    expect(matched).not.toContain('aria-label="Products.md editor"');
-    expect(matched).not.toContain('aria-label="Download Products.md"');
+    expect(matched).toContain('aria-label="Знания документа"');
+    expect(matched).not.toContain('aria-label="Продукты.md — редактор"');
+    expect(matched).not.toContain('aria-label="Скачать Продукты.md"');
     const other = panel("another-thread");
-    expect(other).toContain("Thread knowledge unavailable.");
+    expect(other).toContain("Знания обсуждения недоступны.");
     expect(other).not.toContain('data-model="source"');
     expect(other).not.toContain("Upload files");
   });
@@ -472,8 +474,8 @@ describe("Local AI Chat components", () => {
     expect(settings).toContain(
       'data-variant="me-social-module-profile-id-update-name-ai-chat"',
     );
-    expect(settings).not.toContain("Export Products.md");
-    expect(settings).not.toContain("Download Products.md");
+    expect(settings).not.toContain("Export Продукты.md");
+    expect(settings).not.toContain("Скачать Продукты.md");
   });
 
   test("recognizes prototype routes without intercepting unrelated pages", () => {
@@ -577,7 +579,10 @@ describe("Local AI Chat components", () => {
       );
       for (const [, href] of html.matchAll(/<a[^>]*href="(\/[^\"]*)"/g))
         expect(
-          href === "/" || href === "/framework" || href.startsWith("/ai-chat/"),
+          href === "/" ||
+            href === "/framework" ||
+            href.startsWith("/ai-chat/") ||
+            href.startsWith("/?path=/story/modules-"),
         ).toBe(true);
       for (const [, src] of html.matchAll(
         /src="(\/workspace-assets\/[^\"]*)"/g,
@@ -616,7 +621,9 @@ describe("Local AI Chat components", () => {
       expect(
         imports.some(
           ({ fileName }) =>
-            fileName.startsWith("./") && fileName !== "./interface",
+            fileName.startsWith("./") &&
+            fileName !== "./interface" &&
+            fileName !== "./LandingDemo",
         ),
       ).toBe(false);
       expect(text).not.toMatch(
@@ -635,7 +642,7 @@ describe("Local AI Chat components", () => {
       <AIChatPreview initialHref="/ai-chat/social/profiles/pottery/chats/pottery%3Aproject-chat/threads/create" />,
     );
     expect(create).toContain('data-ds-block="social.thread.create-ai-chat"');
-    expect(create).toContain("Thread name");
+    expect(create).toContain("Название обсуждения");
     expect(create).not.toContain("Thread agent");
     expect(create).not.toContain('data-ds-block="social.thread.id-ai-chat"');
   });
@@ -658,12 +665,12 @@ describe("Local AI Chat components", () => {
           /<div(?=[^>]*data-module="social")(?=[^>]*data-model="profile")(?=[^>]*data-variant="id-ai-chat-project")[^>]*>/,
         )?.[0] ?? "";
       expect(profile).toContain('data-id="pottery"');
-      expect(html).toContain('aria-label="Show sidebar"');
+      expect(html).toContain('aria-label="Показать меню проекта"');
     }
     const inaccessible = renderToStaticMarkup(
       <AIChatPreview initialHref="/ai-chat/social/profiles/foreign" />,
     );
-    expect(inaccessible).toContain("Project profile unavailable");
+    expect(inaccessible).toContain("Проект недоступен");
     expect(inaccessible).not.toContain(
       'data-ds-block="social.profile.id-ai-chat-project"',
     );
@@ -678,8 +685,10 @@ describe("Local AI Chat components", () => {
         onSave={() => {}}
       />,
     );
-    expect(html).toContain("without a preset or custom role.");
-    expect(html).toContain("Create your own agent");
+    expect(html).toContain(
+      "Используйте выбранную модель с документами без дополнительных инструкций помощника.",
+    );
+    expect(html).toContain("Создать своего помощника");
     expect(html).not.toContain("Customize role");
   });
 
@@ -706,7 +715,7 @@ describe("Local AI Chat components", () => {
               data={{
                 id: "history:products",
                 slug: "history:products",
-                title: "Products.md",
+                title: "Продукты.md",
                 variant: "id-ai-chat",
               }}
               initialMessages={messages}
@@ -716,9 +725,9 @@ describe("Local AI Chat components", () => {
           </SourceProvider>
         </FilesProvider>,
       );
-      expect(html).toContain("AI assistant");
-      expect(html).toContain("About Account Manager");
-      expect(html).not.toContain("About Strategist");
+      expect(html).toContain("ИИ-помощник");
+      expect(html).toContain("О помощнике Account Manager");
+      expect(html).not.toContain("О помощнике Strategist");
       expect(html).toContain(
         'data-ds-block="social.thread.message-list-ai-chat"',
       );
@@ -739,6 +748,6 @@ describe("Local AI Chat components", () => {
     expect(html).toContain('data-thread-id="standalone-thread"');
     expect(html).toContain('data-id="standalone-message"');
     expect(html).toContain("Supplied message");
-    expect(html).not.toContain("Products.md is ready");
+    expect(html).not.toContain("Продукты.md готов к работе");
   });
 });

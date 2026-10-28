@@ -12,6 +12,7 @@ import type {
 import type { ISpsComponentBase } from "@sps/ui-adapter";
 export const variant = "me-social-module-profile-list-ai-chat" as const;
 export interface IComponentProps extends IParent<IModel, typeof variant> {
+  language?: string;
   initialProjects?: IAIChatProject[];
   loading?: ReactNode;
   renderError?: (props: { retry: () => void }) => ReactNode;
@@ -26,6 +27,7 @@ export interface IComponentPropsExtended
   retryProjects?: () => void;
 }
 export interface ILoadErrorProps {
+  language?: string;
   error: string;
   onRetry?: () => void;
 }

@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "f5a770b8-3359-439f-a921-5870e1f10896",
+  "createdAt": "2026-10-26T00:12:41.436Z",
+  "updatedAt": "2026-10-27T15:00:02.634Z",
+  "variant": "document",
+  "title": {
+    "en": "Brief",
+    "ru": "Бриф"
+  },
+  "subtitle": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"heading\",\"attrs\":{\"level\":4},\"content\":[{\"type\":\"text\",\"text\":\"Example content\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"A school for people starting to create AI products. The first use case is learning about the course and submitting an enquiry.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"heading\",\"attrs\":{\"level\":4},\"content\":[{\"type\":\"text\",\"text\":\"Пример содержания\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Школа для начинающих создателей ИИ-продуктов. Первый сценарий — узнать о курсе и оставить заявку.\"}]}]}"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The brief describes your idea: who the product is for, which problem it solves and what needs to be considered. The AI assistant uses it to suggest pages and features for your business.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Бриф — описание вашей идеи: для кого продукт, какую задачу он решает и что важно учесть. ИИ-помощник использует его, чтобы предложить страницы и функции для вашего бизнеса.\"}]}]}"
+  },
+  "adminTitle": "Бриф",
+  "slug": "framework-reviewed-context-doc-document-one"
+}

@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Read how the framework works.",
+    "ru": "Узнайте, как устроен фреймворк."
+  },
+  "subtitle": {
+    "en": "Architecture explained through SPS code.",
+    "ru": "Архитектура на примерах кода SPS."
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Follow a page, an API request or a local setup through the repository. The examples explain where each responsibility belongs and why.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Проследите путь страницы, API-запроса или локального запуска в репозитории. Примеры объясняют, где находится каждая ответственность и почему.\"}]}]}"
+  },
+  "anchor": "framework-articles",
+  "className": "sm:grid-cols-2 lg:grid-cols-3",
+  "id": "8593e1b5-b7a7-4683-b4d2-25e6caf487eb",
+  "createdAt": "2026-10-24T01:05:51.070Z",
+  "updatedAt": "2026-10-24T01:05:51.070Z",
+  "variant": "content-collection",
+  "adminTitle": "Read how the framework works.",
+  "slug": "framework-journey-articles-frame"
+}

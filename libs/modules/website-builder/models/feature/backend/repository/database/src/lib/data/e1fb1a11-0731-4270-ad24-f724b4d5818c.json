@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "e1fb1a11-0731-4270-ad24-f724b4d5818c",
+  "createdAt": "2026-10-26T00:11:57.073Z",
+  "updatedAt": "2026-10-27T14:59:59.644Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "How to test the first screen",
+    "ru": "Как проверить первый экран"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Show the page to someone from your audience. Ask what it offers and how to register. Compare their answer with what you intended to communicate.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Покажите страницу человеку из вашей аудитории. Попросите рассказать, что здесь предлагают и как записаться. Сопоставьте ответ с тем, что вы хотели сообщить.\"}]}]}"
+  },
+  "adminTitle": "Как проверить первый экран",
+  "slug": "framework-reviewed-article-social-profile-articles-feature-0"
+}

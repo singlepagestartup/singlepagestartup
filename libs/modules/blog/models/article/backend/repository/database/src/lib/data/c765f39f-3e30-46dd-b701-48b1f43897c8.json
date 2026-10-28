@@ -1,0 +1,21 @@
+{
+  "id": "c765f39f-3e30-46dd-b701-48b1f43897c8",
+  "className": "",
+  "createdAt": "2026-10-26T00:11:46.342Z",
+  "updatedAt": "2026-10-27T15:00:24.940Z",
+  "variant": "card",
+  "adminTitle": "Храните изображения и документы для своего проекта",
+  "slug": "framework-file-storage",
+  "title": {
+    "en": "Store images and documents for your project",
+    "ru": "Храните изображения и документы для своего проекта"
+  },
+  "subtitle": {
+    "en": "Photos, videos and files",
+    "ru": "Фотографии, видео и файлы"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Add product photos, covers, videos and documents. Use uploaded files in different sections of your site.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Добавляйте фотографии товаров, обложки, видео и документы. Используйте загруженные файлы в разных разделах сайта.\"}]}]}"
+  }
+}

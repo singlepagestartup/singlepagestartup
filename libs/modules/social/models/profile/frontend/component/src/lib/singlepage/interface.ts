@@ -1,3 +1,7 @@
+import type { IComponentProps as IAuthorOverviewDefault } from "./author-overview-default/interface";
+import type { IComponentProps as IAuthorBylineDefault } from "./author-byline-default/interface";
+import type { IComponentProps as IAuthorCardDefault } from "./author-card-default/interface";
+import type { IComponentProps as IByline } from "./byline/interface";
 import type { IComponentProps as IAgentIdAiChat } from "./agent-id-ai-chat/interface";
 import type { IComponentProps as IIdSettingsAiChat } from "./id-settings-ai-chat/interface";
 import type { IComponentProps as ISidebarAiChatProject } from "./sidebar-ai-chat-project/interface";
@@ -23,6 +27,10 @@ import { IComponentProps as IAdminTableRowComponentProps } from "./admin/table-r
 import { IComponentProps as IDefaultComponentProps } from "./default/interface";
 import { IComponentProps as IFindComponentProps } from "./find/interface";
 export type IComponentProps =
+  | IAuthorOverviewDefault
+  | IAuthorBylineDefault
+  | IAuthorCardDefault
+  | IByline
   | IAgentIdAiChat
   | IIdSettingsAiChat
   | ISidebarAiChatProject

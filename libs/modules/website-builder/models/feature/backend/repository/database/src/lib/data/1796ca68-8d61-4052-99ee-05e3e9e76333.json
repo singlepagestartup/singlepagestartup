@@ -1,0 +1,18 @@
+{
+  "className": "",
+  "id": "1796ca68-8d61-4052-99ee-05e3e9e76333",
+  "createdAt": "2026-10-24T01:05:52.120Z",
+  "updatedAt": "2026-10-24T01:05:52.120Z",
+  "variant": "dropdown",
+  "title": {
+    "en": "Do I need to write the code myself?",
+    "ru": "Нужно ли писать код самостоятельно?"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Describe what you want to Claude Code or Codex Desktop. Your agent changes the code; you make decisions and explore the resulting interface.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Опишите задачу Claude Code или Codex Desktop. Агент меняет код; вы принимаете решения и изучаете результат в интерфейсе.\"}]}]}"
+  },
+  "adminTitle": "Do I need to write the code myself?",
+  "slug": "framework-journey-faq-0"
+}

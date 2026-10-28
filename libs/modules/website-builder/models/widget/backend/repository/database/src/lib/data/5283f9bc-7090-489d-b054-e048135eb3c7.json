@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Work with Knowledge.",
+    "ru": "Работайте с Knowledge."
+  },
+  "subtitle": {
+    "en": "Business",
+    "ru": "Бизнес"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Editable Sources, their attached Files and derived Chunks for scoped retrieval.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Редактируемые Sources, прикреплённые Files и производные Chunks для поиска в заданной области.\"}]}]}"
+  },
+  "anchor": "module-knowledge",
+  "className": "@5xl:grid-cols-2",
+  "id": "5283f9bc-7090-489d-b054-e048135eb3c7",
+  "createdAt": "2026-10-24T01:06:06.176Z",
+  "updatedAt": "2026-10-24T01:06:06.176Z",
+  "variant": "content-definition-grid-page",
+  "adminTitle": "Work with Knowledge.",
+  "slug": "framework-journey-guide-knowledge-overview"
+}

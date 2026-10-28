@@ -1,0 +1,14 @@
+{
+  "id": "ec6822d3-88e0-4be3-a4c4-8d4ce0e02552",
+  "createdAt": "2026-10-24T01:05:50.094Z",
+  "updatedAt": "2026-10-24T01:05:50.094Z",
+  "variant": "default",
+  "className": "w-full",
+  "title": {
+    "en": "Actions",
+    "ru": "Действия"
+  },
+  "description": {},
+  "adminTitle": "Actions",
+  "slug": "framework-journey-modules-actions"
+}

@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "a23f0e25-f7bd-4e37-b373-05eeb0fecdbf",
+  "createdAt": "2026-10-26T00:11:24.196Z",
+  "updatedAt": "2026-10-27T14:59:48.296Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "billing",
+    "ru": "billing"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Let customers pay for their orders.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Дайте покупателю возможность оплатить заказ.\"}]}]}"
+  },
+  "adminTitle": "billing",
+  "slug": "framework-reviewed-article-ecommerce-connections-feature-0"
+}

@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Account for other sources of changes",
+    "ru": "Учитывайте другие источники изменений"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Host owns the shared WebSocket connection. A successful API response may associate the request with an opaque consistency ID. The server determines dependencies from actual reads, including empty relations and counts. Requests without this coverage continue using existing subscriptions.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Use the shared subscription lifecycle and cleanup. A socket per card or entity refresh timer creates additional owners. The shared transport already handles reconnection, expiry and version checks. Updates arriving during a request must not be lost when it completes.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Общее WebSocket-соединение принадлежит Host. Успешный ответ API может связать запрос с непрозрачным идентификатором согласованности. Сервер определяет зависимости по реальным чтениям, включая пустые связи и подсчёты. Запросы без такого покрытия продолжают использовать прежние подписки.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Используйте общий жизненный цикл подписки и её очистку. Отдельный сокет в каждой карточке или таймер обновления сущности создают дополнительные владельцы. Общий транспорт уже обрабатывает переподключение, срок действия и проверку версии. Обновления, пришедшие во время запроса, не должны теряться после его завершения.\"}]}]}"
+  },
+  "anchor": "ru-section-react-query-realtime-and-principal-scopes-5",
+  "className": "",
+  "id": "897f7e73-5958-460d-b584-11ee825caaf8",
+  "createdAt": "2026-10-26T07:34:02.490Z",
+  "updatedAt": "2026-10-27T14:59:06.805Z",
+  "variant": "content-rich",
+  "adminTitle": "Учитывайте другие источники изменений",
+  "slug": "ru-section-react-query-realtime-and-principal-scopes-5"
+}

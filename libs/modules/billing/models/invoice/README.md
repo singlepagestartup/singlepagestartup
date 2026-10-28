@@ -7,7 +7,7 @@ Invoices track payable amounts and statuses for completed or pending transaction
 ## Fields
 
 - `id`: unique identifier (UUID).
-- `createdAt`: creation timestamp.
+- `createdAt`: server-assigned, immutable creation timestamp.
 - `updatedAt`: last update timestamp.
 - `variant`: display variant.
 - `status`: invoice status (default: `draft`).
@@ -17,6 +17,12 @@ Invoices track payable amounts and statuses for completed or pending transaction
 - `amount`: invoice amount as integer.
 - `providerId`: provider-specific identifier.
 - `provider`: payment provider name.
+
+The owning repository rejects `createdAt` on create and changed values on
+ordinary or conditional updates. Provider updates may include the unchanged
+creation date in an existing full-record payload; the repository removes it
+from the SQL patch. This keeps the subscription Invoice ordering stable when
+payment status changes or a webhook is repeated.
 
 ## Variants
 

@@ -3,6 +3,7 @@ import type { IModel } from "@sps/social/models/message/sdk/model";
 import type { IComponentProps as IParent } from "@sps/shared-frontend-components/singlepage/find/interface";
 export const variant = "list-ai-chat" as const;
 export interface IComponentProps extends IParent<IModel, typeof variant> {
+  language?: string;
   apiProps?: IParent<IModel, typeof variant>["apiProps"] & {
     reactQueryOptions?: Partial<UseQueryOptions<IModel[]>>;
   };

@@ -1,0 +1,9 @@
+{
+  "id": "a43c005d-ba77-48cd-ab25-58e7640359f8",
+  "createdAt": "2026-10-15T14:31:19.854Z",
+  "updatedAt": "2026-10-15T14:31:19.854Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "POST",
+  "path": "/api/rbac/subjects/a859f913-177b-485f-a11e-ade680369e88/social-module/profiles"
+}

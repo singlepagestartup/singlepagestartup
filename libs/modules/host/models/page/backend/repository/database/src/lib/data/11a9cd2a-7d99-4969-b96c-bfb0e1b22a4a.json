@@ -1,0 +1,12 @@
+{
+  "id": "11a9cd2a-7d99-4969-b96c-bfb0e1b22a4a",
+  "title": "Billing · Code Framework",
+  "url": "/framework/modules/billing",
+  "description": "Currencies, payment intents, invoices and payment-provider state.",
+  "createdAt": "2026-10-24T01:06:04.458Z",
+  "updatedAt": "2026-10-24T01:06:04.458Z",
+  "variant": "default",
+  "className": "",
+  "language": "en",
+  "adminTitle": "Billing · Code Framework"
+}

@@ -1,0 +1,12 @@
+{
+  "id": "c430d671-dac2-4736-a58e-c39c0708aefc",
+  "title": "RBAC · Code Framework",
+  "url": "/framework/modules/rbac",
+  "description": "Accounts, authentication, roles and current-user operations with access scope.",
+  "createdAt": "2026-10-24T01:06:01.428Z",
+  "updatedAt": "2026-10-24T01:06:01.428Z",
+  "variant": "default",
+  "className": "",
+  "language": "en",
+  "adminTitle": "RBAC · Code Framework"
+}

@@ -5,7 +5,6 @@ import { Component as CreateAiChat } from "./create/ai-chat/index";
 import { Component as DownloadAiChat } from "./download/ai-chat/index";
 import { Component as IdAiChat } from "./id/ai-chat/index";
 import { Component as IdAiChatSettings } from "./id/ai-chat-settings/index";
-import { Component as List } from "./list/index";
 import { Component as ListDefault } from "./list-default/index";
 import { Component as ListItemSidebarAiChat } from "./list-item-sidebar-ai-chat/index";
 import { Component as MessageListAiChat } from "./message/list/ai-chat/index";
@@ -18,7 +17,6 @@ export const variants = {
   "download-ai-chat": DownloadAiChat,
   "id-ai-chat": IdAiChat,
   "id-ai-chat-settings": IdAiChatSettings,
-  list: List,
   "list-default": ListDefault,
   "list-item-sidebar-ai-chat": ListItemSidebarAiChat,
   "message-list-ai-chat": MessageListAiChat,

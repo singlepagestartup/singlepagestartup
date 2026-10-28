@@ -45,6 +45,24 @@ describe("is-authorized allowed routes", () => {
     expect(matcher.matches("/api/social/messages", "POST")).toBe(false);
   });
 
+  it("delegates only the exact Subject UUID GET to its controller guard", () => {
+    const path = "/api/rbac/subjects/3f2504e0-4f89-11d3-9a0c-0305e82c3301";
+    expect(matcher.matches(path, "GET")).toBe(true);
+    expect(matcher.matches(`${path}/`, "GET")).toBe(true);
+    for (const method of ["POST", "PATCH", "DELETE"]) {
+      expect(matcher.matches(path, method)).toBe(false);
+    }
+    for (const route of [
+      "/api/rbac/subjects",
+      "/api/rbac/subjects/count",
+      "/api/rbac/subjects/dump",
+      `${path}/identities`,
+      `/prefix${path}`,
+    ]) {
+      expect(matcher.matches(route, "GET")).toBe(false);
+    }
+  });
+
   /**
    * BDD Scenario: public module reads are allowed, dump and unknown reads
    *               are not.

@@ -136,13 +136,13 @@ export const Component = memo(function Component({
         label={data.title}
         section={data.title}
         value={sourceUserContext(data.content)}
-        placeholder={data.description ?? "Add your context and notes."}
+        placeholder={data.description ?? "Добавьте свои сведения и заметки."}
         onChange={edit}
       />
       {materials && (
         <details className="mt-3 rounded-lg border border-border p-3 text-xs">
           <summary className={`min-h-9 cursor-pointer ${kit.focus}`}>
-            Analyzed materials
+            Изученные материалы
           </summary>
           <MarkdownDocument
             disableRawHTML
@@ -160,7 +160,7 @@ export const Component = memo(function Component({
           className={`${kit.plain} mt-1 min-h-9 px-0 text-xs`}
         >
           <Icon name="chat-circle" className="size-4" />
-          {discussing ? "Discussing in chat" : "Discuss this section"}
+          {discussing ? "Обсуждается в чате" : "Обсудить раздел"}
         </button>
       )}
       <FileStorageModuleFile

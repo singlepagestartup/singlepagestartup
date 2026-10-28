@@ -24,6 +24,18 @@ owner, and only boundaries/reference projects needed to understand the work. -->
 and why that matters. Separate present capability from intended benefit without
 repeating generic disclaimers. Preserve exact naming and binding requirements. -->
 
+## Competitors
+
+<!-- Ask which businesses the owner considers competitors. Record each name,
+website or page, similar offer and why customers might choose it. When known,
+include geography/audience and exact examples of advertising, posts or search
+results where the owner found it. Keep the owner's observations distinct from
+verified research. These inputs inform later competitor research and keyword
+planning; they are not a completed market analysis or keyword list.
+Each Product keeps its own competitors, which can differ from this business-wide
+list. If the owner does not know any yet, record "Not yet known" and continue;
+silence does not mean there are no competitors. Do not invent names or links. -->
+
 ## Current state
 
 <!-- What exists, works or has been tested; existing customers/results/assets

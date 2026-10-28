@@ -26,3 +26,10 @@ export interface IRowProps {
   language: string;
   form: import("react-hook-form").UseFormReturn<any>;
 }
+
+export interface IQuantityProps {
+  subjectId: string;
+  orderId: string;
+  line: import("@sps/ecommerce/models/order/sdk/model").ICartDetails["lines"][number];
+  language: string;
+}

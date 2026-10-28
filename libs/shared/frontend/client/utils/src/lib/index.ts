@@ -27,3 +27,4 @@ export {
 } from "./file-preview";
 
 export { useChatScroll, type IChatScrollProps } from "./chat-scroll";
+export { getRichTextPlainText, getRichTextMarkdown } from "./rich-text";

@@ -32,7 +32,7 @@ export function Component<M, V>(
 
   return (
     <ErrorBoundary>
-      <Suspense fallback={props.Skeleton ?? <Skeleton />}>
+      <Suspense fallback={props.Skeleton ?? props.skeleton ?? <Skeleton />}>
         <Provider>
           <Comp {...props} api={api} />
         </Provider>

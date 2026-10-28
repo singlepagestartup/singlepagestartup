@@ -17,7 +17,8 @@ export default function Client(props: IComponentProps) {
     subjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFind(
       scope,
     );
-  if (sources.isPending) return props.skeleton ?? <Skeleton />;
+  if (sources.isPending)
+    return props.skeleton ?? <Skeleton language={props.language} />;
   return (
     <ChildComponent
       {...props}

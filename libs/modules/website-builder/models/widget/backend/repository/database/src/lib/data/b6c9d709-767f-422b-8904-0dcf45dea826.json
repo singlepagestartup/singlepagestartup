@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "A request for your project",
+    "ru": "Запрос для вашего проекта"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"I want a school assistant that answers students using our programme and instructions. I will add and update documents. Answers should link to their sources.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Хочу помощника школы, который отвечает ученикам по нашей программе и инструкциям. Добавлю документы и буду обновлять их. В ответах должны быть ссылки на использованные источники.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "b6c9d709-767f-422b-8904-0dcf45dea826",
+  "createdAt": "2026-10-26T00:12:02.265Z",
+  "updatedAt": "2026-10-27T14:59:15.054Z",
+  "variant": "content-rich",
+  "adminTitle": "Запрос для вашего проекта",
+  "slug": "framework-reviewed-article-knowledge-task"
+}

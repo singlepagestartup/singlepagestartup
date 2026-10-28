@@ -57,6 +57,11 @@ export function Component(props: IComponentPropsExtended) {
   const relationSections = useMemo(() => {
     return [
       {
+        id: "widgets-to-ecommerce-module-widgets",
+        title: "Ecommerce Widgets",
+        render: props.widgetsToEcommerceModuleWidgets,
+      },
+      {
         id: "widgets-to-crm-module-widgets",
         title: "CRM Widgets",
         render: props.widgetsToCrmModuleWidgets,
@@ -76,6 +81,7 @@ export function Component(props: IComponentPropsExtended) {
       } => Boolean(section.render),
     );
   }, [
+    props.widgetsToEcommerceModuleWidgets,
     props.widgetsToCrmModuleWidgets,
     props.widgetsToWebsiteBuilderModuleWidgets,
   ]);

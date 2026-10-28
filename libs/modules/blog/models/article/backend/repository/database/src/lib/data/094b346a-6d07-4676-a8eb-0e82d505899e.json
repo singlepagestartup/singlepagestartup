@@ -1,0 +1,21 @@
+{
+  "id": "094b346a-6d07-4676-a8eb-0e82d505899e",
+  "className": "",
+  "createdAt": "2026-10-26T00:11:42.495Z",
+  "updatedAt": "2026-10-27T15:00:22.814Z",
+  "variant": "card",
+  "adminTitle": "Покажите свой опыт в статьях",
+  "slug": "framework-blog",
+  "title": {
+    "en": "Share your expertise in articles",
+    "ru": "Покажите свой опыт в статьях"
+  },
+  "subtitle": {
+    "en": "Articles and blog",
+    "ru": "Статьи и блог"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Share your experience, answer customer questions and link articles to products or services.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Расскажите о своём опыте, ответьте на вопросы клиентов и свяжите статьи с товарами или услугами.\"}]}]}"
+  }
+}

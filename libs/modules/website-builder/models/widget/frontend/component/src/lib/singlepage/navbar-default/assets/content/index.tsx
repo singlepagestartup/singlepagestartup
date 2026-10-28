@@ -3,8 +3,8 @@ import { Component as WidgetsToButtonsArrays } from "@sps/website-builder/relati
 
 export function Component(props: IComponentPropsExtended) {
   return (
-    <div className="flex flex-col lg:flex-row w-full px-2 lg:px-0 items-center justify-between gap-2">
-      <div className="flex flex-row gap-2">
+    <div className="flex min-w-0 w-full flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex min-w-0 flex-col gap-1 lg:flex-row lg:flex-wrap lg:items-center">
         <WidgetsToButtonsArrays
           isServer={props.isServer}
           variant="find"
@@ -28,21 +28,29 @@ export function Component(props: IComponentPropsExtended) {
           }}
         >
           {({ data }) => {
-            return data?.map((entity, index) => {
-              return (
-                <WidgetsToButtonsArrays
-                  key={index}
-                  isServer={props.isServer}
-                  variant={entity.variant as any}
-                  data={entity}
-                  language={props.language}
-                />
-              );
-            });
+            return data
+              ?.toSorted(
+                (a, b) =>
+                  (a.orderIndex ?? 0) - (b.orderIndex ?? 0) ||
+                  a.id.localeCompare(b.id),
+              )
+              .map((entity) => {
+                return (
+                  <WidgetsToButtonsArrays
+                    key={entity.id}
+                    isServer={props.isServer}
+                    variant="default"
+                    className="w-auto max-w-full"
+                    dataSource="props"
+                    data={entity}
+                    language={props.language}
+                  />
+                );
+              });
           }}
         </WidgetsToButtonsArrays>
       </div>
-      <div className="flex flex-row gap-2">
+      <div className="flex shrink-0 flex-wrap items-center gap-1">
         <WidgetsToButtonsArrays
           isServer={props.isServer}
           variant="find"
@@ -66,17 +74,25 @@ export function Component(props: IComponentPropsExtended) {
           }}
         >
           {({ data }) => {
-            return data?.map((entity, index) => {
-              return (
-                <WidgetsToButtonsArrays
-                  key={index}
-                  isServer={props.isServer}
-                  variant={entity.variant as any}
-                  data={entity}
-                  language={props.language}
-                />
-              );
-            });
+            return data
+              ?.toSorted(
+                (a, b) =>
+                  (a.orderIndex ?? 0) - (b.orderIndex ?? 0) ||
+                  a.id.localeCompare(b.id),
+              )
+              .map((entity) => {
+                return (
+                  <WidgetsToButtonsArrays
+                    key={entity.id}
+                    isServer={props.isServer}
+                    variant="default"
+                    className="w-auto max-w-full"
+                    dataSource="props"
+                    data={entity}
+                    language={props.language}
+                  />
+                );
+              });
           }}
         </WidgetsToButtonsArrays>
       </div>

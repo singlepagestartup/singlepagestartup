@@ -32,7 +32,8 @@ export default function Client(props: IComponentProps) {
     subjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFind(
       target,
     );
-  if (profiles.isPending) return props.skeleton ?? <Skeleton />;
+  if (profiles.isPending)
+    return props.skeleton ?? <Skeleton language={props.language} />;
   return (
     <ChildComponent
       {...props}
@@ -57,6 +58,7 @@ export default function Client(props: IComponentProps) {
         (knowledge.data || []).map((source) => [
           source.id,
           <SourceFilesReader
+            language={props.language}
             key={source.id}
             scope={scope}
             socialModuleProfileId={props.socialModuleProfileId}
@@ -71,6 +73,7 @@ function SourceFilesReader({
   scope,
   socialModuleProfileId,
   sourceId,
+  language,
 }: ISourceFilesReaderProps) {
   const files =
     subjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesFind(
@@ -80,5 +83,11 @@ function SourceFilesReader({
         knowledgeModuleSourceId: sourceId,
       },
     );
-  return <SourceFiles files={files.data} error={files.error?.message} />;
+  return (
+    <SourceFiles
+      language={language}
+      files={files.data}
+      error={files.error?.message}
+    />
+  );
 }

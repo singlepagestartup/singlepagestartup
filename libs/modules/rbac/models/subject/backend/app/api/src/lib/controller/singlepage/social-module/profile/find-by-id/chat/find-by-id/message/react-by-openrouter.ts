@@ -26,6 +26,7 @@ import {
   type ISocialProfileAiTool,
   type ISocialProfileAiToolLoopResult,
   type TOpenRouterBillingPurpose,
+  type IAiContextHistoryMessage,
 } from "@sps/rbac/models/subject/backend/app/api/src/lib/service";
 import { api } from "@sps/rbac/models/subject/sdk/server";
 import {
@@ -73,7 +74,7 @@ import {
 } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/social-module/profile/ai/document";
 import { Service as ProfileSkills } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/social-module/profile/skills";
 import { KnowledgeSearchResult } from "@sps/knowledge/backend/app/api/src/lib/types";
-import type { IAiContextHistoryMessage } from "@sps/rbac/models/subject/backend/app/api/src/lib/service";
+
 import { fingerprintAiContextMessage } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/social-module/profile/ai/context/utils";
 import * as jwt from "hono/jwt";
 import { createHash } from "node:crypto";

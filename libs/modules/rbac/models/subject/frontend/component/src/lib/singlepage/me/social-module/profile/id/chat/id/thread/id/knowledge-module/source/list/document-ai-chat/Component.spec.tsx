@@ -5,13 +5,22 @@
  * When: data loads, retries or changes while a draft is being edited.
  * Then: initial drafts start only after loading and remain until attached.
  */
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 const create = jest.fn();
 const updateSource = jest.fn();
 const updateThread = jest.fn();
 const uploadFiles = jest.fn();
 const refetch = jest.fn();
 let sourceRead: any = { data: [] };
+jest.mock("next/navigation", () => ({
+  usePathname: () => "/ru/ai-chat/projects",
+}));
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   api: {
     socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFind:
@@ -40,6 +49,15 @@ jest.mock("@sps/knowledge/models/source/sdk/client", () => ({
 }));
 jest.mock("@sps/knowledge/models/source/sdk/server", () => ({ api: {} }));
 import { Component } from "@sps/rbac/models/subject/frontend/component";
+const clipboardDescriptor = Object.getOwnPropertyDescriptor(
+  navigator,
+  "clipboard",
+);
+afterEach(() => {
+  if (clipboardDescriptor)
+    Object.defineProperty(navigator, "clipboard", clipboardDescriptor);
+  else Reflect.deleteProperty(navigator, "clipboard");
+});
 beforeEach(() => {
   sourceRead = { data: [] };
   refetch.mockReset();
@@ -50,6 +68,7 @@ beforeEach(() => {
 });
 
 const loadingProps: any = {
+  language: "en",
   isServer: false,
   variant:
     "me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-list-document-ai-chat",
@@ -169,6 +188,7 @@ it("retries attachment without duplicating the already saved Knowledge source", 
       },
     });
   const props: any = {
+    language: "en",
     isServer: false,
     variant:
       "me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-list-document-ai-chat",
@@ -245,6 +265,7 @@ it("uploads selected files to the saved Source before attaching it and never dup
   render(
     <Component
       {...({
+        language: "en",
         isServer: false,
         variant:
           "me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-list-document-ai-chat",
@@ -345,4 +366,219 @@ it("retains the first saved section when a second is attached before Thread prop
     "first",
     "second",
   ]);
+});
+
+it("copies instructions for the actual saved Thread file without copying Source bodies or writing data", async () => {
+  const writeText = jest.fn().mockResolvedValue(undefined);
+  Object.defineProperty(navigator, "clipboard", {
+    configurable: true,
+    value: { writeText },
+  });
+  sourceRead = {
+    data: [
+      {
+        id: "saved-source",
+        title: "Section title",
+        content: "Private saved document text",
+      },
+      { id: "foreign", title: "Foreign", content: "Another document" },
+    ],
+  };
+  render(
+    <Component
+      {...loadingProps}
+      thread={{ ...loadingProps.thread, title: "Launch plan.md" }}
+    />,
+  );
+  expect(
+    screen.getAllByRole("button", { name: "Copy development request" }),
+  ).toHaveLength(1);
+  expect(
+    screen
+      .getByRole("link", { name: "Explore Code Framework" })
+      .getAttribute("href"),
+  ).toBe("/ru/framework");
+  fireEvent.click(
+    screen.getByRole("button", { name: "Copy development request" }),
+  );
+  await screen.findByText(/Request copied\. Review and save/);
+  expect(writeText).toHaveBeenCalledTimes(1);
+  const request = writeText.mock.calls[0][0];
+  expect(request).toContain("Launch plan.md");
+  expect(request).toContain("export and attach the file separately");
+  expect(request).not.toContain("Private saved document text");
+  expect(request).not.toContain("Another document");
+  expect(create).not.toHaveBeenCalled();
+  expect(updateSource).not.toHaveBeenCalled();
+  expect(updateThread).not.toHaveBeenCalled();
+  expect(uploadFiles).not.toHaveBeenCalled();
+});
+
+it.each([
+  ["", true],
+  [
+    "## Контекст пользователя\n<!-- knowledge:user -->\n\n<!-- /knowledge:user -->",
+    true,
+  ],
+  [
+    "## Контекст пользователя\n<!-- knowledge:user -->\n\n<!-- /knowledge:user -->\n\n## Сведения из материалов\nSix workshop places.",
+    false,
+  ],
+])(
+  "enables the handoff only for effective content in the scoped saved Sources (%s)",
+  (content, disabled) => {
+    sourceRead = {
+      data: [
+        { id: "saved-source", title: "Section", content },
+        {
+          id: "foreign",
+          title: "Foreign",
+          content: "Foreign content does not enable this document",
+        },
+      ],
+    };
+    render(<Component {...loadingProps} />);
+    expect(
+      (
+        screen.getByRole("button", {
+          name: "Copy development request",
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(disabled);
+  },
+);
+
+it("does not treat an unconfirmed proposal as saved document content", () => {
+  sourceRead = {
+    data: [{ id: "saved-source", title: "Section", content: "" }],
+  };
+  render(
+    <Component
+      {...loadingProps}
+      thread={{
+        ...loadingProps.thread,
+        metadata: {
+          ...loadingProps.thread.metadata,
+          rbacAiDocumentProposal: {
+            version: 1,
+            id: "proposal",
+            status: "pending",
+            sourceId: "saved-source",
+            expectedContentHash: "hash",
+            title: "Proposed section",
+            userContext: "Unconfirmed facts",
+            fileIds: [],
+            triggerMessageId: "message",
+          },
+        },
+      }}
+    />,
+  );
+  expect(
+    (
+      screen.getByRole("button", {
+        name: "Copy development request",
+      }) as HTMLButtonElement
+    ).disabled,
+  ).toBe(true);
+  expect(screen.getByText(/An unconfirmed proposal is waiting/)).toBeTruthy();
+  expect(screen.queryByText("Unconfirmed facts")).toBeNull();
+});
+
+it("resets feedback on saved text changes and ignores the previous pending clipboard completion", async () => {
+  let finish!: () => void;
+  const writeText = jest.fn().mockImplementation(
+    () =>
+      new Promise<void>((resolve) => {
+        finish = resolve;
+      }),
+  );
+  Object.defineProperty(navigator, "clipboard", {
+    configurable: true,
+    value: { writeText },
+  });
+  sourceRead = {
+    data: [
+      { id: "saved-source", title: "Section", content: "Saved first version" },
+    ],
+  };
+  const view = render(<Component {...loadingProps} />);
+  fireEvent.click(
+    screen.getByRole("button", { name: "Copy development request" }),
+  );
+  expect(
+    (
+      screen.getByRole("button", {
+        name: "Copying request…",
+      }) as HTMLButtonElement
+    ).disabled,
+  ).toBe(true);
+  sourceRead = {
+    data: [
+      { id: "saved-source", title: "Section", content: "Saved second version" },
+    ],
+  };
+  view.rerender(<Component {...loadingProps} />);
+  expect(
+    (
+      screen.getByRole("button", {
+        name: "Copy development request",
+      }) as HTMLButtonElement
+    ).disabled,
+  ).toBe(false);
+  await act(async () => {
+    finish();
+    await Promise.resolve();
+  });
+  expect(screen.queryByText(/Request copied\. Review and save/)).toBeNull();
+  expect(writeText).toHaveBeenCalledTimes(1);
+});
+
+it("offers a clipboard retry without changing document data", async () => {
+  const writeText = jest
+    .fn()
+    .mockRejectedValueOnce(new Error("Denied"))
+    .mockResolvedValueOnce(undefined);
+  Object.defineProperty(navigator, "clipboard", {
+    configurable: true,
+    value: { writeText },
+  });
+  sourceRead = {
+    data: [{ id: "saved-source", title: "Section", content: "Saved text" }],
+  };
+  render(<Component {...loadingProps} />);
+  fireEvent.click(
+    screen.getByRole("button", { name: "Copy development request" }),
+  );
+  await screen.findByText(/The request could not be copied/);
+  fireEvent.click(
+    screen.getByRole("button", { name: "Copy development request" }),
+  );
+  await screen.findByText(/Request copied\. Review and save/);
+  expect(writeText).toHaveBeenCalledTimes(2);
+  expect(updateSource).not.toHaveBeenCalled();
+});
+
+it("clears completed feedback when the exported document identity changes", async () => {
+  const writeText = jest.fn().mockResolvedValue(undefined);
+  Object.defineProperty(navigator, "clipboard", {
+    configurable: true,
+    value: { writeText },
+  });
+  sourceRead = {
+    data: [{ id: "saved-source", title: "Section", content: "Saved text" }],
+  };
+  const view = render(<Component {...loadingProps} />);
+  fireEvent.click(
+    screen.getByRole("button", { name: "Copy development request" }),
+  );
+  await screen.findByText(/Request copied\. Review and save/);
+  view.rerender(
+    <Component
+      {...loadingProps}
+      thread={{ ...loadingProps.thread, title: "Another saved file.md" }}
+    />,
+  );
+  expect(screen.queryByText(/Request copied\. Review and save/)).toBeNull();
+  expect(screen.getByText(/then export Another saved file.md/)).toBeTruthy();
 });

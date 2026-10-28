@@ -48,6 +48,19 @@ A caller's own Subject ID alone does not authorize changes to another order.
 - For example, chat thread routes use `RequestSubjectOwnsSocialModuleChat` and `RequestSocialModuleThreadBelongsToChat`, which call `socialModuleChatLifecycleAssertSubjectOwnsChat` and `socialModuleChatLifecycleAssertThreadBelongsToChat`.
 - Handlers may keep the same assertions as a defense-in-depth check, but the access model must not depend on custom route exceptions inside the global authorization service.
 
+### Reading the current Subject
+
+`GET /api/rbac/subjects/:id` accepts a verified session JWT whose Subject ID
+matches the requested ID. This includes guest sessions without identities or
+roles. The controller registers `RequestSubjectReadAccess` before the existing
+find-by-id handler. A foreign Subject requires an explicit RBAC permission;
+the operator secret retains its existing access. Missing, expired and invalid
+session tokens cannot read a Subject.
+
+The exact UUID read delegates authorization to this controller guard. Subject
+collection, count and nested routes keep their existing access rules. The read
+bypasses HTTP response caches so a cached response cannot skip the guard.
+
 ### Social Thread Permission Routes
 
 Thread management through `rbac.subject` requires `rbac.permission` records for the HTTP routes and route-level subject/chat/thread middleware for resource checks:
@@ -259,9 +272,15 @@ delete action is called.
 
 ### Subject Profile collection
 
-`GET /api/rbac/subjects/:id/social-module/profiles` returns the Subject's own Profiles and Profiles connected through its Chats, with caller filters applied within that scope.
+`GET /api/rbac/subjects/:id/social-module/profiles` returns only Profiles explicitly owned by that Subject. Caller filters apply within this scope; shared Chat membership does not grant ownership.
 
-`POST` at the same URL accepts `data.title` and `data.variant` (`default` or `artificial-intelligence`). Profile model defaults generate `slug` and `adminTitle`; caller values for those fields are not forwarded. The AI Chat form supplies `artificial-intelligence` and asks only for the project name. AI Profile creation also provisions its Chat, default Thread and Agent Subject using the existing bootstrap. The returned model is the created Profile.
+`POST` at the same URL creates an `artificial-intelligence` Profile from its title. The authenticated registration flow provisions the single personal Profile; callers cannot create another personal Profile through this endpoint. Model defaults generate `slug` and `adminTitle`; caller values for those fields are not forwarded. AI Profile creation also provisions its Chat, default Thread and Agent Subject through the existing bootstrap. The returned model is the created Profile.
+
+### Publishing an Article
+
+`POST /api/rbac/subjects/:id/blog-module/articles` requires the current Subject's JWT and a registered human Identity. Its strict JSON envelope contains `data.requestId`, localized `title` and TipTap-serialized `description`, optional localized `subtitle`, and an optional `categoryId`. The server chooses the caller's personal Social Profile and atomically creates Article, ownership, authorship and optional category links. A retry with the same request UUID and unchanged payload returns the same Article; a changed or foreign request conflicts. This operation publishes immediately.
+
+Public author URLs use `/authors/<Social Profile UUID>`. Social's `authors`, `authors/count` and `authors/:id` reads expose allowlisted author presentation and explicitly linked Articles/Products. They omit private Profile handles, Subject IDs and AI workspace data. Generic Profile list/count/detail reads require operator or an explicitly Role-bound administrative Permission; account settings use the existing Subject scope. Authorized Chat reads carry current participant and historical sender/actor presentation, including avatars, within their Chat scope.
 
 ## Variants
 
@@ -371,6 +390,17 @@ The Subject-owned `metadata.aiChatDocument` contract has `key`, `profileId` and
 presentation variant or title cannot mark a conversation as a document. Each
 document displays only its listed Sources from the selected project Profile.
 Source attachment preserves the document key and other Thread metadata.
+
+The document Source list includes one development handoff for the whole saved
+document. It uses the same scoped, linked Sources and Thread filename as the
+Markdown export. Copying places instructions on the clipboard; the user reviews
+the text, saves any notes to include, exports the document and attaches it to a
+coding agent separately. Unsaved editor notes and unconfirmed chat proposals
+are excluded from the saved export. The action is disabled when the saved
+document has no effective text or its read is unavailable. Saved-record changes
+reset copy feedback and discard stale clipboard completions. The Framework
+link retains the current locale. Source editing, proposal confirmation and the
+download flow retain their existing owners and behavior.
 
 Ordinary Threads show messages and the composer across the workspace width.
 They have no Knowledge editor, export action or document context selector. The
@@ -522,9 +552,11 @@ permits startup specialization; controllers do not construct ProfileSkills.
 `ecommerceProductCheckout` creates the Product checkout graph and delegates to
 `ecommerceOrderCheckout`, which performs payment checkout and retains its
 compensation behavior. The Product HTTP handler and both order-renewal paths use
-the same public capability. Authentication bootstrap and the Telegram
-free-subscription flow also invoke it directly after selecting the configured
-zero-price Product. The public HTTP checkout retains its Subject JWT ownership
+the same public capability. Authentication and Telegram initial-Free grants use
+a separate direct-Service transaction for the zero-price graph and settlement.
+That operation grants 3000 credits once, rejects an ambient outer transaction
+and dispatches effects after its own commit. It does not invoke HTTP checkout
+or renew the Free allowance. The public HTTP checkout retains its Subject JWT ownership
 check. Proceed receives a deferred DI callback so resolving Subject and Proceed
 does not form a constructor cycle, and startup Subject methods remain effective.
 
@@ -583,9 +615,9 @@ use the public Subject registry.
 
 The `me-blog-module-article-private-content-default` variant accepts an explicit
 blogModuleArticle and language. Its client view owns the authorization wrapper
-and reads the Article's Website Builder associations through their component
-SDK. Blog Widgets receive the rendered operation through a typed slot; this
-Subject variant receives no routing map.
+and reads ordered content through the current-Subject content SDK. Blog Widgets
+receive the rendered operation through a typed slot; this Subject variant
+receives no routing map.
 
 ### Authorized Chat participants
 
@@ -623,3 +655,62 @@ target Profile in a Chat. An ordinary requester must participate; the existing
 administrative Chat scope may read without joining. The target Profile must
 still belong to that Chat and each Source must belong to the target Profile.
 Membership denial is a permission error, rather than an expired session.
+
+### Article content access
+
+`GET /api/rbac/subjects/:id/blog-module/articles/:blogModuleArticleId/content`
+uses the current JWT Subject, including an initialized guest session. A missing
+session returns 401; a different Subject returns 403. The typed client/server
+SDK operation is `blogModuleArticleFindByIdContentFind`.
+
+Subscription access requires the owned active paid period and its current
+Product Roles. An Identity or email registration is not an access requirement;
+an entitled guest Subject receives granted content. A guest without entitlement
+receives the guest presentation state.
+
+Its result contains ordered public entries and private placeholders with opaque
+slot keys. Protected IDs and body appear only in granted entries. Effective
+expiry includes every private root needed by the entry's descendants. The
+client query keeps the result in the principal-specific shared cache, forwards
+cancellation and clears inaccessible data on 401/403. Its request-start
+timestamp lets the reader close content without extending access by transport
+latency. Any other failed revalidation replaces cached private entries with
+locked placeholders while retaining the public entries. Protected results are
+not copied into the debug event log.
+
+`apps/api/app.ts` injects `IGraphServices` using the effective model and relation
+Services from the loaded module registry. The graph never constructs their
+repositories or calls the public API over HTTP. The injected `assertIsolated`
+callback checks incoming references from higher modules before private marking
+and attachment. Standalone graph writers must supply this callback; missing
+services or isolation checks fail closed.
+
+The API host installs `ProtectedBlogContent.bytes()` before `/public/*` and
+`ProtectedBlogContent.init()` after query parsing, before both HTTP response
+caches. List and count restrictions enter the repository filter before
+pagination. Repeated query parsers preserve the guarded filter. Protected
+metadata, content and static paths are excluded from both response caches.
+The bytes middleware reapplies private/no-store headers after the static
+handler returns its Response. Guarded graph writes share a database transaction
+and graph lock with their owning controller mutation. Tests may inject a
+transaction callback for an in-memory graph; production uses the shared
+consistency database context.
+
+The operator-only maintenance operation
+`POST /api/rbac/subjects/:id/ecommerce-module/orders/:ecommerceModuleOrderId/subscription-period/freeze`
+uses SDK `ecommerceModuleOrderFreezeSubscriptionPeriod`. It accepts an expected
+stored update timestamp, verifies the exact owned Order and current complete
+Product Roles, and delegates period freezing to Ecommerce. Callers cannot
+supply arbitrary period timestamps.
+
+### Shared account menu and cart
+
+`me-account` resolves the current session and delegates its authenticated view to
+`me-account-ai-chat`, so public pages and AI Chat use the same profile, token
+balance and account actions. Its guest link uses `/ai-chat/sign-in`.
+
+The cart drawer uses compact Product rows and totals from the authorized
+`includeCartDetails` response. Quantity controls update one exact order line
+through the Subject SDK, then invalidate that Subject’s order collection.
+Pending state and failures remain within the changed line; payment links are
+shown only after checkout returns them.

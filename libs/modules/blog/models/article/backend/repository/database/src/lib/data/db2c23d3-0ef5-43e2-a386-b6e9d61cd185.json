@@ -1,0 +1,21 @@
+{
+  "id": "db2c23d3-0ef5-43e2-a386-b6e9d61cd185",
+  "className": "",
+  "createdAt": "2026-10-26T00:11:49.803Z",
+  "updatedAt": "2026-10-27T15:00:25.398Z",
+  "variant": "card",
+  "adminTitle": "Объедините клиентов вокруг вашего проекта",
+  "slug": "framework-social",
+  "title": {
+    "en": "Bring customers together around your project",
+    "ru": "Объедините клиентов вокруг вашего проекта"
+  },
+  "subtitle": {
+    "en": "Profiles and conversations",
+    "ru": "Профили и общение"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Create a community, a conversation with an expert or a chat with an AI assistant. Members can meet and discuss their tasks.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Создайте сообщество, переписку с экспертом или чат с ИИ-помощником. Участники смогут знакомиться и обсуждать свои задачи.\"}]}]}"
+  }
+}

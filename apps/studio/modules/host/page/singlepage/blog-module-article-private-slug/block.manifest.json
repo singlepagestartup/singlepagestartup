@@ -1,0 +1,28 @@
+{
+  "$schema": "../../../../../block.schema.json",
+  "id": "host.page.blog-module-article-private-slug",
+  "title": "Host Page / blog-module-article-private-slug",
+  "description": "Framework presentation with explicit content and composition slots.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "host",
+    "entityType": "model",
+    "entity": "page",
+    "variant": "blog-module-article-private-slug"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "host.page",
+    "pageName": "host",
+    "variantName": "blog-module-article-private-slug",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

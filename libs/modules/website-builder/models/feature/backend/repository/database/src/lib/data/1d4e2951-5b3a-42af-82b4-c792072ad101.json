@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "1d4e2951-5b3a-42af-82b4-c792072ad101",
+  "createdAt": "2026-10-26T00:12:00.787Z",
+  "updatedAt": "2026-10-27T14:59:27.480Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Question",
+    "ru": "Вопрос"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"What do I need for the first class?\\n\\nAn example answer based on the course programme.\\n\\nBring a camera or smartphone\\n\\nPrepare three of your photos\\n\\nSource: course programme, class 1\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Что нужно для первого занятия?\\n\\nПример ответа по программе курса.\\n\\nВозьмите камеру или смартфон\\n\\nПодготовьте три своих снимка\\n\\nИсточник: программа курса, занятие 1\"}]}]}"
+  },
+  "adminTitle": "Вопрос",
+  "slug": "framework-reviewed-article-knowledge-example-feature-1"
+}

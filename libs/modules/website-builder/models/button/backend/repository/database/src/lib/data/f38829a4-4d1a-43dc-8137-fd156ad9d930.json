@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Backend articles",
+    "ru": "Статьи о бэкенде"
+  },
+  "subtitle": {},
+  "url": "/blog/categories/backend",
+  "className": "",
+  "id": "f38829a4-4d1a-43dc-8137-fd156ad9d930",
+  "createdAt": "2026-10-26T00:11:17.795Z",
+  "updatedAt": "2026-10-27T15:00:17.576Z",
+  "variant": "link",
+  "adminTitle": "Статьи о бэкенде",
+  "slug": "framework-reviewed-footer-2-2"
+}

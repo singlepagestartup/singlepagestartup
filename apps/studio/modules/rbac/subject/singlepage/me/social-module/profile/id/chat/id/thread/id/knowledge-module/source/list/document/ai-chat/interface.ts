@@ -16,3 +16,10 @@ export interface IComponentProps extends Omit<IVariantInputs, "variant"> {
 }
 
 export interface IComponentPropsExtended extends IComponentProps {}
+
+export interface IDevelopmentHandoffProps {
+  fileName: string;
+  revision: string;
+  hasContent: boolean;
+  hasPendingProposal: boolean;
+}

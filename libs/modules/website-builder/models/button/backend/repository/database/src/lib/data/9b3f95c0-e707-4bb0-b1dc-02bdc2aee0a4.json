@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Blog",
+    "ru": "Блог"
+  },
+  "subtitle": {},
+  "url": "/blog",
+  "className": "",
+  "id": "9b3f95c0-e707-4bb0-b1dc-02bdc2aee0a4",
+  "createdAt": "2026-10-26T00:11:17.426Z",
+  "updatedAt": "2026-10-27T15:00:13.372Z",
+  "variant": "link",
+  "adminTitle": "Блог",
+  "slug": "framework-reviewed-footer-2-0"
+}

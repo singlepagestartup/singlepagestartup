@@ -1,53 +1,81 @@
 import Link from "next/link";
-import { getLocalizedHref } from "@sps/shared-frontend-client-utils";
-import { Icon } from "@sps/ui-adapter";
-import type { IComponentPropsExtended } from "./interface";
-export function Component({
-  variant = "brand-ai-chat",
-  language = "en",
-  data,
-}: IComponentPropsExtended) {
-  const pathname = `/${language}`;
+import { IComponentPropsExtended } from "./interface";
+import { Component as LogotypesToFileStorageWidgets } from "@sps/website-builder/relations/logotypes-to-file-storage-module-files/frontend/component";
+import { internationalization } from "@sps/shared-configuration";
+import { saveLanguageContext } from "@sps/shared-utils";
+import { cn } from "@sps/shared-frontend-client-utils";
+
+export function Component(props: IComponentPropsExtended) {
+  const href = saveLanguageContext(
+    props.data.url || "",
+    props.language || internationalization.defaultLanguage.code,
+    internationalization.languages,
+  );
+
+  const title =
+    props.data.title?.[
+      props.language || internationalization.defaultLanguage.code
+    ] || props.data.title?.en;
+
   return (
     <Link
-      href={getLocalizedHref(pathname, "/")}
-      data-ds-block="website-builder.logotype.brand-ai-chat"
-      data-id={data.id}
-      className={`group relative isolate inline-flex shrink-0 items-center gap-3 rounded-xl ${kit.focus}`}
-      aria-label="SPS AI Chat home"
       data-module="website-builder"
       data-model="logotype"
-      data-variant={variant}
+      data-id={props.data?.id || ""}
+      data-variant={props.variant}
+      className={cn(
+        "inline-flex min-h-11 max-w-full items-center gap-3 rounded-xl text-base font-semibold text-foreground no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground",
+        props.data.className,
+        props.className,
+      )}
+      href={href}
+      aria-label={title || undefined}
     >
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute -inset-3 -z-10 rounded-full bg-linear-to-r from-primary via-primary/30 to-muted opacity-0 blur-lg transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100 motion-reduce:transition-none"
-      />
-      <img
-        src="/images/ai-chat/operator-logo-square-black.svg"
-        alt=""
-        aria-hidden="true"
-        width={36}
-        height={36}
-        className="size-9 shrink-0 transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-110 group-focus-visible:-rotate-6 motion-reduce:transform-none motion-reduce:transition-none"
-      />
-      <span className="text-lg font-semibold tracking-tight">
-        sps{" "}
-        <span className="text-muted-foreground transition-colors group-hover:text-foreground group-focus-visible:text-foreground motion-reduce:transition-none">
-          ai chat
-        </span>
+      <span className="inline-flex shrink-0 items-center [&_[data-relation=logotypes-to-file-storage-module-files]]:size-8 [&_[data-model=file]]:size-8 [&_img]:object-contain">
+        <LogotypesToFileStorageWidgets
+          isServer={props.isServer}
+          variant="find"
+          apiProps={{
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "logotypeId",
+                    method: "eq",
+                    value: props.data.id,
+                  },
+                ],
+              },
+            },
+          }}
+        >
+          {({ data }) => {
+            return data
+              ?.toSorted(
+                (a, b) =>
+                  a.orderIndex - b.orderIndex || a.id.localeCompare(b.id),
+              )
+              .map((entity) => {
+                return (
+                  <LogotypesToFileStorageWidgets
+                    key={entity.id}
+                    isServer={props.isServer}
+                    variant={entity.variant as any}
+                    dataSource="props"
+                    data={entity}
+                    language={
+                      props.language ||
+                      internationalization.defaultLanguage.code
+                    }
+                  />
+                );
+              });
+          }}
+        </LogotypesToFileStorageWidgets>
       </span>
-      <span
-        aria-hidden="true"
-        className="absolute -right-3 -top-2 scale-50 text-primary opacity-0 transition-all duration-300 group-hover:rotate-12 group-hover:scale-100 group-hover:opacity-100 group-focus-visible:scale-100 group-focus-visible:opacity-100 motion-reduce:transition-none"
-      >
-        <Icon name="star" className="size-4" />
-      </span>
+      {title ? (
+        <span className="hidden min-[480px]:inline">{title}</span>
+      ) : null}
     </Link>
   );
 }
-const focus =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
-const kit = {
-  focus: focus,
-};

@@ -1,9 +1,9 @@
 "use client";
-import { forwardRef as forwardRef } from "react";
+import { forwardRef as forwardRef, useState } from "react";
 import * as SelectPrimitive from "@radix-ui/react-select";
 import { twMerge as twMerge } from "tailwind-merge";
 import IconGlyphs from "../../../../../../website-builder/feature/singlepage/icon/icons.json";
-import { useState } from "react";
+
 import type { IProjectAgent } from "../../overview/ai-chat/resolver";
 import {
   Component as AgentProfile,
@@ -71,8 +71,8 @@ export function Component({ onChange }: IThreadAgentSelectProps) {
       <div className="flex items-center gap-2">
         <div className="min-w-0 flex-1">
           <Select
-            aria-label="Thread agent"
-            placeholder="Select an agent"
+            aria-label="Помощник в обсуждении"
+            placeholder="Выберите помощника"
             value={agentId}
             onValueChange={(value) => {
               setAgentId(value);
@@ -88,7 +88,7 @@ export function Component({ onChange }: IThreadAgentSelectProps) {
       <p className="text-xs leading-5 text-[color:var(--workspace-brand-muted)]">
         {agentId
           ? knowledgeAgent.description
-          : "Choose the agent for this conversation."}
+          : "Выберите помощника для этого обсуждения."}
       </p>
       <AgentProfile agent={profile} onClose={() => setProfile(null)} />
     </fieldset>

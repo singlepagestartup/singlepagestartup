@@ -1,6 +1,7 @@
-import type {
-  IComponentProps,
-  ContentButtonsArrayFindDefaultProps,
+import {
+  type IComponentProps,
+  type ContentButtonsArrayFindDefaultProps,
+  type IModuleIconProps,
 } from "./interface";
 export type { ContentButtonsArrayFindDefaultProps } from "./interface";
 
@@ -95,5 +96,3 @@ export const defaultContentButtonsArrayFindDefaultProps = {
     { icon: Mail, label: "SMTP" },
   ] satisfies IntegrationItem[],
 };
-
-import type { IModuleIconProps } from "./interface";

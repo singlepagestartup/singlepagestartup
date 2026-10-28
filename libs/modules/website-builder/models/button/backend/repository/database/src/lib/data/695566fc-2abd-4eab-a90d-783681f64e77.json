@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Read File Storage source guide",
+    "ru": "Документация File Storage"
+  },
+  "subtitle": {},
+  "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/modules/file-storage/README.md",
+  "className": "w-fit",
+  "id": "695566fc-2abd-4eab-a90d-783681f64e77",
+  "createdAt": "2026-10-24T01:06:09.711Z",
+  "updatedAt": "2026-10-24T01:06:09.711Z",
+  "variant": "primary",
+  "adminTitle": "Read File Storage source guide",
+  "slug": "framework-journey-guide-file-storage-actions-1"
+}

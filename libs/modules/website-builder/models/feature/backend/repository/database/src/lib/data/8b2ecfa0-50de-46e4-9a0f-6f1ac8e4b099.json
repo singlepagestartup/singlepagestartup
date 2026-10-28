@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "8b2ecfa0-50de-46e4-9a0f-6f1ac8e4b099",
+  "createdAt": "2026-10-26T00:12:13.882Z",
+  "updatedAt": "2026-10-27T14:59:43.347Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Numbers appear in the working interface",
+    "ru": "Числа видны в рабочем интерфейсе"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Display values in the project dashboard. Define the source, period and update method for each metric.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Разместите значения в панели проекта. Источник, период и способ обновления задаются для каждого показателя.\"}]}]}"
+  },
+  "adminTitle": "Числа видны в рабочем интерфейсе",
+  "slug": "framework-reviewed-article-analytic-introduction-feature-1"
+}

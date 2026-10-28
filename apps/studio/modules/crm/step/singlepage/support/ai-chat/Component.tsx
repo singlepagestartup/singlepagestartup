@@ -18,7 +18,7 @@ export function Component({
       data-model="step"
       data-variant={variant}
     >
-      <legend className="sr-only">Support request details</legend>
+      <legend className="sr-only">Подробности обращения</legend>
       {(["topic", "details", "result"] as const).map((field) => (
         <Input
           key={field}

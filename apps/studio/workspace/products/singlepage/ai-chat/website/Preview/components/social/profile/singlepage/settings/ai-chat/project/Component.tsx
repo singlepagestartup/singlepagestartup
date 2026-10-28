@@ -1,14 +1,17 @@
 "use client";
-import { type InputHTMLAttributes as InputHTMLAttributes } from "react";
-import { useId as useId } from "react";
-import { type ReactNode as ReactNode } from "react";
-import { Component as WebsiteBuilderModuleButton } from "../../../../../../website-builder/button/index";
 import {
+  type InputHTMLAttributes as InputHTMLAttributes,
+  useId as useId,
+  type ReactNode as ReactNode,
   forwardRef as forwardRefControl,
   type ButtonHTMLAttributes as ButtonControlProps,
+  useState,
 } from "react";
+
+import { Component as WebsiteBuilderModuleButton } from "../../../../../../website-builder/button/index";
+
 import IconGlyphs from "../../../../../../website-builder/feature/singlepage/icon/icons.json";
-import { useState } from "react";
+
 import { useProfiles } from "../../../scope/ai-chat/project/Profiles";
 import { Component as KnowledgeModuleSource } from "../../../../../../knowledge/source/index";
 interface IFeedbackProps {
@@ -126,7 +129,7 @@ export function Component({ profileId }: IProfileSettingsProps) {
   const profile = projects.find((record) => record.id === profileId);
   const [name, setName] = useState(profile?.name ?? "");
   const [saved, setSaved] = useState(false);
-  if (!profile) return <p role="status">Project profile unavailable.</p>;
+  if (!profile) return <p role="status">Проект недоступен.</p>;
   return (
     <div
       data-ds-block="social.profile.settings-ai-chat-project"
@@ -143,7 +146,7 @@ export function Component({ profileId }: IProfileSettingsProps) {
       >
         <div className="min-w-0 flex-1">
           <TextField
-            label="Project name"
+            label="Название проекта"
             value={name}
             className="mt-2"
             onChange={(event) => {
@@ -156,14 +159,14 @@ export function Component({ profileId }: IProfileSettingsProps) {
           type="submit"
           disabled={!name.trim() || name.trim() === profile.name}
         >
-          Save name
+          Сохранить название
         </Button>
       </form>
-      {saved && <Feedback>Project name saved.</Feedback>}
+      {saved && <Feedback>Название проекта сохранено.</Feedback>}
       <div className="border-t border-[color:var(--workspace-brand-line)] pt-5">
         <KnowledgeModuleSource
           variant="download-ai-chat"
-          label="Export Products.md"
+          label="Скачать Продукты.md"
         />
       </div>
     </div>

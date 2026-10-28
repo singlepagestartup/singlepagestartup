@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "A request for your project",
+    "ru": "Запрос для вашего проекта"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"I want a library of school photos and documents. I need course covers, teacher photos and exercise PDFs. Paid materials must be delivered only to buyers.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Хочу библиотеку фотографий и документов школы. Нужны обложки курсов, фотографии преподавателей и PDF с заданиями. Платные материалы должны выдаваться только покупателям.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "d8637b39-836f-4750-aaee-c7dc6bedbb39",
+  "createdAt": "2026-10-26T00:11:49.210Z",
+  "updatedAt": "2026-10-27T14:59:17.569Z",
+  "variant": "content-rich",
+  "adminTitle": "Запрос для вашего проекта",
+  "slug": "framework-reviewed-article-file-storage-task"
+}

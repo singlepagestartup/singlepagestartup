@@ -15,6 +15,7 @@ import type { ISpsComponentBase } from "@sps/ui-adapter";
 export const variant =
   "me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-id-update-ai-chat" as const;
 export interface IComponentProps extends IParent<IModel, typeof variant> {
+  language?: string;
   project: IAIChatProject;
   source: import("@sps/knowledge/models/source/sdk/model").IModel;
   onDiscuss: (id: string) => void;
@@ -33,6 +34,7 @@ export interface IComponentPropsExtended
 }
 
 export interface ISourceFileProps {
+  language: string;
   file: IFile;
   removing: boolean;
   onRemove: (id: string) => void;

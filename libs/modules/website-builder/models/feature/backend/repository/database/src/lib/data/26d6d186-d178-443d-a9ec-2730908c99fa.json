@@ -1,0 +1,18 @@
+{
+  "className": "",
+  "id": "26d6d186-d178-443d-a9ec-2730908c99fa",
+  "createdAt": "2026-10-24T01:06:10.869Z",
+  "updatedAt": "2026-10-24T01:06:10.869Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Keep a clear owner.",
+    "ru": "Сохраните ответственность модуля."
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Use Notification for its own records and operations. Connect other capabilities through their public interfaces and explicit relations; keep the business task in its owning domain.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Используйте Notification для его записей и операций. Подключайте другие возможности через публичные интерфейсы и явные связи; бизнес-задача остаётся в своём домене.\"}]}]}"
+  },
+  "adminTitle": "Keep a clear owner.",
+  "slug": "framework-journey-guide-notification-owner"
+}

@@ -1,0 +1,17 @@
+{
+  "id": "5695e253-9060-4846-b8a4-ada5104c52bd",
+  "createdAt": "2026-10-26T00:12:38.485Z",
+  "updatedAt": "2026-10-26T22:00:45.652Z",
+  "variant": "actions",
+  "className": "",
+  "title": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "",
+    "ru": ""
+  },
+  "adminTitle": "framework-reviewed-context-actions",
+  "slug": "framework-reviewed-context-actions"
+}

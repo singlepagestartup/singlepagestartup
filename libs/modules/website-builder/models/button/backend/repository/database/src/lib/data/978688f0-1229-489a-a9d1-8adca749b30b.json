@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Explore module",
+    "ru": "Изучить модуль"
+  },
+  "subtitle": {},
+  "url": "/framework/modules/social",
+  "className": "w-fit",
+  "id": "978688f0-1229-489a-a9d1-8adca749b30b",
+  "createdAt": "2026-10-24T01:05:58.071Z",
+  "updatedAt": "2026-10-24T01:05:58.071Z",
+  "variant": "secondary",
+  "adminTitle": "Explore module",
+  "slug": "framework-journey-module-social-actions-0"
+}

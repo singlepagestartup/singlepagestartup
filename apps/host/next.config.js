@@ -14,6 +14,15 @@ const withBundleAnalyzer = bundleAnalyzer({
 });
 
 function makeConfig() {
+  const turbopackMemoryMb = process.env.SPS_HOST_TURBOPACK_MEMORY_MB
+    ? Number(process.env.SPS_HOST_TURBOPACK_MEMORY_MB)
+    : undefined;
+  if (
+    turbopackMemoryMb !== undefined &&
+    (!Number.isSafeInteger(turbopackMemoryMb) || turbopackMemoryMb <= 0)
+  ) {
+    throw new Error("SPS_HOST_TURBOPACK_MEMORY_MB must be a positive integer");
+  }
   const stripProtocol = (url) =>
     url.replace("https://", "").replace("http://", "");
 
@@ -27,6 +36,12 @@ function makeConfig() {
     distDir: process.env.SPS_HOST_DIST_DIR || ".next",
     experimental: {
       webpackMemoryOptimizations: true,
+      // Release each compiler's heap before the next build stage.
+      webpackBuildWorker: true,
+      turbopackMemoryLimit:
+        turbopackMemoryMb === undefined
+          ? undefined
+          : turbopackMemoryMb * 1024 * 1024,
     },
     // Preserve the public origin in locale redirects, including loopback hosts.
     skipMiddlewareUrlNormalize: true,

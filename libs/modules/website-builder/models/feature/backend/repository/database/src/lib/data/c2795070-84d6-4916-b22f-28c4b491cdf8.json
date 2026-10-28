@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "c2795070-84d6-4916-b22f-28c4b491cdf8",
+  "createdAt": "2026-10-24T01:06:11.685Z",
+  "updatedAt": "2026-10-24T01:06:11.685Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Broadcast",
+    "ru": "Broadcast"
+  },
+  "subtitle": {
+    "en": "Foundation",
+    "ru": "Основа"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Channels and messages for realtime or queued delivery.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Каналы и сообщения для realtime или доставки через очередь.\"}]}]}"
+  },
+  "adminTitle": "Broadcast",
+  "slug": "framework-journey-module-broadcast"
+}

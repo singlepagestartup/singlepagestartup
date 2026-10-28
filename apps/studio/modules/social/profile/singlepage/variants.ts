@@ -1,3 +1,6 @@
+import { Component as AuthorOverviewDefault } from "./author-overview-default";
+import { Component as AuthorBylineDefault } from "./author-byline-default";
+import { Component as AuthorCardDefault } from "./author-card-default";
 import { Component as AccountMenu } from "./account-menu/index";
 import { Component as AdminV2Card } from "./admin-v2-card/index";
 import { Component as AdminV2Table } from "./admin-v2-table/index";
@@ -14,7 +17,6 @@ import { Component as FindRow } from "./find-row/index";
 import { Component as IdAiChatProject } from "./id/ai-chat/project/index";
 import { Component as KnowledgeModuleSourceListDocumentAiChat } from "./knowledge-module/source/list/document/ai-chat/index";
 import { Component as KnowledgeModuleSourceListSidebarAiChat } from "./knowledge-module/source/list/sidebar/ai-chat/index";
-import { Component as List } from "./list/index";
 import { Component as OverviewDefault } from "./overview/default/index";
 import { Component as ScopeAiChatProject } from "./scope/ai-chat/project/index";
 import { Component as SelectAiChatProject } from "./select/ai-chat/project/index";
@@ -23,6 +25,9 @@ import { Component as SettingsAiChatProject } from "./settings/ai-chat/project/i
 import { Component as SidebarAiChatProject } from "./sidebar/ai-chat/project/index";
 
 export const variants = {
+  "author-overview-default": AuthorOverviewDefault,
+  "author-byline-default": AuthorBylineDefault,
+  "author-card-default": AuthorCardDefault,
   "account-menu": AccountMenu,
   "admin-v2-card": AdminV2Card,
   "admin-v2-table": AdminV2Table,
@@ -41,7 +46,6 @@ export const variants = {
     KnowledgeModuleSourceListDocumentAiChat,
   "knowledge-module-source-list-sidebar-ai-chat":
     KnowledgeModuleSourceListSidebarAiChat,
-  list: List,
   "overview-default": OverviewDefault,
   "scope-ai-chat-project": ScopeAiChatProject,
   "select-ai-chat-project": SelectAiChatProject,

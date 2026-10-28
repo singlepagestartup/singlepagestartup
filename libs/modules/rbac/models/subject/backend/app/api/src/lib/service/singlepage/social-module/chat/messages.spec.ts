@@ -22,12 +22,23 @@ it("returns authors and all ordered attachments only for the authorized messages
   readFiles.mockResolvedValue([{ id: "first" }, { id: "second" }]);
   const result = await new Service({
     socialModule: {
+      profile: {
+        profilePresentation: jest.fn(async ({ id }) => ({
+          id,
+          title: { en: "Former member" },
+          subtitle: {},
+          avatar: null,
+        })),
+      },
       profilesToMessages: authors,
       messagesToFileStorageModuleFiles: links,
     },
     fileStorageModule: { file: { find: readFiles, readBytes } },
   } as any).enrich([{ id: "message", description: "hello" }] as any);
   expect(result[0].authorProfileIds).toEqual(["owner"]);
+  expect(result[0].authorProfiles).toEqual([
+    { id: "owner", title: { en: "Former member" }, subtitle: {}, avatar: null },
+  ]);
   expect(result[0].attachments?.map((f) => f.id)).toEqual(["first", "second"]);
   expect(authors.find).toHaveBeenCalledWith({
     params: {

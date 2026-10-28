@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "cebee449-d666-4de4-a8c3-ffc02408964a",
+  "createdAt": "2026-10-26T00:11:51.762Z",
+  "updatedAt": "2026-10-27T14:59:56.004Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Thread · topic",
+    "ru": "Thread · о чём"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Landing page feedback: a separate topic with its own history inside the chat.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"«Обратная связь о лендинге». Отдельная тема со своей историей внутри чата.\"}]}]}"
+  },
+  "adminTitle": "Thread · о чём",
+  "slug": "framework-reviewed-article-social-structure-feature-2"
+}

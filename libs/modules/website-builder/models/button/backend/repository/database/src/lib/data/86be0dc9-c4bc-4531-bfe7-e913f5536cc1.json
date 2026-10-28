@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Questions and issues",
+    "ru": "Вопросы и задачи"
+  },
+  "subtitle": {},
+  "url": "https://github.com/singlepagestartup/singlepagestartup/issues",
+  "className": "w-fit",
+  "id": "86be0dc9-c4bc-4531-bfe7-e913f5536cc1",
+  "createdAt": "2026-10-23T20:18:03.191Z",
+  "updatedAt": "2026-10-23T20:18:03.191Z",
+  "variant": "ghost",
+  "adminTitle": "Questions and issues",
+  "slug": "framework-footer-resources-issues"
+}

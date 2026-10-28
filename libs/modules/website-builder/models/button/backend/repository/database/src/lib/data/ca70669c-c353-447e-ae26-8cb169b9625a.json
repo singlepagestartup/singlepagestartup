@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Source guide",
+    "ru": "Документация модуля"
+  },
+  "subtitle": {},
+  "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/modules/blog/README.md",
+  "className": "w-fit",
+  "id": "ca70669c-c353-447e-ae26-8cb169b9625a",
+  "createdAt": "2026-10-24T01:05:56.687Z",
+  "updatedAt": "2026-10-24T01:05:56.687Z",
+  "variant": "ghost",
+  "adminTitle": "Source guide",
+  "slug": "framework-journey-module-blog-actions-1"
+}

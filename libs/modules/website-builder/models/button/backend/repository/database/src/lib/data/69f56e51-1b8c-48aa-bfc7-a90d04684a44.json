@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "GitHub repository",
+    "ru": "Репозиторий GitHub"
+  },
+  "subtitle": {},
+  "url": "https://github.com/singlepagestartup/singlepagestartup",
+  "className": "w-fit",
+  "id": "69f56e51-1b8c-48aa-bfc7-a90d04684a44",
+  "createdAt": "2026-10-23T20:18:02.544Z",
+  "updatedAt": "2026-10-23T20:18:02.544Z",
+  "variant": "ghost",
+  "adminTitle": "GitHub repository",
+  "slug": "framework-footer-framework-repository"
+}

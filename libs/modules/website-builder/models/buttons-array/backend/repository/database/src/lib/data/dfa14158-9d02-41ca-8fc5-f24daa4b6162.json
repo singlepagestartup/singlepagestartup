@@ -1,0 +1,14 @@
+{
+  "id": "dfa14158-9d02-41ca-8fc5-f24daa4b6162",
+  "createdAt": "2026-10-27T08:55:55.135Z",
+  "updatedAt": "2026-10-27T15:00:21.431Z",
+  "variant": "navigation-inline",
+  "className": "",
+  "title": {
+    "en": "Return to your projects",
+    "ru": "Вернитесь к своим проектам"
+  },
+  "description": {},
+  "adminTitle": "content-ai-chat-reset-password-links",
+  "slug": "ai-chat-editable-content-ai-chat-reset-password-links"
+}

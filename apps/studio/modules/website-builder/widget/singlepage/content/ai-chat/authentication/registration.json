@@ -1,26 +1,26 @@
 {
   "intro": {
-    "title": "Bring your project into chat.",
+    "title": "Начните работу над проектом в чате",
     "paragraphs": [
-      "Create an account to add your notes, files and images. Work with AI in each document's thread, then use saved documents in new project conversations."
+      "Создайте аккаунт и добавьте заметки, файлы и изображения. Обсуждайте документы с ИИ-помощником и используйте сохранённые знания в новых задачах."
     ]
   },
   "images": [
     {
       "src": "/module-assets/images/singlepage/generated/living-focus/singlepagestartup-photography-project-start-v1-square.png",
-      "alt": "A woman working on her project with a laptop and notebook.",
+      "alt": "Женщина работает над проектом с ноутбуком и блокнотом.",
       "assetId": "singlepage-generated-living-focus-photography-project-start-v1-square"
     },
     {
       "src": "/module-assets/images/singlepage/generated/living-focus/singlepagestartup-photography-project-progress-v1-square.png",
-      "alt": "A man reviewing a project sketch beside his laptop.",
+      "alt": "Мужчина изучает эскиз проекта рядом с ноутбуком.",
       "assetId": "singlepage-generated-living-focus-photography-project-progress-v1-square"
     }
   ],
   "aside": {
-    "title": "Before you add files",
+    "title": "Перед загрузкой файлов",
     "paragraphs": [
-      "Read [How your materials are processed and stored](/ai-chat/social/profiles/create#how-your-materials-are-processed-and-stored), including external AI processing and backup retention after deletion."
+      "Прочитайте, [как обрабатываются и хранятся материалы](/ai-chat/social/profiles/create#how-your-materials-are-processed-and-stored): какие сведения передаются провайдерам ИИ и как долго резервные копии могут храниться после удаления."
     ]
   }
 }

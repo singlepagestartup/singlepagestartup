@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "4a4c91b6-44b9-4dbb-8a99-3499f7c79c15",
+  "createdAt": "2026-10-26T00:12:46.014Z",
+  "updatedAt": "2026-10-27T14:59:34.895Z",
+  "variant": "context-note",
+  "title": {
+    "en": "2. A new task based on this knowledge",
+    "ru": "2. Новая задача на основе этих знаний"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"@knowledge · project knowledge\"}]},{\"type\":\"blockquote\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Add registration for a new course to the website. Use the school's description and design.\"}]}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Add @knowledge to a request in a new chat so the AI assistant can find relevant information in saved documents. For example, it can use your school's description when creating a page for a new course.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"@knowledge · знания о проекте\"}]},{\"type\":\"blockquote\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Добавь на сайт запись на новый курс. Используй описание школы и её оформление.\"}]}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"В новом чате добавьте @knowledge к запросу, чтобы ИИ-помощник нашёл нужное в сохранённых документах. Например, использовал описание вашей школы при создании страницы нового курса.\"}]}]}"
+  },
+  "adminTitle": "2. Новая задача на основе этих знаний",
+  "slug": "framework-reviewed-context-task"
+}

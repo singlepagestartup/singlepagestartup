@@ -1,0 +1,40 @@
+{
+  "$schema": "../../../../../block.schema.json",
+  "id": "website-builder.feature.selectable",
+  "title": "selectable",
+  "description": "Props-driven feature presentation for selectable.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "feature",
+    "variant": "selectable"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "title",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "required": true
+    }
+  ],
+  "figma": {
+    "componentName": "website-builder.feature",
+    "pageName": "website-builder",
+    "variantName": "selectable",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["website-builder", "feature", "selectable"]
+}

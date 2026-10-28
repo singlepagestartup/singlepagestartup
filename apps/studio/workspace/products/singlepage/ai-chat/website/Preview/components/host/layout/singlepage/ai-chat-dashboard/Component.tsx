@@ -1,6 +1,12 @@
-import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget/index";
+"use client";
+
+import { usePreviewLayout } from "../ai-chat-landing/Navigation";
+import {
+  Component as WebsiteBuilderModuleWidget,
+  type INavbarAiChatProps,
+} from "../../../../website-builder/widget/index";
 import type { ReactNode } from "react";
-import { type INavbarAiChatProps } from "../../../../website-builder/widget/index";
+
 import { aiChatServiceHrefs } from "../ai-chat-landing/routes";
 
 export interface IAIChatDashboardLayoutProps
@@ -14,6 +20,16 @@ export function Component({
   profileSelect,
   subjectAccount,
 }: IAIChatDashboardLayoutProps) {
+  const embedded = usePreviewLayout();
+  if (embedded)
+    return (
+      <div
+        lang="ru"
+        className="@container min-w-0 font-[family-name:var(--workspace-brand-font-body)] text-[color:var(--workspace-brand-foreground)]"
+      >
+        {children}
+      </div>
+    );
   const accountAccess = page === "register" || page === "login";
   const buttonsArrayId =
     page === "register"
@@ -23,6 +39,7 @@ export function Component({
         : "ai-chat-help";
   return (
     <div
+      lang="ru"
       data-workspace-projection="singlepage"
       data-ds-block="host.layout.ai-chat-dashboard"
       className="@container min-h-screen min-w-0 flex flex-col bg-[color:var(--workspace-brand-background)] font-[family-name:var(--workspace-brand-font-body)] text-[color:var(--workspace-brand-foreground)]"
@@ -38,9 +55,7 @@ export function Component({
               ]
         }
         navigationLayout={accountAccess ? "inline" : "collapsible"}
-        navigationLabel={
-          accountAccess ? "Account access" : "Account navigation"
-        }
+        navigationLabel={accountAccess ? "Доступ к аккаунту" : "Меню аккаунта"}
         profileSelect={accountAccess ? undefined : profileSelect}
         subjectAccount={accountAccess ? undefined : subjectAccount}
       />

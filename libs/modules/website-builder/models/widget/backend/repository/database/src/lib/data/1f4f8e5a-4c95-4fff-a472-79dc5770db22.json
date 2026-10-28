@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Module structure",
+    "ru": "Устройство модуля"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Notification stores a message and delivery information; Template stores reusable content; Topic stores the notification topic. Delivery and triggers are configured in the project's workflow.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Notification хранит сообщение и сведения о доставке; Template — повторно используемое содержимое; Topic — тему уведомлений. Доставка и её триггеры настраиваются в сценарии проекта.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "1f4f8e5a-4c95-4fff-a472-79dc5770db22",
+  "createdAt": "2026-10-26T00:12:05.352Z",
+  "updatedAt": "2026-10-27T14:58:51.483Z",
+  "variant": "content-rich",
+  "adminTitle": "Устройство модуля",
+  "slug": "framework-reviewed-article-notification-technical"
+}

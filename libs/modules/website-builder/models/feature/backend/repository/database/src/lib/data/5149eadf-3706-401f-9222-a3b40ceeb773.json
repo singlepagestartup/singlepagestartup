@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "5149eadf-3706-401f-9222-a3b40ceeb773",
+  "createdAt": "2026-10-26T00:12:15.255Z",
+  "updatedAt": "2026-10-27T14:59:35.635Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "ecommerce",
+    "ru": "ecommerce"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Use order data.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Используйте данные о заказах.\"}]}]}"
+  },
+  "adminTitle": "ecommerce",
+  "slug": "framework-reviewed-article-analytic-connections-feature-1"
+}

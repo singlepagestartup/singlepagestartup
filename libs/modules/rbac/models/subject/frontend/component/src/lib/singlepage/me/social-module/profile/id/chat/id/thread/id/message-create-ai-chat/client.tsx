@@ -20,7 +20,8 @@ export default function Client(props: IComponentProps) {
     subjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFind(
       { ...scope, reactQueryOptions: { enabled: isDocument } },
     );
-  if (isDocument && sources.isPending) return props.skeleton ?? <Skeleton />;
+  if (isDocument && sources.isPending)
+    return props.skeleton ?? <Skeleton language={props.language} />;
   return (
     <ChildComponent
       {...props}

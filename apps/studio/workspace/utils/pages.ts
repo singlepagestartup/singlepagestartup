@@ -1,9 +1,14 @@
 import type { ComponentType } from "react";
 import type { IDocumentConfirmation } from "../../../../tools/studio/workspace/document";
 export type WorkspacePageLayer = "singlepage" | "startup";
+export type WorkspaceLinkResolver = (
+  url: string,
+) => string | { href: string; target: "_top" };
+
 export interface IWorkspacePageProps {
   text?: string;
   navigationHref?: string;
+  resolveLink?: WorkspaceLinkResolver;
 }
 
 export interface IWorkspacePageView {
@@ -54,6 +59,123 @@ export interface IWorkspacePage {
   representations?: { text: string; preview?: string };
   children: IWorkspacePage[];
   export?: "pdf";
+}
+
+export type WorkspacePageRepresentation = "text" | "preview";
+
+export interface IWorkspacePageSelection {
+  selected?: string;
+  representation: WorkspacePageRepresentation;
+  navigationHref?: string;
+}
+
+export interface IWorkspacePageActivation {
+  button: number;
+  metaKey?: boolean;
+  ctrlKey?: boolean;
+  shiftKey?: boolean;
+  altKey?: boolean;
+  target?: string | null;
+  download?: boolean;
+}
+
+export function flattenWorkspacePages(
+  pages: readonly IWorkspacePageView[],
+): IWorkspacePageView[] {
+  return pages.flatMap((page) => [
+    page,
+    ...flattenWorkspacePages(page.children),
+  ]);
+}
+
+/** Only ordinary same-frame clicks belong to the local page preview. */
+export function canNavigateWorkspacePage({
+  button,
+  metaKey,
+  ctrlKey,
+  shiftKey,
+  altKey,
+  target,
+  download,
+}: IWorkspacePageActivation): boolean {
+  return (
+    button === 0 &&
+    !metaKey &&
+    !ctrlKey &&
+    !shiftKey &&
+    !altKey &&
+    !download &&
+    (!target || target.toLowerCase() === "_self")
+  );
+}
+
+/** Match exact routes before dynamic segments; never consume another origin. */
+export function findWorkspacePage(
+  pages: readonly IWorkspacePageView[],
+  href: string,
+  baseHref: string,
+): IWorkspacePageView | undefined {
+  let destination: URL;
+  try {
+    destination = new URL(href, baseHref);
+    if (destination.origin !== new URL(baseHref).origin) return undefined;
+  } catch {
+    return undefined;
+  }
+  const all = flattenWorkspacePages(pages).filter(
+    ({ kind }) => kind !== "group",
+  );
+  return (
+    all.find(({ route }) => route === destination.pathname) ??
+    all.find((page) => {
+      const routeParts = page.route?.split("/");
+      const targetParts = destination.pathname.split("/");
+      const routeMatches =
+        routeParts?.length === targetParts.length &&
+        routeParts.every((part, index) =>
+          /^\[[^\]]+\]$/.test(part)
+            ? Boolean(targetParts[index])
+            : part === targetParts[index],
+        );
+      const sourceUrl = page.representations?.text.url ?? page.url;
+      return (
+        routeMatches ||
+        (sourceUrl &&
+          new URL(sourceUrl, baseHref).pathname === destination.pathname)
+      );
+    })
+  );
+}
+
+/** URL state may select only a declared page and one of its representations. */
+export function requestedWorkspacePage(
+  pages: readonly IWorkspacePageView[],
+  { overview = false, search = "", baseHref = "http://workspace.local/" } = {},
+): IWorkspacePageSelection {
+  const all = flattenWorkspacePages(pages);
+  const first = all.find(({ kind }) => kind !== "group");
+  const params = new URLSearchParams(search);
+  const page = all.find(
+    ({ id, kind }) => id === params.get("page") && kind !== "group",
+  );
+  const fallback = overview ? "overview" : first?.id;
+  if (!page) return { selected: fallback, representation: "text" };
+  const destination = params.get("navigationHref");
+  const navigationHref =
+    destination?.startsWith("/") &&
+    !destination.startsWith("//") &&
+    findWorkspacePage(pages, destination, baseHref)?.id === page.id
+      ? destination
+      : undefined;
+  return {
+    selected: page.id,
+    representation:
+      params.get("representation") === "preview" &&
+      page.representations?.preview
+        ? "preview"
+        : "text",
+    navigationHref,
+  };
 }
 
 /** Resolve a declared page inside one selected source layer, with no fallback. */
@@ -127,4 +249,13 @@ export function resolveWorkspacePage(
             : "file";
   }
   return result;
+}
+
+export function workspaceNavigationAnchor(href: string): string {
+  const hash = new URL(href, "http://workspace.local/").hash.slice(1);
+  try {
+    return decodeURIComponent(hash);
+  } catch {
+    return hash;
+  }
 }

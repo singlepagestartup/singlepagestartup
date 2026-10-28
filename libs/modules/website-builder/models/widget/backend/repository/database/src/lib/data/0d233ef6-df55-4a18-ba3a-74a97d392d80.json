@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "See what your product could look like",
+    "ru": "Посмотрите, каким может быть ваш продукт"
+  },
+  "subtitle": {
+    "en": "Find a use case for your idea",
+    "ru": "Найдите сценарий для своей идеи"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"SinglePageStartup is a framework with a modular, extensible codebase used in dozens of projects. Start with the features your business needs and add more as your project grows.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"SinglePageStartup — фреймворк с модульной и расширяемой кодовой базой, проверенный на десятках проектов. Начните с функций, которые нужны вашему бизнесу, и подключайте новые по мере развития проекта.\"}]}]}"
+  },
+  "anchor": "cf-foundation",
+  "className": "",
+  "id": "0d233ef6-df55-4a18-ba3a-74a97d392d80",
+  "createdAt": "2026-10-26T00:12:26.071Z",
+  "updatedAt": "2026-10-27T14:58:46.787Z",
+  "variant": "content-showcase",
+  "adminTitle": "Посмотрите, каким может быть ваш продукт",
+  "slug": "framework-reviewed-showcase"
+}

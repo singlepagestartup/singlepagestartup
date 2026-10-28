@@ -6,7 +6,6 @@ import { Component as AdminV2Table } from "./admin-v2-table/index";
 import { Component as AiChatDashboard } from "./ai-chat-dashboard/index";
 import { Component as AiChatLanding } from "./ai-chat-landing/index";
 import { Component as Default } from "./default/index";
-import { Component as List } from "./list/index";
 import { Component as Website } from "./website/index";
 
 export const variants = {
@@ -18,6 +17,5 @@ export const variants = {
   "ai-chat-dashboard": AiChatDashboard,
   "ai-chat-landing": AiChatLanding,
   default: Default,
-  list: List,
   website: Website,
 };

@@ -58,7 +58,7 @@ export function Component({
           <Icon name="folder-open" />
           <span className="min-w-0 truncate">
             {projects.find((profile) => profile.id === profileId)?.name ??
-              "Select project"}
+              "Выберите проект"}
           </span>
           <Icon name="caret-down" className="size-4" />
         </button>
@@ -72,7 +72,7 @@ export function Component({
           className="z-50 w-64 max-w-[calc(100vw-24px)] rounded-xl border border-[color:var(--workspace-brand-line)] bg-[color:var(--workspace-brand-surface)] p-2 text-[color:var(--workspace-brand-foreground)] shadow-lg font-[family-name:var(--workspace-brand-font-body)]"
         >
           <DropdownMenu.Label className="px-3 py-2 text-xs font-semibold text-[color:var(--workspace-brand-muted)]">
-            Projects
+            Проекты
           </DropdownMenu.Label>
           {projects.map((profile) => (
             <ProjectSelectItem
@@ -90,7 +90,7 @@ export function Component({
               className={itemClass}
             >
               <Icon name="plus" />
-              New project
+              Новый проект
             </a>
           </DropdownMenu.Item>
         </DropdownMenu.Content>

@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Develop your product using open source",
+    "ru": "Развивайте свой продукт, используя open-source"
+  },
+  "subtitle": {
+    "en": "You keep access to your code",
+    "ru": "Код остаётся у вас"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Your project runs on the SinglePageStartup framework. We maintain its modules, add features and fix bugs. If the available features do not cover your needs, you can extend a module or create your own with an AI assistant or a developer. You always retain access to all your project's code.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Ваш проект работает на фреймворке SinglePageStartup. Мы поддерживаем его модули, добавляем возможности и исправляем ошибки. Если для вашей задачи не хватает существующих функций, вы можете доработать модуль или создать свой с ИИ-помощником либо разработчиком. Доступ ко всему коду вашего проекта всегда остаётся у вас.\"}]}]}"
+  },
+  "anchor": "cf-questions",
+  "className": "",
+  "id": "472f31c9-4b43-4590-b96f-2f3a2fab936f",
+  "createdAt": "2026-10-26T00:12:50.177Z",
+  "updatedAt": "2026-10-27T14:58:57.642Z",
+  "variant": "content-faq",
+  "adminTitle": "Развивайте свой продукт, используя open-source",
+  "slug": "framework-reviewed-faq"
+}

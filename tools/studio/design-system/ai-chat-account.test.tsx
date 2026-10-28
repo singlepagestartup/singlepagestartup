@@ -11,12 +11,12 @@ test("account menu renders the supplied profile and balance, with a signed-out f
     </AccountProvider>,
   );
   expect(html).toContain('data-profile-id="current-user"');
-  expect(html).toContain("1,250 tokens");
+  expect(html).toContain("1 250 токенов");
   const empty = renderToStaticMarkup(
     <AccountProvider account={{ ...aiChatAccount, profile: undefined }}>
       <SubjectAccount page="chat" showTokens />
     </AccountProvider>,
   );
-  expect(empty).toContain("Sign in");
+  expect(empty).toContain("Войти");
   expect(empty).not.toContain('data-profile-id="current-user"');
 });

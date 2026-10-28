@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Extend the use case",
+    "ru": "Дополните сценарий"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[]}",
+    "ru": "{\"type\":\"doc\",\"content\":[]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "1f940e56-4898-407f-9a11-0c5f66952d44",
+  "createdAt": "2026-10-26T00:12:01.174Z",
+  "updatedAt": "2026-10-27T14:58:51.747Z",
+  "variant": "content-rich",
+  "adminTitle": "Дополните сценарий",
+  "slug": "framework-reviewed-article-knowledge-connections"
+}

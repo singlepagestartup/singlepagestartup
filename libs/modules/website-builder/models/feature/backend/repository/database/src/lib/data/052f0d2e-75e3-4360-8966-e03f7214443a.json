@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "052f0d2e-75e3-4360-8966-e03f7214443a",
+  "createdAt": "2026-10-26T00:11:27.488Z",
+  "updatedAt": "2026-10-27T14:59:21.577Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "ecommerce",
+    "ru": "ecommerce"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Keep the order the customer is paying for.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Сохраняйте заказ, за который платит клиент.\"}]}]}"
+  },
+  "adminTitle": "ecommerce",
+  "slug": "framework-reviewed-article-billing-connections-feature-0"
+}

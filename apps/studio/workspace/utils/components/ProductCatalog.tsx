@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { productStoryId } from "../products/catalog";
 
 import type { IProductCatalogView, IProductView } from "../products/source";
+import { resolveProductPreviewLink } from "../products/pages";
 import { MarkdownDocument } from "./ArtifactBrowser";
 import { DocumentHeader, DocumentReviewToolbar } from "./DocumentStatus";
 import { PresentationWorkspace } from "./PresentationWorkspace";
@@ -251,6 +252,13 @@ export function ProductCatalog({
         target: "_top" as const,
       };
     }
+    const previewLink = resolveProductPreviewLink(href, {
+      catalog: catalogView,
+      currentProductId: product.id,
+      currentSection: activeSection,
+      locationHref: window.location.href,
+    });
+    if (typeof previewLink !== "string") return previewLink;
     if (!href.startsWith("/workspace-products/")) return href;
     const target = new URL(href, window.location.href);
     const sourcePath = `apps/studio/workspace/products/${decodeURIComponent(target.pathname.slice("/workspace-products/".length))}`;
@@ -264,6 +272,9 @@ export function ProductCatalog({
       );
       if (!linked) continue;
       const url = new URL(window.location.href);
+      url.searchParams.delete("page");
+      url.searchParams.delete("representation");
+      url.searchParams.delete("navigationHref");
       if (productId) {
         const layer =
           view.id === "default"

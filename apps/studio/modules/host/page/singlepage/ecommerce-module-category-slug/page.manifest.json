@@ -1,0 +1,30 @@
+{
+  "id": "ecommerce-module-category-slug",
+  "title": "Host Page / ecommerce-module-category-slug",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Framework page composed from public Studio model and widget entries.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "blocks": [
+    {
+      "id": "ecommerce.widget.category-overview-default",
+      "path": "../../../../ecommerce/widget/singlepage/category-overview-default"
+    },
+    {
+      "id": "ecommerce.category.overview-default",
+      "path": "../../../../ecommerce/category/singlepage/overview-default"
+    }
+  ],
+  "figma": {
+    "componentName": "host.page",
+    "pageName": "host",
+    "variantName": "ecommerce-module-category-slug",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

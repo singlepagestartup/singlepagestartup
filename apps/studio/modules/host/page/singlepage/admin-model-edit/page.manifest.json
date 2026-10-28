@@ -18,8 +18,8 @@
       "path": "../../../../ecommerce/product/singlepage/admin-v2-form"
     },
     {
-      "id": "ecommerce.attribute.list",
-      "path": "../../../../ecommerce/attribute/singlepage/list"
+      "id": "ecommerce.attribute.admin-v2-table",
+      "path": "../../../../ecommerce/attribute/singlepage/admin-v2-table"
     },
     {
       "id": "ecommerce.product.admin-v2-list",

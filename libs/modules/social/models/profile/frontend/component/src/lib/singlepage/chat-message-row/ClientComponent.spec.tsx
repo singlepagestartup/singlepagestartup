@@ -24,10 +24,17 @@ jest.mock(
 jest.mock(
   "@sps/social/models/profile/frontend/component/src/lib/singlepage/chat-profile-avatar",
   () => ({
-    Component: (props: { data: { adminTitle?: string; slug: string } }) => {
+    Component: (props: {
+      data: { title?: { en?: string }; adminTitle?: string; slug?: string };
+    }) => {
       return (
         <span data-testid="profile-avatar">
-          {(props.data.adminTitle || props.data.slug).charAt(0)}
+          {(
+            props.data.title?.en ||
+            props.data.adminTitle ||
+            props.data.slug ||
+            "?"
+          ).charAt(0)}
         </span>
       );
     },
@@ -160,6 +167,15 @@ describe("GIVEN: social profile chat message markdown rendering", () => {
           isServer={false}
           language="ru"
           onProfileOpen={jest.fn()}
+          profile={
+            {
+              id: "profile-1",
+              title: {},
+              subtitle: {},
+              slug: "chat-gpt-1",
+              adminTitle: "Chat GPT 1",
+            } as any
+          }
           data={
             {
               id: "profile-1",
@@ -193,6 +209,36 @@ describe("GIVEN: social profile chat message markdown rendering", () => {
     expect(avatarButton?.className).toContain("self-start");
     expect(avatarButton?.className).toContain("h-8");
     expect(avatarButton?.className).toContain("w-8");
+  });
+
+  test("departed sender presentations render without a private profile link or drawer action", () => {
+    const onProfileOpen = jest.fn();
+    act(() =>
+      root.render(
+        <Component
+          isServer={false}
+          language="en"
+          data={{
+            id: "former-profile",
+            title: { en: "Former contributor" },
+            subtitle: {},
+          }}
+          avatar={null}
+          onProfileOpen={onProfileOpen}
+          message={
+            {
+              id: "historical-message",
+              description: "Saved history",
+              interaction: {},
+            } as any
+          }
+        />,
+      ),
+    );
+    expect(container.textContent).toContain("Former contributor");
+    expect(container.querySelector("a[href*='/social/profiles']")).toBeNull();
+    expect(container.querySelector("button[aria-label*='profile']")).toBeNull();
+    expect(onProfileOpen).not.toHaveBeenCalled();
   });
 
   /**

@@ -3,8 +3,9 @@ import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { NEXT_PUBLIC_API_SERVICE_URL } from "@sps/shared-utils";
 import { FileText } from "lucide-react";
+import { Component as ClientComponent } from "./ClientComponent";
 
-export function Component(props: IComponentPropsExtended) {
+function PublicMedia(props: IComponentPropsExtended) {
   const src = props.data.file.includes("https")
     ? props.data.file
     : `${NEXT_PUBLIC_API_SERVICE_URL}/public${props.data.file}`;
@@ -58,7 +59,7 @@ export function Component(props: IComponentPropsExtended) {
       {isImage ? (
         <Image
           src={src}
-          alt=""
+          alt={props.data.alt || ""}
           fill={props.data.containerClassName?.includes("aspect-")}
           width={
             !props.data.containerClassName?.includes("aspect-")
@@ -126,5 +127,18 @@ export function Component(props: IComponentPropsExtended) {
         </a>
       ) : null}
     </div>
+  );
+}
+
+/** Public media remains server-rendered; protected scopes select binary reads in the client. */
+export function Component(props: IComponentPropsExtended) {
+  return (
+    <ClientComponent
+      data={props.data}
+      language={props.language}
+      className={props.className}
+      containerClassName={props.containerClassName}
+      publicMedia={<PublicMedia {...props} />}
+    />
   );
 }

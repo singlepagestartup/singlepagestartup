@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "7913bcbd-686e-4e90-8269-94b7d125eb50",
+  "createdAt": "2026-10-26T00:11:23.269Z",
+  "updatedAt": "2026-10-27T14:59:41.135Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Catalogue",
+    "ru": "Каталог"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Choose a learning format\\n\\nEach offer has its own card and price.\\n\\nIntroductory course · 2,900 RUB\\n\\nPractical workshop · 4,500 RUB\\n\\nExercise collection · 600 RUB\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Выберите формат обучения\\n\\nУ каждого предложения есть своя карточка и цена.\\n\\nВводный курс · 2 900 ₽\\n\\nПрактикум · 4 500 ₽\\n\\nСборник заданий · 600 ₽\"}]}]}"
+  },
+  "adminTitle": "Каталог",
+  "slug": "framework-reviewed-article-ecommerce-example-feature-0"
+}

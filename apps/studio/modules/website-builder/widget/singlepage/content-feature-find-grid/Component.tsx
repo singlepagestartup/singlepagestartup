@@ -1,8 +1,9 @@
-import type {
-  IComponentProps,
-  ContentFeatureItem,
-  ContentFeatureFindGridProps,
-  ModuleIcon,
+import {
+  type IComponentProps,
+  type ContentFeatureItem,
+  type ContentFeatureFindGridProps,
+  type ModuleIcon,
+  type IModuleIconProps,
 } from "./interface";
 export type {
   ContentFeatureItem,
@@ -112,5 +113,3 @@ export const defaultContentFeatureFindGridProps = {
     },
   ] satisfies ContentFeatureItem[],
 };
-
-import type { IModuleIconProps } from "./interface";

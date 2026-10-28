@@ -9,7 +9,11 @@ export function Component(props: IComponentPropsExtended) {
       data-model="option"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className={cn("w-full h-full flex items-center gap-4", props.className)}
+      className={cn(
+        "flex h-full w-full min-w-0 items-center gap-3 text-sm",
+        props.data.className,
+        props.className,
+      )}
     >
       <OptionsToFileStorageModuleWidgets
         isServer={props.isServer}

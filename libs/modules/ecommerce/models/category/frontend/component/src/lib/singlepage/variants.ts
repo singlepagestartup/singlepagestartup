@@ -1,3 +1,4 @@
+import { Component as Loading } from "./loading";
 import { Component as ButtonDefault } from "./button-default";
 import { Component as Find } from "./find";
 import { Component as AdminForm } from "./admin/form";
@@ -14,6 +15,7 @@ import { Component as Default } from "./default";
 import { Component as OverviewDefault } from "./overview-default";
 
 export const variants = {
+  loading: Loading,
   "button-default": ButtonDefault,
   find: Find,
   "admin-form": AdminForm,

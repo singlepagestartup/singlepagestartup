@@ -1,4 +1,5 @@
 "use client";
+import { internationalization } from "@sps/shared-configuration";
 import { memo, useId, useRef, useState, type FormEvent } from "react";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import { Icon } from "@sps/ui-adapter";
@@ -7,6 +8,8 @@ import type { IComponentPropsExtended } from "./interface";
 export const Component = memo(function Component(
   props: IComponentPropsExtended,
 ) {
+  const language = props.language || internationalization.defaultLanguage.code;
+  const ru = language === "ru";
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<
     "start" | "verify-current" | "details" | "verify-new" | "complete"
@@ -58,7 +61,9 @@ export const Component = memo(function Component(
       setError(
         error instanceof Error
           ? error.message
-          : "The verification email could not be sent.",
+          : ru
+            ? "Не удалось отправить письмо для подтверждения."
+            : "The verification email could not be sent.",
       );
     }
   }
@@ -84,7 +89,9 @@ export const Component = memo(function Component(
       setError(
         error instanceof Error
           ? error.message
-          : "The code could not be verified.",
+          : ru
+            ? "Не удалось проверить код."
+            : "The code could not be verified.",
       );
     }
   }
@@ -106,49 +113,59 @@ export const Component = memo(function Component(
         className={secondary}
         onClick={() => (open ? close() : setOpen(true))}
       >
-        Change email
+        {ru ? "Изменить почту" : "Change email"}
       </button>
       {open && (
         <section
           id={id}
-          aria-label="Change email"
+          aria-label={ru ? "Изменить почту" : "Change email"}
           className="order-last mt-5 min-w-0 basis-full rounded-xl border border-border bg-muted p-4 sm:p-5"
         >
-          <h4 className="text-base font-semibold">Change email</h4>
+          <h4 className="text-base font-semibold">
+            {ru ? "Изменить почту" : "Change email"}
+          </h4>
           {step === "complete" ? (
             <div className="mt-4 space-y-4">
               <p role="status" className="text-sm">
-                Email updated to {newEmail.trim().toLowerCase()}.
+                {ru ? "Почта изменена на" : "Email updated to"}{" "}
+                {newEmail.trim().toLowerCase()}.
               </p>
               <button type="button" className={secondary} onClick={close}>
-                Done
+                {ru ? "Готово" : "Done"}
               </button>
             </div>
           ) : (
             <>
               <ol
-                aria-label="Change progress"
+                aria-label={ru ? "Этапы изменения" : "Change progress"}
                 className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-xs text-muted-foreground"
               >
-                {["Verify current email", "New email", "Verify new email"].map(
-                  (label, index) => (
-                    <li
-                      key={label}
-                      aria-current={active === index ? "step" : undefined}
-                      className={
-                        active === index ? "font-semibold text-foreground" : ""
-                      }
-                    >
-                      {index + 1}. {label}
-                    </li>
-                  ),
-                )}
+                {[
+                  ru ? "Подтвердите текущую почту" : "Verify current email",
+                  ru ? "Новая почта" : "New email",
+                  ru ? "Подтвердите новую почту" : "Verify new email",
+                ].map((label, index) => (
+                  <li
+                    key={label}
+                    aria-current={active === index ? "step" : undefined}
+                    className={
+                      active === index ? "font-semibold text-foreground" : ""
+                    }
+                  >
+                    {index + 1}. {label}
+                  </li>
+                ))}
               </ol>
               {step === "start" ? (
                 <div className="mt-5 space-y-4">
                   <p className="break-words text-sm leading-6 text-muted-foreground">
-                    First, confirm access to {props.identity.email}. Then enter
-                    and verify your new email address.
+                    {ru
+                      ? "Сначала подтвердите доступ к"
+                      : "First, confirm access to"}{" "}
+                    {props.identity.email}
+                    {ru
+                      ? ". Затем введите и подтвердите новый адрес почты."
+                      : ". Then enter and verify your new email address."}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     <button
@@ -158,7 +175,13 @@ export const Component = memo(function Component(
                       onClick={() => void send("current")}
                     >
                       <Icon name="envelope" className="size-4" />
-                      {pending ? "Sending…" : "Send verification code"}
+                      {pending
+                        ? ru
+                          ? "Отправляем…"
+                          : "Sending…"
+                        : ru
+                          ? "Отправить код подтверждения"
+                          : "Send verification code"}
                     </button>
                     <button
                       type="button"
@@ -166,7 +189,7 @@ export const Component = memo(function Component(
                       className={secondary}
                       onClick={close}
                     >
-                      Cancel
+                      {ru ? "Отмена" : "Cancel"}
                     </button>
                   </div>
                 </div>
@@ -178,7 +201,7 @@ export const Component = memo(function Component(
                 >
                   {step === "details" ? (
                     <label className="grid min-w-0 gap-2 text-sm font-semibold">
-                      New email
+                      {ru ? "Новая почта" : "New email"}
                       <input
                         autoFocus
                         type="email"
@@ -196,7 +219,9 @@ export const Component = memo(function Component(
                   ) : (
                     <>
                       <p className="break-words text-sm leading-6 text-muted-foreground">
-                        Enter the verification code sent to{" "}
+                        {ru
+                          ? "Введите код подтверждения, отправленный на"
+                          : "Enter the verification code sent to"}{" "}
                         <strong className="font-medium text-foreground">
                           {step === "verify-new"
                             ? newEmail
@@ -208,7 +233,7 @@ export const Component = memo(function Component(
                         className="grid min-w-0 gap-2 text-sm font-semibold"
                         htmlFor={`${id}-code`}
                       >
-                        Verification code
+                        {ru ? "Код подтверждения" : "Verification code"}
                         <input
                           id={`${id}-code`}
                           autoFocus
@@ -232,7 +257,9 @@ export const Component = memo(function Component(
                         id={`${id}-hint`}
                         className="text-xs text-muted-foreground"
                       >
-                        The code expires in 10 minutes.
+                        {ru
+                          ? "Код действует 10 минут."
+                          : "The code expires in 10 minutes."}
                       </p>
                       <button
                         type="button"
@@ -242,7 +269,7 @@ export const Component = memo(function Component(
                           void send(step === "verify-new" ? "new" : "current")
                         }
                       >
-                        Resend code
+                        {ru ? "Отправить код ещё раз" : "Resend code"}
                       </button>
                     </>
                   )}
@@ -253,12 +280,20 @@ export const Component = memo(function Component(
                       className={primary}
                     >
                       {pending
-                        ? "Please wait…"
+                        ? ru
+                          ? "Подождите…"
+                          : "Please wait…"
                         : step === "verify-new"
-                          ? "Confirm new email"
+                          ? ru
+                            ? "Подтвердить новую почту"
+                            : "Confirm new email"
                           : step === "details"
-                            ? "Verify new email"
-                            : "Verify code"}
+                            ? ru
+                              ? "Подтвердите новую почту"
+                              : "Verify new email"
+                            : ru
+                              ? "Проверить код"
+                              : "Verify code"}
                     </button>
                     <button
                       type="button"
@@ -268,7 +303,7 @@ export const Component = memo(function Component(
                         advance(step === "verify-new" ? "details" : "start")
                       }
                     >
-                      Back
+                      {ru ? "Назад" : "Back"}
                     </button>
                     <button
                       type="button"
@@ -276,7 +311,7 @@ export const Component = memo(function Component(
                       className={`${button} text-muted-foreground hover:text-foreground`}
                       onClick={close}
                     >
-                      Cancel
+                      {ru ? "Отмена" : "Cancel"}
                     </button>
                   </div>
                 </form>

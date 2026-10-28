@@ -5,21 +5,36 @@ confirmation:
   at: 2026-09-17
   source: "Operator confirmed the complete revised Business workspace in chat: «Здесь всё окей, можно подтверждать и давать следующую страницу»."
   content_sha256: b6dcff3727fcebc01171b581bd96aa6fb45cb9273193633a6153ca84d36e8321
+sources:
+  source_contract:
+    classification: verified-fact
+    inspected_snapshot: aa780be0f99f78f5d25802d259059cb1b66f4cb0
+    sources:
+      - libs/modules/rbac/models/subject/README.md
+      - libs/modules/knowledge/README.md
+      - libs/shared/utils/src/lib/constants/open-router-models.ts
+    supports: One owned token amount, title-only ordinary threads with the current assistant, all profile-linked Knowledge, explicit skill activation, supported attachment formats and text-output answering.
+    limitation: The selected-document header, settings and review-guided walkthrough are presentation proposals. Their local state does not prove narrower Knowledge retrieval, a real session, generated-image production or deployed readiness.
+route_intent:
+  projects: /ai-chat/projects
+  create: /ai-chat/projects?create=1
+  product_simulation_alias: /ai-chat/social/profiles/create
 review:
   dependencies:
-    product.ai-chat.page.content.project-model: f17aa0f1649f24c00b387547fb0800c632db2e752cdc54fd696b53e07d8a3473
-    product.ai-chat.website: db31acbb2f6bff59d196207b3f6245f4fc7674dbe685f71a18c890fef7e2d2cf
+    product.ai-chat.page.content.one-hour-setup: 60c4a0a57c9fc449ffba8839b30144ff55d90f8f3e02adb0d8f540a3fc1294b0
+    product.ai-chat.page.content.project-model: d0e4d58f3665d16fed3ff973ebe52dca776510843d3525af26d1a09cc0078d2f
+    product.ai-chat.website: 01b952c5fa54af025f65408e64fd34bb8ab17b40c54ccecbf01604312b1abdc2
 ---
 
 # Project chat
 
-Open a document's working thread to discuss and edit it with the AI agent. Each file keeps its own conversation, draft and review state. The agent points out gaps and proposes changes; review the text before saving it. In the general project workspace, create separate threads and attach selected saved documents for each conversation. The documents remain available for export.
+Open a document's working thread to discuss and edit it with the AI agent. Each file keeps its own conversation, draft and review state. The agent points out gaps and proposes changes; review the text before saving it. In the general project workspace, name separate threads for continued discussion. The current assistant can use all Knowledge linked to the project's profile. The documents remain available for export.
 
 ## Choose and manage a project
 
-The project selector lists this account's projects. **New project** first asks for a name. Creating the named project opens its material-upload screen. Switching projects preserves each project's name, files, messages and document drafts.
+The [project selector](/ai-chat/projects) lists this account's projects. [New project](/ai-chat/projects?create=1) asks for a name. Creating the named project opens its material-upload screen. Switching projects preserves each project's name, files, messages and document drafts. Loading, a failed list request and an empty account have separate states; retry preserves the existing project. Guests sign in before opening owned projects.
 
-**Project settings** belongs to the selected project. Rename it, open its products and document threads, or export its current texts. Password changes, purchases and account deletion remain in account Settings. The profile menu shows the account's remaining free and purchased tokens, including a negative balance, and links to token purchases and account Settings. Export reviewed documents appears below the project-name form.
+**Project settings** belongs to the selected project. Rename it, open its products and document threads, or export its current texts. Verified email changes, password changes, purchases and account deletion remain in account Settings. The profile menu shows one account token amount containing granted and purchased credits, including a negative balance, and links to token purchases and account Settings. Export reviewed documents appears below the project-name form.
 
 ## Project setup
 
@@ -29,9 +44,9 @@ The project selector lists this account's projects. **New project** first asks f
 | **2. Materials** | Upload documents, notes and images, with an optional explanation. Review the processing disclosure before upload.                                          |
 | **3. Analysis**  | Follow the analysis progress, inspect the supplied sources and see which document drafts need information. Open the document chats when analysis is ready. |
 | **4. Documents** | Discuss each file with the AI agent, review proposed changes and edit its sections. Save the version you have checked.                                     |
-| **5. Work**      | Name a topic and attach selected reviewed documents as its knowledge base. Continue the conversation in that thread.                                       |
+| **5. Work**      | Name a topic and continue the conversation with the project's assistant. All Knowledge linked to that profile remains available.                           |
 
-Upload and analysis are separate setup screens. Document chats have a file list, conversation, message composer and editable document. Each file retains its own messages and draft when you switch files. Project threads become available after the first document has a reviewed version; other files can remain unfinished.
+Upload and analysis are separate setup screens. Document chats have a file list, conversation, message composer and editable document. Each file retains its own messages and draft when you switch files. The guided walkthrough opens project threads after the first reviewed document. Ordinary project threads need a title and can be created while documents remain unfinished.
 
 The arrow beside **Documents** collapses or opens the document list while keeping project threads visible. Opening or creating a project thread collapses the list automatically. The account navbar stays visible at the top while scrolling. The selected conversation header sticks below it. On mobile, the menu icon in the conversation header opens a drawer below the navbar containing project settings, documents and threads; selecting an item closes the drawer. The navbar remains accessible above the drawer. On wider screens, the same icon hides or shows the navigation panel; the selected conversation, messages and drafts remain in place. On mobile, Help and the project picker open from the header menu; the profile icon to the left of the menu button opens its own dropdown. On wider screens, Help and the project picker remain visible beside Profile. Working on uses a menu with checkboxes for multiple sections. Analysis progress uses the same lime accent and rounded track as the other controls.
 
@@ -43,31 +58,33 @@ On mobile, the conversation log is at least half a screen high, with the message
 
 The document shown in Document is included in its chat automatically. Working on sits in the message composer: choose the whole document, one section or several sections. Selecting a section's discussion action opens chat with that section selected. Each reply records the scope and context used; later selection or document edits leave that record unchanged. Document chat replies show the context they used in a compact disclosure. Project threads show their current context documents in the header. The agent profile shows only the role.
 
-Attach documents or images directly in a document chat or project thread. The composer shows the selected files, with image previews and a removal button for each attachment. Send them with a message or on their own. Press ⌘ Enter on Mac or Ctrl Enter on Windows to send; Enter adds a new line. Unsent attachments stay with their own conversation when switching documents, threads or projects. Sent files remain beside the message and in that conversation's context. Attach a sent file to a document section when it belongs there; document changes and file approval still require review. After Brief has a reviewed version, document chats use it without repeating the original notes and source text as separate context items.
+Attach PNG, JPG, WebP, GIF, PDF, TXT, MD, CSV or JSON directly in a document chat or project thread. The composer shows the selected files, with image previews and a removal button for each attachment. Send them with a message or on their own. Press ⌘ Enter on Mac or Ctrl Enter on Windows to send; Enter adds a new line. Unsent attachments stay with their own conversation when switching documents, threads or projects. Sent files remain beside the message and in that conversation's context. Attach a sent file to a document section when it belongs there; document changes and file approval still require review. After Brief has a reviewed version, document chats use it without repeating the original notes and source text as separate context items.
+
+Open supported images, PDF, Markdown or text in a centered preview. Original-file and download actions remain available when an inline view is unavailable. Existing SVG and SVGZ originals stay stored but show an unsupported-format message; they are unavailable for material analysis, model context or active preview.
 
 ## References and generated files
 
 Uploaded images retain their originals and appear as previews in Brief’s Visual reference intake and Design’s Outputs and provenance sections. Their contents and intended use remain open until discussed and reviewed. Classify visual references as identity, interface and website, typography, photography, illustration or marketing creative, then attach them to the relevant document section.
 
-Each section holds references and generated files alongside its text. Attach an existing project file or upload another one. A file card shows its preview, origin, category, intended use and review status. Generated files also retain the generation prompt and tool; a prepared square delivery can be linked to its original. Both files remain available for download. Approving a file is a separate action from reviewing the document text.
+Each section can hold supplied references alongside its text. Attach an existing project file or upload a supported file. A file card shows its preview, origin, category, intended use and review status. A visual produced outside this chat can retain its supplied generation prompt and tool, with a prepared square delivery linked to its original; both files remain available for download. These provenance fields do not generate an image. The current answering service produces text; image generation belongs to a separate future workflow. Approving a file is a separate action from reviewing the document text.
 
 Reviewed document versions include the attached files and their metadata. Later edits or detachment leave the last reviewed version available to project threads until the revised document is reviewed. Thread messages retain the file context used for that answer.
 
 ## Project stages
 
-| Section      | What you review                                                                                                                 |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------- |
-| **Brief**    | The project, current situation, products, intended result, boundaries, constraints and supplied material.                       |
-| **Strategy** | Priority audiences, product roles, positioning, customer paths, channels and measures of success.                               |
-| **Brand**    | Meaning, promise, supported claims, evidence, voice, objections and calls to action.                                            |
-| **Design**   | A written description of the visual direction, existing assets and constraints.                                                 |
-| **Products** | Separate products with their own descriptions, operations and economics, Sales, Promotion, Analytics and research where needed. |
+| Section      | What you review                                                                                                                                  |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Brief**    | The project, customers, known business competitors, current situation, products, intended result, boundaries, constraints and supplied material. |
+| **Strategy** | Priority audiences, product roles, positioning, customer paths, channels and measures of success.                                                |
+| **Brand**    | Meaning, promise, supported claims, evidence, voice, objections and calls to action.                                                             |
+| **Design**   | A written description of the visual direction, existing assets and constraints.                                                                  |
+| **Products** | Separate products with their own descriptions, operations and economics, Sales, Promotion, Analytics and research where needed.                  |
 
 Selecting Brief.md, Strategy.md, Brand.md, Design.md or Products.md opens that file's thread, with its conversation and editable text. Selecting a product opens that product's own sections:
 
 | Product section            | Contents                                                                                                                                                |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Product**                | Customer, problem, offer, value and conditions.                                                                                                         |
+| **Product**                | Customer, problem, product-specific competitors, offer, value and conditions.                                                                           |
 | **Operations & Economics** | Delivery, revenue, resources, activities, partners, costs and financing owned by this Product. Shared resources include this Product's allocated share. |
 | **Sales**                  | Discovery, evaluation, purchase, delivery, use, support and continued use.                                                                              |
 | **Promotion**              | A written description of how this product will be presented publicly, with Website, Creative and Presentation texts where relevant.                     |
@@ -92,9 +109,9 @@ Choose **New thread** and give it a name. **Create thread** opens a separate con
 
 New threads have no automatically selected skill. To use a connected skill for a request, include `/skill-slug` in the message. The open thread shows its conversation and composer.
 
-Attached document names appear on the right side of the thread header, beside its settings button. Thread settings lets you rename the thread, add or remove reviewed documents for future replies, or delete the thread and its messages after confirmation. Changing context documents preserves earlier messages and their recorded context. Removing every document leaves future replies with the conversation and its sent attachments. Closing settings without saving leaves the thread unchanged.
+The intended reference controls show selected document names on the right side of the thread header, beside its settings button. Thread settings lets you rename the thread, choose reviewed documents to discuss, or delete the thread and its messages after confirmation. Changing task references preserves earlier messages and their recorded context. Other Knowledge linked to the project remains available to the assistant, including when no document is selected. Closing settings without saving leaves the thread unchanged.
 
-You can start a thread with one reviewed document while other sections remain unfinished. When you edit a reviewed document, project threads keep using its last reviewed version until you save the new text after review.
+You can start an ordinary thread with a title while document sections remain unfinished. In the intended reference view, a selected reviewed document keeps its last reviewed version while you edit a new draft. Proposed text changes return to that document for review before saving.
 
 ## Continue working
 
@@ -116,14 +133,15 @@ Each section has **Editor** and **Preview** modes. Filled sections open in Previ
 
 ### Brief.md
 
-| Field                   | Question or information to work through                                                                                                                                                     |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Project and products    | What is this project, which products belong to it, and what is outside its scope? Keep exact names, IDs, owners and current or intended availability.                                       |
-| Customers and value     | Who uses, buys or benefits from the offer? Describe their situation, problem and the value currently delivered or intended.                                                                 |
-| Current state           | What exists or has been observed? Attribute supplied statements, tested work, results and assets; distinguish them from intentions.                                                         |
-| Business and resources  | What is known about channels, delivery, prices, revenue, funding, people, partners, costs and capacity? State units, sources and constraints.                                               |
-| Goals and success       | What does the owner want to achieve, with which priorities, baseline, target and time horizon where supplied?                                                                               |
-| Visual reference intake | Record identity and references for interface and website, typography, photography, illustration and marketing creative. Attach exact files and record preferences, rights and review state. |
+| Field                   | Question or information to work through                                                                                                                                                                                                                                        |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Project and products    | What is this project, which products belong to it, and what is outside its scope? Keep exact names, IDs, owners and current or intended availability.                                                                                                                          |
+| Customers and value     | Who uses, buys or benefits from the offer? Describe their situation, problem and the value currently delivered or intended.                                                                                                                                                    |
+| Competitors             | Which businesses do you consider competitors? Give their names, links, comparable offers and why customers might choose them. If known, include examples of ads, publications or search queries used to find them. You can answer "I don't know yet" and return to this later. |
+| Current state           | What exists or has been observed? Attribute supplied statements, tested work, results and assets; distinguish them from intentions.                                                                                                                                            |
+| Business and resources  | What is known about channels, delivery, prices, revenue, funding, people, partners, costs and capacity? State units, sources and constraints.                                                                                                                                  |
+| Goals and success       | What does the owner want to achieve, with which priorities, baseline, target and time horizon where supplied?                                                                                                                                                                  |
+| Visual reference intake | Record identity and references for interface and website, typography, photography, illustration and marketing creative. Attach exact files and record preferences, rights and review state.                                                                                    |
 
 <!-- document: strategy -->
 
@@ -176,20 +194,21 @@ Each section has **Editor** and **Preview** modes. Filled sections open in Previ
 
 ### Product document
 
-| Field                          | Question or information to work through                                                                                                                                                                                                                 |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Product identity               | State the brand, product name, category, lifecycle, owner and boundary.                                                                                                                                                                                 |
-| Customer Segments              | Distinguish user, buyer, payer, beneficiary and decision-maker. Give segments stable IDs, qualifying situations, triggers and exclusions.                                                                                                               |
-| Problem and desired progress   | Describe the customer's circumstance, desired progress, functional, social and emotional forces, pains and gains.                                                                                                                                       |
-| Value Propositions             | Compare actual alternatives, differentiated capabilities and the customer value they enable. Link the offer to jobs, pains and gains.                                                                                                                   |
-| Offer and usage                | Define access or deliverable unit, included and excluded scope, experience, support, rights and dependencies.                                                                                                                                           |
-| Revenue Streams                | For each segment state payer, unit, price or pricing rule, currency, cadence, payment timing and conditions. For a free offer record the intended non-cash exchange separately from money revenue.                                                      |
-| Key Activities                 | Which work creates and delivers the value, and who owns it? Reference the Sales process without duplicating it.                                                                                                                                         |
-| Key Resources                  | Identify people, infrastructure, finance and intellectual resources, owners, availability and constraints. Record this product's share and allocation basis for shared resources.                                                                       |
-| Key Partnerships               | Which suppliers and partners contribute, what do they do, and which dependencies or agreements have evidence?                                                                                                                                           |
-| Cost Structure                 | Describe fixed and variable costs, amount, currency, period and calculation basis. Separate cash from founder time and state shared allocations. Include Funding: capital or subsidy provider, conditions and limits, separately from customer revenue. |
-| Assumptions and decision rules | Give material assumptions stable IDs, sources and states, with signals and consequences for the affected decisions. Link the Research that tests them.                                                                                                  |
-| Business goals and metrics     | Connect acquisition, customer value, adoption, revenue and continued use to relevant business signals and management decisions. Give numerical targets a basis.                                                                                         |
-| Sales                          | Describe the complete customer process for each segment: discovery, evaluation, purchase or adoption, delivery, use, help and continued use. Reference the Product's money terms.                                                                       |
-| Promotion                      | Describe this product's Website, Marketing Creative and Presentation where relevant, applying the reviewed Strategy, Brand and Design.                                                                                                                  |
-| Analytics & Research           | Keep measured results, source and time window separate from research findings and hypotheses. Link findings to this Product's assumptions.                                                                                                              |
+| Field                          | Question or information to work through                                                                                                                                                                                                                                                                                                                |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Product identity               | State the brand, product name, category, lifecycle, owner and boundary.                                                                                                                                                                                                                                                                                |
+| Customer Segments              | Distinguish user, buyer, payer, beneficiary and decision-maker. Give segments stable IDs, qualifying situations, triggers and exclusions.                                                                                                                                                                                                              |
+| Problem and desired progress   | Describe the customer's circumstance, desired progress, functional, social and emotional forces, pains and gains.                                                                                                                                                                                                                                      |
+| Competitors                    | Which offers could a customer choose instead of this product? Name the competitor and specific product, link to the offer and explain the comparison. Add known prices, differences and promotion examples with source links. This list may differ from the business competitors in Brief and those of other products. State when you do not know yet. |
+| Value Propositions             | Compare actual alternatives, differentiated capabilities and the customer value they enable. Link the offer to jobs, pains and gains.                                                                                                                                                                                                                  |
+| Offer and usage                | Define access or deliverable unit, included and excluded scope, experience, support, rights and dependencies.                                                                                                                                                                                                                                          |
+| Revenue Streams                | For each segment state payer, unit, price or pricing rule, currency, cadence, payment timing and conditions. For a free offer record the intended non-cash exchange separately from money revenue.                                                                                                                                                     |
+| Key Activities                 | Which work creates and delivers the value, and who owns it? Reference the Sales process without duplicating it.                                                                                                                                                                                                                                        |
+| Key Resources                  | Identify people, infrastructure, finance and intellectual resources, owners, availability and constraints. Record this product's share and allocation basis for shared resources.                                                                                                                                                                      |
+| Key Partnerships               | Which suppliers and partners contribute, what do they do, and which dependencies or agreements have evidence?                                                                                                                                                                                                                                          |
+| Cost Structure                 | Describe fixed and variable costs, amount, currency, period and calculation basis. Separate cash from founder time and state shared allocations. Include Funding: capital or subsidy provider, conditions and limits, separately from customer revenue.                                                                                                |
+| Assumptions and decision rules | Give material assumptions stable IDs, sources and states, with signals and consequences for the affected decisions. Link the Research that tests them.                                                                                                                                                                                                 |
+| Business goals and metrics     | Connect acquisition, customer value, adoption, revenue and continued use to relevant business signals and management decisions. Give numerical targets a basis.                                                                                                                                                                                        |
+| Sales                          | Describe the complete customer process for each segment: discovery, evaluation, purchase or adoption, delivery, use, help and continued use. Reference the Product's money terms.                                                                                                                                                                      |
+| Promotion                      | Describe this product's Website, Marketing Creative and Presentation where relevant, applying the reviewed Strategy, Brand and Design.                                                                                                                                                                                                                 |
+| Analytics & Research           | Keep measured results, source and time window separate from research findings and hypotheses. Link findings to this Product's assumptions.                                                                                                                                                                                                             |

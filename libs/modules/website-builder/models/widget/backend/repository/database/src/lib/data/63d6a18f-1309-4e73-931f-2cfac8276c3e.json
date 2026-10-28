@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Work with Blog.",
+    "ru": "Работайте с Blog."
+  },
+  "subtitle": {
+    "en": "Experience",
+    "ru": "Интерфейс"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Articles, categories, covers and content blocks for searchable explanations.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Статьи, категории, обложки и блоки контента для публикаций.\"}]}]}"
+  },
+  "anchor": "module-blog",
+  "className": "@5xl:grid-cols-2",
+  "id": "63d6a18f-1309-4e73-931f-2cfac8276c3e",
+  "createdAt": "2026-10-24T01:05:57.024Z",
+  "updatedAt": "2026-10-24T01:05:57.024Z",
+  "variant": "content-definition-grid-page",
+  "adminTitle": "Work with Blog.",
+  "slug": "framework-journey-guide-blog-overview"
+}

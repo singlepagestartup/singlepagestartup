@@ -1,0 +1,14 @@
+{
+  "id": "5d9e8654-ff1a-4c56-bbc6-d2366d75e97a",
+  "createdAt": "2026-10-27T08:40:55.123Z",
+  "updatedAt": "2026-10-27T08:40:55.123Z",
+  "variant": "actions",
+  "className": "",
+  "title": {
+    "en": "hero",
+    "ru": "hero"
+  },
+  "description": {},
+  "adminTitle": "AI Chat: hero",
+  "slug": "ai-chat-editable-hero-actions"
+}

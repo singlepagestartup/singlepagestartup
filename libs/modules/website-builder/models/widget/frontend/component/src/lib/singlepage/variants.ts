@@ -1,3 +1,20 @@
+import { Component as ContentRich } from "./content-rich";
+import { Component as ContentCta } from "./content-cta";
+import { Component as ContentProjectContext } from "./content-project-context";
+import { Component as ContentShowcase } from "./content-showcase";
+import { Component as ContentPageHeader } from "./content-page-header";
+import { Component as ContentFeatureSplit } from "./content-feature-split";
+import { Component as ContentFeatureSplitReverse } from "./content-feature-split-reverse";
+import { Component as ContentDefinitionGrid } from "./content-definition-grid";
+import { Component as ContentDefinitionGridPage } from "./content-definition-grid-page";
+import { Component as ContentSteps } from "./content-steps";
+import { Component as ContentOffer } from "./content-offer";
+import { Component as ContentOfferCard } from "./content-offer-card";
+import { Component as ContentFaq } from "./content-faq";
+import { Component as ContentCollection } from "./content-collection";
+import { Component as ContentForm } from "./content-form";
+import { Component as ContentHero } from "./content-hero";
+import { Component as ContentFeatureFindCard } from "./content-feature-find-card";
 import { Component as ContentSocialChatDefault } from "./content/social/chat-default";
 import { Component as ContentEcommerceDefault } from "./content-ecommerce-default";
 import { Component as ContentAiChatResetPassword } from "./content-ai-chat-reset-password";
@@ -25,7 +42,28 @@ import { Component as Default } from "./default";
 import { Component as ContentDefaultComponent } from "./content-default";
 import { Component as FooterDefaultComponent } from "./footer-default";
 import { Component as NavbarDefaultComponent } from "./navbar-default";
+import { Component as ContentFeatureFindRow } from "./content-feature-find-row";
 export const variants = {
+  "content-rich": ContentRich,
+  "content-cta": ContentCta,
+  "content-project-context": ContentProjectContext,
+  "content-showcase": ContentShowcase,
+  "content-page-header": ContentPageHeader,
+  "content-feature-split": ContentFeatureSplit,
+  "content-feature-split-reverse": ContentFeatureSplitReverse,
+  "content-definition-grid": ContentDefinitionGrid,
+  "content-definition-grid-page": ContentDefinitionGridPage,
+  "content-steps": ContentSteps,
+  "content-offer": ContentOffer,
+  "content-offer-card": ContentOfferCard,
+  "content-faq": ContentFaq,
+
+  "content-collection": ContentCollection,
+  "content-form": ContentForm,
+  "content-hero": ContentHero,
+  "content-feature-find-card": ContentFeatureFindCard,
+
+  "content-feature-find-row": ContentFeatureFindRow,
   "content-social-chat-default": ContentSocialChatDefault,
   "content-ecommerce-default": ContentEcommerceDefault,
   "content-ai-chat-reset-password": ContentAiChatResetPassword,

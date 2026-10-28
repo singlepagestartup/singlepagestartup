@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Explore module",
+    "ru": "Изучить модуль"
+  },
+  "subtitle": {},
+  "url": "/framework/modules/billing",
+  "className": "w-fit",
+  "id": "acc019df-ff7c-44f7-a5ea-729093dda05f",
+  "createdAt": "2026-10-24T01:05:49.210Z",
+  "updatedAt": "2026-10-24T01:05:49.210Z",
+  "variant": "secondary",
+  "adminTitle": "Explore module",
+  "slug": "framework-journey-module-group-5-actions-0"
+}

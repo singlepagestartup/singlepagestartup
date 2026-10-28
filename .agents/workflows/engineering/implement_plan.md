@@ -49,13 +49,16 @@ If you encounter a mismatch:
 
 ## Verification Approach
 
-After implementing a phase:
+Follow `AGENTS.md`, "Validation timing and machine resources". Collect each
+phase's success criteria during implementation. Run the checks only after the
+requested changes are complete, before a commit or final results message. When
+implementing several phases in one task, keep checks pending until that boundary.
 
-- Run the success criteria checks (usually `make check test` covers everything)
-- Fix any issues before proceeding
+- Run the relevant success criteria checks sequentially with resource monitoring
+- Finish fixes before rerunning the affected checks
 - Update your progress in both the plan and your todos
 - Check off completed items in the plan file itself using Edit
-- **Pause for human verification**: After completing all automated verification for a phase, pause and inform the human that the phase is ready for manual testing. Use this format:
+- **Pause for human verification**: When handing completed work back to the user, after the required automated checks pass, inform the human that the work is ready for manual testing. Use this format:
 
   ```
   Phase [N] Complete - Ready for Manual Verification

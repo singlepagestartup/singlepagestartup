@@ -43,6 +43,7 @@ export function Component(props: IComponentPropsExtended) {
 
   return (
     <SocialModuleThread
+      language={props.language}
       isServer={false}
       variant="download-ai-chat"
       data={thread}

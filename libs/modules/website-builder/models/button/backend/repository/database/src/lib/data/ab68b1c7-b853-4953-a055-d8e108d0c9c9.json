@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Documentation",
+    "ru": "Документация"
+  },
+  "subtitle": {},
+  "url": "https://github.com/singlepagestartup/singlepagestartup#readme",
+  "className": "w-fit",
+  "id": "ab68b1c7-b853-4953-a055-d8e108d0c9c9",
+  "createdAt": "2026-10-23T20:18:03.124Z",
+  "updatedAt": "2026-10-23T20:18:03.124Z",
+  "variant": "ghost",
+  "adminTitle": "Documentation",
+  "slug": "framework-footer-resources-docs"
+}

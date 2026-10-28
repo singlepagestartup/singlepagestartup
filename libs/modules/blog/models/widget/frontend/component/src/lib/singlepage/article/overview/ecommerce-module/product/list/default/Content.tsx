@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import { Component as Article } from "@sps/blog/models/article/frontend/component";
 import type { IContentProps } from "./interface";
 import { Component as EcommerceModuleProduct } from "@sps/ecommerce/models/product/frontend/component";
@@ -24,6 +25,7 @@ export function Component(props: IContentProps) {
       }}
     >
       {({ data }) => {
+        if (data?.length === 0) notFound();
         return data?.map((entity, index) => {
           return (
             <ArticlesToEcommerceModuleProducts
@@ -32,6 +34,7 @@ export function Component(props: IContentProps) {
               variant="find"
               apiProps={{
                 params: {
+                  orderBy: { and: [{ column: "orderIndex", method: "asc" }] },
                   filters: {
                     and: [
                       {
@@ -46,7 +49,7 @@ export function Component(props: IContentProps) {
             >
               {({ data: articlesToEcommerceModuleProducts }) => {
                 return (
-                  <div className="grid lg:grid-cols-2 gap-4">
+                  <div className="grid min-w-0 items-stretch gap-5 sm:grid-cols-2 lg:grid-cols-3">
                     {articlesToEcommerceModuleProducts?.map(
                       (articleToEcommerceModuleProduct, index) => {
                         return (

@@ -72,7 +72,7 @@ it("streams the avatar Skeleton during its scoped server read and strips binding
     },
   );
   await shellReady;
-  expect(html).toContain("Loading avatar");
+  expect(html).toContain("Загрузка аватара");
   expect(mockSubject).toHaveBeenCalledTimes(1);
   await started;
   expect(mockPreview).toHaveBeenCalledWith({

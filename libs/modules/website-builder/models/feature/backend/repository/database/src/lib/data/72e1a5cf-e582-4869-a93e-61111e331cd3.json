@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "72e1a5cf-e582-4869-a93e-61111e331cd3",
+  "createdAt": "2026-10-26T00:11:37.225Z",
+  "updatedAt": "2026-10-27T14:59:40.609Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "crm",
+    "ru": "crm"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Collect enquiries directly on the page.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Собирайте заявки прямо на странице.\"}]}]}"
+  },
+  "adminTitle": "crm",
+  "slug": "framework-reviewed-article-website-builder-connections-feature-1"
+}

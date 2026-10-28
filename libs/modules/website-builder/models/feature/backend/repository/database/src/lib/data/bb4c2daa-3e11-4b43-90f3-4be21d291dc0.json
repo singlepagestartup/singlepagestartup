@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "bb4c2daa-3e11-4b43-90f3-4be21d291dc0",
+  "createdAt": "2026-10-26T00:11:33.395Z",
+  "updatedAt": "2026-10-27T14:59:53.153Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "file-storage",
+    "ru": "file-storage"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Use images in selection options.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Используйте изображения в вариантах выбора.\"}]}]}"
+  },
+  "adminTitle": "file-storage",
+  "slug": "framework-reviewed-article-crm-connections-feature-2"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "fad008ee-3cd9-4279-b2c9-acc6f86b3094",
+  "createdAt": "2026-10-23T21:18:23.880Z",
+  "updatedAt": "2026-10-27T20:13:16.265Z",
+  "variant": "default",
+  "type": "one_off",
+  "slug": "ai-chat-tokens-300-rub",
+  "title": {
+    "en": "Token top-up · 300 RUB",
+    "ru": "Пополнение токенов · 300 ₽"
+  },
+  "shortDescription": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Add approximately 2,308 tokens to your AI Chat balance for 300 RUB. The rate is 0.13 RUB per token.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Пополните баланс AI-чата примерно на 2 308 токенов за 300 ₽. Курс — 0,13 ₽ за токен.\"}]}]}"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"A one-time purchase adds approximately 2,308 tokens per pack to your existing balance. Tokens do not expire. This top-up does not include Pro subscription access. Price: 300 RUB at 0.13 RUB per token.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Разовая покупка добавляет примерно 2 308 токенов за каждый пакет к текущему балансу. Токены не сгорают. Пополнение не включает доступ по подписке Pro. Цена — 300 ₽ по курсу 0,13 ₽ за токен.\"}]}]}"
+  },
+  "adminTitle": "AI Chat Token top-up 300 RUB"
+}

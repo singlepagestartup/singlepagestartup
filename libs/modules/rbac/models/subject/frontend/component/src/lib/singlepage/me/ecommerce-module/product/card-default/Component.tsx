@@ -14,7 +14,7 @@ export function Component(props: IComponentPropsExtended) {
       data={props.ecommerceModuleProduct}
       language={props.language}
       topSlot={
-        <CardHeader className="pb-0">
+        <CardHeader className="p-0">
           <CategoryRowButtonDefault
             isServer={props.isServer}
             language={props.language}
@@ -24,7 +24,7 @@ export function Component(props: IComponentPropsExtended) {
         </CardHeader>
       }
       middleSlot={
-        <CardContent>
+        <CardContent className="p-0">
           <SocialModuleProfileButtonDefault
             isServer={props.isServer}
             language={props.language}

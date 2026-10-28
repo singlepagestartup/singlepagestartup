@@ -1,4 +1,19 @@
 import {
+  action as blogModuleArticleCreate,
+  type IProps as IBlogModuleArticleCreateProps,
+  type IResult as IBlogModuleArticleCreateResult,
+} from "./blog-module/article/create";
+import {
+  action as ecommerceModuleOrderFreezeSubscriptionPeriod,
+  type IProps as IEcommerceModuleOrderFreezeSubscriptionPeriodProps,
+  type IResult as IEcommerceModuleOrderFreezeSubscriptionPeriodResult,
+} from "./ecommerce-module/order/freeze-subscription-period";
+import {
+  action as blogModuleArticleFindByIdContentFind,
+  type IProps as IBlogModuleArticleFindByIdContentFindProps,
+  type IResult as IBlogModuleArticleFindByIdContentFindResult,
+} from "./blog-module/article/content";
+import {
   action as socialModuleProfileFindByIdAvatarFind,
   type IProps as ISocialModuleProfileFindByIdAvatarFindProps,
   type IResult as ISocialModuleProfileFindByIdAvatarFindResult,
@@ -465,6 +480,9 @@ import {
 } from "./social-module/chat/find-by-id/profile/delete";
 
 export type IProps = {
+  IBlogModuleArticleCreateProps: IBlogModuleArticleCreateProps;
+  IEcommerceModuleOrderFreezeSubscriptionPeriodProps: IEcommerceModuleOrderFreezeSubscriptionPeriodProps;
+  IBlogModuleArticleFindByIdContentFindProps: IBlogModuleArticleFindByIdContentFindProps;
   IBillingModuleBalanceProps: IBillingModuleBalanceProps;
   IIdentityChangeEmailRequestProps: IIdentityChangeEmailRequestProps;
   IIdentityChangeEmailVerifyProps: IIdentityChangeEmailVerifyProps;
@@ -564,6 +582,9 @@ export type IProps = {
 };
 
 export type IResult = {
+  IBlogModuleArticleCreateResult: IBlogModuleArticleCreateResult;
+  IEcommerceModuleOrderFreezeSubscriptionPeriodResult: IEcommerceModuleOrderFreezeSubscriptionPeriodResult;
+  IBlogModuleArticleFindByIdContentFindResult: IBlogModuleArticleFindByIdContentFindResult;
   IBillingModuleBalanceResult: IBillingModuleBalanceResult;
   IIdentityChangeEmailRequestResult: IIdentityChangeEmailRequestResult;
   IIdentityChangeEmailVerifyResult: IIdentityChangeEmailVerifyResult;
@@ -663,6 +684,9 @@ export type IResult = {
 };
 
 export const api = {
+  blogModuleArticleCreate,
+  ecommerceModuleOrderFreezeSubscriptionPeriod,
+  blogModuleArticleFindByIdContentFind,
   socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdate,
   socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesFind,
   ...factory<IModel>({

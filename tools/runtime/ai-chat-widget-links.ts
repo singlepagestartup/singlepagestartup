@@ -37,12 +37,16 @@ export interface IWidgetCutoverOperation {
   selector?: Record<string, unknown>;
   referenceId?: string;
   rolledBack?: boolean;
+  /** Security classifications remain active when reverting presentation changes. */
+  retainOnRollback?: boolean;
 }
 export interface IWidgetCutoverManifest {
   schema:
     | "sps.ai-chat-widget-cutover.v1"
     | "sps.ecommerce-widget-cutover.v1"
-    | "sps.social-widget-cutover.v1";
+    | "sps.social-widget-cutover.v1"
+    | "sps.framework-widget-cutover.v1"
+    | "sps.platform-example-cutover.v1";
   createdAt: string;
   apiOrigin?: string;
   hostBindings?: Pick<
@@ -640,6 +644,8 @@ export async function applyWidgetCutover(
       "sps.ai-chat-widget-cutover.v1",
       "sps.ecommerce-widget-cutover.v1",
       "sps.social-widget-cutover.v1",
+      "sps.framework-widget-cutover.v1",
+      "sps.platform-example-cutover.v1",
     ].includes(manifest.schema) ||
     ["rolling-back", "rolled-back"].includes(manifest.status)
   )
@@ -746,13 +752,16 @@ export async function rollbackWidgetCutover(
       "sps.ai-chat-widget-cutover.v1",
       "sps.ecommerce-widget-cutover.v1",
       "sps.social-widget-cutover.v1",
+      "sps.framework-widget-cutover.v1",
+      "sps.platform-example-cutover.v1",
     ].includes(manifest.schema)
   )
     throw new Error("Unknown manifest schema");
   manifest.status = "rolling-back";
   await persist(manifest);
   for (const operation of [...manifest.operations].reverse()) {
-    if (!operation.before || operation.rolledBack) continue;
+    if (!operation.before || operation.rolledBack || operation.retainOnRollback)
+      continue;
     const current = await read(adapter, operation.entity, operation.id);
     if (
       matches(

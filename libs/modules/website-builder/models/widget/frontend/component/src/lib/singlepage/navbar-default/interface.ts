@@ -22,3 +22,13 @@ export interface IComponentPropsExtended
   content?: ReactNode;
   logotype?: ReactNode;
 }
+
+export interface IClientComponentProps {
+  data: IModel;
+  variant: typeof variant;
+  language: string;
+  className?: string;
+  logotype?: ReactNode;
+  content?: ReactNode;
+  children?: ReactNode;
+}

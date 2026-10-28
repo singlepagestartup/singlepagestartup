@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "32f47e67-9572-4947-9b54-baba6ae65a5e",
+  "createdAt": "2026-10-26T00:11:29.212Z",
+  "updatedAt": "2026-10-27T14:59:31.098Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Questions match your service",
+    "ru": "Вопросы соответствуют вашей услуге"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Choose fields and answer options. Ask about the task for a consultation, or participation format for a workshop.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Выбирайте поля и варианты ответа. Для консультации спросите о задаче, для мастер-класса — о формате участия.\"}]}]}"
+  },
+  "adminTitle": "Вопросы соответствуют вашей услуге",
+  "slug": "framework-reviewed-article-crm-introduction-feature-0"
+}

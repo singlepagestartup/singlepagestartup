@@ -1,0 +1,15 @@
+{
+  "id": "ed3a4838-49df-4620-9219-7c393021e91a",
+  "className": "",
+  "createdAt": "2026-10-24T01:05:51.344Z",
+  "updatedAt": "2026-10-24T01:05:51.344Z",
+  "variant": "article-list-default",
+  "adminTitle": "Read how the framework works.",
+  "slug": "framework-journey-articles",
+  "title": {
+    "en": "Read how the framework works.",
+    "ru": "Узнайте, как устроен фреймворк."
+  },
+  "subtitle": {},
+  "description": {}
+}

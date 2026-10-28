@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "SinglePageStartup · Code Framework",
+    "ru": "SinglePageStartup · Code Framework"
+  },
+  "subtitle": {
+    "en": "© 2026 SinglePageStartup",
+    "ru": "© 2026 SinglePageStartup"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Prepare your business in AI Chat. Build your product with Code Framework.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Подготовьте бизнес в AI-чате. Разрабатывайте продукт с Code Framework.\"}]}]}"
+  },
+  "anchor": "",
+  "className": "",
+  "id": "98347b4f-47f2-4178-a81e-2ea50520651c",
+  "createdAt": "2026-10-24T01:06:20.480Z",
+  "updatedAt": "2026-10-24T01:06:20.480Z",
+  "variant": "footer-default",
+  "adminTitle": "SinglePageStartup · Code Framework",
+  "slug": "framework-journey-footer"
+}

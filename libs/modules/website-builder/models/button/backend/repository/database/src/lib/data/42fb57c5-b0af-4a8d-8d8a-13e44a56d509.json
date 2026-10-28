@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "All modules",
+    "ru": "Все модули"
+  },
+  "subtitle": {},
+  "url": "/framework/modules",
+  "className": "w-fit",
+  "id": "42fb57c5-b0af-4a8d-8d8a-13e44a56d509",
+  "createdAt": "2026-10-24T01:06:00.432Z",
+  "updatedAt": "2026-10-24T01:06:00.432Z",
+  "variant": "secondary",
+  "adminTitle": "All modules",
+  "slug": "framework-journey-guide-crm-actions-0"
+}

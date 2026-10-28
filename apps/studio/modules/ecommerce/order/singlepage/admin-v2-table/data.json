@@ -55,6 +55,30 @@
         "label": "Comment",
         "kind": "text",
         "nullable": true
+      },
+      {
+        "key": "subscriptionPeriodStartsAt",
+        "label": "Subscription Period Starts At",
+        "kind": "timestamp",
+        "nullable": true
+      },
+      {
+        "key": "subscriptionPeriodEndsAt",
+        "label": "Subscription Period Ends At",
+        "kind": "timestamp",
+        "nullable": true
+      },
+      {
+        "key": "subscriptionPeriodInvoiceId",
+        "label": "Subscription Period Invoice Id",
+        "kind": "uuid",
+        "nullable": true
+      },
+      {
+        "key": "subscriptionRevokedAt",
+        "label": "Subscription Revoked At",
+        "kind": "timestamp",
+        "nullable": true
       }
     ]
   },
@@ -67,7 +91,11 @@
       "status": "new",
       "type": "cart",
       "receipt": "",
-      "comment": null
+      "comment": null,
+      "subscriptionPeriodStartsAt": null,
+      "subscriptionPeriodEndsAt": null,
+      "subscriptionPeriodInvoiceId": null,
+      "subscriptionRevokedAt": null
     },
     {
       "id": "89214e48-c443-45ed-aa81-6789e1c7fd62",
@@ -77,7 +105,11 @@
       "status": "new",
       "type": "cart",
       "receipt": "",
-      "comment": null
+      "comment": null,
+      "subscriptionPeriodStartsAt": null,
+      "subscriptionPeriodEndsAt": null,
+      "subscriptionPeriodInvoiceId": null,
+      "subscriptionRevokedAt": null
     },
     {
       "id": "c994228f-441e-48d4-a884-671cbdaf392b",
@@ -87,7 +119,11 @@
       "status": "new",
       "type": "cart",
       "receipt": "",
-      "comment": null
+      "comment": null,
+      "subscriptionPeriodStartsAt": null,
+      "subscriptionPeriodEndsAt": null,
+      "subscriptionPeriodInvoiceId": null,
+      "subscriptionRevokedAt": null
     }
   ]
 }

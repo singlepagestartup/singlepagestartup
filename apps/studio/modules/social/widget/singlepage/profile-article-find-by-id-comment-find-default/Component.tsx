@@ -99,7 +99,7 @@ function CommentItem({
               type="button"
               className="text-xs text-muted-foreground transition hover:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground min-h-11"
             >
-              Reply
+              Ответить
             </button>
           </div>
         </div>

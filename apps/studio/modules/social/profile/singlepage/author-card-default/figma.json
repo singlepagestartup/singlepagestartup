@@ -1,0 +1,21 @@
+{
+  "componentName": "social.profile",
+  "pageName": "social",
+  "variantName": "author-card-default",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "social.profile.author-card-default",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "social/profile/singlepage/author-card-default",
+    "sps.figma.component": "social.profile",
+    "sps.figma.variant": "author-card-default",
+    "sps.source.module": "social",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "profile",
+    "sps.source.variant": "author-card-default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/social/profile/singlepage/author-card-default/Component.tsx",
+    "sps.code.story": "apps/studio/modules/social/profile/singlepage/author-card-default/Component.stories.tsx"
+  }
+}

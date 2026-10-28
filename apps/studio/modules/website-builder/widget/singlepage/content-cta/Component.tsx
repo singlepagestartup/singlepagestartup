@@ -41,6 +41,45 @@ export function ContentCta(props?: IComponentProps) {
     ...defaultContentCtaProps,
     ...props,
   };
+  if (props?.appearance === "primary")
+    return (
+      <section
+        id={props.id}
+        aria-labelledby={props.id ? `${props.id}-title` : undefined}
+        className="bg-primary text-primary-foreground"
+        data-module="website-builder"
+        data-model="widget"
+        data-variant="content-cta"
+        data-ds-block="website-builder.widget.content-cta"
+      >
+        <div className="mx-auto max-w-7xl px-5 py-14 text-center @3xl:px-8 @3xl:py-20">
+          {props.eyebrow ? (
+            <p className="text-xs font-medium uppercase tracking-widest">
+              {props.eyebrow}
+            </p>
+          ) : null}
+          <h2
+            id={props.id ? `${props.id}-title` : undefined}
+            className="mx-auto mt-4 max-w-5xl text-balance font-default text-3xl font-semibold leading-tight @3xl:text-5xl"
+          >
+            {title}
+          </h2>
+          <p className="mx-auto mt-5 max-w-3xl text-sm leading-6">
+            {description}
+          </p>
+          <div className="mt-6">
+            {props.actions ?? (
+              <a
+                href={primaryAction.href}
+                className="inline-flex min-h-11 items-center justify-center rounded-xl bg-default px-5 py-3 text-sm font-semibold text-default-foreground"
+              >
+                {primaryAction.label}
+              </a>
+            )}
+          </div>
+        </div>
+      </section>
+    );
   return (
     <div
       className="w-full bg-muted py-12 sm:py-16"

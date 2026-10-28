@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Blog",
+    "ru": "Блог"
+  },
+  "subtitle": {},
+  "url": "/blog",
+  "className": "w-fit",
+  "id": "eb1b3dcc-4efe-4ea8-a7fd-11293b19f50f",
+  "createdAt": "2026-10-24T01:06:21.996Z",
+  "updatedAt": "2026-10-24T01:06:21.996Z",
+  "variant": "ghost",
+  "adminTitle": "Blog",
+  "slug": "framework-journey-footer-group-2-0"
+}

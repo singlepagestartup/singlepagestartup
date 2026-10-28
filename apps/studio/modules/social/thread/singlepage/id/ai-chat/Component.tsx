@@ -60,10 +60,10 @@ function ThreadId({
     >
       <PanelHeader
         title={thread.title}
-        label="Document thread"
+        label="Обсуждение документа"
         navigation={navigation}
         actions={
-          <div className="flex rounded-lg bg-muted p-1 @[900px]/chat:hidden">
+          <div className="flex rounded-lg bg-muted p-1 @[800px]/chat:hidden">
             {(["chat", "document"] as const).map((item) => (
               <button
                 key={item}
@@ -72,15 +72,15 @@ function ThreadId({
                 onClick={() => setPane(item)}
                 className={`min-h-9 rounded-md px-3 text-xs font-semibold ${kit.focus} ${pane === item ? "bg-card" : kit.muted}`}
               >
-                {item === "chat" ? "Chat" : "Document"}
+                {item === "chat" ? "Чат" : "Документ"}
               </button>
             ))}
           </div>
         }
       />
-      <div className="grid min-h-0 min-w-0 flex-1 @[900px]/chat:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="grid min-h-0 min-w-0 flex-1 @[800px]/chat:grid-cols-[minmax(0,1fr)_360px]">
         <div
-          className={`${pane === "chat" ? "flex" : "hidden"} min-h-0 min-w-0 flex-col overflow-y-auto @[900px]/chat:flex`}
+          className={`${pane === "chat" ? "flex" : "hidden"} min-h-0 min-w-0 flex-col overflow-y-auto @[800px]/chat:flex`}
         >
           <div data-ai-chat-messages className="min-h-0 flex-1 overflow-y-auto">
             <ThreadMessageList className="min-h-[50dvh] @[760px]/workspace:min-h-0" />
@@ -89,10 +89,10 @@ function ThreadId({
           {messageCreate}
         </div>
         <div
-          className={`${pane === "document" ? "block" : "hidden"} min-h-0 min-w-0 overflow-y-auto border-border @[900px]/chat:block @[900px]/chat:border-l`}
+          className={`${pane === "document" ? "block" : "hidden"} min-h-0 min-w-0 overflow-y-auto border-border @[800px]/chat:block @[800px]/chat:border-l`}
         >
           <section
-            aria-label={`${thread.title} editor`}
+            aria-label={`${thread.title} — редактор`}
             data-thread-id={thread.id}
             className="min-w-0 bg-muted p-4"
           >

@@ -4,16 +4,16 @@
   "items": [],
   "links": [
     {
-      "text": "Start with my files",
+      "text": "Начать со своих материалов",
       "href": "/ai-chat/rbac/subjects/authentication/registration"
     },
     {
-      "text": "Sign in",
+      "text": "Войти",
       "href": "/ai-chat/rbac/subjects/authentication/select-method"
     },
     {
       "text": "Code Framework",
-      "href": "https://github.com/singlepagestartup/singlepagestartup"
+      "href": "/framework"
     }
   ]
 }

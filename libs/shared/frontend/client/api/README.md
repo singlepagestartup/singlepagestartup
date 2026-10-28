@@ -35,6 +35,25 @@ The [transport contract](../../../../middlewares/src/lib/revalidation/README.md)
 describes reconnect, lease renewal, retention and the shared 15-second fallback
 version check. A healthy chat has no five-second messages poll.
 
+## Protected query scopes
+
+`QueryScopeProvider` uses the existing QueryClient. Its owner supplies a
+non-secret `scopeKey` for the protected resource or slot; the Provider appends
+its own React instance ID. Factory `find`, `findById` and `count` append the
+resulting scope after the existing path, parameters and principal/host partition and add
+`meta.protectedContentScope`. Caller query options cannot replace that scoped
+key or ownership metadata. Topics and consistency references keep their usual
+meaning; public readers outside the context retain their existing keys.
+
+Scoped queries use `gcTime: 0`. On subtree disposal the scope cancels and removes
+only entries with its exact ownership metadata. Public readers and other
+protected scopes retain their cache entries and observers. Strict Mode effect
+replay preserves the mounted scope. Delayed cancellation from a closed
+instance cannot remove a replacement instance's queries. Returning to a prior
+scope on the same Provider also retains its active observers. The RBAC article gate mounts this context
+around granted Website Builder content; File Storage retains its separate
+protected-byte lifetime inside that context. Backend guards own authorization.
+
 ## Mutations
 
 Factory mutations run internal cache handling before the consumer's onSuccess,

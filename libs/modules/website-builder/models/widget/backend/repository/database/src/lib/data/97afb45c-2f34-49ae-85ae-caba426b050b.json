@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Separate schema from content",
+    "ru": "Отделите схему от содержимого"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The \"},{\"type\":\"text\",\"text\":\"backend/repository/database/src/lib/data\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" directories contain data snapshots. Editing them does not update the running CMS or implement an interface fix. Articles, categories, Widget relations and images are changed through the owning SDK.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Before moving content, read current records and incoming relations. A shared hero frame may also be used by a contact form. Changing it affects both consumers. Explicit copying and switching the required relation preserves ownership. Record returned IDs and read back exact relations after the operation.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Каталоги \"},{\"type\":\"text\",\"text\":\"backend/repository/database/src/lib/data\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" содержат снимки данных. Их правка не обновляет работающий CMS и не реализует исправление интерфейса. Статьи, категории, связи Widget и изображения изменяются через SDK владельца.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Перед переносом содержимого прочитайте текущие записи и входящие связи. Общая рамка hero может использоваться и контактной формой. Её изменение затронет обоих потребителей. Явное копирование и переключение нужной связи сохраняет владельца. Запишите возвращённые ID и прочитайте точные связи после операции.\"}]}]}"
+  },
+  "anchor": "ru-section-nx-bun-docker-and-generated-migrations-5",
+  "className": "",
+  "id": "97afb45c-2f34-49ae-85ae-caba426b050b",
+  "createdAt": "2026-10-26T07:34:00.183Z",
+  "updatedAt": "2026-10-27T14:59:08.734Z",
+  "variant": "content-rich",
+  "adminTitle": "Отделите схему от содержимого",
+  "slug": "ru-section-nx-bun-docker-and-generated-migrations-5"
+}

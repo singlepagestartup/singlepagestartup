@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Explore the running examples",
+    "ru": "Изучите работающие примеры"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Framework shows product cards, forms and content composition. The blog explains implementation details. AI Chat is the hosted service built on the same project.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Framework показывает карточки товаров, формы и сборку контента. Блог объясняет устройство кода. AI-чат — сервис, построенный на том же проекте.\"}]}]}"
+  },
+  "anchor": "explore",
+  "className": "[&_.grid]:xl:grid-cols-3",
+  "id": "7e379b78-18a6-4671-8f4e-5abe53d2d236",
+  "createdAt": "2026-10-23T20:18:06.743Z",
+  "updatedAt": "2026-10-23T20:18:06.743Z",
+  "variant": "content-feature-find-card",
+  "adminTitle": "Explore the running examples",
+  "slug": "framework-about-next"
+}

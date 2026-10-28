@@ -14,6 +14,7 @@ import type { ISpsComponentBase } from "@sps/ui-adapter";
 export const variant =
   "me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-list-document-ai-chat" as const;
 export interface IComponentProps extends IParent<IModel, typeof variant> {
+  language?: string;
   project: IAIChatProject;
   thread: IThread;
   onDiscuss: (id: string) => void;
@@ -32,6 +33,7 @@ export interface IComponentPropsExtended
 }
 
 export interface IDraftSourceProps {
+  language?: string;
   id: string;
   hasSavedSources: boolean;
   title?: string;
@@ -41,4 +43,19 @@ export interface IDraftSourceProps {
     value: { title: string; content: string },
     files: File[],
   ) => Promise<string>;
+}
+
+export interface IDevelopmentHandoffProps {
+  language?: string;
+  fileName: string;
+  revision: string;
+  hasContent: boolean;
+  hasPendingProposal: boolean;
+  unavailable: boolean;
+  frameworkHref: string;
+}
+
+export interface IDevelopmentCopyFeedback {
+  state: "idle" | "pending" | "success" | "error";
+  text: string;
 }

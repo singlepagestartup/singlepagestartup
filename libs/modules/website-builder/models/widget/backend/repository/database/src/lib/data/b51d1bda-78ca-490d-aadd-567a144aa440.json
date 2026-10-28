@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Restrict data before pagination",
+    "ru": "Ограничьте данные до пагинации"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The ownership constraint belongs in the repository query. In a Subject cart read, permitted order IDs are combined with filters through \"},{\"type\":\"text\",\"text\":\"filters.and\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\". Filtering a completed page after \"},{\"type\":\"text\",\"text\":\"limit\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" produces an incomplete page and an incorrect count. The same constraints must apply to lists, counts, reads by ID and additional related data.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The shared ParseQuery preserves an already parsed query when Hono applications execute in a nested composition. Parsing the raw URL again could erase restrictions. Check the actual nested composition, rather than one handler with injected parameters.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Ограничение владельца входит в запрос репозитория. В чтении корзины Subject разрешённые ID заказов объединяются с фильтрами через \"},{\"type\":\"text\",\"text\":\"filters.and\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\". Фильтрация готовой страницы после \"},{\"type\":\"text\",\"text\":\"limit\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" даёт неполную страницу и неверный счётчик. Один набор ограничений нужен списку, подсчёту, чтению по ID и дополнительным связанным данным.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Общий ParseQuery сохраняет уже разобранный запрос при вложенном выполнении приложений Hono. Повторный разбор сырого URL мог бы стереть ограничения. Проверяйте реальную вложенную композицию, а не один обработчик с подставленными параметрами.\"}]}]}"
+  },
+  "anchor": "ru-section-hono-api-layers-di-and-owned-middleware-5",
+  "className": "",
+  "id": "b51d1bda-78ca-490d-aadd-567a144aa440",
+  "createdAt": "2026-10-26T07:34:01.971Z",
+  "updatedAt": "2026-10-27T14:59:14.537Z",
+  "variant": "content-rich",
+  "adminTitle": "Ограничьте данные до пагинации",
+  "slug": "ru-section-hono-api-layers-di-and-owned-middleware-5"
+}

@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Framework gallery",
+    "ru": "Галерея Framework"
+  },
+  "subtitle": {
+    "en": "Saved component examples",
+    "ru": "Сохранённые примеры компонентов"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Explore the saved slides, then try the product cards, contact form and categories below.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Изучите сохранённые слайды, затем попробуйте карточки товаров, контактную форму и категории ниже.\"}]}]}"
+  },
+  "anchor": "framework-gallery",
+  "className": "",
+  "id": "2f9d47da-24d1-4bb1-8a78-925c880582fb",
+  "createdAt": "2026-10-24T01:05:53.021Z",
+  "updatedAt": "2026-10-24T01:05:53.021Z",
+  "variant": "content-collection",
+  "adminTitle": "Framework gallery",
+  "slug": "framework-journey-gallery"
+}

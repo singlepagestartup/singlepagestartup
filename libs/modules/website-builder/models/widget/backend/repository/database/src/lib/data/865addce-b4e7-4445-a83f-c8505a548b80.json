@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "A place for each part of your product.",
+    "ru": "Своя ответственность для каждой части продукта."
+  },
+  "subtitle": {
+    "en": "Code Framework modules",
+    "ru": "Модули Code Framework"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Choose the capabilities your product needs. Each module keeps its records, operations and presentation together; relations connect specific records across the system.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Выберите нужные возможности. Каждый модуль объединяет свои записи, операции и представления; связи соединяют конкретные записи разных модулей.\"}]}]}"
+  },
+  "anchor": "all-modules",
+  "className": "",
+  "id": "865addce-b4e7-4445-a83f-c8505a548b80",
+  "createdAt": "2026-10-24T01:05:53.333Z",
+  "updatedAt": "2026-10-24T01:05:53.333Z",
+  "variant": "content-definition-grid-page",
+  "adminTitle": "A place for each part of your product.",
+  "slug": "framework-journey-modules-overview-grid"
+}

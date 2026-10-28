@@ -18,7 +18,7 @@ coordinator instead of editing shared files.
 
 ## Method
 
-- Use the six sections of the Brief template. Concise briefing supplies the
+- Use the seven sections of the Brief template. Concise briefing supplies the
   request, business context, objectives and constraints; lean business
   planning supplies customers, value, delivery, money and resources. This
   house format is not an externally prescribed standard or a completed
@@ -33,6 +33,12 @@ coordinator instead of editing shared files.
   supporting showcases, acquisition activities and internal work as concise
   scope context rather than another catalog; do not decide Strategy
   priorities or infer a product from an activity that may earn money later.
+- Ask which businesses the owner considers competitors. Capture names, links,
+  similar offers, reasons for comparison and any known promotion examples.
+  Attribute these as owner input for later research and keyword planning.
+  Each Product owns its offer-specific competitors. An explicit "not yet known"
+  is acceptable; continue the intake without inventing names or treating
+  missing input as absence of competition.
 - Return the scope as a compact summary in the operator's language and obtain
   a natural-language confirmation before Business Analyst or Market Researcher
   starts.
@@ -122,7 +128,7 @@ or promise a result the business cannot yet deliver.
 
 A reader should understand the current business without opening another
 document. Remove empty or formulaic sections instead of filling them with
-process language; keep the six required sections useful and specific.
+process language; keep the seven required sections useful and specific.
 
 ## Handoff
 

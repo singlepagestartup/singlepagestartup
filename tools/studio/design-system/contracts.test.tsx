@@ -73,10 +73,13 @@ test("every variant owns its public literal contract and the layer registers it"
         for (const declaration of statement.declarationList.declarations)
           if (
             declaration.name.getText(source) === "variant" &&
-            declaration.initializer &&
-            ts.isStringLiteral(declaration.initializer)
-          )
-            literal = declaration.initializer.text;
+            declaration.initializer
+          ) {
+            const value = ts.isAsExpression(declaration.initializer)
+              ? declaration.initializer.expression
+              : declaration.initializer;
+            if (ts.isStringLiteral(value)) literal = value.text;
+          }
     expect(literal, contract).toBeTruthy();
     const variantRoot = file.match(/^(.*\/(?:singlepage|startup))\//)![1];
     const registryTree = tree(path.join(variantRoot, "variants.ts"));

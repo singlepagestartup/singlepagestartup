@@ -35,6 +35,7 @@ const stored = {
   indexedContentHash: "hash",
 };
 const props: any = {
+  language: "en",
   isServer: false,
   variant: "id-ai-chat",
   data: { ...stored, title: "Stale title", content: "Stale content" },
@@ -179,7 +180,7 @@ it("loads the Source on the server without calling the client reader", async () 
   ).toBe("Current title");
 });
 it.each([false])(
-  "creates a draft without a Source ID or record lookup (server=%s)",
+  "creates a draft with Russian controls by default without a Source lookup (server=%s)",
   async (isServer) => {
     const save = jest.fn().mockResolvedValue("Created");
     const creation: any = {
@@ -198,10 +199,10 @@ it.each([false])(
     );
     expect(clientRead).not.toHaveBeenCalled();
     expect(serverRead).not.toHaveBeenCalled();
-    fireEvent.change(screen.getByRole("textbox", { name: "Brief content" }), {
+    fireEvent.change(screen.getByRole("textbox", { name: "Текст: Brief" }), {
       target: { value: "New draft" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Save knowledge" }));
+    fireEvent.click(screen.getByRole("button", { name: "Сохранить знания" }));
     await waitFor(() =>
       expect(save).toHaveBeenCalledWith({
         title: "Brief",

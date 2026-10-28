@@ -1,0 +1,12 @@
+{
+  "id": "0c3052fd-bd68-472c-b633-70e9141f1c8a",
+  "title": "CRM · Code Framework",
+  "url": "/framework/modules/crm",
+  "description": "Forms, steps, fields and saved contact requests.",
+  "createdAt": "2026-10-24T01:05:59.895Z",
+  "updatedAt": "2026-10-24T01:05:59.895Z",
+  "variant": "default",
+  "className": "",
+  "language": "en",
+  "adminTitle": "CRM · Code Framework"
+}

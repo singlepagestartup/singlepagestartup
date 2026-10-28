@@ -13,12 +13,18 @@ import { Component as AdminV2Table } from "./admin-v2-table/index";
 import { Component as AiChat } from "./ai-chat/index";
 import { Component as AiChatHelp } from "./ai-chat-help/index";
 import { Component as BlogModuleArticleFind } from "./blog-module-article-find/index";
+import { Component as BlogModuleArticlePrivateSlug } from "./blog-module-article-private-slug/index";
 import { Component as BlogModuleArticleSlug } from "./blog-module-article-slug/index";
+import { Component as BlogModuleCategorySlug } from "./blog-module-category-slug/index";
 import { Component as Composition } from "./composition/index";
 import { Component as Default } from "./default/index";
+import { Component as EcommerceModuleCategorySlug } from "./ecommerce-module-category-slug/index";
 import { Component as EcommerceModuleProductFind } from "./ecommerce-module-product-find/index";
+import { Component as EcommerceModuleTokenFind } from "./ecommerce-module-token-find/index";
 import { Component as EcommerceModuleProductSlug } from "./ecommerce-module-product-slug/index";
-import { Component as List } from "./list/index";
+import { Component as Framework } from "./framework/index";
+import { Component as FrameworkModuleFind } from "./framework-module-find";
+import { Component as FrameworkModuleSlug } from "./framework-module-slug";
 import { Component as Privacy } from "./privacy/index";
 import { Component as RbacModuleSubjectMeAuthenticationRegistrationAiChat } from "./rbac-module-subject-me-authentication-registration-ai-chat/index";
 import { Component as RbacModuleSubjectMeAuthenticationResetPassword } from "./rbac-module-subject-me-authentication-reset-password/index";
@@ -56,12 +62,18 @@ export const variants = {
   "ai-chat": AiChat,
   "ai-chat-help": AiChatHelp,
   "blog-module-article-find": BlogModuleArticleFind,
+  "blog-module-article-private-slug": BlogModuleArticlePrivateSlug,
   "blog-module-article-slug": BlogModuleArticleSlug,
+  "blog-module-category-slug": BlogModuleCategorySlug,
   composition: Composition,
   default: Default,
+  "ecommerce-module-category-slug": EcommerceModuleCategorySlug,
   "ecommerce-module-product-find": EcommerceModuleProductFind,
+  "ecommerce-module-token-find": EcommerceModuleTokenFind,
   "ecommerce-module-product-slug": EcommerceModuleProductSlug,
-  list: List,
+  framework: Framework,
+  "framework-module-find": FrameworkModuleFind,
+  "framework-module-slug": FrameworkModuleSlug,
   privacy: Privacy,
   "rbac-module-subject-me-authentication-registration-ai-chat":
     RbacModuleSubjectMeAuthenticationRegistrationAiChat,

@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "efaea174-976e-4917-8cbc-904e0fc79dc0",
+  "createdAt": "2026-10-26T00:12:46.482Z",
+  "updatedAt": "2026-10-27T15:00:01.462Z",
+  "variant": "context-result",
+  "title": {
+    "en": "3. Update the published project",
+    "ru": "3. Обновите опубликованный проект"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Review the new page and ask the AI assistant to publish the changes. They will appear on your website. Continue developing the project through the same chat.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Посмотрите новую страницу и попросите ИИ-помощника опубликовать изменения. Они появятся на вашем сайте. Продолжайте дорабатывать проект через тот же чат.\"}]}]}"
+  },
+  "adminTitle": "3. Обновите опубликованный проект",
+  "slug": "framework-reviewed-context-publish"
+}

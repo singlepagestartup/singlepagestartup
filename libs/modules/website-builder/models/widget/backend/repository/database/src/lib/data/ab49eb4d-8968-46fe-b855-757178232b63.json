@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Two employees view enquiries",
+    "ru": "Два сотрудника смотрят заявки"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"One administrator changes an enquiry. Another, whose list is already open, receives a change event. The interface requests current data within that person's access permissions.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Connect updates to a particular list or screen. An event does not grant access to someone else's data: the interface must fetch permitted records again. An email message is a separate notification workflow.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Один администратор меняет данные заявки. Другому, у которого список уже открыт, приходит событие об изменении. Интерфейс запрашивает актуальные данные с учётом его доступа.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Нужно подключить обновления к конкретному списку или экрану. Событие не предоставляет доступ к чужим данным: интерфейс должен заново получить разрешённые записи. Сообщение на почту — отдельный сценарий уведомлений.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "ab49eb4d-8968-46fe-b855-757178232b63",
+  "createdAt": "2026-10-26T00:12:10.817Z",
+  "updatedAt": "2026-10-27T14:59:12.328Z",
+  "variant": "content-rich",
+  "adminTitle": "Два сотрудника смотрят заявки",
+  "slug": "framework-reviewed-article-broadcast-example"
+}

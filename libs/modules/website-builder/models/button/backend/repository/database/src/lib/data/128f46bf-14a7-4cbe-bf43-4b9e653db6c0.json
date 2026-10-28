@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Explore Code Framework",
+    "ru": "Изучить Code Framework"
+  },
+  "subtitle": {},
+  "url": "/framework",
+  "className": "w-fit",
+  "id": "128f46bf-14a7-4cbe-bf43-4b9e653db6c0",
+  "createdAt": "2026-10-24T01:06:17.734Z",
+  "updatedAt": "2026-10-24T01:06:17.734Z",
+  "variant": "secondary",
+  "adminTitle": "Explore Code Framework",
+  "slug": "framework-journey-tokens-introduction-actions-1"
+}

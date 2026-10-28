@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "15eb6317-7fa5-438b-bbb0-3d18b4e5d610",
+  "createdAt": "2026-10-24T01:06:04.001Z",
+  "updatedAt": "2026-10-24T01:06:04.001Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Billing",
+    "ru": "Billing"
+  },
+  "subtitle": {
+    "en": "Business",
+    "ru": "Бизнес"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Currencies, payment intents, invoices and payment-provider state.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Валюты, платежные намерения, счета и состояние платежных провайдеров.\"}]}]}"
+  },
+  "adminTitle": "Billing",
+  "slug": "framework-journey-module-billing"
+}

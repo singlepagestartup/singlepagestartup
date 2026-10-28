@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Work with Broadcast.",
+    "ru": "Работайте с Broadcast."
+  },
+  "subtitle": {
+    "en": "Foundation",
+    "ru": "Основа"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Channels and messages for realtime or queued delivery.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Каналы и сообщения для realtime или доставки через очередь.\"}]}]}"
+  },
+  "anchor": "module-broadcast",
+  "className": "@5xl:grid-cols-2",
+  "id": "d6a73efb-83c6-45c6-8182-1f2665927e0c",
+  "createdAt": "2026-10-24T01:06:12.284Z",
+  "updatedAt": "2026-10-24T01:06:12.284Z",
+  "variant": "content-definition-grid-page",
+  "adminTitle": "Work with Broadcast.",
+  "slug": "framework-journey-guide-broadcast-overview"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "c52d3b6e-ac57-48d9-bc32-e1aaa25e82f1",
+  "createdAt": "2026-10-24T01:06:13.325Z",
+  "updatedAt": "2026-10-24T01:06:13.325Z",
+  "variant": "default",
+  "className": "w-full",
+  "title": {
+    "en": "Actions",
+    "ru": "Действия"
+  },
+  "description": {},
+  "adminTitle": "Actions",
+  "slug": "framework-journey-module-analytic-actions"
+}

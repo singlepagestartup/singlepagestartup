@@ -38,10 +38,46 @@ products:
             children:
               - id: landing
                 title: Landing page
-                route: /
+                route: /framework
                 representations:
                   text: singlepagestartup/website/page.md
                   preview: singlepagestartup/website/Landing.tsx
+              - id: modules
+                title: Modules
+                route: /framework/modules
+                representations:
+                  text: singlepagestartup/website/Modules/page.md
+                  preview: singlepagestartup/website/Modules/index.tsx
+              - id: module-guide
+                title: Module guide
+                route: /framework/modules/[slug]
+                representations:
+                  text: singlepagestartup/website/Modules/page.md
+                  preview: singlepagestartup/website/Modules/Guide.tsx
+              - id: blog
+                title: Blog
+                route: /blog
+                representations:
+                  text: singlepagestartup/website/Blog/list.md
+                  preview: singlepagestartup/website/Blog/index.tsx
+              - id: blog-category
+                title: Blog category
+                route: /blog/categories/[slug]
+                representations:
+                  text: singlepagestartup/website/Blog/category.md
+                  preview: singlepagestartup/website/Blog/Category.tsx
+              - id: blog-article
+                title: Article
+                route: /blog/articles/[slug]
+                representations:
+                  text: singlepagestartup/website/Blog/article.md
+                  preview: singlepagestartup/website/Blog/Article.tsx
+              - id: tokens
+                title: Plans and tokens
+                route: /ecommerce
+                representations:
+                  text: singlepagestartup/website/Tokens/page.md
+                  preview: singlepagestartup/website/Tokens/index.tsx
       - id: creative
         title: Marketing Creative
         pages:
@@ -98,12 +134,12 @@ products:
               preview: singlepagestartup/content/Guide.tsx
   - id: ai-chat
     name: AI Chat
-    summary: Describe your project or upload notes, documents and images. Review
-      short Request, Strategy, Brand and Design texts, plus separate Products
-      with their own sections. Correct shortcomings the AI agent identifies,
-      accept and freely export the documents or continue in chat from the saved
-      project. Landing-page creation and paid server deployment belong to later
-      development.
+    summary: Опишите проект или загрузите заметки, документы и изображения.
+      Подготовьте с ИИ-помощником бриф, стратегию, бренд, дизайн и отдельные
+      описания продуктов. Уточняйте сведения, редактируйте документы,
+      скачивайте их и используйте сохранённые знания в новых обсуждениях.
+      Создание посадочных страниц и платный запуск на сервере относятся
+      к будущим возможностям.
     research: ai-chat/research.md
     analytics: ai-chat/analytics.md
     sales: ai-chat/sales.yaml
@@ -132,25 +168,25 @@ products:
             title: Pages
             children:
               - id: landing
-                title: Landing page
-                route: /ai-chat/
+                title: Главная страница
+                route: /
                 representations:
                   text: ai-chat/website/page.md
                   preview: ai-chat/website/Landing.tsx
               - id: register
-                title: Create account
+                title: Регистрация
                 route: /ai-chat/rbac/subjects/authentication/registration
                 representations:
                   text: ai-chat/website/register.md
                   preview: ai-chat/website/Register.tsx
               - id: login
-                title: Sign in
+                title: Вход
                 route: /ai-chat/rbac/subjects/authentication/select-method
                 representations:
                   text: ai-chat/website/login.md
                   preview: ai-chat/website/Login.tsx
               - id: project-workspace
-                title: Project chat
+                title: Чат проекта
                 route: /ai-chat/social/profiles/[social.profiles.id]
                 uses:
                   - product.ai-chat.page.content.one-hour-setup
@@ -159,19 +195,25 @@ products:
                   text: ai-chat/website/project-workspace.md
                   preview: ai-chat/website/ProjectWorkspace/Screen.tsx
               - id: tokens
-                title: Buy tokens
+                title: Купить токены
                 route: /ai-chat/rbac/subjects/tokens
                 representations:
                   text: ai-chat/website/tokens.md
                   preview: ai-chat/website/Tokens.tsx
+              - id: pro
+                title: Тариф Pro
+                route: /ai-chat/rbac/subjects/subscriptions/pro
+                representations:
+                  text: ai-chat/website/Pro/page.md
+                  preview: ai-chat/website/Pro/index.tsx
               - id: settings
-                title: Settings
+                title: Настройки
                 route: /ai-chat/rbac/subjects/settings
                 representations:
                   text: ai-chat/website/settings.md
                   preview: ai-chat/website/Settings.tsx
               - id: help
-                title: Help
+                title: Помощь
                 route: /ai-chat/help
                 representations:
                   text: ai-chat/website/help.md

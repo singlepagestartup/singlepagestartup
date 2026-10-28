@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "9bbc12f0-2562-4204-8668-4bf6ac2d9cf8",
+  "createdAt": "2026-10-26T00:12:11.883Z",
+  "updatedAt": "2026-10-27T14:59:47.090Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "social",
+    "ru": "social"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Update an open conversation.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Обновляйте открытую переписку.\"}]}]}"
+  },
+  "adminTitle": "social",
+  "slug": "framework-reviewed-article-broadcast-connections-feature-0"
+}

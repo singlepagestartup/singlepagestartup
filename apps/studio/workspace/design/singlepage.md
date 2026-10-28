@@ -4,9 +4,9 @@ confirmation:
 proposal_id: living-focus
 review:
   dependencies:
-    asset-index: eb4181781ae7407c2581216acc813b1c3786cac2ba4e294eff978c7648fbf15f
-    brand: 8dbe5a27b000710a03ca504b7a56040516cfdb9b54be0a95d910ee4506361590
-    brief: 1636c06e5e68d369527a3efb1939e956cd3c559b1a9672b19f7df047fbb6a960
+    asset-index: c36aef0012a41459654a20c2d4236e32c76f1864b63ed24cddd1bd3cd219e446
+    brand: c11095b305b2ccb166e46b5d488d95a74a1c541bcabb4fd22b44ed243e848a73
+    brief: 490a648452b91afd083215d3b2420e6990deedbfcc94442dc30b731613cb3258
 scoped_confirmations:
   preference_profile:
     confirmed: true
@@ -80,8 +80,9 @@ sources:
       - Consistency rules
     supports: Shortened written project and separate product documents, with visible shortcomings,
       user corrections and accepted text for later chat and export; people remain visible in the
-      work. Landing-page assembly and server deployment belong to subsequent development, while
-      reusable functions and human-directed agent work support separate software needs.
+      work. Reviewed or exported business material can brief a coding agent working with the
+      existing free Code Framework on a landing page or product. Automatic assembly, hosted
+      editing and server deployment through AI Chat belong to subsequent development.
     limitation: Editorial images, interface compositions and conceptual diagrams do not prove provider
       integration, deployment speed, market response, useful answers, adoption, implemented
       architecture or successful setup.
@@ -569,7 +570,7 @@ The twelve interface references support neutral work surfaces, explicit states a
 
 **Living Focus** brings people and their work into a clear digital workspace. Close, candid photography carries movement and attention; cool white surfaces and graphite panels give decisions room to stand out. Direct Onest typography keeps the interface readable, while lime marks the next useful action and the current selection.
 
-The same visual language connects supplied materials, shortened written project and product documents, corrections and accepted text for later chat and export. Landing-page assembly and server deployment belong to subsequent development. Photography shows human work; interface captures explain observed product states. Sparse diagrams support explanations of software reuse and human-directed agent work.
+The same visual language connects supplied materials, shortened written project and product documents, corrections and accepted text for later chat and export. Reviewed or exported business material can guide a coding agent's work on a landing page or product using the existing free Code Framework. Automatic landing-page assembly, hosted editing and server deployment through AI Chat belong to subsequent development. Photography shows human work; interface captures explain observed product states. Sparse diagrams support explanations of software reuse and human-directed agent work.
 
 ### Reusable graphic language
 
@@ -863,8 +864,8 @@ Illustration explains reusable functions, product adaptation and human-directed 
 - Keep the reviewed project and each product's written documents as the stable content anchor while the user corrects shortcomings, accepts the text and reuses it in chat or exports it.
 - Reuse recognizable content fragments across states so the relationship remains clear.
 - Reveal research, documents and products when they become relevant; unanswered questions can remain open while the user reviews the draft.
-- Label landing-page assembly and server deployment as subsequent development, separate from the first-stage written documents.
-- Show Code Framework in response to a concrete software need, connecting the intended product to relevant reusable functions and the user's server.
+- Label automatic landing-page assembly, hosted editing and server deployment through AI Chat as future development, separate from the first-stage written documents.
+- Show Code Framework in response to a concrete software need, connecting reviewed or exported business material to the coding-agent task, relevant reusable functions and the user's server.
 
 ### Style master prompt
 

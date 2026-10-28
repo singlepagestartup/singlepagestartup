@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "What you can offer customers",
+    "ru": "Что вы сможете предложить клиентам"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[]}",
+    "ru": "{\"type\":\"doc\",\"content\":[]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "060e94b1-a7a0-4981-b691-04f468d354eb",
+  "createdAt": "2026-10-26T00:12:11.491Z",
+  "updatedAt": "2026-10-27T14:58:45.837Z",
+  "variant": "content-rich",
+  "adminTitle": "Что вы сможете предложить клиентам",
+  "slug": "framework-reviewed-article-broadcast-possibilities"
+}

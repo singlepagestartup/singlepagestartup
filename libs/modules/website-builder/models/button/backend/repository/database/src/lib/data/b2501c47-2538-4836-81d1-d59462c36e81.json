@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Read Knowledge source guide",
+    "ru": "Документация Knowledge"
+  },
+  "subtitle": {},
+  "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/modules/knowledge/README.md",
+  "className": "w-fit",
+  "id": "b2501c47-2538-4836-81d1-d59462c36e81",
+  "createdAt": "2026-10-24T01:06:06.670Z",
+  "updatedAt": "2026-10-24T01:06:06.670Z",
+  "variant": "primary",
+  "adminTitle": "Read Knowledge source guide",
+  "slug": "framework-journey-guide-knowledge-actions-1"
+}

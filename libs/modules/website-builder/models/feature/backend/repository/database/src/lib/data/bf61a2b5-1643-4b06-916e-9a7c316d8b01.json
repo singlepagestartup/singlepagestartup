@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "bf61a2b5-1643-4b06-916e-9a7c316d8b01",
+  "createdAt": "2026-10-26T00:11:57.277Z",
+  "updatedAt": "2026-10-27T14:59:54.152Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Questions to ask after a test",
+    "ru": "Какие вопросы задать после теста"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Ask participants to reconstruct their actions: what they were looking for, where they stopped and what they expected after clicking. Record specific difficulties and check them in the next version.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Попросите участника восстановить свои действия: что он искал, где остановился, чего ожидал после нажатия. Запишите конкретные затруднения и проверьте их в следующей версии.\"}]}]}"
+  },
+  "adminTitle": "Какие вопросы задать после теста",
+  "slug": "framework-reviewed-article-social-profile-articles-feature-1"
+}

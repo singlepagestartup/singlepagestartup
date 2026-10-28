@@ -19,7 +19,12 @@ export function Component(props: IComponentPropsExtended) {
         <Content
           isServer={props.isServer}
           language={props.language}
+          renderAuthor={props.renderAuthor}
+          renderAuthorCard={props.renderAuthorCard}
+          renderCommentsContent={props.renderCommentsContent}
+          renderNavigation={props.renderNavigation}
           articleSlug={props.articleSlug}
+          renderContent={props.renderContent}
           renderPrivateContent={props.renderPrivateContent}
         />
       )}

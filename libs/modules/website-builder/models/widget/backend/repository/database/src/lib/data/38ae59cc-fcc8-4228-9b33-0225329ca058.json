@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Prepare the environment",
+    "ru": "Подготовьте окружение"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Check the Node.js and npm versions in \"},{\"type\":\"text\",\"text\":\"package.json\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\", confirm that Bun is installed and Docker is running. \"},{\"type\":\"text\",\"text\":\"npm install\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" installs dependencies. The \"},{\"type\":\"text\",\"text\":\"./up.sh\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" script prepares environment files, starts infrastructure and applies API migrations. Then start \"},{\"type\":\"text\",\"text\":\"npm run api:dev\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" and \"},{\"type\":\"text\",\"text\":\"npm run host:dev\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\".\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Check database, Redis and API availability separately. If Host opens a page but data does not load, first identify the API address and response. Do not replace a failed request with a static object in the component.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Проверьте версии Node.js и npm в \"},{\"type\":\"text\",\"text\":\"package.json\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\", наличие Bun и запущенного Docker. \"},{\"type\":\"text\",\"text\":\"npm install\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" устанавливает зависимости. Скрипт \"},{\"type\":\"text\",\"text\":\"./up.sh\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" подготавливает env-файлы, запускает инфраструктуру и применяет миграции API. Затем запускаются \"},{\"type\":\"text\",\"text\":\"npm run api:dev\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" и \"},{\"type\":\"text\",\"text\":\"npm run host:dev\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\".\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Проверяйте доступность базы, Redis и API отдельно. Если Host открыл страницу, но данные не загружаются, сначала определите адрес и ответ API. Не подменяйте неработающий запрос статическим объектом в компоненте.\"}]}]}"
+  },
+  "anchor": "ru-section-nx-bun-docker-and-generated-migrations-1",
+  "className": "",
+  "id": "38ae59cc-fcc8-4228-9b33-0225329ca058",
+  "createdAt": "2026-10-26T07:33:59.903Z",
+  "updatedAt": "2026-10-27T14:58:55.339Z",
+  "variant": "content-rich",
+  "adminTitle": "Подготовьте окружение",
+  "slug": "ru-section-nx-bun-docker-and-generated-migrations-1"
+}

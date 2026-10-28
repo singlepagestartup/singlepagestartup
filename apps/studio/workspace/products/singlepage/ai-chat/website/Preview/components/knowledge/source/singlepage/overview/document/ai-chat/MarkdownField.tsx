@@ -174,7 +174,7 @@ export const MarkdownField = memo(function MarkdownField({
           {onHelp && (
             <button
               type="button"
-              aria-label={helpLabel ?? `About ${section}`}
+              aria-label={helpLabel ?? `О помощнике ${section}`}
               aria-haspopup="dialog"
               onClick={(event) => onHelp(event.currentTarget, section)}
               className={`inline-flex shrink-0 items-center justify-center rounded p-0.5 text-[color:var(--workspace-brand-muted)] hover:text-[color:var(--workspace-brand-foreground)] focus:outline-none ${kit.focus}`}
@@ -185,14 +185,14 @@ export const MarkdownField = memo(function MarkdownField({
         </div>
         <div
           role="group"
-          aria-label={`${label} display`}
+          aria-label={`${label} — вид документа`}
           className="flex rounded-lg bg-[color:var(--workspace-brand-background)] p-1"
         >
           {(["editor", "preview"] as const).map((option) => (
             <button
               key={option}
               type="button"
-              aria-label={`${label}: ${option === "editor" ? "Editor" : "Preview"}`}
+              aria-label={`${label}: ${option === "editor" ? "Редактор" : "Предпросмотр"}`}
               aria-pressed={mode === option}
               aria-controls={option === "editor" ? id : `${id}-preview`}
               onClick={() => {
@@ -203,7 +203,7 @@ export const MarkdownField = memo(function MarkdownField({
               }}
               className={`min-h-7 rounded-md px-2 text-xs font-semibold ${kit.focus} ${mode === option ? "bg-[color:var(--workspace-brand-surface)] text-[color:var(--workspace-brand-foreground)]" : kit.muted}`}
             >
-              {option === "editor" ? "Editor" : "Preview"}
+              {option === "editor" ? "Редактор" : "Предпросмотр"}
             </button>
           ))}
         </div>
@@ -223,7 +223,7 @@ export const MarkdownField = memo(function MarkdownField({
         <div
           id={`${id}-preview`}
           role="region"
-          aria-label={`${label} preview`}
+          aria-label={`${label} — предпросмотр`}
           className="min-h-32 min-w-0 rounded-xl border border-[color:var(--workspace-brand-line)] px-3 py-2"
         >
           {value.trim() ? (

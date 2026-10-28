@@ -14,7 +14,10 @@ import {
 import { ProjectProvider } from "./components/social/profile/singlepage/scope/ai-chat/project/Profile";
 import { NavigationProvider } from "./components/host/layout/singlepage/ai-chat-landing/Navigation";
 import { aiChatAccount } from "./components/rbac/subject/singlepage/account/fixture";
-import { aiChatWorkspaceFixture } from "./components/social/profile/singlepage/scope/ai-chat/project/fixtures";
+import {
+  aiChatSourceFixture,
+  aiChatWorkspaceFixture,
+} from "./components/social/profile/singlepage/scope/ai-chat/project/fixtures";
 import {
   resolveAIChatRoute,
   aiChatProfileHref,
@@ -23,6 +26,7 @@ import {
 } from "./components/host/layout/singlepage/ai-chat-landing/routes";
 import type { IAIChatServicePageContent } from "./components/website-builder/widget/singlepage/content/ai-chat/content";
 export interface IAIChatPreviewProps {
+  embedded?: boolean;
   loginCopy?: IAIChatServicePageContent;
   initialHref?: string;
   account?: IAIChatAccount;
@@ -62,12 +66,14 @@ function ProfilePage({ route }: { route: IAIChatRoute }) {
 function Pages({
   route,
   loginCopy,
+  embedded,
 }: {
+  embedded?: boolean;
   route: IAIChatRoute | undefined;
   loginCopy?: IAIChatServicePageContent;
 }) {
   const { projects } = useProfiles();
-  if (!route) return <main role="status">Page unavailable.</main>;
+  if (!route) return <main role="status">Страница недоступна.</main>;
   const serviceVariant = servicePages[route.page as keyof typeof servicePages];
   const available = projects.some((profile) => profile.id === route.profileId);
   return (
@@ -83,7 +89,12 @@ function Pages({
       )}
       {route.profileId && !available && <ProfilePage route={route} />}
       {projects.map((profile) => (
-        <ProjectProvider key={profile.id} profileId={profile.id}>
+        <ProjectProvider
+          key={profile.id}
+          profileId={profile.id}
+          initialSource={embedded ? aiChatSourceFixture().source : undefined}
+          initialFiles={embedded ? aiChatSourceFixture().files : undefined}
+        >
           {profile.id === route.profileId ? (
             <ProfilePage route={route} />
           ) : null}
@@ -94,6 +105,7 @@ function Pages({
 }
 export function AIChatPreview({
   loginCopy,
+  embedded = false,
   initialHref = "/ai-chat/",
   account = aiChatAccount,
   profiles = aiChatWorkspaceFixture(),
@@ -146,9 +158,13 @@ export function AIChatPreview({
       }
     >
       <ProfilesProvider {...profiles}>
-        <NavigationProvider navigate={navigate}>
+        <NavigationProvider navigate={navigate} embedded={embedded}>
           <div onClick={followLink} data-preview-href={href}>
-            <Pages route={resolveAIChatRoute(href)} loginCopy={loginCopy} />
+            <Pages
+              route={resolveAIChatRoute(href)}
+              loginCopy={loginCopy}
+              embedded={embedded}
+            />
           </div>
         </NavigationProvider>
       </ProfilesProvider>

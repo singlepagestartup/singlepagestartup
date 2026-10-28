@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 export const variant = "content-faq";
 
 export interface ContentFaqItem {
@@ -8,7 +10,7 @@ export interface ContentFaqItem {
 export type ContentFaqProps = {
   eyebrow: string;
   title: string;
-  description: string;
+  description: ReactNode;
   contactHref: string;
   faq: { q: string; a: string }[];
 };
@@ -19,6 +21,12 @@ type IVariantInputs = NonNullable<
 
 export interface IComponentProps extends Omit<IVariantInputs, "variant"> {
   variant?: "content-faq";
+  appearance?: "default" | "plain";
+  id?: string;
+  aside?: ReactNode;
+  actions?: ReactNode;
+  questionsTitle?: string;
+  children?: ReactNode;
 }
 
 export interface IComponentPropsExtended extends IComponentProps {}

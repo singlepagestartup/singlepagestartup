@@ -3,10 +3,16 @@ import Link from "next/link";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { Icon } from "@sps/ui-adapter";
 import type { IClientComponentProps } from "./interface";
+import { internationalization } from "@sps/shared-configuration";
 
 export function Component(props: IClientComponentProps) {
+  const language = props.language || internationalization.defaultLanguage.code;
+  const ru = language === "ru";
   const title =
-    props.data?.title?.en || props.data?.adminTitle || "Select project";
+    props.data?.title?.[language] ||
+    props.data?.title?.en ||
+    props.data?.adminTitle ||
+    (ru ? "Выберите проект" : "Select project");
   const buttonClassName =
     "inline-flex min-h-11 max-w-60 items-center gap-2 rounded-xl px-3 text-sm text-muted-foreground hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
   if (props.error)
@@ -15,11 +21,11 @@ export function Component(props: IClientComponentProps) {
         <DropdownMenu.Trigger asChild>
           <button
             type="button"
-            aria-label="Projects unavailable"
+            aria-label={ru ? "Проекты недоступны" : "Projects unavailable"}
             className={buttonClassName}
           >
             <Icon name="folder-open" />
-            <span>Projects unavailable</span>
+            <span>{ru ? "Проекты недоступны" : "Projects unavailable"}</span>
             <span
               aria-hidden="true"
               className="size-1.5 shrink-0 rounded-full bg-destructive"
@@ -35,9 +41,15 @@ export function Component(props: IClientComponentProps) {
             className="z-50 w-64 max-w-[calc(100vw-24px)] rounded-xl border border-border bg-card p-3 text-foreground shadow-lg font-default"
           >
             <div role="alert" className="space-y-2 p-1 text-sm">
-              <p className="font-semibold">Couldn't load your projects.</p>
+              <p className="font-semibold">
+                {ru
+                  ? "Не удалось загрузить проекты."
+                  : "Couldn't load your projects."}
+              </p>
               <p className="text-muted-foreground">
-                Try again to reconnect to your workspace.
+                {ru
+                  ? "Повторите попытку, чтобы вернуться к рабочему пространству."
+                  : "Try again to reconnect to your workspace."}
               </p>
             </div>
             <DropdownMenu.Item asChild>
@@ -46,7 +58,7 @@ export function Component(props: IClientComponentProps) {
                 onClick={props.onRetry}
                 className="mt-3 min-h-11 w-full rounded-lg border border-border px-3 text-sm font-semibold outline-none hover:bg-muted data-highlighted:bg-muted"
               >
-                Try again
+                {ru ? "Повторить" : "Try again"}
               </button>
             </DropdownMenu.Item>
           </DropdownMenu.Content>
@@ -57,7 +69,7 @@ export function Component(props: IClientComponentProps) {
     return (
       <div
         role="status"
-        aria-label="Loading projects"
+        aria-label={ru ? "Загрузка проектов" : "Loading projects"}
         aria-busy="true"
         className={buttonClassName}
       >
@@ -66,14 +78,16 @@ export function Component(props: IClientComponentProps) {
           aria-hidden="true"
           className="h-4 w-24 rounded bg-border motion-safe:animate-pulse"
         />
-        <span className="sr-only">Loading projects…</span>
+        <span className="sr-only">
+          {ru ? "Загрузка проектов…" : "Loading projects…"}
+        </span>
       </div>
     );
   if (props.empty)
     return (
       <Link href={props.createHref} className={buttonClassName}>
         <Icon name="plus" />
-        Create project
+        {ru ? "Создать проект" : "Create project"}
       </Link>
     );
   return (
@@ -81,7 +95,7 @@ export function Component(props: IClientComponentProps) {
       <DropdownMenu.Trigger asChild>
         <button
           type="button"
-          aria-label="Project"
+          aria-label={ru ? "Проект" : "Project"}
           className={buttonClassName}
           data-module="social"
           data-model="profile"
@@ -105,14 +119,14 @@ export function Component(props: IClientComponentProps) {
           data-variant={props.variant}
         >
           <DropdownMenu.Label className="px-3 py-2 text-xs font-semibold text-muted-foreground">
-            Projects
+            {ru ? "Проекты" : "Projects"}
           </DropdownMenu.Label>
           {props.pending ? (
             <p
               role="status"
               className="px-3 py-2 text-sm text-muted-foreground"
             >
-              Loading projects…
+              {ru ? "Загрузка проектов…" : "Loading projects…"}
             </p>
           ) : (
             props.children
@@ -124,7 +138,8 @@ export function Component(props: IClientComponentProps) {
               className="flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-sm outline-none data-highlighted:bg-muted"
             >
               <Icon name="plus" />
-              New project
+
+              {ru ? "Новый проект" : "New project"}
             </Link>
           </DropdownMenu.Item>
         </DropdownMenu.Content>

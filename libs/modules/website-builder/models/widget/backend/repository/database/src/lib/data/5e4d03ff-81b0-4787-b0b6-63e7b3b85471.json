@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Turn your business brief into a product.",
+    "ru": "Превратите описание бизнеса в продукт."
+  },
+  "subtitle": {
+    "en": "Code Framework · Free code",
+    "ru": "Code Framework · Бесплатный код"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Prepare the decisions behind your business, then build with a coding agent. Reuse accounts, content, orders and payments while you shape your own product.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Bring an existing brief or prepare one in AI Chat. The framework code is free under MIT; coding tools, hosting and AI Chat have separate costs.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Подготовьте решения для своего бизнеса, затем разрабатывайте продукт с coding agent. Используйте готовые аккаунты, контент, заказы и платежи, добавляя правила своего продукта.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Используйте готовый бриф или подготовьте его в AI-чате. Код фреймворка доступен по MIT; coding tools, хостинг и AI-чат оплачиваются отдельно.\"}]}]}"
+  },
+  "anchor": "framework-introduction",
+  "className": "",
+  "id": "5e4d03ff-81b0-4787-b0b6-63e7b3b85471",
+  "createdAt": "2026-10-24T01:05:45.187Z",
+  "updatedAt": "2026-10-24T01:05:45.187Z",
+  "variant": "content-hero",
+  "adminTitle": "Turn your business brief into a product.",
+  "slug": "framework-journey-hero"
+}

@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Launch your project today and start showing it to customers",
+    "ru": "Запустите проект уже сегодня и начните показывать его клиентам"
+  },
+  "subtitle": {
+    "en": "Start with your idea",
+    "ru": "Начните со своей идеи"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Describe what you want to offer customers. Choose features with the AI assistant, review the first version and publish it through chat.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Опишите, что хотите предложить клиентам. Вместе с ИИ-помощником выберите функции, посмотрите первую версию и опубликуйте её через чат.\"}]}]}"
+  },
+  "anchor": "cf-handoff",
+  "className": "",
+  "id": "1745300b-c422-4399-9683-8fcdbf3425d7",
+  "createdAt": "2026-10-26T00:12:48.999Z",
+  "updatedAt": "2026-10-27T14:58:49.173Z",
+  "variant": "content-cta",
+  "adminTitle": "Запустите проект уже сегодня и начните показывать его клиентам",
+  "slug": "framework-reviewed-cta"
+}

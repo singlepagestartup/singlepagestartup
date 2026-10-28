@@ -1,4 +1,5 @@
 "use client";
+import { internationalization } from "@sps/shared-configuration";
 import { useCallback, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -8,6 +9,8 @@ import { api as subjectApi } from "@sps/rbac/models/subject/sdk/client";
 import { projectHref } from "@sps/rbac/models/subject/sdk/model";
 import type { IClientComponentProps } from "./interface";
 export function Component(props: IClientComponentProps) {
+  const language = props.language || internationalization.defaultLanguage.code;
+  const ru = language === "ru";
   const router = useRouter();
   const pathname = usePathname();
   const { project } = props;
@@ -38,30 +41,42 @@ export function Component(props: IClientComponentProps) {
         );
       } catch (error) {
         setError(
-          error instanceof Error ? error.message : "Thread creation failed",
+          error instanceof Error
+            ? error.message
+            : ru
+              ? "Не удалось создать обсуждение"
+              : "Thread creation failed",
         );
       } finally {
         submitting.current = false;
       }
     },
-    [name, create.mutateAsync, props.data.id, project, router, pathname],
+    [name, create.mutateAsync, props.data.id, project, router, pathname, ru],
   );
   return (
     <div className="min-w-0 flex-1">
       <header className="border-b border-border p-5">
-        <p className="text-xs text-muted-foreground">Thread</p>
-        <h1 className="mt-1 text-base font-semibold">New thread</h1>
+        <p className="text-xs text-muted-foreground">
+          {ru ? "Обсуждение" : "Thread"}
+        </p>
+        <h1 className="mt-1 text-base font-semibold">
+          {ru ? "Новое обсуждение" : "New thread"}
+        </h1>
       </header>
       <form className="mx-auto grid max-w-xl gap-4 px-5 py-8" onSubmit={submit}>
         <p className="mb-1 text-sm leading-6 text-muted-foreground">
-          Give this thread a name.
+          {ru ? "Дайте обсуждению название." : "Give this thread a name."}
         </p>
         <label className="grid gap-3 text-sm font-semibold">
-          Thread name
+          {ru ? "Название обсуждения" : "Thread name"}
           <input
             value={name}
             onChange={(event) => setName(event.target.value)}
-            placeholder="What do you want to work on?"
+            placeholder={
+              ru
+                ? "Какую задачу хотите обсудить?"
+                : "What do you want to work on?"
+            }
             className="min-h-12 rounded-xl border border-border px-4 font-normal"
             required
             maxLength={200}
@@ -73,13 +88,19 @@ export function Component(props: IClientComponentProps) {
             className="flex min-h-11 items-center gap-2 rounded-xl bg-primary text-primary-foreground px-5 text-sm font-semibold disabled:opacity-50"
           >
             <MessageCircle className="size-4" />
-            {create.isPending ? "Creating…" : "Create thread"}
+            {create.isPending
+              ? ru
+                ? "Создаём…"
+                : "Creating…"
+              : ru
+                ? "Создать обсуждение"
+                : "Create thread"}
           </button>
           <Link
             href={getLocalizedHref(pathname, projectHref(project))}
             className="inline-flex min-h-11 items-center rounded-xl border border-border px-5 text-sm font-semibold"
           >
-            Cancel
+            {ru ? "Отмена" : "Cancel"}
           </Link>
         </div>
         {error && (

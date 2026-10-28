@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Contact",
+    "ru": "Связаться"
+  },
+  "subtitle": {},
+  "url": "/framework#contact",
+  "className": "w-fit",
+  "id": "aab1b3ec-6278-4168-94aa-5913306d65df",
+  "createdAt": "2026-10-23T20:18:03.804Z",
+  "updatedAt": "2026-10-23T20:18:03.804Z",
+  "variant": "ghost",
+  "adminTitle": "Contact",
+  "slug": "framework-footer-products-contact"
+}

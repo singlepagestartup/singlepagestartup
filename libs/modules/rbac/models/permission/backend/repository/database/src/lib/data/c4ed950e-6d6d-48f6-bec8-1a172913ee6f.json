@@ -1,0 +1,9 @@
+{
+  "id": "c4ed950e-6d6d-48f6-bec8-1a172913ee6f",
+  "createdAt": "2026-10-22T23:51:35.033Z",
+  "updatedAt": "2026-10-22T23:51:35.033Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/blog/categories-to-website-builder-module-widgets"
+}

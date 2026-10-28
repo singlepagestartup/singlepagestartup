@@ -1,14 +1,17 @@
 "use client";
-import { type InputHTMLAttributes as InputHTMLAttributes } from "react";
-import { useId as useId } from "react";
-import { type ReactNode as ReactNode } from "react";
-import { Component as WebsiteBuilderModuleButton } from "../../../../../website-builder/button/index";
 import {
+  type InputHTMLAttributes as InputHTMLAttributes,
+  useId as useId,
+  type ReactNode as ReactNode,
   forwardRef as forwardRefControl,
   type ButtonHTMLAttributes as ButtonControlProps,
+  useState,
 } from "react";
+
+import { Component as WebsiteBuilderModuleButton } from "../../../../../website-builder/button/index";
+
 import IconGlyphs from "../../../../../website-builder/feature/singlepage/icon/icons.json";
-import { useState } from "react";
+
 interface IFeedbackProps {
   children: ReactNode;
   kind?: "success" | "error" | "info";
@@ -134,10 +137,10 @@ export function Component({ chatId, cancelHref }: IThreadCreateProps) {
       className="mx-auto grid w-full max-w-xl gap-5 overflow-y-auto p-5 @[640px]:p-8"
     >
       <p className={`text-sm leading-6 ${kit.muted}`}>
-        Give this thread a name.
+        Укажите название обсуждения.
       </p>
       <TextField
-        label="Thread name"
+        label="Название обсуждения"
         value={title}
         onChange={(event) => {
           setTitle(event.target.value);
@@ -145,21 +148,25 @@ export function Component({ chatId, cancelHref }: IThreadCreateProps) {
         }}
         required
         maxLength={100}
-        placeholder="What do you want to work on?"
+        placeholder="Над чем хотите поработать?"
       />
       <div className="flex flex-wrap gap-3">
         <Button type="submit" disabled={!title.trim()}>
           <Icon name="chat-circle" />
-          Create thread
+          Создать обсуждение
         </Button>
         <a
           href={cancelHref}
           className={`inline-flex min-h-11 items-center rounded-xl border border-[color:var(--workspace-brand-line)] px-5 text-sm font-semibold ${kit.focus}`}
         >
-          Cancel
+          Отмена
         </a>
       </div>
-      {previewed && <Feedback>Preview only. No thread was created.</Feedback>}
+      {previewed && (
+        <Feedback>
+          Это предварительный просмотр. Обсуждение на сервере не создано.
+        </Feedback>
+      )}
     </form>
   );
 }

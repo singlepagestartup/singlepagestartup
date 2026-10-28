@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "f105aab6-3410-45a4-8400-b2a6dbf3000d",
+  "createdAt": "2026-10-26T00:11:53.107Z",
+  "updatedAt": "2026-10-27T15:00:01.703Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Action",
+    "ru": "Action"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"An event record with data and expiry. In AI Chat, it can hold a prepared view of the assistant's work, such as knowledge lookups. Execution rules remain in the coordinating module.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Запись события с данными и сроком действия. В AI Chat может хранить подготовленное представление работы помощника — например, обращения к знаниям. Правила выполнения остаются в управляющем модуле.\"}]}]}"
+  },
+  "adminTitle": "Action",
+  "slug": "framework-reviewed-article-social-models-feature-3"
+}

@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Check boundaries one at a time",
+    "ru": "Проверяйте границы по очереди"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Distinguish infrastructure readiness, applied schema, API response and Host rendering. The Host wrapper disables experimental Node web storage in the child process so browser SDK detection matches the SSR environment. Preserve this behaviour when comparing dev and production start.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"A generated migration is a file to review; an applied migration is database state. A TypeScript field does not prove the running database has that column. An updated database does not prove the API loaded the new implementation. State which processes and route were checked so the result can be reproduced.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Разделяйте готовность инфраструктуры, применённую схему, ответ API и рендеринг Host. Обёртка Host отключает экспериментальный web storage Node для дочернего процесса, чтобы определение браузерного SDK при серверном рендеринге соответствовало среде. Сохраняйте это поведение при сравнении dev и production start.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Созданная миграция — файл для проверки, применённая миграция — состояние базы. Видимое TypeScript-поле не доказывает наличие столбца в запущенной базе. Обновлённая база не доказывает, что API загрузил новую реализацию. Укажите проверенные процессы и маршрут, чтобы результат можно было повторить.\"}]}]}"
+  },
+  "anchor": "ru-section-nx-bun-docker-and-generated-migrations-7",
+  "className": "",
+  "id": "bcd2bf76-3fe3-4c8e-bcc8-b60a97ae844e",
+  "createdAt": "2026-10-26T07:34:00.289Z",
+  "updatedAt": "2026-10-27T14:59:15.297Z",
+  "variant": "content-rich",
+  "adminTitle": "Проверяйте границы по очереди",
+  "slug": "ru-section-nx-bun-docker-and-generated-migrations-7"
+}

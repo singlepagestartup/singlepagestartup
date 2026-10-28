@@ -21,6 +21,10 @@ export const options = {
   },
 } as NextRequestOptions;
 export const variants = [
+  "content-collection",
+  "content-form",
+  "content-hero",
+  "content-feature-find-card",
   "content-social-chat-default",
   "content-ecommerce-default",
   "content-ai-chat-authentication",

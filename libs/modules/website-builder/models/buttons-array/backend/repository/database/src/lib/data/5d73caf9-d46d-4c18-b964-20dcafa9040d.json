@@ -1,0 +1,14 @@
+{
+  "id": "5d73caf9-d46d-4c18-b964-20dcafa9040d",
+  "createdAt": "2026-10-27T08:55:53.113Z",
+  "updatedAt": "2026-10-27T15:00:19.209Z",
+  "variant": "navigation-inline",
+  "className": "",
+  "title": {
+    "en": "Cannot sign in?",
+    "ru": "Не получается войти?"
+  },
+  "description": {},
+  "adminTitle": "content-ai-chat-authentication-links",
+  "slug": "ai-chat-editable-content-ai-chat-authentication-links"
+}

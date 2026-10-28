@@ -1,4 +1,5 @@
 "use client";
+import { internationalization } from "@sps/shared-configuration";
 import { memo } from "react";
 import { Component as OrdersToFileStorageModuleFiles } from "@sps/ecommerce/relations/orders-to-file-storage-module-files/frontend/component";
 import { Component as FileStorageModuleFile } from "@sps/file-storage/models/file/frontend/component";
@@ -6,7 +7,8 @@ import { Icon } from "@sps/ui-adapter";
 import { NEXT_PUBLIC_API_SERVICE_URL } from "@sps/shared-utils";
 import type { IComponentPropsExtended, IReceiptProps } from "./interface";
 
-function Receipt({ file }: IReceiptProps) {
+function Receipt({ file, language }: IReceiptProps) {
+  const ru = language === "ru";
   const className =
     "inline-flex min-h-11 items-center gap-2 rounded-xl border border-border px-4 text-sm font-medium";
   return file ? (
@@ -19,16 +21,16 @@ function Receipt({ file }: IReceiptProps) {
           : `${NEXT_PUBLIC_API_SERVICE_URL}/public${file.file}`
       }
     >
-      <Icon name="file-text" /> Receipt
+      <Icon name="file-text" /> {ru ? "Чек" : "Receipt"}
     </a>
   ) : (
     <button
       type="button"
       disabled
-      title="Receipt is not available yet."
+      title={ru ? "Чек пока недоступен." : "Receipt is not available yet."}
       className={className}
     >
-      <Icon name="file-text" /> Receipt
+      <Icon name="file-text" /> {ru ? "Чек" : "Receipt"}
     </button>
   );
 }
@@ -36,6 +38,8 @@ function Receipt({ file }: IReceiptProps) {
 export const Component = memo(function Component(
   props: IComponentPropsExtended,
 ) {
+  const language = props.language || internationalization.defaultLanguage.code;
+  const ru = language === "ru";
   const currencies = new Map<string, { amount: number; label: string }>();
   props.totals?.forEach(({ total, billingModuleCurrency }) => {
     const previous = currencies.get(billingModuleCurrency.id);
@@ -60,9 +64,15 @@ export const Component = memo(function Component(
     >
       <div>
         <p className="text-sm font-semibold">
-          Service purchase{" "}
+          {ru ? "Покупка услуги" : "Service purchase"}{" "}
           <span className="ml-2 inline-flex rounded-full bg-primary/25 px-2 py-1 text-xs font-medium">
-            Paid
+            {props.data.status === "expired"
+              ? ru
+                ? "Срок истёк"
+                : "Expired"
+              : ru
+                ? "Оплачено"
+                : "Paid"}
           </span>
         </p>
         <p className="mt-1 text-xs text-muted-foreground">
@@ -72,17 +82,24 @@ export const Component = memo(function Component(
       <div className="flex flex-wrap items-center gap-4">
         <span className="text-sm font-semibold">
           {props.totalsPending
-            ? "Loading total…"
+            ? ru
+              ? "Загрузка суммы…"
+              : "Loading total…"
             : props.totalsError || !currencies.size
-              ? "Total unavailable"
+              ? ru
+                ? "Сумма недоступна"
+                : "Total unavailable"
               : Array.from(currencies, ([id, value]) => (
                   <span key={id} className="block">
-                    {value.amount.toLocaleString("en-US")} {value.label}
+                    {value.amount.toLocaleString(language)} {value.label}
                   </span>
                 ))}
         </span>
         {props.purchaseDetails || props.dataSource === "props" ? (
-          <Receipt file={props.purchaseDetails?.receipts[0]} />
+          <Receipt
+            language={language}
+            file={props.purchaseDetails?.receipts[0]}
+          />
         ) : (
           <OrdersToFileStorageModuleFiles
             isServer={false}
@@ -124,11 +141,14 @@ export const Component = memo(function Component(
                   }}
                 >
                   {({ data: fileStorageModuleFiles }) => (
-                    <Receipt file={fileStorageModuleFiles?.[0]} />
+                    <Receipt
+                      language={language}
+                      file={fileStorageModuleFiles?.[0]}
+                    />
                   )}
                 </FileStorageModuleFile>
               ) : (
-                <Receipt />
+                <Receipt language={language} />
               )
             }
           </OrdersToFileStorageModuleFiles>

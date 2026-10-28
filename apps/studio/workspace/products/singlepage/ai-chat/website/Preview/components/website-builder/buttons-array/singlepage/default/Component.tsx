@@ -1,5 +1,5 @@
-import { forwardRef as forwardRef } from "react";
-import { type SVGProps as SVGProps } from "react";
+import { forwardRef as forwardRef, type SVGProps as SVGProps } from "react";
+
 import { twMerge as twMerge } from "tailwind-merge";
 import IconGlyphs from "../../../feature/singlepage/icon/icons.json";
 import { Component as WebsiteBuilderModuleButton } from "../../../button/index";
@@ -225,13 +225,13 @@ const ArrowRight = createIcon("arrow-right");
 export const defaultButtonsArrayProps: ButtonsArrayDefaultProps = {
   buttons: [
     {
-      label: "Open admin panel",
+      label: "Открыть панель управления",
       href: "/admin",
       variant: "primary",
       icon: ArrowRight,
     },
     {
-      label: "Learn more",
+      label: "Подробнее",
       href: "#features",
       variant: "secondary",
       icon: Play,
