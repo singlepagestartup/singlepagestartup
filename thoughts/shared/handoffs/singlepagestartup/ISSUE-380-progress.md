@@ -3,7 +3,8 @@ issue_number: 380
 issue_title: SEO сборки страниц
 start_date: 2026-10-28
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-380.md
-status: in_progress
+status: complete
+completed_date: 2026-10-30
 ---
 
 # Implementation progress: ISSUE-380
@@ -25,17 +26,19 @@ status: in_progress
 
 ## Verification
 
-Подробные результаты и перенос: [process](../../processes/singlepagestartup/ISSUE-380.md).
-554 focused tests, один прежний skipped; Host tsc, scoped ESLint, Studio validation,
-module-dependencies. Полная новая БД и upgrade с записями проверены. HTTP-матрица
-содержит 18 маршрутов; sitemap содержит 20 публичных URL. Ошибки API сохраняют 5xx.
+Релиз [0.0.330](https://github.com/singlepagestartup/singlepagestartup/releases/tag/0.0.330), код `8324e42e97`, Host/API подтверждены на сервере. Публичные страницы используют ISR; session reads остаются в клиентских моделях/приватном no-store. Hidden Page/Article/Product/обязательная связь возвращают 404 после прогретого HIT, восстановленные — 200. Проверены все поля и внешние ключи после частичного PATCH.
+
+Финальная ревизия: 281 тест пройден, один прежний skipped; TypeScript в production build; scoped ESLint — 36 файлов без ошибок/предупреждений; module dependencies — 15 494 файла без нарушений. Исходная локальная БД `sps-lite-7` используется API. Транзакционные проверки seed/partial PATCH откатились.
+
+В production 52 ru Page шаблона со связями; маски Metadata статей/товаров, общая и домашняя обложки, H1 статических страниц. Четыре пустые тестовые статьи hidden; Article demo и тестовый Store noindex. Обход: 138 URL, все 200 с canonical/lang/description/OG и одним H1. Lighthouse SEO 100 на пяти URL; Performance 78/43/44/40/36.
+
+Полная [рецензия в issue #380](https://github.com/singlepagestartup/singlepagestartup/issues/380#issuecomment-6514109866) и [локальный документ](../../research/singlepagestartup/ISSUE-380-production-review.md); 18 отчётов приложены к релизу. Серверный PATCH-инцидент и восстановление из версионированных данных описаны там же.
 
 ## Remaining
 
-Реализация `a3694a93a8`, [PR #382](https://github.com/singlepagestartup/singlepagestartup/pull/382).
-Статус #380 подтверждён как Code Review. Production и данные m2commerce.ru не изменены.
-Тестовая среда остановлена и удалена; дальнейший выпуск описан в process.
-Приёмка владельцем интерфейса не отмечена как завершённая.
+[PR #382](https://github.com/singlepagestartup/singlepagestartup/pull/382) передаётся в Code Review. Следующие улучшения вынесены в рецензию: bundle, CLS/изображения, описания/переводы, seed Metadata, Store и аналитика. Фактическое присутствие в Google требует Search Console и переобхода. m2commerce.ru не обновлялся.
+
+Host 3000, API 4000 и Storybook 4321 оставлены работающими. Ветка `codex/studio-linear-workflow` сохранена; посторонние Studio/workflow-файлы не входят в SEO-коммиты. Ниже — история промежуточных инцидентов, включая прежнее временное request rendering; актуальный режим — ISR.
 
 ## Incident Log
 

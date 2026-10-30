@@ -10,10 +10,27 @@ Resolves #380. Work stays on `codex/studio-linear-workflow`; unrelated local Stu
 - Validated JSONB `metadata.seo` on Article/Product/Profile; both admin generations and Studio editors; atomic `_expectedMetadata` conflict checks through API/SDK/MCP. Public Profile SEO uses the Author DTO and UUID routes, exposing only metadata.seo from JSON.
 - Metadata image fields and a generated Metadata→File relation, ordered covers, alt/dimensions and draft preview. Metadata-only File PATCH now updates the existing upload.
 - `hidden` across 61 models and 98 relations, generator support, filtering before count/pagination, true 404 for primary content and separate authorized admin reads.
-- Language-aware Page uniqueness/lookup, `indexing`, canonical, robots, factual JSON-LD and bounded sitemap chunks with 503 on upstream failure.
-- Server-rendered rich text and H1 for article/product content. Product cart/checkout remain session-owned client actions. Request rendering avoids the reproduced ISR fallback 500 and settles route visibility before streaming.
+- Partial-schema repository updates preserve omitted localized/JSON fields and unchanged relation keys, while explicit empty objects still clear the requested field.
+- Language-aware Page uniqueness/lookup/seed reconciliation (including legacy snapshots), `indexing`, canonical, robots, factual JSON-LD and bounded sitemap chunks with 503 on upstream failure.
+- Server-rendered rich text and H1 for article/product content. Product cart/checkout remain session-owned client actions. Public HTML now uses dependency-invalidated ISR. Locale comes from `[language]` route params, the admin route stays dynamic, and a Page document reader resolves existence/SEO before streaming.
 
 ## Verification
+
+Final revision: `8324e42e97`, deployed as [0.0.330](https://github.com/singlepagestartup/singlepagestartup/releases/tag/0.0.330).
+
+- [x] Production build and TypeScript; public catch-all is SSG/ISR and admin is dynamic. CI/CodeQL and release workflow passed.
+- [x] 281 tests passed, one pre-existing skipped: Host 59, Host module 112, URL utilities 28, shared backend API 82 passed. Scoped ESLint: 36 files, 0 errors/warnings; module dependencies: 15,494 files, 0 violations.
+- [x] Original test database: partial-update and localized-seed scenarios in rolled-back transactions; 51 ru Page templates preserved and 51 en templates matched.
+- [x] Local and production HIT → title update → updated HIT → hidden 404 → restore 200. Page, populated Article/Product and required relation preserve all unrelated fields. A public cookie retains the shared HTML/HIT.
+- [x] Local encoded-slash and locale-name paths; warm public 200 HIT during API outage, cold 500 no-store, sitemap 503 no-store with Retry-After.
+- [x] Production crawl: 138 URLs, all 200; canonical/locale/description/OG image and exactly one H1 on every URL; no noindex URLs or invalid JSON-LD in sitemap.
+- [x] Production data: 52 ru Page templates with existing content links, Article/Product Metadata masks, primary/home covers, static page headings and demo noindex policies. Four completely empty test articles remain stored as hidden.
+- [x] Lighthouse 13.6.0 mobile on five URLs: SEO 100 on all; Performance 78/43/44/40/36. Three comparable pages use 3 font requests (~158 KB), down from 22 (~1.19 MB).
+- [x] Browser: local home and production module/article render without application errors. Lighthouse reports external Yandex Webvisor CORS errors on two articles.
+
+[Production review and priorities](https://github.com/singlepagestartup/singlepagestartup/issues/380#issuecomment-6514109866); 18 reports are attached to the release.
+
+Earlier SEO implementation:
 
 - [x] Focused Jest suites: 554 passed; one pre-existing backend test skipped. Covers Host module/app, shared API/components/utils, middleware, MCP, File Storage, TipTap and anonymous product SSR.
 - [x] `tsc -p apps/host/tsconfig.json --noEmit`; scoped ESLint with the repository configuration; `git diff --check`.
@@ -30,11 +47,11 @@ Resolves #380. Work stays on `codex/studio-linear-workflow`; unrelated local Stu
 
 Reconciled current main in the same branch, retaining its Article/Product presentation and public Author API. Added hidden to its three new relations and regenerated consistency capture as 0010. Original local Studio/workflow edits are restored byte-for-byte and remain unstaged.
 
-The diff is broad because every model/relation receives the requested hidden contract. Existing variants and database data snapshots are preserved. The runtime change to request rendering has a performance tradeoff; final local fixture responses were 9–255 ms after reconciliation, which is not a production load benchmark.
+The diff is broad because every model/relation receives the requested hidden contract. Existing variants and database data snapshots are preserved. Public rendering no longer depends on request headers/cookies. Current-Subject controls must stay in client compositions; private reads and previews bypass public caches.
 
-One pre-existing local database has an inconsistent migration baseline; it was not changed. Migration verification used isolated databases. A fresh full API migration currently omits Analytic, so its existing target was run separately for the test environment.
+The original test database is in use. Localized Page templates preserve shared content IDs and do not establish translated content. The production crawl has no missing/multiple H1. Remaining priorities are the 1.72 MB first-load client bundle, article/module layout shifts, 16 URLs using the generic site description, Metadata seed duplication, Store composition and analytics configuration. See the linked review for evidence and proposed scope.
 
-Production m2commerce.ru and its data are unchanged. Existing literal Metadata titles still take priority: deployments must configure real masks, translations and covers. Search reports can only improve after rollout and recrawl. Hreflang, author entity types, publication dates and commerce offers are emitted only when supported; this change does not invent them.
+The authorized test production singlepagestartup.com is updated to 0.0.330. Production m2commerce.ru and its data are unchanged. Existing literal Metadata titles still take priority: deployments must configure real masks, translations and covers. Search reports can only improve after rollout and recrawl. Hreflang, author entity types, publication dates and commerce offers are emitted only when supported; this change does not invent them.
 
 ## Downstream migration
 
@@ -46,4 +63,8 @@ Public author Pages use `[social.profiles.id]`, explicit visible Article/Product
 
 Link real Pages to Metadata, replace shared literals with square masks, populate requested locales and `metadata.seo`, and attach real covers. Preserve unrelated JSON sections and send `_expectedMetadata` for concurrent API/MCP/editor updates. Set public Host/API origins and define a policy for content-changing query parameters.
 
-Verify built anonymous HTML, 404/noindex, images, JSON-LD, sitemap and cache refresh before deployment. Then arrange recrawl separately. Detailed evidence and rollout steps are in `thoughts/shared/processes/singlepagestartup/ISSUE-380.md`.
+Merge localized Host routes/layout and the globalNotFound configuration; render Page documents through the owning model. Keep getSeoCanonicalUrl inputs resolved and unlocalized. Adapt custom Page seed filters to match both URL and language, using the schema default for legacy snapshots and preserving relation IDs. Copy legacy Page templates and their Widget/Layout/Metadata links only for actual intended locales, preserving translations and shared content. Do not add server session reads or a root loading boundary to cached public documents.
+
+Adopt partial-schema repository update validation in owned overrides. Send explicit values for intended resets, audit records previously edited through partial updates for unexpected empty JSON/localized fields, and restore verified revisions through the owning data flow while preserving IDs and relations. Verify variant-only Article/Product/relation PATCH preserves every unrelated field and explicit empty objects affect only the requested field.
+
+Verify built anonymous HTML, MISS/HIT, 404/noindex, images, JSON-LD, sitemap and cache refresh after SDK/direct writes before deployment. Then arrange recrawl separately. Detailed evidence and rollout steps are in `thoughts/shared/processes/singlepagestartup/ISSUE-380.md`.

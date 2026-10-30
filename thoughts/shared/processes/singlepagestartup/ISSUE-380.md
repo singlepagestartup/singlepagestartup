@@ -4,8 +4,9 @@ issue_title: "SEO для сборки страниц Host, блога и кат�
 repository: singlepagestartup
 created_at: 2026-10-28
 last_updated: 2026-10-30
-status: in_progress
-current_phase: implement
+status: complete
+current_phase: complete
+completed_date: 2026-10-30
 ---
 
 # Process log: SEO для сборки страниц
@@ -19,9 +20,19 @@ current_phase: implement
 - Create: completed
 - Research: completed
 - Plan: completed
-- Implement: in_progress
-- Current phase: code_review
-- Next step: Code Review PR #382; приёмка и выпуск в дочернем проекте отдельно
+- Implement: completed
+- Current phase: complete
+- Next step: Code Review PR #382; приёмка владельцем и выпуск в дочерних проектах отдельно
+
+## Итоговая проверка 0.0.330
+
+Релиз [0.0.330](https://github.com/singlepagestartup/singlepagestartup/releases/tag/0.0.330) из текущей ветки завершён успешно. Host и API на тестовом production используют этот образ. Код: `8324e42e97`. Полная [рецензия в issue #380](https://github.com/singlepagestartup/singlepagestartup/issues/380#issuecomment-6514109866) и [копия в репозитории](../../research/singlepagestartup/ISSUE-380-production-review.md).
+
+281 тест пройден, один прежний skipped; scoped ESLint 36 файлов без ошибок/предупреждений. Production build проверил TypeScript и SSG/ISR публичных маршрутов; админка динамическая. Проверены исходная БД, прогретый кеш, title invalidation, hidden/restore и сохранность всех полей Page/Article/Product/обязательной связи. Seed Page сопоставляет URL и язык; PATCH не применяет insert defaults к пропущенным полям.
+
+Production sitemap: 138 URL, все 200, корректные canonical/lang, описание, обложка и один H1; noindex и служебные страницы исключены. Lighthouse mobile: SEO 100 на пяти страницах, Performance 78/43/44/40/36. Отчёты, ограничения и следующие улучшения опубликованы в рецензии и 18 файлах релиза.
+
+Локально работают Host 3000, API 4000 на исходной `sps-lite-7`, Storybook 4321. 451 посторонний локальный путь сохранён по хешам. Ниже — история промежуточных проверок; текущее состояние указано в этом разделе.
 
 ## Phase Notes
 
@@ -395,3 +406,7 @@ API — на 4000.
 
 Релиз и проверка production ещё выполняются; результаты будут добавлены после
 фактического обновления сервисов.
+
+### Завершение серверной проверки
+
+Серверный сценарий выявил общий дефект частичного PATCH: у `framework-blog` и `framework-landing` сбросились локализованные поля. Восстановление выполнено через SDK из проверенных версионированных записей; полного JSON-backup до первого сценария не было. Исправление `8324e42e97` применяет partial schema. Усиленная проверка 0.0.330 подтверждает сохранность всех полей и ключей, сохраняет полный backup перед мутацией и восстанавливает его в finally. Подробности и результаты доступны в итоговой рецензии.
