@@ -1,7 +1,9 @@
 import { Component as EcommerceModuleCategory } from "@sps/ecommerce/models/category/frontend/component";
 import { Component as EcommerceModuleCategoriesToProducts } from "@sps/ecommerce/relations/categories-to-products/frontend/component";
-import type { IProductDetailProps as IComponentProps } from "./interface";
+import { twMerge } from "tailwind-merge";
+import type { IComponentProps } from "./interface";
 export function Component(props: IComponentProps) {
+  if (!props.ecommerceModuleProductId) return null;
   return (
     <EcommerceModuleCategoriesToProducts
       isServer={props.isServer}
@@ -13,7 +15,7 @@ export function Component(props: IComponentProps) {
               {
                 column: "productId",
                 method: "eq",
-                value: props.ecommerceModuleProduct.id,
+                value: props.ecommerceModuleProductId,
               },
             ],
           },
@@ -25,8 +27,13 @@ export function Component(props: IComponentProps) {
           return null;
         }
         return (
-          <div className="flex flex-wrap gap-2">
-            {categoriesToProducts?.map((categoryToProduct, index) => {
+          <div
+            data-module="rbac"
+            data-model="subject"
+            data-variant={props.variant}
+            className={twMerge("flex flex-wrap gap-2", props.className)}
+          >
+            {categoriesToProducts?.map((categoryToProduct) => {
               return (
                 <EcommerceModuleCategory
                   key={categoryToProduct.id}
@@ -47,7 +54,7 @@ export function Component(props: IComponentProps) {
                   }}
                 >
                   {({ data: categories }) => {
-                    return categories?.map((category, index) => {
+                    return categories?.map((category) => {
                       return (
                         <EcommerceModuleCategory
                           key={category.id}

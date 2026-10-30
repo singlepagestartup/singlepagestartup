@@ -609,6 +609,16 @@ Foreign records are `ecommerceModuleProduct`, `ecommerceModuleStore` and
 RBAC import. `me-navigation-controls-ai-chat` owns the session, project selector
 and account controls; it receives explicit Social IDs and `settingsSelected`.
 
+Public Product details also use the Subject registry:
+`ecommerce-module-product-category-default` and
+`ecommerce-module-product-profile-default` accept `ecommerceModuleProductId`
+and `language`. Categories use the ordinary filtered CategoriesToProducts and
+Category components. Profiles use Social's allowlisted `authorFind` SDK and
+public author bylines. These variants have no current-Subject read and support
+server rendering before session initialization. Product cards, overviews and
+RBAC Widgets select them through the public Subject component; they do not
+import private helpers from `me/.../card-default`.
+
 Current-Subject variants are grouped under `singlepage/me/` by module, model
 and operation. Public variant strings remain stable when folders move; callers
 use the public Subject registry.

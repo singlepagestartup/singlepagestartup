@@ -3,8 +3,6 @@ import { notFound } from "next/navigation";
 import { Component as EcommerceModuleProduct } from "@sps/ecommerce/models/product/frontend/component";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import { CardContent, CardHeader } from "@sps/shared-ui-shadcn";
-import { Component as Category } from "@sps/rbac/models/subject/frontend/component/src/lib/singlepage/me/ecommerce-module/product/card-default/Category";
-import { Component as Profile } from "@sps/rbac/models/subject/frontend/component/src/lib/singlepage/me/ecommerce-module/product/card-default/Profile";
 import { IContentProps } from "./interface";
 export function Component(props: IContentProps) {
   const data = props.ecommerceModuleProductSlug;
@@ -41,21 +39,21 @@ export function Component(props: IContentProps) {
               language={props.language}
               topSlot={
                 <CardHeader className="pb-0">
-                  <Category
+                  <Subject
                     isServer={props.isServer}
                     language={props.language}
-                    variant="overview-default"
-                    ecommerceModuleProduct={product}
+                    variant="ecommerce-module-product-category-default"
+                    ecommerceModuleProductId={product.id}
                   />
                 </CardHeader>
               }
               middleSlot={
                 <CardContent>
-                  <Profile
+                  <Subject
                     isServer={props.isServer}
                     language={props.language}
-                    variant="overview-default"
-                    ecommerceModuleProduct={product}
+                    variant="ecommerce-module-product-profile-default"
+                    ecommerceModuleProductId={product.id}
                   />
                 </CardContent>
               }

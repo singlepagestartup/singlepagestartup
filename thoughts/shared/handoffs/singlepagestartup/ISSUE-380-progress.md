@@ -667,3 +667,39 @@ Before-images и завершённый manifest: /tmp/sps-page-languages-manife
 /tmp/sps-page-languages-preview-admin-v1.png,
 /tmp/sps-page-languages-preview-admin-v2.png. Проверено локально на 3000/4000;
 удалённый сервер этим исправлением не обновлялся.
+
+## Публичный Subject API для деталей товара — 31.10.2026
+
+Widget product overview использует публичный Subject и его варианты вместо
+глубоких импортов Category/Profile из me Product card. Категории и авторы —
+публичные данные товара; отдельная сессия для них не нужна. Их варианты
+зарегистрированы как ecommerce-module-product-category-default и
+ecommerce-module-product-profile-default в singlepage registry и props union.
+Префикс me остаётся у текущего Subject и действий корзины/покупки.
+
+- [x] Перенести помощники в самостоятельные варианты Subject; передавать
+      ecommerceModuleProductId и language через явные типы.
+- [x] Подключить Widget, me Product card и overview через публичный Subject.
+- [x] Сохранить public authorFind DTO, обычные фильтры связей и client/server
+      readers; не читать текущий Subject при показе публичных деталей.
+- [x] Проверить отсутствие запросов без Product ID, публичный SSR H1 и
+      прежнюю работу me readers. 30 tests passed; Host typecheck прошёл;
+      module-dependencies: 15 507 файлов, 0 нарушений.
+- [x] Production build прошёл; публичный catch-all отмечен SSG. На реальном
+      товаре framework-startup анонимный HTML содержит H1, категорию и автора;
+      повторный запрос получил ISR HIT с revalidate 3600. В браузере категория
+      и автор отображаются; ошибок и предупреждений в консоли нет.
+
+Старые приватные пути и IProductDetailProps удалены. Новые варианты могут
+переопределяться через обычный startup registry. Проекты с собственными
+глубокими импортами переходят на публичный Subject, выбирают соответствующий
+вариант и передают Product ID; me cart/checkout сохраняют текущий Subject.
+
+Проверки: /tmp/sps-subject-public-details-tests.log,
+/tmp/sps-subject-public-details-types.log,
+/tmp/sps-subject-public-details-dependencies.log,
+/tmp/sps-subject-public-details-build.log,
+/tmp/sps-subject-public-details-http.json.
+Снимок: /tmp/sps-subject-public-details-product.png.
+Host 3000 запущен из .next-subject-public-details, API 4000 и Storybook 4321
+сохранены. Изменения проверены локально; удалённый сервер не обновлялся.
