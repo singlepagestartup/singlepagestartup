@@ -279,7 +279,14 @@ export async function applyPageSeo(
     (key) => [key, manifest.input.assets[key]] as const,
   )) {
     const slug = `page-seo-${key}-${asset.sha256.slice(0, 16)}`;
-    const rows = (await all(api.files)).filter((file) => file.slug === slug);
+    const rows = await api.files.find({
+      params: {
+        includeHidden: 1,
+        limit: 2,
+        filters: { and: [{ column: "slug", method: "eq", value: slug }] },
+      },
+    });
+    if (!rows) throw Error("SEO cover lookup unavailable");
     if (rows.length > 1) throw Error("Ambiguous SEO cover slug");
     const file =
       rows[0] ??
@@ -302,7 +309,16 @@ export async function applyPageSeo(
       Number(file.height) < 600 ||
       file.alt !== asset.alt
     )
-      throw Error("Invalid SEO cover upload");
+      throw Error(
+        `Invalid SEO cover upload: ${key} (${JSON.stringify({
+          present: Boolean(file),
+          mimeType: file?.mimeType,
+          width: file?.width,
+          height: file?.height,
+          variant: file?.variant,
+          altMatches: file?.alt === asset.alt,
+        })})`,
+      );
     manifest.assets[key].fileId = file.id;
     await persist();
   }

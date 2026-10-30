@@ -424,8 +424,10 @@ masks. An optional `page` object changes only that Page's title/description.
 
 Assets name WebP files relative to the input, their SHA-256 and alt text. The
 command verifies bytes before mutation, uploads Files with a stable content-based
-slug, links Metadata→File and then Page→Metadata with explicit ordering. Existing
-editorial Metadata and relations remain available. A matching selected Metadata
+slug, links Metadata→File and then Page→Metadata with explicit ordering. Cover
+lookups filter by the exact slug and read at most two rows, independently of the
+size of the File library. Existing editorial Metadata and relations remain
+available. A matching selected Metadata
 is reused; unchanged repeat publication creates no records. Private Pages retain
 their indexing/access policy. No permissions, content entities or seed snapshots
 are changed.

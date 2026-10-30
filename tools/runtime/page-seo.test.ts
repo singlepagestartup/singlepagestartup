@@ -53,10 +53,16 @@ function fixture() {
       {
         find: async ({ params }: any = {}) =>
           structuredClone(
-            rows[key as keyof typeof rows].slice(
-              params?.offset ?? 0,
-              (params?.offset ?? 0) + (params?.limit ?? 100),
-            ),
+            rows[key as keyof typeof rows]
+              .filter((row) =>
+                (params?.filters?.and ?? []).every(
+                  (filter: any) => row[filter.column] === filter.value,
+                ),
+              )
+              .slice(
+                params?.offset ?? 0,
+                (params?.offset ?? 0) + (params?.limit ?? 100),
+              ),
           ),
         create: async ({ data }: any) => {
           writes++;
@@ -120,6 +126,34 @@ function fixture() {
   return { rows, api, input, bytes, writes: () => writes };
 }
 describe("Page SEO publication", () => {
+  it("looks up covers by slug instead of scanning the full library per asset", async () => {
+    const f = fixture();
+    for (let index = 0; index < 250; index++)
+      f.rows.files.push({ id: `existing-${index}`, slug: `other-${index}` });
+    f.input.assets.english = { ...f.input.assets.blog };
+    f.input.pages[1].cover = "english";
+    const reads: any[] = [];
+    const find = f.api.files.find;
+    f.api.files.find = async (props) => {
+      reads.push(props?.params);
+      return find(props);
+    };
+    const manifest = await preparePageSeo(f.input, f.api);
+    await applyPageSeo(
+      manifest,
+      f.api,
+      async () => {},
+      async () => f.bytes,
+    );
+    const exact = reads.filter(
+      (params) => params.filters?.and?.[0]?.column === "slug",
+    );
+    expect(exact).toHaveLength(2);
+    expect(
+      exact.every((params) => params.limit === 2 && params.includeHidden === 1),
+    ).toBe(true);
+    expect(reads.filter((params) => !params.filters)).toHaveLength(3);
+  });
   it("publishes explicit links and covers for both locales while retaining previous editorial records and publication policy", async () => {
     const f = fixture();
     f.input.assets.unused = { ...f.input.assets.blog, alt: "Unused cover" };
