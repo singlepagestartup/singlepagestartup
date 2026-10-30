@@ -23,6 +23,7 @@ export default async function NotFoundPage() {
           <HostModulePage
             isServer={true}
             variant={data?.variant as any}
+            dataSource="props"
             data={data}
             url="/404"
             language={internationalization.defaultLanguage.code}

@@ -10,6 +10,7 @@ export interface ISeoRoute {
 
 export interface ISeoCanonicalUrlProps {
   origin: string;
+  /** Already resolved pathname, without the locale prefix. */
   pathname: string;
   language: string;
 }
@@ -43,11 +44,7 @@ export function getSeoCanonicalUrl(props: ISeoCanonicalUrlProps): string {
   if (!/^[a-zA-Z0-9-]+$/.test(props.language)) {
     throw new Error("Invalid SEO language");
   }
-  const { pathname } = resolveSeoRoute(
-    props.pathname,
-    [props.language],
-    props.language,
-  );
+  const pathname = pathnameOnly(props.pathname);
   const parts = pathname.split("/").filter(Boolean);
   if (
     parts.some((part) => /^(?:\.|%2e){1,2}$/i.test(part)) ||

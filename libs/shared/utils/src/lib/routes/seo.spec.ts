@@ -28,7 +28,8 @@ describe("SEO URL policy", () => {
   it.each([
     ["/", "https://example.test/ru"],
     ["/blog/2?utm_source=ad", "https://example.test/ru/blog/2"],
-    ["/ru/blog/2/", "https://example.test/ru/blog/2"],
+    ["/ru/blog/2/", "https://example.test/ru/ru/blog/2"],
+    ["/ru", "https://example.test/ru/ru"],
     ["/статья", "https://example.test/ru/%D1%81%D1%82%D0%B0%D1%82%D1%8C%D1%8F"],
   ])("normalizes %s to its localized canonical URL", (pathname, expected) => {
     expect(

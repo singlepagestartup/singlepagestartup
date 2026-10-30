@@ -5,6 +5,7 @@ import {
 } from "@sps/host/models/page/sdk/model";
 import {
   NextRequestOptions,
+  consistencyRequestOptions,
   responsePipe,
   transformResponseItem,
 } from "@sps/shared-utils";
@@ -41,14 +42,14 @@ export async function action({
 
   const options: NextRequestOptions = {
     ...requestOptions,
-    cache: "no-store",
+    cache: requestOptions?.cache,
     headers: {
       ...cacheControlOptions,
       ...requestOptions?.headers,
     },
     next: {
       ...requestOptions?.next,
-      tags: [route],
+      tags: [...new Set([route, ...(requestOptions?.next?.tags || [])])],
     },
   };
 
@@ -62,9 +63,10 @@ export async function action({
     },
   );
 
+  const requestUrl = `${host}${route}/find-by-url?${stringifiedQuery}`;
   const res = await fetch(
-    `${host}${route}/find-by-url?${stringifiedQuery}`,
-    options,
+    requestUrl,
+    await consistencyRequestOptions(requestUrl, options),
   );
 
   if (silentNotFound && res.status === 404) {

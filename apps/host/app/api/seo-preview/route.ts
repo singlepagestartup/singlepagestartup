@@ -37,6 +37,7 @@ export async function POST(request: Request) {
       url: route.pathname,
       language: input.language,
       silentNotFound: true,
+      options: { cache: "no-store" },
     });
     if (
       !page ||
@@ -49,10 +50,11 @@ export async function POST(request: Request) {
       );
     return Response.json(
       await metadata.generatePageSeo({
-        url: route.pathname,
+        url: input.url,
         language: input.language,
         page,
         metadataDraft: input.metadata,
+        options: { cache: "no-store" },
       }),
       { headers },
     );

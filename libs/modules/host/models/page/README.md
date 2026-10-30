@@ -39,13 +39,32 @@ Administrative reads bypass the legacy anonymous HTTP cache. Public browser
 readers request publicOnly and do not reuse admin query keys.
 
 HTTP cache excludes dependent Page operations `find-by-url`, `url-segment-value`
-and `urls`. Host currently renders the catch-all per request: its root checks
-locale and existence before streaming, and its admin/session compositions read
-request state. Production verification exposed DYNAMIC_SERVER_USAGE when an ISR
-fallback tried these reads. Page/SEO SDK reads use no-store; ordinary public
-API reads keep their existing generation-checked caching and invalidation.
-Any future return to ISR must preserve true 404, session isolation and immediate
-hidden transitions in a built Host, not just in development.
+and `urls`. Public Host routes use on-demand ISR with a one-hour route TTL.
+The locale is a `[language]` route parameter; layouts do not read headers or
+session cookies. The separately routed admin remains request-rendered.
+
+The `document` Page variant is a server reader for `Metadata.resolvePageSeo`.
+It resolves existence and SEO before rendering saved Page content or a Suspense
+boundary. The route supplies only the path and locale. Metadata and document
+share one React request cache; this is separate from the persistent ISR cache.
+The root loading boundary is omitted so a missing Page returns HTTP 404.
+Global errors and unmatched routes have standalone fallback documents.
+
+Anonymous Page/Metadata SDK reads use the shared finite Next cache and consistency
+tags. Nested API reads contribute their dependencies to the existing consistency
+context. Committed mutations invalidate those tags before notification delivery;
+this also covers captured direct database writes. Invalidation is asynchronous,
+so public ISR has an eventual propagation window and the TTL is its fallback.
+Authorization/Cookie reads and draft previews use no-store. Current-Subject
+controls remain in client compositions; personalized data must never be added
+to the public document reader. A warm page can serve cached HTML during an API
+outage; a cold failed read remains a server error rather than a false 404.
+
+Existing installations must audit saved Page languages before rollout. A legacy
+`en` template used by old `/ru` routes needs an explicit localized Page and copied
+Page–Widget/Layout/Metadata links; exact language matching never guesses that
+content has been translated. Preserve shared content IDs and keep hreflang absent
+until equivalent localized content is verified.
 
 ## Sitemap and robots
 

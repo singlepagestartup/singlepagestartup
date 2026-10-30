@@ -52,6 +52,40 @@ it("propagates transport errors", async () => {
   ).rejects.toThrow("Connection refused");
 });
 
+it("uses a tracked finite cache only when explicitly requested for a public lookup", async () => {
+  (global.fetch as jest.Mock).mockResolvedValue(
+    new Response(JSON.stringify({ data: { id: "page-1" } }), { status: 200 }),
+  );
+  await api.findByUrl({
+    url: "/about",
+    language: "en",
+    options: { cache: "force-cache", next: { revalidate: 300 } },
+  });
+  const [, options] = (global.fetch as jest.Mock).mock.calls[0];
+  expect(options.cache).toBe("force-cache");
+  expect(options.next.revalidate).toBe(300);
+  expect(options.next.tags).toEqual(
+    expect.arrayContaining([expect.stringMatching(/^sps:q:[a-f0-9]{64}$/)]),
+  );
+  expect(options.headers.get("X-SPS-Consistency")).toBe("1");
+});
+
+it("does not cache a lookup carrying an authorization header", async () => {
+  (global.fetch as jest.Mock).mockResolvedValue(
+    new Response(JSON.stringify({ data: { id: "page-1" } }), { status: 200 }),
+  );
+  await api.findByUrl({
+    url: "/account",
+    options: {
+      cache: "force-cache",
+      headers: { Authorization: "Bearer token" },
+    },
+  });
+  const [, options] = (global.fetch as jest.Mock).mock.calls[0];
+  expect(options.cache).toBe("no-store");
+  expect(options.next.revalidate).toBe(0);
+});
+
 it("returns a resolved Page including named route values", async () => {
   (global.fetch as jest.Mock).mockResolvedValue(
     new Response(

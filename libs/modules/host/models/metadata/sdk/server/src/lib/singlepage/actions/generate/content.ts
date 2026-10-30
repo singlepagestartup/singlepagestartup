@@ -19,6 +19,7 @@ import {
   metadataPathValue,
   isHiddenRecord,
   type IMetadataReference,
+  type NextRequestOptions,
 } from "@sps/shared-utils";
 import type { ISeoContent, ISeoImage } from "./interface";
 import {
@@ -35,7 +36,7 @@ interface IRecord {
 }
 interface IReader {
   find: (props: {
-    options?: { cache: "no-store" };
+    options?: Partial<NextRequestOptions>;
     params: {
       filters: {
         and: { column: string; method: "eq" | "ne"; value: string }[];
@@ -78,7 +79,11 @@ export function fileImage(file: IRecord): ISeoImage | undefined {
 }
 
 /** One request context shares reads between text masks, images and JSON-LD. */
-export function createMetadataContext(page: IResolvedPage, language: string) {
+export function createMetadataContext(
+  page: IResolvedPage,
+  language: string,
+  options?: Partial<NextRequestOptions>,
+) {
   const readers: Record<string, IReader> = {
     "blog.articles": blogArticleApi,
     "blog.categories": blogCategoryApi,
@@ -166,7 +171,7 @@ export function createMetadataContext(page: IResolvedPage, language: string) {
         key,
         (async () => {
           const data = await api.find({
-            options: { cache: "no-store" },
+            options,
             params: {
               filters: {
                 and: [

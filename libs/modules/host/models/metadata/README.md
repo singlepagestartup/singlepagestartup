@@ -6,8 +6,10 @@ Metadata stores editable SEO fields in the database. Pages select it through
 ## Resolving a page
 
 `api.generatePageSeo({ url, language?, page?, metadataDraft? })` returns Next.js
-`metadata`, `structuredData` and mask `diagnostics`. Host supplies the resolved
-Page to reuse its lookup. `api.generate` is the compatibility adapter returning
+`metadata`, `structuredData` and mask `diagnostics`. Host uses `api.resolvePageSeo(url, language)` to share the resolved Page and
+SEO within one server render. Public reads use the shared finite Next cache and dependency invalidation.
+Pass `options: { cache: "no-store" }` for an uncached read; metadata drafts always
+bypass caching. `api.generate` is the compatibility adapter returning
 only Next.js metadata. Neither operation writes generated text to the database.
 
 The first visible linked Metadata wins, sorted by relation `orderIndex`, then

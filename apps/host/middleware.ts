@@ -26,11 +26,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(nextUrl, 308);
   }
 
-  // These request headers are overwritten here, never trusted from the caller.
-  // RootLayout uses them to resolve the page before streaming any HTML.
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-sps-pathname", pathname);
-  return NextResponse.next({ request: { headers: requestHeaders } });
+  return NextResponse.next();
 }
 
 export const config = {

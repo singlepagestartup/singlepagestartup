@@ -32,7 +32,7 @@ jest.mock("@sps/ecommerce/relations/categories-to-products/sdk/server", () => ({
  * Then: the result describes the concrete page, keeps canonical URLs stable and
  * propagates upstream failures instead of publishing an indexable fallback.
  */
-import { api as metadataApi } from "@sps/host/models/metadata/sdk/server";
+import { api as metadataApi } from "../../crud";
 import { api as pageApi } from "@sps/host/models/page/sdk/server";
 import { api as pagesToMetadataApi } from "@sps/host/relations/pages-to-metadata/sdk/server";
 import { api as blogArticleApi } from "@sps/blog/models/article/sdk/server";
@@ -43,9 +43,9 @@ import { api as blogArticlesToFilesApi } from "@sps/blog/relations/articles-to-f
 import { api as ecommerceProductsToFilesApi } from "@sps/ecommerce/relations/products-to-file-storage-module-files/sdk/server";
 import { api as fileStorageFileApi } from "@sps/file-storage/models/file/sdk/server";
 import type { IResolvedPage } from "@sps/host/models/page/sdk/model";
-import { action, generatePageSeo } from "./index";
+import { action, generatePageSeo, resolvePageSeo } from "./index";
 
-jest.mock("@sps/host/models/metadata/sdk/server", () => ({
+jest.mock("../../crud", () => ({
   api: { find: jest.fn(), findById: jest.fn() },
 }));
 jest.mock("@sps/host/models/page/sdk/server", () => ({
@@ -145,6 +145,33 @@ beforeEach(() => {
 });
 
 describe("public page SEO generation", () => {
+  it("keeps a page segment identical to its locale after route resolution", async () => {
+    jest
+      .mocked(pageApi.findByUrl)
+      .mockResolvedValue(page({ url: "/ru", title: "Russian department" }));
+    const result = await resolvePageSeo("/ru", "ru");
+    expect(result.metadata.alternates).toEqual({
+      canonical: "https://example.com/ru/ru",
+    });
+    expect(pageApi.findByUrl).toHaveBeenCalledWith({
+      url: "/ru",
+      language: "ru",
+      silentNotFound: true,
+    });
+  });
+  it("resolves the Page before generating its SEO", async () => {
+    const resolvedPage = page({ url: "/about", title: "About" });
+    jest.mocked(pageApi.findByUrl).mockResolvedValue(resolvedPage);
+    const result = await resolvePageSeo("/about", "en");
+    expect(pageApi.findByUrl).toHaveBeenCalledWith({
+      url: "/about",
+      language: "en",
+      silentNotFound: true,
+    });
+    expect(result.page).toBe(resolvedPage);
+    expect(result.metadata.title).toBe("About");
+  });
+
   it("uses distinct static page titles and descriptions instead of primary metadata", async () => {
     const first = await action({
       url: "/ru/about",
@@ -188,6 +215,7 @@ describe("public page SEO generation", () => {
     expect(pageApi.findByUrl).toHaveBeenCalledWith({
       url: "/about",
       language: "en",
+      options: undefined,
     });
     expect(result.alternates).toEqual({
       canonical: "https://example.com/en/about",
@@ -227,7 +255,7 @@ describe("public page SEO generation", () => {
       page: articlePage("%D1%81%D1%82%D0%B0%D1%82%D1%8C%D1%8F"),
     });
     expect(blogArticleApi.find).toHaveBeenCalledWith({
-      options: { cache: "no-store" },
+      options: undefined,
       params: {
         filters: {
           and: [
@@ -368,7 +396,7 @@ describe("public page SEO generation", () => {
       headline: "Guide",
     });
     expect(pagesToMetadataApi.find).toHaveBeenCalledWith({
-      options: { cache: "no-store" },
+      options: undefined,
       params: {
         filters: {
           and: [
@@ -674,7 +702,7 @@ it("uses only the public author DTO for Profile metadata and avatar", async () =
   expect(result.metadata.keywords).toEqual(["writing"]);
   expect(profilesApi.authorFind).toHaveBeenCalledWith({
     params: { profileId: id },
-    options: { cache: "no-store" },
+    options: undefined,
   });
   expect(profilesApi.find).not.toHaveBeenCalled();
   expect(profileFilesApi.find).not.toHaveBeenCalled();

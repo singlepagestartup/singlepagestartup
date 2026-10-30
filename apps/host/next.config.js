@@ -35,6 +35,7 @@ function makeConfig() {
     reactStrictMode: true,
     distDir: process.env.SPS_HOST_DIST_DIR || ".next",
     experimental: {
+      globalNotFound: true,
       webpackMemoryOptimizations: true,
       ...(process.env.SPS_HOST_BUILD_CPUS
         ? { cpus: Number(process.env.SPS_HOST_BUILD_CPUS) }

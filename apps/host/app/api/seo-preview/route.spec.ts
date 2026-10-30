@@ -48,12 +48,14 @@ it("resolves the selected locale and unsaved masks without caching the result", 
     url: "/blog/one",
     language: "ru",
     silentNotFound: true,
+    options: { cache: "no-store" },
   });
   expect(metadata.generatePageSeo).toHaveBeenCalledWith({
-    url: "/blog/one",
+    url: "/ru/blog/one",
     language: "ru",
     page,
     metadataDraft: draft.metadata,
+    options: { cache: "no-store" },
   });
   expect((await response.json()).metadata.title).toBe("Статья");
 });

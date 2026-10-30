@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import { cache } from "react";
 import { notFound } from "next/navigation";
-import { api as metadataApi } from "@sps/host/models/metadata/sdk/server";
+import { api as metadataApi } from "../../crud";
 import type { IModel as IMetadata } from "@sps/host/models/metadata/sdk/model";
 import { api as pageApi } from "@sps/host/models/page/sdk/server";
 import { api as pagesToMetadataApi } from "@sps/host/relations/pages-to-metadata/sdk/server";
@@ -22,17 +23,18 @@ import { createMetadataContext } from "./content";
 import { absoluteHttpUrl, meaningfulPageText, plainText } from "./utils";
 export type { IGeneratePageSeoProps, IPageSeoResult } from "./interface";
 
-export async function generatePageSeo(
+async function assemblePageSeo(
   props: IGeneratePageSeoProps,
 ): Promise<IPageSeoResult> {
-  const route = resolveSeoRoute(
-    props.url,
-    internationalization.languages.map(({ code }) => code),
-    props.language || internationalization.defaultLanguage.code,
-  );
-  const language = props.language || route.language;
+  const language = props.language || internationalization.defaultLanguage.code;
+  const route = { pathname: props.url };
   const page =
-    props.page || (await pageApi.findByUrl({ url: route.pathname, language }));
+    props.page ||
+    (await pageApi.findByUrl({
+      url: route.pathname,
+      language,
+      options: props.options,
+    }));
   if (!page || isHiddenRecord(page)) notFound();
   const pageId = page.id;
   const canonical = getSeoCanonicalUrl({
@@ -57,10 +59,13 @@ export async function generatePageSeo(
       },
       structuredData: [],
     };
-  const context = createMetadataContext(page, language);
+  const options = props.metadataDraft
+    ? { ...props.options, cache: "no-store" as const }
+    : props.options;
+  const context = createMetadataContext(page, language, options);
   const [primaries, links, content] = await Promise.all([
     metadataApi.find({
-      options: { cache: "no-store" },
+      options,
       params: {
         filters: {
           and: [{ column: "variant", method: "eq", value: "primary" }],
@@ -69,7 +74,7 @@ export async function generatePageSeo(
       },
     }),
     pagesToMetadataApi.find({
-      options: { cache: "no-store" },
+      options,
       params: {
         filters: {
           and: [
@@ -94,7 +99,7 @@ export async function generatePageSeo(
   for (const link of links) {
     if (isHiddenRecord(link)) continue;
     const records = await metadataApi.find({
-      options: { cache: "no-store" },
+      options,
       params: {
         filters: {
           and: [
@@ -290,6 +295,30 @@ export async function generatePageSeo(
   return { metadata, structuredData, diagnostics };
 }
 
+/** Compatibility entrypoint for concrete URLs that may include a locale. */
+export async function generatePageSeo(
+  props: IGeneratePageSeoProps,
+): Promise<IPageSeoResult> {
+  const route = resolveSeoRoute(
+    props.url,
+    internationalization.languages.map(({ code }) => code),
+    props.language || internationalization.defaultLanguage.code,
+  );
+  return assemblePageSeo({
+    ...props,
+    url: route.pathname,
+    language: props.language || route.language,
+  });
+}
+
 export async function action(props: IGeneratePageSeoProps): Promise<Metadata> {
   return (await generatePageSeo(props)).metadata;
 }
+
+/** Resolve once per server render for both the document head and Page view. */
+export const resolvePageSeo = cache(async (url: string, language: string) => {
+  const page = await pageApi.findByUrl({ url, language, silentNotFound: true });
+  if (!page) notFound();
+  const seo = await assemblePageSeo({ url, language, page });
+  return { page, ...seo };
+});
