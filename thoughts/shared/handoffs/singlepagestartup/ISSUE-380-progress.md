@@ -730,3 +730,47 @@ articles/products возвращает только Author detail DTO.
 Логи: /tmp/sps-author-crud-tests.log, /tmp/sps-author-crud-types.log,
 /tmp/sps-author-crud-runtime.log, /tmp/sps-author-crud-dependencies.log.
 Изменения локальные; релиз и обновление удалённого сервера не выполнялись.
+
+## Автоматическая генерация Consistency Capture — 31.10.2026
+
+Все 159 targets генерации моделей и связей в 15 модулях выполняют Drizzle,
+затем @sps/providers-db:repository-generate. Генерация, её агрегирующие targets,
+api:db:generate и инфраструктурный target работают без кеша Nx. Новые модели
+и связи получают такой же контракт через генераторы.
+
+- [x] Обновить существующие targets и оба генератора; сохранить порядок и
+      последовательное выполнение. Проверено, что 17 project.json отличаются
+      по смыслу только шагом Capture и отключением кеша генерации.
+- [x] Обновить корневой README, инструкции AGENTS/CLAUDE, README провайдера
+      БД и генератора. Описать создание Startup-схем, миграции, проверку и
+      артефакты для коммита; ручное редактирование Capture не требуется.
+- [x] Пройти 20 тестов: аудит targets, генерация Startup модели и связи,
+      регрессии генераторов моделей и межмодульных связей.
+- [x] Создать captureprobe и widgets-to-captureprobes штатными Nx CLI во
+      временной копии этой ветки. Запустить standalone targets модели и
+      связи; получить каталог из 161 ресурса без ручной регистрации.
+      Повторная генерация связи не создала новую Capture-миграцию.
+- [x] Добавить captureNote в fields/startup.ts временной модели и повторно
+      выполнить её target. Поле и новая миграция Capture сгенерированы
+      автоматически; колонка зарегистрирована как capture_note.
+- [x] Клонировать исходную тестовую БД во временную базу, применить
+      инфраструктурные миграции, модель и связь. consistency-check: 161/161.
+      Проверить события INSERT/UPDATE/DELETE на обеих таблицах, атомарный
+      откат данных/версий/outbox и событие TRUNCATE.
+- [x] Пройти существующий Startup Widget target в рабочем checkout:
+      каталог из 159 ресурсов обновлён автоматически. Он добавил ранее
+      отсутствовавшее описание Page.metadata. Миграция 0011, snapshot,
+      journal и capture.json созданы штатным Drizzle target.
+- [x] Проверить исходную БД без изменения данных: consistency-check 159/159,
+      lagMs=0, degraded=false. Удалить временную БД, дамп и checkout.
+
+Логи: /tmp/sps-capture-tests.log, /tmp/sps-capture-model-create.log,
+/tmp/sps-capture-relation-create.log, /tmp/sps-capture-model-generate.log,
+/tmp/sps-capture-relation-generate.log,
+/tmp/sps-capture-startup-field-generate.log,
+/tmp/sps-capture-coverage-migrate.log, /tmp/sps-capture-db-proof.log,
+/tmp/sps-capture-existing-target-generate.log,
+/tmp/sps-capture-existing-coverage.log, /tmp/sps-capture-cleanup.log.
+Проверочные модели и связи не добавлены в рабочую кодовую базу.
+Удалённый сервер не обновлялся; миграция 0011 применяется обычным
+api:db:migrate при развёртывании этой версии.

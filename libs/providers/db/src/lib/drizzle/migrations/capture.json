@@ -1,5 +1,5 @@
 {
-  "fingerprint": "3d48293bf9fa1efa5586aed2944967a91ab2c0ac2ac4385e7976935f726d98cd",
+  "fingerprint": "b8c7f89e2619ba19fb3f2adcf08baa4d42fb91fd592b80ecb30064ab04570fb1",
   "resources": [
     {
       "resource": "public.bg_as_to_ee_me_ps_bd9",
@@ -1592,6 +1592,7 @@
       "resource": "public.sps_h_page",
       "topic": "host.pages",
       "columns": {
+        "metadata": "metadata",
         "id": "id",
         "title": "title",
         "url": "url",

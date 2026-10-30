@@ -263,6 +263,7 @@ Strict layered architecture: Repository → Service → Controller → App.
 - Fields defined in `fields/`, table schema in `schema.ts`
 - Database structure changes are managed via generated Drizzle SQL migrations
 - After changing `schema.ts` or any `fields/*` table definition, run the matching `repository-generate` Nx target, for example `npx nx run @sps/<module>:models:<model>:repository-generate` or the corresponding relation target. Do not hand-write migration SQL, `migrations/meta/*` snapshots, or `_journal.json` entries.
+- Every model/relation generation target runs uncached and regenerates Consistency Capture after Drizzle, including client-owned Startup schemas. Commit the generated schema and capture artifacts together. Apply them with `npx nx run api:db:migrate`, then run `npx nx run @sps/providers-db:consistency-check`. Custom targets must retain the final capture-generation command. See [PostgreSQL consistency storage](libs/providers/db/README.md) for the lifecycle and checks.
 
 #### Service Layer
 

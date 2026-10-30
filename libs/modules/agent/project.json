@@ -9,12 +9,8 @@
     "jest:test": {},
     "jest:integration": {
       "executor": "@nx/jest:jest",
-      "outputs": [
-        "{projectRoot}/coverage"
-      ],
-      "inputs": [
-        "{projectRoot}"
-      ],
+      "outputs": ["{projectRoot}/coverage"],
+      "inputs": ["{projectRoot}"],
       "options": {
         "jestConfig": "libs/modules/agent/jest.integration.config.ts",
         "passWithNoTests": true
@@ -33,7 +29,8 @@
             "command": "nx run @sps/agent:relations:repository-generate"
           }
         ]
-      }
+      },
+      "cache": false
     },
     "repository-migrate": {
       "executor": "nx:run-commands",
@@ -62,14 +59,16 @@
             "command": "nx run @sps/agent:models:widget:repository-generate"
           }
         ]
-      }
+      },
+      "cache": false
     },
     "relations:repository-generate": {
       "executor": "nx:run-commands",
       "options": {
         "parallel": false,
         "commands": []
-      }
+      },
+      "cache": false
     },
     "models:repository-migrate": {
       "executor": "nx:run-commands",
@@ -105,9 +104,13 @@
           },
           {
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          },
+          {
+            "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
-      }
+      },
+      "cache": false
     },
     "models:widget:repository-migrate": {
       "executor": "nx:run-commands",
@@ -134,9 +137,13 @@
           },
           {
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          },
+          {
+            "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
-      }
+      },
+      "cache": false
     },
     "models:agent:repository-migrate": {
       "executor": "nx:run-commands",
