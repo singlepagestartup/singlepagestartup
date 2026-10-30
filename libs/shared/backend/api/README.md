@@ -1,5 +1,15 @@
 # Repository read dependencies
 
+## Partial updates
+
+`updateFirstByField` validates a patch against the partial insert schema. Omitted
+fields keep their stored values; insert defaults apply only when creating a row.
+An explicit empty object or nullable value still replaces that field. Updates
+retain field validation and refresh `updatedAt` where the model supports it.
+Unchanged relation keys do not need to be resubmitted when changing `variant`.
+
+## Read tracking
+
 `createConsistencyRuntime` collects actual repository reads in an
 `AsyncLocalStorage` operation. `find`, `count`, `findByField` and
 `findFirstByField` record their candidate scope before reading rows. Empty

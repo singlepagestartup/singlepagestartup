@@ -287,9 +287,9 @@ export class Database<T extends PgTableWithColumns<any>>
 
       const [record] = await this.findByField(field, value);
 
-      const plainData: T["$inferInsert"] = this.insertSchema.parse(
-        this.prepareWritableData(data),
-      );
+      const plainData: Partial<T["$inferInsert"]> = this.insertSchema
+        .partial()
+        .parse(this.prepareWritableData(data));
 
       const [result] = await this.db
         .update(this.Table)
