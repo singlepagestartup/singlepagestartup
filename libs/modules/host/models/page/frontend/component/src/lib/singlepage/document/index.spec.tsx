@@ -45,26 +45,28 @@ function renderDocument() {
   });
 }
 
-it("passes one resolved record to its saved variant and safely serializes JSON-LD", async () => {
-  const page = { id: "page-1", title: "Статья", variant: "default" };
-  jest.mocked(metadataApi.resolvePageSeo).mockResolvedValue({
-    page,
-    structuredData: [{ headline: "Safe </script><script>alert(1)</script>" }],
-  } as any);
-  const html = await renderDocument();
-  expect(metadataApi.resolvePageSeo).toHaveBeenCalledWith("/article", "ru");
-  expect(renderedProps).toHaveBeenCalledWith(
-    expect.objectContaining({
-      data: page,
-      dataSource: "props",
-      url: "/article",
-      language: "ru",
-    }),
-  );
-  expect(html).toContain("Статья");
-  expect(html).not.toContain("</script><script>");
-  const json = html.match(/<script\b[^>]*>([\s\S]*?)<\/script>/i)?.[1];
-  expect(JSON.parse(json!)[0].headline).toBe(
-    "Safe </script><script>alert(1)</script>",
-  );
-});
+it.each(["</script>", "</script >", "</script\t>"])(
+  "passes one resolved record and safely serializes JSON-LD containing %s",
+  async (closingTag) => {
+    const headline = `Safe ${closingTag}<script>alert(1)</script>`;
+    const page = { id: "page-1", title: "Статья", variant: "default" };
+    jest.mocked(metadataApi.resolvePageSeo).mockResolvedValue({
+      page,
+      structuredData: [{ headline }],
+    } as any);
+    const html = await renderDocument();
+    expect(metadataApi.resolvePageSeo).toHaveBeenCalledWith("/article", "ru");
+    expect(renderedProps).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: page,
+        dataSource: "props",
+        url: "/article",
+        language: "ru",
+      }),
+    );
+    expect(html).toContain("Статья");
+    expect(html).not.toContain(`${closingTag}<script>`);
+    const json = html.match(/<script\b[^>]*>([\s\S]*?)<\/script\s*>/i)?.[1];
+    expect(JSON.parse(json!)[0].headline).toBe(headline);
+  },
+);
