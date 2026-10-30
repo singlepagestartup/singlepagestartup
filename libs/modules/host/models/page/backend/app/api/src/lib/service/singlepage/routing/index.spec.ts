@@ -1,19 +1,29 @@
-import { pgTable, uuid } from "drizzle-orm/pg-core";
 import { RoutingService } from "./index";
-
-const left = pgTable("left", { id: uuid().primaryKey() });
-const right = pgTable("right", { id: uuid().primaryKey() });
-const relation = pgTable("links", {
-  id: uuid().primaryKey(),
-  customOwner: uuid().references(() => left.id),
-  customTarget: uuid().references(() => right.id),
-});
 const sources = [
-  { name: "custom.owners", route: "/api/custom/owners", table: left },
-  { name: "custom.items", route: "/api/custom/items", table: right },
-  { name: "custom.links", route: "/api/custom/links", table: relation },
+  {
+    name: "custom.owners",
+    route: "/api/custom/owners",
+    resource: { table: "owners", columns: ["id"], references: [] },
+  },
+  {
+    name: "custom.items",
+    route: "/api/custom/items",
+    resource: { table: "items", columns: ["id"], references: [] },
+  },
+  {
+    name: "custom.links",
+    route: "/api/custom/links",
+    resource: {
+      table: "links",
+      columns: ["id", "customOwner", "customTarget"],
+      references: [
+        { column: "customOwner", table: "owners", targetColumn: "id" },
+        { column: "customTarget", table: "items", targetColumn: "id" },
+      ],
+    },
+  },
 ];
-it("reads relation keys from the registered database schema in both directions", () => {
+it("reads relation keys from the service resource descriptions in both directions", () => {
   const routing = new RoutingService(sources);
   expect(routing.relation("custom.links", "custom.owners")).toEqual({
     source: "custom.owners",

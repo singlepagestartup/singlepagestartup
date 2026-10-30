@@ -7,6 +7,7 @@ import { Service } from "../../service";
 import { Handler as FindByUrl } from "./find-by-url";
 import { Handler as UrlSegmentValue } from "./url-segment-value";
 import { Handler as Urls } from "./urls";
+import type { IRouteSource } from "../../service/singlepage/routing";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
@@ -62,6 +63,10 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         handler: this.delete,
       },
     ]);
+  }
+
+  configureRouting(sources: IRouteSource[]) {
+    this.service.configureRouting(sources);
   }
 
   async findByUrl(c: Context, next: any): Promise<Response> {

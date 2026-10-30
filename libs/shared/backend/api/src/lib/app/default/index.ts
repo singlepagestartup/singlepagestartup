@@ -4,6 +4,7 @@ import { type IController } from "../../controllers";
 import { type IExceptionFilter } from "../../filters";
 import { inject, injectable } from "inversify";
 import { DI } from "../../di/constants";
+import type { IResourceDescription } from "../../repository/interface";
 import {
   IDumpResult,
   ISeedResult,
@@ -15,6 +16,7 @@ export interface IApp<
   ENV extends Env = {},
   SCHEMA extends Record<string, unknown> = {},
 > {
+  describeRoutes: () => IAppRouteDescription[];
   hono: Hono<ENV>;
   controller?: IController<SCHEMA>;
   exceptionFilter: IExceptionFilter;
@@ -28,6 +30,11 @@ export interface IApp<
     type?: "model" | "relation";
     dumps: IDumpResult[];
   }) => Promise<IDumpResult | IDumpResult[]>;
+}
+
+export interface IAppRouteDescription {
+  route: string;
+  resource: IResourceDescription;
 }
 
 @injectable()
@@ -48,6 +55,11 @@ export class App<SCHEMA extends Record<string, unknown>>
     this.exceptionFilter = exceptionFilter;
     this.controller = controller;
     this.configuration = configuration;
+  }
+
+  describeRoutes(): IAppRouteDescription[] {
+    const resource = this.controller.describe?.();
+    return resource ? [{ route: "", resource }] : [];
   }
 
   public async init() {

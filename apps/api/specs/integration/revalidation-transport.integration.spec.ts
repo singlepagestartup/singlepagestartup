@@ -13,6 +13,8 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { connect } from "node:net";
 import { Hono } from "hono";
+import { createBunWebSocket } from "hono/bun";
+import { ConsistencyMiddleware, HTTPCacheMiddleware } from "@sps/middlewares";
 import { createConsistencyRuntime, createMutationEffectsPublisher, consistencyContext } from "@sps/shared-backend-api";
 import { websocketManager } from "@sps/backend-utils";
 import { Provider as KVProvider } from "@sps/providers-kv";
@@ -101,8 +103,12 @@ class FixtureOwnerService {
   }
 }
 const app = new Hono();
-app.use(runtime.middleware());
-app.use(runtime.cache());
+const consistencyMiddleware = new ConsistencyMiddleware({ runtime, revalidation: { revalidateTags: async () => {} } });
+const httpCacheMiddleware = new HTTPCacheMiddleware({ runtime });
+app.use(consistencyMiddleware.init());
+consistencyMiddleware.registerRoutes(app);
+httpCacheMiddleware.registerRoutes(app);
+app.use(httpCacheMiddleware.init());
 app.get(route, (c) => {
   handlerCalls += 1;
   consistencyContext.getStore().dependencies.set(dependency, generation);
@@ -123,30 +129,20 @@ try {
     }), "Redis readiness");
   }
   assert.equal(await redis.ping(), "PONG");
-  server = Bun.serve({
-    hostname: "127.0.0.1", port: 0,
-    fetch(request, socketServer) {
-      const url = new URL(request.url);
-      if (url.pathname === "/ws/revalidation") {
-        if (socketServer.upgrade(request, { data: { id: url.searchParams.get("client") } })) return;
-        return new Response("Upgrade required", { status: 426 });
-      }
-      return app.fetch(request);
-    },
-    websocket: {
-      open(socket) {
-        connected.add(socket.data.id);
-        websocketManager.addClient(socket.data.id, socket);
-        if (connected.size === 2) bothConnected.resolve();
-      },
-      close(socket) {
-        connected.delete(socket.data.id);
-        websocketManager.removeClient(socket.data.id);
-        if (!connected.size) allClosed.resolve();
-      },
-      message() {},
-    },
-  });
+  const addClient = websocketManager.addClient.bind(websocketManager);
+  const removeClient = websocketManager.removeClient.bind(websocketManager);
+  websocketManager.addClient = (id, socket) => {
+    addClient(id, socket);
+    connected.add(id);
+    if (connected.size === 2) bothConnected.resolve();
+  };
+  websocketManager.removeClient = (id) => {
+    removeClient(id);
+    connected.delete(id);
+    if (!connected.size) allClosed.resolve();
+  };
+  const { websocket } = createBunWebSocket();
+  server = Bun.serve({ hostname: "127.0.0.1", port: 0, fetch: app.fetch, websocket });
   const base = "http://127.0.0.1:" + server.port;
   const read = async () => {
     const response = await fetch(base + route, { headers: { Connection: "close" } });

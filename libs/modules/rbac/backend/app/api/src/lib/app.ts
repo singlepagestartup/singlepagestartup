@@ -21,9 +21,18 @@ export class App implements IDefaultApp<Env> {
     this.exceptionFilter = exceptionFilter;
   }
 
+  describeRoutes() {
+    return this.apps.apps.flatMap(({ route, app }) =>
+      app
+        .describeRoutes()
+        .map((entry) => ({ ...entry, route: route + entry.route })),
+    );
+  }
+
   public async init() {
     const apps = new Apps();
     this.apps = apps;
+    this.apps.configure();
 
     this.useRoutes();
     this.hono.onError(this.exceptionFilter.catch.bind(this.exceptionFilter));
@@ -43,6 +52,10 @@ export class App implements IDefaultApp<Env> {
     );
 
     return dumps;
+  }
+
+  middleware() {
+    return this.apps.middleware();
   }
 
   async seed(props?: { type?: "model" | "relation"; seeds: ISeedResult[] }) {

@@ -1,7 +1,7 @@
 import { logger } from "@sps/backend-utils";
 import { getDrizzle } from "@sps/shared-backend-database-config";
 import * as methods from "drizzle-orm";
-import { PgTableWithColumns } from "drizzle-orm/pg-core";
+import { getTableConfig, PgTableWithColumns } from "drizzle-orm/pg-core";
 import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import fs from "fs/promises";
 import { inject, injectable } from "inversify";
@@ -16,7 +16,7 @@ import { DI } from "../../di/constants";
 import { queryBuilder } from "../../query-builder";
 import { type IFilter } from "../../query-builder/filters";
 import { FindServiceProps } from "../../services/interfaces";
-import { type IRepository } from "../interface";
+import { type IRepository, type IResourceDescription } from "../interface";
 import { consistencyContext, trackRepositoryRead } from "./context";
 
 function isDateSchema(value: unknown): boolean {
@@ -59,6 +59,34 @@ export class Database<T extends PgTableWithColumns<any>>
     this.insertSchema = config.repository.insertSchema;
     this.selectSchema = config.repository.selectSchema;
     this.configuration = config;
+  }
+
+  describe(): IResourceDescription {
+    const columns = methods.getTableColumns(this.Table);
+    return {
+      table: methods.getTableUniqueName(this.Table),
+      columns: Object.keys(columns),
+      references: getTableConfig(this.Table).foreignKeys.flatMap((key) => {
+        const reference = key.reference();
+        const targetColumns = methods.getTableColumns(reference.foreignTable);
+        if (reference.columns.length !== 1) return [];
+        const column = Object.keys(columns).find(
+          (name) => columns[name] === reference.columns[0],
+        );
+        const targetColumn = Object.keys(targetColumns).find(
+          (name) => targetColumns[name] === reference.foreignColumns[0],
+        );
+        return column && targetColumn
+          ? [
+              {
+                column,
+                table: methods.getTableUniqueName(reference.foreignTable),
+                targetColumn,
+              },
+            ]
+          : [];
+      }),
+    };
   }
 
   async find(props?: FindServiceProps): Promise<T["$inferSelect"][]> {

@@ -94,3 +94,18 @@ PostgreSQL capture, dispatcher fencing, retention and migration commands are
 documented in [providers-db](../../../providers/db/README.md). The
 [transport contract](../../../middlewares/src/lib/revalidation/README.md)
 describes private query refs, replay and browser recovery.
+
+## Resource descriptions
+
+DatabaseRepository.describe returns serializable table, column and foreign-key
+names without querying records. CRUDService.describe and RESTController.describe
+forward this contract. DefaultApp.describeRoutes describes its resource; module
+apps combine child descriptions with their mounted routes. Host consumes these
+descriptions for URL and metadata masks. API composition never inspects a
+controller's service repository or passes Drizzle Table objects to Host.
+
+HTTP response caching is mounted through HTTPCacheMiddleware. Its runtime option
+receives the sole consistency cache capability; it does not create a second
+store. ConsistencyMiddleware owns read tracking, diagnostics/check endpoints,
+WebSocket lifecycle and delivery startup. RevalidationMiddleware remains the
+Next tag and legacy notification adapter.

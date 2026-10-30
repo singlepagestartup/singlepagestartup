@@ -6,12 +6,19 @@ import {
 import { type IFilter } from "../query-builder/filters";
 import { FindServiceProps } from "../services/interfaces";
 
+export interface IResourceDescription {
+  table: string;
+  columns: string[];
+  references: { column: string; table: string; targetColumn: string }[];
+}
+
 export interface ITransferable {
   dump: (props?: any) => Promise<IDumpResult>;
   seed: (props?: { seeds: ISeedResult[] }) => Promise<ISeedResult>;
 }
 
 interface IDefaultRepository extends ITransferable {
+  describe?: () => IResourceDescription;
   /**
    * The model configuration the repository was built from. Exposed so the REST
    * boundary can read `repository.outputSchema` (issue #270) without a second

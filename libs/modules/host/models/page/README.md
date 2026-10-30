@@ -101,3 +101,13 @@ by Page API without applying another URL-prefix filter.
 
 Before migration, audit saved Page languages and duplicate `(url, language)`
 values. A default language value does not prove the content is translated.
+
+## Route source composition
+
+Host receives serializable resource descriptions through each connected
+module's describeRoutes contract. Entity apps delegate to their controllers,
+services and repositories; only the owning repository inspects its table.
+Descriptions contain column names and foreign-key references, not Table objects
+or repository instances. Host connects them to Page and Metadata through their
+controllers. The API entrypoint only calls hostApp.configureRouting(apiModules).
+New module app overrides and generator output must preserve describeRoutes.

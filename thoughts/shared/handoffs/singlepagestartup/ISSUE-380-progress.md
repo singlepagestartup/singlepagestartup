@@ -433,3 +433,94 @@ Host с проверенной production-сборкой оставлен на 3
 /tmp/sps-variant-http-check.log, /tmp/sps-single-cache-transport.log,
 /tmp/sps-variant-host-types.log, /tmp/sps-variant-api-types.log,
 /tmp/sps-variant-module-dependencies.log.
+
+## Рефакторинг API composition — 30.10.2026
+
+Входной app.ts подключает модули, middleware и транспорт. Глобальная защита
+графа демонстрационной статьи удаляется; показ дополнительных виджетов остаётся
+за клиентским вариантом с проверкой доступа. Правила подписок сохраняются в RBAC.
+Host получает описания источников масок через публичные контракты модулей,
+контроллеров и сервисов. Прямого доступа к репозиториям из apps/api нет.
+HTTPCacheMiddleware сохраняется как отдельный middleware над единым кешем.
+
+- [x] Убрать глобальный граф статьи и восстановить клиентский пример доступа.
+- [x] Перенести правила отзыва подписок в сервис RBAC и его подключение в модуль.
+- [x] Передавать Host описания маршрутов через слои приложения без Table в composition.
+- [x] Вынести transport/read tracking и вернуть HTTPCacheMiddleware.
+- [x] Проверить SEO, SSG/ISR, обычный API, подписки, middleware и WebSocket transport.
+
+В app.ts осталось 163 строки вместо 558: модули, middleware, CORS и выдача
+статических файлов. Правила заказов, отзыв подписок, обход графа и доступ к
+репозиториям из этого файла удалены.
+
+Модули публикуют describeRoutes. Описание ресурса проходит через
+DefaultApp → RESTController → CRUDService → DatabaseRepository.describe;
+оно содержит строки с именами полей, квалифицированными именами таблиц и
+внешними ключами. Host связывает эти описания с Page/Metadata через контроллеры.
+Объекты Drizzle Table и экземпляры репозиториев между модулями не передаются.
+Публичные bootstrap возвращают конкретный App; генератор сохраняет этот контракт.
+
+HTTPCacheMiddleware снова является отдельным middleware. Он получает единый
+runtime и делегирует ему кеширование и очистку. ConsistencyMiddleware владеет
+отслеживанием чтений, check/status routes, WebSocket и запуском доставки.
+Авторизация и разбор запроса выполняются до кеша; guard очистки — вне кеша.
+Административный доступ к исходным Profile остаётся в middleware RBAC.
+
+Глобальные content/byte guards статьи, граф, Subject content-route и его SDK
+удалены. Клиентский пример проверяет разрешение перед монтированием читателей
+виджетов. Вариант private у связи отображает Widget обычным способом; ограничения
+общего API из этого варианта не выводятся. Правила оплаты, периодов подписки
+и отзыва ролей сохранены в сервисе RBAC Subject.
+
+Проверки:
+
+- 134 целевых теста пройдены: 54 теста новых контрактов и композиции,
+  78 регрессионных и две интеграционные проверки. Повторные восемь тестов
+  middleware также пройдены и в итоговое число повторно не включены.
+- Интеграция с настоящим Redis и двумя TCP WebSocket-клиентами использует
+  ConsistencyMiddleware и HTTPCacheMiddleware. SDK/controller checkout
+  проверен в транзакционных фикстурах исходной БД с фиктивной оплатой.
+- Типы Host и production build пройдены. API содержит 20 прежних ошибок
+  типов вместо 21; новых нет. Проверка 15 501 исходного файла не нашла
+  нарушений направления зависимостей модулей. git diff --check пройден.
+- На запущенном API с временно включённым HTTP cache проверены HIT,
+  свежесть после записи, изоляция операторского и анонимного запроса и
+  операторская очистка. Metadata с hidden читается обычным CRUD и исключается
+  явным фильтром. Временная Metadata удалена.
+- Временная связь статьи с private и её Widget доступны через обычный
+  анонимный API. Удалённый content-route возвращает 404. Временные Article,
+  Widget и связь удалены. Анонимное чтение исходных Profile возвращает 403.
+- Новая production-сборка: Page default → noindex → hidden → default,
+  соответствующие HTTP/robots/sitemap, связанные Metadata, перекрывающиеся
+  маски и robots.txt проверены. Временные Page/Metadata/связи удалены.
+- Framework и статья сохраняют SSG/ISR, s-maxage=3600 и HIT с тем же публичным
+  HTML при тестовом cookie. Preview не заменяет и не инвалидирует публичный
+  HTML. Изолированная проверка выполнена после доставки инвалидаций очистки
+  фикстур: первая попытка совпала с этой асинхронной доставкой и получила MISS.
+- Framework, статья и обе админки открыты в браузере без ошибок консоли.
+  В обеих формах несохранённая маска title разрешилась в русский заголовок
+  статьи через API preview. Связи File/Page загрузились; формы закрыты без
+  сохранения.
+
+Host с новой production-сборкой оставлен на 3000, API — на 4000 с исходными
+настройками окружения. MIDDLEWARE_HTTP_CACHE=true использовался только для
+проверки и не записывался в env-файлы. Схемы, миграции и снимки данных БД
+не менялись. Ветка прежняя; удалённого deployment в этой доработке нет.
+
+При переносе дочерних изменений необходимо сохранить describeRoutes в своих
+module App, описания через контроллер/сервис для собственных источников масок
+и типизированный bootstrap. Подключать Host через configureRouting, RBAC через
+middleware модуля, а HTTP cache — через HTTPCacheMiddleware с единственным
+runtime. Собственные подписочные правила остаются в RBAC. Демонстрационный
+frontend статьи не предоставляет отдельной доставки приватных статей;
+проекты с такой функцией сохраняют её в своих Subject-scoped операциях.
+
+Снимки: /tmp/sps-api-composition-article.png,
+/tmp/sps-api-composition-admin-v1-preview.png,
+/tmp/sps-api-composition-admin-v2-preview.png.
+Логи: /tmp/sps-api-composition-tests.log,
+/tmp/sps-api-composition-regressions.log, /tmp/sps-api-composition-transport.log,
+/tmp/sps-api-composition-types.log, /tmp/sps-api-composition-production-build.log,
+/tmp/sps-api-composition-http-cache-check.log,
+/tmp/sps-api-composition-public-article.log,
+/tmp/sps-api-composition-page-cycle.log, /tmp/sps-api-composition-isr.log.

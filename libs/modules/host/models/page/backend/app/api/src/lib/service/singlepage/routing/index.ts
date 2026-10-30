@@ -1,12 +1,13 @@
-import { getTableColumns } from "drizzle-orm";
-import { getTableConfig, type PgTable } from "drizzle-orm/pg-core";
 import QueryString from "qs";
 import {
   API_SERVICE_URL,
   responsePipe,
   SEO_SITEMAP_MAX_CANDIDATES,
 } from "@sps/shared-utils";
-import type { FindServiceProps } from "@sps/shared-backend-api";
+import type {
+  FindServiceProps,
+  IResourceDescription,
+} from "@sps/shared-backend-api";
 
 export interface IRouteRecord {
   id: string;
@@ -15,7 +16,7 @@ export interface IRouteRecord {
 export interface IRouteSource {
   name: string;
   route: string;
-  table: PgTable;
+  resource: IResourceDescription;
 }
 export interface IRouteRelation {
   source: string;
@@ -35,18 +36,12 @@ export class RoutingService {
     const definition = this.sources.get(name);
     if (!definition)
       throw new Error("Validation error. Unknown route relation");
-    const references = getTableConfig(definition.table).foreignKeys.map(
-      (key) => {
-        const reference = key.reference();
-        const target = [...this.sources.values()].find(
-          (entry) => entry.table === reference.foreignTable,
-        );
-        const field = Object.entries(getTableColumns(definition.table)).find(
-          ([, column]) => column === reference.columns[0],
-        )?.[0];
-        return { target: target?.name, field };
-      },
-    );
+    const references = definition.resource.references.map((reference) => {
+      const target = [...this.sources.values()].find(
+        (entry) => entry.resource.table === reference.table,
+      );
+      return { target: target?.name, field: reference.column };
+    });
     const left = references.filter((reference) => reference.target === source);
     const right = references.filter((reference) => reference.target !== source);
     if (
@@ -88,10 +83,10 @@ export class RoutingService {
   ): Promise<IRouteRecord[]> {
     const source = this.sources.get(name);
     if (!source) throw new Error("Validation error. Unknown route source");
-    const columns = getTableColumns(source.table);
+    const columns = source.resource.columns;
     const orderBy = params.orderBy || {
       and: [
-        ...("orderIndex" in columns
+        ...(columns.includes("orderIndex")
           ? [{ column: "orderIndex", method: "asc" as const }]
           : []),
         { column: "id", method: "asc" as const },

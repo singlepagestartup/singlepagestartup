@@ -6,6 +6,7 @@ import type { Context } from "hono";
 import { Service } from "../../service";
 import { Handler as Preview } from "./preview";
 import { Handler as Seo } from "./seo";
+import type { IRouteSource } from "@sps/host/models/page/backend/app/api/src/lib/service/singlepage/routing";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
@@ -18,6 +19,10 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       { method: "POST", path: "/preview", handler: this.preview },
       ...this.httpRoutes,
     ]);
+  }
+
+  configureRouting(sources: IRouteSource[]) {
+    this.service.configureRouting(sources);
   }
 
   async preview(c: Context): Promise<Response> {

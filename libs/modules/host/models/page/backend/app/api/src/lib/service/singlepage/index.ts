@@ -12,7 +12,7 @@ import {
   isSeoIndexablePage,
   SEO_SITEMAP_MAX_CANDIDATES,
 } from "@sps/shared-utils";
-import { RoutingService } from "./routing";
+import { RoutingService, type IRouteSource } from "./routing";
 
 export interface EntityWithUrls extends Record<string, unknown> {
   urls: { url: string }[];
@@ -25,6 +25,10 @@ export interface FindByUrlServiceProps extends Partial<FindByIdServiceProps> {
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   routing = new RoutingService();
+
+  configureRouting(sources: IRouteSource[]) {
+    this.routing = new RoutingService(sources);
+  }
 
   protected async routePages(language?: string) {
     return (await this.find())

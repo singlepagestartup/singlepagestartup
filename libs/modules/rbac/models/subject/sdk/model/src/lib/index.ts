@@ -75,9 +75,3 @@ export {
   type IAIChatDocument,
   type IAIChatProject,
 } from "./ai-chat-project";
-
-export type {
-  IArticleContentAccess,
-  IArticleContentItem,
-  IArticleContentResult,
-} from "./blog-article-content";

@@ -21,6 +21,28 @@ export class App implements IDefaultApp<Env> {
     this.exceptionFilter = exceptionFilter;
   }
 
+  describeRoutes() {
+    return this.apps.apps.flatMap(({ route, app }) =>
+      app
+        .describeRoutes()
+        .map((entry) => ({ ...entry, route: route + entry.route })),
+    );
+  }
+
+  configureRouting(
+    modules: Record<string, Pick<IDefaultApp, "describeRoutes">>,
+  ) {
+    this.apps.configureRouting(
+      Object.entries(modules).flatMap(([name, module]) =>
+        module.describeRoutes().map(({ route, resource }) => ({
+          name: name + "." + route.slice(1),
+          route: "/api/" + name + route,
+          resource,
+        })),
+      ),
+    );
+  }
+
   public async init() {
     const apps = new Apps();
     this.apps = apps;

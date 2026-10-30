@@ -22,6 +22,14 @@ export class App implements IDefaultApp<Env> {
     this.exceptionFilter = exceptionFilter;
   }
 
+  describeRoutes() {
+    return this.apps.apps.flatMap(({ route, app }) =>
+      app
+        .describeRoutes()
+        .map((entry) => ({ ...entry, route: route + entry.route })),
+    );
+  }
+
   public async init() {
     const apps = new Apps();
     this.apps = apps;
