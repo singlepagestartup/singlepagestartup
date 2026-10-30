@@ -28,7 +28,7 @@ export function createHostModel<K extends HostModel>(
       title: "New page",
       url: "/new-page",
       description: null,
-      language: "en",
+      metadata: {},
       indexing: "auto",
       className: null,
     },
@@ -124,7 +124,7 @@ export function validateHostModel(
 ): string | null {
   const required =
     kind === "page"
-      ? ["adminTitle", "title", "url", "language", "variant"]
+      ? ["adminTitle", "title", "url", "variant"]
       : kind === "metadata"
         ? ["title", "variant"]
         : ["adminTitle", "slug", "variant"];
@@ -141,10 +141,7 @@ export function validateHostModel(
     state.models[kind].some(
       (item) =>
         item.id !== record.id &&
-        hostFieldValue(item, unique) === hostFieldValue(record, unique) &&
-        (kind !== "page" ||
-          hostFieldValue(item, "language") ===
-            hostFieldValue(record, "language")),
+        hostFieldValue(item, unique) === hostFieldValue(record, unique),
     )
   )
     return `${unique} already exists.`;

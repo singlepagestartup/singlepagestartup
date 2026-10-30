@@ -1,17 +1,18 @@
 # Host Page Model
 
-Pages own localized URL masks and compose layouts, widgets and Metadata through
-explicit relations. Fields are `id`, `title`, `description`, `url`, `language`,
-`indexing`, `variant`, `className`, `adminTitle`, `createdAt` and `updatedAt`.
-The database enforces uniqueness of `(url, language)`.
-Seed reconciliation uses the same URL/language identity. Snapshots without a
-language use the database column default (`en`), preserving other localized Pages
-and the IDs referenced by their relations.
+Pages own URL masks and compose layouts, widgets and Metadata through explicit
+relations. One record serves all configured presentation languages. The database
+keeps URL unique. `metadata` is the same JSON container used by other content
+models; `metadata.seo.title` and `metadata.seo.description` can hold language maps
+referenced by explicit Metadata masks. Legacy text fields remain fallback values.
+The old `language` column is retained for compatibility and has no routing,
+publication or indexing role. Seed reconciliation uses URL alone.
 
 ## Route lookup
 
-`findByUrl({ url, language })` selects the exact language (defaulting to the
-configured default language), then tries static pages before dynamic masks.
+`findByUrl({ url })` tries static pages before dynamic masks. The HTTP handler
+accepts a bare or locale-prefixed path and removes a supported locale prefix.
+The owning service resolves the resulting path independently of language.
 It returns `IResolvedPage`: the saved Page and a computed `routeParams` map.
 Keys are complete placeholders such as `blog.articles.slug`; values retain
 encoded pathname segments. Field lookups target exactly one entity. Hidden
@@ -22,7 +23,7 @@ The map is not stored. Queries and fragments are not route parameters.
 Host leaf compositions use Page `variant="url-segment-values"` callbacks and
 pass explicit IDs/slugs to domain components. Keep the complete map in that
 callback. The scalar `url-segment-value` API remains compatible. Client lookup
-keys include language and URL; unresolved pages return undefined, static pages
+keys include the requested URL; unresolved pages return undefined, static pages
 return an empty map. Missing keys remain undefined.
 
 `default` composes the page; `hidden` renders nothing and is unavailable as a
@@ -67,19 +68,13 @@ controls remain in client compositions; personalized data must never be added
 to the public document reader. A warm page can serve cached HTML during an API
 outage; a cold failed read remains a server error rather than a false 404.
 
-Existing installations must audit saved Page languages before rollout. A legacy
-`en` template used by old `/ru` routes needs an explicit localized Page and copied
-Page–Widget/Layout/Metadata links; exact language matching never guesses that
-content has been translated. Preserve shared content IDs and keep hreflang absent
-until equivalent localized content is verified.
-
 ## SEO operations
 
 The Page server SDK owns these operations.
 
 `api.generatePageSeo({ url, language?, page?, metadataDraft? })` returns Next.js
 `metadata`, `structuredData` and mask `diagnostics`. Host uses
-`api.resolvePageSeo(url, language)` to share the resolved Page and SEO within one
+`api.resolvePageSeo(url)` to share the resolved Page and SEO within one
 server render. Public reads use the shared finite Next cache and dependency invalidation.
 Pass `options: { cache: "no-store" }` for an uncached read; metadata drafts always
 bypass caching. `api.generate` is the compatibility adapter returning
@@ -95,13 +90,15 @@ suffix. Hidden or draft Page returns 404; Page.variant alone controls indexing.
 Source failures propagate; invalid/missing mask values use fallback and produce
 preview diagnostics.
 
-Public rendering uses `GET /api/host/pages/seo?url=...&language=...` on apps/api.
-The pathname is already unlocalized. The Page service selects the Page, reads
+Public rendering uses `GET /api/host/pages/seo?url=...` on apps/api.
+A supported prefix such as `/en/about` selects the rendering language; `/about`
+uses `internationalization.defaultLanguage.code`. No language query parameter
+is sent. The Page service selects the Page, reads
 PagesToMetadata, and resolves the selected Metadata through its public SDK.
 It uses the same configured RoutingService as URL lookup for mask context.
 Metadata retains its ordinary CRUD service and file relations.
 
-`POST /api/host/pages/seo-preview` accepts a concrete URL, language and unsaved
+`POST /api/host/pages/seo-preview` accepts a concrete URL and unsaved
 Metadata values. The Page service checks publication and resolves the draft
 without saving. Preview returns no-store/noindex, accepts accessible noindex
 Pages and rejects hidden/draft or missing Pages. The middleware excludes this
@@ -115,9 +112,9 @@ Host has no separate SEO API route.
 
 ## Sitemap and robots
 
-Anonymous `GET /api/host/pages/urls` lists candidates with saved Page language.
+Anonymous `GET /api/host/pages/urls` lists language-neutral candidates from Page.
 It excludes hidden/draft/noindex Pages before expansion. A generic mask cannot
-reintroduce a URL owned by a higher-priority excluded Page in the same language.
+reintroduce a URL owned by a higher-priority excluded Page in any presentation language.
 Page URL masks expand registered API model fields and pagination. Sources come
 from the same module registry used to mount apps/api, so adding a registered
 model does not require an SEO allowlist. API data is read anonymously through
@@ -126,7 +123,8 @@ unavailable enumeration; temporary failures propagate. The enumeration safety
 cap is one million candidates, not the per-file sitemap limit.
 
 Host `/sitemap.xml` uses the standard sitemap namespace, absolute public URLs,
-supported saved languages and deterministic deduplication. It emits a urlset or
+configured languages and deterministic deduplication. Each candidate expands to
+those configured URL prefixes without creating more Page records. It emits a urlset or
 an index of `/sitemap.xml?part=N` chunks, each within 50,000 URLs and 50 MiB.
 Invalid chunk numbers return 404. API failure returns no-store HTTP 503 with
 Retry-After; a successful empty collection is a valid empty sitemap. No dates
@@ -139,8 +137,16 @@ read each Page's noindex response. It has no application URL exclusions or
 universal query-parameter cleanup policy. Host serializes the candidates supplied
 by Page API without applying another URL-prefix filter.
 
-Before migration, audit saved Page languages and duplicate `(url, language)`
-values. A default language value does not prove the content is translated.
+## Migrating language-specific copies
+
+For an installation with the earlier URL/language duplicates, apply the additive
+JSON migration first, consolidate data, then restore URL uniqueness. Keep CMS
+writers stopped during this maintenance window. See
+[Page consolidation](../../../../../tools/runtime/README.md#page-language-consolidation).
+The tool retains original Page IDs and before-images, checks equivalent Widget/
+Layout associations, preserves translated literal SEO copy in Page JSON, and
+keeps dynamic Metadata masks. Conflicting compositions stop preparation.
+Legacy Metadata/File records remain available; seed snapshots are not rewritten.
 
 ## Route source composition
 

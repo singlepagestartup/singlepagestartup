@@ -1,5 +1,4 @@
 import "reflect-metadata";
-import { internationalization } from "@sps/shared-configuration";
 import { injectable } from "inversify";
 import {
   CRUDService,
@@ -20,7 +19,6 @@ export interface EntityWithUrls extends Record<string, unknown> {
 }
 export interface FindByUrlServiceProps extends Partial<FindByIdServiceProps> {
   url: string;
-  language?: string;
 }
 
 @injectable()
@@ -35,22 +33,18 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     this.seo.routing = this.routing;
   }
 
-  protected async routePages(language?: string) {
-    return (await this.find())
-      .filter((page) => !language || page.language === language)
-      .sort(
-        (a, b) =>
-          (a.url.match(/\[/g)?.length || 0) -
-            (b.url.match(/\[/g)?.length || 0) || a.id.localeCompare(b.id),
-      );
+  protected async routePages() {
+    return (await this.find()).sort(
+      (a, b) =>
+        (a.url.match(/\[/g)?.length || 0) - (b.url.match(/\[/g)?.length || 0) ||
+        a.id.localeCompare(b.id),
+    );
   }
 
   async findByUrl(props: FindByUrlServiceProps) {
     if (props.url.includes("?"))
       throw new Error("Validation error. Query parameters are not allowed");
-    const language =
-      props.language || internationalization.defaultLanguage.code;
-    const pages = await this.routePages(language);
+    const pages = await this.routePages();
     for (const page of pages) {
       let routeParams: Record<string, string>;
       try {
@@ -176,17 +170,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   async urls() {
-    const urls = new Map<string, { url: string; language: string }>();
+    const urls = new Map<string, { url: string }>();
     const pages = await this.routePages();
     for (const [index, page] of pages.entries()) {
       if (!isSeoIndexablePage(page)) continue;
       const exclusions = pages
         .slice(0, index)
-        .filter(
-          (candidate) =>
-            candidate.language === page.language &&
-            !isSeoIndexablePage(candidate),
-        );
+        .filter((candidate) => !isSeoIndexablePage(candidate));
       let expanded: Awaited<ReturnType<Service["withUrls"]>>;
       try {
         expanded = await this.withUrls({
@@ -215,10 +205,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           })
         )
           continue;
-        urls.set(page.language + ":" + entry.url, {
-          ...entry,
-          language: page.language,
-        });
+        urls.set(entry.url, entry);
         if (urls.size > SEO_SITEMAP_MAX_CANDIDATES)
           throw new Error(
             "Validation error. Sitemap exceeds the URL enumeration limit",
@@ -228,11 +215,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return [...urls.values()];
   }
 
-  async urlSegmentValue(props: {
-    url: string;
-    segment: string;
-    language?: string;
-  }) {
+  async urlSegmentValue(props: { url: string; segment: string }) {
     const page = await this.findByUrl(props);
     const params =
       page.routeParams ??

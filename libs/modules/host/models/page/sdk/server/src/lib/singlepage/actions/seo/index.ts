@@ -14,16 +14,15 @@ import {
 import QueryString from "qs";
 
 export interface IResolveSeoProps {
-  /** Already unlocalized pathname. */
+  /** Concrete pathname; a locale prefix selects presentation language. */
   url: string;
-  language: string;
   options?: Partial<NextRequestOptions>;
 }
 
 export async function resolveSeo(
   props: IResolveSeoProps,
 ): Promise<IResolvedPageSeo> {
-  const url = `${serverHost}${route}/seo?${QueryString.stringify({ url: props.url, language: props.language }, { encodeValuesOnly: true })}`;
+  const url = `${serverHost}${route}/seo?${QueryString.stringify({ url: props.url }, { encodeValuesOnly: true })}`;
   const res = await fetch(
     url,
     await consistencyRequestOptions(url, {

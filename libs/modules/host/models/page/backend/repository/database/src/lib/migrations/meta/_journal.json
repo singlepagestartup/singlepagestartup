@@ -22,6 +22,20 @@
       "when": 1793200379607,
       "tag": "0002_dusty_tarantula",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793398954593,
+      "tag": "0003_flaky_marvel_zombies",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793399130513,
+      "tag": "0004_military_mongu",
+      "breakpoints": true
     }
   ]
 }

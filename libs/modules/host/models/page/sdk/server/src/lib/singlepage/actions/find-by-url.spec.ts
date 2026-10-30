@@ -58,7 +58,6 @@ it("uses a tracked finite cache only when explicitly requested for a public look
   );
   await api.findByUrl({
     url: "/about",
-    language: "en",
     options: { cache: "force-cache", next: { revalidate: 300 } },
   });
   const [, options] = (global.fetch as jest.Mock).mock.calls[0];

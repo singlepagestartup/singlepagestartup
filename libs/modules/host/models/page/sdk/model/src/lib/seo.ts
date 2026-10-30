@@ -22,13 +22,11 @@ export interface IResolvedPageSeo extends IPageSeoResult {
 
 export interface ISeoPreviewProps {
   url: string;
-  language: string;
   metadata: Partial<IMetadata>;
 }
 
 export const seoResolveSchema = z.object({
   url: z.string().max(2048).startsWith("/"),
-  language: z.string().max(16),
 });
 export const seoPreviewSchema = seoResolveSchema.extend({
   metadata: metadataInsertSchema.partial(),

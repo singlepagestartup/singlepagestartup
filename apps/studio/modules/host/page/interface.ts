@@ -4,7 +4,8 @@ export interface IModel extends IHostRecord {
   title: string;
   url: string;
   description: string | null;
-  language: string;
+  metadata?: Record<string, unknown>;
+  language?: string;
   indexing?: "auto" | "noindex";
   className: string | null;
 }

@@ -9,7 +9,6 @@ import { PHASE_PRODUCTION_BUILD } from "next/constants";
 
 interface Params {
   url: string;
-  language?: string;
   segment: string;
   catchErrors?: boolean;
   host?: string;
@@ -38,7 +37,6 @@ export async function action(props: Params) {
   const stringifiedQuery = QueryString.stringify(
     {
       url: props.url,
-      language: props.language,
       segment: props.segment,
     },
     {

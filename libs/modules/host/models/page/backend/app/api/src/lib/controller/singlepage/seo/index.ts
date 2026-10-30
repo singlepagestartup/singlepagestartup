@@ -15,10 +15,7 @@ export class Handler {
           message: parsed.error.issues[0].message,
         });
       return c.json({
-        data: await this.service.seo.resolve(
-          parsed.data.url,
-          parsed.data.language,
-        ),
+        data: await this.service.seo.resolve(parsed.data.url),
       });
     } catch (error) {
       if (error instanceof HTTPException) throw error;

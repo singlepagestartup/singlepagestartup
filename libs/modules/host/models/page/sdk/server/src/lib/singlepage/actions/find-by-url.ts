@@ -15,7 +15,6 @@ import { PHASE_PRODUCTION_BUILD } from "next/constants";
 interface Params {
   host?: string;
   url: string;
-  language?: string;
   catchErrors?: boolean;
   /** Treat only an actual HTTP 404 as an absent page; other failures still throw. */
   silentNotFound?: boolean;
@@ -26,7 +25,6 @@ interface Params {
 export async function action({
   host = serverHost,
   url,
-  language,
   catchErrors = false,
   silentNotFound = false,
   silentErrorStatuses,
@@ -56,7 +54,6 @@ export async function action({
   const stringifiedQuery = QueryString.stringify(
     {
       url,
-      language,
     },
     {
       encodeValuesOnly: true,

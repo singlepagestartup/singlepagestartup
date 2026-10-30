@@ -18,16 +18,15 @@ export async function GET(request: Request) {
     const urls = new Set<string>();
     for (const page of pages) {
       const pathname = `/${page.url.join("/")}`;
-      const language =
-        page.language || internationalization.defaultLanguage.code;
-      if (!languages.includes(language)) continue;
-      urls.add(
-        getSeoCanonicalUrl({
-          origin: NEXT_PUBLIC_HOST_SERVICE_URL,
-          pathname,
-          language,
-        }),
-      );
+      for (const language of languages) {
+        urls.add(
+          getSeoCanonicalUrl({
+            origin: NEXT_PUBLIC_HOST_SERVICE_URL,
+            pathname,
+            language,
+          }),
+        );
+      }
     }
     const documents = sitemapDocuments([...urls].sort());
     const part = new URL(request.url).searchParams.get("part");

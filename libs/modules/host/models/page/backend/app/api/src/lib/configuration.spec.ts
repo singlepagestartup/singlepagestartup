@@ -1,8 +1,8 @@
 /**
- * BDD Suite: localized Page seed identity.
- * Given: two locales with the same saved URL.
+ * BDD Suite: Page seed identity.
+ * Given: one Page shared by all locales.
  * When: a Page snapshot is seeded, including a legacy snapshot without language.
- * Then: only its locale is reconciled and the other Page and its ID survive.
+ * Then: its URL is reconciled without creating a language-specific copy.
  */
 import fs from "node:fs/promises";
 import { Configuration } from "./configuration";
@@ -11,16 +11,13 @@ import { Repository } from "./repository";
 afterEach(() => jest.restoreAllMocks());
 
 it.each(["en", "ru", undefined])(
-  "preserves the other locale when seeding language %s",
+  "reconciles the same Page URL when a legacy snapshot has language %s",
   async (language) => {
     const rows = [
-      { id: "en-page", url: "/about", language: "en", title: "English" },
-      { id: "ru-page", url: "/about", language: "ru", title: "Русский" },
+      { id: "page", url: "/about", language: "en", title: "About" },
+      { id: "other", url: "/contacts", language: "en", title: "Contacts" },
     ];
-    const expectedLanguage = language ?? "en";
-    const originalOther = {
-      ...rows.find((r) => r.language !== expectedLanguage)!,
-    };
+    const originalOther = { ...rows[1] };
     const snapshot = {
       id: "snapshot-page",
       url: "/about",
@@ -52,12 +49,8 @@ it.each(["en", "ru", undefined])(
 
     expect(repository.insert).not.toHaveBeenCalled();
     expect(repository.updateFirstByField).toHaveBeenCalledTimes(1);
-    expect(result.seeds.map((seed) => seed.new.id)).toEqual([
-      `${expectedLanguage}-page`,
-    ]);
-    expect(rows.find((r) => r.language === expectedLanguage)?.title).toBe(
-      snapshot.title,
-    );
+    expect(result.seeds.map((seed) => seed.new.id)).toEqual(["page"]);
+    expect(rows.find((r) => r.id === "page")?.title).toBe(snapshot.title);
     expect(rows.find((r) => r.id === originalOther.id)).toEqual(originalOther);
   },
 );

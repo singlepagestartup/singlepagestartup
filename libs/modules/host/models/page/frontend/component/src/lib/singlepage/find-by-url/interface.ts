@@ -8,7 +8,6 @@ export const variant = "find-by-url" as const;
 export interface IComponentProps extends Omit<ISpsComponentBase, "children"> {
   variant: typeof variant;
   url: string;
-  language?: string;
   silentNotFound?: boolean;
   set?: Dispatch<SetStateAction<IModel | undefined>>;
   children?: ({ data }: { data: IModel | undefined }) => ReactNode;

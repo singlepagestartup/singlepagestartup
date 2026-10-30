@@ -416,11 +416,11 @@ manifest and deploy matching application code when restoring old variants.
 ## Page SEO publication
 
 `page-seo.ts` fills existing Host Pages through their owning SDKs. An explicit
-`sps.page-seo-input.v1` input defines each URL/language, editable Metadata fields
+`sps.page-seo-input.v2` input defines each URL, editable Metadata fields
 and a cover asset key. Every saved Page must have a definition; extra definitions
 allow the same input to cover installations with different optional templates.
-Static Metadata may contain literal localized copy; dynamic Metadata uses square
-masks. An optional `page` object changes only that Page's title/description.
+Static Metadata uses literals or masks into a Page JSON language map; dynamic
+Metadata uses the content model’s localized JSON fields. An optional `page` object changes only that Page's title/description.
 
 Assets name WebP files relative to the input, their SHA-256 and alt text. The
 command verifies bytes before mutation, uploads Files with a stable content-based
@@ -451,3 +451,33 @@ for inspection. Avoid concurrent CMS edits during publication. Rollback restores
 changed Page fields and removes only its new Page links after checking for edits;
 additive Metadata and Files remain stored. Deploy first, then prepare/apply/verify
 against the target database so startup seeding is included in the inventory.
+
+## Page language consolidation
+
+`page-languages.ts` repairs the earlier language-specific copies without changing
+content snapshots. It runs against a loopback API on the target host with the
+existing operator credentials. Prepare records all original Pages, Metadata and
+associations in a new private manifest. Apply retains the oldest Page ID, moves
+translated literal SEO fields into its JSON and replaces those Metadata fields
+with square masks. Dynamic masks remain unchanged. Layout/Widget links must be
+equivalent; conflicts and edits after preparation stop the operation. Metadata
+and File records are retained. Repeating apply on the same manifest does no work.
+
+For installations with URL/language duplicates, deploy the additive code and run
+these stages with CMS writers stopped:
+
+```sh
+NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run @sps/host:models:page:repository-migrate --through=3
+bun --env-file=apps/api/.env --tsconfig-override tsconfig.base.json tools/runtime/page-languages.ts prepare /private/tmp/page-languages-before.json
+bun --env-file=apps/api/.env --tsconfig-override tsconfig.base.json tools/runtime/page-languages.ts apply /private/tmp/page-languages-before.json
+NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run @sps/host:models:page:repository-migrate
+```
+
+The `--through` option runs an inclusive prefix of generated migrations through
+Drizzle's journal. It does not rewrite SQL or journal files or roll back already
+applied migrations. Here index 3 adds the JSON column; index 4 restores unique
+URL after data consolidation. A fresh empty database can run all migrations.
+Keep the manifest outside Git. Before reopening writers, verify one Page per
+URL, both locales' HTML/SEO, default-language routing, masks, covers, sitemap,
+hidden/noindex, and both admin editors. The retained language column is legacy
+storage and does not select Page records or create language query parameters.

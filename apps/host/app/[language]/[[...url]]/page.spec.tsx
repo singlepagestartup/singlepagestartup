@@ -49,7 +49,7 @@ it("delegates localized SEO to its model SDK", async () => {
   expect(await generateMetadata(request("ru", ["blog", "example"]))).toEqual({
     title: "SEO",
   });
-  expect(pageApi.resolvePageSeo).toHaveBeenCalledWith("/blog/example", "ru");
+  expect(pageApi.resolvePageSeo).toHaveBeenCalledWith("/ru/blog/example");
 });
 it("renders the document model with explicit route inputs", async () => {
   const html = renderToStaticMarkup(await Page(request("en", ["about"])));
@@ -65,5 +65,5 @@ it("rejects unsupported locales before reading SEO", async () => {
 
 it("preserves Next-escaped delimiters without encoding them a second time", async () => {
   await generateMetadata(request("ru", ["blog", "a%2Fb"]));
-  expect(pageApi.resolvePageSeo).toHaveBeenCalledWith("/blog/a%2Fb", "ru");
+  expect(pageApi.resolvePageSeo).toHaveBeenCalledWith("/ru/blog/a%2Fb");
 });

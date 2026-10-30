@@ -2,7 +2,11 @@ import { createHash } from "node:crypto";
 import { open, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { parseArgs } from "node:util";
-import { API_SERVICE_URL } from "@sps/shared-utils";
+import {
+  API_SERVICE_URL,
+  entityMetadataSchema,
+  type IEntityMetadata,
+} from "@sps/shared-utils";
 import { cutoverApiOrigin } from "./ai-chat-widget-links";
 
 interface IRecord {
@@ -20,13 +24,12 @@ interface IAsset {
 }
 interface IPageDefinition {
   url: string;
-  language: string;
   cover: string;
-  page?: { title: string; description: string };
+  page?: { title?: string; description?: string; metadata?: IEntityMetadata };
   metadata: IFields & { title: string; description: string };
 }
 export interface IPageSeoInput {
-  schema: "sps.page-seo-input.v1";
+  schema: "sps.page-seo-input.v2";
   assets: Record<string, IAsset>;
   pages: IPageDefinition[];
 }
@@ -120,21 +123,23 @@ export async function preparePageSeo(
   api: IPageSeoAdapter,
 ): Promise<IPageSeoManifest> {
   if (
-    input.schema !== "sps.page-seo-input.v1" ||
+    input.schema !== "sps.page-seo-input.v2" ||
     !input.pages.length ||
     !Object.keys(input.assets).length
   )
     throw Error("Explicit Page SEO input is required");
-  const definitions = new Map(
-    input.pages.map((page) => [`${page.language}:${page.url}`, page]),
-  );
+  const definitions = new Map(input.pages.map((page) => [page.url, page]));
   if (
     definitions.size !== input.pages.length ||
     input.pages.some(
       (page) =>
         !page.url.startsWith("/") ||
         (page.page &&
-          (!page.page.title.trim() || !page.page.description.trim())) ||
+          ((page.page.title !== undefined && !page.page.title.trim()) ||
+            (page.page.description !== undefined &&
+              !page.page.description.trim()) ||
+            (page.page.metadata !== undefined &&
+              !entityMetadataSchema.safeParse(page.page.metadata).success))) ||
         !page.metadata.title.trim() ||
         !page.metadata.description.trim() ||
         !input.assets[page.cover],
@@ -147,14 +152,14 @@ export async function preparePageSeo(
     all(api.pageLinks),
     all(api.coverLinks),
   ]);
-  const identities = pages.map((page) => `${page.language}:${page.url}`);
+  const identities = pages.map((page) => page.url);
   if (
     new Set(identities).size !== pages.length ||
     identities.some((key) => !definitions.has(key))
   )
-    throw Error("Every saved Page needs one explicit localized SEO definition");
+    throw Error("Every saved Page URL needs one explicit SEO definition");
   const operations = pages.map((before) => {
-    const definition = definitions.get(`${before.language}:${before.url}`)!;
+    const definition = definitions.get(before.url)!;
     const current = ordered(links.filter((link) => link.pageId === before.id))
       .map((link) =>
         metadata.find((meta) => meta.id === link.metadataId && visible(meta)),
@@ -454,9 +459,7 @@ export async function verifyPageSeo(
         ),
       )[0]?.fileStorageModuleFileId !== cover.id
     )
-      throw Error(
-        `Page SEO verification failed: ${operation.definition.language}:${operation.definition.url}`,
-      );
+      throw Error(`Page SEO verification failed: ${operation.definition.url}`);
   }
   return {
     pages: manifest.operations.length,

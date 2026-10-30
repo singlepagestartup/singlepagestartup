@@ -23,7 +23,11 @@ export async function generateMetadata({
   const { language, url = [] } = await params;
   if (!internationalization.languages.some(({ code }) => code === language))
     notFound();
-  return (await pageApi.resolvePageSeo(`/${url.join("/")}`, language)).metadata;
+  return (
+    await pageApi.resolvePageSeo(
+      `/${language}${url.length ? "/" + url.join("/") : ""}`,
+    )
+  ).metadata;
 }
 
 export default async function Page({ params }: IPageProps) {

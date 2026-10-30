@@ -31,10 +31,7 @@ import {
 } from "./utils";
 
 interface IPageReader {
-  findByUrl: (props: {
-    url: string;
-    language: string;
-  }) => Promise<IResolvedPage | undefined>;
+  findByUrl: (props: { url: string }) => Promise<IResolvedPage | undefined>;
 }
 
 export class SeoService {
@@ -50,7 +47,6 @@ export class SeoService {
       props.page ||
       (await this.pages.findByUrl({
         url: route.pathname,
-        language,
       }));
     if (!page || ["hidden", "draft"].includes(page.variant)) notFound();
     const pageId = page.id;
@@ -287,17 +283,18 @@ export class SeoService {
     });
   }
 
-  /** Resolve an already unlocalized pathname without removing a same-named segment. */
-  async resolve(url: string, language: string): Promise<IResolvedPageSeo> {
-    this.checkLanguage(language);
-    const page = await this.pages.findByUrl({
+  /** A concrete URL supplies locale; a bare path uses the configured default. */
+  async resolve(url: string): Promise<IResolvedPageSeo> {
+    const route = resolveSeoRoute(
       url,
-      language,
-    });
+      internationalization.languages.map(({ code }) => code),
+      internationalization.defaultLanguage.code,
+    );
+    const page = await this.pages.findByUrl({ url: route.pathname });
     if (!page) notFound();
     const seo = await this.assemble({
-      url,
-      language,
+      url: route.pathname,
+      language: route.language,
       page,
       options: { cache: "no-store" },
     });
@@ -305,28 +302,19 @@ export class SeoService {
   }
 
   async preview(props: ISeoPreviewProps): Promise<IPageSeoResult> {
-    this.checkLanguage(props.language);
     const route = resolveSeoRoute(
       props.url,
       internationalization.languages.map(({ code }) => code),
-      props.language,
+      internationalization.defaultLanguage.code,
     );
-    const page = await this.pages.findByUrl({
-      url: route.pathname,
-      language: props.language,
-    });
-    if (!page || ["hidden", "draft"].includes(page.variant)) notFound();
+    const page = await this.pages.findByUrl({ url: route.pathname });
+    if (!page) notFound();
     return this.assemble({
       url: route.pathname,
-      language: props.language,
+      language: route.language,
       page,
       metadataDraft: props.metadata,
       options: { cache: "no-store" },
     });
-  }
-
-  private checkLanguage(language: string) {
-    if (!internationalization.languages.some(({ code }) => code === language))
-      throw new Error("Validation error. Unknown language");
   }
 }

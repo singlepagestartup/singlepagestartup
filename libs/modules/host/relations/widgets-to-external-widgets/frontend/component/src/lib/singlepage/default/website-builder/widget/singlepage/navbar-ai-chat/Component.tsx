@@ -6,7 +6,6 @@ export function Component(props: IComponentProps) {
     <Page
       isServer={props.isServer}
       variant="url-segment-values"
-      language={props.language}
       url={props.url}
     >
       {({ data: routeParams }) => (

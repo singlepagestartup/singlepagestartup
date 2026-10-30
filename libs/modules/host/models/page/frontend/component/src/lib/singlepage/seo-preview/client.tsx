@@ -2,6 +2,7 @@
 import { useState, useId } from "react";
 import { useWatch } from "react-hook-form";
 import { internationalization } from "@sps/shared-configuration";
+import { resolveSeoRoute } from "@sps/shared-utils";
 import { api } from "@sps/host/models/page/sdk/client";
 import { Component as ChildComponent } from "./Component";
 import type { IComponentProps } from "./interface";
@@ -12,9 +13,13 @@ export default function Client({ control, metadataId }: IComponentProps) {
   const [language, setLanguage] = useState(
     internationalization.defaultLanguage.code,
   );
-  const query = api.previewSeo({
+  const pathname = resolveSeoRoute(
     url,
+    internationalization.languages.map(({ code }) => code),
     language,
+  ).pathname;
+  const query = api.previewSeo({
+    url: `/${language}${pathname === "/" ? "" : pathname}`,
     metadata: { ...draft, ...(metadataId ? { id: metadataId } : {}) },
   });
   const result = query.data;
@@ -38,8 +43,16 @@ export default function Client({ control, metadataId }: IComponentProps) {
       id={id}
       url={url}
       language={language}
-      setUrl={setUrl}
-      setLanguage={setLanguage}
+      setUrl={(value) => {
+        setUrl(value);
+        const prefix = value.split("/")[1];
+        if (internationalization.languages.some(({ code }) => code === prefix))
+          setLanguage(prefix);
+      }}
+      setLanguage={(value) => {
+        setLanguage(value);
+        setUrl(`/${value}${pathname === "/" ? "" : pathname}`);
+      }}
       onPreview={() => void query.refetch()}
       isFetching={query.isFetching}
       error={query.error?.message}

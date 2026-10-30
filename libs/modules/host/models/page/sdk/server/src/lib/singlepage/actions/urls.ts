@@ -3,7 +3,6 @@ import { responsePipe, type NextRequestOptions } from "@sps/shared-utils";
 
 interface IUrlRecord {
   url: string;
-  language?: string;
 }
 
 interface IUrlsProps {
@@ -26,7 +25,7 @@ export async function action({
       if (typeof entry.url !== "string" || !entry.url.startsWith("/")) {
         throw new Error("Invalid URL in page enumeration response");
       }
-      return { ...entry, url: entry.url.split("/").filter(Boolean) };
+      return { url: entry.url.split("/").filter(Boolean) };
     });
   } catch (error) {
     if (catchErrors) return undefined;

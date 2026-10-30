@@ -6,7 +6,6 @@ import { api } from "@sps/host/models/page/sdk/server";
 
 export default async function Server(props: IComponentProps) {
   const data = await api.findByUrl({
-    language: props.language,
     url: props.url,
     silentNotFound: props.silentNotFound,
   });

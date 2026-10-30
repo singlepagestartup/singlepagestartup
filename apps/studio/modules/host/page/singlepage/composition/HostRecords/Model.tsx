@@ -911,32 +911,55 @@ export function HostModelForm({
             .map((key) => (
               <label key={key} className="grid min-w-0 gap-2">
                 <span className={kit.label}>{key}</span>
-                <input
-                  className={kit.field}
-                  value={hostFieldValue(draft, key)}
-                  required={
-                    key === "adminTitle" ||
-                    key === "url" ||
-                    key === "slug" ||
-                    key === "language" ||
-                    key === "variant" ||
-                    (key === "title" && model !== "layout")
-                  }
-                  onChange={(event) =>
-                    patch(
-                      key,
-                      event.target.value ||
-                        (key === "className" ||
-                        key === "description" ||
-                        (model === "metadata" &&
-                          key !== "title" &&
-                          key !== "variant") ||
-                        (model === "layout" && key === "title")
-                          ? null
-                          : ""),
-                    )
-                  }
-                />
+                {key === "metadata" ? (
+                  <textarea
+                    className={`${kit.field} min-h-40 font-mono`}
+                    defaultValue={hostFieldValue(draft, key)}
+                    onChange={(event) => {
+                      try {
+                        const value = JSON.parse(event.target.value);
+                        if (
+                          !value ||
+                          typeof value !== "object" ||
+                          Array.isArray(value)
+                        )
+                          throw Error("Expected a JSON object");
+                        event.target.setCustomValidity("");
+                        patch(key, value);
+                      } catch {
+                        event.target.setCustomValidity(
+                          "Enter a valid JSON object",
+                        );
+                      }
+                    }}
+                  />
+                ) : (
+                  <input
+                    className={kit.field}
+                    value={hostFieldValue(draft, key)}
+                    required={
+                      key === "adminTitle" ||
+                      key === "url" ||
+                      key === "slug" ||
+                      key === "variant" ||
+                      (key === "title" && model !== "layout")
+                    }
+                    onChange={(event) =>
+                      patch(
+                        key,
+                        event.target.value ||
+                          (key === "className" ||
+                          key === "description" ||
+                          (model === "metadata" &&
+                            key !== "title" &&
+                            key !== "variant") ||
+                          (model === "layout" && key === "title")
+                            ? null
+                            : ""),
+                      )
+                    }
+                  />
+                )}
               </label>
             ))}
         </div>

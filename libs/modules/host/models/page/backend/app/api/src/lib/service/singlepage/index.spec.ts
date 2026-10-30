@@ -27,17 +27,17 @@ it("indexes saved published Pages independently of URL prefixes and legacy index
     page({ id: "contacts", url: "/contacts" }),
   ]);
   expect(await service.urls()).toEqual([
-    { url: "/contacts", language: "ru" },
-    { url: "/ai-chat/public", language: "ru" },
+    { url: "/contacts" },
+    { url: "/ai-chat/public" },
   ]);
 });
 it.each(["hidden", "draft"])(
   "returns 404 and omits %s Pages",
   async (variant) => {
     const service = create([page({ variant })]);
-    await expect(
-      service.findByUrl({ url: "/about", language: "ru" }),
-    ).rejects.toThrow("Not Found");
+    await expect(service.findByUrl({ url: "/about" })).rejects.toThrow(
+      "Not Found",
+    );
     expect(await service.urls()).toEqual([]);
   },
 );
@@ -45,9 +45,9 @@ it("keeps noindex route shells available without reading authenticated data", as
   const service = create([
     page({ variant: "noindex", url: "/private/[custom.items.id]" }),
   ]);
-  expect(
-    await service.findByUrl({ url: "/private/one", language: "ru" }),
-  ).toMatchObject({ routeParams: { "custom.items.id": "one" } });
+  expect(await service.findByUrl({ url: "/private/one" })).toMatchObject({
+    routeParams: { "custom.items.id": "one" },
+  });
   expect(service.routing.find).not.toHaveBeenCalled();
   expect(await service.urls()).toEqual([]);
 });
@@ -56,29 +56,24 @@ it("uses registered route sources for new modules without an SEO collection list
   jest
     .mocked(service.routing.all)
     .mockResolvedValue([{ id: "one", slug: "new-work" }]);
-  expect(await service.urls()).toEqual([
-    { url: "/portfolio/new-work", language: "ru" },
-  ]);
+  expect(await service.urls()).toEqual([{ url: "/portfolio/new-work" }]);
   jest
     .mocked(service.routing.find)
     .mockResolvedValue([{ id: "one", slug: "new-work" }]);
-  expect(
-    await service.findByUrl({ url: "/portfolio/new-work", language: "ru" }),
-  ).toMatchObject({ routeParams: { "custom.projects.slug": "new-work" } });
+  expect(await service.findByUrl({ url: "/portfolio/new-work" })).toMatchObject(
+    { routeParams: { "custom.projects.slug": "new-work" } },
+  );
   jest.mocked(service.routing.find).mockResolvedValue([]);
   await expect(
-    service.findByUrl({ url: "/portfolio/missing", language: "ru" }),
+    service.findByUrl({ url: "/portfolio/missing" }),
   ).rejects.toThrow("Not Found");
 });
-it("prefers exact localized static Pages before route masks", async () => {
+it("prefers exact static Pages before route masks", async () => {
   const service = create([
     page({ id: "mask", url: "/[custom.items.slug]" }),
     page(),
-    page({ id: "en", language: "en" }),
   ]);
-  expect((await service.findByUrl({ url: "/about", language: "ru" })).id).toBe(
-    "page",
-  );
+  expect((await service.findByUrl({ url: "/about" })).id).toBe("page");
   expect(service.routing.find).not.toHaveBeenCalled();
 });
 it("expands pagination through the Page route constructor and keeps page 1 unnumbered", async () => {
@@ -93,13 +88,13 @@ it("expands pagination through the Page route constructor and keeps page 1 unnum
       { id: "e" },
     ]);
   expect(await service.urls()).toEqual([
-    { url: "/news", language: "ru" },
-    { url: "/news/2", language: "ru" },
-    { url: "/news/3", language: "ru" },
+    { url: "/news" },
+    { url: "/news/2" },
+    { url: "/news/3" },
   ]);
-  await expect(
-    service.findByUrl({ url: "/news/4", language: "ru" }),
-  ).rejects.toThrow("Not Found");
+  await expect(service.findByUrl({ url: "/news/4" })).rejects.toThrow(
+    "Not Found",
+  );
 });
 it("does not impose cross-model association requirements on Page masks", async () => {
   const service = create([
@@ -112,9 +107,7 @@ it("does not impose cross-model association requirements on Page masks", async (
         ? [{ id: "g", slug: "group" }]
         : [{ id: "i", slug: "item" }],
     );
-  expect(await service.urls()).toEqual([
-    { url: "/group/item", language: "ru" },
-  ]);
+  expect(await service.urls()).toEqual([{ url: "/group/item" }]);
 });
 it("does not turn source outages into a partial successful sitemap", async () => {
   const service = create([page({ url: "/[custom.items.slug]" })]);
@@ -133,14 +126,12 @@ it("retains legacy scalar route lookups and returns null for a missing segment",
   expect(
     await service.urlSegmentValue({
       url: "/private/one",
-      language: "ru",
       segment: "custom.items.id",
     }),
   ).toBe("one");
   expect(
     await service.urlSegmentValue({
       url: "/private/one",
-      language: "ru",
       segment: "other.id",
     }),
   ).toBeNull();
@@ -151,28 +142,24 @@ it("does not let a generic mask override an explicitly hidden static Page", asyn
     page({ variant: "hidden" }),
     page({ id: "mask", url: "/[custom.items.slug]" }),
   ]);
-  await expect(
-    service.findByUrl({ url: "/about", language: "ru" }),
-  ).rejects.toThrow("Not Found");
+  await expect(service.findByUrl({ url: "/about" })).rejects.toThrow(
+    "Not Found",
+  );
   expect(service.routing.find).not.toHaveBeenCalled();
 });
 
 it.each(["hidden", "draft", "noindex"])(
-  "does not reintroduce a localized %s Page through a generic sitemap mask",
+  "does not reintroduce a %s Page through a generic sitemap mask",
   async (variant) => {
     const service = create([
       page({ variant }),
       page({ id: "ru-mask", url: "/[custom.items.slug]" }),
-      page({ id: "en-mask", language: "en", url: "/[custom.items.slug]" }),
+      page({ id: "en-mask", url: "/[custom.items.slug]" }),
     ]);
     jest.mocked(service.routing.all).mockResolvedValue([
       { id: "one", slug: "about" },
       { id: "two", slug: "contacts" },
     ]);
-    expect(await service.urls()).toEqual([
-      { url: "/about", language: "en" },
-      { url: "/contacts", language: "en" },
-      { url: "/contacts", language: "ru" },
-    ]);
+    expect(await service.urls()).toEqual([{ url: "/contacts" }]);
   },
 );

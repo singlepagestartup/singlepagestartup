@@ -41,10 +41,11 @@ export async function generatePageSeo(
     props.language || internationalization.defaultLanguage.code,
   );
   const language = props.language || route.language;
+  const pathname = `/${language}${route.pathname === "/" ? "" : route.pathname}`;
   const result = await adapt(() =>
     props.metadataDraft
-      ? preview({ url: props.url, language, metadata: props.metadataDraft })
-      : resolveSeo({ url: route.pathname, language, options: props.options }),
+      ? preview({ url: pathname, metadata: props.metadataDraft })
+      : resolveSeo({ url: pathname, options: props.options }),
   );
   return nextMetadata(result);
 }
@@ -52,7 +53,7 @@ export async function action(props: IGeneratePageSeoProps): Promise<Metadata> {
   return (await generatePageSeo(props)).metadata;
 }
 /** Shared per server render, independently from persistent ISR caching. */
-export const resolvePageSeo = cache(async (url: string, language: string) => {
-  const result = await adapt(() => resolveSeo({ url, language }));
+export const resolvePageSeo = cache(async (url: string) => {
+  const result = await adapt(() => resolveSeo({ url }));
   return { page: result.page, ...nextMetadata(result) };
 });

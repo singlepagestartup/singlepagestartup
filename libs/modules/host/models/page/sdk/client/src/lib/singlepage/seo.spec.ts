@@ -9,6 +9,8 @@ jest.mock("@sps/shared-frontend-client-api", () => ({
   Provider: () => null,
 }));
 jest.mock("@sps/shared-utils", () => ({
+  entityMetadataSchema: jest.requireActual("@sps/shared-utils/metadata")
+    .entityMetadataSchema,
   responsePipe: async ({ res }: { res: Response }) => {
     if (!res.ok) throw new Error("Preview failed");
     return res.json();
@@ -24,7 +26,6 @@ describe("Page client SEO preview transport", () => {
   it("calls Page API with unsaved form values and unwraps its data envelope", async () => {
     const draft = {
       url: "/blog/one",
-      language: "ru",
       metadata: { title: "Draft" },
     };
     api.previewSeo(draft);

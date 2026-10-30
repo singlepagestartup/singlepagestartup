@@ -7,7 +7,6 @@ export default async function NotFoundPage() {
       isServer={true}
       variant="find-by-url"
       url="/404"
-      language={internationalization.defaultLanguage.code}
       silentNotFound={true}
     >
       {({ data }) => {

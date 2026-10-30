@@ -62,7 +62,7 @@ it.each(["</script>", "</script >", "</script\t>", "</script\t\n bar>"])(
       structuredData: [{ headline }],
     } as any);
     const html = await renderDocument();
-    expect(pageApi.resolvePageSeo).toHaveBeenCalledWith("/article", "ru");
+    expect(pageApi.resolvePageSeo).toHaveBeenCalledWith("/ru/article");
     expect(renderedProps).toHaveBeenCalledWith(
       expect.objectContaining({
         data: page,

@@ -23,7 +23,7 @@ jest.mock("@sps/shared-utils", () => ({
 
 const urls = api.urls as jest.Mock;
 
-it("publishes each saved language once and escapes XML characters in paths", async () => {
+it("expands each shared Page to configured languages once and escapes XML characters in paths", async () => {
   urls.mockResolvedValue([
     { url: [], language: "ru" },
     { url: ["blog", "one&two"], language: "ru" },
@@ -39,7 +39,7 @@ it("publishes each saved language once and escapes XML characters in paths", asy
   expect(body).toContain("<loc>https://example.test/ru</loc>");
   expect(body).toContain("<loc>https://example.test/ru/blog/one&amp;two</loc>");
   expect(body).toContain("<loc>https://example.test/en/about</loc>");
-  expect(body.match(/<loc>/g)).toHaveLength(4);
+  expect(body.match(/<loc>/g)).toHaveLength(8);
   expect(body).not.toMatch(/hreflang|lastmod/);
 });
 
@@ -79,8 +79,12 @@ it("splits a large sitemap into discoverable protocol-compliant parts", async ()
   const second = await GET(
     new Request("https://example.test/sitemap.xml?part=2"),
   );
-  expect((await second.text()).match(/<url>/g)).toHaveLength(1);
+  expect((await second.text()).match(/<url>/g)).toHaveLength(50_000);
+  const third = await GET(
+    new Request("https://example.test/sitemap.xml?part=3"),
+  );
+  expect((await third.text()).match(/<url>/g)).toHaveLength(2);
   expect(
-    (await GET(new Request("https://example.test/sitemap.xml?part=3"))).status,
+    (await GET(new Request("https://example.test/sitemap.xml?part=4"))).status,
   ).toBe(404);
 });

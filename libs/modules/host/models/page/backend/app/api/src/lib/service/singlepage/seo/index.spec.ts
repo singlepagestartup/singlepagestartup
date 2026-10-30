@@ -192,7 +192,6 @@ it("previews current unsaved Metadata for the selected Page without changing pub
   jest.mocked(pages.findByUrl).mockResolvedValue(page({ variant: "noindex" }));
   const result = await seo.preview({
     url: "/ru/account",
-    language: "ru",
     metadata: {
       title: "Unsaved title",
       opengraphImage: "https://example.com/a.webp",
@@ -269,17 +268,16 @@ it("preserves an already resolved path identical to its language", async () => {
       opengraphImage: "https://example.com/a.webp",
     },
   ]);
-  expect(
-    (await seo.resolve("/ru", "ru")).metadata.alternates?.canonical,
-  ).toMatch(/\/ru\/ru$/);
+  expect((await seo.resolve("/ru/ru")).metadata.alternates?.canonical).toMatch(
+    /\/ru\/ru$/,
+  );
 });
 
 it("resolves its Page through the owning service before reading related Metadata", async () => {
   pages.findByUrl.mockResolvedValue(page());
-  await seo.resolve("/about", "ru");
+  await seo.resolve("/ru/about");
   expect(pages.findByUrl).toHaveBeenCalledWith({
     url: "/about",
-    language: "ru",
   });
   expect(linksApi.find).toHaveBeenCalledWith(
     expect.objectContaining({
@@ -295,4 +293,41 @@ it("resolves its Page through the owning service before reading related Metadata
       },
     }),
   );
+});
+
+it("uses one Page for Russian, English and default-language SEO", async () => {
+  const shared = page({
+    metadata: {
+      seo: {
+        title: { ru: "О фреймворке", en: "About the framework" },
+        description: { ru: "Веб-разработка", en: "Web development" },
+      },
+    },
+  });
+  pages.findByUrl.mockResolvedValue(shared);
+  jest.mocked(metadata.find).mockResolvedValue([
+    {
+      id: "meta",
+      title: "[host.pages.metadata.seo.title]",
+      description: "[host.pages.metadata.seo.description]",
+    },
+  ] as any);
+  const implicit = await seo.resolve("/about");
+  const russian = await seo.resolve("/ru/about");
+  const english = await seo.resolve("/en/about");
+  expect([implicit.page.id, russian.page.id, english.page.id]).toEqual([
+    "page",
+    "page",
+    "page",
+  ]);
+  expect(implicit.metadata.title).toBe("О фреймворке");
+  expect(russian.metadata.title).toBe("О фреймворке");
+  expect(english.metadata.title).toBe("About the framework");
+  expect(english.metadata.description).toBe("Web development");
+  expect(english.metadata.alternates?.canonical).toMatch(/\/en\/about$/);
+  expect(
+    pages.findByUrl.mock.calls.every(
+      ([props]) => JSON.stringify(props) === '{"url":"/about"}',
+    ),
+  ).toBe(true);
 });

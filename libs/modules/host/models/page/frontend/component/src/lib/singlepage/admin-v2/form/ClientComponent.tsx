@@ -9,7 +9,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { variants, insertSchema } from "@sps/host/models/page/sdk/model";
 import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin-v2/form/Component";
 import { useGetAdminFormState } from "@sps/shared-frontend-client-hooks";
-import { internationalization } from "@sps/shared-configuration";
+import { useRef } from "react";
+import { MetadataField } from "@sps/shared-frontend-components/singlepage/admin/metadata-editor/field";
 import {
   Tabs,
   TabsContent,
@@ -19,6 +20,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 
 export function Component(props: IComponentPropsExtended) {
+  const expectedMetadata = useRef(props.data?.metadata || {});
   const updateEntity = api.update();
   const createEntity = api.create();
 
@@ -30,8 +32,7 @@ export function Component(props: IComponentPropsExtended) {
   const form = useForm<z.infer<typeof insertSchema>>({
     resolver: zodResolver(insertSchema),
     defaultValues: {
-      language:
-        props.data?.language || internationalization.defaultLanguage.code,
+      metadata: props.data?.metadata || {},
       description: props.data?.description || "",
       title: props.data?.title || "",
       url: props.data?.url || "/",
@@ -42,7 +43,17 @@ export function Component(props: IComponentPropsExtended) {
 
   async function onSubmit(data: z.infer<typeof insertSchema>) {
     if (props.data?.id) {
-      updateEntity.mutate({ id: props.data?.id, data });
+      updateEntity.mutate(
+        {
+          id: props.data.id,
+          data: { ...data, _expectedMetadata: expectedMetadata.current },
+        },
+        {
+          onSuccess: (record) => {
+            expectedMetadata.current = record.metadata;
+          },
+        },
+      );
       return;
     }
 
@@ -142,13 +153,7 @@ export function Component(props: IComponentPropsExtended) {
 
         <TabsContent value="details" className="mt-0 pt-6">
           <div className="flex flex-col gap-6">
-            <FormField
-              ui="shadcn"
-              type="text"
-              name="language"
-              label="Language"
-              form={form}
-            />
+            <MetadataField form={form} />
             <FormField
               ui="shadcn"
               type="text"

@@ -11,7 +11,7 @@ export const HOST_STUDIO_FIELDS = {
     "title",
     "url",
     "description",
-    "language",
+    "metadata",
     "indexing",
     "variant",
     "className",

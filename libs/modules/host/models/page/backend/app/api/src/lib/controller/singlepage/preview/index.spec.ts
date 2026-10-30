@@ -16,7 +16,6 @@ describe("Page SEO preview HTTP contract", () => {
   );
   const draft = {
     url: "/ru/blog/one",
-    language: "ru",
     metadata: { title: "[blog.articles.title]" },
   };
   const request = (data: unknown) =>

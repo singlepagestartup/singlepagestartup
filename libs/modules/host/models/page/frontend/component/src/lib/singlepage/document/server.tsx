@@ -6,8 +6,7 @@ import { Component as ChildComponent } from "./Component";
 
 export default async function Server(props: IComponentProps) {
   const { page, structuredData } = await pageApi.resolvePageSeo(
-    props.url,
-    props.language,
+    `/${props.language}${props.url === "/" ? "" : props.url}`,
   );
   return (
     <ChildComponent

@@ -7,7 +7,6 @@ import { api } from "@sps/host/models/page/sdk/client";
 
 export default function Client(props: IComponentProps) {
   const { data, isLoading } = api.findByUrl({
-    language: props.language,
     url: props.url,
   });
 

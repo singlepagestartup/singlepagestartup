@@ -15,7 +15,6 @@ function fixture() {
       {
         id: "ru-page",
         url: "/blog",
-        language: "ru",
         title: "Blog",
         description: "Description",
         variant: "default",
@@ -23,8 +22,7 @@ function fixture() {
       },
       {
         id: "en-page",
-        url: "/blog",
-        language: "en",
+        url: "/framework",
         title: "Blog",
         description: "Description",
         variant: "default",
@@ -102,7 +100,7 @@ function fixture() {
   ) as unknown as IPageSeoAdapter;
   const bytes = new TextEncoder().encode("verified cover bytes");
   const input: IPageSeoInput = {
-    schema: "sps.page-seo-input.v1",
+    schema: "sps.page-seo-input.v2",
     assets: {
       blog: {
         path: "blog.webp",
@@ -111,8 +109,7 @@ function fixture() {
       },
     },
     pages: ["ru", "en"].map((language) => ({
-      url: "/blog",
-      language,
+      url: language === "ru" ? "/blog" : "/framework",
       cover: "blog",
       page: {
         title: language === "ru" ? "Блог" : "Blog",

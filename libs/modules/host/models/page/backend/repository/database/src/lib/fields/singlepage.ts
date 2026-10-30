@@ -1,10 +1,15 @@
 import * as pgCore from "drizzle-orm/pg-core";
-import { randomWordsGenerator } from "@sps/shared-utils";
+import { type IEntityMetadata, randomWordsGenerator } from "@sps/shared-utils";
 
 export const fields = {
+  metadata: pgCore
+    .jsonb("metadata")
+    .$type<IEntityMetadata>()
+    .notNull()
+    .default({}),
   id: pgCore.uuid("id").primaryKey().defaultRandom(),
   title: pgCore.text("title").notNull().default("Page"),
-  url: pgCore.text("url").notNull().default("/"),
+  url: pgCore.text("url").notNull().default("/").unique(),
   description: pgCore.text("description").default("Description"),
   createdAt: pgCore.timestamp("created_at").notNull().defaultNow(),
   updatedAt: pgCore.timestamp("updated_at").notNull().defaultNow(),
@@ -14,6 +19,7 @@ export const fields = {
     .text("indexing", { enum: ["auto", "noindex"] })
     .notNull()
     .default("auto"),
+  // Legacy storage only; URL lookup and presentation locale do not use this field.
   language: pgCore.text("language").notNull().default("en"),
   adminTitle: pgCore
     .text("admin_title")

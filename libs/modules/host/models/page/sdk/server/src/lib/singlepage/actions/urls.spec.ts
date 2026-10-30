@@ -2,7 +2,7 @@
  * BDD Suite: public URL SDK transport.
  * Given: URL enumeration returns data, an HTTP failure or malformed data.
  * When: the server SDK reads sitemap candidates.
- * Then: language and path segments survive and failures cannot look like an empty site.
+ * Then: path segments survive without imposing Page languages and failures cannot look like an empty site.
  */
 import { action } from "./urls";
 
@@ -14,23 +14,20 @@ afterEach(() => {
   global.fetch = originalFetch;
 });
 
-it("preserves the Page language and the existing segment-array contract", async () => {
+it("preserves the segment-array contract without Page language data", async () => {
   (global.fetch as jest.Mock).mockResolvedValue(
     new Response(
       JSON.stringify({
         data: {
-          urls: [
-            { url: "/", language: "ru" },
-            { url: "/blog/article", language: "en" },
-          ],
+          urls: [{ url: "/" }, { url: "/blog/article" }],
         },
       }),
       { status: 200 },
     ),
   );
   await expect(action({ host: "https://api.example.test" })).resolves.toEqual([
-    { url: [], language: "ru" },
-    { url: ["blog", "article"], language: "en" },
+    { url: [] },
+    { url: ["blog", "article"] },
   ]);
   expect(global.fetch).toHaveBeenCalledWith(
     "https://api.example.test/api/host/pages/urls",

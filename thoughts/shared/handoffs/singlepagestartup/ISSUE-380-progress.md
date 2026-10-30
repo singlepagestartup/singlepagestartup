@@ -588,3 +588,82 @@ URL/масок конфигурируются только у Page. Данные
 /tmp/sps-page-owned-cache-check.log, /tmp/sps-page-owned-policy-check.log,
 /tmp/sps-page-owned-isr-check.log. Эти изменения проверены локально на 3000/4000;
 удалённый релиз и повторный Lighthouse в этот перенос не входят.
+
+## Одна Page для всех языков — 31.10.2026
+
+Page определяется URL и маской. Язык выбирает представление JSON-полей и SEO,
+а не отдельную запись Page. Язык не передаётся отдельным query-параметром.
+Полный URL с префиксом определяет язык; путь без префикса использует настройку
+по умолчанию. Legacy Page.language не участвует в поиске или sitemap.
+
+- [x] Удалить language из lookup/SEO query и фильтрации Page.
+- [x] Объединить 51 языковую пару тестовых Pages, сохранив исходные ID,
+      общие виджеты/макеты, переводы SEO в JSON и резервную копию исходных записей.
+- [x] Вернуть уникальность URL штатной Drizzle-генерацией после объединения.
+- [x] Обновить обе формы, sitemap, SDK, runtime-инструменты и документацию.
+- [x] Проверить русский, английский и язык по умолчанию, отсутствие language
+      в query, одинаковый Page ID, hidden/noindex, кеш и production ISR.
+
+Результат:
+
+- Page lookup и URL enumeration не фильтруют записи по language. Контроллеры,
+  SDK и SEO schema не принимают отдельный language query. SEO и preview
+  используют полный URL: /en/about выбирает английские JSON-значения, /about —
+  настроенный русский язык. Компоненты сохраняют свой контекст отображения.
+- В исходной тестовой БД 102 Page объединены в 51 уникальный URL. Сохранены
+  исходные ID, одинаковые Widget/Layout связи и все Metadata/File записи.
+  Различающиеся буквальные SEO-переводы находятся в Page.metadata.seo и
+  Page.metadata.seoDisplay; связанные Metadata используют явные маски.
+  Одинаковые динамические маски Article/Product/Profile сохранены.
+- Legacy Page.language существовал до SEO-задачи. Он сохранён как неиспользуемое
+  поле совместимости и не участвует в identity, lookup, sitemap или формах Page.
+- Два файла миграций и snapshots/journal созданы repository-generate:
+  0003 добавляет JSON metadata, 0004 восстанавливает unique(url). Runtime-tool
+  page-languages.ts сохраняет before-images, проверяет состав страниц и отказывается
+  перетирать изменения после prepare. Повторный apply сохраняет завершённые шаги.
+- Для обновления установок с дублями Page migrate поддерживает --through=3:
+  сначала штатный префикс generated migrations через Drizzle, затем SDK
+  consolidation, затем обычный migrate. Это не переписывает SQL/journal.
+  Обычный общий мигратор без аргументов сохраняет прежнее поведение.
+- Обе формы Page редактируют JSON через существующий MetadataField; передают
+  \_expectedMetadata при записи. Studio использует URL uniqueness и JSON-поле.
+  page-seo input v2 содержит одну декларацию на URL и допускает Page metadata.
+- Sitemap разворачивает один набор Page URL во все настроенные языки. Hidden,
+  draft и noindex исключаются до разворачивания; отдельные записи для языков
+  не создаются.
+
+Проверки:
+
+- 129 Jest-проверок Host/мигратора + 10 Next route/sitemap + 13 Bun runtime
+  - 1 Studio Provider: 153 passed. Полная проверка типов Host и production
+    build прошли; публичный catch-all остаётся SSG/ISR. API: прежние 20
+    type diagnostics, новых нет; module-dependencies — 0 нарушений.
+- /about, /ru/about и /en/about разрешаются в Page
+  99ffcce1-adf1-44c0-878a-19902b9151ff. Русский заголовок — «О SinglePageStartup»,
+  английский — «About SinglePageStartup». Bare /about перенаправляется 308 на
+  /ru/about. В захваченных SDK запросах language query отсутствует.
+- Article SEO и HTML: /ru/blog/articles/framework-blog — «Покажите свой опыт
+  в статьях — SinglePageStartup»; /en/... — «Share your expertise in articles
+  — SinglePageStartup». Статья и Page общие для двух языков.
+- About HTML: верные title, canonical, html lang и og:locale, ISR HIT и
+  s-maxage=3600. API response cache даёт HIT отдельно для обоих полных URL
+  и не смешивает тексты. Изменение английского JSON-заголовка обновляет ISR;
+  русский заголовок остаётся прежним.
+- noindex → hidden → default проверен в обоих языках по HTTP status, robots и
+  sitemap. Missing English Page возвращает 404. Временная Page, Metadata и
+  связь удалены; в БД осталось 51 уникальное значение URL.
+- Обе production-админки открыли JSON одной Page, переключили его на English
+  и разрешили /en/about в Metadata preview. Console errors: 0; формы закрыты
+  без сохранения. Тестовое включение HTTP cache не меняло env-файлы.
+
+Before-images и завершённый manifest: /tmp/sps-page-languages-manifest.json
+(вне Git). Логи: /tmp/sps-page-language-check.log,
+/tmp/sps-page-languages-host-check.log, /tmp/sps-page-languages-build.log,
+/tmp/sps-page-languages-jest-final.log, /tmp/sps-page-languages-next-jest.log,
+/tmp/sps-page-languages-runtime-tests-final.log,
+/tmp/sps-page-languages-studio-tests.log, /tmp/sps-page-languages-api-types.log.
+Снимки: /tmp/sps-page-languages-page-admin-v1.png,
+/tmp/sps-page-languages-page-admin-v2.png,
+/tmp/sps-page-languages-preview-admin-v1.png,
+/tmp/sps-page-languages-preview-admin-v2.png. Проверено локально на 3000/4000;
+удалённый сервер этим исправлением не обновлялся.

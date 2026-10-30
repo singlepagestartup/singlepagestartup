@@ -16,7 +16,10 @@ jest.mock("../variants", () => ({
 jest.mock("@sps/shared-configuration", () => ({
   internationalization: {
     defaultLanguage: { code: "ru" },
-    languages: [{ code: "ru", title: "Russian" }],
+    languages: [
+      { code: "ru", title: "Russian" },
+      { code: "en", title: "English" },
+    ],
   },
 }));
 function Editor() {
@@ -54,7 +57,6 @@ it("passes unsaved Metadata values through the Page reader and previews the sele
   });
   expect(api.previewSeo).toHaveBeenLastCalledWith({
     url: "/ru/blog/articles/framework-blog",
-    language: "ru",
     metadata: { title: "[blog.articles.title]", id: "existing-metadata" },
   });
   fireEvent.click(screen.getByRole("button", { name: "Preview draft" }));
@@ -81,4 +83,26 @@ it("renders the Page SDK result and its publication policy", () => {
   expect(
     screen.getByText("Canonical: https://example.com/ru/framework"),
   ).toBeTruthy();
+});
+
+it("takes an explicit English URL into the preview and sends no language field", () => {
+  render(<Editor />);
+  fireEvent.change(screen.getByLabelText("Page URL"), {
+    target: { value: "/en/about" },
+  });
+  expect(api.previewSeo).toHaveBeenLastCalledWith(
+    expect.objectContaining({ url: "/en/about" }),
+  );
+  expect(jest.mocked(api.previewSeo).mock.calls.at(-1)![0]).not.toHaveProperty(
+    "language",
+  );
+  fireEvent.change(screen.getByLabelText("Language"), {
+    target: { value: "ru" },
+  });
+  expect((screen.getByLabelText("Page URL") as HTMLInputElement).value).toBe(
+    "/ru/about",
+  );
+  expect(api.previewSeo).toHaveBeenLastCalledWith(
+    expect.objectContaining({ url: "/ru/about" }),
+  );
 });

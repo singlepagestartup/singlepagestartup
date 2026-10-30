@@ -6,14 +6,6 @@ export const table = "page";
 
 const pgTable = pgCore.pgTableCreator((name) => `${moduleName}_${name}`);
 
-export const Table = pgTable(
-  table,
-  {
-    ...fields,
-  },
-  (table) => [
-    pgCore
-      .unique("sps_h_page_url_language_unique")
-      .on(table.url, table.language),
-  ],
-);
+export const Table = pgTable(table, {
+  ...fields,
+});
