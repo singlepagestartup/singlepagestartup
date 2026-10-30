@@ -1,15 +1,22 @@
 /**
+ * @jest-environment jsdom
+ * @jest-environment-options {"customExportConditions":["node","node-addons"]}
+ */
+/**
  * BDD Suite: server Page document reader.
  * Given: a resolved Page and structured data from the SEO SDK.
  * When: the public Page entry renders a document.
  * Then: the saved renderer receives the loaded Page and JSON-LD remains safe HTML.
  */
 import { PassThrough } from "node:stream";
+import { setImmediate, clearImmediate } from "node:timers";
 import { renderToPipeableStream } from "react-dom/server";
 import { Component as Page } from "@sps/host/models/page/frontend/component";
 import { api as metadataApi } from "@sps/host/models/metadata/sdk/server";
 
 const renderedProps = jest.fn();
+// React's Node streaming renderer uses timers absent from the DOM environment.
+Object.assign(globalThis, { setImmediate, clearImmediate });
 jest.mock("server-only", () => ({}));
 jest.mock("@sps/host/models/metadata/sdk/server", () => ({
   api: { resolvePageSeo: jest.fn() },
@@ -45,7 +52,7 @@ function renderDocument() {
   });
 }
 
-it.each(["</script>", "</script >", "</script\t>"])(
+it.each(["</script>", "</script >", "</script\t>", "</script\t\n bar>"])(
   "passes one resolved record and safely serializes JSON-LD containing %s",
   async (closingTag) => {
     const headline = `Safe ${closingTag}<script>alert(1)</script>`;
@@ -66,7 +73,10 @@ it.each(["</script>", "</script >", "</script\t>"])(
     );
     expect(html).toContain("Статья");
     expect(html).not.toContain(`${closingTag}<script>`);
-    const json = html.match(/<script\b[^>]*>([\s\S]*?)<\/script\s*>/i)?.[1];
-    expect(JSON.parse(json!)[0].headline).toBe(headline);
+    const document = new DOMParser().parseFromString(html, "text/html");
+    const scripts = document.querySelectorAll("script");
+    expect(scripts).toHaveLength(1);
+    expect(scripts[0].type).toBe("application/ld+json");
+    expect(JSON.parse(scripts[0].textContent!)[0].headline).toBe(headline);
   },
 );
