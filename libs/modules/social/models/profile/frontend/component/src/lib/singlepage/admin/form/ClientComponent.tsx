@@ -82,17 +82,6 @@ export function Component(props: IComponentPropsExtended) {
       status={status}
     >
       <div className="flex flex-col gap-6">
-        {props.profilesToBlogModuleArticles?.({
-          data: props.data,
-          isServer: false,
-        })}
-        {props.profilesToSkills
-          ? props.profilesToSkills({
-              data: props.data,
-              isServer: props.isServer,
-            })
-          : null}
-
         <MetadataField form={form} />
         <FormField
           ui="shadcn"
@@ -178,48 +167,52 @@ export function Component(props: IComponentPropsExtended) {
           storedIdentifiers={props.data?.allowedMcpServerIds}
         />
 
+        {props.profilesToBlogModuleArticles?.({
+          data: props.data,
+          isServer: false,
+        })}
+        {props.profilesToSkills
+          ? props.profilesToSkills({
+              data: props.data,
+              isServer: props.isServer,
+            })
+          : null}
         {props.profilesToWebsiteBuilderModuleWidgets
           ? props.profilesToWebsiteBuilderModuleWidgets({
               data: props.data,
               isServer: props.isServer,
             })
           : null}
-
         {props.profilesToFileStorageModuleFiles
           ? props.profilesToFileStorageModuleFiles({
               data: props.data,
               isServer: props.isServer,
             })
           : null}
-
         {props.profilesToAttributes
           ? props.profilesToAttributes({
               data: props.data,
               isServer: props.isServer,
             })
           : null}
-
         {props.profilesToMessages
           ? props.profilesToMessages({
               data: props.data,
               isServer: props.isServer,
             })
           : null}
-
         {props.profilesToChats
           ? props.profilesToChats({
               data: props.data,
               isServer: props.isServer,
             })
           : null}
-
         {props.profilesToActions
           ? props.profilesToActions({
               data: props.data,
               isServer: props.isServer,
             })
           : null}
-
         {props.profilesToEcommerceModuleProducts
           ? props.profilesToEcommerceModuleProducts({
               data: props.data,

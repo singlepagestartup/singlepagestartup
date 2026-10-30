@@ -1,6 +1,5 @@
 "use client";
 
-import { publicReadOptions } from "@sps/shared-utils/public-read";
 import "client-only";
 
 import { useEffect, type ReactNode } from "react";
@@ -13,20 +12,7 @@ export function Component<
   A extends { api: ReturnType<typeof factory<M>>; Skeleton?: ReactNode },
   CP extends IComponentProps<M, V>,
 >(props: CP & A) {
-  const { data, isFetching, isLoading } = props.api.find(
-    publicReadOptions({
-      ...props.apiProps,
-      params: {
-        ...props.apiProps?.params,
-        filters: {
-          and: [
-            ...(props.apiProps?.params?.filters?.and || []),
-            { column: "variant", method: "ne", value: "hidden" },
-          ],
-        },
-      },
-    }),
-  );
+  const { data, isFetching, isLoading } = props.api.find(props.apiProps || {});
 
   useEffect(() => {
     if (props.set && typeof props.set === "function") {

@@ -53,10 +53,6 @@ export function Component({
       >
         {isFetching ? "Loading…" : "Preview draft"}
       </button>
-      <p className="text-sm text-muted-foreground">
-        Uses the public page and current form values. Preview does not save
-        changes.
-      </p>
       {error ? (
         <p role="alert" className="text-sm text-destructive">
           {error}

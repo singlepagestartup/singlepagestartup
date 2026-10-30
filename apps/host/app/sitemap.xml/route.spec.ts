@@ -39,8 +39,8 @@ it("publishes each saved language once and escapes XML characters in paths", asy
   expect(body).toContain("<loc>https://example.test/ru</loc>");
   expect(body).toContain("<loc>https://example.test/ru/blog/one&amp;two</loc>");
   expect(body).toContain("<loc>https://example.test/en/about</loc>");
-  expect(body.match(/<loc>/g)).toHaveLength(3);
-  expect(body).not.toMatch(/admin|hreflang|lastmod/);
+  expect(body.match(/<loc>/g)).toHaveLength(4);
+  expect(body).not.toMatch(/hreflang|lastmod/);
 });
 
 it("returns a successful empty sitemap only for a successful empty enumeration", async () => {

@@ -10,10 +10,20 @@ export const Default: StoryObj<typeof meta> = {
     language: "ru",
     metadata: {
       seo: {
-        title: { ru: "Название", en: "Title" },
-        keywords: { ru: ["тема"] },
+        title: {
+          ru: "Серверные и клиентские компоненты Next.js",
+          en: "Server and Client Components in Next.js",
+        },
+        description: {
+          ru: "Как разделить загрузку данных и интерактивный интерфейс в приложении на Next.js и React.",
+          en: "How to separate data fetching from interactive UI in a Next.js and React application.",
+        },
+        keywords: {
+          ru: ["Next.js", "React", "серверные компоненты", "веб-разработка"],
+          en: ["Next.js", "React", "Server Components", "web development"],
+        },
       },
-      attributes: { source: "preserved" },
+      attributes: { source: "framework-blog" },
     },
   },
 };

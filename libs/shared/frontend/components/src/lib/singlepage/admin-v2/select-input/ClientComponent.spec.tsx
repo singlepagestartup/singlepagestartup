@@ -181,7 +181,6 @@ describe("GIVEN: admin-v2 select-input client component", () => {
     );
 
     expect(findById).toHaveBeenCalledWith({
-      params: { includeHidden: "1" },
       id: "selected-1",
       reactQueryOptions: {
         enabled: true,

@@ -1,6 +1,5 @@
 "use server";
 
-import { publicReadOptions } from "@sps/shared-utils/public-read";
 import "server-only";
 
 import { ErrorBoundary } from "@sps/ui-adapter";
@@ -10,11 +9,9 @@ import { api } from "@sps/broadcast/models/channel/sdk/server";
 import { Component } from "./Component";
 
 export default async function Server(props: IComponentProps) {
-  const data = await api.findById(
-    publicReadOptions({
-      id: props.id,
-    }),
-  );
+  const data = await api.findById({
+    id: props.id,
+  });
 
   if (!data) {
     return <></>;

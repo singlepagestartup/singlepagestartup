@@ -1,7 +1,6 @@
 import {
   NEXT_PUBLIC_HOST_SERVICE_URL,
   getSeoCanonicalUrl,
-  isSeoIndexablePage,
   sitemapDocuments,
   sitemapIndex,
 } from "@sps/shared-utils";
@@ -19,7 +18,6 @@ export async function GET(request: Request) {
     const urls = new Set<string>();
     for (const page of pages) {
       const pathname = `/${page.url.join("/")}`;
-      if (!isSeoIndexablePage({ url: pathname })) continue;
       const language =
         page.language || internationalization.defaultLanguage.code;
       if (!languages.includes(language)) continue;

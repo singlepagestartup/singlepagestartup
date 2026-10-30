@@ -155,7 +155,7 @@ it("returns only linked Article and Product references and accepts UUID handles 
   );
 });
 
-it("omits hidden content and hidden author links from public eligibility", async () => {
+it("does not treat content or association variants as publication permissions", async () => {
   const { service, dependencies } = fixture();
   dependencies.article.find.mockResolvedValue([
     { id: ids.article, variant: "hidden" },
@@ -167,28 +167,33 @@ it("omits hidden content and hidden author links from public eligibility", async
       variant: "hidden",
     },
   ] as any);
-  expect(await service.find()).toEqual([]);
-  expect(await service.count()).toBe(0);
+  expect((await service.find()).map((profile) => profile.id)).toContain(
+    ids.human,
+  );
+  expect(await service.count()).toBeGreaterThan(0);
 });
-it.each(["file", "link"])("omits a hidden avatar %s", async (target) => {
-  const { service, dependencies } = fixture();
-  if (target === "file")
-    dependencies.file.findById.mockResolvedValue({
-      id: "avatar",
-      file: "/avatar.png",
-      mimeType: "image/png",
-      variant: "hidden",
-    } as any);
-  else
-    dependencies.profilesToFiles.find.mockResolvedValue([
-      {
-        profileId: ids.human,
-        fileStorageModuleFileId: "avatar",
+it.each(["file", "link"])(
+  "retains an avatar with variant hidden on its %s",
+  async (target) => {
+    const { service, dependencies } = fixture();
+    if (target === "file")
+      dependencies.file.findById.mockResolvedValue({
+        id: "avatar",
+        file: "/avatar.png",
+        mimeType: "image/png",
         variant: "hidden",
-      },
-    ] as any);
-  expect((await service.find())[0].avatar).toBeNull();
-});
+      } as any);
+    else
+      dependencies.profilesToFiles.find.mockResolvedValue([
+        {
+          profileId: ids.human,
+          fileStorageModuleFileId: "avatar",
+          variant: "hidden",
+        },
+      ] as any);
+    expect((await service.find())[0].avatar).toMatchObject({ id: "avatar" });
+  },
+);
 it("publishes only the validated SEO section from Profile JSON", async () => {
   const { service, dependencies } = fixture();
   const profiles = await dependencies.profile.find();

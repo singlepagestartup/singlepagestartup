@@ -1,6 +1,5 @@
 "use client";
 
-import { publicReadOptions } from "@sps/shared-utils/public-read";
 import "client-only";
 
 import { IComponentProps } from "./interface";
@@ -12,7 +11,7 @@ export default function Client(props: IComponentProps) {
   const processedActions = new Set<string>();
 
   const { data, isFetching, isLoading, refetch } = api.find(
-    publicReadOptions(props.apiProps || {}),
+    props.apiProps || {},
   );
 
   useEffect(() => {

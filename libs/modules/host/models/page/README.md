@@ -14,8 +14,9 @@ and the IDs referenced by their relations.
 configured default language), then tries static pages before dynamic masks.
 It returns `IResolvedPage`: the saved Page and a computed `routeParams` map.
 Keys are complete placeholders such as `blog.articles.slug`; values retain
-encoded pathname segments. ID/slug lookups target the exact entity. Hidden Page,
-main entity or required nested association means 404. Unknown masks are rejected.
+encoded pathname segments. Field lookups target exactly one entity. Hidden
+or draft Pages return 404. Dynamic values are resolved through the registered API
+source used by the Page URL constructor. Unknown sources/masks are rejected.
 The map is not stored. Queries and fragments are not route parameters.
 
 Host leaf compositions use Page `variant="url-segment-values"` callbacks and
@@ -26,23 +27,26 @@ return an empty map. Missing keys remain undefined.
 
 `default` composes the page; `hidden` renders nothing and is unavailable as a
 public route. `find`, `find-by-url`, both URL readers and both admin generations
-retain their ordinary roles. Admin reads explicitly request `includeHidden=1`.
+retain their ordinary roles. The hidden view is selected through the ordinary
+variant registry; shared readers do not suppress records by their saved variant.
 
 ## Visibility and caching
 
-`indexing="auto"` applies the public/private route policy. `noindex` keeps a page
-accessible but removes it from search candidates and emits noindex. `hidden`
-takes precedence and returns 404. Hidden optional widgets/files/links suppress
-only their element. Hidden is publication state, not a replacement for RBAC.
+Publication and indexing use the persisted Page.variant:
+default and project presentation variants are indexable, noindex keeps the
+Page accessible but excludes it from sitemap, and hidden returns 404.
+Legacy draft records also return 404. The old indexing column is retained
+for schema compatibility and is not a second policy input. Migrate existing
+publication choices to Page variants before rollout. Hidden remains publication
+state rather than an authorization boundary.
 
-Shared REST reads exclude hidden before pagination/count. Operator reads may
-include it; editor reads use `includeHidden=1` and require the collection's POST
-permission. `publicOnly=1` enforces visible data even with privileged credentials.
-Administrative reads bypass the legacy anonymous HTTP cache. Public browser
-readers request publicOnly and do not reuse admin query keys.
+Shared REST reads, counts and ID lookups use the requested filters without
+assigning access rules to variant names. Authorization, ownership and output
+schemas remain independent of presentation variants. Administrative reads use
+the same SDK contracts and the caller's credentials.
 
-HTTP cache excludes dependent Page operations `find-by-url`, `url-segment-value`
-and `urls`. Public Host routes use on-demand ISR with a one-hour route TTL.
+The API response cache tracks the actual dependencies of Page operations,
+including dynamic URL sources. Public Host routes use on-demand ISR with a one-hour route TTL.
 The locale is a `[language]` route parameter; layouts do not read headers or
 session cookies. The separately routed admin remains request-rendered.
 
@@ -71,14 +75,15 @@ until equivalent localized content is verified.
 
 ## Sitemap and robots
 
-Anonymous `GET /api/host/pages/urls` lists public candidates with saved Page
-language. It excludes hidden/noindex Pages and private routes before expansion.
-Supported public masks cover Blog, Ecommerce and Profile ID/slug routes and
-pagination. Nested associations must exist and be visible. Values are encoded;
-hidden records are removed before pagination. Unknown masks are not enumerated.
-Public enumeration sends no admin credential or session. Unauthorized collections
-are omitted; temporary failures propagate. The enumeration safety cap is one
-million candidates, not the per-file sitemap limit.
+Anonymous `GET /api/host/pages/urls` lists candidates with saved Page language.
+It excludes hidden/draft/noindex Pages before expansion. A generic mask cannot
+reintroduce a URL owned by a higher-priority excluded Page in the same language.
+Page URL masks expand registered API model fields and pagination. Sources come
+from the same module registry used to mount apps/api, so adding a registered
+model does not require an SEO allowlist. API data is read anonymously through
+its public contract, without operator credentials. Permission errors omit an
+unavailable enumeration; temporary failures propagate. The enumeration safety
+cap is one million candidates, not the per-file sitemap limit.
 
 Host `/sitemap.xml` uses the standard sitemap namespace, absolute public URLs,
 supported saved languages and deterministic deduplication. It emits a urlset or
@@ -89,10 +94,10 @@ or hreflang alternatives are inferred from timestamps/configuration alone.
 
 Pagination sizes must be positive safe integers. Page 1 uses the unnumbered
 URL; subsequent pages keep separate canonical URLs. Locale redirects use 308.
-Robots publishes Yandex Clean-param for known tracking fields. Content selectors
-such as segment, intent and offer remain significant; projects whose query
-changes indexable content must define its canonical policy. Accessible private
-pages stay crawlable so robots can observe noindex.
+Robots publishes the absolute sitemap URL and allows crawling so a crawler can
+read each Page's noindex response. It has no application URL exclusions or
+universal query-parameter cleanup policy. Host serializes the candidates supplied
+by Page API without applying another URL-prefix filter.
 
 Before migration, audit saved Page languages and duplicate `(url, language)`
 values. A default language value does not prove the content is translated.

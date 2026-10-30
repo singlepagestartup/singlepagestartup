@@ -107,9 +107,6 @@
       ],
       "@sps/shared-utils/metadata": [
         "libs/shared/utils/src/lib/metadata/index.ts"
-      ],
-      "@sps/shared-utils/public-read": [
-        "libs/shared/utils/src/lib/public-read/index.ts"
       ]
     },
     "typeRoots": [

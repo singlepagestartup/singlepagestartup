@@ -1,4 +1,3 @@
-import { shouldHideRecord } from "../public-read";
 import {
   entityMetadataSchema,
   metadataPathValue,
@@ -87,12 +86,5 @@ describe("editable metadata contracts", () => {
       entityMetadataSchema.safeParse(JSON.parse('{"__proto__":{"secret":1}}'))
         .success,
     ).toBe(false);
-  });
-  it("suppresses hidden data in public variants while keeping the admin editor available", () => {
-    expect(shouldHideRecord({ variant: "hidden" }, "default")).toBe(true);
-    expect(shouldHideRecord({ variant: "hidden" }, "admin-v2-form")).toBe(
-      false,
-    );
-    expect(shouldHideRecord({ variant: "default" }, "hidden")).toBe(true);
   });
 });

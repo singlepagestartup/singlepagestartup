@@ -60,22 +60,6 @@ export function Component(props: IComponentPropsExtended) {
     >
       <div className="flex flex-col gap-6">
         {" "}
-        {props.widgetsToEcommerceModuleWidgets?.({
-          data: props.data,
-          isServer: false,
-        })}
-        {props.widgetsToCrmModuleWidgets
-          ? props.widgetsToCrmModuleWidgets({
-              data: props.data,
-              isServer: props.isServer,
-            })
-          : null}{" "}
-        {props.widgetsToWebsiteBuilderModuleWidgets
-          ? props.widgetsToWebsiteBuilderModuleWidgets({
-              data: props.data,
-              isServer: props.isServer,
-            })
-          : null}
         <FormField
           ui="shadcn"
           type="text"
@@ -154,6 +138,22 @@ export function Component(props: IComponentPropsExtended) {
           placeholder="Select variant"
           options={variants.map((variant) => [variant, variant])}
         />
+        {props.widgetsToEcommerceModuleWidgets?.({
+          data: props.data,
+          isServer: false,
+        })}
+        {props.widgetsToCrmModuleWidgets
+          ? props.widgetsToCrmModuleWidgets({
+              data: props.data,
+              isServer: props.isServer,
+            })
+          : null}
+        {props.widgetsToWebsiteBuilderModuleWidgets
+          ? props.widgetsToWebsiteBuilderModuleWidgets({
+              data: props.data,
+              isServer: props.isServer,
+            })
+          : null}
       </div>
     </ParentAdminForm>
   );

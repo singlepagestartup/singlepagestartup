@@ -1,5 +1,12 @@
 # Repository read dependencies
 
+## REST selection
+
+Shared find, count and ID handlers return records allowed by the operation's
+authorization and output schema. They do not infer publication or permissions
+from a variant name. Callers select records through ordinary filters. Host Page
+owns its public URL and sitemap policy separately from generic CRUD reads.
+
 ## Partial updates
 
 `updateFirstByField` validates a patch against the partial insert schema. Omitted
@@ -59,6 +66,29 @@ The API app creates one infrastructure runtime, starts read tracking before
 RBAC, and registers response caching after authorization, billing and query
 parsing. Business services use ordinary transactions. Knowledge and CRM do not
 require publisher setters in the API host or CLI.
+
+## API response cache
+
+`MIDDLEWARE_HTTP_CACHE=true` enables the single response cache exposed by
+`createConsistencyRuntime.cache()`. Read tracking and mutation delivery run
+independently of this switch. There is no alternate path/topic response cache.
+
+Authorization runs before cache lookup. Response identity hashes the complete
+URL, authorization header, cookies, operator credential, language and requested
+representation. Credentials are absent from stored keys and public metadata.
+Every hit verifies the envelope's epoch and captured PostgreSQL generations.
+Incomplete dependency capture, no-store requests and excluded controller-guarded
+routes bypass caching. An excluded route still executes its authorization guards.
+
+KV operations have a 150 ms request-path deadline. Cache entries expire after
+five minutes and respect `HTTP_CACHE_MAX_ENTRY_BYTES` (default 1 MiB). A cache
+failure becomes a miss; unverifiable generations cannot produce a hit.
+
+The operator-guarded `GET /api/http-cache/clear` invokes `clearCache()` on the
+same runtime. It removes only API response envelopes/pointers. PostgreSQL
+generations, journals, OAuth records and subject preferences remain intact.
+Next tag invalidation and WebSocket notifications continue when response caching
+is disabled.
 
 PostgreSQL capture, dispatcher fencing, retention and migration commands are
 documented in [providers-db](../../../providers/db/README.md). The

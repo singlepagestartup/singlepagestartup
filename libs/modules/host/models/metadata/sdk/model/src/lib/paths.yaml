@@ -1,4 +1,65 @@
 paths:
+  /host/metadata/preview:
+    post:
+      tags: ["host-metadata"]
+      summary: Preview unsaved SEO fields for a public page
+      description: Resolves Metadata masks without saving the draft. Hidden and private pages are rejected. The response is no-store and noindex.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [url, language, metadata]
+              properties:
+                url:
+                  type: string
+                  example: /ru/blog/articles/example
+                language:
+                  type: string
+                  example: ru
+                metadata:
+                  type: object
+                  description: Partial Metadata record containing current form values and optional existing Metadata id.
+                  additionalProperties: true
+      responses:
+        "200":
+          description: Data envelope containing serializable metadata, structuredData and mask diagnostics.
+        "400":
+          description: Invalid JSON, Metadata masks or locale.
+        "404":
+          description: Public page or required public content is missing.
+        "413":
+          description: Request exceeds 64 KiB.
+        "503":
+          description: Upstream content is unavailable.
+
+  /host/metadata/seo:
+    get:
+      tags: ["host-metadata"]
+      summary: Resolve a Page and its SEO using public content
+      description: Receives a pathname without a locale prefix. Uses the same Metadata service as draft preview.
+      parameters:
+        - name: url
+          in: query
+          required: true
+          schema:
+            type: string
+          example: /blog/articles/example
+        - name: language
+          in: query
+          required: true
+          schema:
+            type: string
+          example: ru
+      responses:
+        "200":
+          description: Data envelope containing Page, serializable metadata, structuredData and diagnostics.
+        "400":
+          description: Invalid pathname or locale.
+        "404":
+          description: Page or required public content is missing.
+
   /host/metadata:
     get:
       tags:

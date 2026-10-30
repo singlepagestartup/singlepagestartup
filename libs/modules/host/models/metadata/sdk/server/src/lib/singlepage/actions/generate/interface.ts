@@ -7,7 +7,7 @@ export interface IGeneratePageSeoProps {
   /** Concrete pathname, optionally prefixed with a configured locale. */
   url: string;
   language?: string;
-  /** Reuse the Page resolved by the Host before it starts its response. */
+  /** Legacy input; the API resolves the authoritative Page from URL and locale. */
   page?: IResolvedPage;
   /** Retained for compatibility; SEO reads propagate failures. */
   catchErrors?: boolean;
@@ -20,21 +20,4 @@ export interface IPageSeoResult {
   metadata: Metadata;
   structuredData: Record<string, unknown>[];
   diagnostics?: string[];
-}
-
-export interface ISeoImage {
-  url: string;
-  width?: number;
-  height?: number;
-  alt?: string;
-}
-
-export interface ISeoContent {
-  kind: "article" | "product" | "category" | "profile";
-  title?: string;
-  description?: string;
-  image?: ISeoImage;
-  seoTitle?: string;
-  seoDescription?: string;
-  keywords?: string[];
 }

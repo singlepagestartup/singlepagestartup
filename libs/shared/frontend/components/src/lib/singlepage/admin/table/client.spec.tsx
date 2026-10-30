@@ -32,13 +32,13 @@ describe("parent-scoped administrative relation counts", () => {
         />,
       );
       expect(count).toHaveBeenCalledWith({
-        params: { filters, includeHidden: "1" },
+        params: { filters },
         options: {
           headers: { Authorization: "session", "Cache-Control": "no-store" },
         },
       });
       expect(find).toHaveBeenCalledWith({
-        params: { filters, includeHidden: "1", offset: 100, limit: 100 },
+        params: { filters, offset: 100, limit: 100 },
         options: {
           headers: { Authorization: "session", "Cache-Control": "no-store" },
         },

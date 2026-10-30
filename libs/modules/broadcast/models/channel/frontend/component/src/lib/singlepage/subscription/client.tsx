@@ -1,6 +1,5 @@
 "use client";
 
-import { publicReadOptions } from "@sps/shared-utils/public-read";
 import "client-only";
 
 import { Component as ChildComponent } from "./Component";
@@ -11,12 +10,10 @@ import { IComponentProps } from "./interface";
 import { api } from "@sps/broadcast/models/channel/sdk/client";
 
 export function Component(props: IComponentProps) {
-  const { data, isFetching, isLoading } = api.findById(
-    publicReadOptions({
-      id: props.data.id,
-      ...props.apiProps,
-    }),
-  );
+  const { data, isFetching, isLoading } = api.findById({
+    id: props.data.id,
+    ...props.apiProps,
+  });
 
   if (isFetching || isLoading || !data) {
     return <Skeleton />;

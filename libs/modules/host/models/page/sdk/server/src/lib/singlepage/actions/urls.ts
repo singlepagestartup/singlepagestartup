@@ -1,5 +1,5 @@
 import { route, serverHost } from "@sps/host/models/page/sdk/model";
-import { responsePipe } from "@sps/shared-utils";
+import { responsePipe, type NextRequestOptions } from "@sps/shared-utils";
 
 interface IUrlRecord {
   url: string;
@@ -16,7 +16,8 @@ export async function action({
   catchErrors = false,
 }: IUrlsProps) {
   try {
-    const res = await fetch(`${host}${route}/urls`, { cache: "no-store" });
+    const options: Partial<NextRequestOptions> = { cache: "no-store" };
+    const res = await fetch(`${host}${route}/urls`, options);
     const json = await responsePipe<{ data: { urls: IUrlRecord[] } }>({ res });
     if (!Array.isArray(json?.data?.urls)) {
       throw new Error("Invalid page URL enumeration response");

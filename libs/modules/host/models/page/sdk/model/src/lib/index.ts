@@ -16,7 +16,7 @@ import {
 export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/host/pages";
-export const variants = ["hidden", "default"];
+export const variants = ["hidden", "default", "noindex"];
 export const query = {};
 export const options = {
   next: {

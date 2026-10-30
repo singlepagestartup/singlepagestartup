@@ -4,7 +4,7 @@ export interface IComponentProps<T extends FieldValues> {
   metadataId?: string;
 }
 
-import type { IPageSeoResult } from "@sps/host/models/metadata/sdk/server";
+import type { IPageSeoResult } from "@sps/host/models/metadata/sdk/model";
 export interface IPreviewViewProps {
   id: string;
   url: string;

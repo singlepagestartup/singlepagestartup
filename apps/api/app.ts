@@ -1,3 +1,9 @@
+import {
+  RoutingService,
+  type IRouteSource,
+} from "@sps/host/models/page/backend/app/api/src/lib/service/singlepage/routing";
+import type { Service as HostPageService } from "@sps/host/models/page/backend/app/api/src/lib/service";
+import type { Service as HostMetadataService } from "@sps/host/models/metadata/backend/app/api/src/lib/service";
 import type { Service as SubjectService } from "@sps/rbac/models/subject/backend/app/api/src/lib/service";
 import type {
   Service as SubjectRoleService,
@@ -26,8 +32,8 @@ import {
 } from "@sps/shared-backend-api";
 import {
   IsAuthorizedMiddleware,
+  SearchIndexingMiddleware,
   RevalidationMiddleware,
-  HTTPCacheMiddleware,
   ObserverMiddleware,
   RequestIdMiddleware,
   ActionLoggerMiddleware,
@@ -226,12 +232,15 @@ app.use(
   }),
 );
 
+app.use("/api/*", new SearchIndexingMiddleware().init());
+
 const exceptionFilter = new ExceptionFilter();
 app.onError((err, c) => exceptionFilter.catch(err, c));
 
+const pageRouteSources: IRouteSource[] = [];
 const protectedGraphServices: import("@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/blog/article/graph").IGraphServices =
   {};
-for (const [name, module] of Object.entries({
+const apiModules = {
   host: hostApp,
   rbac: rbacApp,
   startup: startupApp,
@@ -246,11 +255,31 @@ for (const [name, module] of Object.entries({
   social: socialApp,
   knowledge: knowledgeApp,
   agent: agentApp,
-})) {
-  for (const entry of moduleEntries(module))
+  broadcast: broadcastApp,
+};
+for (const [name, module] of Object.entries(apiModules)) {
+  for (const entry of moduleEntries(module)) {
+    const table =
+      entry.app.controller.service.repository?.configuration?.repository.Table;
+    if (table)
+      pageRouteSources.push({
+        name: name + "." + entry.route.slice(1),
+        route: "/api/" + name + entry.route,
+        table,
+      });
     protectedGraphServices[`${name}${entry.route}`] = entry.app.controller
       .service as unknown as import("@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/blog/article/graph").IGraphReader;
+  }
 }
+const pageRouting = new RoutingService(pageRouteSources);
+(
+  moduleEntries(hostApp).find((entry) => entry.route === "/pages")!.app
+    .controller.service as unknown as HostPageService
+).routing = pageRouting;
+(
+  moduleEntries(hostApp).find((entry) => entry.route === "/metadata")!.app
+    .controller.service as unknown as HostMetadataService
+).seo.routing = pageRouting;
 const protectedBlogContent = new ProtectedBlogContent(
   () =>
     new ProtectedBlogGraph(
@@ -396,9 +425,6 @@ app.on(["GET", "HEAD"], "/public/*", async (c) => {
 const requestIdMiddleware = new RequestIdMiddleware();
 app.use(requestIdMiddleware.init());
 
-const consistencyMode = process.env.SPS_CONSISTENCY_MODE || "compatibility";
-if (!["off", "observe", "compatibility", "enabled"].includes(consistencyMode))
-  throw new Error("Invalid SPS_CONSISTENCY_MODE");
 export const consistencyRuntime = createConsistencyRuntime({
   verifyAuthorization: async (authorization) => {
     if (!authorization) return; // Only anonymous query capabilities can match.
@@ -410,7 +436,6 @@ export const consistencyRuntime = createConsistencyRuntime({
   },
   publishLegacy: async (topics) => {
     topics = expandLegacyTopics(topics);
-    await httpCacheMiddleware.invalidateTopics(topics);
     const now = Date.now();
     websocketManager.broadcastMessage({
       slug: "revalidation",
@@ -421,10 +446,7 @@ export const consistencyRuntime = createConsistencyRuntime({
     });
   },
 });
-if (consistencyMode !== "off")
-  app.use(
-    consistencyRuntime.middleware({ metadata: consistencyMode !== "observe" }),
-  );
+app.use(consistencyRuntime.middleware());
 app.post("/api/consistency/check", async (c) => {
   const body = await c.req.json();
   if (
@@ -476,7 +498,7 @@ app.get(
         };
       },
       onMessage(event, ws) {
-        if (consistencyMode === "off" || !consistencySocket) return;
+        if (!consistencySocket) return;
         // Modern clients reconcile through their private query capabilities.
         void consistencyRuntime
           .receive(consistencySocket, String(event.data))
@@ -490,25 +512,9 @@ app.get(
   }),
 );
 
-/**
- * Ordering contract (issue #195): RevalidationMiddleware MUST be registered
- * BEFORE HTTPCacheMiddleware. Hono unwinds post-next() code inner-first, so
- * the inner http-cache version bump completes before the outer revalidation
- * WS broadcast. Otherwise another client's immediate refetch (triggered by
- * the broadcast) could be served a stale cached response.
- */
+// Mutation notifications and Next revalidation remain independent of response caching.
 const revalidationMiddleware = new RevalidationMiddleware();
 app.use(revalidationMiddleware.init());
-
-/**
- * Construct the invalidator independently of HTTP cache registration: direct
- * service writes must bump topic versions before Next/WS revalidation, including
- * when this process does not cache responses. GET caching remains opt-in through
- * MIDDLEWARE_HTTP_CACHE below; scoped reads also need exclusions or no-store.
- */
-const httpCacheMiddleware = new HTTPCacheMiddleware({
-  excludedRoutes: [...protectedContentRoutes, ...rawSocialProfileReadRoutes],
-});
 
 const actionLoggerMiddleware = new ActionLoggerMiddleware();
 app.use(actionLoggerMiddleware.init());
@@ -525,35 +531,28 @@ app.use(protectedBlogContent.init());
 app.use(new RawSocialProfileRead(() => currentSubjectService).init());
 
 if (MIDDLEWARE_HTTP_CACHE === "true") {
-  if (consistencyMode !== "off")
-    app.use(
-      consistencyRuntime.cache({
-        observe: consistencyMode === "observe",
-        excludedRoutes: [
-          ...controllerGuardedRoutes,
-          ...protectedContentRoutes,
-          ...rawSocialProfileReadRoutes,
-        ],
-      }),
-    );
-  else app.use(httpCacheMiddleware.init());
-  httpCacheMiddleware.setRoutes(app);
+  // Cache management executes its operator guard outside response caching.
+  app.get(
+    "/api/http-cache/clear",
+    new OperatorSecretMiddleware().init(),
+    async (c) => {
+      await consistencyRuntime.clearCache();
+      return c.json({ message: "Cache cleared" });
+    },
+  );
+  app.use(
+    consistencyRuntime.cache({
+      excludedRoutes: [
+        ...controllerGuardedRoutes,
+        ...protectedContentRoutes,
+        ...rawSocialProfileReadRoutes,
+      ],
+    }),
+  );
 }
 
-app.route("/api/agent", agentApp.hono);
-app.route("/api/host", hostApp.hono);
-app.route("/api/rbac", rbacApp.hono);
-app.route("/api/startup", startupApp.hono);
-app.route("/api/crm", crmApp.hono);
-app.route("/api/ecommerce", ecommerceApp.hono);
-app.route("/api/notification", notificationApp.hono);
-app.route("/api/blog", blogApp.hono);
-app.route("/api/billing", billingApp.hono);
-app.route("/api/website-builder", websiteBuilderApp.hono);
-app.route("/api/broadcast", broadcastApp.hono);
-app.route("/api/file-storage", fileStorageApp.hono);
-app.route("/api/analytic", analyticApp.hono);
-app.route("/api/social", socialApp.hono);
-app.route("/api/knowledge", knowledgeApp.hono);
+for (const [name, module] of Object.entries(apiModules))
+  app.route("/api/" + name, module.hono);
+
 await consistencyRuntime.store.assertCoverage();
 consistencyRuntime.start();

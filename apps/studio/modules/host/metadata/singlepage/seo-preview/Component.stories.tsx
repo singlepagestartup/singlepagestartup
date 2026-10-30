@@ -5,23 +5,24 @@ const meta = {
   component: Metadata,
   args: {
     variant: "seo-preview",
+    url: "/ru/blog/articles/nextjs-server-client-components",
     templates: {
-      title: "[blog.articles.title] — Example",
+      title: "[blog.articles.title] — SinglePageStartup",
       description: "[blog.articles.description]",
       keywords: "[blog.articles.metadata.seo.keywords]",
     },
     values: {
       "blog.articles.title": {
-        ru: "Доходная недвижимость",
-        en: "Income property",
+        ru: "Серверные и клиентские компоненты Next.js",
+        en: "Server and Client Components in Next.js",
       },
       "blog.articles.description": {
-        ru: "Как выбрать коммерческое помещение.",
-        en: "Choosing commercial premises.",
+        ru: "Как разделить загрузку данных и интерактивный интерфейс в приложении на Next.js и React.",
+        en: "How to separate data fetching from interactive UI in a Next.js and React application.",
       },
       "blog.articles.metadata.seo.keywords": {
-        ru: ["недвижимость", "инвестиции"],
-        en: ["property", "investment"],
+        ru: ["Next.js", "React", "серверные компоненты", "веб-разработка"],
+        en: ["Next.js", "React", "Server Components", "web development"],
       },
     },
   },
@@ -32,7 +33,15 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 export const LocalizedMasks: Story = {};
 export const Literal: Story = {
-  args: { templates: { title: "About us", description: "Our team." } },
+  args: {
+    url: "/ru/framework",
+    templates: {
+      title: "SinglePageStartup — фреймворк для веб-приложений",
+      description:
+        "Модули, API и интерфейсы для разработки веб-приложений на Next.js, React и TypeScript.",
+      keywords: "SinglePageStartup, Next.js, React, TypeScript, веб-разработка",
+    },
+  },
 };
 export const MissingValue: Story = { args: { values: {} } };
 export const InvalidMask: Story = {
@@ -40,5 +49,8 @@ export const InvalidMask: Story = {
 };
 export const Hidden: Story = { args: { hidden: true } };
 export const DefaultCover: Story = {
-  args: { fallbackImage: "https://example.org/cover.jpg" },
+  args: {
+    fallbackImage:
+      "/module-assets/images/singlepage/generated/living-focus/blog/next-server-client-square.png",
+  },
 };

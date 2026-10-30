@@ -1,6 +1,5 @@
 "use client";
 
-import { publicReadOptions } from "@sps/shared-utils/public-read";
 import "client-only";
 
 import { Component } from "./Component";
@@ -17,12 +16,10 @@ import { api as attributesToAttributeKeysApi } from "@sps/ecommerce/relations/at
 export default function Client(props: IComponentProps) {
   const [amount, setAmount] = useState<string | undefined>();
 
-  const { data, isFetching, isLoading } = api.findById(
-    publicReadOptions({
-      id: props.data.id,
-      ...props.apiProps,
-    }),
-  );
+  const { data, isFetching, isLoading } = api.findById({
+    id: props.data.id,
+    ...props.apiProps,
+  });
 
   useEffect(() => {
     if (props.set && typeof props.set === "function") {
@@ -35,21 +32,19 @@ export default function Client(props: IComponentProps) {
       return;
     }
 
-    const priceAttributeKeys = await attributeKeyApi.find(
-      publicReadOptions({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "type",
-                method: "eq",
-                value: "price",
-              },
-            ],
-          },
+    const priceAttributeKeys = await attributeKeyApi.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "type",
+              method: "eq",
+              value: "price",
+            },
+          ],
         },
-      }),
-    );
+      },
+    });
 
     if (!priceAttributeKeys?.length) {
       return;
@@ -57,31 +52,27 @@ export default function Client(props: IComponentProps) {
 
     const priceAttributeKey = priceAttributeKeys[0];
 
-    const product = await productApi.findById(
-      publicReadOptions({
-        id: data.productId,
-      }),
-    );
+    const product = await productApi.findById({
+      id: data.productId,
+    });
 
     if (!product) {
       return;
     }
 
-    const productAttributes = await productsToAttributesApi.find(
-      publicReadOptions({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "productId",
-                method: "eq",
-                value: data.productId,
-              },
-            ],
-          },
+    const productAttributes = await productsToAttributesApi.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "productId",
+              method: "eq",
+              value: data.productId,
+            },
+          ],
         },
-      }),
-    );
+      },
+    });
 
     if (!productAttributes) {
       return;
@@ -92,50 +83,46 @@ export default function Client(props: IComponentProps) {
     });
 
     const priceAttributesToAttributeKeys =
-      await attributesToAttributeKeysApi.find(
-        publicReadOptions({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "attributeKeyId",
-                  method: "eq",
-                  value: priceAttributeKey.id,
-                },
-                {
-                  column: "attributeId",
-                  method: "inArray",
-                  value: attributeIds,
-                },
-              ],
-            },
+      await attributesToAttributeKeysApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "attributeKeyId",
+                method: "eq",
+                value: priceAttributeKey.id,
+              },
+              {
+                column: "attributeId",
+                method: "inArray",
+                value: attributeIds,
+              },
+            ],
           },
-        }),
-      );
+        },
+      });
 
     if (!priceAttributesToAttributeKeys) {
       return;
     }
 
-    const attributes = await attributeApi.find(
-      publicReadOptions({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "id",
-                method: "inArray",
-                value: priceAttributesToAttributeKeys.map(
-                  (priceAttributeToAttributeKey) => {
-                    return priceAttributeToAttributeKey.attributeId;
-                  },
-                ),
-              },
-            ],
-          },
+    const attributes = await attributeApi.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "id",
+              method: "inArray",
+              value: priceAttributesToAttributeKeys.map(
+                (priceAttributeToAttributeKey) => {
+                  return priceAttributeToAttributeKey.attributeId;
+                },
+              ),
+            },
+          ],
         },
-      }),
-    );
+      },
+    });
 
     if (!attributes) {
       return;

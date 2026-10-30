@@ -50,34 +50,18 @@ describe("SEO URL policy", () => {
       ).toThrow();
     }
   });
-  it.each([
-    "/",
-    "/about",
-    "/admin-guide",
-    "/blog/articles/[blog.articles.slug]",
-    "/catalog/[ecommerce.products.slug]",
-    "/authors/[social.profiles.id]",
-    "/blog/[blog.articles.:pagination:10]",
-  ])("allows public Page %s", (url) => {
-    expect(isSeoIndexablePage({ url })).toBe(true);
-  });
-  it.each([
-    "/admin",
-    "/rbac/subject/authentication/logout",
-    "/404",
-    "/ai-chat/projects",
-    "/ecommerce/orders/123",
-    "/social/chats/[social.chats.id]",
-    "/authors/[social.profiles.slug]",
-    "/blog/[blog.articles.:pagination:0]",
-    "/blog/[blog.articles.:pagination:10suffix]",
-    "/blog/[blogXarticles.:pagination:10]",
-    "/broken/[blog.articles.slug",
-    "https://example.test",
-    "//example.test",
-  ])("excludes service or unsupported Page %s", (url) => {
-    expect(isSeoIndexablePage({ url })).toBe(false);
-  });
+  it.each(["default", "custom-landing"])(
+    "indexes published Page variant %s",
+    (variant) => {
+      expect(isSeoIndexablePage({ variant })).toBe(true);
+    },
+  );
+  it.each(["hidden", "draft", "noindex"])(
+    "excludes Page variant %s",
+    (variant) => {
+      expect(isSeoIndexablePage({ variant })).toBe(false);
+    },
+  );
   it("keeps structured data parseable without an HTML script closing tag", () => {
     const value = { name: '</script><script>alert("x")</script>&\u2028' };
     const json = safeJsonLd(value);

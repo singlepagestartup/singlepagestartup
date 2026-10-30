@@ -1,8 +1,3 @@
-import {
-  SEO_NON_INDEXABLE_PATHS,
-  SEO_PUBLIC_ROUTE_COLLECTIONS,
-} from "../constants/seo";
-
 export interface ISeoRoute {
   pathname: string;
   language: string;
@@ -58,36 +53,9 @@ export function getSeoCanonicalUrl(props: ISeoCanonicalUrlProps): string {
   ).href;
 }
 
-/** Receives an unlocalized Page mask; check this before expanding its entities. */
-export function isSeoIndexablePage(props: { url: string }): boolean {
-  if (
-    !props.url.startsWith("/") ||
-    props.url.startsWith("//") ||
-    props.url.includes("\\")
-  ) {
-    return false;
-  }
-  const pathname = pathnameOnly(props.url);
-  if (SEO_NON_INDEXABLE_PATHS.some((pattern) => pattern.test(pathname)))
-    return false;
-  return pathname
-    .split("/")
-    .filter(Boolean)
-    .every((segment) => {
-      if (!/[\[\]]/.test(segment)) return true;
-      const match = /^\[([^\[\]]+)\]$/.exec(segment);
-      if (!match) return false;
-      return SEO_PUBLIC_ROUTE_COLLECTIONS.some((collection) => {
-        const paginationPrefix = `${collection}.:pagination:`;
-        return (
-          (collection !== "social.profiles" &&
-            match[1] === `${collection}.slug`) ||
-          match[1] === `${collection}.id` ||
-          (match[1].startsWith(paginationPrefix) &&
-            /^[1-9]\d*$/.test(match[1].slice(paginationPrefix.length)))
-        );
-      });
-    });
+/** Publication is a property of the persisted Host Page, independent of URL or content module. */
+export function isSeoIndexablePage(page: { variant?: string }): boolean {
+  return !["hidden", "draft", "noindex"].includes(page.variant || "default");
 }
 
 /** JSON embedded in script text must never contain an HTML closing tag. */

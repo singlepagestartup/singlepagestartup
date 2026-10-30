@@ -73,10 +73,6 @@ export function Component(props: IComponentPropsExtended) {
       status={status}
     >
       <div className="flex flex-col gap-6">
-        {props.profilesToBlogModuleArticles?.({
-          data: props.data,
-          isServer: false,
-        })}
         <MetadataField form={form} />
         <FormField
           ui="shadcn"
@@ -156,6 +152,11 @@ export function Component(props: IComponentPropsExtended) {
           placeholder="Select variant"
           options={variants.map((variant) => [variant, variant])}
         />
+
+        {props.profilesToBlogModuleArticles?.({
+          data: props.data,
+          isServer: false,
+        })}
         {props.categoriesToArticles
           ? props.categoriesToArticles({
               data: props.data,

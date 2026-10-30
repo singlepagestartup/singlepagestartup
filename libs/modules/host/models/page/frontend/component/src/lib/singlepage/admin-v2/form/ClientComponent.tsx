@@ -32,7 +32,6 @@ export function Component(props: IComponentPropsExtended) {
     defaultValues: {
       language:
         props.data?.language || internationalization.defaultLanguage.code,
-      indexing: props.data?.indexing || "auto",
       description: props.data?.description || "",
       title: props.data?.title || "",
       url: props.data?.url || "/",
@@ -156,17 +155,6 @@ export function Component(props: IComponentPropsExtended) {
               name="description"
               label="Description"
               form={form}
-            />
-            <FormField
-              ui="shadcn"
-              type="select"
-              name="indexing"
-              label="Search indexing"
-              form={form}
-              options={[
-                ["auto", "Automatic"],
-                ["noindex", "No index"],
-              ]}
             />
             <FormField
               ui="shadcn"

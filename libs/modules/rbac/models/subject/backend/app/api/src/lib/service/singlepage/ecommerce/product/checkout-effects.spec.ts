@@ -1,7 +1,10 @@
 import { Hono } from "hono";
 import { QueryClient, QueryObserver } from "@tanstack/react-query";
 import { Service } from "./checkout";
-import { Middleware as HTTPCacheMiddleware } from "../../../../../../../../../../../../../middlewares/src/lib/http-cache";
+import {
+  createConsistencyRuntime,
+  consistencyContext,
+} from "@sps/shared-backend-api";
 import { Middleware as RevalidationMiddleware } from "../../../../../../../../../../../../../middlewares/src/lib/revalidation";
 
 let mockApp: Hono;
@@ -10,7 +13,17 @@ const mockBroadcast = jest.fn((event) => {
   for (const callback of mockSubscribers)
     callback({ getActionsFromStoreByName: () => [{ result: event }] });
 });
-jest.mock("@sps/providers-kv", () => ({ Provider: jest.fn(() => ({})) }));
+const mockValues = new Map<string, string>();
+jest.mock("@sps/providers-kv", () => ({
+  Provider: class {
+    async get({ prefix, key }: any) {
+      return mockValues.get(prefix + key);
+    }
+    async set({ prefix, key, value }: any) {
+      mockValues.set(prefix + key, value);
+    }
+  },
+}));
 jest.mock("@sps/shared-utils", () => ({
   ...jest.requireActual("@sps/shared-utils"),
   RBAC_SECRET_KEY: "test-secret",
@@ -80,30 +93,40 @@ jest.mock(
 );
 
 it("keeps nested mutation effects when Product checkout runs without its outer HTTP request", async () => {
-  const cache = new HTTPCacheMiddleware();
-  const values = new Map<string, string>();
-  cache.storeProvider = {
-    get: async ({ prefix, key }: any) => values.get(`${prefix}:${key}`) ?? null,
-    set: async ({ prefix, key, value }: any) => {
-      values.set(`${prefix}:${key}`, value);
-    },
-    incr: async ({ prefix, key }: any) => {
-      const next = Number(values.get(`${prefix}:${key}`) ?? 0) + 1;
-      values.set(`${prefix}:${key}`, String(next));
-      return next;
-    },
-  } as any;
+  mockValues.clear();
+  const dependency = "public.fixture|collection|0";
+  let generation = "0";
+  const runtime = createConsistencyRuntime({
+    store: {
+      status: async () => ({ epoch: "test" }),
+      versions: async () => ({ [dependency]: generation }),
+      covered: async () => true,
+      register: async () => ({
+        protocol: 1,
+        ref: "ref",
+        epoch: "test",
+        cursor: "0",
+        expiresAt: new Date(Date.now() + 60000).toISOString(),
+      }),
+    } as any,
+    verifyAuthorization: async () => {},
+  });
   const revalidation = new RevalidationMiddleware();
   revalidation.revalidateTag = jest.fn();
   mockApp = new Hono();
+  mockApp.use(runtime.middleware());
   mockApp.use(revalidation.init());
-  mockApp.use(cache.init());
+  mockApp.use(runtime.cache());
   const id = "303302a0-4eb7-4cef-af04-74d7e8e72442";
   const orders: { id: string }[] = [];
-  const reads = jest.fn((c: any) => c.json({ data: [...orders] }));
+  const reads = jest.fn((c: any) => {
+    consistencyContext.getStore()!.dependencies.set(dependency, generation);
+    return c.json({ data: [...orders] });
+  });
   mockApp.get("/api/ecommerce/orders", reads);
   mockApp.post("/api/ecommerce/orders", (c) => {
     orders.push({ id });
+    generation = String(Number(generation) + 1);
     return c.json({ data: { id } });
   });
   for (const path of [
@@ -144,6 +167,12 @@ it("keeps nested mutation effects when Product checkout runs without its outer H
       find: jest.fn(async () => [{ identityId: "identity" }]),
     },
     ecommerceModule: {
+      product: {
+        findById: jest.fn(async () => ({
+          id: "product",
+          slug: "fixture-product",
+        })),
+      },
       productsToAttributes: { find },
       attributesToBillingModuleCurrencies: { find },
     },

@@ -1,3 +1,4 @@
+import { Component as NoIndex } from "./noindex";
 import { Component as Document } from "./document";
 import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
 import { Component as AdminV2SidebarItem } from "./admin-v2/sidebar-item";
@@ -16,6 +17,7 @@ import { Component as AdminSelectInput } from "./admin/select-input";
 import { Component as AdminForm } from "./admin/form";
 import { Component as Default } from "./default";
 export const variants = {
+  noindex: NoIndex,
   document: Document,
   hidden: Hidden,
   "url-segment-values": UrlSegmentValues,

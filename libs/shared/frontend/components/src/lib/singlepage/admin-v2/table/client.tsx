@@ -1,6 +1,5 @@
 "use client";
 
-import { adminReadOptions } from "@sps/shared-utils/public-read";
 import "client-only";
 
 import { factory } from "@sps/shared-frontend-client-api";
@@ -134,30 +133,26 @@ export function Component<
     };
   }, [params]);
 
-  const { data: totalData, isLoading: isTotalLoading } = typedProps.api.count(
-    adminReadOptions({
-      params: countParams,
-      options: {
-        ...typedProps.apiProps?.options,
-        headers: {
-          ...typedProps.apiProps?.options?.headers,
-          "Cache-Control": "no-store",
-        },
+  const { data: totalData, isLoading: isTotalLoading } = typedProps.api.count({
+    params: countParams,
+    options: {
+      ...typedProps.apiProps?.options,
+      headers: {
+        ...typedProps.apiProps?.options?.headers,
+        "Cache-Control": "no-store",
       },
-    }),
-  );
-  const { data, isLoading } = typedProps.api.find(
-    adminReadOptions({
-      params,
-      options: {
-        ...typedProps.apiProps?.options,
-        headers: {
-          ...typedProps.apiProps?.options?.headers,
-          "Cache-Control": "no-store",
-        },
+    },
+  });
+  const { data, isLoading } = typedProps.api.find({
+    params,
+    options: {
+      ...typedProps.apiProps?.options,
+      headers: {
+        ...typedProps.apiProps?.options?.headers,
+        "Cache-Control": "no-store",
       },
-    }),
-  );
+    },
+  });
   const loadedVisibleRowIds = useMemo(() => {
     return (data ?? [])
       .map((entity) => entity.id)

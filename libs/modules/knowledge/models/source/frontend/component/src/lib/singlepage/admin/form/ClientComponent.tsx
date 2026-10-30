@@ -55,18 +55,6 @@ export function Component(props: IComponentPropsExtended) {
     >
       <div className="flex flex-col gap-6">
         {" "}
-        {props.sourcesToChunks
-          ? props.sourcesToChunks({
-              data: props.data,
-              isServer: props.isServer,
-            })
-          : null}{" "}
-        {props.sourcesToFileStorageModuleFiles
-          ? props.sourcesToFileStorageModuleFiles({
-              data: props.data,
-              isServer: props.isServer,
-            })
-          : null}
         <FormField
           ui="shadcn"
           type="text"
@@ -92,6 +80,18 @@ export function Component(props: IComponentPropsExtended) {
           placeholder="Type title"
           options={variants.map((variant) => [variant, variant])}
         />
+        {props.sourcesToChunks
+          ? props.sourcesToChunks({
+              data: props.data,
+              isServer: props.isServer,
+            })
+          : null}
+        {props.sourcesToFileStorageModuleFiles
+          ? props.sourcesToFileStorageModuleFiles({
+              data: props.data,
+              isServer: props.isServer,
+            })
+          : null}
       </div>
     </ParentAdminForm>
   );

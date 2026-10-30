@@ -10,14 +10,12 @@ jest.mock("@sps/shared-utils", () => ({
   NEXT_PUBLIC_HOST_SERVICE_URL: "https://example.test/",
 }));
 
-it("publishes one absolute sitemap and scoped Clean-param without content selectors", async () => {
+it("publishes a sitemap without preventing crawlers from reading Page noindex", async () => {
   const response = await GET();
   const body = await response.text();
   expect(response.status).toBe(200);
-  expect(body).toContain("Sitemap: https://example.test/sitemap.xml\n");
-  expect(body).toContain(
-    "User-agent: Yandex\nAllow: /\nClean-param: utm_source&",
+  expect(body).toBe(
+    "User-agent: *\nAllow: /\n\nSitemap: https://example.test/sitemap.xml\n",
   );
-  expect(body).toContain("&yclid&");
-  expect(body).not.toMatch(/segment|intent|offer|Disallow/);
+  expect(body).not.toMatch(/Disallow|Clean-param|noindex:/);
 });

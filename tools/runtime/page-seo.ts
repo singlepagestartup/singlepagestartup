@@ -101,7 +101,6 @@ async function all(api: ISdk): Promise<IRecord[]> {
   for (let offset = 0; ; offset += 100) {
     const rows = await api.find({
       params: {
-        includeHidden: 1,
         limit: 100,
         offset,
         orderBy: { and: [{ column: "id", method: "asc" }] },
@@ -281,7 +280,6 @@ export async function applyPageSeo(
     const slug = `page-seo-${key}-${asset.sha256.slice(0, 16)}`;
     const rows = await api.files.find({
       params: {
-        includeHidden: 1,
         limit: 2,
         filters: { and: [{ column: "slug", method: "eq", value: slug }] },
       },
@@ -417,7 +415,6 @@ export async function verifyPageSeo(
     const ids = fileIds.slice(offset, offset + 100);
     const rows = await api.files.find({
       params: {
-        includeHidden: 1,
         limit: 100,
         filters: { and: [{ column: "id", method: "inArray", value: ids }] },
       },

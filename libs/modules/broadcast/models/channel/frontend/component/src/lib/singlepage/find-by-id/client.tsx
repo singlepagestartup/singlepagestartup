@@ -1,6 +1,5 @@
 "use client";
 
-import { publicReadOptions } from "@sps/shared-utils/public-read";
 import "client-only";
 
 import { Component } from "./Component";
@@ -12,11 +11,9 @@ import { api } from "@sps/broadcast/models/channel/sdk/client";
 import { useEffect } from "react";
 
 export default function Client(props: IComponentProps) {
-  const { data, isFetching, isLoading } = api.findById(
-    publicReadOptions({
-      id: props.id,
-    }),
-  );
+  const { data, isFetching, isLoading } = api.findById({
+    id: props.id,
+  });
 
   useEffect(() => {
     if (props.set && typeof props.set === "function") {

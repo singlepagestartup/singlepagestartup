@@ -1,6 +1,5 @@
 "use server";
 
-import { adminReadOptions } from "@sps/shared-utils/public-read";
 import "server-only";
 
 import { IComponentProps, IComponentPropsExtended } from "./interface";
@@ -41,22 +40,20 @@ export async function Component<
     ],
   };
 
-  const data = await typedProps.api.find(
-    adminReadOptions({
-      ...typedProps.apiProps,
-      params: {
-        ...(typedProps.apiProps?.params ?? {}),
-        filters,
+  const data = await typedProps.api.find({
+    ...typedProps.apiProps,
+    params: {
+      ...(typedProps.apiProps?.params ?? {}),
+      filters,
+    },
+    options: {
+      ...typedProps.apiProps?.options,
+      headers: {
+        "Cache-Control": "no-store",
+        ...typedProps.apiProps?.options?.headers,
       },
-      options: {
-        ...typedProps.apiProps?.options,
-        headers: {
-          "Cache-Control": "no-store",
-          ...typedProps.apiProps?.options?.headers,
-        },
-      },
-    }),
-  );
+    },
+  });
 
   if (!data) {
     return <></>;

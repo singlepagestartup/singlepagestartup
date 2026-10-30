@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { CONSISTENCY_CACHE_PREFIX } from "@sps/shared-utils";
 const values = new Map<string, string>();
 jest.mock("@sps/providers-kv", () => ({
   Provider: class {
@@ -10,11 +11,80 @@ jest.mock("@sps/providers-kv", () => ({
     async set({ prefix, key, value }: any) {
       values.set(prefix + key, value);
     }
+    async delByPrefix({ prefix }: { prefix: string }) {
+      for (const key of values.keys())
+        if (key.startsWith(prefix)) values.delete(key);
+    }
   },
 }));
 jest.mock("@sps/providers-db", () => ({ ConsistencyStore: jest.fn() }));
 import { createConsistencyRuntime } from "./consistency";
 import { consistencyContext } from "../repository/database/context";
+
+it("clears only API response envelopes and pointers, preserving unrelated KV state", async () => {
+  values.clear();
+  values.set(CONSISTENCY_CACHE_PREFIX + ":pointer", "envelope");
+  values.set(CONSISTENCY_CACHE_PREFIX + ":envelope", "response");
+  values.set("mcp:oauth:client", "oauth");
+  values.set("rbac:subject:preferences", "preferences");
+  const runtime = createConsistencyRuntime({
+    store: {} as any,
+    verifyAuthorization: async () => {},
+  });
+  await runtime.clearCache();
+  expect([...values.entries()]).toEqual([
+    ["mcp:oauth:client", "oauth"],
+    ["rbac:subject:preferences", "preferences"],
+  ]);
+});
+
+it.each(["Authorization", "Cookie", "X-RBAC-SECRET-KEY"])(
+  "isolates cached responses by %s and refuses anonymous access after a private hit",
+  async (header) => {
+    values.clear();
+    const key = "public.fixture|id|record";
+    const store: any = {
+      status: async () => ({ epoch: "test" }),
+      versions: async () => ({ [key]: "0" }),
+      register: async () => ({
+        protocol: 1,
+        ref: "ref",
+        epoch: "test",
+        cursor: "0",
+        expiresAt: new Date(Date.now() + 60000).toISOString(),
+      }),
+      covered: async () => true,
+    };
+    const runtime = createConsistencyRuntime({
+      store,
+      verifyAuthorization: async () => {},
+    });
+    const app = new Hono();
+    app.use(runtime.middleware());
+    app.use(async (c, next) => {
+      if (!c.req.header(header)) return c.json({ error: "Forbidden" }, 403);
+      await next();
+    });
+    app.use(runtime.cache());
+    const read = jest.fn((c) => {
+      consistencyContext.getStore()!.dependencies.set(key, "0");
+      return c.json({ data: { owner: c.req.header(header) } });
+    });
+    app.get("/api/fixture", read);
+    const credential = (actor: string) =>
+      header === "Cookie" ? "rbac.subject.jwt=" + actor : actor;
+    const request = (actor: string) =>
+      app.request("/api/fixture", { headers: { [header]: credential(actor) } });
+    await request("actor-a");
+    expect((await request("actor-a")).headers.get("X-SPS-Cache")).toBe("hit");
+    const other = await request("actor-b");
+    expect((await other.json()).data.owner).toBe(credential("actor-b"));
+    const anonymous = await app.request("/api/fixture");
+    expect(anonymous.status).toBe(403);
+    expect(await anonymous.json()).toEqual({ error: "Forbidden" });
+    expect(read).toHaveBeenCalledTimes(2);
+  },
+);
 
 it("never serves cached responses before a controller guard on excluded routes", async () => {
   values.clear();

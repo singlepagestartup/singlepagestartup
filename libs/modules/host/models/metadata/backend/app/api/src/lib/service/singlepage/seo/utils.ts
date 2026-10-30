@@ -93,3 +93,8 @@ export function decodeRouteValue(value: string): string {
     return value;
   }
 }
+
+/** Missing public content uses the API error contract; Next adapts HTTP 404. */
+export function notFound(): never {
+  throw new Error("Not Found error. Public page not found");
+}

@@ -19,7 +19,7 @@ export function Component(props: IComponentProps) {
           <MetadataToFiles
             isServer={false}
             variant="admin-v2-table"
-            rightModelAdminFormLabel="Cover file"
+            rightModelAdminFormLabel="File"
             rightModelAdminForm={({ data }) => (
               <File
                 isServer={false}

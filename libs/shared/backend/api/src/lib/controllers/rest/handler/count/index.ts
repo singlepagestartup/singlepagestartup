@@ -1,4 +1,3 @@
-import { publicReadParams } from "../../../../public-read";
 import "reflect-metadata";
 import { HTTPException } from "hono/http-exception";
 import { Context } from "hono";
@@ -22,7 +21,7 @@ export class Handler<
   ): Promise<Response> {
     try {
       const data = await this.service.count({
-        params: publicReadParams(c, this.service, c.var.parsedQuery),
+        params: c.var.parsedQuery,
       });
 
       return c.json({

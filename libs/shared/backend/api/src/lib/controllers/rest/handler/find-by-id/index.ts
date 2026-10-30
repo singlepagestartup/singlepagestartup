@@ -1,4 +1,3 @@
-import { assertPublicRecord } from "../../../../public-read";
 import "reflect-metadata";
 import { HTTPException } from "hono/http-exception";
 import { Context } from "hono";
@@ -25,8 +24,6 @@ export class Handler<
       }
 
       const data = await this.service.findById({ id: uuid });
-
-      assertPublicRecord(c, data);
 
       if (!data || !Object.keys(data).length) {
         throw new Error("Not Found error. Not Found entity with id: " + uuid);

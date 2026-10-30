@@ -43,8 +43,7 @@ export class Middleware {
     // Topic rules precedence: constructor options -> project startup layer ->
     // framework defaults. A more specific rule with `stop: true` wins. The
     // resolver + the singlepage/startup rule layers live in @sps/shared-utils
-    // (NOT this middleware), so http-cache consumes the same resolver without
-    // coupling to revalidation, and broadcast + cache-version bump always agree.
+    // so mutation notifications and browser subscriptions share a vocabulary.
     this.compiledTopicRules = compileTopicRules([
       ...(options?.topicRules || []),
       ...startupTopicRules,

@@ -51,7 +51,6 @@ describe("GIVEN: admin-v2 form client loader", () => {
     );
 
     expect(findById).toHaveBeenCalledWith({
-      params: { includeHidden: "1" },
       id: "entity-1",
     });
     expect(childSpy).toHaveBeenCalled();

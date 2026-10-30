@@ -1,5 +1,4 @@
 import type { FindServiceProps } from "@sps/shared-backend-api";
-import { isHiddenRecord } from "@sps/shared-utils/public-read";
 import type {
   IModel as IProfile,
   IAuthorFindParams,
@@ -122,24 +121,13 @@ export class Service {
           },
         }),
       ]);
-    const actualArticles = new Set(
-      articles
-        .filter((article) => !isHiddenRecord(article))
-        .map((article) => article.id),
+    const actualArticles = new Set(articles.map((article) => article.id));
+    const actualProducts = new Set(products.map((product) => product.id));
+    const validArticleLinks = articleLinks.filter((link) =>
+      actualArticles.has(link.blogModuleArticleId),
     );
-    const actualProducts = new Set(
-      products
-        .filter((product) => !isHiddenRecord(product))
-        .map((product) => product.id),
-    );
-    const validArticleLinks = articleLinks.filter(
-      (link) =>
-        !isHiddenRecord(link) && actualArticles.has(link.blogModuleArticleId),
-    );
-    const validProductLinks = productLinks.filter(
-      (link) =>
-        !isHiddenRecord(link) &&
-        actualProducts.has(link.ecommerceModuleProductId),
+    const validProductLinks = productLinks.filter((link) =>
+      actualProducts.has(link.ecommerceModuleProductId),
     );
     const eligible = profiles
       .filter(
@@ -185,16 +173,14 @@ export class Service {
         },
       },
     });
-    const link = links.filter(
-      (link) => link.profileId === profile.id && !isHiddenRecord(link),
-    )[0];
+    const link = links.find((link) => link.profileId === profile.id);
     const file = link
       ? await this.dependencies.file.findById({
           id: link.fileStorageModuleFileId,
         })
       : null;
     let avatar: IProfileAvatar | null = null;
-    if (!isHiddenRecord(file) && file?.mimeType?.startsWith("image/")) {
+    if (file?.mimeType?.startsWith("image/")) {
       const { id, file: path, mimeType, extension, alt, width, height } = file;
       avatar = { id, file: path, mimeType, extension, alt, width, height };
     }

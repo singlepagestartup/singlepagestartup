@@ -1,6 +1,5 @@
 "use client";
 
-import { adminReadOptions } from "@sps/shared-utils/public-read";
 import "client-only";
 
 import { factory } from "@sps/shared-frontend-client-api";
@@ -93,30 +92,26 @@ export function Component<
     searchField,
   ]);
 
-  const { data: totalData } = props.api.count(
-    adminReadOptions({
-      params: { filters: params.filters },
-      options: {
-        ...props.apiProps?.options,
-        headers: {
-          ...props.apiProps?.options?.headers,
-          "Cache-Control": "no-store",
-        },
+  const { data: totalData } = props.api.count({
+    params: { filters: params.filters },
+    options: {
+      ...props.apiProps?.options,
+      headers: {
+        ...props.apiProps?.options?.headers,
+        "Cache-Control": "no-store",
       },
-    }),
-  );
-  const { data, isLoading } = props.api.find(
-    adminReadOptions({
-      params,
-      options: {
-        ...props.apiProps?.options,
-        headers: {
-          ...props.apiProps?.options?.headers,
-          "Cache-Control": "no-store",
-        },
+    },
+  });
+  const { data, isLoading } = props.api.find({
+    params,
+    options: {
+      ...props.apiProps?.options,
+      headers: {
+        ...props.apiProps?.options?.headers,
+        "Cache-Control": "no-store",
       },
-    }),
-  );
+    },
+  });
 
   useEffect(() => {
     if (typeof totalData !== "number" || !setState) {

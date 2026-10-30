@@ -70,7 +70,7 @@ export function Component(props: IComponentPropsExtended) {
     return [
       {
         id: "metadata-to-files",
-        title: "Cover images",
+        title: "Files",
         render: props.metadataToFileStorageModuleFiles,
       },
       {
@@ -152,16 +152,6 @@ export function Component(props: IComponentPropsExtended) {
 
         <TabsContent value="details" className="mt-0 pt-6">
           <div className="flex flex-col gap-6">
-            <p className="text-sm text-muted-foreground">
-              Text accepts masks such as [blog.articles.title] and
-              [blog.articles.metadata.seo.keywords]. Images accept a URL or a
-              file relation mask; the linked cover is used when empty. Viewport
-              is managed by Host.
-            </p>
-            <MetadataPreview
-              control={form.control}
-              metadataId={props.data?.id}
-            />
             {[
               "title",
               "description",
@@ -202,6 +192,10 @@ export function Component(props: IComponentPropsExtended) {
               form={form}
               placeholder="Select variant"
               options={variants.map((variant) => [variant, variant])}
+            />
+            <MetadataPreview
+              control={form.control}
+              metadataId={props.data?.id}
             />
           </div>
         </TabsContent>

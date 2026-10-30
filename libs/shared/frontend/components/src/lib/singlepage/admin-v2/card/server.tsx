@@ -1,6 +1,5 @@
 "use server";
 
-import { adminReadOptions } from "@sps/shared-utils/public-read";
 import "server-only";
 
 import { IComponentProps, IComponentPropsExtended } from "./interface";
@@ -19,18 +18,16 @@ export async function Component<
   CP extends IComponentProps<M, V>,
 >(props: CP & A) {
   const { Component: Child } = props;
-  const count = await props.api.count(
-    adminReadOptions({
-      params: props.apiProps?.params,
-      options: {
-        ...props.apiProps?.options,
-        headers: {
-          ...props.apiProps?.options?.headers,
-          "Cache-Control": "no-store",
-        },
+  const count = await props.api.count({
+    params: props.apiProps?.params,
+    options: {
+      ...props.apiProps?.options,
+      headers: {
+        ...props.apiProps?.options?.headers,
+        "Cache-Control": "no-store",
       },
-    }),
-  );
+    },
+  });
 
   return (
     <Child

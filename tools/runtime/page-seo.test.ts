@@ -151,9 +151,7 @@ describe("Page SEO publication", () => {
       (params) => params.filters?.and?.[0]?.column === "slug",
     );
     expect(exact).toHaveLength(2);
-    expect(
-      exact.every((params) => params.limit === 2 && params.includeHidden === 1),
-    ).toBe(true);
+    expect(exact.every((params) => params.limit === 2)).toBe(true);
     expect(reads.filter((params) => !params.filters)).toHaveLength(0);
     expect(
       reads.filter((params) => params.filters.and[0].column === "id"),

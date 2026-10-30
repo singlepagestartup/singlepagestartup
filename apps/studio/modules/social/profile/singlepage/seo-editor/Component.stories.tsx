@@ -10,10 +10,20 @@ export const Default: StoryObj<typeof meta> = {
     language: "ru",
     metadata: {
       seo: {
-        title: { ru: "Название", en: "Title" },
-        keywords: { ru: ["тема"] },
+        title: {
+          ru: "Команда SinglePageStartup",
+          en: "SinglePageStartup team",
+        },
+        description: {
+          ru: "Разрабатываем модули, API и интерфейсы для веб-приложений с ИИ.",
+          en: "We build modules, APIs and interfaces for web applications with AI.",
+        },
+        keywords: {
+          ru: ["SinglePageStartup", "TypeScript", "веб-разработка", "ИИ"],
+          en: ["SinglePageStartup", "TypeScript", "web development", "AI"],
+        },
       },
-      attributes: { source: "preserved" },
+      attributes: { role: "framework-maintainer" },
     },
   },
 };

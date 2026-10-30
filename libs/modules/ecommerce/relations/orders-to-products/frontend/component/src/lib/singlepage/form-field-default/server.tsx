@@ -1,6 +1,5 @@
 "use server";
 
-import { publicReadOptions } from "@sps/shared-utils/public-read";
 import "server-only";
 
 import { IComponentProps } from "./interface";
@@ -12,12 +11,10 @@ export default async function Server(props: IComponentProps) {
     return <></>;
   }
 
-  const data = await api.findById(
-    publicReadOptions({
-      id: props.data.id,
-      ...props.apiProps,
-    }),
-  );
+  const data = await api.findById({
+    id: props.data.id,
+    ...props.apiProps,
+  });
 
   if (!data) {
     return <></>;

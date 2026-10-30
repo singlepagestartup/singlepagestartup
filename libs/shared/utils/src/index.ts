@@ -1,4 +1,3 @@
-export * from "./lib/public-read";
 export * from "./lib/preapare-form-data-to-send";
 export { util as transformResponseItem } from "./lib/transform-response-item";
 export { util as parseMimeType } from "./lib/parse-mime-type";

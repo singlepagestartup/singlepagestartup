@@ -4,6 +4,7 @@ import { Provider as KVProvider } from "@sps/providers-kv";
 import { createMiddleware } from "hono/factory";
 import {
   CONSISTENCY_HEADER,
+  CONSISTENCY_CACHE_PREFIX,
   KV_PROVIDER,
   HTTP_CACHE_MAX_ENTRY_BYTES,
   RouteMatcher,
@@ -37,6 +38,7 @@ interface IClient {
 }
 export interface IConsistencyRuntimeProps {
   store?: ConsistencyStore;
+  cache?: Pick<KVProvider, "get" | "set" | "delByPrefix">;
   verifyAuthorization: (authorization: string) => Promise<void>;
   invalidateTags?: (tags: string[]) => Promise<void>;
   publishLegacy?: (topics: string[]) => Promise<void>;
@@ -44,6 +46,7 @@ export interface IConsistencyRuntimeProps {
 
 export function createConsistencyRuntime(props: IConsistencyRuntimeProps) {
   const store = props.store || new ConsistencyStore();
+  const cache = props.cache || new KVProvider({ type: KV_PROVIDER });
   const clients = new Map<IConnection, IClient>();
   const coverage = new Map<string, Promise<boolean>>();
   let timer: ReturnType<typeof setInterval> | undefined;
@@ -273,9 +276,11 @@ export function createConsistencyRuntime(props: IConsistencyRuntimeProps) {
       };
     },
     tick,
+    async clearCache() {
+      await cache.delByPrefix({ prefix: CONSISTENCY_CACHE_PREFIX });
+    },
     /** Register after authorization. PostgreSQL, never Redis, proves freshness. */
     cache(options: { observe?: boolean; excludedRoutes?: IRouteRule[] } = {}) {
-      const cache = new KVProvider({ type: KV_PROVIDER });
       const excludedRoutesMatcher = new RouteMatcher(
         options.excludedRoutes || [],
       );
@@ -299,7 +304,7 @@ export function createConsistencyRuntime(props: IConsistencyRuntimeProps) {
           c.req.header("Accept"),
         ]);
         const key = createHash("sha256").update(identity).digest("hex");
-        const prefix = "sps-consistency:v1";
+        const prefix = CONSISTENCY_CACHE_PREFIX;
         let status: Awaited<ReturnType<typeof store.status>>;
         try {
           status = await store.status();

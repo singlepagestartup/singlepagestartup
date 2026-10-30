@@ -45,3 +45,10 @@ describe("revalidation not-revalidating routes", () => {
     expect(extended.matches("/api/crm/internal-sync", "POST")).toBe(true);
   });
 });
+
+it("does not broadcast a read-only Metadata preview as a mutation", () => {
+  const matcher = createNotRevalidatingRoutesMatcher();
+  expect(matcher.matches("/api/host/metadata/preview", "POST")).toBe(true);
+  expect(matcher.matches("/api/host/metadata", "POST")).toBe(false);
+  expect(matcher.matches("/api/host/metadata/preview", "PATCH")).toBe(false);
+});

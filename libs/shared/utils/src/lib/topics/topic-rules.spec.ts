@@ -2,12 +2,11 @@
  * BDD Suite: Shared realtime topic-rule resolver.
  *
  * Given: topic rules (template-based) and the framework default rule set.
- * When: a mutation/read path is resolved to its broadcast/bump topics.
+ * When: a mutation/read path is resolved to its notification topics.
  * Then: explicit rules win (with placeholder substitution + stop ordering), the
  *       canonical deriver is the fallback, and the framework defaults map the
  *       RPC/action endpoints onto the topics their readers subscribe to — the
- *       single resolver BOTH the revalidation broadcast and the http-cache
- *       version bump call, so the two layers never diverge (issue #195).
+ *       shared vocabulary for revalidation broadcasts and reader subscriptions.
  */
 
 import {

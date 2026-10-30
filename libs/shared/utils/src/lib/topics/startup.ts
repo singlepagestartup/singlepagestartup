@@ -11,9 +11,8 @@ import type { ITopicRule } from "./index";
  * `startup.ts` is project-owned and preserved across base-module syncs — the
  * framework only ships `singlepage.ts`, so a sync never overwrites this file.
  *
- * These rules feed BOTH the revalidation broadcast and the http-cache version
- * bump (one shared resolver in `./index`), keeping the two realtime layers in
- * lockstep. (A project may also pass rules via the `RevalidationMiddleware`
- * constructor in `apps/api/app.ts`, which are layered on top of these.)
+ * These rules feed mutation notifications through the shared resolver in
+ * `./index`. A project may also pass rules via the `RevalidationMiddleware`
+ * constructor in `apps/api/app.ts`, layered on top of these.
  */
 export const topicRules: ITopicRule[] = [];

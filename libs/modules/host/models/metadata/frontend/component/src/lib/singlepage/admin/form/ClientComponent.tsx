@@ -72,19 +72,6 @@ export function Component(props: IComponentPropsExtended) {
     >
       <div className="flex flex-col gap-6">
         {" "}
-        {props.metadataToFileStorageModuleFiles
-          ? props.metadataToFileStorageModuleFiles({
-              data: props.data,
-              isServer: props.isServer,
-            })
-          : null}
-        <p className="text-sm text-muted-foreground">
-          Text accepts masks such as [blog.articles.title] and
-          [blog.articles.metadata.seo.keywords]. Images accept a URL or a file
-          relation mask; the linked cover is used when empty. Viewport is
-          managed by Host.
-        </p>
-        <MetadataPreview control={form.control} metadataId={props.data?.id} />
         {[
           "title",
           "description",
@@ -126,6 +113,12 @@ export function Component(props: IComponentPropsExtended) {
           placeholder="Select variant"
           options={variants.map((variant) => [variant, variant])}
         />
+        {props.metadataToFileStorageModuleFiles
+          ? props.metadataToFileStorageModuleFiles({
+              data: props.data,
+              isServer: props.isServer,
+            })
+          : null}
         {props.pagesToMetadata
           ? props.pagesToMetadata({
               data: props.data,
@@ -133,6 +126,7 @@ export function Component(props: IComponentPropsExtended) {
               isServer: props.isServer,
             })
           : null}
+        <MetadataPreview control={form.control} metadataId={props.data?.id} />
       </div>
     </ParentAdminForm>
   );

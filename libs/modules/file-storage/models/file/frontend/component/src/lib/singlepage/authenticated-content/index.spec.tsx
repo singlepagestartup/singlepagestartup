@@ -150,7 +150,6 @@ it("retains public SSR output and the ordinary metadata reader without a binary 
   );
   expect(mockFindById).toHaveBeenCalledWith({
     id: file.id,
-    params: { publicOnly: "1" },
   });
   expect(mockProvider).toHaveBeenCalledTimes(1);
   unmount();

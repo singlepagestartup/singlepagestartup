@@ -141,9 +141,8 @@ export class Provider implements IProvider {
     const value = await this.client.incr(redisKey);
 
     // Issue #233: refresh the expiry on EVERY increment, not only when the
-    // counter is created. A counter that is bumped forever used to keep its
-    // missing (or first) TTL forever, which is how `http-cache:version:*`
-    // became the part of the key space nothing could reclaim.
+    // counter is created. Refreshing the TTL lets a frequently updated counter
+    // expire once its writes stop.
     if (props.options?.ttl) {
       await this.client.expire(redisKey, props.options.ttl);
     }

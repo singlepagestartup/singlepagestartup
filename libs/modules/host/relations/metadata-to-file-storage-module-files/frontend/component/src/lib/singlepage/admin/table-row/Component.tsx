@@ -29,7 +29,7 @@ export const Component = memo(function Component(
     >
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 p-4 pt-6">
         <div className="min-w-0">
-          <p className="text-xs text-muted-foreground">Cover file</p>
+          <p className="text-xs text-muted-foreground">File</p>
           <p className="break-all text-sm">
             {props.data.fileStorageModuleFileId}
           </p>

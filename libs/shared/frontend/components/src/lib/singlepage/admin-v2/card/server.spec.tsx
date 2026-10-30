@@ -76,7 +76,7 @@ describe("GIVEN: admin-v2 card server data integration", () => {
     renderInHarness(harness, element);
 
     expect(count).toHaveBeenCalledWith({
-      params: { includeHidden: "1", filters },
+      params: { filters },
       options: {
         headers: {
           Authorization: "Bearer test",

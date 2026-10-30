@@ -1,10 +1,7 @@
-import { shouldHideRecord } from "@sps/shared-utils/public-read";
 import { IComponentProps } from "./interface";
 import { variants } from "./variants";
 
 export function Component(props: IComponentProps) {
-  if (shouldHideRecord("data" in props ? props.data : undefined, props.variant))
-    return null;
   const Comp = variants[props.variant];
 
   if (!Comp) {
