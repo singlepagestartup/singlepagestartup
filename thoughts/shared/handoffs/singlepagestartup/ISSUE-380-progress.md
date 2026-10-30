@@ -22,18 +22,24 @@ status: in_progress
 - [x] Составить инвентаризацию всех Host Pages локально и на тестовом production. Связать каждую Page с редактируемой Metadata; динамические значения — квадратные маски, fallback сохраняется.
 - [x] Создать обложки в стиле Workspace Living Focus через imagegen, сохранить оригиналы и данные происхождения; загрузить через File SDK и настроить Metadata→File для всех Page. Служебные страницы сохраняют noindex.
 - [x] Сохранить существующие тексты/связи; data flow имеет preflight, backup, readback и повторный запуск без дублей. Snapshots не изменяются.
-- [ ] Проверить новые/существующие формы, аутентифицированные запросы, маски и images; выполнить целевые тесты, lint, production build, публичный ISR/hidden.
-- [ ] Commit/push в текущую ветку, release, проверить фактические образы и данные production, полный обход sitemap, Lighthouse.
-- [ ] Проверить доступный Яндекс Вебмастер и запустить проверку/переобход, если интерфейс и права позволяют. Не подменять чужой домен результатами singlepagestartup.com.
+- [x] Проверить новые/существующие формы, аутентифицированные запросы, маски и images; выполнить целевые тесты, lint, production build, публичный ISR/hidden.
+- [x] Commit/push в текущую ветку, release, проверить фактические образы и данные production, полный обход sitemap, Lighthouse.
+- [x] Проверить доступный Яндекс Вебмастер и запустить проверку/переобход, если интерфейс и права позволяют. Не подменять чужой домен результатами singlepagestartup.com.
 - [ ] Опубликовать результаты и ограничения в issue #380, обновить PR #382, подтвердить Code Review.
 
 Исходная локальная проверка: 102 Page, 2 Page→Metadata (обе для главной), 2 Metadata, 0 Metadata→File. У /blog и шаблонов Article/Product связей нет. Admin v2 передаёт серверные children через клиентскую проверку доступа; server card/table reads с includeHidden=1 не получают сессию. Новый Metadata→File admin/table не передаёт имя/форму контроллеру. Счётчик общей admin/table не учитывает фильтры.
 
-Локальная публикация: 102 Page → 102 выбранные Metadata → 102 отдельных File. Сохранены прежние Metadata и связи. Для семи разделов созданы иллюстрации Living Focus; исходные landscape PNG, отдельные square PNG и WebP находятся в `apps/studio/workspace/assets/singlepage/generated/page-seo-v1/`. Динамические Article/Product/Category/Author используют маски; статические тексты хранятся в Metadata. Личные разделы сохраняют noindex и не читают данные пользователя для SEO.
+Итоговая проверка: [0.0.331](https://github.com/singlepagestartup/singlepagestartup/releases/tag/0.0.331), код приложения `55ed9ad9b2`. Фактические Host/API — 0.0.331, running/completed. Все 102 локальные и 104 production Page связаны с отдельными Metadata и File. Прежние записи/связи сохранены; fresh prepare/apply не создаёт дублей. Все 104 публичные обложки проходят SHA-256/MIME/размеры/alt/HTTP 200. Семь иллюстраций Living Focus, оригиналы и WebP находятся в `apps/studio/workspace/assets/singlepage/generated/page-seo-v1/`.
 
-Повторный apply и новый prepare/apply проходят без новых Metadata/Page→Metadata/Metadata→File. Приватный before-manifest сохранён вне Git. В браузере проверены новая админка без 403, Page → Metadata → Cover file, сохранение/восстановление заголовка и draft preview `/ru/blog` с canonical, описанием и обложкой. Alt редактируется в обеих формах File.
+Обе админки проверены в браузере: вход, таблицы, Page→Metadata→File, сохранение Metadata/File и draft preview. Новая Page использует ru из настроек. Публичный маршрут — SSG/ISR. Production: Metadata title → обновление HIT, hidden Page/Article/Product/обязательной связи → 404, восстановление → 200, остальные поля сохранены. Cookie не меняет публичный HIT; анонимный административный read — 403.
 
-Целевые проверки: runtime data flow — 7 тестов, admin guards — 12, таблицы — 7, Metadata generator/utils — 32. Scoped ESLint — 24 TS/TSX-файла без ошибок/предупреждений; module dependencies — 15 495 файлов, 0 нарушений. Production build и TypeScript прошли; публичный маршрут помечен SSG, административный — dynamic. Публикация 0.0.331, production-проверки и Яндекс остаются впереди.
+Production sitemap: 136 URL, все 200 с canonical/lang/description/OG и одним H1, без noindex и ошибочного JSON-LD. Локально — 124 URL после исправления H1, noindex формы создания статьи/demo Store и восстановления Analytic из точной прежней резервной копии. Четыре прежние пустые production-статьи сохраняют hidden. Все временные fixture удалены.
+
+Lighthouse 13.6.0 mobile: SEO 100 на семи URL; Performance 80/50/30/22/31/32/51. Долги: JS, LCP/CLS, восемь общих description, переводы, FileInput и seed Metadata. Полная рецензия: [ISSUE-380-completion-review.md](../../research/singlepagestartup/ISSUE-380-completion-review.md).
+
+Яндекс: живые проверки 404 и 200 прошли. 136 адресов приняты на переобход 30.10.2026 14:25, все «В очереди». Общая диагностика не обновляется из-за сбоя Яндекса; её кнопка проверки отключена.
+
+Код: 60 целевых тестов, TypeScript/production build, scoped ESLint 24 файла без ошибок/предупреждений, module dependencies 15 495 файлов без нарушений. Сценарий публикации оптимизирован для библиотеки около 8 700 File: точный slug и связанные File ID, без повторного чтения всей библиотеки. Улучшения CLI находятся в той же ветке и не меняют развёрнутое приложение. 451 посторонний путь сохранён.
 
 ## Phase progress
 
@@ -65,7 +71,7 @@ Host 3000, API 4000 и Storybook 4321 оставлены работающими.
 
 ## Incident Log
 
-<!-- incident-count: 13 -->
+<!-- incident-count: 14 -->
 
 ### Incident 1 — GitHub недоступен из sandbox
 
@@ -206,7 +212,7 @@ Production ещё не обновлён. Пробный перенос лока�
 SDK-скриптом после обновления схемы, с сохранением существующих данных и связей.
 Релиз 0.0.328 пока не создан. Последний опубликованный релиз — 0.0.327.
 
-## Текущее продолжение
+## История продолжения до 0.0.330
 
 Код ISR завершён и прошёл production build, 193 теста и HTTP-сценарии.
 Локальный итоговый sitemap — 128 адресов после noindex для демонстрационных
@@ -224,3 +230,14 @@ noindex на тестовый production, выполнить повторный 
 - **Root Cause**: выводимый union-тип не гарантировал это поле после spread.
 - **Fix**: начальные фильтры явно включены в обе ветки; таблицы — 7 тестов, повторная production-сборка с TypeScript прошла.
 - **Preventive Action**: проверять общий reader production-сборкой после изменения параметров запросов.
+
+### Incident 14 — Объём File inventory в сценарии публикации
+
+- **Phase**: Production verification
+- **Occurrences**: 1
+- **Symptom**: библиотека production содержит около 8 700 File; полное чтение на каждую обложку и при readback задерживало публикацию.
+- **Root Cause**: несвязанные File перечислялись вместе с целевыми.
+- **Fix**: загрузки ищутся по точному slug с limit=2; verifier читает связанные и ожидаемые File ID пакетами по 100 и проверяет конкурирующие связи. Runtime — 9 тестов; 104 production комплекта проверены. Старый read-only verifier остановлен, его собственный lock удалён после подтверждения завершения процесса.
+- **Preventive Action**: проверять data-management flows на большой посторонней библиотеке; не сканировать коллекцию для поиска одного стабильного ключа.
+
+Один ранний apply остановился на валидации File. Новая попытка использовала тот же manifest и переиспользовала загрузки; все 104 комплекта завершены и проверены без дублей. Причина разового неполного ответа не установлена; ошибка upload теперь содержит диагностические поля без секретов.

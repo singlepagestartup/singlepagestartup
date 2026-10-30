@@ -27,6 +27,12 @@ current_phase: implement
 
 Нужно довести клиентскую авторизацию и обе админки, заполнить Page→Metadata и обложки для всех Host Pages локально и на тестовом production, выпустить текущую ветку и повторить диагностику. Полный список задач находится в progress. Fallback сохраняется; авторизованные SDK reads выполняются на клиенте. Владелец разрешил implementation, commit/release и проверки без остановок.
 
+## Итоговая проверка 0.0.331
+
+Host/API 0.0.331 подтверждены на сервере. Заполнены 102 локальные и 104 production Page→Metadata→File; 104 изображения проходят проверку публичных байтов. Повторный запуск не создаёт дублей. Production sitemap — 136 корректных URL. Hidden/restore Page, Article, Product и обязательной связи, изменение Metadata на HIT, 404 файлов и запрет анонимного admin read проверены. Lighthouse SEO — 100 на семи URL; Performance 22–80 остаётся следующим этапом.
+
+Яндекс подтвердил живые 404/200; 136 адресов приняты в очередь переобхода 30.10.2026 14:25. Общая диагностика не обновляется из-за сбоя сервиса. [Полная рецензия](../../research/singlepagestartup/ISSUE-380-completion-review.md). Публикация рецензии и перевод issue в Code Review завершают текущее продолжение.
+
 ## Итоговая проверка 0.0.330
 
 Релиз [0.0.330](https://github.com/singlepagestartup/singlepagestartup/releases/tag/0.0.330) из текущей ветки завершён успешно. Host и API на тестовом production используют этот образ. Код: `8324e42e97`. Полная [рецензия в issue #380](https://github.com/singlepagestartup/singlepagestartup/issues/380#issuecomment-6514109866) и [копия в репозитории](../../research/singlepagestartup/ISSUE-380-production-review.md).

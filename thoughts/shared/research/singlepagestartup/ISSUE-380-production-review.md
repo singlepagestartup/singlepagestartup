@@ -1,3 +1,5 @@
+Актуальная доработка: [проверка 0.0.331](ISSUE-380-completion-review.md). Ниже сохранены результаты предыдущего релиза 0.0.330.
+
 ## Результат проверки SEO, ISR и данных
 
 Релиз: [0.0.330](https://github.com/singlepagestartup/singlepagestartup/releases/tag/0.0.330). Код: [`8324e42e97`](https://github.com/singlepagestartup/singlepagestartup/commit/8324e42e97a6630680833e16158d99eabf5b94bd). Проверка: 30.10.2026, Europe/Moscow. Ветка `codex/studio-linear-workflow`.

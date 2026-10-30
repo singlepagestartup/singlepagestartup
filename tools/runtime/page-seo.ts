@@ -393,13 +393,39 @@ export async function verifyPageSeo(
   manifest: IPageSeoManifest,
   api: IPageSeoAdapter,
 ) {
-  const [pages, metadata, links, covers, files] = await Promise.all([
+  const [pages, metadata, links, covers] = await Promise.all([
     all(api.pages),
     all(api.metadata),
     all(api.pageLinks),
     all(api.coverLinks),
-    all(api.files),
   ]);
+  const metadataIds = new Set(
+    manifest.operations.map((operation) => operation.metadata.id),
+  );
+  const fileIds = [
+    ...new Set(
+      [
+        ...Object.values(manifest.assets).map((asset) => asset.fileId),
+        ...covers
+          .filter((link) => metadataIds.has(String(link.metadataId)))
+          .map((link) => link.fileStorageModuleFileId),
+      ].filter((id): id is string => typeof id === "string"),
+    ),
+  ];
+  const files: IRecord[] = [];
+  for (let offset = 0; offset < fileIds.length; offset += 100) {
+    const ids = fileIds.slice(offset, offset + 100);
+    const rows = await api.files.find({
+      params: {
+        includeHidden: 1,
+        limit: 100,
+        filters: { and: [{ column: "id", method: "inArray", value: ids }] },
+      },
+    });
+    if (!rows || rows.some((row) => !ids.includes(row.id)))
+      throw Error("SEO cover verification inventory unavailable");
+    files.push(...rows);
+  }
   for (const operation of manifest.operations) {
     const page = pages.find((page) => page.id === operation.before.id);
     const selected = ordered(

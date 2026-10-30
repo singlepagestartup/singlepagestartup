@@ -55,8 +55,10 @@ function fixture() {
           structuredClone(
             rows[key as keyof typeof rows]
               .filter((row) =>
-                (params?.filters?.and ?? []).every(
-                  (filter: any) => row[filter.column] === filter.value,
+                (params?.filters?.and ?? []).every((filter: any) =>
+                  filter.method === "inArray"
+                    ? filter.value.includes(row[filter.column])
+                    : row[filter.column] === filter.value,
                 ),
               )
               .slice(
@@ -152,7 +154,38 @@ describe("Page SEO publication", () => {
     expect(
       exact.every((params) => params.limit === 2 && params.includeHidden === 1),
     ).toBe(true);
-    expect(reads.filter((params) => !params.filters)).toHaveLength(3);
+    expect(reads.filter((params) => !params.filters)).toHaveLength(0);
+    expect(
+      reads.filter((params) => params.filters.and[0].column === "id"),
+    ).toHaveLength(1);
+  });
+  it("still detects a higher priority cover outside the publication's expected File IDs", async () => {
+    const f = fixture();
+    const manifest = await preparePageSeo(f.input, f.api);
+    await applyPageSeo(
+      manifest,
+      f.api,
+      async () => {},
+      async () => f.bytes,
+    );
+    f.rows.files.push({
+      id: "other-cover",
+      variant: "default",
+      mimeType: "image/webp",
+      file: "/other.webp",
+      width: 1254,
+      height: 1254,
+    });
+    f.rows.coverLinks.push({
+      id: "other-link",
+      metadataId: manifest.operations[0].metadata.id,
+      fileStorageModuleFileId: "other-cover",
+      variant: "default",
+      orderIndex: -10,
+    });
+    await expect(verifyPageSeo(manifest, f.api)).rejects.toThrow(
+      "Page SEO verification failed",
+    );
   });
   it("publishes explicit links and covers for both locales while retaining previous editorial records and publication policy", async () => {
     const f = fixture();

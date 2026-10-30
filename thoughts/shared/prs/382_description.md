@@ -1,6 +1,6 @@
 ## Summary
 
-Pages currently reuse site-wide metadata, and missing or hidden content can remain indexable. Resolve each page from its database Metadata and exact route content, preserve localized fields, and make public visibility consistent across HTML, API reads and sitemap.
+Public pages need their own editable Metadata, localized masks and covers, while hidden content must return 404 consistently. Administrative server reads also lost the client session and failed with 403. Public HTML now uses ISR with model-owned SEO resolution; authenticated administration mounts inside the client guard, with backend RBAC preserved.
 
 Resolves #380. Work stays on `codex/studio-linear-workflow`; unrelated local Studio/workflow edits are not included in these commits.
 
@@ -16,7 +16,21 @@ Resolves #380. Work stays on `codex/studio-linear-workflow`; unrelated local Stu
 
 ## Verification
 
-Final revision: `8324e42e97`, deployed as [0.0.330](https://github.com/singlepagestartup/singlepagestartup/releases/tag/0.0.330).
+Current application release: [0.0.331](https://github.com/singlepagestartup/singlepagestartup/releases/tag/0.0.331), app commit `55ed9ad9b2`. Subsequent operator CLI optimizations run during data publication and do not change the deployed Host/API application.
+
+- [x] Both admin generations: client session/role guard, filtered relation counts, Page→Metadata→File editing, alt, preview and configured language default.
+- [x] 102 local and 104 production Pages have selected Metadata and individual cover Files. Seven Living Focus illustrations retain landscape/square originals; all 104 production images pass public HTTP, SHA-256, MIME, dimension and alt checks. Fresh publication creates no duplicate Metadata, links or File IDs.
+- [x] 60 focused tests; production build/TypeScript; scoped ESLint on 24 TS/TSX files; module dependencies: 15,495 files, 0 violations.
+- [x] Production Metadata title invalidation/HIT, hidden/restore Page/Article/Product/required relation, preserved fields, cookie-isolated public HIT, real missing page/file 404 and anonymous administrative 403.
+- [x] Production sitemap: 136 URLs, all 200 with canonical/lang/description/OG and exactly one H1; no noindex or invalid JSON-LD. No duplicate titles within either locale.
+- [x] Lighthouse 13.6.0 mobile: SEO 100 on seven URLs; Performance 80/50/30/22/31/32/51. Remaining JS/LCP/CLS and content work are documented with evidence.
+- [x] Yandex live checks confirm 404 and 200; all 136 URLs accepted into the recrawl queue. Global diagnostic refresh is disabled by Yandex's service outage.
+
+[Current review](https://github.com/singlepagestartup/singlepagestartup/blob/codex/studio-linear-workflow/thoughts/shared/research/singlepagestartup/ISSUE-380-completion-review.md). Public reports are attached to release 0.0.331; private before-manifests are excluded.
+
+Previous verification:
+
+Previous revision: `8324e42e97`, deployed as [0.0.330](https://github.com/singlepagestartup/singlepagestartup/releases/tag/0.0.330).
 
 - [x] Production build and TypeScript; public catch-all is SSG/ISR and admin is dynamic. CI/CodeQL and release workflow passed.
 - [x] 281 tests passed, one pre-existing skipped: Host 59, Host module 112, URL utilities 28, shared backend API 82 passed. Scoped ESLint: 36 files, 0 errors/warnings; module dependencies: 15,494 files, 0 violations.
@@ -41,17 +55,17 @@ Earlier SEO implementation:
 - [x] Production HTTP matrix: 18 routes, locale metadata, article/product H1, tracking canonical, noindex, true 404, pagination, 20 expected sitemap URLs and draft preview.
 - [x] Warm HTML and sitemap update after title edits/hide/restore; hidden cover File/link removes OG. API outage gives HTML 500 and sitemap 503/no-store/Retry-After.
 - [x] Browser/Storybook checks: article content after hydration, product presentation, invalid JSON feedback and recovery preserving sibling sections/locales.
-- [ ] Owner acceptance of the administrative editing flows and project-specific production rollout.
+- [ ] Owner acceptance of the completed editing flows; rollout to other projects is separate.
 
 ## Notes
 
-Reconciled current main in the same branch, retaining its Article/Product presentation and public Author API. Added hidden to its three new relations and regenerated consistency capture as 0010. Original local Studio/workflow edits are restored byte-for-byte and remain unstaged.
+Reconciled current main in the same branch, retaining its Article/Product presentation and public Author API. Added hidden to its three new relations and regenerated consistency capture as 0010. Existing local Studio/workflow edits remain unstaged; hashes of 451 unrelated paths are preserved.
 
 The diff is broad because every model/relation receives the requested hidden contract. Existing variants and database data snapshots are preserved. Public rendering no longer depends on request headers/cookies. Current-Subject controls must stay in client compositions; private reads and previews bypass public caches.
 
-The original test database is in use. Localized Page templates preserve shared content IDs and do not establish translated content. The production crawl has no missing/multiple H1. Remaining priorities are the 1.72 MB first-load client bundle, article/module layout shifts, 16 URLs using the generic site description, Metadata seed duplication, Store composition and analytics configuration. See the linked review for evidence and proposed scope.
+The original test database is in use. Localized Page templates preserve shared content IDs and do not establish translated content. The production crawl has no missing/multiple H1. Remaining priorities are the 1.72 MB first-load client bundle, article/module layout shifts, 8 catalog URLs using the generic site description, Metadata seed duplication, FileInput replacement behavior, Store composition and analytics configuration. See the linked review for evidence and proposed scope.
 
-The authorized test production singlepagestartup.com is updated to 0.0.330. Production m2commerce.ru and its data are unchanged. Existing literal Metadata titles still take priority: deployments must configure real masks, translations and covers. Search reports can only improve after rollout and recrawl. Hreflang, author entity types, publication dates and commerce offers are emitted only when supported; this change does not invent them.
+The authorized test production singlepagestartup.com is updated to 0.0.331. Production m2commerce.ru and its data are unchanged. Existing literal Metadata titles still take priority: deployments must configure real masks, translations and covers. Search reports can only improve after rollout and recrawl. Hreflang, author entity types, publication dates and commerce offers are emitted only when supported; this change does not invent them.
 
 ## Downstream migration
 
@@ -68,3 +82,5 @@ Merge localized Host routes/layout and the globalNotFound configuration; render 
 Adopt partial-schema repository update validation in owned overrides. Send explicit values for intended resets, audit records previously edited through partial updates for unexpected empty JSON/localized fields, and restore verified revisions through the owning data flow while preserving IDs and relations. Verify variant-only Article/Product/relation PATCH preserves every unrelated field and explicit empty objects affect only the requested field.
 
 Verify built anonymous HTML, MISS/HIT, 404/noindex, images, JSON-LD, sitemap and cache refresh after SDK/direct writes before deployment. Then arrange recrawl separately. Detailed evidence and rollout steps are in `thoughts/shared/processes/singlepagestartup/ISSUE-380.md`.
+
+Owned admin compositions must mount their readers after the client session/role guard with `isServer=false`. Custom legacy table adapters must supply `count` with the same parent/search filters as `find`, preserving client headers/no-store. Page creation uses the configured default language. For existing Pages, prepare project-owned localized SEO input and real covers, retain the private before-manifest, publish through `tools/runtime/page-seo.ts` and verify repeat publication. Cover lookup and verification use exact slugs/related File IDs rather than scanning unrelated uploads.

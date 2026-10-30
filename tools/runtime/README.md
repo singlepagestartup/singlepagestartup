@@ -432,6 +432,10 @@ is reused; unchanged repeat publication creates no records. Private Pages retain
 their indexing/access policy. No permissions, content entities or seed snapshots
 are changed.
 
+Verification reads File IDs from the selected Metadata's cover relations and
+the expected assets in batches of 100. It includes competing covers to validate
+selection order without enumerating unrelated uploads.
+
 ```sh
 API_SERVICE_URL=http://localhost:4000 bun --env-file=apps/api/.env --tsconfig-override tsconfig.base.json tools/runtime/page-seo.ts prepare /absolute/input.json /private/tmp/page-seo-local.json
 API_SERVICE_URL=http://localhost:4000 bun --env-file=apps/api/.env --tsconfig-override tsconfig.base.json tools/runtime/page-seo.ts apply /private/tmp/page-seo-local.json
