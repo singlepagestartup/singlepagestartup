@@ -1,5 +1,6 @@
 "use client";
 
+import { Component as PageSeoPreview } from "@sps/host/models/page/frontend/component";
 import { Component as ParentComponent } from "@sps/host/models/metadata/frontend/component";
 import { Component as PagesToMetadata } from "@sps/host/relations/pages-to-metadata/frontend/component";
 import { Component as File } from "@sps/file-storage/models/file/frontend/component";
@@ -14,6 +15,14 @@ export function Component(props: IComponentProps) {
       isServer={false}
       data={props.data}
       variant="admin-v2-form"
+      preview={({ control, metadataId }) => (
+        <PageSeoPreview
+          isServer={false}
+          variant="seo-preview"
+          control={control}
+          metadataId={metadataId}
+        />
+      )}
       metadataToFileStorageModuleFiles={({ data }) =>
         data ? (
           <MetadataToFiles

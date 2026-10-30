@@ -56,7 +56,7 @@ export function Component({
       className="grid gap-4 rounded-xl border border-border bg-card p-5"
       aria-label="SEO preview"
       data-module="host"
-      data-model="metadata"
+      data-model="page"
       data-variant="seo-preview"
     >
       <div className="flex flex-wrap items-center justify-between gap-3">

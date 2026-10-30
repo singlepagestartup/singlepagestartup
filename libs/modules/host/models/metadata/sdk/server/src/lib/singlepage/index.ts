@@ -1,19 +1,18 @@
-import { api as crudApi } from "./crud";
+import { factory } from "@sps/shared-frontend-server-api";
 import {
-  action as generate,
-  generatePageSeo,
-  resolvePageSeo,
-} from "./actions/generate";
+  serverHost,
+  route,
+  type IModel,
+  query,
+  options,
+} from "@sps/host/models/metadata/sdk/model";
 
-export type { IGeneratePageSeoProps, IPageSeoResult } from "./actions/generate";
+export const api = factory<IModel>({
+  route,
+  host: serverHost,
+  params: query,
+  options,
+});
 
 export type IProps = {};
-
 export type IResult = {};
-
-export const api = {
-  ...crudApi,
-  generate,
-  generatePageSeo,
-  resolvePageSeo,
-};

@@ -1,21 +1,18 @@
 "use client";
 import { useState, useId } from "react";
-import { useWatch, type FieldValues } from "react-hook-form";
+import { useWatch } from "react-hook-form";
 import { internationalization } from "@sps/shared-configuration";
-import { api } from "@sps/host/models/metadata/sdk/client";
+import { api } from "@sps/host/models/page/sdk/client";
 import { Component as ChildComponent } from "./Component";
 import type { IComponentProps } from "./interface";
-export function Component<T extends FieldValues>({
-  control,
-  metadataId,
-}: IComponentProps<T>) {
+export default function Client({ control, metadataId }: IComponentProps) {
   const id = useId();
   const draft = useWatch({ control });
   const [url, setUrl] = useState("/");
   const [language, setLanguage] = useState(
     internationalization.defaultLanguage.code,
   );
-  const query = api.preview({
+  const query = api.previewSeo({
     url,
     language,
     metadata: { ...draft, ...(metadataId ? { id: metadataId } : {}) },

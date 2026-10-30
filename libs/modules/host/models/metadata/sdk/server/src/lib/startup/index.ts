@@ -9,5 +9,3 @@ export type IProps = IParentProps & {};
 export type IResult = IParentResult & {};
 
 export const api = parentApi;
-
-export type { IGeneratePageSeoProps, IPageSeoResult } from "../singlepage";

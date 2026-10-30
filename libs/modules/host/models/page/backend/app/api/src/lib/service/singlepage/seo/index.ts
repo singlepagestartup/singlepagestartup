@@ -1,6 +1,7 @@
 import { RoutingService } from "@sps/host/models/page/backend/app/api/src/lib/service/singlepage/routing";
 import type { IModel as IMetadata } from "@sps/host/models/metadata/sdk/model";
-import { api as pageApi } from "@sps/host/models/page/sdk/server";
+import { api as metadataApi } from "@sps/host/models/metadata/sdk/server";
+import type { IResolvedPage } from "@sps/host/models/page/sdk/model";
 import { api as pagesToMetadataApi } from "@sps/host/relations/pages-to-metadata/sdk/server";
 import { internationalization } from "@sps/shared-configuration";
 import {
@@ -20,9 +21,7 @@ import type {
   IResolvedPageSeo,
   ISeoMetadata,
   ISeoPreviewProps,
-} from "@sps/host/models/metadata/sdk/model";
-import type { FindServiceProps } from "@sps/shared-backend-api";
-import type { NextRequestOptions } from "@sps/shared-utils";
+} from "@sps/host/models/page/sdk/model";
 import { createMetadataContext } from "./content";
 import {
   absoluteHttpUrl,
@@ -31,16 +30,16 @@ import {
   notFound,
 } from "./utils";
 
-interface IMetadataReader {
-  find: (props: {
-    params?: FindServiceProps["params"];
-    options?: Partial<NextRequestOptions>;
-  }) => Promise<IMetadata[] | undefined>;
+interface IPageReader {
+  findByUrl: (props: {
+    url: string;
+    language: string;
+  }) => Promise<IResolvedPage | undefined>;
 }
 
 export class SeoService {
   routing = new RoutingService();
-  constructor(private readonly metadata: IMetadataReader) {}
+  constructor(private readonly pages: IPageReader) {}
   private async assemble(
     props: IGeneratePageSeoProps,
   ): Promise<IPageSeoResult> {
@@ -49,10 +48,9 @@ export class SeoService {
     const route = { pathname: props.url };
     const page =
       props.page ||
-      (await pageApi.findByUrl({
+      (await this.pages.findByUrl({
         url: route.pathname,
         language,
-        options: props.options,
       }));
     if (!page || ["hidden", "draft"].includes(page.variant)) notFound();
     const pageId = page.id;
@@ -72,7 +70,7 @@ export class SeoService {
       : props.options;
     const context = createMetadataContext(page, language, this.routing);
     const [primaries, links] = await Promise.all([
-      this.metadata.find({
+      metadataApi.find({
         options,
         params: {
           filters: {
@@ -101,7 +99,7 @@ export class SeoService {
     const primary = primaries.find((entry) => entry.variant === "primary");
     let selected: IMetadata | undefined;
     for (const link of links) {
-      const records = await this.metadata.find({
+      const records = await metadataApi.find({
         options,
         params: {
           filters: {
@@ -292,11 +290,9 @@ export class SeoService {
   /** Resolve an already unlocalized pathname without removing a same-named segment. */
   async resolve(url: string, language: string): Promise<IResolvedPageSeo> {
     this.checkLanguage(language);
-    const page = await pageApi.findByUrl({
+    const page = await this.pages.findByUrl({
       url,
       language,
-      silentNotFound: true,
-      options: { cache: "no-store" },
     });
     if (!page) notFound();
     const seo = await this.assemble({
@@ -315,11 +311,9 @@ export class SeoService {
       internationalization.languages.map(({ code }) => code),
       props.language,
     );
-    const page = await pageApi.findByUrl({
+    const page = await this.pages.findByUrl({
       url: route.pathname,
       language: props.language,
-      silentNotFound: true,
-      options: { cache: "no-store" },
     });
     if (!page || ["hidden", "draft"].includes(page.variant)) notFound();
     return this.assemble({

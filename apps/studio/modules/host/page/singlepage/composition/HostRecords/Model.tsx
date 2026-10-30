@@ -1,4 +1,4 @@
-import { Component as SeoPreview } from "../../../../metadata/singlepage/seo-preview";
+import { Component as SeoPreview } from "../../seo-preview";
 import { Component as SharedIcon } from "../../../../../shared/icon";
 
 import {

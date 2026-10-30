@@ -10,7 +10,6 @@ import { app as pagesToWidgets } from "@sps/host/relations/pages-to-widgets/back
 import { app as widgetsToExternalModules } from "@sps/host/relations/widgets-to-external-widgets/backend/app/api";
 import { DefaultApp } from "@sps/shared-backend-api";
 import type { Controller as PageController } from "@sps/host/models/page/backend/app/api/src/lib/controller/singlepage";
-import type { Controller as MetadataController } from "@sps/host/models/metadata/backend/app/api/src/lib/controller/singlepage";
 import type { IRouteSource } from "@sps/host/models/page/backend/app/api/src/lib/service/singlepage/routing";
 
 export class Apps {
@@ -23,7 +22,6 @@ export class Apps {
 
   configureRouting(sources: IRouteSource[]) {
     (page.controller as PageController).configureRouting(sources);
-    (metadata.controller as MetadataController).configureRouting(sources);
   }
 
   bindApps() {

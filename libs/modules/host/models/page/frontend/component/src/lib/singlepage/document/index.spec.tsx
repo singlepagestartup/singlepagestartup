@@ -12,13 +12,13 @@ import { PassThrough } from "node:stream";
 import { setImmediate, clearImmediate } from "node:timers";
 import { renderToPipeableStream } from "react-dom/server";
 import { Component as Page } from "@sps/host/models/page/frontend/component";
-import { api as metadataApi } from "@sps/host/models/metadata/sdk/server";
+import { api as pageApi } from "@sps/host/models/page/sdk/server";
 
 const renderedProps = jest.fn();
 // React's Node streaming renderer uses timers absent from the DOM environment.
 Object.assign(globalThis, { setImmediate, clearImmediate });
 jest.mock("server-only", () => ({}));
-jest.mock("@sps/host/models/metadata/sdk/server", () => ({
+jest.mock("@sps/host/models/page/sdk/server", () => ({
   api: { resolvePageSeo: jest.fn() },
 }));
 jest.mock("../variants", () => ({
@@ -57,12 +57,12 @@ it.each(["</script>", "</script >", "</script\t>", "</script\t\n bar>"])(
   async (closingTag) => {
     const headline = `Safe ${closingTag}<script>alert(1)</script>`;
     const page = { id: "page-1", title: "Статья", variant: "default" };
-    jest.mocked(metadataApi.resolvePageSeo).mockResolvedValue({
+    jest.mocked(pageApi.resolvePageSeo).mockResolvedValue({
       page,
       structuredData: [{ headline }],
     } as any);
     const html = await renderDocument();
-    expect(metadataApi.resolvePageSeo).toHaveBeenCalledWith("/article", "ru");
+    expect(pageApi.resolvePageSeo).toHaveBeenCalledWith("/article", "ru");
     expect(renderedProps).toHaveBeenCalledWith(
       expect.objectContaining({
         data: page,

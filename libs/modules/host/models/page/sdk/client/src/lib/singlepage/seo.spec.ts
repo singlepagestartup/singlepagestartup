@@ -15,19 +15,19 @@ jest.mock("@sps/shared-utils", () => ({
   },
   transformResponseItem: (result: { data: unknown }) => result.data,
 }));
-describe("Metadata client preview transport", () => {
+describe("Page client SEO preview transport", () => {
   const fetcher = jest.fn();
   beforeEach(() => {
     jest.clearAllMocks();
     global.fetch = fetcher;
   });
-  it("calls Metadata API with unsaved form values and unwraps its data envelope", async () => {
+  it("calls Page API with unsaved form values and unwraps its data envelope", async () => {
     const draft = {
       url: "/blog/one",
       language: "ru",
       metadata: { title: "Draft" },
     };
-    api.preview(draft);
+    api.previewSeo(draft);
     const options = jest.mocked(useQuery).mock.calls[0][0] as any;
     expect(options.enabled).toBe(false);
     expect(options.gcTime).toBe(0);
@@ -40,7 +40,9 @@ describe("Metadata client preview transport", () => {
       metadata: { title: "Resolved" },
       structuredData: [],
     });
-    expect(fetcher.mock.calls[0][0]).toMatch(/\/api\/host\/metadata\/preview$/);
+    expect(fetcher.mock.calls[0][0]).toMatch(
+      /\/api\/host\/pages\/seo-preview$/,
+    );
     expect(fetcher.mock.calls[0][1]).toEqual(
       expect.objectContaining({
         method: "POST",

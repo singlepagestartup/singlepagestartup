@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { Component as Metadata } from "../..";
+import { Component as Page } from "../..";
 const meta = {
-  title: "Modules/Host/Metadata/Singlepage/seo-preview",
-  component: Metadata,
+  title: "Modules/Host/Page/Singlepage/seo-preview",
+  component: Page,
   args: {
     variant: "seo-preview",
     url: "/ru/blog/articles/nextjs-server-client-components",
@@ -27,7 +27,7 @@ const meta = {
     },
   },
 } satisfies Meta<
-  Extract<React.ComponentProps<typeof Metadata>, { variant: "seo-preview" }>
+  Extract<React.ComponentProps<typeof Page>, { variant: "seo-preview" }>
 >;
 export default meta;
 type Story = StoryObj<typeof meta>;

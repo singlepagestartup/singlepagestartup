@@ -28,3 +28,5 @@ export const options = {
 export interface IResolvedPage extends ISelectSchema {
   routeParams: IRouteParams;
 }
+
+export * from "./seo";

@@ -2,7 +2,6 @@
 
 import { IComponentPropsExtended, variant, IModel } from "./interface";
 import { api } from "@sps/host/models/metadata/sdk/client";
-import { Component as MetadataPreview } from "../../admin/seo-preview";
 import { useForm } from "react-hook-form";
 import { FormField } from "@sps/ui-adapter";
 import { z } from "zod";
@@ -193,10 +192,10 @@ export function Component(props: IComponentPropsExtended) {
               placeholder="Select variant"
               options={variants.map((variant) => [variant, variant])}
             />
-            <MetadataPreview
-              control={form.control}
-              metadataId={props.data?.id}
-            />
+            {props.preview?.({
+              control: form.control,
+              metadataId: props.data?.id,
+            })}
           </div>
         </TabsContent>
 

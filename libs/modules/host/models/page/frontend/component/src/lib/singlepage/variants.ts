@@ -1,3 +1,4 @@
+import { Component as SeoPreview } from "./seo-preview";
 import { Component as NoIndex } from "./noindex";
 import { Component as Document } from "./document";
 import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
@@ -17,6 +18,7 @@ import { Component as AdminSelectInput } from "./admin/select-input";
 import { Component as AdminForm } from "./admin/form";
 import { Component as Default } from "./default";
 export const variants = {
+  "seo-preview": SeoPreview,
   noindex: NoIndex,
   document: Document,
   hidden: Hidden,

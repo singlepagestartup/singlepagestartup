@@ -1,10 +1,3 @@
-import { z } from "zod";
-import {
-  insertSchema,
-  type ISelectSchema as IModel,
-} from "@sps/host/models/metadata/backend/repository/database";
-import type { IResolvedPage } from "@sps/host/models/page/sdk/model";
-
 export interface ISeoImage {
   url: string;
   width?: number;
@@ -40,27 +33,3 @@ export interface ISeoMetadata {
     images?: ISeoImage[];
   };
 }
-
-export interface IPageSeoResult {
-  metadata: ISeoMetadata;
-  structuredData: Record<string, unknown>[];
-  diagnostics?: string[];
-}
-
-export interface IResolvedPageSeo extends IPageSeoResult {
-  page: IResolvedPage;
-}
-
-export interface ISeoPreviewProps {
-  url: string;
-  language: string;
-  metadata: Partial<IModel>;
-}
-
-export const seoResolveSchema = z.object({
-  url: z.string().max(2048).startsWith("/"),
-  language: z.string().max(16),
-});
-export const seoPreviewSchema = seoResolveSchema.extend({
-  metadata: insertSchema.partial(),
-});

@@ -1,8 +1,5 @@
 import type { NextRequestOptions } from "@sps/shared-utils";
-import type {
-  IModel as IMetadata,
-  ISeoImage,
-} from "@sps/host/models/metadata/sdk/model";
+import type { IModel as IMetadata } from "@sps/host/models/metadata/sdk/model";
 export type { ISeoImage } from "@sps/host/models/metadata/sdk/model";
 import type { IResolvedPage } from "@sps/host/models/page/sdk/model";
 

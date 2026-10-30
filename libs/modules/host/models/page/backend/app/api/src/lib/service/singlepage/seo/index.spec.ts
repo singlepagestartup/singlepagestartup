@@ -1,10 +1,10 @@
 import { SeoService } from "./index";
-import { api as pageApi } from "@sps/host/models/page/sdk/server";
+import { api as metadata } from "@sps/host/models/metadata/sdk/server";
 import { api as linksApi } from "@sps/host/relations/pages-to-metadata/sdk/server";
 import type { IResolvedPage } from "@sps/host/models/page/sdk/model";
 import type { RoutingService } from "@sps/host/models/page/backend/app/api/src/lib/service/singlepage/routing";
-jest.mock("@sps/host/models/page/sdk/server", () => ({
-  api: { findByUrl: jest.fn() },
+jest.mock("@sps/host/models/metadata/sdk/server", () => ({
+  api: { find: jest.fn() },
 }));
 jest.mock("@sps/host/relations/pages-to-metadata/sdk/server", () => ({
   api: { find: jest.fn() },
@@ -26,14 +26,13 @@ const page = (extra: object = {}) =>
     routeParams: {},
     ...extra,
   }) as IResolvedPage;
-let metadata: { find: jest.Mock };
+const pages = { findByUrl: jest.fn() };
 let seo: SeoService;
 let find: jest.Mock;
 let all: jest.Mock;
 beforeEach(() => {
   jest.resetAllMocks();
-  metadata = { find: jest.fn(async () => []) };
-  seo = new SeoService(metadata);
+  seo = new SeoService(pages);
   find = jest.fn(async () => []);
   all = jest.fn(async () => []);
   seo.routing = {
@@ -51,7 +50,7 @@ beforeEach(() => {
     .mockResolvedValue([
       { id: "link", metadataId: "meta", variant: "default" },
     ] as any);
-  metadata.find.mockResolvedValue([
+  jest.mocked(metadata.find).mockResolvedValue([
     {
       id: "meta",
       variant: "default",
@@ -90,7 +89,7 @@ it("uses related Metadata masks for any registered source without inferring enti
   expect(result.structuredData[0]["@type"]).toBe("WebPage");
 });
 it("does not preload domain entities when Metadata contains literals", async () => {
-  metadata.find.mockResolvedValue([
+  jest.mocked(metadata.find).mockResolvedValue([
     {
       id: "meta",
       variant: "default",
@@ -107,7 +106,7 @@ it("does not preload domain entities when Metadata contains literals", async () 
   expect(find).not.toHaveBeenCalled();
 });
 it("decides indexability only from the Page variant, even under a formerly excluded URL", async () => {
-  metadata.find.mockResolvedValue([
+  jest.mocked(metadata.find).mockResolvedValue([
     {
       id: "meta",
       title: "Public chat landing",
@@ -135,7 +134,7 @@ it.each(["hidden", "draft"])("rejects %s Page", async (variant) => {
 });
 it("retains Page fallback if Metadata is absent", async () => {
   jest.mocked(linksApi.find).mockResolvedValue([]);
-  metadata.find.mockResolvedValue([]);
+  jest.mocked(metadata.find).mockResolvedValue([]);
   const result = await seo.generate({
     url: "/about",
     page: page({ title: "О нас", description: "О компании" }),
@@ -145,7 +144,7 @@ it("retains Page fallback if Metadata is absent", async () => {
 });
 it("uses primary Metadata when the Page has no meaningful text", async () => {
   jest.mocked(linksApi.find).mockResolvedValue([]);
-  metadata.find.mockResolvedValue([
+  jest.mocked(metadata.find).mockResolvedValue([
     {
       id: "primary",
       variant: "primary",
@@ -168,7 +167,9 @@ it("keeps mask diagnostics separate from the Page publication decision", async (
   ).toBe(true);
 });
 it("resolves an existing Metadata cover through the registered relation schema", async () => {
-  metadata.find.mockResolvedValue([{ id: "meta", title: "Page title" }]);
+  jest
+    .mocked(metadata.find)
+    .mockResolvedValue([{ id: "meta", title: "Page title" }]);
   all.mockResolvedValue([
     { id: "link", metadataId: "meta", fileStorageModuleFileId: "file" },
   ]);
@@ -188,9 +189,7 @@ it("resolves an existing Metadata cover through the registered relation schema",
   });
 });
 it("previews current unsaved Metadata for the selected Page without changing publication", async () => {
-  jest
-    .mocked(pageApi.findByUrl)
-    .mockResolvedValue(page({ variant: "noindex" }));
+  jest.mocked(pages.findByUrl).mockResolvedValue(page({ variant: "noindex" }));
   const result = await seo.preview({
     url: "/ru/account",
     language: "ru",
@@ -208,9 +207,11 @@ it("does not infer visibility from Metadata, association or File presentation va
     .mockResolvedValue([
       { id: "link", metadataId: "meta", variant: "hidden" },
     ] as any);
-  metadata.find.mockResolvedValue([
-    { id: "meta", variant: "hidden", title: "Selected Metadata" },
-  ]);
+  jest
+    .mocked(metadata.find)
+    .mockResolvedValue([
+      { id: "meta", variant: "hidden", title: "Selected Metadata" },
+    ]);
   all.mockResolvedValue([
     {
       id: "cover-link",
@@ -235,7 +236,7 @@ it("does not infer visibility from Metadata, association or File presentation va
   expect(result.metadata.robots?.index).toBe(true);
 });
 it("preserves pagination and localized concrete URLs", async () => {
-  metadata.find.mockResolvedValue([
+  jest.mocked(metadata.find).mockResolvedValue([
     {
       id: "meta",
       title: "Новости",
@@ -260,8 +261,8 @@ it("propagates source outages instead of caching fallback output", async () => {
   ).rejects.toThrow("offline");
 });
 it("preserves an already resolved path identical to its language", async () => {
-  jest.mocked(pageApi.findByUrl).mockResolvedValue(page({ url: "/ru" }));
-  metadata.find.mockResolvedValue([
+  jest.mocked(pages.findByUrl).mockResolvedValue(page({ url: "/ru" }));
+  jest.mocked(metadata.find).mockResolvedValue([
     {
       id: "meta",
       title: "Russian department",
@@ -271,4 +272,27 @@ it("preserves an already resolved path identical to its language", async () => {
   expect(
     (await seo.resolve("/ru", "ru")).metadata.alternates?.canonical,
   ).toMatch(/\/ru\/ru$/);
+});
+
+it("resolves its Page through the owning service before reading related Metadata", async () => {
+  pages.findByUrl.mockResolvedValue(page());
+  await seo.resolve("/about", "ru");
+  expect(pages.findByUrl).toHaveBeenCalledWith({
+    url: "/about",
+    language: "ru",
+  });
+  expect(linksApi.find).toHaveBeenCalledWith(
+    expect.objectContaining({
+      params: expect.objectContaining({
+        filters: { and: [{ column: "pageId", method: "eq", value: "page" }] },
+      }),
+    }),
+  );
+  expect(metadata.find).toHaveBeenCalledWith(
+    expect.objectContaining({
+      params: {
+        filters: { and: [{ column: "id", method: "eq", value: "meta" }] },
+      },
+    }),
+  );
 });

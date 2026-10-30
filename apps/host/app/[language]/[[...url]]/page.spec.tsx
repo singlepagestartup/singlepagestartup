@@ -5,14 +5,14 @@
  * Then: model readers own document data and unsupported locales return 404.
  */
 import { renderToStaticMarkup } from "react-dom/server";
-import { api as metadataApi } from "@sps/host/models/metadata/sdk/server";
+import { api as pageApi } from "@sps/host/models/page/sdk/server";
 import Page, {
   revalidate,
   dynamicParams,
   generateMetadata,
   generateStaticParams,
 } from "./page";
-jest.mock("@sps/host/models/metadata/sdk/server", () => ({
+jest.mock("@sps/host/models/page/sdk/server", () => ({
   api: { resolvePageSeo: jest.fn() },
 }));
 jest.mock("@sps/shared-configuration", () => ({
@@ -37,7 +37,7 @@ const request = (language: string, url: string[] = []) => ({
 beforeEach(() => {
   jest.clearAllMocks();
   jest
-    .mocked(metadataApi.resolvePageSeo)
+    .mocked(pageApi.resolvePageSeo)
     .mockResolvedValue({ metadata: { title: "SEO" } } as any);
 });
 it("enables on-demand ISR without enumerating all user-owned entities", async () => {
@@ -49,10 +49,7 @@ it("delegates localized SEO to its model SDK", async () => {
   expect(await generateMetadata(request("ru", ["blog", "example"]))).toEqual({
     title: "SEO",
   });
-  expect(metadataApi.resolvePageSeo).toHaveBeenCalledWith(
-    "/blog/example",
-    "ru",
-  );
+  expect(pageApi.resolvePageSeo).toHaveBeenCalledWith("/blog/example", "ru");
 });
 it("renders the document model with explicit route inputs", async () => {
   const html = renderToStaticMarkup(await Page(request("en", ["about"])));
@@ -63,10 +60,10 @@ it("renders the document model with explicit route inputs", async () => {
 it("rejects unsupported locales before reading SEO", async () => {
   await expect(generateMetadata(request("zz"))).rejects.toThrow("404");
   await expect(Page(request("zz"))).rejects.toThrow("404");
-  expect(metadataApi.resolvePageSeo).not.toHaveBeenCalled();
+  expect(pageApi.resolvePageSeo).not.toHaveBeenCalled();
 });
 
 it("preserves Next-escaped delimiters without encoding them a second time", async () => {
   await generateMetadata(request("ru", ["blog", "a%2Fb"]));
-  expect(metadataApi.resolvePageSeo).toHaveBeenCalledWith("/blog/a%2Fb", "ru");
+  expect(pageApi.resolvePageSeo).toHaveBeenCalledWith("/blog/a%2Fb", "ru");
 });

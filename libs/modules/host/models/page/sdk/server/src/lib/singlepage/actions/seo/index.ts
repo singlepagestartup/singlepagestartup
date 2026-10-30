@@ -4,7 +4,7 @@ import {
   type IResolvedPageSeo,
   type IPageSeoResult,
   type ISeoPreviewProps,
-} from "@sps/host/models/metadata/sdk/model";
+} from "@sps/host/models/page/sdk/model";
 import {
   consistencyRequestOptions,
   responsePipe,
@@ -41,7 +41,7 @@ export async function resolveSeo(
 export async function preview(
   props: ISeoPreviewProps,
 ): Promise<IPageSeoResult> {
-  const res = await fetch(`${serverHost}${route}/preview`, {
+  const res = await fetch(`${serverHost}${route}/seo-preview`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(props),

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { api as metadataApi } from "@sps/host/models/metadata/sdk/server";
+import { api as pageApi } from "@sps/host/models/page/sdk/server";
 import { Component as HostModulePage } from "@sps/host/models/page/frontend/component";
 import { internationalization } from "@sps/shared-configuration";
 import { notFound } from "next/navigation";
@@ -23,8 +23,7 @@ export async function generateMetadata({
   const { language, url = [] } = await params;
   if (!internationalization.languages.some(({ code }) => code === language))
     notFound();
-  return (await metadataApi.resolvePageSeo(`/${url.join("/")}`, language))
-    .metadata;
+  return (await pageApi.resolvePageSeo(`/${url.join("/")}`, language)).metadata;
 }
 
 export default async function Page({ params }: IPageProps) {

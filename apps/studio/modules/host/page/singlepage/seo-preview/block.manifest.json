@@ -1,14 +1,14 @@
 {
   "$schema": "../../../../../block.schema.json",
-  "id": "host.metadata.seo-preview",
-  "title": "Metadata / seo-preview",
+  "id": "host.page.seo-preview",
+  "title": "Page / seo-preview",
   "description": "Localized SEO editing and preview.",
   "layer": "singlepage",
   "state": "draft",
   "source": {
     "module": "host",
     "entityType": "model",
-    "entity": "metadata",
+    "entity": "page",
     "variant": "seo-preview"
   },
   "files": {
@@ -17,7 +17,7 @@
   },
   "contentSlots": [],
   "figma": {
-    "componentName": "host.metadata",
+    "componentName": "host.page",
     "pageName": "host",
     "variantName": "seo-preview",
     "nodeId": null,
@@ -25,5 +25,5 @@
     "syncStatus": "not-created",
     "metadataFile": "figma.json"
   },
-  "tags": ["host", "metadata", "seo"]
+  "tags": ["host", "page", "seo"]
 }

@@ -2,7 +2,6 @@
 
 import { IComponentPropsExtended, variant, IModel } from "./interface";
 import { api } from "@sps/host/models/metadata/sdk/client";
-import { Component as MetadataPreview } from "../seo-preview";
 import { useForm } from "react-hook-form";
 import { FormField } from "@sps/ui-adapter";
 import { z } from "zod";
@@ -126,7 +125,7 @@ export function Component(props: IComponentPropsExtended) {
               isServer: props.isServer,
             })
           : null}
-        <MetadataPreview control={form.control} metadataId={props.data?.id} />
+        {props.preview?.({ control: form.control, metadataId: props.data?.id })}
       </div>
     </ParentAdminForm>
   );

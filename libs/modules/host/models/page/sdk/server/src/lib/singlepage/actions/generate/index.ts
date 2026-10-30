@@ -5,7 +5,7 @@ import { internationalization } from "@sps/shared-configuration";
 import { resolveSeoRoute } from "@sps/shared-utils";
 import { preview, resolveSeo } from "../seo";
 import type { IGeneratePageSeoProps, IPageSeoResult } from "./interface";
-import type { IPageSeoResult as ISeoResult } from "@sps/host/models/metadata/sdk/model";
+import type { IPageSeoResult as ISeoResult } from "@sps/host/models/page/sdk/model";
 export type { IGeneratePageSeoProps, IPageSeoResult } from "./interface";
 
 function nextMetadata(result: ISeoResult): IPageSeoResult {

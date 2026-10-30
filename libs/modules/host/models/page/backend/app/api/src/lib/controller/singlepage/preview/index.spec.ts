@@ -3,11 +3,11 @@ import { HTTPException } from "hono/http-exception";
 import { Handler } from "./index";
 import type { Service } from "../../../service";
 
-describe("Metadata preview HTTP contract", () => {
+describe("Page SEO preview HTTP contract", () => {
   const preview = jest.fn();
   const handler = new Handler({ seo: { preview } } as unknown as Service);
   const app = new Hono();
-  app.post("/preview", (c) => handler.execute(c));
+  app.post("/seo-preview", (c) => handler.execute(c));
   app.onError((error, c) =>
     c.json(
       { error: error.message },
@@ -20,7 +20,7 @@ describe("Metadata preview HTTP contract", () => {
     metadata: { title: "[blog.articles.title]" },
   };
   const request = (data: unknown) =>
-    app.request("/preview", { method: "POST", body: JSON.stringify(data) });
+    app.request("/seo-preview", { method: "POST", body: JSON.stringify(data) });
 
   beforeEach(() => jest.resetAllMocks());
   it("returns the computed draft in the API data envelope without cache or indexing", async () => {
@@ -40,7 +40,7 @@ describe("Metadata preview HTTP contract", () => {
       (await request({ ...draft, metadata: { title: "[invalid" } })).status,
     ).toBe(400);
     expect(
-      (await app.request("/preview", { method: "POST", body: "{" })).status,
+      (await app.request("/seo-preview", { method: "POST", body: "{" })).status,
     ).toBe(400);
     expect(
       (await request({ ...draft, metadata: { title: "x".repeat(65536) } }))

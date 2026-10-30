@@ -3,25 +3,9 @@
 Metadata stores editable SEO fields in the database. Pages select it through
 `pages-to-metadata`; covers use `metadata-to-file-storage-module-files`.
 
-## Resolving a page
-
-`api.generatePageSeo({ url, language?, page?, metadataDraft? })` returns Next.js
-`metadata`, `structuredData` and mask `diagnostics`. Host uses
-`api.resolvePageSeo(url, language)` to share the resolved Page and SEO within one
-server render. Public reads use the shared finite Next cache and dependency invalidation.
-Pass `options: { cache: "no-store" }` for an uncached read; metadata drafts always
-bypass caching. `api.generate` is the compatibility adapter returning
-only Next.js metadata. Neither operation writes generated text to the database.
-
-The first linked Metadata wins, sorted by relation `orderIndex`, then
-relation ID. Fields from multiple linked records are not merged. For each title
-or description the fallback order is: linked Metadata mask/literal
-→ meaningful Page field → primary Metadata → environment default. Entity
-metadata is read only when an explicit mask requests it; it does not override
-the Page's linked Metadata automatically. Pagination receives a page-number
-suffix. Hidden or draft Page returns 404; Page.variant alone controls indexing.
-Source failures propagate; invalid/missing mask values use fallback and produce
-preview diagnostics.
+Page owns URL lookup and SEO assembly. Metadata stores the editable values and
+file associations consumed through the Page–Metadata relation. See
+[Page SEO operations](../page/README.md#seo-operations).
 
 ## Masks
 
@@ -52,7 +36,7 @@ publication state do not define an independent SEO policy.
 ## Covers, author and structured data
 
 `opengraphImage` and `twitterImage` are text fields accepting a mask or URL.
-Open Graph uses the explicit image, then the first visible image linked to the
+Open Graph uses the explicit image, then the first image linked to the
 selected Metadata, then the primary Metadata's cover. Twitter falls back to
 Open Graph. MIME must be an image. Record and relation variants do not implicitly
 filter the API result; selection constraints use ordinary query filters.
@@ -75,24 +59,14 @@ Page's publication state.
 
 ## Editing and compatibility
 
-Both admin form generations expose mask fields, cover links and read-only draft
-preview for a concrete public URL and language. The Metadata client SDK calls
-`POST /api/host/metadata/preview` on apps/api. The Metadata service validates
-the public Page, resolves masks and returns a serializable SEO result without
-saving the draft. Preview returns no-store/noindex and rejects hidden/draft
-Pages. It can preview an accessible noindex Page. It is a read operation and does
-not broadcast mutation invalidations.
+Both admin form generations expose the editable fields and file relations.
+Host composes a Page `seo-preview` variant into each Metadata form through its
+`preview` slot. The form supplies its current Control and Metadata ID; the Page
+client reader watches those unsaved values and calls the Page SDK. Metadata
+has no dependency on the Page service, SDK or frontend component.
 
-Public rendering uses `GET /api/host/metadata/seo?url=...&language=...`. This
-operation receives an already unlocalized pathname and returns the resolved
-Page with the same SEO result used by preview. Internal reads use public SDK
-surfaces without caller credentials. Their consistency descriptors propagate
-to the aggregate. The API cache validates captured dependency versions;
-Next keeps its finite dependency-tagged cache for public SEO reads. The server
-SDK adapts the serializable result to Next Metadata, restores metadataBase as
-a URL, maps HTTP 404 to notFound and shares the result within one render.
-There is no Host preview route. Studio has a fixture
-preview and localized JSON editors for Article, Product and Profile.
+Studio keeps a fixture preview under Host Page. Article, Product and Profile
+editors retain their localized JSON fields for explicit Metadata masks.
 
 All existing text fields remain stored: title, description, keywords, author,
 viewport, Open Graph title/description/URL/type/site name/locale and Twitter

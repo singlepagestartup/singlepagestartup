@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { getHttpErrorType } from "@sps/backend-utils";
-import { seoResolveSchema } from "@sps/host/models/metadata/sdk/model";
+import { seoResolveSchema } from "@sps/host/models/page/sdk/model";
 import type { Service } from "../../../service";
 
 export class Handler {

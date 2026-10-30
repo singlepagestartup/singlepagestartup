@@ -6,7 +6,6 @@ import { Component as AdminV2Table } from "./admin-v2-table/index";
 import { Component as Default } from "./default/index";
 
 export const variants = {
-  "seo-preview": SeoPreview,
   "admin-v2-card": AdminV2Card,
   "admin-v2-form": AdminV2Form,
   "admin-v2-list": AdminV2List,
@@ -14,4 +13,3 @@ export const variants = {
   "admin-v2-table": AdminV2Table,
   default: Default,
 };
-import { Component as SeoPreview } from "./seo-preview";

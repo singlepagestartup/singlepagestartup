@@ -156,13 +156,15 @@ describe("is-authorized allowed routes", () => {
   });
 });
 
-it("opens only the public Metadata SEO read operations", () => {
+it("opens only the public Page SEO read operations", () => {
   const matcher = createAllowedRoutesMatcher();
-  expect(matcher.matches("/api/host/metadata/seo", "GET")).toBe(true);
-  expect(matcher.matches("/api/host/metadata/preview", "POST")).toBe(true);
-  expect(matcher.matches("/api/host/metadata/preview", "PATCH")).toBe(false);
-  expect(matcher.matches("/api/host/metadata/preview/export", "POST")).toBe(
+  expect(matcher.matches("/api/host/pages/seo", "GET")).toBe(true);
+  expect(matcher.matches("/api/host/pages/seo-preview", "POST")).toBe(true);
+  expect(matcher.matches("/api/host/pages/seo-preview", "PATCH")).toBe(false);
+  expect(matcher.matches("/api/host/pages/seo-preview/export", "POST")).toBe(
     false,
   );
   expect(matcher.matches("/api/host/metadata", "POST")).toBe(false);
+  expect(matcher.matches("/api/host/metadata/seo", "GET")).toBe(false);
+  expect(matcher.matches("/api/host/metadata/preview", "POST")).toBe(false);
 });

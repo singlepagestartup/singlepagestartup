@@ -524,3 +524,67 @@ frontend статьи не предоставляет отдельной дос�
 /tmp/sps-api-composition-http-cache-check.log,
 /tmp/sps-api-composition-public-article.log,
 /tmp/sps-api-composition-page-cycle.log, /tmp/sps-api-composition-isr.log.
+
+## Page владеет SEO-операциями — 30.10.2026
+
+Page разрешает URL, проверяет публикацию и через PagesToMetadata выбирает
+метаданные. Metadata хранит и редактирует свои значения и связи с Files.
+Page-зависимые сервисы, роуты, контракты и SDK переносятся в Page; Metadata
+не обращается к Page. Предпросмотр подключается к формам через слот из Host.
+
+- [x] Перенести SEO/preview endpoints и сборку результата в Page.
+- [x] Перенести контракты и SDK, обновить Next document/metadata.
+- [x] Перенести preview в Page и подключить слотом к обеим админкам.
+- [x] Обновить пермишены, кеш/инвалидацию, документацию и проверки.
+- [x] Проверить новые/удалённые API, обе админки и production SSG/ISR.
+
+Итоговая цепочка: Page service → PagesToMetadata SDK → Metadata SDK.
+Page читает собственный findByUrl через внедрённый callback; обращения
+к Page HTTP SDK из этого сервиса нет. GET /api/host/pages/seo и POST
+/api/host/pages/seo-preview зарегистрированы в Page. Старые специализированные
+обработчики Metadata удалены. Metadata содержит CRUD, редактируемые SEO-значения
+и связи с Files. Обратных импортов Page в Metadata нет.
+
+Page SDK обслуживает Next generateMetadata/document и обе клиентские формы.
+Host передаёт Page seo-preview через типизированный preview-слот Metadata;
+Control остаётся у формы, useWatch — у preview reader. В клиентские формы
+передаются явные UI-пропсы. Studio preview зарегистрирован под
+host.page.seo-preview; блок, история, Figma metadata и ссылки композиции обновлены.
+
+Проверки:
+
+- 132 теста Host и затронутых middleware плюс 5 тестов Next Page: 137 passed.
+- Полная проверка типов Host и окончательная production-сборка прошли.
+  Публичный catch-all отмечен Next как SSG; админка остаётся dynamic.
+- API: 20 прежних type diagnostics, новых нет. Проверка зависимостей:
+  15 503 исходных файла, 0 нарушений. Общий code-placement check показывает
+  существующий конфликт Files.tsx/Files в незавершённых изменениях Studio;
+  этот перенос новых конфликтов не добавляет.
+- На исходной тестовой БД Page SDK разрешил title-маску статьи и обложку.
+  Preview вернул no-store/noindex и не сохранил черновик.
+- При включённом едином HTTP cache агрегат Page SEO вернул HIT. Изменение
+  Metadata обновило результат; preview сохранил прогретый ответ.
+- Цикл default → noindex → hidden → default проверен по HTTP, HTML robots,
+  связанным Metadata и sitemap, включая перекрывающую URL-маску.
+  Изменение связанной Metadata обновило уже прогретый ISR HTML без cache busting.
+- /ru/framework и /ru/blog/articles/framework-blog: HTTP 200, HIT и
+  s-maxage=3600; тестовая cookie не изменила публичный HTML. Preview не
+  инвалидировал документ. Несуществующая Page вернула 404; удалённый Host
+  preview вернул GET 404 / POST 405. Robots публикует sitemap без списков URL.
+- Обе production-админки открыли Metadata и разрешили несохранённую маску
+  [blog.articles.title] для /ru/blog/articles/framework-blog. Console errors: 0. Формы закрыты без сохранения; временные записи всех API-проверок удалены.
+- Storybook 4321 открыл Modules/Host/Page/Singlepage/seo-preview / Localized Masks.
+
+Дочерние проекты переводят свои SEO imports, API consumers и Page-aware типы
+с Metadata на Page; preview подключают из Host клиентским слотом. Источники
+URL/масок конфигурируются только у Page. Данные Page–Metadata–File, их ID,
+связи и маски сохраняются; миграция БД для этого переноса не нужна.
+
+Доказательства: /tmp/sps-page-seo-admin-v1-preview.png,
+/tmp/sps-page-seo-admin-v2-preview.png. Логи:
+/tmp/sps-page-seo-all-jest.log, /tmp/sps-page-seo-next-jest.log,
+/tmp/sps-page-seo-api-types-final.log, /tmp/sps-page-seo-host-types-final.log,
+/tmp/sps-page-seo-build.log, /tmp/sps-page-owned-api-check.log,
+/tmp/sps-page-owned-cache-check.log, /tmp/sps-page-owned-policy-check.log,
+/tmp/sps-page-owned-isr-check.log. Эти изменения проверены локально на 3000/4000;
+удалённый релиз и повторный Lighthouse в этот перенос не входят.

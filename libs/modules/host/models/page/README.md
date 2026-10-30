@@ -50,7 +50,7 @@ including dynamic URL sources. Public Host routes use on-demand ISR with a one-h
 The locale is a `[language]` route parameter; layouts do not read headers or
 session cookies. The separately routed admin remains request-rendered.
 
-The `document` Page variant is a server reader for `Metadata.resolvePageSeo`.
+The `document` Page variant is a server reader for `Page.resolvePageSeo`.
 It resolves existence and SEO before rendering saved Page content or a Suspense
 boundary. The route supplies only the path and locale. Metadata and document
 share one React request cache; this is separate from the persistent ISR cache.
@@ -72,6 +72,46 @@ Existing installations must audit saved Page languages before rollout. A legacy
 Page–Widget/Layout/Metadata links; exact language matching never guesses that
 content has been translated. Preserve shared content IDs and keep hreflang absent
 until equivalent localized content is verified.
+
+## SEO operations
+
+The Page server SDK owns these operations.
+
+`api.generatePageSeo({ url, language?, page?, metadataDraft? })` returns Next.js
+`metadata`, `structuredData` and mask `diagnostics`. Host uses
+`api.resolvePageSeo(url, language)` to share the resolved Page and SEO within one
+server render. Public reads use the shared finite Next cache and dependency invalidation.
+Pass `options: { cache: "no-store" }` for an uncached read; metadata drafts always
+bypass caching. `api.generate` is the compatibility adapter returning
+only Next.js metadata. Neither operation writes generated text to the database.
+
+The first linked Metadata wins, sorted by relation `orderIndex`, then
+relation ID. Fields from multiple linked records are not merged. For each title
+or description the fallback order is: linked Metadata mask/literal
+→ meaningful Page field → primary Metadata → environment default. Entity
+metadata is read only when an explicit mask requests it; it does not override
+the Page's linked Metadata automatically. Pagination receives a page-number
+suffix. Hidden or draft Page returns 404; Page.variant alone controls indexing.
+Source failures propagate; invalid/missing mask values use fallback and produce
+preview diagnostics.
+
+Public rendering uses `GET /api/host/pages/seo?url=...&language=...` on apps/api.
+The pathname is already unlocalized. The Page service selects the Page, reads
+PagesToMetadata, and resolves the selected Metadata through its public SDK.
+It uses the same configured RoutingService as URL lookup for mask context.
+Metadata retains its ordinary CRUD service and file relations.
+
+`POST /api/host/pages/seo-preview` accepts a concrete URL, language and unsaved
+Metadata values. The Page service checks publication and resolves the draft
+without saving. Preview returns no-store/noindex, accepts accessible noindex
+Pages and rejects hidden/draft or missing Pages. The middleware excludes this
+read-only POST from mutation invalidation.
+
+The Page client SDK exposes `previewSeo`; the Page server SDK exposes
+`resolveSeo`, `previewSeo` and the Next adapters above. Next adapters restore
+metadataBase as a URL and map HTTP 404 to notFound. Public reads contribute
+their actual consistency dependencies to the aggregate API cache and Next tags.
+Host has no separate SEO API route.
 
 ## Sitemap and robots
 
@@ -108,6 +148,5 @@ Host receives serializable resource descriptions through each connected
 module's describeRoutes contract. Entity apps delegate to their controllers,
 services and repositories; only the owning repository inspects its table.
 Descriptions contain column names and foreign-key references, not Table objects
-or repository instances. Host connects them to Page and Metadata through their
-controllers. The API entrypoint only calls hostApp.configureRouting(apiModules).
+or repository instances. Host connects them to Page through its controller. The API entrypoint only calls hostApp.configureRouting(apiModules).
 New module app overrides and generator output must preserve describeRoutes.

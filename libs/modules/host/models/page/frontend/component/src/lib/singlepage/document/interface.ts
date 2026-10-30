@@ -1,5 +1,5 @@
 import type { IResolvedPage } from "@sps/host/models/page/sdk/model";
-import type { IPageSeoResult } from "@sps/host/models/metadata/sdk/server";
+import type { IPageSeoResult } from "@sps/host/models/page/sdk/server";
 
 export const variant = "document" as const;
 

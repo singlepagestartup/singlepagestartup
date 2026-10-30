@@ -1,4 +1,8 @@
 "use client";
+import type {
+  IPageSeoResult,
+  ISeoPreviewProps,
+} from "@sps/host/models/page/sdk/model";
 
 import {
   type IResolvedPage,
@@ -48,11 +52,13 @@ export interface IUrlSegmentValueProps {
 }
 
 export type IProps = {
+  ISeoPreviewProps: ISeoPreviewProps;
   IUrlSegmentValueProps: IUrlSegmentValueProps;
   IFindByUrlProps: IFindByUrlProps;
 };
 
 export type IResult = {
+  ISeoPreviewProps: IPageSeoResult;
   IUrlSegmentValueProps: string | null;
   IFindByUrlProps: IResolvedPage;
 };
@@ -201,4 +207,23 @@ export const api = {
       staleTime: STALE_TIME,
     });
   },
+  previewSeo: (props: ISeoPreviewProps) =>
+    useQuery<IPageSeoResult>({
+      queryKey: ["host.pages.seo-preview", props],
+      enabled: false,
+      gcTime: 0,
+      retry: false,
+      queryFn: async () => {
+        const response = await fetch(`${clientHost}${route}/seo-preview`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(props),
+          cache: "no-store",
+        });
+        const result = await responsePipe<{ data: IPageSeoResult }>({
+          res: response,
+        });
+        return transformResponseItem<IPageSeoResult>(result);
+      },
+    }),
 };
