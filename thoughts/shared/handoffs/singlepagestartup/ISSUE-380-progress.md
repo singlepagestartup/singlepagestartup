@@ -703,3 +703,30 @@ ecommerce-module-product-profile-default в singlepage registry и props union.
 Снимок: /tmp/sps-subject-public-details-product.png.
 Host 3000 запущен из .next-subject-public-details, API 4000 и Storybook 4321
 сохранены. Изменения проверены локально; удалённый сервер не обновлялся.
+
+## Отдельные Author-операции и стандартный Profile CRUD — 31.10.2026
+
+Profile Service наследует find/count/findById из CRUDService. Отдельный
+Author Service не наследуется от CRUD; его методы теперь явно называются
+`authorFind`, `authorFindCount`, `authorFindById`. Profile делегирует им
+одноимённые операции. Стандартные методы не обогащают модель связями;
+articles/products возвращает только Author detail DTO.
+
+- [x] Убрать CRUD-названия из Author Service и обновить делегирование и тесты.
+- [x] Проверить отдельные маршруты контроллера: GET/HEAD /authors,
+      /authors/count и /authors/:id. SDK уже использует эти маршруты;
+      публичный API не меняется.
+- [x] Проверить HTTP-контракт через настоящий Profile Controller и Service
+      с подставными репозиториями: стандартные фильтры/пагинация и модель,
+      Author DTO со связями, отклонение CRUD-фильтров в Author route.
+      Всего 10 тестов прошли. Транзакция snapshot заменена в unit-тесте,
+      поскольку подставные репозитории не используют БД.
+- [x] Проверить оба контракта через настоящий SDK/API 4000 на исходной базе:
+      обычные list/count/detail возвращают Profile, отдельные Author-операции
+      возвращают публичные данные и связанные работы. Изменений данных нет.
+- [x] API: 20 существующих диагностик, новых нет. Module dependencies:
+      15 508 исходных файлов, нарушений нет. Обновлена документация Profile.
+
+Логи: /tmp/sps-author-crud-tests.log, /tmp/sps-author-crud-types.log,
+/tmp/sps-author-crud-runtime.log, /tmp/sps-author-crud-dependencies.log.
+Изменения локальные; релиз и обновление удалённого сервера не выполнялись.

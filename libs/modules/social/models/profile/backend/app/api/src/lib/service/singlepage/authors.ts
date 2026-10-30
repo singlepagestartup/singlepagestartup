@@ -213,7 +213,7 @@ export class Service {
       ).size,
     };
   }
-  async find(params: IAuthorFindParams = {}): Promise<IAuthorSummary[]> {
+  async authorFind(params: IAuthorFindParams = {}): Promise<IAuthorSummary[]> {
     this.filters(params);
     const selected = await this.selected(params);
     return Promise.all(
@@ -222,11 +222,11 @@ export class Service {
         .map((profile) => this.summary(profile, selected)),
     );
   }
-  async count(params: IAuthorFilters = {}): Promise<number> {
+  async authorFindCount(params: IAuthorFilters = {}): Promise<number> {
     this.filters(params);
     return (await this.selected(params)).profiles.length;
   }
-  async findById({ id }: { id: string }): Promise<IAuthorDetail | null> {
+  async authorFindById({ id }: { id: string }): Promise<IAuthorDetail | null> {
     this.filters({ profileId: id });
     const selected = await this.selected({ profileId: id });
     const profile = selected.profiles[0];

@@ -95,17 +95,27 @@ editor changed it. Reload before retrying. API/SDK/MCP callers should read the
 current object, merge their intended section and supply `_expectedMetadata`;
 updates without this guard retain the ordinary full-field replacement behavior.
 
-The `hidden` variant makes a primary public route return 404 and removes the
-record from public lists/counts and sitemap. Admin access remains subject to
-RBAC. Changing presentation variants does not rename saved values.
+Profile variants select presentation components. Ordinary Profile CRUD uses
+the shared model contract and filters; Host Page variants own public URL
+availability and sitemap inclusion. Administrative access remains subject to RBAC.
 
 ## Public authors
 
-`authorFind`, `authorFindCount` and `authorFindById` use the named `/api/social/profiles/authors` routes. A default or Telegram Profile appears publicly after an explicit link to an existing Article or Product. Public URLs use the Profile UUID; the DTO omits private slugs, Subject/Identity identifiers, administrative fields and AI workspace configuration. Article and Product references contain only their public summary fields.
+`authorFind`, `authorFindCount` and `authorFindById` are separate service and
+SDK methods. The controller exposes them as `GET /api/social/profiles/authors`,
+`GET /api/social/profiles/authors/count` and `GET /api/social/profiles/authors/:id`,
+with matching HEAD routes.
 
-The `author-card-default`, `author-byline-default` and `author-overview-default` variants consume these DTOs. Already loaded results use props mode. Own-account and private Chat reads retain their Subject/Chat scope, including historical sender and actor avatar presentation. Generic Profile list/count/detail reads require an operator or a current explicit administrative Role binding. Public author reads bypass the legacy route-topic cache; the consistency cache records the owning Service dependencies.
+Profile inherits `find`, `count` and `findById` from CRUDService without overriding
+them. Standard list/detail reads return the Profile model and count returns the
+ordinary model count. Linked `articles` and `products` belong only to the Author
+detail DTO.
 
-Author summaries expose only `metadata.seo` from the JSON field. Hidden content or
-author relations do not establish public eligibility; hidden avatar links/files
-are omitted. Host author metadata and sitemap use the public Author SDK and
-`[social.profiles.id]` masks, preserving UUID-only public routes.
+A default or Telegram Profile appears publicly after an explicit link to an existing Article or Product. Public URLs use the Profile UUID; the DTO omits private slugs, Subject/Identity identifiers, administrative fields and AI workspace configuration. Article and Product references contain only their public summary fields.
+
+The `author-card-default`, `author-byline-default` and `author-overview-default` variants consume these DTOs. Already loaded results use props mode. Own-account and private Chat reads retain their Subject/Chat scope, including historical sender and actor avatar presentation. Generic Profile list/count/detail reads require an operator or a current explicit administrative Role binding. The consistency cache records the owning Service dependencies for public Author reads.
+
+Author summaries expose only `metadata.seo` from the JSON field. Content,
+association and avatar variants retain their normal presentation meaning.
+Public author DTOs expose a selected image attachment and UUID-based references;
+CRUD responses keep the ordinary Profile shape.
