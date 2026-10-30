@@ -18,7 +18,7 @@ Resolves #380. Work stays on `codex/studio-linear-workflow`; unrelated local Stu
 
 Current application release: [0.0.331](https://github.com/singlepagestartup/singlepagestartup/releases/tag/0.0.331), app commit `55ed9ad9b2`. Subsequent operator CLI optimizations run during data publication and do not change the deployed Host/API application.
 
-- [x] Both admin generations: client session/role guard, filtered relation counts, Page→Metadata→File editing, alt, preview and configured language default.
+- [x] Both admin generations checked in the local authenticated browser: client session/role guard, filtered relation counts, Page→Metadata→File editing, alt, preview and configured language default. Production SDK and public route checks passed.
 - [x] 102 local and 104 production Pages have selected Metadata and individual cover Files. Seven Living Focus illustrations retain landscape/square originals; all 104 production images pass public HTTP, SHA-256, MIME, dimension and alt checks. Fresh publication creates no duplicate Metadata, links or File IDs.
 - [x] 60 focused tests; production build/TypeScript; scoped ESLint on 24 TS/TSX files; module dependencies: 15,495 files, 0 violations.
 - [x] Production Metadata title invalidation/HIT, hidden/restore Page/Article/Product/required relation, preserved fields, cookie-isolated public HIT, real missing page/file 404 and anonymous administrative 403.
@@ -26,7 +26,7 @@ Current application release: [0.0.331](https://github.com/singlepagestartup/sing
 - [x] Lighthouse 13.6.0 mobile: SEO 100 on seven URLs; Performance 80/50/30/22/31/32/51. Remaining JS/LCP/CLS and content work are documented with evidence.
 - [x] Yandex live checks confirm 404 and 200; all 136 URLs accepted into the recrawl queue. Global diagnostic refresh is disabled by Yandex's service outage.
 
-[Current review](https://github.com/singlepagestartup/singlepagestartup/blob/codex/studio-linear-workflow/thoughts/shared/research/singlepagestartup/ISSUE-380-completion-review.md). Public reports are attached to release 0.0.331; private before-manifests are excluded.
+[Current review](https://github.com/singlepagestartup/singlepagestartup/issues/380#issuecomment-6521794094). Public reports are attached to release 0.0.331; private before-manifests are excluded.
 
 Previous verification:
 
@@ -59,7 +59,7 @@ Earlier SEO implementation:
 
 ## Notes
 
-Reconciled current main in the same branch, retaining its Article/Product presentation and public Author API. Added hidden to its three new relations and regenerated consistency capture as 0010. Existing local Studio/workflow edits remain unstaged; hashes of 451 unrelated paths are preserved.
+Reconciled current main in the same branch, retaining its Article/Product presentation and public Author API. Added hidden to its three new relations and regenerated consistency capture as 0010. Existing local Studio/workflow edits remain unstaged; 451 unrelated paths are excluded, including concurrent Studio edits.
 
 The diff is broad because every model/relation receives the requested hidden contract. Existing variants and database data snapshots are preserved. Public rendering no longer depends on request headers/cookies. Current-Subject controls must stay in client compositions; private reads and previews bypass public caches.
 

@@ -3,7 +3,7 @@ issue_number: 380
 issue_title: SEO сборки страниц
 start_date: 2026-10-28
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-380.md
-status: in_progress
+status: complete
 ---
 
 # Implementation progress: ISSUE-380
@@ -25,7 +25,7 @@ status: in_progress
 - [x] Проверить новые/существующие формы, аутентифицированные запросы, маски и images; выполнить целевые тесты, lint, production build, публичный ISR/hidden.
 - [x] Commit/push в текущую ветку, release, проверить фактические образы и данные production, полный обход sitemap, Lighthouse.
 - [x] Проверить доступный Яндекс Вебмастер и запустить проверку/переобход, если интерфейс и права позволяют. Не подменять чужой домен результатами singlepagestartup.com.
-- [ ] Опубликовать результаты и ограничения в issue #380, обновить PR #382, подтвердить Code Review.
+- [x] Опубликовать результаты и ограничения в issue #380, обновить PR #382, подтвердить Code Review.
 
 Исходная локальная проверка: 102 Page, 2 Page→Metadata (обе для главной), 2 Metadata, 0 Metadata→File. У /blog и шаблонов Article/Product связей нет. Admin v2 передаёт серверные children через клиентскую проверку доступа; server card/table reads с includeHidden=1 не получают сессию. Новый Metadata→File admin/table не передаёт имя/форму контроллеру. Счётчик общей admin/table не учитывает фильтры.
 
@@ -40,6 +40,8 @@ Lighthouse 13.6.0 mobile: SEO 100 на семи URL; Performance 80/50/30/22/31/
 Яндекс: живые проверки 404 и 200 прошли. 136 адресов приняты на переобход 30.10.2026 14:25, все «В очереди». Общая диагностика не обновляется из-за сбоя Яндекса; её кнопка проверки отключена.
 
 Код: 60 целевых тестов, TypeScript/production build, scoped ESLint 24 файла без ошибок/предупреждений, module dependencies 15 495 файлов без нарушений. Сценарий публикации оптимизирован для библиотеки около 8 700 File: точный slug и связанные File ID, без повторного чтения всей библиотеки. Улучшения CLI находятся в той же ветке и не меняют развёрнутое приложение. 451 посторонний путь сохранён.
+
+Рецензия опубликована: https://github.com/singlepagestartup/singlepagestartup/issues/380#issuecomment-6521794094. PR #382 обновлён; helper подтвердил статус issue **Code Review**. Работа по текущему запросу завершена, приёмка владельцем остаётся в PR.
 
 ## Phase progress
 

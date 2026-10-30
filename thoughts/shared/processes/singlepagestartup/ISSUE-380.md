@@ -4,8 +4,9 @@ issue_title: "SEO для сборки страниц Host, блога и кат�
 repository: singlepagestartup
 created_at: 2026-10-28
 last_updated: 2026-10-30
-status: in_progress
-current_phase: implement
+status: complete
+current_phase: complete
+completed_date: 2026-10-30
 ---
 
 # Process log: SEO для сборки страниц
@@ -19,19 +20,19 @@ current_phase: implement
 - Create: completed
 - Research: completed
 - Plan: completed
-- Implement: in_progress
-- Current phase: implement
+- Implement: completed
+- Current phase: complete
 - Next step: Code Review PR #382; приёмка владельцем и выпуск в дочерних проектах отдельно
 
 ## Текущее продолжение после проверки владельцем
 
-Нужно довести клиентскую авторизацию и обе админки, заполнить Page→Metadata и обложки для всех Host Pages локально и на тестовом production, выпустить текущую ветку и повторить диагностику. Полный список задач находится в progress. Fallback сохраняется; авторизованные SDK reads выполняются на клиенте. Владелец разрешил implementation, commit/release и проверки без остановок.
+Клиентская авторизация и обе админки проверены; Page→Metadata и обложки заполнены для всех Host Pages локально и на тестовом production. Выпуск текущей ветки и диагностика завершены. Полный список задач находится в progress. Fallback сохраняется; авторизованные SDK reads выполняются на клиенте. Владелец разрешил implementation, commit/release и проверки без остановок.
 
 ## Итоговая проверка 0.0.331
 
 Host/API 0.0.331 подтверждены на сервере. Заполнены 102 локальные и 104 production Page→Metadata→File; 104 изображения проходят проверку публичных байтов. Повторный запуск не создаёт дублей. Production sitemap — 136 корректных URL. Hidden/restore Page, Article, Product и обязательной связи, изменение Metadata на HIT, 404 файлов и запрет анонимного admin read проверены. Lighthouse SEO — 100 на семи URL; Performance 22–80 остаётся следующим этапом.
 
-Яндекс подтвердил живые 404/200; 136 адресов приняты в очередь переобхода 30.10.2026 14:25. Общая диагностика не обновляется из-за сбоя сервиса. [Полная рецензия](../../research/singlepagestartup/ISSUE-380-completion-review.md). Публикация рецензии и перевод issue в Code Review завершают текущее продолжение.
+Яндекс подтвердил живые 404/200; 136 адресов приняты в очередь переобхода 30.10.2026 14:25. Общая диагностика не обновляется из-за сбоя сервиса. [Полная рецензия](../../research/singlepagestartup/ISSUE-380-completion-review.md). [Рецензия опубликована](https://github.com/singlepagestartup/singlepagestartup/issues/380#issuecomment-6521794094); PR #382 обновлён, helper подтвердил Code Review.
 
 ## Итоговая проверка 0.0.330
 
