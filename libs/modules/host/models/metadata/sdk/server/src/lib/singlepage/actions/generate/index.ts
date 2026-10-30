@@ -49,16 +49,6 @@ async function assemblePageSeo(
     alternates: { canonical },
     robots: { index: indexable, follow: publicRoute },
   };
-  if (!publicRoute)
-    return {
-      metadata: {
-        ...base,
-        title:
-          meaningfulPageText(page.title, "Page") ||
-          NEXT_PUBLIC_HOST_METADATA_TITLE,
-      },
-      structuredData: [],
-    };
   const options = props.metadataDraft
     ? { ...props.options, cache: "no-store" as const }
     : props.options;
@@ -90,7 +80,7 @@ async function assemblePageSeo(
         },
       },
     }),
-    context.content(),
+    publicRoute ? context.content() : Promise.resolve(undefined),
   ]);
   if (!primaries || !links)
     throw new Error("SEO metadata response is unavailable");
@@ -133,7 +123,20 @@ async function assemblePageSeo(
           await renderMetadataTemplate(value, {
             language,
             list,
-            resolve: context.resolve,
+            resolve: (reference) => {
+              if (
+                !publicRoute &&
+                (!["host.pages", "host.metadata"].includes(reference.source) ||
+                  reference.relations.some(
+                    (relation) =>
+                      relation !== "host.metadata-to-file-storage-module-files",
+                  ))
+              )
+                throw new MetadataMaskError(
+                  "Private route metadata only reads Page configuration and its cover",
+                );
+              return context.resolve(reference);
+            },
           }),
         ) || fallback
       );

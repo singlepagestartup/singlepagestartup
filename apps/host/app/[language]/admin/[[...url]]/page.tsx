@@ -15,7 +15,7 @@ export default async function AdminPage({
   const { language, url = [] } = await params;
   return (
     <AdminV2
-      isServer={true}
+      isServer={false}
       url={`/admin${url.length ? `/${url.join("/")}` : ""}`}
       language={language}
     />

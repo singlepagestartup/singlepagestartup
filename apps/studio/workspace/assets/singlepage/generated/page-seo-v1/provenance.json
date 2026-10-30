@@ -1,0 +1,79 @@
+{
+  "tool": "image_gen",
+  "createdAt": "2026-10-30",
+  "styleSource": "../../../../design/singlepage.md",
+  "reference": "../living-focus/singlepagestartup-illustration-module-hierarchy-cool-square.png",
+  "assets": [
+    {
+      "key": "workspace",
+      "master": "workspace-master.png",
+      "square": "workspace-square.png",
+      "delivery": "workspace.webp",
+      "subject": "A person-guided project workspace: a central open notebook with a small chat bubble, two reference cards with a tiny photograph and a clear route from idea to edited document. Convey thoughtful human direction, not autonomous magic.",
+      "encoding": "WebP quality 88, no resize or crop. Both generated PNG originals are preserved.",
+      "masterPromptSummary": "Create a new standalone editorial illustration MASTER for the workspace section of SinglePageStartup. Use the referenced image only as a visual STYLE reference; do not copy its layout. Subject: A person-guided project workspace: a central open notebook with a small chat bubble, two reference cards with a tiny photograph and a clear route from idea to edited document. Convey thoughtful human direction, not autonomous magic. Workspace approved style Living Focus: light isometric line illustration on a perfectly clean white background, thin graphite #18232A outlines, cool pale gray auxiliary lines, sparse meaningful dotted links and small restrained lime #BFEF61 accents. Open simple forms, no shadows, no warm paper, no gradients, generous whitespace, clear focal group legible at thumbnail size. No lettering, captions, fake interface text, logos or watermarks. Choose a natural landscape 3:2 composition; preserve generous margins around all objects. This is the uncropped landscape original; a separate square canvas expansion will follow.",
+      "squareInstructionSummary": "Expand the landscape canvas vertically to 1:1, ideally 1254×1254. Preserve the entire original drawing and proportions, with no crop, zoom, stretching or new objects; add clean white space above and below. Keep graphite contours and lime accents."
+    },
+    {
+      "key": "framework",
+      "master": "framework-master.png",
+      "square": "framework-square.png",
+      "delivery": "framework.webp",
+      "subject": "A modular software framework: five small open architectural blocks with code, storage, profile, articles and catalog symbols, linked clearly to a shared foundation. Show meaningful reuse and composition, with no decorative spaghetti connections.",
+      "encoding": "WebP quality 88, no resize or crop. Both generated PNG originals are preserved.",
+      "masterPromptSummary": "Create a new standalone editorial illustration MASTER for the framework section of SinglePageStartup. Use the referenced image only as a visual STYLE reference; do not copy its layout. Subject: A modular software framework: five small open architectural blocks with code, storage, profile, articles and catalog symbols, linked clearly to a shared foundation. Show meaningful reuse and composition, with no decorative spaghetti connections. Workspace approved style Living Focus: light isometric line illustration on a perfectly clean white background, thin graphite #18232A outlines, cool pale gray auxiliary lines, sparse meaningful dotted links and small restrained lime #BFEF61 accents. Open simple forms, no shadows, no warm paper, no gradients, generous whitespace, clear focal group legible at thumbnail size. No lettering, captions, fake interface text, logos or watermarks. Choose a natural landscape 3:2 composition; preserve generous margins around all objects. This is the uncropped landscape original; a separate square canvas expansion will follow.",
+      "squareInstructionSummary": "Expand the landscape canvas vertically to 1:1, ideally 1254×1254. Preserve the entire original drawing and proportions, with no crop, zoom, stretching or new objects; add clean white space above and below. Keep graphite contours and lime accents."
+    },
+    {
+      "key": "blog",
+      "master": "blog-master.png",
+      "square": "blog-square.png",
+      "delivery": "blog.webp",
+      "subject": "An editorial library: three open article pages with clear abstract text lines and an image thumbnail, an index card and a bookmark, connected to a small reader card. Convey publishing and finding useful articles.",
+      "encoding": "WebP quality 88, no resize or crop. Both generated PNG originals are preserved.",
+      "masterPromptSummary": "Create a new standalone editorial illustration MASTER for the blog section of SinglePageStartup. Use the referenced image only as a visual STYLE reference; do not copy its layout. Subject: An editorial library: three open article pages with clear abstract text lines and an image thumbnail, an index card and a bookmark, connected to a small reader card. Convey publishing and finding useful articles. Workspace approved style Living Focus: light isometric line illustration on a perfectly clean white background, thin graphite #18232A outlines, cool pale gray auxiliary lines, sparse meaningful dotted links and small restrained lime #BFEF61 accents. Open simple forms, no shadows, no warm paper, no gradients, generous whitespace, clear focal group legible at thumbnail size. No lettering, captions, fake interface text, logos or watermarks. Choose a natural landscape 3:2 composition; preserve generous margins around all objects. This is the uncropped landscape original; a separate square canvas expansion will follow.",
+      "squareInstructionSummary": "Expand the landscape canvas vertically to 1:1, ideally 1254×1254. Preserve the entire original drawing and proportions, with no crop, zoom, stretching or new objects; add clean white space above and below. Keep graphite contours and lime accents."
+    },
+    {
+      "key": "commerce",
+      "master": "commerce-master.png",
+      "square": "commerce-square.png",
+      "delivery": "commerce.webp",
+      "subject": "A straightforward digital product catalog: three product cards, a simple basket outline and a small order confirmation card. No money amounts, sales growth claims, currency symbols or ratings.",
+      "encoding": "WebP quality 88, no resize or crop. Both generated PNG originals are preserved.",
+      "masterPromptSummary": "Create a new standalone editorial illustration MASTER for the commerce section of SinglePageStartup. Use the referenced image only as a visual STYLE reference; do not copy its layout. Subject: A straightforward digital product catalog: three product cards, a simple basket outline and a small order confirmation card. No money amounts, sales growth claims, currency symbols or ratings. Workspace approved style Living Focus: light isometric line illustration on a perfectly clean white background, thin graphite #18232A outlines, cool pale gray auxiliary lines, sparse meaningful dotted links and small restrained lime #BFEF61 accents. Open simple forms, no shadows, no warm paper, no gradients, generous whitespace, clear focal group legible at thumbnail size. No lettering, captions, fake interface text, logos or watermarks. Choose a natural landscape 3:2 composition; preserve generous margins around all objects. This is the uncropped landscape original; a separate square canvas expansion will follow.",
+      "squareInstructionSummary": "Expand the landscape canvas vertically to 1:1, ideally 1254×1254. Preserve the entire original drawing and proportions, with no crop, zoom, stretching or new objects; add clean white space above and below. Keep graphite contours and lime accents."
+    },
+    {
+      "key": "people",
+      "master": "people-master.png",
+      "square": "people-square.png",
+      "delivery": "people.webp",
+      "subject": "Authors and community: three simple profile cards with neutral avatar line drawings, one open article and a few intentional conversation links. No real people, personal information or social network brands.",
+      "encoding": "WebP quality 88, no resize or crop. Both generated PNG originals are preserved.",
+      "masterPromptSummary": "Create a new standalone editorial illustration MASTER for the people section of SinglePageStartup. Use the referenced image only as a visual STYLE reference; do not copy its layout. Subject: Authors and community: three simple profile cards with neutral avatar line drawings, one open article and a few intentional conversation links. No real people, personal information or social network brands. Workspace approved style Living Focus: light isometric line illustration on a perfectly clean white background, thin graphite #18232A outlines, cool pale gray auxiliary lines, sparse meaningful dotted links and small restrained lime #BFEF61 accents. Open simple forms, no shadows, no warm paper, no gradients, generous whitespace, clear focal group legible at thumbnail size. No lettering, captions, fake interface text, logos or watermarks. Choose a natural landscape 3:2 composition; preserve generous margins around all objects. This is the uncropped landscape original; a separate square canvas expansion will follow.",
+      "squareInstructionSummary": "Expand the landscape canvas vertically to 1:1, ideally 1254×1254. Preserve the entire original drawing and proportions, with no crop, zoom, stretching or new objects; add clean white space above and below. Keep graphite contours and lime accents."
+    },
+    {
+      "key": "account",
+      "master": "account-master.png",
+      "square": "account-square.png",
+      "delivery": "account.webp",
+      "subject": "A private project workspace: an open folder with a profile card, a small key and a single protected document, composed calmly. No secrets, passwords, security badges or guarantee claims.",
+      "encoding": "WebP quality 88, no resize or crop. Both generated PNG originals are preserved.",
+      "masterPromptSummary": "Create a new standalone editorial illustration MASTER for the account section of SinglePageStartup. Use the referenced image only as a visual STYLE reference; do not copy its layout. Subject: A private project workspace: an open folder with a profile card, a small key and a single protected document, composed calmly. No secrets, passwords, security badges or guarantee claims. Workspace approved style Living Focus: light isometric line illustration on a perfectly clean white background, thin graphite #18232A outlines, cool pale gray auxiliary lines, sparse meaningful dotted links and small restrained lime #BFEF61 accents. Open simple forms, no shadows, no warm paper, no gradients, generous whitespace, clear focal group legible at thumbnail size. No lettering, captions, fake interface text, logos or watermarks. Choose a natural landscape 3:2 composition; preserve generous margins around all objects. This is the uncropped landscape original; a separate square canvas expansion will follow.",
+      "squareInstructionSummary": "Expand the landscape canvas vertically to 1:1, ideally 1254×1254. Preserve the entire original drawing and proportions, with no crop, zoom, stretching or new objects; add clean white space above and below. Keep graphite contours and lime accents."
+    },
+    {
+      "key": "support",
+      "master": "support-master.png",
+      "square": "support-square.png",
+      "delivery": "support.webp",
+      "subject": "A help and guidance library: a small open guide, a conversation bubble with a question symbol and an ordered three-step route to a resolved document. No readable text or certification claims.",
+      "encoding": "WebP quality 88, no resize or crop. Both generated PNG originals are preserved.",
+      "masterPromptSummary": "Create a new standalone editorial illustration MASTER for the support section of SinglePageStartup. Use the referenced image only as a visual STYLE reference; do not copy its layout. Subject: A help and guidance library: a small open guide, a conversation bubble with a question symbol and an ordered three-step route to a resolved document. No readable text or certification claims. Workspace approved style Living Focus: light isometric line illustration on a perfectly clean white background, thin graphite #18232A outlines, cool pale gray auxiliary lines, sparse meaningful dotted links and small restrained lime #BFEF61 accents. Open simple forms, no shadows, no warm paper, no gradients, generous whitespace, clear focal group legible at thumbnail size. No lettering, captions, fake interface text, logos or watermarks. Choose a natural landscape 3:2 composition; preserve generous margins around all objects. This is the uncropped landscape original; a separate square canvas expansion will follow.",
+      "squareInstructionSummary": "Expand the landscape canvas vertically to 1:1, ideally 1254×1254. Preserve the entire original drawing and proportions, with no crop, zoom, stretching or new objects; add clean white space above and below. Keep graphite contours and lime accents."
+    }
+  ],
+  "promptRecord": "Normalized prompt summaries preserving the subjects, style constraints and separate square canvas expansion. Wording varied between generation batches."
+}

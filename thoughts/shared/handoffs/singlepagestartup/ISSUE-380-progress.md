@@ -3,14 +3,37 @@ issue_number: 380
 issue_title: SEO сборки страниц
 start_date: 2026-10-28
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-380.md
-status: complete
-completed_date: 2026-10-30
+status: in_progress
 ---
 
 # Implementation progress: ISSUE-380
 
 Ветка: `codex/studio-linear-workflow`. Редакция 2 согласована; все этапы разрешены
 последовательно. Существующие Studio/workflow-правки сохраняются отдельно от SEO-коммита.
+
+## Доработка после проверки владельцем — 30.10.2026
+
+Текущая задача выполняется в `codex/studio-linear-workflow`. Владелец разрешил все этапы без дополнительных согласований, commit, release, проверку тестового production, Lighthouse и доступную диагностику Яндекс Вебмастера.
+
+- [x] Весь аутентифицированный интерфейс админки и вложенные SDK reads выполняются на клиенте после authentication/authorization; серверные cookie/session reads не добавляются. Проверки прав на API сохраняются.
+- [x] Исправить Metadata→File: название, создание и редактирование связи в обеих админках.
+- [x] Счётчики/пагинация отношений учитывают фильтр текущего родителя; существующие связи видны одинаково в обеих админках.
+- [x] Создание Page использует язык из internationalization.defaultLanguage; редактирование сохраняет язык записи.
+- [x] Составить инвентаризацию всех Host Pages локально и на тестовом production. Связать каждую Page с редактируемой Metadata; динамические значения — квадратные маски, fallback сохраняется.
+- [x] Создать обложки в стиле Workspace Living Focus через imagegen, сохранить оригиналы и данные происхождения; загрузить через File SDK и настроить Metadata→File для всех Page. Служебные страницы сохраняют noindex.
+- [x] Сохранить существующие тексты/связи; data flow имеет preflight, backup, readback и повторный запуск без дублей. Snapshots не изменяются.
+- [ ] Проверить новые/существующие формы, аутентифицированные запросы, маски и images; выполнить целевые тесты, lint, production build, публичный ISR/hidden.
+- [ ] Commit/push в текущую ветку, release, проверить фактические образы и данные production, полный обход sitemap, Lighthouse.
+- [ ] Проверить доступный Яндекс Вебмастер и запустить проверку/переобход, если интерфейс и права позволяют. Не подменять чужой домен результатами singlepagestartup.com.
+- [ ] Опубликовать результаты и ограничения в issue #380, обновить PR #382, подтвердить Code Review.
+
+Исходная локальная проверка: 102 Page, 2 Page→Metadata (обе для главной), 2 Metadata, 0 Metadata→File. У /blog и шаблонов Article/Product связей нет. Admin v2 передаёт серверные children через клиентскую проверку доступа; server card/table reads с includeHidden=1 не получают сессию. Новый Metadata→File admin/table не передаёт имя/форму контроллеру. Счётчик общей admin/table не учитывает фильтры.
+
+Локальная публикация: 102 Page → 102 выбранные Metadata → 102 отдельных File. Сохранены прежние Metadata и связи. Для семи разделов созданы иллюстрации Living Focus; исходные landscape PNG, отдельные square PNG и WebP находятся в `apps/studio/workspace/assets/singlepage/generated/page-seo-v1/`. Динамические Article/Product/Category/Author используют маски; статические тексты хранятся в Metadata. Личные разделы сохраняют noindex и не читают данные пользователя для SEO.
+
+Повторный apply и новый prepare/apply проходят без новых Metadata/Page→Metadata/Metadata→File. Приватный before-manifest сохранён вне Git. В браузере проверены новая админка без 403, Page → Metadata → Cover file, сохранение/восстановление заголовка и draft preview `/ru/blog` с canonical, описанием и обложкой. Alt редактируется в обеих формах File.
+
+Целевые проверки: runtime data flow — 7 тестов, admin guards — 12, таблицы — 7, Metadata generator/utils — 32. Scoped ESLint — 24 TS/TSX-файла без ошибок/предупреждений; module dependencies — 15 495 файлов, 0 нарушений. Production build и TypeScript прошли; публичный маршрут помечен SSG, административный — dynamic. Публикация 0.0.331, production-проверки и Яндекс остаются впереди.
 
 ## Phase progress
 
@@ -42,7 +65,7 @@ Host 3000, API 4000 и Storybook 4321 оставлены работающими.
 
 ## Incident Log
 
-<!-- incident-count: 12 -->
+<!-- incident-count: 13 -->
 
 ### Incident 1 — GitHub недоступен из sandbox
 
@@ -192,3 +215,12 @@ SDK-скриптом после обновления схемы, с сохран
 Осталось выпустить проверенный коммит, перенести языковые шаблоны и политику
 noindex на тестовый production, выполнить повторный аудит/Lighthouse и
 опубликовать рецензию в issue #380. Статус остаётся in_progress до этих действий.
+
+### Incident 13 — Тип filters в счётчике admin v1
+
+- **Phase**: Implement continuation
+- **Occurrences**: 1
+- **Symptom**: production build отклонил обращение `params.filters` в ветке без поиска.
+- **Root Cause**: выводимый union-тип не гарантировал это поле после spread.
+- **Fix**: начальные фильтры явно включены в обе ветки; таблицы — 7 тестов, повторная production-сборка с TypeScript прошла.
+- **Preventive Action**: проверять общий reader production-сборкой после изменения параметров запросов.

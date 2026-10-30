@@ -17,6 +17,8 @@ export const Component = memo(function Component(
   return (
     <ParentComponent
       {...props}
+      module="host"
+      name="metadata-to-file-storage-module-files"
       type="relation"
       adminForm={() => {
         return (
@@ -30,6 +32,16 @@ export const Component = memo(function Component(
       onDelete={onDelete}
     >
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 p-4 pt-6">
+        <div className="min-w-0">
+          <p className="text-xs text-muted-foreground">Cover file</p>
+          <p className="break-all text-sm">
+            {props.data.fileStorageModuleFileId}
+          </p>
+        </div>
+        <div className="min-w-0">
+          <p className="text-xs text-muted-foreground">Metadata</p>
+          <p className="break-all text-sm">{props.data.metadataId}</p>
+        </div>
         <div className="flex flex-col gap-0.5 overflow-hidden">
           <p className="text-xs text-muted-foreground">Order index</p>
           <p className="truncate">{props.data.orderIndex}</p>

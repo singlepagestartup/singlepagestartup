@@ -42,6 +42,7 @@ export function Component<
     if (!value) {
       return {
         ...(props.apiProps?.params ?? {}),
+        filters: props.apiProps?.params?.filters,
         offset,
         limit,
       };
@@ -92,10 +93,13 @@ export function Component<
     searchField,
   ]);
 
-  const { data: totalData, isLoading: isTotalLoading } = props.api.find(
+  const { data: totalData } = props.api.count(
     adminReadOptions({
+      params: { filters: params.filters },
       options: {
+        ...props.apiProps?.options,
         headers: {
+          ...props.apiProps?.options?.headers,
           "Cache-Control": "no-store",
         },
       },
@@ -105,7 +109,9 @@ export function Component<
     adminReadOptions({
       params,
       options: {
+        ...props.apiProps?.options,
         headers: {
+          ...props.apiProps?.options?.headers,
           "Cache-Control": "no-store",
         },
       },
@@ -113,14 +119,12 @@ export function Component<
   );
 
   useEffect(() => {
-    if (!totalData || !Array.isArray(totalData) || !setState) {
+    if (typeof totalData !== "number" || !setState) {
       return;
     }
 
     setState((prev) => {
-      const newTotal = totalData ? totalData.length : 0;
-
-      return { ...prev, total: newTotal };
+      return prev.total === totalData ? prev : { ...prev, total: totalData };
     });
   }, [totalData, setState]);
 

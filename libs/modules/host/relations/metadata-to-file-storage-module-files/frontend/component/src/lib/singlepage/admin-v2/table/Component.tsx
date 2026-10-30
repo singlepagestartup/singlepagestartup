@@ -5,7 +5,7 @@ import { Component as ParentComponent } from "@sps/shared-frontend-components/si
 export function Component(props: IComponentPropsExtended) {
   return (
     <ParentComponent<IModel, typeof variant> {...props}>
-      {props.data.map((entity, index) => {
+      {props.data.map((entity) => {
         return (
           <AdminTableRow
             key={entity.id}
@@ -15,6 +15,11 @@ export function Component(props: IComponentPropsExtended) {
             variant="admin-v2-table-row"
             adminForm={props.adminForm}
             data={entity}
+            apiProps={props.apiProps}
+            leftModelAdminForm={props.leftModelAdminForm}
+            rightModelAdminForm={props.rightModelAdminForm}
+            leftModelAdminFormLabel={props.leftModelAdminFormLabel}
+            rightModelAdminFormLabel={props.rightModelAdminFormLabel}
           />
         );
       })}

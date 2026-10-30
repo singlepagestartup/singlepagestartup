@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { variants, insertSchema } from "@sps/host/models/page/sdk/model";
 import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin/form/Component";
 import { useGetAdminFormState } from "@sps/shared-frontend-client-hooks";
+import { internationalization } from "@sps/shared-configuration";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
@@ -22,7 +23,8 @@ export function Component(props: IComponentPropsExtended) {
   const form = useForm<z.infer<typeof insertSchema>>({
     resolver: zodResolver(insertSchema),
     defaultValues: {
-      language: props.data?.language || "en",
+      language:
+        props.data?.language || internationalization.defaultLanguage.code,
       indexing: props.data?.indexing || "auto",
       description: props.data?.description || "",
       title: props.data?.title || "",
@@ -46,7 +48,7 @@ export function Component(props: IComponentPropsExtended) {
   return (
     <ParentAdminForm<IModel, typeof variant>
       {...props}
-      module="website-builder"
+      module="host"
       form={form}
       id={props.data?.id}
       onSubmit={onSubmit}

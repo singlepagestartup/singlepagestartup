@@ -1,0 +1,2607 @@
+{
+  "schema": "sps.page-seo-input.v1",
+  "assets": {
+    "ru-8a5edab28263": {
+      "path": "workspace.webp",
+      "sha256": "d9b1a60d762a3b7410a2f10743e2a7efe56eeed283ad6cda924422e061e68ae0",
+      "alt": "Иллюстрация раздела «AI Chat — чат проекта». SinglePageStartup.",
+      "label": "Page SEO · ru · /"
+    },
+    "en-8a5edab28263": {
+      "path": "workspace.webp",
+      "sha256": "d9b1a60d762a3b7410a2f10743e2a7efe56eeed283ad6cda924422e061e68ae0",
+      "alt": "Section illustration: AI Chat — your project workspace — SinglePageStartup.",
+      "label": "Page SEO · en · /"
+    },
+    "ru-e741043d850d": {
+      "path": "account.webp",
+      "sha256": "00060ca99bb01dfd6c178bdf315b962f227b3e9854de36df499dd8b3baf80fd9",
+      "alt": "Иллюстрация раздела «Настройки инструментов разработчика». SinglePageStartup.",
+      "label": "Page SEO · ru · /.well-known/appspecific/com.chrome.devtools.json"
+    },
+    "en-e741043d850d": {
+      "path": "account.webp",
+      "sha256": "00060ca99bb01dfd6c178bdf315b962f227b3e9854de36df499dd8b3baf80fd9",
+      "alt": "Section illustration: Developer tools configuration — SinglePageStartup.",
+      "label": "Page SEO · en · /.well-known/appspecific/com.chrome.devtools.json"
+    },
+    "ru-316556f0cdc8": {
+      "path": "support.webp",
+      "sha256": "b72c2cbc1d1034504376a3ba08e384fb1ede15891d51b2c47bf84df92b636258",
+      "alt": "Иллюстрация раздела «Страница не найдена». SinglePageStartup.",
+      "label": "Page SEO · ru · /404"
+    },
+    "en-316556f0cdc8": {
+      "path": "support.webp",
+      "sha256": "b72c2cbc1d1034504376a3ba08e384fb1ede15891d51b2c47bf84df92b636258",
+      "alt": "Section illustration: Page not found — SinglePageStartup.",
+      "label": "Page SEO · en · /404"
+    },
+    "ru-979bddc4a8ca": {
+      "path": "workspace.webp",
+      "sha256": "d9b1a60d762a3b7410a2f10743e2a7efe56eeed283ad6cda924422e061e68ae0",
+      "alt": "Иллюстрация раздела «О SinglePageStartup». SinglePageStartup.",
+      "label": "Page SEO · ru · /about"
+    },
+    "en-979bddc4a8ca": {
+      "path": "workspace.webp",
+      "sha256": "d9b1a60d762a3b7410a2f10743e2a7efe56eeed283ad6cda924422e061e68ae0",
+      "alt": "Section illustration: About SinglePageStartup — SinglePageStartup.",
+      "label": "Page SEO · en · /about"
+    },
+    "ru-7452bbbe96d7": {
+      "path": "account.webp",
+      "sha256": "00060ca99bb01dfd6c178bdf315b962f227b3e9854de36df499dd8b3baf80fd9",
+      "alt": "Иллюстрация раздела «Создание аккаунта AI Chat». SinglePageStartup.",
+      "label": "Page SEO · ru · /ai-chat/create-account"
+    },
+    "en-7452bbbe96d7": {
+      "path": "account.webp",
+      "sha256": "00060ca99bb01dfd6c178bdf315b962f227b3e9854de36df499dd8b3baf80fd9",
+      "alt": "Section illustration: Create an AI Chat account — SinglePageStartup.",
+      "label": "Page SEO · en · /ai-chat/create-account"
+    },
+    "ru-1c297e8a020a": {
+      "path": "account.webp",
+      "sha256": "00060ca99bb01dfd6c178bdf315b962f227b3e9854de36df499dd8b3baf80fd9",
+      "alt": "Иллюстрация раздела «Восстановление доступа к AI Chat». SinglePageStartup.",
+      "label": "Page SEO · ru · /ai-chat/forgot-password"
+    },
+    "en-1c297e8a020a": {
+      "path": "account.webp",
+      "sha256": "00060ca99bb01dfd6c178bdf315b962f227b3e9854de36df499dd8b3baf80fd9",
+      "alt": "Section illustration: Recover AI Chat access — SinglePageStartup.",
+      "label": "Page SEO · en · /ai-chat/forgot-password"
+    },
+    "ru-443f482b3c81": {
+      "path": "support.webp",
+      "sha256": "b72c2cbc1d1034504376a3ba08e384fb1ede15891d51b2c47bf84df92b636258",
+      "alt": "Иллюстрация раздела «Помощь по AI Chat». SinglePageStartup.",
+      "label": "Page SEO · ru · /ai-chat/help"
+    },
+    "en-443f482b3c81": {
+      "path": "support.webp",
+      "sha256": "b72c2cbc1d1034504376a3ba08e384fb1ede15891d51b2c47bf84df92b636258",
+      "alt": "Section illustration: AI Chat help — SinglePageStartup.",
+      "label": "Page SEO · en · /ai-chat/help"
+    },
+    "ru-a17c5d378e3a": {
+      "path": "workspace.webp",
+      "sha256": "d9b1a60d762a3b7410a2f10743e2a7efe56eeed283ad6cda924422e061e68ae0",
+      "alt": "Иллюстрация раздела «Проекты AI Chat». SinglePageStartup.",
+      "label": "Page SEO · ru · /ai-chat/projects"
+    },
+    "en-a17c5d378e3a": {
+      "path": "workspace.webp",
+      "sha256": "d9b1a60d762a3b7410a2f10743e2a7efe56eeed283ad6cda924422e061e68ae0",
+      "alt": "Section illustration: AI Chat projects — SinglePageStartup.",
+      "label": "Page SEO · en · /ai-chat/projects"
+    },
+    "ru-0c495dd9e477": {
+      "path": "account.webp",
+      "sha256": "00060ca99bb01dfd6c178bdf315b962f227b3e9854de36df499dd8b3baf80fd9",
+      "alt": "Иллюстрация раздела «Новый пароль AI Chat». SinglePageStartup.",
+      "label": "Page SEO · ru · /ai-chat/reset-password"
+    },
+    "en-0c495dd9e477": {
+      "path": "account.webp",
+      "sha256": "00060ca99bb01dfd6c178bdf315b962f227b3e9854de36df499dd8b3baf80fd9",
+      "alt": "Section illustration: Reset AI Chat password — SinglePageStartup.",
+      "label": "Page SEO · en · /ai-chat/reset-password"
+    },
+    "ru-d9f966a62ece": {
+      "path": "account.webp",
+      "sha256": "00060ca99bb01dfd6c178bdf315b962f227b3e9854de36df499dd8b3baf80fd9",
+      "alt": "Иллюстрация раздела «Настройки AI Chat». SinglePageStartup.",
+      "label": "Page SEO · ru · /ai-chat/settings"
+    },
+    "en-d9f966a62ece": {
+      "path": "account.webp",
+      "sha256": "00060ca99bb01dfd6c178bdf315b962f227b3e9854de36df499dd8b3baf80fd9",
+      "alt": "Section illustration: AI Chat settings — SinglePageStartup.",
+      "label": "Page SEO · en · /ai-chat/settings"
+    },
+    "ru-eaa32d5dbfa3": {
+      "path": "account.webp",
+      "sha256": "00060ca99bb01dfd6c178bdf315b962f227b3e9854de36df499dd8b3baf80fd9",
+      "alt": "Иллюстрация раздела «Вход в AI Chat». SinglePageStartup.",
+      "label": "Page SEO · ru · /ai-chat/sign-in"
+    },
+    "en-eaa32d5dbfa3": {
+      "path": "account.webp",
+      "sha256": "00060ca99bb01dfd6c178bdf315b962f227b3e9854de36df499dd8b3baf80fd9",
+      "alt": "Section illustration: Sign in to AI Chat — SinglePageStartup.",
+      "label": "Page SEO · en · /ai-chat/sign-in"
+    },
+    "ru-1e4ab5054d8f": {
+      "path": "account.webp",
+      "sha256": "00060ca99bb01dfd6c178bdf315b962f227b3e9854de36df499dd8b3baf80fd9",
+      "alt": "Иллюстрация раздела «Настройки проекта AI Chat». SinglePageStartup.",
+      "label": "Page SEO · ru · /ai-chat/social/profiles/[social.profiles.id]/chats/[social.chats.id]/settings"
+    },
+    "en-1e4ab5054d8f": {
+      "path": "account.webp",
+      "sha256": "00060ca99bb01dfd6c178bdf315b962f227b3e9854de36df499dd8b3baf80fd9",
+      "alt": "Section illustration: AI Chat project settings — SinglePageStartup.",
+      "label": "Page SEO · en · /ai-chat/social/profiles/[social.profiles.id]/chats/[social.chats.id]/settings"
+    },
+    "ru-f9a296a86a79": {
+      "path": "workspace.webp",
+      "sha256": "d9b1a60d762a3b7410a2f10743e2a7efe56eeed283ad6cda924422e061e68ae0",
+      "alt": "Иллюстрация раздела «Рабочее пространство AI Chat». SinglePageStartup.",
+      "label": "Page SEO · ru · /ai-chat/social/profiles/[social.profiles.id]/chats/[social.chats.id]/threads/[social.threads.id]"
+    },
+    "en-f9a296a86a79": {
+      "path": "workspace.webp",
+      "sha256": "d9b1a60d762a3b7410a2f10743e2a7efe56eeed283ad6cda924422e061e68ae0",
+      "alt": "Section illustration: AI Chat workspace — SinglePageStartup.",
+      "label": "Page SEO · en · /ai-chat/social/profiles/[social.profiles.id]/chats/[social.chats.id]/threads/[social.threads.id]"
+    },
+    "ru-719b3dbafea4": {
+      "path": "workspace.webp",
+      "sha256": "d9b1a60d762a3b7410a2f10743e2a7efe56eeed283ad6cda924422e061e68ae0",
+      "alt": "Иллюстрация раздела «Новое обсуждение AI Chat». SinglePageStartup.",
+      "label": "Page SEO · ru · /ai-chat/social/profiles/[social.profiles.id]/chats/[social.chats.id]/threads/create"
+    },
+    "en-719b3dbafea4": {
+      "path": "workspace.webp",
+      "sha256": "d9b1a60d762a3b7410a2f10743e2a7efe56eeed283ad6cda924422e061e68ae0",
+      "alt": "Section illustration: New AI Chat conversation — SinglePageStartup.",
+      "label": "Page SEO · en · /ai-chat/social/profiles/[social.profiles.id]/chats/[social.chats.id]/threads/create"
+    },
+    "ru-e89ffc3a33a1": {
+      "path": "people.webp",
+      "sha256": "3e787dfb516dc46568f60b0b2dab02f1fb78b50250a0aa46ec19045d0883e524",
+      "alt": "Иллюстрация раздела «Авторы». SinglePageStartup.",
+      "label": "Page SEO · ru · /authors"
+    },
+    "en-e89ffc3a33a1": {
+      "path": "people.webp",
+      "sha256": "3e787dfb516dc46568f60b0b2dab02f1fb78b50250a0aa46ec19045d0883e524",
+      "alt": "Section illustration: Authors — SinglePageStartup.",
+      "label": "Page SEO · en · /authors"
+    },
+    "ru-45d6a0f551c7": {
+      "path": "people.webp",
+      "sha256": "3e787dfb516dc46568f60b0b2dab02f1fb78b50250a0aa46ec19045d0883e524",
+      "alt": "Иллюстрация раздела «Профиль автора». SinglePageStartup.",
+      "label": "Page SEO · ru · /authors/[social.profiles.id]"
+    },
+    "en-45d6a0f551c7": {
+      "path": "people.webp",
+      "sha256": "3e787dfb516dc46568f60b0b2dab02f1fb78b50250a0aa46ec19045d0883e524",
+      "alt": "Section illustration: Author profile — SinglePageStartup.",
+      "label": "Page SEO · en · /authors/[social.profiles.id]"
+    },
+    "ru-8caafe4386f9": {
+      "path": "blog.webp",
+      "sha256": "f503ebe472d82199b8adc1f6d9c82b0b8a169035a48b3653db42e916fbd0af91",
+      "alt": "Иллюстрация раздела «Блог SinglePageStartup». SinglePageStartup.",
+      "label": "Page SEO · ru · /blog"
+    },
+    "en-8caafe4386f9": {
+      "path": "blog.webp",
+      "sha256": "f503ebe472d82199b8adc1f6d9c82b0b8a169035a48b3653db42e916fbd0af91",
+      "alt": "Section illustration: SinglePageStartup blog — SinglePageStartup.",
+      "label": "Page SEO · en · /blog"
+    },
+    "ru-8464a8af110b": {
+      "path": "blog.webp",
+      "sha256": "f503ebe472d82199b8adc1f6d9c82b0b8a169035a48b3653db42e916fbd0af91",
+      "alt": "Иллюстрация раздела «Статья блога». SinglePageStartup.",
+      "label": "Page SEO · ru · /blog/articles/[blog.articles.slug]"
+    },
+    "en-8464a8af110b": {
+      "path": "blog.webp",
+      "sha256": "f503ebe472d82199b8adc1f6d9c82b0b8a169035a48b3653db42e916fbd0af91",
+      "alt": "Section illustration: Blog article — SinglePageStartup.",
+      "label": "Page SEO · en · /blog/articles/[blog.articles.slug]"
+    },
+    "ru-9e52b0b57c82": {
+      "path": "blog.webp",
+      "sha256": "f503ebe472d82199b8adc1f6d9c82b0b8a169035a48b3653db42e916fbd0af91",
+      "alt": "Иллюстрация раздела «Раздел блога». SinglePageStartup.",
+      "label": "Page SEO · ru · /blog/categories/[blog.categories.slug]"
+    },
+    "en-9e52b0b57c82": {
+      "path": "blog.webp",
+      "sha256": "f503ebe472d82199b8adc1f6d9c82b0b8a169035a48b3653db42e916fbd0af91",
+      "alt": "Section illustration: Blog category — SinglePageStartup.",
+      "label": "Page SEO · en · /blog/categories/[blog.categories.slug]"
+    },
+    "ru-bb0f90776f11": {
+      "path": "blog.webp",
+      "sha256": "f503ebe472d82199b8adc1f6d9c82b0b8a169035a48b3653db42e916fbd0af91",
+      "alt": "Иллюстрация раздела «Новая статья». SinglePageStartup.",
+      "label": "Page SEO · ru · /blog/new"
+    },
+    "en-bb0f90776f11": {
+      "path": "blog.webp",
+      "sha256": "f503ebe472d82199b8adc1f6d9c82b0b8a169035a48b3653db42e916fbd0af91",
+      "alt": "Section illustration: Create an article — SinglePageStartup.",
+      "label": "Page SEO · en · /blog/new"
+    },
+    "ru-3fc04847d95e": {
+      "path": "commerce.webp",
+      "sha256": "d98dc84868ca6767985d467776a4eb60b98ae234beb714a1466ad94822219348",
+      "alt": "Иллюстрация раздела «Каталог продуктов». SinglePageStartup.",
+      "label": "Page SEO · ru · /ecommerce"
+    },
+    "en-3fc04847d95e": {
+      "path": "commerce.webp",
+      "sha256": "d98dc84868ca6767985d467776a4eb60b98ae234beb714a1466ad94822219348",
+      "alt": "Section illustration: Product catalog — SinglePageStartup.",
+      "label": "Page SEO · en · /ecommerce"
+    },
+    "ru-721e1fd1779d": {
+      "path": "commerce.webp",
+      "sha256": "d98dc84868ca6767985d467776a4eb60b98ae234beb714a1466ad94822219348",
+      "alt": "Иллюстрация раздела «Категория продуктов». SinglePageStartup.",
+      "label": "Page SEO · ru · /ecommerce/categories/[ecommerce.categories.slug]"
+    },
+    "en-721e1fd1779d": {
+      "path": "commerce.webp",
+      "sha256": "d98dc84868ca6767985d467776a4eb60b98ae234beb714a1466ad94822219348",
+      "alt": "Section illustration: Product category — SinglePageStartup.",
+      "label": "Page SEO · en · /ecommerce/categories/[ecommerce.categories.slug]"
+    },
+    "ru-33dc76d7d7ca": {
+      "path": "commerce.webp",
+      "sha256": "d98dc84868ca6767985d467776a4eb60b98ae234beb714a1466ad94822219348",
+      "alt": "Иллюстрация раздела «Продукт». SinglePageStartup.",
+      "label": "Page SEO · ru · /ecommerce/products/[ecommerce.products.slug]"
+    },
+    "en-33dc76d7d7ca": {
+      "path": "commerce.webp",
+      "sha256": "d98dc84868ca6767985d467776a4eb60b98ae234beb714a1466ad94822219348",
+      "alt": "Section illustration: Product — SinglePageStartup.",
+      "label": "Page SEO · en · /ecommerce/products/[ecommerce.products.slug]"
+    },
+    "ru-d01031085c59": {
+      "path": "commerce.webp",
+      "sha256": "d98dc84868ca6767985d467776a4eb60b98ae234beb714a1466ad94822219348",
+      "alt": "Иллюстрация раздела «Магазин». SinglePageStartup.",
+      "label": "Page SEO · ru · /ecommerce/stores/[ecommerce.stores.slug]"
+    },
+    "en-d01031085c59": {
+      "path": "commerce.webp",
+      "sha256": "d98dc84868ca6767985d467776a4eb60b98ae234beb714a1466ad94822219348",
+      "alt": "Section illustration: Store — SinglePageStartup.",
+      "label": "Page SEO · en · /ecommerce/stores/[ecommerce.stores.slug]"
+    },
+    "ru-5666c73030c1": {
+      "path": "framework.webp",
+      "sha256": "5f633f2d09b6209d9d3f799f49052a7c8b3ee0f475894f2dc2d298426a0367c4",
+      "alt": "Иллюстрация раздела «Code Framework». SinglePageStartup.",
+      "label": "Page SEO · ru · /framework"
+    },
+    "en-5666c73030c1": {
+      "path": "framework.webp",
+      "sha256": "5f633f2d09b6209d9d3f799f49052a7c8b3ee0f475894f2dc2d298426a0367c4",
+      "alt": "Section illustration: Code Framework — SinglePageStartup.",
+      "label": "Page SEO · en · /framework"
+    },
+    "ru-c9690858acc9": {
+      "path": "blog.webp",
+      "sha256": "f503ebe472d82199b8adc1f6d9c82b0b8a169035a48b3653db42e916fbd0af91",
+      "alt": "Иллюстрация раздела «Демонстрация статьи». SinglePageStartup.",
+      "label": "Page SEO · ru · /framework/blog/articles/[blog.articles.slug]"
+    },
+    "en-c9690858acc9": {
+      "path": "blog.webp",
+      "sha256": "f503ebe472d82199b8adc1f6d9c82b0b8a169035a48b3653db42e916fbd0af91",
+      "alt": "Section illustration: Article demonstration — SinglePageStartup.",
+      "label": "Page SEO · en · /framework/blog/articles/[blog.articles.slug]"
+    },
+    "ru-e0de8f945d69": {
+      "path": "framework.webp",
+      "sha256": "5f633f2d09b6209d9d3f799f49052a7c8b3ee0f475894f2dc2d298426a0367c4",
+      "alt": "Иллюстрация раздела «Модули Code Framework». SinglePageStartup.",
+      "label": "Page SEO · ru · /framework/modules"
+    },
+    "en-e0de8f945d69": {
+      "path": "framework.webp",
+      "sha256": "5f633f2d09b6209d9d3f799f49052a7c8b3ee0f475894f2dc2d298426a0367c4",
+      "alt": "Section illustration: Code Framework modules — SinglePageStartup.",
+      "label": "Page SEO · en · /framework/modules"
+    },
+    "ru-ea7eb3e205b2": {
+      "path": "framework.webp",
+      "sha256": "5f633f2d09b6209d9d3f799f49052a7c8b3ee0f475894f2dc2d298426a0367c4",
+      "alt": "Иллюстрация раздела «Agent · Code Framework». SinglePageStartup.",
+      "label": "Page SEO · ru · /framework/modules/agent"
+    },
+    "en-ea7eb3e205b2": {
+      "path": "framework.webp",
+      "sha256": "5f633f2d09b6209d9d3f799f49052a7c8b3ee0f475894f2dc2d298426a0367c4",
+      "alt": "Section illustration: Agent · Code Framework — SinglePageStartup.",
+      "label": "Page SEO · en · /framework/modules/agent"
+    },
+    "ru-4f847c34c22a": {
+      "path": "framework.webp",
+      "sha256": "5f633f2d09b6209d9d3f799f49052a7c8b3ee0f475894f2dc2d298426a0367c4",
+      "alt": "Иллюстрация раздела «Analytic · Code Framework». SinglePageStartup.",
+      "label": "Page SEO · ru · /framework/modules/analytic"
+    },
+    "en-4f847c34c22a": {
+      "path": "framework.webp",
+      "sha256": "5f633f2d09b6209d9d3f799f49052a7c8b3ee0f475894f2dc2d298426a0367c4",
+      "alt": "Section illustration: Analytic · Code Framework — SinglePageStartup.",
+      "label": "Page SEO · en · /framework/modules/analytic"
+    },
+    "ru-2112d4254abf": {
+      "path": "framework.webp",
+      "sha256": "5f633f2d09b6209d9d3f799f49052a7c8b3ee0f475894f2dc2d298426a0367c4",
+      "alt": "Иллюстрация раздела «Billing · Code Framework». SinglePageStartup.",
+      "label": "Page SEO · ru · /framework/modules/billing"
+    },
+    "en-2112d4254abf": {
+      "path": "framework.webp",
+      "sha256": "5f633f2d09b6209d9d3f799f49052a7c8b3ee0f475894f2dc2d298426a0367c4",
+      "alt": "Section illustration: Billing · Code Framework — SinglePageStartup.",
+      "label": "Page SEO · en · /framework/modules/billing"
+    },
+    "ru-e856ed4b9f4e": {
+      "path": "framework.webp",
+      "sha256": "5f633f2d09b6209d9d3f799f49052a7c8b3ee0f475894f2dc2d298426a0367c4",
+      "alt": "Иллюстрация раздела «Blog · Code Framework». SinglePageStartup.",
+      "label": "Page SEO · ru · /framework/modules/blog"
+    },
+    "en-e856ed4b9f4e": {
+      "path": "framework.webp",
+      "sha256": "5f633f2d09b6209d9d3f799f49052a7c8b3ee0f475894f2dc2d298426a0367c4",
+      "alt": "Section illustration: Blog · Code Framework — SinglePageStartup.",
+      "label": "Page SEO · en · /framework/modules/blog"
+    },
+    "ru-be8c32f4c733": {
+      "path": "framework.webp",
+      "sha256": "5f633f2d09b6209d9d3f799f49052a7c8b3ee0f475894f2dc2d298426a0367c4",
+      "alt": "Иллюстрация раздела «Broadcast · Code Framework». SinglePageStartup.",
+      "label": "Page SEO · ru · /framework/modules/broadcast"
+    },
+    "en-be8c32f4c733": {
+      "path": "framework.webp",
+      "sha256": "5f633f2d09b6209d9d3f799f49052a7c8b3ee0f475894f2dc2d298426a0367c4",
+      "alt": "Section illustration: Broadcast · Code Framework — SinglePageStartup.",
+      "label": "Page SEO · en · /framework/modules/broadcast"
+    },
+    "ru-61564cbb82ec": {
+      "path": "framework.webp",
+      "sha256": "5f633f2d09b6209d9d3f799f49052a7c8b3ee0f475894f2dc2d298426a0367c4",
+      "alt": "Иллюстрация раздела «CRM · Code Framework». SinglePageStartup.",
+      "label": "Page SEO · ru · /framework/modules/crm"
+    },
+    "en-61564cbb82ec": {
+      "path": "framework.webp",
+      "sha256": "5f633f2d09b6209d9d3f799f49052a7c8b3ee0f475894f2dc2d298426a0367c4",
+      "alt": "Section illustration: CRM · Code Framework — SinglePageStartup.",
+      "label": "Page SEO · en · /framework/modules/crm"
+    },
+    "ru-5895624a6011": {
+      "path": "framework.webp",
+      "sha256": "5f633f2d09b6209d9d3f799f49052a7c8b3ee0f475894f2dc2d298426a0367c4",
+      "alt": "Иллюстрация раздела «Ecommerce · Code Framework». SinglePageStartup.",
+      "label": "Page SEO · ru · /framework/modules/ecommerce"
+    },
+    "en-5895624a6011": {
+      "path": "framework.webp",
+      "sha256": "5f633f2d09b6209d9d3f799f49052a7c8b3ee0f475894f2dc2d298426a0367c4",
+      "alt": "Section illustration: Ecommerce · Code Framework — SinglePageStartup.",
+      "label": "Page SEO · en · /framework/modules/ecommerce"
+    },
+    "ru-a08409df83e0": {
+      "path": "framework.webp",
+      "sha256": "5f633f2d09b6209d9d3f799f49052a7c8b3ee0f475894f2dc2d298426a0367c4",
+      "alt": "Иллюстрация раздела «File Storage · Code Framework». SinglePageStartup.",
+      "label": "Page SEO · ru · /framework/modules/file-storage"
+    },
+    "en-a08409df83e0": {
+      "path": "framework.webp",
+      "sha256": "5f633f2d09b6209d9d3f799f49052a7c8b3ee0f475894f2dc2d298426a0367c4",
+      "alt": "Section illustration: File Storage · Code Framework — SinglePageStartup.",
+      "label": "Page SEO · en · /framework/modules/file-storage"
+    },
+    "ru-dc0995971403": {
+      "path": "framework.webp",
+      "sha256": "5f633f2d09b6209d9d3f799f49052a7c8b3ee0f475894f2dc2d298426a0367c4",
+      "alt": "Иллюстрация раздела «Host · Code Framework». SinglePageStartup.",
+      "label": "Page SEO · ru · /framework/modules/host"
+    },
+    "en-dc0995971403": {
+      "path": "framework.webp",
+      "sha256": "5f633f2d09b6209d9d3f799f49052a7c8b3ee0f475894f2dc2d298426a0367c4",
+      "alt": "Section illustration: Host · Code Framework — SinglePageStartup.",
+      "label": "Page SEO · en · /framework/modules/host"
+    },
+    "ru-bd5ab93828c5": {
+      "path": "framework.webp",
+      "sha256": "5f633f2d09b6209d9d3f799f49052a7c8b3ee0f475894f2dc2d298426a0367c4",
+      "alt": "Иллюстрация раздела «Knowledge · Code Framework». SinglePageStartup.",
+      "label": "Page SEO · ru · /framework/modules/knowledge"
+    },
+    "en-bd5ab93828c5": {
+      "path": "framework.webp",
+      "sha256": "5f633f2d09b6209d9d3f799f49052a7c8b3ee0f475894f2dc2d298426a0367c4",
+      "alt": "Section illustration: Knowledge · Code Framework — SinglePageStartup.",
+      "label": "Page SEO · en · /framework/modules/knowledge"
+    },
+    "ru-a0d471152726": {
+      "path": "framework.webp",
+      "sha256": "5f633f2d09b6209d9d3f799f49052a7c8b3ee0f475894f2dc2d298426a0367c4",
+      "alt": "Иллюстрация раздела «Notification · Code Framework». SinglePageStartup.",
+      "label": "Page SEO · ru · /framework/modules/notification"
+    },
+    "en-a0d471152726": {
+      "path": "framework.webp",
+      "sha256": "5f633f2d09b6209d9d3f799f49052a7c8b3ee0f475894f2dc2d298426a0367c4",
+      "alt": "Section illustration: Notification · Code Framework — SinglePageStartup.",
+      "label": "Page SEO · en · /framework/modules/notification"
+    },
+    "ru-8f02a82d32bf": {
+      "path": "framework.webp",
+      "sha256": "5f633f2d09b6209d9d3f799f49052a7c8b3ee0f475894f2dc2d298426a0367c4",
+      "alt": "Иллюстрация раздела «RBAC · Code Framework». SinglePageStartup.",
+      "label": "Page SEO · ru · /framework/modules/rbac"
+    },
+    "en-8f02a82d32bf": {
+      "path": "framework.webp",
+      "sha256": "5f633f2d09b6209d9d3f799f49052a7c8b3ee0f475894f2dc2d298426a0367c4",
+      "alt": "Section illustration: RBAC · Code Framework — SinglePageStartup.",
+      "label": "Page SEO · en · /framework/modules/rbac"
+    },
+    "ru-284982465a8d": {
+      "path": "framework.webp",
+      "sha256": "5f633f2d09b6209d9d3f799f49052a7c8b3ee0f475894f2dc2d298426a0367c4",
+      "alt": "Иллюстрация раздела «Social · Code Framework». SinglePageStartup.",
+      "label": "Page SEO · ru · /framework/modules/social"
+    },
+    "en-284982465a8d": {
+      "path": "framework.webp",
+      "sha256": "5f633f2d09b6209d9d3f799f49052a7c8b3ee0f475894f2dc2d298426a0367c4",
+      "alt": "Section illustration: Social · Code Framework — SinglePageStartup.",
+      "label": "Page SEO · en · /framework/modules/social"
+    },
+    "ru-d6d5d528d36d": {
+      "path": "framework.webp",
+      "sha256": "5f633f2d09b6209d9d3f799f49052a7c8b3ee0f475894f2dc2d298426a0367c4",
+      "alt": "Иллюстрация раздела «Startup · Code Framework». SinglePageStartup.",
+      "label": "Page SEO · ru · /framework/modules/startup"
+    },
+    "en-d6d5d528d36d": {
+      "path": "framework.webp",
+      "sha256": "5f633f2d09b6209d9d3f799f49052a7c8b3ee0f475894f2dc2d298426a0367c4",
+      "alt": "Section illustration: Startup · Code Framework — SinglePageStartup.",
+      "label": "Page SEO · en · /framework/modules/startup"
+    },
+    "ru-a01ccb1b69a2": {
+      "path": "framework.webp",
+      "sha256": "5f633f2d09b6209d9d3f799f49052a7c8b3ee0f475894f2dc2d298426a0367c4",
+      "alt": "Иллюстрация раздела «Website Builder · Code Framework». SinglePageStartup.",
+      "label": "Page SEO · ru · /framework/modules/website-builder"
+    },
+    "en-a01ccb1b69a2": {
+      "path": "framework.webp",
+      "sha256": "5f633f2d09b6209d9d3f799f49052a7c8b3ee0f475894f2dc2d298426a0367c4",
+      "alt": "Section illustration: Website Builder · Code Framework — SinglePageStartup.",
+      "label": "Page SEO · en · /framework/modules/website-builder"
+    },
+    "ru-d61fd9d3c703": {
+      "path": "account.webp",
+      "sha256": "00060ca99bb01dfd6c178bdf315b962f227b3e9854de36df499dd8b3baf80fd9",
+      "alt": "Иллюстрация раздела «Восстановление пароля». SinglePageStartup.",
+      "label": "Page SEO · ru · /rbac/subject/authentication/email-and-password/forgot-password"
+    },
+    "en-d61fd9d3c703": {
+      "path": "account.webp",
+      "sha256": "00060ca99bb01dfd6c178bdf315b962f227b3e9854de36df499dd8b3baf80fd9",
+      "alt": "Section illustration: Recover password — SinglePageStartup.",
+      "label": "Page SEO · en · /rbac/subject/authentication/email-and-password/forgot-password"
+    },
+    "ru-c40f09e4522f": {
+      "path": "account.webp",
+      "sha256": "00060ca99bb01dfd6c178bdf315b962f227b3e9854de36df499dd8b3baf80fd9",
+      "alt": "Иллюстрация раздела «Регистрация аккаунта». SinglePageStartup.",
+      "label": "Page SEO · ru · /rbac/subject/authentication/email-and-password/registration"
+    },
+    "en-c40f09e4522f": {
+      "path": "account.webp",
+      "sha256": "00060ca99bb01dfd6c178bdf315b962f227b3e9854de36df499dd8b3baf80fd9",
+      "alt": "Section illustration: Register an account — SinglePageStartup.",
+      "label": "Page SEO · en · /rbac/subject/authentication/email-and-password/registration"
+    },
+    "ru-0889b4d6bfc9": {
+      "path": "account.webp",
+      "sha256": "00060ca99bb01dfd6c178bdf315b962f227b3e9854de36df499dd8b3baf80fd9",
+      "alt": "Иллюстрация раздела «Установка пароля». SinglePageStartup.",
+      "label": "Page SEO · ru · /rbac/subject/authentication/email-and-password/reset-password"
+    },
+    "en-0889b4d6bfc9": {
+      "path": "account.webp",
+      "sha256": "00060ca99bb01dfd6c178bdf315b962f227b3e9854de36df499dd8b3baf80fd9",
+      "alt": "Section illustration: Set a password — SinglePageStartup.",
+      "label": "Page SEO · en · /rbac/subject/authentication/email-and-password/reset-password"
+    },
+    "ru-b5566c455639": {
+      "path": "account.webp",
+      "sha256": "00060ca99bb01dfd6c178bdf315b962f227b3e9854de36df499dd8b3baf80fd9",
+      "alt": "Иллюстрация раздела «Выход из аккаунта». SinglePageStartup.",
+      "label": "Page SEO · ru · /rbac/subject/authentication/logout"
+    },
+    "en-b5566c455639": {
+      "path": "account.webp",
+      "sha256": "00060ca99bb01dfd6c178bdf315b962f227b3e9854de36df499dd8b3baf80fd9",
+      "alt": "Section illustration: Sign out — SinglePageStartup.",
+      "label": "Page SEO · en · /rbac/subject/authentication/logout"
+    },
+    "ru-5b86293eef17": {
+      "path": "account.webp",
+      "sha256": "00060ca99bb01dfd6c178bdf315b962f227b3e9854de36df499dd8b3baf80fd9",
+      "alt": "Иллюстрация раздела «Способ входа». SinglePageStartup.",
+      "label": "Page SEO · ru · /rbac/subject/authentication/select-method"
+    },
+    "en-5b86293eef17": {
+      "path": "account.webp",
+      "sha256": "00060ca99bb01dfd6c178bdf315b962f227b3e9854de36df499dd8b3baf80fd9",
+      "alt": "Section illustration: Choose a sign-in method — SinglePageStartup.",
+      "label": "Page SEO · en · /rbac/subject/authentication/select-method"
+    },
+    "ru-e918bca41b8a": {
+      "path": "account.webp",
+      "sha256": "00060ca99bb01dfd6c178bdf315b962f227b3e9854de36df499dd8b3baf80fd9",
+      "alt": "Иллюстрация раздела «Настройки аккаунта». SinglePageStartup.",
+      "label": "Page SEO · ru · /rbac/subjects/settings"
+    },
+    "en-e918bca41b8a": {
+      "path": "account.webp",
+      "sha256": "00060ca99bb01dfd6c178bdf315b962f227b3e9854de36df499dd8b3baf80fd9",
+      "alt": "Section illustration: Account settings — SinglePageStartup.",
+      "label": "Page SEO · en · /rbac/subjects/settings"
+    },
+    "ru-8d537344d59e": {
+      "path": "people.webp",
+      "sha256": "3e787dfb516dc46568f60b0b2dab02f1fb78b50250a0aa46ec19045d0883e524",
+      "alt": "Иллюстрация раздела «Обсуждения». SinglePageStartup.",
+      "label": "Page SEO · ru · /social/chats"
+    },
+    "en-8d537344d59e": {
+      "path": "people.webp",
+      "sha256": "3e787dfb516dc46568f60b0b2dab02f1fb78b50250a0aa46ec19045d0883e524",
+      "alt": "Section illustration: Conversations — SinglePageStartup.",
+      "label": "Page SEO · en · /social/chats"
+    },
+    "ru-c98fe3745235": {
+      "path": "people.webp",
+      "sha256": "3e787dfb516dc46568f60b0b2dab02f1fb78b50250a0aa46ec19045d0883e524",
+      "alt": "Иллюстрация раздела «Обсуждение проекта». SinglePageStartup.",
+      "label": "Page SEO · ru · /social/chats/[social.chats.id]"
+    },
+    "en-c98fe3745235": {
+      "path": "people.webp",
+      "sha256": "3e787dfb516dc46568f60b0b2dab02f1fb78b50250a0aa46ec19045d0883e524",
+      "alt": "Section illustration: Project conversation — SinglePageStartup.",
+      "label": "Page SEO · en · /social/chats/[social.chats.id]"
+    },
+    "ru-74768a5a3931": {
+      "path": "people.webp",
+      "sha256": "3e787dfb516dc46568f60b0b2dab02f1fb78b50250a0aa46ec19045d0883e524",
+      "alt": "Иллюстрация раздела «Тема обсуждения». SinglePageStartup.",
+      "label": "Page SEO · ru · /social/chats/[social.chats.id]/threads/[social.threads.id]"
+    },
+    "en-74768a5a3931": {
+      "path": "people.webp",
+      "sha256": "3e787dfb516dc46568f60b0b2dab02f1fb78b50250a0aa46ec19045d0883e524",
+      "alt": "Section illustration: Conversation thread — SinglePageStartup.",
+      "label": "Page SEO · en · /social/chats/[social.chats.id]/threads/[social.threads.id]"
+    },
+    "ru-6493c8b3ee4c": {
+      "path": "people.webp",
+      "sha256": "3e787dfb516dc46568f60b0b2dab02f1fb78b50250a0aa46ec19045d0883e524",
+      "alt": "Иллюстрация раздела «Профиль участника». SinglePageStartup.",
+      "label": "Page SEO · ru · /social/profiles/[social.profiles.slug]"
+    },
+    "en-6493c8b3ee4c": {
+      "path": "people.webp",
+      "sha256": "3e787dfb516dc46568f60b0b2dab02f1fb78b50250a0aa46ec19045d0883e524",
+      "alt": "Section illustration: Member profile — SinglePageStartup.",
+      "label": "Page SEO · en · /social/profiles/[social.profiles.slug]"
+    }
+  },
+  "pages": [
+    {
+      "url": "/",
+      "language": "ru",
+      "cover": "ru-8a5edab28263",
+      "metadata": {
+        "title": "AI Chat — чат проекта — SinglePageStartup",
+        "description": "Обсуждайте бизнес-идею, добавляйте материалы и готовьте документы о проекте в AI Chat.",
+        "opengraphTitle": "AI Chat — чат проекта — SinglePageStartup",
+        "opengraphDescription": "Обсуждайте бизнес-идею, добавляйте материалы и готовьте документы о проекте в AI Chat.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "AI Chat — чат проекта — SinglePageStartup",
+        "twitterDescription": "Обсуждайте бизнес-идею, добавляйте материалы и готовьте документы о проекте в AI Chat.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/",
+      "language": "en",
+      "cover": "en-8a5edab28263",
+      "metadata": {
+        "title": "AI Chat — your project workspace — SinglePageStartup",
+        "description": "Discuss a business idea, add your materials and prepare project documents in AI Chat.",
+        "opengraphTitle": "AI Chat — your project workspace — SinglePageStartup",
+        "opengraphDescription": "Discuss a business idea, add your materials and prepare project documents in AI Chat.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "AI Chat — your project workspace — SinglePageStartup",
+        "twitterDescription": "Discuss a business idea, add your materials and prepare project documents in AI Chat.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/.well-known/appspecific/com.chrome.devtools.json",
+      "language": "ru",
+      "cover": "ru-e741043d850d",
+      "metadata": {
+        "title": "Настройки инструментов разработчика — SinglePageStartup",
+        "description": "Служебная страница настроек инструментов разработчика.",
+        "opengraphTitle": "Настройки инструментов разработчика — SinglePageStartup",
+        "opengraphDescription": "Служебная страница настроек инструментов разработчика.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Настройки инструментов разработчика — SinglePageStartup",
+        "twitterDescription": "Служебная страница настроек инструментов разработчика.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/.well-known/appspecific/com.chrome.devtools.json",
+      "language": "en",
+      "cover": "en-e741043d850d",
+      "metadata": {
+        "title": "Developer tools configuration — SinglePageStartup",
+        "description": "Internal developer tools configuration page.",
+        "opengraphTitle": "Developer tools configuration — SinglePageStartup",
+        "opengraphDescription": "Internal developer tools configuration page.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Developer tools configuration — SinglePageStartup",
+        "twitterDescription": "Internal developer tools configuration page.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/404",
+      "language": "ru",
+      "cover": "ru-316556f0cdc8",
+      "metadata": {
+        "title": "Страница не найдена — SinglePageStartup",
+        "description": "Запрошенная страница недоступна. Вернитесь к разделам SinglePageStartup.",
+        "opengraphTitle": "Страница не найдена — SinglePageStartup",
+        "opengraphDescription": "Запрошенная страница недоступна. Вернитесь к разделам SinglePageStartup.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Страница не найдена — SinglePageStartup",
+        "twitterDescription": "Запрошенная страница недоступна. Вернитесь к разделам SinglePageStartup.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/404",
+      "language": "en",
+      "cover": "en-316556f0cdc8",
+      "metadata": {
+        "title": "Page not found — SinglePageStartup",
+        "description": "The requested page is unavailable. Return to the SinglePageStartup sections.",
+        "opengraphTitle": "Page not found — SinglePageStartup",
+        "opengraphDescription": "The requested page is unavailable. Return to the SinglePageStartup sections.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Page not found — SinglePageStartup",
+        "twitterDescription": "The requested page is unavailable. Return to the SinglePageStartup sections.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/about",
+      "language": "ru",
+      "cover": "ru-979bddc4a8ca",
+      "metadata": {
+        "title": "О SinglePageStartup",
+        "description": "Как устроен SinglePageStartup: открытый Code Framework для разработки и AI Chat для работы с материалами проекта.",
+        "opengraphTitle": "О SinglePageStartup",
+        "opengraphDescription": "Как устроен SinglePageStartup: открытый Code Framework для разработки и AI Chat для работы с материалами проекта.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "О SinglePageStartup",
+        "twitterDescription": "Как устроен SinglePageStartup: открытый Code Framework для разработки и AI Chat для работы с материалами проекта.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/about",
+      "language": "en",
+      "cover": "en-979bddc4a8ca",
+      "metadata": {
+        "title": "About SinglePageStartup",
+        "description": "Explore SinglePageStartup: an open Code Framework for development and AI Chat for working with project materials.",
+        "opengraphTitle": "About SinglePageStartup",
+        "opengraphDescription": "Explore SinglePageStartup: an open Code Framework for development and AI Chat for working with project materials.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "About SinglePageStartup",
+        "twitterDescription": "Explore SinglePageStartup: an open Code Framework for development and AI Chat for working with project materials.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/ai-chat/create-account",
+      "language": "ru",
+      "cover": "ru-7452bbbe96d7",
+      "metadata": {
+        "title": "Создание аккаунта AI Chat — SinglePageStartup",
+        "description": "Создайте аккаунт для работы со своими проектами и материалами в AI Chat.",
+        "opengraphTitle": "Создание аккаунта AI Chat — SinglePageStartup",
+        "opengraphDescription": "Создайте аккаунт для работы со своими проектами и материалами в AI Chat.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Создание аккаунта AI Chat — SinglePageStartup",
+        "twitterDescription": "Создайте аккаунт для работы со своими проектами и материалами в AI Chat.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/ai-chat/create-account",
+      "language": "en",
+      "cover": "en-7452bbbe96d7",
+      "metadata": {
+        "title": "Create an AI Chat account — SinglePageStartup",
+        "description": "Create an account to work with your projects and materials in AI Chat.",
+        "opengraphTitle": "Create an AI Chat account — SinglePageStartup",
+        "opengraphDescription": "Create an account to work with your projects and materials in AI Chat.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Create an AI Chat account — SinglePageStartup",
+        "twitterDescription": "Create an account to work with your projects and materials in AI Chat.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/ai-chat/forgot-password",
+      "language": "ru",
+      "cover": "ru-1c297e8a020a",
+      "metadata": {
+        "title": "Восстановление доступа к AI Chat — SinglePageStartup",
+        "description": "Запрос ссылки для восстановления доступа к аккаунту AI Chat.",
+        "opengraphTitle": "Восстановление доступа к AI Chat — SinglePageStartup",
+        "opengraphDescription": "Запрос ссылки для восстановления доступа к аккаунту AI Chat.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Восстановление доступа к AI Chat — SinglePageStartup",
+        "twitterDescription": "Запрос ссылки для восстановления доступа к аккаунту AI Chat.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/ai-chat/forgot-password",
+      "language": "en",
+      "cover": "en-1c297e8a020a",
+      "metadata": {
+        "title": "Recover AI Chat access — SinglePageStartup",
+        "description": "Request a link to recover access to an AI Chat account.",
+        "opengraphTitle": "Recover AI Chat access — SinglePageStartup",
+        "opengraphDescription": "Request a link to recover access to an AI Chat account.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Recover AI Chat access — SinglePageStartup",
+        "twitterDescription": "Request a link to recover access to an AI Chat account.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/ai-chat/help",
+      "language": "ru",
+      "cover": "ru-443f482b3c81",
+      "metadata": {
+        "title": "Помощь по AI Chat — SinglePageStartup",
+        "description": "Как работать с проектами, обсуждениями, документами и файлами в AI Chat.",
+        "opengraphTitle": "Помощь по AI Chat — SinglePageStartup",
+        "opengraphDescription": "Как работать с проектами, обсуждениями, документами и файлами в AI Chat.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Помощь по AI Chat — SinglePageStartup",
+        "twitterDescription": "Как работать с проектами, обсуждениями, документами и файлами в AI Chat.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/ai-chat/help",
+      "language": "en",
+      "cover": "en-443f482b3c81",
+      "metadata": {
+        "title": "AI Chat help — SinglePageStartup",
+        "description": "How to work with projects, conversations, documents and files in AI Chat.",
+        "opengraphTitle": "AI Chat help — SinglePageStartup",
+        "opengraphDescription": "How to work with projects, conversations, documents and files in AI Chat.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "AI Chat help — SinglePageStartup",
+        "twitterDescription": "How to work with projects, conversations, documents and files in AI Chat.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/ai-chat/projects",
+      "language": "ru",
+      "cover": "ru-a17c5d378e3a",
+      "metadata": {
+        "title": "Проекты AI Chat — SinglePageStartup",
+        "description": "Список доступных пользователю проектов AI Chat и переход к обсуждениям.",
+        "opengraphTitle": "Проекты AI Chat — SinglePageStartup",
+        "opengraphDescription": "Список доступных пользователю проектов AI Chat и переход к обсуждениям.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Проекты AI Chat — SinglePageStartup",
+        "twitterDescription": "Список доступных пользователю проектов AI Chat и переход к обсуждениям.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/ai-chat/projects",
+      "language": "en",
+      "cover": "en-a17c5d378e3a",
+      "metadata": {
+        "title": "AI Chat projects — SinglePageStartup",
+        "description": "AI Chat projects available to the current user and links to their conversations.",
+        "opengraphTitle": "AI Chat projects — SinglePageStartup",
+        "opengraphDescription": "AI Chat projects available to the current user and links to their conversations.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "AI Chat projects — SinglePageStartup",
+        "twitterDescription": "AI Chat projects available to the current user and links to their conversations.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/ai-chat/reset-password",
+      "language": "ru",
+      "cover": "ru-0c495dd9e477",
+      "metadata": {
+        "title": "Новый пароль AI Chat — SinglePageStartup",
+        "description": "Установка нового пароля аккаунта AI Chat по ссылке восстановления.",
+        "opengraphTitle": "Новый пароль AI Chat — SinglePageStartup",
+        "opengraphDescription": "Установка нового пароля аккаунта AI Chat по ссылке восстановления.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Новый пароль AI Chat — SinglePageStartup",
+        "twitterDescription": "Установка нового пароля аккаунта AI Chat по ссылке восстановления.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/ai-chat/reset-password",
+      "language": "en",
+      "cover": "en-0c495dd9e477",
+      "metadata": {
+        "title": "Reset AI Chat password — SinglePageStartup",
+        "description": "Set a new AI Chat account password using a recovery link.",
+        "opengraphTitle": "Reset AI Chat password — SinglePageStartup",
+        "opengraphDescription": "Set a new AI Chat account password using a recovery link.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Reset AI Chat password — SinglePageStartup",
+        "twitterDescription": "Set a new AI Chat account password using a recovery link.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/ai-chat/settings",
+      "language": "ru",
+      "cover": "ru-d9f966a62ece",
+      "metadata": {
+        "title": "Настройки AI Chat — SinglePageStartup",
+        "description": "Настройки аккаунта и параметров работы в AI Chat.",
+        "opengraphTitle": "Настройки AI Chat — SinglePageStartup",
+        "opengraphDescription": "Настройки аккаунта и параметров работы в AI Chat.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Настройки AI Chat — SinglePageStartup",
+        "twitterDescription": "Настройки аккаунта и параметров работы в AI Chat.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/ai-chat/settings",
+      "language": "en",
+      "cover": "en-d9f966a62ece",
+      "metadata": {
+        "title": "AI Chat settings — SinglePageStartup",
+        "description": "Account and workspace settings in AI Chat.",
+        "opengraphTitle": "AI Chat settings — SinglePageStartup",
+        "opengraphDescription": "Account and workspace settings in AI Chat.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "AI Chat settings — SinglePageStartup",
+        "twitterDescription": "Account and workspace settings in AI Chat.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/ai-chat/sign-in",
+      "language": "ru",
+      "cover": "ru-eaa32d5dbfa3",
+      "metadata": {
+        "title": "Вход в AI Chat — SinglePageStartup",
+        "description": "Вход в аккаунт для работы с проектами и документами AI Chat.",
+        "opengraphTitle": "Вход в AI Chat — SinglePageStartup",
+        "opengraphDescription": "Вход в аккаунт для работы с проектами и документами AI Chat.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Вход в AI Chat — SinglePageStartup",
+        "twitterDescription": "Вход в аккаунт для работы с проектами и документами AI Chat.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/ai-chat/sign-in",
+      "language": "en",
+      "cover": "en-eaa32d5dbfa3",
+      "metadata": {
+        "title": "Sign in to AI Chat — SinglePageStartup",
+        "description": "Sign in to work with AI Chat projects and documents.",
+        "opengraphTitle": "Sign in to AI Chat — SinglePageStartup",
+        "opengraphDescription": "Sign in to work with AI Chat projects and documents.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Sign in to AI Chat — SinglePageStartup",
+        "twitterDescription": "Sign in to work with AI Chat projects and documents.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/ai-chat/social/profiles/[social.profiles.id]/chats/[social.chats.id]/settings",
+      "language": "ru",
+      "cover": "ru-1e4ab5054d8f",
+      "metadata": {
+        "title": "Настройки проекта AI Chat — SinglePageStartup",
+        "description": "Настройки выбранного проекта AI Chat и его обсуждений.",
+        "opengraphTitle": "Настройки проекта AI Chat — SinglePageStartup",
+        "opengraphDescription": "Настройки выбранного проекта AI Chat и его обсуждений.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Настройки проекта AI Chat — SinglePageStartup",
+        "twitterDescription": "Настройки выбранного проекта AI Chat и его обсуждений.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/ai-chat/social/profiles/[social.profiles.id]/chats/[social.chats.id]/settings",
+      "language": "en",
+      "cover": "en-1e4ab5054d8f",
+      "metadata": {
+        "title": "AI Chat project settings — SinglePageStartup",
+        "description": "Settings for the selected AI Chat project and its conversations.",
+        "opengraphTitle": "AI Chat project settings — SinglePageStartup",
+        "opengraphDescription": "Settings for the selected AI Chat project and its conversations.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "AI Chat project settings — SinglePageStartup",
+        "twitterDescription": "Settings for the selected AI Chat project and its conversations.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/ai-chat/social/profiles/[social.profiles.id]/chats/[social.chats.id]/threads/[social.threads.id]",
+      "language": "ru",
+      "cover": "ru-f9a296a86a79",
+      "metadata": {
+        "title": "Рабочее пространство AI Chat — SinglePageStartup",
+        "description": "Обсуждение проекта, редактирование документов и работа с прикреплёнными материалами.",
+        "opengraphTitle": "Рабочее пространство AI Chat — SinglePageStartup",
+        "opengraphDescription": "Обсуждение проекта, редактирование документов и работа с прикреплёнными материалами.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Рабочее пространство AI Chat — SinglePageStartup",
+        "twitterDescription": "Обсуждение проекта, редактирование документов и работа с прикреплёнными материалами.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/ai-chat/social/profiles/[social.profiles.id]/chats/[social.chats.id]/threads/[social.threads.id]",
+      "language": "en",
+      "cover": "en-f9a296a86a79",
+      "metadata": {
+        "title": "AI Chat workspace — SinglePageStartup",
+        "description": "Discuss a project, edit documents and work with attached materials.",
+        "opengraphTitle": "AI Chat workspace — SinglePageStartup",
+        "opengraphDescription": "Discuss a project, edit documents and work with attached materials.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "AI Chat workspace — SinglePageStartup",
+        "twitterDescription": "Discuss a project, edit documents and work with attached materials.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/ai-chat/social/profiles/[social.profiles.id]/chats/[social.chats.id]/threads/create",
+      "language": "ru",
+      "cover": "ru-719b3dbafea4",
+      "metadata": {
+        "title": "Новое обсуждение AI Chat — SinglePageStartup",
+        "description": "Создание новой темы обсуждения в выбранном проекте AI Chat.",
+        "opengraphTitle": "Новое обсуждение AI Chat — SinglePageStartup",
+        "opengraphDescription": "Создание новой темы обсуждения в выбранном проекте AI Chat.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Новое обсуждение AI Chat — SinglePageStartup",
+        "twitterDescription": "Создание новой темы обсуждения в выбранном проекте AI Chat.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/ai-chat/social/profiles/[social.profiles.id]/chats/[social.chats.id]/threads/create",
+      "language": "en",
+      "cover": "en-719b3dbafea4",
+      "metadata": {
+        "title": "New AI Chat conversation — SinglePageStartup",
+        "description": "Create a new conversation thread in the selected AI Chat project.",
+        "opengraphTitle": "New AI Chat conversation — SinglePageStartup",
+        "opengraphDescription": "Create a new conversation thread in the selected AI Chat project.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "New AI Chat conversation — SinglePageStartup",
+        "twitterDescription": "Create a new conversation thread in the selected AI Chat project.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/authors",
+      "language": "ru",
+      "cover": "ru-e89ffc3a33a1",
+      "metadata": {
+        "title": "Авторы — SinglePageStartup",
+        "description": "Авторы SinglePageStartup: публичные профили, связанные статьи и проекты.",
+        "opengraphTitle": "Авторы — SinglePageStartup",
+        "opengraphDescription": "Авторы SinglePageStartup: публичные профили, связанные статьи и проекты.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Авторы — SinglePageStartup",
+        "twitterDescription": "Авторы SinglePageStartup: публичные профили, связанные статьи и проекты.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/authors",
+      "language": "en",
+      "cover": "en-e89ffc3a33a1",
+      "metadata": {
+        "title": "Authors — SinglePageStartup",
+        "description": "SinglePageStartup authors: public profiles, related articles and projects.",
+        "opengraphTitle": "Authors — SinglePageStartup",
+        "opengraphDescription": "SinglePageStartup authors: public profiles, related articles and projects.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Authors — SinglePageStartup",
+        "twitterDescription": "SinglePageStartup authors: public profiles, related articles and projects.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/authors/[social.profiles.id]",
+      "language": "ru",
+      "cover": "ru-45d6a0f551c7",
+      "metadata": {
+        "title": "[social.profiles.title] — SinglePageStartup",
+        "description": "[social.profiles.description]",
+        "opengraphTitle": "[social.profiles.title] — SinglePageStartup",
+        "opengraphDescription": "[social.profiles.description]",
+        "opengraphImage": "[social.profiles>social.profiles-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "[social.profiles.title] — SinglePageStartup",
+        "twitterDescription": "[social.profiles.description]",
+        "twitterImage": "[social.profiles>social.profiles-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/authors/[social.profiles.id]",
+      "language": "en",
+      "cover": "en-45d6a0f551c7",
+      "metadata": {
+        "title": "[social.profiles.title] — SinglePageStartup",
+        "description": "[social.profiles.description]",
+        "opengraphTitle": "[social.profiles.title] — SinglePageStartup",
+        "opengraphDescription": "[social.profiles.description]",
+        "opengraphImage": "[social.profiles>social.profiles-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "[social.profiles.title] — SinglePageStartup",
+        "twitterDescription": "[social.profiles.description]",
+        "twitterImage": "[social.profiles>social.profiles-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/blog",
+      "language": "ru",
+      "cover": "ru-8caafe4386f9",
+      "metadata": {
+        "title": "Блог SinglePageStartup",
+        "description": "Статьи о разработке, устройстве модулей Code Framework и создании цифровых продуктов.",
+        "opengraphTitle": "Блог SinglePageStartup",
+        "opengraphDescription": "Статьи о разработке, устройстве модулей Code Framework и создании цифровых продуктов.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Блог SinglePageStartup",
+        "twitterDescription": "Статьи о разработке, устройстве модулей Code Framework и создании цифровых продуктов.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/blog",
+      "language": "en",
+      "cover": "en-8caafe4386f9",
+      "metadata": {
+        "title": "SinglePageStartup blog",
+        "description": "Articles about development, Code Framework modules and building digital products.",
+        "opengraphTitle": "SinglePageStartup blog",
+        "opengraphDescription": "Articles about development, Code Framework modules and building digital products.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "SinglePageStartup blog",
+        "twitterDescription": "Articles about development, Code Framework modules and building digital products.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/blog/articles/[blog.articles.slug]",
+      "language": "ru",
+      "cover": "ru-8464a8af110b",
+      "metadata": {
+        "title": "[blog.articles.title] — SinglePageStartup",
+        "description": "[blog.articles.description]",
+        "opengraphTitle": "[blog.articles.title] — SinglePageStartup",
+        "opengraphDescription": "[blog.articles.description]",
+        "opengraphImage": "[blog.articles>blog.articles-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "article",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "[blog.articles.title] — SinglePageStartup",
+        "twitterDescription": "[blog.articles.description]",
+        "twitterImage": "[blog.articles>blog.articles-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/blog/articles/[blog.articles.slug]",
+      "language": "en",
+      "cover": "en-8464a8af110b",
+      "metadata": {
+        "title": "[blog.articles.title] — SinglePageStartup",
+        "description": "[blog.articles.description]",
+        "opengraphTitle": "[blog.articles.title] — SinglePageStartup",
+        "opengraphDescription": "[blog.articles.description]",
+        "opengraphImage": "[blog.articles>blog.articles-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "article",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "[blog.articles.title] — SinglePageStartup",
+        "twitterDescription": "[blog.articles.description]",
+        "twitterImage": "[blog.articles>blog.articles-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/blog/categories/[blog.categories.slug]",
+      "language": "ru",
+      "cover": "ru-9e52b0b57c82",
+      "metadata": {
+        "title": "[blog.categories.title] — SinglePageStartup",
+        "description": "[blog.categories.description]",
+        "opengraphTitle": "[blog.categories.title] — SinglePageStartup",
+        "opengraphDescription": "[blog.categories.description]",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "[blog.categories.title] — SinglePageStartup",
+        "twitterDescription": "[blog.categories.description]",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/blog/categories/[blog.categories.slug]",
+      "language": "en",
+      "cover": "en-9e52b0b57c82",
+      "metadata": {
+        "title": "[blog.categories.title] — SinglePageStartup",
+        "description": "[blog.categories.description]",
+        "opengraphTitle": "[blog.categories.title] — SinglePageStartup",
+        "opengraphDescription": "[blog.categories.description]",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "[blog.categories.title] — SinglePageStartup",
+        "twitterDescription": "[blog.categories.description]",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/blog/new",
+      "language": "ru",
+      "cover": "ru-bb0f90776f11",
+      "metadata": {
+        "title": "Новая статья — SinglePageStartup",
+        "description": "Подготовка и редактирование новой статьи в SinglePageStartup.",
+        "opengraphTitle": "Новая статья — SinglePageStartup",
+        "opengraphDescription": "Подготовка и редактирование новой статьи в SinglePageStartup.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Новая статья — SinglePageStartup",
+        "twitterDescription": "Подготовка и редактирование новой статьи в SinglePageStartup.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/blog/new",
+      "language": "en",
+      "cover": "en-bb0f90776f11",
+      "metadata": {
+        "title": "Create an article — SinglePageStartup",
+        "description": "Prepare and edit a new article in SinglePageStartup.",
+        "opengraphTitle": "Create an article — SinglePageStartup",
+        "opengraphDescription": "Prepare and edit a new article in SinglePageStartup.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Create an article — SinglePageStartup",
+        "twitterDescription": "Prepare and edit a new article in SinglePageStartup.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/ecommerce",
+      "language": "ru",
+      "cover": "ru-3fc04847d95e",
+      "metadata": {
+        "title": "Каталог продуктов — SinglePageStartup",
+        "description": "Изучите продукты SinglePageStartup, их описание и доступные варианты в каталоге.",
+        "opengraphTitle": "Каталог продуктов — SinglePageStartup",
+        "opengraphDescription": "Изучите продукты SinglePageStartup, их описание и доступные варианты в каталоге.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Каталог продуктов — SinglePageStartup",
+        "twitterDescription": "Изучите продукты SinglePageStartup, их описание и доступные варианты в каталоге.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/ecommerce",
+      "language": "en",
+      "cover": "en-3fc04847d95e",
+      "metadata": {
+        "title": "Product catalog — SinglePageStartup",
+        "description": "Explore SinglePageStartup products, their descriptions and available catalog options.",
+        "opengraphTitle": "Product catalog — SinglePageStartup",
+        "opengraphDescription": "Explore SinglePageStartup products, their descriptions and available catalog options.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Product catalog — SinglePageStartup",
+        "twitterDescription": "Explore SinglePageStartup products, their descriptions and available catalog options.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/ecommerce/categories/[ecommerce.categories.slug]",
+      "language": "ru",
+      "cover": "ru-721e1fd1779d",
+      "metadata": {
+        "title": "[ecommerce.categories.title] — SinglePageStartup",
+        "description": "[ecommerce.categories.description]",
+        "opengraphTitle": "[ecommerce.categories.title] — SinglePageStartup",
+        "opengraphDescription": "[ecommerce.categories.description]",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "[ecommerce.categories.title] — SinglePageStartup",
+        "twitterDescription": "[ecommerce.categories.description]",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/ecommerce/categories/[ecommerce.categories.slug]",
+      "language": "en",
+      "cover": "en-721e1fd1779d",
+      "metadata": {
+        "title": "[ecommerce.categories.title] — SinglePageStartup",
+        "description": "[ecommerce.categories.description]",
+        "opengraphTitle": "[ecommerce.categories.title] — SinglePageStartup",
+        "opengraphDescription": "[ecommerce.categories.description]",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "[ecommerce.categories.title] — SinglePageStartup",
+        "twitterDescription": "[ecommerce.categories.description]",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/ecommerce/products/[ecommerce.products.slug]",
+      "language": "ru",
+      "cover": "ru-33dc76d7d7ca",
+      "metadata": {
+        "title": "[ecommerce.products.title] — SinglePageStartup",
+        "description": "[ecommerce.products.shortDescription]",
+        "opengraphTitle": "[ecommerce.products.title] — SinglePageStartup",
+        "opengraphDescription": "[ecommerce.products.shortDescription]",
+        "opengraphImage": "[ecommerce.products>ecommerce.products-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "[ecommerce.products.title] — SinglePageStartup",
+        "twitterDescription": "[ecommerce.products.shortDescription]",
+        "twitterImage": "[ecommerce.products>ecommerce.products-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/ecommerce/products/[ecommerce.products.slug]",
+      "language": "en",
+      "cover": "en-33dc76d7d7ca",
+      "metadata": {
+        "title": "[ecommerce.products.title] — SinglePageStartup",
+        "description": "[ecommerce.products.shortDescription]",
+        "opengraphTitle": "[ecommerce.products.title] — SinglePageStartup",
+        "opengraphDescription": "[ecommerce.products.shortDescription]",
+        "opengraphImage": "[ecommerce.products>ecommerce.products-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "[ecommerce.products.title] — SinglePageStartup",
+        "twitterDescription": "[ecommerce.products.shortDescription]",
+        "twitterImage": "[ecommerce.products>ecommerce.products-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/ecommerce/stores/[ecommerce.stores.slug]",
+      "language": "ru",
+      "cover": "ru-d01031085c59",
+      "metadata": {
+        "title": "Магазин — SinglePageStartup",
+        "description": "Каталог и описание выбранного магазина SinglePageStartup.",
+        "opengraphTitle": "Магазин — SinglePageStartup",
+        "opengraphDescription": "Каталог и описание выбранного магазина SinglePageStartup.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Магазин — SinglePageStartup",
+        "twitterDescription": "Каталог и описание выбранного магазина SinglePageStartup.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/ecommerce/stores/[ecommerce.stores.slug]",
+      "language": "en",
+      "cover": "en-d01031085c59",
+      "metadata": {
+        "title": "Store — SinglePageStartup",
+        "description": "Catalog and details of the selected SinglePageStartup store.",
+        "opengraphTitle": "Store — SinglePageStartup",
+        "opengraphDescription": "Catalog and details of the selected SinglePageStartup store.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Store — SinglePageStartup",
+        "twitterDescription": "Catalog and details of the selected SinglePageStartup store.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework",
+      "language": "ru",
+      "cover": "ru-5666c73030c1",
+      "metadata": {
+        "title": "Code Framework — SinglePageStartup",
+        "description": "Открытый модульный фреймворк для сайтов, магазинов и веб-сервисов. Изучите устройство, модули и примеры интерфейсов.",
+        "opengraphTitle": "Code Framework — SinglePageStartup",
+        "opengraphDescription": "Открытый модульный фреймворк для сайтов, магазинов и веб-сервисов. Изучите устройство, модули и примеры интерфейсов.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Code Framework — SinglePageStartup",
+        "twitterDescription": "Открытый модульный фреймворк для сайтов, магазинов и веб-сервисов. Изучите устройство, модули и примеры интерфейсов.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework",
+      "language": "en",
+      "cover": "en-5666c73030c1",
+      "metadata": {
+        "title": "Code Framework — SinglePageStartup",
+        "description": "An open modular framework for websites, stores and web services. Explore its structure, modules and interface examples.",
+        "opengraphTitle": "Code Framework — SinglePageStartup",
+        "opengraphDescription": "An open modular framework for websites, stores and web services. Explore its structure, modules and interface examples.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Code Framework — SinglePageStartup",
+        "twitterDescription": "An open modular framework for websites, stores and web services. Explore its structure, modules and interface examples.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework/blog/articles/[blog.articles.slug]",
+      "language": "ru",
+      "cover": "ru-c9690858acc9",
+      "metadata": {
+        "title": "[blog.articles.title] — SinglePageStartup",
+        "description": "[blog.articles.description]",
+        "opengraphTitle": "[blog.articles.title] — SinglePageStartup",
+        "opengraphDescription": "[blog.articles.description]",
+        "opengraphImage": "[blog.articles>blog.articles-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "article",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "[blog.articles.title] — SinglePageStartup",
+        "twitterDescription": "[blog.articles.description]",
+        "twitterImage": "[blog.articles>blog.articles-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework/blog/articles/[blog.articles.slug]",
+      "language": "en",
+      "cover": "en-c9690858acc9",
+      "metadata": {
+        "title": "[blog.articles.title] — SinglePageStartup",
+        "description": "[blog.articles.description]",
+        "opengraphTitle": "[blog.articles.title] — SinglePageStartup",
+        "opengraphDescription": "[blog.articles.description]",
+        "opengraphImage": "[blog.articles>blog.articles-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "article",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "[blog.articles.title] — SinglePageStartup",
+        "twitterDescription": "[blog.articles.description]",
+        "twitterImage": "[blog.articles>blog.articles-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework/modules",
+      "language": "ru",
+      "cover": "ru-e0de8f945d69",
+      "metadata": {
+        "title": "Модули Code Framework — SinglePageStartup",
+        "description": "Обзор пятнадцати модулей SinglePageStartup: назначение, модели, связи и примеры использования.",
+        "opengraphTitle": "Модули Code Framework — SinglePageStartup",
+        "opengraphDescription": "Обзор пятнадцати модулей SinglePageStartup: назначение, модели, связи и примеры использования.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Модули Code Framework — SinglePageStartup",
+        "twitterDescription": "Обзор пятнадцати модулей SinglePageStartup: назначение, модели, связи и примеры использования.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework/modules",
+      "language": "en",
+      "cover": "en-e0de8f945d69",
+      "metadata": {
+        "title": "Code Framework modules — SinglePageStartup",
+        "description": "Explore the fifteen SinglePageStartup modules, their responsibilities, models, relations and examples.",
+        "opengraphTitle": "Code Framework modules — SinglePageStartup",
+        "opengraphDescription": "Explore the fifteen SinglePageStartup modules, their responsibilities, models, relations and examples.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Code Framework modules — SinglePageStartup",
+        "twitterDescription": "Explore the fifteen SinglePageStartup modules, their responsibilities, models, relations and examples.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework/modules/agent",
+      "language": "ru",
+      "cover": "ru-ea7eb3e205b2",
+      "metadata": {
+        "title": "Agent · Code Framework — SinglePageStartup",
+        "description": "Описание агентов, управление задачами и команды обсуждений.",
+        "opengraphTitle": "Agent · Code Framework — SinglePageStartup",
+        "opengraphDescription": "Описание агентов, управление задачами и команды обсуждений.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Agent · Code Framework — SinglePageStartup",
+        "twitterDescription": "Описание агентов, управление задачами и команды обсуждений.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework/modules/agent",
+      "language": "en",
+      "cover": "en-ea7eb3e205b2",
+      "metadata": {
+        "title": "Agent · Code Framework — SinglePageStartup",
+        "description": "Agent definitions, task orchestration and conversation commands.",
+        "opengraphTitle": "Agent · Code Framework — SinglePageStartup",
+        "opengraphDescription": "Agent definitions, task orchestration and conversation commands.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Agent · Code Framework — SinglePageStartup",
+        "twitterDescription": "Agent definitions, task orchestration and conversation commands.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework/modules/analytic",
+      "language": "ru",
+      "cover": "ru-4f847c34c22a",
+      "metadata": {
+        "title": "Analytic · Code Framework — SinglePageStartup",
+        "description": "Записи показателей и виджеты для представления их значений.",
+        "opengraphTitle": "Analytic · Code Framework — SinglePageStartup",
+        "opengraphDescription": "Записи показателей и виджеты для представления их значений.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Analytic · Code Framework — SinglePageStartup",
+        "twitterDescription": "Записи показателей и виджеты для представления их значений.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework/modules/analytic",
+      "language": "en",
+      "cover": "en-4f847c34c22a",
+      "metadata": {
+        "title": "Analytic · Code Framework — SinglePageStartup",
+        "description": "Metric records and widgets for presenting their values.",
+        "opengraphTitle": "Analytic · Code Framework — SinglePageStartup",
+        "opengraphDescription": "Metric records and widgets for presenting their values.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Analytic · Code Framework — SinglePageStartup",
+        "twitterDescription": "Metric records and widgets for presenting their values.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework/modules/billing",
+      "language": "ru",
+      "cover": "ru-2112d4254abf",
+      "metadata": {
+        "title": "Billing · Code Framework — SinglePageStartup",
+        "description": "Валюты, платёжные намерения, счета и состояние платёжных провайдеров.",
+        "opengraphTitle": "Billing · Code Framework — SinglePageStartup",
+        "opengraphDescription": "Валюты, платёжные намерения, счета и состояние платёжных провайдеров.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Billing · Code Framework — SinglePageStartup",
+        "twitterDescription": "Валюты, платёжные намерения, счета и состояние платёжных провайдеров.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework/modules/billing",
+      "language": "en",
+      "cover": "en-2112d4254abf",
+      "metadata": {
+        "title": "Billing · Code Framework — SinglePageStartup",
+        "description": "Currencies, payment intents, invoices and payment-provider state.",
+        "opengraphTitle": "Billing · Code Framework — SinglePageStartup",
+        "opengraphDescription": "Currencies, payment intents, invoices and payment-provider state.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Billing · Code Framework — SinglePageStartup",
+        "twitterDescription": "Currencies, payment intents, invoices and payment-provider state.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework/modules/blog",
+      "language": "ru",
+      "cover": "ru-e856ed4b9f4e",
+      "metadata": {
+        "title": "Blog · Code Framework — SinglePageStartup",
+        "description": "Статьи, категории, обложки и блоки содержимого для публикаций.",
+        "opengraphTitle": "Blog · Code Framework — SinglePageStartup",
+        "opengraphDescription": "Статьи, категории, обложки и блоки содержимого для публикаций.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Blog · Code Framework — SinglePageStartup",
+        "twitterDescription": "Статьи, категории, обложки и блоки содержимого для публикаций.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework/modules/blog",
+      "language": "en",
+      "cover": "en-e856ed4b9f4e",
+      "metadata": {
+        "title": "Blog · Code Framework — SinglePageStartup",
+        "description": "Articles, categories, covers and content blocks for searchable explanations.",
+        "opengraphTitle": "Blog · Code Framework — SinglePageStartup",
+        "opengraphDescription": "Articles, categories, covers and content blocks for searchable explanations.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Blog · Code Framework — SinglePageStartup",
+        "twitterDescription": "Articles, categories, covers and content blocks for searchable explanations.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework/modules/broadcast",
+      "language": "ru",
+      "cover": "ru-be8c32f4c733",
+      "metadata": {
+        "title": "Broadcast · Code Framework — SinglePageStartup",
+        "description": "Каналы и сообщения для доставки в реальном времени или через очередь.",
+        "opengraphTitle": "Broadcast · Code Framework — SinglePageStartup",
+        "opengraphDescription": "Каналы и сообщения для доставки в реальном времени или через очередь.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Broadcast · Code Framework — SinglePageStartup",
+        "twitterDescription": "Каналы и сообщения для доставки в реальном времени или через очередь.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework/modules/broadcast",
+      "language": "en",
+      "cover": "en-be8c32f4c733",
+      "metadata": {
+        "title": "Broadcast · Code Framework — SinglePageStartup",
+        "description": "Channels and messages for realtime or queued delivery.",
+        "opengraphTitle": "Broadcast · Code Framework — SinglePageStartup",
+        "opengraphDescription": "Channels and messages for realtime or queued delivery.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Broadcast · Code Framework — SinglePageStartup",
+        "twitterDescription": "Channels and messages for realtime or queued delivery.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework/modules/crm",
+      "language": "ru",
+      "cover": "ru-61564cbb82ec",
+      "metadata": {
+        "title": "CRM · Code Framework — SinglePageStartup",
+        "description": "Формы, шаги, поля и сохранённые обращения клиентов.",
+        "opengraphTitle": "CRM · Code Framework — SinglePageStartup",
+        "opengraphDescription": "Формы, шаги, поля и сохранённые обращения клиентов.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "CRM · Code Framework — SinglePageStartup",
+        "twitterDescription": "Формы, шаги, поля и сохранённые обращения клиентов.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework/modules/crm",
+      "language": "en",
+      "cover": "en-61564cbb82ec",
+      "metadata": {
+        "title": "CRM · Code Framework — SinglePageStartup",
+        "description": "Forms, steps, fields and saved contact requests.",
+        "opengraphTitle": "CRM · Code Framework — SinglePageStartup",
+        "opengraphDescription": "Forms, steps, fields and saved contact requests.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "CRM · Code Framework — SinglePageStartup",
+        "twitterDescription": "Forms, steps, fields and saved contact requests.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework/modules/ecommerce",
+      "language": "ru",
+      "cover": "ru-5895624a6011",
+      "metadata": {
+        "title": "Ecommerce · Code Framework — SinglePageStartup",
+        "description": "Продукты, атрибуты, категории, корзины и заказы.",
+        "opengraphTitle": "Ecommerce · Code Framework — SinglePageStartup",
+        "opengraphDescription": "Продукты, атрибуты, категории, корзины и заказы.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Ecommerce · Code Framework — SinglePageStartup",
+        "twitterDescription": "Продукты, атрибуты, категории, корзины и заказы.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework/modules/ecommerce",
+      "language": "en",
+      "cover": "en-5895624a6011",
+      "metadata": {
+        "title": "Ecommerce · Code Framework — SinglePageStartup",
+        "description": "Products, attributes, categories, carts and orders.",
+        "opengraphTitle": "Ecommerce · Code Framework — SinglePageStartup",
+        "opengraphDescription": "Products, attributes, categories, carts and orders.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Ecommerce · Code Framework — SinglePageStartup",
+        "twitterDescription": "Products, attributes, categories, carts and orders.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework/modules/file-storage",
+      "language": "ru",
+      "cover": "ru-a08409df83e0",
+      "metadata": {
+        "title": "File Storage · Code Framework — SinglePageStartup",
+        "description": "Метаданные файлов, хранение оригиналов и представление медиа.",
+        "opengraphTitle": "File Storage · Code Framework — SinglePageStartup",
+        "opengraphDescription": "Метаданные файлов, хранение оригиналов и представление медиа.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "File Storage · Code Framework — SinglePageStartup",
+        "twitterDescription": "Метаданные файлов, хранение оригиналов и представление медиа.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework/modules/file-storage",
+      "language": "en",
+      "cover": "en-a08409df83e0",
+      "metadata": {
+        "title": "File Storage · Code Framework — SinglePageStartup",
+        "description": "Stored file metadata, original bytes and media presentation.",
+        "opengraphTitle": "File Storage · Code Framework — SinglePageStartup",
+        "opengraphDescription": "Stored file metadata, original bytes and media presentation.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "File Storage · Code Framework — SinglePageStartup",
+        "twitterDescription": "Stored file metadata, original bytes and media presentation.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework/modules/host",
+      "language": "ru",
+      "cover": "ru-dc0995971403",
+      "metadata": {
+        "title": "Host · Code Framework — SinglePageStartup",
+        "description": "Страницы, макеты, метаданные и конкретные экземпляры виджетов, из которых собирается сайт.",
+        "opengraphTitle": "Host · Code Framework — SinglePageStartup",
+        "opengraphDescription": "Страницы, макеты, метаданные и конкретные экземпляры виджетов, из которых собирается сайт.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Host · Code Framework — SinglePageStartup",
+        "twitterDescription": "Страницы, макеты, метаданные и конкретные экземпляры виджетов, из которых собирается сайт.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework/modules/host",
+      "language": "en",
+      "cover": "en-dc0995971403",
+      "metadata": {
+        "title": "Host · Code Framework — SinglePageStartup",
+        "description": "Pages, layouts, metadata and the exact Widget instances that make a page.",
+        "opengraphTitle": "Host · Code Framework — SinglePageStartup",
+        "opengraphDescription": "Pages, layouts, metadata and the exact Widget instances that make a page.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Host · Code Framework — SinglePageStartup",
+        "twitterDescription": "Pages, layouts, metadata and the exact Widget instances that make a page.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework/modules/knowledge",
+      "language": "ru",
+      "cover": "ru-bd5ab93828c5",
+      "metadata": {
+        "title": "Knowledge · Code Framework — SinglePageStartup",
+        "description": "Редактируемые источники, прикреплённые файлы и производные фрагменты для поиска.",
+        "opengraphTitle": "Knowledge · Code Framework — SinglePageStartup",
+        "opengraphDescription": "Редактируемые источники, прикреплённые файлы и производные фрагменты для поиска.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Knowledge · Code Framework — SinglePageStartup",
+        "twitterDescription": "Редактируемые источники, прикреплённые файлы и производные фрагменты для поиска.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework/modules/knowledge",
+      "language": "en",
+      "cover": "en-bd5ab93828c5",
+      "metadata": {
+        "title": "Knowledge · Code Framework — SinglePageStartup",
+        "description": "Editable Sources, their attached Files and derived Chunks for scoped retrieval.",
+        "opengraphTitle": "Knowledge · Code Framework — SinglePageStartup",
+        "opengraphDescription": "Editable Sources, their attached Files and derived Chunks for scoped retrieval.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Knowledge · Code Framework — SinglePageStartup",
+        "twitterDescription": "Editable Sources, their attached Files and derived Chunks for scoped retrieval.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework/modules/notification",
+      "language": "ru",
+      "cover": "ru-a0d471152726",
+      "metadata": {
+        "title": "Notification · Code Framework — SinglePageStartup",
+        "description": "Записи доставки, шаблоны и темы уведомлений.",
+        "opengraphTitle": "Notification · Code Framework — SinglePageStartup",
+        "opengraphDescription": "Записи доставки, шаблоны и темы уведомлений.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Notification · Code Framework — SinglePageStartup",
+        "twitterDescription": "Записи доставки, шаблоны и темы уведомлений.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework/modules/notification",
+      "language": "en",
+      "cover": "en-a0d471152726",
+      "metadata": {
+        "title": "Notification · Code Framework — SinglePageStartup",
+        "description": "Delivery records, templates and notification topics.",
+        "opengraphTitle": "Notification · Code Framework — SinglePageStartup",
+        "opengraphDescription": "Delivery records, templates and notification topics.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Notification · Code Framework — SinglePageStartup",
+        "twitterDescription": "Delivery records, templates and notification topics.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework/modules/rbac",
+      "language": "ru",
+      "cover": "ru-8f02a82d32bf",
+      "metadata": {
+        "title": "RBAC · Code Framework — SinglePageStartup",
+        "description": "Аккаунты, вход, роли и операции текущего пользователя с проверкой прав доступа.",
+        "opengraphTitle": "RBAC · Code Framework — SinglePageStartup",
+        "opengraphDescription": "Аккаунты, вход, роли и операции текущего пользователя с проверкой прав доступа.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "RBAC · Code Framework — SinglePageStartup",
+        "twitterDescription": "Аккаунты, вход, роли и операции текущего пользователя с проверкой прав доступа.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework/modules/rbac",
+      "language": "en",
+      "cover": "en-8f02a82d32bf",
+      "metadata": {
+        "title": "RBAC · Code Framework — SinglePageStartup",
+        "description": "Accounts, authentication, roles and current-user operations with access scope.",
+        "opengraphTitle": "RBAC · Code Framework — SinglePageStartup",
+        "opengraphDescription": "Accounts, authentication, roles and current-user operations with access scope.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "RBAC · Code Framework — SinglePageStartup",
+        "twitterDescription": "Accounts, authentication, roles and current-user operations with access scope.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework/modules/social",
+      "language": "ru",
+      "cover": "ru-284982465a8d",
+      "metadata": {
+        "title": "Social · Code Framework — SinglePageStartup",
+        "description": "Профили, связи авторов, чаты, темы и сообщения.",
+        "opengraphTitle": "Social · Code Framework — SinglePageStartup",
+        "opengraphDescription": "Профили, связи авторов, чаты, темы и сообщения.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Social · Code Framework — SinglePageStartup",
+        "twitterDescription": "Профили, связи авторов, чаты, темы и сообщения.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework/modules/social",
+      "language": "en",
+      "cover": "en-284982465a8d",
+      "metadata": {
+        "title": "Social · Code Framework — SinglePageStartup",
+        "description": "Profiles, authorship, chats, threads, messages and their associations.",
+        "opengraphTitle": "Social · Code Framework — SinglePageStartup",
+        "opengraphDescription": "Profiles, authorship, chats, threads, messages and their associations.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Social · Code Framework — SinglePageStartup",
+        "twitterDescription": "Profiles, authorship, chats, threads, messages and their associations.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework/modules/startup",
+      "language": "ru",
+      "cover": "ru-d6d5d528d36d",
+      "metadata": {
+        "title": "Startup · Code Framework — SinglePageStartup",
+        "description": "Виджеты проекта для продукта, создаваемого на основе фреймворка.",
+        "opengraphTitle": "Startup · Code Framework — SinglePageStartup",
+        "opengraphDescription": "Виджеты проекта для продукта, создаваемого на основе фреймворка.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Startup · Code Framework — SinglePageStartup",
+        "twitterDescription": "Виджеты проекта для продукта, создаваемого на основе фреймворка.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework/modules/startup",
+      "language": "en",
+      "cover": "en-d6d5d528d36d",
+      "metadata": {
+        "title": "Startup · Code Framework — SinglePageStartup",
+        "description": "Project-specific widgets for the product you build on this foundation.",
+        "opengraphTitle": "Startup · Code Framework — SinglePageStartup",
+        "opengraphDescription": "Project-specific widgets for the product you build on this foundation.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Startup · Code Framework — SinglePageStartup",
+        "twitterDescription": "Project-specific widgets for the product you build on this foundation.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework/modules/website-builder",
+      "language": "ru",
+      "cover": "ru-a01ccb1b69a2",
+      "metadata": {
+        "title": "Website Builder · Code Framework — SinglePageStartup",
+        "description": "Редактируемые тексты, медиа, навигация и оформление с местами для функционального содержимого.",
+        "opengraphTitle": "Website Builder · Code Framework — SinglePageStartup",
+        "opengraphDescription": "Редактируемые тексты, медиа, навигация и оформление с местами для функционального содержимого.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Website Builder · Code Framework — SinglePageStartup",
+        "twitterDescription": "Редактируемые тексты, медиа, навигация и оформление с местами для функционального содержимого.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/framework/modules/website-builder",
+      "language": "en",
+      "cover": "en-a01ccb1b69a2",
+      "metadata": {
+        "title": "Website Builder · Code Framework — SinglePageStartup",
+        "description": "Editable copy, media, navigation and presentation sections with slots for domain content.",
+        "opengraphTitle": "Website Builder · Code Framework — SinglePageStartup",
+        "opengraphDescription": "Editable copy, media, navigation and presentation sections with slots for domain content.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Website Builder · Code Framework — SinglePageStartup",
+        "twitterDescription": "Editable copy, media, navigation and presentation sections with slots for domain content.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/rbac/subject/authentication/email-and-password/forgot-password",
+      "language": "ru",
+      "cover": "ru-d61fd9d3c703",
+      "metadata": {
+        "title": "Восстановление пароля — SinglePageStartup",
+        "description": "Запрос восстановления пароля аккаунта SinglePageStartup.",
+        "opengraphTitle": "Восстановление пароля — SinglePageStartup",
+        "opengraphDescription": "Запрос восстановления пароля аккаунта SinglePageStartup.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Восстановление пароля — SinglePageStartup",
+        "twitterDescription": "Запрос восстановления пароля аккаунта SinglePageStartup.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/rbac/subject/authentication/email-and-password/forgot-password",
+      "language": "en",
+      "cover": "en-d61fd9d3c703",
+      "metadata": {
+        "title": "Recover password — SinglePageStartup",
+        "description": "Request password recovery for a SinglePageStartup account.",
+        "opengraphTitle": "Recover password — SinglePageStartup",
+        "opengraphDescription": "Request password recovery for a SinglePageStartup account.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Recover password — SinglePageStartup",
+        "twitterDescription": "Request password recovery for a SinglePageStartup account.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/rbac/subject/authentication/email-and-password/registration",
+      "language": "ru",
+      "cover": "ru-c40f09e4522f",
+      "metadata": {
+        "title": "Регистрация аккаунта — SinglePageStartup",
+        "description": "Создание аккаунта SinglePageStartup по электронной почте и паролю.",
+        "opengraphTitle": "Регистрация аккаунта — SinglePageStartup",
+        "opengraphDescription": "Создание аккаунта SinglePageStartup по электронной почте и паролю.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Регистрация аккаунта — SinglePageStartup",
+        "twitterDescription": "Создание аккаунта SinglePageStartup по электронной почте и паролю.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/rbac/subject/authentication/email-and-password/registration",
+      "language": "en",
+      "cover": "en-c40f09e4522f",
+      "metadata": {
+        "title": "Register an account — SinglePageStartup",
+        "description": "Create a SinglePageStartup account with email and password.",
+        "opengraphTitle": "Register an account — SinglePageStartup",
+        "opengraphDescription": "Create a SinglePageStartup account with email and password.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Register an account — SinglePageStartup",
+        "twitterDescription": "Create a SinglePageStartup account with email and password.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/rbac/subject/authentication/email-and-password/reset-password",
+      "language": "ru",
+      "cover": "ru-0889b4d6bfc9",
+      "metadata": {
+        "title": "Установка пароля — SinglePageStartup",
+        "description": "Установка пароля аккаунта SinglePageStartup по ссылке восстановления.",
+        "opengraphTitle": "Установка пароля — SinglePageStartup",
+        "opengraphDescription": "Установка пароля аккаунта SinglePageStartup по ссылке восстановления.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Установка пароля — SinglePageStartup",
+        "twitterDescription": "Установка пароля аккаунта SinglePageStartup по ссылке восстановления.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/rbac/subject/authentication/email-and-password/reset-password",
+      "language": "en",
+      "cover": "en-0889b4d6bfc9",
+      "metadata": {
+        "title": "Set a password — SinglePageStartup",
+        "description": "Set a SinglePageStartup account password using a recovery link.",
+        "opengraphTitle": "Set a password — SinglePageStartup",
+        "opengraphDescription": "Set a SinglePageStartup account password using a recovery link.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Set a password — SinglePageStartup",
+        "twitterDescription": "Set a SinglePageStartup account password using a recovery link.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/rbac/subject/authentication/logout",
+      "language": "ru",
+      "cover": "ru-b5566c455639",
+      "metadata": {
+        "title": "Выход из аккаунта — SinglePageStartup",
+        "description": "Завершение текущей сессии аккаунта SinglePageStartup.",
+        "opengraphTitle": "Выход из аккаунта — SinglePageStartup",
+        "opengraphDescription": "Завершение текущей сессии аккаунта SinglePageStartup.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Выход из аккаунта — SinglePageStartup",
+        "twitterDescription": "Завершение текущей сессии аккаунта SinglePageStartup.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/rbac/subject/authentication/logout",
+      "language": "en",
+      "cover": "en-b5566c455639",
+      "metadata": {
+        "title": "Sign out — SinglePageStartup",
+        "description": "End the current SinglePageStartup account session.",
+        "opengraphTitle": "Sign out — SinglePageStartup",
+        "opengraphDescription": "End the current SinglePageStartup account session.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Sign out — SinglePageStartup",
+        "twitterDescription": "End the current SinglePageStartup account session.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/rbac/subject/authentication/select-method",
+      "language": "ru",
+      "cover": "ru-5b86293eef17",
+      "metadata": {
+        "title": "Способ входа — SinglePageStartup",
+        "description": "Выбор доступного способа входа в аккаунт SinglePageStartup.",
+        "opengraphTitle": "Способ входа — SinglePageStartup",
+        "opengraphDescription": "Выбор доступного способа входа в аккаунт SinglePageStartup.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Способ входа — SinglePageStartup",
+        "twitterDescription": "Выбор доступного способа входа в аккаунт SinglePageStartup.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/rbac/subject/authentication/select-method",
+      "language": "en",
+      "cover": "en-5b86293eef17",
+      "metadata": {
+        "title": "Choose a sign-in method — SinglePageStartup",
+        "description": "Choose an available method to sign in to a SinglePageStartup account.",
+        "opengraphTitle": "Choose a sign-in method — SinglePageStartup",
+        "opengraphDescription": "Choose an available method to sign in to a SinglePageStartup account.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Choose a sign-in method — SinglePageStartup",
+        "twitterDescription": "Choose an available method to sign in to a SinglePageStartup account.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/rbac/subjects/settings",
+      "language": "ru",
+      "cover": "ru-e918bca41b8a",
+      "metadata": {
+        "title": "Настройки аккаунта — SinglePageStartup",
+        "description": "Параметры текущего аккаунта SinglePageStartup.",
+        "opengraphTitle": "Настройки аккаунта — SinglePageStartup",
+        "opengraphDescription": "Параметры текущего аккаунта SinglePageStartup.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Настройки аккаунта — SinglePageStartup",
+        "twitterDescription": "Параметры текущего аккаунта SinglePageStartup.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/rbac/subjects/settings",
+      "language": "en",
+      "cover": "en-e918bca41b8a",
+      "metadata": {
+        "title": "Account settings — SinglePageStartup",
+        "description": "Settings of the current SinglePageStartup account.",
+        "opengraphTitle": "Account settings — SinglePageStartup",
+        "opengraphDescription": "Settings of the current SinglePageStartup account.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Account settings — SinglePageStartup",
+        "twitterDescription": "Settings of the current SinglePageStartup account.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/social/chats",
+      "language": "ru",
+      "cover": "ru-8d537344d59e",
+      "metadata": {
+        "title": "Обсуждения — SinglePageStartup",
+        "description": "Доступные пользователю обсуждения и переписка проекта.",
+        "opengraphTitle": "Обсуждения — SinglePageStartup",
+        "opengraphDescription": "Доступные пользователю обсуждения и переписка проекта.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Обсуждения — SinglePageStartup",
+        "twitterDescription": "Доступные пользователю обсуждения и переписка проекта.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/social/chats",
+      "language": "en",
+      "cover": "en-8d537344d59e",
+      "metadata": {
+        "title": "Conversations — SinglePageStartup",
+        "description": "Project conversations available to the current user.",
+        "opengraphTitle": "Conversations — SinglePageStartup",
+        "opengraphDescription": "Project conversations available to the current user.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Conversations — SinglePageStartup",
+        "twitterDescription": "Project conversations available to the current user.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/social/chats/[social.chats.id]",
+      "language": "ru",
+      "cover": "ru-c98fe3745235",
+      "metadata": {
+        "title": "Обсуждение проекта — SinglePageStartup",
+        "description": "Сообщения и темы выбранного обсуждения с учётом прав доступа.",
+        "opengraphTitle": "Обсуждение проекта — SinglePageStartup",
+        "opengraphDescription": "Сообщения и темы выбранного обсуждения с учётом прав доступа.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Обсуждение проекта — SinglePageStartup",
+        "twitterDescription": "Сообщения и темы выбранного обсуждения с учётом прав доступа.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/social/chats/[social.chats.id]",
+      "language": "en",
+      "cover": "en-c98fe3745235",
+      "metadata": {
+        "title": "Project conversation — SinglePageStartup",
+        "description": "Messages and topics in the selected conversation, subject to access permissions.",
+        "opengraphTitle": "Project conversation — SinglePageStartup",
+        "opengraphDescription": "Messages and topics in the selected conversation, subject to access permissions.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Project conversation — SinglePageStartup",
+        "twitterDescription": "Messages and topics in the selected conversation, subject to access permissions.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/social/chats/[social.chats.id]/threads/[social.threads.id]",
+      "language": "ru",
+      "cover": "ru-74768a5a3931",
+      "metadata": {
+        "title": "Тема обсуждения — SinglePageStartup",
+        "description": "Сообщения выбранной темы в обсуждении проекта.",
+        "opengraphTitle": "Тема обсуждения — SinglePageStartup",
+        "opengraphDescription": "Сообщения выбранной темы в обсуждении проекта.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Тема обсуждения — SinglePageStartup",
+        "twitterDescription": "Сообщения выбранной темы в обсуждении проекта.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/social/chats/[social.chats.id]/threads/[social.threads.id]",
+      "language": "en",
+      "cover": "en-74768a5a3931",
+      "metadata": {
+        "title": "Conversation thread — SinglePageStartup",
+        "description": "Messages in the selected project conversation thread.",
+        "opengraphTitle": "Conversation thread — SinglePageStartup",
+        "opengraphDescription": "Messages in the selected project conversation thread.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Conversation thread — SinglePageStartup",
+        "twitterDescription": "Messages in the selected project conversation thread.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/social/profiles/[social.profiles.slug]",
+      "language": "ru",
+      "cover": "ru-6493c8b3ee4c",
+      "metadata": {
+        "title": "Профиль участника — SinglePageStartup",
+        "description": "Профиль участника проекта и связанные материалы в пределах доступных прав.",
+        "opengraphTitle": "Профиль участника — SinglePageStartup",
+        "opengraphDescription": "Профиль участника проекта и связанные материалы в пределах доступных прав.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "ru_RU",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Профиль участника — SinglePageStartup",
+        "twitterDescription": "Профиль участника проекта и связанные материалы в пределах доступных прав.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    },
+    {
+      "url": "/social/profiles/[social.profiles.slug]",
+      "language": "en",
+      "cover": "en-6493c8b3ee4c",
+      "metadata": {
+        "title": "Member profile — SinglePageStartup",
+        "description": "A project member profile and related materials within the available access scope.",
+        "opengraphTitle": "Member profile — SinglePageStartup",
+        "opengraphDescription": "A project member profile and related materials within the available access scope.",
+        "opengraphImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]",
+        "opengraphType": "website",
+        "opengraphSiteName": "SinglePageStartup",
+        "opengraphLocale": "en_US",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Member profile — SinglePageStartup",
+        "twitterDescription": "A project member profile and related materials within the available access scope.",
+        "twitterImage": "[host.metadata>host.metadata-to-file-storage-module-files>file-storage.files.file]"
+      }
+    }
+  ]
+}

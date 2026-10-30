@@ -68,6 +68,9 @@ Canonical uses the public Host origin and localized pathname, omitting tracking
 queries/fragments. Content-changing query parameters require a project-specific
 canonical policy. Hreflang is omitted until equivalent translations are known.
 Private/unsupported routes get noindex without loading entity SEO content.
+They still use their linked Metadata and cover. On private routes, masks may
+read only the current Page, selected Metadata and its cover relation; masks
+for personal entities use the ordinary field fallback and report a diagnostic.
 
 ## Editing and compatibility
 

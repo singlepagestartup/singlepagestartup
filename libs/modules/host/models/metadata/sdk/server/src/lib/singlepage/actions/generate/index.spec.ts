@@ -481,15 +481,51 @@ describe("public page SEO generation", () => {
     });
   });
 
-  it("marks private pages noindex without reading metadata or private entities", async () => {
+  it("keeps private pages noindex while reading only editable page configuration", async () => {
+    jest
+      .mocked(pagesToMetadataApi.find)
+      .mockResolvedValue([
+        { id: "link", metadataId: "private-config", orderIndex: 0 } as any,
+      ]);
+    jest.mocked(metadataApi.find).mockImplementation(async (props) =>
+      (props?.params as any)?.filters.and[0].value === "primary"
+        ? []
+        : [
+            {
+              id: "private-config",
+              title: "Project workspace",
+              description: "Work with project documents",
+            } as any,
+          ],
+    );
     const result = await generatePageSeo({
       url: "/en/ai-chat/projects",
       page: page({ url: "/ai-chat/projects" }),
     });
     expect(result.metadata.robots).toEqual({ index: false, follow: false });
     expect(result.structuredData).toEqual([]);
-    expect(metadataApi.find).not.toHaveBeenCalled();
+    expect(result.metadata.title).toBe("Project workspace");
+    expect(metadataApi.find).toHaveBeenCalled();
     expect(blogArticleApi.find).not.toHaveBeenCalled();
+  });
+
+  it("never resolves personal entity masks on a private workspace route", async () => {
+    selectedMetadata({ title: "[social.profiles.title]" });
+    const result = await generatePageSeo({
+      url: "/ai-chat/private-workspace",
+      page: page({
+        title: "Workspace",
+        url: "/ai-chat/[social.profiles.id]",
+        routeParams: { "social.profiles.id": "private-profile" },
+      }),
+    });
+    expect(result.metadata.title).toBe("Workspace");
+    expect(result.metadata.robots).toEqual({ index: false, follow: false });
+    expect(profilesApi.find).not.toHaveBeenCalled();
+    expect(profilesApi.authorFind).not.toHaveBeenCalled();
+    expect(result.diagnostics).toContain(
+      "Private route metadata only reads Page configuration and its cover",
+    );
   });
 
   it("keeps API outages observable even when a legacy caller passes catchErrors", async () => {

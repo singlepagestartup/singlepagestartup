@@ -412,3 +412,36 @@ Resume the same manifest after an unknown response. Repeat apply and a fresh
 prepare require zero writes. Rollback restores only changed existing records;
 additive records and retained security configuration remain. Keep the original
 manifest and deploy matching application code when restoring old variants.
+
+## Page SEO publication
+
+`page-seo.ts` fills existing Host Pages through their owning SDKs. An explicit
+`sps.page-seo-input.v1` input defines each URL/language, editable Metadata fields
+and a cover asset key. Every saved Page must have a definition; extra definitions
+allow the same input to cover installations with different optional templates.
+Static Metadata may contain literal localized copy; dynamic Metadata uses square
+masks. An optional `page` object changes only that Page's title/description.
+
+Assets name WebP files relative to the input, their SHA-256 and alt text. The
+command verifies bytes before mutation, uploads Files with a stable content-based
+slug, links Metadata→File and then Page→Metadata with explicit ordering. Existing
+editorial Metadata and relations remain available. A matching selected Metadata
+is reused; unchanged repeat publication creates no records. Private Pages retain
+their indexing/access policy. No permissions, content entities or seed snapshots
+are changed.
+
+```sh
+API_SERVICE_URL=http://localhost:4000 bun --env-file=apps/api/.env --tsconfig-override tsconfig.base.json tools/runtime/page-seo.ts prepare /absolute/input.json /private/tmp/page-seo-local.json
+API_SERVICE_URL=http://localhost:4000 bun --env-file=apps/api/.env --tsconfig-override tsconfig.base.json tools/runtime/page-seo.ts apply /private/tmp/page-seo-local.json
+API_SERVICE_URL=http://localhost:4000 bun --env-file=apps/api/.env --tsconfig-override tsconfig.base.json tools/runtime/page-seo.ts verify /private/tmp/page-seo-local.json
+```
+
+Remote use requires HTTPS and `--allow-api-origin` equal to `API_SERVICE_URL`.
+Prepare records originals in a mode-0600 manifest. Keep this private manifest
+outside Git. Apply persists each create before and after the request; resume the
+same manifest after interruption. An unknown Metadata/link create is recovered
+only when exactly one new matching record exists; otherwise the command stops
+for inspection. Avoid concurrent CMS edits during publication. Rollback restores
+changed Page fields and removes only its new Page links after checking for edits;
+additive Metadata and Files remain stored. Deploy first, then prepare/apply/verify
+against the target database so startup seeding is included in the inventory.

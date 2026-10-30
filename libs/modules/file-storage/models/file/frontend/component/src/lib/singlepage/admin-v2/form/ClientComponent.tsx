@@ -51,6 +51,7 @@ export function Component(props: IComponentPropsExtended) {
       className: props.data?.className || "",
       containerClassName: props.data?.containerClassName || "",
       file: file || "",
+      alt: props.data?.alt || "",
       slug:
         props.data?.slug ||
         randomWordsGenerator({
@@ -175,6 +176,14 @@ export function Component(props: IComponentPropsExtended) {
               form={form}
               placeholder="Select variant"
               options={variants.map((variant) => [variant, variant])}
+            />
+            <FormField
+              ui="shadcn"
+              type="text"
+              label="Alternative text"
+              name="alt"
+              form={form}
+              placeholder="Describe the image"
             />
             <FormField
               ui="shadcn"

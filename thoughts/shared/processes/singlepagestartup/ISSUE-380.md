@@ -4,9 +4,8 @@ issue_title: "SEO для сборки страниц Host, блога и кат�
 repository: singlepagestartup
 created_at: 2026-10-28
 last_updated: 2026-10-30
-status: complete
-current_phase: complete
-completed_date: 2026-10-30
+status: in_progress
+current_phase: implement
 ---
 
 # Process log: SEO для сборки страниц
@@ -20,9 +19,13 @@ completed_date: 2026-10-30
 - Create: completed
 - Research: completed
 - Plan: completed
-- Implement: completed
-- Current phase: complete
+- Implement: in_progress
+- Current phase: implement
 - Next step: Code Review PR #382; приёмка владельцем и выпуск в дочерних проектах отдельно
+
+## Текущее продолжение после проверки владельцем
+
+Нужно довести клиентскую авторизацию и обе админки, заполнить Page→Metadata и обложки для всех Host Pages локально и на тестовом production, выпустить текущую ветку и повторить диагностику. Полный список задач находится в progress. Fallback сохраняется; авторизованные SDK reads выполняются на клиенте. Владелец разрешил implementation, commit/release и проверки без остановок.
 
 ## Итоговая проверка 0.0.330
 
