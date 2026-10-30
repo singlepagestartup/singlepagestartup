@@ -34,6 +34,13 @@ export class Configuration extends ParentConfiguration {
                 return data.entity.dump.url;
               },
             },
+            {
+              column: "language",
+              method: "eq",
+              value: (data) => {
+                return data.entity.dump.language ?? Table.language.default;
+              },
+            },
           ],
         },
       },

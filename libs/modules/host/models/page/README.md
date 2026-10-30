@@ -4,6 +4,9 @@ Pages own localized URL masks and compose layouts, widgets and Metadata through
 explicit relations. Fields are `id`, `title`, `description`, `url`, `language`,
 `indexing`, `variant`, `className`, `adminTitle`, `createdAt` and `updatedAt`.
 The database enforces uniqueness of `(url, language)`.
+Seed reconciliation uses the same URL/language identity. Snapshots without a
+language use the database column default (`en`), preserving other localized Pages
+and the IDs referenced by their relations.
 
 ## Route lookup
 
