@@ -8,9 +8,7 @@ import {
 import { inject, injectable } from "inversify";
 import { Apps } from "./apps";
 
-export interface IApp extends IModuleApp<Apps> {
-  middleware: Apps["middleware"];
-}
+export type IApp = IModuleApp<Apps>;
 
 @injectable()
 export class App extends ModuleApp<Apps> implements IApp {
@@ -20,9 +18,5 @@ export class App extends ModuleApp<Apps> implements IApp {
 
   protected override configureApps(): void {
     this.apps.configure();
-  }
-
-  middleware() {
-    return this.apps.middleware();
   }
 }

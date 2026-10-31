@@ -111,9 +111,23 @@ them. Standard list/detail reads return the Profile model and count returns the
 ordinary model count. Linked `articles` and `products` belong only to the Author
 detail DTO.
 
-A default or Telegram Profile appears publicly after an explicit link to an existing Article or Product. Public URLs use the Profile UUID; the DTO omits private slugs, Subject/Identity identifiers, administrative fields and AI workspace configuration. Article and Product references contain only their public summary fields.
+Author discovery currently includes default or Telegram Profiles linked to an existing Article or Product. This discovery does not grant access to the ordinary Profile detail route. Public URLs use the Profile UUID; the DTO omits private slugs, Subject/Identity identifiers, administrative fields and AI workspace configuration. Article and Product references contain only their public summary fields.
 
-The `author-card-default`, `author-byline-default` and `author-overview-default` variants consume these DTOs. Already loaded results use props mode. Own-account and private Chat reads retain their Subject/Chat scope, including historical sender and actor avatar presentation. Generic Profile list/count/detail reads require an operator or a current explicit administrative Role binding. The consistency cache records the owning Service dependencies for public Author reads.
+The `author-card-default` and `author-byline-default` variants consume Author
+DTOs. `author-overview-default` reads the ordinary Profile model through
+`findById` and the shared default reader. It loads attachments, Articles and
+Products through their relation components, filtered by that Profile ID.
+Already loaded results use props mode. Own-account and private Chat reads retain
+their Subject/Chat scope, including historical sender and actor avatar presentation.
+
+Standard Profile reads use the normal RBAC Permissions policy. A public exact
+`GET /api/social/profiles/<UUID>` Permission can open one Profile while the
+collection, count and other IDs remain protected. There is no second
+administrative Profile guard. CRUD returns the model through the shared
+`outputSchema` mechanism; the Profile configuration currently declares no
+additional output schema. A link to an Article or Product does not create this
+exact Permission. Profile publication consent and sitemap enumeration of exact
+public Permissions remain separate follow-up work.
 
 Author summaries expose only `metadata.seo` from the JSON field. Content,
 association and avatar variants retain their normal presentation meaning.

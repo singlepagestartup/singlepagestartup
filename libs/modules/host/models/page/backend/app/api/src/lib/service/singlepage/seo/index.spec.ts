@@ -37,6 +37,14 @@ beforeEach(() => {
   all = jest.fn(async () => []);
   seo.routing = {
     find,
+    findById: jest.fn(
+      async (name, id) =>
+        (
+          await find(name, {
+            filters: { and: [{ column: "id", method: "eq", value: id }] },
+          })
+        )[0],
+    ),
     all,
     relation: () => ({
       source: "host.metadata",

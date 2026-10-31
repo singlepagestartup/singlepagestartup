@@ -1,10 +1,14 @@
 import { memo } from "react";
-import { NEXT_PUBLIC_API_SERVICE_URL } from "@sps/shared-utils";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { getLocalizedPlainText } from "../plain-text";
-import type { IComponentPropsExtended } from "./interface";
-import { Component as BlogModuleArticle } from "@sps/blog/models/article/frontend/component";
-import { Component as EcommerceModuleProduct } from "@sps/ecommerce/models/product/frontend/component";
+import type {
+  IComponentPropsExtended,
+  IArticleRowProps,
+  IProductRowProps,
+} from "./interface";
+import { Component as ProfilesToBlogModuleArticles } from "@sps/social/relations/profiles-to-blog-module-articles/frontend/component";
+import { Component as ProfilesToEcommerceModuleProducts } from "@sps/social/relations/profiles-to-ecommerce-module-products/frontend/component";
+import { Component as ProfilesToFileStorageModuleFiles } from "@sps/social/relations/profiles-to-file-storage-module-files/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {
   const ru = props.language === "ru";
@@ -17,12 +21,6 @@ export function Component(props: IComponentPropsExtended) {
     props.data.description,
     props.language,
   );
-  const avatar = props.data.avatar;
-  const src = avatar?.file
-    ? /^https?:\/\//.test(avatar.file)
-      ? avatar.file
-      : `${NEXT_PUBLIC_API_SERVICE_URL}/public${avatar.file}`
-    : null;
   return (
     <section
       data-module="social"
@@ -38,17 +36,47 @@ export function Component(props: IComponentPropsExtended) {
         <div className="flex min-w-0 items-center gap-4">
           <span
             aria-hidden="true"
-            className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-full bg-muted text-lg font-semibold text-muted-foreground"
+            className="relative grid size-14 shrink-0 place-items-center overflow-hidden rounded-full bg-muted text-lg font-semibold text-muted-foreground"
           >
-            {src ? (
-              <img src={src} alt="" className="size-full object-cover" />
-            ) : (
-              name
-                .split(/\s+/)
-                .slice(0, 2)
-                .map((part) => part[0])
-                .join("")
-            )}
+            {name
+              .split(/\s+/)
+              .slice(0, 2)
+              .map((part) => part[0])
+              .join("")}
+            <ProfilesToFileStorageModuleFiles
+              isServer={props.isServer}
+              variant="find"
+              skeleton={null}
+              apiProps={{
+                params: {
+                  filters: {
+                    and: [
+                      {
+                        column: "profileId",
+                        method: "eq",
+                        value: props.data.id,
+                      },
+                    ],
+                  },
+                  orderBy: { and: [{ column: "orderIndex", method: "asc" }] },
+                  limit: 1,
+                },
+              }}
+            >
+              {({ data }) =>
+                data?.map((link) => (
+                  <ProfilesToFileStorageModuleFiles
+                    key={link.id}
+                    isServer={props.isServer}
+                    variant="default"
+                    dataSource="props"
+                    data={link}
+                    language={props.language}
+                    className="absolute inset-0 [&_[data-model=file]]:size-full [&_img]:size-full [&_img]:object-cover"
+                  />
+                ))
+              }
+            </ProfilesToFileStorageModuleFiles>
           </span>
           <div className="min-w-0">
             <h1 className="break-words text-2xl font-semibold tracking-tight sm:text-3xl">
@@ -64,109 +92,99 @@ export function Component(props: IComponentPropsExtended) {
             {description}
           </p>
         ) : null}
-        <p className="text-xs text-muted-foreground">
-          {props.data.articleCount} {ru ? "статей" : "articles"} ·{" "}
-          {props.data.productCount} {ru ? "проектов" : "projects"}
-        </p>
       </header>
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">{ru ? "Статьи" : "Articles"}</h2>
-        {props.data.articles.length ? (
-          <div className="grid items-stretch gap-5 sm:grid-cols-2">
-            {props.data.articles.map((article) => (
-              <ArticleRow
-                key={article.id}
-                id={article.id}
-                isServer={props.isServer}
-                language={props.language}
-              />
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground">
-            {ru ? "Статей пока нет." : "No articles yet."}
-          </p>
-        )}
+        <ProfilesToBlogModuleArticles
+          isServer={props.isServer}
+          variant="find"
+          apiProps={{
+            params: {
+              filters: {
+                and: [
+                  { column: "profileId", method: "eq", value: props.data.id },
+                ],
+              },
+              orderBy: { and: [{ column: "orderIndex", method: "asc" }] },
+            },
+          }}
+        >
+          {({ data }) =>
+            data?.length ? (
+              <div className="grid items-stretch gap-5 sm:grid-cols-2">
+                {data.map((link) => (
+                  <ArticleRow
+                    key={link.id}
+                    data={link}
+                    isServer={props.isServer}
+                    language={props.language}
+                  />
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                {ru ? "Статей пока нет." : "No articles yet."}
+              </p>
+            )
+          }
+        </ProfilesToBlogModuleArticles>
       </section>
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">{ru ? "Проекты" : "Projects"}</h2>
-        {props.data.products.length ? (
-          <div className="grid items-stretch gap-5 sm:grid-cols-2">
-            {props.data.products.map((product) => (
-              <ProductRow
-                key={product.id}
-                id={product.id}
-                isServer={props.isServer}
-                language={props.language}
-              />
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground">
-            {ru ? "Публичных проектов пока нет." : "No public projects yet."}
-          </p>
-        )}
+        <ProfilesToEcommerceModuleProducts
+          isServer={props.isServer}
+          variant="find"
+          apiProps={{
+            params: {
+              filters: {
+                and: [
+                  { column: "profileId", method: "eq", value: props.data.id },
+                ],
+              },
+              orderBy: { and: [{ column: "orderIndex", method: "asc" }] },
+            },
+          }}
+        >
+          {({ data }) =>
+            data?.length ? (
+              <div className="grid items-stretch gap-5 sm:grid-cols-2">
+                {data.map((link) => (
+                  <ProductRow
+                    key={link.id}
+                    data={link}
+                    isServer={props.isServer}
+                    language={props.language}
+                  />
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                {ru
+                  ? "Публичных проектов пока нет."
+                  : "No public projects yet."}
+              </p>
+            )
+          }
+        </ProfilesToEcommerceModuleProducts>
       </section>
     </section>
   );
 }
-const ArticleRow = memo(function ArticleRow(props: {
-  id: string;
-  isServer: boolean;
-  language: string;
-}) {
+const ArticleRow = memo(function ArticleRow(props: IArticleRowProps) {
   return (
-    <BlogModuleArticle
-      isServer={props.isServer}
-      variant="find"
-      apiProps={{
-        params: {
-          filters: { and: [{ column: "id", method: "eq", value: props.id }] },
-        },
-      }}
-    >
-      {({ data }) =>
-        data?.map((article) => (
-          <BlogModuleArticle
-            key={article.id}
-            isServer={props.isServer}
-            variant="default"
-            dataSource="props"
-            data={article}
-            language={props.language}
-          />
-        ))
-      }
-    </BlogModuleArticle>
+    <ProfilesToBlogModuleArticles
+      {...props}
+      variant="default"
+      dataSource="props"
+    />
   );
 });
-const ProductRow = memo(function ProductRow(props: {
-  id: string;
-  isServer: boolean;
-  language: string;
-}) {
+const ProductRow = memo(function ProductRow(props: IProductRowProps) {
   return (
-    <EcommerceModuleProduct
-      isServer={props.isServer}
-      variant="find"
-      apiProps={{
-        params: {
-          filters: { and: [{ column: "id", method: "eq", value: props.id }] },
-        },
-      }}
-    >
-      {({ data }) =>
-        data?.map((product) => (
-          <EcommerceModuleProduct
-            key={product.id}
-            isServer={props.isServer}
-            variant="default"
-            dataSource="props"
-            data={product}
-            language={props.language}
-          />
-        ))
-      }
-    </EcommerceModuleProduct>
+    <ProfilesToEcommerceModuleProducts
+      {...props}
+      variant="default"
+      dataSource="props"
+    />
   );
 });

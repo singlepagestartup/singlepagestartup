@@ -77,6 +77,14 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           exists = false;
           break;
         }
+        if (match[3] === "id") {
+          const record = await this.routing.findById(
+            match[1] + "." + match[2],
+            decoded,
+          );
+          if (!record) exists = false;
+          continue;
+        }
         const records = await this.routing.find(match[1] + "." + match[2], {
           filters: {
             and: [{ column: match[3], method: "eq", value: decoded }],

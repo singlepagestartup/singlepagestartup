@@ -15,7 +15,6 @@ import {
   controllerGuardedRoutes,
 } from "@sps/middlewares";
 import { MIDDLEWARE_HTTP_CACHE } from "@sps/shared-utils";
-import { rawSocialProfileReadRoutes } from "@sps/rbac/models/subject/backend/app/middlewares";
 import { app as agentApp } from "@sps/agent/backend/app/api";
 import { app as analyticApp } from "@sps/analytic/backend/app/api";
 import { app as hostApp } from "@sps/host/backend/app/api";
@@ -58,7 +57,7 @@ const consistencyMiddleware = new ConsistencyMiddleware({
 });
 const httpCacheMiddleware = new HTTPCacheMiddleware({
   runtime: consistencyMiddleware.runtime,
-  excludedRoutes: [...controllerGuardedRoutes, ...rawSocialProfileReadRoutes],
+  excludedRoutes: controllerGuardedRoutes,
 });
 
 app.use(
@@ -150,7 +149,6 @@ app.use(new ActionLoggerMiddleware().init());
 app.use(new IsAuthorizedMiddleware().init());
 app.use(new BillRouteMiddleware().init());
 app.use(new ParseQueryMiddleware().init());
-app.use(rbacApp.middleware());
 
 if (MIDDLEWARE_HTTP_CACHE === "true") {
   httpCacheMiddleware.registerRoutes(app);

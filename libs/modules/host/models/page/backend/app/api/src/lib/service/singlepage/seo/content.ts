@@ -57,6 +57,10 @@ export function createMetadataContext(
         key,
         (async () => {
           try {
+            if (!many && column === "id") {
+              const record = await routing.findById(name, value);
+              return record ? [record] : [];
+            }
             return many
               ? await routing.all(name, {
                   filters: { and: [{ column, method: "eq", value }] },

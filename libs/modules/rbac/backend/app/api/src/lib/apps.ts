@@ -41,12 +41,6 @@ export class Apps {
     );
   }
 
-  middleware() {
-    return (
-      subject.controller as SubjectController
-    ).administrativeProfileRead();
-  }
-
   bindApps() {
     this.apps.push({
       type: "relation",

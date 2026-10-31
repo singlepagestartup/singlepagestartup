@@ -105,8 +105,9 @@ HTTP and data-tooling contract. `DefaultApp` implements it for a resource;
 with the same paths used to mount their Hono routes.
 
 `IModuleApp<Apps>` extends the common contract with the typed child registry.
-Module bootstraps bind and resolve this interface. Host and RBAC extend it with
-their own routing-configuration and middleware capabilities. A concrete App
+Module bootstraps bind and resolve this interface. Host extends it with its
+routing-configuration capability; RBAC uses the standard interface and its
+module-local initialization hook. A concrete App
 class is only the DI implementation; it is not the bootstrap's public type.
 
 ModuleApp creates the registry during init, runs the protected configureApps

@@ -39,6 +39,7 @@ export function Component(props: IComponentPropsExtended) {
                 key={entity.id}
                 isServer={props.isServer}
                 variant="default"
+                dataSource="props"
                 data={entity}
                 language={props.language}
               />

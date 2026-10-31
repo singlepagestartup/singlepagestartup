@@ -54,3 +54,44 @@ it("enumerates all API pages instead of truncating at one batch", async () => {
   expect(await routing.all("custom.items")).toHaveLength(101);
   expect(find.mock.calls[1][1]?.offset).toBe(100);
 });
+
+it("reads a permitted exact ID through the SDK without requesting its collection", async () => {
+  const request = jest.spyOn(globalThis, "fetch").mockResolvedValue(
+    new Response(JSON.stringify({ data: { id: "one" } }), {
+      headers: { "Content-Type": "application/json" },
+    }),
+  );
+  try {
+    expect(
+      await new RoutingService(sources).findById("custom.items", "one"),
+    ).toEqual({ id: "one" });
+    expect(String(request.mock.calls[0][0])).toMatch(
+      /\/api\/custom\/items\/one\?/,
+    );
+    expect(request.mock.calls[0][1]?.headers).not.toHaveProperty(
+      "Authorization",
+    );
+  } finally {
+    request.mockRestore();
+  }
+});
+it("preserves denied exact reads and treats a missing ID as absent", async () => {
+  const request = jest.spyOn(globalThis, "fetch");
+  try {
+    const routing = new RoutingService(sources);
+    request.mockResolvedValue(
+      new Response(JSON.stringify({ message: "denied" }), { status: 403 }),
+    );
+    await expect(
+      routing.findById("custom.items", "private"),
+    ).rejects.toMatchObject({ status: 403 });
+    request.mockResolvedValue(
+      new Response(JSON.stringify({ message: "missing" }), { status: 404 }),
+    );
+    await expect(
+      routing.findById("custom.items", "missing"),
+    ).resolves.toBeUndefined();
+  } finally {
+    request.mockRestore();
+  }
+});

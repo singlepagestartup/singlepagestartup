@@ -22,7 +22,6 @@ import {
   RequestSubjectIdOwner,
   RequestSubjectReadAccess,
   RequestOperatorSecret,
-  RawSocialProfileRead,
   RequestSubjectOwnsEcommerceModuleOrder,
   RequestSubjectOwnsSocialModuleChat,
   RequestSubjectOwnsIdentity,
@@ -121,10 +120,6 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
 
   configureRoleRevocation() {
     return this.service.configureRoleRevocation();
-  }
-
-  administrativeProfileRead() {
-    return new RawSocialProfileRead(() => this.service).init();
   }
 
   constructor(@inject(DI.IService) service: Service) {

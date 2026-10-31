@@ -9,6 +9,7 @@ function create(pages: any[]) {
   ) as any;
   service.routing = {
     find: jest.fn(),
+    findById: jest.fn(),
     all: jest.fn(),
   } as unknown as RoutingService;
   return service;
@@ -75,6 +76,26 @@ it("prefers exact static Pages before route masks", async () => {
   ]);
   expect((await service.findByUrl({ url: "/about" })).id).toBe("page");
   expect(service.routing.find).not.toHaveBeenCalled();
+});
+it("resolves ID masks through the exact resource without reading its collection", async () => {
+  const service = create([page({ url: "/authors/[custom.profiles.id]" })]);
+  jest.mocked(service.routing.findById).mockResolvedValue({ id: "public" });
+  expect(await service.findByUrl({ url: "/authors/public" })).toMatchObject({
+    routeParams: { "custom.profiles.id": "public" },
+  });
+  expect(service.routing.findById).toHaveBeenCalledWith(
+    "custom.profiles",
+    "public",
+  );
+  expect(service.routing.find).not.toHaveBeenCalled();
+  jest.mocked(service.routing.findById).mockResolvedValue(undefined);
+  await expect(service.findByUrl({ url: "/authors/missing" })).rejects.toThrow(
+    "Not Found",
+  );
+  jest.mocked(service.routing.findById).mockRejectedValue({ status: 403 });
+  await expect(service.findByUrl({ url: "/authors/private" })).rejects.toEqual({
+    status: 403,
+  });
 });
 it("expands pagination through the Page route constructor and keeps page 1 unnumbered", async () => {
   const service = create([page({ url: "/news/[custom.posts.:pagination:2]" })]);

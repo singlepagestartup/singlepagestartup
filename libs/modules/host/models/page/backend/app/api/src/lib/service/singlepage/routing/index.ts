@@ -1,4 +1,5 @@
 import QueryString from "qs";
+import { factory } from "@sps/shared-frontend-server-api";
 import {
   API_SERVICE_URL,
   responsePipe,
@@ -75,6 +76,31 @@ export class RoutingService {
     if (!Array.isArray(payload?.data))
       throw new Error("Route source unavailable");
     return payload.data;
+  }
+
+  async findById(name: string, id: string): Promise<IRouteRecord | undefined> {
+    const source = this.sources.get(name);
+    if (!source) throw new Error("Validation error. Unknown route source");
+    try {
+      return await factory<IRouteRecord>({
+        host: API_SERVICE_URL,
+        route: source.route,
+      }).findById({
+        id: encodeURIComponent(id),
+        options: {
+          headers: { "Cache-Control": "no-store", "X-SPS-Consistency": "1" },
+        },
+      });
+    } catch (error) {
+      if (
+        error &&
+        typeof error === "object" &&
+        "status" in error &&
+        error.status === 404
+      )
+        return undefined;
+      throw error;
+    }
   }
 
   async all(
