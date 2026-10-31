@@ -29,4 +29,11 @@ export interface IResolvedPage extends ISelectSchema {
   routeParams: IRouteParams;
 }
 
+/** A concrete public URL with its owning Page's presentation/indexing policy. */
+export interface IPageUrl {
+  url: string;
+  pageId: string;
+  variant: ISelectSchema["variant"];
+}
+
 export * from "./seo";

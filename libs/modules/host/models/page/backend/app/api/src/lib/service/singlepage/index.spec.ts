@@ -8,12 +8,16 @@ function create(pages: any[]) {
     pages.find((page) => page.id === id),
   ) as any;
   service.routing = {
+    resolve: RoutingService.prototype.resolve,
+    enumerate: jest.fn((name) => service.routing.all(name)),
     find: jest.fn(),
     findById: jest.fn(),
-    all: jest.fn(),
+    all: jest.fn().mockResolvedValue([]),
   } as unknown as RoutingService;
   return service;
 }
+const paths = async (service: Service) =>
+  (await service.urls()).map(({ url }) => ({ url }));
 const page = (values: object = {}) => ({
   id: "page",
   variant: "default",
@@ -27,7 +31,7 @@ it("indexes saved published Pages independently of URL prefixes", async () => {
     page({ url: "/ai-chat/public" }),
     page({ id: "contacts", url: "/contacts" }),
   ]);
-  expect(await service.urls()).toEqual([
+  expect(await paths(service)).toEqual([
     { url: "/contacts" },
     { url: "/ai-chat/public" },
   ]);
@@ -39,7 +43,7 @@ it.each(["hidden", "draft"])(
     await expect(service.findByUrl({ url: "/about" })).rejects.toThrow(
       "Not Found",
     );
-    expect(await service.urls()).toEqual([]);
+    expect(await paths(service)).toEqual([]);
   },
 );
 it("keeps noindex route shells available without reading authenticated data", async () => {
@@ -50,14 +54,14 @@ it("keeps noindex route shells available without reading authenticated data", as
     routeParams: { "custom.items.id": "one" },
   });
   expect(service.routing.find).not.toHaveBeenCalled();
-  expect(await service.urls()).toEqual([]);
+  expect(await paths(service)).toEqual([]);
 });
 it("uses registered route sources for new modules without an SEO collection list", async () => {
   const service = create([page({ url: "/portfolio/[custom.projects.slug]" })]);
   jest
     .mocked(service.routing.all)
     .mockResolvedValue([{ id: "one", slug: "new-work" }]);
-  expect(await service.urls()).toEqual([{ url: "/portfolio/new-work" }]);
+  expect(await paths(service)).toEqual([{ url: "/portfolio/new-work" }]);
   jest
     .mocked(service.routing.find)
     .mockResolvedValue([{ id: "one", slug: "new-work" }]);
@@ -108,7 +112,7 @@ it("expands pagination through the Page route constructor and keeps page 1 unnum
       { id: "d" },
       { id: "e" },
     ]);
-  expect(await service.urls()).toEqual([
+  expect(await paths(service)).toEqual([
     { url: "/news" },
     { url: "/news/2" },
     { url: "/news/3" },
@@ -128,7 +132,7 @@ it("does not impose cross-model association requirements on Page masks", async (
         ? [{ id: "g", slug: "group" }]
         : [{ id: "i", slug: "item" }],
     );
-  expect(await service.urls()).toEqual([{ url: "/group/item" }]);
+  expect(await paths(service)).toEqual([{ url: "/group/item" }]);
 });
 it("does not turn source outages into a partial successful sitemap", async () => {
   const service = create([page({ url: "/[custom.items.slug]" })]);
@@ -137,8 +141,8 @@ it("does not turn source outages into a partial successful sitemap", async () =>
 });
 it("omits unavailable anonymous source enumerations without using credentials", async () => {
   const service = create([page({ url: "/[custom.items.slug]" })]);
-  jest.mocked(service.routing.all).mockRejectedValue({ status: 403 });
-  expect(await service.urls()).toEqual([]);
+  jest.mocked(service.routing.enumerate).mockResolvedValue([]);
+  expect(await paths(service)).toEqual([]);
 });
 it("retains legacy scalar route lookups and returns null for a missing segment", async () => {
   const service = create([
@@ -169,7 +173,7 @@ it("does not let a generic mask override an explicitly hidden static Page", asyn
   expect(service.routing.find).not.toHaveBeenCalled();
 });
 
-it.each(["hidden", "draft", "noindex"])(
+it.each(["hidden", "draft"])(
   "does not reintroduce a %s Page through a generic sitemap mask",
   async (variant) => {
     const service = create([
@@ -181,6 +185,29 @@ it.each(["hidden", "draft", "noindex"])(
       { id: "one", slug: "about" },
       { id: "two", slug: "contacts" },
     ]);
-    expect(await service.urls()).toEqual([{ url: "/contacts" }]);
+    expect(await paths(service)).toEqual([{ url: "/contacts" }]);
   },
 );
+
+it("lists accessible noindex pages while preserving the most specific Page policy", async () => {
+  const service = create([
+    page({ variant: "noindex" }),
+    page({ id: "mask", url: "/[custom.items.slug]" }),
+  ]);
+  jest.mocked(service.routing.all).mockResolvedValue([
+    { id: "item", slug: "about" },
+    { id: "other", slug: "contacts" },
+  ]);
+  expect(await service.urls()).toEqual([
+    { url: "/about", pageId: "page", variant: "noindex" },
+    { url: "/contacts", pageId: "mask", variant: "default" },
+  ]);
+});
+it("expands exact public IDs supplied by the route source without a model allowlist", async () => {
+  const service = create([page({ url: "/people/[custom.people.id]" })]);
+  jest.mocked(service.routing.enumerate).mockResolvedValue([{ id: "public" }]);
+  expect(await service.urls()).toEqual([
+    { url: "/people/public", pageId: "page", variant: "default" },
+  ]);
+  expect(service.routing.enumerate).toHaveBeenCalledWith("custom.people", "id");
+});

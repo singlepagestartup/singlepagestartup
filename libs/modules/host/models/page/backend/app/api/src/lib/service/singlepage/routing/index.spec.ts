@@ -1,3 +1,7 @@
+import { api as permissionApi } from "@sps/rbac/models/permission/sdk/server";
+jest.mock("@sps/rbac/models/permission/sdk/server", () => ({
+  api: { publicResourceIds: jest.fn() },
+}));
 import { RoutingService } from "./index";
 const sources = [
   {
@@ -94,4 +98,55 @@ it("preserves denied exact reads and treats a missing ID as absent", async () =>
   } finally {
     request.mockRestore();
   }
+});
+
+it("enumerates exact public records when their collection is protected", async () => {
+  const routing = new RoutingService(sources);
+  jest.spyOn(routing, "all").mockRejectedValue({ status: 403 });
+  jest
+    .mocked(permissionApi.publicResourceIds)
+    .mockResolvedValue(["public", "denied", "missing"]);
+  const read = jest
+    .spyOn(routing, "findById")
+    .mockImplementation(async (_name, id) => {
+      if (id === "denied") throw { status: 403 };
+      if (id === "missing") return undefined;
+      return { id, slug: "visible" };
+    });
+  expect(await routing.enumerate("custom.items", "slug")).toEqual([
+    { id: "public", slug: "visible" },
+  ]);
+  expect(permissionApi.publicResourceIds).toHaveBeenCalledWith({
+    params: { resource: "/api/custom/items" },
+  });
+  expect(read).toHaveBeenCalledTimes(3);
+});
+it("uses the same exact public records to resolve non-ID URL fields", async () => {
+  const routing = new RoutingService(sources);
+  jest.spyOn(routing, "find").mockRejectedValue({ status: 403 });
+  jest.mocked(permissionApi.publicResourceIds).mockResolvedValue(["public"]);
+  jest
+    .spyOn(routing, "findById")
+    .mockResolvedValue({ id: "public", slug: "visible" });
+  expect(await routing.resolve("custom.items", "slug", "visible")).toEqual([
+    { id: "public", slug: "visible" },
+  ]);
+  expect(await routing.resolve("custom.items", "slug", "other")).toEqual([]);
+});
+it("omits denied detail URLs even when their collection is public and propagates outages", async () => {
+  const routing = new RoutingService(sources);
+  jest
+    .spyOn(routing, "all")
+    .mockResolvedValue([{ id: "public" }, { id: "private" }]);
+  jest.spyOn(routing, "findById").mockImplementation(async (_name, id) => {
+    if (id === "private") throw { status: 403 };
+    return { id };
+  });
+  expect(await routing.enumerate("custom.items", "id")).toEqual([
+    { id: "public" },
+  ]);
+  jest.spyOn(routing, "all").mockRejectedValue({ status: 503 });
+  await expect(routing.enumerate("custom.items")).rejects.toEqual({
+    status: 503,
+  });
 });

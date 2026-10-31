@@ -3,6 +3,7 @@ import {
   getSeoCanonicalUrl,
   sitemapDocuments,
   sitemapIndex,
+  isSeoIndexablePage,
 } from "@sps/shared-utils";
 import { internationalization } from "@sps/shared-configuration";
 import { api as hostModulePageApi } from "@sps/host/models/page/sdk/server";
@@ -17,6 +18,7 @@ export async function GET(request: Request) {
     const languages = internationalization.languages.map(({ code }) => code);
     const urls = new Set<string>();
     for (const page of pages) {
+      if (!isSeoIndexablePage(page)) continue;
       const pathname = `/${page.url.join("/")}`;
       for (const language of languages) {
         urls.add(

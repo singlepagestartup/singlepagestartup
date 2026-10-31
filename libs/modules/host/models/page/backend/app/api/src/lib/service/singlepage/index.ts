@@ -8,10 +8,10 @@ import { Table } from "@sps/host/models/page/backend/repository/database";
 import {
   buildTreePaths,
   extractRouteParams,
-  isSeoIndexablePage,
   SEO_SITEMAP_MAX_CANDIDATES,
 } from "@sps/shared-utils";
 import { RoutingService, type IRouteSource } from "./routing";
+import type { IPageUrl } from "@sps/host/models/page/sdk/model";
 import { SeoService } from "./seo";
 
 export interface EntityWithUrls extends Record<string, unknown> {
@@ -77,20 +77,11 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           exists = false;
           break;
         }
-        if (match[3] === "id") {
-          const record = await this.routing.findById(
-            match[1] + "." + match[2],
-            decoded,
-          );
-          if (!record) exists = false;
-          continue;
-        }
-        const records = await this.routing.find(match[1] + "." + match[2], {
-          filters: {
-            and: [{ column: match[3], method: "eq", value: decoded }],
-          },
-          limit: 2,
-        });
+        const records = await this.routing.resolve(
+          match[1] + "." + match[2],
+          match[3],
+          decoded,
+        );
         if (records.length !== 1) {
           exists = false;
           break;
@@ -113,7 +104,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       !Number.isSafeInteger(pageSize)
     )
       throw new Error("Validation error. Invalid pagination format");
-    const records = await this.routing.all(name.replace(/\.$/, ""));
+    const records = await this.routing.enumerate(name.replace(/\.$/, ""));
     const pages = Math.ceil(records.length / pageSize);
     if (options.maxUrls && pages > options.maxUrls)
       throw new Error("Validation error. Pagination exceeds the URL limit");
@@ -148,7 +139,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         );
       if (!match)
         throw new Error("Validation error. Unsupported Page URL mask");
-      const records = await this.routing.all(match[1] + "." + match[2]);
+      const records = await this.routing.enumerate(
+        match[1] + "." + match[2],
+        match[3],
+      );
       segments.push([
         ...new Set(
           records
@@ -178,29 +172,17 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   async urls() {
-    const urls = new Map<string, { url: string }>();
+    const urls = new Map<string, IPageUrl>();
     const pages = await this.routePages();
     for (const [index, page] of pages.entries()) {
-      if (!isSeoIndexablePage(page)) continue;
+      if (["hidden", "draft"].includes(page.variant)) continue;
       const exclusions = pages
         .slice(0, index)
-        .filter((candidate) => !isSeoIndexablePage(candidate));
-      let expanded: Awaited<ReturnType<Service["withUrls"]>>;
-      try {
-        expanded = await this.withUrls({
-          id: page.id,
-          maxUrls: SEO_SITEMAP_MAX_CANDIDATES,
-        });
-      } catch (error) {
-        if (
-          error &&
-          typeof error === "object" &&
-          "status" in error &&
-          [401, 403].includes(Number(error.status))
-        )
-          continue;
-        throw error;
-      }
+        .filter((candidate) => ["hidden", "draft"].includes(candidate.variant));
+      const expanded = await this.withUrls({
+        id: page.id,
+        maxUrls: SEO_SITEMAP_MAX_CANDIDATES,
+      });
       for (const entry of expanded.urls) {
         if (
           exclusions.some((candidate) => {
@@ -213,10 +195,15 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           })
         )
           continue;
-        urls.set(entry.url, entry);
+        if (!urls.has(entry.url))
+          urls.set(entry.url, {
+            ...entry,
+            pageId: page.id,
+            variant: page.variant,
+          });
         if (urls.size > SEO_SITEMAP_MAX_CANDIDATES)
           throw new Error(
-            "Validation error. Sitemap exceeds the URL enumeration limit",
+            "Validation error. Page enumeration exceeds the URL limit",
           );
       }
     }

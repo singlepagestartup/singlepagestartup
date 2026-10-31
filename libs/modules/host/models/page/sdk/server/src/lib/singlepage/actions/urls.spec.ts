@@ -54,3 +54,18 @@ it("distinguishes valid empty results from malformed upstream data", async () =>
     "Invalid page URL enumeration response",
   );
 });
+
+it("preserves the owning Page and its variant for downstream consumers", async () => {
+  (global.fetch as jest.Mock).mockResolvedValue(
+    new Response(
+      JSON.stringify({
+        data: {
+          urls: [{ url: "/login", pageId: "login-page", variant: "noindex" }],
+        },
+      }),
+    ),
+  );
+  await expect(action({})).resolves.toEqual([
+    { url: ["login"], pageId: "login-page", variant: "noindex" },
+  ]);
+});

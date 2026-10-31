@@ -23,3 +23,4 @@ export const options = {
     revalidate: REVALIDATE,
   },
 } as NextRequestOptions;
+export * from "./public-resource-ids";

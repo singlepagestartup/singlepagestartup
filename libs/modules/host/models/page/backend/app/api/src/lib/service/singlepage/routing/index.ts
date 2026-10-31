@@ -1,5 +1,6 @@
 import QueryString from "qs";
 import { factory } from "@sps/shared-frontend-server-api";
+import { api as permissionApi } from "@sps/rbac/models/permission/sdk/server";
 import {
   API_SERVICE_URL,
   responsePipe,
@@ -101,6 +102,98 @@ export class RoutingService {
         return undefined;
       throw error;
     }
+  }
+
+  async resolve(
+    name: string,
+    column: string,
+    value: string,
+  ): Promise<IRouteRecord[]> {
+    if (column === "id") {
+      const record = await this.findById(name, value);
+      return record ? [record] : [];
+    }
+    try {
+      return await this.find(name, {
+        filters: { and: [{ column, method: "eq", value }] },
+        limit: 2,
+      });
+    } catch (error) {
+      if (
+        !error ||
+        typeof error !== "object" ||
+        !("status" in error) ||
+        ![401, 403].includes(Number(error.status))
+      )
+        throw error;
+      return (await this.exactPublicRecords(name)).filter(
+        (record) => String(record[column]) === value,
+      );
+    }
+  }
+
+  private async readableRecords(
+    name: string,
+    ids: string[],
+  ): Promise<IRouteRecord[]> {
+    if (ids.length > SEO_SITEMAP_MAX_CANDIDATES)
+      throw new Error(
+        "Validation error. Route enumeration exceeds the URL limit",
+      );
+    const records: IRouteRecord[] = [];
+    for (let offset = 0; offset < ids.length; offset += 100) {
+      const batch = await Promise.all(
+        ids.slice(offset, offset + 100).map(async (id) => {
+          try {
+            return await this.findById(name, id);
+          } catch (error) {
+            if (
+              error &&
+              typeof error === "object" &&
+              "status" in error &&
+              [401, 403].includes(Number(error.status))
+            )
+              return undefined;
+            throw error;
+          }
+        }),
+      );
+      records.push(
+        ...batch.filter((record): record is IRouteRecord => !!record),
+      );
+    }
+    return records;
+  }
+
+  private async exactPublicRecords(name: string): Promise<IRouteRecord[]> {
+    const source = this.sources.get(name);
+    if (!source) throw new Error("Validation error. Unknown route source");
+    const ids = await permissionApi.publicResourceIds({
+      params: { resource: source.route },
+    });
+    return this.readableRecords(name, ids);
+  }
+
+  async enumerate(name: string, column?: string): Promise<IRouteRecord[]> {
+    let records: IRouteRecord[];
+    try {
+      records = await this.all(name);
+    } catch (error) {
+      if (
+        !error ||
+        typeof error !== "object" ||
+        !("status" in error) ||
+        ![401, 403].includes(Number(error.status))
+      )
+        throw error;
+      return this.exactPublicRecords(name);
+    }
+    return column === "id"
+      ? this.readableRecords(
+          name,
+          records.map(({ id }) => id),
+        )
+      : records;
   }
 
   async all(

@@ -1,9 +1,9 @@
-import { route, serverHost } from "@sps/host/models/page/sdk/model";
+import {
+  route,
+  serverHost,
+  type IPageUrl,
+} from "@sps/host/models/page/sdk/model";
 import { responsePipe, type NextRequestOptions } from "@sps/shared-utils";
-
-interface IUrlRecord {
-  url: string;
-}
 
 interface IUrlsProps {
   catchErrors?: boolean;
@@ -17,7 +17,7 @@ export async function action({
   try {
     const options: Partial<NextRequestOptions> = { cache: "no-store" };
     const res = await fetch(`${host}${route}/urls`, options);
-    const json = await responsePipe<{ data: { urls: IUrlRecord[] } }>({ res });
+    const json = await responsePipe<{ data: { urls: IPageUrl[] } }>({ res });
     if (!Array.isArray(json?.data?.urls)) {
       throw new Error("Invalid page URL enumeration response");
     }
@@ -25,7 +25,7 @@ export async function action({
       if (typeof entry.url !== "string" || !entry.url.startsWith("/")) {
         throw new Error("Invalid URL in page enumeration response");
       }
-      return { url: entry.url.split("/").filter(Boolean) };
+      return { ...entry, url: entry.url.split("/").filter(Boolean) };
     });
   } catch (error) {
     if (catchErrors) return undefined;

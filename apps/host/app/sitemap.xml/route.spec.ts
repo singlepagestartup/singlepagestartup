@@ -88,3 +88,17 @@ it("splits a large sitemap into discoverable protocol-compliant parts", async ()
     (await GET(new Request("https://example.test/sitemap.xml?part=4"))).status,
   ).toBe(404);
 });
+
+it("filters indexing policy independently from the general available URL list", async () => {
+  urls.mockResolvedValue([
+    { url: ["authors", "public"], variant: "default" },
+    { url: ["login"], variant: "noindex" },
+    { url: ["hidden"], variant: "hidden" },
+    { url: ["draft"], variant: "draft" },
+  ]);
+  const response = await GET(new Request("https://example.test/sitemap.xml"));
+  const body = await response.text();
+  expect(response.status).toBe(200);
+  expect(body).toContain("/authors/public</loc>");
+  expect(body).not.toMatch(/\/(login|hidden|draft)<\/loc>/);
+});

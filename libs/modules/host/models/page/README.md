@@ -111,15 +111,26 @@ Host has no separate SEO API route.
 
 ## Sitemap and robots
 
-Anonymous `GET /api/host/pages/urls` lists language-neutral candidates from Page.
-It excludes hidden/draft/noindex Pages before expansion. A generic mask cannot
-reintroduce a URL owned by a higher-priority excluded Page in any presentation language.
-Page URL masks expand registered API model fields and pagination. Sources come
-from the same module registry used to mount apps/api, so adding a registered
-model does not require an SEO allowlist. API data is read anonymously through
-its public contract, without operator credentials. Permission errors omit an
-unavailable enumeration; temporary failures propagate. The enumeration safety
-cap is one million candidates, not the per-file sitemap limit.
+Anonymous `GET /api/host/pages/urls` lists concrete, language-neutral available
+Page URLs. Each entry contains `url`, `pageId` and the owning Page's `variant`.
+It includes accessible noindex Pages and excludes hidden/draft Pages. The most
+specific matching Page owns the URL; broader masks cannot restore a hidden URL
+or replace the noindex policy of a more specific Page.
+
+Page URL masks expand registered API fields and pagination. Sources come from
+the module registry used to mount apps/api. Public collections supply candidates;
+when a collection is protected, RBAC's `publicResourceIds` SDK operation supplies
+IDs with exact public GET Permissions. Host reads these records anonymously by
+ID and omits missing or denied records. ID-based masks also check detail access
+when their collection is public. Non-ID lookups on protected collections resolve
+against these same exact public records. Host does not interpret Role bindings,
+use operator credentials or maintain model allowlists. Temporary source failures
+propagate instead of returning a partial successful list. The enumeration safety
+cap is one million candidates, independently of XML file limits.
+
+The server SDK preserves `pageId` and `variant` while retaining its existing
+segment-array `url` representation. Sitemap filters indexing policy separately
+with `isSeoIndexablePage`; it excludes noindex entries from the available URL list.
 
 Host `/sitemap.xml` uses the standard sitemap namespace, absolute public URLs,
 configured languages and deterministic deduplication. Each candidate expands to
