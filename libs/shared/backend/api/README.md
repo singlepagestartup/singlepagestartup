@@ -99,10 +99,28 @@ describes private query refs, replay and browser recovery.
 
 DatabaseRepository.describe returns serializable table, column and foreign-key
 names without querying records. CRUDService.describe and RESTController.describe
-forward this contract. DefaultApp.describeRoutes describes its resource; module
-apps combine child descriptions with their mounted routes. Host consumes these
-descriptions for URL and metadata masks. API composition never inspects a
-controller's service repository or passes Drizzle Table objects to Host.
+forward this contract. `IDefaultApp` defines the shared route-description,
+HTTP and data-tooling contract. `DefaultApp` implements it for a resource;
+`ModuleApp` implements module composition once, prefixing child descriptions
+with the same paths used to mount their Hono routes.
+
+`IModuleApp<Apps>` extends the common contract with the typed child registry.
+Module bootstraps bind and resolve this interface. Host and RBAC extend it with
+their own routing-configuration and middleware capabilities. A concrete App
+class is only the DI implementation; it is not the bootstrap's public type.
+
+ModuleApp creates the registry during init, runs the protected configureApps
+hook, mounts child routes and installs the exception filter. It also owns the
+existing type-filtered dump/seed delegation. A module declares its registry
+factory and overrides only its own behavior: RBAC configures Subject services
+before mounting, Knowledge adds its API routes through useRoutes, and Host
+configures Page routing. The module generator uses this same base and registers
+new modules in the API composition's shared `apiModules` registry, used for
+both HTTP mounting and resource discovery.
+
+Host consumes resource descriptions for URL and metadata masks. API composition
+never inspects a controller's service repository or passes Drizzle Table objects
+to Host.
 
 HTTP response caching is mounted through HTTPCacheMiddleware. Its runtime option
 receives the sole consistency cache capability; it does not create a second

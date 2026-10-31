@@ -807,3 +807,46 @@ Page из схемы автоматически. Исторические миг
 Удалённый сервер не обновлялся. Для дочерних проектов нужно удалить обращения
 к indexing в собственных формах/запросах, выразить нужные правила через
 Page.variant и применить сгенерированные миграции обычным api:db:migrate.
+
+## Общий ModuleApp вместо копирования по модулям — 31.10.2026
+
+IDefaultApp задаёт общий контракт HTTP, describeRoutes и инструментов данных.
+Его типы перенесены в существующий default/interface.ts с прежними экспортами.
+DefaultApp обслуживает ресурс с Controller; ModuleApp собирает дочерние Apps
+и реализует общий жизненный цикл, describeRoutes, HTTP mounting, dump и seed.
+IModuleApp<Apps> расширяет IDefaultApp типизированной коллекцией приложений.
+
+- [x] Убрать повторяющиеся методы из всех 15 модулей и шаблона генератора.
+      Обычный App объявляет только фабрику Apps. Bootstrap разрешает
+      IModuleApp<Apps> через DI вместо конкретного класса.
+- [x] Сохранить доменные возможности: Host.configureRouting, настройку
+      Subject-сервисов RBAC перед mounting и middleware, дополнительные
+      маршруты Knowledge. Host/RBAC экспортируют собственный IApp,
+      расширяющий IModuleApp; общий контракт не содержит этих доменных методов.
+- [x] Проверить вложенные префиксы HTTP/описаний, сериализацию ресурсов,
+      порядок lifecycle hook, ошибочный HTTP-ответ, фильтры dump/seed и
+      наследование Inversify с unmanaged-фабрикой. Тип-фильтры dump/seed
+      сохранены; массивы результатов дочерних App разворачиваются в общий список.
+- [x] Обновить генератор модулей: общий App/интерфейс, недостающий параметр
+      имени модуля, валидный JSON и uncached aggregate targets. Новый модуль
+      регистрируется в apiModules актуального apps/api/app.ts, который
+      используют HTTP mounting и Host discovery. Обновлены attach/detach;
+      типизированный Hono и другие записи реестра сохраняются.
+- [x] Пройти 54 теста в 8 наборах: общий/ресурсный App, description pipeline,
+      Page/SEO, административный Profile guard и генератор с API composition.
+      Основной финальный набор: 49 passed; обновлённые тесты генератора:
+      6 passed, из них один входит в основной набор.
+- [x] Сверить SDK до/после без HTTP-кеша: те же 61 URL и hash полного списка;
+      ID, title, description, canonical и index страницы About и товара
+      совпадают. Анонимный Profile CRUD по-прежнему получает 403.
+      Миграций и изменений данных нет.
+- [x] Module dependencies: 15 508 исходных файлов, нарушений нет.
+
+Логи: /tmp/sps-module-app-tests-final.log,
+/tmp/sps-module-app-generator-final.log,
+/tmp/sps-module-app-api-types-final.log,
+/tmp/sps-module-app-dependencies.log,
+/tmp/sps-module-app-before.log, /tmp/sps-module-app-after-final.log.
+Документация обновлена в shared backend API и генераторе. Корневой API entrypoint
+не изменён; проверочный новый модуль существует только в in-memory Nx tree.
+Удалённый сервер не обновлялся.
