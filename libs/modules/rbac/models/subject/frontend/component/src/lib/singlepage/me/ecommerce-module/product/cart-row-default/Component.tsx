@@ -15,7 +15,7 @@ export function Component(props: IComponentPropsExtended) {
         isServer={props.isServer}
         ecommerceModuleProduct={props.ecommerceModuleProduct}
         language={props.language}
-        variant="ecommerce-module-product-cart-default"
+        variant="me-ecommerce-module-product-cart-default"
         dataSource="props"
         data={props.data}
       />

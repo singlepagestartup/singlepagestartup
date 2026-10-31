@@ -2,7 +2,7 @@
 import "server-only";
 
 import AuthenticationMe from "../../../authentication/me-default/server";
-import type { IComponentProps } from "./interface";
+import type { IApiComponentProps as IComponentProps } from "./interface";
 import { Component as ChildComponent } from "./Component";
 import Client from "./client";
 

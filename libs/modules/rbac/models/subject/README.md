@@ -10,6 +10,24 @@ Subjects represent visitors, registered accounts and actors, and connect identit
 - Frontend variants such as `me-ecommerce-module-product-cart-default`, `me-ecommerce-module-product-checkout-default`, and `me-ecommerce-module-cart-default` are the supported entry points for host/cart behavior.
 - Dependency direction is one-way: `rbac > ecommerce`. RBAC may compose ecommerce SDK/components; ecommerce must not import RBAC subject implementation.
 
+### Current-Subject cart components
+
+The cart sheet, Product cart actions and Product checkout use the public variants
+`me-ecommerce-module-cart-default`, `me-ecommerce-module-product-cart-default`
+and `me-ecommerce-module-product-checkout-default`. Each has one view and two
+Subject sources: the default reader resolves `authenticationMe`; with
+`dataSource="props"`, `data` is required and the view uses that already-loaded
+Subject without another session read or Provider. An owning card or overview
+passes its live Subject through this mode. Cart reads and mutations still use
+the client Subject SDK and the API's JWT/ownership checks. Guest sessions are
+supported; a supplied Subject does not establish API authorization.
+
+Product views and actions live in their owning `me` variant directories. The
+former `ecommerce-module-product-cart-default` and
+`ecommerce-module-product-checkout-default` registrations are removed; owned
+compositions should select the corresponding `me` variant and pass
+`dataSource="props"` when they already own the current Subject.
+
 ### Current-Subject cart reads
 
 `GET /api/rbac/subjects/:id/ecommerce-module/orders?includeCartDetails=true`
@@ -314,8 +332,8 @@ Public author URLs use `/authors/<Social Profile UUID>`. Social's `authors`, `au
 - `identity-settings-default`: identity settings form.
 - `get-emails`: helper to fetch identity emails.
 - `crm-module-form-request-create`: create CRM form request.
-- `ecommerce-module-product-cart-default`: cart product actions for subject.
-- `ecommerce-module-product-checkout-default`: product checkout flow.
+- `me-ecommerce-module-product-cart-default`: current-Subject cart product actions.
+- `me-ecommerce-module-product-checkout-default`: current-Subject product checkout flow.
 - `ecommerce-module-order-create-default`: create order action.
 - `ecommerce-module-order-update-default`: update order action.
 - `ecommerce-module-order-delete-default`: delete order action.

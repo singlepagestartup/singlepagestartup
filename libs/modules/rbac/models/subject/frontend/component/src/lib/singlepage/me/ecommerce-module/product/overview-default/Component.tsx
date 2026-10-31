@@ -38,7 +38,7 @@ export function Component(props: IComponentPropsExtended) {
           ecommerceModuleProduct={props.ecommerceModuleProduct}
           ecommerceModuleStore={props.ecommerceModuleStore}
           language={props.language}
-          variant="ecommerce-module-product-cart-default"
+          variant="me-ecommerce-module-product-cart-default"
           dataSource="props"
           data={props.data}
           className="w-full"
@@ -48,7 +48,7 @@ export function Component(props: IComponentPropsExtended) {
           ecommerceModuleProduct={props.ecommerceModuleProduct}
           ecommerceModuleStore={props.ecommerceModuleStore}
           language={props.language}
-          variant="ecommerce-module-product-checkout-default"
+          variant="me-ecommerce-module-product-checkout-default"
           dataSource="props"
           data={props.data}
           className="w-full"

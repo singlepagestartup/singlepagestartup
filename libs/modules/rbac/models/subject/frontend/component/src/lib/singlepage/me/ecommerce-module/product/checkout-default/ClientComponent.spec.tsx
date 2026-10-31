@@ -63,10 +63,10 @@ jest.mock("@sps/ecommerce/models/product/frontend/component", () => ({
     ),
 }));
 import { Component } from "./ClientComponent";
-import { Component as CreateCart } from "../../order/create-default/ClientComponent";
+import { Component as CreateCart } from "../../../../ecommerce-module/order/create-default/ClientComponent";
 const props = {
   isServer: false,
-  variant: "ecommerce-module-product-checkout-default" as const,
+  variant: "me-ecommerce-module-product-checkout-default" as const,
   data: { id: "subject" } as any,
   ecommerceModuleProduct: { id: "product" } as any,
   ecommerceModuleStore: { id: "store" } as any,

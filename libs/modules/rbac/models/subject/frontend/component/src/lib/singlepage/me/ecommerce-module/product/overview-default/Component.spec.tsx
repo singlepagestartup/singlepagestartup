@@ -73,8 +73,8 @@ describe("Given: RBAC ecommerce product overview component", () => {
 
     expect(delegatedVariants).toEqual(
       expect.arrayContaining([
-        "ecommerce-module-product-cart-default",
-        "ecommerce-module-product-checkout-default",
+        "me-ecommerce-module-product-cart-default",
+        "me-ecommerce-module-product-checkout-default",
       ]),
     );
   });

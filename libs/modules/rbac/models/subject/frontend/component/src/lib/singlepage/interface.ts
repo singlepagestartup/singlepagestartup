@@ -76,8 +76,6 @@ import { IComponentProps as IAuthenticationEmailAndPasswordResetPasswordComponen
 import { IComponentProps as IAuthenticationEmailAndPasswordRegistrationFormDefaultComponentProps } from "./authentication/email-and-password/registration-form-default/interface";
 import { IComponentProps as IDefaultComponentProps } from "./default/interface";
 import { IComponentProps as IIdentityGetEmailsComponentProps } from "./identity/get-emails/interface";
-import { IComponentProps as IEcommerceModuleProductCheckoutDefaultComponentProps } from "./ecommerce-module/product/checkout-default/interface";
-import { IComponentProps as IEcommerceModuleProductCartDefaultComponentProps } from "./ecommerce-module/product/cart-default/interface";
 import { IComponentProps as IAuthenticationButtonDefaultComponentProps } from "./authentication/button-default/interface";
 import { IComponentProps as IOverviewDefaultComponentProps } from "./overview-default/interface";
 import { IComponentProps as IIdentitySettingsDefaultComponentProps } from "./identity/settings-default/interface";
@@ -157,10 +155,8 @@ export type IComponentProps =
   | IAdminV2CardComponentProps
   | IAdminV2SidebarItemComponentProps
   | IDefaultComponentProps
-  | IEcommerceModuleProductCheckoutDefaultComponentProps
   | IAuthenticationButtonDefaultComponentProps
   | IOverviewDefaultComponentProps
-  | IEcommerceModuleProductCartDefaultComponentProps
   | IAuthenticationInitDefaultComponentProps
   | IAuthenticationEmailAndPasswordAuthenticationFormDefaultComponentProps
   | IAuthenticationLogoutActionComponentProps
