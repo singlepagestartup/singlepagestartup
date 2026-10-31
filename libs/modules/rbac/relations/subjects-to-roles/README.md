@@ -39,7 +39,7 @@ set to `schema.ts`. Constraints never own column declarations.
 
 ## Subscription revocation
 
-Generic delete and reassignment use the owning relation Service. Its API-host
+Generic delete and reassignment use the owning relation Service. Its RBAC module
 composition marks matching owned subscription Orders through the effective
 Ecommerce Service before deleting or changing the grant. Both writes share the
 owning grant transaction and Subject delivery lock. An unconfigured Service
@@ -52,9 +52,10 @@ or cancellation of an owned Order. Subscription cancellation requires that
 Order's revocation marker. The operation preserves grants required by another
 current subscription. No REST parameter bypasses explicit revocation.
 
-`apps/api/app.ts` calls `configureRevocation({ revoke, canFulfill })` on both
-the HTTP relation Service and the Subject-injected relation Service. These
-callbacks delegate Order reads and revocation to the effective Ecommerce
-Service. Tests constructing this relation Service directly must provide the
-callbacks before delete or reassignment. The owning repository locks only
-Subject grant rows and tracks that read through the shared consistency layer.
+RBAC module initialization configures both the HTTP relation Service and the
+Subject-injected relation Service through their controllers. The Subject's
+Ecommerce Order role-revocation service owns the callbacks and delegates Order
+reads and revocation to the effective Ecommerce Service. Tests constructing the
+relation Service directly must provide these callbacks before delete or
+reassignment. The owning repository locks Subject grant rows and tracks the read
+through the shared consistency layer.

@@ -15,6 +15,40 @@ const bindings = {
   serverApi: { findById: jest.fn(), find: jest.fn() },
 };
 
+it("renders the explicitly selected view even when the loaded record has variant hidden", () => {
+  const view = jest.fn((props: any) => <div>{props.data.title}</div>);
+  render(
+    createElement(Component as any, {
+      ...bindings,
+      Component: view,
+      isServer: false,
+      variant: "default",
+      dataSource: "props",
+      data: { id: "one", variant: "hidden", title: "Selected view" },
+    }),
+  );
+  expect(screen.getByText("Selected view")).toBeTruthy();
+});
+
+it("passes every supplied record to the collection renderer regardless of variant", () => {
+  const data = [
+    { id: "one", variant: "hidden" },
+    { id: "two", variant: "default" },
+  ];
+  const children = jest.fn(() => null);
+  render(
+    createElement(Find as any, {
+      ...bindings,
+      isServer: false,
+      variant: "find",
+      dataSource: "props",
+      data,
+      children,
+    }),
+  );
+  expect(children).toHaveBeenCalledWith({ data });
+});
+
 it.each([true, false])(
   "renders current parent query results with no second request/Provider (isServer=%s)",
   (isServer) => {
@@ -112,7 +146,7 @@ it("uses the supplied Skeleton node while the client SDK query is pending", () =
 
 it("strips all reader bindings after the server SDK read", async () => {
   const { Component: ServerReader } = await import("./server");
-  const data = { id: "record", title: "Loaded" };
+  const data = { id: "record", variant: "hidden", title: "Loaded" };
   const element = await ServerReader({
     ...bindings,
     api: { findById: jest.fn().mockResolvedValue(data) },

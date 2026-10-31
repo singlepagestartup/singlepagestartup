@@ -1,69 +1,37 @@
 import "reflect-metadata";
-import { Env, Hono } from "hono";
 import {
   DI,
-  IDumpResult,
-  ISeedResult,
-  type IDefaultApp,
+  ModuleApp,
   type IExceptionFilter,
+  type IDefaultApp,
+  type IModuleApp,
 } from "@sps/shared-backend-api";
 import { inject, injectable } from "inversify";
 import { Apps } from "./apps";
 
+export interface IApp extends IModuleApp<Apps> {
+  configureRouting(
+    modules: Record<string, Pick<IDefaultApp, "describeRoutes">>,
+  ): void;
+}
+
 @injectable()
-export class App implements IDefaultApp<Env> {
-  hono: Hono<Env>;
-  exceptionFilter: IExceptionFilter;
-  apps: Apps;
-
+export class App extends ModuleApp<Apps> implements IApp {
   constructor(@inject(DI.IExceptionFilter) exceptionFilter: IExceptionFilter) {
-    this.hono = new Hono<Env>();
-    this.exceptionFilter = exceptionFilter;
+    super(exceptionFilter, () => new Apps());
   }
 
-  public async init() {
-    const apps = new Apps();
-    this.apps = apps;
-
-    this.useRoutes();
-    this.hono.onError(this.exceptionFilter.catch.bind(this.exceptionFilter));
-  }
-
-  async dump(props?: { type?: "model" | "relation"; dumps: IDumpResult[] }) {
-    const dumps: IDumpResult[] = [];
-
-    await Promise.all(
-      this.apps.apps.map(async (app) => {
-        if (app.type === props?.type) {
-          const appDumps = await app.app.dump();
-
-          dumps.push(appDumps);
-        }
-      }),
+  configureRouting(
+    modules: Record<string, Pick<IDefaultApp, "describeRoutes">>,
+  ) {
+    this.apps.configureRouting(
+      Object.entries(modules).flatMap(([name, module]) =>
+        module.describeRoutes().map(({ route, resource }) => ({
+          name: name + "." + route.slice(1),
+          route: "/api/" + name + route,
+          resource,
+        })),
+      ),
     );
-
-    return dumps;
-  }
-
-  async seed(props?: { type?: "model" | "relation"; seeds: ISeedResult[] }) {
-    const seeds: ISeedResult[] = [];
-
-    await Promise.all(
-      this.apps.apps.map(async (app) => {
-        if (app.type === props?.type) {
-          const appSeeds = await app.app.seed(props);
-
-          seeds.push(appSeeds);
-        }
-      }),
-    );
-
-    return seeds;
-  }
-
-  useRoutes() {
-    this.apps.apps.forEach((app) => {
-      this.hono.route(app.route, app.app.hono);
-    });
   }
 }

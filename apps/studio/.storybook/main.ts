@@ -61,6 +61,10 @@ const config: StorybookConfig = {
       ...config.resolve,
       alias: {
         ...config.resolve?.alias,
+        "@sps/shared-utils/metadata": path.resolve(
+          configDirectory,
+          "../../../libs/shared/utils/src/lib/metadata/index.ts",
+        ),
         "@sps/ui-adapter/toast": path.resolve(
           configDirectory,
           "../../../libs/shared/ui/adapter/src/lib/toast/index.tsx",

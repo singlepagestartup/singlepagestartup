@@ -1,3 +1,5 @@
+import { internationalization } from "@sps/shared-configuration";
+import { resolveSeoRoute } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
@@ -29,7 +31,11 @@ export class Handler {
       }
 
       const entity = await this.service.findByUrl({
-        url,
+        url: resolveSeoRoute(
+          url,
+          internationalization.languages.map(({ code }) => code),
+          internationalization.defaultLanguage.code,
+        ).pathname,
         params: c.var.parsedQuery,
       });
 

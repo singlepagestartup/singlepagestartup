@@ -21,6 +21,7 @@ export const options = {
   },
 } as NextRequestOptions;
 export const variants = [
+  "hidden",
   "content-collection",
   "content-form",
   "content-hero",

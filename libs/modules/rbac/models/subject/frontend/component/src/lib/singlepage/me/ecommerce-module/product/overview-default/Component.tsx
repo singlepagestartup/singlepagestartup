@@ -1,8 +1,6 @@
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import { Component as EcommerceModuleProduct } from "@sps/ecommerce/models/product/frontend/component";
 import type { IComponentPropsExtended } from "./interface";
-import { Component as CategoryRowButtonDefault } from "../card-default/Category";
-import { Component as SocialModuleProfileButtonDefault } from "../card-default/Profile";
 import { CardContent, CardHeader } from "@sps/shared-ui-shadcn";
 
 export function Component(props: IComponentPropsExtended) {
@@ -15,21 +13,21 @@ export function Component(props: IComponentPropsExtended) {
       language={props.language}
       topSlot={
         <CardHeader className="p-0">
-          <CategoryRowButtonDefault
+          <Subject
             isServer={props.isServer}
             language={props.language}
-            variant="overview-default"
-            ecommerceModuleProduct={props.ecommerceModuleProduct}
+            variant="ecommerce-module-product-category-default"
+            ecommerceModuleProductId={props.ecommerceModuleProduct.id}
           />
         </CardHeader>
       }
       middleSlot={
         <CardContent className="p-0">
-          <SocialModuleProfileButtonDefault
+          <Subject
             isServer={props.isServer}
             language={props.language}
-            variant="overview-default"
-            ecommerceModuleProduct={props.ecommerceModuleProduct}
+            variant="ecommerce-module-product-profile-default"
+            ecommerceModuleProductId={props.ecommerceModuleProduct.id}
           />
         </CardContent>
       }

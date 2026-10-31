@@ -1,4 +1,5 @@
 "use server";
+
 import "server-only";
 
 import { IComponentProps } from "./interface";
@@ -10,7 +11,7 @@ export async function Component<
   A extends { api: ReturnType<typeof factory<M>> },
   CP extends IComponentProps<M, V>,
 >(props: CP & A) {
-  const data = await props.api.find(props.apiProps);
+  const data = await props.api.find(props.apiProps || {});
 
   if (!data) {
     return <></>;

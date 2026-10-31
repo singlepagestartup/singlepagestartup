@@ -1,271 +1,226 @@
 import "reflect-metadata";
 import { injectable } from "inversify";
-import { CRUDService, FindByIdServiceProps } from "@sps/shared-backend-api";
+import {
+  CRUDService,
+  type FindByIdServiceProps,
+} from "@sps/shared-backend-api";
 import { Table } from "@sps/host/models/page/backend/repository/database";
 import {
-  API_SERVICE_URL,
   buildTreePaths,
-  RBAC_SECRET_KEY,
-  responsePipe,
   extractRouteParams,
+  isSeoIndexablePage,
+  SEO_SITEMAP_MAX_CANDIDATES,
 } from "@sps/shared-utils";
+import { RoutingService, type IRouteSource } from "./routing";
+import { SeoService } from "./seo";
 
-export type EntityWithUrls = typeof Table.$inferSelect & {
+export interface EntityWithUrls extends Record<string, unknown> {
   urls: { url: string }[];
-};
-
-export type FindByUrlServiceProps = {
+}
+export interface FindByUrlServiceProps extends Partial<FindByIdServiceProps> {
   url: string;
-} & Partial<FindByIdServiceProps>;
+}
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
-  async findByUrl(props: FindByUrlServiceProps): Promise<any> {
-    if (props.url.includes("?")) {
-      throw new Error("Validation error. Query parameters are not allowed");
-    }
+  routing = new RoutingService();
+  readonly seo = new SeoService({
+    findByUrl: (props) => this.findByUrl(props),
+  });
 
-    const splittedUrl = props.url.split("/").filter((url) => url !== "");
-
-    const pages = await this.find();
-
-    const pageWithEqualUrlParts = pages?.filter((page) => {
-      const pageUrlParts = page.url?.split("/").filter((url) => url !== "");
-
-      if (page.url?.includes(":pagination:")) {
-        if (
-          splittedUrl.length === pageUrlParts?.length ||
-          splittedUrl.length === pageUrlParts?.length - 1
-        ) {
-          return true;
-        }
-      } else {
-        if (splittedUrl.length === pageUrlParts?.length) {
-          return true;
-        }
-      }
-
-      return false;
-    });
-
-    const filledPages: EntityWithUrls[] = [];
-
-    for (const pageWithEqualUrlPart of pageWithEqualUrlParts) {
-      const entityWithUrls = await this.withUrls({
-        id: pageWithEqualUrlPart.id,
-      });
-
-      if (!entityWithUrls) {
-        continue;
-      }
-
-      filledPages.push(entityWithUrls);
-    }
-
-    const targetPage = filledPages.find((page) => {
-      if (
-        page.urls.find((urlParam) => {
-          if (urlParam.url === props.url) {
-            return true;
-          }
-
-          return false;
-        })
-      ) {
-        return true;
-      }
-
-      return false;
-    });
-
-    if (!targetPage) {
-      throw new Error(`Not Found error. Page with url ${props.url} not found`);
-    }
-
-    const populatedPage = await this.findById({
-      id: targetPage.id,
-    });
-
-    return populatedPage
-      ? {
-          ...populatedPage,
-          routeParams: extractRouteParams({
-            url: props.url,
-            mask: populatedPage.url,
-          }),
-        }
-      : populatedPage;
+  configureRouting(sources: IRouteSource[]) {
+    this.routing = new RoutingService(sources);
+    this.seo.routing = this.routing;
   }
 
-  protected async processPaginationSegment(segment: string): Promise<string[]> {
-    const [moduleInfo, paginationType, pageSize] = segment.split(":");
+  protected async routePages() {
+    return (await this.find()).sort(
+      (a, b) =>
+        (a.url.match(/\[/g)?.length || 0) - (b.url.match(/\[/g)?.length || 0) ||
+        a.id.localeCompare(b.id),
+    );
+  }
 
-    if (paginationType !== "pagination") {
+  async findByUrl(props: FindByUrlServiceProps) {
+    if (props.url.includes("?"))
+      throw new Error("Validation error. Query parameters are not allowed");
+    const pages = await this.routePages();
+    for (const page of pages) {
+      let routeParams: Record<string, string>;
+      try {
+        routeParams = extractRouteParams({ url: props.url, mask: page.url });
+      } catch {
+        continue;
+      }
+      if (["hidden", "draft"].includes(page.variant))
+        throw new Error("Not Found error. Page not found");
+      // Application pages resolve their route shell here; authenticated data
+      // remains in the client-side domain readers.
+      if (page.variant === "noindex") return { ...page, routeParams };
+      let exists = true;
+      for (const [key, value] of Object.entries(routeParams)) {
+        if (key.includes(":pagination:")) {
+          const numbers = await this.processPaginationSegment(key);
+          if (value !== "1" && !numbers.includes(value)) exists = false;
+          continue;
+        }
+        const match =
+          /^([a-z][a-z0-9-]*)\.([a-z][a-z0-9-]*)\.([a-zA-Z][a-zA-Z0-9_]*)$/.exec(
+            key,
+          );
+        if (!match)
+          throw new Error("Validation error. Unsupported Page URL mask");
+        let decoded: string;
+        try {
+          decoded = decodeURIComponent(value);
+        } catch {
+          exists = false;
+          break;
+        }
+        const records = await this.routing.find(match[1] + "." + match[2], {
+          filters: {
+            and: [{ column: match[3], method: "eq", value: decoded }],
+          },
+          limit: 2,
+        });
+        if (records.length !== 1) {
+          exists = false;
+          break;
+        }
+      }
+      if (exists) return { ...page, routeParams };
+    }
+    throw new Error("Not Found error. Page not found");
+  }
+
+  protected async processPaginationSegment(
+    segment: string,
+    options: { maxUrls?: number } = {},
+  ) {
+    const [name, pagination, size] = segment.split(":");
+    const pageSize = Number(size);
+    if (
+      pagination !== "pagination" ||
+      !/^[1-9]\d*$/.test(size) ||
+      !Number.isSafeInteger(pageSize)
+    )
       throw new Error("Validation error. Invalid pagination format");
-    }
-
-    if (!RBAC_SECRET_KEY) {
-      throw new Error("Configuration error. RBAC_SECRET_KEY not found");
-    }
-
-    const [moduleName, modelName] = moduleInfo.split(".");
-    const pageSizeNum = parseInt(pageSize, 10);
-
-    if (isNaN(pageSizeNum)) {
-      throw new Error("Validation error. Invalid page size");
-    }
-
-    const moduleEntities = await this.fetchAllModuleEntities({
-      moduleName,
-      modelName,
-      secretKey: RBAC_SECRET_KEY,
-    });
-    const totalItems = moduleEntities.length;
-    const totalPages = Math.ceil(totalItems / pageSizeNum);
-
+    const records = await this.routing.all(name.replace(/\.$/, ""));
+    const pages = Math.ceil(records.length / pageSize);
+    if (options.maxUrls && pages > options.maxUrls)
+      throw new Error("Validation error. Pagination exceeds the URL limit");
     return [
       "",
-      ...Array.from({ length: totalPages - 1 }, (_, i) => (i + 2).toString()),
+      ...Array.from({ length: Math.max(0, pages - 1) }, (_, i) =>
+        String(i + 2),
+      ),
     ];
   }
 
-  async withUrls(props: { id: string }) {
-    if (!RBAC_SECRET_KEY) {
-      throw new Error("Configuration error. RBAC_SECRET_KEY not found");
-    }
-
-    const result = await this.findById({
-      id: props.id,
-    });
-
-    if (!result) {
-      throw new Error(`Not Found error. Entity with id ${props.id} not found`);
-    }
-
-    const segments = result.url?.split("/").filter((url) => url !== "");
-
-    const saturatedSegments: Array<string | string[]> = [];
-
-    if (segments?.length) {
-      for (const segment of segments) {
-        if (segment.includes("[")) {
-          const moduleSegment = segment.replace("[", "").replace("]", "");
-
-          if (moduleSegment.includes(":pagination:")) {
-            const pageNumbers =
-              await this.processPaginationSegment(moduleSegment);
-            saturatedSegments.push(pageNumbers);
-            continue;
-          }
-
-          const moduleName = moduleSegment.split(".")[0];
-          const modelName = moduleSegment.split(".")[1];
-          const param = moduleSegment.split(".")[2];
-          const moduleSegmentPaths: string[] = [];
-
-          const moduleEntities = await this.fetchAllModuleEntities({
-            moduleName,
-            modelName,
-            secretKey: RBAC_SECRET_KEY,
-          });
-
-          moduleEntities.forEach((entity: unknown) => {
-            if (!entity?.[param]) {
-              throw new Error(
-                `Not Found error. Entity with param ${param} not found`,
-              );
-            }
-
-            moduleSegmentPaths.push(entity[param]);
-          });
-
-          saturatedSegments.push(moduleSegmentPaths);
-          continue;
-        }
-
-        saturatedSegments.push(segment);
+  async withUrls(props: { id: string; maxUrls?: number }) {
+    const page = await this.findById({ id: props.id });
+    if (!page || ["hidden", "draft"].includes(page.variant))
+      throw new Error("Not Found error. Page not found");
+    const segments: (string | string[])[] = [];
+    for (const segment of page.url.split("/").filter(Boolean)) {
+      if (!segment.includes("[")) {
+        segments.push(segment);
+        continue;
       }
-    }
-
-    if (saturatedSegments.length === 0) {
-      return { ...result, urls: [{ url: "/" }] };
-    }
-
-    const constructedUrls = buildTreePaths({
-      segments: saturatedSegments,
-    });
-
-    const urls: EntityWithUrls["urls"] = constructedUrls.map((url) => {
-      let urlString = url.join("/");
-
-      if (urlString.endsWith("/") && urlString.length > 1) {
-        urlString = urlString.slice(0, -1);
+      const token = /^\[([^\[\]]+)\]$/.exec(segment)?.[1];
+      if (!token)
+        throw new Error("Validation error. Unsupported Page URL mask");
+      if (token.includes(":pagination:")) {
+        segments.push(await this.processPaginationSegment(token, props));
+        continue;
       }
-
-      return {
-        url: urlString.startsWith("/") ? urlString : `/${urlString}`,
-      };
-    });
-
-    return { ...result, urls };
-  }
-
-  protected async fetchAllModuleEntities(props: {
-    moduleName: string;
-    modelName: string;
-    secretKey: string;
-  }): Promise<any[]> {
-    const response = await fetch(
-      `${API_SERVICE_URL}/api/${props.moduleName}/${props.modelName}`,
-      {
-        headers: {
-          "X-RBAC-SECRET-KEY": props.secretKey,
-          "X-SPS-Consistency": "1",
-          "Cache-Control": "no-store",
-        },
-      },
+      const match =
+        /^([a-z][a-z0-9-]*)\.([a-z][a-z0-9-]*)\.([a-zA-Z][a-zA-Z0-9_]*)$/.exec(
+          token,
+        );
+      if (!match)
+        throw new Error("Validation error. Unsupported Page URL mask");
+      const records = await this.routing.all(match[1] + "." + match[2]);
+      segments.push([
+        ...new Set(
+          records
+            .map((record) => record[match[3]])
+            .filter(
+              (value) => typeof value === "string" || typeof value === "number",
+            )
+            .map((value) => encodeURIComponent(String(value))),
+        ),
+      ]);
+    }
+    const count = segments.reduce(
+      (count, segment) => count * (Array.isArray(segment) ? segment.length : 1),
+      1,
     );
-    const payload = await responsePipe<{ data: any[] }>({ res: response });
-
-    if (!Array.isArray(payload?.data)) {
-      return [];
-    }
-
-    return payload.data;
+    if (props.maxUrls && count > props.maxUrls)
+      throw new Error(
+        "Validation error. Page mask exceeds the URL enumeration limit",
+      );
+    const paths = segments.length ? buildTreePaths({ segments }) : [[]];
+    return {
+      ...page,
+      urls: paths.map((path) => ({
+        url: "/" + path.join("/").replace(/\/$/, ""),
+      })),
+    };
   }
 
   async urls() {
-    const entities = await this.find();
-    const saturatedEntities: EntityWithUrls[] = [];
-
-    for (const entity of entities) {
-      const saturatedEntity = await this.withUrls({ id: entity.id });
-      saturatedEntities.push(saturatedEntity);
+    const urls = new Map<string, { url: string }>();
+    const pages = await this.routePages();
+    for (const [index, page] of pages.entries()) {
+      if (!isSeoIndexablePage(page)) continue;
+      const exclusions = pages
+        .slice(0, index)
+        .filter((candidate) => !isSeoIndexablePage(candidate));
+      let expanded: Awaited<ReturnType<Service["withUrls"]>>;
+      try {
+        expanded = await this.withUrls({
+          id: page.id,
+          maxUrls: SEO_SITEMAP_MAX_CANDIDATES,
+        });
+      } catch (error) {
+        if (
+          error &&
+          typeof error === "object" &&
+          "status" in error &&
+          [401, 403].includes(Number(error.status))
+        )
+          continue;
+        throw error;
+      }
+      for (const entry of expanded.urls) {
+        if (
+          exclusions.some((candidate) => {
+            try {
+              extractRouteParams({ url: entry.url, mask: candidate.url });
+              return true;
+            } catch {
+              return false;
+            }
+          })
+        )
+          continue;
+        urls.set(entry.url, entry);
+        if (urls.size > SEO_SITEMAP_MAX_CANDIDATES)
+          throw new Error(
+            "Validation error. Sitemap exceeds the URL enumeration limit",
+          );
+      }
     }
-
-    return saturatedEntities
-      .map((entity) => {
-        return entity.urls;
-      })
-      .flat();
+    return [...urls.values()];
   }
 
   async urlSegmentValue(props: { url: string; segment: string }) {
-    const entity = await this.findByUrl({
-      url: props.url,
-    });
-
-    if (!entity) {
-      throw new Error("Not Found error. Entity not found");
-    }
-
+    const page = await this.findByUrl(props);
     const params =
-      entity.routeParams ??
-      extractRouteParams({ url: props.url, mask: entity.url });
-    // Retain legacy partial-name lookup; new callers consume exact map keys.
-    const key = Object.keys(params).find((name) =>
-      name.includes(props.segment),
-    );
+      page.routeParams ??
+      extractRouteParams({ url: props.url, mask: page.url });
+    const key = Object.keys(params).find((key) => key.includes(props.segment));
     return key ? params[key] : null;
   }
 }

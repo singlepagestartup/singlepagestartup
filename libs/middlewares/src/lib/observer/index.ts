@@ -88,10 +88,7 @@ export class Middleware {
             return;
           }
 
-          /**
-           * Without passing Cache-Control data are mismatched, because
-           * http-cache middleware uses these models.
-           */
+          // Notification reads need current data rather than reusable responses.
           const messagesByChannels = await Promise.all(
             observerChannels.map((channel) => {
               if (!RBAC_SECRET_KEY) {

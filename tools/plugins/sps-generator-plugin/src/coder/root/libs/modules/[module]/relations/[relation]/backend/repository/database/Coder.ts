@@ -151,6 +151,7 @@ export class Coder {
           type === "generate"
             ? {
                 executor: "nx:run-commands",
+                cache: false,
                 options: {
                   parallel: false,
                   cwd: `libs/modules/${moduleName}/relations/${relationNameStyles.kebabCased.base}/backend/repository/database`,

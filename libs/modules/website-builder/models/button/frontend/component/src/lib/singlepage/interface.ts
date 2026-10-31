@@ -1,3 +1,4 @@
+import { IComponentProps as IHiddenComponentProps } from "@sps/shared-frontend-components/singlepage/hidden/interface";
 import type { IComponentProps as IActionOutlineInverse } from "./action-outline-inverse/interface";
 import type { IComponentProps as IFooterLink } from "./footer-link/interface";
 import type { IComponentProps as INavigationInverse } from "./navigation-inverse/interface";
@@ -28,6 +29,7 @@ import { IComponentProps as IDefaultComponentProps } from "./default/interface";
 import { IComponentProps as IChildrenComponentProps } from "./children/interface";
 
 export type IComponentProps =
+  | IHiddenComponentProps
   | IActionOutlineInverse
   | IFooterLink
   | INavigationInverse

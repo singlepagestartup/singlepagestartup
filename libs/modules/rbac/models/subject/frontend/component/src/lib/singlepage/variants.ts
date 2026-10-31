@@ -1,3 +1,6 @@
+import { Component as EcommerceModuleProductCategoryDefault } from "./ecommerce-module/product/category-default";
+import { Component as EcommerceModuleProductProfileDefault } from "./ecommerce-module/product/profile-default";
+import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
 import { Component as MeBlogModuleArticleCreateDefault } from "./me/blog-module/article/create-default";
 import { Component as MeAccount } from "./me/account";
 import { Component as SocialModuleProfileFind } from "./social-module/profile/find";
@@ -86,6 +89,11 @@ import { Component as SocialModuleProfileChatListDefault } from "./social-module
 import { Component as SocialModuleProfileChatOverviewDefault } from "./social-module/profile/chat/overview/default";
 
 export const variants = {
+  "ecommerce-module-product-category-default":
+    EcommerceModuleProductCategoryDefault,
+  "ecommerce-module-product-profile-default":
+    EcommerceModuleProductProfileDefault,
+  hidden: Hidden,
   "me-blog-module-article-create-default": MeBlogModuleArticleCreateDefault,
   "me-account": MeAccount,
   "social-module-profile-find": SocialModuleProfileFind,

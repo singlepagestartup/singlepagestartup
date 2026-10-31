@@ -20,6 +20,7 @@ export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/rbac/subjects";
 export const variants = [
+  "hidden",
   "me-account",
   "me-blog-module-article-create-default",
 
@@ -74,9 +75,3 @@ export {
   type IAIChatDocument,
   type IAIChatProject,
 } from "./ai-chat-project";
-
-export type {
-  IArticleContentAccess,
-  IArticleContentItem,
-  IArticleContentResult,
-} from "./blog-article-content";

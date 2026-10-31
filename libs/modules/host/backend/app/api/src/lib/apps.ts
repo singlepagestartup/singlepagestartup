@@ -1,3 +1,4 @@
+import { app as metadataToFileStorageModuleFiles } from "@sps/host/relations/metadata-to-file-storage-module-files/backend/app/api";
 import { app as layout } from "@sps/host/models/layout/backend/app/api";
 import { app as metadata } from "@sps/host/models/metadata/backend/app/api";
 import { app as page } from "@sps/host/models/page/backend/app/api";
@@ -8,6 +9,8 @@ import { app as pagesToMetadata } from "@sps/host/relations/pages-to-metadata/ba
 import { app as pagesToWidgets } from "@sps/host/relations/pages-to-widgets/backend/app/api";
 import { app as widgetsToExternalModules } from "@sps/host/relations/widgets-to-external-widgets/backend/app/api";
 import { DefaultApp } from "@sps/shared-backend-api";
+import type { Controller as PageController } from "@sps/host/models/page/backend/app/api/src/lib/controller/singlepage";
+import type { IRouteSource } from "@sps/host/models/page/backend/app/api/src/lib/service/singlepage/routing";
 
 export class Apps {
   apps: { type: "model" | "relation"; route: string; app: DefaultApp<any> }[] =
@@ -17,7 +20,16 @@ export class Apps {
     this.bindApps();
   }
 
+  configureRouting(sources: IRouteSource[]) {
+    (page.controller as PageController).configureRouting(sources);
+  }
+
   bindApps() {
+    this.apps.push({
+      type: "relation",
+      route: "/metadata-to-file-storage-module-files",
+      app: metadataToFileStorageModuleFiles,
+    });
     this.apps.push({
       type: "model",
       route: "/layouts",

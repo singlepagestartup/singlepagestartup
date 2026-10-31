@@ -1,0 +1,112 @@
+{
+  "id": "bc7be7ba-e682-4d90-bce0-0491197add1b",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.ht_ma_to_fe_se_me_fs_5ax": {
+      "name": "ht_ma_to_fe_se_me_fs_5ax",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "variant": {
+          "name": "variant",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'default'"
+        },
+        "order_index": {
+          "name": "order_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "class_name": {
+          "name": "class_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ma_id": {
+          "name": "ma_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fe_se_me_fe_id": {
+          "name": "fe_se_me_fe_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "ht_ma_to_fe_se_me_fs_5ax_ma_id_sps_h_metadata_id_fk": {
+          "name": "ht_ma_to_fe_se_me_fs_5ax_ma_id_sps_h_metadata_id_fk",
+          "tableFrom": "ht_ma_to_fe_se_me_fs_5ax",
+          "tableTo": "sps_h_metadata",
+          "columnsFrom": [
+            "ma_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "ht_ma_to_fe_se_me_fs_5ax_fe_se_me_fe_id_sps_f_s_file_id_fk": {
+          "name": "ht_ma_to_fe_se_me_fs_5ax_fe_se_me_fe_id_sps_f_s_file_id_fk",
+          "tableFrom": "ht_ma_to_fe_se_me_fs_5ax",
+          "tableTo": "sps_f_s_file",
+          "columnsFrom": [
+            "fe_se_me_fe_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

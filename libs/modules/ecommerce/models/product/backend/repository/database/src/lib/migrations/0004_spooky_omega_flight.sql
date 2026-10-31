@@ -1,0 +1,1 @@
+ALTER TABLE "sps_ee_product" ADD COLUMN "metadata" jsonb DEFAULT '{}'::jsonb NOT NULL;

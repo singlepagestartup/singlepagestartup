@@ -1,3 +1,4 @@
+import { IComponentProps as IHiddenComponentProps } from "@sps/shared-frontend-components/singlepage/hidden/interface";
 import type { IComponentProps as ISubjectMeBlogModuleArticleCreateProps } from "./subject/me/blog-module/article/create/interface";
 import type { IComponentProps as ISubjectMeCrmModuleFormRequestCreate } from "./subject-me-crm-module-form-request-create/interface";
 import type { IComponentProps as ISubjectMeSocialModuleProfileChatOverviewDefault } from "./subject/me/social-module/profile/chat/overview-default/interface";
@@ -44,6 +45,7 @@ import { IComponentProps as ISubjectOverviewDefaultComponentProps } from "./subj
 import { IComponentProps as ISubjectListDefaultComponentProps } from "./subject/list/default/interface";
 
 export type IComponentProps =
+  | IHiddenComponentProps
   | ISubjectMeBlogModuleArticleCreateProps
   | ISubjectMeCrmModuleFormRequestCreate
   | ISubjectMeSocialModuleProfileChatOverviewDefault

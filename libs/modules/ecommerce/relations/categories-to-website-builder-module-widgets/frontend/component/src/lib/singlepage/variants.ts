@@ -1,3 +1,4 @@
+import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
 import { Component as AdminSelectInput } from "./admin/select-input";
 import { Component as AdminTableRow } from "./admin/table-row";
 import { Component as AdminTable } from "./admin/table";
@@ -11,6 +12,7 @@ import { Component as Default } from "./default";
 import { Component as Overview } from "./overview";
 
 export const variants = {
+  hidden: Hidden,
   "admin-select-input": AdminSelectInput,
   "admin-table-row": AdminTableRow,
   "admin-table": AdminTable,

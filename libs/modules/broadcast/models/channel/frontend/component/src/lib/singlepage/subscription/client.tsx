@@ -1,4 +1,5 @@
 "use client";
+
 import "client-only";
 
 import { Component as ChildComponent } from "./Component";

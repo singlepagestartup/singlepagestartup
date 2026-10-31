@@ -1,7 +1,7 @@
 /**
  * Given: two TCP WebSocket clients and an API GET warmed in the production HTTP cache.
  * When: an owner service publishes a committed mutation through the production publisher.
- * Then: Redis generation changes precede both clients' immediate HTTP refetches.
+ * Then: version validation makes both clients' immediate HTTP refetches fresh.
  */
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
@@ -13,11 +13,12 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { connect } from "node:net";
 import { Hono } from "hono";
-import { Middleware as HTTPCache } from "./libs/middlewares/src/lib/http-cache";
-import { createMutationEffectsPublisher } from "@sps/shared-backend-api";
+import { createBunWebSocket } from "hono/bun";
+import { ConsistencyMiddleware, HTTPCacheMiddleware } from "@sps/middlewares";
+import { createConsistencyRuntime, createMutationEffectsPublisher, consistencyContext } from "@sps/shared-backend-api";
 import { websocketManager } from "@sps/backend-utils";
 import { Provider as KVProvider } from "@sps/providers-kv";
-import { KV_HOST } from "@sps/shared-utils";
+import { KV_HOST, CONSISTENCY_CACHE_PREFIX } from "@sps/shared-utils";
 
 if (!["localhost", "127.0.0.1", "::1"].includes(KV_HOST)) {
   throw new Error("The transport fixture requires local Redis");
@@ -40,9 +41,10 @@ const namespace = "sps:pr374:transport:" + randomUUID() + ":";
 const moduleName = "transport-" + randomUUID();
 const route = "/api/" + moduleName + "/items";
 const topic = moduleName + ".items";
+const dependency = "public.transport_fixture|collection|0";
+let generation = "0";
 const provider = new KVProvider({ type: "redis" });
 const redis = provider.client.client;
-const cache = new HTTPCache();
 const firstStored = deferred();
 const freshStored = deferred();
 const bumpStarted = deferred();
@@ -52,31 +54,43 @@ const writtenKeys = new Set();
 const remember = async (props) => writtenKeys.add(namespace + props.prefix + ":" + await provider.hashKey({ key: props.key }));
 let pauseBump = false;
 let bumpComplete = false;
-cache.storeProvider = {
+const cache = {
   get: (props) => provider.get(scoped(props)),
   set: async (props) => {
     const result = await provider.set(scoped(props));
     await remember(props);
-    if (props.prefix.startsWith("http-cache:data")) {
-      const body = JSON.parse(props.value);
-      if (body.data.value === 10) firstStored.resolve();
-      if (body.data.value === 20) freshStored.resolve();
+    if (props.prefix === CONSISTENCY_CACHE_PREFIX) {
+      try {
+        const envelope = JSON.parse(props.value);
+        if (envelope.body) {
+          const body = JSON.parse(envelope.body);
+          if (body.data.value === 10) firstStored.resolve();
+          if (body.data.value === 20) freshStored.resolve();
+        }
+      } catch { /* A pointer stores an envelope key, not JSON. */ }
     }
     return result;
   },
-  incr: async (props) => {
+  delByPrefix: (props) => provider.delByPrefix(scoped(props)),
+};
+const runtime = createConsistencyRuntime({
+  cache,
+  store: {
+    status: async () => ({epoch: "fixture"}),
+    versions: async () => ({[dependency]: generation}),
+    covered: async () => true,
+    register: async () => ({protocol: 1,ref: "ref",epoch: "fixture",cursor: "0",expiresAt: new Date(Date.now()+60000).toISOString()}),
+  },
+  verifyAuthorization: async () => {},
+});
+const publish = createMutationEffectsPublisher({
+  invalidateTopics: async () => {
     if (pauseBump) {
       bumpStarted.resolve();
       await allowBump.promise;
     }
-    const result = await provider.incr(scoped(props));
-    await remember(props);
     bumpComplete = true;
-    return result;
   },
-};
-const publish = createMutationEffectsPublisher({
-  invalidateTopics: (topics) => cache.invalidateTopics(topics),
 });
 let value = 10;
 let handlerCalls = 0;
@@ -84,13 +98,20 @@ class FixtureOwnerService {
   async update() {
     // This fixture's in-memory owner commit has no database or user-record effects.
     value = 20;
+    generation = "1";
     await publish({ topics: [topic], payload: route });
   }
 }
 const app = new Hono();
-app.use(cache.init());
+const consistencyMiddleware = new ConsistencyMiddleware({ runtime, revalidation: { revalidateTags: async () => {} } });
+const httpCacheMiddleware = new HTTPCacheMiddleware({ runtime });
+app.use(consistencyMiddleware.init());
+consistencyMiddleware.registerRoutes(app);
+httpCacheMiddleware.registerRoutes(app);
+app.use(httpCacheMiddleware.init());
 app.get(route, (c) => {
   handlerCalls += 1;
+  consistencyContext.getStore().dependencies.set(dependency, generation);
   return c.json({ data: { value } });
 });
 const connected = new Set();
@@ -108,30 +129,20 @@ try {
     }), "Redis readiness");
   }
   assert.equal(await redis.ping(), "PONG");
-  server = Bun.serve({
-    hostname: "127.0.0.1", port: 0,
-    fetch(request, socketServer) {
-      const url = new URL(request.url);
-      if (url.pathname === "/ws/revalidation") {
-        if (socketServer.upgrade(request, { data: { id: url.searchParams.get("client") } })) return;
-        return new Response("Upgrade required", { status: 426 });
-      }
-      return app.fetch(request);
-    },
-    websocket: {
-      open(socket) {
-        connected.add(socket.data.id);
-        websocketManager.addClient(socket.data.id, socket);
-        if (connected.size === 2) bothConnected.resolve();
-      },
-      close(socket) {
-        connected.delete(socket.data.id);
-        websocketManager.removeClient(socket.data.id);
-        if (!connected.size) allClosed.resolve();
-      },
-      message() {},
-    },
-  });
+  const addClient = websocketManager.addClient.bind(websocketManager);
+  const removeClient = websocketManager.removeClient.bind(websocketManager);
+  websocketManager.addClient = (id, socket) => {
+    addClient(id, socket);
+    connected.add(id);
+    if (connected.size === 2) bothConnected.resolve();
+  };
+  websocketManager.removeClient = (id) => {
+    removeClient(id);
+    connected.delete(id);
+    if (!connected.size) allClosed.resolve();
+  };
+  const { websocket } = createBunWebSocket();
+  server = Bun.serve({ hostname: "127.0.0.1", port: 0, fetch: app.fetch, websocket });
   const base = "http://127.0.0.1:" + server.port;
   const read = async () => {
     const response = await fetch(base + route, { headers: { Connection: "close" } });
@@ -153,7 +164,7 @@ try {
           const message = JSON.parse(String(event.data));
           if (message.slug !== "revalidation" || !message.topics?.includes(topic)) return;
           events += 1;
-          assert.equal(bumpComplete, true, "WebSocket event preceded Redis generation bump");
+          assert.equal(bumpComplete, true, "WebSocket event preceded mutation-effect completion");
           // No jitter or wait: emulate the earliest possible subscriber refetch.
           resolve({ client: id, value: await read() });
         } catch (error) { reject(error); }
@@ -179,7 +190,7 @@ try {
   const callsAfterRefetch = handlerCalls;
   assert.equal(await read(), 20);
   assert.equal(handlerCalls, callsAfterRefetch, "fresh generation must be cached again");
-  evidence = { transport: "Bun TCP + WebSocket", cache: "production HTTPCache + local Redis", clients: 2, before, after, warmCacheHit: true, freshCacheHit: true, heldBumpEvents: 0 };
+  evidence = { transport: "Bun TCP + WebSocket", cache: "consistencyRuntime + local Redis", clients: 2, before, after, warmCacheHit: true, freshCacheHit: true, heldBumpEvents: 0 };
 } finally {
   allowBump.resolve();
   try {

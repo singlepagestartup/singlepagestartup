@@ -1,3 +1,4 @@
+import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
 import { Component as Private } from "./private";
 import { Component as Find } from "./find";
 import { Component as AdminTableRow } from "./admin/table-row";
@@ -11,6 +12,7 @@ import { Component as AdminV2Form } from "./admin-v2/form";
 import { Component as Default } from "./default";
 
 export const variants = {
+  hidden: Hidden,
   private: Private,
   find: Find,
   "admin-table-row": AdminTableRow,

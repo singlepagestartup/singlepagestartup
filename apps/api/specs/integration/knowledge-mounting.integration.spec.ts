@@ -24,9 +24,8 @@ describe("api/knowledge mounting integration", () => {
       "utf-8",
     );
 
-    expect(appSource).toContain(
-      `app.route("/api/knowledge", knowledgeApp.hono);`,
-    );
+    expect(appSource).toContain("knowledge: knowledgeApp");
+    expect(appSource).toContain('app.route("/api/" + name, module.hono)');
   });
 
   /**

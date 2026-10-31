@@ -16,6 +16,7 @@ describe("apps/api startup contract", () => {
       "utf-8",
     );
 
-    expect(appSource).toContain('app.route("/api/startup", startupApp.hono);');
+    expect(appSource).toContain("startup: startupApp");
+    expect(appSource).toContain('app.route("/api/" + name, module.hono)');
   });
 });

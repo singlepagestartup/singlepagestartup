@@ -1,3 +1,4 @@
+import { entityMetadataSchema } from "@sps/shared-utils";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 export * from "./schema";
 import { supportedMcpServerIdentifiers, Table } from "./schema";
@@ -7,13 +8,17 @@ const allowedMcpServerIdsSchema = z
   .array(z.enum(supportedMcpServerIdentifiers))
   .default([]);
 
-export const insertSchema = createInsertSchema(Table).extend({
+export const insertSchema = createInsertSchema(Table, {
+  metadata: entityMetadataSchema.optional(),
+}).extend({
   title: z.record(z.any()).default({}),
   subtitle: z.record(z.any()).default({}),
   description: z.record(z.any()).default({}),
   allowedMcpServerIds: allowedMcpServerIdsSchema,
 });
-export const selectSchema = createSelectSchema(Table).extend({
+export const selectSchema = createSelectSchema(Table, {
+  metadata: entityMetadataSchema,
+}).extend({
   title: z.record(z.any()).default({}),
   subtitle: z.record(z.any()).default({}),
   description: z.record(z.any()).default({}),

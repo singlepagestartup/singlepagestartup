@@ -66,8 +66,8 @@ export function Component<M extends { id?: string }>(
   }, [baseSearchableFields, props.searchableFields]);
 
   const currentPage = Math.floor(state.offset / state.limit) + 1;
-  const startItem = state.offset + 1;
-  const endItem = state.offset + state.limit;
+  const startItem = state.total ? state.offset + 1 : 0;
+  const endItem = Math.min(state.offset + state.limit, state.total);
 
   const contextValue = useMemo(() => state, [state]);
 
@@ -164,7 +164,7 @@ export function Component<M extends { id?: string }>(
             </Select>
             <div className="text-sm text-muted-foreground mt-1">
               Page {currentPage} • {startItem}–{endItem}
-              {state.total ? ` of ${state.total}` : ""}
+              {` of ${state.total}`}
             </div>
           </div>
 
@@ -189,6 +189,7 @@ export function Component<M extends { id?: string }>(
             <Button
               size="sm"
               variant="outline"
+              disabled={endItem >= state.total}
               onClick={() =>
                 setState((prev) => ({
                   ...prev,

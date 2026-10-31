@@ -39,6 +39,7 @@ Each module contains:
 - When one file is no longer enough for a thing, move it into a folder named after it and make it that folder's `index.ts`. Never leave a file beside a folder of the same name — importers of `./thing` resolve to either, so the thing ends up living in two places under one name.
 - Do not edit repository data snapshots under `libs/modules/<module>/<relations|models>/<name>/backend/repository/database/src/lib/data/*` to implement behavior or UI fixes; change runtime code, configuration, migrations, or explicit data-management flows instead.
 - When changing a Drizzle table schema or fields, run the appropriate `repository-generate` target instead of hand-writing migration SQL or `migrations/meta/*` journal/snapshot files. For example, use `npx nx run @sps/<module>:models:<model>:repository-generate` or the matching relation target; use `npx nx run api:db:generate` only when intentionally regenerating all repository migrations.
+- Model/relation `repository-generate` targets run uncached and automatically regenerate Consistency Capture after Drizzle, including Startup models and `fields/startup.ts` changes. Preserve that final step in custom targets; commit the generated migrations and capture catalog together. Apply migrations with `npx nx run api:db:migrate`, then run `npx nx run @sps/providers-db:consistency-check`. Never hand-edit capture SQL or `capture.json`; see `libs/providers/db/README.md`.
 
 If anything is unclear, read the relevant README files instead of guessing.
 

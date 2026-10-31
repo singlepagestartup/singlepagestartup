@@ -873,3 +873,26 @@ describe("MCP content-management generic operations", () => {
     expect(api.update).not.toHaveBeenCalled();
   });
 });
+
+it("preserves the metadata concurrency token through a strict model schema", async () => {
+  const api = createApi();
+  const descriptor = createDescriptor(api, { key: "blog.article" });
+  descriptor.insertSchema = z.object({ metadata: z.record(z.unknown()) });
+  const previous = { campaign: { name: "keep" } };
+  const next = { ...previous, seo: { title: { en: "New title" } } };
+  await updateContentModelRecord(
+    {
+      module: "blog",
+      model: "article",
+      id: "record-1",
+      dryRun: false,
+      data: { metadata: next, _expectedMetadata: previous },
+    },
+    { registry: [descriptor], authHeaders },
+  );
+  expect(api.update).toHaveBeenCalledWith({
+    id: "record-1",
+    data: { metadata: next, _expectedMetadata: previous },
+    options: { headers: authHeaders },
+  });
+});

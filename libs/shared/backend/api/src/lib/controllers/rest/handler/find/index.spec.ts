@@ -9,6 +9,8 @@
 import { z } from "zod";
 import { RBAC_PRIVILEGED_CONTEXT_KEY } from "@sps/shared-utils";
 import { Handler } from ".";
+import { Handler as CountHandler } from "../count";
+import { Handler as FindByIdHandler } from "../find-by-id";
 
 const rows = [
   { id: "row-1", email: "one@example.com", secret: "hash-1" },
@@ -45,6 +47,51 @@ function createContext(props?: { privileged?: boolean }) {
 }
 
 describe("Given: a model served through the shared find handler", () => {
+  it("returns hidden variants as ordinary data and forwards only the caller's filters", async () => {
+    const data = [
+      { id: "one", variant: "hidden" },
+      { id: "two", variant: "default" },
+    ];
+    const service = createService();
+    service.repository.configuration = {
+      repository: { Table: { variant: {} } },
+    };
+    service.find.mockResolvedValue(data);
+    const context = createContext();
+    context.var.parsedQuery = {
+      limit: 10,
+      filters: { and: [{ column: "variant", method: "eq", value: "hidden" }] },
+    };
+    await new Handler(service).execute(context, jest.fn() as any);
+    expect(service.find).toHaveBeenCalledWith({
+      params: context.var.parsedQuery,
+    });
+    expect(context.json).toHaveBeenCalledWith({ data });
+  });
+
+  it("does not turn a hidden variant into a missing record", async () => {
+    const data = { id: "one", variant: "hidden" };
+    const service = createService();
+    service.findById = jest.fn().mockResolvedValue(data);
+    const context = createContext();
+    context.req = { param: () => data.id };
+    await new FindByIdHandler(service).execute(context, jest.fn() as any);
+    expect(context.json).toHaveBeenCalledWith({ data });
+  });
+
+  it("counts the requested collection without injecting a variant predicate", async () => {
+    const service = createService();
+    service.repository.configuration = {
+      repository: { Table: { variant: {} } },
+    };
+    service.count = jest.fn().mockResolvedValue(2);
+    const context = createContext();
+    await new CountHandler(service).execute(context, jest.fn() as any);
+    expect(service.count).toHaveBeenCalledWith({
+      params: context.var.parsedQuery,
+    });
+    expect(context.json).toHaveBeenCalledWith({ data: 2 });
+  });
   /**
    * BDD Scenario
    * Given: a model that configures no output schema.

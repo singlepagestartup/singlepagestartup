@@ -1,3 +1,5 @@
+import type { Control } from "react-hook-form";
+import type { IInsertSchema } from "@sps/host/models/metadata/sdk/model";
 export { type IModel } from "@sps/host/models/metadata/sdk/model";
 import { IModel } from "@sps/host/models/metadata/sdk/model";
 import {
@@ -10,6 +12,13 @@ import { ISpsComponentBase } from "@sps/ui-adapter";
 export const variant = "admin-v2-form" as const;
 
 export type IComponentProps = IParentComponentProps<IModel, typeof variant> & {
+  preview?: (props: {
+    control: Control<IInsertSchema>;
+    metadataId?: string;
+  }) => ReactNode;
+  metadataToFileStorageModuleFiles?: (
+    props: ISpsComponentBase & { data?: IModel },
+  ) => ReactNode;
   pagesToMetadata?: (props: ISpsComponentBase & { data?: IModel }) => ReactNode;
 };
 

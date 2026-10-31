@@ -1,3 +1,4 @@
+import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
 import { Component as Find } from "./find";
 import { Component as AdminTableRow } from "./admin/table-row";
 import { Component as AdminTable } from "./admin/table";
@@ -12,6 +13,7 @@ import { Component as AttachmentDefault } from "./attachment-default";
 import { Component as ReceiptDefault } from "./receipt-default";
 
 export const variants = {
+  hidden: Hidden,
   find: Find,
   "admin-table-row": AdminTableRow,
   "admin-table": AdminTable,

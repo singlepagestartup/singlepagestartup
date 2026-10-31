@@ -59,15 +59,20 @@ export class Handler {
       }
 
       if (!parsedBody.files) {
-        const entity = await this.service.create({
-          data: parsedBody.data,
+        if (!parsedBody.data) {
+          throw new Error("Validation error. File metadata is required");
+        }
+        const data: any = parsedBody.data;
+        const entity = await this.service.update({
+          id: uuid,
+          data,
         });
 
         return c.json(
           {
             data: entity,
           },
-          201,
+          200,
         );
       }
 

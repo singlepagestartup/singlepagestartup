@@ -1,5 +1,22 @@
 # Repository read dependencies
 
+## REST selection
+
+Shared find, count and ID handlers return records allowed by the operation's
+authorization and output schema. They do not infer publication or permissions
+from a variant name. Callers select records through ordinary filters. Host Page
+owns its public URL and sitemap policy separately from generic CRUD reads.
+
+## Partial updates
+
+`updateFirstByField` validates a patch against the partial insert schema. Omitted
+fields keep their stored values; insert defaults apply only when creating a row.
+An explicit empty object or nullable value still replaces that field. Updates
+retain field validation and refresh `updatedAt` where the model supports it.
+Unchanged relation keys do not need to be resubmitted when changing `variant`.
+
+## Read tracking
+
 `createConsistencyRuntime` collects actual repository reads in an
 `AsyncLocalStorage` operation. `find`, `count`, `findByField` and
 `findFirstByField` record their candidate scope before reading rows. Empty
@@ -50,7 +67,63 @@ RBAC, and registers response caching after authorization, billing and query
 parsing. Business services use ordinary transactions. Knowledge and CRM do not
 require publisher setters in the API host or CLI.
 
+## API response cache
+
+`MIDDLEWARE_HTTP_CACHE=true` enables the single response cache exposed by
+`createConsistencyRuntime.cache()`. Read tracking and mutation delivery run
+independently of this switch. There is no alternate path/topic response cache.
+
+Authorization runs before cache lookup. Response identity hashes the complete
+URL, authorization header, cookies, operator credential, language and requested
+representation. Credentials are absent from stored keys and public metadata.
+Every hit verifies the envelope's epoch and captured PostgreSQL generations.
+Incomplete dependency capture, no-store requests and excluded controller-guarded
+routes bypass caching. An excluded route still executes its authorization guards.
+
+KV operations have a 150 ms request-path deadline. Cache entries expire after
+five minutes and respect `HTTP_CACHE_MAX_ENTRY_BYTES` (default 1 MiB). A cache
+failure becomes a miss; unverifiable generations cannot produce a hit.
+
+The operator-guarded `GET /api/http-cache/clear` invokes `clearCache()` on the
+same runtime. It removes only API response envelopes/pointers. PostgreSQL
+generations, journals, OAuth records and subject preferences remain intact.
+Next tag invalidation and WebSocket notifications continue when response caching
+is disabled.
+
 PostgreSQL capture, dispatcher fencing, retention and migration commands are
 documented in [providers-db](../../../providers/db/README.md). The
 [transport contract](../../../middlewares/src/lib/revalidation/README.md)
 describes private query refs, replay and browser recovery.
+
+## Resource descriptions
+
+DatabaseRepository.describe returns serializable table, column and foreign-key
+names without querying records. CRUDService.describe and RESTController.describe
+forward this contract. `IDefaultApp` defines the shared route-description,
+HTTP and data-tooling contract. `DefaultApp` implements it for a resource;
+`ModuleApp` implements module composition once, prefixing child descriptions
+with the same paths used to mount their Hono routes.
+
+`IModuleApp<Apps>` extends the common contract with the typed child registry.
+Module bootstraps bind and resolve this interface. Host and RBAC extend it with
+their own routing-configuration and middleware capabilities. A concrete App
+class is only the DI implementation; it is not the bootstrap's public type.
+
+ModuleApp creates the registry during init, runs the protected configureApps
+hook, mounts child routes and installs the exception filter. It also owns the
+existing type-filtered dump/seed delegation. A module declares its registry
+factory and overrides only its own behavior: RBAC configures Subject services
+before mounting, Knowledge adds its API routes through useRoutes, and Host
+configures Page routing. The module generator uses this same base and registers
+new modules in the API composition's shared `apiModules` registry, used for
+both HTTP mounting and resource discovery.
+
+Host consumes resource descriptions for URL and metadata masks. API composition
+never inspects a controller's service repository or passes Drizzle Table objects
+to Host.
+
+HTTP response caching is mounted through HTTPCacheMiddleware. Its runtime option
+receives the sole consistency cache capability; it does not create a second
+store. ConsistencyMiddleware owns read tracking, diagnostics/check endpoints,
+WebSocket lifecycle and delivery startup. RevalidationMiddleware remains the
+Next tag and legacy notification adapter.

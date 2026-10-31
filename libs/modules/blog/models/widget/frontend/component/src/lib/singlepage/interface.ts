@@ -1,3 +1,4 @@
+import { IComponentProps as IHiddenComponentProps } from "@sps/shared-frontend-components/singlepage/hidden/interface";
 import type { IComponentProps as IArticleOverviewLinked } from "./article-overview-linked/interface";
 import type { IComponentProps as IArticleFindGuides } from "./article-find-guides/interface";
 import type { IComponentProps as IArticleFindGrid } from "./article-find-grid/interface";
@@ -22,6 +23,7 @@ import { IComponentProps as IArticleOverviewDefaultComponentProps } from "./arti
 import { IComponentProps as IArticleOverviewWithPrivateContentDefaultComponentProps } from "./article/overview/with-private-content-default/interface";
 
 export type IComponentProps =
+  | IHiddenComponentProps
   | IArticleOverviewLinked
   | IArticleFindGuides
   | IArticleFindGrid

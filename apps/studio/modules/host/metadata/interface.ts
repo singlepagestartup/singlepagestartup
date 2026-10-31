@@ -5,6 +5,8 @@ export interface IModel extends IHostRecord {
   keywords: string | null;
   author: string | null;
   viewport: string | null;
+  opengraphImage: string | null;
+  twitterImage: string | null;
   opengraphTitle: string | null;
   opengraphDescription: string | null;
   opengraphUrl: string | null;

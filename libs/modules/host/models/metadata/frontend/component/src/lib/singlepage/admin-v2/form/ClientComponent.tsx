@@ -29,6 +29,27 @@ export function Component(props: IComponentPropsExtended) {
   const form = useForm<z.infer<typeof insertSchema>>({
     resolver: zodResolver(insertSchema),
     defaultValues: {
+      title: props.data?.title || "",
+      description: props.data?.description || "",
+      keywords: props.data?.keywords || "",
+      author: props.data?.author || "",
+      opengraphImage: props.data?.opengraphImage || "",
+      twitterImage: props.data?.twitterImage || "",
+      opengraphTitle: props.data?.opengraphTitle || "",
+      opengraphDescription: props.data?.opengraphDescription || "",
+      opengraphUrl: props.data?.opengraphUrl || "",
+      opengraphType: props.data?.opengraphType || "",
+      opengraphSiteName: props.data?.opengraphSiteName || "",
+      opengraphLocale: props.data?.opengraphLocale || "",
+      twitterCard: props.data?.twitterCard || "",
+      twitterSite: props.data?.twitterSite || "",
+      twitterCreator: props.data?.twitterCreator || "",
+      twitterTitle: props.data?.twitterTitle || "",
+      twitterDescription: props.data?.twitterDescription || "",
+      twitterUrl: props.data?.twitterUrl || "",
+      twitterDomain: props.data?.twitterDomain || "",
+      twitterAppCountry: props.data?.twitterAppCountry || "",
+
       variant: props.data?.variant || "default",
     },
   });
@@ -47,6 +68,11 @@ export function Component(props: IComponentPropsExtended) {
   const relationSections = useMemo(() => {
     return [
       {
+        id: "metadata-to-files",
+        title: "Files",
+        render: props.metadataToFileStorageModuleFiles,
+      },
+      {
         id: "pages-to-metadata",
         title: "Pages",
         render: props.pagesToMetadata,
@@ -60,7 +86,7 @@ export function Component(props: IComponentPropsExtended) {
         render: NonNullable<typeof section.render>;
       } => Boolean(section.render),
     );
-  }, [props.pagesToMetadata]);
+  }, [props.pagesToMetadata, props.metadataToFileStorageModuleFiles]);
 
   const [activeMainTab, setActiveMainTab] = useState<"details" | "relations">(
     "details",
@@ -125,6 +151,38 @@ export function Component(props: IComponentPropsExtended) {
 
         <TabsContent value="details" className="mt-0 pt-6">
           <div className="flex flex-col gap-6">
+            {[
+              "title",
+              "description",
+              "keywords",
+              "author",
+              "opengraphImage",
+              "twitterImage",
+              "opengraphTitle",
+              "opengraphDescription",
+              "opengraphUrl",
+              "opengraphType",
+              "opengraphSiteName",
+              "opengraphLocale",
+              "twitterCard",
+              "twitterSite",
+              "twitterCreator",
+              "twitterTitle",
+              "twitterDescription",
+              "twitterUrl",
+              "twitterDomain",
+              "twitterAppCountry",
+            ].map((name) => (
+              <FormField
+                key={name}
+                ui="shadcn"
+                type="text"
+                name={name}
+                label={name}
+                form={form}
+                placeholder={name}
+              />
+            ))}
             <FormField
               ui="shadcn"
               type="select"
@@ -134,6 +192,10 @@ export function Component(props: IComponentPropsExtended) {
               placeholder="Select variant"
               options={variants.map((variant) => [variant, variant])}
             />
+            {props.preview?.({
+              control: form.control,
+              metadataId: props.data?.id,
+            })}
           </div>
         </TabsContent>
 

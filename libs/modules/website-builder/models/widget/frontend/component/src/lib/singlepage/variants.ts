@@ -1,3 +1,4 @@
+import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
 import { Component as ContentRich } from "./content-rich";
 import { Component as ContentCta } from "./content-cta";
 import { Component as ContentProjectContext } from "./content-project-context";
@@ -44,6 +45,7 @@ import { Component as FooterDefaultComponent } from "./footer-default";
 import { Component as NavbarDefaultComponent } from "./navbar-default";
 import { Component as ContentFeatureFindRow } from "./content-feature-find-row";
 export const variants = {
+  hidden: Hidden,
   "content-rich": ContentRich,
   "content-cta": ContentCta,
   "content-project-context": ContentProjectContext,

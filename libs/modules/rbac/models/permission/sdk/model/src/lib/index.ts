@@ -14,7 +14,7 @@ import {
 export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/rbac/permissions";
-export const variants = ["default"];
+export const variants = ["hidden", "default"];
 export const types = ["HTTP"];
 export const methods = ["*", "GET", "POST", "PATCH", "DELETE"];
 export const query = {};

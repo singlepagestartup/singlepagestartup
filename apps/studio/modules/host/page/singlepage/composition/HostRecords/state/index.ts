@@ -28,7 +28,7 @@ export function createHostModel<K extends HostModel>(
       title: "New page",
       url: "/new-page",
       description: null,
-      language: "en",
+      metadata: {},
       className: null,
     },
     layout: {
@@ -54,6 +54,8 @@ export function createHostModel<K extends HostModel>(
       keywords: null,
       author: null,
       viewport: null,
+      opengraphImage: null,
+      twitterImage: null,
       opengraphTitle: null,
       opengraphDescription: null,
       opengraphUrl: null,
@@ -121,7 +123,7 @@ export function validateHostModel(
 ): string | null {
   const required =
     kind === "page"
-      ? ["adminTitle", "title", "url", "language", "variant"]
+      ? ["adminTitle", "title", "url", "variant"]
       : kind === "metadata"
         ? ["title", "variant"]
         : ["adminTitle", "slug", "variant"];

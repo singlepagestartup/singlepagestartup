@@ -1,3 +1,4 @@
+import { Component as SeoPreview } from "../../seo-preview";
 import { Component as SharedIcon } from "../../../../../shared/icon";
 
 import {
@@ -905,38 +906,80 @@ export function HostModelForm({
       >
         <p className={`mb-4 break-all text-xs ${kit.muted}`}>ID: {draft.id}</p>
         <div className="grid min-w-0 gap-4 sm:grid-cols-2">
-          {HOST_STUDIO_FIELDS[model].map((key) => (
-            <label key={key} className="grid min-w-0 gap-2">
-              <span className={kit.label}>{key}</span>
-              <input
-                className={kit.field}
-                value={hostFieldValue(draft, key)}
-                required={
-                  key === "adminTitle" ||
-                  key === "url" ||
-                  key === "slug" ||
-                  key === "language" ||
-                  key === "variant" ||
-                  (key === "title" && model !== "layout")
-                }
-                onChange={(event) =>
-                  patch(
-                    key,
-                    event.target.value ||
-                      (key === "className" ||
-                      key === "description" ||
-                      (model === "metadata" &&
-                        key !== "title" &&
-                        key !== "variant") ||
-                      (model === "layout" && key === "title")
-                        ? null
-                        : ""),
-                  )
-                }
-              />
-            </label>
-          ))}
+          {HOST_STUDIO_FIELDS[model]
+            .filter((key) => key !== "viewport")
+            .map((key) => (
+              <label key={key} className="grid min-w-0 gap-2">
+                <span className={kit.label}>{key}</span>
+                {key === "metadata" ? (
+                  <textarea
+                    className={`${kit.field} min-h-40 font-mono`}
+                    defaultValue={hostFieldValue(draft, key)}
+                    onChange={(event) => {
+                      try {
+                        const value = JSON.parse(event.target.value);
+                        if (
+                          !value ||
+                          typeof value !== "object" ||
+                          Array.isArray(value)
+                        )
+                          throw Error("Expected a JSON object");
+                        event.target.setCustomValidity("");
+                        patch(key, value);
+                      } catch {
+                        event.target.setCustomValidity(
+                          "Enter a valid JSON object",
+                        );
+                      }
+                    }}
+                  />
+                ) : (
+                  <input
+                    className={kit.field}
+                    value={hostFieldValue(draft, key)}
+                    required={
+                      key === "adminTitle" ||
+                      key === "url" ||
+                      key === "slug" ||
+                      key === "variant" ||
+                      (key === "title" && model !== "layout")
+                    }
+                    onChange={(event) =>
+                      patch(
+                        key,
+                        event.target.value ||
+                          (key === "className" ||
+                          key === "description" ||
+                          (model === "metadata" &&
+                            key !== "title" &&
+                            key !== "variant") ||
+                          (model === "layout" && key === "title")
+                            ? null
+                            : ""),
+                      )
+                    }
+                  />
+                )}
+              </label>
+            ))}
         </div>
+        {model === "metadata" ? (
+          <div className="mt-5">
+            <p className="mb-3 text-sm text-muted-foreground">
+              Viewport is managed by Host. Mask previews need the referenced
+              page data.
+            </p>
+            <SeoPreview
+              templates={{
+                title: hostFieldValue(draft, "title"),
+                description: hostFieldValue(draft, "description"),
+                keywords: hostFieldValue(draft, "keywords"),
+                opengraphImage: hostFieldValue(draft, "opengraphImage"),
+              }}
+              language={language}
+            />
+          </div>
+        ) : null}
         {model === "widget" && "subtitle" in draft && (
           <fieldset className="mt-5 grid gap-4 rounded-xl border border-border p-4">
             <legend className="px-2 font-semibold">Localized content</legend>

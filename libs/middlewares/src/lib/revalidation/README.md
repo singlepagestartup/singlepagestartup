@@ -67,15 +67,14 @@ notifications for old bundles; the new dependency engine does not use that
 map. Old clients retain their route/topic subscriptions. These
 frames contain no record IDs from private dependency descriptors.
 
-Legacy middleware remains before its HTTP-cache adapter so its awaited version
-bumps finish before broadcast. In the new path, PostgreSQL generations determine
-API freshness; dispatcher retry handles Next tag invalidation before delivery.
+PostgreSQL generations determine API cache freshness. Dispatcher retry handles
+Next tag invalidation before delivery. Route/topic frames remain a notification
+fallback for browser subscriptions; they do not select another response cache.
 Ordinary messages do not call router.refresh, reload or root-layout invalidation.
 
-`SPS_CONSISTENCY_MODE` defaults to `compatibility`. `enabled` uses the same
-protocol; `observe` compares cached candidates with fresh reads and omits browser capabilities; `off` omits read
-tracking. The committed-write bridge continues in all modes. HTTP response
-caching is separately opt-in through `MIDDLEWARE_HTTP_CACHE=true`.
+Read tracking and the committed-write bridge always run. HTTP response caching
+is separately opt-in through `MIDDLEWARE_HTTP_CACHE=true`; disabling that cache
+does not disable dependency capture, authorization or invalidation delivery.
 
 ## Next tag delivery
 

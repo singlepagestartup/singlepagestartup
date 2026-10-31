@@ -15,6 +15,7 @@ export interface IProfilePresentation {
 }
 export interface IAuthorSummary extends IProfilePresentation {
   description: IProfile["description"];
+  metadata?: Pick<NonNullable<IProfile["metadata"]>, "seo">;
   articleCount: number;
   productCount: number;
 }

@@ -71,7 +71,8 @@
             "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
-      }
+      },
+      "cache": false
     },
     "db:migrate": {
       "executor": "nx:run-commands",

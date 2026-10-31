@@ -1,3 +1,4 @@
+import { IComponentProps as IHiddenComponentProps } from "@sps/shared-frontend-components/singlepage/hidden/interface";
 import type { IComponentProps as ILoading } from "./loading/interface";
 import { IComponentProps as IOverviewDefaultComponentProps } from "./overview-default/interface";
 import { IComponentProps as IFindComponentProps } from "./find/interface";
@@ -13,6 +14,7 @@ import { IComponentProps as IAdminV2CardComponentProps } from "./admin-v2/card/i
 import { IComponentProps as IAdminV2SidebarItemComponentProps } from "./admin-v2/sidebar-item/interface";
 import { IComponentProps as IDefaultComponentProps } from "./default/interface";
 export type IComponentProps =
+  | IHiddenComponentProps
   | ILoading
   | IOverviewDefaultComponentProps
   | IFindComponentProps

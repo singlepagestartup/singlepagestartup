@@ -14,7 +14,7 @@ import {
 export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/crm/widgets";
-export const variants = ["default", "form-list-default"];
+export const variants = ["hidden", "default", "form-list-default"];
 export const query = {};
 export const options = {
   next: {

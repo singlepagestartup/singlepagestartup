@@ -28,6 +28,10 @@ export class Service<DTO extends Record<string, unknown>>
     this.repository = repository;
   }
 
+  describe() {
+    return this.repository.describe?.();
+  }
+
   async find(props?: FindServiceProps): Promise<DTO[]> {
     const action = new FindAction(this.repository);
     return action.execute(props);

@@ -10,6 +10,8 @@ export const fields = {
   keywords: pgCore.text("keywords"),
   author: pgCore.text("author"),
   viewport: pgCore.text("viewport"),
+  opengraphImage: pgCore.text("opengraph_image"),
+  twitterImage: pgCore.text("twitter_image"),
   opengraphTitle: pgCore.text("opengraph_title"),
   opengraphDescription: pgCore.text("opengraph_description"),
   opengraphUrl: pgCore.text("opengraph_url"),

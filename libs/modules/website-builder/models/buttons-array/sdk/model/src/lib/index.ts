@@ -21,6 +21,7 @@ export const options = {
   },
 } as NextRequestOptions;
 export const variants = [
+  "hidden",
   "navigation-inline",
   "navigation",
   "actions-full",

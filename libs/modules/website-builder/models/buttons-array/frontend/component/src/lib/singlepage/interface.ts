@@ -1,3 +1,4 @@
+import { IComponentProps as IHiddenComponentProps } from "@sps/shared-frontend-components/singlepage/hidden/interface";
 import type { IComponentProps as INavigationInline } from "./navigation-inline/interface";
 import type { IComponentProps as INavigation } from "./navigation/interface";
 import type { IComponentProps as IActionsFull } from "./actions-full/interface";
@@ -17,6 +18,7 @@ import { IComponentProps as IAdminFormComponentProps } from "./admin/form/interf
 import { IComponentProps as IDefaultComponentProps } from "./default/interface";
 
 export type IComponentProps =
+  | IHiddenComponentProps
   | INavigationInline
   | INavigation
   | IActionsFull

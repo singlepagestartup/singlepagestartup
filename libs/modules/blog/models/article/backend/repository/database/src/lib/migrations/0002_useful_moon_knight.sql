@@ -1,0 +1,1 @@
+ALTER TABLE "sps_blog_article" ADD COLUMN "metadata" jsonb DEFAULT '{}'::jsonb NOT NULL;

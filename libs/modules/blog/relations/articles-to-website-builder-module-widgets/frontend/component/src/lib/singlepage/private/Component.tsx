@@ -1,13 +1,52 @@
-import type { IComponentPropsExtended } from "./interface";
-/** Private association content is rendered only by the higher scoped operation. */
+import { IComponentPropsExtended } from "./interface";
+import { Component as WebsiteBuilderModuleWidget } from "@sps/website-builder/models/widget/frontend/component";
+import { cn } from "@sps/shared-frontend-client-utils";
+
 export function Component(props: IComponentPropsExtended) {
   return (
     <div
       data-module="blog"
       data-relation="articles-to-website-builder-module-widgets"
-      data-variant="private"
-      data-access="locked"
-      className={props.className}
-    />
+      data-id={props.data?.id || ""}
+      data-variant={props.variant}
+      className={cn(
+        "w-full flex flex-col",
+        props.data.className,
+        props.className,
+      )}
+    >
+      <WebsiteBuilderModuleWidget
+        variant="find"
+        isServer={props.isServer}
+        apiProps={{
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "id",
+                  method: "eq",
+                  value: props.data.websiteBuilderModuleWidgetId,
+                },
+              ],
+            },
+          },
+        }}
+      >
+        {({ data }) => {
+          return data?.map((entity) => {
+            return (
+              <WebsiteBuilderModuleWidget
+                key={entity.id}
+                isServer={props.isServer}
+                variant={entity.variant as any}
+                dataSource="props"
+                data={entity}
+                language={props.language}
+              />
+            );
+          });
+        }}
+      </WebsiteBuilderModuleWidget>
+    </div>
   );
 }

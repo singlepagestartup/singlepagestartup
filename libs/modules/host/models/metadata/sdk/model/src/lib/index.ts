@@ -14,10 +14,12 @@ import {
 export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/host/metadata";
-export const variants = ["default"];
+export const variants = ["hidden", "default", "primary"];
 export const query = {};
 export const options = {
   next: {
     revalidate: REVALIDATE,
   },
 } as NextRequestOptions;
+
+export * from "./seo";

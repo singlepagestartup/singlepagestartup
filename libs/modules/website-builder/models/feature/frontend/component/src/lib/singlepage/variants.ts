@@ -1,3 +1,4 @@
+import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
 import { Component as DemoHandoff } from "./demo-handoff";
 import { Component as DemoDocument } from "./demo-document";
 import { Component as DemoProject } from "./demo-project";
@@ -33,6 +34,7 @@ import { Component as AdminTableRow } from "./admin/table-row";
 import { Component as Default } from "./default";
 
 export const variants = {
+  hidden: Hidden,
   "demo-handoff": DemoHandoff,
   "demo-document": DemoDocument,
   "demo-project": DemoProject,

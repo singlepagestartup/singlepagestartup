@@ -29,14 +29,6 @@ jest.mock("@sps/ecommerce/models/product/frontend/component", () => ({
   },
 }));
 
-jest.mock("../card-default/Category", () => ({
-  Component: () => <div />,
-}));
-
-jest.mock("../card-default/Profile", () => ({
-  Component: () => <div />,
-}));
-
 jest.mock("@sps/shared-ui-shadcn", () => ({
   CardContent: ({ children }: any) => <div>{children}</div>,
   CardHeader: ({ children }: any) => <div>{children}</div>,

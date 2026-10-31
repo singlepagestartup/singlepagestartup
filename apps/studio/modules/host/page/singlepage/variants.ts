@@ -46,7 +46,10 @@ import { Component as SocialModuleChatIdThreadId } from "./social-module-chat-id
 import { Component as SocialModuleProfileSlugAuthor } from "./social-module-profile-slug-author/index";
 import { Component as Terms } from "./terms/index";
 
+import { Component as SeoPreview } from "./seo-preview";
+
 export const variants = {
+  "seo-preview": SeoPreview,
   "admin-dashboard": AdminDashboard,
   "admin-entity-drawer": AdminEntityDrawer,
   "admin-model-edit": AdminModelEdit,

@@ -148,7 +148,9 @@ it("retains public SSR output and the ordinary metadata reader without a binary 
       language="en"
     />,
   );
-  expect(mockFindById).toHaveBeenCalledWith({ id: file.id });
+  expect(mockFindById).toHaveBeenCalledWith({
+    id: file.id,
+  });
   expect(mockProvider).toHaveBeenCalledTimes(1);
   unmount();
   mockServerFindById.mockResolvedValue(file);

@@ -1,3 +1,6 @@
+import type { IComponentProps as IEcommerceModuleProductCategoryDefaultProps } from "./ecommerce-module/product/category-default/interface";
+import type { IComponentProps as IEcommerceModuleProductProfileDefaultProps } from "./ecommerce-module/product/profile-default/interface";
+import { IComponentProps as IHiddenComponentProps } from "@sps/shared-frontend-components/singlepage/hidden/interface";
 import type { IComponentProps as IMeBlogModuleArticleCreateDefaultProps } from "./me/blog-module/article/create-default/interface";
 import type { IComponentProps as IMeAccountProps } from "./me/account/interface";
 import type { IComponentProps as ISocialModuleProfileFindProps } from "./social-module/profile/find/interface";
@@ -87,6 +90,9 @@ import { IComponentProps as ISocialModuleProfileChatListDefaultComponentProps } 
 import { IComponentProps as ISocialModuleProfileChatOverviewDefaultComponentProps } from "./social-module/profile/chat/overview/default/interface";
 
 export type IComponentProps =
+  | IEcommerceModuleProductCategoryDefaultProps
+  | IEcommerceModuleProductProfileDefaultProps
+  | IHiddenComponentProps
   | IMeBlogModuleArticleCreateDefaultProps
   | IMeAccountProps
   | ISocialModuleProfileFindProps

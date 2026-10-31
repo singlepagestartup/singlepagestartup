@@ -6,3 +6,6 @@ export interface IComponentProps {
 }
 
 export interface IComponentPropsExtended extends IComponentProps {}
+
+export interface IClientComponentProps
+  extends Omit<IComponentProps, "isServer"> {}

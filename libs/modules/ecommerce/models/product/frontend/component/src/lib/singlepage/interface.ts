@@ -1,3 +1,4 @@
+import { IComponentProps as IHiddenComponentProps } from "@sps/shared-frontend-components/singlepage/hidden/interface";
 import type { IComponentProps as ILoading } from "./loading/interface";
 import type { IComponentProps as IGallery } from "./gallery/interface";
 import { IComponentProps as ICartDefaultComponentProps } from "./cart/default/interface";
@@ -18,6 +19,7 @@ import { IComponentProps as IPriceDefaultComponentProps } from "./price-default/
 import { IComponentProps as ICurrencyToggleGroupDefaultComponentProps } from "./currency/toggle-group-default/interface";
 
 export type IComponentProps =
+  | IHiddenComponentProps
   | ILoading
   | IGallery
   | ICartDefaultComponentProps

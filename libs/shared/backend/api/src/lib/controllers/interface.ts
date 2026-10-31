@@ -2,6 +2,7 @@ import { Context, Handler } from "hono";
 import { createMiddleware } from "hono/factory";
 import { BlankInput, HandlerResponse } from "hono/types";
 import { IService } from "../service";
+import type { IResourceDescription } from "../repository/interface";
 import {
   Middleware as GrammyMiddleware,
   Context as GrammyContext,
@@ -34,6 +35,7 @@ export interface ITelegramConversation {
 }
 
 export interface IController<DTO extends Record<string, unknown>> {
+  describe?: () => IResourceDescription | undefined;
   service: IService<DTO>;
   httpRoutes: IRoute[];
   telegramRoutes: ITelegramRoute[];

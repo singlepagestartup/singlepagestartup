@@ -4,8 +4,8 @@
   "totals": {
     "modules": 15,
     "entities": 61,
-    "variants": 975,
-    "coveredVariants": 246,
+    "variants": 976,
+    "coveredVariants": 247,
     "representedEntities": 61
   },
   "modules": [
@@ -3253,6 +3253,14 @@
               "coveredBy": []
             },
             {
+              "variant": "seo-preview",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/host/models/page/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": [
+                "host.page.seo-preview"
+              ]
+            },
+            {
               "variant": "url-segment-value",
               "scope": "singlepage",
               "variantsFile": "libs/modules/host/models/page/frontend/component/src/lib/singlepage/variants.ts",
@@ -3311,6 +3319,7 @@
             "apps/studio/modules/host/page/singlepage/rbac-module-subject-me-social-module-profile-id-settings-ai-chat/Component.stories.tsx",
             "apps/studio/modules/host/page/singlepage/rbac-module-subject-me-social-module-profile-list-ai-chat/Component.stories.tsx",
             "apps/studio/modules/host/page/singlepage/root/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/seo-preview/Component.stories.tsx",
             "apps/studio/modules/host/page/singlepage/social-module-chat-id-thread-id/Component.stories.tsx",
             "apps/studio/modules/host/page/singlepage/social-module-profile-slug-author/Component.stories.tsx",
             "apps/studio/modules/host/page/singlepage/terms/Component.stories.tsx"

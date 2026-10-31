@@ -104,6 +104,9 @@
       ],
       "@sps/shared-frontend-client-utils/chat-scroll": [
         "libs/shared/frontend/client/utils/src/lib/chat-scroll/index.ts"
+      ],
+      "@sps/shared-utils/metadata": [
+        "libs/shared/utils/src/lib/metadata/index.ts"
       ]
     },
     "typeRoots": [

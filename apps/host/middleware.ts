@@ -23,7 +23,7 @@ export async function middleware(request: NextRequest) {
     }
 
     nextUrl.pathname = `/${defaultLanguage}${pathname}`;
-    return NextResponse.redirect(nextUrl);
+    return NextResponse.redirect(nextUrl, 308);
   }
 
   return NextResponse.next();

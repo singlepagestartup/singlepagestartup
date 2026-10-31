@@ -1,3 +1,4 @@
+import { IComponentProps as IHiddenComponentProps } from "@sps/shared-frontend-components/singlepage/hidden/interface";
 import type { IComponentProps as IWordmark } from "./wordmark/interface";
 import type { IComponentProps as IBrandAiChat } from "./brand-ai-chat/interface";
 import { IComponentProps as IAdminV2SidebarItemComponentProps } from "./admin-v2/sidebar-item/interface";
@@ -14,6 +15,7 @@ import { IComponentProps as IAdminFormComponentProps } from "./admin/form/interf
 import { IComponentProps as IDefaultComponentProps } from "./default/interface";
 
 export type IComponentProps =
+  | IHiddenComponentProps
   | IWordmark
   | IBrandAiChat
   | IFindComponentProps
