@@ -12,7 +12,6 @@ export const HOST_STUDIO_FIELDS = {
     "url",
     "description",
     "metadata",
-    "indexing",
     "variant",
     "className",
   ],

@@ -36,10 +36,9 @@ variant registry; shared readers do not suppress records by their saved variant.
 Publication and indexing use the persisted Page.variant:
 default and project presentation variants are indexable, noindex keeps the
 Page accessible but excludes it from sitemap, and hidden returns 404.
-Legacy draft records also return 404. The old indexing column is retained
-for schema compatibility and is not a second policy input. Migrate existing
-publication choices to Page variants before rollout. Hidden remains publication
-state rather than an authorization boundary.
+Legacy draft records also return 404. Page.variant is the only publication and
+indexing input. Hidden remains publication state rather than an authorization
+boundary.
 
 Shared REST reads, counts and ID lookups use the requested filters without
 assigning access rules to variant names. Authorization, ownership and output

@@ -29,7 +29,6 @@ export function createHostModel<K extends HostModel>(
       url: "/new-page",
       description: null,
       metadata: {},
-      indexing: "auto",
       className: null,
     },
     layout: {

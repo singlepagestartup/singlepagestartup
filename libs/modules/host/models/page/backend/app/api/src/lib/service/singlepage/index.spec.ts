@@ -21,9 +21,9 @@ const page = (values: object = {}) => ({
   ...values,
 });
 
-it("indexes saved published Pages independently of URL prefixes and legacy indexing", async () => {
+it("indexes saved published Pages independently of URL prefixes", async () => {
   const service = create([
-    page({ url: "/ai-chat/public", indexing: "noindex" }),
+    page({ url: "/ai-chat/public" }),
     page({ id: "contacts", url: "/contacts" }),
   ]);
   expect(await service.urls()).toEqual([

@@ -18,7 +18,6 @@ function fixture() {
         title: "Blog",
         description: "Description",
         variant: "default",
-        indexing: "auto",
       },
       {
         id: "en-page",
@@ -26,7 +25,6 @@ function fixture() {
         title: "Blog",
         description: "Description",
         variant: "default",
-        indexing: "auto",
       },
     ],
     metadata: [
@@ -198,11 +196,7 @@ describe("Page SEO publication", () => {
       "Original editorial title",
     );
     expect(f.rows.pageLinks.some((row) => row.id === "old-link")).toBe(true);
-    expect(
-      f.rows.pages.every(
-        (row) => row.indexing === "auto" && row.variant === "default",
-      ),
-    ).toBe(true);
+    expect(f.rows.pages.every((row) => row.variant === "default")).toBe(true);
     expect(
       new Set(manifest.operations.map((operation) => operation.metadata.id))
         .size,

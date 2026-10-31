@@ -774,3 +774,36 @@ api:db:generate и инфраструктурный target работают бе
 Проверочные модели и связи не добавлены в рабочую кодовую базу.
 Удалённый сервер не обновлялся; миграция 0011 применяется обычным
 api:db:migrate при развёртывании этой версии.
+
+## Удаление Page.indexing — 31.10.2026
+
+Page.variant управляет публикацией и индексацией. Неиспользуемое поле indexing
+удалено из схемы, Studio interface/формы и тестовых данных. SDK получает тип
+Page из схемы автоматически. Исторические миграции сохранены.
+
+- [x] Убрать поле и текущие обращения к нему, обновить документацию Page.
+- [x] Выполнить Host Page repository-generate: Drizzle создал Page-миграцию
+      0005_breezy_whirlwind.sql с DROP COLUMN indexing, snapshot и journal.
+      Автоматический Capture создал миграцию 0012, snapshot, journal и каталог
+      без удалённой колонки. SQL и метаданные миграций не редактировались вручную.
+- [x] Пройти 51 тест Page/SEO/sitemap/robots и 10 тестов runtime SEO/Studio.
+      Host typecheck прошёл. API: 20 существующих диагностик, новых нет.
+- [x] Применить инфраструктурные миграции и Page 0005 к исходной тестовой БД.
+      До и после удаления: 51 Page, контрольная сумма всех оставшихся полей
+      совпала. Колонка отсутствует в information_schema и ответах SDK.
+- [x] Проверить публичную /ru/about: HTTP 200 и index=true. Существующая Page
+      с вариантом noindex получает index=false. Hidden/draft и исключения
+      sitemap проверены модульными тестами. Consistency-check: 159/159,
+      lagMs=0, degraded=false.
+
+Логи: /tmp/sps-remove-page-indexing-generate.log,
+/tmp/sps-remove-page-indexing-tests.log,
+/tmp/sps-remove-page-indexing-runtime-tests.log,
+/tmp/sps-remove-page-indexing-host-types.log,
+/tmp/sps-remove-page-indexing-api-types.log,
+/tmp/sps-remove-page-indexing-before.log,
+/tmp/sps-remove-page-indexing-after.log,
+/tmp/sps-remove-page-indexing-coverage-migrate.log.
+Удалённый сервер не обновлялся. Для дочерних проектов нужно удалить обращения
+к indexing в собственных формах/запросах, выразить нужные правила через
+Page.variant и применить сгенерированные миграции обычным api:db:migrate.

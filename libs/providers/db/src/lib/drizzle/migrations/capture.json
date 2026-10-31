@@ -1,5 +1,5 @@
 {
-  "fingerprint": "b8c7f89e2619ba19fb3f2adcf08baa4d42fb91fd592b80ecb30064ab04570fb1",
+  "fingerprint": "ef7ba315efdd33a39ca48756e398e6e6ae3f9a22109542d7188dc76d6fe0241b",
   "resources": [
     {
       "resource": "public.bg_as_to_ee_me_ps_bd9",
@@ -1601,7 +1601,6 @@
         "updatedAt": "updated_at",
         "variant": "variant",
         "className": "class_name",
-        "indexing": "indexing",
         "language": "language",
         "adminTitle": "admin_title"
       }

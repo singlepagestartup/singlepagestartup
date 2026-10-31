@@ -115,7 +115,7 @@ it("decides indexability only from the Page variant, even under a formerly exclu
   ]);
   const result = await seo.generate({
     url: "/ai-chat/features",
-    page: page({ url: "/ai-chat/features", indexing: "noindex" }),
+    page: page({ url: "/ai-chat/features" }),
   });
   expect(result.metadata.robots?.index).toBe(true);
 });

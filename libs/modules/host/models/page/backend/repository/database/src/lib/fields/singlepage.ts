@@ -15,10 +15,6 @@ export const fields = {
   updatedAt: pgCore.timestamp("updated_at").notNull().defaultNow(),
   variant: pgCore.text("variant").notNull().default("default"),
   className: pgCore.text("class_name"),
-  indexing: pgCore
-    .text("indexing", { enum: ["auto", "noindex"] })
-    .notNull()
-    .default("auto"),
   // Legacy storage only; URL lookup and presentation locale do not use this field.
   language: pgCore.text("language").notNull().default("en"),
   adminTitle: pgCore
