@@ -1,15 +1,8 @@
 "use client";
-
-import { usePreviewLayout } from "../../../../../../host/layout/singlepage/ai-chat-landing/Navigation";
 import { Component as WebsiteBuilderModuleButton } from "../../../../../../website-builder/button/index";
 import {
   forwardRef as forwardRefControl,
   type ButtonHTMLAttributes as ButtonControlProps,
-  useEffect,
-  useId,
-  useRef,
-  useState,
-  type ReactNode,
 } from "react";
 import IconGlyphs from "../../../../../../website-builder/feature/singlepage/icon/icons.json";
 import { Component as ProfileScope } from "../../../scope/ai-chat/project/index";
@@ -17,7 +10,7 @@ import {
   Component as ProfileSidebar,
   type IProfileSidebarProps,
 } from "../../../sidebar/ai-chat/project/index";
-
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 function Icon({
   name,
   size = 20,
@@ -32,7 +25,7 @@ function Icon({
   const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
@@ -80,8 +73,6 @@ function OverviewAiChatProject({
   selected,
   children,
 }: IOverviewAiChatProjectProps) {
-  const embedded = usePreviewLayout();
-  const Container = embedded ? "div" : "main";
   const id = useId();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -100,7 +91,7 @@ function OverviewAiChatProject({
         ref={drawerTrigger}
         variant="plain"
         className="min-h-9 shrink-0 px-2 @[760px]/workspace:hidden"
-        aria-label="Показать меню проекта"
+        aria-label="Показать боковую панель"
         aria-expanded={drawerOpen}
         aria-controls={`${id}-sidebar`}
         onClick={() => setDrawerOpen((current) => !current)}
@@ -111,7 +102,7 @@ function OverviewAiChatProject({
         variant="plain"
         className="hidden min-h-9 shrink-0 px-2 @[760px]/workspace:inline-flex"
         aria-label={
-          sidebarOpen ? "Скрыть меню проекта" : "Показать меню проекта"
+          sidebarOpen ? "Скрыть боковую панель" : "Показать боковую панель"
         }
         aria-expanded={sidebarOpen}
         aria-controls={`${id}-sidebar`}
@@ -122,9 +113,7 @@ function OverviewAiChatProject({
     </>
   );
   return (
-    <Container
-      className={`@container/workspace mx-auto max-w-[1440px] ${embedded ? "" : "px-4 py-6 @[640px]:px-5"}`}
-    >
+    <main className="@container/workspace mx-auto max-w-[1440px] px-4 py-6 @[640px]:px-5">
       <div
         id="documents"
         data-ds-block="social.profile.overview-ai-chat-project"
@@ -144,7 +133,7 @@ function OverviewAiChatProject({
       >
         <button
           type="button"
-          aria-label="Закрыть меню проекта"
+          aria-label="Закрыть боковую панель проекта"
           tabIndex={-1}
           onMouseDown={(event) => event.preventDefault()}
           onClick={closeDrawer}
@@ -152,7 +141,7 @@ function OverviewAiChatProject({
         />
         <aside
           id={`${id}-sidebar`}
-          aria-label="Обсуждения проекта"
+          aria-label="Беседы проекта"
           onBlur={(event) => {
             if (!event.currentTarget.contains(event.relatedTarget)) {
               setDrawerOpen(false);
@@ -168,7 +157,7 @@ function OverviewAiChatProject({
           <button
             ref={drawerClose}
             type="button"
-            aria-label="Закрыть меню"
+            aria-label="Закрыть боковую панель"
             onClick={closeDrawer}
             className={`absolute right-3 top-3 inline-flex size-9 items-center justify-center rounded-lg hover:bg-white/10 @[760px]/workspace:hidden ${kit.focus}`}
           >
@@ -182,7 +171,7 @@ function OverviewAiChatProject({
         </aside>
         <div className="flex min-h-0 min-w-0 flex-col">{children(toggle)}</div>
       </div>
-    </Container>
+    </main>
   );
 }
 const focus =

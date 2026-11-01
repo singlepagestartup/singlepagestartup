@@ -23,7 +23,6 @@ import {
 } from "./layout";
 import { projectDesignData } from "./data";
 import { DesignRenderer } from "../components/DesignRenderer";
-import { documentConfirmation } from "../../../../../tools/studio/workspace/document";
 import { validateDesignLayoutFiles } from "../../../../../tools/studio/design/validate";
 
 const sources: IDesignLayoutSources = {
@@ -87,7 +86,7 @@ describe("Design layout", () => {
   /** BDD Scenario: Change block order and omit irrelevant media
    * Given a project chooses colors, its own Icons, and typography
    * When rendered with the default shell
-   * Then only those blocks appear in the declared order with a review status
+   * Then only those blocks appear in the declared order without a review status
    */
   test("reorders, removes, and adds blocks without modifying the shared template", () => {
     const layout = local([
@@ -99,7 +98,6 @@ describe("Design layout", () => {
       <DesignRenderer
         data={data}
         layout={resolveDesignLayoutView(layout, sources)}
-        confirmation={documentConfirmation("# Design", "startup")}
       />,
     );
     expect(html.indexOf('id="colors"')).toBeLessThan(
@@ -109,7 +107,7 @@ describe("Design layout", () => {
       html.indexOf('id="typography"'),
     );
     expect(html).toContain("Project icon examples");
-    expect(html).toContain("Needs confirmation");
+    expect(html).not.toContain("Нужна проверка");
     expect(html).not.toContain('id="photography"');
     expect(html).not.toContain('id="illustration"');
     expect(html).not.toContain('id="logos"');
@@ -133,11 +131,7 @@ describe("Design layout", () => {
       },
     );
     const html = renderToStaticMarkup(
-      <DesignRenderer
-        data={data}
-        layout={layout}
-        confirmation={documentConfirmation("# Design", "startup")}
-      />,
+      <DesignRenderer data={data} layout={layout} />,
     );
 
     expect(html).toContain('data-workspace-html="kit"');
@@ -156,11 +150,7 @@ describe("Design layout", () => {
       { ...sources, files: new Set([...sources.files, "startup/kit.html"]) },
     );
     const html = renderToStaticMarkup(
-      <DesignRenderer
-        data={data}
-        layout={layout}
-        confirmation={documentConfirmation("# Design", "startup")}
-      />,
+      <DesignRenderer data={data} layout={layout} />,
     );
 
     expect(html).toContain("<iframe");
@@ -175,15 +165,11 @@ describe("Design layout", () => {
   test("allows a complete template replacement without legacy data", () => {
     const layout = resolveDesignLayoutView(local([], "Layout.tsx"), sources);
     const html = renderToStaticMarkup(
-      <DesignRenderer
-        layout={layout}
-        document="Own design structure"
-        confirmation={documentConfirmation("# Design", "startup")}
-      />,
+      <DesignRenderer layout={layout} document="Own design structure" />,
     );
     expect(html).toContain('data-custom-design="true"');
     expect(html).toContain("Own design structure");
-    expect(html).toContain("Needs confirmation");
+    expect(html).not.toContain("Нужна проверка");
     expect(html).not.toContain('id="overview"');
   });
 
@@ -346,7 +332,7 @@ describe("Design layout", () => {
     );
     const document = new JSDOM(html).window.document;
     expect(
-      document.querySelectorAll('nav[aria-label="Interface kit categories"]'),
+      document.querySelectorAll('nav[aria-label="Категории: Interface kit"]'),
     ).toHaveLength(1);
     expect(document.querySelectorAll("[data-design-category]")).toHaveLength(3);
     expect(document.getElementById("kit-heading")?.textContent).toBe(
@@ -459,7 +445,7 @@ describe("Design layout", () => {
     );
     expect(() =>
       renderToStaticMarkup(<DesignRenderer layout={layout} />),
-    ).toThrow("Built-in Design blocks need parsed Design data");
+    ).toThrow("Встроенным блокам Дизайна нужны разобранные данные документа.");
     expect(
       renderToStaticMarkup(<DesignRenderer layout={layout} data={data} />),
     ).toContain('id="colors"');
@@ -620,7 +606,7 @@ describe("Design layout", () => {
         "kit-category-select",
       ) as HTMLSelectElement;
       expect(mobileSelect.labels?.[0].textContent).toBe(
-        "Interface kit category",
+        "Категория: Interface kit",
       );
       expect(mobileSelect.value).toBe("fields");
       await act(async () => {
@@ -635,7 +621,7 @@ describe("Design layout", () => {
       expect(dom.window.location.hash).toBe("#buttons");
       const showAll = Array.from(
         dom.window.document.querySelectorAll("button"),
-      ).find((button) => button.textContent === "Show all")!;
+      ).find((button) => button.textContent === "Показать все")!;
       await act(async () => showAll.click());
       expect(panel("buttons").hidden).toBe(false);
       expect(panel("fields").hidden).toBe(false);
@@ -648,11 +634,11 @@ describe("Design layout", () => {
       });
       expect(panel("buttons").hidden).toBe(true);
       expect(panel("fields").hidden).toBe(false);
-      expect(showAll.textContent).toBe("Show all");
+      expect(showAll.textContent).toBe("Показать все");
       await act(async () => {
         (
           dom.window.document.querySelector(
-            '[aria-label="Download HTML"]',
+            '[aria-label="Скачать HTML"]',
           ) as HTMLButtonElement
         ).click();
       });

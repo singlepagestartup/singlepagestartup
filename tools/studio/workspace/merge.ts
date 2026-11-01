@@ -1,3 +1,4 @@
+import { canonicalHeading } from "./headings";
 import { parse, stringify } from "yaml";
 import {
   hasMarkdownContent,
@@ -9,7 +10,6 @@ import {
 export interface IMergedWorkspaceContent {
   content: string;
   overlayContributes: boolean;
-  confirmationLayer?: DocumentLayer;
 }
 
 export type WorkspaceMergeStrategy =
@@ -47,7 +47,7 @@ function splitMarkdown(source: string): {
     return {
       body: source.slice(bodyStart, end).trim(),
       heading,
-      key: heading.toLocaleLowerCase(),
+      key: canonicalHeading(heading).toLocaleLowerCase(),
     };
   });
   return {
@@ -126,31 +126,12 @@ function mergeDocument(
   const baseDocument = parseDocument(base);
   const overlayDocument = parseDocument(overlay);
   const merged = mergeBody(baseDocument.body, overlayDocument.body);
-  const ownsConfirmation = Object.hasOwn(
-    overlayDocument.metadata,
-    "confirmation",
-  );
   const metadata = { ...baseDocument.metadata, ...overlayDocument.metadata };
-  // A changed body never inherits approval of the previous document.
-  if (
-    merged.overlayContributes &&
-    !ownsConfirmation &&
-    baseDocument.metadata.confirmation !== undefined
-  ) {
-    metadata.confirmation = { confirmed: false };
-  }
-  if (
-    merged.overlayContributes &&
-    !Object.hasOwn(overlayDocument.metadata, "review")
-  )
-    delete metadata.review;
   return {
     content: renderDocument({ body: merged.content, metadata }),
     overlayContributes:
       merged.overlayContributes ||
       Object.keys(overlayDocument.metadata).length > 0,
-    confirmationLayer:
-      ownsConfirmation || merged.overlayContributes ? "startup" : "singlepage",
   };
 }
 
@@ -202,19 +183,7 @@ export function mergeYaml(
   const overlayData = parse(overlayDocument.body);
   const merged = mergeData(baseData, overlayData);
   const bodyChanges = JSON.stringify(merged) !== JSON.stringify(baseData);
-  const ownsConfirmation = Object.hasOwn(
-    overlayDocument.metadata,
-    "confirmation",
-  );
   const metadata = { ...baseDocument.metadata, ...overlayDocument.metadata };
-  if (
-    bodyChanges &&
-    !ownsConfirmation &&
-    baseDocument.metadata.confirmation !== undefined
-  )
-    metadata.confirmation = { confirmed: false };
-  if (bodyChanges && !Object.hasOwn(overlayDocument.metadata, "review"))
-    delete metadata.review;
   const overlayContributes =
     bodyChanges || Object.keys(overlayDocument.metadata).length > 0;
   return {
@@ -222,8 +191,6 @@ export function mergeYaml(
       ? stringify({ ...(merged as Record<string, unknown>), ...metadata })
       : base,
     overlayContributes,
-    confirmationLayer:
-      bodyChanges || ownsConfirmation ? "startup" : "singlepage",
   };
 }
 

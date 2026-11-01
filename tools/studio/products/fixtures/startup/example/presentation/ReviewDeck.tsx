@@ -1,15 +1,14 @@
 import { ProjectPresentation } from "../../../../../../../apps/studio/workspace/utils/components/ProjectPresentation";
 
-export default function ReviewDeck({
-  content,
-}: {
-  content: Record<string, unknown>;
-}) {
-  const data = content.slides as Array<{
-    id: string;
-    title: string;
-    summary: string;
-  }>;
+export default function ReviewDeck() {
+  const data = [
+    {
+      id: "intro",
+      title: "A project-owned deck",
+      summary: "Editable slide content",
+    },
+    { id: "offer", title: "The offer", summary: "Next action" },
+  ];
   return (
     <ProjectPresentation
       name="Course"

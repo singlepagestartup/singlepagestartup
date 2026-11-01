@@ -11,13 +11,13 @@ export default function Overlays() {
   const [portal, setPortal] = useState<HTMLDivElement | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
-  const [name, setName] = useState("Studio demo");
+  const [name, setName] = useState("Пример Studio");
   const [draftName, setDraftName] = useState(name);
   const [deleted, setDeleted] = useState(false);
   const [compact, setCompact] = useState(false);
   const [notifications, setNotifications] = useState(true);
-  const [menuResult, setMenuResult] = useState("No action selected.");
-  const [commandResult, setCommandResult] = useState("No command selected.");
+  const [menuResult, setMenuResult] = useState("Действие не выбрано.");
+  const [commandResult, setCommandResult] = useState("Команда не выбрана.");
   const nameId = useId();
   const nameErrorId = useId();
   const nameInput = useRef<HTMLInputElement>(null);
@@ -36,14 +36,14 @@ export default function Overlays() {
     <div className="grid gap-6">
       <Specimen
         id="dialog"
-        title="Dialog"
-        description="A focused edit with an explicit save or cancel."
-        states={["Closed", "Open", "Invalid", "Saved", "Cancelled"]}
-        usage="Use a modal for one contained task. Focus moves inside and returns to its trigger; Escape cancels."
+        title="Диалог"
+        description="Одна правка с явным сохранением или отменой."
+        states={["Закрыто", "Открыть", "Ошибка ввода", "Сохранено", "Отмена"]}
+        usage="Модальный диалог — для одной задачи. Фокус входит внутрь и возвращается к вызвавшему элементу; Escape отменяет."
         recipe={content}
       >
         <p className={`mb-4 text-sm ${kit.muted}`}>
-          Local workspace name:{" "}
+          Локальное имя Workspace:{" "}
           <span className="font-semibold text-[var(--workspace-brand-foreground)]">
             {name}
           </span>
@@ -52,7 +52,7 @@ export default function Overlays() {
           <Dialog.Trigger asChild>
             <Button variant="secondary" onClick={() => setDraftName(name)}>
               <Icon name="pencil-simple" />
-              Edit demo name
+              Изменить имя примера
             </Button>
           </Dialog.Trigger>
           {portal ? (
@@ -67,20 +67,20 @@ export default function Overlays() {
               >
                 <div className="flex items-start justify-between gap-4">
                   <Dialog.Title className="text-2xl font-semibold">
-                    Edit workspace name
+                    Изменить имя Workspace
                   </Dialog.Title>
                   <Dialog.Close asChild>
                     <Button
                       variant="plain"
                       className="px-3"
-                      aria-label="Close name dialog"
+                      aria-label="Закрыть диалог имени"
                     >
                       <Icon name="x" />
                     </Button>
                   </Dialog.Close>
                 </div>
                 <Dialog.Description className={`mt-2 text-sm ${kit.muted}`}>
-                  This changes the name in this preview only.
+                  Меняется только имя в этом примере.
                 </Dialog.Description>
                 <form
                   className="mt-6 grid gap-4"
@@ -93,7 +93,7 @@ export default function Overlays() {
                   }}
                 >
                   <label className={kit.label} htmlFor={nameId}>
-                    Workspace name
+                    Имя Workspace
                   </label>
                   <input
                     ref={nameInput}
@@ -112,15 +112,15 @@ export default function Overlays() {
                       role="alert"
                       className="text-sm text-[var(--workspace-brand-danger)]"
                     >
-                      Enter a workspace name.
+                      Введите имя Workspace.
                     </p>
                   ) : null}
                   <div className="mt-2 flex flex-wrap justify-end gap-3">
                     <Dialog.Close asChild>
-                      <Button variant="secondary">Cancel</Button>
+                      <Button variant="secondary">Отмена</Button>
                     </Dialog.Close>
                     <Button type="submit" disabled={!draftName.trim()}>
-                      Save local name
+                      Сохранить локальное имя
                     </Button>
                   </div>
                 </form>
@@ -132,17 +132,23 @@ export default function Overlays() {
 
       <Specimen
         id="confirmation"
-        title="Confirmation dialog"
-        description="Name the item and consequence before a destructive action."
-        states={["Ready", "Confirming", "Cancelled", "Removed", "Restored"]}
-        usage="Use an alert dialog only for a consequence that needs explicit consent. Initial focus stays on Cancel."
+        title="Диалог подтверждения"
+        description="Назовите объект и последствия перед опасным действием."
+        states={[
+          "Готово",
+          "Подтверждение",
+          "Отмена",
+          "Удалено",
+          "Восстановлено",
+        ]}
+        usage="Диалог предупреждения нужен для последствия, требующего явного согласия. Начальный фокус — на отмене."
         recipe={`${content} / ${kit.danger}`}
       >
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--workspace-brand-line)] p-4">
           <p role="status" className="text-sm">
             {deleted
-              ? "The demo draft has been removed."
-              : "Draft: First project notes"}
+              ? "Черновик примера удалён."
+              : "Черновик: первые заметки проекта"}
           </p>
           {deleted ? (
             <Button
@@ -150,14 +156,14 @@ export default function Overlays() {
               variant="secondary"
               onClick={() => setDeleted(false)}
             >
-              Restore demo draft
+              Восстановить черновик примера
             </Button>
           ) : (
             <AlertDialog.Root>
               <AlertDialog.Trigger asChild>
                 <Button variant="danger">
                   <Icon name="trash" />
-                  Remove draft
+                  Убрать черновик
                 </Button>
               </AlertDialog.Trigger>
               {portal ? (
@@ -173,24 +179,24 @@ export default function Overlays() {
                     }}
                   >
                     <AlertDialog.Title className="text-2xl font-semibold">
-                      Remove this demo draft?
+                      Убрать этот черновик примера?
                     </AlertDialog.Title>
                     <AlertDialog.Description
                       className={`mt-3 text-sm leading-relaxed ${kit.muted}`}
                     >
-                      “First project notes” will disappear from this preview.
-                      This demonstration does not delete a real file.
+                      «Первые заметки проекта» исчезнут из примера. Настоящий
+                      файл не удаляется.
                     </AlertDialog.Description>
                     <div className="mt-6 flex flex-wrap justify-end gap-3">
                       <AlertDialog.Cancel asChild>
-                        <Button variant="secondary">Cancel</Button>
+                        <Button variant="secondary">Отмена</Button>
                       </AlertDialog.Cancel>
                       <AlertDialog.Action asChild>
                         <Button
                           variant="danger"
                           onClick={() => setDeleted(true)}
                         >
-                          Remove demo draft
+                          Убрать черновик примера
                         </Button>
                       </AlertDialog.Action>
                     </div>
@@ -204,17 +210,17 @@ export default function Overlays() {
 
       <Specimen
         id="sheet"
-        title="Sheet"
-        description="Secondary settings appear beside the current workspace."
-        states={["Closed", "Open", "Changed"]}
-        usage="Keep the task visible behind a sheet. Use the same modal focus and Escape behavior as a dialog."
+        title="Выдвижная панель"
+        description="Вторичные настройки открываются рядом с текущей рабочей областью."
+        states={["Закрыто", "Открыть", "Изменено"]}
+        usage="Задача остаётся видна за панелью. Фокус и Escape работают как в модальном диалоге."
         recipe="fixed inset-y-0 right-0 z-[60] w-full max-w-md overflow-y-auto border-l border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-6"
       >
         <Dialog.Root>
           <Dialog.Trigger asChild>
             <Button variant="secondary">
               <Icon name="gear-six" />
-              Open preview settings
+              Открыть настройки примера
             </Button>
           </Dialog.Trigger>
           {portal ? (
@@ -223,34 +229,33 @@ export default function Overlays() {
               <Dialog.Content className="fixed inset-y-0 right-0 z-[60] flex w-full max-w-md flex-col overflow-y-auto border-l border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-6 font-[family-name:var(--workspace-brand-font-body)] text-[var(--workspace-brand-foreground)] shadow-xl focus:outline-none">
                 <div className="flex items-center justify-between gap-4">
                   <Dialog.Title className="text-2xl font-semibold">
-                    Preview settings
+                    Настройки примера
                   </Dialog.Title>
                   <Dialog.Close asChild>
                     <Button
                       variant="plain"
                       className="px-3"
-                      aria-label="Close preview settings"
+                      aria-label="Закрыть настройки примера"
                     >
                       <Icon name="x" />
                     </Button>
                   </Dialog.Close>
                 </div>
                 <Dialog.Description className={`mt-3 text-sm ${kit.muted}`}>
-                  These controls update local demo preferences.
+                  Элементы меняют локальные настройки примера.
                 </Dialog.Description>
                 <label className="mt-8 flex min-h-12 cursor-pointer items-center justify-between gap-4 rounded-xl border border-[var(--workspace-brand-line)] p-4 text-sm">
-                  <span>Demo notifications</span>
+                  <span>Уведомления примера</span>
                   <Checkbox
                     checked={notifications}
                     onChange={(event) => setNotifications(event.target.checked)}
                   />
                 </label>
                 <p role="status" className={`mt-4 text-sm ${kit.muted}`}>
-                  Notifications are {notifications ? "on" : "off"} in this
-                  preview.
+                  Уведомления {notifications ? "on" : "off"} в этом примере.
                 </p>
                 <Dialog.Close asChild>
-                  <Button className="mt-8 self-start">Done</Button>
+                  <Button className="mt-8 self-start">Готово</Button>
                 </Dialog.Close>
               </Dialog.Content>
             </Dialog.Portal>
@@ -260,17 +265,17 @@ export default function Overlays() {
 
       <Specimen
         id="popover"
-        title="Popover and tooltip"
-        description="Small choices and short explanations stay close to their trigger."
-        states={["Closed", "Open", "Focused", "Selected"]}
-        usage="Use a popover for interactive content. A tooltip only supplements an accessible button label."
+        title="Всплывающий блок и подсказка"
+        description="Небольшой выбор и короткое пояснение остаются рядом с вызвавшим элементом."
+        states={["Закрыто", "Открыть", "В фокусе", "Выбрано"]}
+        usage="Интерактивное содержимое — во всплывающем блоке. Подсказка только дополняет доступную подпись кнопки."
         recipe={`${floating} / ${menuItem}`}
       >
         <div className="flex flex-wrap items-center gap-3">
           <Popover.Root>
             <Popover.Trigger asChild>
               <Button variant="secondary">
-                View options
+                Параметры вида
                 <Icon name="arrow-down" />
               </Button>
             </Popover.Trigger>
@@ -280,11 +285,13 @@ export default function Overlays() {
                   align="start"
                   sideOffset={8}
                   className={`${floating} w-64 p-4`}
-                  aria-label="View options"
+                  aria-label="Параметры вида"
                 >
-                  <h4 className="text-sm font-semibold">Display density</h4>
+                  <h4 className="text-sm font-semibold">
+                    Плотность отображения
+                  </h4>
                   <label className="mt-3 flex min-h-11 cursor-pointer items-center justify-between gap-4 text-sm">
-                    Compact rows
+                    Компактные строки
                     <Checkbox
                       checked={compact}
                       onChange={(event) => setCompact(event.target.checked)}
@@ -292,7 +299,7 @@ export default function Overlays() {
                   </label>
                   <Popover.Close asChild>
                     <Button variant="plain" className="mt-2 w-full">
-                      Done
+                      Готово
                     </Button>
                   </Popover.Close>
                 </Popover.Content>
@@ -305,7 +312,7 @@ export default function Overlays() {
                 <Button
                   variant="plain"
                   className="px-3"
-                  aria-label="About display density"
+                  aria-label="О плотности отображения"
                 >
                   <Icon name="question" />
                 </Button>
@@ -316,7 +323,7 @@ export default function Overlays() {
                     sideOffset={8}
                     className={`${floating} max-w-xs px-3 py-2 text-xs`}
                   >
-                    Density changes spacing, never the information shown.
+                    Плотность меняет интервалы, сохраняя сведения.
                   </Tooltip.Content>
                 </Tooltip.Portal>
               ) : null}
@@ -325,28 +332,28 @@ export default function Overlays() {
         </div>
         <div className="mt-4 overflow-hidden rounded-xl border border-[var(--workspace-brand-line)] text-sm">
           <div className={compact ? "px-4 py-2" : "px-4 py-4"}>
-            Project overview
+            Обзор проекта
           </div>
           <div
             className={`${compact ? "px-4 py-2" : "px-4 py-4"} border-t border-[var(--workspace-brand-line)]`}
           >
-            Reference materials
+            Справочные материалы
           </div>
         </div>
       </Specimen>
 
       <Specimen
         id="menu"
-        title="Dropdown menu"
-        description="A compact set of actions uses native menu keyboard navigation."
-        states={["Closed", "Open", "Highlighted", "Disabled", "Selected"]}
-        usage="Use action labels and separate destructive operations. Arrow keys move through the items; Escape returns to the trigger."
+        title="Выпадающее меню"
+        description="Компактный набор действий использует нативную клавиатурную навигацию меню."
+        states={["Закрыто", "Открыть", "Подсвечено", "Отключено", "Выбрано"]}
+        usage="Подписывайте действия и отделяйте опасные операции. Стрелки перемещают выбор; Escape возвращает к вызвавшему элементу."
         recipe={`${floating} / ${menuItem}`}
       >
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
             <Button variant="secondary">
-              Demo actions
+              Действия примера
               <Icon name="arrow-down" />
             </Button>
           </DropdownMenu.Trigger>
@@ -360,37 +367,35 @@ export default function Overlays() {
                 <DropdownMenu.Label
                   className={`px-3 py-2 text-xs ${kit.muted}`}
                 >
-                  Local preview
+                  Локальный просмотр
                 </DropdownMenu.Label>
                 <DropdownMenu.Item
                   className={menuItem}
                   onSelect={() =>
-                    setMenuResult("Demo copy created in this preview.")
+                    setMenuResult("Копия создана внутри примера.")
                   }
                 >
                   <Icon name="plus" />
-                  Duplicate example
+                  Дублировать пример
                 </DropdownMenu.Item>
                 <DropdownMenu.Item
                   className={menuItem}
-                  onSelect={() => setMenuResult("Example marked for review.")}
+                  onSelect={() => setMenuResult("Пример отмечен для проверки.")}
                 >
                   <Icon name="check" />
-                  Mark for review
+                  Отметить для проверки
                 </DropdownMenu.Item>
                 <DropdownMenu.Item className={menuItem} disabled>
                   <Icon name="globe" />
-                  Publish unavailable
+                  Публикация недоступна
                 </DropdownMenu.Item>
                 <DropdownMenu.Separator className="my-1 h-px bg-[var(--workspace-brand-line)]" />
                 <DropdownMenu.Item
                   className={`${menuItem} text-[var(--workspace-brand-danger)] data-[highlighted]:bg-[var(--workspace-brand-danger-surface)]`}
-                  onSelect={() =>
-                    setMenuResult("Demo copy removed from this preview.")
-                  }
+                  onSelect={() => setMenuResult("Копия убрана из примера.")}
                 >
                   <Icon name="trash" />
-                  Remove demo copy
+                  Убрать копию примера
                 </DropdownMenu.Item>
               </DropdownMenu.Content>
             </DropdownMenu.Portal>
@@ -403,17 +408,17 @@ export default function Overlays() {
 
       <Specimen
         id="command"
-        title="Command search"
-        description="Search a small command list and select it with the keyboard."
-        states={["Closed", "Searching", "Matched", "No results", "Selected"]}
-        usage="Use commands for known actions. Arrow keys select a result and Enter runs the local demonstration."
+        title="Поиск команд"
+        description="Найдите команду в небольшом списке и выберите клавиатурой."
+        states={["Закрыто", "Поиск", "Найдено", "Нет результатов", "Выбрано"]}
+        usage="Команды обозначают известные действия. Стрелки выбирают результат, Enter запускает локальный пример."
         recipe={`${content} / ${kit.field} / ${menuItem}`}
       >
         <Dialog.Root open={commandOpen} onOpenChange={setCommandOpen}>
           <Dialog.Trigger asChild>
             <Button variant="secondary">
               <Icon name="arrow-right" />
-              Find a demo command
+              Найти команду примера
             </Button>
           </Dialog.Trigger>
           {portal ? (
@@ -428,45 +433,45 @@ export default function Overlays() {
               >
                 <div className="flex items-center justify-between gap-4">
                   <Dialog.Title className="text-xl font-semibold">
-                    Find a command
+                    Найти команду
                   </Dialog.Title>
                   <Dialog.Close asChild>
                     <Button
                       variant="plain"
                       className="px-3"
-                      aria-label="Close command search"
+                      aria-label="Закрыть поиск команд"
                     >
                       <Icon name="x" />
                     </Button>
                   </Dialog.Close>
                 </div>
                 <Dialog.Description className={`mt-2 text-sm ${kit.muted}`}>
-                  Commands report a local preview selection.
+                  Команды сообщают о выборе в локальном примере.
                 </Dialog.Description>
-                <Command className="mt-5" label="Demo commands">
+                <Command className="mt-5" label="Команды примера">
                   <Command.Input
                     ref={commandInput}
                     className={kit.field}
-                    placeholder="Search commands…"
-                    aria-label="Search demo commands"
+                    placeholder="Поиск команд…"
+                    aria-label="Поиск команд примера"
                   />
                   <Command.List className="mt-3 max-h-64 overflow-y-auto">
                     <Command.Empty
                       className={`px-3 py-6 text-center text-sm ${kit.muted}`}
                     >
-                      No matching commands.
+                      Команды не найдены.
                     </Command.Empty>
                     {[
-                      ["Open project overview", "folder-open"],
-                      ["Create a draft", "plus"],
-                      ["Review reference files", "file-text"],
+                      ["Открыть обзор проекта", "folder-open"],
+                      ["Создать черновик", "plus"],
+                      ["Проверить файлы референсов", "file-text"],
                     ].map(([label, icon]) => (
                       <Command.Item
                         key={label}
                         value={label}
                         onSelect={() => {
                           setCommandResult(
-                            `Selected: ${label}. Local demo only.`,
+                            `Selected: ${label}. Только локальный пример.`,
                           );
                           setCommandOpen(false);
                         }}

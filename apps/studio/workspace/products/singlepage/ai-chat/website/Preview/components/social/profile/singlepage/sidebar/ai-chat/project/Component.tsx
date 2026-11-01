@@ -21,7 +21,7 @@ function Icon({
   const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
@@ -52,7 +52,7 @@ export function Component({
   const id = useId();
   const { projects } = useProfiles();
   const name =
-    projects.find((profile) => profile.id === profileId)?.name ?? "Project";
+    projects.find((profile) => profile.id === profileId)?.name ?? "Проект";
   const href = aiChatProfileHref(profileId);
   const settingsSelected = selected === "settings";
   const creatingThread = selected === "thread-create";
@@ -62,7 +62,7 @@ export function Component({
       <h1 className="mb-3 break-words pr-10 text-lg font-semibold @[760px]/workspace:pr-0">
         {name}
       </h1>
-      <nav aria-label="Навигация по проекту" className="space-y-1">
+      <nav aria-label="Навигация проекта" className="space-y-1">
         <a
           href={`${href}/settings`}
           aria-label="Настройки проекта"
@@ -101,17 +101,17 @@ export function Component({
         </div>
       </nav>
       <section
-        aria-label="Обсуждения проекта"
+        aria-label="Переписки проекта"
         className="mt-5 border-t border-white/10 pt-4"
       >
-        <h2 className="mb-3 text-xs font-semibold text-white/60">Обсуждения</h2>
+        <h2 className="mb-3 text-xs font-semibold text-white/60">Переписки</h2>
         <a
           href={aiChatThreadCreateHref(profileId, chatId)}
           aria-current={creatingThread ? "page" : undefined}
           className={`flex min-h-11 w-full items-center gap-2 rounded-xl border border-white/15 px-3 py-2 text-left text-sm text-white/80 hover:bg-white/10 ${creatingThread ? "bg-white/15" : ""} ${kit.focus}`}
         >
           <Icon name="plus" className="size-4" />
-          Новое обсуждение
+          Новая переписка
         </a>
       </section>
     </>

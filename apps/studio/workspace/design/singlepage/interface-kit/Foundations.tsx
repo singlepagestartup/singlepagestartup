@@ -1,28 +1,28 @@
 import { useId, useState } from "react";
 import { Button, Icon, Specimen, kit, type IconName } from "./primitives";
 import { StarFilled } from "../../../utils/components/ModuleIcons";
-import { InterfaceRules } from "../../../utils/components/InterfaceGuidance";
+import { IconRules } from "../../../utils/components/InterfaceGuidance";
 
 const icons: { name: IconName; label: string }[] = [
-  { name: "arrow-right", label: "Forward" },
-  { name: "arrow-down", label: "Down" },
-  { name: "caret-down", label: "Expand picker" },
-  { name: "arrow-up-right", label: "Open link" },
-  { name: "file-text", label: "File" },
-  { name: "folder-open", label: "Folder" },
-  { name: "check", label: "Confirm" },
-  { name: "x", label: "Close" },
-  { name: "stack", label: "Layers" },
-  { name: "globe", label: "Web" },
-  { name: "chat-circle", label: "Chat" },
-  { name: "plus", label: "Add" },
-  { name: "pencil-simple", label: "Edit" },
-  { name: "eye", label: "Preview" },
-  { name: "upload-simple", label: "Upload" },
-  { name: "gear-six", label: "Settings" },
-  { name: "trash", label: "Delete" },
-  { name: "question", label: "Help" },
-  { name: "star", label: "Rating · regular" },
+  { name: "arrow-right", label: "Вперёд" },
+  { name: "arrow-down", label: "Вниз" },
+  { name: "caret-down", label: "Раскрыть выбор" },
+  { name: "arrow-up-right", label: "Открыть ссылку" },
+  { name: "file-text", label: "Файл" },
+  { name: "folder-open", label: "Папка" },
+  { name: "check", label: "Подтвердить" },
+  { name: "x", label: "Закрыть" },
+  { name: "stack", label: "Слои" },
+  { name: "globe", label: "Сайт" },
+  { name: "chat-circle", label: "Чат" },
+  { name: "plus", label: "Добавить" },
+  { name: "pencil-simple", label: "Изменить" },
+  { name: "eye", label: "Просмотр" },
+  { name: "upload-simple", label: "Загрузить" },
+  { name: "gear-six", label: "Настройки" },
+  { name: "trash", label: "Удалить" },
+  { name: "question", label: "Помощь" },
+  { name: "star", label: "Рейтинг · контур" },
 ];
 const iconGrid = "grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6";
 const darkSurface =
@@ -30,33 +30,33 @@ const darkSurface =
 
 export default function Foundations() {
   const nameId = useId();
-  const [name, setName] = useState("Coffee roastery");
+  const [name, setName] = useState("Обжарка кофе");
   const [savedName, setSavedName] = useState("");
 
   return (
     <div className="grid gap-4">
-      <InterfaceRules />
       <Specimen
         id="icons"
-        title="Icons"
-        description="Phosphor 2.1.1. Regular controls use official 256-unit geometry and 16-unit weight; filled stars represent rating values."
+        title="Иконки"
+        description="Галерея иконок навигации, действий и состояний."
         states={[
-          "20px control",
-          "24px card",
-          "inherited colour",
-          "decorative SVG",
+          "20px в управлении",
+          "24px в карточке",
+          "наследуемый цвет",
+          "декоративный SVG",
         ]}
-        usage="Keep icons fixed in size and centred beside text. Use 14px checks inside 20px checkboxes and status markers, and 16px checks inside 24px choice markers. Decorative SVGs are hidden from assistive technology; icon-only controls need an accessible name. Preserve the official geometry."
+        usage="Размер иконок фиксирован, центр выровнен с текстом. Галочка 14px внутри флажка 20px, галочка 16px внутри отметки выбора 24px. Декоративные SVG скрыты от вспомогательных технологий; кнопке-иконке нужно доступное имя. Геометрия официальная."
         recipe={`Gallery: ${iconGrid}\n20px: h-5 w-5 shrink-0\n24px: h-6 w-6 shrink-0\nSVG: viewBox=\"0 0 256 256\" fill=\"currentColor\" aria-hidden=\"true\"`}
       >
-        <p className={`mb-5 text-sm ${kit.muted}`}>
+        <IconRules />
+        <p className={`my-5 text-sm ${kit.muted}`}>
           <a
             href="https://github.com/phosphor-icons/core/tree/2b75f3ad12b420c9504ef05df8d2564a28f8500e"
             target="_blank"
             rel="noopener noreferrer"
             className={`rounded-sm underline underline-offset-4 ${kit.focus}`}
           >
-            Official library
+            Официальная библиотека
           </a>
           {" · "}
           <a
@@ -65,7 +65,7 @@ export default function Foundations() {
             rel="noopener noreferrer"
             className={`rounded-sm underline underline-offset-4 ${kit.focus}`}
           >
-            MIT license
+            Лицензия MIT
           </a>
         </p>
         <div className={iconGrid}>
@@ -87,7 +87,7 @@ export default function Foundations() {
               <StarFilled />
               <StarFilled size={24} className="h-6 w-6" />
             </div>
-            <p className="mt-3 text-xs font-medium">Rating · fill</p>
+            <p className="mt-3 text-xs font-medium">Рейтинг · заливка</p>
             <p className={`mt-1 text-xs ${kit.muted}`}>20 / 24 px</p>
           </div>
         </div>
@@ -95,23 +95,25 @@ export default function Foundations() {
 
       <Specimen
         id="dark-pair"
-        title="Dark pair"
-        description="Graphite surfaces use the same controls, spacing and states. Lime actions retain graphite text."
+        title="Тёмная пара"
+        description="На графите те же управление, интервалы и состояния. Лаймовые действия сохраняют графитовый текст."
         states={[
-          "dark surface",
-          "raised field",
+          "тёмная поверхность",
+          "выделенное поле",
           "focus",
           "primary",
           "secondary",
-          "saved locally",
+          "сохранено локально",
         ]}
-        usage="Override semantic surface, foreground, muted, line and focus tokens together. Keep accent and on-accent consistent between themes."
+        usage="Токены поверхности, текста, вторичного текста, границы и фокуса меняются вместе. Accent и on-accent согласованы между темами."
         recipe={`${darkSurface}\nPrimary: ${kit.button}\nField: ${kit.field}`}
       >
         <div className={darkSurface}>
-          <p className={`text-xs font-medium ${kit.muted}`}>Project settings</p>
+          <p className={`text-xs font-medium ${kit.muted}`}>
+            Настройки проекта
+          </p>
           <h4 className="mt-3 text-3xl font-semibold leading-tight">
-            Bring your next idea into focus.
+            Сосредоточьтесь на следующей идее.
           </h4>
           <form
             className="mt-6 grid max-w-lg gap-3"
@@ -121,7 +123,7 @@ export default function Foundations() {
             }}
           >
             <label className={kit.label} htmlFor={nameId}>
-              Project name
+              Название проекта
             </label>
             <input
               id={nameId}
@@ -136,22 +138,22 @@ export default function Foundations() {
             <div className="mt-2 flex flex-wrap gap-3">
               <Button type="submit" disabled={!name.trim()}>
                 <Icon name="check" />
-                Save in preview
+                Сохранить в примере
               </Button>
               <Button
                 variant="secondary"
                 onClick={() => {
-                  setName("Coffee roastery");
+                  setName("Обжарка кофе");
                   setSavedName("");
                 }}
               >
-                Reset
+                Сбросить
               </Button>
             </div>
             <p className={`min-h-5 text-xs ${kit.muted}`} role="status">
               {savedName
-                ? `Saved here: ${savedName}`
-                : "Changes stay in this specimen."}
+                ? `Сохранено здесь: ${savedName}`
+                : "Изменения остаются в этом образце."}
             </p>
           </form>
         </div>

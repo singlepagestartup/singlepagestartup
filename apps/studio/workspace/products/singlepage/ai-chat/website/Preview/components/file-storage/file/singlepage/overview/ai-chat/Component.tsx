@@ -15,7 +15,7 @@ function Icon({
   const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
@@ -52,7 +52,7 @@ export function Component({ file, compact }: IFilePreviewProps) {
           href={file.fileUrl}
           target="_blank"
           rel="noreferrer"
-          aria-label={`Открыть ${file.name}`}
+          aria-label={`Open ${file.name}`}
           className={`block ${kit.focus}`}
         >
           <img
@@ -76,21 +76,21 @@ export function Component({ file, compact }: IFilePreviewProps) {
             href={file.fileUrl}
             target="_blank"
             rel="noreferrer"
-            aria-label={`Открыть ${file.name}`}
+            aria-label={`Open ${file.name}`}
             className={`${kit.plain} min-h-9 shrink-0 px-2 ${compact ? "col-span-2 justify-self-end" : ""}`}
           >
-            Open
+            Открыть
           </a>
         )}
         {file.fileUrl && (
           <a
             href={file.fileUrl}
             download={file.name}
-            aria-label={`Скачать ${file.name}`}
+            aria-label={`Download ${file.name}`}
             className={`${kit.plain} min-h-9 shrink-0 px-2 ${compact ? "col-span-2 justify-self-end" : ""}`}
           >
             <Icon name="arrow-down" className="size-4" />
-            {compact && "Download"}
+            {compact && "Скачать"}
           </a>
         )}
       </figcaption>

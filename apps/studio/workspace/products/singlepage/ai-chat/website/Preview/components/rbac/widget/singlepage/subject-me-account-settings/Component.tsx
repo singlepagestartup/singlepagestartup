@@ -1,26 +1,19 @@
 "use client";
+import { forwardRef as forwardRef } from "react";
+import * as SelectPrimitive from "@radix-ui/react-select";
+import { useState as useStatePresentation } from "react";
+import { twMerge as twMerge } from "tailwind-merge";
+import { forwardRef as forwardRefPresentation } from "react";
+import { type SVGProps as SVGProps } from "react";
+import { twMerge as twMergePresentation } from "tailwind-merge";
+import { Component as WebsiteBuilderModuleButton } from "../../../../website-builder/button/index";
 import {
-  forwardRef as forwardRef,
-  useState as useStatePresentation,
-  forwardRef as forwardRefPresentation,
-  type SVGProps as SVGProps,
   forwardRef as forwardRefControl,
   type ButtonHTMLAttributes as ButtonControlProps,
-  useId,
-  useState,
 } from "react";
-import * as SelectPrimitive from "@radix-ui/react-select";
-
-import {
-  twMerge as twMerge,
-  twMerge as twMergePresentation,
-} from "tailwind-merge";
-
-import { Component as WebsiteBuilderModuleButton } from "../../../../website-builder/button/index";
-
 import IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
 import type { IAIChatServicePageContent } from "../../../../website-builder/widget/singlepage/content/ai-chat/content";
-
+import { useId, useState } from "react";
 import { Component as RbacModuleSubject } from "../../../subject/index";
 import { useStudioAccount } from "../../../subject/singlepage/account/Account";
 interface IModuleIconProps extends SVGProps<SVGSVGElement> {
@@ -159,7 +152,7 @@ function Icon({
   const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
@@ -204,7 +197,7 @@ export function SubjectMeAccountSettings({
     },
     {
       id: "purchases",
-      label: showTokens ? "Токены и покупки" : "Покупки",
+      label: showTokens ? "Токены и покупки" : "Purchases",
       content: (
         <RbacModuleSubject
           variant="account-data"
@@ -241,8 +234,7 @@ export function SubjectMeAccountSettings({
               Настройки аккаунта
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-[color:var(--workspace-brand-muted)]">
-              Измените профиль, настройте способы входа и посмотрите данные
-              аккаунта.
+              Измените профиль, настройте вход и проверьте данные аккаунта.
             </p>
           </div>
           <Button
@@ -255,7 +247,7 @@ export function SubjectMeAccountSettings({
             }}
           >
             <LogOut className="size-4" />
-            {signedOut ? "Вы вышли из аккаунта" : "Выйти"}
+            {signedOut ? "Вы вышли" : "Выйти"}
           </Button>
         </header>
         {signedOut ? (

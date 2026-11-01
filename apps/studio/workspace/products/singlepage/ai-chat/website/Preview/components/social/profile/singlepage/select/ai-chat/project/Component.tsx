@@ -17,7 +17,7 @@ function Icon({
   const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
@@ -51,14 +51,14 @@ export function Component({
       <DropdownMenu.Trigger asChild>
         <button
           type="button"
-          aria-label="Project"
+          aria-label="Проект"
           data-ds-block="social.profile.select-ai-chat-project"
           className={`inline-flex min-h-11 max-w-60 items-center gap-2 rounded-xl px-3 text-sm text-[color:var(--workspace-brand-muted)] hover:bg-[color:var(--workspace-brand-background)] ${kit.focus}`}
         >
           <Icon name="folder-open" />
           <span className="min-w-0 truncate">
             {projects.find((profile) => profile.id === profileId)?.name ??
-              "Выберите проект"}
+              "Выбрать проект"}
           </span>
           <Icon name="caret-down" className="size-4" />
         </button>

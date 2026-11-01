@@ -52,7 +52,7 @@ export function parseProjectDocumentGuides(
     guides[id] = {
       title,
       body,
-      basis: body.split(/\n## Basis\n/)[1]?.trim(),
+      basis: body.split(/\n## (?:Basis|Основания)\n/)[1]?.trim(),
       sections,
     };
   }
@@ -102,26 +102,6 @@ export function parseProjectDocumentDefinitions(
   return definitions;
 }
 
-export function parseAIChatServicePage(
-  text: string,
-): IAIChatServicePageContent {
-  const body = text.replace(/^---\s*\n[\s\S]*?\n---\s*\n/, "");
-  const parts = body.split(/<!--\s*section:\s*([\w-]+)\s*-->/);
-  const sections: Record<string, IWebsiteSection> = {};
-  for (let index = 1; index < parts.length; index += 2) {
-    sections[parts[index]] = parseSection(parts[index + 1] ?? "");
-  }
-  if (!sections.hero || !sections.controls) {
-    throw new Error("AI Chat service page needs hero and controls sections.");
-  }
-  return {
-    sections,
-    labels: Object.fromEntries(
-      sections.controls.items.map(({ title, text }) => [title, text]),
-    ),
-  };
-}
-
 export interface IAIChatWebsiteContent {
   hero: IWebsiteSection;
   foundation: IWebsiteSection;
@@ -161,37 +141,4 @@ function parseSection(markdown: string): IWebsiteSection {
     (match) => ({ text: match[1], href: match[2] }),
   );
   return { title, paragraphs, items, links };
-}
-
-export function parseAIChatWebsite(text: string): IAIChatWebsiteContent {
-  const body = text.replace(/^---\s*\n[\s\S]*?\n---\s*\n/, "");
-  const parts = body.split(/<!--\s*section:\s*([\w-]+)\s*-->/);
-  const sections: Record<string, IWebsiteSection> = {};
-  for (let index = 1; index < parts.length; index += 2) {
-    sections[parts[index]] = parseSection(parts[index + 1] ?? "");
-  }
-  const section = (id: string) => {
-    if (!sections[id])
-      throw new Error(`AI Chat landing text is missing its ${id} section.`);
-    return sections[id];
-  };
-  return {
-    hero: section("hero"),
-    foundation: section("foundation"),
-    workflow: section("workflow"),
-    publish: section("publish"),
-    continue: section("continue"),
-    footer: section("footer"),
-    terms: sections.terms ?? parseSection(""),
-    demoFiles: sections["demo-files"] ?? parseSection(""),
-    demoDraft: sections["demo-draft"] ?? parseSection(""),
-    demoDocuments: sections["demo-documents"] ?? parseSection(""),
-    demoConversation: sections["demo-conversation"] ?? parseSection(""),
-    demoReadyDocument: section("demo-ready-document"),
-    demoThreadPrompts: section("demo-thread-prompts"),
-    demoThreadInputs: section("demo-thread-inputs"),
-    labels: Object.fromEntries(
-      section("controls").items.map(({ title, text }) => [title, text]),
-    ),
-  };
 }

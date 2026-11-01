@@ -1,5 +1,4 @@
 ---
-confirmation: { confirmed: false }
 defaultArticle: "nextjs-server-client-readers-and-widget-slots"
 backLabel: "The Framework journal"
 contentsLabel: "In this guide"

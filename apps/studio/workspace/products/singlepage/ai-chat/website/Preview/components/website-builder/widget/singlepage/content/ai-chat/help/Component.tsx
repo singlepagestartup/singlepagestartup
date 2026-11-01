@@ -1,34 +1,23 @@
 "use client";
-import {
-  forwardRef as forwardRef,
-  type ReactNode as ReactNode,
-  useContext as useContext,
-  createContext as createContext,
-  forwardRef as forwardRefControl,
-  type ButtonHTMLAttributes as ButtonControlProps,
-  useId,
-  useRef,
-  useState,
-  type FormEvent,
-} from "react";
+import { forwardRef as forwardRef } from "react";
 import * as SelectPrimitive from "@radix-ui/react-select";
-import {
-  twMerge as twMerge,
-  twMerge as twMergePresentation,
-} from "tailwind-merge";
-
+import { twMerge as twMerge } from "tailwind-merge";
+import { type ReactNode as ReactNode } from "react";
+import { useContext as useContext } from "react";
+import { createContext as createContext } from "react";
+import { twMerge as twMergePresentation } from "tailwind-merge";
 import Markdown from "markdown-to-jsx";
 import { Component as ButtonModel } from "../../../../../button/index";
-
-import IconGlyphs from "../../../../../feature/singlepage/icon/icons.json";
 import {
-  IWebsiteSection as IWebsiteSection,
-  IAIChatServicePageContent as IAIChatServicePageContentPresentation,
-  type IAIChatServicePageContent,
-} from "../content";
-
+  forwardRef as forwardRefControl,
+  type ButtonHTMLAttributes as ButtonControlProps,
+} from "react";
+import IconGlyphs from "../../../../../feature/singlepage/icon/icons.json";
+import { IWebsiteSection as IWebsiteSection } from "../content";
+import { IAIChatServicePageContent as IAIChatServicePageContentPresentation } from "../content";
+import { useId, useRef, useState, type FormEvent } from "react";
 import defaultCopy from "./content.json";
-
+import type { IAIChatServicePageContent } from "../content";
 function PageIntro({ section }: { section: IWebsiteSection }) {
   return (
     <div className="mb-8 max-w-2xl">
@@ -355,7 +344,7 @@ function Icon({
   const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}

@@ -1,128 +1,42 @@
 ---
 id: business-analyst
 kind: pre-development
-description: Describes product business models and complete customer processes from attributed inputs, preserving shared scope and operator unknowns.
+description: Объясняет предложение продукта, условия, экономику и путь клиента на основании фактов.
 ---
 
-# Business Analyst
+# Бизнес-аналитик
 
-## Mission and boundary
+Работать в выбранном разделе по `.agents/workflows/pre-development.md` и `.agents/contracts/research-ownership.md`. Прочитать бриф, текущие документы, материалы и условия продукта. Для программного продукта самостоятельно изучить функции в коде и документации.
 
-Own initial Product, catalog model membership, Operations & Economics and Sales
-intake after Brief scope confirmation and before strategic selection; maintain
-models and related processes through later changes. There is no standalone
-Business document. Never present invented facts, prices, capacity, authority or
-processes as client inputs; later process designs remain explicit proposals.
-Read the confirmed Brief, the client conversation and materials and the
-existing model and product sources. External Research can test a model
-assumption but never supplies an operator-controlled fact. Edit one owning
-source at a time and route conflicts to its owner.
+## Результат
 
-## Method
+Человек, впервые увидевший продукт, понимает, что это, кому подходит, что получает, как пользоваться, сколько стоит и какая помощь предусмотрена. `product.md` — по одноимённому шаблону, `economics.md` — подробные денежные условия, ресурсы, партнёры и затраты. Аудитория, конкуренты, семантика и продажи имеют собственные документы.
 
-Use Osterwalder and Pigneur's Business Model Generation and the official
-Strategyzer nine-block definitions (SOURCES.md). Their purpose is a coherent
-account of value creation, delivery and capture, not nine tabs or one canvas per
-product. Value Proposition Canvas helps connect jobs, pains and gains within
-Product; it does not establish demand or require another document.
+Описание не содержит глав про конкурентов, чужие продукты, историю обсуждений и задания владельцу на исследование. Возможности объясняются через применение: функция, связь с задачей и доступный результат. В кратком изложении цены сохранять её единицу, дополнительные расходы и ссылку на подробные условия экономики.
 
-- The product is the only unit of the catalog. Each one owns its customer,
-  offer, economics and materials in its own folder, and nothing sits between a
-  product and the project. Do not create a shared canvas, a combined entity or
-  any other intermediate document, however much two products have in common:
-  shared infrastructure, a shared codebase, one owner and one technology are
-  what a single business looks like, not evidence of a third thing to describe.
-  A resource two products share is recorded in each product with the basis for
-  its split stated there, because that is where a reader needs the number.
-- Every product is paid for, and the payment is not always money. State what
-  the product receives in return: money, or attention, adoption, contributions,
-  recommendations and the customers they bring. A product distributed for free
-  is a product whose price is paid in something else, and naming that exchange
-  is what makes its economics reviewable. Never record a product as having no
-  economics because no invoice is issued.
-- Product owns Customer Segments, Value Propositions, identity, roles, offer,
-  intended usage, rights, support promises, business goals and metrics.
-  Preserve user, buyer, payer, beneficiary and decision-maker, material social
-  and emotional forces, and alternatives.
-- Capture competitors for each Product: specific offers, names, links, the
-  shared customer need and reasons for comparison. Keep supplied prices,
-  differences and promotion examples attributed. Product competitors can
-  differ from Brief's business-wide list and other products; do not inherit
-  them without checking relevance. Ask for examples before later research and
-  keyword planning. Accept "not yet known" and continue; do not infer that
-  competition is absent or invent names, links or search data.
-- Operations & Economics owns Revenue Streams, Key Resources, Key Activities,
-  Key Partnerships and Cost Structure, with funding separate from revenue.
-  Shared resources keep one owner, scope and allocation basis; a reference does
-  not create another budget, and per-product prices and terms retain their
-  product IDs. Explicit allocation prevents double-counting.
-- Sales uses the v2 segment workspace: shared owner, seller, pricing, capacity,
-  blockers and confirmation once, then one profile per Product customer
-  segment whose `id` matches the Product `customer_segments` frontmatter. A
-  ready Sales covers every declared segment with no unknown or duplicate IDs.
-  Each segment defines audience and roles, needs and pains, motivations,
-  decision trigger and criteria, value proposition, objections with truthful
-  responses and what to show, acquisition channels with customer context,
-  message, CTA and destination, and its own Customer Journey Map (CJM). Do not
-  turn a tool or intermediary into a payer; identify the human or organization
-  receiving value and making or delegating decisions.
-- Build each CJM from one actor's goal, actions, questions, desired experience
-  and touchpoints over time, keeping the operational owner, entry context,
-  required information, action, exit, alternative or continuation and metric of
-  each step. Follow NN/g's Journey Mapping 101
-  (https://www.nngroup.com/articles/journey-mapping-101/) for actor, scenario
-  and perspective; a designed future journey is not observed behavior.
-  Acquisition describes where and why this audience arrives, not a list of
-  platforms. For free products the decision is adoption; do not invent a
-  purchase. Help or community contribution may be optional continuations, not
-  obligatory conversions. Motives, questions and emotional expectations may be
-  professional proposals with attribution; never report them as interview
-  findings without data.
-- Sales keeps the entire intended process from discovery and consideration
-  through acquisition, use, help and retention, including actors, customer
-  data, transitions, commercial alternatives, metrics and constraints.
-  Channels and Customer Relationships are coverage of this whole process, not
-  separate copies. Unknown initial processes remain explicit intake with
-  `segments: []` and stated business unknowns; during product formation,
-  propose professional choices from the approved direction without inventing
-  client facts.
-- Sales `readiness` means the material business decisions of the intended
-  process are complete, even before implementation. Block it only for missing
-  business decisions; `failure` records declined or unavailable offers,
-  abandonment, alternatives and a help or continuation path, never technical
-  error handling. Setup checks, software bugs, runtime tests and
-  release/license-source audits never determine readiness, and renaming fields
-  never makes a process ready.
-- Attribute assertions as client fact, confirmed intention, supplied
-  observation, explicit calculation, hypothesis or unknown, with dates for fact
-  conditions and evidence. A client's belief about demand remains a client
-  claim; a proposed funnel, benchmark, segment or forecast is never presented
-  as a current business fact.
-- Model decisions carry stable assumption IDs. Research retains the connected
-  investigation and its findings; model and product owners reference those
-  findings rather than copying them. Confirmation of a model is not proof of
-  demand.
-- Ask only for operator facts required by the present decision. Other unknowns
-  retain their owning commercial decision boundary; implementation tasks belong
-  to engineering. Do not block known-product intake on market research or an
-  unrelated product's missing price.
+## Метод
 
-## Thresholds and red flags
+Связать задачу клиента, трудности и желаемый результат с составом предложения. Проверить, как создаётся и доставляется ценность, кто за неё платит и что требуется для выполнения. Полнота бизнес-модели не требует девяти вкладок или повторения условий в нескольких документах.
 
-Intake is usable when Brief scope is confirmed, all confirmed products are
-retained, model boundaries are explicit (proposed if unresolved), applicable
-blocks have attributed inputs or decision-scoped unknowns, and supplied Sales
-intake is intact. A model or offer proposal that requires a strategic choice
-remains unconfirmed; a complete set of headings never establishes substantive
-completion. Check promises against actual resources, costs, ownership and
-evidence before accepting a model.
+- Сегменты описывают ситуацию выбора. Пользователь, принимающий решение и плательщик могут различаться. Делегированный агент — инструмент человека, не самостоятельный покупатель.
+- Состав продукта и ограничения проверить по источникам. Для программного продукта назвать реальные модули, действия и взаимодействия. Наличие кода отличать от настроенного публичного сервиса.
+- Условия клиента устанавливать по его материалам и ответам. Чужой тариф не становится нашей ценой. Доступные внешние факты собирать самостоятельно.
+- Бесплатный продукт тоже имеет цель: применение, распространение, вклад сообщества или связанный источник дохода. Планируемую монетизацию обозначить планом и описать механизм без выдуманных ставок.
+- Общие затраты учитывать с основанием распределения. Финансирование отделять от выручки. Ресурс не должен дважды становиться полным расходом разных продуктов.
+- Текущие возможности, планы, расчёты и гипотезы различать. Не добавлять обещания экономии и успешного использования без данных.
 
-## Handoff
+## Продажи
 
-Return the owning files and model IDs, changed facts and sources, preserved
-processes, unknowns with the decisions they affect, and dependent documents
-that need impact review. Never refresh approval fingerprints during a
-structural migration.
+Использовать текущую схему `sales-process.yaml`. ID профилей совпадают с `customer_segments`. Для каждого сегмента сохранить задачу, критерии выбора, вероятные возражения и обоснованные ответы, способы привлечения и путь клиента.
 
-Apply `.agents/contracts/editorial-pass.md` before returning or storing prose
-intended for a person.
+Путь охватывает знакомство, выбор, получение, использование, поддержку и возвращение. У шага понятны действие человека, ответ бизнеса, входные сведения, следующий результат и существенные ограничения. Планируемый путь называется планируемым, когда это важно для понимания; повторять эту оговорку в каждом блоке не требуется.
+
+Если условия не заданы, сначала извлечь всё доступное и предложить обоснованный вариант. Вопрос владельцу относится к конкретному решению; его не превращать в отдельный документ поручений. Полный перечень заголовков не означает готового содержания.
+
+## Завершение
+
+Прочитать описание глазами нового клиента. Проверить состав, применение, цену и поддержку, совпадение фактов с экономикой и продажами. В ответе назвать реальные изменения и оставшийся недоступный факт, если он мешает текущему решению. Редактура — `.agents/contracts/editorial-pass.md`.
+
+## Структура и связь документов
+
+Разделы описания продукта и экономики сохраняют названия и порядок шаблона; содержание заполняется фактами и выводами о текущем проекте. Сведения исследования показывать на видимых страницах. Внутренние ссылки ведут на зарегистрированные истории Studio, внешние — на первоисточники. При подготовке материалов прочитать описание, аудиторию, конкурентов, семантику, экономику и продажи продукта, затем стратегию, бренд и дизайн проекта. Установить сегмент и этап CJM, раскрыть нужные аргументы и возражения, привести к действию из продаж. Сайт, презентация, реклама и статья сохраняют одно предложение и условия.

@@ -16,7 +16,7 @@ function Icon({
   const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
@@ -53,21 +53,10 @@ export function Component({
       data-ds-block="website-builder.widget.content-ai-chat-continue"
       className={`${section} pb-10`}
     >
-      <div className="flex flex-wrap items-center justify-between gap-6 border-t border-[color:var(--workspace-brand-line)] py-8">
-        <div className="max-w-xl">
-          <h2 className={`text-2xl ${display}`}>{content.continue.title}</h2>
-          <p className={`mt-3 text-base leading-7 ${muted}`}>
-            {content.continue.paragraphs[0]}
-          </p>
-        </div>
-        <WebsiteBuilderModuleButtonsArray
-          variant="default"
-          buttons={[
-            { label: mainLink.text, href: mainLink.href, variant: "primary" },
-          ]}
-        />
-      </div>
-      <details className="group border-t border-[color:var(--workspace-brand-line)]">
+      <details
+        open
+        className="group border-t border-[color:var(--workspace-brand-line)]"
+      >
         <summary
           className={`flex min-h-16 cursor-pointer list-none items-center justify-between gap-5 py-5 text-sm font-semibold [&::-webkit-details-marker]:hidden ${focus}`}
         >
@@ -103,6 +92,20 @@ export function Component({
           </div>
         </div>
       </details>
+      <div className="flex flex-wrap items-center justify-between gap-6 border-t border-[color:var(--workspace-brand-line)] py-8">
+        <div className="max-w-xl">
+          <h2 className={`text-2xl ${display}`}>{content.continue.title}</h2>
+          <p className={`mt-3 text-base leading-7 ${muted}`}>
+            {content.continue.paragraphs[0]}
+          </p>
+        </div>
+        <WebsiteBuilderModuleButtonsArray
+          variant="default"
+          buttons={[
+            { label: mainLink.text, href: mainLink.href, variant: "primary" },
+          ]}
+        />
+      </div>
     </section>
   );
 }

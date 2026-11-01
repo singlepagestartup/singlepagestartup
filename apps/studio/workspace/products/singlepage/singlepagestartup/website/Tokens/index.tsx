@@ -5,8 +5,7 @@ import {
   kit,
 } from "../../../../../design/singlepage/interface-kit/primitives";
 import { PreviewLink, SiteShell, siteStyles } from "../Site";
-import sourceText from "./page.md?raw";
-import { parseTokenPage, tokenCredit } from "./content";
+import { pageContent, tokenCredit } from "./content";
 
 const integer = new Intl.NumberFormat("ru-RU");
 const credit = new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 0 });
@@ -15,7 +14,7 @@ export default function Tokens({
   text,
   resolveLink,
 }: IWorkspacePageProps = {}) {
-  const content = parseTokenPage(text ?? sourceText);
+  const content = pageContent;
   const labels = content.labels;
   const [currency, setCurrency] = useState<"USD" | "RUB">("USD");
   const [selectedAmount, setSelectedAmount] = useState(500);

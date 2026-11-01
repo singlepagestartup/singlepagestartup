@@ -18,7 +18,7 @@ function Icon({
   const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
@@ -64,7 +64,7 @@ export function Component({
   const [avatarFailed, setAvatarFailed] = useState(false);
   useEffect(() => setAvatarFailed(false), [data.avatar]);
   const balanceLabel = balance
-    ? `${(balance.free + balance.purchased).toLocaleString("ru-RU", { maximumFractionDigits: 6 })} токенов`
+    ? `${(balance.free + balance.purchased).toLocaleString("en-US", { maximumFractionDigits: 6 })} tokens`
     : "— токенов";
   return (
     <DropdownMenu.Root modal={false}>

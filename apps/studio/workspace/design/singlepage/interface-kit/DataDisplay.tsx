@@ -26,6 +26,17 @@ type MaterialStatus =
   | "Ready"
   | "Archived";
 
+const materialLabels: Record<string, string> = {
+  Draft: "Черновик",
+  "In review": "На проверке",
+  "In progress": "В работе",
+  Ready: "Готово",
+  Archived: "В архиве",
+  All: "Все",
+  Document: "Документ",
+  Collection: "Подборка",
+};
+
 interface IAvatarProps {
   name: string;
   src?: string;
@@ -54,49 +65,49 @@ interface IStructuredListRowProps {
 const sampleMaterials: IMaterial[] = [
   {
     id: "notes",
-    name: "Project notes",
+    name: "Заметки проекта",
     kind: "Document",
     status: "In review",
     updated: "2026-10-03",
   },
   {
     id: "audience",
-    name: "Audience outline",
+    name: "Описание аудитории",
     kind: "Document",
     status: "Draft",
     updated: "2026-10-01",
   },
   {
     id: "brief",
-    name: "Project request",
+    name: "Запрос проекта",
     kind: "Document",
     status: "Ready",
     updated: "2026-09-30",
   },
   {
     id: "images",
-    name: "Photo references",
+    name: "Фотореференсы",
     kind: "Collection",
     status: "Ready",
     updated: "2026-10-02",
   },
   {
     id: "offer",
-    name: "Offer notes",
+    name: "Заметки о предложении",
     kind: "Document",
     status: "Draft",
     updated: "2026-09-29",
   },
   {
     id: "outline",
-    name: "Page outline",
+    name: "Структура страницы",
     kind: "Document",
     status: "In review",
     updated: "2026-09-28",
   },
   {
     id: "archive",
-    name: "Previous outline",
+    name: "Предыдущая структура",
     kind: "Document",
     status: "Archived",
     updated: "2026-09-20",
@@ -115,7 +126,7 @@ export function StatusBadge({ status }: { status: MaterialStatus }) {
       ) : status === "In review" ? (
         <Icon name="eye" />
       ) : null}
-      {status}
+      {materialLabels[status] ?? status}
     </span>
   );
 }
@@ -139,7 +150,7 @@ export function Avatar({ name, src, size = "medium" }: IAvatarProps) {
   return (
     <span
       role="img"
-      aria-label={name || "Unnamed person"}
+      aria-label={name || "Без имени"}
       className={`inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] font-semibold text-[var(--workspace-brand-foreground)] ${sizes[size]}`}
     >
       {src && failedSource !== src ? (
@@ -178,7 +189,7 @@ const DataTableRow = memo(function DataTableRow({
       <th scope="row" className="px-4 py-3 text-left font-medium">
         {item.name}
         <span className={`mt-1 block text-xs font-normal ${kit.muted}`}>
-          {item.kind}
+          {materialLabels[item.kind] ?? item.kind}
         </span>
       </th>
       <td className="px-4 py-3">
@@ -209,7 +220,7 @@ export function DataTable() {
         .filter(
           (item) =>
             (status === "All" || item.status === status) &&
-            `${item.name} ${item.kind}`
+            `${item.name} ${materialLabels[item.kind] ?? item.kind}`
               .toLowerCase()
               .includes(query.trim().toLowerCase()),
         )
@@ -253,12 +264,12 @@ export function DataTable() {
     <div className="min-w-0">
       <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_180px]">
         <label className="grid gap-2" htmlFor={`${id}-search`}>
-          <span className={kit.label}>Search materials</span>
+          <span className={kit.label}>Поиск материалов</span>
           <input
             id={`${id}-search`}
             type="search"
             value={query}
-            placeholder="Name or type"
+            placeholder="Имя или тип"
             className={kit.field}
             onChange={(event) => {
               setQuery(event.target.value);
@@ -267,23 +278,24 @@ export function DataTable() {
           />
         </label>
         <label className="grid gap-2" htmlFor={`${id}-status`}>
-          <span className={kit.label}>Status</span>
+          <span className={kit.label}>Статус</span>
           <Select
             id={`${id}-status`}
-            value={status}
+            value={materialLabels[status] ?? status}
             onValueChange={(value) => {
               setStatus(value as MaterialStatus | "All");
               setPage(0);
             }}
             options={["All", "Draft", "In review", "Ready", "Archived"].map(
-              (value) => ({ value, label: value }),
+              (value) => ({ value, label: materialLabels[value] ?? value }),
             )}
           />
         </label>
       </div>
       <div className="my-4 flex flex-wrap items-center justify-between gap-2">
         <p className={`text-sm ${kit.muted}`} role="status">
-          {filtered.length} results · {selected.size} selected across pages
+          {filtered.length} результатов · {selected.size} выбрано на всех
+          страницах
         </p>
         <Button
           variant="plain"
@@ -291,19 +303,19 @@ export function DataTable() {
           disabled={selected.size === 0}
           onClick={() => setSelected(new Set())}
         >
-          Clear selection
+          Снять выбор
         </Button>
       </div>
       <div
         role="region"
-        aria-label="Materials table, scroll horizontally on small screens"
+        aria-label="Таблица материалов, на узких экранах прокручивается по горизонтали"
         tabIndex={0}
         className={`relative overflow-x-auto rounded-xl border border-[var(--workspace-brand-line)] ${kit.focus}`}
       >
         <table className="w-full min-w-[560px] border-collapse text-sm">
           <caption className="sr-only">
-            Example materials. Sort by name or updated date. Archived rows
-            cannot be selected.
+            Примеры материалов. Сортировка по имени или дате. Архивные строки
+            нельзя выбрать.
           </caption>
           <thead className="bg-[var(--workspace-brand-background)]">
             <tr>
@@ -311,7 +323,7 @@ export function DataTable() {
                 <label className="mx-auto grid size-11 cursor-pointer place-items-center has-[:disabled]:cursor-not-allowed">
                   <Checkbox
                     ref={selectAllRef}
-                    aria-label="Select all available rows on this page"
+                    aria-label="Выбрать все доступные строки страницы"
                     checked={
                       selectable.length > 0 &&
                       selectedOnPage === selectable.length
@@ -347,7 +359,7 @@ export function DataTable() {
                   className={`inline-flex min-h-11 items-center gap-2 rounded-md ${kit.focus}`}
                   onClick={() => sortBy("name")}
                 >
-                  Name{" "}
+                  Имя{" "}
                   <Icon
                     name="arrow-down"
                     className={
@@ -358,11 +370,11 @@ export function DataTable() {
                           : undefined
                     }
                   />
-                  <span className="sr-only">, sort by name</span>
+                  <span className="sr-only">, сортировать по имени</span>
                 </button>
               </th>
               <th scope="col" className="px-4 py-3 text-left font-semibold">
-                Status
+                Статус
               </th>
               <th
                 scope="col"
@@ -380,7 +392,7 @@ export function DataTable() {
                   className={`inline-flex min-h-11 items-center gap-2 rounded-md ${kit.focus}`}
                   onClick={() => sortBy("updated")}
                 >
-                  Updated{" "}
+                  Обновлено{" "}
                   <Icon
                     name="arrow-down"
                     className={
@@ -391,7 +403,9 @@ export function DataTable() {
                           : undefined
                     }
                   />
-                  <span className="sr-only">, sort by updated date</span>
+                  <span className="sr-only">
+                    , сортировать по дате обновления
+                  </span>
                 </button>
               </th>
             </tr>
@@ -408,9 +422,9 @@ export function DataTable() {
             {visible.length === 0 ? (
               <tr>
                 <td colSpan={4} className="px-5 py-10 text-center">
-                  <p className="font-semibold">No matching materials</p>
+                  <p className="font-semibold">Материалы не найдены</p>
                   <p className={`mt-2 ${kit.muted}`}>
-                    Try another name or clear the filters.
+                    Попробуйте другое имя или очистите фильтры.
                   </p>
                   <Button
                     variant="secondary"
@@ -421,7 +435,7 @@ export function DataTable() {
                       setPage(0);
                     }}
                   >
-                    Clear filters
+                    Очистить фильтры
                   </Button>
                 </td>
               </tr>
@@ -431,13 +445,13 @@ export function DataTable() {
       </div>
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <p className={`text-xs ${kit.muted}`}>
-          Archived materials remain visible and cannot be selected.
+          Архивные материалы видны, но недоступны для выбора.
         </p>
         <PaginationControls
           page={page}
           pageCount={pageCount}
           onPageChange={setPage}
-          label="Material table pages"
+          label="Страницы таблицы материалов"
         />
       </div>
     </div>
@@ -456,7 +470,7 @@ const StructuredListRow = memo(function StructuredListRow({
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium">{item.name}</p>
         <p className={`mt-1 text-xs ${kit.muted}`}>
-          {item.kind} · {item.status}
+          {materialLabels[item.kind] ?? item.kind} · {item.status}
         </p>
       </div>
       <Button
@@ -465,7 +479,7 @@ const StructuredListRow = memo(function StructuredListRow({
         aria-label={`Open ${item.name}`}
         onClick={() => onOpen(item.id)}
       >
-        Open <Icon name="arrow-right" />
+        Открыть <Icon name="arrow-right" />
       </Button>
     </li>
   );
@@ -480,7 +494,7 @@ function StructuredList() {
   return (
     <div className={kit.card}>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm font-semibold">Saved materials</p>
+        <p className="text-sm font-semibold">Сохранённые материалы</p>
         <Button
           variant="secondary"
           onClick={() => {
@@ -488,7 +502,7 @@ function StructuredList() {
             setOpened(null);
           }}
         >
-          {empty ? "Restore sample list" : "Show empty list"}
+          {empty ? "Восстановить пример списка" : "Показать пустой список"}
         </Button>
       </div>
       {empty ? (
@@ -498,9 +512,11 @@ function StructuredList() {
             size={24}
             className={`mx-auto ${kit.muted}`}
           />
-          <p className="mt-3 text-sm font-semibold">No saved materials</p>
+          <p className="mt-3 text-sm font-semibold">
+            Нет сохранённых материалов
+          </p>
           <p className={`mt-2 text-sm ${kit.muted}`}>
-            Add a material to give this list its first item.
+            Добавьте первый материал в список.
           </p>
         </div>
       ) : (
@@ -512,7 +528,7 @@ function StructuredList() {
       )}
       <p className={`mt-3 min-h-5 text-sm ${kit.muted}`} role="status">
         {opened
-          ? `${sampleMaterials.find((item) => item.id === opened)?.name} is selected for preview.`
+          ? `${sampleMaterials.find((item) => item.id === opened)?.name} выбран для просмотра.`
           : ""}
       </p>
     </div>
@@ -528,40 +544,40 @@ export function DataDisplaySpecimens() {
     <div className="grid min-w-0 gap-4">
       <Specimen
         id="surfaces"
-        title="Surfaces and media"
-        description="Cards, dividers and image frames provide reusable structure before a content block adds its message."
+        title="Поверхности и медиа"
+        description="Карточки, разделители и рамки изображений задают структуру, которую контентный блок наполняет смыслом."
         states={[
-          "default surface",
-          "muted inset",
-          "square media",
-          "long text",
+          "обычная поверхность",
+          "приглушённая вставка",
+          "квадратное медиа",
+          "длинный текст",
           "divider",
         ]}
-        usage="Surface supplies the edge and background; its children supply spacing. SquareImage uses the reviewed square asset with a meaningful alternative. Use an hr for a thematic break and a border for decoration. A card is only interactive when it contains a named link or button."
+        usage="Surface задаёт границу и фон, дочерние элементы — отступы. SquareImage использует проверенный квадрат с содержательным описанием. hr разделяет темы, border служит декору. Карточка интерактивна только с подписанной ссылкой или кнопкой."
         recipe="Surface: min-w-0 overflow-hidden rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)]. SquareImage: block aspect-square w-full object-cover. Body: p-5. Divider: border-[var(--workspace-brand-line)]."
       >
         <div className="grid gap-4 sm:grid-cols-2">
           <Surface as="figure">
             <SquareImage
               src="/workspace-assets/singlepage/generated/living-focus/singlepagestartup-photography-moment-of-focus-square.png"
-              alt="A business owner taking a moment to consider an idea."
+              alt="Владелец бизнеса обдумывает идею."
             />
             <figcaption className="p-5 text-sm">
-              A square image with a separate caption.
+              Квадратное изображение с отдельной подписью.
             </figcaption>
           </Surface>
           <Surface className="p-5">
-            <h4 className="text-base font-semibold">Project overview</h4>
+            <h4 className="text-base font-semibold">Обзор проекта</h4>
             <p className={`mt-3 text-sm leading-6 ${kit.muted}`}>
-              A surface groups related information. Long headings and copy wrap
-              naturally inside the available width.
+              Поверхность объединяет связанные сведения. Длинные заголовки и
+              текст переносятся внутри доступной ширины.
             </p>
             <hr className="my-5 border-[var(--workspace-brand-line)]" />
             <p className="text-sm">
-              Details can follow a meaningful section break.
+              Подробности могут идти после смыслового разделителя.
             </p>
             <div className="mt-5 rounded-xl bg-[var(--workspace-brand-background)] p-4 text-sm">
-              Use a muted inset for supporting context.
+              Приглушённая вставка подходит для дополнительного контекста.
             </div>
           </Surface>
         </div>
@@ -569,18 +585,18 @@ export function DataDisplaySpecimens() {
 
       <Specimen
         id="status"
-        title="Status and progress"
-        description="Text names the state. A small lime check marks readiness inside a quiet badge; review and waiting states use graphite and cool gray. Progress reports a known total or an explicitly indeterminate task."
+        title="Статус и прогресс"
+        description="Текст называет состояние. Маленькая лаймовая галочка отмечает готовность; проверка и ожидание — графит и холодный серый. Прогресс показывает известный объём или явно неопределённую задачу."
         states={[
           "draft",
-          "in review",
+          "на проверке",
           "ready",
           "archived",
-          "determinate progress",
-          "indeterminate progress",
+          "измеримый прогресс",
+          "неопределённый прогресс",
           "complete",
         ]}
-        usage="Do not rely on color alone. The review button advances this five-item local example. Use an indeterminate bar when the remaining work has no reliable count."
+        usage="Не полагайтесь только на цвет. Кнопка проверки продвигает локальный пример из пяти элементов. При неизвестном объёме остатка используйте неопределённую полосу."
         recipe="inline-flex rounded-full px-2.5 py-1 text-xs font-medium; review: bg-[var(--workspace-brand-background)] ring-1 ring-inset ring-[var(--workspace-brand-line)]; ready indicator: size-5 with a centred 14px Phosphor check, rounded-full bg-[var(--workspace-brand-accent)] text-[var(--workspace-brand-on-accent)]"
       >
         <div className="flex flex-wrap gap-2">
@@ -596,8 +612,8 @@ export function DataDisplaySpecimens() {
               htmlFor={progressId}
               className="flex items-center justify-between gap-3 text-sm font-medium"
             >
-              <span>Materials reviewed</span>
-              <span aria-live="polite">{reviewed} of 5</span>
+              <span>Проверено материалов</span>
+              <span aria-live="polite">{reviewed} из 5</span>
             </label>
             <progress
               id={progressId}
@@ -610,25 +626,25 @@ export function DataDisplaySpecimens() {
                 disabled={reviewed === 5}
                 onClick={() => setReviewed((count) => Math.min(5, count + 1))}
               >
-                {reviewed === 5 ? "Review complete" : "Review next item"}
+                {reviewed === 5 ? "Проверка завершена" : "Проверить следующий"}
               </Button>
               <Button variant="plain" onClick={() => setReviewed(0)}>
-                Reset
+                Сбросить
               </Button>
             </div>
           </div>
           <div className={kit.card}>
-            <p className="text-sm font-medium">Checking files</p>
+            <p className="text-sm font-medium">Проверка файлов</p>
             <div
               role="progressbar"
-              aria-label="Checking files"
-              aria-valuetext="In progress; remaining time unknown"
+              aria-label="Проверка файлов"
+              aria-valuetext="В работе; оставшееся время неизвестно"
               className="mt-3 h-2 overflow-hidden rounded-full bg-[var(--workspace-brand-background)]"
             >
               <span className="block h-full w-1/3 rounded-full bg-[var(--workspace-brand-muted)] motion-safe:animate-pulse" />
             </div>
             <p className={`mt-4 text-sm leading-6 ${kit.muted}`}>
-              Indeterminate example. No percentage or completion time is known.
+              Пример с неизвестным объёмом. Процент и срок завершения не заданы.
             </p>
           </div>
         </div>
@@ -636,21 +652,21 @@ export function DataDisplaySpecimens() {
 
       <Specimen
         id="avatars"
-        title="Avatars"
-        description="A photo or initials identifies a person in compact spaces. Initials remain available when no image is supplied or an image fails."
+        title="Аватары"
+        description="Фото или инициалы обозначают человека в компактной области. Инициалы доступны, если изображения нет или оно не загрузилось."
         states={[
           "photo",
-          "initials fallback",
-          "unnamed fallback",
+          "запасные инициалы",
+          "вариант без имени",
           "group",
-          "small / medium / large",
+          "маленький / средний / большой",
         ]}
-        usage="Every avatar has an accessible name. Decorative duplicate portraits should be hidden when the adjacent name already supplies the same information. Crop profile images proportionally with object-cover."
+        usage="У каждого аватара доступное имя. Декоративный повтор портрета скрыт, если имя уже указано рядом. Фото профиля обрезается пропорционально через object-cover."
         recipe="inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)]; sizes: size-10 / size-12 / size-16; image: h-full w-full object-cover"
       >
         <div className="flex flex-wrap items-center gap-5">
           <Avatar
-            name="Photo avatar example"
+            name="Пример фотоаватара"
             size="large"
             src={
               showPhoto
@@ -665,11 +681,11 @@ export function DataDisplaySpecimens() {
             variant="secondary"
             onClick={() => setShowPhoto((value) => !value)}
           >
-            {showPhoto ? "Show initials fallback" : "Show photo"}
+            {showPhoto ? "Показать инициалы" : "Показать фото"}
           </Button>
         </div>
         <div className="mt-5 flex flex-wrap items-center gap-3">
-          <ul aria-label="Example collaborators" className="flex -space-x-2">
+          <ul aria-label="Примеры участников" className="flex -space-x-2">
             {["Maya Stone", "Alex Reed", "Lee Park"].map((name) => (
               <li
                 key={name}
@@ -679,22 +695,22 @@ export function DataDisplaySpecimens() {
               </li>
             ))}
           </ul>
-          <p className={`text-sm ${kit.muted}`}>3 collaborators</p>
+          <p className={`text-sm ${kit.muted}`}>3 участника</p>
         </div>
       </Specimen>
 
       <Specimen
         id="data-table"
-        title="Data table"
-        description="A compact table supports scanning, filtering, sorting and selecting individual records without changing the surrounding context."
+        title="Таблица данных"
+        description="Компактная таблица позволяет просматривать, фильтровать, сортировать и выбирать записи, сохраняя окружающий контекст."
         states={[
           "default",
           "filtered",
-          "empty results",
-          "ascending / descending sort",
-          "row selected",
-          "partial page selection",
-          "disabled row selection",
+          "пустые результаты",
+          "сортировка по возрастанию / убыванию",
+          "строка выбрана",
+          "частичный выбор страницы",
+          "недоступный выбор строки",
           "paginated",
         ]}
         usage="Search and status filters combine. Select-all applies to the current page; selection persists across pages and filters. Sortable columns expose aria-sort. The table scrolls horizontally on small screens."
@@ -705,10 +721,10 @@ export function DataDisplaySpecimens() {
 
       <Specimen
         id="accordion"
-        title="Accordion"
-        description="Disclosures reveal supporting information while keeping their questions visible. Multiple answers may remain open."
-        states={["collapsed", "expanded", "keyboard focus"]}
-        usage="Native details and summary provide Enter/Space activation and expanded state without custom scripting. Keep the summary descriptive and place interactive content inside the answer."
+        title="Раскрывающиеся разделы"
+        description="Пояснения раскрываются под видимыми вопросами. Несколько ответов могут оставаться открытыми."
+        states={["collapsed", "expanded", "клавиатурный фокус"]}
+        usage="Нативные details и summary дают Enter/Space и состояние раскрытия без своего скрипта. Заголовок описывает содержание; интерактивные элементы находятся внутри ответа."
         recipe="details: border-b border-[var(--workspace-brand-line)] py-4 last:border-0; summary: min-h-11 cursor-pointer rounded-md py-3 text-sm font-semibold; answer: mt-3 text-sm leading-6; kit.focus"
       >
         <div className={kit.card}>
@@ -719,33 +735,32 @@ export function DataDisplaySpecimens() {
             <summary
               className={`min-h-11 cursor-pointer rounded-md py-3 text-sm font-semibold ${kit.focus}`}
             >
-              What belongs in a project note?
+              Что включить в заметку проекта?
             </summary>
             <p className={`mt-3 text-sm leading-6 ${kit.muted}`}>
-              Write the decision, its source and the next question that needs an
-              answer.
+              Решение, его источник и следующий вопрос без ответа.
             </p>
           </details>
           <details className="border-b border-[var(--workspace-brand-line)] py-4 last:border-0">
             <summary
               className={`min-h-11 cursor-pointer rounded-md py-3 text-sm font-semibold ${kit.focus}`}
             >
-              Can a material remain unfinished?
+              Может ли материал оставаться незавершённым?
             </summary>
             <p className={`mt-3 text-sm leading-6 ${kit.muted}`}>
-              Keep a draft state while you gather information. A visible status
-              prevents it from being mistaken for a reviewed item.
+              Пока собираете данные, сохраняйте черновик. Видимый статус не даст
+              принять его за проверенный материал.
             </p>
           </details>
           <details className="border-b border-[var(--workspace-brand-line)] py-4 last:border-0">
             <summary
               className={`min-h-11 cursor-pointer rounded-md py-3 text-sm font-semibold ${kit.focus}`}
             >
-              How should details be grouped?
+              Как группировать подробности?
             </summary>
             <p className={`mt-3 text-sm leading-6 ${kit.muted}`}>
-              Keep one question in each disclosure. Give unrelated information
-              its own section.
+              Один вопрос на раскрытие. Несвязанным сведениям — отдельный
+              раздел.
             </p>
           </details>
         </div>
@@ -753,16 +768,16 @@ export function DataDisplaySpecimens() {
 
       <Specimen
         id="structured-list"
-        title="Structured list"
-        description="Rows combine an identifying icon, a title, supporting information and one action. The empty state explains what will appear here."
+        title="Структурированный список"
+        description="Строка объединяет иконку, заголовок, пояснение и одно действие. Пустое состояние объясняет, что здесь появится."
         states={[
           "default",
-          "selected preview",
-          "unavailable action",
+          "выбранный просмотр",
+          "недоступное действие",
           "empty",
-          "restored list",
+          "восстановленный список",
         ]}
-        usage="Use stable record IDs and memoized rows. Archived items remain readable while their action is disabled. The example selection is local and does not open or modify a real file."
+        usage="Используйте стабильные ID записей и мемоизированные строки. Архивные записи читаются, но действие недоступно. Выбор примера локальный, реальный файл не открывает и не меняет."
         recipe="row: flex flex-wrap items-center gap-3 border-b border-[var(--workspace-brand-line)] py-4 last:border-0; icon: size-11 rounded-xl bg-[var(--workspace-brand-background)]; text: min-w-0 flex-1"
       >
         <StructuredList />

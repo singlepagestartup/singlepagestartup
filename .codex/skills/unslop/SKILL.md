@@ -1,19 +1,12 @@
 ---
 name: unslop
-description: Remove AI-written tells from human-facing prose in any language while preserving meaning, facts, voice, terminology, and intent. Apply as the final editing pass to Markdown, documentation, READMEs, reports, proposals, emails, UI copy, release notes, slide text, and other writing meant to be read by people.
+description: Edit human-facing prose in any language without changing facts or intent. For Russian and English, remove verbal clutter, explain unfamiliar terms, and improve the structure. Use for Workspace documents, articles, landing pages, scripts, slides, UI copy, and reports.
 ---
 
-# unslop
+# Unslop
 
 Canonical source: `.agents/contracts/editorial-pass.md`.
 
-Read the canonical contract completely and apply it to the text in hand. Its
-rules, its scope and its completion check are the whole of this skill.
-
-Load `.agents/references/unslop-patterns.md` while editing: it lists the shapes
-that break those rules, with a rewrite for each, and the self-audit questions to
-ask before returning the text. Both files are provider-neutral, so Codex and
-every other provider edit against the same rules.
-
-Return the revised text without explaining every change unless an editorial
-report is requested.
+Read and apply the canonical contract, including its clarity pass and language
+routing. Load `.agents/references/unslop-patterns.md` and the language reference
+specified by the contract. Return the edited text in the requested format.

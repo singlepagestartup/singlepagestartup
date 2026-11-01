@@ -12,9 +12,12 @@ import {
   type IDesignSectionView,
   type IDesignTemplateProps,
 } from "../design/layout";
-import ProjectDesign, { ProjectDesignSection } from "./ProjectDesign";
+import ProjectDesign, {
+  DesignNotes,
+  ProjectDesignSection,
+} from "./ProjectDesign";
 import { DocumentDownloads } from "./DocumentDownloads";
-import { DocumentHeader, documentPurpose } from "./DocumentStatus";
+import { DocumentHeader, documentPurpose } from "./DocumentHeader";
 import { WorkspacePage } from "./WorkspacePage";
 import type { WorkspacePageLayer } from "../pages";
 
@@ -203,18 +206,26 @@ function DesignSectionGroup({
           onClick={() => setShowAll((current) => !current)}
           className="min-h-11 rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] px-4 py-2 text-sm text-[var(--workspace-brand-foreground)] hover:border-[var(--workspace-brand-primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-primary)] print:hidden"
         >
-          {showAll ? "Show one category" : "Show all"}
+          {showAll ? "Одна категория" : "Показать все"}
         </button>
       </div>
+      {section.id === "interface-kit" ? (
+        <div className="mb-10">
+          <DesignNotes
+            markdown={templateProps.data?.notes?.interface}
+            section="interface"
+          />
+        </div>
+      ) : null}
       <div className="flex flex-col items-stretch gap-8 md:flex-row md:items-start">
         <nav
           ref={navigationRef}
-          aria-label={`${section.title} categories`}
+          aria-label={`Категории: ${section.title}`}
           data-export-controls
           className="md:sticky md:top-6 md:w-48 md:shrink-0 print:hidden"
         >
           <label htmlFor={`${section.id}-category-select`} className="sr-only">
-            {section.title} category
+            Категория: {section.title}
           </label>
           <select
             id={`${section.id}-category-select`}
@@ -223,7 +234,7 @@ function DesignSectionGroup({
             className="min-h-11 w-full rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] px-3 py-2 text-base text-[var(--workspace-brand-foreground)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-primary)] md:hidden"
           >
             <option value="" disabled>
-              All categories
+              Все категории
             </option>
             {categories.map((child) => (
               <option key={child.id} value={child.id}>
@@ -292,7 +303,9 @@ export function DesignRenderer({
       )) &&
     !props.data
   )
-    throw new Error("Built-in Design blocks need parsed Design data.");
+    throw new Error(
+      "Встроенным блокам Дизайна нужны разобранные данные документа.",
+    );
   const Template = layout.Template;
   const sections = layout.sections.map((section) => (
     <DesignSectionContent
@@ -314,11 +327,10 @@ export function DesignRenderer({
             htmlTargetRef={downloadRef}
             markdown={props.document}
             theme="dark"
-            title="Design"
+            title="Дизайн"
           />
         }
-        confirmation={props.confirmation}
-        title="Design"
+        title="Дизайн"
         {...documentPurpose("design")}
       />
       <div className="overflow-clip rounded-3xl border border-[var(--workspace-brand-line)] ">

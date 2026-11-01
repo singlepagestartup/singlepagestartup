@@ -12,7 +12,7 @@ export function Component({ profileId, children }: IProjectScopeProps) {
   if (!projects.some((profile) => profile.id === profileId))
     return (
       <main role="status" className="p-6">
-        Проект недоступен. Выберите другой проект в аккаунте.
+        Профиль проекта недоступен. Выберите проект в своём профиле.
       </main>
     );
   return (

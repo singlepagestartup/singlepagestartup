@@ -14,7 +14,7 @@ function WebsiteBuilderModuleFeature({
   const geometry = Glyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       width={size}
@@ -46,7 +46,7 @@ export function Component({
       href={file.fileUrl}
       target="_blank"
       rel="noreferrer"
-      aria-label={`Открыть ${file.name}`}
+      aria-label={`Open ${file.name}`}
       data-module="file-storage"
       data-model="file"
       data-variant={variant}

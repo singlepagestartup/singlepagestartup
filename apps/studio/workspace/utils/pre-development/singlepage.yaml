@@ -1,7 +1,18 @@
-schema: singlepagestartup.pre-development-state.v1
-active_stage: 00-business
-status: blocked
-active_artifacts:
-  - brief
-blockers:
-  - brief/singlepage.md#confirmation
+schema: singlepagestartup.pre-development-state.v2
+active_stage: 40-products
+active_section: materials
+active_product: singlepagestartup
+status: in_progress
+progress:
+  brief: prepared
+  products:singlepagestartup: prepared
+  competitors:singlepagestartup: prepared
+  semantics:singlepagestartup: prepared
+  strategy: prepared
+  brand: prepared
+  design: prepared
+  materials:singlepagestartup: in_progress
+  products:ai-chat: prepared
+  competitors:ai-chat: prepared
+  semantics:ai-chat: prepared
+  materials:ai-chat: in_progress

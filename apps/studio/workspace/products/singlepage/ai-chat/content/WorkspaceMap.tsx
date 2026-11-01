@@ -9,108 +9,108 @@ const sections = [
   {
     id: "brief",
     number: "00",
-    title: "Brief",
-    summary: "Current situation, intended result and boundaries",
+    title: "Бриф",
+    summary: "Текущая ситуация, ожидаемый результат и границы",
     details: [
       [
-        "Working on",
-        "A hosted workspace that turns existing project material into a usable business model.",
+        "Работа над",
+        "Облачная рабочая область превращает материалы проекта в пригодную бизнес-модель.",
       ],
       [
-        "Intended result",
-        "A person can start useful project-aware chat after one focused setup session.",
+        "Ожидаемый результат",
+        "После одной сосредоточенной сессии человек может начать полезный чат с контекстом проекта.",
       ],
       [
-        "Known boundary",
-        "AI Chat's first release creates written project and product descriptions. Landing-page generation and paid deployment belong to later development.",
+        "Известная граница",
+        "Первый выпуск AI Chat создаёт письменные описания проекта и продуктов. Посадочная и платное развёртывание — дальнейшее развитие.",
       ],
     ],
   },
   {
     id: "strategy",
     number: "10",
-    title: "Strategy",
-    summary: "The final picture of how the project should work",
+    title: "Стратегия",
+    summary: "Итоговая картина работы проекта",
     details: [
       [
-        "Priority audience",
-        "People with an idea or early project and a mixture of notes, files and partial decisions.",
+        "Приоритетная аудитория",
+        "Люди с идеей или ранним проектом, заметками, файлами и частичными решениями.",
       ],
       [
-        "Customer path",
-        "Add material → discuss and edit each file in its own thread → review the texts → attach saved documents to a project topic.",
+        "Путь клиента",
+        "Добавить материалы → обсудить и править каждый файл отдельно → проверить тексты → прикрепить документы к теме проекта.",
       ],
       [
         "Success",
-        "The context supports decisions and real materials without repeated explanation.",
+        "Контекст помогает принимать решения и готовить материалы без повторного объяснения.",
       ],
     ],
   },
   {
     id: "brand",
     number: "20",
-    title: "Brand",
-    summary: "Meaning, promise, proof and communication",
+    title: "Бренд",
+    summary: "Смысл, обещание, подтверждение и коммуникация",
     details: [
       [
         "Meaning",
-        "Describe the project from existing notes, files and decisions, correct identified shortcomings and use the texts as a first step toward customers.",
+        "Опишите проект по заметкам, файлам и решениям, исправьте недостатки и используйте тексты как первый шаг к клиентам.",
       ],
       [
-        "Voice",
-        "Direct, calm and specific; no technical explanation unless it helps a decision.",
+        "Тон общения",
+        "Прямо, спокойно и конкретно; техническое объяснение нужно, только если помогает решению.",
       ],
       [
-        "Primary action",
-        "Add the material you already have and review the resulting model.",
+        "Основное действие",
+        "Добавьте имеющиеся материалы и проверьте полученное описание.",
       ],
     ],
   },
   {
     id: "design",
     number: "30",
-    title: "Design",
-    summary: "Visual identity, interface principles and assets",
+    title: "Дизайн",
+    summary: "Айдентика, принципы интерфейса и ресурсы",
     details: [
       [
-        "Interface",
-        "A written description of the intended appearance and constraints, reviewed beside the other project texts.",
+        "Интерфейс",
+        "Текст об ожидаемом виде и ограничениях, проверяемый рядом с остальными документами.",
       ],
       [
         "Identity",
-        "Onest headings and working text, cool gray, white, graphite and lime actions.",
+        "Onest для заголовков и текста, холодный серый, белый, графит и лаймовые действия.",
       ],
       [
         "Principle",
-        "Show progress through reviewed decisions rather than artificial scores or long forms.",
+        "Показывайте прогресс через проверенные решения, без искусственных баллов и длинных форм.",
       ],
     ],
   },
   {
     id: "products",
     number: "40",
-    title: "Products",
-    summary: "Separate product texts, each with its own sections",
+    title: "Продукты",
+    summary: "Отдельные тексты продуктов со своими разделами",
     details: [
       [
-        "Customer and value",
-        "Early-stage project owners receive short project and product descriptions, correction, review, export and continued chat.",
+        "Клиент и ценность",
+        "Владельцы ранних проектов получают короткие описания, исправления, проверку, выгрузку и продолжение в чате.",
       ],
       [
-        "Access and relationship",
-        "Add material, work with the agent in each document thread and review the text. Export saved documents or attach them to a separate project topic.",
+        "Доступ и отношения",
+        "Добавьте материалы, работайте с агентом в переписке документа и проверяйте текст. Выгружайте документы или прикрепляйте их к отдельной теме проекта.",
       ],
       [
-        "Money and delivery",
+        "Деньги и поставка",
         "AI Chat owns its token revenue and service costs. Development and support time is split equally with Code Framework; other owner work is allocated 80% to AI Chat and 20% to Code Framework. One token costs 0.13 roubles; top-ups are 100, 300, 500, 1,000 or 3,000 roubles without a package discount. Purchased tokens do not expire; cash refunds for purchases are decided case by case. Failed or cancelled AI requests restore all token deductions and have a net charge of zero; the service bears any provider expense.",
       ],
       [
-        "Promotion",
-        "Written descriptions of how each product will be presented publicly, with Website, Creative and Presentation texts where relevant. This section does not build a website or produce media.",
+        "Продвижение",
+        "Письменная публичная подача каждого продукта: тексты сайта, креативов и презентации по необходимости. Раздел не собирает сайт и не производит медиа.",
       ],
       [
-        "Sales and learning",
-        "The customer path and current observations stay connected to the product without being copied here.",
+        "Продажи и выводы",
+        "Путь клиента и текущие наблюдения связаны с продуктом и не копируются сюда.",
       ],
     ],
   },
@@ -119,53 +119,53 @@ const sections = [
 const hypothesisFlow = [
   {
     number: "01",
-    title: "Brief",
-    pages: "Idea + goal + supplied facts",
-    result: "Describe the project or supply the material already available",
+    title: "Бриф",
+    pages: "Идея + цель + предоставленные факты",
+    result: "Опишите проект или передайте имеющиеся материалы",
   },
   {
     number: "02",
-    title: "Draft project and product texts",
-    pages: "Five short stages + separate Products",
-    result: "Read the AI agent's proposed descriptions",
+    title: "Черновики проекта и продуктов",
+    pages: "Пять коротких этапов + отдельные продукты",
+    result: "Прочитайте предложенные агентом описания",
   },
   {
     number: "03",
-    title: "Each Product: operations and economics",
-    pages: "Delivery + revenue + resources + costs",
-    result: "Review that Product's decisions and allocated resource shares",
+    title: "Каждый продукт: операции и экономика",
+    pages: "Поставка + доходы + ресурсы + расходы",
+    result: "Проверьте решения продукта и выделенные доли ресурсов",
   },
   {
     number: "04",
-    title: "Each Product: Sales",
-    pages: "Customer process + support + continued use",
-    result: "Review the short customer-process description for that Product",
+    title: "Каждый продукт: продажи",
+    pages: "Путь клиента + поддержка + продолжение",
+    result: "Проверьте короткое описание пути клиента продукта",
   },
   {
     number: "05",
-    title: "AI-identified shortcomings",
-    pages: "Inaccuracies + contradictions + critical assumptions",
-    result: "See which descriptions need correction or an answer",
+    title: "Недочёты, найденные AI",
+    pages: "Неточности + противоречия + критические предположения",
+    result: "Посмотрите, каким описаниям нужны правка или ответ",
   },
   {
     number: "06",
-    title: "Analytics and research where needed",
-    pages: "Observations + evidence + unanswered questions",
+    title: "Аналитика и исследования по необходимости",
+    pages: "Наблюдения + доказательства + открытые вопросы",
     result:
-      "Keep sources and limitations visible; missing evidence stays missing",
+      "Сохраняйте источники и ограничения; отсутствие доказательств остаётся видимым",
   },
   {
     number: "07",
-    title: "Correct and review the owning text",
-    pages: "Edit + answer + review",
-    result: "Correct identified shortcomings or leave an unanswered fact open",
+    title: "Исправьте и проверьте соответствующий текст",
+    pages: "Правка + ответ + проверка",
+    result: "Исправьте недочёт или оставьте неизвестный факт открытым",
   },
   {
     number: "08",
-    title: "Review, export and open a topic",
-    pages: "Selected saved documents + separate topic",
+    title: "Проверьте, выгрузите и откройте тему",
+    pages: "Выбранные документы + отдельная тема",
     result:
-      "Attach selected reviewed documents to a new project topic or freely export them",
+      "Прикрепите проверенные документы к новой теме или свободно выгрузите их",
   },
 ];
 
@@ -195,21 +195,21 @@ export default function WorkspaceMap({
                 />
               </div>
               <div>
-                <p className="text-sm font-semibold">Sample project</p>
+                <p className="text-sm font-semibold">Пример проекта</p>
                 <p className="text-sm text-[var(--workspace-brand-muted)]">
-                  Project model · Saved now
+                  Модель проекта · только что сохранено
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <span className="rounded-full border border-[var(--workspace-brand-line)] px-3 py-2 text-sm font-semibold">
-                Request terms defined
+                Условия запроса определены
               </span>
               <span className="inline-flex items-center gap-2 rounded-full border border-[var(--workspace-brand-line)] bg-white px-3 py-2 text-sm font-medium">
                 <span className="grid size-5 place-items-center rounded-full bg-[var(--workspace-brand-accent)]">
                   <Icon name="check" className="h-3.5 w-3.5" />
                 </span>
-                Ready for chat
+                Можно начать чат
               </span>
             </div>
           </header>
@@ -223,24 +223,24 @@ export default function WorkspaceMap({
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
                 <p className="text-sm font-semibold text-[var(--workspace-brand-muted)]">
-                  How you review the project texts
+                  Как проверять тексты проекта
                 </p>
                 <h2
                   className="mt-1 text-2xl font-semibold [font-family:var(--workspace-brand-font-display)]"
                   id="product-cycle-title"
                 >
-                  Draft, correct and review
+                  Черновик, правки и проверка
                 </h2>
               </div>
               <p className="max-w-xl text-base leading-7 text-[var(--workspace-brand-muted)]">
-                Discuss and edit each file in its own thread. Review the texts,
-                then attach selected saved documents to a new project topic or
-                freely export them.
+                Обсуждайте и правьте каждый файл отдельно. Проверяйте тексты,
+                затем прикрепляйте документы к новой теме или свободно
+                выгружайте их.
               </p>
             </div>
 
             <div
-              aria-label="Project text review loop"
+              aria-label="Цикл проверки текстов проекта"
               className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3"
               role="list"
             >
@@ -274,27 +274,27 @@ export default function WorkspaceMap({
 
             <div className="mt-6 rounded-2xl border border-[var(--workspace-brand-line)] bg-white p-6">
               <p className="text-sm font-semibold text-[var(--workspace-brand-muted)]">
-                What happens after review?
+                Что происходит после проверки?
               </p>
               <div className="mt-3 grid gap-3 lg:grid-cols-2">
                 <div className="rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] p-4">
-                  <p className="text-sm font-semibold">Reviewed description</p>
+                  <p className="text-sm font-semibold">Проверенное описание</p>
                   <p className="mt-2 text-base leading-7">
-                    Save the text you reviewed, export it or attach it to a
-                    project topic. The saved version stays available while you
-                    revise a new draft. Review records the wording, not market
-                    demand.
+                    Сохраните проверенный текст, выгрузите его или прикрепите к
+                    теме. Сохранённая версия доступна во время правок нового
+                    черновика. Проверка фиксирует формулировку, а не рыночный
+                    спрос.
                   </p>
                 </div>
                 <div className="rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] p-4">
                   <p className="text-sm font-semibold">
-                    Unanswered fact or assumption
+                    Неизвестный факт или предположение
                   </p>
                   <p className="mt-2 text-base leading-7">
-                    Keep missing facts open. A reviewed assumption remains an
-                    assumption. Attribute evidence to its source and revise the
-                    owning text when an answer or new evidence becomes
-                    available.
+                    Оставляйте неизвестное открытым. Проверенное предположение
+                    остаётся предположением. Указывайте источник доказательства
+                    и правьте соответствующий текст при появлении ответа или
+                    новых данных.
                   </p>
                 </div>
               </div>
@@ -306,17 +306,17 @@ export default function WorkspaceMap({
           <aside className="border-b border-[var(--workspace-brand-line)] bg-white p-4 lg:border-r lg:border-b-0">
             <div className="rounded-2xl bg-[var(--workspace-brand-foreground)] p-4 text-white">
               <p className="text-sm font-semibold text-[var(--workspace-brand-accent)]">
-                Single page
+                Одна страница
               </p>
               <p className="mt-2 text-xl font-semibold [font-family:var(--workspace-brand-font-display)]">
-                Project model
+                Модель проекта
               </p>
               <p className="mt-2 text-base leading-7 text-[var(--workspace-brand-muted-on-primary)]">
-                Five compact sections. Add a deeper document when the work needs
-                it.
+                Пять коротких разделов. Добавьте подробный документ, когда он
+                понадобится.
               </p>
             </div>
-            <nav aria-label="Project model sections" className="mt-4 space-y-1">
+            <nav aria-label="Разделы модели проекта" className="mt-4 space-y-1">
               {sections.map((item, index) => (
                 <button
                   aria-current={active === index ? "page" : undefined}
@@ -333,7 +333,7 @@ export default function WorkspaceMap({
                       {item.title}
                     </span>
                     <span className="mt-0.5 block truncate text-sm text-[var(--workspace-brand-muted)]">
-                      Accepted
+                      Принято
                     </span>
                   </span>
                 </button>
@@ -344,7 +344,7 @@ export default function WorkspaceMap({
               type="button"
             >
               <Icon name="plus" />
-              Add deeper document
+              Добавить подробный документ
             </button>
           </aside>
 
@@ -353,7 +353,7 @@ export default function WorkspaceMap({
               <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[var(--workspace-brand-line)] pb-6">
                 <div>
                   <p className="text-sm font-semibold text-[var(--workspace-brand-muted)]">
-                    {section.number} · Accepted
+                    {section.number} · Принято
                   </p>
                   <h1 className="mt-2 text-[40px] font-semibold leading-[1.1] [font-family:var(--workspace-brand-font-display)] sm:text-[56px]">
                     {section.title}
@@ -363,7 +363,7 @@ export default function WorkspaceMap({
                   </p>
                 </div>
                 <button className={kit.secondary} type="button">
-                  Edit section
+                  Изменить раздел
                 </button>
               </div>
 
@@ -378,7 +378,7 @@ export default function WorkspaceMap({
                         {label}
                       </h2>
                       <span className="rounded-full bg-[var(--workspace-brand-background)] px-2 py-1 text-sm font-semibold">
-                        Accepted
+                        Принято
                       </span>
                     </div>
                     <p className="mt-3 text-base leading-7">{value}</p>
@@ -386,7 +386,7 @@ export default function WorkspaceMap({
                       className={`${kit.plain} mt-3 px-0 underline underline-offset-4`}
                       type="button"
                     >
-                      View source
+                      Посмотреть источник
                     </button>
                   </article>
                 ))}
@@ -396,16 +396,18 @@ export default function WorkspaceMap({
                 <section className="mt-4 rounded-2xl border border-dashed border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] p-5">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <p className="text-sm font-semibold">Product economics</p>
+                      <p className="text-sm font-semibold">
+                        Экономика продукта
+                      </p>
                       <p className="mt-1 text-sm text-[var(--workspace-brand-muted)]">
-                        Each Product owns its revenue, resources and costs, with
-                        a stated share of shared resources.
+                        У каждого продукта свои доходы, ресурсы и расходы с
+                        указанной долей общих ресурсов.
                       </p>
                     </div>
                     <p className="mt-3 text-sm leading-6 text-[var(--workspace-brand-muted)]">
-                      AI Chat and Code Framework each have their own Product,
-                      Operations & Economics, Sales, Promotion, and Analytics &
-                      Research texts.
+                      У AI Chat и Code Framework свои тексты продукта, операций
+                      и экономики, продаж, продвижения, аналитики и
+                      исследований.
                     </p>
                   </div>
                   <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -417,11 +419,11 @@ export default function WorkspaceMap({
                         <h3 className="text-base font-semibold">{product}</h3>
                         <ul className="mt-3 space-y-2 text-sm text-[var(--workspace-brand-muted)]">
                           {[
-                            "Product: customer and offer",
-                            "Operations & Economics",
-                            "Sales",
-                            "Promotion: written public presentation",
-                            "Analytics & Research where needed",
+                            "Продукт: клиент и предложение",
+                            "Операции и экономика",
+                            "Продажи",
+                            "Продвижение: письменная публичная подача",
+                            "Аналитика и исследования по необходимости",
                           ].map((text) => (
                             <li key={text}>{text}</li>
                           ))}
@@ -436,40 +438,40 @@ export default function WorkspaceMap({
 
           <aside className="border-t border-[var(--workspace-brand-line)] bg-white p-5 xl:border-t-0 xl:border-l">
             <p className="text-sm font-semibold text-[var(--workspace-brand-muted)]">
-              Project topics
+              Темы проекта
             </p>
             <div className="mt-4 rounded-3xl bg-[var(--workspace-brand-foreground)] p-6 text-white">
               <p className="text-base font-semibold [font-family:var(--workspace-brand-font-display)]">
-                Ask in ordinary language
+                Спросите обычными словами
               </p>
               <p className="mt-2 text-base leading-7 text-[var(--workspace-brand-muted-on-primary)]">
-                Choose saved documents for each topic. AI Chat uses those
-                attachments as context for its answers.
+                Выбирайте сохранённые документы для каждой темы. AI Chat
+                использует вложения как контекст ответа.
               </p>
               <label className="mt-4 block" htmlFor="project-question">
-                <span className="sr-only">Ask about this project</span>
+                <span className="sr-only">Спросить об этом проекте</span>
                 <textarea
                   className={`${kit.field} min-h-32 resize-y focus-visible:ring-[var(--workspace-brand-accent)]`}
-                  defaultValue="Evaluate my idea against the customer and offer I described"
+                  defaultValue="Оцени мою идею с учётом описанных клиента и предложения"
                   id="project-question"
                 />
               </label>
               <button className={`${kit.button} mt-4 w-full`} type="button">
-                Ask AI Chat
+                Спросить AI Chat
                 <Icon name="arrow-right" className="size-5 shrink-0" />
               </button>
             </div>
 
             <div className="mt-5">
               <p className="text-sm font-semibold text-[var(--workspace-brand-muted)]">
-                Useful next actions
+                Полезные следующие действия
               </p>
               <div className="mt-3 space-y-2">
                 {[
-                  "Improve an uploaded document",
-                  "Correct the shortcomings identified by the AI agent",
-                  "Export the reviewed documents",
-                  "Add another product",
+                  "Улучшить загруженный документ",
+                  "Исправить найденные агентом недочёты",
+                  "Выгрузить проверенные документы",
+                  "Добавить другой продукт",
                 ].map((action) => (
                   <button
                     className={`${kit.secondary} w-full justify-between text-left`}
@@ -485,7 +487,7 @@ export default function WorkspaceMap({
 
             <div className="mt-5 rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] p-4">
               <p className="text-sm font-semibold">
-                Failed or cancelled requests
+                Ошибочные и отменённые запросы
               </p>
               <p className="mt-1 text-sm leading-5 text-[var(--workspace-brand-muted)]">
                 All deductions are restored, including the initial token and any

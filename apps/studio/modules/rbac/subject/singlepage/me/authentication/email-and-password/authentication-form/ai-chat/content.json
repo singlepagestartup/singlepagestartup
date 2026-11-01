@@ -2,7 +2,7 @@
   "title": "Войти",
   "description": [],
   "successDescription": [
-    "Откройте проект, чтобы продолжить работу с документами и обсуждениями."
+    "Откройте рабочее пространство, чтобы вернуться к документам и перепискам."
   ],
   "labels": {
     "email-label": "Электронная почта",
@@ -14,10 +14,10 @@
     "register-label": "Создать аккаунт",
     "register-href": "/ai-chat/rbac/subjects/authentication/registration",
     "no-account": "Ещё нет аккаунта?",
-    "continue-label": "Открыть проект",
+    "continue-label": "Открыть рабочее пространство",
     "continue-href": "/ai-chat/social/profiles/example",
-    "email-error": "Укажите адрес электронной почты.",
+    "email-error": "Введите корректный адрес электронной почты.",
     "password-error": "Введите пароль.",
-    "success-message": "Вы вошли в аккаунт."
+    "success-message": "Вы снова с нами."
   }
 }

@@ -1,11 +1,14 @@
 import type { IComponentProps } from "./interface";
 import { memo } from "react";
+import { Component as Feature } from "../..";
 
 export const Component = memo<IComponentProps>(function Component({
   title,
   subtitle,
   description,
   children,
+  attachments,
+  attachmentsLabel,
   appearance = "default",
 }) {
   return (
@@ -29,6 +32,23 @@ export const Component = memo<IComponentProps>(function Component({
       <p className="mt-2 text-sm leading-6 text-default-muted-foreground">
         {description}
       </p>
+      {attachments?.length ? (
+        <ul
+          aria-label={attachmentsLabel}
+          className="mt-6 grid grid-cols-2 gap-3"
+        >
+          {attachments.map((attachment) => (
+            <li key={attachment.id} className="min-w-0">
+              <Feature
+                variant="definition-card"
+                appearance="attachment"
+                title={attachment.title}
+                description=""
+              />
+            </li>
+          ))}
+        </ul>
+      ) : null}
       {children ? <div className="mt-5">{children}</div> : null}
     </li>
   );

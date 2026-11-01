@@ -52,6 +52,6 @@ export function FilesProvider({
 }
 export function useFiles() {
   const context = useContext(FilesContext);
-  if (!context) throw new Error("AI Chat File requires FilesProvider.");
+  if (!context) throw new Error("AI Chat File требует FilesProvider.");
   return context;
 }

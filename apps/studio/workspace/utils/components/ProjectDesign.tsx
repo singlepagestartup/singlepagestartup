@@ -1,9 +1,10 @@
+import { localizedHeading } from "../../../../../tools/studio/workspace/headings";
 import {
   defaultDesignSections,
   type DesignBuiltinSection,
 } from "../design/layout";
-import type { IDocumentConfirmation } from "../../../../../tools/studio/workspace/document";
-import { CircleHelp as Info } from "./ModuleIcons";
+import { MarkdownDocument } from "./ArtifactBrowser";
+import type { IDesignDocumentNotes } from "../design/document";
 import type { CSSProperties, ReactNode } from "react";
 
 export interface IProjectDesignAsset {
@@ -64,6 +65,7 @@ export interface IProjectDesignTypographyRole {
 }
 
 export interface IProjectDesignData {
+  notes?: IDesignDocumentNotes;
   assets: IProjectDesignAsset[];
   bodyType: string;
   bodyTypeLabel: string;
@@ -94,9 +96,23 @@ export interface IProjectDesignData {
 }
 
 export interface IProjectDesignProps {
-  confirmation?: IDocumentConfirmation;
   data: IProjectDesignData;
   children?: ReactNode;
+}
+
+export function DesignNotes({
+  markdown,
+  section,
+}: {
+  markdown?: string;
+  section: string;
+}) {
+  if (!markdown?.trim()) return null;
+  return (
+    <div className="mt-6" data-design-rules={section}>
+      <MarkdownDocument>{markdown}</MarkdownDocument>
+    </div>
+  );
 }
 
 type ProjectPaletteRole = keyof IProjectDesignData["palette"];
@@ -200,12 +216,14 @@ function PageTitle({
       >
         {children}
       </h2>
-      <p
-        className="mt-6 max-w-4xl text-sm leading-7 md:text-base"
-        style={{ color: paletteValue(data, "muted") }}
-      >
-        {copy}
-      </p>
+      {copy ? (
+        <p
+          className="mt-6 max-w-4xl text-sm leading-7 md:text-base"
+          style={{ color: paletteValue(data, "muted") }}
+        >
+          {copy}
+        </p>
+      ) : null}
     </header>
   );
 }
@@ -231,52 +249,21 @@ function Overview({ data }: IProjectDesignProps) {
       <PageTitle
         copy={data.conceptSummary}
         data={data}
-        eyebrow="Identity direction"
+        eyebrow="Направление айдентики"
       >
         {data.conceptName}
       </PageTitle>
 
-      {data.graphicRules.length || data.doDont.length ? (
-        <div className="mt-12 grid gap-4 lg:grid-cols-[1.15fr_.85fr]">
-          <article
-            className="rounded-3xl p-7 md:p-10"
-            style={{
-              backgroundColor: paletteValue(data, "primary"),
-              color: paletteValue(data, "surface"),
-            }}
-          >
-            <div className="flex items-center gap-4">
-              <span
-                className="inline-block h-3 w-3 shrink-0 rounded-sm"
-                style={{ backgroundColor: paletteValue(data, "accent") }}
-              />
-              <h2 className="text-3xl font-semibold" style={displayStyle(data)}>
-                Reusable graphic language
-              </h2>
-            </div>
-            <div className="mt-7 opacity-80">
-              <RuleList items={data.graphicRules} />
-            </div>
-          </article>
-
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-            {data.doDont.length ? (
-              <>
-                <RulePanel
-                  data={data}
-                  items={data.doDont.map((item) => item.do)}
-                  title="Do"
-                />
-                <RulePanel
-                  data={data}
-                  items={data.doDont.map((item) => item.dont)}
-                  title="Do not"
-                />
-              </>
-            ) : null}
-          </div>
-        </div>
-      ) : null}
+      <div className="mt-10">
+        <h2 className="text-3xl font-semibold" style={displayStyle(data)}>
+          Общие правила дизайна
+        </h2>
+        {data.notes?.overview ? (
+          <DesignNotes markdown={data.notes.overview} section="overview" />
+        ) : (
+          <RuleList items={data.graphicRules} />
+        )}
+      </div>
     </section>
   );
 }
@@ -293,12 +280,13 @@ function Logos({ data }: { data: IProjectDesignData }) {
       style={{ borderColor: paletteValue(data, "line") }}
     >
       <PageTitle
-        copy={data.logoRules.join(" ")}
+        copy={data.notes?.logos ? "" : data.logoRules.join(" ")}
         data={data}
-        eyebrow="Identity assets"
+        eyebrow="Файлы айдентики"
       >
-        Logos
+        Логотипы
       </PageTitle>
+      <DesignNotes markdown={data.notes?.logos} section="logos" />
       <div className="mt-10 grid gap-4 md:grid-cols-2">
         {logos.map((asset) => {
           const darkSurface = asset.designKey?.includes("-dark") ?? false;
@@ -357,13 +345,10 @@ function Colors({ data }: { data: IProjectDesignData }) {
       id="colors"
       style={{ borderColor: paletteValue(data, "line") }}
     >
-      <PageTitle
-        copy="Semantic roles and usage rules come from the resolved Design document."
-        data={data}
-        eyebrow="Semantic system"
-      >
-        Colors
+      <PageTitle copy="" data={data} eyebrow="Семантическая система">
+        Цвета
       </PageTitle>
+      <DesignNotes markdown={data.notes?.colors} section="colors" />
       <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {data.colorRoles.map((color) => (
           <article
@@ -379,7 +364,7 @@ function Colors({ data }: { data: IProjectDesignData }) {
               <div style={{ backgroundColor: colorValue(color.dark) }} />
             </div>
             <div className="p-5">
-              <h3 className="font-semibold">{color.role}</h3>
+              <h3 className="font-semibold">{localizedHeading(color.role)}</h3>
               <p className="mt-3 text-xs leading-6">{color.usage}</p>
               <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
                 <code>{color.light}</code>
@@ -409,12 +394,13 @@ function Typography({ data }: { data: IProjectDesignData }) {
       style={{ borderColor: paletteValue(data, "line") }}
     >
       <PageTitle
-        copy={data.typographyRules.join(" ")}
+        copy={data.notes?.typography ? "" : data.typographyRules.join(" ")}
         data={data}
-        eyebrow="Type system"
+        eyebrow="Типографическая система"
       >
-        Typography
+        Типографика
       </PageTitle>
+      <DesignNotes markdown={data.notes?.typography} section="typography" />
       <div className="mt-10 grid gap-4 lg:grid-cols-2">
         {specimens.map((specimen, index) => (
           <article
@@ -446,7 +432,7 @@ function Typography({ data }: { data: IProjectDesignData }) {
             {/primary|display/.test(specimen.role.toLocaleLowerCase()) ? (
               <p
                 className="mt-4 text-3xl leading-tight md:text-5xl"
-                style={{ fontFamily: specimen.fontStack, fontStyle: "italic" }}
+                style={{ fontFamily: specimen.fontStack }}
               >
                 Build with clarity · Создавайте яснее
               </p>
@@ -463,13 +449,9 @@ function Typography({ data }: { data: IProjectDesignData }) {
 
 function MasterPrompt({
   data,
-  guidance,
-  id,
   prompt,
 }: {
   data: IProjectDesignData;
-  guidance: string[];
-  id: string;
   prompt: string;
 }) {
   return (
@@ -480,56 +462,13 @@ function MasterPrompt({
         color: paletteValue(data, "surface"),
       }}
     >
-      <div className="relative flex items-center gap-2">
-        <p className="text-xs font-semibold tracking-normal opacity-65">
-          Style master prompt
-        </p>
-        <PromptUsageTooltip data={data} id={id} items={guidance} />
-      </div>
+      <p className="text-xs font-semibold tracking-normal opacity-65">
+        Основной стилевой промпт
+      </p>
       <blockquote className="mt-6 max-w-5xl select-text whitespace-pre-wrap border-l pl-5 text-sm leading-7 opacity-85">
         {prompt}
       </blockquote>
     </article>
-  );
-}
-
-function PromptUsageTooltip({
-  data,
-  id,
-  items,
-}: {
-  data: IProjectDesignData;
-  id: string;
-  items: string[];
-}) {
-  if (!items.length) return null;
-
-  return (
-    <div className="group inline-flex sm:relative">
-      <button
-        aria-describedby={id}
-        aria-label="How to use this style master prompt"
-        className="grid h-6 w-6 place-items-center rounded-full border border-current/40 opacity-70 transition hover:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-        type="button"
-      >
-        <Info aria-hidden="true" className="h-5 w-5" />
-      </button>
-      <div
-        className="invisible absolute left-0 top-full z-20 mt-3 w-80 max-w-full rounded-2xl border p-5 text-left opacity-0 shadow-xl transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 sm:left-1/2 sm:max-w-[calc(100vw-4rem)] sm:-translate-x-1/2"
-        id={id}
-        role="tooltip"
-        style={{
-          backgroundColor: paletteValue(data, "surface"),
-          borderColor: paletteValue(data, "line"),
-          color: paletteValue(data, "foreground"),
-        }}
-      >
-        <p className="mb-4 text-sm font-semibold" style={displayStyle(data)}>
-          How to use the prompt
-        </p>
-        <RuleList items={items} />
-      </div>
-    </div>
   );
 }
 
@@ -641,7 +580,7 @@ function SurfacePatternCard({
         className="text-xl font-semibold leading-tight [overflow-wrap:anywhere]"
         style={displayStyle(data)}
       >
-        {pattern.title}
+        {localizedHeading(pattern.title)}
       </h3>
       <p className="mt-5 flex-1 text-sm leading-7">{pattern.decision}</p>
       <p
@@ -658,7 +597,9 @@ function SurfacePatternCard({
           className="mt-4 text-[11px] leading-5 [overflow-wrap:anywhere]"
           style={{ color: paletteValue(data, "muted") }}
         >
-          <span className="font-semibold tracking-normal">Observed in</span>{" "}
+          <span className="font-semibold tracking-normal">
+            Источник наблюдения
+          </span>{" "}
           {pattern.references.join(", ")}
         </p>
       ) : null}
@@ -675,30 +616,44 @@ function InterfaceSurfaces({ data }: { data: IProjectDesignData }) {
       id="interface"
       style={{ borderColor: paletteValue(data, "line") }}
     >
-      <PageTitle copy={intro} data={data} eyebrow="Product surfaces">
-        Interface
+      <PageTitle
+        copy={data.notes?.interface ? "" : intro}
+        data={data}
+        eyebrow="Интерфейсы продукта"
+      >
+        Интерфейс
       </PageTitle>
-      <div className="mt-10 grid items-start gap-4 lg:grid-cols-2">
-        {shapeRules.length ? (
-          <RulePanel
-            data={data}
-            items={shapeRules}
-            title="Surface, density, and shape"
-          />
-        ) : null}
-        {stateRules.length ? (
-          <RulePanel
-            data={data}
-            items={stateRules}
-            title="Controls, states, and actions"
-          />
-        ) : null}
-      </div>
+      {data.notes?.interface ? (
+        <DesignNotes markdown={data.notes.interface} section="interface" />
+      ) : (
+        <div className="mt-10 grid items-start gap-4 lg:grid-cols-2">
+          {shapeRules.length ? (
+            <RulePanel
+              data={data}
+              items={shapeRules}
+              title="Поверхности, плотность и форма"
+            />
+          ) : null}
+          {stateRules.length ? (
+            <RulePanel
+              data={data}
+              items={stateRules}
+              title="Элементы управления, состояния и действия"
+            />
+          ) : null}
+        </div>
+      )}
+      {data.notes?.icons ? (
+        <div className="mt-8">
+          <h3 className="text-2xl font-semibold">Иконки</h3>
+          <DesignNotes markdown={data.notes.icons} section="icons" />
+        </div>
+      ) : null}
       <div className="mt-4 grid items-start gap-4 lg:grid-cols-2">
         {patterns.map((pattern) => (
           <SurfacePatternCard
             data={data}
-            key={pattern.title}
+            key={localizedHeading(pattern.title)}
             pattern={pattern}
           />
         ))}
@@ -731,12 +686,18 @@ function MediaSection({
       <PageTitle copy={media.intro} data={data} eyebrow={eyebrow}>
         {title}
       </PageTitle>
-      <MasterPrompt
-        data={data}
-        guidance={media.productionRules}
-        id={`${id}-prompt-usage`}
-        prompt={media.masterPrompt}
-      />
+      <MasterPrompt data={data} prompt={media.masterPrompt} />
+      <div className="mt-8">
+        <h3 className="text-2xl font-semibold">Требования к производству</h3>
+        {data.notes?.[id as "photography" | "illustration"] ? (
+          <DesignNotes
+            markdown={data.notes[id as "photography" | "illustration"]}
+            section={id}
+          />
+        ) : (
+          <RuleList items={media.productionRules} />
+        )}
+      </div>
       <div className="mt-10 grid items-start gap-4 lg:grid-cols-2">
         {media.examples.map((item) => (
           <PromptCard
@@ -773,10 +734,10 @@ export function ProjectDesignSection({
         <MediaSection
           assetRole="photography"
           data={data}
-          eyebrow="Image system"
+          eyebrow="Система изображений"
           id="photography"
           media={data.photography}
-          title="Photography"
+          title="Фотография"
         />
       );
     case "illustration":
@@ -784,10 +745,10 @@ export function ProjectDesignSection({
         <MediaSection
           assetRole="motif"
           data={data}
-          eyebrow="Image system"
+          eyebrow="Система изображений"
           id="illustration"
           media={data.illustration}
-          title="Illustration and diagrams"
+          title="Иллюстрации и схемы"
         />
       );
   }

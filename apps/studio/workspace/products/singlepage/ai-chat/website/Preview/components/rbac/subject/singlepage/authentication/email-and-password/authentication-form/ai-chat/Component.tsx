@@ -1,20 +1,15 @@
 "use client";
+import { type ReactNode as ReactNode } from "react";
+import { type InputHTMLAttributes as InputHTMLAttributes } from "react";
+import { useId as useIdPresentation } from "react";
+import { useState as useStatePresentation } from "react";
+import { Component as WebsiteBuilderModuleButton } from "../../../../../../../website-builder/button/index";
 import {
-  type ReactNode as ReactNode,
-  type InputHTMLAttributes as InputHTMLAttributes,
-  useId as useIdPresentation,
-  useState as useStatePresentation,
   forwardRef as forwardRefControl,
   type ButtonHTMLAttributes as ButtonControlProps,
-  useId,
-  useState,
-  type FormEvent,
 } from "react";
-
-import { Component as WebsiteBuilderModuleButton } from "../../../../../../../website-builder/button/index";
-
 import IconGlyphs from "../../../../../../../website-builder/feature/singlepage/icon/icons.json";
-
+import { useId, useState, type FormEvent } from "react";
 import {
   AccountPage,
   PageSection,
@@ -100,7 +95,7 @@ function PasswordField({
         <Button
           variant="plain"
           onClick={() => setVisible(!visible)}
-          aria-label={`${visible ? "Скрыть" : "Показать"} ${label.toLowerCase()}`}
+          aria-label={`${visible ? "Hide" : "Show"} ${label.toLowerCase()}`}
           aria-pressed={visible}
           className="absolute top-0.5 right-1 min-h-11 w-11 px-2"
         >
@@ -165,7 +160,7 @@ function Icon({
   const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}

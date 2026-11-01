@@ -1,5 +1,6 @@
 import {
-  productStoryId,
+  materialStoryId,
+  materialNavigationTarget,
   type IProductSection,
   type ProductCatalogLayer,
 } from "./catalog";
@@ -88,25 +89,15 @@ export function resolveProductPreviewLink(
   url.pathname = url.pathname.replace(/iframe\.html$/, "");
   url.search = "";
   url.hash = "";
+  const target = materialNavigationTarget(
+    linked.product,
+    `${linked.section.id}-${linked.page.id}`,
+  );
   url.searchParams.set(
     "path",
-    `/story/${productStoryId(layer, linked.product.id)}`,
+    `/story/${materialStoryId(layer, linked.product.id, target.story, target.group)}`,
   );
-  url.searchParams.set("product", linked.product.id);
-  if (["website", "creative", "presentation"].includes(linked.section.id)) {
-    url.searchParams.set("section", "promotion");
-    url.searchParams.set("surface", linked.section.id);
-  } else if (["analytics", "research"].includes(linked.section.id)) {
-    url.searchParams.set("section", "analytics");
-    url.searchParams.set("surface", linked.section.id);
-  } else {
-    url.searchParams.set("section", linked.section.id);
-  }
   url.searchParams.set("page", linked.page.id);
-  url.searchParams.set(
-    "representation",
-    linked.page.representations?.preview ? "preview" : "text",
-  );
   url.searchParams.set(
     "navigationHref",
     destination.pathname + destination.search + destination.hash,

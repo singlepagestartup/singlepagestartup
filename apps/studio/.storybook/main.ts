@@ -28,6 +28,9 @@ const config: StorybookConfig = {
     { from: "../workspace/assets", to: "/workspace-assets" },
     { from: "../workspace/products", to: "/workspace-products" },
     { from: "../workspace/design", to: "/workspace-design" },
+    { from: "../workspace/brief", to: "/workspace-brief" },
+    { from: "../workspace/strategy", to: "/workspace-strategy" },
+    { from: "../workspace/brand", to: "/workspace-brand" },
   ],
   viteFinal: (config) => ({
     ...config,

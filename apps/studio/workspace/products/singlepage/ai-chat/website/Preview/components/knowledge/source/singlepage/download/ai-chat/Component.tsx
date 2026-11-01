@@ -20,7 +20,7 @@ function Icon({
   const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
@@ -59,7 +59,7 @@ export function Component({ label = ".md" }: ISourceDownloadProps) {
     <Button
       data-ds-block="knowledge.source.download-ai-chat"
       variant="secondary"
-      aria-label={`Скачать ${source.title}.md`}
+      aria-label={`Download ${source.title}.md`}
       onClick={download}
     >
       <Icon name="arrow-down" />

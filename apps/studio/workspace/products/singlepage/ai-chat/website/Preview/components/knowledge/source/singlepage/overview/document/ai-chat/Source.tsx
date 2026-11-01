@@ -35,10 +35,10 @@ export function SourceProvider({
         id: `${profileId}:products:products`,
         slug: `${encodeURIComponent(profileId)}:products:products`,
         variant: "overview-ai-chat",
-        title: "Продукты",
+        title: "Products",
         content: "",
         description:
-          "Опишите продукты, их клиентов, предложение и текущую доступность.",
+          "Опишите продукты, их клиентов, ценность и текущую доступность.",
       },
   );
   const [fileIds, setFileIds] = useState(initialFileIds);
@@ -68,6 +68,6 @@ export function SourceProvider({
 }
 export function useSource() {
   const context = useContext(SourceContext);
-  if (!context) throw new Error("AI Chat Source requires SourceProvider.");
+  if (!context) throw new Error("AI Chat Source требует SourceProvider.");
   return context;
 }

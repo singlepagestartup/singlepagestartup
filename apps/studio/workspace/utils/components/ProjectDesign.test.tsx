@@ -8,7 +8,9 @@
 import { describe, expect, test } from "bun:test";
 import { renderToStaticMarkup } from "react-dom/server";
 
-import ProjectDesign, { type IProjectDesignData } from "./ProjectDesign";
+import ProjectDesign from "./ProjectDesign";
+
+import type { IProjectDesignData } from "./ProjectDesign";
 
 const data: IProjectDesignData = {
   assets: [
@@ -115,7 +117,7 @@ describe("ProjectDesign", () => {
     const block = html.slice(start, html.indexOf("<section", start + 1));
 
     expect(start).toBeGreaterThan(-1);
-    expect(block).toContain("Surface, density, and shape");
+    expect(block).toContain("Поверхности, плотность и форма");
     expect(block).toContain("Allow one dominant action per view.");
     expect(block).toContain("interface-reference-license-card");
     expect(block).not.toContain("<img");
