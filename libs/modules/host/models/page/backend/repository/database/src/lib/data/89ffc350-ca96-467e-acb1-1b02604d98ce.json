@@ -1,11 +1,45 @@
 {
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "AI Chat projects — SinglePageStartup",
+        "ru": "Проекты AI Chat — SinglePageStartup"
+      },
+      "description": {
+        "en": "AI Chat projects available to the current user and links to their conversations.",
+        "ru": "Список доступных пользователю проектов AI Chat и переход к обсуждениям."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "AI Chat projects — SinglePageStartup",
+        "ru": "Проекты AI Chat — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "AI Chat projects — SinglePageStartup",
+        "ru": "Проекты AI Chat — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "AI Chat projects available to the current user and links to their conversations.",
+        "ru": "Список доступных пользователю проектов AI Chat и переход к обсуждениям."
+      },
+      "opengraphDescription": {
+        "en": "AI Chat projects available to the current user and links to their conversations.",
+        "ru": "Список доступных пользователю проектов AI Chat и переход к обсуждениям."
+      }
+    }
+  },
   "id": "89ffc350-ca96-467e-acb1-1b02604d98ce",
   "title": "AI Chat — projects",
   "url": "/ai-chat/projects",
   "description": "Description",
   "createdAt": "2026-10-11T02:00:20.081Z",
-  "updatedAt": "2026-10-11T02:00:20.081Z",
-  "variant": "default",
+  "updatedAt": "2026-10-30T22:25:06.876Z",
+  "variant": "noindex",
   "className": "",
   "language": "en",
   "adminTitle": "ethical tomato crane"

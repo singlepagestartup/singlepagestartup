@@ -1,10 +1,32 @@
 {
+  "metadata": {
+    "seo": {
+      "description": {
+        "en": "Delivery records, templates and notification topics.",
+        "ru": "Записи доставки, шаблоны и темы уведомлений."
+      }
+    },
+    "seoDisplay": {
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Delivery records, templates and notification topics.",
+        "ru": "Записи доставки, шаблоны и темы уведомлений."
+      },
+      "opengraphDescription": {
+        "en": "Delivery records, templates and notification topics.",
+        "ru": "Записи доставки, шаблоны и темы уведомлений."
+      }
+    }
+  },
   "id": "48cfd229-3b16-4b22-87e4-d170e62c3bda",
   "title": "Notification · Code Framework",
   "url": "/framework/modules/notification",
   "description": "Delivery records, templates and notification topics.",
   "createdAt": "2026-10-24T01:06:10.602Z",
-  "updatedAt": "2026-10-24T01:06:10.602Z",
+  "updatedAt": "2026-10-30T22:25:06.343Z",
   "variant": "default",
   "className": "",
   "language": "en",
