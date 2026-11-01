@@ -39,6 +39,11 @@ competitor comparison and Semantics belong to each product. Materials opens the
 same product's existing public-page and creative sources. Existing story IDs
 and product IDs remain stable despite the changed display order.
 
+Article summaries read search phrases from query-table columns in the article's
+owned sources (`Запрос`, `Query`, `Search query`). The `semantic_cluster` ID stays
+in source metadata; the summary displays phrases from the same SEO source used
+by the material and its exports.
+
 Keep main review documents to approximately 600–1,000 words. Detailed intake,
 commercial terms, strategic rationale and design specifications are linked
 references. The query map separates candidates from measured demand; absent

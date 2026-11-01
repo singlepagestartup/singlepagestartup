@@ -1,7 +1,7 @@
 ---
 audience: Владелец действующего магазина, которому нужно ограничение размера заказа
 semantic_cluster: CF-G02
-goal: Перейти на страницу Code Framework и начать со своей задачи в AI Chat
+goal: Посмотреть Code Framework и сформулировать в AI Chat правило минимального заказа
 journey:
   segment: makers
   stage: reached-explanation
@@ -19,15 +19,15 @@ journey:
 
 ## Связь с продуктом
 
-Знакомство с возможностями для своего бизнеса; статья → Code Framework → AI Chat со своими вводными. Этап CJM: `makers / reached-explanation`. [Продажи и путь клиента](/?path=/story/workspace-10-products-singlepage-singlepagestartup--sales).
+Статья показывает доработку действующего магазина: минимальный заказ по общему количеству изделий. После чтения владелец может описать своё ограничение и условия, по которым будет проверять работу агента. Этап пути клиента: `makers / reached-explanation`. [Продажи и путь клиента](/?path=/story/workspace-10-products-singlepage-singlepagestartup--sales).
 
-Следующее действие: [Перейти на страницу Code Framework и начать со своей задачи в AI Chat](/?path=/story/workspace-50-materials-singlepage-singlepagestartup-website--website#website-landing). На странице продукта человек видит состав, условия и способ начать. Статья отвечает на свой вопрос до этого перехода.
+На странице [Code Framework](/?path=/story/workspace-50-materials-singlepage-singlepagestartup-website--website#website-landing) можно посмотреть готовые функции магазина. Затем в AI Chat можно сформулировать правило минимального заказа: какие товары учитывать, когда разрешать оформление и что показывать покупателю.
 
 ## Основание темы
 
 Материал для оценки возможности доработки. Фраза «доработать сайт нейросеть» дала 1 запрос; отдельный спрос на точное условие не установлен. Высокочастотные запросы создания сайта этой статье не назначаются.
 
-Группа CF-G02 в [семантике продукта](/?path=/story/workspace-10-products-singlepage-singlepagestartup--semantics). Измерения, прочитанные страницы и решение о пересечениях показаны в SEO-блоке этой истории.
+Запрос «доработать сайт нейросеть» относится к группе о доработке сайта в [семантике продукта](/?path=/story/workspace-10-products-singlepage-singlepagestartup--semantics). Частотность, разбор страниц из поиска и разделение тем приведены в SEO-задании ниже.
 
 ## Источники и границы
 

@@ -1,7 +1,7 @@
 ---
 audience: Владелец небольшой мастерской, переносящий продажи товаров на свой сайт
 semantic_cluster: CF-G04
-goal: Перейти на страницу Code Framework и начать со своей задачи в AI Chat
+goal: Посмотреть Code Framework и составить задание на интернет-магазин в AI Chat
 journey:
   segment: makers
   stage: reached-explanation
@@ -19,15 +19,15 @@ journey:
 
 ## Связь с продуктом
 
-Знакомство с возможностями для своего бизнеса; статья → Code Framework → AI Chat со своими вводными. Этап CJM: `makers / reached-explanation`. [Продажи и путь клиента](/?path=/story/workspace-10-products-singlepage-singlepagestartup--sales).
+Статья показывает, как устроен магазин с каталогом, корзиной и подтверждением наличия перед оплатой. После чтения владелец может сравнить этот пример со своими правилами продажи и подготовить задание на магазин. Этап пути клиента: `makers / reached-explanation`. [Продажи и путь клиента](/?path=/story/workspace-10-products-singlepage-singlepagestartup--sales).
 
-Следующее действие: [Перейти на страницу Code Framework и начать со своей задачи в AI Chat](/?path=/story/workspace-50-materials-singlepage-singlepagestartup-website--website#website-landing). На странице продукта человек видит состав, условия и способ начать. Статья отвечает на свой вопрос до этого перехода.
+В [Code Framework](/?path=/story/workspace-50-materials-singlepage-singlepagestartup-website--website#website-landing) можно посмотреть готовые функции для магазина. Затем в AI Chat можно описать ассортимент и правила заказа, чтобы составить задание на свой проект.
 
 ## Основание темы
 
 Поисковая тема: «создать интернет магазин нейросеть» — 21 запрос без операторов. В выдаче есть инструкции и конструкторы. Наш ответ ограничен первым магазином с подтверждением наличия перед оплатой.
 
-Группа CF-G04 в [семантике продукта](/?path=/story/workspace-10-products-singlepage-singlepagestartup--semantics). Измерения, прочитанные страницы и решение о пересечениях показаны в SEO-блоке этой истории.
+Запросы «создать интернет магазин нейросеть» и «интернет магазин нейросеть» собраны в [семантике продукта](/?path=/story/workspace-10-products-singlepage-singlepagestartup--semantics). Частотность, разбор страниц из поиска и разделение тем приведены в SEO-задании ниже.
 
 ## Источники и границы
 

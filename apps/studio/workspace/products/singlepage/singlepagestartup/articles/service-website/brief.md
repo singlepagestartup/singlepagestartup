@@ -1,7 +1,7 @@
 ---
 audience: Владелец мастерской, которому нужен первый сайт для заявок
 semantic_cluster: CF-G03
-goal: Перейти на страницу Code Framework и начать со своей задачи в AI Chat
+goal: Посмотреть Code Framework и подготовить в AI Chat задание на сайт своей услуги
 journey:
   segment: makers
   stage: reached-explanation
@@ -19,15 +19,15 @@ journey:
 
 ## Связь с продуктом
 
-Знакомство с возможностями для своего бизнеса; статья → Code Framework → AI Chat со своими вводными. Этап CJM: `makers / reached-explanation`. [Продажи и путь клиента](/?path=/story/workspace-10-products-singlepage-singlepagestartup--sales).
+Статья показывает, какие сведения нужны для сайта услуги и как проверить форму заявки. После чтения владелец может подготовить описание своей услуги, структуру страницы и требования к форме. Этап пути клиента: `makers / reached-explanation`. [Продажи и путь клиента](/?path=/story/workspace-10-products-singlepage-singlepagestartup--sales).
 
-Следующее действие: [Перейти на страницу Code Framework и начать со своей задачи в AI Chat](/?path=/story/workspace-50-materials-singlepage-singlepagestartup-website--website#website-landing). На странице продукта человек видит состав, условия и способ начать. Статья отвечает на свой вопрос до этого перехода.
+На странице [Code Framework](/?path=/story/workspace-50-materials-singlepage-singlepagestartup-website--website#website-landing) показаны готовые функции для сайта. В AI Chat можно передать условия своей услуги и подготовить задание: что разместить на странице, какие данные получить от клиента и куда сохранить заявку.
 
 ## Основание темы
 
 Поисковая тема на основе более широкой группы создания сайта. Wordstat подтвердил спрос на создание сайта с ИИ; точная формулировка про сайт услуг не вернула подходящих запросов. Узкой теме не присваивается частотность широкой.
 
-Группа CF-G03 в [семантике продукта](/?path=/story/workspace-10-products-singlepage-singlepagestartup--semantics). Измерения, прочитанные страницы и решение о пересечениях показаны в SEO-блоке этой истории.
+Запросы о создании сайта с нейросетью собраны в [семантике продукта](/?path=/story/workspace-10-products-singlepage-singlepagestartup--semantics). Частотность, разбор страниц из поиска и разделение тем приведены в SEO-задании ниже.
 
 ## Источники и границы
 

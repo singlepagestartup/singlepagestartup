@@ -71,6 +71,34 @@ describe("product materials", () => {
     expect(html).not.toContain("text-0");
     expect(html).not.toContain("Найти статью");
   });
+  test("shows article queries from its SEO source instead of an opaque cluster ID", () => {
+    const view = fixture();
+    const article = view.products[0].sections[0].pages[0];
+    article.children.push(
+      page(
+        "seo",
+        "| Запрос | Значение |\n| --- | --- |\n| создать магазин нейросеть | 21 |",
+      ),
+    );
+    const render = () =>
+      new JSDOM(
+        renderToStaticMarkup(
+          <ProductMaterials
+            view={view}
+            productId="service"
+            materialId="articles-topic-0"
+          />,
+        ),
+      ).window.document.querySelector("dl")!.textContent;
+    expect(render()).toContain("создать магазин нейросеть");
+    expect(render()).not.toContain("G0");
+    article.children.at(-1)!.markdown =
+      "# SEO\n\n| Query | Count |\n| --- | --- |\n| own updated query | 4 |";
+    expect(render()).toContain("own updated query");
+    article.children.pop();
+    expect(render()).toContain("Не указаны в SEO-задании");
+    expect(render()).not.toContain("G0");
+  });
   test("a derivative link opens its owning article without an internal sidebar", () => {
     const html = renderToStaticMarkup(
       <ProductMaterials

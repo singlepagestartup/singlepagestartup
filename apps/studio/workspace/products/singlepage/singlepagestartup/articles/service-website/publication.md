@@ -2,6 +2,6 @@
 
 Комплект подготовлен для просмотра в Studio. Размещение в Host и на публичном сайте не выполнено.
 
-Путь читателя: статья → Code Framework → AI Chat со своей задачей. [Страница назначения](/?path=/story/workspace-50-materials-singlepage-singlepagestartup-website--website#website-landing).
+Путь читателя: статья → Code Framework → задание на сайт услуги и форму заявки в AI Chat. [Страница назначения](/?path=/story/workspace-50-materials-singlepage-singlepagestartup-website--website#website-landing).
 
-После публикации результат этой статьи оценивается по переходам на страницу продукта и дальнейшему действию из CJM. Публичного URL и измерений этой версии пока нет.
+После публикации результат этой статьи оценивается по переходам на страницу продукта и подготовке задания в AI Chat. Публичного URL и измерений этой версии пока нет.

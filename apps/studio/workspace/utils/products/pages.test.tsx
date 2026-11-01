@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { renderToStaticMarkup } from "react-dom/server";
-import { resolveProductSections } from "./pages";
+import { resolveProductSections, productPageSearchQueries } from "./pages";
 import { findWorkspacePage, canNavigateWorkspacePage } from "../pages";
 import { WorkspacePage } from "../components/WorkspacePage";
 const sections = [
@@ -65,4 +65,34 @@ describe("source-owned product pages", () => {
     expect(canNavigateWorkspacePage({ button: 0, metaKey: true })).toBe(false);
     expect(canNavigateWorkspacePage({ button: 0, download: true })).toBe(false);
   });
+});
+
+test("material queries come from query columns, preserving phrases and ignoring code examples", () => {
+  const page = resolveProductSections(sections, "startup", sources)[0].pages[0];
+  page.children = [
+    {
+      ...page,
+      id: "seo",
+      kind: "markdown",
+      children: [],
+      markdown: [
+        "# SEO",
+        "| Значение | Запрос |",
+        "| --- | --- |",
+        "| 21 | `создать магазин нейросеть` |",
+        "| 126 | [интернет магазин нейросеть](https://example.test) |",
+        "| 21 | создать магазин нейросеть |",
+        "",
+        "```md",
+        "| Query |",
+        "| --- |",
+        "| hidden example |",
+        "```",
+      ].join("\n"),
+    },
+  ];
+  expect(productPageSearchQueries(page)).toEqual([
+    "создать магазин нейросеть",
+    "интернет магазин нейросеть",
+  ]);
 });

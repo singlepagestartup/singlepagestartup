@@ -1,6 +1,9 @@
 import { useRef } from "react";
 import type { IProductCatalogView, IProductView } from "../products/source";
-import type { IProductPageView } from "../products/pages";
+import {
+  productPageSearchQueries,
+  type IProductPageView,
+} from "../products/pages";
 import { flattenWorkspacePages } from "../pages";
 import { materialNavigationTarget } from "../products/catalog";
 import { parseDocument } from "../../../../../tools/studio/workspace/document";
@@ -153,6 +156,7 @@ export function ProductMaterials({
   const metadata = article
     ? parseDocument(article.markdown ?? "").metadata
     : {};
+  const searchQueries = article ? productPageSearchQueries(article) : [];
   const sourceBlocks = flattenWorkspacePages(blocks);
   const markdown = [
     ...sourceBlocks.flatMap((page) =>
@@ -185,7 +189,6 @@ export function ProductMaterials({
               [
                 ["audience", "Аудитория"],
                 ["goal", "Задача материала"],
-                ["semantic_cluster", "Группа запросов"],
               ] as const
             ).map(([key, label]) => (
               <div key={key}>
@@ -199,6 +202,22 @@ export function ProductMaterials({
                 </dd>
               </div>
             ))}
+            <div>
+              <dt className="text-sm font-semibold text-[var(--workspace-brand-muted)]">
+                Поисковые запросы
+              </dt>
+              <dd className="mt-1">
+                {searchQueries.length ? (
+                  <ul className="list-disc space-y-1 pl-5">
+                    {searchQueries.map((query) => (
+                      <li key={query}>{query}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  "Не указаны в SEO-задании"
+                )}
+              </dd>
+            </div>
           </dl>
         )}
         <div className="space-y-8">
