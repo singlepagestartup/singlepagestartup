@@ -2,7 +2,7 @@ import { readFile, readdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { loadCsf } from "storybook/internal/csf-tools";
 import path from "node:path";
-import { parseDocument } from "../workspace/document";
+import { documentVisibleText, parseDocument } from "../workspace/document";
 import {
   parseSalesProcess,
   type ISalesProcess,
@@ -19,9 +19,7 @@ import {
 
 const headings = (text: string) =>
   [
-    ...parseDocument(text)
-      .body.replace(/<!--[\s\S]*?-->/g, "")
-      .matchAll(/^## (.+)$/gm),
+    ...documentVisibleText(parseDocument(text).body).matchAll(/^## (.+)$/gm),
   ].map((m) => m[1].trim());
 
 export function validateDocumentStructure(

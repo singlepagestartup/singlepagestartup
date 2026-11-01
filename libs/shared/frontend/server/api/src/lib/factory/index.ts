@@ -42,45 +42,45 @@ export function factory<T>(params: IFactoryProps) {
       return await actions.findById<T>({
         params: params.params,
         options: params.options,
+        ...props,
         route: params.route,
         host: params.host,
-        ...props,
       });
     },
     find: async (props?: Omit<IFindProps, "model" | "route" | "host">) => {
       return await actions.find<T>({
         params: params.params,
         options: params.options,
+        ...props,
         route: params.route,
         host: params.host,
-        ...props,
       });
     },
     count: async (props?: Omit<ICountProps, "model" | "route" | "host">) => {
       return await actions.count({
         params: params.params,
         options: params.options,
+        ...props,
         route: params.route,
         host: params.host,
-        ...props,
       });
     },
     update: async (props: Omit<IUpdateProps, "model" | "route" | "host">) => {
       return await actions.update<T>({
         params: params.params,
         options: params.options,
+        ...props,
         route: params.route,
         host: params.host,
-        ...props,
       });
     },
     create: async (props: Omit<ICreateProps, "model" | "route" | "host">) => {
       return await actions.create<T>({
         params: params.params,
         options: params.options,
+        ...props,
         route: params.route,
         host: params.host,
-        ...props,
       });
     },
     findOrCreate: async (
@@ -89,18 +89,18 @@ export function factory<T>(params: IFactoryProps) {
       return await actions.findOrCreate<T>({
         params: params.params,
         options: params.options,
+        ...props,
         route: params.route,
         host: params.host,
-        ...props,
       });
     },
     delete: async (props: Omit<IDeleteProps, "model" | "route" | "host">) => {
       return await actions.delete<T>({
         params: params.params,
         options: params.options,
+        ...props,
         route: params.route,
         host: params.host,
-        ...props,
       });
     },
     bulkCreate: async (
@@ -109,9 +109,9 @@ export function factory<T>(params: IFactoryProps) {
       return await actions.bulkCreate<T>({
         params: params.params,
         options: params.options,
+        ...props,
         route: params.route,
         host: params.host,
-        ...props,
       });
     },
     bulkUpdate: async (
@@ -120,9 +120,9 @@ export function factory<T>(params: IFactoryProps) {
       return await actions.bulkUpdate<T>({
         params: params.params,
         options: params.options,
+        ...props,
         route: params.route,
         host: params.host,
-        ...props,
       });
     },
   };

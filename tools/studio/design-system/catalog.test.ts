@@ -212,7 +212,9 @@ test("reassembling nested variants preserves custom keys and startup rendering",
     mkdirSync(selector, { recursive: true });
     writeFileSync(
       path.join(selector, "Component.tsx"),
-      `import type { IComponentProps } from "./interface"; export function Component(_props: IComponentProps) { return ${JSON.stringify(layer)}; }`,
+      layer === "singlepage"
+        ? 'import type { IComponentProps } from "./interface"; export function Component(_props: IComponentProps) { return "singlepage"; }'
+        : 'import type { IComponentProps } from "./interface"; export function Component(_props: IComponentProps) { return "startup"; }',
     );
     writeFileSync(
       path.join(selector, "interface.ts"),

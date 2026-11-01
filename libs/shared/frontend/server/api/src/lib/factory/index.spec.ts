@@ -10,6 +10,7 @@ jest.mock("@sps/shared-frontend-api", () => ({
   actions: {
     findById: jest.fn(),
     find: jest.fn(),
+    count: jest.fn(),
     update: jest.fn(),
     create: jest.fn(),
     delete: jest.fn(),
@@ -77,6 +78,40 @@ describe("server api factory", () => {
       options: { headers: { "X-Request": "abc" } },
     });
   });
+
+  it.each([
+    "find",
+    "findById",
+    "count",
+    "create",
+    "update",
+    "delete",
+    "findOrCreate",
+    "bulkCreate",
+    "bulkUpdate",
+  ] as const)(
+    "keeps %s on the configured host and route for untyped caller props",
+    async (operation) => {
+      const api = factory({
+        host: "https://api.example.test",
+        route: "/api/ecommerce/products",
+      });
+      const input = {
+        host: "http://untrusted.example.test",
+        route: "/unexpected",
+        id: "entity-id",
+        data: operation.startsWith("bulk") ? [{}] : {},
+        params: { limit: 3 },
+        options: { headers: { "X-Request": "allowed" } },
+      };
+      await api[operation](input as never);
+      expect(actions[operation]).toHaveBeenCalledWith({
+        ...input,
+        host: "https://api.example.test",
+        route: "/api/ecommerce/products",
+      });
+    },
+  );
 
   it("routes mutation helpers to corresponding actions", async () => {
     const createMock = actions.create as jest.Mock;

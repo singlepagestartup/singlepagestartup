@@ -201,3 +201,9 @@ test("renders both media systems and semantic colors from the current Design dat
   expect(data.typographyRoles.length).toBeGreaterThan(0);
   for (const role of data.colorRoles) expect(html).toContain(role.light);
 });
+
+test("Design structure inspection ignores headings inside unfinished comments", () => {
+  expect(() =>
+    validateDesignDocument(`${document}\n<!--\n## Hidden section`),
+  ).not.toThrow();
+});

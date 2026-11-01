@@ -24,6 +24,10 @@ The library exports a single factory function that creates an API client with th
 - `bulkCreate`: Create multiple records
 - `bulkUpdate`: Update multiple records
 
+The configured `host` and `route` remain fixed for every operation, including
+when a caller supplies untyped serialized props. Method-level `params` and
+`options` can override their defaults; they cannot change the API destination.
+
 ## Usage
 
 ```typescript

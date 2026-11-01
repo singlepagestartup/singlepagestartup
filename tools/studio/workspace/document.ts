@@ -32,6 +32,25 @@ export function renderDocument({ body, metadata }: IDocumentSource): string {
   return `---\n${stringify(metadata).trimEnd()}\n---\n\n${body.trim()}\n`;
 }
 
+/** Mask comments for source inspection, preserving line and token boundaries. */
+export function documentVisibleText(source: string): string {
+  const parts: string[] = [];
+  let offset = 0;
+  while (offset < source.length) {
+    const start = source.indexOf("<!--", offset);
+    if (start === -1) {
+      parts.push(source.slice(offset));
+      break;
+    }
+    parts.push(source.slice(offset, start));
+    const close = source.indexOf("-->", start + 4);
+    const end = close === -1 ? source.length : close + 3;
+    parts.push(source.slice(start, end).replace(/[^\r\n]/g, " "));
+    offset = end;
+  }
+  return parts.join("");
+}
+
 /** Advance once through whitespace and comments; an unclosed comment hides the rest. */
 function skipDocumentTrivia(body: string, offset = 0): number {
   while (offset < body.length) {

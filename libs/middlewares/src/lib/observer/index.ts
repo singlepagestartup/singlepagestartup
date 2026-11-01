@@ -217,7 +217,7 @@ export class Middleware {
             bodyString.replace(
               new RegExp(`\\[${key}\\.[a-zA-Z0-9.]+\\]`, "g"),
               (match) => {
-                const path = match.replace(`[${key}.`, "").replace("]", "");
+                const path = match.slice(key.length + 2, -1);
                 const value = path.split(".").reduce((acc, key) => {
                   return acc[key];
                 }, data);

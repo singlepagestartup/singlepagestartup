@@ -1,4 +1,7 @@
-import { parseDocument } from "../../../../../tools/studio/workspace/document";
+import {
+  documentVisibleText,
+  parseDocument,
+} from "../../../../../tools/studio/workspace/document";
 
 export const designDocumentStructure = {
   "Общие правила дизайна": ["Идея и характер бренда"],
@@ -95,7 +98,7 @@ export function designDocumentNotes(source: string) {
 export type IDesignDocumentNotes = ReturnType<typeof designDocumentNotes>;
 /** Fail on structural drift instead of silently hiding prose from the visual page. */
 export function validateDesignDocument(source: string) {
-  const body = parseDocument(source).body.replace(/<!--[\s\S]*?-->/g, "");
+  const body = documentVisibleText(parseDocument(source).body);
   const actual = [...body.matchAll(/^(#{2,}) (.+)$/gm)].map(
     (match) => `${match[1]} ${match[2].trim()}`,
   );

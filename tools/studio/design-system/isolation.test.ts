@@ -300,8 +300,7 @@ function target(
     if (matches)
       return path.resolve(
         options.root,
-        destinations[0].replace(
-          "*",
+        destinations[0].replaceAll("*", () =>
           name.slice(prefix.length, suffix ? -suffix.length : undefined),
         ),
       );
@@ -458,6 +457,17 @@ test("detects production aliases and relative imports, including type dependenci
       "../modules/host/page/interface",
     ),
   ).toBe(false);
+});
+
+test("alias replacement keeps captured path characters literal", () => {
+  const options = {
+    root: "/fixture",
+    studio: "/fixture/apps/studio",
+    aliases: { "@fixture/*": ["apps/studio/modules/*"] },
+  };
+  expect(target("/fixture/view.ts", "@fixture/$&", options)).toBe(
+    "/fixture/apps/studio/modules/$&",
+  );
 });
 
 test("shared UI entries have a transitive UI-only graph without SDK or app imports", () => {

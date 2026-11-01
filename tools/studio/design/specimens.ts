@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { parse } from "yaml";
 import ts from "typescript";
+import { documentVisibleText } from "../workspace/document";
 import { localizedHeading } from "../workspace/headings";
 
 import {
@@ -270,7 +271,7 @@ export function readSpecimenDeclarations(
     visit(tree);
     return found;
   }
-  const html = source.replace(/<!--[\s\S]*?-->/g, "");
+  const html = documentVisibleText(source);
   const marks = [...html.matchAll(/data-specimen="([a-z0-9-]+)"/g)];
   return marks.map((mark, index) => {
     const fragment = html.slice(

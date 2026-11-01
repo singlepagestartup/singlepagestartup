@@ -4,6 +4,7 @@ import {
   renderDocument,
   hasMarkdownContent,
   documentReviewBody,
+  documentVisibleText,
 } from "./document";
 import { mergeMarkdown, mergeWorkspaceContent } from "./merge";
 describe("workspace documents", () => {
@@ -44,4 +45,18 @@ describe("workspace documents", () => {
       documentReviewBody("<!-- source -->\n# Title\n\n## Section\nText", true),
     ).toContain("## Section");
   });
+});
+
+test("comment inspection preserves boundaries and ignores unfinished comments", () => {
+  const source = "<!<!-- hidden -->-->\n<!--\n## Hidden\n-->\n## Visible";
+  const visible = documentVisibleText(source);
+  expect(visible).not.toContain("<!--");
+  expect(visible).toHaveLength(source.length);
+  expect(visible.match(/^## .+$/gm)).toEqual(["## Visible"]);
+  expect(documentVisibleText("Text <!-- unfinished\n## Hidden").trim()).toBe(
+    "Text",
+  );
+  expect(documentVisibleText("<b>Visible markup</b>")).toBe(
+    "<b>Visible markup</b>",
+  );
 });
