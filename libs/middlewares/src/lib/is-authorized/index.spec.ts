@@ -54,3 +54,37 @@ it("rejects an authenticated caller denied access to the requested resource", as
   });
   expect(result.status).toBeGreaterThanOrEqual(400);
 });
+
+it.each(["missing", "%0A", "%0D", "%E2%80%A8", "%E2%80%A9"])(
+  "checks authorization before not-found handling for a private path containing %s",
+  async (segment) => {
+    jest
+      .mocked(api.authenticationIsAuthorized)
+      .mockRejectedValue(new Error("Forbidden error. Denied"));
+
+    const result = await app().request(`/api/private/${segment}/unknown`);
+
+    expect(result.status).toBe(403);
+    expect(api.authenticationIsAuthorized).toHaveBeenCalledTimes(1);
+    expect(api.authenticationIsAuthorized).toHaveBeenCalledWith(
+      expect.objectContaining({
+        params: {
+          permission: {
+            route: expect.stringContaining("/api/private/"),
+            method: "GET",
+            type: "HTTP",
+          },
+        },
+      }),
+    );
+  },
+);
+
+it("returns not-found after authorization allows an unknown private path", async () => {
+  jest.mocked(api.authenticationIsAuthorized).mockResolvedValue({} as any);
+
+  const result = await app().request("/api/private/authorized-missing");
+
+  expect(result.status).toBe(404);
+  expect(api.authenticationIsAuthorized).toHaveBeenCalledTimes(1);
+});
