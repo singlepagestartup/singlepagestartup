@@ -146,7 +146,7 @@
     "flatted": "^3.3.3",
     "framer-motion": "^11.15.0",
     "grammy": "^1.33.0",
-    "hono": "^4.10.2",
+    "hono": "4.13.16",
     "hono-rate-limiter": "^0.4.2",
     "html-to-image": "1.11.13",
     "image-size": "^1.2.0",
