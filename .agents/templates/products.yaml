@@ -2,41 +2,42 @@
 schema: singlepagestartup.product-catalog.v2
 products: []
 # Пример записи. Добавлять только существующие документы и макеты.
-# - id: product-id
+# Поле id содержит уникальный человекочитаемый slug продукта в kebab-case.
+# - id: product-slug
 #   name: Название продукта
 #   summary: Краткое описание.
-#   product: product-id/product.md
-#   audience: product-id/audience.md
-#   competitors: product-id/competitors.md
-#   semantics: product-id/semantics.md
-#   economics: product-id/economics.md
-#   sales: product-id/sales.yaml
-#   website: product-id/website.md
-#   marketing_creative: product-id/marketing-creative.md
-#   presentation: product-id/presentation/Presentation.tsx
+#   product: product-slug/product.md
+#   audience: product-slug/audience.md
+#   competitors: product-slug/competitors.md
+#   semantics: product-slug/semantics.md
+#   economics: product-slug/economics.md
+#   sales: product-slug/sales.yaml
+#   website: product-slug/website.md
+#   marketing_creative: product-slug/marketing-creative.md
+#   presentation: product-slug/presentation/Presentation.tsx
 #   sections:
 #     - id: website
 #       title: Сайт
 #       pages:
 #         - id: landing
 #           title: Посадочная страница
-#           source: product-id/website/Landing.tsx
+#           source: product-slug/website/Landing.tsx
 #     - id: articles
 #       title: Статьи
 #       pages:
 #         - id: topic
 #           title: Название статьи
-#           source: product-id/articles/topic/brief.md
+#           source: product-slug/articles/topic/brief.md
 #           children:
 #             - id: topic-seo
 #               title: SEO
-#               source: product-id/articles/topic/seo.md
+#               source: product-slug/articles/topic/seo.md
 #             - id: topic-article
 #               title: Статья
-#               source: product-id/articles/topic/article.md
+#               source: product-slug/articles/topic/article.md
 #             - id: topic-video
 #               title: Видео
-#               source: product-id/articles/topic/video.md
+#               source: product-slug/articles/topic/video.md
 #
 # В 10 Продукты документы открываются отдельными историями.
 # В 50 Материалы продукт — папка, сайт/презентация/реклама — отдельные истории,

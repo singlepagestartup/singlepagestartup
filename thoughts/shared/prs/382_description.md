@@ -36,6 +36,12 @@ Resolves #380. Work remains on `codex/studio-linear-workflow`. All remaining Stu
 
 ## Verification
 
+Latest agent-guide review checks:
+
+- Addressed all 14 open owner comments across Materials, Product research, SEO articles and Studio artifacts. Removed the requested caveats and external-method paragraph, clarified material ownership and video assets, made semantic-core construction explicit, and placed the full editorial read after preparation checks.
+- Product identity is a unique human-readable kebab-case slug. The existing catalog field `id`, document `product_id` and folder paths carry that same slug; the catalog template now names this requirement. No schema keys or runtime data were changed.
+- 35 catalog/document/pipeline and instruction-duplication tests pass, plus all three editorial adapter checks. Review threads remain open for the owner's verification.
+
 Latest store-material checks:
 
 - 369 Studio tests pass (50 files, 30,504 assertions); Studio TypeScript passes. Both the revised store article and new GitHub guide render on Storybook 4321 without console errors.
@@ -134,6 +140,8 @@ CodeQL corrections cover the seven PR findings (#73, #124, #137, #138, #139, #15
 Material summaries now show the article's search phrases from its owned Markdown query tables; semantic_cluster IDs remain in source metadata. The same source supplies the SEO block, summary and exports. Goals and calls to action in article briefs, articles and video scripts name the actual task and destination. Browser checks cover the store and service-website articles; all 369 Studio tests and Studio TypeScript pass.
 
 ## Downstream migration
+
+Reconcile owned material/research guides with explicit semantic-core construction and the final editorial read after preparation checks. Product catalog keys must be human-readable slugs in the existing `id`/`product_id` fields. If a project uses numeric product keys, choose stable slugs and update folder names, catalog paths, metadata and internal story links together; verify document resolution and navigation before publication.
 
 Owned editorial adapters that link to the removed external clarity reference must use the canonical editorial contract and language references. Remove obsolete links and run `node --test tools/agents/editorial-pass.test.mjs`; the existing two-pass edit and language rules remain active.
 
