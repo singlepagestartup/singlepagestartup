@@ -7,6 +7,7 @@ export type JsonValue =
   | { [key: string]: JsonValue };
 
 export interface IRecord {
+  metadata: JsonValue;
   id: string;
   createdAt: string;
   updatedAt: string;

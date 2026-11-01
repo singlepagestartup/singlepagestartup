@@ -3,7 +3,7 @@ import { useId, useState } from "react";
 import { entityMetadataSchema } from "@sps/shared-utils/metadata";
 import type { IComponentProps } from "./interface";
 
-export function Component({
+export function MetadataEditor({
   value,
   language = "en",
   onChange,

@@ -123,6 +123,13 @@ entry. `studio:catalog` preserves authored contracts and requires an owning
 interface before assembling custom variants. Its generated table, card and list
 views use the same structure.
 
+The catalog refreshes schema fields, ordered record keys and the schema-owned
+`IRecord` while preserving authored record values, presentation data and view
+props. New fields receive fixture defaults; retired schema fields are removed.
+Custom fixture formats remain owned by their views. The shared `MetadataEditor`
+is a named UI helper, rather than an entity with a variant registry. Entity SEO
+stories use their public model entry and identify their own DOM roots.
+
 The current tree has 63 model entries and 430 presentation variants, plus the
 shared Icon and Toast entries. Every model exports a provider-free `Skeleton` and
 `ISkeletonProps` from its public index, with a `Loading` story. The skeleton uses

@@ -5949,3 +5949,43 @@ assets:
     prohibited_use: ["Выдавать вымышленных людей за клиентов или отзывы."]
     visual_review: {"status": "visually-verified", "findings": "Лица, руки и рабочие предметы проверены; читаемых логотипов нет."}
     source_master_asset_id: "singlepage-editorial-furniture"
+
+  - id: singlepage-framework-preview-contact
+    path: assets/singlepage/generated/framework-example-previews/contact-hd.jpg
+    source_type: generated
+    evidence: false
+    rights_status: Existing project preview, copied without modification.
+    purpose: Product-owned interface example for the Framework presentation.
+    related_artifacts: [singlepage.design]
+    source_or_tool: Existing Studio delivery image; no generation or editing in this transfer.
+    lifecycle: proposed
+
+  - id: singlepage-framework-preview-community
+    path: assets/singlepage/generated/framework-example-previews/community-hd.jpg
+    source_type: generated
+    evidence: false
+    rights_status: Existing project preview, copied without modification.
+    purpose: Product-owned interface example for the Framework presentation.
+    related_artifacts: [singlepage.design]
+    source_or_tool: Existing Studio delivery image; no generation or editing in this transfer.
+    lifecycle: proposed
+
+  - id: singlepage-framework-preview-courses
+    path: assets/singlepage/generated/framework-example-previews/courses-hd.jpg
+    source_type: generated
+    evidence: false
+    rights_status: Existing project preview, copied without modification.
+    purpose: Product-owned interface example for the Framework presentation.
+    related_artifacts: [singlepage.design]
+    source_or_tool: Existing Studio delivery image; no generation or editing in this transfer.
+    lifecycle: proposed
+
+  - id: singlepage-framework-preview-journal
+    path: assets/singlepage/generated/framework-example-previews/journal-hd.jpg
+    source_type: generated
+    evidence: false
+    rights_status: Existing project preview, copied without modification.
+    purpose: Product-owned interface example for the Framework presentation.
+    related_artifacts: [singlepage.design]
+    source_or_tool: Existing Studio delivery image; no generation or editing in this transfer.
+    lifecycle: proposed

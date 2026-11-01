@@ -1,4 +1,3 @@
-import { resolveFrameworkLink } from "../../../../modules/host/page/singlepage/framework/navigation";
 import salesSource from "./sales.yaml?raw";
 import { parseSalesProcess } from "../../../utils/products/sales";
 
@@ -16,10 +15,7 @@ export const frameworkActions = {
   primary: {
     label: website.cta,
     destination: website.destination,
-    href: (() => {
-      const target = resolveFrameworkLink(website.destination);
-      return typeof target === "string" ? target : target.href;
-    })(),
+    href: website.destination,
   },
   secondary: { label: repository.cta, href: repository.destination },
 };

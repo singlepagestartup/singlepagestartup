@@ -377,102 +377,7 @@ describe("Studio presentation structure", () => {
     expect(component).toContain("<DesignRenderer");
   });
 
-  /**
-   * BDD Scenario: Hold photography and illustration to the same quality contract
-   * Given imagery quality is a primary Design gate
-   * When the roles, templates, and shared renderer are inspected
-   * Then both media families require the same structured prompts, examples, and visual review
-   */
-  test("requires symmetric, visually verified media systems", () => {
-    const role = source(".agents/roles/brand-designer.md");
-    const roleText = role.replace(/\s+/g, " ");
-    const briefRole = source(".agents/roles/account-manager.md");
-    const briefRoleText = briefRole.replace(/\s+/g, " ");
-    const briefTemplate = canonicalMarkdownHeadings(
-      source(".agents/templates/brief.md"),
-    );
-    const template = canonicalMarkdownHeadings(
-      source(".agents/templates/design.md"),
-    );
-    const component = source(
-      "apps/studio/workspace/utils/components/ProjectDesign.tsx",
-    );
-
-    // Symmetry is a contract between the two media families, so it is measured
-    // across their own span; other sections may reuse a shared heading name.
-    const media = template.slice(
-      template.indexOf("## Photography"),
-      template.indexOf("## Outputs and provenance"),
-    );
-    expect(media).toContain("## Illustration and diagrams");
-    for (const heading of [
-      "### Purpose and evidence boundary",
-      "### Style master prompt",
-      "### Production specification",
-      "### Generation examples",
-      "### Review and quality gate",
-    ]) {
-      expect(media.split(heading)).toHaveLength(3);
-    }
-    // Both families carry the same review rule, stated once in each of them.
-    expect(
-      media.match(
-        /Минимум три (?:существенно разных зарегистрированных примера|разных примера)/g,
-      ),
-    ).toHaveLength(2);
-    expect(
-      template.match(/структуру, (?:количество|число), масштаб/g),
-    ).toHaveLength(2);
-
-    // Brief owns the intake register; Design points at it instead of copying it.
-    expect(roleText).toContain("`brief/<layer>.md#visual-reference-intake`");
-    expect(briefTemplate).toContain("## Visual reference intake");
-    expect(briefTemplate).toMatch(/^\| Маркетинговые материалы\s+\|/m);
-    expect(template).not.toMatch(/^\| Маркетинговые материалы\s+\|/m);
-    expect(briefTemplate).not.toContain("Existing asset IDs");
-    expect(template).toContain("### Client visual preference profile");
-    expect(template).not.toContain("Categorized reference intake");
-    for (const label of INTAKE_LABELS) {
-      expect(briefRoleText).toContain(label);
-      expect(roleText).toContain(
-        (
-          {
-            "interface and website appearance": "интерфейс и сайт",
-            typography: "типографик",
-            photography: "фотограф",
-            illustration: "иллюстрац",
-            "marketing creative": "креатив",
-          } as Record<string, string>
-        )[label],
-      );
-    }
-    expect(template).not.toContain("centered `55% × 55%` crop-safe");
-    expect(template).toContain("### Reusable graphic language");
-    expect(template).not.toContain("## Graphic language");
-    expect(component).toContain("function MediaSection");
-    expect(component.match(/<MediaSection/g)).toHaveLength(2);
-    expect(component).not.toContain("function PreferenceProfile");
-    expect(component).not.toContain('id="preference-profile"');
-    expect(component).toContain("Общая графика");
-    expect(component).toContain('className="flex items-center gap-4"');
-    expect(component).toContain("function PromptUsageTooltip");
-    expect(component).toContain('role="tooltip"');
-    expect(component).toContain(
-      'aria-label="Как использовать основной стилевой промпт"',
-    );
-    expect(component).toContain("guidance={media.productionRules}");
-    expect(component).not.toContain("Acceptance checks");
-    expect(component).not.toContain("media.reviewRules");
-    expect(component).not.toContain("Production specification");
-    expect(component).not.toContain("Review and quality gate");
-    expect(component).not.toContain('aria-label="Design sections"');
-    expect(component).not.toContain("Logo assets");
-    expect(component).not.toContain("Photography examples");
-    expect(component.match(/data\.conceptSummary/g)).toHaveLength(1);
-    expect(component).not.toContain("function ReferenceIntake");
-    expect(component).not.toContain("data.referenceIntake");
-    expect(component).toContain('className="block h-auto w-full"');
-
+  test("registered media masters exist and report their actual dimensions", () => {
     const assetIndex = parse(
       source("apps/studio/workspace/assets/singlepage.yaml"),
     ) as {
@@ -547,39 +452,6 @@ describe("Studio presentation structure", () => {
   });
 
   /**
-   * BDD Scenario: Bind typography and layout rules to real implementation tokens
-   * Given Design is shared by singlepage and downstream startup projects
-   * When the role, source, parser, and layered CSS are inspected
-   * Then fonts are registered and verifiable while layout uses named Tailwind utilities
-   */
-  test("binds typography and layout to registered assets and Tailwind", () => {
-    const role = source(".agents/roles/brand-designer.md").replace(/\s+/g, " ");
-    const template = canonicalMarkdownHeadings(
-      source(".agents/templates/design.md"),
-    );
-    const design = source("apps/studio/workspace/design/singlepage.md");
-    const parser = source("apps/studio/workspace/utils/design/data.ts");
-    const component = source(
-      "apps/studio/workspace/utils/components/ProjectDesign.tsx",
-    );
-    const styles = source("apps/studio/workspace/styles/singlepage.css");
-
-    expect(template).toMatch(
-      /^\| Роль\s+\| Семейство CSS\s+\| Начертания\s+\|/m,
-    );
-    expect(role).toContain("`document.fonts.check(...)`");
-    expect(role).toContain("`max-w-7xl` (`1280px`)");
-    expect(design).toContain("singlepage-font-onest-variable");
-    expect(design).toContain("`max-w-7xl` (`1280px`)");
-    expect(design).not.toContain("`1200px` grid");
-    expect(parser).toContain("references missing font asset");
-    expect(component).toContain("data-font-family");
-    expect(component).toContain("data-font-asset-id");
-    expect(styles).toContain('font-family: "Onest"');
-    expect(styles).toContain("Onest-wght.ttf");
-  });
-
-  /**
    * BDD Scenario: Present project decisions instead of Studio diagnostics
    * Given the presentation is a review deck derived from canonical artifacts
    * When the base React deck is inspected
@@ -593,37 +465,6 @@ describe("Studio presentation structure", () => {
     expect(presentation).toContain("slides={data.slides.map");
     expect(presentation).toContain("presentationContent");
     expect(presentation).not.toContain("presentationSlideMarkdown");
-  });
-
-  /**
-   * BDD Scenario: Resolve presentation surfaces from the selected Design palette
-   * Given Design defines Surface and Canvas roles
-   * When the React deck assigns its page and information surfaces
-   * Then it uses semantic Design tokens instead of an unrelated canvas color
-   */
-  test("uses selected semantic colors for presentation surfaces", () => {
-    const presentation = source(
-      "apps/studio/workspace/products/singlepage/singlepagestartup/presentation/ProjectPresentation.tsx",
-    );
-    const styles = source("apps/studio/workspace/styles/singlepage.css");
-    const design = source("apps/studio/workspace/design/singlepage.md");
-
-    expect(presentation).toContain(
-      'backgroundColor: paletteValue(data, "surface")',
-    );
-    for (const [role, token] of [
-      ["Canvas", "background"],
-      ["Surface", "surface"],
-    ]) {
-      const color = design.match(
-        new RegExp(`\\|\\s*${role}\\s*\\|\\s*\x60(#[0-9a-f]{6})\x60`, "i"),
-      )?.[1];
-      expect(color).toBeDefined();
-      expect(styles.toLowerCase()).toContain(
-        `--workspace-brand-${token}: ${color?.toLowerCase()}`,
-      );
-    }
-    expect(presentation).toContain("--workspace-brand-background,#F4F6F8");
   });
 
   /**

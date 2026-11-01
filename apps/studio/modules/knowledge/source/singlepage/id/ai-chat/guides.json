@@ -61,7 +61,7 @@
     },
     "guideSource": "apps/studio/workspace/products/singlepage/ai-chat/content/document-guides.md",
     "templateSource": ".agents/templates/design.md",
-    "templateSha256": "32fdb9dd7edbbc6ccdd90ad4547f91d837037f2e48e7cfdb8aab03ae58bc53bb"
+    "templateSha256": "be8be6b9c6ad2c42194f6768b1623852fad013df88d4abbfc47a70d5344f9473"
   },
   "products": {
     "title": "Products.md",

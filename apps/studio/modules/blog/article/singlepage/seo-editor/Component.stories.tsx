@@ -1,9 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { Component } from "./Component";
+import { Component as Model } from "../../index";
+import type { IComponentProps } from "./interface";
 const meta = {
   title: "Modules/blog/article/Singlepage/SEO editor",
-  component: Component,
-} satisfies Meta<typeof Component>;
+  component: Model,
+  args: { variant: "seo-editor" },
+} satisfies Meta<IComponentProps>;
 export default meta;
 export const Default: StoryObj<typeof meta> = {
   args: {

@@ -1,4 +1,4 @@
-import { Component as File } from "../../../../../modules/file-storage/file";
+import { Component as File } from "../website/Preview/components/file-storage/file";
 
 export function KnowledgeExample({ compact = false }: { compact?: boolean }) {
   return (
@@ -18,7 +18,7 @@ export function KnowledgeExample({ compact = false }: { compact?: boolean }) {
           ].map((name, index) => (
             <File
               key={name}
-              variant="id-ai-chat"
+              variant="attachment-ai-chat"
               file={{
                 id: `example-${index}`,
                 name,

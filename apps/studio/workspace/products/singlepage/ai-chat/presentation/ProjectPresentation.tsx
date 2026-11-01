@@ -18,6 +18,7 @@ function Page({
 }) {
   return (
     <main
+      data-slide-content="true"
       data-workspace-projection="singlepage"
       className={`flex h-full flex-col overflow-hidden px-16 py-12 [font-family:var(--workspace-brand-font-body)] ${tone === "dark" ? "bg-[var(--workspace-brand-foreground)] text-white" : tone === "lime" ? "bg-[var(--workspace-brand-accent)] text-[var(--workspace-brand-foreground)]" : "bg-[var(--workspace-brand-background)] text-[var(--workspace-brand-foreground)]"}`}
     >

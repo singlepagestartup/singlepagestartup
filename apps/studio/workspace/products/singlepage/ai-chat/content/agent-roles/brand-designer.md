@@ -2,7 +2,7 @@
 id: brand-designer
 description: Определяет смысл бренда и переводит выбранное направление в общую визуальную систему.
 source: .agents/roles/brand-designer.md
-source_sha256: d0882ea857777d2eccd9e760caa473362876c2847b2df93deea72a8e13574e38
+source_sha256: 862043c6d08cbe1720903c0f225d1f33908854ca0bde56e6fbf52be92d8e8edd
 ---
 
 # Бренд-дизайнер

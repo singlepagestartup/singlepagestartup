@@ -184,3 +184,20 @@ describe("fixed Design document and adjacent rules", () => {
     expect(html).not.toContain("proposal_id");
   });
 });
+
+test("renders both media systems and semantic colors from the current Design data", () => {
+  const data = projectDesignData(workspace, "singlepage");
+  const html = renderToStaticMarkup(<ProjectDesign data={data} />);
+  const dom = new JSDOM(html).window.document;
+  for (const family of ["photography", "illustration"] as const) {
+    const section = dom.getElementById(family);
+    expect(section).not.toBeNull();
+    expect(section!.textContent).toContain(data[family].masterPrompt);
+    for (const rule of data[family].productionRules)
+      expect(section!.textContent).toContain(rule);
+    for (const example of data[family].examples)
+      expect(section!.textContent).toContain(example.title);
+  }
+  expect(data.typographyRoles.length).toBeGreaterThan(0);
+  for (const role of data.colorRoles) expect(html).toContain(role.light);
+});

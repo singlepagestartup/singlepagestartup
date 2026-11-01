@@ -4876,6 +4876,18 @@
               "coveredBy": []
             },
             {
+              "variant": "ecommerce-module-product-category-default",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "ecommerce-module-product-profile-default",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
               "variant": "find",
               "scope": "singlepage",
               "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",

@@ -1,17 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
-import { Component } from "./Component";
+import { MetadataEditor } from "./MetadataEditor";
 import type { IEntityMetadata } from "@sps/shared-utils/metadata";
 const meta = {
   id: "shared-metadata-editor",
   title: "Modules/Shared/Metadata editor",
-  component: Component,
+  component: MetadataEditor,
   args: { value: {}, onChange: () => {} },
   render: (args) => {
     const [value, setValue] = useState<IEntityMetadata>(args.value);
-    return <Component {...args} value={value} onChange={setValue} />;
+    return <MetadataEditor {...args} value={value} onChange={setValue} />;
   },
-} satisfies Meta<typeof Component>;
+} satisfies Meta<typeof MetadataEditor>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Article: Story = {

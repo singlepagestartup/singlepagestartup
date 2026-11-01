@@ -5,7 +5,7 @@ import {
   landingArtwork,
   productExamplePreviews,
   websiteAssets,
-} from "../../../../../modules/host/page/singlepage/framework/content";
+} from "../website/content";
 import { ProjectPresentation } from "../../../../utils/components/ProjectPresentation";
 import type {
   IProjectPresentationData,
@@ -481,7 +481,7 @@ export const presentationContent: IProjectPresentationData = {
         "Начните с нужных функций и подключайте новые по мере развития проекта.",
       points: [],
       gallery: productExamplePreviews.map((preview, index) => ({
-        src: `/module-assets/images/singlepage/generated/framework-example-previews/${preview.name}-hd.jpg`,
+        src: `/workspace-assets/singlepage/generated/framework-example-previews/${preview.name}-hd.jpg`,
         alt: preview.alt,
         title: ["Сбор контактов", "Сообщество", "Магазин курсов", "Блог об ИИ"][
           index

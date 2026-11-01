@@ -1,6 +1,6 @@
 import type { IComponentProps } from "./interface";
 import { memo } from "react";
-import { Component as Feature } from "../..";
+import { Component as DefinitionCard } from "../definition-card";
 
 export const Component = memo<IComponentProps>(function Component({
   title,
@@ -39,7 +39,7 @@ export const Component = memo<IComponentProps>(function Component({
         >
           {attachments.map((attachment) => (
             <li key={attachment.id} className="min-w-0">
-              <Feature
+              <DefinitionCard
                 variant="definition-card"
                 appearance="attachment"
                 title={attachment.title}

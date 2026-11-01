@@ -60,6 +60,18 @@
         "nullable": true
       },
       {
+        "key": "opengraphImage",
+        "label": "Opengraph Image",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "twitterImage",
+        "label": "Twitter Image",
+        "kind": "text",
+        "nullable": true
+      },
+      {
         "key": "opengraphTitle",
         "label": "Opengraph Title",
         "kind": "text",
@@ -156,6 +168,8 @@
       "keywords": "SinglePageStartup, Next.js, React, TypeScript, веб-разработка",
       "author": "SinglePageStartup",
       "viewport": null,
+      "opengraphImage": null,
+      "twitterImage": null,
       "opengraphTitle": "SinglePageStartup — фреймворк для веб-приложений",
       "opengraphDescription": "Модули, API и интерфейсы для разработки веб-приложений на Next.js, React и TypeScript.",
       "opengraphUrl": "https://singlepagestartup.com/ru/framework",
@@ -181,6 +195,8 @@
       "keywords": "Next.js, React, серверные компоненты, веб-разработка",
       "author": "SinglePageStartup",
       "viewport": null,
+      "opengraphImage": null,
+      "twitterImage": null,
       "opengraphTitle": "Серверные и клиентские компоненты Next.js — SinglePageStartup",
       "opengraphDescription": "Как разделить загрузку данных и интерактивный интерфейс в приложении на Next.js и React.",
       "opengraphUrl": "https://singlepagestartup.com/ru/blog/articles/nextjs-server-client-components",
@@ -206,6 +222,8 @@
       "keywords": "ИИ-помощник, база знаний, AI Chat, разработка с ИИ",
       "author": "SinglePageStartup",
       "viewport": null,
+      "opengraphImage": null,
+      "twitterImage": null,
       "opengraphTitle": "ИИ-помощник и база знаний проекта — SinglePageStartup",
       "opengraphDescription": "Как использовать материалы проекта в диалоге с ИИ и при разработке веб-приложения.",
       "opengraphUrl": "https://singlepagestartup.com/ru/ai-chat",
