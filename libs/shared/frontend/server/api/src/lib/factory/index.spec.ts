@@ -103,15 +103,58 @@ describe("server api factory", () => {
         data: operation.startsWith("bulk") ? [{}] : {},
         params: { limit: 3 },
         options: { headers: { "X-Request": "allowed" } },
+        tag: "request-tag",
+        revalidate: 30,
+        unexpected: "must not reach the action",
       };
       await api[operation](input as never);
-      expect(actions[operation]).toHaveBeenCalledWith({
-        ...input,
-        host: "https://api.example.test",
-        route: "/api/ecommerce/products",
-      });
+      expect(actions[operation]).toHaveBeenCalledWith(
+        expect.objectContaining({
+          host: "https://api.example.test",
+          route: "/api/ecommerce/products",
+          params: input.params,
+          options: input.options,
+          tag: input.tag,
+          revalidate: input.revalidate,
+        }),
+      );
+      const forwarded = (actions[operation] as jest.Mock).mock.calls[0][0];
+      expect(forwarded).not.toHaveProperty("unexpected");
+      if (["findById", "update", "delete"].includes(operation))
+        expect(forwarded.id).toBe(input.id);
+      if (
+        [
+          "create",
+          "update",
+          "findOrCreate",
+          "bulkCreate",
+          "bulkUpdate",
+        ].includes(operation)
+      )
+        expect(forwarded.data).toBe(input.data);
     },
   );
+
+  it("retains explicit undefined params/options overrides", async () => {
+    const api = factory({
+      host: "https://api.example.test",
+      route: "/api/ecommerce/products",
+      params: { limit: 10 },
+      options: { headers: { "X-Default": "1" } },
+    });
+    await api.find({
+      params: undefined,
+      options: undefined,
+      catchErrors: true,
+    });
+    expect(actions.find).toHaveBeenCalledWith(
+      expect.objectContaining({
+        params: undefined,
+        options: undefined,
+        catchErrors: true,
+      }),
+    );
+  });
 
   it("routes mutation helpers to corresponding actions", async () => {
     const createMock = actions.create as jest.Mock;

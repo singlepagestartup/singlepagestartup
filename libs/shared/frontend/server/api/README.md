@@ -27,6 +27,8 @@ The library exports a single factory function that creates an API client with th
 The configured `host` and `route` remain fixed for every operation, including
 when a caller supplies untyped serialized props. Method-level `params` and
 `options` can override their defaults; they cannot change the API destination.
+Each operation forwards only its declared request fields; unknown serialized
+properties are ignored. Explicit undefined params/options still clear defaults.
 
 ## Usage
 
