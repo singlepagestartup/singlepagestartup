@@ -40,7 +40,7 @@ products:
         title: Статьи
         pages:
           - id: ai-online-store
-            title: "Как создать интернет-магазин с помощью нейросети: от каталога до заказа"
+            title: "Как создать интернет-магазин с помощью нейросетей"
             source: singlepagestartup/articles/ai-online-store/brief.md
             children:
               - id: ai-online-store-seo
@@ -55,6 +55,19 @@ products:
               - id: ai-online-store-publication
                 title: Публикация и результаты
                 source: singlepagestartup/articles/ai-online-store/publication.md
+          - id: github-setup
+            title: "GitHub для первого проекта: регистрация и копия SinglePageStartup"
+            source: singlepagestartup/articles/github-setup/brief.md
+            children:
+              - id: github-setup-seo
+                title: SEO и поисковое задание
+                source: singlepagestartup/articles/github-setup/seo.md
+              - id: github-setup-text
+                title: Статья
+                source: singlepagestartup/articles/github-setup/Article.tsx
+              - id: github-setup-publication
+                title: Публикация и результаты
+                source: singlepagestartup/articles/github-setup/publication.md
           - id: service-website
             title: "Как создать сайт услуги с помощью нейросети и принимать заявки"
             source: singlepagestartup/articles/service-website/brief.md

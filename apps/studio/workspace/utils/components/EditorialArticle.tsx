@@ -45,7 +45,7 @@ export function EditorialArticle({
             className="h-auto w-full rounded-2xl"
           />
           <figcaption className="mt-3 text-sm text-[var(--workspace-brand-muted)]">
-            Иллюстрация учебного примера, созданная с помощью ИИ.
+            Иллюстрация, созданная с помощью ИИ.
           </figcaption>
         </figure>
       )}
