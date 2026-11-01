@@ -1,3 +1,9 @@
+/**
+ * BDD Suite: project-owned MCP client connections.
+ * Given: a checkout, deployment settings and optional existing client settings.
+ * When: connections are explicitly generated or deployment exports a bundle.
+ * Then: connections use the checkout's repository and remain outside tracked files.
+ */
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import {
   chmodSync,
@@ -73,20 +79,37 @@ class Fixture {
     args: string[] = [],
     { success = true, generate = true }: IRunOptions = {},
   ) {
-    return this.run(
-      [
-        process.execPath,
-        "--no-env-file",
-        GENERATOR,
-        "--repo-root",
+    // Exercise explicit per-client activation; the CLI's no-client mode is
+    // separately tested as an isolated export, not a multi-client activation.
+    const explicit =
+      args.includes("--client") || args.includes("--output-dir") || !generate;
+    const targets = explicit
+      ? [undefined]
+      : success
+        ? ["claude", "codex", "cursor", "vscode", "opencode", "kimi", "mimo"]
+        : ["opencode"];
+    let stdout = "";
+    let result!: ReturnType<Fixture["run"]>;
+    for (const client of targets) {
+      result = this.run(
+        [
+          process.execPath,
+          "--no-env-file",
+          GENERATOR,
+          "--repo-root",
+          this.root,
+          ...(generate ? ["--write-clients"] : []),
+          ...(client ? ["--client", client] : []),
+          ...args,
+        ],
         this.root,
-        ...(generate ? ["--write-clients"] : []),
-        ...args,
-      ],
-      this.root,
-      success,
-    );
+        success,
+      );
+      stdout += result.stdout;
+    }
+    return { ...result, stdout };
   }
+
   read(relative: string) {
     return readFileSync(join(this.root, relative), "utf8");
   }
@@ -116,6 +139,7 @@ class Fixture {
   installHooks() {
     for (const relative of [
       "create_env.sh",
+      "up.sh",
       "tools/mcp/setup-project-mcp.sh",
       "tools/mcp/client-configs.ts",
       "tools/deployer/mcp.sh",
@@ -160,6 +184,233 @@ describe("MCP client configuration generation on Bun", () => {
   });
   afterEach(() => {
     rmSync(fixture.root, { recursive: true, force: true });
+  });
+
+  test("uses the checkout origin instead of an inherited deployment repository", () => {
+    fixture.envFile();
+    fixture.run(["git", "init"]);
+    fixture.run([
+      "git",
+      "remote",
+      "add",
+      "origin",
+      "git@github.com:customer/client-shop.git",
+    ]);
+    fixture.environment.TARGET_REPO = "framework/inherited-name";
+    fixture.generate(["--remote-url", "https://mcp.client-shop.example/mcp"]);
+
+    expect(fixture.json(".mcp.json").mcpServers).toEqual({
+      "client-shop-production": {
+        type: "http",
+        url: "https://mcp.client-shop.example/mcp",
+      },
+    });
+    expect(fixture.toml().mcp_servers).toHaveProperty("client-shop-production");
+
+    fixture.generate(["--repo-name", "explicit-project"]);
+    expect(fixture.toml().mcp_servers).toHaveProperty(
+      "explicit-project-production",
+    );
+  });
+
+  test("exports isolated samples by default instead of activating conflicting project files", () => {
+    fixture.envFile();
+    fixture.generate(["--write-clients"], { generate: false });
+
+    expect(existsSync(join(fixture.root, ".mcp.json"))).toBe(false);
+    expect(existsSync(join(fixture.root, ".kimi-code/mcp.json"))).toBe(false);
+    const bundle = ".artifacts/mcp-client-configs/";
+    expect(
+      fixture.json(bundle + "claude/.mcp.json").mcpServers[
+        "m2commerce-production"
+      ].type,
+    ).toBe("http");
+    expect(fixture.json(bundle + "muse/settings.json")).toEqual({
+      schema_version: 1,
+      mcpServers: {
+        "m2commerce-production": {
+          type: "streamable-http",
+          url: "https://mcp.m2commerce.ru/mcp",
+          required: false,
+        },
+      },
+    });
+    expect(
+      fixture.json(bundle + "kimi/.kimi-code/mcp.json").mcpServers[
+        "m2commerce-production"
+      ],
+    ).toEqual({ url: "https://mcp.m2commerce.ru/mcp" });
+    expect(fixture.read(bundle + "deepseek/mcp-client.yaml")).toContain(
+      "failOnStartupError: false",
+    );
+  });
+
+  test("configures Kimi without reading another client's broken configuration", () => {
+    fixture.envFile();
+    fixture.write("opencode.json", '{"mcp":');
+    fixture.write(".mcp.json", '{"mcpServers":');
+
+    fixture.generate(["--client", "kimi"]);
+
+    expect(fixture.json(".kimi-code/mcp.json")).toEqual({
+      mcpServers: {
+        "m2commerce-production": { url: "https://mcp.m2commerce.ru/mcp" },
+      },
+    });
+    expect(fixture.read("opencode.json")).toBe('{"mcp":');
+    expect(fixture.read(".mcp.json")).toBe('{"mcpServers":');
+  });
+
+  test("rejects JSONC in Kimi's strict JSON file before writing it", () => {
+    fixture.envFile();
+    const original =
+      '{\n// This is not valid Kimi JSON.\n"mcpServers":{},\n}\n';
+    fixture.write(".kimi-code/mcp.json", original);
+    const result = fixture.generate(["--client", "kimi"], { success: false });
+    expect(result.stderr).toContain("requires strict JSON");
+    expect(fixture.read(".kimi-code/mcp.json")).toBe(original);
+  });
+
+  test("rejects an unknown client without activating any project files", () => {
+    fixture.envFile();
+    const before = fixture.snapshot();
+    const result = fixture.generate(["--client", "unknown"], {
+      success: false,
+    });
+    expect(result.stderr).toContain("Unknown MCP client");
+    expect(fixture.snapshot()).toEqual(before);
+  });
+
+  test("preserves MiMo JSONC provider settings when adding an MCP connection", () => {
+    fixture.envFile();
+    fixture.write(
+      ".mimocode/mimocode.jsonc",
+      '{\n// Keep the model provider.\n"model":"xiaomi/my-model",\n"mcp":{},\n}\n',
+    );
+    fixture.generate(["--client", "mimo"]);
+    expect(fixture.json(".mimocode/mimocode.jsonc").model).toBe(
+      "xiaomi/my-model",
+    );
+    expect(fixture.read(".mimocode/mimocode.jsonc")).toContain(
+      "// Keep the model provider.",
+    );
+    expect(
+      fixture.json(".mimocode/mimocode.jsonc").mcp["m2commerce-production"]
+        .type,
+    ).toBe("remote");
+    expect(existsSync(join(fixture.root, ".mcp.json"))).toBe(false);
+  });
+
+  test("exports Muse without replacing an existing Claude project file", () => {
+    fixture.envFile();
+    fixture.write(
+      ".mcp.json",
+      '{"mcpServers":{"custom":{"type":"http","url":"https://custom.example/mcp"}}}',
+    );
+    const before = fixture.read(".mcp.json");
+    fixture.generate(["--client", "muse"]);
+    expect(fixture.read(".mcp.json")).toBe(before);
+    expect(
+      fixture.json(".artifacts/mcp-client-configs/muse/settings.json")
+        .schema_version,
+    ).toBe(1);
+  });
+
+  test("normalizes dotted repository names for Claude's server name contract", () => {
+    fixture.envFile();
+    fixture.generate(["--repo-name", "client.shop", "--client", "claude"]);
+    expect(Object.keys(fixture.json(".mcp.json").mcpServers)).toEqual([
+      "client-shop-production",
+    ]);
+  });
+
+  test("bounds the DeepSeek server namespace for a long repository name", () => {
+    fixture.envFile();
+    fixture.generate([
+      "--client",
+      "deepseek",
+      "--repo-name",
+      "very-long-repository-name-with-many-characters",
+    ]);
+    const doc = fixture.read(
+      ".artifacts/mcp-client-configs/deepseek/mcp-client.yaml",
+    );
+    const serverName = JSON.parse(doc.match(/serverName: (".*")/)![1]);
+    expect(serverName.length).toBeLessThanOrEqual(32);
+    expect(serverName).toMatch(/^[A-Za-z0-9_-]+$/);
+    expect(doc).toContain("transport: streamable-http");
+    expect(existsSync(join(fixture.root, "cordis.patch.yml"))).toBe(false);
+  });
+
+  test("keeps generated connections ignored while retaining shared Codex defaults", () => {
+    const env = fixture.envFile();
+    writeFileSync(
+      env,
+      fixture
+        .read("tools/deployer/.env")
+        .replace("owner/m2commerce", "customer/client-shop")
+        .replace("m2commerce.ru", "client-shop.example"),
+    );
+    for (const file of [
+      ".gitignore",
+      ".codex/config.toml.example",
+      ".cursor/mcp.json.example",
+      ".mcp.json.example",
+    ])
+      fixture.write(file, readFileSync(join(SOURCE_ROOT, file), "utf8"));
+    fixture.run(["git", "init"]);
+    fixture.run([
+      "git",
+      "remote",
+      "add",
+      "origin",
+      "https://github.com/customer/client-shop.git",
+    ]);
+    fixture.run([
+      "git",
+      "add",
+      ".gitignore",
+      ".codex/config.toml.example",
+      ".cursor/mcp.json.example",
+      ".mcp.json.example",
+    ]);
+    const before = fixture.run(["git", "status", "--porcelain"]).stdout;
+
+    fixture.generate();
+
+    expect(fixture.run(["git", "status", "--porcelain"]).stdout).toBe(before);
+    const defaults = fixture.toml(".codex/config.toml.example");
+    expect(fixture.toml().profiles).toEqual(defaults.profiles);
+    expect(fixture.toml().agents).toEqual(defaults.agents);
+    expect(Object.keys(fixture.toml().mcp_servers)).toEqual([
+      "client-shop-production",
+    ]);
+    expect(Object.keys(fixture.json(".mcp.json").mcpServers)).toEqual([
+      "client-shop-production",
+    ]);
+    expect(
+      fixture.json(".mcp.json").mcpServers["client-shop-production"].url,
+    ).toBe("https://mcp.client-shop.example/mcp");
+  });
+
+  test("rejects an inherited deployment endpoint before creating client connections", () => {
+    fixture.envFile();
+    fixture.run(["git", "init"]);
+    fixture.run([
+      "git",
+      "remote",
+      "add",
+      "origin",
+      "https://github.com/customer/client-shop.git",
+    ]);
+
+    const result = fixture.generate([], { success: false });
+
+    expect(result.stderr).toContain(
+      "Deployment repository m2commerce differs from checkout client-shop",
+    );
+    expect(existsSync(join(fixture.root, ".mcp.json"))).toBe(false);
+    expect(existsSync(join(fixture.root, ".codex/config.toml"))).toBe(false);
   });
 
   test("generates all client formats from the downstream deployer env", () => {
@@ -381,15 +632,15 @@ describe("MCP client configuration generation on Bun", () => {
 
   test("an invalid client file prevents all writes", () => {
     fixture.envFile();
-    for (const [relative, content] of [
-      ["opencode.json", '{"mcp":'],
-      [".codex/config.toml", "[invalid"],
-      [".cursor/mcp.json", '{"mcpServers":{},"mcpServers":{}}'],
-      [".vscode/mcp.json", '{"extra":[{"same":1,"same":2}]}'],
+    for (const [client, relative, content] of [
+      ["opencode", "opencode.json", '{"mcp":'],
+      ["codex", ".codex/config.toml", "[invalid"],
+      ["cursor", ".cursor/mcp.json", '{"mcpServers":{},"mcpServers":{}}'],
+      ["vscode", ".vscode/mcp.json", '{"extra":[{"same":1,"same":2}]}'],
     ]) {
       fixture.write(relative, content);
       const before = fixture.snapshot();
-      fixture.generate([], { success: false });
+      fixture.generate(["--client", client], { success: false });
       expect(fixture.snapshot()).toEqual(before);
       rmSync(join(fixture.root, relative));
     }
@@ -440,9 +691,14 @@ describe("MCP client configuration generation on Bun", () => {
       '{"mcp":{"nx-mcp":{"type":"local","command":["npx","nx","mcp"]}}}',
     );
     const before = fixture.read(".mcp.json");
-    fixture.generate(["--output-dir", join(fixture.root, "bundle")]);
+    fixture.generate([
+      "--output-dir",
+      join(fixture.root, "bundle"),
+      "--opencode-version",
+      "1",
+    ]);
     expect(fixture.read(".mcp.json")).toBe(before);
-    const bundle = fixture.json("bundle/opencode.jsonc");
+    const bundle = fixture.json("bundle/opencode/opencode.json");
     expect(bundle.mcp).toHaveProperty("m2commerce-production");
     expect(bundle.mcp).not.toHaveProperty("nx-mcp");
     for (const [file, bytes] of Object.entries(fixture.snapshot())) {
@@ -467,17 +723,30 @@ describe("MCP client configuration generation on Bun", () => {
     expect(fixture.json(".mcp.json").mcpServers.child.command).toBe("bun");
   });
 
-  test("successful deploy creates configs and down does not", () => {
+  test("successful deploy exports a bundle without creating active client configs", () => {
     fixture.installHooks();
     fixture.envFile(
       "API_SERVICE_DOCKER_HUB_REPOSITORY_NAME=owner/image\nMCP_CLIENT_OPENCODE_VERSION=1\n",
     );
     fixture.deploy("down");
     expect(existsSync(join(fixture.root, "opencode.json"))).toBe(false);
+    expect(
+      existsSync(join(fixture.root, ".artifacts/mcp-client-configs")),
+    ).toBe(false);
     fixture.deploy();
-    expect(fixture.json("opencode.json").mcp["m2commerce-production"].url).toBe(
-      "https://mcp.m2commerce.ru/mcp",
-    );
+    for (const path of [
+      "opencode.json",
+      ".mcp.json",
+      ".codex/config.toml",
+      ".cursor/mcp.json",
+      ".vscode/mcp.json",
+    ])
+      expect(existsSync(join(fixture.root, path))).toBe(false);
+    expect(
+      fixture.json(".artifacts/mcp-client-configs/opencode/opencode.json").mcp[
+        "m2commerce-production"
+      ].url,
+    ).toBe("https://mcp.m2commerce.ru/mcp");
   });
 
   test("failed deploy and a disabled image do not generate configs", () => {
@@ -485,15 +754,21 @@ describe("MCP client configuration generation on Bun", () => {
     fixture.envFile();
     fixture.deploy();
     expect(existsSync(join(fixture.root, "opencode.json"))).toBe(false);
+    expect(
+      existsSync(join(fixture.root, ".artifacts/mcp-client-configs")),
+    ).toBe(false);
     fixture.envFile("API_SERVICE_DOCKER_HUB_REPOSITORY_NAME=owner/image\n");
     for (const play of ["./mcp/create_mcp.yaml", "./mcp/fill_github.yaml"]) {
       fixture.environment.MOCK_DEPLOY_FAIL = play;
       fixture.deploy("up", "", false);
       expect(existsSync(join(fixture.root, "opencode.json"))).toBe(false);
+      expect(
+        existsSync(join(fixture.root, ".artifacts/mcp-client-configs")),
+      ).toBe(false);
     }
   });
 
-  test("an invalid config stops deploy before external operations", () => {
+  test("an unrelated invalid editor config does not block deployment bundle export", () => {
     fixture.installHooks();
     fixture.envFile("API_SERVICE_DOCKER_HUB_REPOSITORY_NAME=owner/image\n");
     fixture.write("opencode.json", '{"mcp":');
@@ -502,12 +777,13 @@ describe("MCP client configuration generation on Bun", () => {
       "#!/bin/bash\ntouch external-operation-started\nexit 0\n",
       0o755,
     );
-    fixture.deploy("up", "", false);
+    fixture.deploy("up");
     expect(
       existsSync(
         join(fixture.root, "tools/deployer/external-operation-started"),
       ),
-    ).toBe(false);
+    ).toBe(true);
+    expect(fixture.read("opencode.json")).toBe('{"mcp":');
   });
 
   test("CI deploy exports without changing checkout client configs", () => {
@@ -526,10 +802,33 @@ describe("MCP client configuration generation on Bun", () => {
     );
     fixture.deploy();
     expect(fixture.read(".mcp.json")).toBe(before);
-    expect(fixture.json("bundle/opencode.json").mcp).toHaveProperty(
+    expect(fixture.json("bundle/opencode/opencode.json").mcp).toHaveProperty(
       "m2commerce-production",
     );
-    expect(fixture.read("bundle/.mcp.json")).not.toContain("do-not-export");
+    expect(fixture.read("bundle/claude/.mcp.json")).not.toContain(
+      "do-not-export",
+    );
+  });
+
+  test("local deployment preserves all five existing client configurations", () => {
+    fixture.installHooks();
+    fixture.envFile("API_SERVICE_DOCKER_HUB_REPOSITORY_NAME=owner/image\n");
+    fixture.generate();
+    const files = [
+      "opencode.json",
+      ".mcp.json",
+      ".codex/config.toml",
+      ".cursor/mcp.json",
+      ".vscode/mcp.json",
+    ];
+    const before = files.map((file) => fixture.read(file));
+
+    fixture.deploy();
+
+    expect(files.map((file) => fixture.read(file))).toEqual(before);
+    expect(
+      fixture.json(".artifacts/mcp-client-configs/claude/.mcp.json").mcpServers,
+    ).toHaveProperty("m2commerce-production");
   });
 
   test("preview deploy uses its actual domain and environment", () => {
@@ -544,12 +843,14 @@ describe("MCP client configuration generation on Bun", () => {
         .replace("DOMAIN=m2commerce.ru", "DOMAIN=preview.m2commerce.ru"),
     );
     fixture.deploy("up", "preview");
-    expect(fixture.json("opencode.json").mcp["m2commerce-preview"].url).toBe(
-      "https://mcp.preview.m2commerce.ru/mcp",
-    );
+    expect(
+      fixture.json(".artifacts/mcp-client-configs/opencode/opencode.json").mcp[
+        "m2commerce-preview"
+      ].url,
+    ).toBe("https://mcp.preview.m2commerce.ru/mcp");
   });
 
-  test("env bootstrap generates even when app env files exist", () => {
+  test("env bootstrap leaves client connections unchanged even when MCP is configured", () => {
     fixture.installHooks();
     fixture.envFile("MCP_CLIENT_OPENCODE_VERSION=1\n");
     for (const app of ["db", "redis", "host", "api", "telegram", "mcp"])
@@ -558,10 +859,17 @@ describe("MCP client configuration generation on Bun", () => {
         "#!/bin/bash\nexit 1\n",
         0o755,
       );
-    fixture.run(["bash", "./create_env.sh"]);
-    expect(fixture.json("opencode.json").mcp).toHaveProperty(
-      "m2commerce-production",
+    fixture.write(
+      ".mcp.json",
+      '{"mcpServers":{"custom":{"url":"https://custom.example/mcp"}}}',
     );
+    for (const path of ["apps/db/up.sh", "apps/redis/up.sh", "bin/npx"])
+      fixture.write(path, "#!/bin/bash\nexit 0\n", 0o755);
+    fixture.environment.START_LLM = "false";
+    const before = fixture.snapshot();
+    fixture.run(["bash", "./create_env.sh"]);
+    fixture.run(["bash", "./up.sh"]);
+    expect(fixture.snapshot()).toEqual(before);
   });
 
   test("runtime container env does not generate client configs", () => {
@@ -580,7 +888,13 @@ describe("MCP client configuration generation on Bun", () => {
       ".env",
       "MCP_SERVICE_PUBLIC_URL=https://implicit.example/mcp\n",
     );
-    fixture.run(["bash", "tools/mcp/setup-project-mcp.sh", "--write-clients"]);
+    fixture.run([
+      "bash",
+      "tools/mcp/setup-project-mcp.sh",
+      "--write-clients",
+      "--client",
+      "opencode",
+    ]);
     expect(
       fixture.json("opencode.json").mcp.servers["m2commerce-production"].url,
     ).toBe("https://mcp.m2commerce.ru/mcp");

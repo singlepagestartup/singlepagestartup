@@ -82,7 +82,8 @@ configure_mcp_clients() {
     ../mcp/setup-project-mcp.sh "$1" \
         --env-file "$PWD/.env" \
         --remote-url "https://$SERVICE_URL/mcp" \
-        --environment "${ENVIRONMENT_TYPE:-production}"
+        --environment "${ENVIRONMENT_TYPE:-production}" \
+        --output-dir "${MCP_CLIENT_CONFIG_OUTPUT_DIR:-$PWD/../../.artifacts/mcp-client-configs}"
 }
 
 if [ "$1" != "down" ]

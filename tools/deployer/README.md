@@ -66,22 +66,25 @@ private-key variables empty and setting `ANSIBLE_PASSWORD`.
 
 ## MCP client configuration
 
-When the MCP deployment succeeds, `mcp.sh up` generates project configuration
-for OpenCode, Claude Code, Codex, Cursor, and VS Code/Copilot with the deployed
-HTTPS endpoint. The connector name is `<repo-name>-production`, or
-`<repo-name>-<environment>` for an explicit environment such as `preview`.
-`mcp.sh down`, a skipped MCP image, and a failed deployment do not generate
-these files.
+When MCP deployment succeeds, `mcp.sh up` exports a public connection bundle
+for OpenCode, Claude Code, Codex, Cursor and VS Code/Copilot under
+`.artifacts/mcp-client-configs/<client>`. `MCP_CLIENT_CONFIG_OUTPUT_DIR` selects another
+directory, including the GitHub Actions artifact location. Active client files
+in the checkout remain unchanged.
 
-Before changing DNS, pulling an image, or running the MCP playbooks, the deployer
-validates client configuration with `--check-clients`. Invalid existing config
-stops the MCP deployment before those operations. The files are written only
-after the MCP deployment and GitHub metadata update succeed.
+The connector name uses the checkout's `origin` repository and the environment:
+`<repo-name>-production` or `<repo-name>-preview`. `--repo-name` overrides the
+name; deployment repository settings are a fallback when Git context is absent.
+The endpoint uses the deployment's actual domain and subdomain.
 
-`./create_env.sh` at the repository root also generates the configs when
-`tools/deployer/.env` contains `MCP_SERVICE_NAME` and `DOMAIN`, or an explicit
-`MCP_SERVICE_PUBLIC_URL`. Client generation runs on Bun 1.3.6; it
-does not install dependencies or perform OAuth login.
+The deployer validates bundle generation with `--check-clients` before DNS,
+image or MCP playbook operations, then writes the bundle after deployment and
+GitHub metadata updates succeed. A failed deployment, `mcp.sh down` or a skipped
+MCP image does not generate the bundle.
+
+`up.sh` and root `create_env.sh` do not generate client connections. Developers
+configure them explicitly after setting their own MCP endpoint. Client
+generation runs on Bun 1.3.6 without installing dependencies or logging in.
 
 Use `MCP_CLIENT_OPENCODE_VERSION=auto` to preserve the project's existing
 OpenCode format. A new configuration uses the installed client's version, or
@@ -90,13 +93,14 @@ explicitly. Regenerate without provisioning a server:
 
 ```bash
 # From the repository root:
-npm run mcp:clients:generate
+npm run mcp:clients:generate -- --client codex
 ```
 
 GitHub Actions saves an `mcp-client-configs` artifact with public connector
 entries after successful MCP deployment. The export excludes existing client
-settings and credentials. Local deployment merges into checkout files; CI
-exports to `MCP_CLIENT_CONFIG_OUTPUT_DIR` without committing generated files.
+settings and credentials. Local deployment and CI both export a bundle without
+changing active client files. `npm run mcp:clients:generate -- --client <client>` explicitly updates that
+client's ignored local files; shared `*.example` defaults remain in Git.
 Each client still needs the user's OAuth login. See the
 [client formats and authentication commands](../../apps/mcp/README.md#generated-project-client-configs).
 
