@@ -35,7 +35,12 @@ function makeConfig() {
     reactStrictMode: true,
     distDir: process.env.SPS_HOST_DIST_DIR || ".next",
     experimental: {
+      globalNotFound: true,
       webpackMemoryOptimizations: true,
+      ...(process.env.SPS_HOST_BUILD_CPUS
+        ? { cpus: Number(process.env.SPS_HOST_BUILD_CPUS) }
+        : {}),
+
       // Release each compiler's heap before the next build stage.
       webpackBuildWorker: true,
       turbopackMemoryLimit:
@@ -45,6 +50,9 @@ function makeConfig() {
     },
     // Preserve the public origin in locale redirects, including loopback hosts.
     skipMiddlewareUrlNormalize: true,
+    // Keep canonical, robots and social metadata in the initial head for all
+    // crawlers; metadata/page absence must be settled before streaming HTML.
+    htmlLimitedBots: /.*/,
     deploymentId: process.env.NEXT_DEPLOYMENT_ID || undefined,
     staticPageGenerationTimeout: 6000,
     images: {

@@ -23,6 +23,7 @@ describe("Locale redirects preserve the browser origin", () => {
         headers: { host },
       });
       const response = await middleware(request);
+      expect(response.status).toBe(308);
       expect(response.headers.get("location")).toBe(
         `http://${host}/ru?check=origin`,
       );

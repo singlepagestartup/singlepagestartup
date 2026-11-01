@@ -251,6 +251,11 @@ for (const entry of files(modules).filter((file) =>
       { variant: "list", count: 2 },
       { variant: "list", empty: true },
       { variant: "button-default" },
+      {
+        variant: "seo-editor",
+        metadata: { seo: { title: { en: "Framework SEO" } } },
+        language: "en",
+      },
       { variant: "phosphor", name: "user" },
       { variant: "custom", name: "star-fill" },
       ...(module === "shared" && model === "toast"

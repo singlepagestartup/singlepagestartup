@@ -1,4 +1,5 @@
 "use client";
+
 import "client-only";
 
 import { useEffect, type ReactNode } from "react";
@@ -11,7 +12,7 @@ export function Component<
   A extends { api: ReturnType<typeof factory<M>>; Skeleton?: ReactNode },
   CP extends IComponentProps<M, V>,
 >(props: CP & A) {
-  const { data, isFetching, isLoading } = props.api.find(props.apiProps);
+  const { data, isFetching, isLoading } = props.api.find(props.apiProps || {});
 
   useEffect(() => {
     if (props.set && typeof props.set === "function") {

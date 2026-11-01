@@ -35,14 +35,6 @@ jest.mock("@sps/ecommerce/models/product/frontend/component", () => ({
   },
 }));
 
-jest.mock("./Category", () => ({
-  Component: () => <div data-testid="category-button" />,
-}));
-
-jest.mock("./Profile", () => ({
-  Component: () => <div data-testid="profile-button" />,
-}));
-
 jest.mock("@sps/shared-ui-shadcn", () => ({
   CardContent: ({ children }: any) => <div>{children}</div>,
   CardHeader: ({ children }: any) => <div>{children}</div>,
@@ -72,8 +64,8 @@ describe("Given: RBAC ecommerce product default component", () => {
 
     expect(delegatedVariants).toEqual(
       expect.arrayContaining([
-        "ecommerce-module-product-cart-default",
-        "ecommerce-module-product-checkout-default",
+        "me-ecommerce-module-product-cart-default",
+        "me-ecommerce-module-product-checkout-default",
       ]),
     );
 

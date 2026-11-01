@@ -1,239 +1,47 @@
----
-confirmation:
-  confirmed: true
-  by: operator
-  at: "2026-10-06"
-  source: "Operator confirmed the unchanged Strategy and the reviewed upstream changes in this chat: «все подтверждаю, поменяй статусы». The review covers the accepted Brief visual requirements and the AI Chat Research and Sales references placing economics in Product."
-  content_sha256: eb19f447e5827c306c69f2bcc71f46325588847549efdd2c9d198018e2fcc566
-review:
-  dependencies:
-    brief: 490a648452b91afd083215d3b2420e6990deedbfcc94442dc30b731613cb3258
-    product.ai-chat.research: 0dd825258be22f2d82b37c504bd3a8862a400eea7f6f47c2f24aacbe06ac3f7f
-    product.ai-chat.sales: f765054d5282a8c8a02a98e1fab7e1338c1f4df231b7d77318b0ec4d684ab82a
-    product.singlepagestartup.research: 2bfd1f9d4d535851fb7ed25de7883719ca25fe296a41e6f6366613a9fc5f16b8
-    product.singlepagestartup.sales: 9274aa239ae9f522707a0a540dcfcffef10a01d62809d298ee274946b75a0184
-sources:
-  strategic_direction_and_products:
-    classification: client-claim
-    source: apps/studio/workspace/brief/singlepage.md
-    source_keys:
-      - intake.scope
-      - intake.product_direction
-      - intake.framework_preparation_journey
-      - sources.ai_chat_launch_stage
-      - sources.funding
-      - sources.current_business
-    date: 2026-10-24
-    supports: AI Chat as the hosted entry and token-revenue product; files, images
-      and guided answers structured into shortened, editable project and product
-      documents; each product retains its own Product/customer/offer, Operations & Economics,
-      Sales, Promotion, Analytics and applicable research; Promotion describes intended public presentation with Website, Creative and Presentation text where relevant, not finished visual assets or a built landing page; users correct AI-identified
-      shortcomings and continue from accepted context. The owner evaluates and
-      improves that workflow. Reviewed or exported business material supplies
-      the brief for coding-agent development of a landing page or product on the
-      existing free Code Framework. Hosted automatic landing-page assembly,
-      editing and server deployment are future development.
-    limitation: Intended journey does not establish public-service readiness, setup
-      time, customer results or paid adoption. Future landing pages aim to collect
-      initial enquiries and test a hypothesis without guaranteeing either;
-      deployment commercial terms remain undecided. Token purchases pay for
-      hosted AI work and are not required for framework access.
-  reusable_foundation:
-    classification: client-claim
-    source: apps/studio/workspace/brief/singlepage.md
-    source_keys:
-      - sources.current_business
-    date: 2026-09-12
-    supports: Registration, carts and payments configured and tested together; reuse
-      benefit.
-    limitation: Client-reported team testing is not quantified time/token savings or
-      external novice-completion evidence.
-  positioning_and_quality:
-    classification: verified-fact
-    research: apps/studio/workspace/products/singlepage/ai-chat/research.md
-    finding_ids:
-      - AC-SPS-01
-      - AC-SPS-02
-      - AC-SPS-05
-      - AC-SPS-06
-    accessed: 2026-09-13
-    urls:
-      - https://learn.chatgpt.com/docs/projects
-      - https://www.chatbase.co/docs/user-guides/chatbot/data-sources
-    supports: Competing tools already accept files/context and can discuss ideas;
-      attributable structuring, correction and reasoned continued use must
-      establish preference.
-    limitation: Vendor documentation verifies features, not preference, relative
-      answer quality or willingness to pay.
-  demonstration_and_short_content:
-    classification: assumption
-    resolution: professional-choice
-    research:
-      - apps/studio/workspace/products/singlepage/ai-chat/research.md
-      - apps/studio/workspace/products/singlepage/singlepagestartup/research.md
-    finding_ids:
-      - AC-SPS-04
-      - AC-SPS-07
-      - CF-SPS-04
-      - CF-SPS-08
-    accessed: 2026-09-13
-    urls:
-      - https://support.google.com/youtube/answer/13748639?hl=en
-      - https://support.google.com/youtube/answer/12836917?hl=en
-    supports: Demonstrations lead to hosted chat; eligible own public videos can
-      supply Shorts linked to the full video; clickable external descriptions
-      require advanced features.
-    limitation: Platform mechanics are verified; channel fit is inferred. No
-      operating account, existing reach, publication quota or performance is
-      asserted.
-  searchable_explanations:
-    classification: assumption
-    resolution: professional-choice
-    research:
-      - apps/studio/workspace/products/singlepage/ai-chat/research.md
-      - apps/studio/workspace/products/singlepage/singlepagestartup/research.md
-    finding_ids:
-      - AC-SPS-08
-      - CF-SPS-09
-    accessed: 2026-09-13
-    urls:
-      - https://developers.google.com/search/docs/essentials
-    supports: Helpful use-case pages and maker task guidance connect search intent
-      to demonstrations, hosted chat and repository onboarding.
-    limitation: Official content/link guidance supports mechanics; demand, existing
-      traffic, indexing and ranking are unestablished.
-  community_participation:
-    classification: assumption
-    resolution: professional-choice
-    research:
-      - apps/studio/workspace/products/singlepage/ai-chat/research.md
-      - apps/studio/workspace/products/singlepage/singlepagestartup/research.md
-    finding_ids:
-      - AC-SPS-09
-      - CF-SPS-10
-    accessed: 2026-09-13
-    urls:
-      - https://support.reddithelp.com/hc/en-us/articles/360043504051-Spam
-    supports: Contextual helpful participation and permitted relevant links; real
-      questions can improve explanations.
-    limitation: Reddit is a bounded policy example, not universal community rules,
-      confirmed audience concentration or access.
-  growth_and_retention:
-    classification: assumption
-    resolution: professional-choice
-    research:
-      - apps/studio/workspace/products/singlepage/ai-chat/research.md
-      - apps/studio/workspace/products/singlepage/singlepagestartup/research.md
-    finding_ids:
-      - AC-SPS-03
-      - AC-SPS-06
-      - AC-SPS-10
-      - CF-SPS-02
-      - CF-SPS-05
-      - CF-SPS-07
-      - CF-SPS-11
-      - CF-SPS-12
-    accessed: 2026-09-13
-    urls:
-      - https://code.claude.com/docs/en/overview
-    supports: Coordinated discovery and use; project structuring, new questions,
-      idea criticism and knowledge updates support repeat paid use; optional
-      agent-assisted setup, adaptation, reuse and contributions strengthen
-      future explanations.
-    limitation: Proposed mechanism, not observed retention or self-sustaining
-      growth. Agent capabilities establish neither automatic setup nor
-      independent agent selection of SPS. Use only publishable materials for
-      examples.
-  resources_and_measurement:
-    classification: assumption
-    resolution: professional-choice
-    source: apps/studio/workspace/brief/singlepage.md
-    crosscheck: apps/studio/workspace/products/singlepage/ai-chat/product.md
-    source_keys:
-      - sources.funding
-      - sources.current_business
-      - sources.ai_chat_commercial_terms
-    date: 2026-09-13
-    supports: Allocate effort to usefulness and reusable organic material; expand
-      acquisition only where activation, paid retention or adoption supports it;
-      separate attention, use, revenue and contributions.
-    limitation: Token terms are owned by Product and Sales; ongoing capacity,
-      budget and operating costs remain unselected, so no revenue or margin outcome
-      follows from the terms alone. No scoped
-      experiment ceiling becomes a recurring commitment.
-  release_license:
-    classification: client-claim
-    source: apps/studio/workspace/brief/singlepage.md
-    source_keys:
-      - sources.license
-    date: 2026-09-18
-    inspected_snapshot: https://github.com/singlepagestartup/singlepagestartup/blob/1df352484f23a8615962da490771028b7f87f536/LICENSE
-    limitation: Inspected origin/main now carries the MIT text, published in commit
-      914115d1be. The license governs the distributed source only; it verifies no
-      runtime behavior, adoption or support level.
----
+# Стратегия
 
-# Strategy
+## Стратегическое направление
 
-## Strategic direction
+SinglePageStartup помогает предпринимателю организовать знания о бизнесе, использовать их в продвижении и создавать собственные цифровые продукты. AI Chat сохраняет сведения о предложении, клиентах и условиях и помогает готовить статьи, рекламу, презентации и технические задания. Code Framework предоставляет готовые модули для разработки с ИИ: страницы, каталог, статьи, формы, доступ и платежи. Подготовка сайта — один из способов применить знания, а работа с контентом имеет самостоятельную ценность.
 
-SinglePageStartup runs as one business with two products that feed each other.
+Бизнес строится на двух источниках дохода: оплате ИИ в AI Chat и будущем партнёрском вознаграждении от хостинг-провайдеров. Бесплатный фреймворк расширяет число проектов на SPS. Развёртывание из чата должно связывать эти проекты с подключёнными серверами, за использование которых провайдер перечисляет долю платежей привлечённых клиентов.
 
-**AI Chat (`ai-chat`)** is the hosted experience people pay for through tokens. They bring the notes and half-made decisions they already have, or answer guided questions, and receive shortened, editable project and product documents. The Workspace structure remains Request, Strategy, Brand, Design and Products: a project brief, strategic direction, brand meaning, a written Design description and each product's own Product/customer/offer, Operations & Economics, Sales, Promotion, Analytics and applicable research. Promotion describes the intended public presentation in words, including Website, Creative and Presentation text where relevant; finished visual assets and a built landing page are outside this offer. The AI agent identifies shortcomings for the person to correct, and accepted descriptions remain context for later discussion, criticism and materials.
+Первый рынок продвижения — русскоязычные пользователи в России. Начальный формат — страницы продуктов и статьи о работе с материалами бизнеса и создании сайта или сервиса с ИИ. В AI Chat полезный результат — подготовленный материал на сведениях своего проекта. В Code Framework повторное использование подходящих модулей должно уменьшать объём повторной разработки; измеренной экономии времени и токенов пока нет.
 
-**Code Framework (`singlepagestartup`)** is the existing software foundation a maker reuses to build a landing page or product from a clear business description. AI Chat helps prepare and review that description; the maker exports useful documents and gives a coding agent a concrete development task. Makers adapt relevant common functions, deploy to their own server and can improve the shared base in return. AI Chat also demonstrates an application built on that foundation. The framework code remains available without chat registration or a token purchase.
+## Аудитории и роли продуктов
 
-The **audience-growth priority** is recognition earned by showing scattered material become a usable description, a shortcoming identified and corrected, and useful later work from accepted context. The **sales-product priority** is creation and continued improvement of those descriptions through paid AI Chat use. SinglePageStartup is positioned as a way to describe an early project, examine it with a counterpart that knows the context and take a first step toward customers with documents the person can use inside or outside the service.
+| Аудитория                                                                      | Предложение и результат                                                                                    |
+| ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| Предприниматели с идеей или действующим продуктом, которому нужен первый сайт  | Code Framework: описание предложения, статьи, обращения и нужные функции бизнеса в собственном проекте     |
+| Создатели цифровых продуктов, работающие с ИИ-агентами                         | Code Framework: готовые общие модули, доработка нужного поведения и размещение на своём сервере            |
+| Владельцы бизнеса, эксперты и маркетологи с разрозненными сведениями о проекте | AI Chat: база знаний о бизнесе, статьи, рекламные материалы, презентации и ТЗ на основе сохранённых фактов |
 
-The current hosted offer provides reviewed, editable project and product descriptions and useful work from that context. The owner learns whether this workflow works for the first users and improves it. Those documents also support a coding-agent brief for independent Framework development. Automatic landing-page assembly, a hosted editor and server publication through AI Chat are future development whose purpose is to collect initial enquiries and test a hypothesis; they are outside current hosted activation and completion, and their commercial terms are undecided. The standing trade-off is depth over reach: useful descriptions, corrected shortcomings and continued value receive priority over distribution that produces attention without use or revenue.
+Агент разработки может изучать и выбирать основу по поручению человека. Для этого нужны доступные инструкции и конкретные примеры кода; покупателем или владельцем бизнеса остаётся человек.
 
-## Audiences and product roles
+## Система роста
 
-| Audience and situation                                                                                                      | Value and promise                                                                                                                                                                                   | Product role and desired behavior                                                                                                                                                                                                                                                                    |
-| --------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| People with a business idea or early-stage project whose information is scattered across notes, documents and conversations | Supply available material or answer guided questions; review shortened project and product descriptions, correct shortcomings and use accepted context for later reasoning or a coding-agent brief. | **AI Chat (`ai-chat`)**: primary hosted entry and token-based revenue. Earn use through useful written artifacts and continued reasoning; reviewed documents can guide Framework development. First-user work and feedback inform improvement of the description workflow.                           |
-| Novice makers, including vibe coders, with a concrete site, chatbot or product need                                         | Turn a clear business description into a development task and reuse team-tested registration, carts, payments and other relevant common functions.                                                  | **Code Framework (`singlepagestartup`)**: code and documentation carrying no charge, for server deployment, adaptation and reuse. AI Chat supports preparation when needed. The exchange is social capital: stars, forks, recommendations, contributions back and trust that can lead to hosted use. |
+Для Code Framework приоритет — предпринимательская задача создания сайта с помощью ИИ. [Данные Wordstat](/?path=/story/workspace-10-products-singlepage-singlepagestartup--semantics#измерения-спроса) подтверждают поисковые обращения по этому направлению; технический запрос `nextjs saas starter` дал единичное значение в измеренном периоде. Поэтому сайт услуги, каталог и получение заявок понятнее для первого знакомства, а доработка готового приложения служит демонстрацией возможностей.
 
-Agents that independently select SPS form an additional adoption audience. Clear machine-readable documentation, reliable shared functions and attributable examples let agents recommend the framework without changing the primary human customer paths.
+Для AI Chat содержание сосредоточено на описании собственного предложения и работе с материалами бизнеса. [Изученная выдача](/?path=/story/workspace-10-products-singlepage-ai-chat--semantics#поисковая-выдача) по «описанию бизнес-проекта» преимущественно объясняет бизнес-план, а запросы об описании бизнес-идеи содержат учебный интерес и осенний рост. Эти показатели не равны спросу предпринимателей на сервис. Примеры и статьи раскрывают конкретные случаи: составить описание продукта, использовать его в рекламном сообщении или статье, подготовить требования к разработке. Общая тема базы знаний соответствует назначению продукта, но её широкий поисковый объём пока не выделен в подтверждённый коммерческий кластер.
 
-## Growth system
+Поисковые группы связываются с одной подходящей страницей: выбор продукта ведёт на посадочную, вопрос о способе решения — на статью. Статья раскрывает задачу и предлагает продолжение, которое действительно помогает читателю. Её содержание может стать основой видео, поста или рекламы. Общие визуальные правила и голос бренда сохраняются во всех форматах.
 
-Growth feeds on useful project-description work, with no paid distribution. A real project moves from scattered input to reviewed text artifacts, a shortcoming corrected and a later discussion or decision that uses the accepted context. With permission to show the material, that work becomes a demonstration, a searchable explanation, a short video and a relevant community answer. Each leads back to describing and improving a project in AI Chat.
+Устойчивый рост фреймворка связан с повторным использованием и рекомендациями: человек запускает проект, дорабатывает его и использует знакомую основу для следующего. Партнёрское размещение должно облегчить запуск и обслуживание. В платном чате причина возвращения — новая полезная работа с уже накопленными сведениями о бизнесе: следующая статья, рекламный материал, обновление предложения или техническое задание.
 
-| Channel or mechanism                                   | Role and audience                                                         | Content or value                                                                                                                                                     | Destination and contribution                                                                                                                                      |
-| ------------------------------------------------------ | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| YouTube demonstrations and tutorials                   | Explain the value to project owners; show makers the existing foundation. | Show mixed files and images becoming shortened project documents, an AI-identified shortcoming corrected and one useful later discussion.                            | **Organize your materials** leads viewers into registration and project description.                                                                              |
-| Repurposed short videos                                | Introduce one understandable transition to new viewers.                   | Extract the moment where scattered input becomes a clear description or an assumption is challenged and corrected.                                                   | Link the Short to its full video, where viewers can understand the example and continue into AI Chat.                                                             |
-| Searchable use-case pages, Blog and task documentation | Help people describing a project or seeking software-building guidance.   | Explain the project situation, usable documents and their review; Framework articles explain modules and concrete adaptation tasks with inspectable source examples. | Lead to the matching AI Chat preparation, Framework explanation or repository guide. Navigation keeps Blog, AI Chat, Framework and hosted token terms accessible. |
-| Contextual community participation                     | Meet relevant business and maker questions.                               | Give useful answers; include an example when relevant and permitted by the community.                                                                                | Lead to the matching explanation and discover questions needing better guidance.                                                                                  |
+## Путь клиента
 
-The same example is reused across channels without changing its claim or evidence boundary. Useful AI Chat work can create return visits, recommendations and relevant maker interest. Reviewed descriptions, corrected shortcomings, later questions and independent framework adaptations supply attributable examples. Feedback from that work also helps the owner improve the description workflow; no demonstration substitutes for observed customer usefulness or paid retention.
+У Code Framework два входа: предприниматель ищет способ представить продукт в интернете, а создатель приложения — готовые функции для своей задачи. Посадочная показывает состав, пример применения, условия и порядок запуска. Основное действие — попробовать AI Chat: передать сведения о своём бизнесе, прояснить задачу и определить нужные функции. Для человека, готового работать с кодом, второй путь ведёт прямо в GitHub: получить основу, развернуть её и выполнить доработку с агентом. Партнёрское размещение в дальнейшем должно упростить переход к работающему сайту.
 
-## Customer journey
+В AI Chat человек начинает со своих файлов или описания задачи. Ассистент собирает знания о проекте, исследует нужные вопросы и готовит выбранный результат: описание, статью, рекламный материал, презентацию или ТЗ. Пользователь уточняет факты, исправляет результат и использует его. Сохранённые знания становятся основой следующей задачи; для продолжения не требуется разработка сайта.
 
-The journey connects reviewed business material to continued project work and, when needed, software development.
+Разработка из чата — следующий путь развития: техническое задание связывается с модулями SPS, агент создаёт продукт, человек проверяет его и принимает предложение о публикации. Затем подключает GitHub и кабинет хостинг-провайдера. Оплата ИИ связана с использованием токенов; будущий партнёрский доход — с дальнейшей оплатой серверных мощностей.
 
-1. **Discover and understand.** A demonstration, search result or relevant answer shows mixed project input becoming an approved structure and useful later work, then leads to AI Chat.
-2. **Describe the project.** Add existing notes, documents and decisions or complete guided sections. Review where the service places information in the project-wide documents and each product's own sections.
-3. **Correct and accept.** Examine shortcomings identified by the AI agent, correct the owning description and approve usable text artifacts with remaining unknowns visible. Export and use them outside the service when useful.
-4. **Continue the project.** Return for later questions, criticism, comparisons, materials or product additions without repeating accepted context; buy tokens when continued hosted work is valuable. Clear balance and purchase terms explain what the purchase covers.
-5. **Build from the reviewed material.** For a landing page or product, select reviewed documents to brief a coding agent, understand the relevant Framework modules through its landing page and Blog, and adapt the free code. Makers who already have the material can enter Framework directly. People who need to clarify it can move from Framework into AI Chat preparation.
-6. **Recommend and inform improvement.** Share an attributable result or feedback about the workflow; the owner uses first-user work to improve how projects are described and how makers continue into development.
+## Измерения и приоритеты
 
-A coding agent such as Claude Code or Codex Desktop changes the Framework code; the person directs the work, reviews the interface and checks the result on their own server. Token purchases fund hosted AI work, while coding-agent and infrastructure charges remain separate. This document-to-code route is distinct from AI Chat's future automatic landing-page assembly and publication. Completing a useful set of documents remains a hosted outcome even when the person chooses no development work.
+Для фреймворка главный результат — применение: запущенный проект, выполненная доработка, повторное использование. Переходы в репозиторий и звёзды показывают интерес к основе, но сами по себе не подтверждают использование. Для будущего партнёрского размещения значимы состоявшиеся развёртывания и доход от подключённых проектов.
 
-## Measurement and priorities
+Для AI Chat значимы пригодные к использованию материалы, повторное применение сохранённых знаний и расходы ИИ на результат. Для пути разработки дополнительно важны принятые технические задания, переход к созданию и запуску продукта, повторные доработки. Выручка от токенов сопоставляется с затратами API; партнёрские выплаты — с оплатой серверов привлечёнными клиентами. В продвижении оцениваются переход от материала к продукту и дальнейшее действие. Источник и период измерения позволяют сравнивать результаты; целевые числа задаются по накопленным данным.
 
-| Strategic outcome      | Observable signals                                                                                                           | Management consequence                                                                                                                                         |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Recognition            | Relevant visits, movement from demonstrations into project creation and GitHub stars                                         | Attention receives more resources only when it produces qualified use; weak activation redirects effort to examples and entry points.                          |
-| Project activation     | Material supplied, information attributed to project and product sections, corrections and reviewed usable text artifacts    | Acquisition never outgrows the description experience; abandonment redirects effort to intake, structuring, explanation or review problems.                    |
-| Workflow learning      | AI-identified shortcomings, user corrections, unresolved gaps and first-user feedback about descriptions                     | The owner improves the workflow from observed difficulties and useful results; a completed description does not establish demand for the user's project.       |
-| Continued hosted value | User-rated useful discussions, criticism acted on, later materials, return use and repeated-input problems                   | Weak usefulness or return use redirects resources to reasoning quality and reuse of accepted project context.                                                  |
-| Revenue                | Completed token purchases, repeat paid use and service costs                                                                 | Paid growth remains bounded by repeat value and viable service economics; spend does not expand while either is unsupported.                                   |
-| Framework adoption     | Contextual Framework visits, reviewed documents used in a coding-agent brief, independent adaptations and next-product reuse | Improve preparation handoffs and module guidance at observed difficulties; count development outcomes separately from document completion and token purchases. |
-| Community growth       | Recommendations, useful contributions and later agent-led adoption                                                           | Recurring needs and accepted improvements become clearer documentation and stronger public examples.                                                           |
+Ближайший приоритет сайта — понятные поиску страницы продуктов и статей. [Сохранённый отчёт Яндекс Вебмастера](/?path=/story/workspace-10-products-singlepage-singlepagestartup--semantics#состояние-сайта) содержит 112 страниц в поиске и по 111 дублей title и description, включая служебные маршруты. Сводка обновляется с задержкой, поэтому эти числа не доказывают ошибку текущего кода. Они показывают, почему дальнейшее продвижение должно опираться на проверенные опубликованные страницы с собственным назначением, а не на общее число проиндексированных URL.
 
-Resources follow a standing order of precedence: usable descriptions, corrected shortcomings and repeat value outrank reach; reusable documents and demonstrations outrank one-off distribution. More acquisition is justified by activation, useful continued work or paid retention. Organic distribution and support remain within the owner's recorded funding and capacity. Future deployment sales depend on evaluation and improvement of the description workflow and a separately defined commercial offer.
-
-Token terms, document usage, the complete customer process and future deployment conditions remain with their owning product sources. Recognition, current hosted revenue, independent framework adoption and any later landing-page enquiries or hypothesis learning remain separate outcomes.
+Расширение каналов связано с результатом этих страниц: какое сообщение приводит подходящего человека и помогает ему перейти к использованию продукта.

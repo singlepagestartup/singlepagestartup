@@ -7,7 +7,7 @@ export interface ButtonLinkProps {
 }
 
 export const defaultButtonLinkProps: ButtonLinkProps = {
-  label: "Privacy",
+  label: "Конфиденциальность",
   href: "/privacy",
   size: "sm",
   tone: "default",

@@ -1,11 +1,45 @@
 {
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "Create an AI Chat account — SinglePageStartup",
+        "ru": "Создание аккаунта AI Chat — SinglePageStartup"
+      },
+      "description": {
+        "en": "Create an account to work with your projects and materials in AI Chat.",
+        "ru": "Создайте аккаунт для работы со своими проектами и материалами в AI Chat."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "Create an AI Chat account — SinglePageStartup",
+        "ru": "Создание аккаунта AI Chat — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "Create an AI Chat account — SinglePageStartup",
+        "ru": "Создание аккаунта AI Chat — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Create an account to work with your projects and materials in AI Chat.",
+        "ru": "Создайте аккаунт для работы со своими проектами и материалами в AI Chat."
+      },
+      "opengraphDescription": {
+        "en": "Create an account to work with your projects and materials in AI Chat.",
+        "ru": "Создайте аккаунт для работы со своими проектами и материалами в AI Chat."
+      }
+    }
+  },
   "id": "f3f4a647-dae0-4fa9-b0b3-deb25fbd4eb5",
   "title": "AI Chat — create-account",
   "url": "/ai-chat/create-account",
   "description": "Description",
   "createdAt": "2026-10-11T02:04:29.118Z",
-  "updatedAt": "2026-10-11T02:04:29.118Z",
-  "variant": "default",
+  "updatedAt": "2026-10-30T22:25:09.606Z",
+  "variant": "noindex",
   "className": "",
   "language": "en",
   "adminTitle": "motionless cyan tarantula"

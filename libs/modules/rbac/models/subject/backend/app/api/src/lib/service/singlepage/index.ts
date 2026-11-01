@@ -36,6 +36,7 @@ import {
   type IConstructorProps as IFreeSubscriptionDependencies,
 } from "./billing/free-subscription";
 import { Service as BlogArticleCreate } from "./blog/article/create";
+import { Service as RoleRevocation } from "./ecommerce/order/role-revocation";
 import type { IArticleCreateInput } from "@sps/rbac/models/subject/sdk/model/src/lib/blog-article-create";
 import type { Service as SubjectsToBlogModuleArticlesService } from "@sps/rbac/relations/subjects-to-blog-module-articles/backend/app/api/src/lib/service";
 import { Table } from "@sps/rbac/models/subject/backend/repository/database";
@@ -262,6 +263,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     this.subjectsToBillingModuleCurrencies = subjectsToBillingModuleCurrencies;
     this.blogModule = blogModule;
     this.subjectsToBlogModuleArticles = subjectsToBlogModuleArticles;
+  }
+
+  configureRoleRevocation() {
+    const revocation = new RoleRevocation(this);
+    this.subjectsToRoles.configureRevocation(revocation);
+    return revocation;
   }
 
   async ecommerceModuleOrderAssertAccess(props: IEcommerceOrderAccessProps) {

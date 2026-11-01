@@ -48,7 +48,9 @@ export function ArtifactFrame({
       );
     } catch (cause) {
       setError(
-        cause instanceof Error ? cause.message : "Could not export this image.",
+        cause instanceof Error
+          ? cause.message
+          : "Не удалось выгрузить изображение.",
       );
     } finally {
       setBusy(false);
@@ -71,7 +73,7 @@ export function ArtifactFrame({
             onClick={() => void save()}
             className="rounded-lg bg-slate-950 px-4 py-2 font-semibold text-white focus-visible:outline-2 focus-visible:outline-teal-600 disabled:opacity-50"
           >
-            {busy ? "Preparing PNG…" : "Download PNG"}
+            {busy ? "Подготовка PNG…" : "Скачать PNG"}
           </button>
         </div>
       )}

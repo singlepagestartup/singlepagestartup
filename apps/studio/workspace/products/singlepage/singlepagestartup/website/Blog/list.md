@@ -1,5 +1,4 @@
 ---
-confirmation: { confirmed: false }
 title: "Build with an understanding of the code."
 eyebrow: "The Framework journal"
 description: "Follow a saved page from Next.js to Hono, understand who owns its data, and make your next change with a clear place to start."

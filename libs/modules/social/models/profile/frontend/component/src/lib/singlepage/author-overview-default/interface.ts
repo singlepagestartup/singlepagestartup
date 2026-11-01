@@ -1,18 +1,26 @@
 import type { ISpsComponentBase } from "@sps/ui-adapter";
-import type { IAuthorDetail } from "@sps/social/models/profile/sdk/model";
-import type { IProps } from "@sps/social/models/profile/sdk/server";
+import type { IModel } from "@sps/social/models/profile/sdk/model";
+import type { IFindByIdProps } from "@sps/shared-frontend-api";
+import type { IModel as IProfilesToBlogModuleArticles } from "@sps/social/relations/profiles-to-blog-module-articles/sdk/model";
+import type { IModel as IProfilesToEcommerceModuleProducts } from "@sps/social/relations/profiles-to-ecommerce-module-products/sdk/model";
 export const variant = "author-overview-default" as const;
 export interface IComponentProps extends ISpsComponentBase {
   variant: typeof variant;
   language: string;
   profileId?: string;
-  data?: IAuthorDetail;
+  data?: IModel;
   dataSource?: "api" | "props";
-  size?: "xs" | "sm";
-  inverse?: boolean;
-  /** Public allowlisted author SDK operation; never generic Profile.find. */
-  apiProps?: Pick<IProps["IAuthorFindByIdProps"], "options">;
+  apiProps?: Pick<IFindByIdProps, "params" | "options">;
 }
 export interface IComponentPropsExtended extends IComponentProps {
-  data: IAuthorDetail;
+  data: IModel;
+}
+
+export interface IArticleRowProps extends Pick<ISpsComponentBase, "isServer"> {
+  data: IProfilesToBlogModuleArticles;
+  language: string;
+}
+export interface IProductRowProps extends Pick<ISpsComponentBase, "isServer"> {
+  data: IProfilesToEcommerceModuleProducts;
+  language: string;
 }

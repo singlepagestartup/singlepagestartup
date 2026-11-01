@@ -1,5 +1,4 @@
 ---
-confirmation: { confirmed: false }
 slug: "nextjs-server-client-readers-and-widget-slots"
 createdAt: "2026-10-23"
 category: "frontend"

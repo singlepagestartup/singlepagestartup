@@ -4,13 +4,12 @@ import {
   Icon,
   kit,
 } from "../../../../design/singlepage/interface-kit/primitives";
-import sourceText from "./page.md?raw";
 import type { IWorkspacePageProps } from "../../../../utils/pages";
 import { SiteShell, PreviewLink, siteStyles } from "./Site";
 import { frameworkModules } from "./Modules/content";
 import ProjectExample from "./ProjectExample";
 import {
-  parseCodeFrameworkWebsite,
+  websiteContent,
   landingArtwork,
   type ICodeFrameworkWebsiteContent,
 } from "./content";
@@ -164,10 +163,9 @@ function CopySetupRequest({ content }: IWebsiteCopyProps) {
 
 /** Independent Product-only acquisition prototype: no Modules, SDKs or runtime mutations. */
 export default function CodeFrameworkLanding({
-  text,
   resolveLink,
 }: IWorkspacePageProps = {}) {
-  const content = parseCodeFrameworkWebsite(text ?? sourceText);
+  const content = websiteContent;
   const [selected, setSelected] = useState(0);
   const label = content.labels;
   const start = content.hero.links[0];

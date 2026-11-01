@@ -1,17 +1,17 @@
 {
   "title": "Создать аккаунт",
   "description": [
-    "После регистрации в аккаунте появятся бесплатные токены для работы с ИИ."
+    "Бесплатный баланс токенов появится в рабочем пространстве."
   ],
   "successDescription": [
-    "Перейдите к проекту и добавьте заметки, файлы и изображения."
+    "Перейдите в чат проекта и добавьте заметки, файлы и изображения."
   ],
   "labels": {
     "email-label": "Электронная почта",
     "email-placeholder": "you@example.com",
     "password-label": "Пароль",
     "repeat-password-label": "Повторите пароль",
-    "terms-label": "Обработка и хранение материалов",
+    "terms-label": "Как обрабатываются и хранятся материалы",
     "terms-href": "/ai-chat/social/profiles/create#how-your-materials-are-processed-and-stored",
     "submit": "Создать аккаунт",
     "sign-in-label": "Войти",
@@ -19,9 +19,9 @@
     "existing-account": "Уже есть аккаунт?",
     "continue-label": "Открыть чат проекта",
     "continue-href": "/ai-chat/social/profiles/create",
-    "email-error": "Укажите адрес электронной почты.",
-    "password-error": "Придумайте пароль.",
-    "repeat-password-error": "Пароли в обоих полях должны совпадать.",
-    "success-message": "Аккаунт создан."
+    "email-error": "Введите корректный адрес электронной почты.",
+    "password-error": "Введите пароль.",
+    "repeat-password-error": "Введите одинаковый пароль в оба поля.",
+    "success-message": "Аккаунт готов."
   }
 }

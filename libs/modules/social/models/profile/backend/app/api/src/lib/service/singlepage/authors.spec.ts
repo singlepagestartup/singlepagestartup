@@ -106,7 +106,7 @@ function fixture() {
 
 it("publishes only supported Profiles with explicit public work and strips private fields", async () => {
   const { service } = fixture();
-  const authors = await service.find();
+  const authors = await service.authorFind();
   expect(authors.map((author) => author.id)).toEqual([
     ids.human,
     ids.editorial,
@@ -130,27 +130,80 @@ it("publishes only supported Profiles with explicit public work and strips priva
 
 it("uses the same filtered eligibility for count before pagination", async () => {
   const { service } = fixture();
-  expect(await service.count()).toBe(2);
-  expect(await service.find({ limit: 1, offset: 1 })).toEqual([
+  expect(await service.authorFindCount()).toBe(2);
+  expect(await service.authorFind({ limit: 1, offset: 1 })).toEqual([
     expect.objectContaining({ id: ids.editorial }),
   ]);
-  expect(await service.count({ ecommerceModuleProductId: ids.product })).toBe(
-    1,
-  );
-  expect(await service.count({ profileId: ids.empty })).toBe(0);
-  expect(await service.findById({ id: ids.ai })).toBeNull();
+  expect(
+    await service.authorFindCount({ ecommerceModuleProductId: ids.product }),
+  ).toBe(1);
+  expect(await service.authorFindCount({ profileId: ids.empty })).toBe(0);
+  expect(await service.authorFindById({ id: ids.ai })).toBeNull();
 });
 
 it("returns only linked Article and Product references and accepts UUID handles only", async () => {
   const { service } = fixture();
-  const author = await service.findById({ id: ids.human });
+  const author = await service.authorFindById({ id: ids.human });
   expect(author?.articles.map((article) => article.id)).toEqual([ids.article]);
   expect(author?.products.map((product) => product.id)).toEqual([ids.product]);
   expect(author).not.toHaveProperty("slug");
   await expect(
-    service.findById({ id: "subject-private-uuid" }),
+    service.authorFindById({ id: "subject-private-uuid" }),
   ).rejects.toThrow("Invalid author resource");
-  await expect(service.find({ filters: {} } as any)).rejects.toThrow(
+  await expect(service.authorFind({ filters: {} } as any)).rejects.toThrow(
     "Unsupported author filter",
   );
+});
+
+it("does not treat content or association variants as publication permissions", async () => {
+  const { service, dependencies } = fixture();
+  dependencies.article.find.mockResolvedValue([
+    { id: ids.article, variant: "hidden" },
+  ] as any);
+  dependencies.profilesToProducts.find.mockResolvedValue([
+    {
+      profileId: ids.human,
+      ecommerceModuleProductId: ids.product,
+      variant: "hidden",
+    },
+  ] as any);
+  expect((await service.authorFind()).map((profile) => profile.id)).toContain(
+    ids.human,
+  );
+  expect(await service.authorFindCount()).toBeGreaterThan(0);
+});
+it.each(["file", "link"])(
+  "retains an avatar with variant hidden on its %s",
+  async (target) => {
+    const { service, dependencies } = fixture();
+    if (target === "file")
+      dependencies.file.findById.mockResolvedValue({
+        id: "avatar",
+        file: "/avatar.png",
+        mimeType: "image/png",
+        variant: "hidden",
+      } as any);
+    else
+      dependencies.profilesToFiles.find.mockResolvedValue([
+        {
+          profileId: ids.human,
+          fileStorageModuleFileId: "avatar",
+          variant: "hidden",
+        },
+      ] as any);
+    expect((await service.authorFind())[0].avatar).toMatchObject({
+      id: "avatar",
+    });
+  },
+);
+it("publishes only the validated SEO section from Profile JSON", async () => {
+  const { service, dependencies } = fixture();
+  const profiles = await dependencies.profile.find();
+  (profiles[0] as any).metadata = {
+    seo: { keywords: { en: ["author"] } },
+    campaign: { internalNote: "not-public" },
+  };
+  const author = (await service.authorFind())[0];
+  expect(author.metadata).toEqual({ seo: { keywords: { en: ["author"] } } });
+  expect(JSON.stringify(author)).not.toContain("not-public");
 });

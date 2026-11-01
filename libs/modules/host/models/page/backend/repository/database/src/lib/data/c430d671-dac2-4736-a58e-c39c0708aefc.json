@@ -1,10 +1,32 @@
 {
+  "metadata": {
+    "seo": {
+      "description": {
+        "en": "Accounts, authentication, roles and current-user operations with access scope.",
+        "ru": "Аккаунты, вход, роли и операции текущего пользователя с проверкой прав доступа."
+      }
+    },
+    "seoDisplay": {
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Accounts, authentication, roles and current-user operations with access scope.",
+        "ru": "Аккаунты, вход, роли и операции текущего пользователя с проверкой прав доступа."
+      },
+      "opengraphDescription": {
+        "en": "Accounts, authentication, roles and current-user operations with access scope.",
+        "ru": "Аккаунты, вход, роли и операции текущего пользователя с проверкой прав доступа."
+      }
+    }
+  },
   "id": "c430d671-dac2-4736-a58e-c39c0708aefc",
   "title": "RBAC · Code Framework",
   "url": "/framework/modules/rbac",
   "description": "Accounts, authentication, roles and current-user operations with access scope.",
   "createdAt": "2026-10-24T01:06:01.428Z",
-  "updatedAt": "2026-10-24T01:06:01.428Z",
+  "updatedAt": "2026-10-30T22:25:05.003Z",
   "variant": "default",
   "className": "",
   "language": "en",

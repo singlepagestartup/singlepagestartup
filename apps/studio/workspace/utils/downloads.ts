@@ -117,7 +117,10 @@ export async function standaloneHtmlDownload(
       }
     })
     .join("\n");
-  const language = owner.documentElement.lang || "en";
+  const language =
+    target.closest("[lang]")?.getAttribute("lang") ||
+    owner.documentElement.lang ||
+    "en";
   const bodyClass = owner.body.className;
   return `<!doctype html>
 <html lang="${escapeHtml(language)}">

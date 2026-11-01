@@ -212,7 +212,9 @@ test("reassembling nested variants preserves custom keys and startup rendering",
     mkdirSync(selector, { recursive: true });
     writeFileSync(
       path.join(selector, "Component.tsx"),
-      `import type { IComponentProps } from "./interface"; export function Component(_props: IComponentProps) { return ${JSON.stringify(layer)}; }`,
+      layer === "singlepage"
+        ? 'import type { IComponentProps } from "./interface"; export function Component(_props: IComponentProps) { return "singlepage"; }'
+        : 'import type { IComponentProps } from "./interface"; export function Component(_props: IComponentProps) { return "startup"; }',
     );
     writeFileSync(
       path.join(selector, "interface.ts"),
@@ -358,4 +360,71 @@ test("scaffolding preserves authored data and UI and skips relations and Telegra
   expect(existsSync(path.join(directory, "apps/studio/modules/telegram"))).toBe(
     false,
   );
+});
+
+test("schema refresh preserves authored records, views and UI props while adding and retiring fields", () => {
+  const root = mkdtempSync(path.join(tmpdir(), "studio-schema-refresh-"));
+  temporary.push(root);
+  const native = path.join(
+    root,
+    "libs/modules/example/models/item/backend/repository/database/src/lib",
+  );
+  mkdirSync(native, { recursive: true });
+  const schema = path.join(native, "schema.ts");
+  const columns =
+    'id: pgCore.uuid("id").primaryKey(), title: pgCore.text("title").notNull()';
+  writeFileSync(
+    schema,
+    `import * as pgCore from "drizzle-orm/pg-core"; export const fields = { ${columns}, obsolete: pgCore.text("obsolete") };`,
+  );
+  const entity = {
+    module: "example",
+    entity: "item",
+    entityType: "model",
+  } as Parameters<typeof scaffoldEntity>[1];
+  scaffoldEntity(root, entity);
+  const directory = path.join(root, "apps/studio/modules/example/item");
+  const dataFile = path.join(directory, "singlepage/admin-v2-table/data.json");
+  const data = JSON.parse(readFileSync(dataFile, "utf8"));
+  data.records[0].title = "Authored title";
+  data.presentation = { caption: "Owned presentation" };
+  const id = data.records[0].id;
+  writeFileSync(dataFile, JSON.stringify(data));
+  const interfaceFile = path.join(
+    directory,
+    "singlepage/admin-v2-table/interface.ts",
+  );
+  writeFileSync(
+    interfaceFile,
+    readFileSync(interfaceFile, "utf8") +
+      "\nexport interface IOwnedProps { description: string; }\n",
+  );
+  const viewFile = path.join(
+    directory,
+    "singlepage/admin-v2-table/Component.tsx",
+  );
+  writeFileSync(
+    viewFile,
+    "export function Component() { return <p>Authored view</p>; }",
+  );
+  writeFileSync(
+    schema,
+    `import * as pgCore from "drizzle-orm/pg-core"; export const fields = { ${columns}, metadata: pgCore.jsonb("metadata").notNull().default({}) };`,
+  );
+  scaffoldEntity(root, entity);
+  const refreshed = readFileSync(dataFile, "utf8");
+  const refreshedInterface = readFileSync(interfaceFile, "utf8");
+  scaffoldEntity(root, entity);
+  expect(readFileSync(interfaceFile, "utf8")).toBe(refreshedInterface);
+  expect(JSON.parse(refreshed).presentation).toEqual({
+    caption: "Owned presentation",
+  });
+  expect(readFileSync(dataFile, "utf8")).toBe(refreshed);
+  const record = JSON.parse(refreshed).records[0];
+  expect(record).toEqual({ id, title: "Authored title", metadata: {} });
+  const contract = readFileSync(interfaceFile, "utf8");
+  expect(contract).toContain("metadata: JsonValue");
+  expect(contract).not.toContain("obsolete:");
+  expect(contract).toContain("export interface IOwnedProps");
+  expect(readFileSync(viewFile, "utf8")).toContain("Authored view");
 });

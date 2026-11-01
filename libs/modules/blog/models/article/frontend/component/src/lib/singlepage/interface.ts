@@ -1,3 +1,4 @@
+import { IComponentProps as IHiddenComponentProps } from "@sps/shared-frontend-components/singlepage/hidden/interface";
 import type { IComponentProps as ICard } from "./card/interface";
 import type { IComponentProps as IPrivateContentDefault } from "./private-content-default/interface";
 import type { IComponentProps as ILoading } from "./loading/interface";
@@ -17,6 +18,7 @@ import { IComponentProps as IOverviewDefaultComponentProps } from "./overview-de
 import { IComponentProps as IOverviewWithPrivateContentDefaultComponentProps } from "./overview-with-private-content-default/interface";
 
 export type IComponentProps =
+  | IHiddenComponentProps
   | ICard
   | IPrivateContentDefault
   | ILoading

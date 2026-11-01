@@ -10,6 +10,24 @@ Subjects represent visitors, registered accounts and actors, and connect identit
 - Frontend variants such as `me-ecommerce-module-product-cart-default`, `me-ecommerce-module-product-checkout-default`, and `me-ecommerce-module-cart-default` are the supported entry points for host/cart behavior.
 - Dependency direction is one-way: `rbac > ecommerce`. RBAC may compose ecommerce SDK/components; ecommerce must not import RBAC subject implementation.
 
+### Current-Subject cart components
+
+The cart sheet, Product cart actions and Product checkout use the public variants
+`me-ecommerce-module-cart-default`, `me-ecommerce-module-product-cart-default`
+and `me-ecommerce-module-product-checkout-default`. Each has one view and two
+Subject sources: the default reader resolves `authenticationMe`; with
+`dataSource="props"`, `data` is required and the view uses that already-loaded
+Subject without another session read or Provider. An owning card or overview
+passes its live Subject through this mode. Cart reads and mutations still use
+the client Subject SDK and the API's JWT/ownership checks. Guest sessions are
+supported; a supplied Subject does not establish API authorization.
+
+Product views and actions live in their owning `me` variant directories. The
+former `ecommerce-module-product-cart-default` and
+`ecommerce-module-product-checkout-default` registrations are removed; owned
+compositions should select the corresponding `me` variant and pass
+`dataSource="props"` when they already own the current Subject.
+
 ### Current-Subject cart reads
 
 `GET /api/rbac/subjects/:id/ecommerce-module/orders?includeCartDetails=true`
@@ -280,7 +298,7 @@ delete action is called.
 
 `POST /api/rbac/subjects/:id/blog-module/articles` requires the current Subject's JWT and a registered human Identity. Its strict JSON envelope contains `data.requestId`, localized `title` and TipTap-serialized `description`, optional localized `subtitle`, and an optional `categoryId`. The server chooses the caller's personal Social Profile and atomically creates Article, ownership, authorship and optional category links. A retry with the same request UUID and unchanged payload returns the same Article; a changed or foreign request conflicts. This operation publishes immediately.
 
-Public author URLs use `/authors/<Social Profile UUID>`. Social's `authors`, `authors/count` and `authors/:id` reads expose allowlisted author presentation and explicitly linked Articles/Products. They omit private Profile handles, Subject IDs and AI workspace data. Generic Profile list/count/detail reads require operator or an explicitly Role-bound administrative Permission; account settings use the existing Subject scope. Authorized Chat reads carry current participant and historical sender/actor presentation, including avatars, within their Chat scope.
+Public author URLs use `/authors/<Social Profile UUID>`. Social's `authors`, `authors/count` and `authors/:id` reads expose allowlisted author presentation and explicitly linked Articles/Products. They omit private Profile handles, Subject IDs and AI workspace data. Standard Profile reads follow RBAC Permissions: an exact public GET Permission can open one Profile without opening its collection or other IDs. No separate administrative Profile middleware overrides that decision. Account settings use the existing Subject scope. Authorized Chat reads carry current participant and historical sender/actor presentation, including avatars, within their Chat scope.
 
 ## Variants
 
@@ -314,8 +332,8 @@ Public author URLs use `/authors/<Social Profile UUID>`. Social's `authors`, `au
 - `identity-settings-default`: identity settings form.
 - `get-emails`: helper to fetch identity emails.
 - `crm-module-form-request-create`: create CRM form request.
-- `ecommerce-module-product-cart-default`: cart product actions for subject.
-- `ecommerce-module-product-checkout-default`: product checkout flow.
+- `me-ecommerce-module-product-cart-default`: current-Subject cart product actions.
+- `me-ecommerce-module-product-checkout-default`: current-Subject product checkout flow.
 - `ecommerce-module-order-create-default`: create order action.
 - `ecommerce-module-order-update-default`: update order action.
 - `ecommerce-module-order-delete-default`: delete order action.
@@ -609,6 +627,16 @@ Foreign records are `ecommerceModuleProduct`, `ecommerceModuleStore` and
 RBAC import. `me-navigation-controls-ai-chat` owns the session, project selector
 and account controls; it receives explicit Social IDs and `settingsSelected`.
 
+Public Product details also use the Subject registry:
+`ecommerce-module-product-category-default` and
+`ecommerce-module-product-profile-default` accept `ecommerceModuleProductId`
+and `language`. Categories use the ordinary filtered CategoriesToProducts and
+Category components. Profiles use Social's allowlisted `authorFind` SDK and
+public author bylines. These variants have no current-Subject read and support
+server rendering before session initialization. Product cards, overviews and
+RBAC Widgets select them through the public Subject component; they do not
+import private helpers from `me/.../card-default`.
+
 Current-Subject variants are grouped under `singlepage/me/` by module, model
 and operation. Public variant strings remain stable when folders move; callers
 use the public Subject registry.
@@ -656,45 +684,18 @@ administrative Chat scope may read without joining. The target Profile must
 still belong to that Chat and each Source must belong to the target Profile.
 Membership denial is a permission error, rather than an expired session.
 
-### Article content access
+### Article widget access example
 
-`GET /api/rbac/subjects/:id/blog-module/articles/:blogModuleArticleId/content`
-uses the current JWT Subject, including an initialized guest session. A missing
-session returns 401; a different Subject returns 403. The typed client/server
-SDK operation is `blogModuleArticleFindByIdContentFind`.
+The me-blog-module-article-private-content-default frontend variant checks the
+current client's permission for the article-widget relation before mounting its
+readers. Without permission it shows the subscription presentation. Authorized
+readers load the Article's relations through their ordinary SDK and render each
+saved variant, including private. This is a presentation example; ordinary
+resource APIs and managed files have no article-graph policy.
 
-Subscription access requires the owned active paid period and its current
-Product Roles. An Identity or email registration is not an access requirement;
-an entitled guest Subject receives granted content. A guest without entitlement
-receives the guest presentation state.
-
-Its result contains ordered public entries and private placeholders with opaque
-slot keys. Protected IDs and body appear only in granted entries. Effective
-expiry includes every private root needed by the entry's descendants. The
-client query keeps the result in the principal-specific shared cache, forwards
-cancellation and clears inaccessible data on 401/403. Its request-start
-timestamp lets the reader close content without extending access by transport
-latency. Any other failed revalidation replaces cached private entries with
-locked placeholders while retaining the public entries. Protected results are
-not copied into the debug event log.
-
-`apps/api/app.ts` injects `IGraphServices` using the effective model and relation
-Services from the loaded module registry. The graph never constructs their
-repositories or calls the public API over HTTP. The injected `assertIsolated`
-callback checks incoming references from higher modules before private marking
-and attachment. Standalone graph writers must supply this callback; missing
-services or isolation checks fail closed.
-
-The API host installs `ProtectedBlogContent.bytes()` before `/public/*` and
-`ProtectedBlogContent.init()` after query parsing, before both HTTP response
-caches. List and count restrictions enter the repository filter before
-pagination. Repeated query parsers preserve the guarded filter. Protected
-metadata, content and static paths are excluded from both response caches.
-The bytes middleware reapplies private/no-store headers after the static
-handler returns its Response. Guarded graph writes share a database transaction
-and graph lock with their owning controller mutation. Tests may inject a
-transaction callback for an in-memory graph; production uses the shared
-consistency database context.
+Private article delivery through a dedicated Subject operation is outside this
+example. The previous graph, global content/byte guards and scoped content SDK
+have been removed. Generic RBAC and ownership guards remain in force.
 
 The operator-only maintenance operation
 `POST /api/rbac/subjects/:id/ecommerce-module/orders/:ecommerceModuleOrderId/subscription-period/freeze`

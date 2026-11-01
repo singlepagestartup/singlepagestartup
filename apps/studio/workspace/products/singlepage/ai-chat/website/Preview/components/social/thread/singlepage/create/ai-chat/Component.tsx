@@ -1,17 +1,14 @@
 "use client";
+import { type InputHTMLAttributes as InputHTMLAttributes } from "react";
+import { useId as useId } from "react";
+import { type ReactNode as ReactNode } from "react";
+import { Component as WebsiteBuilderModuleButton } from "../../../../../website-builder/button/index";
 import {
-  type InputHTMLAttributes as InputHTMLAttributes,
-  useId as useId,
-  type ReactNode as ReactNode,
   forwardRef as forwardRefControl,
   type ButtonHTMLAttributes as ButtonControlProps,
-  useState,
 } from "react";
-
-import { Component as WebsiteBuilderModuleButton } from "../../../../../website-builder/button/index";
-
 import IconGlyphs from "../../../../../website-builder/feature/singlepage/icon/icons.json";
-
+import { useState } from "react";
 interface IFeedbackProps {
   children: ReactNode;
   kind?: "success" | "error" | "info";
@@ -101,7 +98,7 @@ function Icon({
   const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
@@ -136,11 +133,9 @@ export function Component({ chatId, cancelHref }: IThreadCreateProps) {
       }}
       className="mx-auto grid w-full max-w-xl gap-5 overflow-y-auto p-5 @[640px]:p-8"
     >
-      <p className={`text-sm leading-6 ${kit.muted}`}>
-        Укажите название обсуждения.
-      </p>
+      <p className={`text-sm leading-6 ${kit.muted}`}>Назовите переписку.</p>
       <TextField
-        label="Название обсуждения"
+        label="Название переписки"
         value={title}
         onChange={(event) => {
           setTitle(event.target.value);
@@ -153,7 +148,7 @@ export function Component({ chatId, cancelHref }: IThreadCreateProps) {
       <div className="flex flex-wrap gap-3">
         <Button type="submit" disabled={!title.trim()}>
           <Icon name="chat-circle" />
-          Создать обсуждение
+          Создать переписку
         </Button>
         <a
           href={cancelHref}
@@ -163,9 +158,7 @@ export function Component({ chatId, cancelHref }: IThreadCreateProps) {
         </a>
       </div>
       {previewed && (
-        <Feedback>
-          Это предварительный просмотр. Обсуждение на сервере не создано.
-        </Feedback>
+        <Feedback>Только предпросмотр. Переписка не создана.</Feedback>
       )}
     </form>
   );

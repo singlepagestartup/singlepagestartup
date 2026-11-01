@@ -1,3 +1,4 @@
+import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
 import { Component as ActionOutlineInverse } from "./action-outline-inverse";
 import { Component as FooterLink } from "./footer-link";
 import { Component as NavigationInverse } from "./navigation-inverse";
@@ -28,6 +29,7 @@ import { Component as Default } from "./default";
 import { Component as Children } from "./children";
 
 export const variants = {
+  hidden: Hidden,
   "action-outline-inverse": ActionOutlineInverse,
   "footer-link": FooterLink,
   "navigation-inverse": NavigationInverse,

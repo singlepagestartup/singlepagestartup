@@ -60,8 +60,8 @@ export function DocumentDownloads({
               downloadFileName(baseName, "md"),
             )
           }
-          aria-label="Download Markdown"
-          title="Download Markdown"
+          aria-label="Скачать Markdown"
+          title="Скачать Markdown"
           className={`inline-flex items-center gap-2 min-h-11 rounded-xl border px-4 py-2 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-[var(--workspace-brand-focus)] ${buttonClass}`}
         >
           <Download aria-hidden="true" size={20} />
@@ -72,8 +72,8 @@ export function DocumentDownloads({
         <a
           href={htmlUrl}
           download={htmlName}
-          aria-label="Download HTML"
-          title="Download HTML"
+          aria-label="Скачать HTML"
+          title="Скачать HTML"
           className={`inline-flex items-center gap-2 min-h-11 rounded-xl border px-4 py-2 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-[var(--workspace-brand-focus)] ${buttonClass}`}
         >
           <Download aria-hidden="true" size={20} />
@@ -95,13 +95,13 @@ export function DocumentDownloads({
               setPreparingHtml(false);
             }
           }}
-          aria-label={preparingHtml ? "Preparing HTML" : "Download HTML"}
-          title="Download HTML"
+          aria-label={preparingHtml ? "Подготовка HTML" : "Скачать HTML"}
+          title="Скачать HTML"
           disabled={preparingHtml}
           className={`inline-flex items-center gap-2 min-h-11 rounded-xl border px-4 py-2 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-[var(--workspace-brand-focus)] disabled:cursor-wait disabled:opacity-60 ${buttonClass}`}
         >
           <Download aria-hidden="true" size={20} />
-          <span>{preparingHtml ? "Preparing HTML…" : ".html"}</span>
+          <span>{preparingHtml ? "Подготовка HTML…" : ".html"}</span>
         </button>
       ) : null}
     </div>

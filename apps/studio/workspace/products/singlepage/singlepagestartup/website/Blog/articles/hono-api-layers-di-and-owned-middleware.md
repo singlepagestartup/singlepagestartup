@@ -1,5 +1,4 @@
 ---
-confirmation: { confirmed: false }
 slug: "hono-api-layers-di-and-owned-middleware"
 createdAt: "2026-10-23"
 category: "backend"

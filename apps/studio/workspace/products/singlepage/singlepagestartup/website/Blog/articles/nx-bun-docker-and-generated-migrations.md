@@ -1,5 +1,4 @@
 ---
-confirmation: { confirmed: false }
 slug: "nx-bun-docker-and-generated-migrations"
 createdAt: "2026-10-23"
 category: "devops"

@@ -34,19 +34,22 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   authorFind(params: IAuthorFindParams = {}) {
-    return new Authors({ ...this.authorDependencies, profile: this }).find(
-      params,
-    );
+    return new Authors({
+      ...this.authorDependencies,
+      profile: this,
+    }).authorFind(params);
   }
   authorFindCount(params: IAuthorFilters = {}) {
-    return new Authors({ ...this.authorDependencies, profile: this }).count(
-      params,
-    );
+    return new Authors({
+      ...this.authorDependencies,
+      profile: this,
+    }).authorFindCount(params);
   }
   authorFindById(props: { id: string }) {
-    return new Authors({ ...this.authorDependencies, profile: this }).findById(
-      props,
-    );
+    return new Authors({
+      ...this.authorDependencies,
+      profile: this,
+    }).authorFindById(props);
   }
   async profilePresentation(props: { id: string }) {
     const profile = await this.findById(props);

@@ -13,7 +13,7 @@ function Icon({
   const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
@@ -34,14 +34,14 @@ function Icon({
 export function Component() {
   return (
     <a
-      href="/"
+      href="/ai-chat/"
       data-ds-block="website-builder.logotype.brand-ai-chat"
       data-module="website-builder"
       data-model="logotype"
       data-id="ai-chat-logotype"
       data-variant="brand-ai-chat"
       className={`group relative isolate inline-flex shrink-0 items-center gap-3 rounded-xl ${kit.focus}`}
-      aria-label="Главная AI Chat"
+      aria-label="Главная SPS AI Chat"
     >
       <span
         aria-hidden="true"

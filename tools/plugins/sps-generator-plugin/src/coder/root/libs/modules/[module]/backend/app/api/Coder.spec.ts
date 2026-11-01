@@ -1,73 +1,65 @@
 /**
- * BDD Suite: Coder.
- *
- * Given: suite fixtures and test doubles are prepared for deterministic behavior.
- * When: a scenario action from this suite is executed.
- * Then: assertions verify expected observable behavior and contracts.
+ * BDD Suite: module API registration.
+ * Given: API composition with a shared module registry.
+ * When: a module is attached or detached.
+ * Then: its import and registry entry serve both HTTP mounting and descriptions.
  */
-
 import {
   ImportBackendAppApiAsPropertyCasedAppName,
-  ExtendAppRouteWithAppHono,
+  ExtendApiModules,
 } from "./Coder";
 
-describe("Coder", () => {
-  describe("ImportBackendAppApiAsPropertyCasedAppName", () => {
-    const importPath = "@sps/website-builder/backend/app/api";
-    const asPropertyCasedAppName = "websiteBuilder";
-    const importPathApp = new ImportBackendAppApiAsPropertyCasedAppName({
-      importPath,
-      asPropertyCasedAppName,
-    });
-
-    it("should match the regex for removal", () => {
-      const regex = importPathApp.onRemove.regex;
-
-      const string = `import { app as ecommerceApp } from "@sps/ecommerce/backend/app/api";
-      import { app as websiteBuilderApp } from "@sps/website-builder/backend/app/api";`;
-
-      expect(string).toMatch(regex);
-    });
-
-    it("should find the place to insert import", () => {
-      const regex = importPathApp.onCreate.regex;
-
-      const string = 'export const app = new Hono().basePath("/");';
-
-      expect(string).toMatch(regex);
-    });
-
-    it("should correctly insert import before app export", () => {
-      const content = importPathApp.onCreate.content;
-
-      expect(content).toBe(
-        'import { app as websiteBuilderApp } from "@sps/website-builder/backend/app/api";\n\nexport const app = new Hono().basePath("/");',
-      );
-    });
-  });
-
-  describe("ExtendAppRouteWithAppHono", () => {
-    const asPropertyCasedAppName = "websiteBuilder";
-    const kebabCasedAppName = "website-builder";
-    const extendAppRoute = new ExtendAppRouteWithAppHono({
-      asPropertyCasedAppName,
-      kebabCasedAppName,
-    });
-
-    it("should correctly create route content", () => {
-      const content = extendAppRoute.onCreate.content;
-
-      expect(content).toBe(
-        `app.route("/api/${kebabCasedAppName}", ${asPropertyCasedAppName}App.hono);\n`,
-      );
-    });
-
-    it("should match the regex for route removal", () => {
-      const regex = extendAppRoute.onRemove.regex;
-
-      const string = `app.route("/api/${kebabCasedAppName}", ${asPropertyCasedAppName}App.hono);`;
-
-      expect(string).toMatch(regex);
-    });
-  });
+const imports = new ImportBackendAppApiAsPropertyCasedAppName({
+  importPath: "@sps/website-builder/backend/app/api",
+  asPropertyCasedAppName: "websiteBuilder",
 });
+const registry = new ExtendApiModules({
+  asPropertyCasedAppName: "websiteBuilder",
+  kebabCasedAppName: "website-builder",
+});
+
+it.each(["Hono", "Hono<Env>"])(
+  "adds the import without changing the %s application declaration",
+  (constructor) => {
+    const declaration = `export const app = new ${constructor}().basePath("/");`;
+    const attached = declaration.replace(
+      imports.onCreate.regex,
+      imports.onCreate.content,
+    );
+    expect(attached).toContain(
+      'import { app as websiteBuilderApp } from "@sps/website-builder/backend/app/api";',
+    );
+    expect(attached).toContain(declaration);
+    expect(
+      attached.replace(imports.onRemove.regex, imports.onRemove.content).trim(),
+    ).toBe(declaration);
+  },
+);
+
+it("adds a module to the shared registry and removes it without a separate Hono registration", () => {
+  const original = "const apiModules = {\n  blog: blogApp,\n};";
+  const attached = original.replace(
+    registry.onCreate.regex,
+    registry.onCreate.content,
+  );
+  expect(attached).toContain('"website-builder": websiteBuilderApp,');
+  expect(attached).toContain("blog: blogApp,");
+  expect(attached).not.toContain("app.route(");
+  expect(
+    attached.replace(registry.onRemove.regex, registry.onRemove.content),
+  ).toBe(original);
+});
+
+it.each(['"probe"', "probe"])(
+  "removes the %s key after generator formatting",
+  (key) => {
+    const probe = new ExtendApiModules({
+      asPropertyCasedAppName: "probe",
+      kebabCasedAppName: "probe",
+    });
+    const original = `const apiModules = {\n  ${key}: probeApp,\n  blog: blogApp,\n};`;
+    expect(original.replace(probe.onRemove.regex, probe.onRemove.content)).toBe(
+      "const apiModules = {\n  blog: blogApp,\n};",
+    );
+  },
+);

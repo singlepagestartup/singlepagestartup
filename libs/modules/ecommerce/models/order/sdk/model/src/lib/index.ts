@@ -30,7 +30,7 @@ import {
 export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/ecommerce/orders";
-export const variants = ["purchase-ai-chat", "default"];
+export const variants = ["hidden", "purchase-ai-chat", "default"];
 export const types = ["cart", "history"];
 export const statuses = [
   "new",

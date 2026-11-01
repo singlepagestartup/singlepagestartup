@@ -1,27 +1,20 @@
 "use client";
+import { forwardRef as forwardRef } from "react";
+import * as SelectPrimitive from "@radix-ui/react-select";
+import { twMerge as twMerge } from "tailwind-merge";
+import { twMerge as twMergePresentation } from "tailwind-merge";
+import Markdown from "markdown-to-jsx";
+import { type InputHTMLAttributes as InputHTMLAttributes } from "react";
+import { useId as useId } from "react";
+import { Component as WebsiteBuilderModuleButton } from "../../../../../../website-builder/button/index";
 import {
-  forwardRef as forwardRef,
-  type InputHTMLAttributes as InputHTMLAttributes,
-  useId as useId,
   forwardRef as forwardRefControl,
   type ButtonHTMLAttributes as ButtonControlProps,
-  useState,
-  type FormEvent,
 } from "react";
-import * as SelectPrimitive from "@radix-ui/react-select";
-import {
-  twMerge as twMerge,
-  twMerge as twMergePresentation,
-} from "tailwind-merge";
-
-import Markdown from "markdown-to-jsx";
-
-import { Component as WebsiteBuilderModuleButton } from "../../../../../../website-builder/button/index";
-
 import IconGlyphs from "../../../../../../website-builder/feature/singlepage/icon/icons.json";
 import { Component as SocialModuleSkill } from "../../../../../skill/index";
 import * as Dialog from "@radix-ui/react-dialog";
-
+import { useState, type FormEvent } from "react";
 import { AI_CHAT_AGENTS, type IProjectAgent } from "./resolver";
 import { Component as ProjectAgentAvatar } from "../../avatar/ai-chat/index";
 import { knowledgeSkill } from "../../../../../skill/singlepage/overview/ai-chat/index";
@@ -180,7 +173,7 @@ function Icon({
   const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
@@ -229,14 +222,14 @@ export function Component({ agent, onClose }: IAgentProfileProps) {
                   {agent?.name}
                 </Dialog.Title>
                 <p className="mt-1 text-xs text-[color:var(--workspace-brand-muted)]">
-                  {agent?.custom ? "Ваш помощник" : "Готовый помощник"}
+                  {agent?.custom ? "Свой агент" : "Готовый агент"}
                 </p>
               </div>
               <Dialog.Close asChild>
                 <Button
                   variant="plain"
                   className="min-h-9 px-2"
-                  aria-label="Закрыть профиль помощника"
+                  aria-label="Закрыть профиль агента"
                 >
                   <Icon name="x" />
                 </Button>
@@ -274,7 +267,11 @@ export function ProjectAgentPicker({
   function openEditor(value: IProjectAgent | null) {
     setDraft(value?.custom ? value : null);
     setName(
-      value ? (value.custom ? value.name : `${value.name} — custom`) : "",
+      value
+        ? value.custom
+          ? value.name
+          : `${value.name} — пользовательский`
+        : "",
     );
     setDescription(value?.description ?? "");
     setRole(value?.role ?? "");
@@ -300,7 +297,7 @@ export function ProjectAgentPicker({
       <div className="flex flex-wrap items-center gap-2">
         <div className="min-w-0 flex-1">
           <Select
-            aria-label="Помощник в обсуждении"
+            aria-label="Агент переписки"
             value={agent?.id ?? "none"}
             onValueChange={(value) => {
               if (value === "none") {
@@ -311,7 +308,7 @@ export function ProjectAgentPicker({
               if (next) onChange(next);
             }}
             options={[
-              { value: "none", label: "Без помощника" },
+              { value: "none", label: "Без агента" },
               ...available.map((item) => ({
                 value: item.id,
                 label: item.name,
@@ -323,7 +320,7 @@ export function ProjectAgentPicker({
       </div>
       <p className="text-xs leading-5 text-[color:var(--workspace-brand-muted)]">
         {agent?.description ??
-          "Используйте выбранную модель с документами без дополнительных инструкций помощника."}
+          "Выбранная модель с прикреплёнными документами, без готовой или собственной роли."}
       </p>
       <div className="flex flex-wrap gap-2">
         <Button
@@ -332,7 +329,7 @@ export function ProjectAgentPicker({
           onClick={() => openEditor(null)}
         >
           <Icon name="plus" className="size-4" />
-          Создать своего помощника
+          Создать своего агента
         </Button>
         {agent && (
           <Button
@@ -341,7 +338,7 @@ export function ProjectAgentPicker({
             onClick={() => openEditor(agent)}
           >
             <Icon name="gear-six" className="size-4" />
-            {agent.custom ? "Изменить помощника" : "Настроить инструкции"}
+            {agent.custom ? "Изменить агента" : "Настроить роль"}
           </Button>
         )}
       </div>
@@ -353,18 +350,18 @@ export function ProjectAgentPicker({
             <div className="flex items-start justify-between gap-3 border-b border-[color:var(--workspace-brand-line)] p-5">
               <div>
                 <Dialog.Title className="text-lg font-semibold">
-                  {draft ? "Изменить помощника" : "Создать своего помощника"}
+                  {draft ? "Изменить агента" : "Создать своего агента"}
                 </Dialog.Title>
                 <Dialog.Description className="mt-1 text-sm leading-6 text-[color:var(--workspace-brand-muted)]">
-                  Опишите задачи помощника, способ работы и ограничения. Знания
-                  о проекте доступны в связанных документах.
+                  Определите ответственность, метод и границы. Контекст проекта
+                  дают документы, прикреплённые к переписке.
                 </Dialog.Description>
               </div>
               <Dialog.Close asChild>
                 <Button
                   variant="plain"
                   className="min-h-9 px-2"
-                  aria-label="Закрыть редактор помощника"
+                  aria-label="Закрыть редактор агента"
                 >
                   <Icon name="x" />
                 </Button>
@@ -372,7 +369,7 @@ export function ProjectAgentPicker({
             </div>
             <form onSubmit={save} className="space-y-5 overflow-y-auto p-5">
               <TextField
-                label="Имя помощника"
+                label="Имя агента"
                 value={name}
                 onChange={(event) => setName(event.target.value)}
                 required
@@ -389,14 +386,14 @@ export function ProjectAgentPicker({
                 />
               </label>
               <label className="block">
-                <span className={`${kit.label} mb-2 block`}>Role</span>
+                <span className={`${kit.label} mb-2 block`}>Роль</span>
                 <textarea
                   value={role}
                   onChange={(event) => setRole(event.target.value)}
                   required
                   rows={16}
                   className={`${kit.field} font-mono`}
-                  placeholder="Опишите задачи, способ работы, ограничения и ожидаемый результат."
+                  placeholder="Опишите задачу, метод, границы и ожидаемый результат."
                 />
               </label>
               <Button
@@ -404,7 +401,7 @@ export function ProjectAgentPicker({
                 disabled={!name.trim() || !description.trim() || !role.trim()}
               >
                 <Icon name="floppy-disk" />
-                Сохранить помощника
+                Сохранить агента
               </Button>
             </form>
           </Dialog.Content>
@@ -529,7 +526,7 @@ const Button = forwardRefControl<
 });
 export const knowledgeAgent: IProjectAgent = {
   id: "knowledge-assistant",
-  name: "Помощник по документам",
-  description: "Работает со знаниями и файлами проекта.",
+  name: "Ассистент по знаниям",
+  description: "Работает со знаниями проекта и его файлами.",
   role: knowledgeSkill.description,
 };

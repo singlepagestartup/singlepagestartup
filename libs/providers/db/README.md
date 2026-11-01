@@ -4,21 +4,50 @@ The `sps_consistency` schema stores resource generations, a transactional outbox
 a delivery journal and temporary query registrations. It is infrastructure;
 model CRUD routes and data snapshot seeding do not expose these tables.
 
-Generate and apply infrastructure migrations from the repository root:
+## Model and relation changes
+
+Every existing model/relation `repository-generate` target runs Drizzle followed
+by `@sps/providers-db:repository-generate`. New model and relation generators
+create the same sequence. Generation targets run uncached because they write
+migration files and the capture catalog.
+
+For example, after changing Startup Widget fields, run from the repository root:
 
 ```sh
-npx nx run @sps/providers-db:repository-generate
-npx nx run @sps/providers-db:repository-migrate
+npx nx run @sps/startup:models:widget:repository-generate
+npx nx run api:db:migrate
 npx nx run @sps/providers-db:consistency-check
 ```
 
+Use the matching model or relation target for other entities. Capture generation
+scans every module's effective `schema.ts` Table and SDK route, including new
+Startup models, relations and fields inherited through `fields/startup.ts`.
+Commit the generated entity migrations, infrastructure migration, Drizzle
+metadata and `capture.json` together. Never add tables to capture SQL or edit
+the catalog by hand. Repeating generation without schema or capture changes
+creates no new capture migration.
+
 `api:db:migrate` applies infrastructure first. Each model/relation migrator
-installs capture after its own table migration. The infrastructure migrator
-also reconciles the generated catalog with deployed tables. The generator
-reads effective Tables and SDK routes; no second relation graph is maintained.
-A new generator template runs infrastructure generation after model generation.
-An existing manually configured repository target must also run the
-infrastructure generation command when its Table changes.
+installs capture after its own table migration, so newly created tables receive
+triggers. The infrastructure migrator also reconciles the generated catalog
+with deployed tables. `consistency-check` checks both catalog freshness and
+installed database triggers; run it after applying the complete migration set.
+
+Client-owned or manually added generation targets must preserve the same
+uncached, sequential Drizzle-then-capture contract. Run the infrastructure
+command from the workspace root when introducing a custom migration workflow.
+Models and relations in the standard module layout need no manual capture list
+or second relation graph.
+
+## Infrastructure changes
+
+When changing the consistency schema or capture generator itself, run:
+
+```sh
+npx nx run @sps/providers-db:repository-generate
+npx nx run api:db:migrate
+npx nx run @sps/providers-db:consistency-check
+```
 
 Drizzle creates schema migrations and custom migration entries. The capture
 extension fills only a newly generated custom migration and records a catalog

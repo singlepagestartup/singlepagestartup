@@ -1,3 +1,4 @@
+import { IComponentProps as IHiddenComponentProps } from "@sps/shared-frontend-components/singlepage/hidden/interface";
 import type { IComponentProps as IAuthorDefault } from "./author-default/interface";
 import { IComponentProps as IAdminV2FormComponentProps } from "./admin-v2/form/interface";
 import { IComponentProps as IAdminV2SelectInputComponentProps } from "./admin-v2/select-input/interface";
@@ -10,6 +11,7 @@ import { IComponentProps as IAdminFormComponentProps } from "./admin/form/interf
 import { IComponentProps as IFindComponentProps } from "./find/interface";
 import { IComponentProps as IDefaultComponentProps } from "./default/interface";
 export type IComponentProps =
+  | IHiddenComponentProps
   | IAuthorDefault
   | IAdminV2FormComponentProps
   | IAdminV2SelectInputComponentProps

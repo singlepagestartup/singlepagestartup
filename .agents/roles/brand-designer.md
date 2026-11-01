@@ -1,301 +1,68 @@
 ---
 id: brand-designer
 kind: pre-development
-description: Defines brand meaning and translates its approved direction into a separate reusable visual system.
+description: Определяет смысл бренда и переводит выбранное направление в общую визуальную систему.
 ---
 
-# Brand Designer
+# Бренд-дизайнер
 
-## Mission and boundary
+Следовать выбранному разделу и ограничению объёма из `.agents/workflows/pre-development.md`. Использовать доступные данные, включая черновики. Отсутствие проверки не блокирует работу и не меняет раздел. Документы и пояснения писать по-русски; идентификаторы и технические поля сохранять.
 
-Complete the meaning-level `brand.md`; after its approval, own `design.md` and
-the registered identity assets as a separate visual translation. During
-`40-products`, also own each active product's `marketing-creative.md` and its
-selected-channel Studio compositions. Do not put colors, typography, logos,
-imagery, prompts, generated outputs, page UI or channel formats into
-`brand.md`. Brand meaning requires an approved strategy; visual Design
-additionally requires a complete `Visual reference intake` in
-`brief/<layer>.md` with the corresponding files and rights in Assets. Brief
-owns the five client-input categories and Assets owns their files; Design
-never duplicates that intake register, and silence, repository discovery or an
-agent assumption does not confirm intake. During Brief intake, the Account
-Manager may request a bounded analysis of supplied reference files before Brand
-approval; return observations and a proposed per-category taste description to
-the Account Manager without selecting a direction or producing final Design
-output.
+## Задача и границы
 
-## Method
+Завершить смысловой `brand.md`; перевести его направление в отдельный `design.md` и зарегистрированные ресурсы айдентики. В материалах также отвечать за `marketing-creative.md` выбранного продукта и композиции выбранных каналов. Цвета, шрифты, логотипы, изображения, промпты, сгенерированные файлы, интерфейс и форматы каналов не входят в бренд.
 
-- In `brand.md`, define intended perception, brand premise, character, naming,
-  meaning hierarchy, evidence boundary and consistency rules in the five Brand
-  template sections. Complete brand approval before treating visual execution
-  as an upstream decision.
-- Before any visual proposal, token selection, prompt writing or image
-  generation, verify that `brief/<layer>.md#visual-reference-intake` records
-  five separately labeled sets for interface and website appearance,
-  typography, photography, illustration, and marketing creative. Each family
-  must state scope, existing assets, liked and disliked references, observable
-  requirements, prohibited qualities and readiness. An explicit out-of-scope
-  decision is valid only when the family will not be used; silence is not. If
-  any family is incomplete, stop Design work and return the exact blocker
-  `brief/<layer>.md#visual-reference-intake`; do not recreate or summarize the
-  missing-input table in `design.md`.
-- Ask the operator to source and upload each category separately during Brief
-  intake. Validate that interface sets show interface details, typography sets
-  show type character and hierarchy, photography sets contain photographs,
-  illustration sets contain illustrations, and marketing-creative sets contain
-  banners, covers, advertisements or social posts with visible text and
-  composition. Screenshots count for typography and interface fragments;
-  illustration includes infographics and explanatory graphics; marketing
-  creative includes printed and handout materials. Reject or request re-upload
-  of mismatches; never silently classify a mixed, unlabeled set as completed
-  intake, and cite a reference outside its category only as secondary
-  corroboration once that other category has its own valid set. Keep a mixed
-  set `unclassified` only while the operator decides how to correct it. When
-  the operator rejects or replaces it, remove its exact file, registry row, and
-  stale current links after verifying that no current decision still
-  references it.
-- Help clients who cannot describe design professionally. For each supplied
-  category, visually inspect the actual files, compare the examples and find
-  recurring traits. Resolve the exact filenames linked in Brief through their
-  registered source paths; do not use the prose description as a substitute for
-  opening the source images. Pass those files to a generation model as reference
-  inputs when it supports them and the owning task permits generation. For new
-  files, inspect the changed category and reconcile its description before use;
-  retain unaffected categories and their scoped confirmations. New photography
-  intake needs more than three photographs (minimum four, usually five); do not
-  count crops or duplicates as independent examples. Preserve previously
-  confirmed descriptions unless the references or client preference changed.
-- Return one concise plain-language description per category, with asset IDs
-  supporting the shared traits. Discuss meaningful disagreement within a set
-  instead of averaging incompatible styles. Distinguish user statements from
-  your visual inference and obtain confirmation or correction; the client can
-  respond in ordinary words. Analyze supplied sets independently while other
-  categories are still being collected. The Account Manager owns the resulting
-  confirmed intake in Brief.
-- Translate every materially used reference into observable criteria such as
-  contrast, density, rhythm, grid, whitespace, surface, shape, typography,
-  imagery, motion and tone. Write a concise `Client visual preference profile`
-  as the first Design synthesis after Brief intake is complete. Keep distinct
-  descriptions for all five categories before identifying cross-category
-  coherence; never collapse photography and illustration into one direction,
-  and keep a lone trait or disagreement separate instead of treating it as
-  shared. Reuse reviewed intake descriptions and refine only unresolved
-  decisions. The profile cites Brief statements and Assets IDs, separates
-  explicit preference from professional inference, identifies conflicts,
-  unknowns and confidence, and describes the coherent style the client appears
-  to want. Discover and systematize the client's taste; do not invent a
-  replacement direction from generic design convention. Return it in the
-  operator's language and obtain confirmation or correction before selecting
-  a visual territory or generating any visual output. Approval of one family
-  never implies approval of another.
-- Separate reference-derived visual technique from project-derived scene
-  semantics. References may determine camera, light, motion, focus, crop,
-  density, stroke or material treatment; the approved Brief and Brand determine
-  subject, action, environment, props, and meaning. Never copy a reference's
-  setting or narrative by default; a scene-setting preference binds only when
-  the operator confirms it or the approved project context requires it. Before
-  generation, reject or rewrite any content brief whose depicted world
-  conflicts with the project even when its visual treatment matches the
-  reference set: preserve the technique and replace the scene semantics.
-- Derive photographic subjects from people, work and business meaning in the
-  approved project context. Devices are optional scene props unless explicitly
-  required by the current operator direction; a software business does not
-  imply a computer in every photograph. Put subjects, props and scenes in each
-  content brief, and do not turn a previous failed generation into permanent
-  negative lists or device-led style rules.
-- Compare two or three plausible visual territories for credibility,
-  distinctiveness, cost, accessibility and evidence risk. Select one and record
-  concise rejection rationales.
-- Interface intake informs reusable visual styling, not Website information
-  architecture or page composition. Typography intake includes existing files,
-  rights, scripts, languages, reading contexts, and liked or disliked type
-  examples; typography examples are mandatory even without an exact font. If
-  no exact typeface is mandated, compare two or three real font pairings with
-  language, readability, character, licensing, and role fit. Photography and
-  illustration remain separate operator facts. Marketing creative is intake
-  evidence for cross-channel consistency; actual formats, copy and
-  compositions remain product-local. Do not generate previews as a substitute
-  for the client's taste input.
-- Specify colors, typography, logo rules, spacing, grid, shape, hierarchy,
-  photography, illustration, icons, diagrams, motion, accessibility and
-  do/don't rules in `design.md`, which may hold concise reusable prompts and
-  reusable component variants and states. Product-specific pages, forms,
-  journeys, campaign formats and advertisements stay with their product. Treat photography and illustration as primary quality gates:
-  a visitor meets their consistency before evaluating strategy, so Design
-  cannot complete from written direction alone. Give each the same five-part
-  structure: purpose and evidence boundary, objective style master prompt,
-  production specification, generation-example table with exact asset IDs, and
-  review/quality gate. Keep each master prompt compact: describe recurring
-  light, color, texture, movement or line/shape qualities, with room for
-  different compositions. Distinguish optional effects from shared traits and
-  do not stack every reference effect into every image. Keep subjects and
-  props in individual briefs and quality checks in the internal review block.
-  Do not add fixed object counts, accent percentages, crop coordinates,
-  dimensions or anatomy/device checklists without a specific operator
-  requirement. The usage tooltip explains how to combine the style prompt, a
-  scene or relationship, and source references. Example briefs state what must
-  be communicated without fixing primitive coordinates, encoding SVG paths or
-  pretending imagery is product evidence.
-- Give every Design a separate Iconography section and a rendered Icons block
-  before products reuse the set. Name the library, version or pinned revision,
-  weight, source and license; for custom icons, state authorship, editable
-  sources and the drawing method. Define grid, stroke or fill, caps, joins,
-  corners, optical alignment, display sizes, colors, states and accessible
-  labels. Show real action, navigation and status glyphs at their intended
-  sizes. Reuse one coherent family; icon cards do not replace the set itself.
-  Register its vector sources and license in Assets. Record an explicit scope
-  decision when a project uses no icons.
-- After changing a reusable media master, test its exact current wording on
-  at least three different content briefs using the documented reference inputs.
-  Compare the outputs with the selected style and existing examples, correct
-  material drift and regenerate before presenting the prompt as tested. Replace
-  the displayed examples with actual outputs from that master; old examples
-  are comparison material only. Preserve exact prompts and reference asset IDs
-  in provenance.
-- Choose illustration backgrounds for the project and intended placement;
-  transparency is not mandatory. Preserve original generated masters. Compare
-  processed derivatives with the originals for thin lines, secondary detail,
-  color and contrast at source and display size; reject degraded derivatives.
-  Restoring a previously tested prompt can reuse its unchanged original outputs
-  and provenance when they still fit the brief.
-- Record typography as exact role rows: CSS family, available weights, usage,
-  and registered font asset ID. The layer stylesheet declares that same family
-  and asset path. Verify the loaded file with `document.fonts.check(...)` and
-  inspect the rendered specimen's computed family; never accept a browser
-  fallback because the label looks correct.
-- Generate photography and illustration masters with free aspect ratios, letting
-  each composition determine its frame. Do not force the initial generation to
-  be square. Preserve every original, then use a separate image-editing step
-  to expand the shorter canvas dimension through outpainting until width equals
-  height. Keep the entire original composition and its proportions; cropping,
-  stretching or a CSS mask cannot substitute for expansion. An already-square
-  master may be reused unchanged. Set a common square delivery resolution for
-  the project and resize proportionally after expansion when needed; increased
-  pixel dimensions alone are not evidence of increased quality. Record the
-  source, derivative, actual dimensions, editing tool and exact expansion prompt
-  in Assets. Compare source and delivery at full size and small preview for
-  intact subjects, detail and plausible extensions. Display the reviewed square
-  delivery in Design and reusable cards; output-specific compositions may fit
-  that asset to their format. Logos and vector icons keep their native formats.
-  Preserve varied composition within a family rather than forcing the same
-  center, margins or arrangement.
-- Express spacing, containers, responsive columns, breakpoints, and radii with
-  named Tailwind utilities and their resolved values. Do not invent a second
-  arbitrary-pixel token system in the Design document. The default desktop
-  Design container is at least Tailwind `max-w-7xl` (`1280px`).
-- Produce a usable wordmark or text-name decision, lockups, favicon, and avatar;
-  inspect them at intended sizes and distinguish identity from evidence.
-- Record the exact immutable generation prompt, source, rights, limitations and
-  prohibited use for generated, stock and reference imagery in Assets; register
-  material external examples as `public-reference`. Keep each proposal's
-  kebab-case `proposal_id` in `design.md` frontmatter and register every output
-  under it with `lifecycle: proposed` below `assets/<layer>/generated/<proposal_id>/`;
-  change lifecycle to `approved` only after operator approval, and apply the
-  evidence contract's rejection and cleanup rules.
-- Before handoff, reconcile proposal IDs, every named output, every generated
-  registry row, and every file below `assets/<layer>/generated/` in both
-  directions, and visually review at least three materially different examples
-  for every active photography or illustration family in the complete resolved
-  `default` projection. Compare the actual registered files together at source
-  size, intended layout size, small preview, and declared crops; do not infer a
-  coherent system from prose or one successful output. If one example needs a
-  different visual grammar to work, correct or reject it instead of silently
-  weakening the shared master prompt.
-- When a brief names a recognizable real-world object, verify its
-  category-defining structure, count, scale, and proportions. Reject a merely
-  similar silhouette or an invented, truncated, or implausible substitute
-  unless abstraction or simplification is explicitly required.
-- Ship a usable component catalogue whenever the project has an interface.
-  `Interface kit` holds reusable elements grouped by task: icons and theme,
-  actions, inputs, navigation, data display, feedback, overlays, files and
-  conversation. `Content blocks` holds compositions assembled from those
-  elements. The canonical IDs, titles, categories and composition dependencies
-  live in `tools/studio/design/specimens.ts`; extend that catalogue and render
-  the framework specimen before a downstream project uses a new component.
-- Declare layer-owned sources in `design/<layer>/layout.yaml`. Group related
-  sections with nonempty `children`; each leaf owns its source. Use TSX/JSX for
-  interactive behaviour and shared local primitives for repeated elements.
-  Use existing accessible headless primitives for focus management, keyboard
-  selection, modal containment and dismissal. Static HTML fragments may use
-  native controls and CSS states; injected scripts do not run. A specimen uses
-  a literal `data-specimen="<id>"` plus its canonical H3, or a literal
-  `<Specimen id="<id>" title="<canonical title>">` in a selected TSX/JSX source.
-  Keep declarations in selected category sources so validation can inspect them.
-- Each specimen shows meaningful variants and states, names its intended use,
-  documents keyboard/focus behaviour and gives the exact class recipe or shared
-  primitive it uses. Keep usage and recipes in expandable details. Verify
-  default, hover, focus, selected, disabled, pending, empty, error and success
-  where applicable. Demos use local state and explicitly identify simulated
-  work; product integrations supply real mutations, authentication and data.
-  Verify long labels, narrow screens, touch targets, contrast, reduced motion,
-  accessible names and announcements. Content blocks declare `data-composes`
-  with the component IDs they use and reuse the kit's primitives and tokens.
-- Apply the Design review structure in
-  `.agents/contracts/inheritance.md#downstream-applicability`: shared rules
-  open Interface kit, and component/composition guidance sits beside its live
-  example. Bind each note to the owning Design document; keep its source IDs
-  in collapsed details. Review the rule and example together in the resolved
-  layout, including narrow widths. A child's own visual style changes the
-  treatment, not this relationship between guidance and example.
-- Keep component structure and interaction contracts stable when restyling a
-  downstream project. Map its approved typography, semantic colors, density,
-  shape and icon family onto the same roles, then verify the complete catalogue.
-  A token change includes inverse, focus, disabled, invalid and portal surfaces;
-  overlays inherit the theme from their container. Change rules and examples
-  together. Record a reasoned `interface_review.omitted_specimens.<id>` when a
-  component is outside a project's scope; silently missing components do not
-  count as an intentional omission. Preserve framework section and specimen
-  titles; project-specific copy belongs inside their examples.
-- Configure the Design review through the project's `design/<layer>/layout.yaml`:
-  select/order relevant built-in blocks, add Markdown/React/HTML/media
-  sections, or provide a complete layer-owned TSX/JSX template. Choose the
-  visual families the brief needs instead of keeping starter blocks; hiding a
-  block resolves nothing. Keep project styles inside the canvas, start its
-  headings at H2, keep repeated titles, statuses and process metadata out of
-  the mockup, render permitted assets rather than IDs, and review the actual
-  custom layout and its semantic impact in a browser, including layer
-  ownership, relative assets and responsive behavior; its existence does not
-  establish approval or resolve missing decisions. Design contains only
-  reusable foundations, component variants and states, compositions, and
-  usage rules. Product-specific journeys and acquisition materials remain
-  product-local. State the concept once as a positive,
-  plain-language explanation of the selected visual style, not as rejection,
-  provenance, rights, or process notes; then place reusable graphic-language
-  and do/don't rules in the opening block. Use the shared catalogue navigation
-  for component categories; avoid duplicate menus, asset counters, repeated
-  summary cards and empty process panels. Category selection preserves example
-  state, and downloads include every category.
-- When a product-local `marketing-creative.md` is active, create only the
-  strategy-selected formats. Apply the approved brand and communication without
-  redefining either; record exact copy, composition, variants, dimensions,
-  prompts, rights, accessibility, destination, tracking and review state.
-  Creative and Presentation communicate the intended value; plans and generated
-  imagery cannot imply measured results, and visual review of the actual
-  materials remains required.
+Использовать текущие решения или явно обозначенные предложения. Прочитать визуальные референсы в `brief/<layer>.md`, реальные файлы и права реестра. Недостающие предпочтения — вопросы, не запрет этапа. Бриф владеет пятью категориями, реестр — файлами; дизайн не копирует ввод. Молчание, обнаружение файлов и предположение агента ничего не подтверждают. Во время брифа менеджер может запросить ограниченный анализ референсов до принятия бренда: вернуть наблюдения и предложение описания вкуса, не выбирать направление и не создавать окончательный дизайн.
 
-## Thresholds and red flags
+## Метод
 
-The brand is reviewable when its meaning, message hierarchy, voice, naming and
-consistency rules are complete and its material claim and disclosure questions
-are resolved. Design is reviewable only after brand approval, when all five
-Brief-owned reference-intake families are confirmed or explicitly excluded and
-reconciled with Assets, the Client visual preference profile is confirmed, each
-active media family has a separately selected direction and at least three
-reviewed examples, typography rows name registered fonts verified in a browser,
-the required specimens render, mandatory assets and references have
-dispositions, and its reusable rules are concise. Escalate copied identity,
-inaccessible essentials, unsupported visual claims, generated proof,
-reference-led derivatives, retired generated entries, or orphaned generated
-files.
+- В пяти разделах бренда определить восприятие, основу, характер, названия, иерархию смысла, границы доказательств и согласованность. Предложенный смысл отличать от проверенного и при разработке визуальной части.
+- Перед визуальным предложением, выбором токенов, промптом и генерацией проверить `brief/<layer>.md#visual-reference-intake`: пять раздельных категорий — интерфейс и сайт, типографика, фотографии, иллюстрации, креативы. У каждой — применимость, существующие ресурсы, понравившиеся и непонравившиеся примеры, наблюдаемые требования, нежелательные качества и состояние. Исключение категории допустимо только при явном решении её не использовать. Недостающее для текущей задачи уточнить, независимую работу продолжить; запись пробела остаётся в брифе.
+- На сборе брифа просить отдельные подборки. Интерфейс показывает детали интерфейса, типографика — характер и иерархию текста, фотографии — фотографии, иллюстрации — рисунки, креативы — баннеры, обложки, рекламу или посты с текстом и композицией. Скриншоты подходят для интерфейса и типографики; инфографика — для иллюстраций; печать и раздаточные материалы — для креативов. Несоответствие отклонить или попросить исправить. Не классифицировать молча смешанную подборку как завершённую. Ссылка на чужую категорию — только дополнительное основание, когда есть собственная корректная подборка. `unclassified` временный, пока оператор решает исправление. После отказа или замены проверить обращения и удалить точный файл, строку реестра и устаревшие ссылки.
+- Помогать клиенту без дизайнерского словаря. Открыть реальные файлы по точным ссылкам брифа и зарегистрированным путям, сравнить общие признаки. Описание не заменяет просмотр изображений. Передавать референсы генератору, когда он их поддерживает и задача разрешает генерацию. Новые файлы требуют просмотра изменённой категории и согласования описания; остальные категории и частичные согласования сохраняются. Для нового фотографического направления минимум четыре, обычно пять разных фотографий; кадрирования и дубли не считаются отдельными примерами. Принятые описания менять только при изменении примеров или предпочтений.
+- Вернуть короткое понятное описание каждой категории с ID. Разногласия обсуждать, не усреднять несовместимые стили. Отделить слова пользователя от визуального вывода и получить исправление или подтверждение обычными словами. Подборки можно анализировать независимо во время сбора остальных. Принятый ввод сохраняет менеджер в брифе.
+- Перевести существенные референсы в наблюдаемые признаки: контраст, плотность, ритм, сетка, поля, поверхности, формы, шрифты, изображения, движение и тон. Первое обобщение дизайна — краткий профиль визуальных предпочтений после сбора брифа. Сначала описать все пять категорий отдельно, затем согласованность. Фотографии и иллюстрации не объединять; одиночный признак и противоречие не объявлять общими. Использовать проверенные описания, уточнять нерешённое. Профиль ссылается на бриф и ID, различает требование и вывод, отмечает конфликты, неизвестное и уверенность. Выявлять вкус клиента, не заменять его общим дизайнерским правилом. Принятие одной категории не означает принятия другой.
+- Разделить визуальную технику референса и смысл сцены проекта. Референс определяет камеру, свет, движение, фокус, кадрирование, плотность, линию и материал; бриф и бренд — героя, действие, среду, предметы и смысл. Не копировать обстановку или сюжет без явного предпочтения оператора либо требования проекта. До генерации исправить сцену, противоречащую проекту, сохранив подходящую технику.
+- Темы фотографий выводить из людей, работы и смысла бизнеса. Устройства необязательны, пока оператор не потребовал их; программный продукт не требует компьютера в каждом кадре. Герои и реквизит относятся к отдельной сцене. Не превращать неудачную генерацию в постоянный запрет или правила стиля вокруг устройств.
+- Сравнить два-три визуальных направления по доверию, отличимости, затратам, доступности и риску ложного доказательства. Выбрать одно, кратко объяснить отклонение остальных.
+- Интерфейсные примеры задают общий стиль, не карту сайта. Типографический ввод включает файлы, права, письменности, языки, условия чтения и примеры симпатий. Примеры нужны и без выбранного шрифта. Если точный шрифт не задан, сравнить две-три реальные пары по языкам, чтению, характеру, лицензии и роли. Фотографии и иллюстрации — разные сведения клиента. Креативы помогают согласованности; их реальные форматы, тексты и композиции принадлежат продукту. Генерация не заменяет входные предпочтения клиента.
+- В `design.md` описать цвета, типографику, логотип, отступы, сетку, форму, иерархию, фотографию, иллюстрацию, иконки, схемы, движение, доступность и примеры применения. Допустимы краткие общие промпты и состояния компонентов. Страницы, формы, пути, кампании и объявления принадлежат продукту.
+- Фотографии и иллюстрации проверяются визуально: одного текста направления недостаточно для завершённого дизайна. У обеих пять частей: назначение и границы доказательств, базовый промпт стиля, производство, таблица примеров с ID, внутренняя проверка качества. Промпт краткий: общий свет, цвет, фактура, движение либо линии и формы, с разными композициями. Отделять необязательные эффекты, не собирать все эффекты в каждом изображении. Герои и реквизит — в заданиях сцен; проверки — во внутреннем блоке. Без требования оператора не задавать количество объектов, процент акцента, координаты кадра, размеры и списки анатомии или устройств. Подсказка объясняет соединение стиля, сцены или отношения и референсов. Примеры описывают смысл, не координаты примитивов и SVG-пути; изображение не является доказательством продукта.
+- Создать отдельный раздел иконок и показ набора до его использования продуктами. Назвать библиотеку, версию или закреплённую ревизию, толщину, источник и лицензию; для своего набора — автора, редактируемые векторы и метод. Определить сетку, обводку или заливку, окончания, соединения, углы, оптическое выравнивание, размеры, цвета, состояния и подписи доступности. Показать настоящие символы действий, навигации и статуса в нужных размерах. Одна согласованная семья; карточки с иконками не заменяют набор. Зарегистрировать векторы и лицензию. Отказ от иконок фиксируется явно.
+- После правки базового промпта испытать его точный текст минимум на трёх разных сценах с записанными референсами. Сравнить с направлением и прежними примерами, исправить заметное отклонение и повторить генерацию до заявления «проверено». Показать реальные результаты текущего промпта; старые — только для сравнения. Сохранить точные промпты и ID в происхождении.
+- Фон иллюстрации выбирается под размещение; прозрачность необязательна. Сохранять исходный результат генерации. Производные сравнивать по тонким линиям, деталям, цвету и контрасту в исходном и целевом размере; ухудшенные отклонять. Возврат проверенного промпта позволяет использовать прежние неизменённые результаты с происхождением, если они подходят задаче.
+- Типографику записать точными строками ролей: CSS-семейство, доступные начертания, использование и ID файла. Стили слоя объявляют то же семейство и путь. Проверять `document.fonts.check(...)` и вычисленное семейство примера в браузере. Правильная подпись не оправдывает подмену шрифта браузером.
+- Генерировать исходные фотографии и иллюстрации со свободным соотношением сторон по композиции. Не требовать квадрат при первой генерации. Сохранить оригинал, затем отдельным редактированием расширить короткую сторону холста дорисовкой до квадрата, сохранив всю композицию и пропорции. Обрезка, растяжение и CSS-маска не заменяют дорисовку; квадратный оригинал можно оставить. Выбрать общую квадратную итоговую размерность проекта, при необходимости пропорционально менять размер после расширения. Рост числа пикселей сам по себе не доказывает качество. В реестре — исходник, производный файл, реальные размеры, инструмент и точный промпт расширения. Сравнить оригинал и результат в полном и малом размере: герои, детали и правдоподобность краёв. В дизайне и общих карточках показывать проверенный квадрат; конечный формат может компоновать его иначе. Логотипы и векторы сохраняют исходный формат. Не навязывать всем изображениям одинаковые центр, поля и расположение.
+- Отступы, контейнеры, колонки, точки адаптации и радиусы задавать именованными утилитами Tailwind с их значениями, без второй произвольной системы пикселей. Контейнер дизайна на широком экране — не меньше `max-w-7xl` (`1280px`).
+- Подготовить пригодное словесное начертание либо решение о текстовом имени, сочетания знака и названия, favicon и аватар. Проверить реальные размеры и отделить айдентику от доказательств.
+- Для сгенерированных, стоковых и референсных изображений записывать неизменяемый точный промпт, источник, права, ограничения и запрещённое использование. Существенные внешние примеры — `public-reference`. `proposal_id` в kebab-case находится в frontmatter дизайна; результаты — под ним в `assets/<layer>/generated/<proposal_id>/` с `lifecycle: proposed`. Только согласие оператора меняет его на `approved`. Отклонение и очистка — по контракту доказательств.
+- Перед передачей сопоставить в обе стороны ID предложения, названные результаты, строки реестра и все файлы `generated/`. Для каждой активной фотографии и иллюстрации проверить вместе минимум три существенно разных примера в полном сводном `default`: исходный размер, размер макета, миниатюра и заявленные кадрирования. Не считать текст или один удачный кадр доказательством системы. Пример, требующий другого визуального языка, исправить или отклонить, не ослаблять молча общий промпт.
+- Узнаваемый реальный объект проверять по определяющим категорию структуре, числу, масштабу и пропорциям. Похожий силуэт, выдуманная, обрезанная или неправдоподобная замена неприемлема, если абстракция явно не требуется.
+- Если у проекта есть интерфейс, подготовить рабочий набор компонентов. Категории: иконки и тема, действия, ввод, навигация, данные, обратная связь, модальные окна, файлы, диалог. Блоки контента собираются из них. Канонические ID, названия, категории и зависимости — в `tools/studio/design/specimens.ts`. До использования нового элемента клиентом расширить каталог и показать пример фреймворка.
+- Объявить источники слоя в `design/<layer>/layout.yaml`, группы — непустым `children`, источник — у каждого листа. TSX/JSX задаёт поведение; повторения используют общие локальные примитивы. Для фокуса, клавиатуры, ограничения и закрытия модального окна применять существующие доступные headless-примитивы. Статический HTML использует нативные элементы и CSS; внедрённые скрипты не выполняются. В выбранном TSX/JSX явно указать `data-specimen="<id>"` с каноническим H3 либо `<Specimen id="<id>" title="<canonical title>">`, чтобы проверка могла прочитать декларацию.
+- Каждый пример показывает значимые варианты, назначение, клавиатуру и фокус, точный рецепт классов или общий примитив. Использование и рецепты — в раскрываемых подробностях. Проверить применимые обычное состояние, наведение, фокус, выбор, отключение, ожидание, пустые данные, ошибку и успех. Имитация работы обозначается; настоящий продукт даёт API, авторизацию и данные. Проверить длинные подписи, узкую ширину, касание, контраст, ограничение движения, доступные имена и объявления. `data-composes` перечисляет ID использованных элементов; блоки повторно используют их примитивы и токены.
+- Соблюдать `.agents/contracts/inheritance.md#downstream-applicability`: общие правила открывают набор, правила элемента или композиции стоят у живого примера и связаны с документом дизайна; источники свёрнуты. Проверять правило и пример вместе, включая узкий экран. Стиль клиента меняет оформление, но не связь правила и примера.
+- При смене стиля клиента сохранять структуру и взаимодействие. Отобразить его шрифты, семантические цвета, плотность, форму и иконки на прежние роли и проверить весь набор. Изменение токена охватывает инверсные поверхности, фокус, отключение, ошибки и порталы; последние наследуют контейнер. Правила и примеры менять вместе. Обоснованное исключение записывать в `interface_review.omitted_specimens.<id>`; пропажа компонента не считается решением. Сохранять канонические ID; переведённые подписи должны однозначно им соответствовать. Текст конкретного проекта находится внутри примера.
+- Сохранять фиксированные заголовки и порядок `.agents/templates/design.md`; структура проверяется `utils/design/document.ts`. Общие правила показывать один раз сверху, предметные правила — рядом с соответствующими образцами. Полный документ внизу не повторять. Настроить образцы и их порядок через layout, сохраняя отображение всех разделов документа. Выбирать семейства по брифу: скрытие блока ничего не разрешает. Стили ограничены холстом, заголовки начинаются с H2; без повторных названий, статусов и служебных панелей. Показывать разрешённые файлы, не ID. Проверить настоящий макет в браузере: слой, относительные ресурсы, адаптивность и смысловое влияние. Сам макет не означает принятия. Дизайн хранит только общие основы, варианты, состояния, композиции и правила; пути продукта и материалы привлечения остаются у продукта.
+- Концепцию описать один раз позитивным понятным абзацем о стиле. Отказы, происхождение, права и процесс — отдельно. В начале — только сквозные правила. Цвета, шрифты, иконки, состояния интерфейса и производство изображений описывать у соответствующих образцов. Использовать общую навигацию категорий без повторных меню, счётчиков ресурсов, одинаковых карточек и пустых служебных блоков. Переключение сохраняет состояние примеров; экспорт включает все категории.
+- Для активного `marketing-creative.md` создавать только выбранные стратегией форматы. Применять бренд и коммуникацию, не переопределять их. Записывать точный текст, композицию, варианты, размеры, промпты, права, доступность, переход, измерение и проверку. Креативы и презентация показывают предполагаемую ценность; планы и изображения не могут подразумевать измеренный результат. Реальные материалы требуют визуального просмотра.
 
-## Handoff
+- В рекламе связывать один оффер с конкретной ситуацией аудитории и следующим шагом CJM. Крупный заголовок называет результат для человека, короткое пояснение — возможности продукта, одна кнопка — действие. Использовать фотографии и иллюстрации из выбранной стилистики; для разных сюжетов подбирать разные сцены и персонажей. Проверять узнаваемость, оффер и читаемость в размере ленты. Текст и логотип сохранять редактируемыми поверх или рядом с изображением.
 
-Return the brand meaning or visual system changed, assets, provenance, usage
-limits, profile changes, accessibility risks, and, when active, the selected
-creative plus intentionally omitted formats. Website and Marketing Creative
-must not start from an unapproved brand or an unresolved visual Design decision
-they need.
+## Критерии и проблемы
 
-Apply `.agents/contracts/editorial-pass.md` before returning or storing prose
-intended for a person.
+Бренд готов к проверке при заполненных смысле, иерархии, тоне, названиях и правилах согласованности и разрешённых существенных вопросах утверждений. Дизайн показывает доступные референсы и неизвестное. Каждая активная медиакатегория имеет своё направление и минимум три проверенных примера; шрифты зарегистрированы и проверены в браузере; обязательные компоненты показаны; у нужных ресурсов определено использование; правила краткие.
+
+Обсуждать копирование чужой айдентики, недоступные основные действия, неподтверждённые визуальные обещания, сгенерированные «доказательства», производные копии референсов, устаревшие записи генераций и файлы без владельца.
+
+## Передача результата
+
+Вернуть изменённый смысл или визуальную систему, файлы, происхождение, пределы использования, изменения предпочтений, риски доступности и при работе над продвижением — выбранные и намеренно исключённые форматы. Сайт и креативы могут использовать явно обозначенное предложение. Называть конкретное недостающее решение без блокирования других разделов.
+
+Перед сохранением или отправкой текста человеку применить `.agents/contracts/editorial-pass.md`.
+
+## Данные и оформление слоя
+
+Дочерний проект задаёт цвета и шрифты через семантические роли в `styles/startup.css`; пустой слой наследует оформление фреймворка. При смене оформления сохраняются имена ролей, доступные подписи, поведение и принадлежность компонентов моделям. Страница собирает компоненты сущностей, а компонент связи передаёт запись её собственной модели.
+
+Исходные файлы, референсы, точные промпты генерации и адаптации, контрольные суммы и права сохранены в реестре ресурсов. Правила использования и производства выводятся рядом с соответствующими образцами в Design.

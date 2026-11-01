@@ -1,5 +1,5 @@
 {
-  "fingerprint": "c368c6767dd08ad1b3358b560833df7c403c1dd85e621a250ec9a080ccb14d33",
+  "fingerprint": "ef7ba315efdd33a39ca48756e398e6e6ae3f9a22109542d7188dc76d6fe0241b",
   "resources": [
     {
       "resource": "public.bg_as_to_ee_me_ps_bd9",
@@ -127,6 +127,20 @@
         "className": "class_name",
         "categoryId": "cy_id",
         "websiteBuilderModuleWidgetId": "we_br_me_wt_id"
+      }
+    },
+    {
+      "resource": "public.ht_ma_to_fe_se_me_fs_5ax",
+      "topic": "host.metadata-to-file-storage-module-files",
+      "columns": {
+        "id": "id",
+        "createdAt": "created_at",
+        "updatedAt": "updated_at",
+        "variant": "variant",
+        "orderIndex": "order_index",
+        "className": "class_name",
+        "metadataId": "ma_id",
+        "fileStorageModuleFileId": "fe_se_me_fe_id"
       }
     },
     {
@@ -394,6 +408,7 @@
       "resource": "public.sl_profile",
       "topic": "social.profiles",
       "columns": {
+        "metadata": "metadata",
         "id": "id",
         "createdAt": "created_at",
         "updatedAt": "updated_at",
@@ -819,6 +834,7 @@
       "resource": "public.sps_blog_article",
       "topic": "blog.articles",
       "columns": {
+        "metadata": "metadata",
         "id": "id",
         "className": "class_name",
         "createdAt": "created_at",
@@ -1277,6 +1293,7 @@
       "resource": "public.sps_ee_product",
       "topic": "ecommerce.products",
       "columns": {
+        "metadata": "metadata",
         "id": "id",
         "createdAt": "created_at",
         "updatedAt": "updated_at",
@@ -1553,6 +1570,8 @@
         "keywords": "keywords",
         "author": "author",
         "viewport": "viewport",
+        "opengraphImage": "opengraph_image",
+        "twitterImage": "twitter_image",
         "opengraphTitle": "opengraph_title",
         "opengraphDescription": "opengraph_description",
         "opengraphUrl": "opengraph_url",
@@ -1573,6 +1592,7 @@
       "resource": "public.sps_h_page",
       "topic": "host.pages",
       "columns": {
+        "metadata": "metadata",
         "id": "id",
         "title": "title",
         "url": "url",

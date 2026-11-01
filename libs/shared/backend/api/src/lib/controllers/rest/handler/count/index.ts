@@ -20,7 +20,9 @@ export class Handler<
     next: Next,
   ): Promise<Response> {
     try {
-      const data = await this.service.count({ params: c.var.parsedQuery });
+      const data = await this.service.count({
+        params: c.var.parsedQuery,
+      });
 
       return c.json({
         data,

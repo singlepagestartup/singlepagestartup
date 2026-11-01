@@ -48,9 +48,12 @@ explicit port. The path and query parameters remain in the redirect.
 `skipMiddlewareUrlNormalize` prevents Next from rewriting loopback hosts in the
 outgoing Location header; a login on `127.0.0.1` keeps the same cookie origin.
 
-The catch-all page keeps `generateStaticParams()` empty in development and
+The public `[language]/[[...url]]` page keeps `generateStaticParams()` empty in development and
 production. With `dynamicParams = true`, the Host page reader resolves each
-requested URL on demand. Expanding every page mask across user-owned entities
+requested URL on demand and caches its HTML with ISR. Its layout reads the locale
+from route parameters. Admin has a separate request-rendered route. Current-user
+controls load through their client readers and do not personalize cached HTML.
+Expanding every page mask across user-owned entities
 can exceed Next's fixed 5 MiB development static-path cache and repeat that
 expensive enumeration on each request. The URL enumeration API remains available
 for explicit consumers such as the sitemap.

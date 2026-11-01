@@ -207,6 +207,77 @@ describe("Database", () => {
     });
   });
 
+  describe("updateFirstByField", () => {
+    function createUpdateRepository(requiredForeignKey = false) {
+      const record = {
+        id: "row-1",
+        variant: "card",
+        title: { en: "Original", ru: "Исходное название" },
+        metadata: { seo: { keywords: { ru: ["статья"] } } },
+        ownerId: "owner-1",
+      };
+      const configuration = new Configuration({
+        repository: {
+          ...baseConfiguration,
+          Table: ConsumeTestTable,
+          insertSchema: z.object({
+            variant: z.string().optional(),
+            title: z.record(z.string()).default({}),
+            metadata: z.record(z.unknown()).default({}),
+            ownerId: requiredForeignKey ? z.string() : z.string().optional(),
+            updatedAt: z.date().optional(),
+          }),
+          selectSchema: z.object({}).passthrough(),
+        },
+      });
+      const repository = new Database(configuration);
+      jest.spyOn(repository, "findByField").mockResolvedValue([record]);
+      const set = jest.fn();
+      const execute = jest.fn(async () => [
+        { ...record, ...set.mock.calls[0][0] },
+      ]);
+      const returning = jest.fn(() => ({ execute }));
+      const where = jest.fn(() => ({ returning }));
+      set.mockReturnValue({ where });
+      repository.db = { update: jest.fn(() => ({ set })) } as any;
+      return { repository, record, set, execute };
+    }
+
+    it("changes publication state without applying insert defaults to omitted fields", async () => {
+      const { repository, record, set } = createUpdateRepository();
+      const saved = await repository.updateFirstByField("id", record.id, {
+        variant: "hidden",
+      });
+
+      expect(saved).toEqual({
+        ...record,
+        variant: "hidden",
+        updatedAt: expect.any(Date),
+      });
+      expect(set).toHaveBeenCalledWith({
+        variant: "hidden",
+        updatedAt: expect.any(Date),
+      });
+    });
+
+    it("does not require an unchanged relation key in a partial update", async () => {
+      const { repository, record } = createUpdateRepository(true);
+      await expect(
+        repository.updateFirstByField("id", record.id, { variant: "hidden" }),
+      ).resolves.toMatchObject({
+        ownerId: record.ownerId,
+        title: record.title,
+      });
+    });
+
+    it("allows an explicit empty localized field without clearing neighboring JSON", async () => {
+      const { repository, record } = createUpdateRepository();
+      await expect(
+        repository.updateFirstByField("id", record.id, { title: {} }),
+      ).resolves.toMatchObject({ title: {}, metadata: record.metadata });
+    });
+  });
+
   describe("consumeFirstByField", () => {
     function createConsumeRepository() {
       const configuration = new Configuration({

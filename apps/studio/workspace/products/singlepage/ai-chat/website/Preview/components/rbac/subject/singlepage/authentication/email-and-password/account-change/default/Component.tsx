@@ -1,22 +1,18 @@
 "use client";
-import {
-  type InputHTMLAttributes as InputHTMLAttributes,
-  useId as useIdPresentation,
-  useState as useStatePresentation,
-  forwardRef as forwardRef,
-  type SVGProps as SVGProps,
-  forwardRef as forwardRefControl,
-  type ButtonHTMLAttributes as ButtonControlProps,
-  useId,
-  useState,
-  type FormEvent,
-} from "react";
-
+import { type InputHTMLAttributes as InputHTMLAttributes } from "react";
+import { useId as useIdPresentation } from "react";
+import { useState as useStatePresentation } from "react";
+import { forwardRef as forwardRef } from "react";
+import { type SVGProps as SVGProps } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
 import { Component as WebsiteBuilderModuleButton } from "../../../../../../../website-builder/button/index";
-
+import {
+  forwardRef as forwardRefControl,
+  type ButtonHTMLAttributes as ButtonControlProps,
+} from "react";
 import IconGlyphs from "../../../../../../../website-builder/feature/singlepage/icon/icons.json";
-
+import IconPresentationGlyphs from "../../../../../../../website-builder/feature/singlepage/icon/icons.json";
+import { useId, useState, type FormEvent } from "react";
 interface IModuleIconProps extends SVGProps<SVGSVGElement> {
   size?: number;
 }
@@ -161,7 +157,7 @@ function PasswordField({
         <ButtonPresentation
           variant="plain"
           onClick={() => setVisible(!visible)}
-          aria-label={`${visible ? "Скрыть" : "Показать"} ${label.toLowerCase()}`}
+          aria-label={`${visible ? "Hide" : "Show"} ${label.toLowerCase()}`}
           aria-pressed={visible}
           className="absolute top-0.5 right-1 min-h-11 w-11 px-2"
         >
@@ -201,7 +197,7 @@ function Icon({
   const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
@@ -225,15 +221,15 @@ function IconPresentation({
   className = "",
   svgProps,
 }: {
-  name: keyof typeof IconGlyphs;
+  name: keyof typeof IconPresentationGlyphs;
   size?: 20 | 24;
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  const geometry = IconGlyphs[name]
+  const geometry = IconPresentationGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
@@ -277,7 +273,7 @@ export function Component({
   const title = kind === "email" ? "Изменить почту" : "Изменить пароль";
   const steps =
     kind === "email"
-      ? ["Подтвердите текущую почту", "Новая почта", "Подтвердите новую почту"]
+      ? ["Подтвердить текущую почту", "Новая почта", "Подтвердить новую почту"]
       : ["Подтвердить почту", "Новый пароль"];
   const active = step === "details" ? 1 : step === "verify-new" ? 2 : 0;
   function advance(next: typeof step) {
@@ -290,7 +286,7 @@ export function Component({
     try {
       onComplete?.(nextEmail);
     } catch {
-      setError("Не удалось сохранить изменения. Попробуйте ещё раз.");
+      setError("Изменение не сохранилось. Попробуйте снова.");
       return;
     }
     setCurrentPassword("");
@@ -302,14 +298,14 @@ export function Component({
     event.preventDefault();
     if (step === "verify-current" || step === "verify-new") {
       if (code.trim() !== "123456") {
-        setError("Код неверный. В этом примере используйте 123456.");
+        setError("Неверный код. В примере используйте 123456.");
         return;
       }
       if (step === "verify-new") complete(newEmail.trim().toLowerCase());
       else advance("details");
     } else if (kind === "email") {
       if (newEmail.trim().toLowerCase() === email.toLowerCase()) {
-        setError("Укажите другой адрес электронной почты.");
+        setError("Укажите другой адрес почты.");
         return;
       }
       advance("verify-new");
@@ -319,7 +315,7 @@ export function Component({
         return;
       }
       if (password === currentPassword) {
-        setError("Новый пароль должен отличаться от текущего.");
+        setError("Выберите пароль, отличающийся от текущего.");
         return;
       }
       complete();
@@ -337,8 +333,8 @@ export function Component({
           <p role="status" className="flex items-start gap-2 text-sm">
             <CheckCircle2 className="size-5 shrink-0" />
             {kind === "email"
-              ? `В примере почта изменена на ${newEmail.trim().toLowerCase()}.`
-              : "В примере пароль изменён. Введённые пароли не сохраняются."}
+              ? `В этом примере email изменён на ${newEmail.trim().toLowerCase()} .`
+              : "Пароль изменён в примере. Пароли не сохраняются."}
           </p>
           <Button variant="secondary" onClick={onCancel}>
             Готово
@@ -347,7 +343,7 @@ export function Component({
       ) : (
         <>
           <ol
-            aria-label="Этапы изменения"
+            aria-label="Ход изменения"
             className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-xs text-[color:var(--workspace-brand-muted)]"
           >
             {steps.map((label, index) => (
@@ -369,13 +365,13 @@ export function Component({
               <p className="break-words text-sm leading-6 text-[color:var(--workspace-brand-muted)]">
                 Сначала подтвердите доступ к {email}. Затем{" "}
                 {kind === "email"
-                  ? "укажите и подтвердите новую почту."
-                  : "введите текущий пароль и придумайте новый."}
+                  ? "введите и подтвердите новую почту."
+                  : "введите текущий пароль и выберите новый."}
               </p>
               <div className="flex flex-wrap gap-2">
                 <Button onClick={() => advance("verify-current")}>
                   <Mail className="size-4" />
-                  Отправить код
+                  Отправить код проверки
                 </Button>
                 <Button variant="secondary" onClick={onCancel}>
                   Отмена
@@ -391,7 +387,7 @@ export function Component({
               {step === "verify-current" || step === "verify-new" ? (
                 <>
                   <p className="break-words text-sm leading-6 text-[color:var(--workspace-brand-muted)]">
-                    Введите код подтверждения для{" "}
+                    Введите код проверки для{" "}
                     <strong className="font-medium text-[color:var(--workspace-brand-foreground)]">
                       {step === "verify-new"
                         ? newEmail.trim().toLowerCase()
@@ -403,7 +399,7 @@ export function Component({
                     className="grid min-w-0 gap-2 text-sm font-medium"
                     htmlFor={`${id}-code`}
                   >
-                    Код подтверждения
+                    Код проверки
                     <input
                       autoFocus
                       id={`${id}-code`}
@@ -426,7 +422,7 @@ export function Component({
                     id={`${id}-hint`}
                     className="text-xs text-[color:var(--workspace-brand-muted)]"
                   >
-                    Код для примера: 123456. Письмо не отправляется.
+                    Код примера: 123456. Письмо не отправляется.
                   </p>
                   <div>
                     <Button
@@ -445,7 +441,7 @@ export function Component({
                         role="status"
                         className="mt-1 text-xs text-[color:var(--workspace-brand-muted)]"
                       >
-                        Новый код для примера: 123456.
+                        Новый код примера готов: 123456.
                       </p>
                     )}
                   </div>
@@ -517,9 +513,9 @@ export function Component({
                     ? "Подтвердить новую почту"
                     : step === "details"
                       ? kind === "email"
-                        ? "Подтвердите новую почту"
+                        ? "Подтвердить новую почту"
                         : "Изменить пароль"
-                      : "Подтвердить код"}
+                      : "Проверить код"}
                 </Button>
                 <Button
                   type="button"
@@ -534,7 +530,7 @@ export function Component({
                     )
                   }
                 >
-                  Back
+                  Назад
                 </Button>
                 <Button type="button" variant="plain" onClick={onCancel}>
                   Отмена

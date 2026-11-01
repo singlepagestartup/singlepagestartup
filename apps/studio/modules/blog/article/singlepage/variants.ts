@@ -1,3 +1,4 @@
+import { Component as SeoEditor } from "./seo-editor";
 import { Component as AdminV2Card } from "./admin-v2-card/index";
 import { Component as AdminV2List } from "./admin-v2-list/index";
 import { Component as AdminV2Table } from "./admin-v2-table/index";
@@ -11,6 +12,7 @@ import { Component as RelatedDefault } from "./related-default/index";
 import { Component as Row } from "./row/index";
 
 export const variants = {
+  "seo-editor": SeoEditor,
   "admin-v2-card": AdminV2Card,
   "admin-v2-list": AdminV2List,
   "admin-v2-table": AdminV2Table,

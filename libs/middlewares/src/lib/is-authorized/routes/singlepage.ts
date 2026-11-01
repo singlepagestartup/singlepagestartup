@@ -90,6 +90,8 @@ export const allowedRoutes: IRouteRule[] = [
     regexPath: /\/api\/host\/pages\/(find-by-url|urls|url-segment-value)$/,
     methods: ["GET"],
   },
+  { regexPath: /^\/api\/host\/pages\/seo\/?$/, methods: ["GET"] },
+  { regexPath: /^\/api\/host\/pages\/seo-preview\/?$/, methods: ["POST"] },
   {
     regexPath: /\/api\/rbac\/permissions$/,
     methods: ["GET"],

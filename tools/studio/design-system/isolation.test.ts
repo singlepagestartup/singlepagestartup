@@ -194,11 +194,37 @@ function references(file: string): IReference[] {
           expression === "require"
         ) {
           const specifier = staticText(node.arguments[0]);
-          if (!specifier)
-            throw new Error(
-              `${file}: dependency import must have a static specifier`,
-            );
-          add(specifier, "module");
+          if (specifier) add(specifier, "module");
+          else {
+            // Layout-backed test loaders have a fixed local root and a source filename.
+            // Inspect the entire bounded directory, including transitive dependencies.
+            const argument = node.arguments[0];
+            const url =
+              argument &&
+              ts.isPropertyAccessExpression(argument) &&
+              argument.name.text === "href"
+                ? argument.expression
+                : undefined;
+            const template =
+              url &&
+              ts.isNewExpression(url) &&
+              url.expression.getText(tree) === "URL" &&
+              url.arguments?.[1]?.getText(tree) === "import.meta.url"
+                ? url.arguments[0]
+                : undefined;
+            if (
+              template &&
+              ts.isTemplateExpression(template) &&
+              template.templateSpans.length === 1 &&
+              /^(?:\.\.?\/).+\/$/.test(template.head.text) &&
+              template.templateSpans[0].literal.text === ""
+            ) {
+              add(`${template.head.text}**/*`, "glob", globGroup++);
+            } else
+              throw new Error(
+                `${file}: dependency import must have a static specifier or bounded local URL`,
+              );
+          }
         }
         if (
           expression === "import.meta.glob" ||
@@ -274,8 +300,7 @@ function target(
     if (matches)
       return path.resolve(
         options.root,
-        destinations[0].replace(
-          "*",
+        destinations[0].replaceAll("*", () =>
           name.slice(prefix.length, suffix ? -suffix.length : undefined),
         ),
       );
@@ -434,6 +459,17 @@ test("detects production aliases and relative imports, including type dependenci
   ).toBe(false);
 });
 
+test("alias replacement keeps captured path characters literal", () => {
+  const options = {
+    root: "/fixture",
+    studio: "/fixture/apps/studio",
+    aliases: { "@fixture/*": ["apps/studio/modules/*"] },
+  };
+  expect(target("/fixture/view.ts", "@fixture/$&", options)).toBe(
+    "/fixture/apps/studio/modules/$&",
+  );
+});
+
 test("shared UI entries have a transitive UI-only graph without SDK or app imports", () => {
   const visited = new Set<string>();
   function visit(file: string) {
@@ -464,6 +500,7 @@ test.each([
   ["@sps/ui-adapter/toast", "@sps/rbac/models/subject/sdk/client"],
   ["@sps/ui-adapter/toast", "@sps/ui-adapter"],
   ["@sps/ui-adapter/toast", "next/navigation"],
+  ["@sps/shared-utils/metadata", "@sps/rbac/models/subject/sdk/client"],
 ])(
   "approved entry %s rejects transitive dependency %s",
   (specifier, dependency) => {
@@ -561,6 +598,11 @@ test.each([
   ],
   ["reexport", "view.ts", 'export { Component } from "../modules/model";'],
   ["dynamic import", "view.ts", 'const view = import("../modules/model");'],
+  [
+    "bounded URL import",
+    "view.ts",
+    "const view = import(new URL(`../modules/${name}`, import.meta.url).href);",
+  ],
   ["require", "view.ts", 'const view = require("../modules/model");'],
   [
     "Vite root import",

@@ -46,7 +46,7 @@ describe("Given: RBAC ecommerce product cart-default component", () => {
     const delegatedVariants = rbacSpy.mock.calls.map((call) => call[0].variant);
 
     expect(delegatedVariants).toEqual([
-      "ecommerce-module-product-cart-default",
+      "me-ecommerce-module-product-cart-default",
     ]);
   });
 });

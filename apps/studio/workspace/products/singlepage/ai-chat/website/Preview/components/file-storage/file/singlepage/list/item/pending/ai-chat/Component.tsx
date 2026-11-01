@@ -15,7 +15,7 @@ function WebsiteBuilderModuleFeature({
   const geometry = Glyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       width={size}
@@ -79,7 +79,7 @@ export const Component = memo(function Component({
     >
       <button
         type="button"
-        aria-label={`Удалить ${file.name}`}
+        aria-label={`Remove ${file.name}`}
         disabled={disabled}
         onClick={remove}
         className="absolute right-1 top-1 z-10 grid size-6 place-items-center rounded-full bg-foreground text-background hover:opacity-80 disabled:opacity-30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
@@ -111,7 +111,7 @@ export const Component = memo(function Component({
       </p>
       <div className="mt-1 flex items-center justify-between gap-1">
         <span className="text-xs text-muted-foreground">
-          {Math.max(1, Math.ceil(file.size / 1024))} KB
+          {Math.max(1, Math.ceil(file.size / 1024))} КБ
         </span>
         {onMove && (
           <div className="flex">
@@ -119,7 +119,7 @@ export const Component = memo(function Component({
               <button
                 key={direction}
                 type="button"
-                aria-label={`Переместить ${file.name} ${direction === -1 ? "earlier" : "later"}`}
+                aria-label={`Move ${file.name} ${direction === -1 ? "earlier" : "later"}`}
                 disabled={disabled || (direction === -1 ? first : last)}
                 onClick={() => onMove(file.id, direction)}
                 className="grid size-8 place-items-center rounded-md hover:bg-muted disabled:opacity-30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-foreground"

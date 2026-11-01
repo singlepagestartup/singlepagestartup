@@ -1,3 +1,6 @@
+export * from "./sitemap";
+export * from "./seo";
+
 /** Named values resolved from a Page mask; missing keys remain undefined. */
 export type IRouteParams = Readonly<Record<string, string | undefined>>;
 
@@ -148,7 +151,7 @@ export function composeRouteRules(
  * Builds the standard three-layer middleware matcher (issue #195 cleanup):
  * **constructor options → project `startup.ts` → framework `singlepage.ts`**.
  *
- * Every SPS path-gating middleware (`http-cache`, `is-authorized`, `observer`,
+ * Every SPS path-gating middleware (`is-authorized`, `observer`,
  * `revalidation`, `actions-logger`, `bill-route`) composed the identical
  * `new RouteMatcher(composeRouteRules([optionRoutes, startup, singlepage]))`
  * in its own `routes/index.ts`; this is the single shared definition each one

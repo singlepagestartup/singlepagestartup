@@ -2,6 +2,7 @@
 
 import { IComponentPropsExtended, variant, IModel } from "./interface";
 import { api } from "@sps/ecommerce/models/product/sdk/client";
+import { MetadataField } from "@sps/shared-frontend-components/singlepage/admin/metadata-editor/field";
 import { useForm } from "react-hook-form";
 import { FormField } from "@sps/ui-adapter";
 import { z } from "zod";
@@ -22,9 +23,10 @@ import {
   TabsList,
   TabsTrigger,
 } from "@sps/shared-ui-shadcn";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 
 export function Component(props: IComponentPropsExtended) {
+  const expectedMetadata = useRef(props.data?.metadata || {});
   const updateEntity = api.update();
   const createEntity = api.create();
 
@@ -36,6 +38,7 @@ export function Component(props: IComponentPropsExtended) {
   const form = useForm<z.infer<typeof insertSchema>>({
     resolver: zodResolver(insertSchema),
     defaultValues: {
+      metadata: props.data?.metadata || {},
       variant: props.data?.variant || "default",
       title: props.data?.title || {},
       description: props.data?.description || {},
@@ -49,7 +52,17 @@ export function Component(props: IComponentPropsExtended) {
 
   async function onSubmit(data: z.infer<typeof insertSchema>) {
     if (props.data?.id) {
-      updateEntity.mutate({ id: props.data?.id, data });
+      updateEntity.mutate(
+        {
+          id: props.data.id,
+          data: { ...data, _expectedMetadata: expectedMetadata.current },
+        },
+        {
+          onSuccess: (record) => {
+            expectedMetadata.current = record.metadata;
+          },
+        },
+      );
       return;
     }
 
@@ -177,6 +190,7 @@ export function Component(props: IComponentPropsExtended) {
 
         <TabsContent value="details" className="mt-0 pt-6">
           <div className="flex flex-col gap-6">
+            <MetadataField form={form} />
             <FormField
               ui="shadcn"
               type="text"

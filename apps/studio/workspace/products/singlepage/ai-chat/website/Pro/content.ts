@@ -18,60 +18,69 @@ export interface IProPageContent {
   labels: Record<string, string>;
 }
 
-function readSection(text: string, name: string): string {
-  return (
-    text
-      .split(`<!-- section: ${name} -->`)[1]
-      ?.split("<!-- section:")[0]
-      .trim() ?? ""
-  );
-}
-
-function readCopy(text: string): IProPageSection {
-  return {
-    title: text.match(/^## (.+)$/m)?.[1] ?? "",
-    paragraphs: text
-      .replace(/^## .+$/m, "")
-      .split(/\n\s*\n/)
-      .map((paragraph) => paragraph.trim())
-      .filter((paragraph) => paragraph && !paragraph.startsWith("|")),
-  };
-}
-
-function readRows(text: string): string[][] {
-  return text
-    .split("\n")
-    .filter((line) => line.trim().startsWith("|"))
-    .slice(2)
-    .map((line) =>
-      line
-        .trim()
-        .slice(1, -1)
-        .split("|")
-        .map((cell) => cell.trim()),
-    );
-}
-
-export function parseProPage(text: string): IProPageContent {
-  const section = (name: string) => readSection(text, name);
-  const plan = Object.fromEntries(readRows(section("plan")));
-  return {
-    hero: readCopy(section("hero")),
-    plan: {
-      ...readCopy(section("plan")),
-      prices: {
-        USD: Number(plan["usd-monthly"]),
-        RUB: Number(plan["rub-monthly"]),
-      },
-      monthlyTokens: Number(plan["monthly-tokens"]),
+export const pageContent = {
+  hero: {
+    title: "Тариф Pro на месяц",
+    paragraphs: [
+      "Продолжайте работу над бизнес-моделью, идеей продукта и документами проекта с ежемесячным пакетом токенов.",
+    ],
+  },
+  plan: {
+    title: "Pro",
+    paragraphs: ["Ежемесячная оплата"],
+    prices: {
+      USD: 29,
+      RUB: 1900,
     },
-    includes: readCopy(section("includes")),
-    terms: readCopy(section("terms")),
-    preview: readCopy(section("preview")),
-    review: readCopy(section("review")),
-    labels: Object.fromEntries(readRows(section("controls"))),
-  };
-}
+    monthlyTokens: 5000,
+  },
+  includes: {
+    title: "Что входит в тариф",
+    paragraphs: [
+      "Каждый месяц — пакет внутренних токенов для работы в AI Chat.",
+      "Используйте подготовленные документы в работе с ИИ-помощником по разработке на бесплатном Code Framework с лицензией MIT.",
+      "Баланс можно пополнять отдельно от ежемесячного тарифа.",
+    ],
+  },
+  terms: {
+    title: "Расход токенов",
+    paragraphs: [
+      "AI Chat учитывает работу ИИ по стоимости провайдера. Внутренние токены служат единицей баланса аккаунта и отличаются от входных и выходных токенов модели. При ошибке или отмене запроса все списанные за него токены возвращаются.",
+    ],
+  },
+  preview: {
+    title: "Предварительный просмотр тарифа",
+    paragraphs: [
+      "Выбор валюты и просмотр тарифа не создают заказ, не списывают деньги и не подключают подписку.",
+    ],
+  },
+  review: {
+    title: "Выбранный тариф на месяц",
+    paragraphs: [
+      "Здесь показаны выбранный тариф, количество токенов и валюта. Можно изменить валюту или вернуться к тарифам и пополнению.",
+    ],
+  },
+  labels: {
+    back: "К тарифам и токенам",
+    "back-href": "/ecommerce",
+    currency: "Валюта оплаты",
+    usd: "Доллары США",
+    rub: "Российские рубли",
+    "per-month": "в месяц",
+    allowance: "Ежемесячный пакет",
+    "tokens-per-month": "внутренних токенов в месяц",
+    plan: "Тариф",
+    price: "Стоимость за месяц",
+    period: "Период оплаты",
+    month: "Месяц",
+    preview: "Посмотреть тариф",
+    "review-state": "Тариф Pro выбран. Проверьте условия.",
+    chat: "Вернуться в AI Chat",
+    "chat-href": "/",
+    topups: "Пополнение и условия использования токенов",
+    "topups-href": "/ai-chat/rbac/subjects/tokens",
+  },
+};
 
 export function proCurrencyFromHref(href?: string): ProCurrency {
   if (!href) return "USD";

@@ -15,7 +15,7 @@ function Icon({
   const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
@@ -47,8 +47,8 @@ export function Component({ agent, onSelect }: IAgentAvatarProps) {
       data-id={agent.id}
       data-variant="agent-avatar-ai-chat"
       onClick={() => onSelect(agent)}
-      aria-label={`О помощнике ${agent.name}`}
-      title={`О помощнике ${agent.name}`}
+      aria-label={`About ${agent.name}`}
+      title={`About ${agent.name}`}
       className={`grid size-8 shrink-0 place-items-center rounded-lg bg-[color:var(--workspace-brand-accent)] text-[color:var(--workspace-brand-foreground)] transition hover:bg-[color:var(--workspace-brand-accent)]/80 ${kit.focus}`}
     >
       <Icon name="robot" className="size-4" />

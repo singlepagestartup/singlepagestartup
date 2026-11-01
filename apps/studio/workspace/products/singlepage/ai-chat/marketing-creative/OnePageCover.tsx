@@ -35,13 +35,13 @@ export default function OnePageCover({ text }: { text?: string } = {}) {
         </div>
         <div className="relative m-10 overflow-hidden rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-7">
           <div className="flex items-center justify-between border-b border-[var(--workspace-brand-line)] pb-5 text-sm text-[var(--workspace-brand-muted)]">
-            <span>Business model</span>
+            <span>Бизнес-модель</span>
             <span className="rounded-full bg-[var(--workspace-brand-accent)] px-3 py-1 text-[var(--workspace-brand-foreground)]">
-              Current
+              Текущий
             </span>
           </div>
           <div className="mt-7 space-y-4">
-            {["Customers and offer", "Operations", "Sales", "Marketing"].map(
+            {["Клиенты и предложение", "Операции", "Продажи", "Маркетинг"].map(
               (item, index) => (
                 <div
                   className="flex items-center gap-4 rounded-2xl bg-[var(--workspace-brand-background)] p-5"

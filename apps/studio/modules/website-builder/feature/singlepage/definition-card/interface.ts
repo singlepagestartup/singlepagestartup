@@ -12,7 +12,7 @@ export interface IComponentProps {
   linkLabel?: string;
   sourceHref?: string;
   sourceLabel?: string;
-  appearance?: "ruled" | "cards" | "checklist";
+  appearance?: "ruled" | "cards" | "checklist" | "attachment";
   actions?: ReactNode;
 }
 

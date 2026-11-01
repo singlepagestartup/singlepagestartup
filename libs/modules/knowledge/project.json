@@ -45,7 +45,8 @@
             "command": "nx run @sps/knowledge:relations:repository-generate"
           }
         ]
-      }
+      },
+      "cache": false
     },
     "repository-migrate": {
       "executor": "nx:run-commands",
@@ -74,7 +75,8 @@
             "command": "nx run @sps/knowledge:models:chunk:repository-generate"
           }
         ]
-      }
+      },
+      "cache": false
     },
     "relations:repository-generate": {
       "executor": "nx:run-commands",
@@ -88,7 +90,8 @@
             "command": "nx run @sps/knowledge:relations:sources-to-chunks:repository-generate"
           }
         ]
-      }
+      },
+      "cache": false
     },
     "models:repository-migrate": {
       "executor": "nx:run-commands",
@@ -131,9 +134,13 @@
           },
           {
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          },
+          {
+            "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
-      }
+      },
+      "cache": false
     },
     "models:source:repository-migrate": {
       "executor": "nx:run-commands",
@@ -160,9 +167,13 @@
           },
           {
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          },
+          {
+            "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
-      }
+      },
+      "cache": false
     },
     "models:chunk:repository-migrate": {
       "executor": "nx:run-commands",
@@ -189,9 +200,13 @@
           },
           {
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          },
+          {
+            "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
-      }
+      },
+      "cache": false
     },
     "relations:sources-to-file-storage-module-files:repository-migrate": {
       "executor": "nx:run-commands",
@@ -218,9 +233,13 @@
           },
           {
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          },
+          {
+            "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
-      }
+      },
+      "cache": false
     },
     "relations:sources-to-chunks:repository-migrate": {
       "executor": "nx:run-commands",

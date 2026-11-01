@@ -1,23 +1,18 @@
 "use client";
-import {
-  forwardRef as forwardRef,
-  type SVGProps as SVGProps,
-  forwardRef as forwardRefControl,
-  type ButtonHTMLAttributes as ButtonControlProps,
-  useCallback,
-  useEffect,
-  useState,
-} from "react";
-
+import { forwardRef as forwardRef } from "react";
+import { type SVGProps as SVGProps } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
 import { Component as WebsiteBuilderModuleButton } from "../../../../website-builder/button/index";
-
+import {
+  forwardRef as forwardRefControl,
+  type ButtonHTMLAttributes as ButtonControlProps,
+} from "react";
 import IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
 import type { IIdentityFlowProps } from "../../../identity/singlepage/card-default/Component";
 import { Component as AuthenticationProviderConnect } from "../authentication/provider-connect/default/index";
 import { Component as AuthenticationAccountChange } from "../authentication/email-and-password/account-change/default/index";
 import { Component as RbacModuleIdentity } from "../../../identity/index";
-
+import { useCallback, useEffect, useState } from "react";
 import { useStudioAccount } from "../account/Account";
 import { aiChatAccount } from "../account/fixture";
 import {
@@ -148,7 +143,7 @@ function Icon({
   const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
@@ -249,7 +244,7 @@ export function SubjectMeIdentityFindInformation(
       setIdentities((current) =>
         current.filter((item) => item.id !== identity.id),
       );
-      setResult("Способ входа отключён в этом примере.");
+      setResult("Способ входа удалён в примере.");
     },
     [],
   );
@@ -268,7 +263,7 @@ export function SubjectMeIdentityFindInformation(
           </p>
         </div>
         <span className="rounded-full bg-[color:var(--workspace-brand-background)] px-3 py-1.5 text-xs text-[color:var(--workspace-brand-muted)]">
-          Подключено: {identities.length}
+          {identities.length} подключено
         </span>
       </div>
       <div className="mt-6 space-y-4">
@@ -357,7 +352,7 @@ export function SubjectMeIdentityFindInformation(
                   ]);
                   setAdding(false);
                   setProvider(undefined);
-                  setResult("Способ входа подключён в этом примере.");
+                  setResult("Способ входа подключён в примере.");
                 }}
               />
             )}
@@ -387,6 +382,6 @@ export const defaultSubjectMeIdentityFindInformationProps: SubjectMeIdentityFind
   {
     title: "Способы входа",
     description:
-      "Выберите, как входить в аккаунт. Каждое подключение можно настроить отдельно.",
-    emptyLabel: "К этому аккаунту пока не подключены способы входа.",
+      "Выберите способ входа. Каждый подключённый аккаунт настраивается отдельно.",
+    emptyLabel: "У аккаунта нет подключённых способов входа.",
   };

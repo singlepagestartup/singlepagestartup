@@ -7,11 +7,10 @@ import {
 import { SiteShell, PreviewLink, siteStyles as styles } from "../Site";
 import {
   filterModules,
-  parseModules,
-  parseModulesPage,
+  frameworkModules,
+  modulesPageContent,
   readModuleSlug,
 } from "./content";
-import sourceText from "./page.md?raw";
 import SocialGuide from "./SocialGuide";
 import BusinessGuide from "./BusinessGuide";
 import ModuleVisual from "./ModuleVisual";
@@ -28,9 +27,9 @@ export default function ModulesPage({
 }: IModulesPageProps = {}) {
   const [group, setGroup] = useState("");
   const [query, setQuery] = useState("");
-  const copy = parseModulesPage(text ?? sourceText);
+  const copy = modulesPageContent;
   const labels = copy.labels;
-  const modules = parseModules(text ?? sourceText);
+  const modules = frameworkModules;
   const slug = readModuleSlug(navigationHref) ?? defaultSlug;
   const selected = modules.find((item) => item.id === slug);
   const visible = filterModules(modules, group, query);

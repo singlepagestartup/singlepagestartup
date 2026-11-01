@@ -1,5 +1,4 @@
 ---
-confirmation: { confirmed: false }
 slug: "react-query-realtime-and-principal-scopes"
 createdAt: "2026-10-23"
 category: "frontend"

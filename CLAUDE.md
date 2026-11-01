@@ -46,6 +46,7 @@ Each module contains:
 - When one file is no longer enough for a thing, move it into a folder named after it and make it that folder's `index.ts`. Never leave a file beside a folder of the same name — importers of `./thing` resolve to either, so the thing ends up living in two places under one name.
 - Do not edit repository data snapshots under `libs/modules/<module>/<relations|models>/<name>/backend/repository/database/src/lib/data/*` to implement behavior or UI fixes; change runtime code, configuration, migrations, or explicit data-management flows instead.
 - When changing a Drizzle table schema or fields, run the appropriate `repository-generate` target instead of hand-writing migration SQL or `migrations/meta/*` journal/snapshot files. For example, use `npx nx run @sps/<module>:models:<model>:repository-generate` or the matching relation target; use `npx nx run api:db:generate` only when intentionally regenerating all repository migrations.
+- Model/relation `repository-generate` targets run uncached and automatically regenerate Consistency Capture after Drizzle, including Startup models and `fields/startup.ts` changes. Preserve that final step in custom targets; commit the generated migrations and capture catalog together. Apply migrations with `npx nx run api:db:migrate`, then run `npx nx run @sps/providers-db:consistency-check`. Never hand-edit capture SQL or `capture.json`; see `libs/providers/db/README.md`.
 
 If anything is unclear, read the relevant README files instead of guessing.
 
@@ -53,7 +54,7 @@ Before storing, publishing, or returning prose intended for a person, make the
 final editorial pass defined in `.agents/contracts/editorial-pass.md`. Every provider applies that
 one contract, with `.agents/references/unslop-patterns.md` beside it while
 editing. Run it after facts, evidence, links, identifiers, required
-structure, and approval state are correct. It applies in the requested language
+structure, and task scope are correct. It applies in the requested language
 and must preserve meaning, uncertainty, terminology, formatting, and voice.
 
 ## Environment & Requirements
@@ -69,13 +70,6 @@ and must preserve meaning, uncertainty, terminology, formatting, and voice.
   - Creates environment files, starts Postgres (`apps/db`) and Redis (`apps/redis`), then runs `npx nx run api:db:migrate`.
 - Start API server: `npm run api:dev`
 - Start host (Next.js) server: `npm run host:dev`
-
-## Validation timing and machine resources
-
-- Run implementation checks only after the requested changes are complete, before a commit or the final message reporting results. This includes tests, type checks, lint, builds, browser checks, and HTTP requests that trigger compilation. Do not run them between edits or after each phase when continuing with more phases in the same task. Reading source, diffs, and existing logs remains part of implementation.
-- Collect the required checks while implementing and run them at that completion boundary. If a check fails, finish the related fixes before rerunning the affected checks. Report any checks that could not run; do not claim unverified work passed.
-- Run resource-intensive checks one at a time. Do not overlap builds, type checks, test suites, or browser-triggered compilation. Keep only the local services needed for the current check running, and reuse existing instances.
-- Before starting checks, inspect available memory, swap use, free disk space, and running development processes. Set supported memory and worker limits, and monitor resource use during the check. A JavaScript heap limit alone does not limit total system memory use. If memory pressure or swap use keeps rising, stop the agent-started check and resolve the resource constraint before retrying.
 
 ## Test format (BDD)
 
@@ -114,16 +108,20 @@ For special-purpose tasks, see `.claude/commands/README.md` for the full command
 Use `singlepagestartup` (Codex), `/singlepagestartup` (Claude), or a
 plain-language request to start, continue, inspect, or change a project before
 engineering. The canonical process is `.agents/workflows/pre-development.md`.
-Its stage machine, `00-business`, `10-strategy`, `20-brand`, `30-design` and
-`40-products` with owners, active artifacts, executable checks and
-manual-review criteria, is `.agents/pipeline/pre-development.yaml`, executed by
-`npm run singlepagestartup:pipeline:check`. Every invocation runs the GitHub
-preflight, reads the layer-local cursor
-`apps/studio/workspace/utils/pre-development/<layer>.yaml`, runs the check and
-repairs its gaps before stage work. Layers, projections and write ownership are
+The suggested sequence is Brief → Products, competitors and semantics → Strategy
+→ Brand → Design → Materials. Pass `--section` and, for product work, `--product`
+to `npm run singlepagestartup -- ...`; no arguments resume the saved section.
+`--skip`, `--complete` and `--next` move forward explicitly. Document review
+runs on request. Navigation records the selected section independently of
+structural diagnostics. The layer-local v2 state records navigation and preparation
+progress; `npm run singlepagestartup:pipeline:check` is read-only diagnosis.
+GitHub reconciliation is optional and never a prerequisite for local work.
+Layers, projections and write ownership are
 defined in `.agents/contracts/inheritance.md`; claims, unknowns and assets in
-`.agents/contracts/evidence.md`; approval and review state in
-`.agents/contracts/document-confirmation.md`. The seven pre-development
+`.agents/contracts/evidence.md`; on-request document review in
+`.agents/contracts/document-confirmation.md`. Agents own research and concrete
+results under `.agents/contracts/research-ownership.md`; ask the owner only for
+unavailable facts, decisions or access. The seven pre-development
 professions are executable custom agents discovered from `.codex/agents/*.toml`
 and `.claude/agents/*.md`; every adapter loads its canonical role from
 `.agents/roles/`, which holds responsibility and method in one file. All

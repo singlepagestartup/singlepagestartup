@@ -1,5 +1,4 @@
 ---
-confirmation: { confirmed: false }
 slug: "building-and-revalidating-sps-with-safe-content-cutovers"
 createdAt: "2026-10-23"
 category: "devops"

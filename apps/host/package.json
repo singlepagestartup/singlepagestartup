@@ -40,6 +40,7 @@
     "@tanstack/react-query-persist-client": "5.67.3",
     "@tiptap/core": "2.11.5",
     "@tiptap/extension-link": "2.11.5",
+    "@tiptap/html": "2.11.5",
     "@tiptap/react": "2.11.5",
     "@tiptap/starter-kit": "2.11.5",
     "@uiw/react-md-editor": "4.0.11",

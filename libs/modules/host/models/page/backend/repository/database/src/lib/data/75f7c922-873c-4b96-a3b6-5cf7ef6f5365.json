@@ -1,11 +1,45 @@
 {
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "Create an article — SinglePageStartup",
+        "ru": "Новая статья — SinglePageStartup"
+      },
+      "description": {
+        "en": "Prepare and edit a new article in SinglePageStartup.",
+        "ru": "Подготовка и редактирование новой статьи в SinglePageStartup."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "Create an article — SinglePageStartup",
+        "ru": "Новая статья — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "Create an article — SinglePageStartup",
+        "ru": "Новая статья — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Prepare and edit a new article in SinglePageStartup.",
+        "ru": "Подготовка и редактирование новой статьи в SinglePageStartup."
+      },
+      "opengraphDescription": {
+        "en": "Prepare and edit a new article in SinglePageStartup.",
+        "ru": "Подготовка и редактирование новой статьи в SinglePageStartup."
+      }
+    }
+  },
   "id": "75f7c922-873c-4b96-a3b6-5cf7ef6f5365",
   "title": "Create article",
   "url": "/blog/new",
   "description": "Create article",
   "createdAt": "2026-10-23T20:18:07.725Z",
-  "updatedAt": "2026-10-23T20:18:07.725Z",
-  "variant": "default",
+  "updatedAt": "2026-10-30T22:25:07.812Z",
+  "variant": "noindex",
   "className": null,
   "language": "en",
   "adminTitle": "Create article"

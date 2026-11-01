@@ -1,66 +1,31 @@
 ---
-confirmation:
-  confirmed: false
+journey:
+  segment: ""
+  stage: ""
 ---
 
-# Website
+# Сайт
 
-<!-- A prospective website specification within the product's business plan.
-Describe the visitor experience engineering should build; production
-implementation and runtime tests do not gate this document.
+<!-- Контекст посадочной и её макет показаны одной историей. Здесь только решения о бизнес-задаче и техническом назначении. Окончательный текст посетителя и вёрстку редактировать прямо в React/HTML макете; параллельную Markdown-копию не создавать. -->
 
-The rendered body contains only project-specific visitor experience, routes,
-copy and material interaction behavior. Keep Text/Layout synchronization,
-approved-design application, responsiveness/accessibility checks, confirmation,
-dependencies, implementation, backend and security instructions in this comment,
-the Web Designer role, metadata or engineering work. Do not render them as
-generic guidance or an “awaiting review” conclusion. -->
+## Аудитория и предложение
 
-## Objective and customer result
+Сегмент, ситуация посетителя и ожидаемый результат. Состав предложения, основание обещания и существенные условия взять из продукта. Объяснить, почему эта страница отвечает задаче человека.
 
-- The recognizable customer problem, supplied material, concrete product output
-  and business result the site helps the person pursue
-- Target Product segment plus the Sales acquisition and CJM IDs this site serves
-- Customer language; avoid brand-first headings, vague “start” CTAs and internal
-  terms that a first-time visitor would not understand
+## Действие и место в воронке
 
-## Customer journey and site structure
+Откуда приходит посетитель, что знает и что должен понять. Основной CTA: надпись, назначение перехода, следующий экран или обработка обращения. Указать результат действия для человека и ответ бизнеса. Фактический и планируемый путь различать.
 
-- Complete site tree derived from the whole applicable CJM, including discovery,
-  access, intake, workspace, purchase, settings, delivery/publication,
-  continuation, support and cross-product handoff where applicable
-- For every route: visitor situation, page purpose, required information,
-  primary action, next route and recovery or alternative path
-- Cross-route continuity: saved work, return destination after sign-in or
-  purchase, and which screen owns each customer decision
+## Поисковая задача
 
-## Key product interactions
+Группа семантики, запросы, язык, регион и намерение. Агент сам проверяет доступные измерения и выдачу, обосновывает посадочную или другой тип страницы. Если источник недоступен после попытки, описать точное ограничение, не поручая читателю исследование.
 
-- Project-specific uploads, forms, choices, editable outputs, purchase moments,
-  publishing, support and handoffs that make the customer journey work
-- Only states that materially change what the person understands, can do next or
-  must recover from; generic UI-state and quality checklists stay outside the body
-- Exact commercial behavior comes from Product, model and Sales rather than a
-  second price, support or scope description
+## Содержание и метаданные
 
-## Page copy and metadata
+Логика блоков страницы: предложение, состав, пример результата, порядок использования, цена, существенные возражения и действие. Title, H1, description, планируемый URL, canonical и Open Graph, когда применимы. Подробный текст находится в макете.
 
-- Final customer-facing title, description and route-specific messages
-- Author each route's complete headings, offer, process, CTA, form labels,
-  consequential states and metadata in its product-owned Markdown page
-- Keep overview and page copy complementary rather than duplicated
+## Результат
 
-<!-- Framework contract: register one catalog node per route with
-representations.text and optional representations.preview. Work on Markdown
-Text first; React receives that text and Layout uses the same wording. Keep the
-shared review shell outside exported customer layouts. Apply approved Design and
-verify responsive/accessibility behavior without restating those defaults in the
-artifact. -->
+Указать доступные наблюдения с источниками и периодом, если они уже есть. При поручении публикации агент проверяет опубликованную страницу, переходы, метаданные и индексацию. Локальный макет не выдавать за опубликованный сайт.
 
-See `apps/studio/workspace/README.md` for the catalog and component contracts.
-
-<!-- For multilingual projects, specify the source language and supported
-locales inside Page copy and metadata. Use the existing internationalization
-configuration and localized vocabulary fields. Translate all page copy,
-actions, navigation, status messages, accessibility labels and metadata as one
-version. Text/Layout/export must use the same locale and canonical wording. -->
+<!-- В каталоге website указывает на этот документ, sections.website.pages — на макет landing с единым source. Применять дизайн, адаптивность и доступность. Правила: references/studio-artifacts.md. -->

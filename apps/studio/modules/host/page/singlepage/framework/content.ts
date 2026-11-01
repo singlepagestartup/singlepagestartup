@@ -212,6 +212,7 @@ export const projectDocumentKeys = [
   "document-three",
   "document-four",
   "document-five",
+  "document-six",
 ];
 export const productExamplePreviews = [
   {

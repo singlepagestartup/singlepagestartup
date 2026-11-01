@@ -9,9 +9,8 @@ import type { ITopicRule } from "./index";
  * in `./startup.ts` (evaluated BEFORE this layer, so a startup rule with
  * `stop: true` for the same route wins).
  *
- * These rules drive BOTH the revalidation WS broadcast and the http-cache
- * version bump (one shared resolver in `./index`), so the two realtime layers
- * stay in lockstep for every rule listed here.
+ * These rules map revalidation WebSocket broadcasts to their browser reader
+ * subscriptions through the shared resolver in `./index`.
  */
 export const topicRules: ITopicRule[] = [
   {
@@ -28,8 +27,8 @@ export const topicRules: ITopicRule[] = [
   ),
   {
     // Order totals are an aggregate over quantities, product price attributes
-    // and currencies. Both HTTP-cache versions and realtime subscribers must
-    // observe those collections rather than the literal RPC name `total`.
+    // and currencies. Browser subscribers observe those collections rather
+    // than the literal RPC name `total`.
     routeTemplate: "/api/ecommerce/orders/[ecommerce.orders.id]/total",
     topics: [
       "ecommerce.orders",

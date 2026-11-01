@@ -1,18 +1,14 @@
 "use client";
+import { type InputHTMLAttributes as InputHTMLAttributes } from "react";
+import { useId as useIdPresentation } from "react";
+import { useState as useStatePresentation } from "react";
+import { Component as WebsiteBuilderModuleButton } from "../../../../../../website-builder/button/index";
 import {
-  type InputHTMLAttributes as InputHTMLAttributes,
-  useId as useIdPresentation,
-  useState as useStatePresentation,
   forwardRef as forwardRefControl,
   type ButtonHTMLAttributes as ButtonControlProps,
-  useId,
-  useState,
 } from "react";
-
-import { Component as WebsiteBuilderModuleButton } from "../../../../../../website-builder/button/index";
-
 import IconGlyphs from "../../../../../../website-builder/feature/singlepage/icon/icons.json";
-
+import { useId, useState } from "react";
 import { getIdentityProviderMeta } from "../../../../../shared";
 interface ITextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
@@ -50,7 +46,7 @@ function PasswordField({
         <ButtonPresentation
           variant="plain"
           onClick={() => setVisible(!visible)}
-          aria-label={`${visible ? "Скрыть" : "Показать"} ${label.toLowerCase()}`}
+          aria-label={`${visible ? "Hide" : "Show"} ${label.toLowerCase()}`}
           aria-pressed={visible}
           className="absolute top-0.5 right-1 min-h-11 w-11 px-2"
         >
@@ -90,7 +86,7 @@ function Icon({
   const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
@@ -142,11 +138,11 @@ export function Component({
         {credentials
           ? "Укажите почту и пароль, затем подтвердите адрес."
           : wallet
-            ? "Выберите кошелёк и подтвердите владение подписью. Платёж не требуется."
-            : `Продолжите через ${meta.title}, затем подтвердите вход.`}
+            ? "Выберите кошелёк и подтвердите владение подписью. Транзакция и оплата не нужны."
+            : `Продолжите через ${meta.title}и подтвердите доступ для входа.`}
       </p>
       <p className="mt-2 text-xs text-[color:var(--workspace-brand-muted)]">
-        Предварительный просмотр. Внешний аккаунт и кошелёк не подключаются.
+        Пример подключения. Внешний аккаунт или кошелёк не вызывается.
       </p>
       {stage === "account" ? (
         <form
@@ -163,7 +159,7 @@ export function Component({
             {wallet
               ? "Адрес кошелька"
               : provider === "telegram"
-                ? "Имя пользователя Telegram"
+                ? "Имя в Telegram"
                 : "Почта аккаунта"}
             <input
               autoFocus
@@ -198,7 +194,7 @@ export function Component({
           <div className="flex flex-wrap gap-2">
             <Button type="submit">
               {credentials
-                ? "Отправить код"
+                ? "Отправить код проверки"
                 : wallet
                   ? "Продолжить с кошельком"
                   : `Продолжить через ${meta.title}`}
@@ -214,7 +210,7 @@ export function Component({
           onSubmit={(event) => {
             event.preventDefault();
             if (code !== "123456") {
-              setError("Код неверный. В этом примере используйте 123456.");
+              setError("Неверный код. В примере используйте 123456.");
               return;
             }
             onComplete?.(value.trim().toLowerCase());
@@ -223,9 +219,9 @@ export function Component({
             setStage("complete");
           }}
         >
-          <p className="break-all text-sm">Verify {value}</p>
+          <p className="break-all text-sm">Проверить {value}</p>
           <label className="grid min-w-0 gap-2 text-sm font-medium">
-            Код подтверждения
+            Код проверки
             <input
               autoFocus
               required
@@ -242,8 +238,7 @@ export function Component({
             />
           </label>
           <p className="text-xs text-[color:var(--workspace-brand-muted)]">
-            Код для примера: 123456. Письмо не отправляется, пароли не
-            сохраняются.
+            Код примера: 123456. Письмо не отправляется. Пароли не сохраняются.
           </p>
           {error && (
             <p
@@ -264,7 +259,7 @@ export function Component({
                 setError("");
               }}
             >
-              Back
+              Назад
             </Button>
             <Button type="button" variant="plain" onClick={onCancel}>
               Отмена
@@ -276,8 +271,8 @@ export function Component({
           <p className="break-all text-sm font-medium">{value}</p>
           <p className="text-sm leading-6 text-[color:var(--workspace-brand-muted)]">
             {wallet
-              ? "Подпишите запрос, чтобы подтвердить владение кошельком."
-              : `Approve the sign-in request for this ${meta.title} account.`}
+              ? "Подтвердите запрос подписи, чтобы проверить владение кошельком."
+              : `Подтвердите запрос на вход для ${meta.title} account.`}
           </p>
           <div className="flex flex-wrap gap-2">
             <Button
@@ -289,7 +284,7 @@ export function Component({
               {wallet ? "Подтвердить подпись" : "Подтвердить подключение"}
             </Button>
             <Button variant="secondary" onClick={() => setStage("account")}>
-              Back
+              Назад
             </Button>
             <Button variant="plain" onClick={onCancel}>
               Отмена
@@ -299,10 +294,10 @@ export function Component({
       ) : (
         <div className="mt-5 space-y-4">
           <p role="status" className="text-sm">
-            {meta.title} подключён в этом примере.
+            {meta.title} подключено в примере.
           </p>
           <Button variant="secondary" onClick={onCancel}>
-            Done
+            Готово
           </Button>
         </div>
       )}
