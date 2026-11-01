@@ -7,6 +7,6 @@ description: Edit human-facing prose in any language without changing facts or i
 
 Canonical source: `.agents/contracts/editorial-pass.md`.
 
-Read and apply the canonical contract, including its clarity pass and language
-routing. Load `.agents/references/unslop-patterns.md` and the language reference
+Read and apply the canonical contract, including both editing passes and
+language routing. Load `.agents/references/unslop-patterns.md` and the language reference
 specified by the contract. Return the edited text in the requested format.

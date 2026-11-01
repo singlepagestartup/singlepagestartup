@@ -1,8 +1,7 @@
 # English Unslop
 
-Use with the shared editorial contract, then complete the
-[clarity pass](infostyle.md). The general pattern catalogue contains more
-English examples; this reference addresses syntax and explanation.
+Use with the shared editorial contract. The general pattern catalogue
+contains more English examples; this reference addresses syntax and explanation.
 
 ## Plain words, complete meaning
 

@@ -17,8 +17,7 @@ requested language and the author's intended voice remain in force.
 
 For Russian, read `.agents/references/unslop-ru.md`; for English, read
 `.agents/references/unslop-en.md`. For mixed-language documents, apply each
-reference to its passages without translating them. Then apply the shared
-clarity pass in `.agents/references/infostyle.md`. Other languages use the
+reference to its passages without translating them. Other languages use the
 shared rules and retain their natural syntax.
 
 ## Inputs and scope

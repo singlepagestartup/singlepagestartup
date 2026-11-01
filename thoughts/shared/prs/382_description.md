@@ -135,6 +135,8 @@ Material summaries now show the article's search phrases from its owned Markdown
 
 ## Downstream migration
 
+Owned editorial adapters that link to the removed external clarity reference must use the canonical editorial contract and language references. Remove obsolete links and run `node --test tools/agents/editorial-pass.test.mjs`; the existing two-pass edit and language rules remain active.
+
 Reconcile owned Workspace state and bindings with section/product selection and v2 progress; navigation, structural diagnostics and on-request review are separate. Transfer material facts from retired model/research/analytics/copy sources into current product, audience, competitors, semantics, economics, sales or linked references before retiring files. Preserve customer attribution, IDs, layer ownership and applicable review history. Update catalogs, story links, publishers and exporters to owning React material sources, and keep Modules/Workspace presentation ownership distinct. Merge current workflow/editorial adapters with required license attribution and align the Host Tiptap HTML dependency. Run the full Studio checks and address applicable unresolved failures before rollout.
 
 Treat the newly committed database snapshots and covers as framework test-project fixtures. Preserve a child's live content, translations, Page identities and variants; map applicable Metadata/File relations through its explicit SDK/data-management flow. Keep all File records and assets together and verify target storage paths, localized masks, permissions and publication. A clean sample seed and adaptation of an existing customer database require separate verification.
