@@ -523,6 +523,13 @@ If no specific pattern is matched, the error will be classified as a generic Int
 npm install
 ```
 
+Run dependency installation from the repository root. The root `package.json`
+and `package-lock.json` control the dependencies used by local Nx commands and
+the Docker build's `npm ci`. Applications such as `apps/host` are not npm
+workspaces, so changing only their `package.json` does not update the root
+installation. For a dependency declared in both manifests, update both and
+regenerate the root lockfile with npm.
+
 ### 2. Creating envs and starting Required Services
 
 Creating envs in all services and running them
