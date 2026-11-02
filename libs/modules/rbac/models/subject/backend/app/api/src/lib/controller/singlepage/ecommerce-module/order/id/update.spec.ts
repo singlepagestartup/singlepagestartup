@@ -51,6 +51,7 @@ function createContext(
 
 function createService() {
   return {
+    ecommerceModuleOrderSetCurrency: jest.fn().mockResolvedValue(undefined),
     ecommerceModuleOrderAssertAccess: jest.fn().mockResolvedValue(undefined),
     findById: jest.fn().mockResolvedValue({ id: "subject-1" }),
     ecommerceModule: {
@@ -151,5 +152,70 @@ describe("Given: ecommerce order update handler", () => {
         data: { ordersToProducts: [{ id: "otp-1", quantity: 2 }] },
       }),
     );
+  });
+});
+
+describe("Cart currency requests", () => {
+  const currencyId = "11111111-1111-4111-8111-111111111111";
+  beforeEach(() => {
+    jest.clearAllMocks();
+    authorizationMock.mockReturnValue("token");
+    verifyMock.mockResolvedValue({ subject: { id: "subject-1" } });
+  });
+  it("accepts a currency-only update without requiring quantity changes", async () => {
+    const service = createService();
+    await new Handler(service).execute(
+      createContext(
+        { id: "subject-1", orderId: "order-1" },
+        {
+          data: JSON.stringify({
+            billingModule: { currency: { id: currencyId } },
+          }),
+        },
+      ),
+      jest.fn(),
+    );
+    expect(service.ecommerceModuleOrderSetCurrency).toHaveBeenCalledWith({
+      subjectId: "subject-1",
+      orderId: "order-1",
+      currencyId,
+    });
+    expect(orderUpdateMock).not.toHaveBeenCalled();
+  });
+  it.each(["invalid", null])(
+    "rejects invalid currency %s before writes",
+    async (id) => {
+      const service = createService();
+      await expect(
+        new Handler(service).execute(
+          createContext(
+            { id: "subject-1", orderId: "order-1" },
+            { data: JSON.stringify({ billingModule: { currency: { id } } }) },
+          ),
+          jest.fn(),
+        ),
+      ).rejects.toThrow("valid billingModule.currency.id");
+      expect(service.ecommerceModuleOrderSetCurrency).not.toHaveBeenCalled();
+      expect(orderUpdateMock).not.toHaveBeenCalled();
+    },
+  );
+  it("rejects a combined currency/quantity payload before either operation", async () => {
+    const service = createService();
+    await expect(
+      new Handler(service).execute(
+        createContext(
+          { id: "subject-1", orderId: "order-1" },
+          {
+            data: JSON.stringify({
+              billingModule: { currency: { id: currencyId } },
+              ordersToProducts: [{ id: "line", quantity: 3 }],
+            }),
+          },
+        ),
+        jest.fn(),
+      ),
+    ).rejects.toThrow("separately from quantity");
+    expect(service.ecommerceModuleOrderSetCurrency).not.toHaveBeenCalled();
+    expect(orderUpdateMock).not.toHaveBeenCalled();
   });
 });

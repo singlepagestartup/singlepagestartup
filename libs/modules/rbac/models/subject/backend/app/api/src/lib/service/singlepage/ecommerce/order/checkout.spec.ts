@@ -618,6 +618,64 @@ describe("Given: subject starts checkout for a product", () => {
     });
   });
 
+  it("keeps different currencies in separate payments while combining matching orders", async () => {
+    const { service, checkoutOrders } = createTestContext({
+      activeOrderProductId: "product-other",
+      checkoutOrderIds: ["usd-1", "rub-1", "usd-2"],
+      currencyByOrderId: { "usd-1": "usd", "rub-1": "rub", "usd-2": "usd" },
+    });
+    mockBillingModulePaymentIntentCreate
+      .mockResolvedValueOnce({ id: "payment-usd", amount: 100 })
+      .mockResolvedValueOnce({ id: "payment-rub", amount: 100 });
+    mockBillingModulePaymentIntentUpdate.mockResolvedValue({
+      id: "payment-usd",
+      amount: 200,
+    });
+    (
+      service.billingModule.paymentIntentsToInvoices.find as jest.Mock
+    ).mockResolvedValue([
+      { paymentIntentId: "payment-usd", invoiceId: "invoice-usd" },
+      { paymentIntentId: "payment-rub", invoiceId: "invoice-rub" },
+    ]);
+    const invoices = [
+      { id: "invoice-usd", paymentUrl: "https://pay.test/usd" },
+      { id: "invoice-rub", paymentUrl: "https://pay.test/rub" },
+    ];
+    (service.billingModule.invoice.find as jest.Mock).mockResolvedValue(
+      invoices,
+    );
+
+    const result = await service.execute({
+      id: "subject-1",
+      email: "subject@example.com",
+      provider: "stripe",
+      comment: "",
+      ecommerceModule: { orders: checkoutOrders.map(({ id }) => ({ id })) },
+    });
+
+    expect(mockBillingModulePaymentIntentCreate).toHaveBeenCalledTimes(2);
+    expect(mockBillingModulePaymentIntentUpdate).toHaveBeenCalledTimes(1);
+    expect(mockBillingModulePaymentIntentUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "payment-usd",
+        data: expect.objectContaining({ amount: 200 }),
+      }),
+    );
+    expect(mockBillingModulePaymentIntentProvider).toHaveBeenCalledTimes(2);
+    for (const currency of ["usd", "rub"]) {
+      expect(mockBillingModulePaymentIntentProvider).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: `payment-${currency}`,
+          data: expect.objectContaining({
+            provider: "stripe",
+            currencyId: currency,
+          }),
+        }),
+      );
+    }
+    expect(result.billingModule.invoices).toEqual(invoices);
+  });
+
   describe("When: checkout payload contains a deleted order id", () => {
     /**
      * BDD Scenario

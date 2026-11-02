@@ -13,6 +13,14 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 const mutateAsyncMock = jest.fn();
+let updatingCartCount = 0;
+let fetchingCartCount = 0;
+jest.mock("@tanstack/react-query", () => ({
+  ...jest.requireActual("@tanstack/react-query"),
+  useIsMutating: () => updatingCartCount,
+  useIsFetching: () => fetchingCartCount,
+  useQueryClient: () => ({ invalidateQueries: jest.fn() }),
+}));
 const useFormMock = jest.fn();
 const ecommerceModuleOrderApiPropsMock = jest.fn();
 let cartOrders: any[];
@@ -51,6 +59,10 @@ jest.mock("next/link", () => ({
 
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   api: {
+    ecommerceModuleOrderUpdate: () => ({
+      mutateAsync: jest.fn(),
+      isPending: false,
+    }),
     ecommerceModuleOrderCheckout: () => ({
       mutateAsync: mutateAsyncMock,
       isPending: false,
@@ -83,6 +95,7 @@ jest.mock("@sps/shared-ui-shadcn", () => ({
 
 jest.mock("@sps/ui-adapter", () => ({
   FormField: ({ name }: any) => <div data-testid={`field-${name}`} />,
+  Select: () => null,
 }));
 
 jest.mock(
@@ -148,7 +161,24 @@ import { Component } from "./ClientComponent";
 
 describe("Given: order list checkout component", () => {
   beforeEach(() => {
-    cartOrders = [{ id: "order-1", cartDetails: { lines: [], totals: [] } }];
+    cartOrders = [
+      {
+        id: "order-1",
+        cartDetails: {
+          lines: [],
+          totals: [
+            {
+              total: 100,
+              billingModuleCurrency: { id: "rub", symbol: "₽", title: "RUB" },
+            },
+          ],
+          availableCurrencyIds: ["rub"],
+          billingModuleCurrencyId: "rub",
+        },
+      },
+    ];
+    updatingCartCount = 0;
+    fetchingCartCount = 0;
     mutateAsyncMock.mockReset();
     useFormMock.mockReset();
     ecommerceModuleOrderApiPropsMock.mockReset();
@@ -181,7 +211,7 @@ describe("Given: order list checkout component", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Перейти к оплате" }));
+    fireEvent.click(screen.getByRole("button", { name: "Proceed to payment" }));
 
     await waitFor(() => {
       expect(mutateAsyncMock).toHaveBeenCalledWith({
@@ -214,11 +244,18 @@ describe("Given: order list checkout component", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Перейти к оплате" }));
+    fireEvent.click(screen.getByRole("button", { name: "Proceed to payment" }));
 
     await waitFor(() => {
-      const links = screen.getAllByRole("link", { name: "Перейти к оплате" });
+      const links = screen.getAllByRole("link", { name: "Proceed to payment" });
       expect(links.length).toBe(2);
+      expect(links.map((link) => link.getAttribute("href"))).toEqual([
+        "https://pay.local/one",
+        "https://pay.local/two",
+      ]);
+      expect(
+        links.every((link) => link.getAttribute("target") === "_blank"),
+      ).toBe(true);
     });
 
     expect((window.location as any).href).toBe("");
@@ -251,11 +288,21 @@ describe("Given: order list checkout component", () => {
       billingModuleCurrency: { id: "eur", symbol: "€" },
     };
     cartOrders = [
-      { id: "one", cartDetails: { lines: [], totals: [first] } },
+      {
+        id: "one",
+        cartDetails: {
+          lines: [],
+          totals: [first],
+          availableCurrencyIds: ["eur"],
+          billingModuleCurrencyId: "eur",
+        },
+      },
       {
         id: "two",
         cartDetails: {
           lines: [],
+          availableCurrencyIds: ["eur"],
+          billingModuleCurrencyId: "eur",
           totals: [
             { total: 250, billingModuleCurrency: { id: "eur", symbol: "€" } },
           ],
@@ -283,13 +330,15 @@ describe("Given: order list checkout component", () => {
         language="en"
       />,
     );
-    expect(screen.getByText("В корзине пока нет товаров.")).toBeTruthy();
+    expect(screen.getByText("Your cart is empty.")).toBeTruthy();
     expect(
-      screen.queryByRole("button", { name: "Перейти к оплате" }),
+      screen.queryByRole("button", { name: "Proceed to payment" }),
     ).toBeNull();
   });
   it("blocks checkout for a legacy unpriced line while retaining the cart and amounts", async () => {
     cartOrders[0].cartDetails = {
+      availableCurrencyIds: ["rub"],
+      billingModuleCurrencyId: "rub",
       lines: [],
       totals: [
         { total: 100, billingModuleCurrency: { id: "rub", symbol: "₽" } },

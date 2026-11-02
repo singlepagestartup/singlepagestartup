@@ -52,7 +52,10 @@ configuration remains the one from main; retired route files are not restored.
 
 `GET /api/rbac/subjects/:id/ecommerce-module/orders?includeCartDetails=true`
 returns only that Subject's active cart orders, including `cartDetails.lines`
-(with Product records), `cartDetails.totals` and `cartDetails.storeIds`. Owner
+(with Product records), `cartDetails.totals`, `cartDetails.storeIds`,
+`cartDetails.availableCurrencyIds` and the saved
+`cartDetails.billingModuleCurrencyId`. Available currencies are the intersection
+of the current price currencies across all lines of each Order. Owner
 scope and active-cart restrictions are enforced even with caller filters.
 The projection runs in withConsistencySnapshot; the lower Ecommerce
 findByIdCartDetails capability owns line/product loading and amount calculation.
@@ -62,16 +65,31 @@ Product controls, quantity editing and the cart sheet use the Subject order-list
 render-reader with this parameter. Their matching SDK query is shared; they do
 not fetch personal Order or OrdersToProducts data through generic Ecommerce
 read endpoints. Public Product price/media readers remain Ecommerce operations.
-The cart sheet groups the server-calculated amounts by currency from the same
-projection as its rows; it makes no separate total request and hides checkout
-when the cart is empty. The extended response has its own query key; captured dependencies and the
+Each cart Order has a currency selector. Rows and the footer show only the
+selected currency amounts from the same server projection. A missing or obsolete
+selection blocks checkout until the customer chooses an available currency.
+Checkout is also disabled while a cart update or its list refresh is pending;
+email validation and API errors are shown inline. The sheet makes no separate
+total request and hides checkout when the cart is empty. The extended response has its own query key; captured dependencies and the
 legacy SDK topics retain cross-client invalidation after line, quantity or
-price changes. Mutable reads remain no-store at the Next boundary.
+price or selected-currency changes. Mutable reads remain no-store at the Next boundary.
 
 Cart routes use RequestSubjectIdOwner first. Order-ID routes additionally use
 RequestSubjectOwnsEcommerceModuleOrder. The owning Subject service verifies the
 Subject–Order link and, for quantity edits, every submitted Order–Product line.
 A caller's own Subject ID alone does not authorize changes to another order.
+
+### Changing a cart currency
+
+`PATCH /api/rbac/subjects/:id/ecommerce-module/orders/:orderId` accepts
+`{ "billingModule": { "currency": { "id": "<UUID>" } } }` as its `data` payload.
+Send currency and `ordersToProducts` quantity edits in separate requests. The
+Subject service checks ownership, locks the Order and requires an active
+`cart` with status `new`. Every line must currently offer the requested currency;
+Initial Free is excluded. Validation precedes writes in one transaction. The
+service creates a missing currency link or updates the existing link and removes
+legacy duplicates. It does not create a payment or invoice. Checkout continues
+to calculate against the saved Order currency and current Product prices.
 
 ## Authorization Layering
 
