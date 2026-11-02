@@ -15,6 +15,8 @@ const mockSocialModuleThreadsToMessagesCreate = jest.fn();
 
 jest.mock("@sps/shared-utils", () => {
   return {
+    entityMetadataSchema:
+      jest.requireActual("@sps/shared-utils").entityMetadataSchema,
     RBAC_SECRET_KEY: "rbac-secret",
   };
 });

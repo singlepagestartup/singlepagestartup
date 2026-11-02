@@ -12,7 +12,7 @@ export async function GET(request: Request) {
   const type = searchParams.get("type");
 
   if (tag) {
-    await revalidateTag(tag);
+    revalidateTag(tag, { expire: 0 });
   }
 
   if (path) {
@@ -51,6 +51,6 @@ export async function POST(request: Request) {
   )
     return NextResponse.json({ error: "Invalid tags" }, { status: 400 });
   const unique = [...new Set(tags as string[])];
-  for (const tag of unique) revalidateTag(tag);
+  for (const tag of unique) revalidateTag(tag, { expire: 0 });
   return NextResponse.json({ revalidated: { tags: unique }, now: Date.now() });
 }

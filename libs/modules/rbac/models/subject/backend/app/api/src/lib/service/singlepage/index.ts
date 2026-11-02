@@ -477,7 +477,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   ): Promise<T> {
     if (!RBAC_JWT_SECRET)
       throw new Error("Configuration error. RBAC_JWT_SECRET not set");
-    const decoded = await verify(result.jwt, RBAC_JWT_SECRET);
+    const decoded = await verify(result.jwt, RBAC_JWT_SECRET, "HS256");
     const subjectId = decoded.subject?.["id"];
     if (typeof subjectId !== "string")
       throw new Error(

@@ -1,6 +1,8 @@
 import { Hono } from "hono";
 import { sign } from "hono/jwt";
 jest.mock("@sps/shared-utils", () => ({
+  entityMetadataSchema:
+    jest.requireActual("@sps/shared-utils").entityMetadataSchema,
   RBAC_JWT_SECRET: "balance-test-secret",
   RBAC_SECRET_KEY: "internal",
 }));

@@ -1,5 +1,26 @@
 # Host app
 
+## Runtime versions and bundlers
+
+Install from the repository root with `npm ci`. Next.js 16.4.3 and React/React
+DOM 19.3.1 use stable React types; the former `types-react@rc` overrides are
+removed. The root manifest and lockfile own installation. Nx regenerates the
+Host deployment manifest during its production build.
+
+`npm run host:dev` uses Turbopack. `npm run host:build` keeps Webpack through the
+Host target's explicit `webpack: true` option, supported by Nx 22.7.12.
+`npm run host:start` serves the production build. Keep cold dev compilation and
+production builds sequential on machines with limited RAM; see
+[runtime memory guidance](../../tools/runtime/README.md#local-host-memory-budget).
+
+The single-tag and batch revalidation handlers use
+`revalidateTag(tag, { expire: 0 })`, so the next read refreshes expired data
+before responding. The `max` profile permits stale responses during background
+refresh and does not preserve this contract.
+
+Shared agent instructions live in the root `AGENTS.md`. The Next `agentRules`
+option is disabled so dev startup does not generate another instruction file.
+
 ## Guidelines
 
 - **TailwindCSS only**: use Tailwind utility classes. If you need new tokens (colors, spacing, radii, etc.), extend `apps/host/styles/presets/shadcn.ts`; never introduce ad-hoc CSS classes.
@@ -40,12 +61,12 @@ differ because the build adds content hashes.
 
 ## Locale redirects
 
-Locale middleware adds the default language prefix while preserving the request
+The locale proxy adds the default language prefix while preserving the request
 Host header. It clears the internal server port before applying Host, so redirects
 behind a reverse proxy use the public domain and local redirects retain their
 explicit port. The path and query parameters remain in the redirect.
 
-`skipMiddlewareUrlNormalize` prevents Next from rewriting loopback hosts in the
+`skipProxyUrlNormalize` prevents Next from rewriting loopback hosts in the
 outgoing Location header; a login on `127.0.0.1` keeps the same cookie origin.
 
 The public `[language]/[[...url]]` page keeps `generateStaticParams()` empty in development and

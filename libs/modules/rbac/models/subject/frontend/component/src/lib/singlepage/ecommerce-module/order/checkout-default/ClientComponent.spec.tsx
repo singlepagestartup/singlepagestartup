@@ -90,8 +90,11 @@ describe("Given: order checkout-default action component", () => {
     useFormMock.mockReturnValue({
       control: {},
       handleSubmit:
-        (submit: (data: typeof submitPayload) => Promise<void>) => () =>
-          submit(submitPayload),
+        (submit: (data: typeof submitPayload) => Promise<void>) =>
+        (event: { preventDefault: () => void }) => {
+          event.preventDefault();
+          return submit(submitPayload);
+        },
     });
   });
 
@@ -107,7 +110,9 @@ describe("Given: order checkout-default action component", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Checkout" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Continue to payment" }),
+    );
 
     await waitFor(() => {
       expect(mutateAsyncMock).toHaveBeenCalledWith({

@@ -48,7 +48,7 @@ export class Handler {
         throw new Error("Authentication error. No token");
       }
 
-      const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
+      const decoded = await jwt.verify(token, RBAC_JWT_SECRET, "HS256");
 
       if (decoded?.["subject"]?.["id"] !== id) {
         throw new Error("Permission error. Only order owner can update order");

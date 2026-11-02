@@ -1,4 +1,11 @@
-/** @jest-environment node */
+/**
+ * @jest-environment node
+ *
+ * BDD Suite: streaming the scoped avatar reader.
+ * Given: a document shell contains an avatar reader awaiting its SDK response.
+ * When: React streams the shell before the response resolves.
+ * Then: the loading Skeleton precedes the avatar and client props omit bindings.
+ */
 import { PassThrough } from "node:stream";
 import { renderToPipeableStream } from "react-dom/server";
 jest.mock("server-only", () => ({}), { virtual: true });
@@ -39,6 +46,9 @@ it("streams the avatar Skeleton during its scoped server read and strips binding
     });
   });
   const output = new PassThrough();
+  const firstChunk = new Promise<void>((resolve) => {
+    output.once("data", () => resolve());
+  });
   let html = "";
   output.on("data", (chunk) => {
     html += chunk.toString();
@@ -56,13 +66,17 @@ it("streams the avatar Skeleton during its scoped server read and strips binding
     "Cache-Control": "no-store",
   };
   const stream = renderToPipeableStream(
-    <Component
-      isServer={true}
-      variant="me-social-module-profile-id-avatar-update-ai-chat"
-      data={{ id: "owner" } as any}
-      profile={{ id: "profile" } as any}
-      apiProps={{ options: { headers } }}
-    />,
+    <html>
+      <body>
+        <Component
+          isServer={true}
+          variant="me-social-module-profile-id-avatar-update-ai-chat"
+          data={{ id: "owner" } as any}
+          profile={{ id: "profile" } as any}
+          apiProps={{ options: { headers } }}
+        />
+      </body>
+    </html>,
     {
       onShellReady() {
         stream.pipe(output);
@@ -72,6 +86,7 @@ it("streams the avatar Skeleton during its scoped server read and strips binding
     },
   );
   await shellReady;
+  await firstChunk;
   expect(html).toContain("Загрузка аватара");
   expect(mockSubject).toHaveBeenCalledTimes(1);
   await started;
