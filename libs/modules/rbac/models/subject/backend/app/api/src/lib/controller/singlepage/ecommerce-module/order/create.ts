@@ -40,7 +40,7 @@ export class Handler {
         throw new Error("Validation error. No token");
       }
 
-      const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
+      const decoded = await jwt.verify(token, RBAC_JWT_SECRET, "HS256");
 
       const body = await c.req.parseBody();
 

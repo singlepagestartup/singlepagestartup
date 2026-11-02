@@ -86,10 +86,10 @@ jest.mock("@sps/social/models/profile/frontend/component", () => {
             <button
               type="button"
               onClick={() => {
-                props.onProfileOpen?.(props.data);
+                props.onProfileOpen?.(props.profile ?? props.data);
               }}
             >
-              {props.data.slug}
+              {props.profile?.slug ?? props.data.slug}
             </button>
             <p>{props.message.description}</p>
           </article>
@@ -620,7 +620,14 @@ export function renderComponent(
   const timelineItems = options.socialModuleMessagesAndActionsQuery || [];
   mockChatComponentState.socialModuleMessages = timelineItems
     .filter((item) => item.type === "message")
-    .map((item) => item.data);
+    .map((item) => ({
+      ...item.data,
+      authorProfileIds:
+        item.data.authorProfileIds ??
+        mockChatComponentState.profileMessageRelations
+          .filter((relation) => relation.messageId === item.data.id)
+          .map((relation) => relation.profileId),
+    }));
   mockChatComponentState.socialModuleActions = timelineItems
     .filter((item) => item.type === "action")
     .map((item) => item.data);
@@ -660,6 +667,7 @@ export function renderComponent(
         {
           id: "chat-1",
           variant: chatVariant,
+          participants: mockChatComponentState.profiles,
         } as any
       }
       socialModuleThread={

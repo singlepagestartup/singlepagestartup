@@ -16,15 +16,18 @@ Neither command implements behavior by editing repository data snapshots.
 
 `npm run api:dev` starts the API and `npm run host:dev` starts Next.js with
 Turbopack. Run cold compilation and other project checks sequentially on a
-memory-constrained machine. `SPS_HOST_TURBOPACK_MEMORY_MB` supplies Next's target
-native bundler memory limit in MiB; it must be a positive integer. The Node heap
-has its separate `NODE_OPTIONS=--max-old-space-size=...` limit. The bundler target
-is not a hard limit on total process or system memory.
+memory-constrained machine. Next.js 16.4 uses automatic Turbopack memory eviction
+after filesystem-cache snapshots and under system memory pressure. The retired
+`SPS_HOST_TURBOPACK_MEMORY_MB` setting has no effect on this version.
 
-For example, `SPS_HOST_TURBOPACK_MEMORY_MB=1024 NODE_OPTIONS=--max-old-space-size=1536 npm run host:dev`
-sets a 1 GiB bundler target and a 1.5 GiB Node heap. An unset bundler variable
-preserves the Next.js default. A dev-server Ready message still requires a
-successful page request before runtime acceptance.
+`NODE_OPTIONS=--max-old-space-size=...` limits the Node heap; it does not cap
+Turbopack's native allocations or the combined memory of the dev processes.
+Measure the process tree through a cold page request, repeated navigation and
+idle time. A dev-server Ready message alone does not verify page compilation.
+
+Production keeps the existing Webpack build through `npm run host:build`.
+The Host Nx build target explicitly sets `webpack: true`; development uses
+Turbopack.
 
 ## AI Chat Widget links
 

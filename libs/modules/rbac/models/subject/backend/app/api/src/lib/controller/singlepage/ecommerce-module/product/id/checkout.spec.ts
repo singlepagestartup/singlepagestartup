@@ -86,6 +86,11 @@ function createService() {
       checkoutUrl: "https://example.test/pay",
     }),
     ecommerceModule: {
+      product: {
+        findById: jest
+          .fn()
+          .mockResolvedValue({ id: "product-1", slug: "paid-course" }),
+      },
       store: {
         find: jest.fn().mockResolvedValue([{ id: "store-1" }]),
       },

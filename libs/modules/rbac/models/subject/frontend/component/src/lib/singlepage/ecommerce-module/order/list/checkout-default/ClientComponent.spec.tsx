@@ -157,8 +157,11 @@ describe("Given: order list checkout component", () => {
     useFormMock.mockReturnValue({
       control: {},
       handleSubmit:
-        (submit: (data: typeof submitPayload) => Promise<void>) => () =>
-          submit(submitPayload),
+        (submit: (data: typeof submitPayload) => Promise<void>) =>
+        (event: { preventDefault: () => void }) => {
+          event.preventDefault();
+          return submit(submitPayload);
+        },
     });
   });
 
@@ -178,7 +181,7 @@ describe("Given: order list checkout component", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Checkout" }));
+    fireEvent.click(screen.getByRole("button", { name: "Перейти к оплате" }));
 
     await waitFor(() => {
       expect(mutateAsyncMock).toHaveBeenCalledWith({
@@ -211,10 +214,10 @@ describe("Given: order list checkout component", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Checkout" }));
+    fireEvent.click(screen.getByRole("button", { name: "Перейти к оплате" }));
 
     await waitFor(() => {
-      const links = screen.getAllByText("Payment Link");
+      const links = screen.getAllByRole("link", { name: "Перейти к оплате" });
       expect(links.length).toBe(2);
     });
 
@@ -280,7 +283,9 @@ describe("Given: order list checkout component", () => {
         language="en"
       />,
     );
-    expect(screen.getByText("Your cart is empty.")).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "Checkout" })).toBeNull();
+    expect(screen.getByText("В корзине пока нет товаров.")).toBeTruthy();
+    expect(
+      screen.queryByRole("button", { name: "Перейти к оплате" }),
+    ).toBeNull();
   });
 });

@@ -80,9 +80,9 @@ it("registers the current visitor Subject instead of creating a second Subject",
       data: { subjectId: "visitor", roleId: "user-role" },
     }),
   );
-  expect((await verify(result.jwt, "test-jwt-secret")).subject).toEqual(
-    expect.objectContaining({ id: "visitor" }),
-  );
+  expect(
+    (await verify(result.jwt, "test-jwt-secret", "HS256")).subject,
+  ).toEqual(expect.objectContaining({ id: "visitor" }));
 });
 
 it("creates an account Subject when registration has no visitor session", async () => {
@@ -118,7 +118,7 @@ it("signs in to the existing account instead of using a caller's visitor Subject
   });
   expect(mockSubjectCreate).not.toHaveBeenCalled();
   expect(mockLinkCreate).not.toHaveBeenCalled();
-  expect((await verify(result.jwt, "test-jwt-secret")).subject).toEqual(
-    expect.objectContaining({ id: "existing-account" }),
-  );
+  expect(
+    (await verify(result.jwt, "test-jwt-secret", "HS256")).subject,
+  ).toEqual(expect.objectContaining({ id: "existing-account" }));
 });

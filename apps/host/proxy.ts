@@ -1,7 +1,7 @@
 import { internationalization } from "@sps/shared-configuration";
 import { NextResponse, type NextRequest } from "next/server";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const defaultLanguage = internationalization.defaultLanguage.code;
 

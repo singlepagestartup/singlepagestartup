@@ -1,3 +1,9 @@
+/**
+ * BDD Suite: immediate Host cache invalidation.
+ * Given: an API caller requests tag invalidation.
+ * When: a single tag or a bounded tag batch is accepted.
+ * Then: tags expire immediately before the handler acknowledges the request.
+ */
 const tag = jest.fn();
 jest.mock("next/cache", () => ({
   revalidateTag: (...args: unknown[]) => tag(...args),
@@ -6,17 +12,25 @@ jest.mock("next/cache", () => ({
 jest.mock("@sps/shared-utils", () => ({
   CONSISTENCY_REVALIDATION_BATCH_SIZE: 128,
 }));
-import { POST } from "./route";
+import { GET, POST } from "./route";
 const request = (body: unknown) =>
   new Request("http://localhost/api/revalidate", {
     method: "POST",
     body: JSON.stringify(body),
   });
 afterEach(() => tag.mockReset());
+it("expires a single tag immediately", async () => {
+  const res = await GET(new Request("http://localhost/api/revalidate?tag=one"));
+  expect(res.status).toBe(200);
+  expect(tag.mock.calls).toEqual([["one", { expire: 0 }]]);
+});
 it("invalidates a bounded batch before acknowledging it", async () => {
   const res = await POST(request({ tags: ["one", "two", "one"] }));
   expect(res.status).toBe(200);
-  expect(tag.mock.calls).toEqual([["one"], ["two"]]);
+  expect(tag.mock.calls).toEqual([
+    ["one", { expire: 0 }],
+    ["two", { expire: 0 }],
+  ]);
 });
 it.each([{ tags: [42] }, null, { tags: Array(129).fill("a") }])(
   "rejects malformed or oversized tag batches: %p",

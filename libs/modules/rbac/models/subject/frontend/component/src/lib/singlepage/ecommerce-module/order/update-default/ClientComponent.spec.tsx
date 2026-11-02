@@ -27,7 +27,7 @@ const submitPayload = {
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   api: {
     ecommerceModuleOrderUpdate: () => ({
-      mutate: mutateMock,
+      mutateAsync: mutateMock,
       isSuccess: false,
     }),
   },
@@ -87,8 +87,12 @@ describe("Given: order update-default action component", () => {
 
     useFormMock.mockReturnValue({
       control: {},
-      handleSubmit: (submit: (data: typeof submitPayload) => void) => () =>
-        submit(submitPayload),
+      handleSubmit:
+        (submit: (data: typeof submitPayload) => void) =>
+        (event: { preventDefault: () => void }) => {
+          event.preventDefault();
+          return submit(submitPayload);
+        },
     });
   });
 

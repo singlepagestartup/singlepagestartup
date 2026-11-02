@@ -2,11 +2,11 @@
  * BDD Suite: locale redirects preserve the browser origin.
  *
  * Given: requests arrive directly or through a proxy using an internal port.
- * When: locale middleware adds the default language prefix.
+ * When: locale proxy adds the default language prefix.
  * Then: redirects retain the public host, port, path and query parameters.
  */
 import { NextRequest } from "next/server";
-import { middleware } from "./middleware";
+import { proxy } from "./proxy";
 
 jest.mock("@sps/shared-configuration", () => ({
   internationalization: {
@@ -22,7 +22,7 @@ describe("Locale redirects preserve the browser origin", () => {
       const request = new NextRequest("http://localhost:3000/?check=origin", {
         headers: { host },
       });
-      const response = await middleware(request);
+      const response = await proxy(request);
       expect(response.status).toBe(308);
       expect(response.headers.get("location")).toBe(
         `http://${host}/ru?check=origin`,
@@ -49,13 +49,13 @@ describe("Locale redirects preserve the browser origin", () => {
       { headers: { host } },
     );
 
-    const response = await middleware(request);
+    const response = await proxy(request);
 
     expect(response.headers.get("location")).toBe(location);
   });
 
   it("keeps the request origin when no Host header is available", async () => {
-    const response = await middleware(
+    const response = await proxy(
       new NextRequest("http://localhost:3000/?check=origin"),
     );
 
@@ -65,7 +65,7 @@ describe("Locale redirects preserve the browser origin", () => {
   });
 
   it("does not redirect an already localized route", async () => {
-    const response = await middleware(
+    const response = await proxy(
       new NextRequest("http://127.0.0.1:3000/ru/account/profile"),
     );
     expect(response.headers.get("location")).toBeNull();
