@@ -1,3 +1,4 @@
+import { Service as PaykeeperSettlement } from "./paykeeper-settlement";
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import { CRUDService, DI } from "@sps/shared-backend-api";
@@ -51,6 +52,7 @@ import { PaymentIntentDI, type IBillingModule } from "../../di";
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  declare repository: Repository;
   billingModule: IBillingModule;
 
   constructor(
@@ -780,6 +782,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
       let invoice = invoices[0];
 
+      if (invoice.provider !== "dummy") {
+        throw new Error(
+          "Permission error. Invoice belongs to another payment provider",
+        );
+      }
+
       invoice = await invoiceApi.update({
         id: invoice.id,
         data: {
@@ -1207,7 +1215,14 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   async paykeeper(props: IPaykeeperProceedProps) {
-    const paykeeper = new Paykeeper();
+    const paykeeper = new Paykeeper({
+      billingModule: this.billingModule,
+      settle: (input) =>
+        new PaykeeperSettlement({
+          repository: this.repository,
+          service: this,
+        }).execute(input),
+    });
     return paykeeper.proceed(props);
   }
 

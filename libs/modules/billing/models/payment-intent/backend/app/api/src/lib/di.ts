@@ -5,10 +5,14 @@ export interface IReadService {
 
 export interface IBillingModule {
   currency: IReadService;
-  invoice: IReadService;
+  invoice: Pick<
+    InvoiceService,
+    "find" | "findById" | "update" | "lockForSettlement"
+  >;
   paymentIntentsToInvoices: IReadService;
 }
 
 export const PaymentIntentDI = {
   IBillingModule: Symbol.for("billing.payment-intent.billing.module"),
 };
+import type { Service as InvoiceService } from "@sps/billing/models/invoice/backend/app/api/src/lib/service";
