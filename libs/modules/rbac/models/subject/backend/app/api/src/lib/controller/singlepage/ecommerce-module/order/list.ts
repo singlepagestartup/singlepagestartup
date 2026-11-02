@@ -172,7 +172,14 @@ export class Handler {
             const file = files?.find((file) => file.id === id);
             return file ? [file] : [];
           });
-          purchases.push({ ...order, purchaseDetails: { totals, receipts } });
+          purchases.push({
+            ...order,
+            purchaseDetails: {
+              totals: totals.totals,
+              receipts,
+              ...(totals.unpriced.length ? { unpriced: totals.unpriced } : {}),
+            },
+          });
         }
         return c.json({ data: purchases });
       });

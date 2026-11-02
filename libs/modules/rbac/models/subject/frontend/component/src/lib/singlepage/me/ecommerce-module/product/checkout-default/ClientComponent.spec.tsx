@@ -48,8 +48,15 @@ jest.mock("@sps/ui-adapter", () => ({
   ),
 }));
 jest.mock("@sps/ecommerce/models/product/frontend/component", () => ({
-  Component: (props: any) =>
-    props.variant === "price-default" ? (
+  Component: (props: any) => {
+    const React = jest.requireActual<typeof import("react")>("react");
+    React.useEffect(() => {
+      props.onCurrenciesResolved?.([
+        { id: "currency-usd" },
+        { id: "currency-eur" },
+      ]);
+    }, [props.onCurrenciesResolved]);
+    return props.variant === "price-default" ? (
       <span>REAL-SDK-PRICE</span>
     ) : (
       <select
@@ -60,7 +67,8 @@ jest.mock("@sps/ecommerce/models/product/frontend/component", () => ({
         <option value="currency-usd">USD</option>
         <option value="currency-eur">EUR</option>
       </select>
-    ),
+    );
+  },
 }));
 import { Component } from "./ClientComponent";
 import { Component as CreateCart } from "../../../../ecommerce-module/order/create-default/ClientComponent";

@@ -288,4 +288,33 @@ describe("Given: order list checkout component", () => {
       screen.queryByRole("button", { name: "Перейти к оплате" }),
     ).toBeNull();
   });
+  it("blocks checkout for a legacy unpriced line while retaining the cart and amounts", async () => {
+    cartOrders[0].cartDetails = {
+      lines: [],
+      totals: [
+        { total: 100, billingModuleCurrency: { id: "rub", symbol: "₽" } },
+      ],
+      unpriced: [
+        {
+          ordersToProductsId: "bad-line",
+          productId: "bad",
+          reason: "No price",
+        },
+      ],
+    };
+    render(
+      <Component
+        isServer={false}
+        variant="ecommerce-module-order-list-checkout-default"
+        data={{ id: "subject-1" } as any}
+        language="ru"
+      />,
+    );
+    expect(screen.getByRole("alert").textContent).toContain("нет цены");
+    const button = screen.getByRole("button", { name: "Перейти к оплате" });
+    expect(button.hasAttribute("disabled")).toBe(true);
+    fireEvent.click(button);
+    expect(mutateAsyncMock).not.toHaveBeenCalled();
+    expect(screen.getAllByText("100 ₽")).toHaveLength(2);
+  });
 });

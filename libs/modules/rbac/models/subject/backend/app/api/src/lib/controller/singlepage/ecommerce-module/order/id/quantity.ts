@@ -1,8 +1,7 @@
-import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { withConsistencySnapshot } from "@sps/shared-backend-api";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import * as jwt from "hono/jwt";
-import { authorization, getHttpErrorType } from "@sps/backend-utils";
+import { getHttpErrorType } from "@sps/backend-utils";
 import { Service } from "../../../../../service";
 
 export class Handler {
@@ -14,65 +13,44 @@ export class Handler {
 
   async execute(c: Context, next: any): Promise<Response> {
     try {
-      if (!RBAC_JWT_SECRET) {
-        throw new Error("Configuration error. RBAC_JWT_SECRET not set");
-      }
+      return await withConsistencySnapshot(async () => {
+        const id = c.req.param("id");
 
-      if (!RBAC_SECRET_KEY) {
-        throw new Error("Configuration error. RBAC_SECRET_KEY not set");
-      }
+        if (!id) {
+          throw new Error("Validation error. No id provided");
+        }
 
-      const id = c.req.param("id");
+        const orderId = c.req.param("orderId");
 
-      if (!id) {
-        throw new Error("Validation error. No id provided");
-      }
+        if (!orderId) {
+          throw new Error("Validation error. No orderId provided");
+        }
 
-      const orderId = c.req.param("orderId");
+        // Ownership is checked before the order is read: a missing order and
+        // another subject's order are refused alike, so the answer does not
+        // reveal which order ids exist.
+        await this.service.ecommerceModuleOrderAssertAccess({
+          subjectId: id,
+          orderId,
+        });
 
-      if (!orderId) {
-        throw new Error("Validation error. No orderId provided");
-      }
+        const ecommerceModuleOrder =
+          await this.service.ecommerceModule.order.findById({
+            id: orderId,
+          });
 
-      const body = await c.req.parseBody();
+        if (!ecommerceModuleOrder) {
+          throw new Error("Not Found error. No order found");
+        }
 
-      if (typeof body["data"] !== "string") {
-        throw new Error("Validation error. Invalid body");
-      }
+        const ecommerceModuleOrderQuantity =
+          await this.service.ecommerceModule.order.findByIdQuantity({
+            id: orderId,
+          });
 
-      const data = JSON.parse(body["data"]);
-
-      const token = authorization(c);
-
-      if (!token) {
-        throw new Error("Authentication error. No token");
-      }
-
-      const decoded = await jwt.verify(token, RBAC_JWT_SECRET, "HS256");
-
-      if (decoded?.["subject"]?.["id"] !== id) {
-        throw new Error("Permission error. Only order owner can update order");
-      }
-
-      const order = await this.service.ecommerceModule.order.findById({
-        id: orderId,
-      });
-
-      if (!order) {
-        throw new Error("Not Found error. No order found");
-      }
-
-      if (order.status !== "new") {
-        throw new Error("Validation error. Order is not in 'new' status");
-      }
-
-      await this.service.deanonymize({
-        id,
-        email: data["email"],
-      });
-
-      return c.json({
-        data: true,
+        return c.json({
+          data: ecommerceModuleOrderQuantity,
+        });
       });
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);

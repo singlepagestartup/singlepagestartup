@@ -111,3 +111,17 @@ Products and totals through existing services. It does not establish a Subject
 or bypass caller authorization. The RBAC Subject order-list endpoint supplies
 ownership scope and a consistent read snapshot before invoking this capability.
 The SDK model exports ICartDetails; no database field or migration is needed.
+
+## Unpriced cart lines
+
+`findByIdTotal` returns `{ totals, unpriced }` internally. HTTP total routes keep
+amount arrays under `data` and return diagnostics beside them. Existing SDK
+`total` readers retain the `data` array. `findByIdCartDetails` and Subject purchase
+history keep `totals` as an array and expose optional `unpriced` diagnostics;
+each diagnostic names `ordersToProductsId`, `productId` and `reason`.
+
+A missing or incomplete product price contributes no amount and leaves its cart
+line available for removal. Missing order lines, missing configuration and source
+failures still fail the read. Current Subject checkout shows the diagnostics and
+blocks payment until those lines are removed. Payment calculation retains its
+separate checkout validation; an omitted cart amount is not a zero-price grant.

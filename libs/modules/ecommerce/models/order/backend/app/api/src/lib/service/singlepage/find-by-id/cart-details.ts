@@ -33,12 +33,14 @@ export class Service {
       },
     });
     const byId = new Map(products?.map((product) => [product.id, product]));
+    const result = await this.dependencies.total(props);
     return {
+      ...(result.unpriced.length ? { unpriced: result.unpriced } : {}),
       lines: lines.map((line) => ({
         ...line,
         product: byId.get(line.productId) ?? null,
       })),
-      totals: await this.dependencies.total(props),
+      totals: result.totals,
     };
   }
 }
