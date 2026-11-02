@@ -10,9 +10,6 @@ import {
   readRbacSecret,
 } from "@sps/backend-utils";
 import { IModel as Invoice } from "@sps/billing/models/invoice/sdk/model";
-import { IModel as PaymentIntent } from "@sps/billing/models/payment-intent/sdk/model";
-import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
-import { api as paymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
 
 export class Handler {
   service: Service;
@@ -92,20 +89,11 @@ export class Handler {
           });
 
           if (invoice?.provider === "dummy" && invoice.amount === 0) {
-            invoice = await invoiceApi.update({
-              id: invoice.id,
-              data: {
-                ...invoice,
-                status: "paid",
-              },
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                },
-              },
+            invoice = await this.service.settlePayment({
+              invoiceId: invoice.id,
+              provider: "dummy",
+              amount: 0,
             });
-
-            await this.service.updatePaymentIntentStatus({ invoice });
 
             return c.json(
               {
@@ -156,7 +144,6 @@ export class Handler {
               "x-content-hmac": headers["x-content-hmac"],
               "content-hmac": headers["content-hmac"],
             },
-            callback: this.service.updatePaymentIntentStatus,
           });
         }
       } else if (provider === "tiptoppay") {
@@ -169,7 +156,6 @@ export class Handler {
               "x-content-hmac": headers["x-content-hmac"],
               "content-hmac": headers["content-hmac"],
             },
-            callback: this.service.updatePaymentIntentStatus,
           });
         }
       } else if (provider === "dummy") {
@@ -195,7 +181,6 @@ export class Handler {
         result = await this.service.telegramStar({
           data,
           action: "webhook",
-          callback: this.service.updatePaymentIntentStatus,
         });
       }
 

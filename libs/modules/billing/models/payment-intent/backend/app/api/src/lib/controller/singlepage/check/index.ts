@@ -6,8 +6,6 @@ import {
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
-import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
-import { api as api } from "@sps/billing/models/payment-intent/sdk/server";
 import { getHttpErrorType } from "@sps/backend-utils";
 
 export const PAYMENT_INTENT_INITIALIZATION_GRACE_PERIOD_MS = 5 * 60 * 1000;
@@ -79,18 +77,13 @@ export class Handler {
           Date.now() - PAYMENT_INTENT_INITIALIZATION_GRACE_PERIOD_MS;
 
         if (initializationExpired) {
-          const failedEntity = await api.update({
-            id: entity.id,
-            data: {
-              ...entity,
-              status: "failed",
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
-            },
-          });
+          const failedEntity =
+            await this.service.failUninitializedPaymentIntent(
+              entity.id,
+              new Date(
+                Date.now() - PAYMENT_INTENT_INITIALIZATION_GRACE_PERIOD_MS,
+              ),
+            );
 
           return c.json({
             data: failedEntity,
@@ -216,104 +209,53 @@ export class Handler {
             } | null = null;
             if (paymentsList.Model?.length) {
               matchedTransaction = paymentsList.Model.find((tx: any) => {
-                const jsonData = JSON.parse(tx.JsonData);
-                const invoiceId = jsonData.invoiceId;
-
-                return invoiceId === invoice.id;
-              });
-            }
-
-            if (matchedTransaction) {
-              await invoiceApi.update({
-                id: invoice.id,
-                data: {
-                  ...invoice,
-                  amount: matchedTransaction.Amount,
-                  status: "paid",
-                },
-                options: {
-                  headers: {
-                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                  },
-                },
-              });
-
-              await this.service.updatePaymentIntentStatus({
-                invoice,
+                if (tx.Status !== "Completed" || tx.Type !== 0 || tx.Refunded)
+                  return false;
+                try {
+                  const jsonData =
+                    typeof tx.JsonData === "string"
+                      ? JSON.parse(tx.JsonData)
+                      : tx.JsonData;
+                  return jsonData?.invoiceId === invoice.id;
+                } catch {
+                  return false;
+                }
               });
             }
 
             if (
-              new Date(invoice.createdAt).getTime() + 24 * 60 * 60 * 1000 <
-              Date.now()
+              matchedTransaction?.Status === "Completed" &&
+              matchedTransaction.Type === 0 &&
+              !matchedTransaction.Refunded
             ) {
-              await invoiceApi.update({
-                id: invoice.id,
-                data: {
-                  ...invoice,
-                  status: "failed",
-                },
-                options: {
-                  headers: {
-                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                  },
-                },
+              await this.service.settlePayment({
+                invoiceId: invoice.id,
+                provider: "cloudpayments",
+                providerId: invoice.providerId,
+                amount: Number(matchedTransaction.Amount),
               });
-
-              await api.update({
-                id: entity.id,
-                data: {
-                  ...entity,
-                  status: "failed",
-                },
-                options: {
-                  headers: {
-                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                  },
-                },
+            } else {
+              await this.service.expireInvoice({
+                invoiceId: invoice.id,
+                provider: "cloudpayments",
+                expiresBefore: new Date(Date.now() - 24 * 60 * 60 * 1000),
               });
             }
-
             return c.json({
-              data: entity,
+              data: await this.service.findById({ id: entity.id }),
             });
           }
 
-          if (
-            new Date(invoice.createdAt).getTime() + 7 * 24 * 60 * 60 * 1000 <
-            Date.now()
-          ) {
-            await invoiceApi.update({
-              id: invoice.id,
-              data: {
-                ...invoice,
-                status: "failed",
-              },
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                },
-              },
-            });
-
-            await api.update({
-              id: entity.id,
-              data: {
-                ...entity,
-                status: "failed",
-              },
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                },
-              },
-            });
-          }
+          await this.service.expireInvoice({
+            invoiceId: invoice.id,
+            provider: invoice.provider,
+            expiresBefore: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+          });
         }
       }
 
       return c.json({
-        data: entity,
+        data: await this.service.findById({ id: entity.id }),
       });
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);

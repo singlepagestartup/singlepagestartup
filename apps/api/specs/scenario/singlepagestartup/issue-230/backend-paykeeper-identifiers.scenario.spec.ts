@@ -4,7 +4,7 @@
  * When: callbacks are forged, mismatched, valid or repeated concurrently.
  * Then: only verified matching payments settle, acknowledgments are exact, and repeats do not write twice.
  */
-import { createHash, randomUUID } from "node:crypto";
+import { createHash, createHmac, randomUUID } from "node:crypto";
 import { createServer, type Server } from "node:http";
 import { spawn, type ChildProcess } from "node:child_process";
 import { join } from "node:path";
@@ -85,7 +85,8 @@ async function webhook(
 ) {
   // PayKeeper cannot send the application's operator credential.
   const response = await fetch(
-    base + `/api/billing/payment-intents/${providerName}/webhook`,
+    base +
+      `/api/billing/payment-intents/${providerName === "payselection-int" ? "payselection" : providerName}/webhook`,
     {
       method: "POST",
       headers: {
@@ -104,7 +105,7 @@ async function webhook(
     contentType: response.headers.get("content-type"),
   };
 }
-async function fixture() {
+async function fixture(providerName = "paykeeper") {
   const intent = await create("billing/payment-intents", {
     amount: 100,
     variant: `scenario-paykeeper-${randomUUID()}`,
@@ -113,7 +114,7 @@ async function fixture() {
   const invoice = await create("billing/invoices", {
     amount: 100,
     status: "open",
-    provider: "paykeeper",
+    provider: providerName,
     providerId,
   });
   await create("billing/payment-intents-to-invoices", {
@@ -170,6 +171,23 @@ beforeAll(async () => {
       PAYKEEPER_API_LOGIN: "scenario",
       PAYKEEPER_API_PASSWORD: "scenario",
       PAYKEEPER_WEBHOOK_SECRET: seed,
+      CLOUDPAYMENTS_PUBLIC_ID: "fixture-public",
+      CLOUDPAYMENTS_API_SECRET: seed,
+      TIPTOPPAY_PUBLIC_ID: "fixture-public",
+      TIPTOPPAY_API_SECRET: seed,
+      O_X_PROCESSING_SHOP_ID: "fixture-shop",
+      O_X_PROCESSING_WEBHOOK_PASSWORD: seed,
+      NEXT_PUBLIC_PAYSELECTION_RUB_SITE_ID: "fixture-site",
+      NEXT_PUBLIC_PAYSELECTION_RUB_PUBLIC_KEY: "fixture-public",
+      PAYSELECTION_RUB_SECRET_KEY: seed,
+      NEXT_PUBLIC_PAYSELECTION_RUB_SITE_NAME: "fixture-site-name",
+      PAYSELECTION_RUB_WEBHOOK_URL: "https://fixture.invalid/webhook",
+      NEXT_PUBLIC_PAYSELECTION_INT_SITE_ID: "fixture-int-site",
+      NEXT_PUBLIC_PAYSELECTION_INT_PUBLIC_KEY: "fixture-public",
+      NEXT_PUBLIC_PAYSELECTION_INT_SITE_NAME: "fixture-int-site-name",
+      PAYSELECTION_INT_SECRET_KEY: seed,
+      PAYSELECTION_INT_WEBHOOK_URL: "https://fixture.invalid/webhook",
+      TELEGRAM_SERVICE_BOT_TOKEN: "123456:fixture-token",
     },
   });
   api.on("error", () => undefined);
@@ -322,3 +340,102 @@ it("preserves the internal zero-amount dummy flow for a dummy Invoice", async ()
   expect(after.invoice.status).toBe("paid");
   expect(after.intent.status).toBe("succeeded");
 });
+
+it.each([
+  "cloudpayments",
+  "tiptoppay",
+  "0xprocessing",
+  "payselection",
+  "payselection-int",
+  "telegram-star",
+  "dummy",
+])(
+  "settles %s through its HTTP route and refreshes warmed API readers on concurrent retries",
+  async (providerName) => {
+    const f = await fixture(
+      providerName === "payselection-int" ? "payselection" : providerName,
+    );
+    const headers: Record<string, string> = {
+      "content-type": "application/json",
+    };
+    let data: Record<string, unknown>;
+    if (providerName === "cloudpayments" || providerName === "tiptoppay") {
+      data = {
+        Data: JSON.stringify({ invoiceId: f.invoice.id }),
+        Status: "Completed",
+        OperationType: "Payment",
+        Amount: 100,
+        PaymentAmount: "100.00",
+      };
+    } else if (providerName === "0xprocessing") {
+      const Email = "fixture@example.invalid";
+      const Currency = "USDT";
+      data = {
+        PaymentId: f.providerId,
+        Email,
+        Currency,
+        Status: "Success",
+        AmountUSD: 100,
+        Signature: createHash("md5")
+          .update(`${f.providerId}:fixture-shop:${Email}:${Currency}:${seed}`)
+          .digest("hex"),
+      };
+    } else if (providerName.startsWith("payselection")) {
+      data = { OrderId: f.invoice.id, Event: "Payment", Amount: "100.00" };
+      headers["x-site-id"] =
+        providerName === "payselection-int"
+          ? "fixture-int-site"
+          : "fixture-site";
+    } else if (providerName === "telegram-star") {
+      await call("billing/invoices/" + f.invoice.id, "PATCH", {
+        providerId: null,
+      });
+      data = {
+        currency: "XTR",
+        total_amount: 100,
+        invoice_payload: f.invoice.id,
+        telegram_payment_charge_id: "fixture-charge-" + randomUUID(),
+        provider_payment_charge_id: "",
+      };
+      if (!process.env["RBAC_SECRET_KEY"])
+        throw new Error("Missing scenario secret");
+      headers["X-RBAC-SECRET-KEY"] = process.env["RBAC_SECRET_KEY"];
+    } else {
+      data = { data: { id: f.invoice.id } };
+    }
+    const body = JSON.stringify(data);
+    if (providerName === "cloudpayments" || providerName === "tiptoppay") {
+      const signature = createHmac("sha256", seed)
+        .update(body)
+        .digest("base64");
+      headers["content-hmac"] = signature;
+      headers["x-content-hmac"] = signature;
+    } else if (providerName.startsWith("payselection")) {
+      headers["x-webhook-signature"] = createHmac("sha256", seed)
+        .update(
+          `POST\nhttps://fixture.invalid/webhook\n${headers["x-site-id"]}\n${body}`,
+        )
+        .digest("hex");
+    }
+    const deliver = async () => {
+      const response = await fetch(
+        base +
+          `/api/billing/payment-intents/${providerName === "payselection-int" ? "payselection" : providerName}/webhook`,
+        { method: "POST", headers, body },
+      );
+      const result = await response.json();
+      if (response.status !== 200)
+        throw new Error(
+          `${providerName} returned ${response.status}: ${JSON.stringify(result)}`,
+        );
+      return result;
+    };
+    await f.state();
+    await Promise.all(Array.from({ length: 4 }, deliver));
+    const paid = await f.state();
+    expect(paid.invoice.status).toBe("paid");
+    expect(paid.intent.status).toBe("succeeded");
+    await deliver();
+    expect(await f.state()).toEqual(paid);
+  },
+);

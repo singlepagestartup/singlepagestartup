@@ -15,6 +15,61 @@ Payment intents represent an upcoming or in-progress payment with amount and sta
 - `interval`: recurring interval (optional).
 - `type`: payment type (default: `one_off`).
 
+## Atomic payment confirmation
+
+All supported providers use the Payment Intent settlement service:
+`stripe`, `cloudpayments`, `tiptoppay`, `0xprocessing`, `payselection`,
+`paykeeper`, `telegram-star` and `dummy`. Each provider authenticates its
+notification and checks its successful-payment condition before calling
+`settlePayment({ invoiceId, provider, amount, ... })`. Provider API requests
+finish before database locks are acquired.
+
+Settlement locks the linked Payment Intents in ascending UUID order, then the
+Invoice, and rereads their amounts, statuses, provider identity and associations.
+It writes `Invoice.status = paid` and `PaymentIntent.status = succeeded` through
+the effective owning services in one PostgreSQL transaction. A write failure
+rolls back both statuses. Concurrent deliveries wait for the same records;
+retries preserve already completed statuses and timestamps. A canceled Invoice
+or Payment Intent cannot be revived by a callback. Multiple linked intents
+consume their allocated amount even when already succeeded, preventing a
+retry from allocating that amount again. An invoice that cannot cover all its
+linked intents is rejected without writes.
+
+The existing integer amount schema remains in force. A provider confirmation
+must match the saved invoice amount; decimals are never truncated or used to
+replace it. CloudPayments and TipTopPay use `Amount`, which represents the
+original purchase amount, rather than the card's `PaymentAmount`. Stripe
+Checkout requires a completed session with `payment_status = paid` or
+`no_payment_required`; completing an unpaid session does not settle it.
+Recurring Stripe invoice creation, association and settlement share the same
+transaction and Payment Intent lock. Pending out-of-order events do not
+reset an existing paid invoice.
+
+Telegram Stars binds the successful charge ID under the lock; a different
+charge cannot replace it. The zero-amount dummy path also uses settlement and
+accepts only dummy invoices. Provider response formats and authentication
+remain provider-specific. Database idempotence does not initiate, refund or
+prevent an external charge.
+
+The scheduled CloudPayments check calls the same settlement operation only
+for a completed, incoming, non-refunded transaction. Invoice expiry and stale
+orphan recovery also reread under the same Payment Intent locks, so stale
+checks cannot overwrite a committed success. Capture, generations and outbox
+remain part of the write transaction. No schema migration is required.
+
+Custom provider adapters must inject `settle` and delegate both status writes
+to it. CloudPayments, TipTopPay and Telegram Stars no longer accept a separate
+post-write `callback`. The compatibility method `updatePaymentIntentStatus`
+rereads an already paid invoice and uses the same settlement service; it does
+not authenticate a provider notification. Custom pipelines previously attached
+to internal Invoice/Payment Intent PATCH requests must observe committed
+payment state through the existing consistency lifecycle. Separate self-HTTP
+writes cannot participate in the settlement transaction.
+
+Provider contracts: [Stripe fulfillment](https://docs.stripe.com/checkout/fulfillment.md?ui=full-page),
+[CloudPayments notifications](https://developers.cloudpayments.ru/#uvedomleniya),
+[TipTopPay notifications](https://developers.tiptoppay.kz/#uvedomleniya).
+
 ## PayKeeper notifications
 
 Set `PAYKEEPER_WEBHOOK_SECRET` to the merchant's secret word (`secret_seed`) from
@@ -57,11 +112,6 @@ and [invoice lookup contract](https://docs.paykeeper.ru/dokumentatsiya-json-api/
 define the external protocol. The merchant account must enable POST notifications
 with this callback URL and the same secret word. Local tests use a loopback
 provider fixture rather than charging an account.
-
-Projects with custom observer pipelines attached to the former internal
-Invoice/Payment Intent PATCH requests must adapt them to the committed payment
-lifecycle. PayKeeper settlement now uses owning services atomically, rather
-than separate HTTP writes. Other providers retain their existing flow.
 
 ## Variants
 

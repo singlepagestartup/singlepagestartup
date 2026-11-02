@@ -3,5 +3,9 @@ import { injectable } from "inversify";
 import { DefaultApp } from "@sps/shared-backend-api";
 import { Table } from "@sps/billing/relations/payment-intents-to-invoices/backend/repository/database";
 
+import type { Controller } from "./controller";
+
 @injectable()
-export class App extends DefaultApp<(typeof Table)["$inferSelect"]> {}
+export class App extends DefaultApp<(typeof Table)["$inferSelect"]> {
+  declare controller: Controller;
+}
