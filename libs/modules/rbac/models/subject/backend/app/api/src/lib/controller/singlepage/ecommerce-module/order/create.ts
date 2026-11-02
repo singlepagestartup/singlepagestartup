@@ -67,7 +67,7 @@ export class Handler {
         throw new Error(
           "Permission error. Initial Free is available only through authentication bootstrap",
         );
-      let billingModuleCurrencyId = data["billingModule"]?.currency?.id;
+      const requestedCurrencyId = data["billingModule"]?.currency?.id;
 
       let storeId = data.storeId;
 
@@ -95,73 +95,11 @@ export class Handler {
         throw new Error("Not Found error. No entity found");
       }
 
-      const ecommerceModuleProductsToAttributes =
-        await this.service.ecommerceModule.productsToAttributes.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "productId",
-                  method: "eq",
-                  value: productId,
-                },
-              ],
-            },
-          },
+      const billingModuleCurrencyId =
+        await this.service.ecommerceModuleResolveOrderCurrency({
+          productId,
+          billingModuleCurrencyId: requestedCurrencyId,
         });
-
-      const attributesToBillingModuleCurrencies =
-        await this.service.ecommerceModule.attributesToBillingModuleCurrencies.find(
-          {
-            params: {
-              filters: {
-                and: [
-                  {
-                    column: "attributeId",
-                    method: "inArray",
-                    value:
-                      ecommerceModuleProductsToAttributes?.map(
-                        (productToAttribute) => productToAttribute.attributeId,
-                      ) || [],
-                  },
-                ],
-              },
-            },
-          },
-        );
-
-      if (
-        attributesToBillingModuleCurrencies?.length &&
-        !billingModuleCurrencyId
-      ) {
-        const defaultBillingModuleCurrency =
-          await this.service.billingModule.currency.find({
-            params: {
-              filters: {
-                and: [
-                  {
-                    column: "isDefault",
-                    method: "eq",
-                    value: true,
-                  },
-                ],
-              },
-            },
-          });
-
-        if (defaultBillingModuleCurrency?.length) {
-          billingModuleCurrencyId = attributesToBillingModuleCurrencies.find(
-            (attributeToBillingModuleCurrency) =>
-              attributeToBillingModuleCurrency.billingModuleCurrencyId ===
-              defaultBillingModuleCurrency[0].id,
-          )?.billingModuleCurrencyId;
-
-          if (!billingModuleCurrencyId) {
-            billingModuleCurrencyId =
-              attributesToBillingModuleCurrencies[0]?.billingModuleCurrencyId;
-          }
-        }
-      }
 
       const existingOrdersToProducts =
         await this.service.ecommerceModule.ordersToProducts.find({

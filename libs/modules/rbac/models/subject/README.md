@@ -28,6 +28,26 @@ former `ecommerce-module-product-cart-default` and
 compositions should select the corresponding `me` variant and pass
 `dataSource="props"` when they already own the current Subject.
 
+### Product pricing before cart creation
+
+The Subject order-create handler resolves a currency from the Product's price
+attribute links before opening its existing write transaction. A Product with no
+price currency or a requested currency outside that set returns 400 without
+creating an Order or its associations. The default billing currency wins when
+it is supported; otherwise the first supported currency is used.
+
+The current order-create form consumes the Product currency selector's
+`onCurrenciesResolved` callback. It stays disabled while loading and displays
+«Нет цены» / “No price” for an empty result, including empty intermediate
+relations. Switching Products resets the form's Product and currency inputs.
+Legacy unpriced cart rows remain removable; the cart shows a warning and blocks
+checkout without dropping the amounts of priced rows.
+
+Single-order total and quantity handlers reuse `ecommerceModuleOrderAssertAccess`
+and the registered ownership middleware. They check ownership before reading an
+Order; foreign and unknown IDs return the same 403. The existing HTTP cache
+configuration remains the one from main; retired route files are not restored.
+
 ### Current-Subject cart reads
 
 `GET /api/rbac/subjects/:id/ecommerce-module/orders?includeCartDetails=true`

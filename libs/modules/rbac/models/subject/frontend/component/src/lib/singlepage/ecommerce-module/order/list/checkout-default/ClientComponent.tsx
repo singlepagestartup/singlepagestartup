@@ -115,6 +115,9 @@ export function Component(props: IComponentPropsExtended) {
                 </p>
               );
             // Combine server-calculated amounts from the same authorized snapshot as the rows.
+            const hasUnpriced = orders.some(
+              (order) => order.cartDetails?.unpriced?.length,
+            );
             const totals = new Map<string, ICartDetails["totals"][number]>();
             for (const order of orders) {
               for (const total of order.cartDetails?.totals ?? []) {
@@ -154,6 +157,12 @@ export function Component(props: IComponentPropsExtended) {
                       {total.billingModuleCurrency.symbol}
                     </p>
                   ))}
+                  {hasUnpriced && (
+                    <p role="alert" className="text-sm text-destructive">
+                      У некоторых товаров нет цены. Удалите их из корзины перед
+                      оплатой.
+                    </p>
+                  )}
                   <FormField
                     ui="shadcn"
                     type="select"
@@ -198,7 +207,9 @@ export function Component(props: IComponentPropsExtended) {
                       onClick={form.handleSubmit(onSubmit)}
                       variant="primary"
                       className="flex min-h-11 w-full shrink-0 rounded-xl"
-                      disabled={ecommerceModuleOrderCheckout.isPending}
+                      disabled={
+                        ecommerceModuleOrderCheckout.isPending || hasUnpriced
+                      }
                     >
                       {ecommerceModuleOrderCheckout.isPending
                         ? "Оформляем…"

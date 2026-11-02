@@ -1,4 +1,8 @@
 import {
+  Service as ResolveOrderCurrency,
+  type IExecuteProps as IResolveOrderCurrencyProps,
+} from "./ecommerce/order/resolve-currency";
+import {
   Service as FreezeSubscriptionPeriod,
   type IExecuteProps as IFreezeSubscriptionPeriodProps,
 } from "./ecommerce/order/freeze-subscription-period";
@@ -269,6 +273,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     const revocation = new RoleRevocation(this);
     this.subjectsToRoles.configureRevocation(revocation);
     return revocation;
+  }
+
+  async ecommerceModuleResolveOrderCurrency(props: IResolveOrderCurrencyProps) {
+    return new ResolveOrderCurrency({
+      ecommerceModule: this.ecommerceModule,
+      billingModule: this.billingModule,
+    }).execute(props);
   }
 
   async ecommerceModuleOrderAssertAccess(props: IEcommerceOrderAccessProps) {

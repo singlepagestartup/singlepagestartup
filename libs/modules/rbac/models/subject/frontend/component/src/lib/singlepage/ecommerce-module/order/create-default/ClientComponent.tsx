@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,6 +22,23 @@ export function Component(props: IComponentPropsExtended) {
   const createOrder = api.ecommerceModuleOrderCreate({});
   const [error, setError] = useState("");
   const [added, setAdded] = useState(false);
+  const [priceState, setPriceState] = useState<{
+    productId: string;
+    hasPrice: boolean;
+  }>();
+  const hasPrice =
+    priceState?.productId === props.ecommerceModuleProduct.id
+      ? priceState.hasPrice
+      : undefined;
+  const onCurrenciesResolved = useCallback(
+    (currencies: unknown[]) => {
+      setPriceState({
+        productId: props.ecommerceModuleProduct.id,
+        hasPrice: currencies.length > 0,
+      });
+    },
+    [props.ecommerceModuleProduct.id],
+  );
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -31,7 +48,26 @@ export function Component(props: IComponentPropsExtended) {
       billingModule: { currency: { id: props.billingModule?.currency?.id } },
     },
   });
+  const { reset } = form;
+  useEffect(() => {
+    reset({
+      quantity: 1,
+      productId: props.ecommerceModuleProduct.id,
+      storeId: props.ecommerceModuleStore?.id,
+      billingModule: { currency: { id: props.billingModule?.currency?.id } },
+    });
+    setError("");
+    setAdded(false);
+  }, [
+    reset,
+    props.data.id,
+    props.ecommerceModuleProduct.id,
+    props.ecommerceModuleStore?.id,
+    props.billingModule?.currency?.id,
+  ]);
+
   async function submit(data: z.infer<typeof schema>) {
+    if (hasPrice !== true) return;
     setError("");
     setAdded(false);
     try {
@@ -73,6 +109,7 @@ export function Component(props: IComponentPropsExtended) {
                 data={props.ecommerceModuleProduct}
                 form={form}
                 formFieldName="billingModule.currency.id"
+                onCurrenciesResolved={onCurrenciesResolved}
               />
             </div>
             <FormField
@@ -90,17 +127,21 @@ export function Component(props: IComponentPropsExtended) {
           <Button
             type="submit"
             variant="primary"
-            disabled={createOrder.isPending}
+            disabled={createOrder.isPending || hasPrice !== true}
             className="min-h-11 w-full rounded-xl"
           >
             <ShoppingCart size={18} />
-            {createOrder.isPending
+            {hasPrice === false
               ? props.language === "ru"
-                ? "Добавляем…"
-                : "Adding…"
-              : props.language === "ru"
-                ? "Добавить в корзину"
-                : "Add to cart"}
+                ? "Нет цены"
+                : "No price"
+              : createOrder.isPending
+                ? props.language === "ru"
+                  ? "Добавляем…"
+                  : "Adding…"
+                : props.language === "ru"
+                  ? "Добавить в корзину"
+                  : "Add to cart"}
           </Button>
           {error && (
             <p role="alert" className="text-sm text-destructive">

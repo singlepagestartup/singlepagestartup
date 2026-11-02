@@ -226,7 +226,10 @@ describe("Subject order history", () => {
         billingModuleCurrency: { id: "usd", slug: "usd", symbol: "$" },
       },
     ];
-    service.ecommerceModule.order.findByIdTotal.mockResolvedValue(totals);
+    service.ecommerceModule.order.findByIdTotal.mockResolvedValue({
+      totals,
+      unpriced: [],
+    });
     service.ecommerceModule.ordersToFileStorageModuleFiles = {
       find: jest
         .fn()
@@ -347,4 +350,23 @@ describe("Private cart projection", () => {
     ).rejects.toThrow();
     expect(service.subjectsToEcommerceModuleOrders.find).not.toHaveBeenCalled();
   });
+});
+
+describe("Empty cart total response", () => {
+  beforeEach(() => {
+    authorizationMock.mockReturnValue("token");
+    verifyMock.mockResolvedValue({ subject: { id: "subject-1" } });
+  });
+  it.each([false, true])(
+    "keeps the total envelope when subject order links exist: %s",
+    async (hasLinks) => {
+      const { service } = createService();
+      service.subjectsToEcommerceModuleOrders.find.mockResolvedValue(
+        hasLinks ? [{ ecommerceModuleOrderId: "order-1" }] : [],
+      );
+      expect(
+        await new TotalHandler(service).execute(createContext(), jest.fn()),
+      ).toEqual({ data: [], unpriced: [] });
+    },
+  );
 });

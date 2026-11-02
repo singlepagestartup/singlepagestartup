@@ -194,6 +194,10 @@ paths:
     $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1ecommerce-module~1orders~1quantity"
   /rbac/subjects/{id}/ecommerce-module/orders/{orderId}:
     $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1ecommerce-module~1orders~1{orderId}"
+  /rbac/subjects/{id}/ecommerce-module/orders/{orderId}/total:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1ecommerce-module~1orders~1{orderId}~1total"
+  /rbac/subjects/{id}/ecommerce-module/orders/{orderId}/quantity:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1ecommerce-module~1orders~1{orderId}~1quantity"
   /rbac/subjects/{id}/ecommerce-module/orders/{orderId}/checkout:
     $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1ecommerce-module~1orders~1{orderId}~1checkout"
   /rbac/subjects/{id}/crm-module/form/{crmModuleFormId}/request:

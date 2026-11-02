@@ -1,7 +1,11 @@
-import type { IModel as IOrdersToProducts } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
+import type {
+  IUnpricedOrderToProduct,
+  IModel as IOrdersToProducts,
+} from "@sps/ecommerce/relations/orders-to-products/sdk/model";
 import type { IModel as IProduct } from "@sps/ecommerce/models/product/sdk/model";
 
 export interface ICartDetails {
+  unpriced?: IUnpricedOrderToProduct[];
   lines: (IOrdersToProducts & { product: IProduct | null })[];
   totals: { total: number; billingModuleCurrency: IBillingModuleCurrency }[];
 }
@@ -10,6 +14,7 @@ import type { IModel as IBillingModuleCurrency } from "@sps/billing/models/curre
 import type { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
 
 export interface IPurchaseDetails {
+  unpriced?: IUnpricedOrderToProduct[];
   totals: { total: number; billingModuleCurrency: IBillingModuleCurrency }[];
   receipts: IFileStorageModuleFile[];
 }
