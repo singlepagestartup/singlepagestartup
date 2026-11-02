@@ -1,0 +1,9 @@
+{
+  "id": "591c454b-2e20-4e4a-b532-0f6326f44cec",
+  "createdAt": "2026-10-12T01:02:05.400Z",
+  "updatedAt": "2026-10-12T01:02:05.400Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/social/chats"
+}

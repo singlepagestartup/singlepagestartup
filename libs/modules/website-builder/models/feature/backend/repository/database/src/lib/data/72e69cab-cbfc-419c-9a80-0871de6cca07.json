@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "72e69cab-cbfc-419c-9a80-0871de6cca07",
+  "createdAt": "2026-10-26T00:11:22.696Z",
+  "updatedAt": "2026-10-27T14:59:40.871Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Several items become one order",
+    "ru": "Несколько позиций попадают в один заказ"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Buyers add products to a cart and change quantities. Order contents and totals are saved in the project.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Покупатель добавляет товары в корзину и меняет количество. Состав заказа и сумма сохраняются в проекте.\"}]}]}"
+  },
+  "adminTitle": "Несколько позиций попадают в один заказ",
+  "slug": "framework-reviewed-article-ecommerce-introduction-feature-1"
+}

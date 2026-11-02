@@ -1,11 +1,15 @@
-import { cpSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import {
+  cpSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  writeFileSync,
+} from "node:fs";
+import { format } from "prettier";
 import os from "node:os";
 import path from "node:path";
 import { stringify } from "yaml";
 
-import { documentFingerprint } from "../../studio/workspace/document";
-import { mergeMarkdown } from "../../studio/workspace/merge";
-import { loadDocumentReviews } from "../../studio/workspace/review-loader";
 import { templateSections } from "./definition";
 
 /**
@@ -16,29 +20,17 @@ import { templateSections } from "./definition";
 export interface IDownstreamFixtureOptions {
   /** Write project content into the startup layer; false leaves it empty and inheriting. */
   populated?: boolean;
-  /** Which shared documents carry a startup confirmation with a valid fingerprint and input snapshot. */
-  confirm?: Partial<Record<SharedDocument, boolean>>;
   /** Visual intake status per category; defaults to ready with interface out of scope. */
   visualIntake?: Partial<Record<(typeof VISUAL_CATEGORIES)[number], string>>;
   cursor?: {
-    active_stage?: string;
+    active_section?: string;
     status?: string;
-    active_artifacts?: string[];
-    blockers?: string[];
   };
   /** Keep the framework base Design's interface section so it leaks into the resolved startup Design. */
   baseDesignInterface?: boolean;
-  /** Schema of the framework base catalog; the startup catalog is always v2. */
-  baseCatalogSchema?: "v1" | "v2";
   salesReadiness?: "ready" | "blocked";
   /** Drop one generated example file so the registry and the tree disagree. */
   missingGeneratedFile?: boolean;
-  /** Add a retired evidence-register code to a document. */
-  evidenceCode?: boolean;
-  /** Edit these documents after stamping them, so the stamp covers a body that no longer exists. */
-  editedAfterConfirmation?: SharedDocument[];
-  /** Record an input snapshot these documents can no longer match, which makes them stale. */
-  staleInputs?: SharedDocument[];
   /** Register one generated directory instead of its files. */
   generatedDirectory?: boolean;
 }
@@ -60,7 +52,6 @@ const SHARED_DOCUMENTS: SharedDocument[] = [
   "design",
 ];
 const PRODUCT_ID = "fixture-product";
-const MODEL_ID = "fixture-model";
 const PROPOSAL_ID = "fixture-proposal";
 const WORKSPACE = "apps/studio/workspace";
 
@@ -80,6 +71,10 @@ function write(root: string, relative: string, content: string) {
   writeFileSync(file, content);
 }
 
+async function formatMarkdownSource(source: string): Promise<string> {
+  return format(source, { parser: "markdown" });
+}
+
 export async function createDownstreamFixture(
   repositoryRoot: string,
   options: IDownstreamFixtureOptions = {},
@@ -88,6 +83,13 @@ export async function createDownstreamFixture(
   const workspaceRoot = path.join(root, WORKSPACE);
   const sectionsOf = (template: string) =>
     templateSections(repositoryRoot, template);
+  const visibleSectionsOf = (template: string) =>
+    [
+      ...readFileSync(
+        path.join(repositoryRoot, ".agents/templates", template),
+        "utf8",
+      ).matchAll(/^## (.+)$/gm),
+    ].map((match) => match[1].trim());
 
   cpSync(path.join(repositoryRoot, ".agents"), path.join(root, ".agents"), {
     recursive: true,
@@ -106,17 +108,18 @@ export async function createDownstreamFixture(
   write(
     root,
     `${WORKSPACE}/utils/pre-development/singlepage.yaml`,
-    "schema: singlepagestartup.pre-development-state.v1\nactive_stage: 00-business\nstatus: not_started\nactive_artifacts:\n  - brief\nblockers: []\n",
+    "schema: singlepagestartup.pre-development-state.v2\nactive_section: brief\nactive_stage: 00-business\nstatus: not_started\nprogress: {}\n",
   );
   write(
     root,
     `${WORKSPACE}/utils/pre-development/startup.yaml`,
     stringify({
-      schema: "singlepagestartup.pre-development-state.v1",
-      active_stage: options.cursor?.active_stage ?? "40-products",
+      schema: "singlepagestartup.pre-development-state.v2",
+      active_stage: "40-products",
+      active_section: options.cursor?.active_section ?? "materials",
+      active_product: PRODUCT_ID,
       status: options.cursor?.status ?? "in_progress",
-      active_artifacts: options.cursor?.active_artifacts ?? ["products"],
-      blockers: options.cursor?.blockers ?? [],
+      progress: {},
     }),
   );
 
@@ -141,20 +144,16 @@ export async function createDownstreamFixture(
     ),
   };
   for (const kind of SHARED_DOCUMENTS)
-    write(
-      root,
-      `${WORKSPACE}/${kind}/singlepage.md`,
-      withMetadata(base[kind], { confirmation: { confirmed: false } }),
-    );
+    write(root, `${WORKSPACE}/${kind}/singlepage.md`, base[kind]);
   write(
     root,
     `${WORKSPACE}/assets/singlepage.yaml`,
-    "schema: singlepagestartup.asset-index.v1\nconfirmation:\n  confirmed: false\nassets: []\n",
+    "schema: singlepagestartup.asset-index.v1\nassets: []\n",
   );
   write(
     root,
     `${WORKSPACE}/products/singlepage/catalog.yaml`,
-    `schema: singlepagestartup.product-catalog.${options.baseCatalogSchema ?? "v2"}\nmodels: []\nproducts: []\n`,
+    "schema: singlepagestartup.product-catalog.v2\nproducts: []\n",
   );
 
   if (!(options.populated ?? true)) {
@@ -164,7 +163,7 @@ export async function createDownstreamFixture(
     write(
       root,
       `${WORKSPACE}/products/startup/catalog.yaml`,
-      "schema: singlepagestartup.product-catalog.v2\nmodels: []\nproducts: []\n",
+      "schema: singlepagestartup.product-catalog.v2\nproducts: []\n",
     );
     return { root, workspaceRoot, productId: PRODUCT_ID };
   }
@@ -173,7 +172,7 @@ export async function createDownstreamFixture(
   const project = (sections: string[]) =>
     sections.map((section, index): [string, string] => [
       section,
-      `Downstream decision for ${section.toLowerCase()}.${options.evidenceCode && index === 0 ? " See ST-EV-04." : ""}`,
+      `Downstream decision for ${section.toLowerCase()}.`,
     ]);
   const examples = (family: string) =>
     [
@@ -225,9 +224,6 @@ export async function createDownstreamFixture(
     brief: {
       intake: {
         scope: {
-          confirmed: true,
-          at: "2026-09-18",
-          source: "Fixture operator confirmed the product scope.",
           project: "Downstream fixture",
           products: [PRODUCT_ID],
         },
@@ -238,46 +234,16 @@ export async function createDownstreamFixture(
     brand: {},
     design: { proposal_id: PROPOSAL_ID },
   };
-  const confirm = {
-    brief: true,
-    strategy: true,
-    brand: true,
-    design: true,
-    ...options.confirm,
-  };
-  const writeShared = (
-    kind: SharedDocument,
-    dependencies?: Record<string, string>,
-  ) => {
-    const confirmation = confirm[kind]
-      ? {
-          confirmed: true,
-          by: "operator",
-          at: "2026-09-18",
-          source:
-            "Fixture operator confirmed the complete downstream document.",
-          content_sha256: documentFingerprint(
-            mergeMarkdown(base[kind], overlay[kind]).content,
-          ),
-        }
-      : { confirmed: false };
-    // The stamp is computed over the approved body; the edit lands after it.
-    const body = options.editedAfterConfirmation?.includes(kind)
-      ? `${overlay[kind]}\nA decision recorded after the operator approved this document.\n`
-      : overlay[kind];
-    const snapshot = options.staleInputs?.includes(kind)
-      ? { ...dependencies, brief: "0".repeat(64) }
-      : dependencies;
+  const writeShared = (kind: SharedDocument) =>
     write(
       root,
       `${WORKSPACE}/${kind}/startup.md`,
-      withMetadata(body, {
-        ...metadata[kind],
-        confirmation,
-        ...(snapshot ? { review: { dependencies: snapshot } } : {}),
-      }),
+      withMetadata(overlay[kind], metadata[kind]),
     );
-  };
+  for (const kind of SHARED_DOCUMENTS) {
+    base[kind] = await formatMarkdownSource(base[kind]);
+    overlay[kind] = await formatMarkdownSource(overlay[kind]);
+  }
   for (const kind of SHARED_DOCUMENTS) writeShared(kind);
 
   const assets = [
@@ -309,7 +275,7 @@ export async function createDownstreamFixture(
   write(
     root,
     `${WORKSPACE}/assets/startup.yaml`,
-    `schema: singlepagestartup.asset-index.v1\nconfirmation:\n  confirmed: false\n${stringify({ assets })}`,
+    `schema: singlepagestartup.asset-index.v1\n${stringify({ assets })}`,
   );
   for (const [index, asset] of assets.entries()) {
     if (options.missingGeneratedFile && index === 0) continue;
@@ -326,21 +292,15 @@ export async function createDownstreamFixture(
     `${productRoot}/catalog.yaml`,
     stringify({
       schema: "singlepagestartup.product-catalog.v2",
-      models: [
-        {
-          id: MODEL_ID,
-          name: "Fixture model",
-          source: `models/${MODEL_ID}/model.md`,
-        },
-      ],
       products: [
         {
           id: PRODUCT_ID,
-          model: MODEL_ID,
           name: "Fixture product",
           summary: "A downstream product used to exercise the pipeline checks.",
-          research: `${PRODUCT_ID}/research.md`,
-          analytics: `${PRODUCT_ID}/analytics.md`,
+          audience: `${PRODUCT_ID}/audience.md`,
+          competitors: `${PRODUCT_ID}/competitors.md`,
+          semantics: `${PRODUCT_ID}/semantics.md`,
+          economics: `${PRODUCT_ID}/economics.md`,
           sales: `${PRODUCT_ID}/sales.yaml`,
           product: `${PRODUCT_ID}/product.md`,
         },
@@ -349,65 +309,30 @@ export async function createDownstreamFixture(
   );
   write(
     root,
-    `${productRoot}/models/${MODEL_ID}/model.md`,
-    withMetadata(
-      markdown(
-        "Operations & Economics",
-        project(sectionsOf("templates/product-model.md")),
-      ),
-      {
-        confirmation: { confirmed: false },
-      },
-    ),
-  );
-  write(
-    root,
     `${productRoot}/${PRODUCT_ID}/product.md`,
     withMetadata(
-      markdown("Product", project(sectionsOf("templates/product.md"))),
+      markdown("Product", project(visibleSectionsOf("product.md"))),
       {
-        confirmation: { confirmed: false },
         customer_segments: ["buyers"],
       },
     ),
   );
-  write(
-    root,
-    `${productRoot}/${PRODUCT_ID}/research.md`,
-    withMetadata(
-      markdown(
-        "Product research",
-        sectionsOf("templates/product-research.md").map(
-          (section): [string, string] => [
-            section,
-            section === "Findings and unknowns"
-              ? "**FX-S-01** — observation: the fixture market exists."
-              : `Downstream research for ${section.toLowerCase()}.`,
-          ],
-        ),
-      ),
-      { confirmation: { confirmed: false }, finding_prefix: "FX" },
-    ),
-  );
-  write(
-    root,
-    `${productRoot}/${PRODUCT_ID}/analytics.md`,
-    withMetadata(
-      markdown(
-        "Product analytics",
-        project(sectionsOf("templates/product-analytics.md")),
-      ),
-      {
-        confirmation: { confirmed: false },
-      },
-    ),
-  );
+  for (const [kind, template] of [
+    ["audience", "product-audience.md"],
+    ["competitors", "product-research-competitors.md"],
+    ["semantics", "product-semantics.md"],
+    ["economics", "product-economics.md"],
+  ])
+    write(
+      root,
+      `${productRoot}/${PRODUCT_ID}/${kind}.md`,
+      markdown(kind, project(visibleSectionsOf(template))),
+    );
   const ready = (options.salesReadiness ?? "ready") === "ready";
   write(
     root,
     `${productRoot}/${PRODUCT_ID}/sales.yaml`,
     stringify({
-      confirmation: { confirmed: false },
       schema: "singlepagestartup.sales-process.v2",
       product_id: PRODUCT_ID,
       readiness: ready ? "ready" : "blocked",
@@ -466,16 +391,6 @@ export async function createDownstreamFixture(
       ],
     }),
   );
-
-  // Second pass: a confirmed document also records the fingerprints of the
-  // inputs it was reviewed against, exactly as the review resolver expects.
-  const reviews = await loadDocumentReviews(workspaceRoot, "startup");
-  for (const kind of SHARED_DOCUMENTS) {
-    if (!confirm[kind]) continue;
-    const review = reviews.get(kind);
-    if (review && Object.keys(review.dependencies).length)
-      writeShared(kind, review.dependencies);
-  }
 
   return { root, workspaceRoot, productId: PRODUCT_ID };
 }

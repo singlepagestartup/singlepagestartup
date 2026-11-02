@@ -61,6 +61,25 @@ Environment knobs:
   row may fail before `host-module-page-cache` stops. That handler also stops
   between URLs when its run was superseded.
 
+Invalid cron intervals are rejected before the first dispatch. A page-cache run
+stopped by repeated fetch failures returns HTTP 502; a superseded run returns
+HTTP 409. The completion middleware records these HTTP failures instead of a
+successful run. Manual callers should check both the status and `data.stopped`.
+
+## Seeded Agents
+
+The repository ships the agent rows below; `npx nx run api:db:seed` creates
+them and the cron dispatcher runs each one on its interval.
+
+- `billing-module-payment-intents-check` (`* * * * *`).
+- `ecommerce-module-orders-check` (`* * * * *`).
+- `rbac-module-subjects-check` (`* * * * *`): processes subject orders.
+- `rbac-module-subjects-delete-anonymous` (`0 0 * * *`): deletes one bounded
+  batch of inactive anonymous subjects per run by calling
+  `POST /api/rbac/subjects/delete-anonymous`. The retention rules and the batch
+  size belong to the rbac module; see
+  `libs/modules/rbac/models/subject/README.md`.
+
 ## Telegram Thread Commands
 
 The singlepage agent service owns Telegram thread commands:

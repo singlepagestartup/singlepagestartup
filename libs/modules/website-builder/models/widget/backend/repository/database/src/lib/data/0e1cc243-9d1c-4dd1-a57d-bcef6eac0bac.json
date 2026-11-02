@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "A request for your project",
+    "ru": "Запрос для вашего проекта"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"I want a photography school blog with categories, covers and teacher pages. An article about portraits should show the related workshop.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Хочу блог школы фотографии с категориями, обложками и страницами преподавателей. В статье о портретах нужно показать связанный мастер-класс.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "0e1cc243-9d1c-4dd1-a57d-bcef6eac0bac",
+  "createdAt": "2026-10-26T00:11:45.733Z",
+  "updatedAt": "2026-10-27T14:58:47.456Z",
+  "variant": "content-rich",
+  "adminTitle": "Запрос для вашего проекта",
+  "slug": "framework-reviewed-article-blog-task"
+}

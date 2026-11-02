@@ -57,6 +57,11 @@ export function Component(props: IComponentPropsExtended) {
   const relationSections = useMemo(() => {
     return [
       {
+        id: "widgets-to-website-builder-module-widgets",
+        title: "Website Builder",
+        render: props.widgetsToWebsiteBuilderModuleWidgets,
+      },
+      {
         id: "widgets-to-articles",
         title: "Articles",
         render: props.widgetsToArticles,
@@ -75,7 +80,11 @@ export function Component(props: IComponentPropsExtended) {
         render: NonNullable<typeof section.render>;
       } => Boolean(section.render),
     );
-  }, [props.widgetsToArticles, props.widgetsToCategories]);
+  }, [
+    props.widgetsToArticles,
+    props.widgetsToCategories,
+    props.widgetsToWebsiteBuilderModuleWidgets,
+  ]);
 
   const [activeMainTab, setActiveMainTab] = useState<"details" | "relations">(
     "details",

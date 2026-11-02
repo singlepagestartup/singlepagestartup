@@ -40,11 +40,16 @@ function getOAuthErrorText(errorCode?: string | null) {
 export function Component(props: IComponentPropsExtended) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const processedCodeRef = useRef<string | null>(null);
+  const processedExchangeRef = useRef<string | null>(null);
   const [provider, setProvider] = useState<TAuthProvider>("email");
   const [localError, setLocalError] = useState("");
   const oauthError = searchParams.get("oauthError");
   const oauthCode = searchParams.get("code");
+  // The callback marks the landing URL with the provider and hands the code
+  // over as an HttpOnly cookie. `code` is only in the query while a project
+  // keeps RBAC_OAUTH_EXCHANGE_CODE_IN_QUERY on.
+  const oauthExchangeMarker = searchParams.get("oauthExchange");
+  const oauthExchangeKey = oauthCode || oauthExchangeMarker;
 
   const oauthStart = api.authenticationOAuthStart({});
   const oauthExchange = api.authenticationOAuthExchange({
@@ -53,18 +58,17 @@ export function Component(props: IComponentPropsExtended) {
   const oauthExchangeMutate = oauthExchange.mutate;
 
   useEffect(() => {
-    if (!oauthCode || processedCodeRef.current === oauthCode) {
+    if (
+      !oauthExchangeKey ||
+      processedExchangeRef.current === oauthExchangeKey
+    ) {
       return;
     }
 
-    processedCodeRef.current = oauthCode;
+    processedExchangeRef.current = oauthExchangeKey;
 
-    oauthExchangeMutate({
-      data: {
-        code: oauthCode,
-      },
-    });
-  }, [oauthCode, oauthExchangeMutate]);
+    oauthExchangeMutate(oauthCode ? { data: { code: oauthCode } } : {});
+  }, [oauthExchangeKey, oauthCode, oauthExchangeMutate]);
 
   useEffect(() => {
     if (!oauthExchange.isSuccess) {

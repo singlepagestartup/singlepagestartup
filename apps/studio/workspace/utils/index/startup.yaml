@@ -46,8 +46,8 @@ entries:
     path: products/startup/catalog.yaml
     extends: singlepage.products
     strategy: product-catalog
-    description: Atomic catalog of products and their Product, model, Sales,
-      Promotion, Product Content, Analytics, and Research sources.
+    description: Catalog of visible product descriptions, audiences, competitors, semantics,
+      economics, sales and marketing materials.
     uses:
       - startup.brief
       - startup.strategy
@@ -57,9 +57,6 @@ entries:
 exports: []
 imports:
   - template.brief
-  - template.product-model
-  - template.product-research
-  - template.product-analytics
   - template.sales-process
   - template.strategy
   - template.asset-index
@@ -69,3 +66,7 @@ imports:
   - template.products
   - template.website
   - template.creative
+  - template.product-audience
+  - template.product-economics
+  - template.product-semantics
+  - template.product-research-competitors

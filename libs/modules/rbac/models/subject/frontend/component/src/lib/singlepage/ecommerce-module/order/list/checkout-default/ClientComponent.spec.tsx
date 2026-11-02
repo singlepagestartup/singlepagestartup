@@ -15,6 +15,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 const mutateAsyncMock = jest.fn();
 const useFormMock = jest.fn();
 const ecommerceModuleOrderApiPropsMock = jest.fn();
+let cartOrders: any[];
 
 const submitPayload = {
   provider: "stripe",
@@ -132,10 +133,22 @@ jest.mock("../total-default", () => ({
       : null,
 }));
 
+jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
+  Component: (props: any) => {
+    ecommerceModuleOrderApiPropsMock(props.apiProps);
+    return props.children?.({
+      data: cartOrders,
+    });
+  },
+}));
+jest.mock("@sps/ecommerce/models/product/frontend/component", () => ({
+  Component: () => null,
+}));
 import { Component } from "./ClientComponent";
 
 describe("Given: order list checkout component", () => {
   beforeEach(() => {
+    cartOrders = [{ id: "order-1", cartDetails: { lines: [], totals: [] } }];
     mutateAsyncMock.mockReset();
     useFormMock.mockReset();
     ecommerceModuleOrderApiPropsMock.mockReset();
@@ -144,8 +157,11 @@ describe("Given: order list checkout component", () => {
     useFormMock.mockReturnValue({
       control: {},
       handleSubmit:
-        (submit: (data: typeof submitPayload) => Promise<void>) => () =>
-          submit(submitPayload),
+        (submit: (data: typeof submitPayload) => Promise<void>) =>
+        (event: { preventDefault: () => void }) => {
+          event.preventDefault();
+          return submit(submitPayload);
+        },
     });
   });
 
@@ -165,7 +181,7 @@ describe("Given: order list checkout component", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Checkout" }));
+    fireEvent.click(screen.getByRole("button", { name: "Перейти к оплате" }));
 
     await waitFor(() => {
       expect(mutateAsyncMock).toHaveBeenCalledWith({
@@ -198,10 +214,10 @@ describe("Given: order list checkout component", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Checkout" }));
+    fireEvent.click(screen.getByRole("button", { name: "Перейти к оплате" }));
 
     await waitFor(() => {
-      const links = screen.getAllByText("Payment Link");
+      const links = screen.getAllByRole("link", { name: "Перейти к оплате" });
       expect(links.length).toBe(2);
     });
 
@@ -226,28 +242,79 @@ describe("Given: order list checkout component", () => {
     );
 
     expect(ecommerceModuleOrderApiPropsMock).toHaveBeenCalledWith({
-      params: {
-        filters: {
-          and: expect.arrayContaining([
-            {
-              column: "type",
-              method: "eq",
-              value: "cart",
-            },
-            {
-              column: "status",
-              method: "eq",
-              value: "new",
-            },
-          ]),
-        },
-      },
-      options: {
-        cache: "no-store",
-        headers: {
-          "Cache-Control": "no-store",
-        },
-      },
+      params: { includeCartDetails: true },
     });
+  });
+  it("renders totals from the same private snapshot and leaves cached amounts unchanged", () => {
+    const first = {
+      total: 125,
+      billingModuleCurrency: { id: "eur", symbol: "€" },
+    };
+    cartOrders = [
+      { id: "one", cartDetails: { lines: [], totals: [first] } },
+      {
+        id: "two",
+        cartDetails: {
+          lines: [],
+          totals: [
+            { total: 250, billingModuleCurrency: { id: "eur", symbol: "€" } },
+          ],
+        },
+      },
+    ];
+    render(
+      <Component
+        isServer={false}
+        variant="ecommerce-module-order-list-checkout-default"
+        data={{ id: "subject-1" } as any}
+        language="en"
+      />,
+    );
+    expect(screen.getByText("375 €")).toBeTruthy();
+    expect(first.total).toBe(125);
+  });
+  it("does not offer checkout for an empty cart", () => {
+    cartOrders = [];
+    render(
+      <Component
+        isServer={false}
+        variant="ecommerce-module-order-list-checkout-default"
+        data={{ id: "subject-1" } as any}
+        language="en"
+      />,
+    );
+    expect(screen.getByText("В корзине пока нет товаров.")).toBeTruthy();
+    expect(
+      screen.queryByRole("button", { name: "Перейти к оплате" }),
+    ).toBeNull();
+  });
+  it("blocks checkout for a legacy unpriced line while retaining the cart and amounts", async () => {
+    cartOrders[0].cartDetails = {
+      lines: [],
+      totals: [
+        { total: 100, billingModuleCurrency: { id: "rub", symbol: "₽" } },
+      ],
+      unpriced: [
+        {
+          ordersToProductsId: "bad-line",
+          productId: "bad",
+          reason: "No price",
+        },
+      ],
+    };
+    render(
+      <Component
+        isServer={false}
+        variant="ecommerce-module-order-list-checkout-default"
+        data={{ id: "subject-1" } as any}
+        language="ru"
+      />,
+    );
+    expect(screen.getByRole("alert").textContent).toContain("нет цены");
+    const button = screen.getByRole("button", { name: "Перейти к оплате" });
+    expect(button.hasAttribute("disabled")).toBe(true);
+    fireEvent.click(button);
+    expect(mutateAsyncMock).not.toHaveBeenCalled();
+    expect(screen.getAllByText("100 ₽")).toHaveLength(2);
   });
 });

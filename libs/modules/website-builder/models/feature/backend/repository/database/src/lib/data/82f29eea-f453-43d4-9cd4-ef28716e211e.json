@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "82f29eea-f453-43d4-9cd4-ef28716e211e",
+  "createdAt": "2026-10-26T00:12:07.255Z",
+  "updatedAt": "2026-10-27T14:59:42.617Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Develop automation separately",
+    "ru": "Автоматизацию можно развивать отдельно"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Add tasks as recurring work appears. A task uses other modules' capabilities.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Добавляйте новые задания по мере появления повторяющейся работы. Задача использует возможности других модулей.\"}]}]}"
+  },
+  "adminTitle": "Автоматизацию можно развивать отдельно",
+  "slug": "framework-reviewed-article-agent-introduction-feature-2"
+}

@@ -5,7 +5,7 @@ import { logger } from "@sps/backend-utils";
 
 export interface IMiddlewareGeneric {}
 
-type IService = {
+interface IService {
   agentRun: {
     markFinished(props: {
       slug: string;
@@ -13,7 +13,7 @@ type IService = {
       result: Record<string, unknown>;
     }): Promise<boolean>;
   };
-};
+}
 
 /**
  * Closes the run of an agent that the cron runner dispatched.

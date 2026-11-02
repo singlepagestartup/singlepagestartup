@@ -1,30 +1,24 @@
 ---
-confirmation:
-  confirmed: false
-review:
-  dependencies:
-    model.framework-service: a511d19e3b8a0e67ce12e2b3d559a19fb9ca8d6f5732627d43db940fd14d3cbd
-    product.singlepagestartup.creative: 487a52b6d1feb831b6fa08eb35ac85e4ff6995bc605e8e24c954c676590d61bd
 ---
 
-# One business rule. Your own product.
+# Добавьте правило в готовую корзину
 
-A 30-second vertical storyboard introducing a maker's request and the reusable foundation. The illustrations explain the idea; they are not footage of a customer result.
+Сценарий вертикального видео на 30 секунд: магазин принимает заказы от шести единиц, а ИИ-агент добавляет это ограничение в готовое приложение. Пока используются иллюстрации; запись доработки ещё предстоит снять.
 
-| Time        | Visual                                                                  | On-screen text                             | Voiceover                                                                                     |
-| ----------- | ----------------------------------------------------------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------- |
-| 00:00–00:04 | Business-conversation photograph with a short headline.                 | Your idea starts with a customer.          | You have a business idea. Start with what your customer needs.                                |
-| 00:04–00:10 | Module illustration with three simple labels: accounts, cart, payments. | Keep the common functions.                 | Code Framework brings common functions together, so your agent has a foundation to work with. |
-| 00:10–00:17 | A readable request card over the agent-coordination illustration.       | My store has a minimum order of six units. | Describe the rule your business needs. For example: a minimum order of six units.             |
-| 00:17–00:24 | Work-in-motion photograph; the words change from request to product.    | Describe. Build. Explore.                  | Direct the agent, explore the product and keep shaping it around your customers.              |
-| 00:24–00:30 | Product name, module illustration and closing action.                   | See the full build.                        | See the full explanation, then choose the foundation for your own product.                    |
+| Время       | Изображение                                        | Текст на экране              | Закадровый текст                                                                                                                 |
+| ----------- | -------------------------------------------------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| 00:00–00:04 | Схема корзины с пятью товарами и условием заказа.  | Минимальный заказ — 6 единиц | Ваш магазин принимает заказы от шести единиц.                                                                                    |
+| 00:04–00:10 | Иллюстрация модулей: аккаунты, корзина, платежи.   | Корзина и оплата уже есть    | В Code Framework уже есть корзина и оплата. Нужно добавить ваше правило.                                                         |
+| 00:10–00:17 | Карточка запроса к агенту рядом со схемой корзины. | Добавь ограничение заказа    | Опишите агенту минимум заказа и сообщение, которое должен увидеть покупатель.                                                    |
+| 00:17–00:24 | Схема двух проверок: пять единиц и шесть.          | 5 — нельзя. 6 — можно.       | Проверьте заказ из пяти и из шести единиц, затем попробуйте изменить количество.                                                 |
+| 00:24–00:30 | Название продукта и переход к полному разбору.     | Правило минимального заказа  | В полном разборе — порядок доработки. Посмотрите возможности Code Framework и подготовьте в AI Chat задание для своего магазина. |
 
-## Caption
+## Подпись
 
-Your business rules deserve your attention. Reuse the common functions, describe the change to your coding agent and make the product yours.
+Как добавить своё условие продажи в готовое приложение: сформулируйте правило, поручите его ИИ-агенту и проверьте заказ от лица покупателя.
 
-## Destination
+## Переход
 
-Link the published Short to its related full video. That video's description introduces the framework and links to the repository. The video destination is assigned when the video is published.
+Короткое видео ведёт к полному разбору, затем — на страницу Code Framework. Главное действие страницы — попробовать AI Chat со сведениями своего бизнеса; GitHub доступен для перехода к разработке.
 
-[Code Framework](https://github.com/singlepagestartup/singlepagestartup)
+[Страница Code Framework](/?path=/story/workspace-50-materials-singlepage-singlepagestartup-website--website#website-landing)

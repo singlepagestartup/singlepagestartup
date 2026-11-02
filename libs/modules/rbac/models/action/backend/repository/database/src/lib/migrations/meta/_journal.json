@@ -64,6 +64,13 @@
       "when": 1772747988015,
       "tag": "0008_melted_enchantress",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1789918985818,
+      "tag": "0009_chief_starjammers",
+      "breakpoints": true
     }
   ]
 }

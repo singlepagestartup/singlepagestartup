@@ -8,6 +8,7 @@ import {
 import { api as rbacActionApi } from "@sps/rbac/models/action/sdk/server";
 import { api as rbacSubjectApi } from "@sps/rbac/models/subject/sdk/server";
 import * as jwt from "hono/jwt";
+import { consumeOauthAction } from "./utils";
 
 type TOAuthExchangePayload = {
   type?: string;
@@ -70,6 +71,8 @@ export class Service {
       throw new Error("Authentication error. Invalid oauth exchange type");
     }
 
+    // Kept for one release: a row consumed by the previous implementation only
+    // carries the mark in its payload.
     if (payload.oauth?.consumedAt) {
       throw new Error("Authentication error. OAuth exchange code is consumed");
     }
@@ -87,24 +90,17 @@ export class Service {
       );
     }
 
-    await rbacActionApi.update({
+    // Claimed before any token is signed, so a lost race cannot end with two
+    // sessions issued for one code.
+    const consumedExchange = await consumeOauthAction({
       id: oauthExchangeAction.id,
-      data: {
-        ...oauthExchangeAction,
-        payload: {
-          ...payload,
-          oauth: {
-            ...payload.oauth,
-            consumedAt: new Date().toISOString(),
-          },
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-      },
+      payload,
+      secretKey: RBAC_SECRET_KEY,
     });
+
+    if (!consumedExchange) {
+      throw new Error("Authentication error. OAuth exchange code is consumed");
+    }
 
     const subject = await rbacSubjectApi.findById({
       id: payload.oauth.subjectId,

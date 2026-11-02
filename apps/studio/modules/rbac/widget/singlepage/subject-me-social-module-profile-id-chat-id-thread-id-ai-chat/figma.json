@@ -1,0 +1,23 @@
+{
+  "componentName": "rbac.widget",
+  "pageName": "rbac",
+  "variantName": "subject-me-social-module-profile-id-chat-id-thread-id-ai-chat",
+  "nodeId": null,
+  "variantNodeId": null,
+  "syncStatus": "not-created",
+  "metadataFile": "figma.json",
+  "metadata": {
+    "singlepagestartup.studio.blockId": "rbac.widget.subject-me-social-module-profile-id-chat-id-thread-id-ai-chat",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "rbac/widget/singlepage/subject-me-social-module-profile-id-chat-id-thread-id-ai-chat",
+    "sps.figma.component": "rbac.widget",
+    "sps.figma.variant": "subject-me-social-module-profile-id-chat-id-thread-id-ai-chat",
+    "sps.source.module": "rbac",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "subject-me-social-module-profile-id-chat-id-thread-id-ai-chat",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/rbac/widget/singlepage/subject-me-social-module-profile-id-chat-id-thread-id-ai-chat/Component.tsx",
+    "sps.code.story": "apps/studio/modules/rbac/widget/singlepage/subject-me-social-module-profile-id-chat-id-thread-id-ai-chat/Component.stories.tsx"
+  }
+}

@@ -19,6 +19,8 @@ jest.mock("@sps/shared-utils", () => {
     AUDIO_TRANSCRIPTION_LEGACY_METADATA_KEY: "telegramVoiceTranscription",
     AUDIO_TRANSCRIPTION_MAX_BYTES: 25 * 1024 * 1024,
     AUDIO_TRANSCRIPTION_METADATA_KEY: "audioTranscription",
+    AUDIO_TRANSCRIPTION_SILENCE_MAX_VOLUME_DB: -25,
+    AUDIO_TRANSCRIPTION_SILENCE_MEAN_VOLUME_DB: -40,
     OPEN_AI_TRANSCRIPTION_MODEL: "gpt-4o-transcribe",
     RBAC_JWT_SECRET: "rbac-jwt-secret",
     RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS: 3600,
@@ -87,6 +89,12 @@ const flushBackgroundTasks = async () => {
 describe("Given: RBAC audio transcription service", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest
+      .spyOn(
+        AudioTranscriptionService.prototype as any,
+        "detectVolumeInDecibels",
+      )
+      .mockResolvedValue({ max: -2, mean: -19 });
     mockMessageUpdate.mockImplementation(async ({ data }) => data);
     mockThreadFindById.mockResolvedValue({
       id: "thread-1",
@@ -106,6 +114,10 @@ describe("Given: RBAC audio transcription service", () => {
       },
       ok: true,
     });
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   /**
@@ -298,5 +310,146 @@ describe("Given: RBAC audio transcription service", () => {
     );
 
     consoleErrorSpy.mockRestore();
+  });
+  /**
+   * BDD Scenario
+   * Given: an attached voice note carries no audible speech.
+   * When: RBAC prepares transcription.
+   * Then: the provider is never called and the message fails with a silence category.
+   */
+  it("When: the audio is silent Then: transcription is skipped and marked as silence", async () => {
+    jest
+      .spyOn(
+        AudioTranscriptionService.prototype as any,
+        "detectVolumeInDecibels",
+      )
+      .mockResolvedValue({ max: -33.5, mean: -50.9 });
+
+    const service = new AudioTranscriptionService();
+
+    await service.prepareAndRun({
+      fileStorageModuleFiles: [
+        {
+          id: "file-1",
+          file: "https://files.example.com/voice.ogg",
+          mimeType: "audio/ogg",
+          size: 1024,
+        } as any,
+      ],
+      now: () => "2026-05-17T00:00:00.000Z",
+      rbacModuleSubjectId: "subject-1",
+      socialModuleChatId: "chat-1",
+      socialModuleMessage: {
+        id: "message-1",
+        description: "",
+        metadata: {},
+      } as any,
+      socialModuleProfileId: "profile-1",
+      socialModuleThreadId: "thread-1",
+    });
+
+    await flushBackgroundTasks();
+
+    expect(mockTranscribeAudio).not.toHaveBeenCalled();
+    expect(mockActionCreate).not.toHaveBeenCalled();
+    expect(mockMessageUpdate).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          description: "",
+          metadata: expect.objectContaining({
+            [AUDIO_TRANSCRIPTION_METADATA_KEY]: expect.objectContaining({
+              error: {
+                category: "silence",
+              },
+              status: "failed",
+            }),
+          }),
+        }),
+      }),
+    );
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a mostly quiet recording holds one short spoken phrase.
+   * When: RBAC prepares transcription.
+   * Then: the loud moment keeps it out of the silence gate.
+   */
+  it("When: a quiet recording has a loud moment Then: it is still transcribed", async () => {
+    jest
+      .spyOn(
+        AudioTranscriptionService.prototype as any,
+        "detectVolumeInDecibels",
+      )
+      .mockResolvedValue({ max: -12, mean: -46 });
+
+    const service = new AudioTranscriptionService();
+
+    await service.prepareAndRun({
+      fileStorageModuleFiles: [
+        {
+          id: "file-1",
+          file: "https://files.example.com/voice.ogg",
+          mimeType: "audio/ogg",
+          size: 1024,
+        } as any,
+      ],
+      now: () => "2026-05-17T00:00:00.000Z",
+      rbacModuleSubjectId: "subject-1",
+      socialModuleChatId: "chat-1",
+      socialModuleMessage: {
+        id: "message-1",
+        description: "",
+        metadata: {},
+      } as any,
+      socialModuleProfileId: "profile-1",
+      socialModuleThreadId: "thread-1",
+    });
+
+    await flushBackgroundTasks();
+
+    expect(mockTranscribeAudio).toHaveBeenCalledTimes(1);
+  });
+
+  /**
+   * BDD Scenario
+   * Given: the peak level of an attachment cannot be measured.
+   * When: RBAC prepares transcription.
+   * Then: the audio is still transcribed instead of being discarded as silent.
+   */
+  it("When: the peak level is unknown Then: transcription still runs", async () => {
+    jest
+      .spyOn(
+        AudioTranscriptionService.prototype as any,
+        "detectVolumeInDecibels",
+      )
+      .mockResolvedValue(undefined);
+
+    const service = new AudioTranscriptionService();
+
+    await service.prepareAndRun({
+      fileStorageModuleFiles: [
+        {
+          id: "file-1",
+          file: "https://files.example.com/voice.ogg",
+          mimeType: "audio/ogg",
+          size: 1024,
+        } as any,
+      ],
+      now: () => "2026-05-17T00:00:00.000Z",
+      rbacModuleSubjectId: "subject-1",
+      socialModuleChatId: "chat-1",
+      socialModuleMessage: {
+        id: "message-1",
+        description: "",
+        metadata: {},
+      } as any,
+      socialModuleProfileId: "profile-1",
+      socialModuleThreadId: "thread-1",
+    });
+
+    await flushBackgroundTasks();
+
+    expect(mockTranscribeAudio).toHaveBeenCalledTimes(1);
   });
 });

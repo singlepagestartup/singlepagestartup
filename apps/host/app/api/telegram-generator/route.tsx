@@ -26,24 +26,30 @@ export const GET = async (request: NextRequest) => {
       data = JSON.parse(inflatedData);
     }
 
-    return new NextResponse(
-      JSON.stringify(
-        response({
-          variant: parsedParams.variant as any,
-          data,
-          language: (parsedParams.language as string) || "en",
-        }),
-      ),
+    // NextResponse.json derives the declared type from the body it serialises,
+    // so the two cannot drift apart the way a literal header next to a
+    // JSON.stringify call did.
+    return NextResponse.json(
+      response({
+        variant: parsedParams.variant as any,
+        data,
+        language: (parsedParams.language as string) || "en",
+      }),
       {
         headers: {
-          "Content-Type": "text/html",
+          "X-Content-Type-Options": "nosniff",
+          "Cache-Control": "no-store",
         },
       },
     );
   } catch (error: any) {
+    // The route is unauthenticated, so decode and render internals stay in the
+    // host log instead of travelling back to the caller.
+    console.error("Telegram generator render failed:", error);
+
     return NextResponse.json(
       {
-        error: error.message,
+        error: "Not Found",
       },
       { status: 404 },
     );

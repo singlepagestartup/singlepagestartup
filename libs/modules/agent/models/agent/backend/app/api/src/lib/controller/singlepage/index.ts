@@ -37,11 +37,6 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         handler: this.find,
       },
       {
-        method: "GET",
-        path: "/dump",
-        handler: this.dump,
-      },
-      {
         method: "POST",
         path: "/cron",
         handler: this.cron,

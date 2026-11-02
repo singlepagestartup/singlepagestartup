@@ -24,6 +24,24 @@ function makeConfig() {
 
   return withBundleAnalyzer({
     reactStrictMode: true,
+    // Shared agent guidance is maintained in the root AGENTS.md.
+    agentRules: false,
+    distDir: process.env.SPS_HOST_DIST_DIR || ".next",
+    experimental: {
+      globalNotFound: true,
+      webpackMemoryOptimizations: true,
+      ...(process.env.SPS_HOST_BUILD_CPUS
+        ? { cpus: Number(process.env.SPS_HOST_BUILD_CPUS) }
+        : {}),
+
+      // Release each compiler's heap before the next build stage.
+      webpackBuildWorker: true,
+    },
+    // Preserve the public origin in locale redirects, including loopback hosts.
+    skipProxyUrlNormalize: true,
+    // Keep canonical, robots and social metadata in the initial head for all
+    // crawlers; metadata/page absence must be settled before streaming HTML.
+    htmlLimitedBots: /.*/,
     deploymentId: process.env.NEXT_DEPLOYMENT_ID || undefined,
     staticPageGenerationTimeout: 6000,
     images: {
@@ -67,12 +85,16 @@ function makeConfig() {
               value:
                 "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, X-Set-Cookie",
             },
+            // Applied here so every future route under app/api inherits it
+            // without restating it in the handler.
+            { key: "X-Content-Type-Options", value: "nosniff" },
           ],
         },
       ];
     },
     trailingSlash: false,
     webpack(config) {
+      if (process.env.SPS_HOST_WEBPACK_CACHE === "false") config.cache = false;
       config.module.rules.push({
         test: /\.svg$/i,
         issuer: /\.[jt]sx?$/,

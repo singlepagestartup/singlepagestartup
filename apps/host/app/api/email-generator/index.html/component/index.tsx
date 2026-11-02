@@ -2,7 +2,11 @@ import { IComponentProps } from "./interface";
 import { variants } from "./variants";
 
 export function Component(props: IComponentProps) {
-  const Comp = variants[props.variant];
+  // Own-property lookup only, so a variant naming an inherited member cannot
+  // resolve to a prototype function and reach the renderer.
+  const Comp = Object.hasOwn(variants, props.variant)
+    ? variants[props.variant]
+    : undefined;
 
   if (!Comp) {
     return <></>;

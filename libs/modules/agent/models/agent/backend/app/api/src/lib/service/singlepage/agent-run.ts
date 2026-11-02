@@ -1,6 +1,8 @@
 import { randomUUID } from "node:crypto";
 import {
   AGENT_CRON_DISPATCH_TIMEOUT_IN_SECONDS,
+  AGENT_CRON_CHANNEL_SLUG,
+  AGENT_CRON_MARKER_MIN_LIFETIME_IN_SECONDS,
   AGENT_MAX_DURATION_IN_SECONDS,
   API_SERVICE_URL,
   RBAC_SECRET_KEY,
@@ -14,9 +16,6 @@ import {
 import cronParser from "cron-parser";
 import { logger } from "@sps/backend-utils";
 import { type IBroadcastModule } from "../../di";
-
-export const cronChannelSlug = "cron";
-export const defaultMarkerLifetimeInSeconds = 3600;
 
 export interface IAgentRunChannel {
   id: string;
@@ -79,7 +78,9 @@ export class AgentRun {
     const channels = await this.broadcastModule.channel.find({
       params: {
         filters: {
-          and: [{ column: "slug", method: "eq", value: cronChannelSlug }],
+          and: [
+            { column: "slug", method: "eq", value: AGENT_CRON_CHANNEL_SLUG },
+          ],
         },
       },
     });
@@ -183,15 +184,13 @@ export class AgentRun {
       return { due: false, reason: "no-interval" };
     }
 
-    if (!marker) {
-      return { due: true, reason: "first-run" };
-    }
-
     let nextExecutionTime: Date;
 
     try {
       nextExecutionTime = cronParser
-        .parseExpression(agent.interval, { currentDate: marker.datetime })
+        .parseExpression(agent.interval, {
+          currentDate: marker?.datetime || now,
+        })
         .next()
         .toDate();
     } catch (error) {
@@ -201,6 +200,10 @@ export class AgentRun {
       );
 
       return { due: false, reason: "invalid-interval" };
+    }
+
+    if (!marker) {
+      return { due: true, reason: "first-run" };
     }
 
     if (now < nextExecutionTime) {
@@ -385,7 +388,7 @@ export class AgentRun {
   protected markerExpiresAt(props?: { now?: Date }): string {
     const now = props?.now || new Date();
     const lifetimeInSeconds = Math.max(
-      defaultMarkerLifetimeInSeconds,
+      AGENT_CRON_MARKER_MIN_LIFETIME_IN_SECONDS,
       AGENT_MAX_DURATION_IN_SECONDS,
     );
 
@@ -407,7 +410,7 @@ export class AgentRun {
 
     await broadcastChannelApi.pushMessage({
       data: {
-        slug: cronChannelSlug,
+        slug: AGENT_CRON_CHANNEL_SLUG,
         expiresAt: this.markerExpiresAt(),
         payload: JSON.stringify(props.payload),
       },

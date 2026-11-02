@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "All modules",
+    "ru": "Все модули"
+  },
+  "subtitle": {},
+  "url": "/framework/modules",
+  "className": "w-fit",
+  "id": "5b75061c-169c-4c40-84a2-dc27596c7129",
+  "createdAt": "2026-10-24T01:05:55.894Z",
+  "updatedAt": "2026-10-24T01:05:55.894Z",
+  "variant": "secondary",
+  "adminTitle": "All modules",
+  "slug": "framework-journey-guide-website-builder-actions-0"
+}

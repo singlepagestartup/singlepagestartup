@@ -3,13 +3,12 @@ import { HTTPException } from "hono/http-exception";
 import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { MiddlewareHandler } from "hono";
 import { getCookie } from "hono/cookie";
-import { authorization, getHttpErrorType } from "@sps/backend-utils";
-import * as jwt from "hono/jwt";
+import { authorization, getHttpErrorType, verifyJwt } from "@sps/backend-utils";
 
 export interface IMiddlewareGeneric {}
 
 export class Middleware {
-  init(): MiddlewareHandler<any, any, {}> {
+  init(options?: { requireJwt?: boolean }): MiddlewareHandler<any, any, {}> {
     return createMiddleware(async (c, next) => {
       try {
         if (!RBAC_JWT_SECRET) {
@@ -23,20 +22,20 @@ export class Middleware {
         const secretKey =
           c.req.header("X-RBAC-SECRET-KEY") || getCookie(c, "rbac.secret-key");
 
-        const id = c.req.param("id");
+        const id = c.req.param("id") || c.req.param("uuid");
 
         if (!id) {
           throw new Error("Validation error. No id provided");
         }
 
-        if (!secretKey) {
+        if (!secretKey || options?.requireJwt) {
           const token = authorization(c);
 
           if (!token) {
             throw new Error("Validation error. No JWT token provided");
           }
 
-          const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
+          const decoded = await verifyJwt(token, RBAC_JWT_SECRET);
 
           if (decoded?.["subject"]?.["id"] !== id) {
             throw new Error(

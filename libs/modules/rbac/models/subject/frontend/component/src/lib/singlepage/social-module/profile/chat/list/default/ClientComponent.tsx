@@ -12,13 +12,8 @@ import {
   DialogTrigger,
 } from "@sps/shared-ui-shadcn";
 import { Plus } from "lucide-react";
-import { usePathname } from "next/navigation";
 
 export function Component(props: IComponentPropsExtended) {
-  const pathname = usePathname();
-  const currentSocialModuleChatId =
-    pathname.match(/\/social\/chats\/([^/]+)/)?.[1] || "";
-
   return (
     <div
       data-module="rbac"
@@ -79,7 +74,9 @@ export function Component(props: IComponentPropsExtended) {
                     data={props.data}
                     socialModuleProfile={props.socialModuleProfile}
                     socialModuleChatId={socialModuleChat.id}
-                    currentSocialModuleChatId={currentSocialModuleChatId}
+                    currentSocialModuleChatId={props.currentSocialModuleChatId}
+                    dataSource="props"
+                    socialModuleChat={socialModuleChat}
                     language={props.language}
                   />
                 );

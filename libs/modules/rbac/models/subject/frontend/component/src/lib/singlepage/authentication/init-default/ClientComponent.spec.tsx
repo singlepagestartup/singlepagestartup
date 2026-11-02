@@ -40,9 +40,14 @@ jest.mock("@sps/shared-frontend-client-utils", () => ({
   cn: (...values: unknown[]) => values.filter(Boolean).join(" "),
 }));
 
+const navigation = {
+  pathname: "/",
+  search: "",
+};
+
 jest.mock("next/navigation", () => ({
-  usePathname: () => "/",
-  useSearchParams: () => new URLSearchParams(),
+  usePathname: () => navigation.pathname,
+  useSearchParams: () => new URLSearchParams(navigation.search),
 }));
 
 jest.mock("react-jwt", () => ({
@@ -51,6 +56,8 @@ jest.mock("react-jwt", () => ({
 
 describe("Given: authentication init bootstrap", () => {
   beforeEach(() => {
+    navigation.pathname = "/";
+    navigation.search = "";
     document.cookie = "rbac.subject.jwt=; Max-Age=0; path=/";
     authenticationRefreshMock.mockReset();
     authenticationInitMock.mockReset();
@@ -176,5 +183,26 @@ describe("Given: authentication init bootstrap", () => {
     expect(initRefetchMock).toHaveBeenCalledTimes(1);
     expect(refreshMutateMock).not.toHaveBeenCalled();
     expect(clearAuthenticationTokensMock).not.toHaveBeenCalled();
+  });
+
+  /**
+   * BDD Scenario: a browser landing from the OAuth callback.
+   *
+   * Given: the callback marked the landing URL and left the exchange code in an
+   * HttpOnly cookie, so no code is visible to the page.
+   * When: the bootstrap renders on the sign-in page.
+   * Then: it starts no anonymous session, leaving the exchange to issue one.
+   */
+  it("When: the landing URL carries the OAuth exchange marker Then: init is not called", () => {
+    navigation.pathname = "/rbac/subject/authentication/select-method";
+    navigation.search = "?oauthExchange=google";
+    useLocalStorageMock.mockReturnValue(undefined);
+
+    render(
+      <Component variant="authentication-init-default" isServer={false} />,
+    );
+
+    expect(initRefetchMock).not.toHaveBeenCalled();
+    expect(refreshMutateMock).not.toHaveBeenCalled();
   });
 });

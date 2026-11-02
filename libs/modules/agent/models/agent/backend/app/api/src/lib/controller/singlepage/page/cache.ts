@@ -1,5 +1,6 @@
 import {
   AGENT_PAGE_CACHE_MAX_CONSECUTIVE_FAILURES,
+  AGENT_PAGE_CACHE_SUPERSEDE_CHECK_INTERVAL_IN_MILLISECONDS,
   HOST_SERVICE_URL,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
@@ -9,8 +10,6 @@ import { Service } from "../../../service";
 import { getHttpErrorType, logger } from "@sps/backend-utils";
 import { internationalization } from "@sps/shared-configuration";
 import { runIdHeader } from "@sps/agent/models/agent/sdk/model";
-
-export const PAGE_CACHE_SUPERSEDE_CHECK_INTERVAL_IN_MILLISECONDS = 60000;
 
 export type IPageCacheStopReason = "superseded" | "failures";
 
@@ -101,7 +100,10 @@ export class Handler {
           runId,
         });
 
-        return c.json({ data: { ok: false, stopped } });
+        return c.json(
+          { data: { ok: false, stopped } },
+          stopped === "failures" ? 502 : 409,
+        );
       }
 
       logger.info("Host module page cache finished");
@@ -130,7 +132,7 @@ export class Handler {
 
     if (
       now - this.supersedeCheckedAt <
-      PAGE_CACHE_SUPERSEDE_CHECK_INTERVAL_IN_MILLISECONDS
+      AGENT_PAGE_CACHE_SUPERSEDE_CHECK_INTERVAL_IN_MILLISECONDS
     ) {
       return false;
     }

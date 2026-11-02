@@ -1,0 +1,27 @@
+{
+  "id": "social.profile.select-item-ai-chat-project",
+  "title": "select-item-ai-chat-project",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "One project Profile option inside the project selector.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "social.profile",
+    "pageName": "social",
+    "variantName": "select-item-ai-chat-project",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "profile",
+    "variant": "select-item-ai-chat-project"
+  },
+  "contentSlots": []
+}

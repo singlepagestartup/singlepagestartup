@@ -1,0 +1,46 @@
+{
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "AI Chat workspace — SinglePageStartup",
+        "ru": "Рабочее пространство AI Chat — SinglePageStartup"
+      },
+      "description": {
+        "en": "Discuss a project, edit documents and work with attached materials.",
+        "ru": "Обсуждение проекта, редактирование документов и работа с прикреплёнными материалами."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "AI Chat workspace — SinglePageStartup",
+        "ru": "Рабочее пространство AI Chat — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "AI Chat workspace — SinglePageStartup",
+        "ru": "Рабочее пространство AI Chat — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Discuss a project, edit documents and work with attached materials.",
+        "ru": "Обсуждение проекта, редактирование документов и работа с прикреплёнными материалами."
+      },
+      "opengraphDescription": {
+        "en": "Discuss a project, edit documents and work with attached materials.",
+        "ru": "Обсуждение проекта, редактирование документов и работа с прикреплёнными материалами."
+      }
+    }
+  },
+  "id": "b8ce23e9-63c3-406d-b44a-ba382b4cccc8",
+  "title": "AI Chat — workspace",
+  "url": "/ai-chat/social/profiles/[social.profiles.id]/chats/[social.chats.id]/threads/[social.threads.id]",
+  "description": "Description",
+  "createdAt": "2026-10-11T02:00:25.769Z",
+  "updatedAt": "2026-10-30T22:25:08.548Z",
+  "variant": "noindex",
+  "className": "",
+  "language": "en",
+  "adminTitle": "combative white ox"
+}

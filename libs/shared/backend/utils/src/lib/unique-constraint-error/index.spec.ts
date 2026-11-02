@@ -66,6 +66,29 @@ describe("Given: a request loses a race against a unique index", () => {
     expect(isUniqueConstraintError(error)).toBe(true);
   });
 
+  /**
+   * BDD Scenario: an inner hop already sanitized the violation.
+   *
+   * Given: the shared HTTP error mapper answered the inner request with a 409
+   * and a message that names no database object.
+   * When: the calling hop inspects the rethrown error.
+   * Then: the conflict is still recognized, so recovery paths keep working.
+   */
+  it("reports a violation that an inner hop already answered as a conflict", () => {
+    const payload = {
+      message: "Conflict error. Entity already exists",
+      status: 409,
+      cause: [{ message: "Conflict error. Entity already exists" }],
+      requestId: "PtXE08ieefubcfhdB_36K",
+    };
+    const error = Object.assign(new Error(JSON.stringify(payload)), {
+      status: 409,
+      cause: payload,
+    });
+
+    expect(isUniqueConstraintError(error)).toBe(true);
+  });
+
   it("ignores unrelated failures", () => {
     expect(isUniqueConstraintError(new Error("fetch failed"))).toBe(false);
     expect(

@@ -1,79 +1,31 @@
 ---
-confirmation:
-  confirmed: false
-customer_segments: [] # Stable IDs described in Customer Segments and referenced by Sales v2.
+customer_segments: []
 ---
 
-# Product
+# Описание
 
-<!-- One product or service in a prospective business plan.
-Describe the intended offer and experience before engineering. Keep client facts,
-market evidence and proposed outcomes distinct; do not invent operator numbers.
-Runtime checks, bug repair and release/license-source audits are not completion
-criteria. -->
+<!-- Обязательные H2 и их порядок одинаковы для всех продуктов: не переименовывать, не удалять и не добавлять H2. Развивать объяснение внутри разделов, при необходимости использовать H3. Заполнять результатами изучения брифа, материалов и продукта. Эти инструкции не переносятся в готовый документ. ID сегментов сохранить в customer_segments и согласовать с продажами. Рекомендуется 600–1 000 слов; полезные подробности важнее размера. -->
 
-## Product identity
+## Что это за продукт
 
-| Decision          | Required answer                                                                          |
-| ----------------- | ---------------------------------------------------------------------------------------- |
-| Brand and product | Brand, distinct product name, and one-sentence category description                      |
-| Category          | The market context that makes the product's value understandable                         |
-| Lifecycle         | Current foundation, owner and intended development direction; approval lives in metadata |
-| Boundary          | What belongs to this product and which related offers or showcases do not                |
+Название, понятная категория, задача и результат клиента. Короткий пример применения из реальных возможностей. Стадия и доступность — конкретным предложением, если они влияют на использование. Объяснить сущность продукта без отсылки к другому документу.
 
-## Customer Segments
+## Кому подходит
 
-- Distinguish user, buyer, payer, beneficiary, and decision-maker; combine
-  roles only when they are genuinely the same person. Give distinct segments
-  stable names/IDs, declare the IDs in customer_segments frontmatter, and connect
-  each to its value proposition below. Sales uses these IDs for its segment pages.
-- State the qualifying situation and trigger, the status quo or alternatives,
-  the characteristics that make this customer care more than adjacent
-  segments, and explicit exclusions.
+Люди или организации и ситуации, в которых возникает задача. Кто пользуется, выбирает и платит, если это разные участники. Отразить самостоятельные сценарии продукта: не сводить аудиторию к одному этапу воронки. Подробные основания находятся на видимой странице аудитории.
 
-## Problem and desired progress
+## Что входит
 
-| Dimension                   | Required answer                                                                      |
-| --------------------------- | ------------------------------------------------------------------------------------ |
-| Circumstance                | What has changed or become urgent enough to create a decision                        |
-| Progress sought             | The outcome the customer is trying to reach, not a feature request                   |
-| Functional forces           | Tasks, constraints, costs, and risks in getting there                                |
-| Social and emotional forces | Confidence, accountability, reputation, anxiety, or control when material            |
-| Pains and gains             | What must become easier, safer, faster, or more valuable, and how that is recognized |
+Состав, возможности, связи между ними и применение для клиента. Для программного продукта изучить все значимые модули, инструменты, инструкции агентам и рабочие приложения. Объединить их в понятные возможности бизнеса; названия внутренних папок не заменяют объяснение. Для услуги проверить работы и выдаваемый результат. Текущие функции и планы описывать раздельно.
 
-## Value Propositions
+## Как пользоваться
 
-| Element                     | Required answer                                                                    |
-| --------------------------- | ---------------------------------------------------------------------------------- |
-| Competitive alternatives    | What the customer would do if this product did not exist, including the status quo |
-| Differentiated capabilities | Capabilities the relevant alternatives do not provide in the same way              |
-| Customer value              | The practical consequence enabled by each differentiated capability                |
+Общее первое действие и путь до полезного результата: получение, вводные, выполнение, применение. Указать действия продукта, клиента и технического специалиста, где он нужен. Выбрать одно основное действие для первого знакомства; вторичные способы продолжения назвать после него. Этот раздел объясняет использование продукта, а не задаёт владельцу исследовательскую работу.
 
-Map jobs, pains, and gains to the offer, but do not call the mapping product-market
-fit without customer evidence.
+## Стоимость и условия
 
-## Offer and usage
+Цена или принцип расчёта, обязательные дополнительные расходы, оплата, поддержка и существенные условия работы с данными. Сверить с видимой страницей экономики. Бесплатное предложение описать прямо. Недоступную собственную цену уточняет агент после чтения материалов; чужие тарифы её не заменяют.
 
-- Define the intended access or deliverable unit, included and excluded scope,
-  usage experience, support, rights and dependencies. Link the model Revenue
-  Streams for money terms; Sales owns the complete customer process.
-- Describe how the customer obtains value, continues using the offer and, when
-  relevant, adopts it again. These are product requirements, not installation
-  instructions, runtime acceptance checks or a debugging plan.
+## Развитие продукта
 
-## Business goals and metrics
-
-| Goal                       | Intended business outcome                             | Metric and management use                                             |
-| -------------------------- | ----------------------------------------------------- | --------------------------------------------------------------------- |
-| Acquisition or recognition | Who should discover and consider the offer            | A relevant measure of interest and its use in business decisions      |
-| Value and adoption         | Why people should choose and use it                   | Customer value, adoption or revenue measures appropriate to the model |
-| Retention and growth       | Why use, purchases or recommendations should continue | Continued use, repeat business or other project-fit growth measures   |
-
-Choose only goals that fit the product. Distinguish planned outcomes from measured
-results. Numerical targets and forecasts need a stated basis; leave unsupplied
-operator budgets and figures unknown. Business learning can inform these choices,
-but this section does not prescribe engineering tests or release gates.
-
-Initial client-factual Product is created after confirmed Brief, before Strategy.
-Later apply approved Strategy, Brand, Design and Assets as a coherent business
-proposal without redefining them. Confirmation belongs to metadata.
+Цель продукта и выбранные планы, влияющие на будущее использование. Различать доступные функции и планируемые. Если конкретного плана нет, сообщить это одним предложением; заголовок сохранить. Не включать конкурентов, журнал решений и поручения оператору. Существенные факты находятся на странице; внутренние ссылки ведут только на существующие страницы Storybook или их якоря.

@@ -24,3 +24,14 @@ outside workspace and do not change client documents or the live layout.
 Build with `storybook build -c tools/studio/design/.storybook -o <temporary-dir>`
 to verify compiled components and copied static sources. This config supplies
 its own Tailwind source path and reuses the Studio runtime and build settings.
+
+The framework Interface kit is grouped in the selected Design layout. Its
+canonical catalogue is `specimens.ts`; keep titles, categories and required
+coverage there. TSX/JSX declarations are read as syntax nodes, and HTML fragments
+use `data-specimen` and H3 headings. Only files reachable from the resolved
+layout count. Nested groups preserve atomic layer ownership.
+
+Browser verification includes category keyboard navigation and state retention,
+form errors, table filters/sorting/pagination, modal focus/Escape, local file
+validation, chat send/stop/retry, and the all-category HTML snapshot. Component
+examples identify local simulations; they do not establish backend integration.

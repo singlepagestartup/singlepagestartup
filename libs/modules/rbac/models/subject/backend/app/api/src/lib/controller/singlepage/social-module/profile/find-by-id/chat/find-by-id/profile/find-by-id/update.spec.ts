@@ -16,6 +16,8 @@ jest.mock("@sps/social/models/profile/sdk/server", () => ({
   },
 }));
 jest.mock("@sps/shared-utils", () => ({
+  entityMetadataSchema:
+    jest.requireActual("@sps/shared-utils").entityMetadataSchema,
   RBAC_SECRET_KEY: "rbac-secret",
 }));
 

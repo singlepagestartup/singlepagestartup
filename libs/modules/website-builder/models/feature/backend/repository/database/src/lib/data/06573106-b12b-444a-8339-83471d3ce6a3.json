@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "06573106-b12b-444a-8339-83471d3ce6a3",
+  "createdAt": "2026-10-26T00:12:53.179Z",
+  "updatedAt": "2026-10-27T14:59:22.066Z",
+  "variant": "dropdown",
+  "title": {
+    "en": "What is free?",
+    "ru": "Что здесь бесплатно?"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Code Framework and its documentation are available free under the MIT licence. AI Chat, development tools and hosting are paid separately.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Code Framework и документация доступны бесплатно по лицензии MIT. AI Chat, инструменты разработки и хостинг оплачиваются отдельно.\"}]}]}"
+  },
+  "adminTitle": "Что здесь бесплатно?",
+  "slug": "framework-reviewed-faq-4"
+}

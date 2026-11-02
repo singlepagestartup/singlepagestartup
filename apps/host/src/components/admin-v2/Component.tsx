@@ -56,10 +56,6 @@ import {
   AdminV2SidebarModuleItem as StartupAdminV2SidebarModuleItem,
 } from "@sps/startup/frontend/component";
 import {
-  AdminV2Overview as TelegramAdminV2Overview,
-  AdminV2SidebarModuleItem as TelegramAdminV2SidebarModuleItem,
-} from "@sps/telegram/frontend/component";
-import {
   AdminV2Overview as WebsiteBuilderAdminV2Overview,
   AdminV2SidebarModuleItem as WebsiteBuilderAdminV2SidebarModuleItem,
 } from "@sps/website-builder/frontend/component";
@@ -139,10 +135,6 @@ export function Component(props: IComponentProps) {
             isServer={props.isServer}
             url={props.url}
           />
-          <TelegramAdminV2SidebarModuleItem
-            isServer={props.isServer}
-            url={props.url}
-          />
           <WebsiteBuilderAdminV2SidebarModuleItem
             isServer={props.isServer}
             url={props.url}
@@ -198,7 +190,6 @@ export function Component(props: IComponentProps) {
           <RbacAdminV2Overview url={props.url} isServer={props.isServer} />
           <SocialAdminV2Overview url={props.url} isServer={props.isServer} />
           <StartupAdminV2Overview url={props.url} isServer={props.isServer} />
-          <TelegramAdminV2Overview url={props.url} isServer={props.isServer} />
           <WebsiteBuilderAdminV2Overview
             url={props.url}
             isServer={props.isServer}

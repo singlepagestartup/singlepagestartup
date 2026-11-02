@@ -4,7 +4,9 @@ entries:
   - id: singlepage.brief
     kind: brief
     path: brief/singlepage.md
-    description: Current project, products, customers, value, business resources, goals and client visual preferences.
+    description:
+      Current project, products, customers, value, business resources, goals and client
+      visual preferences.
     uses: []
   - id: singlepage.strategy
     kind: strategy
@@ -34,33 +36,15 @@ entries:
   - id: singlepage.products
     kind: products
     path: products/singlepage/catalog.yaml
-    description: Atomic catalog of products and their Product, model, Sales,
-      Promotion, Product Content, Analytics, and Research sources.
+    description:
+      Catalog of visible product descriptions, audiences, competitors, semantics,
+      economics, sales and marketing materials.
     uses:
       - singlepage.brief
-      - singlepage.strategy
-      - singlepage.brand
-      - singlepage.design
-      - singlepage.asset-index
   - id: template.brief
     kind: template
     path: .agents/templates/brief.md
     description: Compact client brief structure.
-    uses: []
-  - id: template.product-model
-    kind: template
-    path: .agents/templates/product-model.md
-    description: Shared product-model operating resources, revenue, funding and costs.
-    uses: []
-  - id: template.product-research
-    kind: template
-    path: .agents/templates/product-research.md
-    description: Research structure for one product.
-    uses: []
-  - id: template.product-analytics
-    kind: template
-    path: .agents/templates/product-analytics.md
-    description: Current product observations, reporting periods, sources, and limits.
     uses: []
   - id: template.sales-process
     kind: template
@@ -107,11 +91,28 @@ entries:
     path: .agents/templates/creative.md
     description: Selected-channel marketing creative structure.
     uses: []
+  - id: template.product-semantics
+    kind: template
+    path: .agents/templates/product-semantics.md
+    description: Product-owned search evidence, query groups and target pages.
+    uses: []
+  - id: template.product-research-competitors
+    kind: template
+    path: .agents/templates/product-research-competitors.md
+    description: Website and offer comparison for one product.
+    uses: []
+  - id: template.product-audience
+    kind: template
+    path: .agents/templates/product-audience.md
+    description: Audience situations, needs, objections and communication conclusions.
+    uses: []
+  - id: template.product-economics
+    kind: template
+    path: .agents/templates/product-economics.md
+    description: Revenue, operations, resources, partners and costs of one product.
+    uses: []
 exports:
   - template.brief
-  - template.product-model
-  - template.product-research
-  - template.product-analytics
   - template.sales-process
   - template.strategy
   - template.asset-index
@@ -121,4 +122,8 @@ exports:
   - template.products
   - template.website
   - template.creative
+  - template.product-semantics
+  - template.product-research-competitors
+  - template.product-audience
+  - template.product-economics
 imports: []

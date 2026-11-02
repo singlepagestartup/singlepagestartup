@@ -3,20 +3,10 @@ import path from "node:path";
 import { parse } from "yaml";
 
 import {
-  documentConfirmation,
   hasMarkdownContent,
   parseDocument,
   type DocumentLayer,
 } from "../workspace/document";
-
-/** Stage order of the pre-development pipeline, used to gate this check. */
-const stages = [
-  "00-business",
-  "10-strategy",
-  "20-brand",
-  "30-design",
-  "40-products",
-] as const;
 
 export interface IBrandbookFinding {
   requirement: string;
@@ -41,15 +31,11 @@ function meaningfulMarkdown(value: string): boolean {
 
 function reachedDesign(cursor: string): boolean {
   const parsed = cursor.trim() ? (parse(cursor) as unknown) : undefined;
-  const stage =
+  const section =
     parsed && typeof parsed === "object" && !Array.isArray(parsed)
-      ? (parsed as { active_stage?: unknown }).active_stage
+      ? (parsed as { active_section?: unknown }).active_section
       : undefined;
-  const index =
-    typeof stage === "string"
-      ? stages.indexOf(stage as (typeof stages)[number])
-      : -1;
-  return index >= stages.indexOf("30-design");
+  return section === "design" || section === "materials";
 }
 
 function registeredAssets(source: string): number {
@@ -65,7 +51,7 @@ function registeredAssets(source: string): number {
 /**
  * A downstream project must own its brandbook rather than shipping the
  * framework's. Inheritance is the explicit starting state, so this only applies
- * once that project's own cursor has reached `30-design`.
+ * when that project has selected Design or Materials.
  */
 export async function findUnownedBrandbook(
   workspaceRoot: string,
@@ -87,18 +73,6 @@ export async function findUnownedBrandbook(
       detail:
         "The document is empty, so the project would ship the framework's visual system as if it were its own.",
     });
-  } else {
-    // An inherited singlepage approval never satisfies a startup gate.
-    const confirmation = documentConfirmation(design, "startup");
-    if (!confirmation.confirmed)
-      findings.push({
-        requirement: "design/startup.md holds its own confirmation",
-        detail: `Resolved state is ${confirmation.state}${
-          confirmation.sources?.length
-            ? ` from ${confirmation.sources.join(", ")}`
-            : ""
-        }; a downstream Design needs its own operator approval.`,
-      });
   }
 
   const assets = await read(path.join(workspaceRoot, "assets", "startup.yaml"));
@@ -120,11 +94,11 @@ export async function validateOwnedBrandbook(
   if (!findings.length) return;
   throw new Error(
     [
-      "This project reached 30-design without owning its brandbook:",
+      "The selected project does not own its brandbook:",
       ...findings.map(
         ({ requirement, detail }) => `- ${requirement}\n  ${detail}`,
       ),
-      "Write the startup layer's own Design and Assets, or move the cursor back to the stage that is actually current.",
+      "Record this project's Design and Assets when that work is selected. This diagnostic does not change the workflow cursor.",
     ].join("\n"),
   );
 }

@@ -11,6 +11,7 @@ const mockLoggerError = jest.fn();
 
 jest.mock("@sps/shared-utils", () => ({
   AGENT_PAGE_CACHE_MAX_CONSECUTIVE_FAILURES: 3,
+  AGENT_PAGE_CACHE_SUPERSEDE_CHECK_INTERVAL_IN_MILLISECONDS: 60000,
   HOST_SERVICE_URL: "http://localhost:3000/",
   RBAC_SECRET_KEY: "test-rbac-secret",
 }));
@@ -50,10 +51,8 @@ jest.mock("@sps/backend-utils", () => ({
   },
 }));
 
-import {
-  Handler,
-  PAGE_CACHE_SUPERSEDE_CHECK_INTERVAL_IN_MILLISECONDS,
-} from "./cache";
+import { AGENT_PAGE_CACHE_SUPERSEDE_CHECK_INTERVAL_IN_MILLISECONDS } from "@sps/shared-utils";
+import { Handler } from "./cache";
 
 const originalFetch = globalThis.fetch;
 
@@ -218,18 +217,22 @@ describe("Given: Host page URLs use the documented string contract", () => {
     jest
       .spyOn(Date, "now")
       .mockReturnValueOnce(0)
-      .mockReturnValue(PAGE_CACHE_SUPERSEDE_CHECK_INTERVAL_IN_MILLISECONDS);
+      .mockReturnValue(
+        AGENT_PAGE_CACHE_SUPERSEDE_CHECK_INTERVAL_IN_MILLISECONDS,
+      );
 
-    const result = await handler.execute(
-      createContext({ runId: "run-id" }),
-      jest.fn(),
-    );
+    const context = createContext({ runId: "run-id" });
+    const result = await handler.execute(context, jest.fn());
 
     expect(isRunSuperseded).toHaveBeenCalledWith({
       slug: "host-module-page-cache",
       runId: "run-id",
     });
     expect(fetchPage).not.toHaveBeenCalled();
+    expect(context.json).toHaveBeenCalledWith(
+      { data: { ok: false, stopped: "superseded" } },
+      409,
+    );
     expect(result).toEqual({
       data: {
         ok: false,
@@ -253,9 +256,14 @@ describe("Given: Host page URLs use the documented string contract", () => {
     });
     globalThis.fetch = fetchPage as any;
 
-    const result = await handler.execute(createContext(), jest.fn());
+    const context = createContext();
+    const result = await handler.execute(context, jest.fn());
 
     expect(fetchPage).toHaveBeenCalledTimes(3);
+    expect(context.json).toHaveBeenCalledWith(
+      { data: { ok: false, stopped: "failures" } },
+      502,
+    );
     expect(result).toEqual({
       data: {
         ok: false,

@@ -71,7 +71,12 @@ export class App {
 
   useHttpRoutes() {
     this.controller.httpRoutes.forEach((route) => {
-      this.hono.on(route.method, route.path, route.handler);
+      this.hono.on(
+        route.method,
+        route.path,
+        ...(route.middlewares ?? []),
+        route.handler,
+      );
     });
     this.apps.apps.forEach((app) => {
       this.hono.route(app.route, app.app.hono);

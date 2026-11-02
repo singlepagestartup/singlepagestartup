@@ -49,6 +49,31 @@ describe("Given: an agent route that the cron runner dispatched", () => {
     jest.clearAllMocks();
   });
 
+  it("records a failed page-cache stop as an error rather than a successful run", async () => {
+    const service = createService();
+    const app = createApp({
+      service,
+      handler: () =>
+        new Response(
+          JSON.stringify({ data: { ok: false, stopped: "failures" } }),
+          { status: 502 },
+        ),
+    });
+    const res = await app.request(route, {
+      method: "POST",
+      headers: { "X-SPS-AGENT-RUN-ID": "run-failed" },
+    });
+    expect(res.status).toBe(502);
+    expect(service.agentRun.markFinished).toHaveBeenCalledWith({
+      slug: "host-module-page-cache",
+      runId: "run-failed",
+      result: {
+        status: 502,
+        error: "Internal error. Agent responded with 502",
+      },
+    });
+  });
+
   /**
    * BDD Scenario: a completed handler finishes its run.
    *

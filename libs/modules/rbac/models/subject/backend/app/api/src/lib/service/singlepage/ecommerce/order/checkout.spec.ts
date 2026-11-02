@@ -19,6 +19,7 @@ const mockBroadcastChannelPushMessage = jest.fn();
 jest.mock("@sps/shared-utils", () => ({
   RBAC_SECRET_KEY: "test-rbac-secret",
   NEXT_PUBLIC_API_SERVICE_URL: "http://localhost:4000",
+  INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG: "free-subscription",
 }));
 
 jest.mock("@sps/ecommerce/models/order/sdk/server", () => ({
@@ -64,12 +65,16 @@ import { Service } from "./checkout";
 
 function createTestContext(props?: {
   activeOrderProductId?: string;
+  productType?: "subscription" | "one_off";
+  productSlug?: string;
   activeOrderStatus?: string;
   paymentIntentCreateError?: Error;
   paymentIntentProviderError?: Error;
   checkoutOrderIds?: string[];
   currencyByOrderId?: Record<string, string>;
 }) {
+  const productType = props?.productType ?? "subscription";
+  const interval = productType === "subscription" ? "month" : undefined;
   const activeOrderProductId = props?.activeOrderProductId ?? "product-target";
   const checkoutOrderIds = props?.checkoutOrderIds ?? ["order-checkout-1"];
 
@@ -107,12 +112,12 @@ function createTestContext(props?: {
       }),
       findByIdCheckoutAttributesByCurrency: jest.fn().mockResolvedValue({
         amount: 100,
-        type: "subscription",
-        interval: "month",
+        type: productType,
+        interval,
       }),
       findByIdCheckoutAttributes: jest.fn().mockResolvedValue({
-        type: "subscription",
-        interval: "month",
+        type: productType,
+        interval,
       }),
     },
     ordersToProducts: {
@@ -154,7 +159,8 @@ function createTestContext(props?: {
       find: jest.fn().mockResolvedValue([
         {
           id: "product-target",
-          type: "subscription",
+          slug: props?.productSlug ?? "paid-product",
+          type: productType,
         },
       ]),
     },
@@ -252,13 +258,13 @@ function createTestContext(props?: {
 
   mockCheckoutAttributesByCurrency.mockResolvedValue({
     amount: 100,
-    type: "subscription",
-    interval: "month",
+    type: productType,
+    interval,
   });
   mockCheckoutAttributes.mockResolvedValue({
     amount: 100,
-    type: "subscription",
-    interval: "month",
+    type: productType,
+    interval,
   });
 
   if (props?.paymentIntentCreateError) {
@@ -269,16 +275,16 @@ function createTestContext(props?: {
     mockBillingModulePaymentIntentCreate.mockResolvedValue({
       id: "payment-intent-1",
       amount: 100,
-      interval: "month",
-      type: "subscription",
+      interval,
+      type: productType,
     });
   }
 
   mockBillingModulePaymentIntentUpdate.mockResolvedValue({
     id: "payment-intent-1",
     amount: 200,
-    interval: "month",
-    type: "subscription",
+    interval,
+    type: productType,
   });
 
   if (props?.paymentIntentProviderError) {
@@ -308,7 +314,7 @@ function createTestContext(props?: {
   };
 }
 
-describe("Given: subject starts checkout for a subscription product", () => {
+describe("Given: subject starts checkout for a product", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.spyOn(console, "log").mockImplementation(() => undefined);
@@ -316,6 +322,52 @@ describe("Given: subject starts checkout for a subscription product", () => {
 
   afterEach(() => {
     jest.restoreAllMocks();
+  });
+
+  it("Then: a one-off product can create a provider checkout", async () => {
+    const { service, checkoutOrders } = createTestContext({
+      productType: "one_off",
+    });
+    await expect(
+      service.execute({
+        id: "subject-1",
+        email: "buyer@example.com",
+        provider: "stripe",
+        ecommerceModule: { orders: [{ id: checkoutOrders[0].id }] },
+      }),
+    ).resolves.toEqual({
+      billingModule: {
+        invoices: [
+          {
+            id: "invoice-1",
+            paymentUrl: "https://pay.test/invoice-1",
+          },
+        ],
+      },
+    });
+    expect(mockBillingModulePaymentIntentCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ type: "one_off" }),
+      }),
+    );
+    expect(mockBillingModulePaymentIntentProvider).toHaveBeenCalledTimes(1);
+  });
+
+  it("Then: Initial Free remains restricted to authentication bootstrap", async () => {
+    const { service, checkoutOrders } = createTestContext({
+      productSlug: "free-subscription",
+    });
+    await expect(
+      service.execute({
+        id: "subject-1",
+        email: "buyer@example.com",
+        provider: "stripe",
+        ecommerceModule: { orders: [{ id: checkoutOrders[0].id }] },
+      }),
+    ).rejects.toThrow(
+      "Initial Free is available only through authentication bootstrap",
+    );
+    expect(mockBillingModulePaymentIntentProvider).not.toHaveBeenCalled();
   });
 
   describe("When: active subscription has the same product", () => {

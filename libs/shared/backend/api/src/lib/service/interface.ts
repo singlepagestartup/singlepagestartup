@@ -1,8 +1,18 @@
 import { ContentfulStatusCode } from "hono/utils/http-status";
 import { IDumpResult, ISeedResult } from "../configuration";
+import {
+  type IRepository,
+  type IResourceDescription,
+} from "../repository/interface";
 import { FindServiceProps } from "../services/interfaces";
 
 export interface IService<DTO extends Record<string, unknown>> {
+  describe?: () => IResourceDescription | undefined;
+  /**
+   * Optional so that a hand-written service still satisfies the interface; the
+   * REST boundary reads the model configuration through it (issue #270).
+   */
+  repository?: IRepository;
   find: (props?: FindServiceProps) => Promise<DTO[]>;
   count: (props?: FindServiceProps) => Promise<number>;
   findById: (props: { id: string }) => Promise<DTO | null>;

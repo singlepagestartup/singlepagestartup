@@ -1,0 +1,14 @@
+{
+  "id": "6e97caa7-3d3c-4bf8-a5fd-5248a54008ce",
+  "createdAt": "2026-10-24T01:06:19.551Z",
+  "updatedAt": "2026-10-24T01:06:19.551Z",
+  "variant": "default",
+  "className": "w-fit",
+  "title": {
+    "en": "Blog",
+    "ru": "Блог"
+  },
+  "description": {},
+  "adminTitle": "Blog",
+  "slug": "framework-journey-navbar-2"
+}

@@ -1,247 +1,114 @@
 ---
-confirmation:
-  confirmed: false
 proposal_id: ""
 ---
 
-# Design
-
-<!-- This is a starting document structure, not a fixed page layout. Choose
-in-scope visual families from the brief. Configure visible blocks, additional
-Markdown/React/HTML/media sections, or a full TSX/JSX template in
-design/<layer>/layout.yaml; see workspace/README.md. Files are layer-owned.
-The shared renderer keeps a neutral Design header above the visual canvas in
-all non-empty projections, including startup. Project templates start at H2,
-keep their styles inside the canvas, and never repeat the document title,
-confirmation badge, or process metadata in the mockup.
-Changing the layout does not approve content or resolve omitted requirements. -->
-
-<!-- Reusable visual translation of approved Brand. Keep pages and forms in
-product-local website.md; keep channel formats in product-local
-marketing-creative.md. Photography and Illustration use the same five-part
-schema because Studio renders both through one media template. -->
-
-<!-- Keep whole-document confirmation, attributable scoped approvals,
-and the current proposal_id in frontmatter. Studio renders confirmation;
-the review body contains current visual decisions without a status table. -->
-
-## Design intent
-
-### Client visual preference profile
-
-| Dimension                                | Confirmed preference or professional inference | Source                          | Confidence or unresolved conflict |
-| ---------------------------------------- | ---------------------------------------------- | ------------------------------- | --------------------------------- |
-| Contrast and palette                     | Observable description                         | Asset IDs or operator statement | Explicit, inferred, or unknown    |
-| Density, whitespace, grid, and rhythm    | Observable description                         | Asset IDs or operator statement | Explicit, inferred, or unknown    |
-| Surface, shape, and motion               | Observable description                         | Asset IDs or operator statement | Explicit, inferred, or unknown    |
-| Typography character and reading use     | Observable description                         | Asset IDs or operator statement | Explicit, inferred, or unknown    |
-| Photography                              | Observable description                         | Asset IDs or operator statement | Explicit, inferred, or unknown    |
-| Illustration and infographics            | Observable description                         | Asset IDs or operator statement | Explicit, inferred, or unknown    |
-| Marketing composition and text hierarchy | Observable description                         | Asset IDs or operator statement | Explicit, inferred, or unknown    |
-
-- First preserve one plain-language description for each of the five input
-  categories. Show recurring traits across inspected examples and the asset
-  IDs supporting them, then explain coherence across categories. Reuse reviewed
-  Brief descriptions; the client is not required to formulate design criteria.
-- Return this coherent style description in the operator's language and obtain
-  confirmation or correction before selecting the visual territory
-- Do not select final tokens, font assets, master prompts, or registered media
-  examples from an unconfirmed profile
-- Source this analysis only from the completed Brief `Visual reference intake`,
-  its operator statements, and the corresponding Assets IDs; the input register
-  itself remains in Brief and Assets
+# Дизайн
 
-### Brand idea and character
+<!-- Фиксированная структура Design. Сохраняйте названия, уровень и порядок заголовков: Studio извлекает эти разделы и размещает правила рядом с их образцами. Новые произвольные H2/H3, скрытые спецификации и повтор всего документа внизу не используются. Заполняйте содержание разделов; если категория не применяется, объясните это в её разделе. Общие правила показываются один раз сверху, идея — в первом экране, остальные правила — у логотипов, цветов, типографики, иконок, интерфейса и изображений. layout.yaml управляет образцами; содержание правил находится только в этом документе. -->
 
-- One positive paragraph explaining the selected style through its visual
-  character, atmosphere, hierarchy, media, and recognizable contrast
-- Do not turn this paragraph into a list of rejected alternatives, reference
-  restrictions, rights, provenance, or internal process notes
+## Общие правила дизайна
 
-### Reusable graphic language
+<!-- Только сквозные принципы: порядок чтения, иерархия, связь изображения с текстом, применение общего дизайна к продуктам и работа с ресурсами. Точные цвета, шрифты, размеры и правила производства размещайте в соответствующих разделах ниже. Не повторяйте их здесь. -->
 
-- Three to six portable rules covering Tailwind layout and spacing, shape and
-  surface treatment, icons and diagrams, imagery and video, motion,
-  accessibility, and truthfulness across every medium
-- State each rule once; do not repeat the brand summary or inventory asset
-  counts
+### Идея и характер бренда
 
-### Do and do not
+<!-- Один абзац о выбранном стиле. Название направления выделите жирным. Этот абзац показывается только в первом экране. -->
 
-| Do  | Do not |
-| --- | ------ |
+## Применение фирменных элементов
 
-## Identity application
+### Названия и логотипные блоки
 
-### Naming and lockups
+<!-- Публичное написание имени, знак, сочетание с надписью, свободное поле, малые размеры, аватар и favicon. Укажите допустимые изменения и права. Правила расположены перед образцами логотипов. -->
 
-- Public name, mark and lockup rules, favicon/avatar behavior
+## Визуальная система
 
-## Visual system
+### Цвета по назначению
 
-### Semantic color system
+<!-- Первая таблица отображается как цветовые образцы; окружающие пояснения видны рядом с ними. Укажите проверенные сочетания текста/фона, контраст, семантические роли, ограничения. -->
 
-| Role | Light | Dark | Usage |
-| ---- | ----- | ---- | ----- |
+| Роль | Светлая тема | Тёмная тема | Применение |
+| ---- | ------------ | ----------- | ---------- |
 
-### Typography
+### Типографика
 
-| Role    | CSS family     | Weights           | Usage and language coverage    | Font asset ID            |
-| ------- | -------------- | ----------------- | ------------------------------ | ------------------------ |
-| Default | Text family    | Available weights | Body, UI, and long-form use    | Registered font asset ID |
-| Primary | Heading family | Available weights | Heading and short emphasis use | Registered font asset ID |
+<!-- Первая таблица задаёт образцы шрифтов. Далее добавьте шкалу размеров и межстрочных интервалов и правила начертаний, регистра и подписей. Всё это показывается в блоке типографики. Шрифтовые файлы и лицензии зарегистрированы в ресурсах. -->
 
-- Sizes, line height, spacing, and fallback rules
-- When no exact font is mandated, compare two or three real pairings for
-  language coverage, readability, character, licensing, and role fit
-- Browser QA: `document.fonts.check(...)` and computed `font-family` match the
-  selected family; silent fallback is not accepted
+| Роль    | CSS-семейство | Насыщенность | Применение и языки | ID шрифта |
+| ------- | ------------- | ------------ | ------------------ | --------- |
+| Default |               |              |                    |           |
+| Primary |               |              |                    |           |
 
-## Interface and product surfaces
+## Иконки
 
-<!-- The reusable interface language only: how the semantic colors, type, and
-shape rules above behave on a product surface. Specific pages, routes, and
-forms stay in product-local website.md. Omit this section when the brief
-supplies no interface references and the project ships no product surface.
+<!-- Назовите библиотеку и версию или собственный метод, геометрию, размеры, толщину, цвета, доступные подписи и лицензию. Текст показывается непосредственно в галерее data-specimen="icons". В галерее нужны реальные SVG навигации, действий и состояний. -->
 
-Required minimum whenever the project ships a product surface —
-controls: dominant action with its secondary, plain, disabled and separated
-destructive variants; selection as a chip and as a grouped choice, each with a
-non-colour signal; status and progress; fields and data rows; navigation for a
-public page and for a work screen; the dark pair when a dark column exists.
-Compositions: editorial entry; a content card carrying the project's own
-confirmed imagery at its original aspect ratio; an icon card on the declared
-icon grid; a repeated item grid. Conditional: offer comparison when the project
-sells, contextual sheet for a mobile or overlay surface, media-and-text row when
-illustration is active. Point at the rendered specimens from the boundary
-below. studio:validate fails a documented interface language that does not
-render them: actions, selection, status, fields, navigation, editorial-entry,
-content-card, icon-card, item-grid, plus dark-pair when a Dark column exists.
-The Brand Designer role owns how a specimen is written, declared and omitted. -->
+## Интерфейс и поверхности продуктов
 
-### Purpose and evidence boundary
+### Назначение и границы доказательств
 
-What the interface language carries across every product surface, and what a
-reference screenshot cannot establish.
+<!-- Что объединяет элементы интерфейса. Кратко обозначьте границу локальных примеров Studio и рабочего приложения. -->
 
-### Surface, density, and shape
+### Поверхности, плотность и форма
 
-- Three to six portable rules for field and card surfaces, spacing rhythm,
-  corner radius, border and shadow restraint, and navigation density
+<!-- Контейнер, поля, сетка, отступы, радиусы, размеры целей управления, поведение на узком экране. Правила расположены перед набором интерфейса. -->
 
-### Controls, states, and actions
+### Элементы управления, состояния и действия
 
-- Three to six portable rules for action hierarchy, selected, disabled,
-  progress and status treatment, destructive separation, and focus visibility
-- Name which semantic role fills the one dominant action; record an unresolved
-  conflict here rather than silently changing a confirmed color role
+<!-- Главное/вторичное действие, выбор, ошибки, ожидание, опасные действия, клавиатура, фокус, диалоги и уменьшение анимации. -->
 
-### Confirmed reference patterns
+### Формы, коллекции и связанные записи
 
-<!-- Provenance only. Studio cites these asset IDs as text and never renders,
-traces, or reproduces a reference layout; keep every registry prohibited_use
-intact. -->
+<!-- Принципы форм и списков, сохранения черновиков, локализации и связей. Заполняйте только применимые правила существующих компонентов. -->
 
-| Pattern | Decision | Avoid | Reference asset IDs |
-| ------- | -------- | ----- | ------------------- |
+### Приёмы из референсов
 
-### Review and quality gate
+<!-- Таблица даёт правила непосредственно соответствующим примерам через SurfacePatternGuidance. Используйте названия приёмов, объявленные в компонентах: Editorial entry, Work screen frame, Repeated item grid, Choice group, Offer comparison, Step form, Contextual sheet, Settings section. При добавлении приёма свяжите его с конкретным видимым образцом. Исходные изображения референсов сохраняются как источники, а не выдаются за работу проекта. -->
 
-<!-- This is an internal agent quality contract. Studio does not render it as a human-review card. -->
+| Приём | Решение | Избегать | ID референсов |
+| ----- | ------- | -------- | ------------- |
 
-- Every cited asset ID resolves in Assets and its `allowed_use` covers
-  abstraction; no entry is rendered, traced, or presented as owned work
-- Each pattern states an own decision rather than describing the reference
-- Contrast, focus visibility, and reduced-motion behavior verified for the
-  named states against the confirmed semantic color system
+### Применение компонентов
 
-## Photography
+<!-- Общие примитивы, их потребители и правила проверки изменённого оформления. Продуктовые маршруты и бизнес-сценарии остаются у продуктов. -->
 
-### Purpose and evidence boundary
+## Фотография
 
-What photography communicates across products and channels, and what it cannot
-prove.
+### Назначение и границы доказательств
 
-### Style master prompt
+<!-- Один абзац: сюжеты и роль фотографии, ограничения использования сгенерированных сцен. Он показывается над примерами. -->
 
-> A compact description of the recurring photographic light, color, texture
-> and movement in the references. Keep optional effects optional and allow
-> varied framing. Put individual subjects, devices and technical requirements
-> in their owning briefs, not in the reusable style prompt.
+### Основной промпт стиля
 
-### Production specification
+> Свет, цвет, фактура и движение. Конкретные герои и действия задаются отдельно для каждой сцены.
 
-<!-- Studio exposes this guidance from the information icon beside Style master prompt; do not create a separate visible card. -->
+### Требования к производству
 
-- Plain-language usage: copy this style prompt, add the people/action or
-  relationship to show, and attach relevant source references
-- Format follows the specific deliverable; quality checks stay in the internal
-  review block and actual dimensions in Assets
+<!-- Видны под промптом. Исходник генерируется в пропорциях композиции и сохраняется. Квадрат создаётся отдельной дорисовкой короткой стороны холста до 1:1 с сохранением всего исходного кадра: без обрезки, растягивания и изменения геометрии объектов. Укажите референсы, общий итоговый размер, проверку в исходном, целевом и малом размерах. Точные промпты и связь оригинала/производной сохраняются в реестре ресурсов. -->
 
-### Generation examples
+### Примеры генерации
 
-| Example | Use | Content brief | Avoid | Asset ID |
-| ------- | --- | ------------- | ----- | -------- |
+<!-- Таблица отображается карточками изображений. Минимум три разных сюжета; больше трёх фотореференсов, обычно пять. -->
 
-### Review and quality gate
+| Пример | Применение | Сюжет | Избегать | ID ресурса |
+| ------ | ---------- | ----- | -------- | ---------- |
 
-<!-- This is an internal agent quality contract. Studio does not render it as a human-review card. -->
+## Иллюстрации и схемы
 
-- At least three materially different registered examples reviewed together at
-  source size, intended size, small preview, and declared crops
-- Named real-world objects retain category-defining structure, count, scale,
-  and proportions; merely similar or implausible substitutes are rejected
-- After a master changes, displayed examples must be generated with that exact
-  master and the documented reference inputs; compare style and regenerate on
-  material drift before presenting the prompt as tested
-- Cross-example style consistency, accessibility, evidence-risk, rights,
-  lifecycle, and exact-prompt provenance checks
+### Назначение и границы доказательств
 
-## Illustration and diagrams
+<!-- Один абзац: что объясняют схемы, как обозначаются предположения и будущие функции. -->
 
-### Purpose and evidence boundary
+### Основной промпт стиля
 
-What illustrations and diagrams communicate across products and channels, and
-what they cannot prove.
+> Линии, формы, пространство и цвет. Композиция определяется объясняемой связью.
 
-### Style master prompt
+### Требования к производству
 
-> A compact description of recurring line, shape, space and color qualities
-> in the references. Allow compositions to follow the relationship being shown.
-> Do not invent fixed object counts, accent percentages or crop coordinates.
+<!-- Видны под промптом. Сохраняйте оригинал, а квадрат создавайте отдельным расширением холста с полным рисунком, линиями и отношениями объектов. Укажите фон, разрешение и проверку деталей. Точные промпты, ссылки на исходники и права находятся в реестре ресурсов. -->
 
-### Production specification
+### Примеры генерации
 
-<!-- Studio exposes this guidance from the information icon beside Style master prompt; do not create a separate visible card. -->
+<!-- Таблица отображается карточками изображений. Минимум три разных объясняемых отношения. -->
 
-- Plain-language usage: copy this style prompt, add the people/action or
-  relationship to show, and attach relevant source references
-- Choose the background and format for the project and intended use; transparency
-  is optional. Preserve the original master; record actual dimensions in Assets.
-
-### Generation examples
-
-| Example | Use | Content brief | Avoid | Asset ID |
-| ------- | --- | ------------- | ----- | -------- |
-
-### Review and quality gate
-
-<!-- This is an internal agent quality contract. Studio does not render it as a human-review card. -->
-
-- At least three materially different registered examples reviewed together at
-  source size, intended size, small preview, and declared crops
-- Named real-world objects retain category-defining structure, count, scale,
-  and proportions unless abstraction or simplification is explicitly required
-- After a master changes, displayed examples must be generated with that exact
-  master and the documented reference inputs; compare style and regenerate on
-  material drift before presenting the prompt as tested
-- Compare derivatives with the original for thin lines, secondary detail, color
-  and contrast at source and display size; reject processing that degrades them.
-- Cross-example style consistency, accessibility, evidence-risk, rights,
-  lifecycle, and exact-prompt provenance checks
-
-## Outputs and provenance
-
-- Current reusable visual asset IDs, lifecycle, rights, and review state
-- Exact immutable generation prompts and tool provenance remain in Assets
-- Product pages, presentations, and campaign formats remain outside Design
+| Пример | Применение | Сюжет | Избегать | ID ресурса |
+| ------ | ---------- | ----- | -------- | ---------- |

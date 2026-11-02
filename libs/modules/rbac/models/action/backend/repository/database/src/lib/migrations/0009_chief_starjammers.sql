@@ -1,0 +1,1 @@
+ALTER TABLE "rc_action" ADD COLUMN "consumed_at" timestamp;

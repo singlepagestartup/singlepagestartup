@@ -11,9 +11,9 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import {
   mockChatComponentState,
-  mockKnowledgeDocumentCreateMutate,
-  mockKnowledgeDocumentDeleteMutateAsync,
-  mockKnowledgeDocumentUpdateMutate,
+  mockKnowledgeSourceCreateMutate,
+  mockKnowledgeSourceDeleteMutateAsync,
+  mockKnowledgeSourceUpdateMutate,
   mockKnowledgeReindexDocumentMutateAsync,
   mockMessageCreateMutate,
   mockOpenRouterModelFavoriteUpdateMutate,
@@ -1415,11 +1415,13 @@ describe("Given: OpenRouter chat profile sidebar", () => {
         description: "Write YouTube descriptions.",
       },
     ];
-    mockChatComponentState.knowledgeDocuments = [
+    mockChatComponentState.knowledgeSources = [
       {
         id: "document-1",
         title: "Policy",
-        description: "Policy details",
+        content: "Policy details",
+        description: null,
+        indexedContentHash: "hash-1",
         slug: "policy",
         adminTitle: "Policy",
         variant: "default",
@@ -1643,7 +1645,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
   /**
    * BDD Scenario
    * Given: a Knowledge chat profile sidebar is opened for an AI profile.
-   * When: the user creates a Knowledge document from that sidebar.
+   * When: the user creates a Knowledge Source from that sidebar.
    * Then: the RBAC scoped create endpoint receives the sidebar profile scope.
    */
   it("When: creating Knowledge from profile sidebar Then: it links to the sidebar profile", async () => {
@@ -1698,7 +1700,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     fireEvent.click(screen.getByRole("button", { name: "Create knowledge" }));
 
     await waitFor(() => {
-      expect(mockKnowledgeDocumentCreateMutate).toHaveBeenCalledWith(
+      expect(mockKnowledgeSourceCreateMutate).toHaveBeenCalledWith(
         {
           id: "subject-1",
           socialModuleProfileId: "profile-1",
@@ -1706,11 +1708,8 @@ describe("Given: OpenRouter chat profile sidebar", () => {
           targetSocialModuleProfileId: "assistant-profile-1",
           data: {
             title: "Sidebar Knowledge",
-            description: "Created from the sidebar profile.",
+            content: "Created from the sidebar profile.",
             orderIndex: 0,
-            metadata: {
-              socialModuleChatId: "chat-1",
-            },
           },
         },
         expect.any(Object),
@@ -1720,11 +1719,11 @@ describe("Given: OpenRouter chat profile sidebar", () => {
 
   /**
    * BDD Scenario
-   * Given: a Knowledge chat profile sidebar shows a linked Knowledge document.
+   * Given: a Knowledge chat profile sidebar shows a linked Knowledge Source.
    * When: the user confirms deleting the document.
    * Then: the RBAC scoped delete endpoint receives the selected profile scope and the dialog closes.
    */
-  it("When: deleting a profile Knowledge document Then: it hard-deletes in that profile scope", async () => {
+  it("When: deleting a profile Knowledge Source Then: it hard-deletes in that profile scope", async () => {
     mockChatComponentState.profiles = [
       {
         id: "assistant-profile-1",
@@ -1740,11 +1739,13 @@ describe("Given: OpenRouter chat profile sidebar", () => {
         messageId: "message-1",
       },
     ];
-    mockChatComponentState.knowledgeDocuments = [
+    mockChatComponentState.knowledgeSources = [
       {
         id: "document-1",
         title: "Temporary Knowledge",
-        description: "Temporary details",
+        content: "Temporary details",
+        description: null,
+        indexedContentHash: "hash-1",
         slug: "temporary-knowledge",
         adminTitle: "Temporary Knowledge",
         variant: "default",
@@ -1782,12 +1783,12 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     fireEvent.click(screen.getByRole("button", { name: "Delete Knowledge" }));
 
     await waitFor(() => {
-      expect(mockKnowledgeDocumentDeleteMutateAsync).toHaveBeenCalledWith({
+      expect(mockKnowledgeSourceDeleteMutateAsync).toHaveBeenCalledWith({
         id: "subject-1",
         socialModuleProfileId: "profile-1",
         socialModuleChatId: "chat-1",
         targetSocialModuleProfileId: "assistant-profile-1",
-        knowledgeModuleDocumentId: "document-1",
+        knowledgeModuleSourceId: "document-1",
       });
     });
 
@@ -1798,11 +1799,11 @@ describe("Given: OpenRouter chat profile sidebar", () => {
 
   /**
    * BDD Scenario
-   * Given: a Knowledge chat profile sidebar shows linked Knowledge documents.
+   * Given: a Knowledge chat profile sidebar shows linked Knowledge Sources.
    * When: the user selects a document, edits it, saves it, and reindexes it.
    * Then: the RBAC scoped Knowledge update and reindex endpoints receive the selected profile scope.
    */
-  it("When: editing a profile Knowledge document Then: it saves and reindexes in that profile scope", async () => {
+  it("When: editing a profile Knowledge Source Then: it saves and reindexes in that profile scope", async () => {
     mockChatComponentState.profiles = [
       {
         id: "assistant-profile-1",
@@ -1818,11 +1819,13 @@ describe("Given: OpenRouter chat profile sidebar", () => {
         messageId: "message-1",
       },
     ];
-    mockChatComponentState.knowledgeDocuments = [
+    mockChatComponentState.knowledgeSources = [
       {
         id: "document-1",
         title: "Policy",
-        description: "Policy details",
+        content: "Policy details",
+        description: null,
+        indexedContentHash: "hash-1",
         slug: "policy",
         adminTitle: "Policy",
         variant: "default",
@@ -1835,11 +1838,11 @@ describe("Given: OpenRouter chat profile sidebar", () => {
         lastIndexedAt: new Date("2026-01-01T10:00:00.000Z"),
       },
     ];
-    mockKnowledgeDocumentUpdateMutate.mockImplementation((payload, options) => {
+    mockKnowledgeSourceUpdateMutate.mockImplementation((payload, options) => {
       options?.onSuccess?.({
-        ...mockChatComponentState.knowledgeDocuments[0],
+        ...mockChatComponentState.knowledgeSources[0],
         title: payload.data.title,
-        description: payload.data.description,
+        content: payload.data.content,
       });
     });
 
@@ -1868,13 +1871,13 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     fireEvent.click(screen.getByRole("button", { name: "Save knowledge" }));
 
     await waitFor(() => {
-      expect(mockKnowledgeDocumentUpdateMutate).toHaveBeenCalledWith(
+      expect(mockKnowledgeSourceUpdateMutate).toHaveBeenCalledWith(
         expect.objectContaining({
           id: "subject-1",
           socialModuleProfileId: "profile-1",
           socialModuleChatId: "chat-1",
           targetSocialModuleProfileId: "assistant-profile-1",
-          knowledgeModuleDocumentId: "document-1",
+          knowledgeModuleSourceId: "document-1",
           data: expect.objectContaining({
             title: "Policy updated",
           }),
@@ -1891,7 +1894,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
         socialModuleProfileId: "profile-1",
         socialModuleChatId: "chat-1",
         targetSocialModuleProfileId: "assistant-profile-1",
-        knowledgeModuleDocumentId: "document-1",
+        knowledgeModuleSourceId: "document-1",
       });
     });
   });

@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "A school website with several sections",
+    "ru": "Сайт школы с несколькими разделами"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The home page introduces the school, the catalogue shows classes and course pages explain their programmes. Links connect these pages into a visitor journey.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Here, Host means the framework's page module. It is not a hosting service: the server, domain and publication are configured separately. Account and data modules check access to the account area.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"На главной школа рассказывает о себе, в каталоге показывает занятия, а на странице курса раскрывает программу. Ссылки соединяют эти страницы в один путь для посетителя.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Host здесь означает модуль страниц внутри фреймворка. Это не услуга хостинга: сервер, домен и публикация проекта настраиваются отдельно. Проверки доступа к кабинету выполняются в модулях аккаунтов и данных.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "5427ded6-9cf1-4bf7-9bc1-78a1997e4c54",
+  "createdAt": "2026-10-26T00:11:39.943Z",
+  "updatedAt": "2026-10-27T14:59:00.133Z",
+  "variant": "content-rich",
+  "adminTitle": "Сайт школы с несколькими разделами",
+  "slug": "framework-reviewed-article-host-example"
+}

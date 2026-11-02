@@ -1,0 +1,18 @@
+{
+  "className": "",
+  "id": "08626c58-3f82-4153-9798-f07464eaceec",
+  "createdAt": "2026-10-24T01:05:48.668Z",
+  "updatedAt": "2026-10-24T01:05:48.668Z",
+  "variant": "definition-item",
+  "title": {
+    "en": "Products and orders",
+    "ru": "Товары и заказы"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Ecommerce owns products, attributes, categories, carts and orders.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Ecommerce управляет товарами, атрибутами, категориями, корзинами и заказами.\"}]}]}"
+  },
+  "adminTitle": "Products and orders",
+  "slug": "framework-journey-module-group-4"
+}

@@ -18,3 +18,18 @@ export interface IComponentPropsExtended
     typeof variant,
     IComponentProps
   > {}
+
+export interface IRowProps {
+  subject: IModel;
+  ecommerceModuleOrder: import("@sps/rbac/models/subject/sdk/server").IResult["IEcommerceModuleOrderListResult"][number];
+  index: number;
+  language: string;
+  form: import("react-hook-form").UseFormReturn<any>;
+}
+
+export interface IQuantityProps {
+  subjectId: string;
+  orderId: string;
+  line: import("@sps/ecommerce/models/order/sdk/model").ICartDetails["lines"][number];
+  language: string;
+}

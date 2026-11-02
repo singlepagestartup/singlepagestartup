@@ -10,8 +10,54 @@ export const UUID_PATH_SEGMENT_REGEX =
 /**
  * Captures a path up to and including its FIRST UUID segment (group 1) —
  * i.e. the entity base of a nested route. Single source of truth for the UUID
- * shape used by the http-cache version-bump prefix logic (issue #195 cleanup),
- * so the shape is not duplicated as an inline literal.
+ * shape for callers that need an entity prefix rather than the trailing scope.
  */
 export const UUID_PATH_PREFIX_REGEX =
   /(.*\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/;
+
+/**
+ * Providers whose email the framework treats as proven, because the address
+ * arrives from the provider over a server-to-server channel rather than from
+ * the person signing up (issue #280).
+ *
+ * `telegram` and the legacy `email` provider are deliberately absent: both can
+ * carry an address without establishing ownership of it.
+ *
+ * Used by the interim registration guard, which refuses a password
+ * registration for an address one of these already holds. That guard goes away
+ * once registration confirms an address of its own, and this list then decides
+ * which identities may be linked rather than which block a registration.
+ */
+export const ADDRESS_VERIFYING_PROVIDERS = Object.freeze([
+  "oauth_google",
+] as const);
+
+/**
+ * Hono context variable set by the is-authorized middleware when the request
+ * carried a valid `X-RBAC-SECRET-KEY` (issue #270). The REST boundary reads it
+ * to decide whether a model's `outputSchema` projection applies: the operator
+ * secret is the trust boundary the framework already has, and the internal
+ * loopback reads that need the full row travel with it.
+ */
+export const RBAC_PRIVILEGED_CONTEXT_KEY = "rbac.privileged";
+
+export * from "./knowledge";
+export * from "./open-router";
+
+export {
+  AI_CHAT_WEBSITE_CONTENT,
+  type IAIChatWebsiteContent,
+} from "./ai-chat-website";
+
+export * from "./ai-chat-service";
+export * from "./ai-chat-documents";
+export * from "./ai-chat-skill-templates";
+
+export * from "./open-router-models";
+export * from "./ai-chat-attachments";
+export * from "./file-preview";
+export * from "./ai-context";
+
+export { INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG } from "./ecommerce";
+
+export * from "./agent";

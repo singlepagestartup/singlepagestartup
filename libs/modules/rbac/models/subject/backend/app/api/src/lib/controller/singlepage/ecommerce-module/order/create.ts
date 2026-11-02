@@ -1,14 +1,15 @@
-import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
+import {
+  INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
+  RBAC_JWT_SECRET,
+  RBAC_SECRET_KEY,
+} from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import * as jwt from "hono/jwt";
 import { authorization, getHttpErrorType } from "@sps/backend-utils";
 import { Service } from "../../../../service";
-import { api as subjectsToEcommerceModuleOrdersApi } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/sdk/server";
-import { api as ecommerceOrdersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
-import { api as ecommerceStoresToOrdersApi } from "@sps/ecommerce/relations/stores-to-orders/sdk/server";
-import { api as ecommerceOrderApi } from "@sps/ecommerce/models/order/sdk/server";
-import { api as ecommerceOrdersToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/server";
+import { getDrizzle } from "@sps/shared-backend-database-config";
+import { withConsistencyDatabase } from "@sps/shared-backend-api";
 
 export class Handler {
   service: Service;
@@ -39,7 +40,7 @@ export class Handler {
         throw new Error("Validation error. No token");
       }
 
-      const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
+      const decoded = await jwt.verify(token, RBAC_JWT_SECRET, "HS256");
 
       const body = await c.req.parseBody();
 
@@ -58,7 +59,15 @@ export class Handler {
       }
 
       const productId = data["productId"];
-      let billingModuleCurrencyId = data["billingModule"]?.currency?.id;
+      const product = await this.service.ecommerceModule.product.findById({
+        id: productId,
+      });
+      if (!product) throw new Error("Not Found error. Product not found");
+      if (product.slug === INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG)
+        throw new Error(
+          "Permission error. Initial Free is available only through authentication bootstrap",
+        );
+      const requestedCurrencyId = data["billingModule"]?.currency?.id;
 
       let storeId = data.storeId;
 
@@ -86,73 +95,11 @@ export class Handler {
         throw new Error("Not Found error. No entity found");
       }
 
-      const ecommerceModuleProductsToAttributes =
-        await this.service.ecommerceModule.productsToAttributes.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "productId",
-                  method: "eq",
-                  value: productId,
-                },
-              ],
-            },
-          },
+      const billingModuleCurrencyId =
+        await this.service.ecommerceModuleResolveOrderCurrency({
+          productId,
+          billingModuleCurrencyId: requestedCurrencyId,
         });
-
-      const attributesToBillingModuleCurrencies =
-        await this.service.ecommerceModule.attributesToBillingModuleCurrencies.find(
-          {
-            params: {
-              filters: {
-                and: [
-                  {
-                    column: "attributeId",
-                    method: "inArray",
-                    value:
-                      ecommerceModuleProductsToAttributes?.map(
-                        (productToAttribute) => productToAttribute.attributeId,
-                      ) || [],
-                  },
-                ],
-              },
-            },
-          },
-        );
-
-      if (
-        attributesToBillingModuleCurrencies?.length &&
-        !billingModuleCurrencyId
-      ) {
-        const defaultBillingModuleCurrency =
-          await this.service.billingModule.currency.find({
-            params: {
-              filters: {
-                and: [
-                  {
-                    column: "isDefault",
-                    method: "eq",
-                    value: true,
-                  },
-                ],
-              },
-            },
-          });
-
-        if (defaultBillingModuleCurrency?.length) {
-          billingModuleCurrencyId = attributesToBillingModuleCurrencies.find(
-            (attributeToBillingModuleCurrency) =>
-              attributeToBillingModuleCurrency.billingModuleCurrencyId ===
-              defaultBillingModuleCurrency[0].id,
-          )?.billingModuleCurrencyId;
-
-          if (!billingModuleCurrencyId) {
-            billingModuleCurrencyId =
-              attributesToBillingModuleCurrencies[0]?.billingModuleCurrencyId;
-          }
-        }
-      }
 
       const existingOrdersToProducts =
         await this.service.ecommerceModule.ordersToProducts.find({
@@ -229,7 +176,7 @@ export class Handler {
                         {
                           column: "storeId",
                           method: "eq",
-                          value: id,
+                          value: storeId,
                         },
                         {
                           column: "orderId",
@@ -273,82 +220,65 @@ export class Handler {
         }
       }
 
-      const order = await ecommerceOrderApi.create({
-        data: {},
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
+      await getDrizzle({}).transaction((tx) =>
+        withConsistencyDatabase(tx, async () => {
+          const order = await this.service.ecommerceModule.order.create({
+            data: {},
+          });
 
-      if (!order) {
-        throw new Error("Not Found error. No order found");
-      }
+          if (!order) {
+            throw new Error("Not Found error. No order found");
+          }
 
-      await subjectsToEcommerceModuleOrdersApi.create({
-        data: {
-          subjectId: id,
-          ecommerceModuleOrderId: order.id,
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
-
-      const ordersToProducts = await ecommerceOrdersToProductsApi.create({
-        data: {
-          orderId: order.id,
-          productId: productId,
-          quantity: data.quantity || 1,
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
-
-      if (!ordersToProducts) {
-        throw new Error("Not Found error. No orders to products found");
-      }
-
-      const storesToOrders = await ecommerceStoresToOrdersApi.create({
-        data: {
-          storeId: storeId,
-          orderId: order.id,
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
-
-      if (!storesToOrders) {
-        throw new Error("Not Found error. No stores to orders found");
-      }
-
-      const ordersToBillingModuleCurrencies =
-        await ecommerceOrdersToBillingModuleCurrenciesApi.create({
-          data: {
-            orderId: order.id,
-            billingModuleCurrencyId: billingModuleCurrencyId,
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          await this.service.subjectsToEcommerceModuleOrders.create({
+            data: {
+              subjectId: id,
+              ecommerceModuleOrderId: order.id,
             },
-          },
-        });
+          });
 
-      if (!ordersToBillingModuleCurrencies) {
-        throw new Error(
-          "Not Found error. No orders to billing module currencies found",
-        );
-      }
+          const ordersToProducts =
+            await this.service.ecommerceModule.ordersToProducts.create({
+              data: {
+                orderId: order.id,
+                productId: productId,
+                quantity: data.quantity || 1,
+              },
+            });
+
+          if (!ordersToProducts) {
+            throw new Error("Not Found error. No orders to products found");
+          }
+
+          const storesToOrders =
+            await this.service.ecommerceModule.storesToOrders.create({
+              data: {
+                storeId: storeId,
+                orderId: order.id,
+              },
+            });
+
+          if (!storesToOrders) {
+            throw new Error("Not Found error. No stores to orders found");
+          }
+
+          const ordersToBillingModuleCurrencies =
+            await this.service.ecommerceModule.ordersToBillingModuleCurrencies.create(
+              {
+                data: {
+                  orderId: order.id,
+                  billingModuleCurrencyId: billingModuleCurrencyId,
+                },
+              },
+            );
+
+          if (!ordersToBillingModuleCurrencies) {
+            throw new Error(
+              "Not Found error. No orders to billing module currencies found",
+            );
+          }
+        }),
+      );
 
       return c.json({
         data: {

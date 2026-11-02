@@ -1,40 +1,33 @@
 ---
-finding_prefix: EX
-confirmation:
-  confirmed: false
+product_id: product-id
 ---
 
-# Competitors and alternatives
+# Конкуренты
 
-<!-- Suggested detail structure, adaptable to the project. Register in catalog
-section research. The Market Researcher role defines the audit method. -->
+<!-- Агент собирает сравнение сам: официальные сайты, тарифы, документация, примеры и FAQ. Все содержательные данные помещаются на эту видимую страницу; внешние источники — прямыми URL, другие документы Studio — Storybook-ссылками с якорями. H2 ниже одинаковы для каждого продукта, детализация допустима в H3. Подсказки заменить результатом исследования. -->
 
-## Comparison scope
+## Границы сравнения
 
-Which Sales segments and choice situations this comparison addresses; relevant
-direct competitors, substitutes, informal approaches and doing nothing.
+Продукт, задача клиента, рынок и причины включения альтернатив. Сопоставить прямые предложения и другие способы получить нужный результат. Отделить изученные свойства от выводов о применимости; поисковые позиции относятся к Семантике.
 
-## Offer comparison
+## Сравнение предложений
 
-| Alternative | Customer / choice situation | Offer, included value and limits | Price, units, terms and date | Acquisition / promise | Why selected / implication for our offer |
-| ----------- | --------------------------- | -------------------------------- | ---------------------------- | --------------------- | ---------------------------------------- |
+| Продукт и первоисточник | Для кого и что уже делает | Существенные ограничения | Где проходит сравнение с нашим продуктом |
+| ----------------------- | ------------------------- | ------------------------ | ---------------------------------------- |
 
-Use authoritative current sources. Record control/ownership and distribution when
-material to the customer. Vendor descriptions establish their offer, not unbiased
-customer outcomes. Explain parity and tradeoffs without forced superiority.
+<!-- При необходимости сгруппировать альтернативы под H3. Разобрать состав, условия использования, владение результатом, переносимость и обслуживание. Коротко описать наблюдаемый путь знакомства: примеры, доказательства, цена, действие посетителя. Не отправлять заявки ради осмотра. -->
 
-## Alternative detail
+## Стоимость и ограничения
 
-Give each material alternative enough room for decision context, distinguishing
-strengths/limitations, source-backed facts, counterevidence and implications for
-the matching segment. Split into child pages if useful; keep stable finding IDs.
+| Продукт | Цена, единица оплаты, лимиты и дополнительные расходы | Дата наблюдения и источник |
+| ------- | ----------------------------------------------------- | -------------------------- |
 
-## Implications and open questions
+<!-- Более свежие данные заменяют прежние. Различать подписку, разовую покупку, оплату по расходу и инфраструктуру. Если цена не установлена после самостоятельного поиска, обозначить конкретный пробел. Доступность в целевом регионе не выводить из наличия сайта. -->
 
-Positioning, offer, proof and acquisition consequences; distinguish observed facts,
-inference/confidence and unresolved product-specific preference or demand.
+## Выводы
 
-## Sources
+Что стало обычным для категории, в каких ситуациях полезен наш продукт и где удобнее конкурент. Каждый вывод опирается на приведённый факт и отвечает на вопрос выбора. Не заменять вывод поручениями «изучить», «сравнить», «провести интервью». Преимущество по времени, качеству или деньгам требует соответствующих измерений.
 
-Retain all material sources, dates and limitations. Source IDs are local to their
-page; cross-page references name their source document.
+## Источники
+
+Дата и охват исследования; первоисточники возле утверждений или компактной таблицей. Для собственных функций указать проверенное основание и видимое описание продукта. Условия продавца подтверждают предложение; его реклама и отзывы не устанавливают сравнительную эффективность. Существенные результаты отображаются здесь целиком, включая ограничения, влияющие на выбор.

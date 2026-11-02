@@ -1,12 +1,37 @@
-import { IRouteRule } from "@sps/shared-utils";
+import { IRouteRule, UUID_PATH_SUFFIX_REGEX } from "@sps/shared-utils";
+
+/** Routes whose controllers authenticate the caller and enforce resource access. */
+export const controllerGuardedRoutes: IRouteRule[] = [
+  {
+    regexPath: /^\/api\/rbac\/subjects\/[^/]+\/blog-module\/articles\/?$/,
+    methods: ["POST"],
+  },
+  {
+    regexPath:
+      /^\/api\/rbac\/subjects\/[^/]+\/blog-module\/articles\/[^/]+\/content$/,
+    methods: ["GET"],
+  },
+  {
+    regexPath: /^\/api\/file-storage\/files\/[^/]+\/content$/,
+    methods: ["GET", "HEAD"],
+  },
+  {
+    regexPath: new RegExp(
+      `^/api/rbac/subjects${UUID_PATH_SUFFIX_REGEX.source}`,
+    ),
+    methods: ["GET"],
+  },
+];
 
 /**
- * Framework-default routes allowed WITHOUT authentication (singlepage layer).
+ * Framework routes that skip the global role check (singlepage layer).
  *
- * A request matching any of these (path + method) skips the is-authorized
- * check. Projects add their own in `./startup.ts` or via constructor options.
+ * Public endpoints accept anonymous requests; controller-guarded routes still
+ * enforce their own authentication and ownership checks. Projects add rules
+ * in `./startup.ts` or via constructor options.
  */
 export const allowedRoutes: IRouteRule[] = [
+  ...controllerGuardedRoutes,
   {
     regexPath: /\/favicon.ico/,
     methods: ["GET"],
@@ -40,22 +65,33 @@ export const allowedRoutes: IRouteRule[] = [
     regexPath: /\/public\/file-storage\/.*/,
     methods: ["GET"],
   },
+  /**
+   * The read surface of the public modules, one shape per route: find, count
+   * and find-by-id on every entity, plus the three page reads the host app
+   * calls anonymously. The single unanchored prefix rule these replaced
+   * matched every path under those modules, so it would open whatever route a
+   * module adds next (issue #276).
+   */
   {
-    regexPath: /\/api\/(host|website-builder|file-storage)\/.*/,
+    regexPath: /\/api\/(host|website-builder|file-storage)\/[a-z0-9-]+\/?$/,
     methods: ["GET"],
   },
   {
-    regexPath: /\/api\/aws-ses/,
-    methods: ["POST"],
-  },
-  {
-    regexPath: /\/api\/http-cache\/clear/,
+    regexPath: /\/api\/(host|website-builder|file-storage)\/[a-z0-9-]+\/count$/,
     methods: ["GET"],
   },
   {
-    regexPath: /\/api\/revalidation\/revalidate/,
+    regexPath: new RegExp(
+      `/api/(host|website-builder|file-storage)/[a-z0-9-]+${UUID_PATH_SUFFIX_REGEX.source}`,
+    ),
     methods: ["GET"],
   },
+  {
+    regexPath: /\/api\/host\/pages\/(find-by-url|urls|url-segment-value)$/,
+    methods: ["GET"],
+  },
+  { regexPath: /^\/api\/host\/pages\/seo\/?$/, methods: ["GET"] },
+  { regexPath: /^\/api\/host\/pages\/seo-preview\/?$/, methods: ["POST"] },
   {
     regexPath: /\/api\/rbac\/permissions$/,
     methods: ["GET"],

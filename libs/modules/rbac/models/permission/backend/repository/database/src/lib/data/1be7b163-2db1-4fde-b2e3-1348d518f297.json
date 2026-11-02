@@ -1,0 +1,9 @@
+{
+  "id": "1be7b163-2db1-4fde-b2e3-1348d518f297",
+  "createdAt": "2026-09-18T21:24:46.075Z",
+  "updatedAt": "2026-09-18T21:24:46.075Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "POST",
+  "path": "/api/rbac/subjects/3b784189-d907-4d31-a42e-773a67bd09c1/social-module/profiles/[social.profiles.id]/chats/[social.chats.id]/profiles/6bd92897-ea1c-4133-aa0e-1e4bdbc67744/knowledge/documents/[knowledge.documents.id]/reindex"
+}

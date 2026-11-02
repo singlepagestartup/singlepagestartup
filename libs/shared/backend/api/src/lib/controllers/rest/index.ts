@@ -8,8 +8,6 @@ import {
   CreateHandler,
   UpdateHandler,
   DeleteHandler,
-  DumpHandler,
-  SeedHandler,
   FindOrCreateHandler,
   BulkCreateHandler,
   BulkUpdateHandler,
@@ -34,11 +32,6 @@ export class Controller<DTO extends Record<string, unknown>>
         method: "GET",
         path: "/",
         handler: this.find,
-      },
-      {
-        method: "GET",
-        path: "/dump",
-        handler: this.dump,
       },
       {
         method: "GET",
@@ -81,6 +74,10 @@ export class Controller<DTO extends Record<string, unknown>>
         handler: this.delete,
       },
     ]);
+  }
+
+  describe() {
+    return this.service.describe?.();
   }
 
   public async find(c: Context, next: any): Promise<Response> {
@@ -126,21 +123,12 @@ export class Controller<DTO extends Record<string, unknown>>
     return handler.execute(c, next);
   }
 
-  public async dump(c: Context, next: any): Promise<Response> {
-    const handler = new DumpHandler<Context, DTO>(this.service);
-    return handler.execute(c, next);
-  }
-
-  public async seed(c: Context, next: any): Promise<Response> {
-    const handler = new SeedHandler<Context, DTO>(this.service);
-    return handler.execute(c, next);
-  }
-
   protected bindHttpRoutes(routes: IController<DTO>["httpRoutes"]) {
     this.httpRoutes = [];
 
     for (const route of routes) {
       const handler = route.handler.bind(this);
+
       this.httpRoutes.push({
         ...route,
         handler,

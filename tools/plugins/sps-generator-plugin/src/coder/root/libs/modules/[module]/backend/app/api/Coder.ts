@@ -5,10 +5,7 @@ import { util as getNameStyles } from "../../../../../../../utils/get-name-style
 import path from "path";
 import { Migrator } from "./migrator/Migrator";
 import { RegexCreator } from "../../../../../../../../utils/regex-utils/RegexCreator";
-import {
-  addToFile,
-  replaceInFile,
-} from "../../../../../../../../utils/file-utils";
+import { replaceInFile } from "../../../../../../../../utils/file-utils";
 
 export class Coder {
   name: string;
@@ -21,7 +18,7 @@ export class Coder {
   moduleNameStyles: ReturnType<typeof getNameStyles>;
   importBackendAppApiAsPropertyCasedAppName: ImportBackendAppApiAsPropertyCasedAppName;
   importPath: string;
-  extendAppRouteWithAppHono: ExtendAppRouteWithAppHono;
+  extendApiModules: ExtendApiModules;
 
   constructor({ tree, parent }: { tree: Tree; parent: AppCoder }) {
     this.name = "api";
@@ -44,11 +41,11 @@ export class Coder {
     this.importBackendAppApiAsPropertyCasedAppName =
       importBackendAppApiAsPropertyCasedAppName;
 
-    const extendAppRouteWithAppHono = new ExtendAppRouteWithAppHono({
+    const extendApiModules = new ExtendApiModules({
       asPropertyCasedAppName: this.moduleNameStyles.propertyCased.base,
       kebabCasedAppName: this.moduleNameStyles.kebabCased.base,
     });
-    this.extendAppRouteWithAppHono = extendAppRouteWithAppHono;
+    this.extendApiModules = extendApiModules;
 
     this.project = getProjects(this.tree).get(this.baseName);
   }
@@ -91,9 +88,9 @@ export class Coder {
       tree: this.tree,
     });
 
-    await addToFile({
-      toTop: false,
-      content: this.extendAppRouteWithAppHono.onCreate.content,
+    await replaceInFile({
+      content: this.extendApiModules.onCreate.content,
+      regex: this.extendApiModules.onCreate.regex,
       pathToFile: "/apps/api/app.ts",
       tree: this.tree,
     });
@@ -109,8 +106,8 @@ export class Coder {
 
     await replaceInFile({
       pathToFile: "/apps/api/app.ts",
-      content: this.extendAppRouteWithAppHono.onRemove.content,
-      regex: this.extendAppRouteWithAppHono.onRemove.regex,
+      content: this.extendApiModules.onRemove.content,
+      regex: this.extendApiModules.onRemove.regex,
       tree: this.tree,
     });
   }
@@ -126,10 +123,8 @@ export class Coder {
 
 export class ImportBackendAppApiAsPropertyCasedAppName extends RegexCreator {
   constructor(props: { asPropertyCasedAppName: string; importPath: string }) {
-    const place = 'export const app = new Hono().basePath("/");';
-    const placeRegex = new RegExp(
-      'export const app = new Hono\\(\\)\\.basePath\\("/"\\);',
-    );
+    const place = "export const app";
+    const placeRegex = /export const app\b/;
 
     const content = `import { app as ${props.asPropertyCasedAppName}App } from "${props.importPath}";\n\n`;
 
@@ -147,21 +142,18 @@ export class ImportBackendAppApiAsPropertyCasedAppName extends RegexCreator {
   }
 }
 
-export class ExtendAppRouteWithAppHono extends RegexCreator {
+export class ExtendApiModules extends RegexCreator {
   constructor(props: {
     asPropertyCasedAppName: string;
     kebabCasedAppName: string;
   }) {
-    const content = `app.route("/api/${props.kebabCasedAppName}", ${props.asPropertyCasedAppName}App.hono);\n`;
-
-    const contentRegex = new RegExp(
-      `app\\.route\\("/api/${props.kebabCasedAppName}", ${props.asPropertyCasedAppName}App\\.hono\\);(\n)?`,
-    );
-
+    const content = `\n  "${props.kebabCasedAppName}": ${props.asPropertyCasedAppName}App,`;
     super({
-      place: "",
-      placeRegex: new RegExp(""),
-      contentRegex,
+      place: "const apiModules = {",
+      placeRegex: /const apiModules\s*=\s*\{/,
+      contentRegex: new RegExp(
+        `\\s*["']?${props.kebabCasedAppName}["']?:\\s*${props.asPropertyCasedAppName}App,?`,
+      ),
       content,
       type: "append",
     });

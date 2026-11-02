@@ -124,3 +124,36 @@ paths:
             application/json:
               schema:
                 $ref: "rbac-action.yaml"
+
+  /rbac/actions/{id}/consume:
+    post:
+      tags:
+        - "rbac-action"
+      summary: Consume entity
+      description: >-
+        Claim an action row in a single conditional write. The row is updated
+        only while it still matches `filters`, so a caller that must act once -
+        an OAuth state, an OAuth exchange code - cannot be raced into acting
+        twice. Answers with `data: null` when nothing matched.
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON string carrying the patch and the predicate
+                  example: '{"data":{"consumedAt":"2026-09-20T10:00:00.000Z"},"filters":{"and":[{"column":"consumedAt","method":"isNull"}]}}'
+              required:
+                - data
+      responses:
+        "200":
+          description: The claimed entity, or null when the predicate no longer held
+          content:
+            application/json:
+              schema:
+                $ref: "rbac-action.yaml"

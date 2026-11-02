@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "db11a3fb-1df7-42eb-8635-78c0354af284",
+  "createdAt": "2026-10-26T00:11:50.742Z",
+  "updatedAt": "2026-10-27T14:59:58.427Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Expert platform",
+    "ru": "Платформа экспертов"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Explore a specialist's profile, articles and offers, then ask a question.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Изучает профиль, статьи и предложения специалиста, а затем задаёт вопрос.\"}]}]}"
+  },
+  "adminTitle": "Платформа экспертов",
+  "slug": "framework-reviewed-article-social-cases-feature-1"
+}

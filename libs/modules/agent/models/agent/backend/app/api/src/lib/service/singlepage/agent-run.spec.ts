@@ -13,6 +13,7 @@ const mockLoggerError = jest.fn();
 const mockLoggerInfo = jest.fn();
 
 jest.mock("@sps/shared-utils", () => ({
+  ...jest.requireActual("@sps/shared-utils"),
   AGENT_CRON_DISPATCH_TIMEOUT_IN_SECONDS: 1,
   AGENT_MAX_DURATION_IN_SECONDS: 600,
   API_SERVICE_URL: "http://localhost:4000",
@@ -38,7 +39,8 @@ jest.mock("@sps/backend-utils", () => ({
   },
 }));
 
-import { AgentRun, defaultMarkerLifetimeInSeconds } from "./agent-run";
+import { AGENT_CRON_MARKER_MIN_LIFETIME_IN_SECONDS } from "@sps/shared-utils";
+import { AgentRun } from "./agent-run";
 
 const originalFetch = globalThis.fetch;
 
@@ -97,6 +99,15 @@ describe("Given: an agent whose executions are tracked on the cron channel", () 
   afterEach(() => {
     globalThis.fetch = originalFetch;
     jest.restoreAllMocks();
+  });
+
+  it("refuses an invalid schedule before the first run", () => {
+    expect(
+      createAgentRun().isDue({
+        agent: { slug: "dummy", interval: "not a cron expression" } as any,
+        now: new Date("2026-11-02T12:00:00.000Z"),
+      }),
+    ).toEqual({ due: false, reason: "invalid-interval" });
   });
 
   /**
@@ -231,7 +242,7 @@ describe("Given: an agent whose executions are tracked on the cron channel", () 
     ).getTime();
 
     expect(expiresAt - before).toBeGreaterThanOrEqual(
-      defaultMarkerLifetimeInSeconds * 1000,
+      AGENT_CRON_MARKER_MIN_LIFETIME_IN_SECONDS * 1000,
     );
   });
 

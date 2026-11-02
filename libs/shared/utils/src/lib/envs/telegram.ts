@@ -2,6 +2,11 @@ export const TELEGRAM_SERVICE_BOT_TOKEN =
   process.env["TELEGRAM_SERVICE_BOT_TOKEN"];
 export const TELEGRAM_SERVICE_BOT_USERNAME =
   process.env["TELEGRAM_SERVICE_BOT_USERNAME"];
+// Shared with Telegram through setWebhook and returned on every delivery as
+// X-Telegram-Bot-Api-Secret-Token. No default: an absent value must fail the
+// service closed rather than silently accept unsigned updates.
+export const TELEGRAM_SERVICE_WEBHOOK_SECRET =
+  process.env["TELEGRAM_SERVICE_WEBHOOK_SECRET"];
 export const TELEGRAM_SERVICE_URL =
   process.env["TELEGRAM_SERVICE_URL"] ?? "http://localhost:8000";
 export const NEXT_PUBLIC_TELEGRAM_SERVICE_URL =
