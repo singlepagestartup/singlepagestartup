@@ -1,248 +1,216 @@
 schema: singlepagestartup.product-catalog.v2
-models:
-  - id: framework-service
-    name: Framework and AI service
-    source: models/framework-service/model.md
 products:
   - id: singlepagestartup
-    model: framework-service
     name: Code Framework
-    summary:
-      A reusable foundation for makers and coding agents to deploy to their
-      server, adapt through conversation and build their own products with
-      tested common functions.
-    research: singlepagestartup/research.md
-    analytics: singlepagestartup/analytics.md
+    summary: Готовый код регистрации, каталога, корзины и платежей. Запустите проект на своём сервере и добавьте
+      правила своего бизнеса вместе с ИИ-агентом.
+    audience: singlepagestartup/audience.md
+    competitors: singlepagestartup/competitors.md
+    semantics: singlepagestartup/semantics.md
+    economics: singlepagestartup/economics.md
     sales: singlepagestartup/sales.yaml
     product: singlepagestartup/product.md
     website: singlepagestartup/website.md
     marketing_creative: singlepagestartup/marketing-creative.md
     presentation: singlepagestartup/presentation/ProjectPresentation.tsx
-    presentation_data: singlepagestartup/presentation/data.yaml
     sections:
-      - id: research
-        title: Research
+      - id: presentation
+        title: Презентация
         pages:
-          - id: customer-segments
-            title: Customer segments
-            children:
-              - id: makers
-                title: Makers
-                source: singlepagestartup/research/makers.md
-              - id: developer-agents
-                title: Developer agents
-                source: singlepagestartup/research/developer-agents.md
-          - id: competitors
-            title: Competitors and alternatives
-            source: singlepagestartup/research/competitors.md
+          - id: brief
+            title: Задача презентации
+            source: singlepagestartup/presentation/brief.md
       - id: website
-        title: Website
+        title: Сайт
         pages:
           - id: pages
-            title: Pages
+            title: Страницы
             children:
               - id: landing
-                title: Landing page
+                title: Страница продукта
                 route: /
-                representations:
-                  text: singlepagestartup/website/page.md
-                  preview: singlepagestartup/website/Landing.tsx
+                source: singlepagestartup/website/Landing.tsx
       - id: creative
-        title: Marketing Creative
+        title: Рекламные материалы
         pages:
-          - id: covers
-            title: Covers
+          - id: ads
+            title: Рекламные макеты
+            source: singlepagestartup/marketing-creative/Ads.tsx
+      - id: articles
+        title: Статьи
+        pages:
+          - id: ai-online-store
+            title: "Как создать интернет-магазин с помощью нейросетей"
+            source: singlepagestartup/articles/ai-online-store/brief.md
             children:
-              - id: walkthrough-cover
-                title: Walkthrough cover
-                representations:
-                  text: singlepagestartup/marketing-creative/walkthrough-cover.md
-                  preview: singlepagestartup/marketing-creative/WalkthroughCover.tsx
-              - id: repository-preview
-                title: Repository preview
-                representations:
-                  text: singlepagestartup/marketing-creative/repository-preview.md
-                  preview: singlepagestartup/marketing-creative/RepositoryCover.tsx
-              - id: short-cover
-                title: Short cover
-                representations:
-                  text: singlepagestartup/marketing-creative/short-cover.md
-                  preview: singlepagestartup/marketing-creative/ShortCover.tsx
-              - id: animated-cover
-                title: Animated cover
-                representations:
-                  text: singlepagestartup/marketing-creative/walkthrough-cover.md
-                  preview: singlepagestartup/marketing-creative/AnimatedCover.tsx
-          - id: article
-            title: Article
-            representations:
-              text: singlepagestartup/marketing-creative/article.md
-              preview: singlepagestartup/marketing-creative/Article.tsx
-          - id: short-storyboard
-            title: Short storyboard
-            representations:
-              text: singlepagestartup/marketing-creative/short-storyboard.md
-              preview: singlepagestartup/marketing-creative/ShortStoryboard.tsx
-          - id: social-post
-            title: Social post
-            representations:
-              text: singlepagestartup/marketing-creative/social-post.md
-              preview: singlepagestartup/marketing-creative/SocialPost.tsx
-      - id: content
-        title: Product Content
-        pages:
-          - id: readme
-            title: GitHub README
-            representations:
-              text: singlepagestartup/content/readme.md
-              preview: singlepagestartup/content/GithubReadme.tsx
-          - id: build
-            title: Build with a coding agent
-            representations:
-              text: singlepagestartup/content/build-with-an-agent.md
-              preview: singlepagestartup/content/Guide.tsx
+              - id: ai-online-store-seo
+                title: SEO и поисковое задание
+                source: singlepagestartup/articles/ai-online-store/seo.md
+              - id: ai-online-store-text
+                title: Статья
+                source: singlepagestartup/articles/ai-online-store/Article.tsx
+              - id: ai-online-store-social
+                title: Публикация в соцсетях
+                source: singlepagestartup/articles/ai-online-store/social-post.md
+              - id: ai-online-store-publication
+                title: Публикация и результаты
+                source: singlepagestartup/articles/ai-online-store/publication.md
+          - id: github-setup
+            title: "GitHub для первого проекта: регистрация и копия SinglePageStartup"
+            source: singlepagestartup/articles/github-setup/brief.md
+            children:
+              - id: github-setup-seo
+                title: SEO и поисковое задание
+                source: singlepagestartup/articles/github-setup/seo.md
+              - id: github-setup-text
+                title: Статья
+                source: singlepagestartup/articles/github-setup/Article.tsx
+              - id: github-setup-publication
+                title: Публикация и результаты
+                source: singlepagestartup/articles/github-setup/publication.md
+          - id: service-website
+            title: "Как создать сайт услуги с помощью нейросети и принимать заявки"
+            source: singlepagestartup/articles/service-website/brief.md
+            children:
+              - id: service-website-seo
+                title: SEO и поисковое задание
+                source: singlepagestartup/articles/service-website/seo.md
+              - id: service-website-text
+                title: Статья
+                source: singlepagestartup/articles/service-website/Article.tsx
+              - id: service-website-social
+                title: Публикация в соцсетях
+                source: singlepagestartup/articles/service-website/social-post.md
+              - id: service-website-publication
+                title: Публикация и результаты
+                source: singlepagestartup/articles/service-website/publication.md
+          - id: adapt-ready-project
+            title: "Минимальный заказ в интернет-магазине: как поставить задачу ИИ-агенту"
+            source: singlepagestartup/articles/adapt-ready-project/brief.md
+            children:
+              - id: adapt-ready-project-seo
+                title: SEO и поисковое задание
+                source: singlepagestartup/articles/adapt-ready-project/seo.md
+              - id: adapt-ready-project-text
+                title: Статья
+                source: singlepagestartup/marketing-creative/Article.tsx
+              - id: adapt-ready-project-horizontal
+                title: Горизонтальное видео
+                source: singlepagestartup/articles/adapt-ready-project/horizontal-video.md
+                children:
+                  - id: adapt-ready-project-horizontal-cover
+                    title: Статичная обложка — эскиз
+                    source: singlepagestartup/marketing-creative/WalkthroughCover.tsx
+                  - id: adapt-ready-project-horizontal-intro
+                    title: Анимированная заставка — эскиз
+                    source: singlepagestartup/marketing-creative/AnimatedCover.tsx
+              - id: adapt-ready-project-vertical
+                title: Вертикальное видео
+                children:
+                  - id: adapt-ready-project-vertical-cover
+                    title: Обложка — эскиз
+                    source: singlepagestartup/marketing-creative/ShortCover.tsx
+                source: singlepagestartup/marketing-creative/ShortStoryboard.tsx
+              - id: adapt-ready-project-social
+                title: Публикация в соцсетях
+                source: singlepagestartup/marketing-creative/SocialPost.tsx
+              - id: adapt-ready-project-publication
+                title: Публикация и результаты
+                source: singlepagestartup/articles/adapt-ready-project/publication.md
   - id: ai-chat
-    model: framework-service
     name: AI Chat
-    summary: Upload notes, documents, screenshots and images, review a compact
-      five-stage project model in about one focused session, then keep working
-      with a chat that uses the same project. Build and preview a landing page
-      in the sandbox, publish it through a GitHub repository and the user's
-      server, buy tokens for more hosted work or use Code Framework for another
-      digital product.
-    research: ai-chat/research.md
-    analytics: ai-chat/analytics.md
+    summary: Соберите описание проекта из заметок, документов и изображений. Отредактируйте его вместе с агентом,
+      скачайте документы или прикрепите их к следующему разговору.
+    audience: ai-chat/audience.md
+    competitors: ai-chat/competitors.md
+    semantics: ai-chat/semantics.md
+    economics: ai-chat/economics.md
     sales: ai-chat/sales.yaml
     product: ai-chat/product.md
     website: ai-chat/website.md
     marketing_creative: ai-chat/marketing-creative.md
     presentation: ai-chat/presentation/ProjectPresentation.tsx
-    presentation_data: ai-chat/presentation/data.yaml
     sections:
-      - id: research
-        title: Research
+      - id: presentation
+        title: Презентация
         pages:
-          - id: customer-segments
-            title: Customer segments
-            children:
-              - id: business-users
-                title: Early-stage project owners
-                source: ai-chat/research/business-users.md
-          - id: competitors
-            title: Competitors and alternatives
-            source: ai-chat/research/competitors.md
+          - id: brief
+            title: Задача презентации
+            source: ai-chat/presentation/brief.md
       - id: website
-        title: Website
+        title: Сайт
         pages:
           - id: pages
-            title: Pages
+            title: Страницы
             children:
               - id: landing
-                title: Landing page
-                route: /
-                representations:
-                  text: ai-chat/website/page.md
-                  preview: ai-chat/website/Landing.tsx
+                title: Страница продукта
+                route: /ai-chat/
+                source: ai-chat/website/Landing.tsx
               - id: register
-                title: Create account
-                route: /register
-                representations:
-                  text: ai-chat/website/register.md
-                  preview: ai-chat/website/Register.tsx
+                title: Создать аккаунт
+                route: /ai-chat/rbac/subjects/authentication/registration
+                source: ai-chat/website/Register.tsx
               - id: login
-                title: Sign in
-                route: /login
-                representations:
-                  text: ai-chat/website/login.md
-                  preview: ai-chat/website/Login.tsx
-              - id: new-project
-                title: Add materials
-                route: /projects/new
+                title: Войти
+                route: /ai-chat/rbac/subjects/authentication/select-method
+                source: ai-chat/website/Login.tsx
+              - id: project-workspace
+                title: Чат проекта
+                route: /ai-chat/social/profiles/[social.profiles.id]
                 uses:
                   - product.ai-chat.page.content.one-hour-setup
-                representations:
-                  text: ai-chat/website/new-project.md
-                  preview: ai-chat/website/NewProject.tsx
-              - id: project-workspace
-                title: Business workspace
-                route: /projects/[project-id]
-                uses:
                   - product.ai-chat.page.content.project-model
-                representations:
-                  text: ai-chat/website/project-workspace.md
-                  preview: ai-chat/website/ProjectWorkspace.tsx
-              - id: landing-page-workspace
-                title: Landing-page sandbox
-                route: /projects/[project-id]/landing-page
-                uses:
-                  - product.ai-chat.page.content.project-model
-                representations:
-                  text: ai-chat/website/landing-page.md
-                  preview: ai-chat/website/LandingPageWorkspace.tsx
-              - id: publish-site
-                title: Publish site
-                route: /projects/[project-id]/landing-page/publish
-                uses:
-                  - product.ai-chat.page.website.landing-page-workspace
-                representations:
-                  text: ai-chat/website/publish.md
-                  preview: ai-chat/website/PublishSite.tsx
+                source: ai-chat/website/ProjectWorkspace/Screen.tsx
               - id: tokens
-                title: Buy tokens
-                route: /tokens
-                representations:
-                  text: ai-chat/website/tokens.md
-                  preview: ai-chat/website/Tokens.tsx
+                title: Купить токены
+                route: /ai-chat/rbac/subjects/tokens
+                source: ai-chat/website/Tokens.tsx
               - id: settings
-                title: Settings
-                route: /settings
-                representations:
-                  text: ai-chat/website/settings.md
-                  preview: ai-chat/website/Settings.tsx
+                title: Настройки
+                route: /ai-chat/rbac/subjects/settings
+                source: ai-chat/website/Settings.tsx
               - id: help
-                title: Help
-                route: /help
-                representations:
-                  text: ai-chat/website/help.md
-                  preview: ai-chat/website/Help.tsx
-      - id: creative
-        title: Marketing Creative
-        pages:
-          - id: covers
-            title: Covers
-            children:
-              - id: one-page-cover
-                title: Structured-project cover
-                representations:
-                  text: ai-chat/marketing-creative/one-page-cover.md
-                  preview: ai-chat/marketing-creative/OnePageCover.tsx
-          - id: article
-            title: Article
-            representations:
-              text: ai-chat/marketing-creative/article.md
-              preview: ai-chat/marketing-creative/Article.tsx
-          - id: social-post
-            title: Social post
-            representations:
-              text: ai-chat/marketing-creative/social-post.md
-              preview: ai-chat/marketing-creative/SocialPost.tsx
+                title: Помощь
+                route: /ai-chat/help
+                source: ai-chat/website/Help.tsx
       - id: content
-        title: Product Content
+        title: Материалы продукта
         pages:
           - id: one-hour-setup
-            title: One-hour setup
-            representations:
-              text: ai-chat/content/guided-cards.md
-              preview: ai-chat/content/GuidedCards.tsx
+            title: Настройка за час
+            source: ai-chat/content/GuidedCards.tsx
           - id: project-model
-            title: Project model
-            representations:
-              text: ai-chat/content/workspace-map.md
-              preview: ai-chat/content/WorkspaceMap.tsx
-review:
-  dependencies:
-    asset-index: 3959f399ca7ce73eb67531f94dc5349d1cfd3a03e7fb9921627e4c09252b1f41
-    brand: 8dbe5a27b000710a03ca504b7a56040516cfdb9b54be0a95d910ee4506361590
-    brief: 875a271cca75b070f276f7ceced7e439bd642272c7b0b289166050ac0f3a82e0
-    design: 6f29bf4c2ea795a190382e7091a7085ee9270f892486aeccd6c2aca62f1179c8
-    strategy: d68e88a81632b3ddf4f57431d6963c9d74c28bf2ba0a3d9578fb2d925fe3bf82
+            title: Модель проекта
+            source: ai-chat/content/WorkspaceMap.tsx
+      - id: creative
+        title: Рекламные материалы
+        pages:
+          - id: ads
+            title: Рекламные макеты
+            source: ai-chat/marketing-creative/Ads.tsx
+      - id: articles
+        title: Статьи
+        pages:
+          - id: project-description
+            title: "Как написать описание услуги для сайта: пример и шаблон"
+            source: ai-chat/articles/project-description/brief.md
+            children:
+              - id: project-description-seo
+                title: SEO и поисковое задание
+                source: ai-chat/articles/project-description/seo.md
+              - id: project-description-text
+                title: Статья
+                source: ai-chat/marketing-creative/Article.tsx
+              - id: project-description-horizontal
+                title: Горизонтальное видео
+                source: ai-chat/articles/project-description/horizontal-video.md
+              - id: project-description-vertical
+                title: Вертикальное видео
+                source: ai-chat/articles/project-description/vertical-video.md
+              - id: project-description-social
+                title: Публикация в соцсетях
+                source: ai-chat/marketing-creative/SocialPost.tsx
+              - id: project-description-publication
+                title: Публикация и результаты
+                source: ai-chat/articles/project-description/publication.md

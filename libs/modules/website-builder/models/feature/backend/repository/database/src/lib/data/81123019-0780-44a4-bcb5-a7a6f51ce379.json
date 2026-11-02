@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "81123019-0780-44a4-bcb5-a7a6f51ce379",
+  "createdAt": "2026-10-26T00:11:23.609Z",
+  "updatedAt": "2026-10-27T14:59:42.109Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Order",
+    "ru": "Заказ"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Order 104\\n\\nThe order is created. Payment is checked separately.\\n\\nIntroductory course\\n\\nExercise collection\\n\\nStatus: awaiting payment\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Заказ № 104\\n\\nЗаказ создан. Оплата проверяется отдельно.\\n\\nВводный курс\\n\\nСборник заданий\\n\\nСтатус: ожидает оплаты\"}]}]}"
+  },
+  "adminTitle": "Заказ",
+  "slug": "framework-reviewed-article-ecommerce-example-feature-2"
+}

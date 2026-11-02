@@ -12,6 +12,7 @@ import path from "node:path";
 
 import {
   findMissingSpecimens,
+  findSpecimenDeviations,
   requiredSpecimens,
   validateRequiredSpecimens,
 } from "./specimens";
@@ -69,6 +70,20 @@ describe("required Design specimens", () => {
    * When the workspace is validated
    * Then nothing is reported
    */
+  test("unfinished comments cannot supply missing specimen declarations", async () => {
+    const root = await workspace({
+      "design/singlepage.md": design(darkColumn),
+      "design/singlepage/layout.yaml": layout,
+      "design/singlepage/kit.html": `${kit(everySpecimen.filter((id) => id !== "actions"))}\n<!-- <article data-specimen="actions">Hidden</article>`,
+    });
+    const missing = await findMissingSpecimens(root);
+    expect(
+      missing.some(
+        (item) => item.requirement === "Design declares a `actions` specimen",
+      ),
+    ).toBe(true);
+  });
+
   test("accepts a layout that renders every required specimen", async () => {
     const root = await workspace({
       "design/singlepage.md": design(darkColumn),
@@ -80,6 +95,31 @@ describe("required Design specimens", () => {
 
     expect(await findMissingSpecimens(root)).toEqual([]);
     await expect(validateRequiredSpecimens(root)).resolves.toBeUndefined();
+  });
+
+  /**
+   * BDD Scenario: Icon cards do not replace the icon system
+   * Given the interface kit renders icon cards but no dedicated Icons block
+   * When the workspace is validated
+   * Then the missing icon system is reported even though icons appear in cards
+   */
+  test("requires the Icons block separately from icon cards", async () => {
+    const root = await workspace({
+      "design/singlepage.md": design(lightOnly),
+      "design/singlepage/layout.yaml": layout,
+      "design/singlepage/kit.html": kit(
+        Object.keys(requiredSpecimens).filter((id) => id !== "icons"),
+      ),
+      "design/startup.md": "",
+      "design/startup/layout.yaml": "{}",
+    });
+
+    expect(
+      (await findMissingSpecimens(root)).map(({ requirement }) => requirement),
+    ).toEqual(["Design declares a `icons` specimen"]);
+    await expect(validateRequiredSpecimens(root)).rejects.toThrow(
+      'data-specimen="icons"',
+    );
   });
 
   /**
@@ -204,5 +244,212 @@ describe("required Design specimens", () => {
     expect(await findMissingSpecimens(root)).toHaveLength(
       Object.keys(requiredSpecimens).length,
     );
+  });
+});
+
+/**
+ * BDD Suite: The framework owns the wrapper
+ * Given a project restyles a block rather than renaming or inventing one
+ * When its Design layout and kit are inspected
+ * Then any renamed section, translated specimen heading or unknown block is reported
+ */
+describe("specimen catalogue", () => {
+  const frameworkLayout = `sections:
+  - id: interface-kit
+    title: Interface kit
+    source: kit.html
+`;
+
+  function projectLayout(title: string): string {
+    return `sections:
+  - id: interface-kit
+    title: ${title}
+    source: kit.html
+`;
+  }
+
+  function article(id: string, heading: string): string {
+    return `<article data-specimen="${id}"><h3>${heading}</h3><p>Body</p></article>`;
+  }
+
+  const frameworkFiles = {
+    "design/singlepage/layout.yaml": frameworkLayout,
+    "design/singlepage/kit.html": article("actions", "Actions"),
+  };
+
+  /**
+   * BDD Scenario: A project that only restyles its blocks
+   * Given a kit whose section and specimen keep the framework names
+   * When the workspace is inspected
+   * Then nothing is reported however different the content is
+   */
+  test("accepts a project that keeps every framework name", async () => {
+    const root = await workspace({
+      ...frameworkFiles,
+      "design/startup/layout.yaml": projectLayout("Interface kit"),
+      "design/startup/kit.html": `<article data-specimen="actions"><h3>Actions</h3><p>Совсем другая подача</p></article>`,
+    });
+
+    expect(await findSpecimenDeviations(root)).toEqual([]);
+  });
+
+  /**
+   * BDD Scenario: A section renamed downstream
+   * Given a project layout that translates the section title
+   * When the workspace is inspected
+   * Then the renamed section is reported with both names
+   */
+  test("reports a section the project renamed", async () => {
+    const root = await workspace({
+      ...frameworkFiles,
+      "design/startup/layout.yaml": projectLayout("Интерфейсный набор"),
+      "design/startup/kit.html": article("actions", "Actions"),
+    });
+
+    const findings = await findSpecimenDeviations(root);
+
+    expect(findings).toHaveLength(1);
+    expect(findings[0].detail).toContain("Интерфейсный набор");
+    expect(findings[0].detail).toContain("Interface kit");
+  });
+
+  /**
+   * BDD Scenario: A specimen heading translated downstream
+   * Given a kit that heads a catalogued block with its own wording
+   * When the workspace is inspected
+   * Then the heading is reported against the framework title
+   */
+  test("reports a specimen the project renamed", async () => {
+    const root = await workspace({
+      ...frameworkFiles,
+      "design/startup/layout.yaml": projectLayout("Interface kit"),
+      "design/startup/kit.html": article("actions", "Ступени действия"),
+    });
+
+    const findings = await findSpecimenDeviations(root);
+
+    expect(findings).toHaveLength(1);
+    expect(findings[0].requirement).toContain("actions");
+    expect(findings[0].detail).toContain("Ступени действия");
+  });
+
+  /**
+   * BDD Scenario: A block that exists in no layer of the framework
+   * Given a kit that declares a specimen the catalogue never defines
+   * When the workspace is inspected
+   * Then the invented block is reported instead of silently shipping
+   */
+  test("reports a specimen the catalogue does not define", async () => {
+    const root = await workspace({
+      ...frameworkFiles,
+      "design/startup/layout.yaml": projectLayout("Interface kit"),
+      "design/startup/kit.html": `${article("actions", "Actions")}\n${article("pricing-ladder", "Pricing ladder")}`,
+    });
+
+    const findings = await findSpecimenDeviations(root);
+
+    expect(findings).toHaveLength(1);
+    expect(findings[0].detail).toContain("pricing-ladder");
+  });
+
+  /**
+   * BDD Scenario: The framework layer itself
+   * Given a workspace where no project layer owns a Design layout
+   * When it is inspected
+   * Then the framework owes nothing to itself
+   */
+  test("owes nothing when only the framework layer has a layout", async () => {
+    const root = await workspace({
+      ...frameworkFiles,
+      "design/startup/layout.yaml": "{}",
+    });
+
+    expect(await findSpecimenDeviations(root)).toEqual([]);
+  });
+});
+
+/** Source inspection must distinguish rendered declarations from quoted examples. */
+describe("grouped interactive catalogue", () => {
+  test("reads nested TSX declarations and ignores comments and strings", async () => {
+    const root = await workspace({
+      "design/singlepage.md": design(lightOnly),
+      "design/singlepage/layout.yaml": `sections:\n  - id: interface-kit\n    title: Interface kit\n    children:\n      - { id: kit-inputs, title: Inputs, source: kit/Inputs.tsx }\n`,
+      "design/singlepage/kit/Inputs.tsx": `
+// <Specimen id="actions" title="Actions" />
+const quoted = '<article data-specimen="icons"><h3>Icons</h3></article>';
+export default function Inputs() { return <Specimen id="fields" title="Fields and data rows"><input /></Specimen>; }
+`,
+    });
+    const missing = (await findMissingSpecimens(root)).map(
+      (item) => item.requirement,
+    );
+    expect(missing).not.toContain("Design declares a `fields` specimen");
+    expect(missing).toContain("Design declares a `actions` specimen");
+    expect(missing).toContain("Design declares a `icons` specimen");
+    expect(await findSpecimenDeviations(root)).toEqual([]);
+  });
+
+  test("does not count an unselected file or inherited base after a layer replacement", async () => {
+    const root = await workspace({
+      "design/singlepage.md": design(lightOnly),
+      "design/singlepage/layout.yaml": layout,
+      "design/singlepage/kit.html": kit(everySpecimen),
+      "design/startup/layout.yaml": `sections:\n  - id: interface-kit\n    title: Interface kit\n    children:\n      - { id: kit-inputs, title: Inputs, source: kit/Inputs.tsx }\n`,
+      "design/startup/kit/Inputs.tsx": `export default () => <Specimen id="fields" title="Fields and data rows"><input /></Specimen>;`,
+      "design/startup/Unselected.tsx": `export default () => <Specimen id="actions" title="Actions"><button>Go</button></Specimen>;`,
+    });
+    const missing = (await findMissingSpecimens(root)).map(
+      (item) => item.requirement,
+    );
+    expect(missing).toContain("Design declares a `actions` specimen");
+    expect(missing).not.toContain("Design declares a `fields` specimen");
+  });
+
+  test("validates canonical names in nested JSX on the framework itself", async () => {
+    const root = await workspace({
+      "design/singlepage/layout.yaml": `sections:\n  - id: interface-kit\n    title: Interface kit\n    children:\n      - { id: kit-actions, title: Actions, source: Actions.tsx }\n`,
+      "design/singlepage/Actions.tsx": `export default () => <><Specimen id="actions" title="Other name" /><Specimen id="made-up" title="Unknown" /></>;`,
+    });
+    const findings = await findSpecimenDeviations(root);
+    expect(findings).toHaveLength(2);
+    expect(findings.some((item) => item.detail.includes("Other name"))).toBe(
+      true,
+    );
+    expect(findings.some((item) => item.detail.includes("made-up"))).toBe(true);
+  });
+});
+
+describe("composition dependencies", () => {
+  test("requires content blocks to name their Interface kit components", async () => {
+    const files = {
+      "design/singlepage/layout.yaml": `sections:\n  - { id: content-blocks, title: Content blocks, source: Cards.tsx }\n`,
+      "design/singlepage/Cards.tsx": `export default () => <article data-specimen="item-grid"><h3>Repeated item grid</h3></article>;`,
+    };
+    const missing = await workspace(files);
+    expect((await findSpecimenDeviations(missing))[0].requirement).toContain(
+      "declares its components",
+    );
+    const unknown = await workspace({
+      ...files,
+      "design/singlepage/Cards.tsx": files[
+        "design/singlepage/Cards.tsx"
+      ].replace(
+        'data-specimen="item-grid"',
+        'data-specimen="item-grid" data-composes="invented"',
+      ),
+    });
+    expect((await findSpecimenDeviations(unknown))[0].requirement).toContain(
+      "uses catalogued components",
+    );
+    const valid = await workspace({
+      ...files,
+      "design/singlepage/Cards.tsx": files[
+        "design/singlepage/Cards.tsx"
+      ].replace(
+        'data-specimen="item-grid"',
+        'data-specimen="item-grid" data-composes="actions status icons"',
+      ),
+    });
+    expect(await findSpecimenDeviations(valid)).toEqual([]);
   });
 });

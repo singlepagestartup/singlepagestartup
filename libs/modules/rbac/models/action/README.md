@@ -17,6 +17,12 @@ Typical RBAC usages:
 - `variant`: display variant.
 - `expiresAt`: expiration timestamp.
 - `payload`: JSON payload for the action (typed by `payload.type`).
+- `consumedAt`: single-use mark. A column rather than a payload key, so a conditional update can claim the row in one write.
+
+## Consume API
+
+- `POST /rbac/actions/{id}/consume`: claim a row in a single conditional write. The body carries the patch and the predicate, for example `{"data":{"consumedAt":"…"},"filters":{"and":[{"column":"consumedAt","method":"isNull"}]}}`. The row is updated only while it still matches, so a caller that must act once cannot be raced into acting twice. It answers `data: null` when nothing matched, which is the caller's signal that the row was already consumed.
+- The route is reached with `X-RBAC-SECRET-KEY`, like every other action call, and is not on the no-auth allow-list.
 
 Common payload types in authentication flows:
 

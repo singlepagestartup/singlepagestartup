@@ -5,13 +5,10 @@ import { getLocalizedPlainText } from "../plain-text";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as SocialModuleProfileChatProfileAvatar } from "@sps/social/models/profile/frontend/component/src/lib/singlepage/chat-profile-avatar";
 import { Component as SocialModuleMessagesToFileStorageModuleFiles } from "@sps/social/relations/messages-to-file-storage-module-files/frontend/component";
-import { internationalization } from "@sps/shared-configuration";
-import { saveLanguageContext } from "@sps/shared-utils";
 import { CollapsibleContent, CollapsibleTrigger } from "@sps/shared-ui-shadcn";
 import { Collapsible } from "@radix-ui/react-collapsible";
 import { Check, ChevronDown, Copy, Pencil, Trash2 } from "lucide-react";
 import Markdown from "markdown-to-jsx";
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 const markdownOptions = {
@@ -78,9 +75,14 @@ function getAudioTranscriptionStatus(
   }
 
   const record = value as Record<string, unknown>;
+  const error = record.error;
 
   return {
     status: String(record.status || ""),
+    errorCategory:
+      error && typeof error === "object"
+        ? String((error as Record<string, unknown>).category || "")
+        : "",
   };
 }
 
@@ -125,23 +127,13 @@ export function normalizeChatMessageMarkdown(value?: string | null) {
   );
 }
 
-function getProfileHref(props: IClientComponentProps) {
-  if (props.data.id === "unknown") {
-    return "#";
-  }
-
-  return saveLanguageContext(
-    `/social/profiles/${props.data.slug}`,
-    props.language,
-    internationalization.languages,
-  );
-}
-
 function getProfileDisplayName(props: IClientComponentProps) {
   return (
     getLocalizedPlainText(props.data.title, props.language) ||
-    props.data.adminTitle ||
-    props.data.slug
+    ("adminTitle" in props.data && typeof props.data.adminTitle === "string"
+      ? props.data.adminTitle
+      : "") ||
+    (props.language === "ru" ? "Профиль" : "Profile")
   );
 }
 
@@ -151,14 +143,16 @@ const avatarTriggerClassName =
 export function Component(props: IClientComponentProps) {
   const [isCopied, setIsCopied] = useState(false);
   const copyResetTimeoutRef = useRef<number | null>(null);
-  const profileHref = getProfileHref(props);
   const profileDisplayName = getProfileDisplayName(props);
   const createdAt = formatTimelineDate(props.message.createdAt);
   const interaction = props.message.interaction;
   const hasInteraction = interaction && Object.keys(interaction).length > 0;
   const audioTranscription = getAudioTranscriptionStatus(props.message);
   const canOpenProfile = Boolean(
-    props.onProfileOpen && props.data.id !== "unknown",
+    props.onProfileOpen &&
+      props.profile &&
+      props.profile.id === props.data.id &&
+      props.data.id !== "unknown",
   );
 
   useEffect(() => {
@@ -174,7 +168,7 @@ export function Component(props: IClientComponentProps) {
       return;
     }
 
-    props.onProfileOpen?.(props.data);
+    if (props.profile) props.onProfileOpen?.(props.profile);
   }
 
   async function onCopyMessage() {
@@ -223,18 +217,20 @@ export function Component(props: IClientComponentProps) {
             isServer={props.isServer}
             variant="chat-profile-avatar"
             data={props.data}
+            file={props.avatar ?? null}
             language={props.language}
           />
         </button>
       ) : (
-        <Link href={profileHref} className={avatarTriggerClassName}>
+        <span className={avatarTriggerClassName}>
           <SocialModuleProfileChatProfileAvatar
             isServer={props.isServer}
             variant="chat-profile-avatar"
             data={props.data}
+            file={props.avatar ?? null}
             language={props.language}
           />
-        </Link>
+        </span>
       )}
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
@@ -247,12 +243,9 @@ export function Component(props: IClientComponentProps) {
               {profileDisplayName}
             </button>
           ) : (
-            <Link
-              href={profileHref}
-              className="truncate text-sm font-medium text-slate-950 hover:underline"
-            >
+            <span className="truncate text-sm font-medium text-slate-950">
               {profileDisplayName}
-            </Link>
+            </span>
           )}
           {props.message.sourceSystemId ? (
             <span className="truncate text-xs text-slate-400">
@@ -271,9 +264,11 @@ export function Component(props: IClientComponentProps) {
         {audioTranscription?.status &&
         audioTranscription.status !== "completed" ? (
           <div className="mt-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500">
-            {audioTranscription.status === "failed"
-              ? "Transcription failed"
-              : "Transcription processing"}
+            {audioTranscription.status !== "failed"
+              ? "Transcription processing"
+              : audioTranscription.errorCategory === "silence"
+                ? "No speech detected"
+                : "Transcription failed"}
           </div>
         ) : null}
         <SocialModuleMessagesToFileStorageModuleFiles

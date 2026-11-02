@@ -5,7 +5,7 @@ import { injectable } from "inversify";
 import { HTTPResponseError } from "hono/types";
 import { IFilter } from "./interface";
 export { type IFilter } from "./interface";
-import { logger } from "@sps/backend-utils";
+import { logger, sanitizeErrorMessage } from "@sps/backend-utils";
 import { Bot } from "grammy";
 import {
   BUG_SERVICE_PROJECT,
@@ -23,7 +23,7 @@ export class Filter implements IFilter {
     const requestId = c.req.header("x-request-id") || "unknown";
 
     let errorMessages: string[] = [];
-    let stack = error.stack || "";
+    let stack = sanitizeErrorMessage(error.stack || "");
     let status = error instanceof HTTPException ? error.status : 500;
     let path = c.req.url;
     let method = c.req.method;
@@ -47,15 +47,18 @@ export class Filter implements IFilter {
       errorMessages.push(error.message);
     }
 
-    causes.push({ message: errorMessages.join(" | "), stack });
+    causes = causes.map((cause) => ({
+      message: sanitizeErrorMessage(cause.message),
+      stack: sanitizeErrorMessage(cause.stack || ""),
+    }));
+
+    const message = sanitizeErrorMessage(errorMessages.join(" | "));
+
+    causes.push({ message, stack });
 
     logger.error(
       `🚨 Exception [${requestId}] ${method} ${path}`,
-      JSON.stringify(
-        { message: errorMessages.join(" | "), stack, status, causes },
-        null,
-        2,
-      ),
+      JSON.stringify({ message, stack, status, causes }, null, 2),
     );
 
     if (
@@ -76,10 +79,10 @@ export class Filter implements IFilter {
         const bot = new Bot(BUG_SERVICE_TELEGRAM_BOT_TOKEN);
 
         let chatId = BUG_SERVICE_TELEGRAM_CHAT_ID;
-        const message = `<b>${BUG_SERVICE_PROJECT}</b>\n🚨 <i>${status} | ${method}${jwt ? " by " + jwt : ""}</i> <pre>${path}</pre>\nError: ${errorMessages.join(" | ")}`;
+        const report = `<b>${BUG_SERVICE_PROJECT}</b>\n🚨 <i>${status} | ${method}${jwt ? " by " + jwt : ""}</i> <pre>${path}</pre>\nError: ${message}`;
 
         try {
-          await bot.api.sendMessage(chatId, message, {
+          await bot.api.sendMessage(chatId, report, {
             parse_mode: "HTML",
           });
         } catch (telegramError: any) {
@@ -89,7 +92,7 @@ export class Filter implements IFilter {
             telegramError?.parameters?.migrate_to_chat_id
           ) {
             chatId = telegramError.parameters.migrate_to_chat_id.toString();
-            await bot.api.sendMessage(chatId, message, {
+            await bot.api.sendMessage(chatId, report, {
               parse_mode: "HTML",
             });
           } else {
@@ -107,7 +110,7 @@ export class Filter implements IFilter {
         path,
         method,
         status,
-        error: errorMessages.join(" | "),
+        error: message,
         stack,
         cause: causes,
       },

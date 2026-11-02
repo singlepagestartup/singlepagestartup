@@ -8,13 +8,25 @@
  *       while parent-entity reads stay isolated from child mutations.
  */
 
-import { deriveTopicsFromPath } from "./index";
+import { deriveTopicsFromPath, expandLegacyTopics } from "./index";
 
 const SID = "303302a0-4eb7-4cef-af04-74d7e8e72442";
 const PID = "88862025-5c38-4ce8-bb4c-4c5c511b874c";
 const CID = "e3d65d9b-60fa-4e6b-8e4d-7a93960bc249";
 const TID = "38529ce7-f88d-45d3-9f34-f40b6a3bf82c";
 const MID = "e9fb51ab-dd98-4d5c-b3f8-7466ce7e440e";
+
+it("keeps an old order-total subscriber informed after a direct quantity or price write", () => {
+  expect(expandLegacyTopics(["ecommerce.orders-to-products"])).toContain(
+    "ecommerce.orders",
+  );
+  expect(expandLegacyTopics(["ecommerce.attributes"])).toContain(
+    "ecommerce.orders",
+  );
+  expect(expandLegacyTopics(["social.messages"])).not.toContain(
+    "social.profiles",
+  );
+});
 
 function intersects(a: string[], b: string[]): boolean {
   return a.some((topic) => b.includes(topic));
@@ -251,18 +263,18 @@ describe("read/mutation symmetry (the framework realtime guarantee)", () => {
   });
 
   /**
-   * BDD Scenario: A knowledge document create reaches the document-LIST
+   * BDD Scenario: A knowledge Source create reaches the document-LIST
    * subscription (same class as the chat-list regression).
    */
-  it("matches knowledge document create to the document-list subscription", () => {
+  it("matches knowledge Source create to the Source-list subscription", () => {
     const docListRead = deriveTopicsFromPath(
-      `/api/rbac/subjects/${SID}/social-module/profiles/${PID}/knowledge/documents`,
+      `/api/rbac/subjects/${SID}/social-module/profiles/${PID}/knowledge/sources`,
     );
     const docCreate = deriveTopicsFromPath(
-      `/api/rbac/subjects/${SID}/social-module/profiles/${PID}/knowledge/documents`,
+      `/api/rbac/subjects/${SID}/social-module/profiles/${PID}/knowledge/sources`,
     );
 
-    expect(docListRead).toContain("social.documents");
+    expect(docListRead).toContain("social.sources");
     expect(intersects(docListRead, docCreate)).toBe(true);
   });
 

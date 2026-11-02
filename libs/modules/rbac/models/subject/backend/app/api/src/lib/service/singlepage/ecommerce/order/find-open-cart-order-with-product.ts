@@ -1,15 +1,15 @@
 import { type IEcommerceModule } from "../../../../di";
-import { Service as SubjectsToEcommerceModuleOrdersService } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/service";
+import type { Service as SubjectsToEcommerceModuleOrdersService } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/service";
 
-export type IExecuteProps = {
+export interface IExecuteProps {
   subjectId: string;
   productId: string;
-};
+}
 
-type IConstructorProps = {
+interface IConstructorProps {
   ecommerceModule: IEcommerceModule;
   subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService;
-};
+}
 
 /**
  * Finds the subject's open cart order that already holds a product.

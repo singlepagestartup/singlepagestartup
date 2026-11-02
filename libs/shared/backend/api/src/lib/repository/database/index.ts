@@ -1,7 +1,7 @@
 import { logger } from "@sps/backend-utils";
 import { getDrizzle } from "@sps/shared-backend-database-config";
 import * as methods from "drizzle-orm";
-import { PgTableWithColumns } from "drizzle-orm/pg-core";
+import { getTableConfig, PgTableWithColumns } from "drizzle-orm/pg-core";
 import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import fs from "fs/promises";
 import { inject, injectable } from "inversify";
@@ -14,8 +14,10 @@ import {
 } from "../../configuration";
 import { DI } from "../../di/constants";
 import { queryBuilder } from "../../query-builder";
+import { type IFilter } from "../../query-builder/filters";
 import { FindServiceProps } from "../../services/interfaces";
-import { type IRepository } from "../interface";
+import { type IRepository, type IResourceDescription } from "../interface";
+import { consistencyContext, trackRepositoryRead } from "./context";
 
 function isDateSchema(value: unknown): boolean {
   if (value instanceof ZodDate) {
@@ -33,7 +35,16 @@ function isDateSchema(value: unknown): boolean {
 export class Database<T extends PgTableWithColumns<any>>
   implements IRepository
 {
-  db: PostgresJsDatabase<any>;
+  private database: PostgresJsDatabase<any>;
+  get db(): PostgresJsDatabase<any> {
+    // Explicit owner transaction clones retain precedence over ambient scope.
+    return typeof (this.database as any)?.rollback === "function"
+      ? this.database
+      : consistencyContext.getStore()?.database || this.database;
+  }
+  set db(value: PostgresJsDatabase<any>) {
+    this.database = value;
+  }
   Table: T;
   insertSchema: ZodObject<any>;
   selectSchema: ZodObject<any>;
@@ -50,8 +61,37 @@ export class Database<T extends PgTableWithColumns<any>>
     this.configuration = config;
   }
 
+  describe(): IResourceDescription {
+    const columns = methods.getTableColumns(this.Table);
+    return {
+      table: methods.getTableUniqueName(this.Table),
+      columns: Object.keys(columns),
+      references: getTableConfig(this.Table).foreignKeys.flatMap((key) => {
+        const reference = key.reference();
+        const targetColumns = methods.getTableColumns(reference.foreignTable);
+        if (reference.columns.length !== 1) return [];
+        const column = Object.keys(columns).find(
+          (name) => columns[name] === reference.columns[0],
+        );
+        const targetColumn = Object.keys(targetColumns).find(
+          (name) => targetColumns[name] === reference.foreignColumns[0],
+        );
+        return column && targetColumn
+          ? [
+              {
+                column,
+                table: methods.getTableUniqueName(reference.foreignTable),
+                targetColumn,
+              },
+            ]
+          : [];
+      }),
+    };
+  }
+
   async find(props?: FindServiceProps): Promise<T["$inferSelect"][]> {
     try {
+      await trackRepositoryRead(this.Table, this.db, props?.params?.filters);
       const filters = queryBuilder.filters({
         table: this.Table as T,
         queryFunctions: methods,
@@ -73,15 +113,20 @@ export class Database<T extends PgTableWithColumns<any>>
         );
       }
 
-      const order =
-        props?.params?.orderBy?.and?.length &&
-        props.params.orderBy.and[0].method
-          ? methods[props.params.orderBy.and[0].method as any](
-              this.Table[props.params.orderBy.and[0].column],
-            )
-          : "orderIndex" in this.Table
-            ? methods.asc(this.Table.orderIndex)
-            : null;
+      const order = (props?.params?.orderBy?.and || []).map(
+        ({ column, method }) => {
+          if (!["asc", "desc"].includes(method) || !this.Table[column])
+            throw new Error("Invalid orderBy");
+          return methods[method](this.Table[column]);
+        },
+      );
+      if (!order.length && "orderIndex" in this.Table)
+        order.push(methods.asc(this.Table.orderIndex));
+      if (
+        "id" in this.Table &&
+        !props?.params?.orderBy?.and?.some(({ column }) => column === "id")
+      )
+        order.push(methods.asc(this.Table.id));
 
       const records = await this.db
         .select()
@@ -89,7 +134,7 @@ export class Database<T extends PgTableWithColumns<any>>
         .where(filters ? methods.and(...filters) : undefined)
         .limit(Number(props?.params?.limit) as number)
         .offset(Number(props?.params?.offset) as number)
-        .orderBy(order)
+        .orderBy(...order)
         .execute();
 
       const sanitizedRecords = records.map((record) => {
@@ -111,6 +156,7 @@ export class Database<T extends PgTableWithColumns<any>>
 
   async count(props?: FindServiceProps): Promise<number> {
     try {
+      await trackRepositoryRead(this.Table, this.db, props?.params?.filters);
       const filters = queryBuilder.filters({
         table: this.Table as T,
         queryFunctions: methods,
@@ -137,6 +183,9 @@ export class Database<T extends PgTableWithColumns<any>>
 
   async findByField(field: string, value: any): Promise<any> {
     try {
+      await trackRepositoryRead(this.Table, this.db, {
+        and: [{ column: field, method: "eq", value }],
+      });
       if (!this.Table[field]) {
         throw new Error(`Field ${field} does not exist on table ${this.Table}`);
       }
@@ -266,33 +315,9 @@ export class Database<T extends PgTableWithColumns<any>>
 
       const [record] = await this.findByField(field, value);
 
-      const shape = this.insertSchema.shape;
-
-      Object.entries(shape).forEach(([key, value]) => {
-        if (isDateSchema(value) && typeof data[key] === "string") {
-          data[key] = new Date(data[key]);
-        }
-
-        if (
-          [
-            "expiresAt",
-            "date",
-            "datetime",
-            "sendAfter",
-            "createdAt",
-            "updatedAt",
-          ].includes(key) &&
-          typeof data[key] === "string"
-        ) {
-          data[key] = new Date(data[key]);
-        }
-      });
-
-      if (!data.updatedAt) {
-        data.updatedAt = new Date();
-      }
-
-      const plainData: T["$inferInsert"] = this.insertSchema.parse(data);
+      const plainData: Partial<T["$inferInsert"]> = this.insertSchema
+        .partial()
+        .parse(this.prepareWritableData(data));
 
       const [result] = await this.db
         .update(this.Table)
@@ -315,6 +340,97 @@ export class Database<T extends PgTableWithColumns<any>>
     }
   }
 
+  /**
+   * Single-use write: the predicate is part of the `update ... where`, so the
+   * row is claimed by the write itself instead of by a read that precedes it.
+   * Two concurrent callers can therefore never both observe the row as
+   * unclaimed. `undefined` means no row matched, which is how a caller learns
+   * it lost the race or the row was already consumed.
+   *
+   * `data` is a patch, not a full row, so it is parsed against the partial
+   * insert schema.
+   */
+  async consumeFirstByField(
+    field: string,
+    value: any,
+    data: any,
+    predicate?: { and: IFilter[] },
+  ): Promise<any> {
+    try {
+      if (!this.Table[field]) {
+        throw new Error(`Field ${field} does not exist on table ${this.Table}`);
+      }
+
+      const predicates = queryBuilder.filters({
+        table: this.Table as T,
+        queryFunctions: methods,
+        filters: predicate,
+      });
+
+      const plainData: Partial<T["$inferInsert"]> = this.insertSchema
+        .partial()
+        .parse(this.prepareWritableData(data));
+
+      const [result] = await this.db
+        .update(this.Table)
+        .set(plainData)
+        .where(
+          methods.and(
+            methods.eq(this.Table[field], value),
+            ...(predicates || []),
+          ),
+        )
+        .returning()
+        .execute();
+
+      if (!result) {
+        return undefined;
+      }
+
+      const sanitizedRecord = this.selectSchema.parse(result);
+
+      return sanitizedRecord;
+    } catch (error: any) {
+      logger.error(error);
+
+      if (error instanceof ZodError) {
+        throw new Error(JSON.stringify({ zodError: error.issues }));
+      }
+
+      throw error;
+    }
+  }
+
+  protected prepareWritableData(data: any) {
+    const shape = this.insertSchema.shape;
+
+    Object.entries(shape).forEach(([key, schema]) => {
+      if (isDateSchema(schema) && typeof data[key] === "string") {
+        data[key] = new Date(data[key]);
+      }
+
+      if (
+        [
+          "expiresAt",
+          "date",
+          "datetime",
+          "sendAfter",
+          "createdAt",
+          "updatedAt",
+        ].includes(key) &&
+        typeof data[key] === "string"
+      ) {
+        data[key] = new Date(data[key]);
+      }
+    });
+
+    if (!data.updatedAt) {
+      data.updatedAt = new Date();
+    }
+
+    return data;
+  }
+
   async dump(): Promise<IDumpResult> {
     const result: IDumpResult = {
       module: this.configuration.repository.seed.module,
@@ -331,6 +447,7 @@ export class Database<T extends PgTableWithColumns<any>>
 
     const directory = this.configuration.repository.dump.directory;
 
+    await fs.mkdir(directory, { recursive: true });
     const seedFiles = await fs.readdir(directory);
 
     const sanitizedFiles = seedFiles.filter((file) => file.endsWith(".json"));

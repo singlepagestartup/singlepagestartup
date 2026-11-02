@@ -1,209 +1,108 @@
-/**
- * @jest-environment jsdom
- */
-
-/**
- * BDD Suite: add-to-cart control for products that cannot be priced.
- *
- * Given: a product card renders the add-to-cart action for a subject.
- * When: the product's price currencies resolve to an empty set.
- * Then: the control is disabled and labelled No price, so no request is sent for a product that cannot be bought.
- */
-
-import { fireEvent, render, screen } from "@testing-library/react";
-
-const mutateMock = jest.fn();
-const useFormMock = jest.fn();
-
-const currencies: { value: { id: string; symbol: string }[] | undefined } = {
-  value: undefined,
-};
-
-const submitPayload = {
-  quantity: 1,
-  productId: "product-1",
-};
-
+/** @jest-environment jsdom */
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+const mutateAsync = jest.fn();
+let currencies: { id: string }[] | undefined;
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   api: {
-    ecommerceModuleOrderCreate: () => ({
-      mutate: mutateMock,
-      isPending: false,
-      isSuccess: false,
-    }),
+    ecommerceModuleOrderCreate: () => ({ mutateAsync, isPending: false }),
   },
 }));
-
-jest.mock("react-hook-form", () => ({
-  useForm: (...args: unknown[]) => useFormMock(...args),
-}));
-
-jest.mock("@hookform/resolvers/zod", () => ({
-  zodResolver: () => undefined,
-}));
-
-jest.mock("sonner", () => ({
-  toast: { success: jest.fn(), error: jest.fn() },
-}));
-
 jest.mock("@sps/shared-frontend-client-utils", () => ({
-  cn: (...args: unknown[]) => args.filter(Boolean).join(" "),
+  cn: (...values: unknown[]) => values.filter(Boolean).join(" "),
 }));
-
 jest.mock("@sps/shared-ui-shadcn", () => ({
-  Button: ({ children, onClick, disabled }: any) => (
-    <button onClick={onClick} disabled={disabled}>
-      {children}
-    </button>
+  Button: ({ children, ...props }: any) => (
+    <button {...props}>{children}</button>
   ),
-  Form: ({ children }: any) => <div>{children}</div>,
+  Form: ({ children }: any) => <>{children}</>,
 }));
-
-jest.mock("@sps/ui-adapter", () => ({
-  FormField: () => <div data-testid="currency-field" />,
+jest.mock("@sps/ui-adapter", () => ({ FormField: () => null }));
+jest.mock("@sps/ecommerce/models/product/frontend/component", () => ({
+  Component: (props: any) => {
+    const React = jest.requireActual<typeof import("react")>("react");
+    React.useEffect(() => {
+      if (currencies !== undefined) props.onCurrenciesResolved(currencies);
+    }, [props.onCurrenciesResolved, currencies]);
+    return null;
+  },
 }));
-
-const passthrough = {
-  Component: ({ children }: any) => children({ data: [] }),
-};
-
-jest.mock(
-  "@sps/ecommerce/models/attribute-key/frontend/component",
-  () => passthrough,
-);
-jest.mock(
-  "@sps/ecommerce/relations/products-to-attributes/frontend/component",
-  () => passthrough,
-);
-jest.mock(
-  "@sps/ecommerce/relations/attribute-keys-to-attributes/frontend/component",
-  () => passthrough,
-);
-jest.mock(
-  "@sps/ecommerce/relations/attributes-to-billing-module-currencies/frontend/component",
-  () => passthrough,
-);
-
-jest.mock("@sps/billing/models/currency/frontend/component", () => {
-  const react = jest.requireActual("react");
-
-  return {
-    Component: ({ set, children }: any) => {
-      react.useEffect(() => {
-        set?.(currencies.value);
-      }, [set]);
-
-      return children ? children({ data: currencies.value }) : null;
-    },
-  };
+import { Component } from "./ClientComponent";
+const props = {
+  variant: "ecommerce-module-order-create-default",
+  language: "ru",
+  data: { id: "subject" },
+  ecommerceModuleProduct: { id: "product" },
+} as any;
+beforeEach(() => {
+  jest.clearAllMocks();
+  currencies = undefined;
+  mutateAsync.mockResolvedValue({});
+});
+it("keeps the control disabled while currencies load", () => {
+  render(<Component {...props} />);
+  expect(
+    screen
+      .getByRole("button", { name: "Добавить в корзину" })
+      .hasAttribute("disabled"),
+  ).toBe(true);
+});
+it("refuses an unpriced product locally and sends no mutation", async () => {
+  currencies = [];
+  render(<Component {...props} />);
+  const button = await screen.findByRole("button", { name: "Нет цены" });
+  expect(button.hasAttribute("disabled")).toBe(true);
+  fireEvent.click(button);
+  expect(mutateAsync).not.toHaveBeenCalled();
+});
+it("submits a priced product and shows success", async () => {
+  currencies = [{ id: "rub" }];
+  render(<Component {...props} />);
+  fireEvent.click(screen.getByRole("button", { name: "Добавить в корзину" }));
+  await waitFor(() =>
+    expect(mutateAsync).toHaveBeenCalledWith({
+      id: "subject",
+      data: expect.objectContaining({ productId: "product", quantity: 1 }),
+    }),
+  );
+  expect((await screen.findByRole("status")).textContent).toContain(
+    "Товар в корзине.",
+  );
+});
+it("shows an API rejection without marking the product added", async () => {
+  currencies = [{ id: "rub" }];
+  mutateAsync.mockRejectedValue(new Error("Price changed"));
+  render(<Component {...props} />);
+  fireEvent.click(screen.getByRole("button", { name: "Добавить в корзину" }));
+  expect((await screen.findByRole("alert")).textContent).toContain(
+    "Price changed",
+  );
+  expect(screen.queryByRole("status")).toBeNull();
+});
+it("does not reuse the previous product price state while another product loads", () => {
+  currencies = [{ id: "rub" }];
+  const view = render(<Component {...props} />);
+  currencies = undefined;
+  view.rerender(
+    <Component {...props} ecommerceModuleProduct={{ id: "different" }} />,
+  );
+  expect(
+    screen
+      .getByRole("button", { name: "Добавить в корзину" })
+      .hasAttribute("disabled"),
+  ).toBe(true);
 });
 
-import { Component } from "./ClientComponent";
-
-function renderComponent() {
-  return render(
-    <Component
-      isServer={false}
-      variant="ecommerce-module-order-create-default"
-      data={{ id: "subject-1" } as any}
-      product={{ id: "product-1" } as any}
-      language="en"
-    />,
+it("submits the selected product after the same form switches products", async () => {
+  currencies = [{ id: "rub" }];
+  const view = render(<Component {...props} />);
+  view.rerender(
+    <Component {...props} ecommerceModuleProduct={{ id: "different" }} />,
   );
-}
-
-describe("Given: an add-to-cart control on a product card", () => {
-  beforeEach(() => {
-    mutateMock.mockReset();
-    useFormMock.mockReset();
-    currencies.value = undefined;
-
-    useFormMock.mockReturnValue({
-      control: {},
-      register: () => ({}),
-      handleSubmit: (submit: (data: typeof submitPayload) => void) => () =>
-        submit(submitPayload),
-    });
-  });
-
-  /**
-   * BDD Scenario: a product with no price in any currency.
-   *
-   * Given: the product's price currencies resolve to an empty list.
-   * When: the control renders.
-   * Then: the button reads No price and is disabled.
-   */
-  it("When: the product has no price currency Then: the button is disabled and reads No price", () => {
-    currencies.value = [];
-
-    renderComponent();
-
-    const button = screen.getByRole("button", {
-      name: "No price",
-    }) as HTMLButtonElement;
-
-    expect(button.disabled).toBe(true);
-  });
-
-  /**
-   * BDD Scenario: a disabled control sends nothing.
-   *
-   * Given: the product has no price currency.
-   * When: the button is clicked.
-   * Then: no add-to-cart request is made.
-   */
-  it("When: the disabled button is clicked Then: no mutation is sent", () => {
-    currencies.value = [];
-
-    renderComponent();
-
-    fireEvent.click(screen.getByRole("button", { name: "No price" }));
-
-    expect(mutateMock).not.toHaveBeenCalled();
-  });
-
-  /**
-   * BDD Scenario: price currencies are still loading.
-   *
-   * Given: the product's price currencies have not resolved yet.
-   * When: the control renders.
-   * Then: the button stays disabled without claiming the product has no price.
-   */
-  it("When: the price currencies are still loading Then: the button is disabled and keeps its label", () => {
-    currencies.value = undefined;
-
-    renderComponent();
-
-    const button = screen.getByRole("button", {
-      name: "Add to cart",
-    }) as HTMLButtonElement;
-
-    expect(button.disabled).toBe(true);
-  });
-
-  /**
-   * BDD Scenario: a product priced in at least one currency.
-   *
-   * Given: the product's price currencies resolve to a non-empty list.
-   * When: the button is clicked.
-   * Then: the add-to-cart mutation is sent for that subject.
-   */
-  it("When: the product has a price currency Then: clicking sends the add-to-cart mutation", () => {
-    currencies.value = [{ id: "currency-rub", symbol: "₽" }];
-
-    renderComponent();
-
-    const button = screen.getByRole("button", {
-      name: "Add to cart",
-    }) as HTMLButtonElement;
-
-    expect(button.disabled).toBe(false);
-
-    fireEvent.click(button);
-
-    expect(mutateMock).toHaveBeenCalledWith({
-      id: "subject-1",
-      data: submitPayload,
-    });
-  });
+  fireEvent.click(screen.getByRole("button", { name: "Добавить в корзину" }));
+  await waitFor(() =>
+    expect(mutateAsync).toHaveBeenCalledWith({
+      id: "subject",
+      data: expect.objectContaining({ productId: "different" }),
+    }),
+  );
 });

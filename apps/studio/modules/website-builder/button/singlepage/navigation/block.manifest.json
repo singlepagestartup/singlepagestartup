@@ -1,0 +1,27 @@
+{
+  "id": "website-builder.button.navigation",
+  "title": "navigation",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Website navigation link with selected/disabled display states.",
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "button",
+    "variant": "navigation"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "website-builder.button",
+    "pageName": "website-builder",
+    "variantName": "navigation",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

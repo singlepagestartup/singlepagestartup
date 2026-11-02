@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "beedd616-6bc1-46d3-9c8c-1177f508d9a5",
+  "createdAt": "2026-10-26T00:11:53.727Z",
+  "updatedAt": "2026-10-27T14:59:53.952Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Author card",
+    "ru": "Карточка автора"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Name, avatar or initials, description, and counts of linked articles and products.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Имя, аватар или инициалы, описание, количество связанных статей и продуктов.\"}]}]}"
+  },
+  "adminTitle": "Карточка автора",
+  "slug": "framework-reviewed-article-social-components-feature-0"
+}

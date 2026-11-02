@@ -15,6 +15,7 @@ const storesToOrdersCreateMock = jest.fn();
 const ordersToBillingModuleCurrenciesCreateMock = jest.fn();
 
 jest.mock("@sps/shared-utils", () => ({
+  ...jest.requireActual("@sps/shared-utils"),
   RBAC_JWT_SECRET: "jwt-secret",
   RBAC_SECRET_KEY: "rbac-secret",
 }));
@@ -43,58 +44,20 @@ jest.mock("hono/http-exception", () => ({
   },
 }));
 
-jest.mock("@sps/ecommerce/models/order/sdk/server", () => ({
-  api: {
-    create: (...args: unknown[]) => orderCreateMock(...args),
-  },
-}));
-
-jest.mock(
-  "@sps/rbac/relations/subjects-to-ecommerce-module-orders/sdk/server",
-  () => ({
-    api: {
-      create: (...args: unknown[]) =>
-        subjectsToEcommerceModuleOrdersCreateMock(...args),
-    },
-  }),
-);
-
-jest.mock("@sps/ecommerce/relations/orders-to-products/sdk/server", () => ({
-  api: {
-    create: (...args: unknown[]) => ordersToProductsCreateMock(...args),
-  },
-}));
-
-jest.mock("@sps/ecommerce/relations/stores-to-orders/sdk/server", () => ({
-  api: {
-    create: (...args: unknown[]) => storesToOrdersCreateMock(...args),
-  },
-}));
-
-jest.mock(
-  "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/server",
-  () => ({
-    api: {
-      create: (...args: unknown[]) =>
-        ordersToBillingModuleCurrenciesCreateMock(...args),
-    },
-  }),
-);
-
 import { Handler } from "./create";
+import { Service as CreateCartOrder } from "../../../../service/singlepage/ecommerce/order/create";
 
 const NO_PRICE_ERROR =
   "Validation error. Product has no price in an available currency";
 
-const ALREADY_IN_CART_ERROR =
-  "Validation error. Product is already in the cart";
+const ALREADY_IN_CART_ERROR = "Conflict error. Product is already in the cart";
 
-type ISubjectOrder = {
+interface ISubjectOrder {
   id: string;
   type: string;
   status: string;
   productIds: string[];
-};
+}
 
 function createContext(productId = "product-unpriced") {
   return {
@@ -139,28 +102,48 @@ function createService(props?: {
   const ecommerceModuleFindOpenCartOrderWithProduct =
     createFindOpenCartOrderWithProduct(props?.subjectOrders ?? []);
 
+  const service: any = {
+    ecommerceModuleResolveOrderCurrency,
+    ecommerceModuleFindOpenCartOrderWithProduct,
+    findById: jest.fn().mockResolvedValue({ id: "subject-1" }),
+    subjectsToEcommerceModuleOrders: {
+      find: jest.fn().mockResolvedValue([]),
+      create: subjectsToEcommerceModuleOrdersCreateMock,
+    },
+    ecommerceModule: {
+      product: {
+        findById: jest
+          .fn()
+          .mockResolvedValue({ id: "product-priced", slug: "test-priced" }),
+      },
+      store: {
+        find: jest.fn().mockResolvedValue([{ id: "store-1" }]),
+      },
+      ordersToProducts: {
+        find: jest.fn().mockResolvedValue([]),
+        create: ordersToProductsCreateMock,
+      },
+      order: { find: jest.fn().mockResolvedValue([]), create: orderCreateMock },
+      storesToOrders: {
+        find: jest.fn().mockResolvedValue([]),
+        create: storesToOrdersCreateMock,
+      },
+      ordersToBillingModuleCurrencies: {
+        create: ordersToBillingModuleCurrenciesCreateMock,
+        find: jest.fn().mockResolvedValue([]),
+      },
+    },
+  };
+  service.ecommerceModuleOrderCreate = (props: any) =>
+    new CreateCartOrder({
+      repository: { withSubjectLock: async (_scope, operation) => operation() },
+      service,
+    }).execute(props);
+
   return {
     ecommerceModuleResolveOrderCurrency,
     ecommerceModuleFindOpenCartOrderWithProduct,
-    service: {
-      ecommerceModuleResolveOrderCurrency,
-      ecommerceModuleFindOpenCartOrderWithProduct,
-      findById: jest.fn().mockResolvedValue({ id: "subject-1" }),
-      subjectsToEcommerceModuleOrders: {
-        find: jest.fn().mockResolvedValue([]),
-      },
-      ecommerceModule: {
-        store: {
-          find: jest.fn().mockResolvedValue([{ id: "store-1" }]),
-        },
-        ordersToProducts: { find: jest.fn().mockResolvedValue([]) },
-        order: { find: jest.fn().mockResolvedValue([]) },
-        storesToOrders: { find: jest.fn().mockResolvedValue([]) },
-        ordersToBillingModuleCurrencies: {
-          find: jest.fn().mockResolvedValue([]),
-        },
-      },
-    } as any,
+    service,
   };
 }
 
@@ -278,7 +261,7 @@ describe("Given: a subject adding a product it may already hold", () => {
    *
    * Given: the subject holds the product in a cart order with status new.
    * When: the create handler runs for that product.
-   * Then: it fails with the already-in-cart validation error and writes no order rows.
+   * Then: it fails with the already-in-cart conflict error and writes no order rows.
    */
   it("When: the product is already in an open cart Then: the request is refused and no order rows are written", async () => {
     const { service } = createPricedService([

@@ -11,7 +11,6 @@
     { id: "agent", name: "Agent", icon: "🤖" },
     { id: "broadcast", name: "Broadcast", icon: "📡" },
     { id: "analytic", name: "Analytic", icon: "📈" },
-    { id: "telegram", name: "Telegram", icon: "✈️" },
     { id: "startup", name: "Startup", icon: "🚀" },
     { id: "host", name: "Host", icon: "🧩" },
     { id: "rbac", name: "RBAC", icon: "🔐" },
@@ -48,7 +47,6 @@
       "widget",
     ],
     startup: ["widget"],
-    telegram: ["page", "widget"],
     "website-builder": [
       "button",
       "buttons-array",

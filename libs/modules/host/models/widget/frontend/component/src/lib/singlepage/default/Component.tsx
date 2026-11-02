@@ -29,22 +29,31 @@ export function Component(props: IComponentPropsExtended) {
                 },
               ],
             },
+            orderBy: {
+              and: [
+                { column: "orderIndex", method: "asc" },
+                { column: "id", method: "asc" },
+              ],
+            },
           },
         }}
       >
         {({ data }) => {
-          return data?.map((entity, index) => {
-            return (
+          return data
+            ?.toSorted(
+              (a, b) => a.orderIndex - b.orderIndex || a.id.localeCompare(b.id),
+            )
+            .map((entity) => (
               <WidgetsToExternalWidgets
-                key={index}
+                key={entity.id}
                 isServer={props.isServer}
                 variant={entity.variant as any}
+                dataSource="props"
                 data={entity}
                 url={props.url}
                 language={props.language}
               />
-            );
-          });
+            ));
         }}
       </WidgetsToExternalWidgets>
     </div>

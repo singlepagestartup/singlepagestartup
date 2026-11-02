@@ -22,6 +22,27 @@ export function Component(props: IComponentPropsExtended) {
   const form = useForm<z.infer<typeof insertSchema>>({
     resolver: zodResolver(insertSchema),
     defaultValues: {
+      title: props.data?.title || "",
+      description: props.data?.description || "",
+      keywords: props.data?.keywords || "",
+      author: props.data?.author || "",
+      opengraphImage: props.data?.opengraphImage || "",
+      twitterImage: props.data?.twitterImage || "",
+      opengraphTitle: props.data?.opengraphTitle || "",
+      opengraphDescription: props.data?.opengraphDescription || "",
+      opengraphUrl: props.data?.opengraphUrl || "",
+      opengraphType: props.data?.opengraphType || "",
+      opengraphSiteName: props.data?.opengraphSiteName || "",
+      opengraphLocale: props.data?.opengraphLocale || "",
+      twitterCard: props.data?.twitterCard || "",
+      twitterSite: props.data?.twitterSite || "",
+      twitterCreator: props.data?.twitterCreator || "",
+      twitterTitle: props.data?.twitterTitle || "",
+      twitterDescription: props.data?.twitterDescription || "",
+      twitterUrl: props.data?.twitterUrl || "",
+      twitterDomain: props.data?.twitterDomain || "",
+      twitterAppCountry: props.data?.twitterAppCountry || "",
+
       variant: props.data?.variant || "default",
     },
   });
@@ -40,7 +61,7 @@ export function Component(props: IComponentPropsExtended) {
   return (
     <ParentAdminForm<IModel, typeof variant>
       {...props}
-      module="website-builder"
+      module="host"
       form={form}
       id={props.data?.id}
       onSubmit={onSubmit}
@@ -49,6 +70,39 @@ export function Component(props: IComponentPropsExtended) {
       status={status}
     >
       <div className="flex flex-col gap-6">
+        {" "}
+        {[
+          "title",
+          "description",
+          "keywords",
+          "author",
+          "opengraphImage",
+          "twitterImage",
+          "opengraphTitle",
+          "opengraphDescription",
+          "opengraphUrl",
+          "opengraphType",
+          "opengraphSiteName",
+          "opengraphLocale",
+          "twitterCard",
+          "twitterSite",
+          "twitterCreator",
+          "twitterTitle",
+          "twitterDescription",
+          "twitterUrl",
+          "twitterDomain",
+          "twitterAppCountry",
+        ].map((name) => (
+          <FormField
+            key={name}
+            ui="shadcn"
+            type="text"
+            name={name}
+            label={name}
+            form={form}
+            placeholder={name}
+          />
+        ))}
         <FormField
           ui="shadcn"
           type="select"
@@ -58,7 +112,12 @@ export function Component(props: IComponentPropsExtended) {
           placeholder="Select variant"
           options={variants.map((variant) => [variant, variant])}
         />
-
+        {props.metadataToFileStorageModuleFiles
+          ? props.metadataToFileStorageModuleFiles({
+              data: props.data,
+              isServer: props.isServer,
+            })
+          : null}
         {props.pagesToMetadata
           ? props.pagesToMetadata({
               data: props.data,
@@ -66,6 +125,7 @@ export function Component(props: IComponentPropsExtended) {
               isServer: props.isServer,
             })
           : null}
+        {props.preview?.({ control: form.control, metadataId: props.data?.id })}
       </div>
     </ParentAdminForm>
   );

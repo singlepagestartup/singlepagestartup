@@ -1,17 +1,14 @@
 import { type IBillingModule, type IEcommerceModule } from "../../../../di";
 
-export const NO_PRICE_IN_AVAILABLE_CURRENCY_ERROR =
-  "Validation error. Product has no price in an available currency";
-
-export type IExecuteProps = {
+export interface IExecuteProps {
   productId: string;
   billingModuleCurrencyId?: string;
-};
+}
 
-type IConstructorProps = {
+interface IConstructorProps {
   ecommerceModule: IEcommerceModule;
   billingModule: IBillingModule;
-};
+}
 
 /**
  * Resolves the billing currency an order line must be created with.
@@ -36,12 +33,16 @@ export class Service {
     });
 
     if (!priceCurrencyIds.length) {
-      throw new Error(NO_PRICE_IN_AVAILABLE_CURRENCY_ERROR);
+      throw new Error(
+        "Validation error. Product has no price in an available currency",
+      );
     }
 
     if (props.billingModuleCurrencyId) {
       if (!priceCurrencyIds.includes(props.billingModuleCurrencyId)) {
-        throw new Error(NO_PRICE_IN_AVAILABLE_CURRENCY_ERROR);
+        throw new Error(
+          "Validation error. Product has no price in an available currency",
+        );
       }
 
       return props.billingModuleCurrencyId;

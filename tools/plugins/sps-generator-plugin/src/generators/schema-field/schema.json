@@ -52,21 +52,48 @@
         "type": "list",
         "default": "website-builder",
         "items": [
-          { "value": "agent" },
-          { "value": "analytic" },
-          { "value": "billing" },
-          { "value": "blog" },
-          { "value": "broadcast" },
-          { "value": "crm" },
-          { "value": "ecommerce" },
-          { "value": "file-storage" },
-          { "value": "host" },
-          { "value": "notification" },
-          { "value": "rbac" },
-          { "value": "social" },
-          { "value": "startup" },
-          { "value": "telegram" },
-          { "value": "website-builder" }
+          {
+            "value": "agent"
+          },
+          {
+            "value": "analytic"
+          },
+          {
+            "value": "billing"
+          },
+          {
+            "value": "blog"
+          },
+          {
+            "value": "broadcast"
+          },
+          {
+            "value": "crm"
+          },
+          {
+            "value": "ecommerce"
+          },
+          {
+            "value": "file-storage"
+          },
+          {
+            "value": "host"
+          },
+          {
+            "value": "notification"
+          },
+          {
+            "value": "rbac"
+          },
+          {
+            "value": "social"
+          },
+          {
+            "value": "startup"
+          },
+          {
+            "value": "website-builder"
+          }
         ]
       }
     },
@@ -78,19 +105,45 @@
         "type": "list",
         "default": "text",
         "items": [
-          { "value": "real" },
-          { "value": "serial" },
-          { "value": "uuid" },
-          { "value": "bigint" },
-          { "value": "text" },
-          { "value": "boolean" },
-          { "value": "timestamp" },
-          { "value": "jsonb" },
-          { "value": "json" },
-          { "value": "integer" },
-          { "value": "date" },
-          { "value": "time" },
-          { "value": "number" }
+          {
+            "value": "real"
+          },
+          {
+            "value": "serial"
+          },
+          {
+            "value": "uuid"
+          },
+          {
+            "value": "bigint"
+          },
+          {
+            "value": "text"
+          },
+          {
+            "value": "boolean"
+          },
+          {
+            "value": "timestamp"
+          },
+          {
+            "value": "jsonb"
+          },
+          {
+            "value": "json"
+          },
+          {
+            "value": "integer"
+          },
+          {
+            "value": "date"
+          },
+          {
+            "value": "time"
+          },
+          {
+            "value": "number"
+          }
         ]
       }
     },

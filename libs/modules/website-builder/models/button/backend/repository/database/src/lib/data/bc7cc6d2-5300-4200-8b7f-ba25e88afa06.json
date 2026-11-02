@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Explore module",
+    "ru": "Изучить модуль"
+  },
+  "subtitle": {},
+  "url": "/framework/modules/startup",
+  "className": "w-fit",
+  "id": "bc7cc6d2-5300-4200-8b7f-ba25e88afa06",
+  "createdAt": "2026-10-24T01:06:14.927Z",
+  "updatedAt": "2026-10-24T01:06:14.927Z",
+  "variant": "secondary",
+  "adminTitle": "Explore module",
+  "slug": "framework-journey-module-startup-actions-0"
+}

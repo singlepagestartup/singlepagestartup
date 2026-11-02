@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "All modules",
+    "ru": "Все модули"
+  },
+  "subtitle": {},
+  "url": "/framework/modules",
+  "className": "w-fit",
+  "id": "8c377c8f-c95c-4e7a-bd7f-e09d2fdd14fb",
+  "createdAt": "2026-10-24T01:06:01.949Z",
+  "updatedAt": "2026-10-24T01:06:01.949Z",
+  "variant": "secondary",
+  "adminTitle": "All modules",
+  "slug": "framework-journey-guide-rbac-actions-0"
+}

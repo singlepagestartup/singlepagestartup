@@ -23,6 +23,23 @@ type INotificationAttachment = NonNullable<IModel["attachments"]>[number];
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  async sendVerificationCode(props: { email: string; code: string }) {
+    if (!AWS_SES_FROM_EMAIL)
+      throw new Error("Configuration error. Email delivery is not configured.");
+    if (!/^\d{6}$/.test(props.code))
+      throw new Error("Validation error. Invalid verification code");
+    const response = await new AWS().ses.sendEmail({
+      to: props.email,
+      from: AWS_SES_FROM_EMAIL,
+      subject: "Confirm your email change",
+      html: `<p>Your email verification code is <strong>${props.code}</strong>.</p><p>This code expires in 10 minutes. If you did not request an email change, ignore this message.</p>`,
+    });
+    if (!response.MessageId)
+      throw new Error(
+        "Internal error. The verification email could not be sent.",
+      );
+    return { sent: true };
+  }
   protected splitTelegramText(text: string, limit: number): string[] {
     if (!text) {
       return [""];
@@ -526,6 +543,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     );
   }
 
+  protected isTelegramMissingThreadError(error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+
+    return message.toLowerCase().includes("message thread not found");
+  }
+
   protected async markAsError(params: { notification: IModel }) {
     const updatedNotification = await this.update({
       id: params.notification.id,
@@ -662,6 +685,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     provider: "Amazon SES" | "Telegram";
     id: string;
     template: ITemplate;
+    dropMessageThreadId?: boolean;
   }): Promise<IModel> {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. Secret key not found");
@@ -751,6 +775,15 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
         if (renderResult) {
           const parsedRenderResult = JSON.parse(renderResult);
+
+          if (props.dropMessageThreadId) {
+            const renderedOptions = parsedRenderResult.props?.[1];
+
+            if (renderedOptions && typeof renderedOptions === "object") {
+              delete (renderedOptions as { message_thread_id?: unknown })
+                .message_thread_id;
+            }
+          }
 
           const bot = new Bot(TELEGRAM_SERVICE_BOT_TOKEN);
 
@@ -1147,6 +1180,16 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         } catch (error) {
           if (this.isTelegramBlockedRecipientError(error)) {
             return await this.markAsError({ notification });
+          }
+
+          if (this.isTelegramMissingThreadError(error)) {
+            return await this.provider({
+              method: "telegram",
+              provider: "Telegram",
+              id: params.id,
+              template,
+              dropMessageThreadId: true,
+            });
           }
 
           throw error;

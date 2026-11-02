@@ -23,7 +23,7 @@ description: |
   &filters[and][1][value]=default
   ```
 
-  Supported methods: eq, ne, gt, gte, lt, lte, like, ilike, in, isNull, isNotNull
+  Supported methods: eq, ne, not, gt, gte, lt, lte, like, ilike, notLike, notIlike, inArray, notInArray, isNull, isNotNull
   Value types: string, number, boolean, undefined, comma-separated values
 schema:
   type: object
@@ -42,7 +42,24 @@ schema:
             default: id
           method:
             type: string
-            enum: [eq, ne, gt, gte, lt, lte, like, ilike, in, isNull, isNotNull]
+            enum:
+              [
+                eq,
+                ne,
+                not,
+                gt,
+                gte,
+                lt,
+                lte,
+                like,
+                ilike,
+                notLike,
+                notIlike,
+                inArray,
+                notInArray,
+                isNull,
+                isNotNull,
+              ]
             description: Filter method
             default: eq
           value:

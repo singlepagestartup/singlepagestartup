@@ -1,0 +1,27 @@
+{
+  "id": "host.layout.website",
+  "title": "website",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Public website frame with Website Builder navigation/footer and Subject/Cart slots.",
+  "source": {
+    "module": "host",
+    "entityType": "model",
+    "entity": "layout",
+    "variant": "website"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "host.layout",
+    "pageName": "host",
+    "variantName": "website",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

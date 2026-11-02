@@ -2,7 +2,7 @@
  * BDD Suite: Downstream brandbook ownership
  * Given a downstream project inherits the framework's visual system until it writes its own
  * When the workspace is validated at or after 30-design
- * Then the project must own its Design decisions, its approval, and its assets
+ * Then the project must own its Design decisions and and its assets
  */
 
 import { describe, expect, test } from "bun:test";
@@ -11,22 +11,6 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 
 import { findUnownedBrandbook, validateOwnedBrandbook } from "./brandbook";
-
-const confirmedDesign = `---
-confirmation:
-  confirmed: true
-  by: operator
-  at: "2026-09-18"
-  source: Operator confirmed the downstream Design in chat.
-  content_sha256: PLACEHOLDER
----
-
-# Design
-
-## Visual system
-
-Our own canvas, accent and type pairing.
-`;
 
 async function workspace(files: Record<string, string>): Promise<string> {
   const root = await mkdtemp(path.join(tmpdir(), "sps-brandbook-"));
@@ -38,16 +22,16 @@ async function workspace(files: Record<string, string>): Promise<string> {
   return root;
 }
 
-const atDesign = `schema: singlepagestartup.pre-development-state.v1
-active_stage: 30-design
+const atDesign = `schema: singlepagestartup.pre-development-state.v2
+active_section: design
 status: in_progress
 active_artifacts:
   - design
 blockers: []
 `;
 
-const atBusiness = `schema: singlepagestartup.pre-development-state.v1
-active_stage: 00-business
+const atBusiness = `schema: singlepagestartup.pre-development-state.v2
+active_section: brief
 status: not_started
 active_artifacts:
   - brief
@@ -107,7 +91,7 @@ describe("downstream brandbook", () => {
       "assets/startup.yaml registers this project's own assets",
     ]);
     await expect(validateOwnedBrandbook(root, "startup")).rejects.toThrow(
-      "without owning its brandbook",
+      "does not own its brandbook",
     );
   });
 
@@ -131,45 +115,12 @@ describe("downstream brandbook", () => {
     ).toEqual(["design/startup.md carries this project's own decisions"]);
   });
 
-  /**
-   * BDD Scenario: Written content still needs the project's own approval
-   * Given a downstream Design has content but no confirmation of its own
-   * When the workspace is validated
-   * Then an inherited framework approval does not satisfy the gate
-   */
-  test("requires the downstream document's own confirmation", async () => {
+  test("accepts owned Design and assets without approval metadata", async () => {
     const root = await workspace({
       "utils/pre-development/startup.yaml": atDesign,
       "design/startup.md": "# Design\n\nOur own canvas and accent.\n",
       "assets/startup.yaml": "assets:\n  - id: startup-font\n",
     });
-
-    expect(
-      (await findUnownedBrandbook(root, "startup")).map(
-        ({ requirement }) => requirement,
-      ),
-    ).toEqual(["design/startup.md holds its own confirmation"]);
-  });
-
-  /**
-   * BDD Scenario: Accept a project that owns its brandbook
-   * Given a downstream Design is written, confirmed, and backed by its own assets
-   * When the workspace is validated
-   * Then nothing is reported
-   */
-  test("accepts a confirmed downstream brandbook with owned assets", async () => {
-    const { documentFingerprint } = await import("../workspace/document");
-    const body = confirmedDesign.split("---\n")[2];
-    const design = confirmedDesign.replace(
-      "PLACEHOLDER",
-      documentFingerprint(body, "markdown"),
-    );
-    const root = await workspace({
-      "utils/pre-development/startup.yaml": atDesign,
-      "design/startup.md": design,
-      "assets/startup.yaml": "assets:\n  - id: startup-font\n",
-    });
-
     expect(await findUnownedBrandbook(root, "startup")).toEqual([]);
     await expect(
       validateOwnedBrandbook(root, "startup"),

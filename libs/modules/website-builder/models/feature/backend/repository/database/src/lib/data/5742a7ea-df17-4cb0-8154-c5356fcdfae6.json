@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "5742a7ea-df17-4cb0-8154-c5356fcdfae6",
+  "createdAt": "2026-10-26T00:11:39.058Z",
+  "updatedAt": "2026-10-27T14:59:36.862Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Share a link to a particular page",
+    "ru": "Можно отправить ссылку на нужную страницу"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Set an address for a course, article or service. Visitors open that exact section instead of searching the home page.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Задайте адрес для курса, статьи или услуги. Посетитель откроет именно этот раздел, а не будет искать его на главной.\"}]}]}"
+  },
+  "adminTitle": "Можно отправить ссылку на нужную страницу",
+  "slug": "framework-reviewed-article-host-introduction-feature-0"
+}

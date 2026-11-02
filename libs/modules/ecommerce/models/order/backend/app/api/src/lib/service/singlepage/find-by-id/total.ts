@@ -3,7 +3,7 @@ import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { IModel as IBillingModuleCurrency } from "@sps/billing/models/currency/sdk/model";
 import { Service as AttributeKeyService } from "@sps/ecommerce/models/attribute-key/backend/app/api/src/lib/service";
 import { Service as OrdersToProductsService } from "@sps/ecommerce/relations/orders-to-products/backend/app/api/src/lib/service";
-import { type IUnpricedOrderToProduct } from "@sps/ecommerce/relations/orders-to-products/backend/app/api/src/lib/service/singlepage/get-total";
+import { type IUnpricedOrderToProduct } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
 import { OrderDI } from "../../../di";
 
 export type IExecuteProps = {
@@ -11,6 +11,7 @@ export type IExecuteProps = {
 };
 
 export type IExecuteResult = {
+  availableCurrencyIds: string[];
   totals: {
     total: number;
     billingModuleCurrency: IBillingModuleCurrency;
@@ -75,6 +76,7 @@ export class Service {
 
     const totals: IExecuteResult["totals"] = [];
     const unpriced: IExecuteResult["unpriced"] = [];
+    let availableCurrencyIds: Set<string> | undefined;
 
     for (const orderToProduct of orderToProducts) {
       const orderToProductTotals = await this.ordersToProducts.getTotal({
@@ -87,8 +89,22 @@ export class Service {
 
       totals.push(...orderToProductTotals.totals);
       unpriced.push(...orderToProductTotals.unpriced);
+      const lineCurrencies = new Set<string>(
+        orderToProductTotals.totals.map(
+          (total) => total.billingModuleCurrency.id,
+        ),
+      );
+      availableCurrencyIds = availableCurrencyIds
+        ? new Set(
+            [...availableCurrencyIds].filter((id) => lineCurrencies.has(id)),
+          )
+        : lineCurrencies;
     }
 
-    return { totals, unpriced };
+    return {
+      totals,
+      unpriced,
+      availableCurrencyIds: [...(availableCurrencyIds ?? [])],
+    };
   }
 }

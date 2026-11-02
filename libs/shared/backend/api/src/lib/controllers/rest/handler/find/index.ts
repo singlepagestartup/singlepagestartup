@@ -7,6 +7,7 @@ import { DI } from "../../../../di/constants";
 import { type IService } from "../../../../service";
 import { type IParseQueryMiddlewareGeneric } from "../../../../middleware";
 import { getHttpErrorType } from "@sps/backend-utils";
+import { applyOutputSchema } from "../../../../output-schema";
 
 @injectable()
 export class Handler<
@@ -20,10 +21,12 @@ export class Handler<
     next: Next,
   ): Promise<Response> {
     try {
-      const data = await this.service.find({ params: c.var.parsedQuery });
+      const data = await this.service.find({
+        params: c.var.parsedQuery,
+      });
 
       return c.json({
-        data,
+        data: applyOutputSchema({ c, service: this.service, data }),
       });
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);

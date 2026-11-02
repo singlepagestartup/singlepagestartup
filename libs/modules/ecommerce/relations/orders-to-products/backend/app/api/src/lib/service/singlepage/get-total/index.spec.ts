@@ -10,6 +10,7 @@ const loggerWarnMock = jest.fn();
 const billingModuleCurrencyFindByIdMock = jest.fn();
 
 jest.mock("@sps/shared-utils", () => ({
+  ...jest.requireActual("@sps/shared-utils"),
   RBAC_SECRET_KEY: "rbac-secret",
 }));
 
@@ -63,6 +64,9 @@ function createService(props?: {
       productId: PRODUCT_ID,
       quantity,
     }) as any,
+    billingModule: {
+      currency: { findById: billingModuleCurrencyFindByIdMock },
+    } as any,
     product: {
       findById: jest
         .fn()

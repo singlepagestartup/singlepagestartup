@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "6c6404d2-dcf4-4057-ac32-b9b8279ada6f",
+  "createdAt": "2026-10-26T00:11:39.352Z",
+  "updatedAt": "2026-10-27T14:59:39.616Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Shared elements do not need copying",
+    "ru": "Общие элементы не нужно копировать"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Use a shared layout for the header, menu and footer while keeping each page's content distinct.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Используйте общий макет для шапки, меню и подвала. Содержимое отдельных страниц при этом отличается.\"}]}]}"
+  },
+  "adminTitle": "Общие элементы не нужно копировать",
+  "slug": "framework-reviewed-article-host-introduction-feature-1"
+}

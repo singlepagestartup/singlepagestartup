@@ -1,8 +1,11 @@
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { logger } from "@sps/backend-utils";
-import { IModel as IBillingModuleCurrency } from "@sps/billing/models/currency/sdk/model";
-import { api as billingModuleCurrencyApi } from "@sps/billing/models/currency/sdk/server";
-import { IModel as IOrderToProduct } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
+import type {
+  IModel as IOrderToProduct,
+  IUnpricedOrderToProduct,
+  IOrderLineTotal,
+  IOrderLineTotals,
+} from "@sps/ecommerce/relations/orders-to-products/sdk/model";
 import { Service as ProductService } from "@sps/ecommerce/models/product/backend/app/api/src/lib/service";
 import { Service as AttributeService } from "@sps/ecommerce/models/attribute/backend/app/api/src/lib/service";
 import { Service as AttributeKeyService } from "@sps/ecommerce/models/attribute-key/backend/app/api/src/lib/service";
@@ -14,25 +17,13 @@ export type IExecuteProps = {
   id: string;
 };
 
-export type ITotal = {
-  total: number;
-  billingModuleCurrency: IBillingModuleCurrency;
-};
-
-export type IUnpricedOrderToProduct = {
-  ordersToProductsId: string;
-  productId: string;
-  reason: string;
-};
-
-export type IExecuteResult = {
-  totals: ITotal[];
-  unpriced: IUnpricedOrderToProduct[];
-};
+export type { IUnpricedOrderToProduct } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
+export interface IExecuteResult extends IOrderLineTotals {}
 
 type IConstructorProps = {
   findById: (props: { id: string }) => Promise<IOrderToProduct | null>;
   product: ProductService;
+  billingModule: ProductService["billingModule"];
   attribute: AttributeService;
   attributeKey: AttributeKeyService;
   productsToAttributes: ProductsToAttributesService;
@@ -51,6 +42,7 @@ type IConstructorProps = {
 export class Service {
   findById: IConstructorProps["findById"];
   product: ProductService;
+  billingModule: ProductService["billingModule"];
   attribute: AttributeService;
   attributeKey: AttributeKeyService;
   productsToAttributes: ProductsToAttributesService;
@@ -60,6 +52,7 @@ export class Service {
   constructor(props: IConstructorProps) {
     this.findById = props.findById;
     this.product = props.product;
+    this.billingModule = props.billingModule;
     this.attribute = props.attribute;
     this.attributeKey = props.attributeKey;
     this.productsToAttributes = props.productsToAttributes;
@@ -99,9 +92,7 @@ export class Service {
       throw new Error("Price attribute key not found");
     }
 
-    const priceAttributeKey = priceAttributeKeys[0];
-
-    const totals: ITotal[] = [];
+    const totals: IOrderLineTotal[] = [];
 
     const product = await this.product.findById({
       id: entity.productId,
@@ -146,8 +137,8 @@ export class Service {
               },
               {
                 column: "attributeKeyId",
-                method: "eq",
-                value: priceAttributeKey.id,
+                method: "inArray",
+                value: priceAttributeKeys.map((key) => key.id),
               },
             ],
           },
@@ -193,13 +184,8 @@ export class Service {
         continue;
       }
 
-      const billingModuleCurrency = await billingModuleCurrencyApi.findById({
+      const billingModuleCurrency = await this.billingModule.currency.findById({
         id: attributesToBillingModuleCurrencies[0].billingModuleCurrencyId,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
       });
 
       if (!billingModuleCurrency) {

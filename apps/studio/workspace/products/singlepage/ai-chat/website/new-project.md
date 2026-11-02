@@ -1,85 +1,67 @@
 ---
-confirmation:
-  confirmed: false
-review:
-  dependencies:
-    model.framework-service: a511d19e3b8a0e67ce12e2b3d559a19fb9ca8d6f5732627d43db940fd14d3cbd
-    product.ai-chat.page.content.one-hour-setup: 27da8d94d51be659df15ec9ab0a735ec1fcd70907773455141c653bb59bdd486
-    product.ai-chat.website: e1989d4215fe29be295c762314b12748a711d7b459df3bed937424ae84b2fa6f
 ---
 
-# Add your project materials
+# Создайте проект и добавьте материалы
 
-Upload the material you already have and briefly explain the business or idea. AI Chat extracts relevant statements, proposes where each one belongs and prepares an editable project model for your review. The first session is planned for about one hour of focused work.
+Введите название проекта. Следующий экран принимает заметки, файлы и изображения с необязательным описанием. Затем откроется отдельный экран анализа: AI-агент проверит материалы и подготовит документы проекта и продуктов. Откройте переписку документа, обсудите и отредактируйте файл, затем сохраните раздел после проверки. Первая сессия рассчитана примерно на час сосредоточенной работы; можно прерваться или оставить вопрос открытым.
 
-## Start with existing material
+## Создание проекта, загрузка и анализ
 
-Add the material in its current form. It may include documents, tables, presentations, conversations, links, notes, screenshots, images, references or decisions that have not yet been sorted.
+**Название проекта:** назовите рабочее пространство перед добавлением материалов.
 
-**Upload:** Choose files or drag them here.
+**Заметки о проекте:** над чем работаете, что уже есть и какой результат нужен?
 
-**Explanation:** What is this business or idea, and what are you trying to do now?
+**Прикрепить файлы:** добавьте документы, таблицы, презентации, заметки, снимки экрана или изображения как есть. Файлы остаются видны в списке загрузки и затем рядом с чатами документов.
 
-Before asking the first question, AI Chat shows:
+Перед загрузкой прочитайте, [как обрабатываются и хранятся материалы](#how-your-materials-are-processed-and-stored).
 
-- the statements it extracted, their sources and the sections where it proposes to place them;
-- contradictions and unclear statements that need your review;
-- unanswered questions that prevent part of the initial model from being used;
-- an editable draft. Nothing is approved automatically.
+**Проанализировать материалы** открывает экран анализа с прогрессом, источниками и готовностью черновиков. **Открыть чаты документов** становится доступно после завершения анализа.
 
-AI Chat does not ask you to repeat information already present in the supplied material. It does not invent prices, budgets, rights, capacity, evidence or operating facts. An unanswered question affects only the decisions that depend on it.
+Агент показывает предлагаемые тексты, источники и найденные недочёты. Исправьте неточное утверждение, разрешите противоречие или ответьте на вопрос, влияющий на описание. Цены, бюджеты, права, возможности выполнения и доказательства остаются неизвестными, пока источник или ответ не установит их. Ничего не принимается автоматически.
 
-## Work through five stages
+## Пять коротких текстовых этапов
 
-Each stage has a shorter first pass that collects enough information to understand the project, choose a direction and prepare the first product materials.
+| Этап          | Текстовый результат                                                                                                         |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| **Бриф**      | Проект, ситуация, продукты, результат, границы, ограничения и материалы.                                                    |
+| **Продукты**  | Отдельные описания клиентов и предложения, операций и экономики, продаж, продвижения, аналитики и необходимых исследований. |
+| **Стратегия** | Приоритетные аудитории, роли продуктов, позиционирование, пути клиентов, каналы и критерии успеха.                          |
+| **Бренд**     | Смысл, обещание, допустимые утверждения, доказательства, голос, возражения и действия.                                      |
+| **Дизайн**    | Текстовое описание визуального направления, ресурсов, принципов интерфейса и ограничений.                                   |
 
-| Stage        | Question                                                                                  | Result                                                                                                                                                        | Time       |
-| ------------ | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
-| **Request**  | What are we working on, what already exists and what result is needed?                    | Subject, current situation, products in scope, desired result, boundaries, constraints and supplied materials.                                                | 10 minutes |
-| **Strategy** | What should the whole project look like when it works as intended?                        | Priority audiences, product roles, positioning, customer path, coordinated channels and measures of success. It describes the intended result, not a roadmap. | 10 minutes |
-| **Brand**    | What should people understand, remember and trust?                                        | Meaning, promise, supported claims, proof, voice, important objections and the primary action.                                                                | 8 minutes  |
-| **Design**   | How should that meaning become visible and usable?                                        | Existing assets, visual direction, interface principles, required imagery, accessibility and production constraints.                                          | 7 minutes  |
-| **Products** | What is offered, who is it for, how is it delivered and how does the business sustain it? | A model for every product in scope, plus shared operating and economic decisions when several products use the same model.                                    | 15 minutes |
+Агент готовит сокращённые тексты по тем же этапам, что и Workspace. Дизайн описывает внешний вид; этот шаг не генерирует айдентику и не собирает лендинг.
 
-The remaining time is for uploading, reviewing and correcting the material. Progress reflects reviewed decisions, not time spent or the amount of text entered. You may pause, leave a question unanswered or return to any section later.
+## Проверяйте каждый продукт отдельно
 
-## Review one decision at a time
+| Раздел                       | Что проверить                                                                                                            |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **Продукт**                  | Клиент, проблема, предложение, ценность, альтернативы и условия.                                                         |
+| **Операции и экономика**     | Выполнение, выручка, ресурсы, действия, партнёры, расходы и финансирование.                                              |
+| **Продажи**                  | Как клиент узнаёт, оценивает, покупает, получает и использует продукт; поддержка и продолжение работы.                   |
+| **Продвижение**              | Текстовое описание публичной подачи, включая сайт, креативы и презентацию, где они нужны.                                |
+| **Аналитика и исследования** | Измерения, наблюдения, вопросы и доказательства для оценки предположений. Исследование добавляется, когда нужно решению. |
 
-Each screen shows:
+Экономика принадлежит продукту. При общем ресурсе каждый продукт указывает свою долю с тем же идентификатором ресурса. Представление экономики показывает эти решения без общей модели между продуктами.
 
-1. **What AI Chat found:** short proposed statements linked to their sources.
-2. **One current question:** the next unanswered question required to complete the selected stage.
-3. **Review controls:** accept, edit, mark as unknown or remove. Acceptance applies only to the visible statement.
-4. **Project page:** the model updates after each change and shows which sections already contain enough information to use.
+## Исправьте, проверьте и примите тексты
 
-AI Chat asks the next question needed for the initial model. Optional detail remains collapsed until you decide to develop that part. Questions use ordinary language; you do not have to choose document names, Business Model Canvas blocks or storage locations.
+1. Прочитайте черновик выбранного этапа проекта или раздела продукта.
+2. Исправьте найденные агентом недочёты в соответствующем тексте.
+3. Примите проверенное описание либо оставьте вопрос открытым.
+4. Создайте тему общего рабочего пространства и прикрепите сохранённые документы для следующего разговора или выгрузите их.
 
-## Cover the product without nine separate forms
+У каждого документа собственные переписка, правки и состояние проверки. Открытие другого файла сохраняет эту работу. Принятие относится к проверенному тексту. Новое изменение проверяется в переписке исходного файла; последняя проверенная версия доступна темам до сохранения правки. Тему можно создать с одним проверенным документом, пока в других остаются вопросы.
 
-The Products stage covers the nine Business Model Canvas blocks in four groups that keep related decisions together.
+[Проверить тексты проекта](/ai-chat/social/profiles/example)
 
-| Group                       | What it covers                                                                                                                                              |
-| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Customer and value**      | Customer segments and roles, circumstances, jobs, problems, desired progress, alternatives, the offer, the included result and reasons to choose it.        |
-| **Access and relationship** | How each segment discovers, evaluates, buys, receives and uses the product, then gets support or continues using it.                                        |
-| **Money and delivery**      | Who pays and for what; required resources, recurring work, partners, costs and financing where it differs from revenue.                                     |
-| **Sales and learning**      | The complete customer process, handoffs, refusals and incomplete actions, measures, current observations and research questions that may change a decision. |
+Рядом с перепиской показаны недостающие сведения и состояние документа: черновик или проверен. Прогресс учитывает проверенные разделы; неотвеченные вопросы остаются видимыми. Баланс токенов виден постоянно и может быть отрицательным. При −2 000 внутренних токенов или ниже новые платные AI-запросы ограничиваются; пополнение выше порога позволяет продолжить с сохранённого шага. Неудачный или отменённый AI-запрос возвращает все списания, его чистая стоимость равна нулю.
 
-When several products use the same operating model, shared resources, activities, partners, revenue logic and costs are recorded once. Conditions that apply to one product stay with that product.
+## Как обрабатываются и хранятся материалы
 
-## Finish with a reviewed project model
+Сервис и загруженные материалы находятся на сервере Contabo в Амстердаме. Исходники и их поисковые представления хранятся в собственном хранилище сервиса и PostgreSQL; pgvector хранит векторы для поиска подходящих фрагментов.
 
-The first setup is complete when:
+Текст документов отправляется в OpenRouter для создания поисковых представлений. Подходящие фрагменты также передаются через OpenRouter как контекст AI-ответа. Запросы обрабатываются на условиях выбранного провайдера; загруженный текст не остаётся целиком внутри этого сервиса.
 
-- Request names the project, current situation, products, requested result, boundaries and constraints;
-- Strategy names the intended final state, priority audiences, product roles, customer path, channels and measures of success;
-- Brand and Design provide the meaning, supported claims, voice, visual direction and interface principles needed for the first customer-facing material;
-- every product in scope has an identifiable customer, value, offer and delivery model;
-- unresolved decisions and contradictions are visible;
-- you have reviewed the complete draft.
+Удаление аккаунта удаляет сам аккаунт и активные данные проектов, которыми управляет сервис. Резервные копии Contabo могут храниться до шести месяцев после удаления; сократить этот срок сервис не может.
 
-The result becomes the project model AI Chat uses in later conversations and when editing uploaded materials. You can then ask a question, revise a section, create a landing page or open the detailed workspace documents without starting another intake.
-
-[Build my project model](/projects/example)
-
-Your progress is saved while files are processed and questions are answered. The current token balance stays visible. If more tokens are required, top up the balance and return to the same step.
+Эта информация доступна перед регистрацией и загрузкой, а также рядом с удалением аккаунта в настройках.

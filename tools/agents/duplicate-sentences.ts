@@ -24,7 +24,7 @@ const ALLOWED: Array<{ match: RegExp; reason: string }> = [
   {
     match: /editorial-pass\.md|`unslop` skill/,
     reason:
-      "Every role, workflow and skill is loaded on its own, so the pointer to the editorial contract travels with each one; tools/agents/editorial-pass.test.mjs requires it.",
+      "Every role, workflow and skill is loaded on its own, so the pointer to the editorial contract and its pattern reference travels with each one; tools/agents/editorial-pass.test.mjs requires it. The rules themselves have one home.",
   },
 ];
 

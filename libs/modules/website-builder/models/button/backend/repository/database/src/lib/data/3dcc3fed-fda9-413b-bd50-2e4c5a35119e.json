@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Prepare the documents in AI Chat",
+    "ru": "Подготовить документы в AI-чате"
+  },
+  "subtitle": {},
+  "url": "/",
+  "className": "w-fit",
+  "id": "3dcc3fed-fda9-413b-bd50-2e4c5a35119e",
+  "createdAt": "2026-10-24T01:05:51.722Z",
+  "updatedAt": "2026-10-24T01:05:51.722Z",
+  "variant": "primary",
+  "adminTitle": "Prepare the documents in AI Chat",
+  "slug": "framework-journey-handoff-actions-0"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "cf2e6c81-b100-4581-9c2a-e701671edb33",
+  "createdAt": "2026-10-24T01:06:00.368Z",
+  "updatedAt": "2026-10-24T01:06:00.368Z",
+  "variant": "default",
+  "className": "w-full",
+  "title": {
+    "en": "Actions",
+    "ru": "Действия"
+  },
+  "description": {},
+  "adminTitle": "Actions",
+  "slug": "framework-journey-guide-crm-actions"
+}

@@ -1,8 +1,12 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { parse } from "yaml";
+import ts from "typescript";
+import { documentVisibleText } from "../workspace/document";
+import { localizedHeading } from "../workspace/headings";
 
 import {
+  flattenDesignSections,
   parseDesignLayout,
   resolveDesignLayout,
 } from "../../../apps/studio/workspace/utils/design/layout";
@@ -15,10 +19,38 @@ import type { IBrandbookFinding } from "./brandbook";
 export const requiredSpecimens = {
   actions:
     "the one dominant action with its secondary, plain, disabled and separated destructive variants",
+  icons:
+    "a dedicated icon set with its library or drawing method, usage rules and rendered glyphs",
   selection: "selection as a chip and as a grouped choice",
   status: "status and progress",
   fields: "fields and data rows",
   navigation: "navigation for a public page and for a work screen",
+  choices: "native selection controls and binary settings",
+  combobox: "a searchable choice with keyboard selection",
+  "date-time": "date and time entry with bounds",
+  range: "bounded numeric adjustment",
+  tabs: "keyboard-operable related views",
+  breadcrumbs: "the current location in a hierarchy",
+  pagination: "bounded page navigation and result counts",
+  avatars: "people and fallback identities",
+  "data-table": "searchable sortable and selectable tabular records",
+  accordion: "expandable sections with keyboard access",
+  "structured-list": "structured records and their actions",
+  alerts: "inline informational and error messages",
+  toast: "dismissible transient feedback",
+  loading: "indeterminate and placeholder loading",
+  "empty-error": "empty results and recoverable errors",
+  dialog: "a modal with focus containment and return",
+  confirmation: "confirmation before a destructive action",
+  sheet: "a dismissible side panel",
+  popover: "contextual help and interactive anchored content",
+  menu: "keyboard-operable action menus",
+  command: "searchable commands and an empty result",
+  "file-upload": "local file selection, drop, validation and removal",
+  attachments: "file metadata and processing or error states",
+  message: "conversation roles and delivery states",
+  composer: "message entry, send, pending, stop and retry",
+  surfaces: "reusable cards, square media frames and dividers",
   "editorial-entry": "an editorial entry composition",
   "content-card": "a content card carrying the project's own confirmed imagery",
   "icon-card": "an icon card on the declared icon grid",
@@ -30,9 +62,127 @@ export const conditionalSpecimens = {
   "dark-pair": "the Semantic color system declares a Dark column",
 } as const;
 
+/**
+ * Part of the catalogue and available to every layer, but owed only when the
+ * surfaces a project ships call for them.
+ */
+export const optionalSpecimens = {
+  "media-and-text": "an illustration beside the statement it explains",
+  "numbered-steps": "the ordered steps a visitor walks through",
+  "offer-comparison": "the offers a visitor chooses between",
+  "contextual-sheet": "the sheet a phone keeps in view while the page scrolls",
+} as const;
+
 export type SpecimenId =
   | keyof typeof requiredSpecimens
-  | keyof typeof conditionalSpecimens;
+  | keyof typeof conditionalSpecimens
+  | keyof typeof optionalSpecimens;
+
+/**
+ * The wrapper belongs to the framework and a project supplies the content, so a
+ * specimen keeps one name in every layer. A downstream Design restyles a block
+ * and changes how it carries information; it does not rename one, invent one or
+ * translate its heading.
+ */
+export const specimenTitles: Record<SpecimenId, string> = {
+  surfaces: "Поверхности и медиа",
+  actions: "Действия",
+  icons: "Иконки",
+  selection: "Выбор",
+  status: "Статус и прогресс",
+  fields: "Поля и строки данных",
+  navigation: "Навигация",
+  "dark-pair": "Тёмная пара",
+  choices: "Флажки, радио и переключатели",
+  combobox: "Выбор с поиском",
+  "date-time": "Дата и время",
+  range: "Диапазон и ползунок",
+  tabs: "Вкладки",
+  breadcrumbs: "Путь страницы",
+  pagination: "Пагинация",
+  avatars: "Аватары",
+  "data-table": "Таблица данных",
+  accordion: "Раскрывающиеся разделы",
+  "structured-list": "Структурированный список",
+  alerts: "Сообщения",
+  toast: "Всплывающее уведомление",
+  loading: "Загрузка и каркас",
+  "empty-error": "Пустые состояния и ошибки",
+  dialog: "Диалог",
+  confirmation: "Диалог подтверждения",
+  sheet: "Выдвижная панель",
+  popover: "Всплывающий блок и подсказка",
+  menu: "Выпадающее меню",
+  command: "Поиск команд",
+  "file-upload": "Загрузка файлов",
+  attachments: "Вложения",
+  message: "Сообщения",
+  composer: "Поле сообщения",
+  "editorial-entry": "Вводная композиция",
+  "content-card": "Фотокарточки",
+  "icon-card": "Карточки с иконками",
+  "media-and-text": "Иллюстрация и текст",
+  "numbered-steps": "Нумерованные шаги",
+  "item-grid": "Сетка повторяющихся элементов",
+  "offer-comparison": "Сравнение предложений",
+  "contextual-sheet": "Контекстная панель",
+};
+
+/** Stable taxonomy for agents; a project's tokens and content supply its style. */
+export const specimenCategories: Record<SpecimenId, string> = {
+  surfaces: "data-display",
+  icons: "foundations",
+  "dark-pair": "foundations",
+  actions: "actions",
+  selection: "inputs",
+  fields: "inputs",
+  navigation: "navigation",
+  status: "data-display",
+  choices: "inputs",
+  combobox: "inputs",
+  "date-time": "inputs",
+  range: "inputs",
+  tabs: "navigation",
+  breadcrumbs: "navigation",
+  pagination: "navigation",
+  avatars: "data-display",
+  "data-table": "data-display",
+  accordion: "data-display",
+  "structured-list": "data-display",
+  alerts: "feedback",
+  toast: "feedback",
+  loading: "feedback",
+  "empty-error": "feedback",
+  dialog: "overlays",
+  confirmation: "overlays",
+  sheet: "overlays",
+  popover: "overlays",
+  menu: "overlays",
+  command: "overlays",
+  "file-upload": "files",
+  attachments: "files",
+  message: "conversation",
+  composer: "conversation",
+  "editorial-entry": "content-blocks",
+  "content-card": "content-blocks",
+  "icon-card": "content-blocks",
+  "media-and-text": "content-blocks",
+  "numbered-steps": "content-blocks",
+  "item-grid": "content-blocks",
+  "offer-comparison": "content-blocks",
+  "contextual-sheet": "content-blocks",
+};
+
+export const compositionComponents = {
+  "offer-comparison": ["surfaces", "actions"],
+  "contextual-sheet": ["surfaces", "actions", "icons", "status", "fields"],
+  "content-card": ["surfaces"],
+  "icon-card": ["surfaces", "icons"],
+  "item-grid": ["surfaces", "actions", "status", "icons"],
+  "editorial-entry": ["surfaces", "actions", "icons"],
+  "numbered-steps": ["surfaces", "structured-list"],
+  "media-and-text": ["surfaces", "actions", "icons"],
+} as const;
 
 const interfaceHeading = /^##\s+Interface and product surfaces\s*$/m;
 
@@ -43,10 +193,103 @@ async function read(file: string): Promise<string> {
   });
 }
 
-function declaredIds(html: string): string[] {
-  return [...html.matchAll(/data-specimen="([a-z0-9-]+)"/g)].map(
-    ([, id]) => id,
-  );
+interface IDeclaredSpecimen {
+  id: string;
+  title?: string;
+  composes?: string[];
+}
+
+/** Inspect actual JSX nodes, so examples in strings or comments never count. */
+export function readSpecimenDeclarations(
+  source: string,
+  file: string,
+): IDeclaredSpecimen[] {
+  if (/\.[jt]sx$/i.test(file)) {
+    const tree = ts.createSourceFile(
+      file,
+      source,
+      ts.ScriptTarget.Latest,
+      true,
+      ts.ScriptKind.TSX,
+    );
+    const found: IDeclaredSpecimen[] = [];
+    const attribute = (
+      attributes: ts.JsxAttributes,
+      name: string,
+    ): string | undefined => {
+      const property = attributes.properties.find(
+        (item) => ts.isJsxAttribute(item) && item.name.getText(tree) === name,
+      );
+      if (!property || !ts.isJsxAttribute(property)) return undefined;
+      const value = property.initializer;
+      if (value && ts.isStringLiteral(value)) return value.text;
+      if (
+        value &&
+        ts.isJsxExpression(value) &&
+        value.expression &&
+        ts.isStringLiteral(value.expression)
+      )
+        return value.expression.text;
+      return undefined;
+    };
+    const visit = (node: ts.Node) => {
+      if (ts.isJsxElement(node) || ts.isJsxSelfClosingElement(node)) {
+        const opening = ts.isJsxElement(node) ? node.openingElement : node;
+        const isWrapper = opening.tagName.getText(tree) === "Specimen";
+        const id = attribute(
+          opening.attributes,
+          isWrapper ? "id" : "data-specimen",
+        );
+        if (id) {
+          const heading = ts.isJsxElement(node)
+            ? node.children.find(
+                (child) =>
+                  ts.isJsxElement(child) &&
+                  child.openingElement.tagName.getText(tree) === "h3",
+              )
+            : undefined;
+          const title = isWrapper
+            ? attribute(opening.attributes, "title")
+            : heading && ts.isJsxElement(heading)
+              ? heading.children
+                  .map((child) => (ts.isJsxText(child) ? child.text : ""))
+                  .join(" ")
+                  .replace(/\s+/g, " ")
+                  .trim()
+              : undefined;
+          found.push({
+            id,
+            title,
+            composes: attribute(opening.attributes, "data-composes")
+              ?.split(/\s+/)
+              .filter(Boolean),
+          });
+        }
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(tree);
+    return found;
+  }
+  const html = documentVisibleText(source);
+  const marks = [...html.matchAll(/data-specimen="([a-z0-9-]+)"/g)];
+  return marks.map((mark, index) => {
+    const fragment = html.slice(
+      mark.index! + mark[0].length,
+      marks[index + 1]?.index ?? html.length,
+    );
+    const title = /<h3[^>]*>\s*([\s\S]*?)\s*<\/h3>/
+      .exec(fragment)?.[1]
+      .replace(/\s+/g, " ")
+      .trim();
+    return {
+      id: mark[1],
+      title,
+      composes: /data-composes="([^"]+)"/
+        .exec(fragment.split(">")[0])?.[1]
+        .split(/\s+/),
+    };
+  });
 }
 
 /** A dark pair is owed once the colour system actually defines a dark column. */
@@ -114,13 +357,14 @@ export async function findMissingSpecimens(
 
   const present = new Set<string>();
   await Promise.all(
-    layout.sections
-      .filter(({ source }) => source && /\.html?$/i.test(source))
+    flattenDesignSections(layout.sections)
+      .filter(({ source }) => source && /\.(?:html?|[jt]sx)$/i.test(source))
       .map(async ({ source }) => {
         const html = await read(
           path.join(workspaceRoot, "design", layout.layer, source!),
         );
-        for (const id of declaredIds(html)) present.add(id);
+        for (const { id } of readSpecimenDeclarations(html, source!))
+          present.add(id);
       }),
   );
 
@@ -133,8 +377,94 @@ export async function findMissingSpecimens(
     .filter(([id]) => !present.has(id) && !omissions.has(id))
     .map(([id, description]) => ({
       requirement: `Design declares a \`${id}\` specimen`,
-      detail: `Nothing in the resolved Design layout renders ${description}. Add it to a layer-owned HTML section with data-specimen="${id}", or record interface_review.omitted_specimens.${id} with the reason it is out of scope.`,
+      detail: `Nothing in the resolved Design layout renders ${description}. Add it to a layer-owned HTML section with data-specimen="${id}" or a TSX/JSX section with <Specimen id="${id}" title="…">, or record interface_review.omitted_specimens.${id} with the reason it is out of scope.`,
     }));
+}
+
+/**
+ * The framework owns the wrapper: which blocks exist, what each one is called
+ * and what the section that holds them is called. A downstream Design restyles
+ * a block and changes how it carries information, so a deviation here is a
+ * renamed or invented wrapper rather than a design decision.
+ */
+export async function findSpecimenDeviations(
+  workspaceRoot: string,
+): Promise<IBrandbookFinding[]> {
+  const sources = await Promise.all(
+    (["singlepage", "startup"] as const).map(async (layer) =>
+      parseDesignLayout(
+        await read(path.join(workspaceRoot, "design", layer, "layout.yaml")),
+        layer,
+      ),
+    ),
+  );
+  const framework = sources[0];
+  const layout = resolveDesignLayout(framework, sources[1]);
+
+  const findings: IBrandbookFinding[] = [];
+  const frameworkTitles = new Map(
+    flattenDesignSections(framework?.sections ?? [])
+      .filter(({ title }) => title)
+      .map(({ id, title }) => [id, title] as const),
+  );
+  for (const section of flattenDesignSections(layout.sections)) {
+    const owned = frameworkTitles.get(section.id);
+    if (owned && localizedHeading(section.title) !== localizedHeading(owned))
+      findings.push({
+        requirement: `Design section \`${section.id}\` keeps its framework title`,
+        detail: `design/${layout.layer}/layout.yaml calls it "${section.title}"; the framework section is "${owned}". A project restyles a section, it does not rename one.`,
+      });
+  }
+
+  await Promise.all(
+    flattenDesignSections(layout.sections)
+      .filter(({ source }) => source && /\.(?:html?|[jt]sx)$/i.test(source))
+      .map(async ({ id, source }) => {
+        const file = path.join(workspaceRoot, "design", layout.layer, source!);
+        for (const {
+          id: specimen,
+          title: heading,
+          composes,
+        } of readSpecimenDeclarations(await read(file), source!)) {
+          const title = specimenTitles[specimen as SpecimenId];
+          if (!title) {
+            findings.push({
+              requirement: `Design section \`${id}\` renders only catalogued specimens`,
+              detail: `design/${layout.layer}/${source} declares data-specimen="${specimen}", which the framework catalogue does not define. Add the block to the framework catalogue before a project ships it.`,
+            });
+            continue;
+          }
+          if (specimen in compositionComponents) {
+            if (!composes?.length)
+              findings.push({
+                requirement: `Composition \`${specimen}\` declares its components`,
+                detail: `design/${layout.layer}/${source} needs data-composes with its Interface kit component IDs.`,
+              });
+            for (const component of composes ?? []) {
+              if (
+                !(component in specimenCategories) ||
+                specimenCategories[component as SpecimenId] === "content-blocks"
+              )
+                findings.push({
+                  requirement: `Composition \`${specimen}\` uses catalogued components`,
+                  detail: `Its data-composes names "${component}"; use an Interface kit component ID.`,
+                });
+            }
+          }
+          if (
+            heading !== undefined &&
+            localizedHeading(heading) !== localizedHeading(title)
+          )
+            findings.push({
+              requirement: `Specimen \`${specimen}\` keeps its framework title`,
+              detail: `design/${layout.layer}/${source} heads it "${heading}"; the framework calls it "${title}". The wrapper name is the framework's, the content is the project's.`,
+            });
+        }
+      }),
+  );
+  return findings.sort((left, right) =>
+    left.requirement.localeCompare(right.requirement),
+  );
 }
 
 export async function validateRequiredSpecimens(

@@ -1,102 +1,73 @@
 ---
-confirmation:
-  confirmed: true
-  by: operator
-  at: 2026-09-17
-  source: "Operator confirmed the revised Project model in chat: «Хорошо, это
-    подтверждаем»."
-  content_sha256: b84c426171d25131fd5395c37a6505370515e8c0a3648ff8fc0962b6d2f04633
-review:
-  dependencies:
-    model.framework-service: a511d19e3b8a0e67ce12e2b3d559a19fb9ca8d6f5732627d43db940fd14d3cbd
-    product.ai-chat.product: 128b557ac48280f0ad09eefbe05fdc4e54a8aaa4c8c972205ffa5f53cb6cbc9e
 ---
 
-# Project model
+# Модель проекта
 
-The first setup produces an editable Project model: one page with the current information from Request, Strategy, Brand, Design and Products, including unresolved questions. AI Chat uses this page when answering later questions or editing supplied materials, so the user does not have to explain the project again in every conversation.
+У Brief.md, Strategy.md, Brand.md, Design.md и Products.md есть собственные рабочие переписки, черновики и правки. Каждый продукт содержит свои разделы. Пользователь отвечает агенту в переписке нужного файла и проверяет формулировку перед сохранением. В общем рабочем пространстве есть отдельные темы с выбранными сохранёнными документами в качестве базы знаний. Документы можно свободно выгружать.
 
-The page displays information from the five sections together without storing another copy. Each fact is still edited in its main section. For example, a product price is stored in the Product section and only displayed in the Project model.
+Обзор показывает исходные тексты без второй редактируемой копии. Предложение и экономика продукта редактируются в его описании; обзор проекта отображает их.
 
-## Page structure
+## Этапы проекта
 
-### Request
+### Бриф
 
-- what the project is and why the user is working on it now;
-- its current state, products and supplied materials;
-- the requested result, boundaries, decision authority and constraints;
-- unanswered questions that cannot be resolved from the supplied information.
+Опишите проект, текущую ситуацию, продукты, переданные материалы, ожидаемый результат, границы, ограничения и ответственного за решения. Неизвестные факты остаются открытыми.
 
-### Strategy
+### Продукты
 
-- the intended final state of the complete project;
-- priority audiences and the role of each product;
-- positioning and the customer path across products and channels;
-- continued use and measures of success.
+У каждого продукта отдельное описание. Продукт открывает собственные разделы:
 
-Strategy describes how the project should work when it fulfils the Request. It records the intended result, not a roadmap or the history of how each decision was made.
+| Раздел продукта              | Содержание                                                                                                 |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| **Продукт**                  | Клиент, проблема, предложение, ценность, альтернативы и условия.                                           |
+| **Операции и экономика**     | Выполнение, выручка, ресурсы, действия, партнёры, расходы и финансирование этого продукта.                 |
+| **Продажи**                  | Знакомство, оценка, покупка, получение, использование, поддержка и продолжение.                            |
+| **Продвижение**              | Текстовое описание публичной подачи, включая сайт, креативы и презентацию, где они нужны.                  |
+| **Аналитика и исследования** | Измерения, наблюдения, вопросы и доказательства для проверки предположений; исследования по необходимости. |
 
-### Brand
+Общие ресурсы имеют одинаковый идентификатор в использующих их продуктах; каждый продукт указывает свою долю. Представление экономики не создаёт промежуточную общую модель.
 
-- what the audience should understand and remember;
-- the promise, supported claims and available evidence;
-- voice, important objections and calls to action.
+### Стратегия
 
-### Design
+Опишите приоритетные аудитории, роли продуктов, позиционирование, пути клиентов, каналы и критерии успеха. Фиксируйте устройство проекта, а не историю принятия решений.
 
-- visual identity and interface principles;
-- existing assets and references that should be preserved;
-- photography, illustration and essential production rules;
-- accessibility and technical constraints that affect the result.
+### Бренд
 
-### Products
+Опишите смысл, обещание, допустимые утверждения, доказательства, голос, возражения и призывы к действию.
 
-Each product is shown as one business model:
+### Дизайн
 
-1. **Customer and value:** customer segments and roles, circumstances, desired progress, problems, alternatives, the offer and its value.
-2. **Access and relationship:** discovery, evaluation, purchase, delivery, use, support and continued use.
-3. **Money and delivery:** payer, revenue, resources, activities, partners, costs and financing where relevant.
-4. **Sales and learning:** the complete customer process, measures, current observations and unanswered research questions.
+Запишите визуальное направление, имеющиеся ресурсы, принципы интерфейса и ограничения. Текст первого выпуска не генерирует айдентику и не собирает лендинг.
 
-When several products use one model, that model has a stable identifier and is stored once. The Project model shows which products use it without copying the shared facts.
-
-## Product development loop
-
-This diagram is the editable source for the order of work. It separates draft decisions from evidence and shows what happens when research supports or disproves a critical assumption.
+## Цикл разработки продукта
 
 ```mermaid
 flowchart LR
-    A[Brief: idea, goal and known facts] --> B[Draft Product]
-    B --> C[Draft Operations & Economics]
-    C --> D[Draft Sales]
-    D --> E[Critical assumptions]
-    E --> F[Research and experiments]
-    F --> G{What did the evidence show?}
-    G -->|Supports| H[Refine and confirm decisions]
-    G -->|Disproves| I[Change Product, model or Sales]
-    I --> E
-    H --> J[Materials and implementation]
+    A[Бриф: идея, цель и исходные факты] --> B[Черновики описаний продуктов]
+    B --> C[Операции и экономика каждого продукта]
+    C --> D[Продажи каждого продукта]
+    D --> E[Недочёты и критические предположения]
+    E --> F[Аналитика и необходимые исследования]
+    F --> G[Исправление и проверка исходного текста]
+    G --> H[Принятие, выгрузка и прикрепление к теме]
+    G --> E
 ```
 
-The Brief provides the idea, intended result and known facts. Product, Operations & Economics and Sales turn them into a complete draft that can be inspected for critical assumptions. Research and experiments then provide the evidence needed to keep or change those decisions.
+AI-агент находит недочёты для исправления пользователем. Исследование записывает доказательства с источниками, где они есть, и вопросы, где их нет. Принятие фиксирует проверку текста, а не жизнеспособность бизнеса.
 
-Materials and implementation include Product Content, Website, Marketing Creative, Presentation and the work required to deliver the product. Observations and measurements from implemented work belong to Analytics. If they expose another critical assumption, the loop begins again from that assumption; the team updates the owning decision before revising dependent materials.
+## Состояния сведений
 
-## Information states
+- **accepted — принято:** пользователь проверил формулировку;
+- **proposal — предложение:** черновик ожидает проверки;
+- **unknown — неизвестно:** материал и пользователь не установили нужный факт;
+- **conflict — противоречие:** исходные утверждения дают несовместимые ответы.
 
-Every statement has one of four review states:
+Метки относятся к исходному описанию. Предлагаемое изменение проходит проверку в этом тексте перед заменой принятой формулировки.
 
-- **accepted:** the user has reviewed the current wording;
-- **proposal:** AI Chat drafted the statement and the user has not reviewed it yet;
-- **unknown:** neither the supplied material nor the user provides the required information;
-- **conflict:** two supplied statements give incompatible answers to the same question.
+## Продолжение работы в чате
 
-These states help the user review the page. They do not create a separate hypothesis register or another business document.
+Пользователь создаёт тему в общем рабочем пространстве и выбирает сохранённые проверенные документы. У темы своя переписка; файлы помогают оценить идею, сравнить варианты или подготовить текст. Изменение документа возвращается в переписку его файла для проверки.
 
-## Use after setup
+Тема может начинаться с одного проверенного файла, пока в других разделах остаются вопросы. Последняя проверенная версия документа доступна как контекст темы во время редактирования нового черновика и меняется после проверки и сохранения. Документы можно свободно выгружать и использовать вне AI Chat. Недостающий факт остаётся вопросом; его не придумывают ради законченного ответа.
 
-For each request, AI Chat uses the relevant parts of the Project model. It can answer a question, critique an idea, edit an uploaded file or prepare new material. Its answer follows accepted project decisions. If missing information would change the answer, AI Chat names what is missing instead of filling the gap itself.
-
-When the user accepts a change, AI Chat updates the main section where that information is stored and marks affected materials for review. A landing page, presentation or advertisement may reuse approved facts, but it does not become the source of the offer, price or product conditions.
-
-The Project model is enough for ordinary questions and the first product materials. When a topic needs deeper research, a complete process or its own working document, the user can open the relevant detailed section of the project.
+Генерация лендинга и платное развёртывание на сервере относятся к будущим возможностям вне первого выпуска. Цель будущей страницы — первые обращения и проверка гипотезы; эти результаты не гарантированы.

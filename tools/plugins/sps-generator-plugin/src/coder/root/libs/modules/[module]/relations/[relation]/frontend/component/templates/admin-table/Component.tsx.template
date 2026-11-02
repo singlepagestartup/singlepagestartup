@@ -10,13 +10,13 @@ export function Component(props: IComponentPropsExtended) {
       module="<%= module_name %>"
       name="<%= relation_name %>"
       variant={props.variant}
-      adminForm={<AdminForm isServer={props.isServer} variant="admin-form" />}
+      adminForm={() => <AdminForm isServer={props.isServer} variant="admin-form" />}
     >
       <div className="flex flex-col gap-6 pt-8 p-4">
         {props.data.map((entity, index) => {
           return (
             <AdminTableRow
-              key={index}
+              key={entity.id}
               module="<%= module_name %>"
               name="<%= relation_name %>"
               isServer={props.isServer}

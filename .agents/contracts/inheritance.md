@@ -14,7 +14,7 @@ unit, and nothing merges by accident.
 | `default`    | The effective result after startup is applied to singlepage         | Read-only; resolved in memory         |
 
 - Agents and Studio resolve `singlepage → startup → default` with the same
-  parser, merger and confirmation resolver, in memory. Nobody writes a
+  parser and merger, in memory. Nobody writes a
   `default` file, a resolved copy, a release version, a snapshot, a run journal
   or a second editable artifact set; Git is the history.
 - An agent writes only the indexed source of the active layer: the framework
@@ -44,6 +44,15 @@ unit, and nothing merges by accident.
    `config.local.yaml`, then the committed default. That file may contain only
    `active_layer`; a value that conflicts with a detected identity is an error.
 
+A heading is part of the structure a layer inherits, not of its content. Every
+heading the framework document declares appears in the layer that inherits it,
+spelled exactly the same way, including the title: a document headed `# Design`
+upstream stays `# Design` downstream, and `## Strategy` never becomes
+`## Стратегия`. A layer writes the body of an inherited section in its own
+language and adds whatever sections its business needs beside them; it does not
+translate, rename or drop one it inherits, because the name is how both layers
+refer to the same section. The pipeline check reports a renamed heading.
+
 The GitHub preflight, the workspace loader, the pipeline check and the
 presentation export share this resolver. Explicit layer arguments exist only as
 assertions for validators, diagnostics and read-only source projections; a
@@ -64,7 +73,6 @@ apps/studio/workspace/
   assets/<layer>/{fonts,intake,generated}/
   styles/{singlepage,startup,default}.css
   products/{singlepage,startup}/catalog.yaml
-  products/<layer>/models/<model-id>/model.md
   products/<layer>/<product-id>/              # documents, data and React entry points together
   knowledge/<kind>/{singlepage,startup}.md    # optional indexed project knowledge
   utils/config.yaml
@@ -97,31 +105,24 @@ apps/studio/workspace/
   invariant across projects. This is deterministic semantic isolation over one
   merged Git repository, not physical confidentiality.
 - Remove retired files together with their index entries, imports and exports,
-  `uses` edges and obsolete review fingerprints; check references first, and
-  preserve current bodies, approvals and unresolved impact. The workspace holds
+  `uses` edges; check references first and preserve current facts and sources. The workspace holds
   current inputs and executable support, not migration archives.
 
-## Products and models
+## Product catalogs
 
-Product catalogs use a stricter rule because products of two businesses must
-never mix. Both `products/singlepage/` and `products/startup/` exist from the
-outset with their own `catalog.yaml`, like the explicit base and extension
-folders in `libs/modules`.
+Products of two businesses must never mix. Both source-layer folders have a
+catalog from the outset. An empty startup catalog inherits the complete
+singlepage catalog for the resolved view. The first startup product replaces
+the whole catalog, including materials and component selection.
 
-- An empty startup catalog (`products: []`) inherits the complete singlepage
-  catalog, including its models. The first startup product replaces the whole
-  catalog: models, products, materials and component selection.
-- Every product and model belongs to exactly one layer and owns every file its
-  catalog entry references. Every catalog path, including presentation data,
-  React entry points and nested `sections` pages, resolves below
-  `products/<layer>/`; a missing startup file is an error, never a fallback to
-  a singlepage folder. Do not copy framework product folders into startup, and
-  never repair a startup catalog with a singlepage product.
-- A shared model is registered once by its catalog ID and referenced by its
-  products; load it once for all consumers and never merge model collections
-  across replaced catalogs. Product-local JSX/TSX, HTML, images, data and
-  nested folders stay inside the product folder; shared loaders, components and
-  tests stay in `workspace/utils/`.
+Every product owns its referenced files under `products/<layer>/<product-id>/`.
+All paths, including React sources and nested pages, resolve within that layer.
+A missing startup file is an error, not a fallback to a framework product.
+Shared loaders, rendering and tests belong to `workspace/utils/`.
+
+Use the current schema only. Product descriptions have reader-oriented headings;
+site, presentation and advertising copy lives in the final artifact source.
+The full file contract is `.agents/references/studio-artifacts.md`.
 
 ## Design layout, styles and fonts
 
@@ -129,7 +130,10 @@ folders in `libs/modules`.
   or names a complete template. An empty startup layout inherits the complete
   singlepage layout; a populated startup layout replaces it and reads every
   declared file from its own layer. Load only the selected layout's declared
-  template, sections and relevant imports. Section inheritance of
+  template, sections and relevant imports. A section group has a title and
+  nonempty `children`; every descendant source still belongs to that layout
+  layer. Component categories preserve state while switching; catalogue HTML
+  downloads include all categories. Section inheritance of
   `design/<layer>.md`, Assets resolution and the cascade of
   `styles/{singlepage,startup,default}.css` stay independent of the layout.
 - Font files and licenses belong to the layer that selected them, below
@@ -144,8 +148,7 @@ folders in `libs/modules`.
   generated outputs below `assets/<layer>/generated/<proposal_id>/` of the
   layer that accepted or produced them. Never place a singlepage input in
   startup or a startup input in singlepage.
-- The shared review shell, one neutral document header with confirmation
-  badge, title, purpose and usage, belongs to Studio and is inherited by every
+- The shared review shell, one neutral document header with current page title, product label and exports, belongs to Studio and is inherited by every
   project. Project templates start their content at H2 and scope their styles
   to the canvas; a downstream design owns its visual choices and never restyles
   the Workspace shell.
@@ -155,31 +158,37 @@ folders in `libs/modules`.
 
 ## Downstream applicability
 
-- Inherited framework facts, decisions and approvals are reference context.
-  They become the downstream project's facts only when the client confirms
-  applicability in the owning startup source, and a startup document that
-  changes inherited content needs its own confirmation under
-  `.agents/contracts/document-confirmation.md`.
-- An empty startup source is valid pass-through until its artifact becomes
-  active for the project. It cannot satisfy a project-specific scope, approval,
-  evidence or visual-intake gate by inheriting an unrelated SinglePageStartup
-  decision; the pipeline check reads such gates from the layer's own file.
-- When a synchronized template adds a section that startup inherits, inspect
-  whether the inherited content genuinely applies: keep valid inheritance
-  unchanged, write a startup section when the project needs a different
-  answer, and block on the owning document when applicability depends on an
-  unknown operator fact. Add only the project-owned section or decision the
-  current pipeline requires.
-- Strategy, Brand, Design and every product document use the same templates and
-  completion criteria in both layers; there is no reduced downstream version.
-  A downstream project authors `strategy/startup.md`, `brand/startup.md`,
-  `design/startup.md` and its own catalog from its own Brief and research. It
-  does not inherit the framework's product count, audiences, monetization,
-  channels, human/agent roles, metrics, offers, numbers, personas or resource
-  commitments without project-specific grounds.
-- A downstream project owns its brandbook. Once its cursor reaches `30-design`,
-  `design/startup.md` must hold decisions of its own with its own operator
-  confirmation and `assets/startup.yaml` must register at least one owned
-  asset. An inherited singlepage approval never satisfies this gate: write the
-  startup layer or move the cursor back to the stage that is actually current,
-  and never copy framework prose to silence the check.
+- Inherited framework facts are reference context. Attribute
+  project-specific facts to the customer's inputs; a proposed applicability
+  statement is not customer confirmation.
+- Empty startup documents may inherit their framework presentation. Such
+  inheritance never establishes that the framework's audiences, economics,
+  research or visual choices apply to the customer's business.
+- When a synchronized template adds a section, preserve valid inherited
+  structure and write the project's answer in its owning startup source.
+  Ask about unknown facts needed by the selected decision and continue
+  independent work. Missing answers never block navigation or reset the cursor.
+- Both layers use the same templates. The downstream project owns its Brief,
+  products, research, semantics, Strategy, Brand, Design and materials. Its
+  product count, prices, audiences and commitments require project-specific
+  grounds.
+- A downstream project records its own Design and asset choices when working
+  on that section. The brandbook diagnostic identifies inherited or missing
+  choices without blocking Studio or moving the cursor. Never copy framework
+  prose or manufacture approval to clear a diagnostic.
+- Design review keeps the same catalogue structure in both layers: reusable
+  foundations, task-based `Interface kit` categories, then `Content blocks`
+  composed from kit elements. Put shared shape, spacing and interaction rules
+  at the beginning of Interface kit. Put each component or composition rule
+  beside its corresponding rendered example: show the intended treatment and
+  what to avoid, with reference asset IDs in collapsed source details. Keep
+  usage, states and implementation recipes in the example's own details. A
+  separate grid of text-only pattern cards does not replace this presentation.
+  The owning Design document remains the source of the rules and provenance;
+  bind the review notes to that layer's resolved content instead of copying
+  framework decisions into project components. Preserve canonical category
+  and specimen IDs, titles and interaction contracts while applying the
+  project's approved typography, semantic colors, icons, density and shapes.
+  Framework layout structure does not require the Living Focus style or its
+  eight reference patterns; the project supplies its own applicable rules,
+  evidence and source records.

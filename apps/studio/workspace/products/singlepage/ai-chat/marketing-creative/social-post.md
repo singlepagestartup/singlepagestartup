@@ -1,20 +1,9 @@
----
-confirmation:
-  confirmed: false
-review:
-  dependencies:
-    model.framework-service: a511d19e3b8a0e67ce12e2b3d559a19fb9ca8d6f5732627d43db940fd14d3cbd
-    product.ai-chat.creative: 45271defa23617549a5078f8ce9c47e530b694ff9ac50d63196adc094b20f1d1
----
+# Как превратить прайс в описание услуги
 
-# Your files contain the business. They just do not show the whole picture yet.
+«Профессиональная съёмка с индивидуальным подходом» не объясняет, что получит заказчик.
 
-Upload notes, documents, screenshots and images.
+В учебном примере услуги фотографа есть точные условия: до десяти товаров, по три обработанных снимка каждого, 15 000 ₽ и три рабочих дня после съёмки. Из них получается описание для сайта, которое можно проверить по прайсу.
 
-AI Chat drafts Request, Strategy, Brand, Design and Products. Review the connected model, see what is missing and create a landing page for potential customers.
+В статье — заполненный пример, шаблон и запрос к ИИ. Они помогают сохранить состав, цену и срок, когда заметки превращаются в текст страницы.
 
-Keep refining the business in chat or export the document and use it elsewhere.
-
-> From scattered material to a business you can explain and test.
-
-[Organize my materials](/register)
+[Посмотреть пример описания услуги](/?path=/story/workspace-50-materials-singlepage-ai-chat-articles--articles-project-description)

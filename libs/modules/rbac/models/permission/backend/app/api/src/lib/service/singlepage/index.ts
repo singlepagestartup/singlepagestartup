@@ -4,13 +4,22 @@ import { CRUDService, DI } from "@sps/shared-backend-api";
 import { Table } from "@sps/rbac/models/permission/backend/repository/database";
 import { Repository } from "../../repository";
 import { Service as PermissionsToBillingModuleCurrenciesService } from "@sps/rbac/relations/permissions-to-billing-module-currencies/backend/app/api/src/lib/service/singlepage";
-import { createMemoryCache } from "@sps/shared-utils";
+import {
+  RouteMatcher,
+  createMemoryCache,
+  normalizeRoutePath,
+} from "@sps/shared-utils";
 import { match } from "path-to-regexp";
 import { PermissionDI } from "../../di";
 import { type IModel as IPermissionsToBillingModuleCurrencies } from "@sps/rbac/relations/permissions-to-billing-module-currencies/sdk/model";
+import { sensitiveRoutes } from "./sensitive-routes";
+import { Service as RolesToPermissionsService } from "@sps/rbac/relations/roles-to-permissions/backend/app/api/src/lib/service";
+import type { IPublicResourceIdsParams } from "@sps/rbac/models/permission/sdk/model";
+import { Service as PublicResourceIdsService } from "./public-resource-ids";
 
 const cache = createMemoryCache({ ttlMs: 30_000, maxSize: 10_000 });
 const matcherCache = new Map<string, ReturnType<typeof match>>();
+const sensitiveRoutesMatcher = new RouteMatcher(sensitiveRoutes);
 
 export type IResolveByRouteProps = {
   permission: {
@@ -35,10 +44,19 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     @inject(DI.IRepository) repository: Repository,
     @inject(PermissionDI.IPermissionsToBillingModuleCurrenciesService)
     permissionsToBillingModuleCurrenciesService: PermissionsToBillingModuleCurrenciesService,
+    @inject(PermissionDI.IRolesToPermissionsService)
+    readonly rolesToPermissions: RolesToPermissionsService,
   ) {
     super(repository);
     this.permissionsToBillingModuleCurrenciesService =
       permissionsToBillingModuleCurrenciesService;
+  }
+
+  publicResourceIds(props: IPublicResourceIdsParams) {
+    return new PublicResourceIdsService({
+      permission: this,
+      rolesToPermissions: this.rolesToPermissions,
+    }).execute(props);
   }
 
   invalidateRouteResolutionCache() {
@@ -46,12 +64,27 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     matcherCache.clear();
   }
 
+  /**
+   * Whether a route stays closed to a caller holding no role, even when the
+   * permission row it resolves to has no role attached (issue #270).
+   *
+   * Public rather than protected because the is-authorized service asks across
+   * a class boundary; async so a project can back its own policy with a read.
+   * This is the documented seam: override it in the `startup` subclass to
+   * widen the list, or to re-open a route the project deliberately serves to
+   * anonymous callers.
+   */
+  async isSensitiveRoute(route: string, method: string): Promise<boolean> {
+    return sensitiveRoutesMatcher.matches(normalizeRoutePath(route), method);
+  }
+
   protected async getTemplatePermissions(props: {
     method: string;
     type: string;
   }) {
     const cacheKey = `permissions:templates:${props.type}:${props.method.toUpperCase()}`;
-    let permissions = cache.get<(typeof Table)["$inferSelect"][]>(cacheKey);
+    let permissions =
+      await cache.getAsync<(typeof Table)["$inferSelect"][]>(cacheKey);
 
     if (!permissions) {
       permissions = await this.find({
@@ -149,7 +182,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   protected async getPermissionBillingRequirements(permissionId: string) {
     const cacheKey = `permission:${permissionId}:billing-requirements`;
     let requirements =
-      cache.get<IPermissionsToBillingModuleCurrencies[]>(cacheKey);
+      await cache.getAsync<IPermissionsToBillingModuleCurrencies[]>(cacheKey);
 
     if (!requirements) {
       const fetched =

@@ -12,16 +12,16 @@ const SUBJECT_ID = "subject-1";
 const PRODUCT_ID = "product-1";
 const OPEN_CART_ORDER_ID = "order-open";
 
-type IOrder = {
+interface IOrder {
   id: string;
   type: string;
   status: string;
-};
+}
 
-type IOrderToProduct = {
+interface IOrderToProduct {
   orderId: string;
   productId: string;
-};
+}
 
 function createTestContext(props?: {
   subjectOrderIds?: string[];

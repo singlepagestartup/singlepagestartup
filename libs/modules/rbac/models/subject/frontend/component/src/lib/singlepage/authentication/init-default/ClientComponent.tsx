@@ -93,9 +93,13 @@ export function Component(props: IComponentPropsExtended) {
     [refreshToken],
   );
 
+  // `oauthExchange` is the marker the callback leaves when the code travels in
+  // the cookie; `code` is only present while RBAC_OAUTH_EXCHANGE_CODE_IN_QUERY
+  // is on. Either way the exchange must not race an anonymous session.
   const isOAuthCallbackPending =
     pathname?.includes("/rbac/subject/authentication/select-method") &&
-    (Boolean(searchParams.get("code")) ||
+    (Boolean(searchParams.get("oauthExchange")) ||
+      Boolean(searchParams.get("code")) ||
       Boolean(searchParams.get("oauthError")));
 
   const refreshError = refresh.error as unknown as

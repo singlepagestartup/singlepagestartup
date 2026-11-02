@@ -1,3 +1,4 @@
+import { canonicalHeading } from "../../studio/workspace/headings";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { parse } from "yaml";
@@ -8,14 +9,10 @@ export const PIPELINE_SCHEMA = "singlepagestartup.pre-development-pipeline.v1";
 export const CHECK_KINDS = [
   "sections",
   "frontmatter",
-  "brief-scope",
-  "confirmed",
-  "stamp-current",
-  "catalog-matches-brief",
-  "model-sections",
+  "no-change-log",
+  "framework-headings",
+  "documents-formatted",
   "product-sections",
-  "research-sections",
-  "research-finding-prefix",
   "sales-v2",
   "visual-intake-ready",
   "design-sections",
@@ -23,21 +20,11 @@ export const CHECK_KINDS = [
   "media-examples",
   "brandbook-owned",
   "specimens-rendered",
+  "specimen-catalogue",
   "catalog-structure",
-  "analytics-declared",
   "sales-readiness",
 ] as const;
 export type PipelineCheckKind = (typeof CHECK_KINDS)[number];
-
-export const LEGACY_DETECTORS = [
-  "decision-profile",
-  "standalone-business",
-  "catalog-v1",
-  "sales-v1",
-  "evidence-register-codes",
-  "legacy-cursor-anchors",
-] as const;
-export type PipelineLegacyDetector = (typeof LEGACY_DETECTORS)[number];
 
 export const PIPELINE_ARTIFACTS = [
   "brief",
@@ -66,14 +53,6 @@ export interface IPipelineStage {
   manual_review: string[];
 }
 
-export interface IPipelineLegacyShape {
-  id: string;
-  detect: PipelineLegacyDetector;
-  procedure: string;
-  /** Stage that owns the documents the shape affects; it carries the gap. */
-  owning_stage: string;
-}
-
 export interface IPipelineDefinition {
   schema: string;
   cursor: {
@@ -84,7 +63,6 @@ export interface IPipelineDefinition {
     artifacts: string[];
   };
   stages: IPipelineStage[];
-  legacy_shapes: IPipelineLegacyShape[];
 }
 
 export class PipelineDefinitionError extends Error {
@@ -226,51 +204,11 @@ export function parsePipelineDefinition(
   if (stageIds.join("|") !== cursor.stages.join("|"))
     failures.push("stages must appear in exactly the cursor.stages order");
 
-  const legacyRaw = Array.isArray(value.legacy_shapes)
-    ? value.legacy_shapes
-    : [];
-  if (!Array.isArray(value.legacy_shapes))
-    failures.push("legacy_shapes must be an array");
-  const legacyIds = new Set<string>();
-  const legacyShapes = legacyRaw.map(
-    (shapeRaw, index): IPipelineLegacyShape => {
-      const shape = record(shapeRaw) ? shapeRaw : {};
-      const prefix = `legacy_shapes[${index}]`;
-      const id = typeof shape.id === "string" ? shape.id : "";
-      if (!id) failures.push(`${prefix}.id must be a non-empty string`);
-      else if (legacyIds.has(id))
-        failures.push(`${prefix}.id ${id} is declared twice`);
-      legacyIds.add(id);
-      if (!LEGACY_DETECTORS.includes(shape.detect as PipelineLegacyDetector))
-        failures.push(
-          `${prefix}.detect ${String(shape.detect)} is not a known detector`,
-        );
-      const procedure =
-        typeof shape.procedure === "string" ? shape.procedure : "";
-      if (!procedure) failures.push(`${prefix}.procedure must name a file`);
-      else if (!existsSync(path.join(agentsRoot, procedure.split("#")[0])))
-        failures.push(`${prefix}.procedure ${procedure} does not exist`);
-      const owningStage =
-        typeof shape.owning_stage === "string" ? shape.owning_stage : "";
-      if (!cursor.stages.includes(owningStage))
-        failures.push(
-          `${prefix}.owning_stage ${String(shape.owning_stage)} is not a declared stage`,
-        );
-      return {
-        id,
-        detect: shape.detect as PipelineLegacyDetector,
-        procedure,
-        owning_stage: owningStage,
-      };
-    },
-  );
-
   if (failures.length) throw new PipelineDefinitionError(failures);
   return {
     schema: PIPELINE_SCHEMA,
     cursor,
     stages,
-    legacy_shapes: legacyShapes,
   };
 }
 
@@ -297,5 +235,7 @@ export function templateSections(
     path.join(repositoryRoot, ".agents", template),
     "utf8",
   );
-  return [...source.matchAll(/^## (.+)$/gm)].map((match) => match[1].trim());
+  return [...source.matchAll(/^## (.+)$/gm)].map((match) =>
+    canonicalHeading(match[1]),
+  );
 }

@@ -278,6 +278,106 @@ describe("notification send service", () => {
   });
 
   /**
+   * BDD Scenario: Stale Telegram topic falls back to the chat
+   *
+   * Given a new notification targets a thread Telegram no longer accepts
+   * When Telegram rejects the delivery with a missing message thread
+   * Then the notification is delivered again without the message thread id
+   */
+  it("retries Telegram delivery without the thread id when the topic is gone", async () => {
+    const notification = createNotification({ reciever: "153077581" });
+    const sentNotification = createNotification({
+      reciever: notification.reciever,
+      status: "sent",
+      sourceSystemId: "5716",
+    });
+    const service = createService({
+      findById: jest.fn().mockResolvedValue(notification),
+      provider: jest
+        .fn()
+        .mockRejectedValueOnce(
+          new Error(
+            "Call to 'sendMessage' failed! (400: Bad Request: message thread not found)",
+          ),
+        )
+        .mockResolvedValueOnce(sentNotification),
+    });
+
+    notificationsToTemplatesFindMock.mockResolvedValue([
+      {
+        notificationId: notification.id,
+        templateId: "template-id",
+      },
+    ]);
+    templateFindMock.mockResolvedValue([
+      {
+        id: "template-id",
+        variant: "generate-telegram-social-module-message-created",
+      },
+    ]);
+
+    await expect(service.send({ id: notification.id })).resolves.toBe(
+      sentNotification,
+    );
+    expect(service.provider).toHaveBeenCalledTimes(2);
+    expect(service.provider).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        method: "telegram",
+        id: notification.id,
+        dropMessageThreadId: true,
+      }),
+    );
+    expect(service.update).not.toHaveBeenCalled();
+  });
+
+  /**
+   * BDD Scenario: Thread id is stripped on the retry delivery
+   *
+   * Given a rendered Telegram template carries a message thread id
+   * When the provider is asked to drop the message thread id
+   * Then the Telegram message is sent to the chat without that option
+   */
+  it("omits the rendered message thread id when asked to drop it", async () => {
+    const notification = createNotification({ reciever: "153077581" });
+    const sentNotification = createNotification({
+      ...notification,
+      status: "sent",
+      sourceSystemId: "5716",
+    });
+    const service = Object.assign(Object.create(Service.prototype), {
+      findById: jest.fn().mockResolvedValue(notification),
+      update: jest.fn().mockResolvedValue(sentNotification),
+    }) as Service;
+
+    mockTelegramSendMessage.mockResolvedValue({ message_id: 5716 });
+    (templateApi.render as jest.Mock).mockResolvedValue(
+      JSON.stringify({
+        method: "sendMessage",
+        props: ["Ответ агента", { message_thread_id: 114703 }],
+      }),
+    );
+
+    await expect(
+      service.provider({
+        method: "telegram",
+        provider: "Telegram",
+        id: notification.id,
+        template: {
+          id: "template-id",
+          variant: "generate-telegram-social-module-message-created",
+        } as any,
+        dropMessageThreadId: true,
+      }),
+    ).resolves.toBe(sentNotification);
+
+    expect(mockTelegramSendMessage).toHaveBeenCalledWith(
+      notification.reciever,
+      expect.any(String),
+      expect.not.objectContaining({ message_thread_id: expect.anything() }),
+    );
+  });
+
+  /**
    * BDD Scenario: Error notification is skipped
    *
    * Given a notification was already marked as an error

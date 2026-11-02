@@ -4,6 +4,7 @@ import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
 import QueryString from "qs";
 import { getHttpErrorType } from "@sps/backend-utils";
+import { applyOutputSchema } from "@sps/shared-backend-api";
 
 export class Handler {
   service: Service;
@@ -64,8 +65,18 @@ export class Handler {
         },
       });
 
+      /**
+       * This route answers with identity rows but builds its own response, so
+       * the model's output schema has to be applied here (issue #270). The
+       * framework sensitive-route list stops at the subject id, so this
+       * sub-path is reachable without it.
+       */
       return c.json({
-        data: identities,
+        data: applyOutputSchema({
+          c,
+          service: this.service.identity,
+          data: identities,
+        }),
       });
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);

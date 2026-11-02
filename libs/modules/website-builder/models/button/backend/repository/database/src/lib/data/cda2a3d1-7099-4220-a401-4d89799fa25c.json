@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Read Broadcast source guide",
+    "ru": "Документация Broadcast"
+  },
+  "subtitle": {},
+  "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/modules/broadcast/README.md",
+  "className": "w-fit",
+  "id": "cda2a3d1-7099-4220-a401-4d89799fa25c",
+  "createdAt": "2026-10-24T01:06:12.790Z",
+  "updatedAt": "2026-10-24T01:06:12.790Z",
+  "variant": "primary",
+  "adminTitle": "Read Broadcast source guide",
+  "slug": "framework-journey-guide-broadcast-actions-1"
+}

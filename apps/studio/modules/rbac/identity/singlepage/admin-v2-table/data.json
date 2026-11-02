@@ -1,0 +1,109 @@
+{
+  "schema": {
+    "module": "rbac",
+    "entity": "identity",
+    "entityType": "model",
+    "fields": [
+      {
+        "key": "password",
+        "label": "Password",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "salt",
+        "label": "Salt",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "account",
+        "label": "Account",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "email",
+        "label": "Email",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "provider",
+        "label": "Provider",
+        "kind": "text",
+        "nullable": false,
+        "default": "email"
+      },
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "code",
+        "label": "Code",
+        "kind": "text",
+        "nullable": true
+      }
+    ]
+  },
+  "records": [
+    {
+      "password": null,
+      "salt": null,
+      "account": null,
+      "email": null,
+      "provider": "email",
+      "id": "b165be33-e672-4b4a-a7e0-3d82d4e839ea",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "code": null
+    },
+    {
+      "password": null,
+      "salt": null,
+      "account": null,
+      "email": null,
+      "provider": "email",
+      "id": "fe549bbd-7fec-453d-a688-eaaf17526a3e",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "code": null
+    },
+    {
+      "password": null,
+      "salt": null,
+      "account": null,
+      "email": null,
+      "provider": "email",
+      "id": "6383fa17-b62a-4262-a21c-cb590a3958a9",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "code": null
+    }
+  ]
+}

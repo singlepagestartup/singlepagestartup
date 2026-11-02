@@ -1,4 +1,6 @@
-import { readFile } from "node:fs/promises";
+import { spawn } from "node:child_process";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { basename, join, normalize } from "node:path";
 import { api as rbacSubjectApi } from "@sps/rbac/models/subject/sdk/server";
 import { api as socialModuleMessageApi } from "@sps/social/models/message/sdk/server";
@@ -12,6 +14,8 @@ import {
   AUDIO_TRANSCRIPTION_LEGACY_METADATA_KEY,
   AUDIO_TRANSCRIPTION_MAX_BYTES,
   AUDIO_TRANSCRIPTION_METADATA_KEY,
+  AUDIO_TRANSCRIPTION_SILENCE_MAX_VOLUME_DB,
+  AUDIO_TRANSCRIPTION_SILENCE_MEAN_VOLUME_DB,
   OPEN_AI_TRANSCRIPTION_MODEL,
   RBAC_JWT_SECRET,
   RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
@@ -160,6 +164,8 @@ export class AudioTranscriptionService {
         });
 
         this.assertFileSize({ file });
+
+        await this.assertFileIsNotSilent({ file });
 
         const transcription = await openAI.transcribeAudio({
           file,
@@ -533,6 +539,113 @@ export class AudioTranscriptionService {
     });
   }
 
+  protected async assertFileIsNotSilent(props: { file: File }) {
+    const volume = await this.detectVolumeInDecibels({ file: props.file });
+
+    if (!volume) {
+      return;
+    }
+
+    const isQuietThroughout =
+      volume.mean <= AUDIO_TRANSCRIPTION_SILENCE_MEAN_VOLUME_DB;
+    const hasNoLoudMoment =
+      volume.max <= AUDIO_TRANSCRIPTION_SILENCE_MAX_VOLUME_DB;
+
+    if (!isQuietThroughout || !hasNoLoudMoment) {
+      return;
+    }
+
+    throw new AudioTranscriptionValidationError({
+      category: "silence",
+      message: `Audio carries no audible speech: mean ${volume.mean} dB, peak ${volume.max} dB`,
+    });
+  }
+
+  /**
+   * Returns the mean and peak levels of the recording, or undefined when they
+   * cannot be measured. An unmeasurable file stays transcribable on purpose:
+   * the gate only saves a provider call, it must never swallow real speech.
+   */
+  protected async detectVolumeInDecibels(props: { file: File }) {
+    let directory: string | undefined;
+
+    try {
+      directory = await mkdtemp(join(tmpdir(), "sps-audio-transcription-"));
+
+      const path = join(directory, "audio");
+
+      await writeFile(path, new Uint8Array(await props.file.arrayBuffer()));
+
+      const output = await this.runFfmpegVolumeDetect({ path });
+      const mean = output.match(/mean_volume:\s*(-?\d+(?:\.\d+)?) dB/);
+      const max = output.match(/max_volume:\s*(-?\d+(?:\.\d+)?) dB/);
+
+      if (!mean || !max) {
+        return;
+      }
+
+      return {
+        max: Number(max[1]),
+        mean: Number(mean[1]),
+      };
+    } catch (error) {
+      console.error("Audio transcription silence detection failed", {
+        message:
+          error instanceof Error
+            ? error.message
+            : String(error || "Unknown silence detection error"),
+        stage: "silence-detection",
+      });
+
+      return;
+    } finally {
+      if (directory) {
+        await rm(directory, { force: true, recursive: true }).catch(
+          () => undefined,
+        );
+      }
+    }
+  }
+
+  protected runFfmpegVolumeDetect(props: { path: string }) {
+    return new Promise<string>((resolve, reject) => {
+      const child = spawn(
+        "ffmpeg",
+        [
+          "-hide_banner",
+          "-nostdin",
+          "-i",
+          props.path,
+          "-af",
+          "volumedetect",
+          "-f",
+          "null",
+          "-",
+        ],
+        {
+          stdio: ["ignore", "ignore", "pipe"],
+        },
+      );
+      const stderr: Buffer[] = [];
+
+      child.stderr?.on("data", (chunk) => {
+        stderr.push(Buffer.from(chunk));
+      });
+
+      child.on("error", reject);
+      child.on("close", (code) => {
+        const output = Buffer.concat(stderr).toString("utf8");
+
+        if (code === 0) {
+          resolve(output);
+          return;
+        }
+
+        reject(new Error(`ffmpeg exited with code ${code}: ${output.trim()}`));
+      });
+    });
+  }
+
   protected async readFileStorageModuleFile(props: {
     fileStorageModuleFile: IFileStorageModuleFile;
   }) {
@@ -645,9 +758,9 @@ export class AudioTranscriptionService {
 }
 
 class AudioTranscriptionValidationError extends Error {
-  category: "validation";
+  category: "validation" | "silence";
 
-  constructor(props: { category: "validation"; message: string }) {
+  constructor(props: { category: "validation" | "silence"; message: string }) {
     super(props.message);
     this.category = props.category;
   }

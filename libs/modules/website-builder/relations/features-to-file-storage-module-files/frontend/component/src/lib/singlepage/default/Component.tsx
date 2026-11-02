@@ -29,11 +29,12 @@ export function Component(props: IComponentPropsExtended) {
         }}
       >
         {({ data }) => {
-          return data?.map((entity, index) => {
+          return data?.map((entity) => {
             return (
               <FileStorageModuleFile
-                key={index}
+                key={entity.id}
                 isServer={props.isServer}
+                dataSource="props"
                 data={entity}
                 variant={entity.variant as any}
                 language={props.language}

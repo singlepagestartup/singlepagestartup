@@ -54,6 +54,15 @@ export interface IRepositoryConfiguration {
   Table: PgTableWithColumns<any>;
   insertSchema: ZodObject<any>;
   selectSchema: ZodObject<any>;
+  /**
+   * Response shape applied at the REST boundary (issue #270), NOT in the
+   * repository: internal flows read columns back out of repository results —
+   * the RBAC identity salt, password hash and reset code are read by login,
+   * OAuth linking and wallet login, several of them over loopback HTTP — so a
+   * repository-level strip would break authentication. A model without this
+   * option keeps returning `selectSchema` rows verbatim.
+   */
+  outputSchema?: ZodObject<any>;
   dump: {
     active: boolean;
     type: "json";

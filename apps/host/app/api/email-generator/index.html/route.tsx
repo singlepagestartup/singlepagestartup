@@ -48,15 +48,23 @@ export const GET = async (request: NextRequest) => {
       },
     );
 
+    // text/html is deliberate here: the body is the email document that the
+    // notification service hands to the mail transport as `html`.
     return new NextResponse(html, {
       headers: {
         "Content-Type": "text/html",
+        "X-Content-Type-Options": "nosniff",
+        "Cache-Control": "no-store",
       },
     });
   } catch (error: any) {
+    // The route is unauthenticated, so decode and render internals stay in the
+    // host log instead of travelling back to the caller.
+    console.error("Email generator render failed:", error);
+
     return NextResponse.json(
       {
-        error: error.message,
+        error: "Not Found",
       },
       { status: 404 },
     );

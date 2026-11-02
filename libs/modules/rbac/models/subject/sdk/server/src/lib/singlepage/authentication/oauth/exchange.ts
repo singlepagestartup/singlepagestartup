@@ -13,8 +13,12 @@ export interface IProps {
     [key: string]: any;
   };
   options?: Partial<NextRequestOptions>;
-  data: {
-    code: string;
+  /**
+   * Optional: the callback hands the code over as an HttpOnly cookie, and the
+   * body is read only while `RBAC_OAUTH_EXCHANGE_CODE_IN_QUERY` is on.
+   */
+  data?: {
+    code?: string;
   };
 }
 

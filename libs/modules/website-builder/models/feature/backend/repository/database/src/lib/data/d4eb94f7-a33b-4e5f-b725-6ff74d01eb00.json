@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "d4eb94f7-a33b-4e5f-b725-6ff74d01eb00",
+  "createdAt": "2026-10-26T00:11:27.670Z",
+  "updatedAt": "2026-10-27T14:59:57.082Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "rbac",
+    "ru": "rbac"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Link purchases to customer accounts.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Свяжите покупку с аккаунтом клиента.\"}]}]}"
+  },
+  "adminTitle": "rbac",
+  "slug": "framework-reviewed-article-billing-connections-feature-1"
+}

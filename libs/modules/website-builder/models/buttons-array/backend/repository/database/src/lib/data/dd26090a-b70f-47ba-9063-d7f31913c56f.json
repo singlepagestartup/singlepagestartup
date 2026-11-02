@@ -1,0 +1,14 @@
+{
+  "id": "dd26090a-b70f-47ba-9063-d7f31913c56f",
+  "createdAt": "2026-10-24T01:05:54.345Z",
+  "updatedAt": "2026-10-24T01:05:54.345Z",
+  "variant": "default",
+  "className": "w-full",
+  "title": {
+    "en": "Actions",
+    "ru": "Действия"
+  },
+  "description": {},
+  "adminTitle": "Actions",
+  "slug": "framework-journey-guide-host-actions"
+}

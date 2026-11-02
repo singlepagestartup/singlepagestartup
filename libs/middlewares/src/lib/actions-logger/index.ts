@@ -68,7 +68,7 @@ export class Middleware {
           void (async () => {
             try {
               const resJson = await c.res.clone().json();
-              const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
+              const decoded = await jwt.verify(token, RBAC_JWT_SECRET, "HS256");
 
               const contentType = c.req.header("content-type");
               let requestData: any = {};

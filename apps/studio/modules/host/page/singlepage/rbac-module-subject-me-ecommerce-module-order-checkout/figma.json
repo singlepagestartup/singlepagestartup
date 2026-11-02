@@ -1,0 +1,27 @@
+{
+  "componentName": "host.page",
+  "pageName": "host",
+  "nodeId": "716:300",
+  "variantNodeId": "983:1819",
+  "variantName": "rbac-module-subject-me-ecommerce-module-order-checkout",
+  "metadata": {
+    "singlepagestartup.studio.blockId": "host.page.rbac-module-subject-me-ecommerce-module-order-checkout",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "host/page/singlepage/rbac-module-subject-me-ecommerce-module-order-checkout",
+    "sps.figma.component": "host.page",
+    "sps.figma.variant": "rbac-module-subject-me-ecommerce-module-order-checkout",
+    "sps.source.module": "host",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "page",
+    "sps.source.variant": "rbac-module-subject-me-ecommerce-module-order-checkout",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/host/page/singlepage/rbac-module-subject-me-ecommerce-module-order-checkout/Component.tsx",
+    "sps.code.story": "apps/studio/modules/host/page/singlepage/rbac-module-subject-me-ecommerce-module-order-checkout/Component.stories.tsx",
+    "sps.figma.nodeId": "716:300",
+    "sps.figma.variantNodeId": "983:1819",
+    "sps.figma.storybookReferenceNodeId": "983:1968",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "983:1968",
+  "storybookImageCount": 1
+}

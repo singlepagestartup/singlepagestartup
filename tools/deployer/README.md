@@ -64,6 +64,46 @@ services, run `./server.sh up` instead.
 Password authentication remains available for other providers by leaving both
 private-key variables empty and setting `ANSIBLE_PASSWORD`.
 
+## MCP client configuration
+
+When MCP deployment succeeds, `mcp.sh up` exports a public connection bundle
+for OpenCode, Claude Code, Codex, Cursor and VS Code/Copilot under
+`.artifacts/mcp-client-configs/<client>`. `MCP_CLIENT_CONFIG_OUTPUT_DIR` selects another
+directory, including the GitHub Actions artifact location. Active client files
+in the checkout remain unchanged.
+
+The connector name uses the checkout's `origin` repository and the environment:
+`<repo-name>-production` or `<repo-name>-preview`. `--repo-name` overrides the
+name; deployment repository settings are a fallback when Git context is absent.
+The endpoint uses the deployment's actual domain and subdomain.
+
+The deployer validates bundle generation with `--check-clients` before DNS,
+image or MCP playbook operations, then writes the bundle after deployment and
+GitHub metadata updates succeed. A failed deployment, `mcp.sh down` or a skipped
+MCP image does not generate the bundle.
+
+`up.sh` and root `create_env.sh` do not generate client connections. Developers
+configure them explicitly after setting their own MCP endpoint. Client
+generation runs on Bun 1.3.6 without installing dependencies or logging in.
+
+Use `MCP_CLIENT_OPENCODE_VERSION=auto` to preserve the project's existing
+OpenCode format. A new configuration uses the installed client's version, or
+V2 when detection is unavailable. `1` and `2` select a new file's format
+explicitly. Regenerate without provisioning a server:
+
+```bash
+# From the repository root:
+npm run mcp:clients:generate -- --client codex
+```
+
+GitHub Actions saves an `mcp-client-configs` artifact with public connector
+entries after successful MCP deployment. The export excludes existing client
+settings and credentials. Local deployment and CI both export a bundle without
+changing active client files. `npm run mcp:clients:generate -- --client <client>` explicitly updates that
+client's ignored local files; shared `*.example` defaults remain in Git.
+Each client still needs the user's OAuth login. See the
+[client formats and authentication commands](../../apps/mcp/README.md#generated-project-client-configs).
+
 ## Infrastructure security and operations
 
 The default production deployment keeps infrastructure services behind the
@@ -122,6 +162,82 @@ If Redis is recreated separately, restart its existing clients before testing:
 docker service update --force api_api
 docker service update --force mcp_mcp
 ```
+
+### Generating deployment secrets
+
+Every `X`-placeholder credential in `tools/deployer/.env.example` is operator
+supplied. The deployer generates nothing; it only transports what it is given.
+Produce each one with a cryptographic source and paste the result:
+
+```bash
+openssl rand -hex 32
+```
+
+That applies to `RBAC_SECRET_KEY`, `RBAC_JWT_SECRET`,
+`RBAC_COOKIE_SESSION_SECRET`, `MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET`,
+`DATABASE_PASSWORD`, `REDIS_PASSWORD`, `TRAEFIK_PASSWORD` and
+`PORTAINER_PASSWORD`. Do not copy these values out of a locally bootstrapped
+`apps/api/.env` into a deployment; generate fresh ones for each environment, and
+keep the production and `PREVIEW_` sets distinct.
+
+The API refuses to start on a secret it can recognize as guessable. Its
+`API_SECRET_STRENGTH` variable defaults to `enforce`, which stops the process
+when `RBAC_SECRET_KEY` or `RBAC_JWT_SECRET` is absent or carries the shape of the
+generator described below. `API_SECRET_STRENGTH=report` logs the same findings
+and starts anyway; it exists for a deployment that cannot rotate in the same
+maintenance window, and leaving it set is an explicit decision to keep running
+on an authorization bypass that can be found offline. The report names keys and
+verdicts only, never a value.
+
+### Rotating the secrets of a deployment that already bootstrapped
+
+Until this change, the bootstrap scripts derived every generated credential from
+the shell `$RANDOM` variable, which has about fifteen bits of entropy, and wrote
+a fixed administrator password. Upgrading does not fix an installation that
+already ran them: `apps/api/create_env.sh`, `apps/db/create_env.sh` and
+`apps/redis/create_env.sh` all exit early when their `.env` file exists, so a
+project that syncs and redeploys still runs on the old values. **The values have
+to be rotated by hand.**
+
+On a developer checkout whose data is disposable: stop the `apps/db` and
+`apps/redis` stacks, move aside `apps/api/.env`, `apps/db/.env`,
+`apps/redis/.env`, `apps/mcp/.env` and `apps/telegram/.env`, remove
+`apps/db/db_data` and `apps/redis/redis_data`, then run `./up.sh`,
+`npx nx run api:db:seed` and `cd apps/api && bash create_rbac_subject.sh`. Copy
+the administrator password the bootstrap prints into `.agents/.env` as
+`API_RBAC_SUBJECT_IDENTITY_PASSWORD` if browser tests are run. Keep the data
+instead by rotating value by value, as below.
+
+On a deployment that must keep its data, rotate in this order. The two token
+secrets end every session, so plan the window.
+
+| Value                                        | What to do                                                                                                                                                                   | Effect                                                                                                                                                    |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POSTGRES_PASSWORD` / `DATABASE_PASSWORD`    | run `ALTER ROLE "<user>" WITH PASSWORD '<new>';` inside the running PostgreSQL container, then update `tools/deployer/.env` and the GitHub secret, then redeploy API and MCP | editing `apps/db/.env` alone does nothing: the image is a stock PostgreSQL entrypoint and `POSTGRES_PASSWORD` applies only at the first init of `db_data` |
+| `REDIS_PASSWORD`                             | follow the coordinated procedure above: update the secret, deploy Redis, API and MCP as one rollout, then force-update `api_api` and `mcp_mcp`                               | cache and KV unavailable for the window                                                                                                                   |
+| `RBAC_JWT_SECRET`                            | rotate in `tools/deployer/.env` and in the GitHub secrets, then deploy API, Telegram and MCP together                                                                        | every access and refresh token is invalidated. It also rotates the MCP OAuth signing key, because the MCP template falls back to this value               |
+| `RBAC_SECRET_KEY`                            | rotate in `tools/deployer/.env` and in the GitHub secrets, deploy API, Telegram and MCP, and **re-run the cron play** so the server crontab receives the new value           | this is the full authorization bypass. The middleware also accepts it from an `rbac.secret-key` cookie, so any browser that received it holds a copy      |
+| `MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET` | rotate and deploy API and MCP together                                                                                                                                       | the API-to-MCP exchange fails until both sides match                                                                                                      |
+| `RBAC_COOKIE_SESSION_SECRET`                 | rotate for hygiene                                                                                                                                                           | no runtime effect: nothing reads it today                                                                                                                 |
+| Administrator identity password              | change it through the API or the admin UI, then update `apps/api/.env` and `.agents/.env`                                                                                    | editing `.env` alone does not change the stored bcrypt hash; that value is only the bootstrap input                                                       |
+
+Four copies survive a rotation unless they are handled as well:
+
+- **Docker images.** `.dockerignore` does not exclude `apps/api/.env`,
+  `apps/mcp/.env`, `apps/telegram/.env` or `tools/deployer/.env`, and the
+  Dockerfile copies the working tree, so any image built from a bootstrapped
+  checkout carries the old values. Rebuild and re-tag, and treat previously
+  pushed tags as carrying them.
+- **GitHub Actions secrets.** Replace both the production and the `PREVIEW_`
+  variants of the four RBAC values.
+- **`tools/deployer/.env`** on the operator's own machine.
+- **The server crontab**, per the `RBAC_SECRET_KEY` row above.
+
+Afterwards, treat the window before the rotation as one in which the old
+`RBAC_SECRET_KEY` could have been guessed. Review the action log for requests
+carrying `X-RBAC-SECRET-KEY` from unexpected sources, confirm the identity and
+subject tables hold no account that was not created through a normal flow, and
+force password resets if the deployment is public.
 
 ### Traefik log level
 
@@ -264,6 +380,25 @@ Never commit a Lightsail private key, the generated `inventory.yaml`, or a real
 `.env` file. They are ignored by the repository.
 
 ## Docker image rollout
+
+API startup applies consistency infrastructure migrations before model and
+relation migrations, finishes seeding, and then starts the HTTP listener.
+A failed migration or seed stops startup. The API service health check probes
+its loopback `authentication/me` endpoint and requires a successful HTTP
+response; an unauthenticated request returns an empty session. The 30-minute
+startup allowance covers migrations. The probe sends `Cache-Control: no-store`
+so cache-version lookups cannot stall the liveness request. Without credentials,
+the endpoint returns an empty session without querying subjects or identities.
+With `start-first` updates, Swarm retains the previous API task until the new
+task passes this check. Existing services must apply the API compose health
+check once before an image with synchronous migrations is rolled out.
+
+The API release job waits for its Swarm update and every target-image task to
+reach `running` before dependent service jobs can continue. It resolves the
+service and endpoint from the existing Portainer webhook; no separate service
+ID map is required. A paused update, rollback, missing health check or timeout
+fails the job and keeps dependent services on their previous images. Check the
+gate with `node --test tools/deployer/portainer/wait-service.test.mjs`.
 
 Release workflows still update each service through its Portainer webhook. A
 shared preparation job first pulls every unique release image through the

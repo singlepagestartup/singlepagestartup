@@ -6,10 +6,9 @@
  * Then: a buyable currency is returned, or the request is rejected before any write happens.
  */
 
-import {
-  Service,
-  NO_PRICE_IN_AVAILABLE_CURRENCY_ERROR,
-} from "./resolve-currency";
+import { Service } from "./resolve-currency";
+const NO_PRICE_IN_AVAILABLE_CURRENCY_ERROR =
+  "Validation error. Product has no price in an available currency";
 
 const PRICE_ATTRIBUTE_KEY_ID = "attribute-key-price";
 const PRODUCT_ID = "product-1";

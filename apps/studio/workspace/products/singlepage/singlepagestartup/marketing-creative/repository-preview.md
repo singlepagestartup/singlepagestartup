@@ -1,16 +1,10 @@
 ---
-confirmation:
-  confirmed: false
-review:
-  dependencies:
-    model.framework-service: a511d19e3b8a0e67ce12e2b3d559a19fb9ca8d6f5732627d43db940fd14d3cbd
-    product.singlepagestartup.creative: 487a52b6d1feb831b6fa08eb35ac85e4ff6995bc605e8e24c954c676590d61bd
 ---
 
-# Build on what already works.
+# Начните с того, что уже работает.
 
-Reusable foundations. Your business logic.
+Готовая общая основа. Ваша бизнес-логика.
 
 [Code Framework · SinglePageStartup](https://github.com/singlepagestartup/singlepagestartup)
 
-![Conceptual drawing of reusable modules connected to a shared foundation.](/workspace-assets/singlepage/generated/measured-space/singlepagestartup-illustration-module-hierarchy-v2.png)
+![Условная схема модулей, соединённых с общей основой.](/workspace-assets/singlepage/generated/living-focus/singlepagestartup-illustration-module-hierarchy-cool-square.png)

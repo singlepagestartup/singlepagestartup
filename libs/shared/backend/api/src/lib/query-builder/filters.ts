@@ -1,6 +1,5 @@
 import { SQL, getOperators, sql } from "drizzle-orm";
 import { PgTableWithColumns } from "drizzle-orm/pg-core";
-import { validate as isUuid } from "uuid";
 
 interface QueryBuilderFilterMethods extends ReturnType<typeof getOperators> {}
 
@@ -18,8 +17,97 @@ export interface QueryBuilderProps<T extends PgTableWithColumns<any>> {
   };
 }
 
+/**
+ * Comparison methods this builder compiles into a predicate. A method outside
+ * the list used to match no branch and produce no predicate at all, so the
+ * query answered with unfiltered rows instead of refusing the request.
+ */
+export const ALLOWED_FILTER_METHODS = Object.freeze([
+  "eq",
+  "ne",
+  "not",
+  "gt",
+  "gte",
+  "lt",
+  "lte",
+  "like",
+  "ilike",
+  "notLike",
+  "notIlike",
+  "inArray",
+  "notInArray",
+  "isNull",
+  "isNotNull",
+] as const);
+
+export type IAllowedFilterMethod = (typeof ALLOWED_FILTER_METHODS)[number];
+
+export const MAX_FILTERS = 32;
+export const MAX_JSON_KEY_LENGTH = 64;
+
+/**
+ * A plain column identifier followed by at most one json key. The key also
+ * accepts "-" because the only live caller derives it from configured language
+ * codes, which downstream projects extend with forms such as "en-US".
+ */
+const FILTER_COLUMN_PATTERN =
+  /^[A-Za-z_][A-Za-z0-9_]*(->>[A-Za-z_][A-Za-z0-9_-]*)?$/;
+
 function castToText(column: any): SQL {
   return sql`CAST(${column} AS TEXT)`;
+}
+
+/**
+ * The json key is an argument of "->>", so it belongs in the parameter list
+ * like any other value. Drizzle's raw-fragment escape hatch must never return
+ * to this file: it would let request text decide the structure of the
+ * statement again. The cast pins the "jsonb ->> text" overload, which an
+ * untyped parameter would otherwise leave to Postgres to resolve.
+ */
+function jsonPathExpression(column: any, key: string): SQL {
+  return sql`${column}->>${key}::text`;
+}
+
+function parseFilterMethod(method: unknown): IAllowedFilterMethod {
+  if (!method) {
+    throw new Error("Validation error. Missing 'method' in filter object");
+  }
+
+  if (
+    typeof method !== "string" ||
+    !ALLOWED_FILTER_METHODS.includes(method as IAllowedFilterMethod)
+  ) {
+    throw new Error(`Validation error. Unknown filter method '${method}'`);
+  }
+
+  return method as IAllowedFilterMethod;
+}
+
+function parseFilterColumn(column: unknown): {
+  name: string;
+  jsonKey?: string;
+} {
+  if (typeof column !== "string" || !column.trim()) {
+    throw new Error("Validation error. Missing 'column' in filter object");
+  }
+
+  const trimmed = column.trim();
+
+  if (!FILTER_COLUMN_PATTERN.test(trimmed)) {
+    throw new Error(
+      "Validation error. Filter column must be an identifier, optionally followed by '->>' and one json key",
+    );
+  }
+
+  const [name, jsonKey] = trimmed.split("->>");
+
+  if (jsonKey && jsonKey.length > MAX_JSON_KEY_LENGTH) {
+    throw new Error(
+      `Validation error. Json key is longer than ${MAX_JSON_KEY_LENGTH} characters`,
+    );
+  }
+
+  return { name, jsonKey };
 }
 
 /**
@@ -53,40 +141,36 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
   }
 
   const filterArrays = filters["and"];
+
+  if (!Array.isArray(filterArrays)) {
+    throw new Error("Validation error. 'filters.and' must be an array");
+  }
+
+  if (filterArrays.length > MAX_FILTERS) {
+    throw new Error(
+      `Validation error. Too many filters, maximum is ${MAX_FILTERS}`,
+    );
+  }
+
   const resultQueries: (SQL<any> | undefined)[] = [];
 
   for (const filter of filterArrays) {
-    const method: keyof QueryBuilderFilterMethods = filter?.method;
-    const filterColumn: keyof T["$inferSelect"] = filter?.column;
-    const tableColumn = table[filterColumn];
-    let filterValue: any;
-    let isJsonField = false;
-    const columnName = filterColumn.toString();
+    const method = parseFilterMethod(filter?.method);
+    const { name, jsonKey } = parseFilterColumn(filter?.column);
+    const tableColumn = table[name];
 
-    if (!method) {
-      throw new Error("Validation error. Missing 'method' in filter object");
+    if (!tableColumn) {
+      throw new Error(`Validation error. Unknown column '${name}'`);
     }
 
-    if (columnName.includes("->>")) {
-      isJsonField = true;
-      const [column] = columnName.split("->>");
-      if (!table[column.trim()]) {
-        throw new Error(
-          `Internal error. Column ${column.trim()} not found in table`,
-        );
-      }
+    let filterValue: any;
+
+    if (jsonKey) {
       filterValue = filter.value;
     } else {
-      if (!tableColumn) {
-        throw new Error("Validation error. Missing 'column' in filter object");
-      }
-
       switch (tableColumn["dataType"]) {
         case "date":
           filterValue = new Date(filter.value);
-          break;
-        case "integer":
-          filterValue = parseInt(filter.value);
           break;
         case "boolean":
           if (typeof filter.value === "boolean") {
@@ -111,37 +195,15 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
       }
     }
 
-    if (tableColumn && tableColumn["dataType"] === "uuid" && method === "eq") {
-      if (isUuid(filter.value)) {
-        resultQueries.push(
-          queryFunctions.eq(tableColumn, filter.value) as SQL<any>,
-        );
-      } else {
-        resultQueries.push(
-          queryFunctions.like(
-            castToText(tableColumn),
-            "%" + filter.value + "%",
-          ) as SQL<any>,
-        );
-      }
-      continue;
-    }
+    const comparedColumn = jsonKey
+      ? jsonPathExpression(tableColumn, jsonKey)
+      : tableColumn;
 
     if (method === "notInArray" || method === "inArray") {
       const arrayFilter: string[] = [];
 
       if (!filterValue) {
-        if (isJsonField) {
-          const [column, jsonField] = columnName.split("->>");
-          const baseColumn = table[column.trim()];
-          resultQueries.push(
-            queryFunctions.isNull(
-              sql`${baseColumn}->>${sql.raw(`'${jsonField.trim()}'`)}`,
-            ) as SQL<any>,
-          );
-        } else if (tableColumn) {
-          resultQueries.push(queryFunctions.isNull(tableColumn) as SQL<any>);
-        }
+        resultQueries.push(queryFunctions.isNull(comparedColumn) as SQL<any>);
         continue;
       }
 
@@ -151,20 +213,9 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
         Object.values(filterValue).forEach((v: any) => arrayFilter.push(v));
       }
 
-      if (isJsonField) {
-        const [column, jsonField] = columnName.split("->>");
-        const baseColumn = table[column.trim()];
-        resultQueries.push(
-          queryFunctions[method](
-            sql`${baseColumn}->>${sql.raw(`'${jsonField.trim()}'`)}`,
-            arrayFilter,
-          ) as SQL<any>,
-        );
-      } else if (tableColumn) {
-        resultQueries.push(
-          queryFunctions[method](tableColumn, arrayFilter) as SQL<any>,
-        );
-      }
+      resultQueries.push(
+        queryFunctions[method](comparedColumn, arrayFilter) as SQL<any>,
+      );
     }
 
     if (
@@ -176,20 +227,9 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
       method === "gte" ||
       method === "ne"
     ) {
-      if (isJsonField) {
-        const [column, jsonField] = columnName.split("->>");
-        const baseColumn = table[column.trim()];
-        resultQueries.push(
-          queryFunctions[method](
-            sql`${baseColumn}->>${sql.raw(`'${jsonField}'`)}`,
-            filterValue,
-          ) as SQL<any>,
-        );
-      } else if (tableColumn) {
-        resultQueries.push(
-          queryFunctions[method](tableColumn, filterValue) as SQL<any>,
-        );
-      }
+      resultQueries.push(
+        queryFunctions[method](comparedColumn, filterValue) as SQL<any>,
+      );
     }
 
     if (
@@ -198,37 +238,16 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
       method === "ilike" ||
       method === "like"
     ) {
-      if (isJsonField) {
-        const [column, jsonField] = columnName.split("->>");
-        const baseColumn = table[column.trim()];
-        resultQueries.push(
-          queryFunctions[method](
-            sql`(${baseColumn}->>${sql.raw(`'${jsonField.trim()}'`)})::text`,
-            "%" + filterValue + "%",
-          ) as SQL<any>,
-        );
-      } else if (tableColumn) {
-        resultQueries.push(
-          queryFunctions[method](
-            castToText(tableColumn),
-            "%" + filterValue + "%",
-          ) as SQL<any>,
-        );
-      }
+      resultQueries.push(
+        queryFunctions[method](
+          jsonKey ? sql`(${comparedColumn})::text` : castToText(comparedColumn),
+          "%" + filterValue + "%",
+        ) as SQL<any>,
+      );
     }
 
     if (method === "isNull" || method === "isNotNull") {
-      if (isJsonField) {
-        const [column, jsonField] = columnName.split("->>");
-        const baseColumn = table[column.trim()];
-        resultQueries.push(
-          queryFunctions[method](
-            sql`${baseColumn}->>${sql.raw(`'${jsonField.trim()}'`)}`,
-          ) as SQL<any>,
-        );
-      } else if (tableColumn) {
-        resultQueries.push(queryFunctions[method](tableColumn) as SQL<any>);
-      }
+      resultQueries.push(queryFunctions[method](comparedColumn) as SQL<any>);
     }
   }
 

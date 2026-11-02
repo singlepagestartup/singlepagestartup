@@ -5,10 +5,11 @@
   "projectType": "application",
   "tags": [],
   "targets": {
+    "jest:test": {},
     "next:dev": {
       "executor": "@nx/next:server",
       "defaultConfiguration": "development",
-      "cache": true,
+      "cache": false,
       "options": {
         "buildTarget": "next:build",
         "dev": true,
@@ -23,7 +24,8 @@
       "cache": true,
       "defaultConfiguration": "production",
       "options": {
-        "outputPath": "apps/host"
+        "outputPath": "apps/host",
+        "webpack": true
       }
     },
     "next:start": {

@@ -1,4 +1,5 @@
 import {
+  CONSISTENCY_REVALIDATION_BATCH_SIZE,
   compileTopicRules,
   HOST_SERVICE_URL,
   ICompiledTopicRule,
@@ -42,8 +43,7 @@ export class Middleware {
     // Topic rules precedence: constructor options -> project startup layer ->
     // framework defaults. A more specific rule with `stop: true` wins. The
     // resolver + the singlepage/startup rule layers live in @sps/shared-utils
-    // (NOT this middleware), so http-cache consumes the same resolver without
-    // coupling to revalidation, and broadcast + cache-version bump always agree.
+    // so mutation notifications and browser subscriptions share a vocabulary.
     this.compiledTopicRules = compileTopicRules([
       ...(options?.topicRules || []),
       ...startupTopicRules,
@@ -123,11 +123,53 @@ export class Middleware {
     });
   }
 
-  async revalidateTag(tag: string) {
+  async revalidateTags(tags: string[], required = false) {
+    const unique = [...new Set(tags)];
+    for (
+      let start = 0;
+      start < unique.length;
+      start += CONSISTENCY_REVALIDATION_BATCH_SIZE
+    ) {
+      try {
+        const response = await fetch(HOST_SERVICE_URL + "/api/revalidate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            tags: unique.slice(
+              start,
+              start + CONSISTENCY_REVALIDATION_BATCH_SIZE,
+            ),
+          }),
+          signal: AbortSignal.timeout(3000),
+        });
+        if (response.status === 404 || response.status === 405) {
+          for (const tag of unique.slice(
+            start,
+            start + CONSISTENCY_REVALIDATION_BATCH_SIZE,
+          ))
+            await this.revalidateTag(tag, required);
+          continue;
+        }
+        if (!response.ok)
+          throw new Error(`Next invalidation failed (${response.status})`);
+      } catch (error) {
+        if (required) throw error;
+        console.log("Next invalidation failed:", error);
+      }
+    }
+  }
+
+  async revalidateTag(tag: string, required = false) {
     try {
-      await fetch(HOST_SERVICE_URL + "/api/revalidate?tag=" + tag);
+      const response = await fetch(
+        HOST_SERVICE_URL + "/api/revalidate?tag=" + encodeURIComponent(tag),
+        { signal: AbortSignal.timeout(3000) },
+      );
+      if (!response.ok)
+        throw new Error(`Next invalidation failed (${response.status})`);
     } catch (error) {
-      console.log("🚀 ~ revalidateTag ~ error:", error);
+      if (required) throw error;
+      console.log("Next invalidation failed:", error);
     }
   }
 }

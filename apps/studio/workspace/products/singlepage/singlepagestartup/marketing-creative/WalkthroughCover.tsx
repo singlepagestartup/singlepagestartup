@@ -23,16 +23,15 @@ export function WalkthroughArtwork({
   return (
     <div
       data-workspace-projection="singlepage"
-      className={`relative h-full w-full overflow-hidden bg-[#F7F6F2] text-[#111111] ${creativeTypography.body}`}
+      className={`relative h-full w-full overflow-hidden bg-[var(--workspace-brand-foreground)] text-white ${creativeTypography.body}`}
     >
       <img
         src={copy.image.src}
         alt={copy.image.alt}
-        className="absolute right-0 top-0 h-[720px] w-[1080px] object-contain"
+        className="absolute bottom-0 left-0 h-[612px] w-[600px] object-cover"
         style={{ transform: `scale(${photoScale})` }}
       />
-      <div className="absolute inset-y-0 left-0 w-[200px] bg-[#F7F6F2]" />
-      <div className="absolute left-[44px] top-[44px] bg-[#F7F6F2] px-[22px] py-[18px]">
+      <div className="absolute inset-x-0 top-0 flex h-[108px] items-center bg-white px-[44px]">
         <img
           src={creativeAssets.logo}
           alt="SinglePageStartup"
@@ -40,18 +39,18 @@ export function WalkthroughArtwork({
         />
       </div>
       <div
-        className="absolute bottom-[64px] left-[44px] w-[622px] bg-[#F7F6F2]/95 px-[34px] pb-[32px] pt-[27px]"
+        className="absolute bottom-[64px] right-[54px] w-[560px]"
         style={{ transform: `translateY(${copyOffset}px)` }}
       >
         <h1
-          className={`${creativeTypography.display} text-[98px] font-semibold leading-[0.91] tracking-[-0.025em]`}
+          className={`${creativeTypography.display} text-[76px] font-semibold leading-[1.04] tracking-[-0.035em]`}
         >
           {copy.title}
         </h1>
-        <p className="mt-[26px] max-w-[495px] text-[20px] leading-[1.5]">
+        <p className="mt-[26px] max-w-[495px] text-[22px] leading-[1.5] text-white/80">
           {copy.description}
         </p>
-        <span className="mt-[25px] inline-block bg-[#BFEF61] px-[20px] py-[13px] text-[17px] font-semibold">
+        <span className="mt-[25px] inline-block rounded-xl bg-[var(--workspace-brand-accent)] px-[20px] py-[13px] text-[17px] font-semibold text-[var(--workspace-brand-foreground)]">
           {copy.action}
         </span>
       </div>
