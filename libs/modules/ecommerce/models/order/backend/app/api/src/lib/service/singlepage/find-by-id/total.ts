@@ -11,6 +11,7 @@ export type IExecuteProps = {
 };
 
 export type IExecuteResult = {
+  availableCurrencyIds: string[];
   totals: {
     total: number;
     billingModuleCurrency: IBillingModuleCurrency;
@@ -75,6 +76,7 @@ export class Service {
 
     const totals: IExecuteResult["totals"] = [];
     const unpriced: IExecuteResult["unpriced"] = [];
+    let availableCurrencyIds: Set<string> | undefined;
 
     for (const orderToProduct of orderToProducts) {
       const orderToProductTotals = await this.ordersToProducts.getTotal({
@@ -87,8 +89,22 @@ export class Service {
 
       totals.push(...orderToProductTotals.totals);
       unpriced.push(...orderToProductTotals.unpriced);
+      const lineCurrencies = new Set<string>(
+        orderToProductTotals.totals.map(
+          (total) => total.billingModuleCurrency.id,
+        ),
+      );
+      availableCurrencyIds = availableCurrencyIds
+        ? new Set(
+            [...availableCurrencyIds].filter((id) => lineCurrencies.has(id)),
+          )
+        : lineCurrencies;
     }
 
-    return { totals, unpriced };
+    return {
+      totals,
+      unpriced,
+      availableCurrencyIds: [...(availableCurrencyIds ?? [])],
+    };
   }
 }

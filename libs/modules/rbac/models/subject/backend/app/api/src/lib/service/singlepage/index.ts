@@ -1,4 +1,8 @@
 import {
+  Service as SetOrderCurrency,
+  type IExecuteProps as ISetOrderCurrencyProps,
+} from "./ecommerce/order/set-currency";
+import {
   Service as ResolveOrderCurrency,
   type IExecuteProps as IResolveOrderCurrencyProps,
 } from "./ecommerce/order/resolve-currency";
@@ -280,6 +284,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       ecommerceModule: this.ecommerceModule,
       billingModule: this.billingModule,
     }).execute(props);
+  }
+
+  async ecommerceModuleOrderSetCurrency(props: ISetOrderCurrencyProps) {
+    return new SetOrderCurrency({ service: this }).execute(props);
   }
 
   async ecommerceModuleOrderAssertAccess(props: IEcommerceOrderAccessProps) {
