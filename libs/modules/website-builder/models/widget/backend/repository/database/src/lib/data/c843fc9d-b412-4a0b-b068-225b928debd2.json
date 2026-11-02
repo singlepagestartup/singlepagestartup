@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Work with CRM.",
+    "ru": "Работайте с CRM."
+  },
+  "subtitle": {
+    "en": "Experience",
+    "ru": "Интерфейс"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Forms, steps, fields and saved contact requests.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Формы, шаги, поля и сохранённые контактные заявки.\"}]}]}"
+  },
+  "anchor": "module-crm",
+  "className": "@5xl:grid-cols-2",
+  "id": "c843fc9d-b412-4a0b-b068-225b928debd2",
+  "createdAt": "2026-10-24T01:06:00.040Z",
+  "updatedAt": "2026-10-24T01:06:00.040Z",
+  "variant": "content-definition-grid-page",
+  "adminTitle": "Work with CRM.",
+  "slug": "framework-journey-guide-crm-overview"
+}

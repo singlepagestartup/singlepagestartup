@@ -131,7 +131,7 @@ export class Service {
     }
 
     try {
-      const decoded = await jwt.verify(authorization, RBAC_JWT_SECRET);
+      const decoded = await jwt.verify(authorization, RBAC_JWT_SECRET, "HS256");
       const subjectId = decoded?.subject?.["id"];
       if (typeof subjectId === "string") {
         return subjectId;

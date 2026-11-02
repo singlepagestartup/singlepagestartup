@@ -5,6 +5,13 @@
 Layouts define reusable page structure containers that group widgets and
 organize them into slots.
 
+Host Page composes route-aware Layout Widgets from their persisted
+`layouts-to-widgets` links and supplies ready `before` and `after` nodes.
+Layout receives those slots and page children. It has no current-URL prop.
+A standalone Layout loads its ordinary `default` and `additional` relations
+when the corresponding slots are omitted. Layout Widgets and Page Widgets
+retain their separate database links.
+
 ## Fields
 
 - `id`: unique identifier (UUID).

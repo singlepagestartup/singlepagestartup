@@ -34,6 +34,9 @@ export class Handler {
 
       const body = await c.req.parseBody();
       const provider = c.req.param("provider");
+      if (!provider) {
+        throw new Error("Validation error. Invalid provider");
+      }
 
       if (typeof body["data"] !== "string") {
         throw new Error("Validation error. Invalid data");

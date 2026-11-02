@@ -4,31 +4,11 @@ import { type IController } from "../../controllers";
 import { type IExceptionFilter } from "../../filters";
 import { inject, injectable } from "inversify";
 import { DI } from "../../di/constants";
-import {
-  IDumpResult,
-  ISeedResult,
-  type IConfiguration,
-} from "../../configuration";
+import { ISeedResult, type IConfiguration } from "../../configuration";
 import { ParseQueryMiddleware, LoggerMiddleware } from "../../middleware";
 
-export interface IApp<
-  ENV extends Env = {},
-  SCHEMA extends Record<string, unknown> = {},
-> {
-  hono: Hono<ENV>;
-  controller?: IController<SCHEMA>;
-  exceptionFilter: IExceptionFilter;
-  init: () => Promise<void>;
-  useRoutes: () => void;
-  seed: (props?: {
-    type?: "model" | "relation";
-    seeds: ISeedResult[];
-  }) => Promise<ISeedResult | ISeedResult[]>;
-  dump: (props?: {
-    type?: "model" | "relation";
-    dumps: IDumpResult[];
-  }) => Promise<IDumpResult | IDumpResult[]>;
-}
+import type { IApp, IAppRouteDescription } from "./interface";
+export type { IApp, IAppRouteDescription } from "./interface";
 
 @injectable()
 export class App<SCHEMA extends Record<string, unknown>>
@@ -48,6 +28,11 @@ export class App<SCHEMA extends Record<string, unknown>>
     this.exceptionFilter = exceptionFilter;
     this.controller = controller;
     this.configuration = configuration;
+  }
+
+  describeRoutes(): IAppRouteDescription[] {
+    const resource = this.controller.describe?.();
+    return resource ? [{ route: "", resource }] : [];
   }
 
   public async init() {

@@ -1,0 +1,27 @@
+{
+  "id": "social.profile.sidebar-ai-chat-project",
+  "title": "sidebar-ai-chat-project",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Project Profile navigation for its Knowledge, settings and Threads.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "social.profile",
+    "pageName": "social",
+    "variantName": "sidebar-ai-chat-project",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "profile",
+    "variant": "sidebar-ai-chat-project"
+  },
+  "contentSlots": []
+}

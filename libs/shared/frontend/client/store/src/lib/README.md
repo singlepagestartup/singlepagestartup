@@ -26,5 +26,14 @@ Key API:
 
 Notes:
 
-- Data is persisted to `sessionStorage` for visibility/debug continuity in one browser session.
-- The store is not a business data source; authoritative data remains in backend + React Query cache.
+- `addAction` writes a compact debug snapshot to the `global-actions-store`
+  `sessionStorage` key. It keeps up to 50 recent channels and three events per
+  channel; large `props` and `result` values are replaced with metadata. An
+  oversized snapshot falls back to action metadata only.
+- The snapshot is write-only in the current implementation: initialization
+  does not read it or hydrate the store. Storage failures do not interrupt
+  the live in-memory event log used for revalidation.
+- The backend owns authoritative entity data; React Query caches SDK results
+  for rendering. Neither entity data nor persistent drafts are restored from
+  the event snapshot. See [the store contract](../../README.md) for the runtime
+  flow and state lifetime.

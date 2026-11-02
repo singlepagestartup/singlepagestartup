@@ -24,6 +24,11 @@ Messages store social chat content and interaction data.
 
 ## Variants
 
+The scoped RBAC chat reader returns `IChatMessage` with optional
+`authorProfileIds` and ordered `attachments`. These fields describe related
+records after Chat access checks; they are not stored in the Message table.
+AI Chat renders that payload without querying global author or File lists.
+
 - `default`: card-like message view.
 - `find`: data-fetch wrapper for querying messages.
 - `admin-form`: admin create/edit form for message fields.

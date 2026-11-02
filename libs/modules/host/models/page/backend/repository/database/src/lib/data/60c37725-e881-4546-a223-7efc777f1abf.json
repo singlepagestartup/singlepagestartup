@@ -1,11 +1,45 @@
 {
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "Developer tools configuration — SinglePageStartup",
+        "ru": "Настройки инструментов разработчика — SinglePageStartup"
+      },
+      "description": {
+        "en": "Internal developer tools configuration page.",
+        "ru": "Служебная страница настроек инструментов разработчика."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "Developer tools configuration — SinglePageStartup",
+        "ru": "Настройки инструментов разработчика — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "Developer tools configuration — SinglePageStartup",
+        "ru": "Настройки инструментов разработчика — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Internal developer tools configuration page.",
+        "ru": "Служебная страница настроек инструментов разработчика."
+      },
+      "opengraphDescription": {
+        "en": "Internal developer tools configuration page.",
+        "ru": "Служебная страница настроек инструментов разработчика."
+      }
+    }
+  },
   "id": "60c37725-e881-4546-a223-7efc777f1abf",
   "title": "com.chrome.devtools.json",
   "url": "/.well-known/appspecific/com.chrome.devtools.json",
   "description": "Description",
   "createdAt": "2025-06-26T12:43:56.604Z",
-  "updatedAt": "2025-11-15T09:32:28.376Z",
-  "variant": "default",
+  "updatedAt": "2026-10-30T22:25:03.948Z",
+  "variant": "noindex",
   "className": null,
   "language": "en",
   "adminTitle": "robust black gayal"

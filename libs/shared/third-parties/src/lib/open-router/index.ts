@@ -1,5 +1,10 @@
-import { OPEN_ROUTER_API_KEY } from "@sps/shared-utils";
+import {
+  OPEN_ROUTER_API_KEY,
+  OPEN_ROUTER_JEV_DECISION_MODEL,
+} from "@sps/shared-utils";
 import type {
+  IOpenRouterDecisionsProps,
+  IOpenRouterDecisionsResult,
   IOpenRouterBilling,
   IOpenRouterGeneratedImage,
   IOpenRouterGenerateResult,
@@ -10,6 +15,7 @@ import type {
   IOpenRouterToolCall,
   IOpenRouterToolChoice,
   IOpenRouterUsage,
+  IOpenRouterSessionOptions,
 } from "./interface";
 
 export type IOpenRouterMessageContent =
@@ -72,13 +78,144 @@ export class Service {
   baseURL: string;
   apiKey: string;
 
-  constructor() {
+  constructor(private readonly options: IOpenRouterSessionOptions = {}) {
     if (!OPEN_ROUTER_API_KEY) {
       throw new Error("Configuration error. OPEN_ROUTER_API_KEY is not set");
     }
 
     this.baseURL = "https://openrouter.ai/api/v1";
     this.apiKey = OPEN_ROUTER_API_KEY;
+  }
+
+  async decide(
+    props: IOpenRouterDecisionsProps,
+  ): Promise<IOpenRouterDecisionsResult> {
+    const model = props.model || OPEN_ROUTER_JEV_DECISION_MODEL;
+    let billing: IOpenRouterBilling | null = null;
+    try {
+      const response = await fetch(
+        `${this.baseURL.replace(/\/v1\/?$/, "")}/alpha/decisions`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${this.apiKey}`,
+            "Content-Type": "application/json",
+            ...(this.options.sessionId && {
+              "x-session-id": this.options.sessionId,
+            }),
+          },
+          signal: AbortSignal.timeout(30_000),
+          body: JSON.stringify({ ...props, model }),
+        },
+      );
+      const data = (await response.json()) as any;
+      if (data.usage) {
+        billing = await this.buildBilling({
+          data: {
+            ...data,
+            usage: {
+              ...data.usage,
+              prompt_tokens: data.usage.input_tokens,
+              completion_tokens: data.usage.output_tokens,
+              total_tokens:
+                (data.usage.input_tokens || 0) +
+                (data.usage.output_tokens || 0),
+            },
+          },
+          requestModelId: model,
+          messages: [],
+          skipModelLookup: true,
+        });
+      }
+      if (!response.ok || data.error) {
+        return {
+          error: data.error || {
+            message: `OpenRouter Decisions failed: ${response.status}`,
+          },
+          billing,
+        };
+      }
+      const probability = (value: unknown) =>
+        typeof value === "number" &&
+        Number.isFinite(value) &&
+        value >= 0 &&
+        value <= 1;
+      for (const [key, question] of Object.entries(props.questions)) {
+        const answer = data.answers?.[key];
+        let valid = answer?.type === question.type;
+        if (question.type === "noul") valid &&= probability(answer?.noul);
+        else {
+          const criteria =
+            question.type === "choice"
+              ? Object.keys(question.criteria)
+              : question.criteria.map((_, index) => String(index));
+          valid &&=
+            probability(answer?.confidence) &&
+            criteria.every((label) =>
+              probability(answer?.probabilities?.[label]),
+            );
+          if (question.type === "choice")
+            valid &&= criteria.includes(answer?.choice);
+          else
+            valid &&=
+              typeof answer?.score === "number" &&
+              Number.isFinite(answer.score) &&
+              answer.score >= 0 &&
+              answer.score <= question.criteria.length - 1;
+        }
+        if (!valid)
+          return {
+            error: { message: `Invalid OpenRouter Decisions answer: ${key}` },
+            billing,
+          };
+      }
+      billing ||= await this.buildBilling({
+        data,
+        requestModelId: model,
+        messages: [],
+        skipModelLookup: true,
+      });
+      return { answers: data.answers, billing };
+    } catch (error) {
+      return {
+        error: {
+          message: `OpenRouter Decisions failed: ${this.stringifyError(error)}`,
+        },
+        billing,
+      };
+    }
+  }
+
+  async transcribeAudio(props: {
+    data: Buffer;
+    format: string;
+    model: string;
+  }) {
+    const response = await fetch(`${this.baseURL}/audio/transcriptions`, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${this.apiKey}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        model: props.model,
+        input_audio: {
+          data: props.data.toString("base64"),
+          format: props.format,
+        },
+        response_format: "verbose_json",
+        timestamp_granularities: ["segment"],
+      }),
+    });
+    if (!response.ok)
+      throw new Error(`OpenRouter transcription failed: ${response.status}`);
+    const result = (await response.json()) as {
+      text?: string;
+      segments?: { start: number; end: number; text: string }[];
+    };
+    if (typeof result.text !== "string")
+      throw new Error("OpenRouter returned no transcription text.");
+    return result;
   }
 
   private stringifyError(error: unknown) {
@@ -171,11 +308,29 @@ export class Service {
             if (part.type === "image_url") {
               const url = part.image_url.url;
 
-              if (this.shouldInlineMediaUrl(url)) {
-                const { dataUrl } = await this.fetchAsDataUrl({
+              if (
+                this.shouldInlineMediaUrl(url) ||
+                /^data:image\/svg\+xml/i.test(url) ||
+                /\.svg(?:[?#]|$)/i.test(url)
+              ) {
+                let { dataUrl } = await this.fetchAsDataUrl({
                   url,
                   fallbackMimeType: "image/*",
                 });
+                if (/^data:image\/svg\+xml/i.test(dataUrl)) {
+                  const { default: sharp } = await import("sharp");
+                  const bytes = Buffer.from(dataUrl.split(",")[1], "base64");
+                  const png = await sharp(bytes, { density: 144 })
+                    .resize({
+                      width: 2048,
+                      height: 2048,
+                      fit: "inside",
+                      withoutEnlargement: true,
+                    })
+                    .png()
+                    .toBuffer();
+                  dataUrl = `data:image/png;base64,${png.toString("base64")}`;
+                }
 
                 return {
                   type: "image_url" as const,
@@ -290,6 +445,8 @@ export class Service {
     reasoning?: IOpenRouterReasoning;
     response_format?: IOpenRouterResponseFormat;
     temperature?: number;
+    sessionId?: string;
+    timeoutMs?: number;
   }): Promise<any> {
     try {
       const response = await fetch(`${this.baseURL}/chat/completions`, {
@@ -298,8 +455,10 @@ export class Service {
           "Content-Type": "application/json",
           Authorization: `Bearer ${this.apiKey}`,
         },
+        signal: AbortSignal.timeout(props.timeoutMs ?? 120_000),
         body: JSON.stringify({
           model: props.model,
+          ...(props.sessionId && { session_id: props.sessionId }),
           messages: props.messages,
           stream: false,
           max_tokens: props.max_tokens,
@@ -532,12 +691,19 @@ export class Service {
     requestModelId: string;
     messages: IOpenRouterRequestMessage[];
     images?: IOpenRouterGeneratedImage[];
+    skipModelLookup?: boolean;
   }): Promise<IOpenRouterBilling> {
     const usage = this.normalizeUsage(props.data?.usage);
-    const models = await this.getModels();
+    const models = props.skipModelLookup
+      ? []
+      : await this.getModels().catch(() => []);
+    const pricingModelId =
+      typeof props.data?.model === "string"
+        ? props.data.model
+        : props.requestModelId;
     const model =
-      models.find((item) => item.id === props.requestModelId) ||
-      models.find((item) => item.canonical_slug === props.requestModelId) ||
+      models.find((item) => item.id === pricingModelId) ||
+      models.find((item) => item.canonical_slug === pricingModelId) ||
       null;
     const pricing = model?.pricing || null;
     const billablePromptTokens = Math.max(
@@ -652,6 +818,7 @@ export class Service {
 
     return {
       ...parsedMessage,
+      finishReason: props.data?.choices?.[0]?.finish_reason,
       billing,
     };
   }
@@ -687,6 +854,8 @@ export class Service {
     responseFormat?: IOpenRouterResponseFormat;
     temperature?: number;
     stripNonTextOnRetry?: boolean;
+    sessionId?: string;
+    timeoutMs?: number;
   }): Promise<IOpenRouterGenerateResult> {
     const hasNonTextContent = props.context.some(
       (message) => typeof message.content !== "string",
@@ -702,6 +871,8 @@ export class Service {
     const data = await this.requestCompletion({
       model: props.model,
       messages: normalizedMessages,
+      sessionId: props.sessionId ?? this.options.sessionId,
+      timeoutMs: props.timeoutMs,
       max_tokens: props.max_tokens,
       tools: props.tools,
       tool_choice: props.toolChoice,
@@ -732,6 +903,8 @@ export class Service {
         const retryData = await this.requestCompletion({
           model: props.model,
           messages: strippedMessages,
+          sessionId: props.sessionId ?? this.options.sessionId,
+          timeoutMs: props.timeoutMs,
           max_tokens: props.max_tokens,
           tools: props.tools,
           tool_choice: props.toolChoice,
@@ -788,16 +961,34 @@ export class Service {
           "Content-Type": "application/json",
           Authorization: `Bearer ${this.apiKey}`,
         },
+        signal: AbortSignal.timeout(30_000),
       });
 
-      const data = await response.json();
-      models = Array.isArray(data.data) ? data.data : [];
+      if (!response.ok) {
+        throw new Error(
+          `OpenRouter models request failed (HTTP ${response.status}).`,
+        );
+      }
+
+      const data = (await response.json()) as { data?: IOpenRouterModel[] };
+      if (
+        !Array.isArray(data.data) ||
+        !data.data.length ||
+        !data.data.every(
+          (model) =>
+            model && typeof model.id === "string" && model.id.trim().length,
+        )
+      ) {
+        throw new Error("OpenRouter returned an invalid model catalog.");
+      }
+      models = data.data;
     } catch (error) {
       console.warn("OpenRouter models fetch failed", {
         error: this.stringifyError(error),
       });
 
-      return cachedModels?.models || [];
+      if (cachedModels) return cachedModels.models;
+      throw error;
     }
 
     cachedModels = {

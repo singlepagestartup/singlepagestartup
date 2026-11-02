@@ -1,0 +1,22 @@
+{
+  "intro": {
+    "title": "Ваши файлы и переписки сохранены.",
+    "paragraphs": [
+      "Войдите, чтобы вернуться к последнему проекту или прерванной задаче. Переписка документа хранит обсуждение и черновик; темы проекта сохраняют прикреплённые документы."
+    ]
+  },
+  "images": [
+    {
+      "src": "/module-assets/images/singlepage/generated/living-focus/singlepagestartup-photography-work-in-motion-square.png",
+      "alt": "Улыбающийся мастер в керамической студии.",
+      "assetId": "singlepage-generated-living-focus-photography-work-in-motion-square"
+    }
+  ],
+  "aside": {
+    "title": "Не получается войти?",
+    "paragraphs": [
+      "Забыли пароль? [Обратитесь в поддержку](/ai-chat/help). При ошибке входа проверьте данные и повторите попытку.",
+      "Ещё нет аккаунта? [Создайте его](/ai-chat/rbac/subjects/authentication/registration)."
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "What else Social includes",
+    "ru": "Что ещё есть в Social"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The module has nine models. Additional models configure profile data, assistant instructions and presentation.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Всего в модуле девять моделей. Дополнительные модели помогают настроить данные профиля, инструкции помощника и представление.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "8b968f41-382c-43a1-8b88-669ac279c839",
+  "createdAt": "2026-10-26T00:11:52.184Z",
+  "updatedAt": "2026-10-27T14:59:07.552Z",
+  "variant": "content-rich",
+  "adminTitle": "Что ещё есть в Social",
+  "slug": "framework-reviewed-article-social-models"
+}

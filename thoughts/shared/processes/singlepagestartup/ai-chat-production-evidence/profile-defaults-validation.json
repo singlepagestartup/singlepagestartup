@@ -1,0 +1,36 @@
+{
+  "date": "2026-10-11",
+  "requestData": {
+    "title": { "en": "Automatic fields — verification" },
+    "variant": "artificial-intelligence"
+  },
+  "persistedProfile": {
+    "id": "9a48b93b-625a-4e45-84aa-39500e5ac4d7",
+    "title": { "en": "Automatic fields — verification" },
+    "variant": "artificial-intelligence",
+    "slug": "absent-amethyst-octopus-5586",
+    "adminTitle": "attractive ivory possum"
+  },
+  "chatId": "eac14dca-04ba-4b7b-b20f-be43cc755b8e",
+  "thread": {
+    "id": "d4ffce05-e931-4c7e-8ee0-5efcd2aa830a",
+    "title": "Products.md",
+    "document": {
+      "profileId": "9a48b93b-625a-4e45-84aa-39500e5ac4d7",
+      "sourceIds": []
+    }
+  },
+  "checks": {
+    "jest": { "suites": 3, "tests": 15, "failed": 0 },
+    "hostTypescript": { "exitCode": 0 },
+    "apiTypescript": {
+      "exitCode": 2,
+      "baselineDiagnostics": 25,
+      "newDiagnostics": 0
+    },
+    "browserCreation": "One Project name field; creation succeeds and opens the new workspace.",
+    "modelDefaults": "Verified through Social Profile and Thread server SDK reads.",
+    "retryHandling": "The form retains a successfully created Profile while retrying workspace resolution and document initialization."
+  },
+  "screenshot": "project-automatic-fields.png"
+}

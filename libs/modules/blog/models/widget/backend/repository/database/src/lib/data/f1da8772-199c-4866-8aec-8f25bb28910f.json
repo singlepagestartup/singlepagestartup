@@ -1,0 +1,21 @@
+{
+  "id": "f1da8772-199c-4866-8aec-8f25bb28910f",
+  "className": "",
+  "createdAt": "2026-10-26T00:12:56.229Z",
+  "updatedAt": "2026-10-27T15:00:30.263Z",
+  "variant": "article-overview-linked",
+  "adminTitle": "Каталог и заказы",
+  "slug": "framework-reviewed-linked-ecommerce",
+  "title": {
+    "en": "Catalogue and orders",
+    "ru": "Каталог и заказы"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "",
+    "ru": ""
+  }
+}

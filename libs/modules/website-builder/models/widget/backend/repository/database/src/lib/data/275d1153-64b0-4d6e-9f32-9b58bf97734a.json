@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Start working on your project in chat",
+    "ru": "Начните работу над проектом в чате"
+  },
+  "subtitle": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Create an account and add notes, files and images. Discuss documents with the AI assistant and use saved knowledge in new tasks.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Создайте аккаунт и добавьте заметки, файлы и изображения. Обсуждайте документы с ИИ-помощником и используйте сохранённые знания в новых задачах.\"}]}]}"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"heading\",\"attrs\":{\"level\":2},\"content\":[{\"type\":\"text\",\"text\":\"Before uploading files\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Read how materials are processed and stored: what information is shared with AI providers and how long backups may remain after deletion.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"heading\",\"attrs\":{\"level\":2},\"content\":[{\"type\":\"text\",\"text\":\"Перед загрузкой файлов\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Прочитайте, как обрабатываются и хранятся материалы: какие сведения передаются провайдерам ИИ и как долго резервные копии могут храниться после удаления.\"}]}]}"
+  },
+  "anchor": null,
+  "className": null,
+  "id": "275d1153-64b0-4d6e-9f32-9b58bf97734a",
+  "createdAt": "2026-10-17T21:43:19.593Z",
+  "updatedAt": "2026-10-27T14:58:52.518Z",
+  "variant": "content-ai-chat-registration",
+  "adminTitle": "AI Chat authentication content",
+  "slug": "ai-chat-9aa9a2dd-adca-4b3f-8138-b6b1cbd080ba-content"
+}

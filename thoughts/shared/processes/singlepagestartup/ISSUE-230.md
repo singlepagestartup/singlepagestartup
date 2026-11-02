@@ -8,6 +8,13 @@ status: active
 current_phase: implement
 ---
 
+> Current validation: [PR #266 against main](../../research/singlepagestartup/2026-11-02-pr266-paykeeper-validation.md).
+> The validator is now exported by `@sps/backend-utils` from
+> `libs/shared/backend/utils/src/lib/webhook-identifiers/index.ts`. The PayKeeper
+> service no longer prints payloads or Authorization headers; signature/ACK and
+> common-controller logging remain separate work. Earlier phase notes below
+> describe their original revision.
+
 # Process Log: ISSUE-230 - Validate PayKeeper webhook identifiers before relation lookup
 
 ## Purpose

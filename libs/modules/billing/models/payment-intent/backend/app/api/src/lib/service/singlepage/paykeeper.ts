@@ -14,7 +14,7 @@ import {
 import { api as paymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
 import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
-import { validateWebhookIdentifiers } from "./webhook-identifiers";
+import { validateWebhookIdentifiers } from "@sps/backend-utils";
 
 interface IMetadata {
   ecommerceModule?: {
@@ -267,47 +267,32 @@ export class Service {
     invoiceId: string,
   ): Promise<IPayKeeperInvoiceData> {
     try {
-      console.log("🚀 ~ Getting invoice data for ID:", invoiceId);
-
       const authHeaders = await this.authHeaders();
-      console.log("🚀 ~ Auth headers:", authHeaders);
 
       const requestUrl = `${PAYKEEPER_BASE_URL}/info/invoice/byid/?id=${invoiceId}`;
-      console.log("🚀 ~ Request URL:", requestUrl);
 
       const response = await fetch(requestUrl, {
         method: "GET",
         headers: authHeaders,
       });
 
-      console.log("🚀 ~ PayKeeper response status:", response.status);
-      console.log(
-        "🚀 ~ PayKeeper response headers:",
-        Object.fromEntries(response.headers.entries()),
-      );
-
       if (!response.ok) {
         const errorText = await response.text();
-        console.log("🚀 ~ PayKeeper error response:", errorText);
         throw new Error(
           `Internal error. PayKeeper invoice request failed: ${response.status} ${response.statusText}. Response: ${errorText}`,
         );
       }
 
       const responseText = await response.text();
-      console.log("🚀 ~ PayKeeper raw response:", responseText);
 
       let invoiceResponse: IPayKeeperInvoiceData;
       try {
         invoiceResponse = JSON.parse(responseText);
       } catch (parseError) {
-        console.log("🚀 ~ Failed to parse PayKeeper response:", parseError);
         throw new Error(
           `Internal error. Failed to parse PayKeeper response: ${responseText}`,
         );
       }
-
-      console.log("🚀 ~ Parsed invoice response:", invoiceResponse);
 
       if (!invoiceResponse) {
         throw new Error(
@@ -375,8 +360,6 @@ export class Service {
           lang: "ru",
         },
       };
-
-      console.log("🚀 ~ proceed ~ paymentData:", paymentData);
 
       try {
         const securityToken = await this.getSecurityToken();
@@ -470,7 +453,6 @@ export class Service {
       }
     } else {
       const { data } = props;
-      console.log("🚀 ~ proceed ~ props:", props);
 
       try {
         const { orderid } = validateWebhookIdentifiers({
@@ -478,10 +460,6 @@ export class Service {
           uuidFields: ["orderid"],
           stringFields: ["id", "sum", "clientid"],
         });
-
-        console.log("🚀 ~ Processing webhook for orderid:", orderid);
-        console.log("🚀 ~ Webhook data:", data);
-        console.log("🚀 ~ Webhook data.id (PayKeeper invoice ID):", data.id);
 
         const paymentIntentToInvoice = await paymentIntentsToInvoicesApi.find({
           params: {
@@ -523,26 +501,13 @@ export class Service {
           );
         }
 
-        console.log("🚀 ~ Found invoice for webhook:", invoice);
-        console.log("🚀 ~ Invoice providerId:", invoice.providerId);
-
         if (!invoice.providerId) {
           throw new Error(
             "Not Found error. Invoice providerId not found - cannot get PayKeeper invoice data",
           );
         }
-
-        console.log(
-          "🚀 ~ Getting PayKeeper invoice data for providerId:",
-          invoice.providerId,
-        );
         const paykeeperInvoiceData = await this.getInvoiceData(
           invoice.providerId,
-        );
-        console.log("🚀 ~ PayKeeper invoice data:", paykeeperInvoiceData);
-        console.log(
-          "🚀 ~ PayKeeper invoice status:",
-          paykeeperInvoiceData?.status,
         );
 
         if (!paykeeperInvoiceData) {
@@ -565,21 +530,13 @@ export class Service {
           });
         }
 
-        console.log(
-          "🚀 ~ PayKeeper invoice status:",
-          paykeeperInvoiceData.status,
-        );
-
         const result = await props.callback({ invoice });
 
         if (!result.ok) {
           throw new Error("Failed to update payment intent status");
         }
-
-        console.log("🚀 ~ Payment intent status updated successfully");
         return { ok: true };
       } catch (error) {
-        console.log("Webhook processing error:", error);
         throw error;
       }
     }
@@ -615,11 +572,6 @@ export class Service {
             (productToAttribute) => {
               return productToAttribute.attributesToBillingModuleCurrencies?.find(
                 (attributeToBillingModuleCurrency) => {
-                  console.log(
-                    "🚀 ~ buildCartFromMetadata ~ attributeToBillingModuleCurrency:",
-                    attributeToBillingModuleCurrency,
-                  );
-
                   return (
                     attributeToBillingModuleCurrency?.billingModuleCurrency
                       ?.slug === "rub"

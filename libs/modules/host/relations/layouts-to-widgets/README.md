@@ -17,7 +17,8 @@ Connects layouts to widgets and defines their order.
 
 ## Variants
 
-- `default`: renders the related target for this link.
+- `default`: renders prepared children when supplied by Host Page; otherwise
+  loads the related Widget by `widgetId`. The presenter receives no current URL.
 - `additional`: alternate slot, rendered like `default`.
 - `find`: data-fetch wrapper for querying relations.
 - `admin-select-input`: admin UI select input for linking relations.

@@ -1,0 +1,33 @@
+{
+  "$schema": "../../../../../block.schema.json",
+  "id": "social.profile.author-byline-default",
+  "title": "author-byline-default",
+  "description": "author-byline-default presentation.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "profile",
+    "variant": "author-byline-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "social.profile",
+    "pageName": "social",
+    "variantName": "author-byline-default",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": [
+    "social",
+    "profile",
+    "author-byline-default"
+  ]
+}

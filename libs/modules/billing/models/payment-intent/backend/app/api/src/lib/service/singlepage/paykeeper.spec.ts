@@ -82,8 +82,47 @@ function webhookProps(overrides: Record<string, unknown> = {}) {
 
 describe("PayKeeper webhook identifiers", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
   });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it.each([undefined, null, [], "malformed", 42])(
+    "rejects an invalid webhook body (%p) without reading or updating an invoice",
+    async (data) => {
+      const props = { ...webhookProps(), data: data as any };
+      const fetchSpy = jest
+        .spyOn(globalThis, "fetch")
+        .mockRejectedValue(new Error("Unexpected provider call"));
+      await expect(new Service().proceed(props)).rejects.toThrow(
+        "Validation error. Invalid webhook payload",
+      );
+      expect(mockedPaymentIntentToInvoiceFind).not.toHaveBeenCalled();
+      expect(mockedInvoiceFindById).not.toHaveBeenCalled();
+      expect(mockedInvoiceUpdate).not.toHaveBeenCalled();
+      expect(props.callback).not.toHaveBeenCalled();
+      expect(fetchSpy).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([
+    ["orderid", ""],
+    ["orderid", "%"],
+    ["orderid", {}],
+    ["sum", 100],
+    ["clientid", []],
+  ])(
+    "rejects malformed %s before any relation lookup",
+    async (field, value) => {
+      await expect(
+        new Service().proceed(webhookProps({ [field as string]: value })),
+      ).rejects.toThrow(`Validation error. Invalid ${field}`);
+      expect(mockedPaymentIntentToInvoiceFind).not.toHaveBeenCalled();
+      expect(mockedInvoiceUpdate).not.toHaveBeenCalled();
+    },
+  );
 
   /**
    * BDD Scenario
@@ -154,6 +193,9 @@ describe("PayKeeper webhook identifiers", () => {
    * Then: the invoice is marked paid and the payment intent callback is called.
    */
   it("keeps the existing flow for a known orderid", async () => {
+    const logSpy = jest
+      .spyOn(console, "log")
+      .mockImplementation(() => undefined);
     const invoice = {
       id: "invoice-1",
       amount: 0,
@@ -201,6 +243,7 @@ describe("PayKeeper webhook identifiers", () => {
       },
     });
     expect(props.callback).toHaveBeenCalledWith({ invoice: updatedInvoice });
+    expect(logSpy).not.toHaveBeenCalled();
 
     fetchSpy.mockRestore();
   });

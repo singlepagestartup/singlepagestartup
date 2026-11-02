@@ -1,5 +1,9 @@
 import { api as rbacModuleSubjectApi } from "@sps/rbac/models/subject/sdk/server";
 import {
+  readKnowledgeUserContext,
+  replaceKnowledgeUserContext,
+} from "@sps/shared-utils";
+import {
   type IModel as ISocialModuleProfile,
   supportedMcpServerDescriptors,
 } from "@sps/social/models/profile/sdk/model";
@@ -443,7 +447,7 @@ export class TelegramAssistantConversation {
         return {};
       }
       case "doc_open": {
-        const document = await this.requireKnowledgeDocumentByToken(
+        const document = await this.requireKnowledgeSourceByToken(
           context,
           state,
           input.token,
@@ -456,7 +460,7 @@ export class TelegramAssistantConversation {
             kind: "success",
             text: "Содержимое отправлено отдельным TXT-файлом.",
           },
-          textFile: this.knowledgeDocumentTextFile(document),
+          textFile: this.knowledgeSourceTextFile(document),
         };
       }
       case "doc_new":
@@ -469,7 +473,7 @@ export class TelegramAssistantConversation {
         };
         return {};
       case "doc_edit": {
-        const document = await this.requireKnowledgeDocument(
+        const document = await this.requireKnowledgeSource(
           context,
           state,
           state.selectedEntityId,
@@ -480,7 +484,7 @@ export class TelegramAssistantConversation {
           entityId: document.id,
           values: {
             title: document.title || "",
-            description: document.description || "",
+            content: readKnowledgeUserContext(document.content),
           },
         };
         return {};
@@ -491,7 +495,7 @@ export class TelegramAssistantConversation {
           notice: { kind: "success", text: "Переиндексация запущена." },
         };
       case "doc_delete":
-        await this.requireKnowledgeDocument(
+        await this.requireKnowledgeSource(
           context,
           state,
           state.selectedEntityId,
@@ -547,15 +551,15 @@ export class TelegramAssistantConversation {
       };
     }
 
-    const document = await this.requireKnowledgeDocument(
+    const document = await this.requireKnowledgeSource(
       context,
       state,
       state.confirmation.entityId,
     );
-    await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFindByIdDelete(
+    await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdDelete(
       {
         ...this.requestProps(context, state),
-        knowledgeModuleDocumentId: document.id,
+        knowledgeModuleSourceId: document.id,
       },
     );
     state.page = "knowledge";
@@ -598,7 +602,7 @@ export class TelegramAssistantConversation {
     const isKnowledgeContent =
       (editor.kind === "knowledge-create" ||
         editor.kind === "knowledge-edit") &&
-      editor.field === "description";
+      editor.field === "content";
     const editorFile = isKnowledgeContent
       ? await transport.resolveEditorFile(message)
       : undefined;
@@ -682,7 +686,7 @@ export class TelegramAssistantConversation {
       return;
     }
 
-    const fields = ["title", "description"];
+    const fields = ["title", "content"];
     const index = fields.indexOf(editor.field);
 
     if (index < fields.length - 1) {
@@ -693,20 +697,27 @@ export class TelegramAssistantConversation {
     await this.requireManageableProfile(context, state.selectedProfileId);
     const data = {
       title: String(editor.values.title),
-      description: String(editor.values.description),
+      content: String(editor.values.content),
     };
 
     if (editor.kind === "knowledge-create") {
-      await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentCreate(
+      await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceCreate(
         { ...this.requestProps(context, state), data },
       );
     } else {
-      await this.requireKnowledgeDocument(context, state, editor.entityId);
-      await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFindByIdUpdate(
+      const source = await this.requireKnowledgeSource(
+        context,
+        state,
+        editor.entityId,
+      );
+      await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdUpdate(
         {
           ...this.requestProps(context, state),
-          knowledgeModuleDocumentId: editor.entityId as string,
-          data,
+          knowledgeModuleSourceId: editor.entityId as string,
+          data: {
+            ...data,
+            content: replaceKnowledgeUserContext(source.content, data.content),
+          },
         },
       );
     }
@@ -862,6 +873,7 @@ export class TelegramAssistantConversation {
         title: "название (ru)",
         subtitle: "подзаголовок (ru)",
         description: "описание/содержимое",
+        content: "ваши пояснения к знанию (сообщением или текстовым файлом)",
         slug: "slug",
         file: "изображение",
       };
@@ -1077,7 +1089,7 @@ export class TelegramAssistantConversation {
     if (state.page === "knowledge") {
       const page = state.pagination.knowledge || 0;
       const documents =
-        await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFind(
+        await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFind(
           {
             ...this.requestProps(context, state),
             limit: pageSize + 1,
@@ -1106,7 +1118,7 @@ export class TelegramAssistantConversation {
     }
 
     const document = state.selectedEntityId
-      ? await this.requireKnowledgeDocument(
+      ? await this.requireKnowledgeSource(
           context,
           state,
           state.selectedEntityId,
@@ -1130,10 +1142,10 @@ export class TelegramAssistantConversation {
     };
   }
 
-  protected knowledgeDocumentTextFile(document: {
+  protected knowledgeSourceTextFile(document: {
     id: string;
     title?: string | null;
-    description?: string | null;
+    content: string;
   }) {
     const title = document.title?.trim() || `knowledge-${document.id}`;
     const safeFileName =
@@ -1141,7 +1153,7 @@ export class TelegramAssistantConversation {
         .replace(/[<>:"/\\|?*\u0000-\u001f]/g, "-")
         .replace(/[. ]+$/g, "")
         .slice(0, 120) || `knowledge-${document.id}`;
-    const content = [title, document.description || ""].join("\n\n");
+    const content = [title, document.content].join("\n\n");
 
     return {
       caption: `Knowledge-документ «${this.truncateText(title, 180)}»`,
@@ -1232,14 +1244,14 @@ export class TelegramAssistantConversation {
     );
   }
 
-  protected async requireKnowledgeDocument(
+  protected async requireKnowledgeSource(
     context: ITelegramAssistantConversationContext,
     state: ITelegramConversationState,
     documentId?: string,
   ) {
     await this.requireManageableProfile(context, state.selectedProfileId);
     const documents =
-      await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFind(
+      await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFind(
         this.requestProps(context, state),
       );
     const document = documents.find((item) => item.id === documentId);
@@ -1248,14 +1260,14 @@ export class TelegramAssistantConversation {
     return document;
   }
 
-  protected async requireKnowledgeDocumentByToken(
+  protected async requireKnowledgeSourceByToken(
     context: ITelegramAssistantConversationContext,
     state: ITelegramConversationState,
     token?: string,
   ) {
     await this.requireManageableProfile(context, state.selectedProfileId);
     const documents =
-      await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFind(
+      await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFind(
         this.requestProps(context, state),
       );
 
@@ -1361,15 +1373,15 @@ export class TelegramAssistantConversation {
     state: ITelegramConversationState,
     documentId?: string,
   ) {
-    const document = await this.requireKnowledgeDocument(
+    const document = await this.requireKnowledgeSource(
       context,
       state,
       documentId,
     );
-    await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFindByIdReindex(
+    await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdReindex(
       {
         ...this.requestProps(context, state),
-        knowledgeModuleDocumentId: document.id,
+        knowledgeModuleSourceId: document.id,
       },
     );
   }

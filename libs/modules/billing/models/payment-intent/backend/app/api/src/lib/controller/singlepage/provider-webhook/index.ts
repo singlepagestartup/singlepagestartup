@@ -28,6 +28,9 @@ export class Handler {
       }
 
       const provider = c.req.param("provider");
+      if (!provider) {
+        throw new Error("Validation error. Invalid provider");
+      }
       const contentType = c.req.header("content-type");
       const headers = c.req.header();
       const isMultipart = contentType?.includes("multipart/form-data");

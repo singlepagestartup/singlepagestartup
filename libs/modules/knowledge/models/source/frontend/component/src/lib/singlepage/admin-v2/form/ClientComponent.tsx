@@ -36,13 +36,8 @@ export function Component(props: IComponentPropsExtended) {
         props.data?.adminTitle || randomWordsGenerator({ type: "title" }),
       slug: props.data?.slug || randomWordsGenerator({ type: "slug" }),
       title: props.data?.title || "",
-      type: props.data?.type || "document",
       content: props.data?.content || "",
       description: props.data?.description || "",
-      originalPath: props.data?.originalPath || "",
-      contentHash: props.data?.contentHash || "",
-      status: props.data?.status || "pending",
-      metadata: props.data?.metadata || {},
     },
   });
 
@@ -172,24 +167,6 @@ export function Component(props: IComponentPropsExtended) {
 
             <FormField
               ui="shadcn"
-              type="text"
-              label="Original Path"
-              name="originalPath"
-              form={form}
-              placeholder="Type original path"
-            />
-
-            <FormField
-              ui="shadcn"
-              type="text"
-              label="Content Hash"
-              name="contentHash"
-              form={form}
-              placeholder="Type content hash"
-            />
-
-            <FormField
-              ui="shadcn"
               type="textarea"
               rows={8}
               label="Content"
@@ -215,30 +192,6 @@ export function Component(props: IComponentPropsExtended) {
               label="Class Name"
               form={form}
               placeholder="Type class name"
-            />
-
-            <FormField
-              ui="shadcn"
-              type="text"
-              name="type"
-              label="Type"
-              form={form}
-              placeholder="Type source type"
-            />
-
-            <FormField
-              ui="shadcn"
-              type="select"
-              label="Status"
-              name="status"
-              form={form}
-              placeholder="Select status"
-              options={[
-                ["pending", "pending"],
-                ["indexed", "indexed"],
-                ["unchanged", "unchanged"],
-                ["failed", "failed"],
-              ]}
             />
 
             <FormField

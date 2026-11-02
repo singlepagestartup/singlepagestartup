@@ -1,3 +1,8 @@
+import {
+  action as content,
+  type IProps as IContentProps,
+  type IResult as IContentResult,
+} from "./content";
 import { factory } from "@sps/shared-frontend-server-api";
 import {
   serverHost,
@@ -20,16 +25,19 @@ import {
 } from "./actions/generate";
 
 export type IProps = {
+  IContentProps: IContentProps;
   IGenerateProps: IGenerateProps;
   ICreateFromUrlProps: ICreateFromUrlProps;
 };
 
 export type IResult = {
+  IContentResult: IContentResult;
   IGenerateResult: IGenerateResult;
   ICreateFromUrlResult: ICreateFromUrlResult;
 };
 
 export const api = {
+  content,
   ...factory<IModel>({
     route,
     host: serverHost,

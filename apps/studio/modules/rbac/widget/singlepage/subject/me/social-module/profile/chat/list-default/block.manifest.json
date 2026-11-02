@@ -1,0 +1,27 @@
+{
+  "id": "rbac.widget.subject-me-social-module-profile-chat-list-default",
+  "title": "subject-me-social-module-profile-chat-list-default",
+  "description": "Current-Subject chat composition with explicit ready, loading, empty and access states.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "subject-me-social-module-profile-chat-list-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": ["children"],
+  "figma": {
+    "componentName": "rbac.widget",
+    "pageName": "rbac",
+    "variantName": "subject-me-social-module-profile-chat-list-default",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

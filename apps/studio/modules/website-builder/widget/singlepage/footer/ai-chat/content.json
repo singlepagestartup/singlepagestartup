@@ -1,0 +1,15 @@
+{
+  "title": "SinglePageStartup",
+  "paragraphs": [],
+  "items": [],
+  "links": [
+    {
+      "text": "Начать с моих материалов",
+      "href": "/ai-chat/rbac/subjects/authentication/registration"
+    },
+    {
+      "text": "Войти",
+      "href": "/ai-chat/rbac/subjects/authentication/select-method"
+    }
+  ]
+}

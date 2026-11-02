@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "15a3c7e5-a701-49bf-98b6-a65b42823194",
+  "createdAt": "2026-10-26T00:11:23.431Z",
+  "updatedAt": "2026-10-27T14:59:24.998Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Cart",
+    "ru": "Корзина"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Your selection\\n\\nSelected items are saved with their quantities.\\n\\nIntroductory course · 1 item\\n\\nExercise collection · 1 item\\n\\nTotal: 3,500 RUB\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Ваша подборка\\n\\nВыбранные позиции сохраняются вместе с количеством.\\n\\nВводный курс · 1 шт.\\n\\nСборник заданий · 1 шт.\\n\\nИтого: 3 500 ₽\"}]}]}"
+  },
+  "adminTitle": "Корзина",
+  "slug": "framework-reviewed-article-ecommerce-example-feature-1"
+}

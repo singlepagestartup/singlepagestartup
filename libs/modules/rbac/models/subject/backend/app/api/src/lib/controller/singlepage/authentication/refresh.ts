@@ -44,7 +44,7 @@ export class Handler {
         refresh: data["refresh"],
       });
 
-      const decoded = await jwt.verify(entity.jwt, RBAC_JWT_SECRET);
+      const decoded = await jwt.verify(entity.jwt, RBAC_JWT_SECRET, "HS256");
 
       if (!decoded.exp) {
         throw new Error("Authentication error. Invalid token issued");

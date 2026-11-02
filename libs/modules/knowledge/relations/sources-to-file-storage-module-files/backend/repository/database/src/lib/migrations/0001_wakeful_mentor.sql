@@ -1,0 +1,1 @@
+ALTER TABLE "sps_ke_ss_to_fe_se_me_fs_t40" ADD CONSTRAINT "sps_ke_source_file_unique" UNIQUE("se_id","fe_se_me_fe_id");

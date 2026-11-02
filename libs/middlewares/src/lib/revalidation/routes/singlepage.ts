@@ -8,6 +8,7 @@ import { IRouteRule } from "@sps/shared-utils";
  * constructor options.
  */
 export const notRevalidatingRoutes: IRouteRule[] = [
+  { regexPath: /^\/api\/host\/pages\/seo-preview\/?$/, methods: ["POST"] },
   {
     regexPath: /\/api\/rbac\/subjects\/(authentication)\/(\w+)?/,
     methods: ["POST"],
