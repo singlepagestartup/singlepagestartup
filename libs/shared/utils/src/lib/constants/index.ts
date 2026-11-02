@@ -59,3 +59,5 @@ export * from "./file-preview";
 export * from "./ai-context";
 
 export { INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG } from "./ecommerce";
+
+export * from "./agent";
