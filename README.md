@@ -44,19 +44,31 @@ For issue-152, HTTP cache remains enabled in scenarios; temporary exclusion is a
 
 `apps/mcp` can run as a remote Streamable HTTP MCP server at `https://mcp.<domain>/mcp`. Deploy it with `tools/deployer/mcp.sh`; production connectors authenticate through OAuth/Bearer and then forward the caller's `rbac.subject` authentication JWT to `apps/api`. Static `X-RBAC-SECRET-KEY` auth is disabled by default for remote deployments and should only be enabled for local/private debugging.
 
-ENV creation and successful MCP deployment generate project configs for
-OpenCode, Claude Code, Codex, Cursor, and VS Code/Copilot with the project's
-HTTPS endpoint. Configure `MCP_SERVICE_NAME` and `DOMAIN` in
-`tools/deployer/.env`; `MCP_SERVICE_SUBDOMAIN` defaults to `mcp`. Client
-generation runs on Bun 1.3.6. Regenerate without deployment with:
+MCP connections for coding clients
+belong to the local checkout and are excluded from Git. Shared defaults remain
+in `*.example` files. `up.sh` and ENV creation leave client connections alone.
+
+Configure your project's `MCP_SERVICE_NAME` and `DOMAIN` in
+`tools/deployer/.env`; `MCP_SERVICE_SUBDOMAIN` defaults to `mcp`. Then generate
+a local connection explicitly for the chosen client with Bun 1.3.6:
 
 ```bash
-npm run mcp:clients:generate
+npm run mcp:clients:generate -- --client codex
 ```
 
-Existing connections such as `nx-mcp` are preserved. GitHub Actions exports an
-`mcp-client-configs` artifact. Complete OAuth login in the chosen client after
-generation; see [project client configuration](apps/mcp/README.md#generated-project-client-configs)
+The connector name comes from this checkout's `origin` repository and the
+environment, for example `client-shop-production`. The URL comes from the
+project's deployment settings; it is not inferred from the repository name.
+Existing connections such as `nx-mcp` are preserved. The `--client` choices
+include `claude`, `codex`, `kimi`, `mimo`, `opencode`, `cursor` and `vscode`.
+Without `--client`, generation exports samples without activating any client.
+Muse and native DeepSeek Harness always use export-only samples; their
+configuration and authentication need manual integration. See the
+[compatibility notes](apps/mcp/README.md#client-compatibility) before sharing
+configurations between clients. Successful MCP deployment
+exports separate client samples under `.artifacts/mcp-client-configs/<client>`; GitHub Actions publishes
+it as the `mcp-client-configs` artifact without editing local client settings.
+Complete OAuth login in the chosen client after generation; see [project client configuration](apps/mcp/README.md#generated-project-client-configs)
 for OpenCode V1/V2 formats and login commands. The following CLI commands are
 also available for manual registration.
 
@@ -191,9 +203,10 @@ Prefer the Streamable HTTP transport for Codex, Claude Code, Inspector, and any 
 http://127.0.0.1:3001/mcp
 ```
 
-Claude Code uses `.mcp.json`; Codex uses `.codex/config.toml`. Generated remote
-connectors use the `-production` suffix and retain existing local connections.
-Print repo-derived commands with:
+Claude Code uses the ignored `.mcp.json`; Codex uses the ignored
+`.codex/config.toml`. Shared defaults live in the corresponding `*.example`
+files. Explicit generation adds a `<repo-name>-production` connector and
+retains existing local connections. Print repo-derived commands with:
 
 ```bash
 tools/mcp/setup-project-mcp.sh
@@ -655,10 +668,11 @@ resolved later, then the command can be resumed. See the
 for the message format, initial compatibility audit, and checkpoint behavior.
 
 After the downstream project has its own `origin` and deployment ENV, generate
-its project MCP configs with the downstream repository name and domain:
+its local MCP configs with that repository name and its own domain. Keep the
+generated files out of Git so future projects do not inherit the connection:
 
 ```bash
-npm run mcp:clients:generate
+npm run mcp:clients:generate -- --client codex
 ```
 
 Use the helper without flags to print MCP authentication and setup commands

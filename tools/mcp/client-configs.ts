@@ -9,9 +9,9 @@ import {
   statSync,
   writeFileSync,
 } from "node:fs";
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { spawnSync } from "node:child_process";
-import { dirname, join, relative, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { isDeepStrictEqual, parseArgs } from "node:util";
 
 interface IObject {
@@ -30,6 +30,7 @@ interface IOptions {
   environment: string;
   opencodeVersion?: string;
   outputDir?: string;
+  client?: string;
   writeClients: boolean;
   checkClients: boolean;
   ifConfigured: boolean;
@@ -328,15 +329,15 @@ function repoName(
 ) {
   let name = override;
   if (!name) {
-    let repo =
+    const origin = spawnSync("git", ["config", "--get", "remote.origin.url"], {
+      cwd: root,
+      encoding: "utf8",
+    }).stdout?.trim();
+    const repo =
+      origin ||
       process.env.TARGET_REPO ||
       values.GITHUB_REPOSITORY ||
       process.env.GITHUB_REPOSITORY;
-    if (!repo)
-      repo = spawnSync("git", ["config", "--get", "remote.origin.url"], {
-        cwd: root,
-        encoding: "utf8",
-      }).stdout?.trim();
     name = (repo || values.PROJECT_NAME || "")
       .replace(/\/+$/, "")
       .replace(/\.git$/, "")
@@ -424,20 +425,126 @@ function configFiles(
   values: Record<string, string>,
 ) {
   const plans: IWritePlan[] = [];
-  const textAt = (destination: string, fallback = "{}\n") =>
-    existsSync(destination) ? readFileSync(destination, "utf8") : fallback;
-  const jsonConfig = (file: string, path: string[], entry: IObject) => {
+  const textAt = (destination: string, fallback = "{}\n") => {
+    if (existsSync(destination)) return readFileSync(destination, "utf8");
+    const example = `${destination}.example`;
+    return root === args.repoRoot && existsSync(example)
+      ? readFileSync(example, "utf8")
+      : fallback;
+  };
+  const jsonConfig = (
+    file: string,
+    path: string[],
+    entry: IObject,
+    strict = false,
+  ) => {
     const destination = join(root, file);
     const original = textAt(destination);
+    if (strict) {
+      try {
+        JSON.parse(original);
+      } catch {
+        throw new Error(
+          `${file} requires strict JSON; remove comments and trailing commas before generating`,
+        );
+      }
+    }
     plans.push({
       destination,
       original,
       generated: editJson(original, path, entry),
     });
   };
-  jsonConfig(".mcp.json", ["mcpServers", name], { type: "http", url });
-  jsonConfig(".cursor/mcp.json", ["mcpServers", name], { url });
-  jsonConfig(".vscode/mcp.json", ["servers", name], { type: "http", url });
+  if (args.client === "claude")
+    jsonConfig(".mcp.json", ["mcpServers", name], { type: "http", url });
+  if (args.client === "cursor")
+    jsonConfig(".cursor/mcp.json", ["mcpServers", name], { url });
+  if (args.client === "vscode")
+    jsonConfig(".vscode/mcp.json", ["servers", name], { type: "http", url });
+  if (args.client === "kimi")
+    jsonConfig(".kimi-code/mcp.json", ["mcpServers", name], { url }, true);
+  if (args.client === "muse") {
+    const destination = join(root, "settings.json");
+    const original = textAt(destination);
+    plans.push({
+      destination,
+      original,
+      generated: editJson(
+        editJson(original, ["schema_version"], 1),
+        ["mcpServers", name],
+        { type: "streamable-http", url, required: false },
+      ),
+    });
+  }
+  if (args.client === "deepseek") {
+    const normalized = name.replace(/[^A-Za-z0-9_-]/g, "_");
+    const serverName =
+      normalized.length <= 32
+        ? normalized
+        : normalized.slice(0, 23) +
+          "_" +
+          createHash("sha256").update(name).digest("hex").slice(0, 8);
+    const destination = join(root, "mcp-client.yaml");
+    plans.push({
+      destination,
+      original: textAt(destination, ""),
+      generated:
+        `# Import this plugin entry into the intended DeepSeek Harness Cordis scope.
+` +
+        `# Supply project authentication separately; OAuth login is not generated.
+` +
+        `- id: ${JSON.stringify("mcp-" + serverName)}
+` +
+        `  name: "@deepseek-ai/dsh-mcp-client"
+` +
+        `  config:
+    serverName: ${JSON.stringify(serverName)}
+` +
+        `    transport: streamable-http
+    url: ${JSON.stringify(url)}
+` +
+        `    failOnStartupError: false
+`,
+    });
+  }
+  if (args.client === "mimo") {
+    const candidates = [
+      ".mimocode/mimocode.jsonc",
+      ".mimocode/mimocode.json",
+      "mimocode.jsonc",
+      "mimocode.json",
+    ];
+    const existing = candidates.filter((file) => existsSync(join(root, file)));
+    if (existing.length > 1)
+      throw new Error(
+        "Multiple MiMo configs found; select one project config before generating",
+      );
+    const destination = join(root, existing[0] || ".mimocode/mimocode.json");
+    const original = textAt(destination);
+    plans.push({
+      destination,
+      original,
+      generated: editJson(
+        editJson(
+          original,
+          ["$schema"],
+          "https://mimo.xiaomi.com/mimocode/config.json",
+        ),
+        ["mcp", name],
+        { type: "remote", url, oauth: { scope: "mcp:content" } },
+      ),
+    });
+  }
+  if (args.client === "codex") {
+    const destination = join(root, ".codex/config.toml");
+    const original = textAt(destination, "");
+    plans.push({
+      destination,
+      original,
+      generated: editCodex(original, name, url),
+    });
+  }
+  if (args.client !== "opencode") return { plans, version: undefined };
   const candidates = [
     "opencode.json",
     "opencode.jsonc",
@@ -452,19 +559,7 @@ function configFiles(
   let destination = existing[0] || join(root, "opencode.json");
   const original = textAt(destination);
   const document = parseJson(original);
-  let sourceDocument = document;
-  if (!existing.length && root !== args.repoRoot) {
-    const sourceConfigs = candidates
-      .map((file) => join(args.repoRoot, relative(root, file)))
-      .filter(existsSync);
-    if (sourceConfigs.length > 1)
-      throw new Error("Multiple OpenCode configs found in the source project");
-    if (sourceConfigs.length) {
-      sourceDocument = parseJson(readFileSync(sourceConfigs[0], "utf8"));
-      destination = join(root, relative(args.repoRoot, sourceConfigs[0]));
-    }
-  }
-  const version = opencodeVersion(args, values, sourceDocument);
+  const version = opencodeVersion(args, values, document);
   if (Object.hasOwn(document, name))
     throw new Error(
       `${name} is outside OpenCode mcp; move it inside mcp before generating`,
@@ -485,13 +580,6 @@ function configFiles(
     destination,
     original,
     generated: editJson(withSchema, serverPath, entry),
-  });
-  destination = join(root, ".codex/config.toml");
-  const codex = textAt(destination, "");
-  plans.push({
-    destination,
-    original: codex,
-    generated: editCodex(codex, name, url),
   });
   return { plans, version };
 }
@@ -532,6 +620,14 @@ function printCommands(
   const endpoint = shellQuote(url || "https://mcp.<domain>/mcp");
   console.log(`Claude Code: /mcp -> ${remoteName} -> Authenticate`);
   console.log(`OpenCode: opencode mcp auth ${remoteName}`);
+  console.log(`Kimi Code: /mcp-config login ${remoteName}`);
+  console.log(`MiMo Code: mimo mcp auth ${remoteName}`);
+  console.log(
+    `Muse: merge the exported settings.json into your user settings, then muse mcp login ${remoteName} --scope mcp:content`,
+  );
+  console.log(
+    "DeepSeek Harness: import the exported plugin snippet and configure authentication separately.",
+  );
   console.log(`Codex: codex mcp login ${remoteName} --scopes mcp:content`);
   console.log(
     "Cursor / VS Code: open MCP settings and authenticate the project server",
@@ -559,6 +655,7 @@ export function main(argv = process.argv.slice(2)) {
       environment: { type: "string" },
       "opencode-version": { type: "string" },
       "output-dir": { type: "string" },
+      client: { type: "string" },
       "write-clients": { type: "boolean" },
       "check-clients": { type: "boolean" },
       "if-configured": { type: "boolean" },
@@ -577,8 +674,9 @@ Usage: tools/mcp/setup-project-mcp.sh [options]
   --remote-url <url>          Production HTTPS endpoint ending in /mcp
   --environment <name>        Connector suffix (defaults to production)
   --opencode-version <auto|1|2>
-  --output-dir <path>         Export public client entries into another directory
-  --write-clients             Merge the remote server into all five client configs
+  --client <name>            claude, codex, kimi, mimo, muse, deepseek, opencode, cursor, vscode
+  --output-dir <path>         Export client-specific bundles into this directory
+  --write-clients             Configure one explicit client, or export samples when omitted
   --check-clients             Validate generation without writing files
   --if-configured             Skip when no remote MCP endpoint is configured
   --write-project            Merge the legacy local stdio server into .mcp.json
@@ -596,6 +694,7 @@ Usage: tools/mcp/setup-project-mcp.sh [options]
       values.environment || process.env.ENVIRONMENT_TYPE || "production",
     opencodeVersion: values["opencode-version"],
     outputDir: values["output-dir"],
+    client: values.client,
     writeClients: Boolean(values["write-clients"]),
     checkClients: Boolean(values["check-clients"]),
     ifConfigured: Boolean(values["if-configured"]),
@@ -617,6 +716,22 @@ Usage: tools/mcp/setup-project-mcp.sh [options]
   if (!/^[A-Za-z0-9][A-Za-z0-9_-]*$/.test(args.environment))
     throw new Error("Invalid MCP environment name");
   const name = repoName(root, valuesFromEnv, args.repoName);
+  const connectorName = name.replace(/\./g, "-");
+  const deploymentName = valuesFromEnv.GITHUB_REPOSITORY?.replace(/\/+$/, "")
+    .replace(/\.git$/, "")
+    .split("/")
+    .at(-1);
+  if (
+    url &&
+    deploymentName &&
+    deploymentName !== name &&
+    !args.repoName &&
+    !args.remoteUrl &&
+    !process.env.MCP_SERVICE_PUBLIC_URL
+  )
+    throw new Error(
+      `Deployment repository ${deploymentName} differs from checkout ${name}; configure this project's deployment settings or pass --remote-url explicitly`,
+    );
   if (
     (args.writeClients ||
       args.checkClients ||
@@ -632,20 +747,49 @@ Usage: tools/mcp/setup-project-mcp.sh [options]
   const output = args.outputDir || process.env.MCP_CLIENT_CONFIG_OUTPUT_DIR;
   const destinationRoot = output ? resolve(output) : root;
   if (args.writeClients || args.checkClients) {
-    const { plans, version } = configFiles(
-      destinationRoot,
-      `${name}-${args.environment}`,
-      url!,
-      args,
-      valuesFromEnv,
-    );
+    const clients = [
+      "claude",
+      "codex",
+      "kimi",
+      "mimo",
+      "muse",
+      "deepseek",
+      "opencode",
+      "cursor",
+      "vscode",
+    ];
+    if (args.client && !clients.includes(args.client))
+      throw new Error(
+        `Unknown MCP client ${args.client}; choose ${clients.join(", ")}`,
+      );
+    const exportOnly =
+      output || !args.client || ["muse", "deepseek"].includes(args.client);
+    const exportRoot = output
+      ? resolve(output)
+      : join(root, ".artifacts/mcp-client-configs");
+    const plans: IWritePlan[] = [];
+    for (const client of args.client ? [args.client] : clients) {
+      const target = exportOnly ? join(exportRoot, client) : root;
+      const result = configFiles(
+        target,
+        `${connectorName}-${args.environment}`,
+        url!,
+        { ...args, client },
+        valuesFromEnv,
+      );
+      plans.push(...result.plans);
+      if (result.version) console.log(`OpenCode format: V${result.version}`);
+    }
     if (args.writeClients) writePlans(plans);
     else {
       console.log("MCP client configuration preflight: OK");
       return;
     }
+    console.log(`MCP: ${connectorName}-${args.environment} -> ${url}`);
     console.log(
-      `OpenCode format: V${version}; MCP: ${name}-${args.environment} -> ${url}`,
+      exportOnly
+        ? `Exported client-specific samples to ${exportRoot}; active client configs were not changed.`
+        : `Configured ${args.client} locally; keep generated configs out of Git.`,
     );
   } else if (args.writeProject) {
     const destination = join(destinationRoot, ".mcp.json");
@@ -656,7 +800,7 @@ Usage: tools/mcp/setup-project-mcp.sh [options]
       {
         destination,
         original,
-        generated: editJson(original, ["mcpServers", name], {
+        generated: editJson(original, ["mcpServers", connectorName], {
           command: "bun",
           args: ["./apps/mcp/index.ts"],
           cwd: "./",
@@ -670,8 +814,8 @@ Usage: tools/mcp/setup-project-mcp.sh [options]
   ] as const) {
     if (!apply) continue;
     for (const [server, endpoint] of [
-      [`${name}-local`, "http://127.0.0.1:3001/mcp"],
-      [`${name}-${args.environment}`, url!],
+      [`${connectorName}-local`, "http://127.0.0.1:3001/mcp"],
+      [`${connectorName}-${args.environment}`, url!],
     ]) {
       const command =
         client === "claude"
@@ -694,7 +838,7 @@ Usage: tools/mcp/setup-project-mcp.sh [options]
       }
     }
   }
-  printCommands(name, url, args.environment);
+  printCommands(connectorName, url, args.environment);
 }
 
 if (import.meta.main) {

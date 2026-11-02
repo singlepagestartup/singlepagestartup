@@ -45,6 +45,20 @@ method, so their adapters load one canonical file rather than a second playbook.
   `market-researcher`, `strategist`, `communication-strategist`,
   `brand-designer`, `web-designer`
 
+## Local configuration
+
+Shared Codex defaults live in `config.toml.example`. Copy them into the ignored
+project-local configuration before using the profiles below:
+
+```bash
+cp .codex/config.toml.example .codex/config.toml
+```
+
+`npm run mcp:clients:generate -- --client codex` also initializes a missing config from that
+example and adds the current project's connection. Existing local settings
+remain intact. Keep active client configs out of Git; downstream projects must
+use their own repository and deployment endpoint.
+
 ## Run modes
 
 - Safe default:
