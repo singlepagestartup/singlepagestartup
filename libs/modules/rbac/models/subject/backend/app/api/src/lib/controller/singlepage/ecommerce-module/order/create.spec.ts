@@ -1,18 +1,9 @@
-jest.mock("@sps/shared-backend-database-config", () => ({
-  getDrizzle: () => ({
-    transaction: async (fn: (tx: unknown) => Promise<unknown>) => fn({}),
-  }),
-}));
-jest.mock("@sps/shared-backend-api", () => ({
-  withConsistencyDatabase: async (_tx: unknown, fn: () => Promise<unknown>) =>
-    fn(),
-}));
 /**
- * BDD Suite: add-to-cart write ordering.
+ * BDD Suite: add-to-cart guards and write ordering.
  *
  * Given: a subject adds a product to the cart through the subject order create route.
- * When: the order currency cannot be resolved for that product.
- * Then: the request is rejected before the first row is written, so no partial order graph survives.
+ * When: the product is already in an open cart, or its order currency cannot be resolved.
+ * Then: the request is rejected before the first row is written, so no partial or duplicate order graph survives.
  */
 
 const authorizationMock = jest.fn();
@@ -53,56 +44,28 @@ jest.mock("hono/http-exception", () => ({
   },
 }));
 
-jest.mock("@sps/ecommerce/models/order/sdk/server", () => ({
-  api: {
-    create: (...args: unknown[]) => orderCreateMock(...args),
-  },
-}));
-
-jest.mock(
-  "@sps/rbac/relations/subjects-to-ecommerce-module-orders/sdk/server",
-  () => ({
-    api: {
-      create: (...args: unknown[]) =>
-        subjectsToEcommerceModuleOrdersCreateMock(...args),
-    },
-  }),
-);
-
-jest.mock("@sps/ecommerce/relations/orders-to-products/sdk/server", () => ({
-  api: {
-    create: (...args: unknown[]) => ordersToProductsCreateMock(...args),
-  },
-}));
-
-jest.mock("@sps/ecommerce/relations/stores-to-orders/sdk/server", () => ({
-  api: {
-    create: (...args: unknown[]) => storesToOrdersCreateMock(...args),
-  },
-}));
-
-jest.mock(
-  "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/server",
-  () => ({
-    api: {
-      create: (...args: unknown[]) =>
-        ordersToBillingModuleCurrenciesCreateMock(...args),
-    },
-  }),
-);
-
 import { Handler } from "./create";
+import { Service as CreateCartOrder } from "../../../../service/singlepage/ecommerce/order/create";
 
 const NO_PRICE_ERROR =
   "Validation error. Product has no price in an available currency";
 
-function createContext() {
+const ALREADY_IN_CART_ERROR = "Conflict error. Product is already in the cart";
+
+interface ISubjectOrder {
+  id: string;
+  type: string;
+  status: string;
+  productIds: string[];
+}
+
+function createContext(productId = "product-unpriced") {
   return {
     req: {
       param: (name: string) => (name === "id" ? "subject-1" : undefined),
       parseBody: jest.fn().mockResolvedValue({
         data: JSON.stringify({
-          productId: "product-unpriced",
+          productId,
           quantity: 1,
         }),
       }),
@@ -111,48 +74,76 @@ function createContext() {
   } as any;
 }
 
-function createService(props?: { resolveOrderCurrency?: jest.Mock }) {
+/**
+ * Mirrors the contract of `ecommerceModuleFindOpenCartOrderWithProduct`: it
+ * answers with the order that blocks the add, and an open cart is `type: "cart"`
+ * with `status: "new"`. The service's own spec covers how it reaches that answer.
+ */
+function createFindOpenCartOrderWithProduct(orders: ISubjectOrder[]) {
+  return jest.fn(async (props: { subjectId: string; productId: string }) => {
+    const blocking = orders.find(
+      (order) =>
+        order.type === "cart" &&
+        order.status === "new" &&
+        order.productIds.includes(props.productId),
+    );
+
+    return blocking?.id ?? null;
+  });
+}
+
+function createService(props?: {
+  resolveOrderCurrency?: jest.Mock;
+  subjectOrders?: ISubjectOrder[];
+}) {
   const ecommerceModuleResolveOrderCurrency =
     props?.resolveOrderCurrency ??
     jest.fn().mockRejectedValue(new Error(NO_PRICE_ERROR));
+  const ecommerceModuleFindOpenCartOrderWithProduct =
+    createFindOpenCartOrderWithProduct(props?.subjectOrders ?? []);
+
+  const service: any = {
+    ecommerceModuleResolveOrderCurrency,
+    ecommerceModuleFindOpenCartOrderWithProduct,
+    findById: jest.fn().mockResolvedValue({ id: "subject-1" }),
+    subjectsToEcommerceModuleOrders: {
+      find: jest.fn().mockResolvedValue([]),
+      create: subjectsToEcommerceModuleOrdersCreateMock,
+    },
+    ecommerceModule: {
+      product: {
+        findById: jest
+          .fn()
+          .mockResolvedValue({ id: "product-priced", slug: "test-priced" }),
+      },
+      store: {
+        find: jest.fn().mockResolvedValue([{ id: "store-1" }]),
+      },
+      ordersToProducts: {
+        find: jest.fn().mockResolvedValue([]),
+        create: ordersToProductsCreateMock,
+      },
+      order: { find: jest.fn().mockResolvedValue([]), create: orderCreateMock },
+      storesToOrders: {
+        find: jest.fn().mockResolvedValue([]),
+        create: storesToOrdersCreateMock,
+      },
+      ordersToBillingModuleCurrencies: {
+        create: ordersToBillingModuleCurrenciesCreateMock,
+        find: jest.fn().mockResolvedValue([]),
+      },
+    },
+  };
+  service.ecommerceModuleOrderCreate = (props: any) =>
+    new CreateCartOrder({
+      repository: { withSubjectLock: async (_scope, operation) => operation() },
+      service,
+    }).execute(props);
 
   return {
     ecommerceModuleResolveOrderCurrency,
-    service: {
-      ecommerceModuleResolveOrderCurrency,
-      findById: jest.fn().mockResolvedValue({ id: "subject-1" }),
-      subjectsToEcommerceModuleOrders: {
-        create: subjectsToEcommerceModuleOrdersCreateMock,
-        find: jest.fn().mockResolvedValue([]),
-      },
-      ecommerceModule: {
-        product: {
-          findById: jest.fn().mockResolvedValue({
-            id: "product-unpriced",
-            slug: "test-unpriced",
-          }),
-        },
-        store: {
-          find: jest.fn().mockResolvedValue([{ id: "store-1" }]),
-        },
-        ordersToProducts: {
-          find: jest.fn().mockResolvedValue([]),
-          create: ordersToProductsCreateMock,
-        },
-        order: {
-          find: jest.fn().mockResolvedValue([]),
-          create: orderCreateMock,
-        },
-        storesToOrders: {
-          find: jest.fn().mockResolvedValue([]),
-          create: storesToOrdersCreateMock,
-        },
-        ordersToBillingModuleCurrencies: {
-          create: ordersToBillingModuleCurrenciesCreateMock,
-          find: jest.fn().mockResolvedValue([]),
-        },
-      },
-    } as any,
+    ecommerceModuleFindOpenCartOrderWithProduct,
+    service,
   };
 }
 
@@ -235,5 +226,163 @@ describe("Given: a subject adding a product with no price in an available curren
       billingModuleCurrencyId: "currency-requested",
     });
     expectNoWrites();
+  });
+});
+
+describe("Given: a subject adding a product it may already hold", () => {
+  const PRICED_PRODUCT = "product-priced";
+
+  function createPricedService(subjectOrders: ISubjectOrder[]) {
+    return createService({
+      resolveOrderCurrency: jest.fn().mockResolvedValue("currency-1"),
+      subjectOrders,
+    });
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    authorizationMock.mockReturnValue("token");
+    verifyMock.mockResolvedValue({ subject: { id: "subject-1" } });
+    orderCreateMock.mockResolvedValue({ id: "order-new" });
+    subjectsToEcommerceModuleOrdersCreateMock.mockResolvedValue({
+      id: "subject-to-order-new",
+    });
+    ordersToProductsCreateMock.mockResolvedValue({
+      id: "order-to-product-new",
+    });
+    storesToOrdersCreateMock.mockResolvedValue({ id: "store-to-order-new" });
+    ordersToBillingModuleCurrenciesCreateMock.mockResolvedValue({
+      id: "order-to-currency-new",
+    });
+  });
+
+  /**
+   * BDD Scenario: the same product is refused while it sits in an open cart.
+   *
+   * Given: the subject holds the product in a cart order with status new.
+   * When: the create handler runs for that product.
+   * Then: it fails with the already-in-cart conflict error and writes no order rows.
+   */
+  it("When: the product is already in an open cart Then: the request is refused and no order rows are written", async () => {
+    const { service } = createPricedService([
+      {
+        id: "order-open",
+        type: "cart",
+        status: "new",
+        productIds: [PRICED_PRODUCT],
+      },
+    ]);
+    const handler = new Handler(service);
+
+    await expect(
+      handler.execute(createContext(PRICED_PRODUCT), jest.fn()),
+    ).rejects.toThrow(ALREADY_IN_CART_ERROR);
+
+    expectNoWrites();
+  });
+
+  /**
+   * BDD Scenario: the guard runs before the currency is resolved.
+   *
+   * Given: the subject holds the product in a cart order with status new.
+   * When: the create handler runs for that product.
+   * Then: the duplicate is refused without asking for an order currency.
+   */
+  it("When: the product is already in an open cart Then: no currency is resolved", async () => {
+    const { service, ecommerceModuleResolveOrderCurrency } =
+      createPricedService([
+        {
+          id: "order-open",
+          type: "cart",
+          status: "new",
+          productIds: [PRICED_PRODUCT],
+        },
+      ]);
+    const handler = new Handler(service);
+
+    await expect(
+      handler.execute(createContext(PRICED_PRODUCT), jest.fn()),
+    ).rejects.toThrow(ALREADY_IN_CART_ERROR);
+
+    expect(ecommerceModuleResolveOrderCurrency).not.toHaveBeenCalled();
+  });
+
+  /**
+   * BDD Scenario: a checked-out order does not block a repeat purchase.
+   *
+   * Given: the subject holds the product only in a paid order that checkout moved to history.
+   * When: the create handler runs for that product.
+   * Then: the add succeeds and the full order graph is written.
+   */
+  it("When: the product sits only in a paid order Then: the add is allowed", async () => {
+    const { service } = createPricedService([
+      {
+        id: "order-paid",
+        type: "history",
+        status: "paying",
+        productIds: [PRICED_PRODUCT],
+      },
+    ]);
+    const handler = new Handler(service);
+
+    await handler.execute(createContext(PRICED_PRODUCT), jest.fn());
+
+    expect(orderCreateMock).toHaveBeenCalled();
+    expect(ordersToProductsCreateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ productId: PRICED_PRODUCT }),
+      }),
+    );
+  });
+
+  /**
+   * BDD Scenario: a cancelled cart order does not block a new one.
+   *
+   * Given: the subject holds the product in a cart order that is no longer new.
+   * When: the create handler runs for that product.
+   * Then: the add is allowed.
+   */
+  it("When: the product sits only in a cancelled cart order Then: the add is allowed", async () => {
+    const { service } = createPricedService([
+      {
+        id: "order-canceled",
+        type: "cart",
+        status: "canceled",
+        productIds: [PRICED_PRODUCT],
+      },
+    ]);
+    const handler = new Handler(service);
+
+    await handler.execute(createContext(PRICED_PRODUCT), jest.fn());
+
+    expect(orderCreateMock).toHaveBeenCalled();
+  });
+
+  /**
+   * BDD Scenario: a different product is unaffected by an occupied cart.
+   *
+   * Given: the subject holds another product in an open cart order.
+   * When: the create handler runs for a product that cart does not hold.
+   * Then: the add is allowed and the guard was asked about the requested product.
+   */
+  it("When: a different product is requested Then: the add is allowed and the guard is asked for that product", async () => {
+    const { service, ecommerceModuleFindOpenCartOrderWithProduct } =
+      createPricedService([
+        {
+          id: "order-open",
+          type: "cart",
+          status: "new",
+          productIds: ["product-other"],
+        },
+      ]);
+    const handler = new Handler(service);
+
+    await handler.execute(createContext(PRICED_PRODUCT), jest.fn());
+
+    expect(ecommerceModuleFindOpenCartOrderWithProduct).toHaveBeenCalledWith({
+      subjectId: "subject-1",
+      productId: PRICED_PRODUCT,
+    });
+    expect(orderCreateMock).toHaveBeenCalled();
   });
 });

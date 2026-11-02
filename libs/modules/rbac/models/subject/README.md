@@ -28,6 +28,26 @@ former `ecommerce-module-product-cart-default` and
 compositions should select the corresponding `me` variant and pass
 `dataSource="props"` when they already own the current Subject.
 
+### Duplicate products in an open cart
+
+The Subject order-create route permits one open cart Order per Product for that
+Subject. An open cart has `type="cart"` and `status="new"`. Store and selected
+currency do not partition the cart. A repeat add returns HTTP 409 with
+`Conflict error. Product is already in the cart`; quantity changes use the
+existing Subject order-update route.
+
+`ecommerceModuleOrderCreate` uses the existing Subject repository's
+`withSubjectLock` transaction. The duplicate lookup, currency resolution and all
+Order graph writes run under the same PostgreSQL lock, including requests from
+different API processes. A relation failure rolls back the graph. The lookup
+narrows from Subject links to active cart Orders and then to their Product
+lines through the owning services. History and cancelled Orders do not block
+another purchase, and another Subject has an independent cart.
+
+The guard covers this Subject operation. Generic administrative writes retain
+their existing behavior, and existing duplicate carts require explicit data
+reconciliation; this change does not delete them.
+
 ### Product pricing before cart creation
 
 The Subject order-create handler resolves a currency from the Product's price

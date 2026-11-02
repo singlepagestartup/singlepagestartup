@@ -1,4 +1,12 @@
 import {
+  Service as CreateCartOrder,
+  type IExecuteProps as ICreateCartOrderProps,
+} from "./ecommerce/order/create";
+import {
+  Service as FindOpenCartOrderWithProduct,
+  type IExecuteProps as IFindOpenCartOrderWithProductProps,
+} from "./ecommerce/order/find-open-cart-order-with-product";
+import {
   Service as SetOrderCurrency,
   type IExecuteProps as ISetOrderCurrencyProps,
 } from "./ecommerce/order/set-currency";
@@ -277,6 +285,22 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     const revocation = new RoleRevocation(this);
     this.subjectsToRoles.configureRevocation(revocation);
     return revocation;
+  }
+
+  async ecommerceModuleOrderCreate(props: ICreateCartOrderProps) {
+    return new CreateCartOrder({
+      repository: this.repository,
+      service: this,
+    }).execute(props);
+  }
+
+  async ecommerceModuleFindOpenCartOrderWithProduct(
+    props: IFindOpenCartOrderWithProductProps,
+  ): Promise<string | null> {
+    return new FindOpenCartOrderWithProduct({
+      ecommerceModule: this.ecommerceModule,
+      subjectsToEcommerceModuleOrders: this.subjectsToEcommerceModuleOrders,
+    }).execute(props);
   }
 
   async ecommerceModuleResolveOrderCurrency(props: IResolveOrderCurrencyProps) {
