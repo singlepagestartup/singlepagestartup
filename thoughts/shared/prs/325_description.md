@@ -17,9 +17,11 @@ explicit page and layout paths.
 - Remove GET, the 404/405 fallback and the extra Host request after each HTTP
   write. Keep browser notification delivery. The dispatcher retries failed
   invalidation without acknowledging the outbox batch.
-- Remove the direct browser action for the internal route. Warm concrete
-  localized pages by their pathname. Provide the secret through local bootstrap
-  and the API and Host deployment templates.
+- The Admin settings button calls `POST /api/rbac/subjects/host-cache/revalidate`
+  with the current session JWT. The Subject middleware verifies the session and
+  checks the current `admin` role before the API invokes the shared Host transport.
+- Warm concrete localized pages by pathname. Supply the service secret through
+  local bootstrap and the API and Host deployment templates.
 
 ## Verification
 
@@ -30,6 +32,12 @@ explicit page and layout paths.
 - Production Next fixture with warmed cache. A rejected POST leaves the cache
   intact, a tag POST refreshes both matching pages and a path POST refreshes
   the selected dynamic URL.
+- Admin settings in Browser and the real API and Next Host. Missing or invalid
+  sessions return 401, an authenticated Subject without the admin role gets
+  403, and the admin gets 200. The service secret is absent from browser bundles.
+- A separate warmed-cache run through Subject refreshed both Next pages.
+  The API cache pointer and response envelope in Redis stayed unchanged, and
+  the next API read was still a cache hit.
 - Two WebSocket clients and a warmed HTTP cache over isolated local Redis.
 - Type checks for changed packages, module dependency check and local bootstrap
   with matching generated API and Host credentials.

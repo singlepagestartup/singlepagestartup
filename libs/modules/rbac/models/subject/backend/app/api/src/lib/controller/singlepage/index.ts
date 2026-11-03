@@ -22,6 +22,7 @@ import {
   RequestSubjectIdOwner,
   RequestSubjectReadAccess,
   RequestOperatorSecret,
+  RequestAuthenticatedAdmin,
   RequestSubjectOwnsEcommerceModuleOrder,
   RequestSubjectOwnsSocialModuleChat,
   RequestSubjectOwnsIdentity,
@@ -42,6 +43,7 @@ import { Handler as AuthenticationOAuthStart } from "./authentication/oauth/star
 import { Handler as AuthenticationOAuthCallback } from "./authentication/oauth/callback";
 import { Handler as AuthenticationOAuthExchange } from "./authentication/oauth/exchange";
 
+import { Handler as RevalidateHostCache } from "./revalidate-host-cache";
 import { Handler as Notify } from "./notify";
 import { Handler as Check } from "./check";
 import { Handler as DeleteAnonymous } from "./delete-anonymous";
@@ -126,6 +128,17 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     super(service);
     this.service = service;
     this.bindHttpRoutes([
+      {
+        method: "POST",
+        path: "/host-cache/revalidate",
+        handler: (c) => new RevalidateHostCache(this.service).execute(c),
+        middlewares: [
+          new RequestAuthenticatedAdmin().init({
+            authenticationMe: (props) => this.service.authenticationMe(props),
+            isAdmin: (subjectId) => this.service.isAdmin(subjectId),
+          }),
+        ],
+      },
       {
         method: "POST",
         path: "/:id/blog-module/articles",
