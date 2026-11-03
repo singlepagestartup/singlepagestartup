@@ -77,7 +77,6 @@ apps/host/coverage
 ############################
 # host / ICP
 ############################
-apps/host/.dfx
 apps/host/*.key
 apps/host/*.pem
 apps/host/*.pem.base64
