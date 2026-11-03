@@ -4,11 +4,13 @@ Closes #320.
 
 The workflows referenced every third-party action by a major tag, substituted branch names and release tags into shell script text, and ran with the repository's default token permissions. Two pull-request workflows listened for branches that no longer exist.
 
-This change pins each action to the commit its tag points at, passes branch names, step outputs and release tags to scripts through quoted environment variables, declares `permissions: contents: read` in every workflow, removes `deploy-to-icp.yml` and `update-host.yml`, and limits `deployer.yml` to pull requests into `ansible-*` branches.
+This change pins each action to the commit its tag points at, passes branch names, step outputs and release tags to scripts through quoted environment variables, declares `permissions: contents: read` in the ten maintained workflows, removes `update-host.yml`, and limits `deployer.yml` to pull requests into `ansible-*` branches.
 
 `deployer.yml` stays. The ref of a merged pull request is its base branch, and merging a pull request from `main` into `ansible-up`, `ansible-down` or their `-preview` variants is how a deployment starts: 36 such pull requests were merged between 2023-11 and 2025-11, and #130 started run 19761939787. Without a branch filter the workflow also started a skipped run for every other closed pull request.
 
 ## Reconciled with current main
+
+The Internet Computer workflow, tooling and ignore rules match main. The checks below cover the ten workflows changed by this PR.
 
 Keep API readiness before dependent releases, Docker verification without
 registry login or publishing, and the Ansible steps that generate and upload MCP
@@ -66,9 +68,9 @@ The pins keep the code that runs today, except in `prepare-docker-images.yml`, w
 
 ## Downstream migration
 
-Adaptation is required in projects that keep the framework's `.github/workflows`. The workflows now run with a read-only `GITHUB_TOKEN`, pin third-party actions to commits, pass branch names and release tags to scripts through environment variables, no longer include the `deploy-to-icp` and `update-host` pull-request workflows, and start the deployment workflow only for pull requests into `ansible-*` branches. `ansible.yml` takes the deployment branch from its `BRANCH` input when another workflow calls it.
+Adaptation is required in projects that keep the framework's `.github/workflows`. The workflows now run with a read-only `GITHUB_TOKEN`, pin third-party actions to commits, pass branch names and release tags to scripts through environment variables, no longer include the `update-host` pull-request workflow, and start the deployment workflow only for pull requests into `ansible-*` branches. `ansible.yml` takes the deployment branch from its `BRANCH` input when another workflow calls it.
 
-**Applies to:** projects with their own steps in these workflows that write through the `GITHUB_TOKEN`, deployment branches whose names do not start with `ansible-`, a remaining use of `deploy-to-icp.yml` or `update-host.yml`, their own `ansible.yml` steps that render `github.ref_name` or `inputs.TAG` into `run:` scripts, their own workflows that call `ansible.yml`, or self-hosted runners for `prepare-docker-images.yml`.
+**Applies to:** projects with their own steps in these workflows that write through the `GITHUB_TOKEN`, deployment branches whose names do not start with `ansible-`, a remaining use of `update-host.yml`, their own `ansible.yml` steps that render `github.ref_name` or `inputs.TAG` into `run:` scripts, their own workflows that call `ansible.yml`, or self-hosted runners for `prepare-docker-images.yml`.
 
 **Actions:**
 
@@ -77,7 +79,7 @@ Adaptation is required in projects that keep the framework's `.github/workflows`
 - Keep the `ansible-*` filter in `deployer.yml`, or restore a branch-name check in its job condition, before removing either: the job now calls `ansible.yml` for every merged pull request the trigger admits.
 - Run `prepare-docker-images.yml` on a runner that supports `actions/checkout` v5 (runner 2.327.1 or later), as `ansible.yml` and `docker-image.yml` already require.
 - Give any project-owned job in these workflows that creates releases, writes comments, pushes commits or tags, or publishes packages through the `GITHUB_TOKEN` its own job-level `permissions` entry; the workflow-level token is now read-only.
-- Add project deployment branch names that do not begin with `ansible-` to the `branches` filter of `.github/workflows/deployer.yml`. A project that still merges into `deploy-to-icp` or `update-frontend` restores that workflow as a project-owned file with a `github.event.pull_request.merged == true` guard.
+- Add project deployment branch names that do not begin with `ansible-` to the `branches` filter of `.github/workflows/deployer.yml`. A project that still merges into `update-frontend` restores that workflow as a project-owned file with a `github.event.pull_request.merged == true` guard.
 - In project-owned `run:` steps of these workflows, read the branch as `"$BRANCH_NAME"` in `ansible.yml` and pass inputs and step outputs through `env:` instead of rendering `${{ github.ref_name }}`, `${{ inputs.TAG }}` or `${{ steps.*.outputs.* }}` into the script.
 
 **Verify:** publish a prerelease and confirm the release chain finishes without a permission error; merge a pull request from `main` into a preview deployment branch and confirm the `Env` run executes `up.sh` with the preview secrets; start the `Ansible` workflow by hand from the same branch and confirm the same selection; close a pull request into `main` and confirm no `Env` run appears.
