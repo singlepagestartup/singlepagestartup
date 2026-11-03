@@ -9,7 +9,7 @@ export function Component(props: IComponentPropsExtended) {
       data-id={props.data?.id || ""}
       data-variant={props.variant}
       className={cn(
-        "w-full flex flex-col",
+        "flex w-full min-w-0 flex-col gap-5",
         props.data.className,
         props.className,
       )}

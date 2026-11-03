@@ -1,0 +1,21 @@
+{
+  "id": "0566c124-d120-4ae2-b08c-faebf1634e9f",
+  "className": "",
+  "createdAt": "2026-10-26T00:13:01.544Z",
+  "updatedAt": "2026-10-27T15:00:26.541Z",
+  "variant": "article-overview-linked",
+  "adminTitle": "Уведомления клиентам",
+  "slug": "framework-reviewed-linked-notification",
+  "title": {
+    "en": "Customer notifications",
+    "ru": "Уведомления клиентам"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "",
+    "ru": ""
+  }
+}

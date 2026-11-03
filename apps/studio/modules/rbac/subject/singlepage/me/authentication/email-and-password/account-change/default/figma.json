@@ -1,0 +1,21 @@
+{
+  "componentName": "rbac.subject",
+  "pageName": "rbac",
+  "variantName": "me-authentication-email-and-password-account-change-default",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "rbac.subject.me-authentication-email-and-password-account-change-default",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "rbac/subject/singlepage/me/authentication/email-and-password/account-change/default",
+    "sps.figma.component": "rbac.subject",
+    "sps.figma.variant": "me-authentication-email-and-password-account-change-default",
+    "sps.source.module": "rbac",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "subject",
+    "sps.source.variant": "me-authentication-email-and-password-account-change-default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/rbac/subject/singlepage/me/authentication/email-and-password/account-change/default/Component.tsx",
+    "sps.code.story": "apps/studio/modules/rbac/subject/singlepage/me/authentication/email-and-password/account-change/default/Component.stories.tsx"
+  }
+}

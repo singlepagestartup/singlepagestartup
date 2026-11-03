@@ -19,3 +19,5 @@ export interface IComponentPropsExtended
     typeof variant,
     IComponentProps
   > {}
+
+export type IExternalWidgetProps = IComponentPropsExtended;

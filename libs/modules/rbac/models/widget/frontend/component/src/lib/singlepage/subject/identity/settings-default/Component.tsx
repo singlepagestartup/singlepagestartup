@@ -1,3 +1,4 @@
+import { Component as Content } from "./Content";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { IComponentPropsExtended } from "./interface";
 import {
@@ -50,7 +51,12 @@ export function Component(props: IComponentPropsExtended) {
               <p className="text-sm text-muted-foreground">Information</p>
             </div>
           </div>
-          {props.children}
+          {props.children ?? (
+            <Content
+              isServer={props.isServer}
+              language={props.language || "en"}
+            />
+          )}
         </CardContent>
       </Card>
     </div>

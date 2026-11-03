@@ -1,7 +1,7 @@
-import { IComponentPropsExtended } from "../interface";
+import { IExternalWidgetProps } from "../interface";
 import { Component as BillingModuleWidget } from "@sps/billing/models/widget/frontend/component";
 
-export function Component(props: IComponentPropsExtended) {
+export function Component(props: IExternalWidgetProps) {
   return (
     <BillingModuleWidget
       isServer={props.isServer}

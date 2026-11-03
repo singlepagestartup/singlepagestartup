@@ -3,20 +3,21 @@
  *
  * Given: the Host page service returns root and nested URL records as strings.
  * When: the Agent page-cache handler processes every configured language.
- * Then: it revalidates and fetches canonical localized paths without stopping after a page failure,
- *       and each revalidation carries the host revalidation secret.
+ * Then: it revalidates and fetches canonical localized paths without stopping after a page failure.
  */
 
 const mockLoggerInfo = jest.fn();
 const mockLoggerError = jest.fn();
 
 jest.mock("@sps/shared-utils", () => ({
-  HOST_SERVICE_REVALIDATION_SECRET: "test-host-revalidation-secret",
-  HOST_SERVICE_REVALIDATION_SECRET_HEADER:
-    jest.requireActual("@sps/shared-utils")
-      .HOST_SERVICE_REVALIDATION_SECRET_HEADER,
+  AGENT_PAGE_CACHE_MAX_CONSECUTIVE_FAILURES: 3,
+  AGENT_PAGE_CACHE_SUPERSEDE_CHECK_INTERVAL_IN_MILLISECONDS: 60000,
   HOST_SERVICE_URL: "http://localhost:3000/",
   RBAC_SECRET_KEY: "test-rbac-secret",
+}));
+
+jest.mock("@sps/agent/models/agent/sdk/model", () => ({
+  runIdHeader: "X-SPS-AGENT-RUN-ID",
 }));
 
 jest.mock("@sps/shared-configuration", () => ({
@@ -39,6 +40,7 @@ jest.mock("@sps/shared-configuration", () => ({
 }));
 
 jest.mock("@sps/backend-utils", () => ({
+  requestHostRevalidation: jest.fn(),
   getHttpErrorType: (error: Error) => ({
     details: error,
     message: error.message,
@@ -50,19 +52,26 @@ jest.mock("@sps/backend-utils", () => ({
   },
 }));
 
-import { HOST_SERVICE_REVALIDATION_SECRET_HEADER } from "@sps/shared-utils";
+import { AGENT_PAGE_CACHE_SUPERSEDE_CHECK_INTERVAL_IN_MILLISECONDS } from "@sps/shared-utils";
 import { Handler } from "./cache";
 
 const originalFetch = globalThis.fetch;
 
-function createContext() {
+function createContext(props?: { runId?: string }) {
   return {
     json: jest.fn((payload: unknown) => payload),
+    req: {
+      header: jest.fn(() => props?.runId),
+      path: "/api/agent/agents/host-module-page-cache",
+    },
   } as any;
 }
 
-function createHandler() {
+function createHandler(props?: { isRunSuperseded?: jest.Mock }) {
   return new Handler({
+    agentRun: {
+      isRunSuperseded: props?.isRunSuperseded || jest.fn(),
+    },
     hostModule: {
       page: {
         urls: jest.fn().mockResolvedValue([
@@ -106,16 +115,16 @@ describe("Given: Host page URLs use the documented string contract", () => {
     globalThis.fetch = fetchPage as any;
     const context = createContext();
     const expectedPaths = [
-      "http://localhost:3000/",
-      "http://localhost:3000/ru/",
-      "http://localhost:3000/gallery/item",
+      "http://localhost:3000/en",
+      "http://localhost:3000/ru",
+      "http://localhost:3000/en/gallery/item",
       "http://localhost:3000/ru/gallery/item",
     ];
 
     const result = await handler.execute(context, jest.fn());
 
     expect(revalidatePage.mock.calls.map(([path]) => path)).toEqual(
-      expectedPaths,
+      expectedPaths.map((url) => new URL(url).pathname),
     );
     expect(fetchPage.mock.calls).toEqual(
       expectedPaths.map((path) => [
@@ -165,22 +174,22 @@ describe("Given: Host page URLs use the documented string contract", () => {
     globalThis.fetch = fetchPage as any;
     const context = createContext();
     const expectedPaths = [
-      "http://localhost:3000/",
-      "http://localhost:3000/ru/",
-      "http://localhost:3000/gallery/item",
+      "http://localhost:3000/en",
+      "http://localhost:3000/ru",
+      "http://localhost:3000/en/gallery/item",
       "http://localhost:3000/ru/gallery/item",
     ];
 
     const result = await handler.execute(context, jest.fn());
 
     expect(revalidatePage.mock.calls.map(([path]) => path)).toEqual(
-      expectedPaths,
+      expectedPaths.map((url) => new URL(url).pathname),
     );
     expect(fetchPage.mock.calls.map(([path]) => path)).toEqual(expectedPaths);
     expect(mockLoggerError).toHaveBeenCalledWith(
-      "http://localhost:3000/ - Failed to fetch page",
+      "http://localhost:3000/en - Failed to fetch page",
       {
-        page: "http://localhost:3000/",
+        page: "http://localhost:3000/en",
         error: expect.any(Error),
       },
     );
@@ -192,34 +201,75 @@ describe("Given: Host page URLs use the documented string contract", () => {
   });
 
   /**
-   * BDD Scenario: a page revalidation carries the host secret.
+   * BDD Scenario: a superseded run stops before the URL list ends.
    *
-   * Given: a localized page URL.
-   * When: the handler asks the host to revalidate that page.
-   * Then: the request carries the revalidation secret, the encoded URL as its only path value, and the page type.
+   * Given: a dispatched run whose slug is already owned by a later run.
+   * When: the page-cache handler reaches the next URL after the check interval.
+   * Then: it stops and reports the reason instead of warming the rest of the site.
    */
-  it("Then: asks the host to revalidate the page with the revalidation secret", async () => {
-    const handler = createHandler();
-    const fetchHost = jest.fn().mockResolvedValue({
+  it("Then: stops warming pages once its run was superseded", async () => {
+    const isRunSuperseded = jest.fn().mockResolvedValue(true);
+    const handler = createHandler({ isRunSuperseded });
+    jest.spyOn(handler, "revalidatePage").mockResolvedValue(undefined);
+    const fetchPage = jest.fn().mockResolvedValue({
       ok: true,
     });
-    globalThis.fetch = fetchHost as any;
-    const page = "http://localhost:3000/ru/gallery/item?view=grid&page=2";
+    globalThis.fetch = fetchPage as any;
+    jest
+      .spyOn(Date, "now")
+      .mockReturnValueOnce(0)
+      .mockReturnValue(
+        AGENT_PAGE_CACHE_SUPERSEDE_CHECK_INTERVAL_IN_MILLISECONDS,
+      );
 
-    await handler.revalidatePage(page);
+    const context = createContext({ runId: "run-id" });
+    const result = await handler.execute(context, jest.fn());
 
-    expect(fetchHost).toHaveBeenCalledTimes(1);
-
-    const [url, init] = fetchHost.mock.calls[0];
-    const requested = new URL(url);
-
-    expect(requested.pathname).toMatch(/\/api\/revalidate$/);
-    expect(requested.searchParams.getAll("path")).toEqual([page]);
-    expect(requested.searchParams.get("type")).toBe("page");
-    expect(init.headers).toEqual({
-      [HOST_SERVICE_REVALIDATION_SECRET_HEADER]:
-        "test-host-revalidation-secret",
+    expect(isRunSuperseded).toHaveBeenCalledWith({
+      slug: "host-module-page-cache",
+      runId: "run-id",
     });
-    expect(mockLoggerError).not.toHaveBeenCalled();
+    expect(fetchPage).not.toHaveBeenCalled();
+    expect(context.json).toHaveBeenCalledWith(
+      { data: { ok: false, stopped: "superseded" } },
+      409,
+    );
+    expect(result).toEqual({
+      data: {
+        ok: false,
+        stopped: "superseded",
+      },
+    });
+  });
+
+  /**
+   * BDD Scenario: repeated page failures end the run.
+   *
+   * Given: every page fetch fails and the configured failure bound is three.
+   * When: the page-cache handler processes the URL list.
+   * Then: it stops after the third consecutive failure and reports the reason.
+   */
+  it("Then: stops after the configured number of consecutive failures", async () => {
+    const handler = createHandler();
+    jest.spyOn(handler, "revalidatePage").mockResolvedValue(undefined);
+    const fetchPage = jest.fn().mockResolvedValue({
+      ok: false,
+    });
+    globalThis.fetch = fetchPage as any;
+
+    const context = createContext();
+    const result = await handler.execute(context, jest.fn());
+
+    expect(fetchPage).toHaveBeenCalledTimes(3);
+    expect(context.json).toHaveBeenCalledWith(
+      { data: { ok: false, stopped: "failures" } },
+      502,
+    );
+    expect(result).toEqual({
+      data: {
+        ok: false,
+        stopped: "failures",
+      },
+    });
   });
 });

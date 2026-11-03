@@ -1,17 +1,25 @@
 import {
-  HOST_SERVICE_REVALIDATION_SECRET,
-  HOST_SERVICE_REVALIDATION_SECRET_HEADER,
+  AGENT_PAGE_CACHE_MAX_CONSECUTIVE_FAILURES,
+  AGENT_PAGE_CACHE_SUPERSEDE_CHECK_INTERVAL_IN_MILLISECONDS,
   HOST_SERVICE_URL,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
-import { getHttpErrorType, logger } from "@sps/backend-utils";
+import {
+  getHttpErrorType,
+  logger,
+  requestHostRevalidation,
+} from "@sps/backend-utils";
 import { internationalization } from "@sps/shared-configuration";
+import { runIdHeader } from "@sps/agent/models/agent/sdk/model";
+
+export type IPageCacheStopReason = "superseded" | "failures";
 
 export class Handler {
   service: Service;
+  protected supersedeCheckedAt = 0;
 
   constructor(service: Service) {
     this.service = service;
@@ -25,24 +33,31 @@ export class Handler {
 
       logger.info("Host module page cache started");
 
+      const runId = c.req.header(runIdHeader);
+      const slug = c.req.path.replace(/\/+$/, "").split("/").pop() || "";
+
+      this.supersedeCheckedAt = Date.now();
+
       const urls = await this.service.hostModule.page.urls();
       const hostServiceUrl = HOST_SERVICE_URL.replace(/\/+$/, "");
 
+      let consecutiveFailures = 0;
+      let stopped: IPageCacheStopReason | undefined;
+
       if (urls?.length) {
         for (const url of urls) {
-          for (const language of internationalization.languages) {
-            const code =
-              language.code === internationalization.defaultLanguage.code
-                ? ""
-                : language.code;
-            const urlPath = url.url.replace(/^\/+|\/+$/g, "");
-            const localizedPath = [code, urlPath].filter(Boolean).join("/");
-            const rootSuffix = !urlPath && localizedPath ? "/" : "";
+          if (await this.isRunSuperseded({ slug, runId })) {
+            stopped = "superseded";
+            break;
+          }
 
-            const path = `${hostServiceUrl}/${localizedPath}${rootSuffix}`;
+          for (const language of internationalization.languages) {
+            const urlPath = url.url.replace(/^\/+|\/+$/g, "");
+            const pathname = `/${[language.code, urlPath].filter(Boolean).join("/")}`;
+            const path = `${hostServiceUrl}${pathname}`;
 
             try {
-              await this.revalidatePage(path);
+              await this.revalidatePage(pathname);
 
               const res = await fetch(path, {
                 method: "GET",
@@ -51,14 +66,42 @@ export class Handler {
               if (!res.ok) {
                 throw new Error("Internal error. Failed to fetch page");
               }
+
+              consecutiveFailures = 0;
             } catch (err) {
+              consecutiveFailures += 1;
+
               logger.error(path + " - Failed to fetch page", {
                 page: path,
                 error: err,
               });
             }
+
+            if (
+              consecutiveFailures >= AGENT_PAGE_CACHE_MAX_CONSECUTIVE_FAILURES
+            ) {
+              stopped = "failures";
+              break;
+            }
+          }
+
+          if (stopped) {
+            break;
           }
         }
+      }
+
+      if (stopped) {
+        logger.info("Host module page cache stopped", {
+          reason: stopped,
+          slug,
+          runId,
+        });
+
+        return c.json(
+          { data: { ok: false, stopped } },
+          stopped === "failures" ? 502 : 409,
+        );
       }
 
       logger.info("Host module page cache finished");
@@ -71,28 +114,44 @@ export class Handler {
     }
   }
 
-  async revalidatePage(path: string) {
-    const res = await fetch(
-      HOST_SERVICE_URL +
-        `/api/revalidate?path=${encodeURIComponent(path)}&type=page`,
-      {
-        headers: {
-          [HOST_SERVICE_REVALIDATION_SECRET_HEADER]:
-            HOST_SERVICE_REVALIDATION_SECRET ?? "",
-        },
-      },
-    )
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("Internal error. Failed to revalidate page");
-        }
-      })
-      .catch((err) => {
-        logger.error("Internal error. Failed to revalidate page", {
-          error: err,
-        });
+  /**
+   * A run that no longer owns its slug keeps loading Host for nothing, so the
+   * marker is re-read between URLs, at most once per check interval.
+   */
+  async isRunSuperseded(props: {
+    slug: string;
+    runId?: string;
+  }): Promise<boolean> {
+    if (!props.runId) {
+      return false;
+    }
+
+    const now = Date.now();
+
+    if (
+      now - this.supersedeCheckedAt <
+      AGENT_PAGE_CACHE_SUPERSEDE_CHECK_INTERVAL_IN_MILLISECONDS
+    ) {
+      return false;
+    }
+
+    this.supersedeCheckedAt = now;
+
+    try {
+      return await this.service.agentRun.isRunSuperseded({
+        slug: props.slug,
+        runId: props.runId,
+      });
+    } catch (error) {
+      logger.error("Internal error. Failed to read the agent run marker", {
+        error,
       });
 
-    return res;
+      return false;
+    }
+  }
+
+  async revalidatePage(path: string) {
+    await requestHostRevalidation({ path });
   }
 }

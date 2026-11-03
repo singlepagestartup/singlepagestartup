@@ -1,0 +1,72 @@
+{
+  "schema": {
+    "module": "analytic",
+    "entity": "metric",
+    "entityType": "model",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "title",
+        "label": "Title",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "value",
+        "label": "Value",
+        "kind": "integer",
+        "nullable": false
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "211cfd8d-2a74-4cc6-a190-a685d132486f",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "title": "metric example 1",
+      "value": 1
+    },
+    {
+      "id": "5ca8ae55-04e1-41f6-a20f-6d02e7f7ada9",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "title": "metric example 2",
+      "value": 2
+    },
+    {
+      "id": "773c5dd1-0431-4f1a-a751-f92c5c39c389",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "title": "metric example 3",
+      "value": 3
+    }
+  ]
+}

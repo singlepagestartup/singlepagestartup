@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Explore the repository documentation",
+    "ru": "Открыть документацию репозитория"
+  },
+  "subtitle": {},
+  "url": "https://github.com/singlepagestartup/singlepagestartup#readme",
+  "className": "w-fit",
+  "id": "f595113c-f753-4337-ae1a-3e7362ee39e7",
+  "createdAt": "2026-10-24T01:05:46.927Z",
+  "updatedAt": "2026-10-24T01:05:46.927Z",
+  "variant": "secondary",
+  "adminTitle": "Explore the repository documentation",
+  "slug": "framework-journey-foundation-actions-0"
+}

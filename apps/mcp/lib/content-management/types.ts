@@ -184,6 +184,12 @@ export interface IDeletePreview {
 }
 
 export interface IHostGraphCandidate {
+  composition?: {
+    ownerSelector: { module: string; model: string };
+    ownerWidget: Record<string, any>;
+    relationSelector: { module: string; relation: string };
+    relation: Record<string, any>;
+  }[];
   id: string;
   page: Record<string, any>;
   pageWidget: Record<string, any>;

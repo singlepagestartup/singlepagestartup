@@ -24,10 +24,6 @@ const initialSettingsOperationState: Record<
     status: "idle",
     message: "",
   },
-  frontendRevalidate: {
-    status: "idle",
-    message: "",
-  },
 };
 
 function getSettingsOperationStatus(status: TSettingsOperationState["status"]) {
@@ -106,9 +102,7 @@ export function Component(props: ISettingsPageProps) {
   );
 
   const backendState = operations.backendCacheClear;
-  const frontendState = operations.frontendRevalidate;
   const backendStatus = getSettingsOperationStatus(backendState.status);
-  const frontendStatus = getSettingsOperationStatus(frontendState.status);
 
   const content = (
     <section data-testid="settings-page" className="space-y-4">
@@ -148,43 +142,6 @@ export function Component(props: ISettingsPageProps) {
               onClick={() => runSettingsOperation("backendCacheClear")}
             >
               {backendState.status === "loading" ? "Running..." : "Run action"}
-            </Button>
-          </Card>
-
-          <Card className="rounded-lg border border-slate-300 bg-slate-50 p-4">
-            <div className="flex items-center justify-between gap-2">
-              <h3 className="text-base font-semibold">
-                Revalidate Frontend Layout
-              </h3>
-              <span
-                className={cn(
-                  "inline-flex items-center rounded-md border px-2 py-1 text-xs font-medium",
-                  frontendStatus.badgeClass,
-                )}
-              >
-                {frontendStatus.text}
-              </span>
-            </div>
-
-            <p className="mt-2 text-sm text-slate-600">
-              Triggers frontend revalidation via
-              <code className="ml-1 rounded bg-white px-1 py-0.5 font-mono text-xs">
-                /api/revalidate?path=/&amp;type=layout
-              </code>
-              .
-            </p>
-
-            <p className="mt-2 min-h-5 text-xs text-slate-500">
-              {frontendState.message || ""}
-            </p>
-
-            <Button
-              type="button"
-              disabled={frontendState.status === "loading"}
-              className="mt-3 !w-auto rounded-md border border-slate-400 bg-slate-900 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:border-slate-500 hover:bg-slate-800"
-              onClick={() => runSettingsOperation("frontendRevalidate")}
-            >
-              {frontendState.status === "loading" ? "Running..." : "Run action"}
             </Button>
           </Card>
         </div>

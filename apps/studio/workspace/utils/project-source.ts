@@ -1,7 +1,3 @@
-import {
-  documentConfirmation,
-  parseDocument,
-} from "../../../../tools/studio/workspace/document";
 import { parse } from "yaml";
 
 import singlepageIndexSource from "./index/singlepage.yaml?raw";
@@ -12,8 +8,6 @@ import {
 } from "../../../../tools/studio/workspace/merge";
 
 import type { IStudioArtifact, IStudioWorkspace } from "./types";
-import { workspaceReviews } from "./review-source";
-import { reviewId } from "../../../../tools/studio/workspace/review";
 
 type WorkspaceLayer = "singlepage" | "startup";
 
@@ -78,19 +72,6 @@ function sourceArtifact(
 ): IStudioArtifact {
   const entry = indexEntry(definition, layer);
   const canonicalPath = sourcePath(entry);
-  const format = canonicalPath.endsWith(".yaml") ? "yaml" : "markdown";
-  const confirmationSource =
-    layer === "startup" &&
-    parseDocument(definition.startup, format).metadata.confirmation !==
-      undefined
-      ? mergeWorkspaceContent({
-          base: definition.singlepage,
-          overlay: definition.startup,
-          kind: definition.kind,
-          sourcePath: canonicalPath,
-          strategy: entry.strategy,
-        }).content
-      : definition[layer];
   return {
     id: entry.id,
     kind: entry.kind,
@@ -104,12 +85,6 @@ function sourceArtifact(
     uses: [...entry.uses],
     usedBy: reverseDependencies(entry, layer),
     content: definition[layer],
-    confirmation: definition[layer].trim()
-      ? (workspaceReviews[
-          layer === "singlepage" ? "singlepage" : "default"
-        ].get(reviewId(entry.extends ?? entry.id))?.confirmation ??
-        documentConfirmation(confirmationSource, layer, format))
-      : documentConfirmation(confirmationSource, layer, format),
   };
 }
 
@@ -133,16 +108,6 @@ function defaultArtifact(definition: IProjectArtifactSource): IStudioArtifact {
     inherited: !merged.overlayContributes,
     resolution: merged.overlayContributes ? "merged" : "inherited",
     content: merged.content,
-    confirmation:
-      workspaceReviews.default.get(
-        reviewId(indexEntry(definition, "startup").extends ?? startup.id),
-      )?.confirmation ??
-      documentConfirmation(
-        merged.content,
-        merged.confirmationLayer ??
-          (merged.overlayContributes ? "startup" : "singlepage"),
-        startup.sourcePath.endsWith(".yaml") ? "yaml" : "markdown",
-      ),
   };
 }
 
@@ -151,9 +116,9 @@ function workspace(
   artifact: IStudioArtifact,
 ): IStudioWorkspace {
   const labels = {
-    default: "default (resolved)",
-    singlepage: "singlepage source",
-    startup: "startup overrides",
+    default: "Результат наследования",
+    singlepage: "Источник singlepage",
+    startup: "Источник startup",
   } as const;
   return {
     id,

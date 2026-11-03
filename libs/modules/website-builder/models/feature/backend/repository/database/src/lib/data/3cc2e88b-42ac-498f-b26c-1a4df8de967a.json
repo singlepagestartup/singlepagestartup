@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "3cc2e88b-42ac-498f-b26c-1a4df8de967a",
+  "createdAt": "2026-10-26T00:11:56.077Z",
+  "updatedAt": "2026-10-27T14:59:32.341Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Choose a task",
+    "ru": "Выберите задачу"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"For example: a member opens an expert's profile and asks a question about their project.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Например: участник открывает профиль эксперта и задаёт вопрос по своему проекту.\"}]}]}"
+  },
+  "adminTitle": "Выберите задачу",
+  "slug": "framework-reviewed-article-social-build-feature-0"
+}

@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Explore module",
+    "ru": "Изучить модуль"
+  },
+  "subtitle": {},
+  "url": "/framework/modules/ecommerce",
+  "className": "w-fit",
+  "id": "1e206f08-1538-4e44-8668-e7c6433bd16c",
+  "createdAt": "2026-10-24T01:06:02.640Z",
+  "updatedAt": "2026-10-24T01:06:02.640Z",
+  "variant": "secondary",
+  "adminTitle": "Explore module",
+  "slug": "framework-journey-module-ecommerce-actions-0"
+}

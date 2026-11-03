@@ -1,0 +1,14 @@
+{
+  "id": "97e8235d-8bfc-4d27-ad0b-035e7a736378",
+  "createdAt": "2026-10-27T08:41:06.229Z",
+  "updatedAt": "2026-10-27T15:00:20.586Z",
+  "variant": "navigation",
+  "className": "",
+  "title": {
+    "en": "Navigation",
+    "ru": "Навигация"
+  },
+  "description": {},
+  "adminTitle": "Navigation for navbar",
+  "slug": "ai-chat-editable-nav-5330b56e-3b26-4267-9d98-c0d968edd993"
+}

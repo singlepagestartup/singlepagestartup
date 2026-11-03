@@ -172,7 +172,7 @@ describe("Provider.incr", () => {
     const client = redisMock.__instances[0];
 
     await provider.incr({
-      prefix: "http-cache:version",
+      prefix: "test:counter",
       key: "/api/rbac/subjects",
       options: { ttl: 30 },
     });
@@ -190,7 +190,7 @@ describe("Provider.incr", () => {
     client.expire.mockClear();
 
     await provider.incr({
-      prefix: "http-cache:version",
+      prefix: "test:counter",
       key: "/api/rbac/subjects",
     });
 

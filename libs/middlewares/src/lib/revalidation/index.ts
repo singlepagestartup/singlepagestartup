@@ -1,12 +1,8 @@
 import {
   compileTopicRules,
-  HOST_SERVICE_REVALIDATION_SECRET,
-  HOST_SERVICE_REVALIDATION_SECRET_HEADER,
-  HOST_SERVICE_URL,
   ICompiledTopicRule,
   IRouteRule,
   ITopicRule,
-  RBAC_SECRET_KEY,
   resolveTopicsForPath,
   RouteMatcher,
   singlepageTopicRules,
@@ -16,7 +12,7 @@ import {
 } from "@sps/shared-utils";
 import { MiddlewareHandler } from "hono";
 import { createMiddleware } from "hono/factory";
-import { logger, websocketManager } from "@sps/backend-utils";
+import { requestHostRevalidation, websocketManager } from "@sps/backend-utils";
 import { createNotRevalidatingRoutesMatcher } from "./routes";
 
 export type IMiddlewareGeneric = unknown;
@@ -44,8 +40,7 @@ export class Middleware {
     // Topic rules precedence: constructor options -> project startup layer ->
     // framework defaults. A more specific rule with `stop: true` wins. The
     // resolver + the singlepage/startup rule layers live in @sps/shared-utils
-    // (NOT this middleware), so http-cache consumes the same resolver without
-    // coupling to revalidation, and broadcast + cache-version bump always agree.
+    // so mutation notifications and browser subscriptions share a vocabulary.
     this.compiledTopicRules = compileTopicRules([
       ...(options?.topicRules || []),
       ...startupTopicRules,
@@ -98,12 +93,6 @@ export class Middleware {
 
       if (c.res.status >= 200 && c.res.status < 300) {
         if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
-          if (!RBAC_SECRET_KEY) {
-            throw Error(
-              "RBAC_SECRET_KEY is not defined, broadcast middleware 'revalidation' can't request to service.",
-            );
-          }
-
           const pathsToRevalidate = this.getNormalizedPaths(path);
           const topics = this.getTopics(path);
           const timestamp = new Date().toISOString();
@@ -117,43 +106,13 @@ export class Middleware {
               createdAt: timestamp,
               expiresAt,
             });
-
-            void this.revalidateTag(payload);
           });
         }
       }
     });
   }
 
-  /**
-   * Asks the host to drop its cached reads of `tag` (issue #315). The host
-   * refuses a call without `HOST_SERVICE_REVALIDATION_SECRET`, so a refusal is
-   * logged: it means pages keep serving the old data until their revalidate
-   * window ends.
-   */
-  async revalidateTag(tag: string) {
-    try {
-      const response = await fetch(
-        HOST_SERVICE_URL + "/api/revalidate?tag=" + encodeURIComponent(tag),
-        {
-          headers: {
-            [HOST_SERVICE_REVALIDATION_SECRET_HEADER]:
-              HOST_SERVICE_REVALIDATION_SECRET ?? "",
-          },
-        },
-      );
-
-      if (!response.ok) {
-        logger.warn(
-          `Host revalidation of ${tag} answered ${response.status}. ` +
-            "A 401 means HOST_SERVICE_REVALIDATION_SECRET is unset or " +
-            "differs between the API and the host.",
-        );
-      }
-    } catch (error) {
-      const reason = error instanceof Error ? error.message : String(error);
-
-      logger.error(`Host revalidation of ${tag} failed: ${reason}`);
-    }
+  revalidateTags(tags: string[]) {
+    return requestHostRevalidation({ tags });
   }
 }

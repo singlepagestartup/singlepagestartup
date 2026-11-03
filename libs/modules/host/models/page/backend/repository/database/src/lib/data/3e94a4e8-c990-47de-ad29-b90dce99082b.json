@@ -1,10 +1,18 @@
 {
+  "metadata": {
+    "seoDisplay": {
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      }
+    }
+  },
   "id": "3e94a4e8-c990-47de-ad29-b90dce99082b",
   "title": "EC | Product | Overview",
   "url": "/ecommerce/products/[ecommerce.products.slug]",
   "description": "Description",
   "createdAt": "2025-01-24T23:47:55.456Z",
-  "updatedAt": "2025-11-15T09:32:28.371Z",
+  "updatedAt": "2026-10-30T22:25:05.873Z",
   "variant": "default",
   "className": null,
   "language": "en",

@@ -8,6 +8,7 @@ import {
 import { IModel as INotificationServiceNotification } from "@sps/notification/models/notification/sdk/model";
 
 export interface IProps {
+  id?: string;
   host?: string;
   tag?: string;
   revalidate?: number;
@@ -27,7 +28,7 @@ export type IResult = {
 } | null;
 
 export async function action(props: IProps): Promise<IResult> {
-  const { data, options, host = serverHost } = props;
+  const { data, id, options, host = serverHost } = props;
 
   const formData = prepareFormDataToSend({ data });
 
@@ -41,7 +42,10 @@ export async function action(props: IProps): Promise<IResult> {
     },
   };
 
-  const res = await fetch(`${host}${route}/check`, requestOptions);
+  const res = await fetch(
+    `${host}${route}${id ? `/${id}` : ""}/check`,
+    requestOptions,
+  );
 
   const json = await responsePipe<{ data: IResult }>({
     res,

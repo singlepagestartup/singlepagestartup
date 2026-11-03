@@ -10,6 +10,19 @@ export interface IProjectPresentationSlide {
   summary: string;
   points: IProjectPresentationPoint[];
   image?: { src: string; alt: string };
+  tone: "light" | "dark" | "accent";
+  layout:
+    | "cover"
+    | "gallery"
+    | "modules"
+    | "steps"
+    | "divider"
+    | "knowledge"
+    | "conversation"
+    | "ownership"
+    | "cost"
+    | "action";
+  gallery?: { src: string; alt: string; title: string; detail: string }[];
   action?: { label: string; href: string; detail: string };
 }
 

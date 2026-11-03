@@ -1,30 +1,21 @@
 /**
- * BDD Suite: Revalidation middleware topic resolution, extension API and host
- * call.
+ * BDD Suite: Revalidation middleware topic resolution and extension API.
  *
  * Given: the middleware compiled with built-in defaults and optional
- *        project-level extensions, in front of a host that requires the
- *        shared revalidation secret.
- * When: broadcast topics are resolved for mutation paths, and a write asks the
- *       host to revalidate its cached reads.
+ *        project-level extensions.
+ * When: broadcast topics are resolved for mutation paths.
  * Then: explicit rules win over canonical derivation, project rules win over
- *       defaults, unmatched paths fall back to the shared deriver, and the
- *       host call carries the secret and exactly the encoded tag.
+ *       defaults, and unmatched paths fall back to the shared deriver.
  */
-
-const mockLoggerWarn = jest.fn();
-const mockLoggerError = jest.fn();
-const MOCK_REVALIDATION_SECRET =
-  "9c1e5a7d3b2f4086a1c9e7d5b3f2a4c6d8e0f1a3b5c7d9e2f4a6b8c0d1e3f5a7";
-
-let mockRevalidationSecret: string | undefined = MOCK_REVALIDATION_SECRET;
+import { Middleware } from "./index";
+import { Hono } from "hono";
+import { websocketManager } from "@sps/backend-utils";
 
 jest.mock("@sps/backend-utils", () => {
   return {
-    logger: {
-      warn: (...args: unknown[]) => mockLoggerWarn(...args),
-      error: (...args: unknown[]) => mockLoggerError(...args),
-    },
+    requestHostRevalidation: jest.requireActual(
+      "../../../../shared/backend/utils/src/lib/host-revalidation",
+    ).requestHostRevalidation,
     websocketManager: {
       broadcastMessage: jest.fn(),
     },
@@ -33,22 +24,79 @@ jest.mock("@sps/backend-utils", () => {
 
 jest.mock("@sps/shared-utils", () => ({
   ...jest.requireActual("@sps/shared-utils"),
-  HOST_SERVICE_URL: "http://host.test",
-  RBAC_SECRET_KEY: "test-rbac-secret",
-  get HOST_SERVICE_REVALIDATION_SECRET() {
-    return mockRevalidationSecret;
-  },
+  HOST_SERVICE_REVALIDATION_SECRET: "fixture-revalidation-secret",
+  HOST_SERVICE_REVALIDATION_SECRET_HEADER: "X-HOST-REVALIDATION-SECRET",
 }));
-
-import { Hono } from "hono";
-import { HOST_SERVICE_REVALIDATION_SECRET_HEADER } from "@sps/shared-utils";
-import { Middleware } from "./index";
 
 const SID = "303302a0-4eb7-4cef-af04-74d7e8e72442";
 const PID = "88862025-5c38-4ce8-bb4c-4c5c511b874c";
 const CID = "e3d65d9b-60fa-4e6b-8e4d-7a93960bc249";
 const TID = "38529ce7-f88d-45d3-9f34-f40b6a3bf82c";
 const MID = "e9fb51ab-dd98-4d5c-b3f8-7466ce7e440e";
+
+describe("Next tag batching", () => {
+  afterEach(() => jest.restoreAllMocks());
+  it("sends 279 distinct tags in three bounded requests and deduplicates repeats", async () => {
+    const fetch = jest
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response("{}", { status: 200 }));
+    const tags = Array.from({ length: 279 }, (_, index) => `tag-${index}`);
+    await new Middleware().revalidateTags([...tags, tags[0]]);
+    expect(fetch).toHaveBeenCalledTimes(3);
+    const batches = fetch.mock.calls.map(
+      ([, options]) => JSON.parse(options!.body as string).tags,
+    );
+    expect(batches.map((batch) => batch.length)).toEqual([128, 128, 23]);
+    expect(batches.flat()).toEqual(tags);
+  });
+  it("keeps failed required invalidation retryable", async () => {
+    jest
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response("error", { status: 500 }));
+    await expect(new Middleware().revalidateTags(["tag"])).rejects.toThrow(
+      "Next invalidation failed (500)",
+    );
+  });
+  it.each([401, 404, 405])(
+    "propagates HTTP %s without a second request",
+    async (status) => {
+      const fetch = jest
+        .spyOn(globalThis, "fetch")
+        .mockResolvedValue(new Response("", { status }));
+      await expect(new Middleware().revalidateTags(["a", "b"])).rejects.toThrow(
+        `Next invalidation failed (${status})`,
+      );
+      expect(fetch).toHaveBeenCalledTimes(1);
+      expect(fetch.mock.calls[0][1]).toMatchObject({
+        method: "POST",
+        headers: {
+          "X-HOST-REVALIDATION-SECRET": "fixture-revalidation-secret",
+        },
+      });
+    },
+  );
+});
+
+it("broadcasts a successful mutation without sending a second Host invalidation", async () => {
+  const fetch = jest.spyOn(globalThis, "fetch");
+  const app = new Hono();
+  app.use(new Middleware().init());
+  app.post("/api/example/items", (c) => c.json({ ok: true }));
+  try {
+    expect(
+      (await app.request("/api/example/items", { method: "POST" })).status,
+    ).toBe(200);
+    expect(websocketManager.broadcastMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        payload: "/api/example/items",
+        slug: "revalidation",
+      }),
+    );
+    expect(fetch).not.toHaveBeenCalled();
+  } finally {
+    fetch.mockRestore();
+  }
+});
 
 function intersects(a: string[], b: string[]): boolean {
   return a.some((topic) => b.includes(topic));
@@ -162,8 +210,8 @@ describe("action / RPC endpoint topic rules (issue #195 F3)", () => {
         `social.chats.${CID}.messages`,
         "social.actions",
         `social.chats.${CID}.actions`,
-        "social.profiles-to-knowledge-module-documents",
-        "knowledge.documents",
+        "social.profiles-to-knowledge-module-sources",
+        "knowledge.sources",
       ]),
     );
     expect(topics).not.toContain("social.openrouter");
@@ -256,157 +304,5 @@ describe("action / RPC endpoint topic rules (issue #195 F3)", () => {
 
     expect(topics).not.toContain(`ecommerce.subjects.${SID}.orders`);
     expect(topics).toContain("ecommerce.checkout-attributes");
-  });
-});
-
-describe("host revalidation call (issue #315)", () => {
-  const originalFetch = globalThis.fetch;
-  let fetchMock: jest.Mock;
-
-  beforeEach(() => {
-    mockRevalidationSecret = MOCK_REVALIDATION_SECRET;
-    mockLoggerWarn.mockClear();
-    mockLoggerError.mockClear();
-    fetchMock = jest.fn().mockResolvedValue({ ok: true, status: 200 });
-    globalThis.fetch = fetchMock as any;
-  });
-
-  afterEach(() => {
-    globalThis.fetch = originalFetch;
-  });
-
-  /**
-   * BDD Scenario: The host call carries the secret and one encoded tag.
-   * Given: a tag that contains reserved query characters.
-   * When:  the middleware asks the host to revalidate it.
-   * Then:  the request carries the secret in the X-HOST-REVALIDATION-SECRET
-   *        header and a single `tag` parameter that decodes to exactly that
-   *        tag.
-   */
-  it("sends the secret and exactly one encoded tag", async () => {
-    const tag = "/api/blog/articles/a&path=/&type=layout";
-
-    await new Middleware().revalidateTag(tag);
-
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-
-    const [url, init] = fetchMock.mock.calls[0];
-    const requested = new URL(url);
-
-    expect(`${requested.origin}${requested.pathname}`).toBe(
-      "http://host.test/api/revalidate",
-    );
-    expect([...requested.searchParams.keys()]).toEqual(["tag"]);
-    expect(requested.searchParams.get("tag")).toBe(tag);
-    expect(init.headers).toEqual({
-      "X-HOST-REVALIDATION-SECRET": MOCK_REVALIDATION_SECRET,
-    });
-  });
-
-  /**
-   * BDD Scenario: A write revalidates the entity and its collection.
-   * Given: the middleware in front of a handler that answers a POST with 201.
-   * When:  an entity is written.
-   * Then:  the host is asked, with the secret, for the entity path and for
-   *        the collection path.
-   */
-  it("asks the host for the entity and its collection after a write", async () => {
-    const app = new Hono();
-
-    app.use(new Middleware().init());
-    app.post("/api/ecommerce/products/:id", (c) => {
-      return c.json({ data: {} }, 201);
-    });
-
-    const response = await app.request(`/api/ecommerce/products/${PID}`, {
-      method: "POST",
-    });
-
-    expect(response.status).toBe(201);
-    expect(
-      fetchMock.mock.calls.map(([url]) => {
-        return new URL(url).searchParams.get("tag");
-      }),
-    ).toEqual([`/api/ecommerce/products/${PID}`, "/api/ecommerce/products"]);
-
-    for (const [, init] of fetchMock.mock.calls) {
-      expect(init.headers[HOST_SERVICE_REVALIDATION_SECRET_HEADER]).toBe(
-        MOCK_REVALIDATION_SECRET,
-      );
-    }
-  });
-
-  /**
-   * BDD Scenario: A read does not reach the host.
-   * Given: the middleware in front of a handler that answers a GET with 200.
-   * When:  an entity is read.
-   * Then:  the host is not called.
-   */
-  it("does not call the host for a read", async () => {
-    const app = new Hono();
-
-    app.use(new Middleware().init());
-    app.get("/api/ecommerce/products/:id", (c) => {
-      return c.json({ data: {} });
-    });
-
-    await app.request(`/api/ecommerce/products/${PID}`);
-
-    expect(fetchMock).not.toHaveBeenCalled();
-  });
-
-  /**
-   * BDD Scenario: A refused call is visible in the API log.
-   * Given: the host answers 401 because its secret is unset or differs.
-   * When:  the middleware asks it to revalidate.
-   * Then:  one warning names the status and the variable, never the secret.
-   */
-  it("logs a refusal with its status and without the secret", async () => {
-    fetchMock.mockResolvedValue({ ok: false, status: 401 });
-
-    await new Middleware().revalidateTag("/api/blog/articles");
-
-    expect(mockLoggerWarn).toHaveBeenCalledTimes(1);
-
-    const [message] = mockLoggerWarn.mock.calls[0];
-
-    expect(message).toContain("401");
-    expect(message).toContain("HOST_SERVICE_REVALIDATION_SECRET");
-    expect(message).not.toContain(MOCK_REVALIDATION_SECRET);
-  });
-
-  /**
-   * BDD Scenario: An unreachable host does not fail the write.
-   * Given: the host cannot be reached.
-   * When:  the middleware asks it to revalidate.
-   * Then:  the call resolves and the failure is logged with its reason.
-   */
-  it("logs an unreachable host instead of throwing", async () => {
-    fetchMock.mockRejectedValue(new Error("connect ECONNREFUSED"));
-
-    await expect(
-      new Middleware().revalidateTag("/api/blog/articles"),
-    ).resolves.toBeUndefined();
-    expect(mockLoggerError).toHaveBeenCalledWith(
-      expect.stringContaining("ECONNREFUSED"),
-    );
-  });
-
-  /**
-   * BDD Scenario: An API without the secret still asks, and the host refuses.
-   * Given: the API has no HOST_SERVICE_REVALIDATION_SECRET.
-   * When:  the middleware asks the host to revalidate.
-   * Then:  the header is sent empty, which the host treats as no credential.
-   */
-  it("sends an empty credential when the API has no secret", async () => {
-    mockRevalidationSecret = undefined;
-
-    await new Middleware().revalidateTag("/api/blog/articles");
-
-    const [, init] = fetchMock.mock.calls[0];
-
-    expect(init.headers).toEqual({
-      [HOST_SERVICE_REVALIDATION_SECRET_HEADER]: "",
-    });
   });
 });

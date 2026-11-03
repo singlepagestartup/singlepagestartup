@@ -20,15 +20,6 @@ export const settingsOperationConfigs: Record<
     confirmLabel: "Clear cache",
     successMessage: "Backend cache has been cleared.",
   },
-  frontendRevalidate: {
-    endpoint: "/api/revalidate?path=/&type=layout",
-    method: "GET",
-    title: "Revalidate frontend layout?",
-    description:
-      "Frontend layout revalidation will be triggered for the root path.",
-    confirmLabel: "Revalidate",
-    successMessage: "Frontend revalidation has been triggered.",
-  },
 };
 
 export type TSettingsOperationKey = keyof typeof settingsOperationConfigs;

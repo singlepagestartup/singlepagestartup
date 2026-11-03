@@ -1,0 +1,27 @@
+{
+  "id": "notification.notification.admin-v2-card",
+  "title": "notification notification / admin-v2-card",
+  "description": "Local records for Studio component design.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "notification",
+    "entityType": "model",
+    "entity": "notification",
+    "variant": "admin-v2-card"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "notification.notification",
+    "pageName": "notification",
+    "variantName": "admin-v2-card",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Know what each part does.",
+    "ru": "Разберитесь, за что отвечает каждая часть."
+  },
+  "subtitle": {
+    "en": "Choose the functions that fit your product.",
+    "ru": "Выберите функции для своего продукта."
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Each module has a defined responsibility and its own documentation. Explore the relevant parts before asking your agent to change them.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"У каждого модуля своя ответственность и документация. Изучите нужные части перед тем, как поручать агенту изменения.\"}]}]}"
+  },
+  "anchor": "framework-modules",
+  "className": "",
+  "id": "5baf58bc-ec26-4177-8f66-41069f2914b0",
+  "createdAt": "2026-10-24T01:05:47.112Z",
+  "updatedAt": "2026-10-24T01:05:47.112Z",
+  "variant": "content-definition-grid",
+  "adminTitle": "Know what each part does.",
+  "slug": "framework-journey-modules"
+}

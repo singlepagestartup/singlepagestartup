@@ -10,8 +10,7 @@ export const UUID_PATH_SEGMENT_REGEX =
 /**
  * Captures a path up to and including its FIRST UUID segment (group 1) —
  * i.e. the entity base of a nested route. Single source of truth for the UUID
- * shape used by the http-cache version-bump prefix logic (issue #195 cleanup),
- * so the shape is not duplicated as an inline literal.
+ * shape for callers that need an entity prefix rather than the trailing scope.
  */
 export const UUID_PATH_PREFIX_REGEX =
   /(.*\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/;
@@ -42,11 +41,26 @@ export const ADDRESS_VERIFYING_PROVIDERS = Object.freeze([
  */
 export const RBAC_PRIVILEGED_CONTEXT_KEY = "rbac.privileged";
 
-/**
- * Request header that carries `HOST_SERVICE_REVALIDATION_SECRET` from the API
- * to the host's `/api/revalidate` route (issue #315). The revalidation
- * middleware, the seed and the agent page cache send it; the route refuses a
- * request without it.
- */
+export * from "./knowledge";
+export * from "./open-router";
+
+export {
+  AI_CHAT_WEBSITE_CONTENT,
+  type IAIChatWebsiteContent,
+} from "./ai-chat-website";
+
+export * from "./ai-chat-service";
+export * from "./ai-chat-documents";
+export * from "./ai-chat-skill-templates";
+
+export * from "./open-router-models";
+export * from "./ai-chat-attachments";
+export * from "./file-preview";
+export * from "./ai-context";
+
+export { INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG } from "./ecommerce";
+
+export * from "./agent";
+
 export const HOST_SERVICE_REVALIDATION_SECRET_HEADER =
   "X-HOST-REVALIDATION-SECRET";

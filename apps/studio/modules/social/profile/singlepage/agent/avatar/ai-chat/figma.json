@@ -1,0 +1,21 @@
+{
+  "componentName": "social.profile",
+  "pageName": "social",
+  "variantName": "agent-avatar-ai-chat",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "social.profile.agent-avatar-ai-chat",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "social/profile/singlepage/agent/avatar/ai-chat",
+    "sps.figma.component": "social.profile",
+    "sps.figma.variant": "agent-avatar-ai-chat",
+    "sps.source.module": "social",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "profile",
+    "sps.source.variant": "agent-avatar-ai-chat",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/social/profile/singlepage/agent/avatar/ai-chat/Component.tsx",
+    "sps.code.story": "apps/studio/modules/social/profile/singlepage/agent/avatar/ai-chat/Component.stories.tsx"
+  }
+}

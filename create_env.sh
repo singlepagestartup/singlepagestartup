@@ -1,5 +1,7 @@
 #!/bin/bash
 
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 write_runtime_env() {
   local target_path="$1"
 
@@ -55,3 +57,6 @@ cd ../api && ./create_env.sh
 cd ../host && ./create_env.sh
 cd ../telegram && ./create_env.sh
 cd ../mcp && ./create_env.sh
+
+# MCP client connections are configured explicitly with mcp:clients:generate.
+cd "$REPO_ROOT" || exit 1

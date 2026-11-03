@@ -1,0 +1,14 @@
+{
+  "id": "8f187e03-b156-405c-8927-67c2d18dda00",
+  "createdAt": "2026-10-24T01:06:19.800Z",
+  "updatedAt": "2026-10-24T01:06:19.800Z",
+  "variant": "default",
+  "className": "w-fit",
+  "title": {
+    "en": "Tokens",
+    "ru": "Токены"
+  },
+  "description": {},
+  "adminTitle": "Tokens",
+  "slug": "framework-journey-navbar-3"
+}

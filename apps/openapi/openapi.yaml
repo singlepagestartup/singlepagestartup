@@ -194,6 +194,10 @@ paths:
     $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1ecommerce-module~1orders~1quantity"
   /rbac/subjects/{id}/ecommerce-module/orders/{orderId}:
     $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1ecommerce-module~1orders~1{orderId}"
+  /rbac/subjects/{id}/ecommerce-module/orders/{orderId}/total:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1ecommerce-module~1orders~1{orderId}~1total"
+  /rbac/subjects/{id}/ecommerce-module/orders/{orderId}/quantity:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1ecommerce-module~1orders~1{orderId}~1quantity"
   /rbac/subjects/{id}/ecommerce-module/orders/{orderId}/checkout:
     $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1ecommerce-module~1orders~1{orderId}~1checkout"
   /rbac/subjects/{id}/crm-module/form/{crmModuleFormId}/request:
@@ -1302,22 +1306,6 @@ paths:
     $ref: "../../libs/modules/website-builder/relations/widgets-to-sliders/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1widgets-to-sliders~1count"
   /website-builder/widgets-to-sliders/{id}:
     $ref: "../../libs/modules/website-builder/relations/widgets-to-sliders/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1widgets-to-sliders~1{id}"
-
-  # telegram/page
-  /telegram/pages/count:
-    $ref: "../../libs/modules/telegram/models/page/sdk/model/src/lib/paths.yaml#/paths/~1telegram~1pages~1count"
-
-  # telegram/widget
-  /telegram/widgets/count:
-    $ref: "../../libs/modules/telegram/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1telegram~1widgets~1count"
-
-  # telegram/relations/pages-to-widgets
-  /telegram/pages-to-widgets/count:
-    $ref: "../../libs/modules/telegram/relations/pages-to-widgets/sdk/model/src/lib/paths.yaml#/paths/~1telegram~1pages-to-widgets~1count"
-
-  # telegram/relations/widgets-to-external-widgets
-  /telegram/widgets-to-external-widgets/count:
-    $ref: "../../libs/modules/telegram/relations/widgets-to-external-widgets/sdk/model/src/lib/paths.yaml#/paths/~1telegram~1widgets-to-external-widgets~1count"
 
   # apps/telegram
   /telegram/run:

@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Sign in",
+    "ru": "Войти"
+  },
+  "subtitle": {},
+  "url": "/ai-chat/sign-in",
+  "className": "",
+  "id": "b6450c77-dfd3-4d7e-8df1-a5670d92a107",
+  "createdAt": "2026-10-27T08:41:01.108Z",
+  "updatedAt": "2026-10-27T15:00:15.197Z",
+  "variant": "footer-link",
+  "adminTitle": "Войти",
+  "slug": "ai-chat-editable-footer-button-1"
+}
