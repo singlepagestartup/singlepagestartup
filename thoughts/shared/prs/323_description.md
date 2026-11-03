@@ -8,7 +8,20 @@ This change pins each action to the commit its tag points at, passes branch name
 
 `deployer.yml` stays. The ref of a merged pull request is its base branch, and merging a pull request from `main` into `ansible-up`, `ansible-down` or their `-preview` variants is how a deployment starts: 36 such pull requests were merged between 2023-11 and 2025-11, and #130 started run 19761939787. Without a branch filter the workflow also started a skipped run for every other closed pull request.
 
-## Changes
+## Reconciled with current main
+
+Keep API readiness before dependent releases, Docker verification without
+registry login or publishing, and the Ansible steps that generate and upload MCP
+client configurations. The conflict resolution retains the checkout pin and pins
+the actions added on main: `setup-bun` v2.2.0, `upload-artifact` v4.6.2 and
+`setup-node` v4.4.0, each at the commit used by its previous major tag.
+
+The reconciled tree passes YAML parsing for ten workflows, eight reusable workflow
+input checks, 24 Bash syntax checks, 19 local step simulations and all eight
+Portainer readiness tests. The simulations use placeholder credentials and never
+publish images or trigger deployments.
+
+## Changes in the original revision
 
 The pins keep the code that runs today, except in `prepare-docker-images.yml`, whose checkout moves from `v4` to the `v5.1.0` commit the other workflows use.
 
@@ -27,7 +40,7 @@ The pins keep the code that runs today, except in `prepare-docker-images.yml`, w
 - `tools/deployer/README.md`: a paragraph in "GitHub Actions deployment" on how a deployment run starts.
 - `thoughts/shared/`: research, plan, process log and implementation progress for #320.
 
-## Verification
+## Verification of the original revision
 
 - [x] All ten workflows parse with `js-yaml`. A one-off harness also checks top-level permissions, commit pins with version comments, an allow-list of expressions inside `run:` (secrets and the boolean `inputs.PRERELEASE`), `bash -n` on every script, `workflow_call` input contracts, and a branch filter plus merge guard on every `pull_request: closed` workflow. It reports no violation on the new files and 45 on the original twelve.
 - [x] An old-versus-new simulation of every changed step with placeholder secrets: 29 identical comparisons covering the four deployment branch names both when `deployer.yml` calls `ansible.yml` and on a manual run, the tag `v1.2.3` for a prerelease and a release, a manual dispatch of a service workflow without inputs, and the image tag list. A caller that passes `BRANCH=ansible-down-preview` gets `down.sh` with the preview secrets. A branch name or tag carrying `$(touch …)` ran the command with the original files and passes through as text with the new ones.

@@ -9,12 +9,8 @@
     "jest:test": {},
     "jest:integration": {
       "executor": "@nx/jest:jest",
-      "outputs": [
-        "{projectRoot}/coverage"
-      ],
-      "inputs": [
-        "{projectRoot}"
-      ],
+      "outputs": ["{projectRoot}/coverage"],
+      "inputs": ["{projectRoot}"],
       "options": {
         "jestConfig": "libs/modules/notification/jest.integration.config.ts",
         "passWithNoTests": true
@@ -33,7 +29,8 @@
             "command": "nx run @sps/notification:relations:repository-generate"
           }
         ]
-      }
+      },
+      "cache": false
     },
     "repository-migrate": {
       "executor": "nx:run-commands",
@@ -68,7 +65,8 @@
             "command": "nx run @sps/notification:models:widget:repository-generate"
           }
         ]
-      }
+      },
+      "cache": false
     },
     "relations:repository-generate": {
       "executor": "nx:run-commands",
@@ -82,7 +80,8 @@
             "command": "nx run @sps/notification:relations:topics-to-notifications:repository-generate"
           }
         ]
-      }
+      },
+      "cache": false
     },
     "models:repository-migrate": {
       "executor": "nx:run-commands",
@@ -131,9 +130,13 @@
           },
           {
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          },
+          {
+            "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
-      }
+      },
+      "cache": false
     },
     "models:template:repository-migrate": {
       "executor": "nx:run-commands",
@@ -160,9 +163,13 @@
           },
           {
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          },
+          {
+            "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
-      }
+      },
+      "cache": false
     },
     "models:notification:repository-migrate": {
       "executor": "nx:run-commands",
@@ -189,9 +196,13 @@
           },
           {
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          },
+          {
+            "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
-      }
+      },
+      "cache": false
     },
     "models:topic:repository-migrate": {
       "executor": "nx:run-commands",
@@ -218,9 +229,13 @@
           },
           {
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          },
+          {
+            "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
-      }
+      },
+      "cache": false
     },
     "models:widget:repository-migrate": {
       "executor": "nx:run-commands",
@@ -247,9 +262,13 @@
           },
           {
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          },
+          {
+            "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
-      }
+      },
+      "cache": false
     },
     "relations:topics-to-notifications:repository-migrate": {
       "executor": "nx:run-commands",
@@ -276,9 +295,13 @@
           },
           {
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          },
+          {
+            "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
-      }
+      },
+      "cache": false
     },
     "relations:notifications-to-templates:repository-migrate": {
       "executor": "nx:run-commands",

@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "8f5420ff-38f6-48b6-97f9-a839934fc885",
+  "createdAt": "2026-10-26T00:11:57.705Z",
+  "updatedAt": "2026-10-27T14:59:44.099Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Course programme.md",
+    "ru": "Программа курса.md"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Class 1: audience, product task and main use case. You will need a laptop and a project idea. The result is an initial brief.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Занятие 1: аудитория, задача продукта и основной сценарий. К занятию понадобятся ноутбук и идея проекта. Результат — первый бриф.\"}]}]}"
+  },
+  "adminTitle": "Программа курса.md",
+  "slug": "framework-reviewed-article-social-profile-knowledge-feature-0"
+}

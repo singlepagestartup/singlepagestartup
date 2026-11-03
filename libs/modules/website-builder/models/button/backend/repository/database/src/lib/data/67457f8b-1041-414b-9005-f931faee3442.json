@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Read Agent source guide",
+    "ru": "Документация Agent"
+  },
+  "subtitle": {},
+  "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/modules/agent/README.md",
+  "className": "w-fit",
+  "id": "67457f8b-1041-414b-9005-f931faee3442",
+  "createdAt": "2026-10-24T01:06:08.208Z",
+  "updatedAt": "2026-10-24T01:06:08.208Z",
+  "variant": "primary",
+  "adminTitle": "Read Agent source guide",
+  "slug": "framework-journey-guide-agent-actions-1"
+}

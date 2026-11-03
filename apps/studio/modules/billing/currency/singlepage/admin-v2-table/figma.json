@@ -1,0 +1,21 @@
+{
+  "componentName": "billing.currency",
+  "pageName": "billing",
+  "variantName": "admin-v2-table",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "billing.currency.admin-v2-table",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "billing/currency/singlepage/admin-v2-table",
+    "sps.figma.component": "billing.currency",
+    "sps.figma.variant": "admin-v2-table",
+    "sps.source.module": "billing",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "currency",
+    "sps.source.variant": "admin-v2-table",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/billing/currency/singlepage/admin-v2-table/Component.tsx",
+    "sps.code.story": "apps/studio/modules/billing/currency/singlepage/admin-v2-table/Component.stories.tsx"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "id": "ecommerce.product.admin-v2-select-input",
+  "title": "Ecommerce Product / Admin V2 Select Input",
+  "description": "Model-owned product selector for local relation previews.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "ecommerce",
+    "entityType": "model",
+    "entity": "product",
+    "variant": "admin-v2-select-input"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "ecommerce.product",
+    "pageName": "ecommerce",
+    "variantName": "admin-v2-select-input",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

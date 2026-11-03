@@ -10,6 +10,8 @@ export const variant = "profile-overview-default" as const;
 export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
   language: string;
+  profileId?: string;
+  profileSlug?: string;
 }
 
 export interface IComponentPropsExtended
@@ -18,3 +20,10 @@ export interface IComponentPropsExtended
     typeof variant,
     IComponentProps
   > {}
+
+export interface IContentProps {
+  isServer: boolean;
+  language: string;
+  profileId?: string;
+  profileSlug?: string;
+}

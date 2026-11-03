@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "An article helps readers choose a workshop",
+    "ru": "Статья помогает выбрать мастер-класс"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The school publishes an article about lighting for portrait photography. Readers learn a technique, view other articles by the teacher and continue to a practical class.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The module stores publications and categories. Profiles add authors and the catalogue adds offers. Discussions and paid access to particular materials require the relevant workflows to be configured.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Школа публикует материал о свете для портретной съёмки. Читатель знакомится с приёмом, смотрит другие статьи преподавателя и переходит к практическому занятию.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Модуль хранит публикации и категории. Автор добавляется через профили, предложение — через каталог. Обсуждения и платный доступ к отдельным материалам требуют настройки соответствующих сценариев.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "196be730-5036-4786-b337-e841679e6966",
+  "createdAt": "2026-10-26T00:11:43.691Z",
+  "updatedAt": "2026-10-27T14:58:49.942Z",
+  "variant": "content-rich",
+  "adminTitle": "Статья помогает выбрать мастер-класс",
+  "slug": "framework-reviewed-article-blog-example"
+}

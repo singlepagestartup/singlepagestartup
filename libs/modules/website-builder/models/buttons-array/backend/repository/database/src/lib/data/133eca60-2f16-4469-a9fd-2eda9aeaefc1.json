@@ -1,0 +1,14 @@
+{
+  "id": "133eca60-2f16-4469-a9fd-2eda9aeaefc1",
+  "createdAt": "2026-10-24T01:06:03.413Z",
+  "updatedAt": "2026-10-24T01:06:03.413Z",
+  "variant": "default",
+  "className": "w-full",
+  "title": {
+    "en": "Actions",
+    "ru": "Действия"
+  },
+  "description": {},
+  "adminTitle": "Actions",
+  "slug": "framework-journey-guide-ecommerce-actions"
+}

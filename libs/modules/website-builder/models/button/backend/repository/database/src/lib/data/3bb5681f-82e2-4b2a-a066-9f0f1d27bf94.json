@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Read RBAC source guide",
+    "ru": "Документация RBAC"
+  },
+  "subtitle": {},
+  "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/modules/rbac/README.md",
+  "className": "w-fit",
+  "id": "3bb5681f-82e2-4b2a-a066-9f0f1d27bf94",
+  "createdAt": "2026-10-24T01:06:02.063Z",
+  "updatedAt": "2026-10-24T01:06:02.063Z",
+  "variant": "primary",
+  "adminTitle": "Read RBAC source guide",
+  "slug": "framework-journey-guide-rbac-actions-1"
+}

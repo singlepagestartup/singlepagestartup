@@ -1,0 +1,18 @@
+{
+  "className": "",
+  "id": "a5d81c6f-c948-45d8-8364-952714093782",
+  "createdAt": "2026-10-24T01:05:52.230Z",
+  "updatedAt": "2026-10-24T01:05:52.230Z",
+  "variant": "dropdown",
+  "title": {
+    "en": "Can I build a product of my own?",
+    "ru": "Можно ли создать свой продукт?"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Yes. Use the foundation for your project and add your own business logic, content and design.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Да. Используйте основу для своего проекта и добавляйте свои бизнес-правила, контент и дизайн.\"}]}]}"
+  },
+  "adminTitle": "Can I build a product of my own?",
+  "slug": "framework-journey-faq-1"
+}

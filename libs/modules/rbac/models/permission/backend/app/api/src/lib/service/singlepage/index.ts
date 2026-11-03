@@ -13,6 +13,9 @@ import { match } from "path-to-regexp";
 import { PermissionDI } from "../../di";
 import { type IModel as IPermissionsToBillingModuleCurrencies } from "@sps/rbac/relations/permissions-to-billing-module-currencies/sdk/model";
 import { sensitiveRoutes } from "./sensitive-routes";
+import { Service as RolesToPermissionsService } from "@sps/rbac/relations/roles-to-permissions/backend/app/api/src/lib/service";
+import type { IPublicResourceIdsParams } from "@sps/rbac/models/permission/sdk/model";
+import { Service as PublicResourceIdsService } from "./public-resource-ids";
 
 const cache = createMemoryCache({ ttlMs: 30_000, maxSize: 10_000 });
 const matcherCache = new Map<string, ReturnType<typeof match>>();
@@ -41,10 +44,19 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     @inject(DI.IRepository) repository: Repository,
     @inject(PermissionDI.IPermissionsToBillingModuleCurrenciesService)
     permissionsToBillingModuleCurrenciesService: PermissionsToBillingModuleCurrenciesService,
+    @inject(PermissionDI.IRolesToPermissionsService)
+    readonly rolesToPermissions: RolesToPermissionsService,
   ) {
     super(repository);
     this.permissionsToBillingModuleCurrenciesService =
       permissionsToBillingModuleCurrenciesService;
+  }
+
+  publicResourceIds(props: IPublicResourceIdsParams) {
+    return new PublicResourceIdsService({
+      permission: this,
+      rolesToPermissions: this.rolesToPermissions,
+    }).execute(props);
   }
 
   invalidateRouteResolutionCache() {
@@ -71,7 +83,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     type: string;
   }) {
     const cacheKey = `permissions:templates:${props.type}:${props.method.toUpperCase()}`;
-    let permissions = cache.get<(typeof Table)["$inferSelect"][]>(cacheKey);
+    let permissions =
+      await cache.getAsync<(typeof Table)["$inferSelect"][]>(cacheKey);
 
     if (!permissions) {
       permissions = await this.find({
@@ -169,7 +182,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   protected async getPermissionBillingRequirements(permissionId: string) {
     const cacheKey = `permission:${permissionId}:billing-requirements`;
     let requirements =
-      cache.get<IPermissionsToBillingModuleCurrencies[]>(cacheKey);
+      await cache.getAsync<IPermissionsToBillingModuleCurrencies[]>(cacheKey);
 
     if (!requirements) {
       const fetched =

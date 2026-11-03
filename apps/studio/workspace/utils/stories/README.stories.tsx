@@ -5,8 +5,11 @@ import { MarkdownDocument } from "../components/ArtifactBrowser";
 
 function WorkspaceReadme() {
   return (
-    <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950 md:px-10 md:py-12">
-      <article className="w-full rounded-3xl border border-slate-200 bg-white px-6 py-8 shadow-sm md:px-12 md:py-12">
+    <main
+      data-workspace-projection="default"
+      className="min-h-screen min-w-0 bg-[var(--workspace-brand-background)] px-4 py-8 font-[family-name:var(--workspace-brand-font-body)] text-[var(--workspace-brand-foreground)] sm:px-6 lg:px-8 md:py-12"
+    >
+      <article className="mx-auto w-full min-w-0 max-w-7xl rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] px-6 py-8 md:px-12 md:py-12">
         <MarkdownDocument>{content}</MarkdownDocument>
       </article>
     </main>
@@ -14,7 +17,8 @@ function WorkspaceReadme() {
 }
 
 const meta = {
-  title: "Workspace/README",
+  id: "workspace-readme",
+  title: "Workspace/Инструкция",
   component: WorkspaceReadme,
   parameters: {
     controls: { disable: true },
@@ -26,4 +30,4 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Overview: Story = { name: "How it works" };
+export const Overview: Story = { name: "Как это работает" };

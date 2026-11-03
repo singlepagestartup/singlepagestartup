@@ -87,6 +87,7 @@ export class Service {
                 method: "inArray",
                 value: socialModuleProfiles.map((entity) => entity.id),
               },
+              { column: "variant", method: "eq", value: "default" },
             ],
           },
         },

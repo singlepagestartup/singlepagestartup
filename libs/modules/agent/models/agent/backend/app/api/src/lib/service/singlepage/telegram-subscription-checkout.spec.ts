@@ -8,6 +8,7 @@
 
 jest.mock("@sps/shared-utils", () => {
   return {
+    ...jest.requireActual("@sps/shared-utils"),
     RBAC_SECRET_KEY: "rbac-secret",
     TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME: "",
     TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_LINK: "",

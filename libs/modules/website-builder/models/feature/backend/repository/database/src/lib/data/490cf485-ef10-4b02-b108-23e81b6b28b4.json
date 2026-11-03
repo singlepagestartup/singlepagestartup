@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "490cf485-ef10-4b02-b108-23e81b6b28b4",
+  "createdAt": "2026-10-26T00:11:32.921Z",
+  "updatedAt": "2026-10-27T14:59:34.641Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "website-builder",
+    "ru": "website-builder"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Place a form next to the service description.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Разместите форму рядом с описанием услуги.\"}]}]}"
+  },
+  "adminTitle": "website-builder",
+  "slug": "framework-reviewed-article-crm-connections-feature-0"
+}

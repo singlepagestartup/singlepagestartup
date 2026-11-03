@@ -153,7 +153,10 @@ describe("subscription invalidation timing", () => {
     expect(invalidateSpy).not.toHaveBeenCalled();
     jest.advanceTimersByTime(JITTER_MAX_MS);
     expect(invalidateSpy).toHaveBeenCalledTimes(1);
-    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: [route] });
+    expect(invalidateSpy).toHaveBeenCalledWith({
+      queryKey: [route],
+      predicate: expect.any(Function),
+    });
 
     unsubscribe();
   });
@@ -270,7 +273,10 @@ describe("subscription invalidation timing", () => {
 
     // Both the global topic invalidation (for the sibling) and the per-route
     // fallback (for this topic-less route) run.
-    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: [route] });
+    expect(invalidateSpy).toHaveBeenCalledWith({
+      queryKey: [route],
+      predicate: expect.any(Function),
+    });
     expect(
       invalidateSpy.mock.calls.some(
         (call) => typeof (call[0] as any)?.predicate === "function",
@@ -312,7 +318,10 @@ describe("subscription invalidation timing", () => {
     // Exactly one invalidation - the predicate-based global one. The plain
     // route-key fallback must NOT have fired.
     expect(invalidateSpy).toHaveBeenCalledTimes(1);
-    expect(invalidateSpy).not.toHaveBeenCalledWith({ queryKey: [route] });
+    expect(invalidateSpy).not.toHaveBeenCalledWith({
+      queryKey: [route],
+      predicate: expect.any(Function),
+    });
 
     unsubscribe();
   });

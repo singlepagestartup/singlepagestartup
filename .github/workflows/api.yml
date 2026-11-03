@@ -2,6 +2,17 @@ name: Update api
 
 on:
   workflow_dispatch:
+    inputs:
+      TAG:
+        description: Docker image tag
+        required: true
+        default: latest
+        type: string
+      PRERELEASE:
+        description: Use preview deployment settings
+        required: true
+        default: false
+        type: boolean
   workflow_call:
     inputs:
       TAG:
@@ -18,9 +29,18 @@ jobs:
   trigger-service-update:
     name: Update service
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     env:
       IMAGE_TAG: ${{ inputs.TAG }}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+
       - name: Send webhook for preview service update
         if: ${{ inputs.PRERELEASE == true }}
         run: curl --fail --silent --show-error --max-time 40 --request POST "${{ secrets.PREVIEW_PORTAINER_API_UPDATE_URL }}?tag=${IMAGE_TAG}"
@@ -28,3 +48,25 @@ jobs:
       - name: Send webhook for production service update
         if: ${{ inputs.PRERELEASE == false }}
         run: curl --fail --silent --show-error --max-time 40 --request POST "${{ secrets.PORTAINER_API_UPDATE_URL }}?tag=${IMAGE_TAG}"
+
+      - name: Wait for preview API readiness
+        if: ${{ inputs.PRERELEASE == true }}
+        env:
+          DOMAIN: ${{ secrets.PREVIEW_DOMAIN }}
+          PORTAINER_SERVICE_SUBDOMAIN: ${{ secrets.PREVIEW_PORTAINER_SERVICE_SUBDOMAIN }}
+          PORTAINER_USERNAME: ${{ secrets.PREVIEW_PORTAINER_USERNAME }}
+          PORTAINER_PASSWORD: ${{ secrets.PREVIEW_PORTAINER_PASSWORD }}
+          SERVICE_UPDATE_URL: ${{ secrets.PREVIEW_PORTAINER_API_UPDATE_URL }}
+          IMAGE_TAG: ${{ inputs.TAG || 'latest' }}
+        run: node tools/deployer/portainer/wait-service.mjs
+
+      - name: Wait for production API readiness
+        if: ${{ inputs.PRERELEASE == false }}
+        env:
+          DOMAIN: ${{ secrets.DOMAIN }}
+          PORTAINER_SERVICE_SUBDOMAIN: ${{ secrets.PORTAINER_SERVICE_SUBDOMAIN }}
+          PORTAINER_USERNAME: ${{ secrets.PORTAINER_USERNAME }}
+          PORTAINER_PASSWORD: ${{ secrets.PORTAINER_PASSWORD }}
+          SERVICE_UPDATE_URL: ${{ secrets.PORTAINER_API_UPDATE_URL }}
+          IMAGE_TAG: ${{ inputs.TAG || 'latest' }}
+        run: node tools/deployer/portainer/wait-service.mjs

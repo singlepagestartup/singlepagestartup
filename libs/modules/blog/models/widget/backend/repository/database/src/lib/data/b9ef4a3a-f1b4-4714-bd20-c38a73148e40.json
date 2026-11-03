@@ -1,0 +1,21 @@
+{
+  "id": "b9ef4a3a-f1b4-4714-bd20-c38a73148e40",
+  "className": "",
+  "createdAt": "2026-10-26T00:13:00.446Z",
+  "updatedAt": "2026-10-27T15:00:29.594Z",
+  "variant": "article-overview-linked",
+  "adminTitle": "Профили и общение",
+  "slug": "framework-reviewed-linked-social",
+  "title": {
+    "en": "Profiles and conversations",
+    "ru": "Профили и общение"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "",
+    "ru": ""
+  }
+}

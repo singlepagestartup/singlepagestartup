@@ -1,0 +1,18 @@
+{
+  "className": "",
+  "id": "a123549f-0ee5-4f39-86e3-3da31c1e702e",
+  "createdAt": "2026-10-24T01:05:46.638Z",
+  "updatedAt": "2026-10-24T01:05:46.638Z",
+  "variant": "definition-checklist",
+  "title": {
+    "en": "Carts, orders and payments",
+    "ru": "Корзины, заказы и платежи"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Use products, currencies, orders and payment flows; add your own commercial rules.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Используйте товары, валюты, заказы и платежные сценарии; добавляйте коммерческие правила своего продукта.\"}]}]}"
+  },
+  "adminTitle": "Carts, orders and payments",
+  "slug": "framework-journey-foundation-2"
+}

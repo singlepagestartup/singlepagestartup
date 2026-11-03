@@ -64,6 +64,46 @@ services, run `./server.sh up` instead.
 Password authentication remains available for other providers by leaving both
 private-key variables empty and setting `ANSIBLE_PASSWORD`.
 
+## MCP client configuration
+
+When MCP deployment succeeds, `mcp.sh up` exports a public connection bundle
+for OpenCode, Claude Code, Codex, Cursor and VS Code/Copilot under
+`.artifacts/mcp-client-configs/<client>`. `MCP_CLIENT_CONFIG_OUTPUT_DIR` selects another
+directory, including the GitHub Actions artifact location. Active client files
+in the checkout remain unchanged.
+
+The connector name uses the checkout's `origin` repository and the environment:
+`<repo-name>-production` or `<repo-name>-preview`. `--repo-name` overrides the
+name; deployment repository settings are a fallback when Git context is absent.
+The endpoint uses the deployment's actual domain and subdomain.
+
+The deployer validates bundle generation with `--check-clients` before DNS,
+image or MCP playbook operations, then writes the bundle after deployment and
+GitHub metadata updates succeed. A failed deployment, `mcp.sh down` or a skipped
+MCP image does not generate the bundle.
+
+`up.sh` and root `create_env.sh` do not generate client connections. Developers
+configure them explicitly after setting their own MCP endpoint. Client
+generation runs on Bun 1.3.6 without installing dependencies or logging in.
+
+Use `MCP_CLIENT_OPENCODE_VERSION=auto` to preserve the project's existing
+OpenCode format. A new configuration uses the installed client's version, or
+V2 when detection is unavailable. `1` and `2` select a new file's format
+explicitly. Regenerate without provisioning a server:
+
+```bash
+# From the repository root:
+npm run mcp:clients:generate -- --client codex
+```
+
+GitHub Actions saves an `mcp-client-configs` artifact with public connector
+entries after successful MCP deployment. The export excludes existing client
+settings and credentials. Local deployment and CI both export a bundle without
+changing active client files. `npm run mcp:clients:generate -- --client <client>` explicitly updates that
+client's ignored local files; shared `*.example` defaults remain in Git.
+Each client still needs the user's OAuth login. See the
+[client formats and authentication commands](../../apps/mcp/README.md#generated-project-client-configs).
+
 ## Infrastructure security and operations
 
 The default production deployment keeps infrastructure services behind the
@@ -352,6 +392,25 @@ Never commit a Lightsail private key, the generated `inventory.yaml`, or a real
 `.env` file. They are ignored by the repository.
 
 ## Docker image rollout
+
+API startup applies consistency infrastructure migrations before model and
+relation migrations, finishes seeding, and then starts the HTTP listener.
+A failed migration or seed stops startup. The API service health check probes
+its loopback `authentication/me` endpoint and requires a successful HTTP
+response; an unauthenticated request returns an empty session. The 30-minute
+startup allowance covers migrations. The probe sends `Cache-Control: no-store`
+so cache-version lookups cannot stall the liveness request. Without credentials,
+the endpoint returns an empty session without querying subjects or identities.
+With `start-first` updates, Swarm retains the previous API task until the new
+task passes this check. Existing services must apply the API compose health
+check once before an image with synchronous migrations is rolled out.
+
+The API release job waits for its Swarm update and every target-image task to
+reach `running` before dependent service jobs can continue. It resolves the
+service and endpoint from the existing Portainer webhook; no separate service
+ID map is required. A paused update, rollback, missing health check or timeout
+fails the job and keeps dependent services on their previous images. Check the
+gate with `node --test tools/deployer/portainer/wait-service.test.mjs`.
 
 Release workflows still update each service through its Portainer webhook. A
 shared preparation job first pulls every unique release image through the
