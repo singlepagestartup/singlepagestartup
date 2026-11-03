@@ -29,8 +29,7 @@ export class Middleware {
             RBAC_JWT_SECRET,
           );
         },
-        invalidateTags: (tags) =>
-          options.revalidation.revalidateTags(tags, true),
+        invalidateTags: (tags) => options.revalidation.revalidateTags(tags),
         publishLegacy: async (topics) => {
           const now = Date.now();
           websocketManager.broadcastMessage({

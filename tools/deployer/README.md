@@ -175,10 +175,10 @@ openssl rand -hex 32
 
 That applies to `RBAC_SECRET_KEY`, `RBAC_JWT_SECRET`,
 `RBAC_COOKIE_SESSION_SECRET`, `MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET`,
-`DATABASE_PASSWORD`, `REDIS_PASSWORD`, `TRAEFIK_PASSWORD` and
-`PORTAINER_PASSWORD`. Do not copy these values out of a locally bootstrapped
-`apps/api/.env` into a deployment; generate fresh ones for each environment, and
-keep the production and `PREVIEW_` sets distinct.
+`HOST_SERVICE_REVALIDATION_SECRET`, `DATABASE_PASSWORD`, `REDIS_PASSWORD`,
+`TRAEFIK_PASSWORD` and `PORTAINER_PASSWORD`. Do not copy these values out of a
+locally bootstrapped `apps/api/.env` into a deployment; generate fresh ones for
+each environment, and keep the production and `PREVIEW_` sets distinct.
 
 The API refuses to start on a secret it can recognize as guessable. Its
 `API_SECRET_STRENGTH` variable defaults to `enforce`, which stops the process
@@ -218,6 +218,7 @@ secrets end every session, so plan the window.
 | `RBAC_JWT_SECRET`                            | rotate in `tools/deployer/.env` and in the GitHub secrets, then deploy API, Telegram and MCP together                                                                        | every access and refresh token is invalidated. It also rotates the MCP OAuth signing key, because the MCP template falls back to this value               |
 | `RBAC_SECRET_KEY`                            | rotate in `tools/deployer/.env` and in the GitHub secrets, deploy API, Telegram and MCP, and **re-run the cron play** so the server crontab receives the new value           | this is the full authorization bypass. The middleware also accepts it from an `rbac.secret-key` cookie, so any browser that received it holds a copy      |
 | `MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET` | rotate and deploy API and MCP together                                                                                                                                       | the API-to-MCP exchange fails until both sides match                                                                                                      |
+| `HOST_SERVICE_REVALIDATION_SECRET`           | rotate in `tools/deployer/.env` and in the GitHub secrets, then deploy API and host together                                                                                 | the Host rejects invalidation until both sides match and the outbox retries pending batches                                                               |
 | `RBAC_COOKIE_SESSION_SECRET`                 | rotate for hygiene                                                                                                                                                           | no runtime effect: nothing reads it today                                                                                                                 |
 | Administrator identity password              | change it through the API or the admin UI, then update `apps/api/.env` and `.agents/.env`                                                                                    | editing `.env` alone does not change the stored bcrypt hash; that value is only the bootstrap input                                                       |
 
@@ -238,6 +239,27 @@ Afterwards, treat the window before the rotation as one in which the old
 carrying `X-RBAC-SECRET-KEY` from unexpected sources, confirm the identity and
 subject tables hold no account that was not created through a normal flow, and
 force password resets if the deployment is public.
+
+### Host revalidation secret
+
+Host invalidates tags and page paths through `POST /api/revalidate`. The
+API and Host share `HOST_SERVICE_REVALIDATION_SECRET`. The API sends it in
+`X-HOST-REVALIDATION-SECRET`. When Host rejects a request, Consistency leaves
+the batch pending and retries it.
+
+Configure both services before releasing the upgrade. Update the API and Host
+as part of the same rollout so their request format and credential match.
+
+1. Generate a value with `openssl rand -hex 32` for each environment.
+2. Set it as `HOST_SERVICE_REVALIDATION_SECRET` in `tools/deployer/.env` and
+   the production GitHub secret. Use `PREVIEW_HOST_SERVICE_REVALIDATION_SECRET`
+   for the preview GitHub secret.
+3. Render the API and Host environment files again through the deployment
+   workflow or `./api.sh up` and `./host.sh up` from `tools/deployer`.
+   An image release alone does not add the variable to existing services.
+
+In an existing developer checkout, set the same value in `apps/api/.env`
+and `apps/host/.env.local`, then restart both services.
 
 ### Traefik log level
 

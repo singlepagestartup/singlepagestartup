@@ -40,6 +40,7 @@ jest.mock("@sps/shared-configuration", () => ({
 }));
 
 jest.mock("@sps/backend-utils", () => ({
+  requestHostRevalidation: jest.fn(),
   getHttpErrorType: (error: Error) => ({
     details: error,
     message: error.message,
@@ -114,16 +115,16 @@ describe("Given: Host page URLs use the documented string contract", () => {
     globalThis.fetch = fetchPage as any;
     const context = createContext();
     const expectedPaths = [
-      "http://localhost:3000/",
-      "http://localhost:3000/ru/",
-      "http://localhost:3000/gallery/item",
+      "http://localhost:3000/en",
+      "http://localhost:3000/ru",
+      "http://localhost:3000/en/gallery/item",
       "http://localhost:3000/ru/gallery/item",
     ];
 
     const result = await handler.execute(context, jest.fn());
 
     expect(revalidatePage.mock.calls.map(([path]) => path)).toEqual(
-      expectedPaths,
+      expectedPaths.map((url) => new URL(url).pathname),
     );
     expect(fetchPage.mock.calls).toEqual(
       expectedPaths.map((path) => [
@@ -173,22 +174,22 @@ describe("Given: Host page URLs use the documented string contract", () => {
     globalThis.fetch = fetchPage as any;
     const context = createContext();
     const expectedPaths = [
-      "http://localhost:3000/",
-      "http://localhost:3000/ru/",
-      "http://localhost:3000/gallery/item",
+      "http://localhost:3000/en",
+      "http://localhost:3000/ru",
+      "http://localhost:3000/en/gallery/item",
       "http://localhost:3000/ru/gallery/item",
     ];
 
     const result = await handler.execute(context, jest.fn());
 
     expect(revalidatePage.mock.calls.map(([path]) => path)).toEqual(
-      expectedPaths,
+      expectedPaths.map((url) => new URL(url).pathname),
     );
     expect(fetchPage.mock.calls.map(([path]) => path)).toEqual(expectedPaths);
     expect(mockLoggerError).toHaveBeenCalledWith(
-      "http://localhost:3000/ - Failed to fetch page",
+      "http://localhost:3000/en - Failed to fetch page",
       {
-        page: "http://localhost:3000/",
+        page: "http://localhost:3000/en",
         error: expect.any(Error),
       },
     );

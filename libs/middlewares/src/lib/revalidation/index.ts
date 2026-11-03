@@ -1,11 +1,8 @@
 import {
-  CONSISTENCY_REVALIDATION_BATCH_SIZE,
   compileTopicRules,
-  HOST_SERVICE_URL,
   ICompiledTopicRule,
   IRouteRule,
   ITopicRule,
-  RBAC_SECRET_KEY,
   resolveTopicsForPath,
   RouteMatcher,
   singlepageTopicRules,
@@ -15,7 +12,7 @@ import {
 } from "@sps/shared-utils";
 import { MiddlewareHandler } from "hono";
 import { createMiddleware } from "hono/factory";
-import { websocketManager } from "@sps/backend-utils";
+import { requestHostRevalidation, websocketManager } from "@sps/backend-utils";
 import { createNotRevalidatingRoutesMatcher } from "./routes";
 
 export type IMiddlewareGeneric = unknown;
@@ -96,12 +93,6 @@ export class Middleware {
 
       if (c.res.status >= 200 && c.res.status < 300) {
         if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
-          if (!RBAC_SECRET_KEY) {
-            throw Error(
-              "RBAC_SECRET_KEY is not defined, broadcast middleware 'revalidation' can't request to service.",
-            );
-          }
-
           const pathsToRevalidate = this.getNormalizedPaths(path);
           const topics = this.getTopics(path);
           const timestamp = new Date().toISOString();
@@ -115,61 +106,13 @@ export class Middleware {
               createdAt: timestamp,
               expiresAt,
             });
-
-            void this.revalidateTag(payload);
           });
         }
       }
     });
   }
 
-  async revalidateTags(tags: string[], required = false) {
-    const unique = [...new Set(tags)];
-    for (
-      let start = 0;
-      start < unique.length;
-      start += CONSISTENCY_REVALIDATION_BATCH_SIZE
-    ) {
-      try {
-        const response = await fetch(HOST_SERVICE_URL + "/api/revalidate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            tags: unique.slice(
-              start,
-              start + CONSISTENCY_REVALIDATION_BATCH_SIZE,
-            ),
-          }),
-          signal: AbortSignal.timeout(3000),
-        });
-        if (response.status === 404 || response.status === 405) {
-          for (const tag of unique.slice(
-            start,
-            start + CONSISTENCY_REVALIDATION_BATCH_SIZE,
-          ))
-            await this.revalidateTag(tag, required);
-          continue;
-        }
-        if (!response.ok)
-          throw new Error(`Next invalidation failed (${response.status})`);
-      } catch (error) {
-        if (required) throw error;
-        console.log("Next invalidation failed:", error);
-      }
-    }
-  }
-
-  async revalidateTag(tag: string, required = false) {
-    try {
-      const response = await fetch(
-        HOST_SERVICE_URL + "/api/revalidate?tag=" + encodeURIComponent(tag),
-        { signal: AbortSignal.timeout(3000) },
-      );
-      if (!response.ok)
-        throw new Error(`Next invalidation failed (${response.status})`);
-    } catch (error) {
-      if (required) throw error;
-      console.log("Next invalidation failed:", error);
-    }
+  revalidateTags(tags: string[]) {
+    return requestHostRevalidation({ tags });
   }
 }

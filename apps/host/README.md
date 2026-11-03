@@ -13,10 +13,9 @@ Host target's explicit `webpack: true` option, supported by Nx 22.7.12.
 production builds sequential on machines with limited RAM; see
 [runtime memory guidance](../../tools/runtime/README.md#local-host-memory-budget).
 
-The single-tag and batch revalidation handlers use
-`revalidateTag(tag, { expire: 0 })`, so the next read refreshes expired data
-before responding. The `max` profile permits stale responses during background
-refresh and does not preserve this contract.
+The authenticated `POST /api/revalidate` accepts tags and a page or layout path.
+It expires each tag with `revalidateTag(tag, { expire: 0 })`, so the next read
+refreshes the data before responding. See the [server contract](../../libs/middlewares/src/lib/revalidation/README.md#next-tag-delivery).
 
 Shared agent instructions live in the root `AGENTS.md`. The Next `agentRules`
 option is disabled so dev startup does not generate another instruction file.

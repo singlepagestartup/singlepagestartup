@@ -429,6 +429,11 @@ import {
   type IResult as ISocialModuleChatFindByIdProfileDeleteResult,
 } from "./social-module/chat/find-by-id/profile/delete";
 
+import {
+  action as hostCacheRevalidate,
+  type IResult as IHostCacheRevalidateResult,
+} from "./host-cache/revalidate";
+
 export type IProps = {
   IBlogModuleArticleCreateProps: IBlogModuleArticleCreateProps;
   IBillingModuleBalanceProps: IBillingModuleBalanceProps;
@@ -518,6 +523,7 @@ export type IProps = {
 };
 
 export type IResult = {
+  IHostCacheRevalidateResult: IHostCacheRevalidateResult;
   IBlogModuleArticleCreateResult: IBlogModuleArticleCreateResult;
   IBillingModuleBalanceResult: IBillingModuleBalanceResult;
   ISocialModuleProfileFindByIdAvatarFindResult: ISocialModuleProfileFindByIdAvatarFindResult;
@@ -606,6 +612,7 @@ export type IResult = {
 };
 
 export const api = {
+  hostCacheRevalidate,
   blogModuleArticleCreate,
   socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdate,
   socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesFind,

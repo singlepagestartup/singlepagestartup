@@ -33,3 +33,8 @@ export {
   validateWebhookIdentifiers,
   type IValidateWebhookIdentifiersProps,
 } from "./webhook-identifiers";
+
+export {
+  requestHostRevalidation,
+  type IHostRevalidationRequest,
+} from "./host-revalidation";

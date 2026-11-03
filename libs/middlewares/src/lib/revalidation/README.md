@@ -78,11 +78,16 @@ does not disable dependency capture, authorization or invalidation delivery.
 
 ## Next tag delivery
 
-The dispatcher deduplicates tags and sends sequential POST batches of at most
-128 tags to Host `/api/revalidate`. Host validates the bounded payload and
-acknowledges after calling `revalidateTag` for every tag. A 404/405 from an older
-Host falls back to serial legacy GET requests. Other failures keep the outbox
-batch pending for retry with backoff; they never acknowledge undelivered events.
+The dispatcher sends committed changes to Host through
+`POST /api/revalidate`. The server-side transport deduplicates tags and sends
+sequential batches of up to 128. The Host requires
+`X-HOST-REVALIDATION-SECRET`, validates the payload and acknowledges after
+expiring the tags. A failed request leaves the outbox batch pending for retry.
+
+The same POST accepts a relative `path` and an optional `type` of `page` or
+`layout`. The API seed, page-cache agent and maintenance reset use this
+contract. Mutation middleware still sends browser notifications. Only the
+dispatcher sends tag invalidation after ordinary writes.
 
 Next delivery failure does not stop socket heartbeats or pumping previously
 delivered events. Browsers can still check authoritative query versions while

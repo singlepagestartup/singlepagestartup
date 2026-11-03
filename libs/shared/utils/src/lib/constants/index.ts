@@ -61,3 +61,6 @@ export * from "./ai-context";
 export { INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG } from "./ecommerce";
 
 export * from "./agent";
+
+export const HOST_SERVICE_REVALIDATION_SECRET_HEADER =
+  "X-HOST-REVALIDATION-SECRET";
