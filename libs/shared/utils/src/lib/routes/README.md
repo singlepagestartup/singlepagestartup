@@ -62,7 +62,6 @@ callers pass extra rules through the middleware constructor.
 
 | Middleware       | Semantic                    | Matcher factory                      |
 | ---------------- | --------------------------- | ------------------------------------ |
-| `http-cache`     | bypass cache                | `createExcludedRoutesMatcher`        |
 | `is-authorized`  | allow without auth          | `createAllowedRoutesMatcher`         |
 | `actions-logger` | log this mutation           | `createLoggingRoutesMatcher`         |
 | `bill-route`     | require billing             | `createBillingRoutesMatcher`         |
@@ -87,7 +86,7 @@ evaluated first of all layers.
 
 ```ts
 // apps/api/app.ts
-new HTTPCacheMiddleware({
+consistencyRuntime.cache({
   excludedRoutes: [{ regexPath: /^\/api\/crm\/boards\/[0-9a-f-]+\/burndown$/i }],
 });
 new IsAuthorizedMiddleware({
@@ -107,3 +106,17 @@ so the constructor-options path is the more durable choice for portable config.
 
 Use `deny` rules in either seam to subtract a framework default rather than
 forking the shipped `singlepage.ts` list.
+
+## Resolved Page parameters
+
+`extractRouteParams({ url, mask })` returns full placeholder names mapped to
+path values for an already resolved Page mask. It preserves encoded segment
+values, ignores query/hash, returns an empty map for static routes and supplies
+1 only for an omitted pagination token. It rejects mismatched masks and
+repeated keys. Locale removal belongs to the Host entrypoint; this helper does
+not query models, choose among Page records or authorize access.
+
+`IRouteParams` is the neutral readonly map of named Page placeholders. Values are
+strings or undefined for missing keys. Module Widgets use this type without
+importing Host; the keys retain their full names such as social.chats.id.
+The map describes routing context and grants no resource access.

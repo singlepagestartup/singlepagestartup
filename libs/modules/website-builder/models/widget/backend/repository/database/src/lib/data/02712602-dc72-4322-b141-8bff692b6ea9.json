@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "A request for your project",
+    "ru": "Запрос для вашего проекта"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"I want administrators to see new enquiries and changes in the open list without manually reloading the page. Each person should receive only the data they are allowed to access.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Хочу, чтобы администраторы видели новые заявки и изменения в открытом списке без ручной перезагрузки страницы. Каждый должен получать только доступные ему данные.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "02712602-dc72-4322-b141-8bff692b6ea9",
+  "createdAt": "2026-10-26T00:12:12.600Z",
+  "updatedAt": "2026-10-27T14:58:45.575Z",
+  "variant": "content-rich",
+  "adminTitle": "Запрос для вашего проекта",
+  "slug": "framework-reviewed-article-broadcast-task"
+}

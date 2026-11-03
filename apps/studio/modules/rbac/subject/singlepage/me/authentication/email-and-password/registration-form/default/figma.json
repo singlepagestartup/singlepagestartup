@@ -1,0 +1,27 @@
+{
+  "componentName": "rbac.subject",
+  "pageName": "rbac",
+  "nodeId": "981:86",
+  "variantNodeId": "981:74",
+  "variantName": "me-authentication-email-and-password-registration-form-default",
+  "metadata": {
+    "singlepagestartup.studio.blockId": "rbac.subject.me-authentication-email-and-password-registration-form-default",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "rbac/subject/singlepage/me/authentication/email-and-password/registration-form/default",
+    "sps.figma.component": "rbac.subject",
+    "sps.figma.variant": "me-authentication-email-and-password-registration-form-default",
+    "sps.source.module": "rbac",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "subject",
+    "sps.source.variant": "me-authentication-email-and-password-registration-form-default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/rbac/subject/singlepage/me/authentication/email-and-password/registration-form/default/Component.tsx",
+    "sps.code.story": "apps/studio/modules/rbac/subject/singlepage/me/authentication/email-and-password/registration-form/default/Component.stories.tsx",
+    "sps.figma.nodeId": "981:86",
+    "sps.figma.variantNodeId": "981:74",
+    "sps.figma.storybookReferenceNodeId": "981:202",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "981:202",
+  "storybookImageCount": 1
+}

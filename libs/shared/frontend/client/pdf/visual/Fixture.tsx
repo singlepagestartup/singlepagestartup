@@ -1,7 +1,6 @@
 import { useRef } from "react";
 import { createRoot } from "react-dom/client";
 import { useElementPdfDownload } from "../src";
-import diagram from "./assets/diagram.svg";
 import "./styles.css";
 
 function Fixture() {
@@ -36,7 +35,7 @@ function Fixture() {
         </div>
         <img
           className="mt-5 h-[120px] w-full rounded-xl object-cover object-center"
-          src={diagram}
+          src="/images/pdf/diagram.svg"
           alt="Centered gold circle with cropped pink and green panels"
         />
         <p className="mt-auto border-t border-[#102738] pt-3 text-xs font-bold">

@@ -44,6 +44,34 @@ For issue-152, HTTP cache remains enabled in scenarios; temporary exclusion is a
 
 `apps/mcp` can run as a remote Streamable HTTP MCP server at `https://mcp.<domain>/mcp`. Deploy it with `tools/deployer/mcp.sh`; production connectors authenticate through OAuth/Bearer and then forward the caller's `rbac.subject` authentication JWT to `apps/api`. Static `X-RBAC-SECRET-KEY` auth is disabled by default for remote deployments and should only be enabled for local/private debugging.
 
+MCP connections for coding clients
+belong to the local checkout and are excluded from Git. Shared defaults remain
+in `*.example` files. `up.sh` and ENV creation leave client connections alone.
+
+Configure your project's `MCP_SERVICE_NAME` and `DOMAIN` in
+`tools/deployer/.env`; `MCP_SERVICE_SUBDOMAIN` defaults to `mcp`. Then generate
+a local connection explicitly for the chosen client with Bun 1.3.6:
+
+```bash
+npm run mcp:clients:generate -- --client codex
+```
+
+The connector name comes from this checkout's `origin` repository and the
+environment, for example `client-shop-production`. The URL comes from the
+project's deployment settings; it is not inferred from the repository name.
+Existing connections such as `nx-mcp` are preserved. The `--client` choices
+include `claude`, `codex`, `kimi`, `mimo`, `opencode`, `cursor` and `vscode`.
+Without `--client`, generation exports samples without activating any client.
+Muse and native DeepSeek Harness always use export-only samples; their
+configuration and authentication need manual integration. See the
+[compatibility notes](apps/mcp/README.md#client-compatibility) before sharing
+configurations between clients. Successful MCP deployment
+exports separate client samples under `.artifacts/mcp-client-configs/<client>`; GitHub Actions publishes
+it as the `mcp-client-configs` artifact without editing local client settings.
+Complete OAuth login in the chosen client after generation; see [project client configuration](apps/mcp/README.md#generated-project-client-configs)
+for OpenCode V1/V2 formats and login commands. The following CLI commands are
+also available for manual registration.
+
 For Codex Desktop/CLI, register the remote MCP explicitly:
 
 ```bash
@@ -61,7 +89,7 @@ REPO_NAME=$(.claude/helpers/get_repo_name.sh)
 claude mcp add --transport http "${REPO_NAME}-production" "https://mcp.<domain>/mcp"
 ```
 
-For Claude UI / Claude Desktop, add a custom connector named `<repo-name>-production` in `Customize -> Connectors` with URL `https://mcp.<domain>/mcp`, then click `Connect` and complete the SPS OAuth login. Keep the project `.mcp.json` local MCP named `<repo-name>` separate from the production connector. Run `tools/mcp/setup-project-mcp.sh` to print exact repo-derived commands.
+For Claude UI / Claude Desktop, add a custom connector named `<repo-name>-production` in `Customize -> Connectors` with URL `https://mcp.<domain>/mcp`, then click `Connect` and complete the SPS OAuth login. Local and production connectors use separate names. Run `tools/mcp/setup-project-mcp.sh` to print exact repo-derived commands.
 
 To apply Claude or Codex setup from the helper, pass the real production URL:
 
@@ -108,7 +136,6 @@ libs/
 │   ├── rbac/         # Role-Based Access Control
 │   ├── social/       # Social network module
 │   ├── startup/      # Startup-specific features
-│   ├── telegram/     # Telegram integration
 │   └── website-builder/ # Website building tools
 ├── shared/      # Shared utilities, base types, configuration
 ├── providers/   # Service providers and dependency injection
@@ -176,7 +203,10 @@ Prefer the Streamable HTTP transport for Codex, Claude Code, Inspector, and any 
 http://127.0.0.1:3001/mcp
 ```
 
-The project `.mcp.json` is local and stdio-focused for Claude Code. Codex uses its own MCP config, and remote production connectors should be registered separately with the `-production` suffix. Print repo-derived commands with:
+Claude Code uses the ignored `.mcp.json`; Codex uses the ignored
+`.codex/config.toml`. Shared defaults live in the corresponding `*.example`
+files. Explicit generation adds a `<repo-name>-production` connector and
+retains existing local connections. Print repo-derived commands with:
 
 ```bash
 tools/mcp/setup-project-mcp.sh
@@ -246,6 +276,7 @@ Strict layered architecture: Repository → Service → Controller → App.
 - Fields defined in `fields/`, table schema in `schema.ts`
 - Database structure changes are managed via generated Drizzle SQL migrations
 - After changing `schema.ts` or any `fields/*` table definition, run the matching `repository-generate` Nx target, for example `npx nx run @sps/<module>:models:<model>:repository-generate` or the corresponding relation target. Do not hand-write migration SQL, `migrations/meta/*` snapshots, or `_journal.json` entries.
+- Every model/relation generation target runs uncached and regenerates Consistency Capture after Drizzle, including client-owned Startup schemas. Commit the generated schema and capture artifacts together. Apply them with `npx nx run api:db:migrate`, then run `npx nx run @sps/providers-db:consistency-check`. Custom targets must retain the final capture-generation command. See [PostgreSQL consistency storage](libs/providers/db/README.md) for the lifecycle and checks.
 
 #### Service Layer
 
@@ -280,10 +311,13 @@ Strict layered architecture: Repository → Service → Controller → App.
 #### Component Structure
 
 - Each variant consists of:
-  - `interface.ts` — props description (`IComponentProps`, `IComponentPropsExtended`)
-  - `index.tsx` — wrapper with `ParentComponent`
+  - `interface.ts` — literal variant name, public props, SDK request parameters and loaded result types (`IComponentProps`, `IComponentPropsExtended`)
+  - `index.tsx` — template wiring and reader composition
   - `Component.tsx` — UI implementation
   - Optional `ClientComponent.tsx` for client-side logic
+- Shared readers own ordinary data loading. When additional or specialized SDK requests cannot be expressed through that reader, the variant may add local `client.tsx` and `server.tsx` in the same folder. Keep the typed interface, view files and one owner for Provider/loading; implement the supported runtime paths.
+- Register the variant under its exact name in the owning layer's `variants.ts` and include its props in that layer's `interface.ts` union. The public entrypoint uses the effective registry with `startup` overrides applied after `singlepage`.
+- The complete implementation and review rules are in [the frontend component contract](.agents/contracts/engineering/frontend-components.md).
 - If a variant requires `"use client"`, put the directive and client-only logic in `ClientComponent.tsx`; keep `Component.tsx` as a server-compatible wrapper that renders `ClientComponent`.
 - When `Component.tsx` renders `ClientComponent.tsx`, pass an explicit allowlist of props. Do not forward `{...props}` across the Server → Client boundary; Next.js requires props passed to Client Components to be serializable, and a spread can accidentally leak unsupported values.
 - `isServer` is part of the SPS base component contract. If the client component needs the SPS runtime context or renders lower-level SPS components, pass `isServer` explicitly from `Component.tsx` to `ClientComponent.tsx`.
@@ -325,6 +359,11 @@ Strict layered architecture: Repository → Service → Controller → App.
 
 ### Cross-Module Layering Boundary
 
+The confirmed top-to-bottom module order and import direction are defined in
+[the module dependency contract](.agents/contracts/engineering/module-dependencies.md).
+Lower modules must not import higher modules, including through types, SDKs,
+frontend composition or reexports.
+
 - Cart/product behavior for authenticated users must be orchestrated through RBAC subject surfaces (`rbac > ecommerce`).
 - `ecommerce` provides domain models/relations and generic UI primitives, but must not import or depend on RBAC subject implementation.
 - Host/cart composition should route actions to RBAC wrappers (for example `me-ecommerce-module-*`) instead of wiring direct ecommerce mutations.
@@ -341,10 +380,17 @@ If you need to understand why data updates/refetches happen in UI (chat, cart, c
 ### Minimal runtime flow
 
 1. Write request succeeds (`POST`/`PUT`/`PATCH`/`DELETE`).
-2. Revalidation middleware broadcasts websocket message with `payload` and optional `topics`.
-3. Frontend `subscription(...)` consumes message from `global-actions-store`.
-4. If matching `meta.topics` queries exist, invalidate by topics.
-5. Otherwise fallback to route-based invalidation.
+2. Revalidation middleware broadcasts a WebSocket message with `payload` and optional `topics` after HTTP-cache generation bumps finish.
+3. Host's revalidation component adds the message to `globalActionsStore`.
+4. SDK `subscription(...)` invalidates React Query entries with matching `meta.topics`; active queries refetch.
+5. Routes without a query covered by those topics retain route-based invalidation.
+
+React Query holds API results in memory under the standard API Provider.
+`globalActionsStore` holds runtime events and writes a compact debug snapshot
+to `sessionStorage`. It does not read that snapshot back or restore entity data
+after a reload. Revalidation uses incoming in-memory events. Local mutations
+also patch the acting client's query cache through the shared helpers; the
+WebSocket path reconciles other subscribed clients and derived changes.
 
 ### Why this design exists
 
@@ -371,6 +417,7 @@ If you need to understand why data updates/refetches happen in UI (chat, cart, c
   - `index.tsx`
   - `Component.tsx`
   - Optional `ClientComponent.tsx`
+  - Optional `client.tsx` and `server.tsx` for specialized SDK reads, following the [frontend component contract](.agents/contracts/engineering/frontend-components.md)
 - Do not put `"use client"` in `Component.tsx`; create `ClientComponent.tsx` and render it from `Component.tsx`.
 - Do not render `<ClientComponent {...props} />` from `Component.tsx`. Destructure or reference only the props the client file actually needs, including `isServer` when it is part of the downstream SPS contract.
 - In `ClientComponent.tsx`, nested SPS components created inside that client boundary must receive `isServer={false}`.
@@ -480,7 +527,7 @@ If no specific pattern is matched, the error will be classified as a generic Int
 ### Prerequisites
 
 - Node.js ^24.x
-- Bun ^1.2.3
+- Bun 1.3.6
 - Docker and Docker Compose
 
 ### 1. Installing Dependencies
@@ -488,6 +535,15 @@ If no specific pattern is matched, the error will be classified as a generic Int
 ```bash
 npm install
 ```
+
+Run dependency installation from the repository root. The root `package.json`
+and `package-lock.json` control the dependencies used by local Nx commands and
+the Docker build's `npm ci`. Applications such as `apps/host` are not npm
+workspaces, so changing only their `package.json` does not update the root
+installation. For a dependency declared in multiple manifests, update all of
+them and regenerate the root lockfile with npm. Hono is pinned to the same
+version in the root, API, Host, OpenAPI and Telegram manifests; the root lockfile
+selects the version used by the running services.
 
 ### 2. Creating envs and starting Required Services
 
@@ -611,13 +667,16 @@ resolved later, then the command can be resumed. See the
 [downstream contract](.agents/contracts/engineering/downstream-migrations.md)
 for the message format, initial compatibility audit, and checkpoint behavior.
 
-After the downstream project has its own `origin`, update the project MCP name from the GitHub repository name:
+After the downstream project has its own `origin` and deployment ENV, generate
+its local MCP configs with that repository name and its own domain. Keep the
+generated files out of Git so future projects do not inherit the connection:
 
 ```bash
-tools/mcp/setup-project-mcp.sh --write-project
+npm run mcp:clients:generate -- --client codex
 ```
 
-Use the same helper without flags to print Claude and Codex MCP setup commands for the downstream repository:
+Use the helper without flags to print MCP authentication and setup commands
+for the downstream repository:
 
 ```bash
 tools/mcp/setup-project-mcp.sh
@@ -650,9 +709,9 @@ Detailed documentation for each module can be found in their respective director
 
 ## Security
 
-Report a weakness through GitHub private vulnerability reporting, never in a
-public issue. [SECURITY.md](./SECURITY.md) has the reporting steps, the
-response and disclosure policy, and the deployment hardening pointers.
+Use GitHub private vulnerability reporting for security findings.
+[SECURITY.md](./SECURITY.md) links to the report form and explains disclosure,
+supported versions and deployment security.
 
 ## License
 

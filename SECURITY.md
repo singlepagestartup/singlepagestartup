@@ -1,65 +1,27 @@
 # Security policy
 
-SinglePageStartup is an open-source framework. Every deployment, including
-the downstream projects built on this repository, runs the code in `apps/`,
-`libs/` and `tools/deployer/`. This file says how to report a weakness in that
-code, what the maintainers do with a report, and where a deployment operator
-finds the hardening steps that no release can apply for them.
+## Report a vulnerability
 
-## Reporting a vulnerability
+Use the [private vulnerability report form](https://github.com/singlepagestartup/singlepagestartup/security/advisories/new) for vulnerabilities in the SinglePageStartup framework. Keep details, reproduction steps and proof of concept in the private report.
 
-Report through GitHub private vulnerability reporting on this repository: open
-the Security tab and choose "Report a vulnerability", or go straight to
-<https://github.com/singlepagestartup/singlepagestartup/security/advisories/new>.
+Include the affected file or route, steps to reproduce, the impact and the commit or release you tested. Use an instance you control. The [local setup guide](./GETTING_STARTED.md) describes how to run the stack with Docker.
 
-Do not open a public issue, pull request or discussion for a security finding,
-and do not attach a working exploit to anything public. The tracker is public,
-so a description of an unfixed weakness reaches attackers before it reaches
-the operators who would have to patch.
+## How maintainers handle reports
 
-A useful report names the affected file or route, the request that triggers
-the weakness, what an attacker gains, and the commit or release you tested.
-Test against your own instance. `GETTING_STARTED.md` explains how to run the
-stack locally with Docker. Do not test against deployments you do not operate.
-
-## What to expect
-
-- Acknowledgement within 5 business days.
-- A confirmed finding gets a draft advisory, a public issue with a neutral
-  title, and a fix branch. For a critical or high finding the target is a fix
-  on `main` within 30 days. Lower severities follow the normal release cadence.
-- The finding, how it could have been used, and the fix are published together
-  in the advisory and the release notes once the release is out. Until then the
-  tracker describes the fix, never the weakness.
-- The advisory credits the reporter unless they ask to stay anonymous.
+Maintainers review the report and may ask for more information in the private GitHub thread. For a confirmed vulnerability, they coordinate the fix and disclosure through a draft advisory. Once the fix is available, the advisory identifies the affected versions, impact and upgrade steps. Maintainers coordinate any public credit with the reporter.
 
 ## Supported versions
 
-Security fixes land on `main` and ship in the next release. Earlier releases
-are not patched; a deployment on an older release moves forward to receive the
-fix.
+Framework security fixes go into `main` and are included in subsequent releases. Upgrade to a release that includes the relevant fix.
 
-Downstream projects pull fixes with the `adapt-upstream` workflow described in
-`.agents/workflows/engineering/adapt-upstream.md`. A weakness in code that a
-downstream project changed or added belongs to that project's maintainers. A
-weakness in framework code belongs here.
+For a project built on SinglePageStartup, first fetch and integrate the upstream fix through your normal Git workflow. Then run [adapt-upstream](./.agents/workflows/engineering/adapt-upstream.md) to review any changes needed in project-owned overrides. Report vulnerabilities in project-owned code to that project's maintainers.
 
-## Hardening a deployment
+## Secure your deployment
 
-Some weaknesses live in a deployment's configuration, and no framework release
-can fix them remotely. `tools/deployer/README.md` covers them under
-"Infrastructure security and operations":
+The [deployment guide](./tools/deployer/README.md#infrastructure-security-and-operations) covers secret generation, rotation and infrastructure settings.
 
-- Generate every deployment secret with a cryptographic source, as described
-  under "Generating deployment secrets". The API refuses to start on a secret
-  it recognizes as guessable unless `API_SECRET_STRENGTH=report` is set.
-- Rotate the secrets of a deployment bootstrapped before that generator
-  existed, following "Rotating the secrets of a deployment that already
-  bootstrapped". Update every copy: the service env files, the GitHub Actions
-  secrets, the server crontab and the operator's `tools/deployer/.env`.
-- Change the bootstrap administrator password through the API or the admin UI.
-  Editing `.env` alone does not change the stored hash.
+- Generate secrets using a cryptographic source. The API checks configured secrets at startup. See [Generating deployment secrets](./tools/deployer/README.md#generating-deployment-secrets).
+- When rotating a secret, update every copy used by the deployment. See [Rotating the secrets of a deployment that already bootstrapped](./tools/deployer/README.md#rotating-the-secrets-of-a-deployment-that-already-bootstrapped).
+- Change the bootstrap administrator password through the API or admin UI so the stored password changes.
 
-`RBAC_SECRET_KEY` bypasses authorization on every API route. Treat it as a root
-credential: keep it out of browsers, MCP client configuration and shared
-machines, and rotate it as soon as a copy may have left your control.
+`RBAC_SECRET_KEY` grants privileged access through the API authorization middleware. Keep it in trusted server environments and rotate it if it may have been exposed.

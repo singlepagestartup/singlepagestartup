@@ -1,3 +1,5 @@
+import { internationalization } from "@sps/shared-configuration";
+import { resolveSeoRoute } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
@@ -26,7 +28,11 @@ export class Handler {
       }
 
       const segmentValue = await this.service.urlSegmentValue({
-        url: sanitizedUrl,
+        url: resolveSeoRoute(
+          sanitizedUrl,
+          internationalization.languages.map(({ code }) => code),
+          internationalization.defaultLanguage.code,
+        ).pathname,
         segment,
       });
 

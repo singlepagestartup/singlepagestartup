@@ -1,0 +1,23 @@
+import type { IComponentProps } from "./interface";
+import { internationalization } from "@sps/shared-configuration";
+export function Skeleton({
+  language = internationalization.defaultLanguage.code,
+}: Pick<IComponentProps, "language"> = {}) {
+  const ru = language === "ru";
+  return (
+    <div
+      role="status"
+      aria-busy="true"
+      aria-label={ru ? "Загрузка формы сообщения" : "Loading message composer"}
+      className="grid gap-3 p-4"
+    >
+      <span className="sr-only">
+        {ru ? "Загрузка формы сообщения…" : "Loading message composer\u2026"}
+      </span>
+      <div aria-hidden="true" className="contents motion-safe:animate-pulse">
+        <div className="h-24 rounded-xl bg-muted" />
+        <div className="ml-auto h-11 w-28 rounded-xl bg-muted" />
+      </div>
+    </div>
+  );
+}

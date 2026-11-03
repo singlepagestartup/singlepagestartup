@@ -19,6 +19,8 @@ Forms define multi-step CRM data collection flows with localized metadata.
 
 ## Variants
 
+- `support-ai-chat`: uses the shared SPS `default` wrapper with the CRM SDK Provider and client/server APIs. `isServer` selects the reader, which loads the Form by `data.id` and forwards `apiProps`. The renderer receives the loaded record, applies its `className`, and displays topic, details and desired-result fields with errors and a submit-control slot. RBAC owns values, validation and submission. Website Builder Help owns the surrounding card and heading; Host supplies the RBAC form through its children.
+
 - `default`: wrapper that renders child form content.
 - `find`: data-fetch wrapper for querying forms.
 - `admin-form`: admin create/edit form for localized fields and metadata.

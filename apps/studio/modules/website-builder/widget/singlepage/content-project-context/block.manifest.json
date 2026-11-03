@@ -1,0 +1,60 @@
+{
+  "$schema": "../../../../../block.schema.json",
+  "id": "website-builder.widget.content-project-context",
+  "title": "content-project-context",
+  "description": "Props-driven widget presentation for content-project-context.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "content-project-context"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "title",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "documents",
+      "type": "list",
+      "required": true
+    },
+    {
+      "name": "task",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "publishDescription",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "actions",
+      "type": "richText",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "website-builder.widget",
+    "pageName": "website-builder",
+    "variantName": "content-project-context",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["website-builder", "widget", "content-project-context"]
+}

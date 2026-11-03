@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "1b94476c-1ac6-4eea-a544-74e3fc7399b6",
+  "createdAt": "2026-10-26T00:11:26.043Z",
+  "updatedAt": "2026-10-27T14:59:26.470Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Prices include a currency",
+    "ru": "Цена указана с валютой"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Configure your project's currencies. Buyers see which currency an amount uses; available payment methods depend on the connected service.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Настройте валюты вашего проекта. Покупатель видит, в какой валюте выставлена сумма; доступные способы оплаты зависят от подключённого сервиса.\"}]}]}"
+  },
+  "adminTitle": "Цена указана с валютой",
+  "slug": "framework-reviewed-article-billing-introduction-feature-0"
+}

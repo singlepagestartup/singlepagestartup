@@ -1,0 +1,27 @@
+{
+  "id": "website-builder.button.control",
+  "title": "control",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Control rendering owned by Website Builder.",
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "button",
+    "variant": "control"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "website-builder.button",
+    "pageName": "website-builder",
+    "variantName": "control",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

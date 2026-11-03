@@ -7,6 +7,9 @@ import { Service } from "../../service";
 import { Handler as FindByUrl } from "./find-by-url";
 import { Handler as UrlSegmentValue } from "./url-segment-value";
 import { Handler as Urls } from "./urls";
+import { Handler as Seo } from "./seo";
+import { Handler as SeoPreview } from "./preview";
+import type { IRouteSource } from "../../service/singlepage/routing";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
@@ -16,6 +19,16 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     super(service);
     this.service = service;
     this.bindHttpRoutes([
+      {
+        method: "GET",
+        path: "/seo",
+        handler: (c) => new Seo(this.service).execute(c),
+      },
+      {
+        method: "POST",
+        path: "/seo-preview",
+        handler: (c) => new SeoPreview(this.service).execute(c),
+      },
       {
         method: "GET",
         path: "/",
@@ -62,6 +75,10 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         handler: this.delete,
       },
     ]);
+  }
+
+  configureRouting(sources: IRouteSource[]) {
+    this.service.configureRouting(sources);
   }
 
   async findByUrl(c: Context, next: any): Promise<Response> {

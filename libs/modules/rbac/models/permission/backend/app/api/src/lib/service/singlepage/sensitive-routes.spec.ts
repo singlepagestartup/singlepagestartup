@@ -9,7 +9,11 @@
 import { Service } from ".";
 
 function createService() {
-  return new Service({} as any, { find: jest.fn() } as any);
+  return new Service(
+    {} as any,
+    { find: jest.fn() } as any,
+    { find: jest.fn() } as any,
+  );
 }
 
 describe("Given: the framework sensitive-route list", () => {

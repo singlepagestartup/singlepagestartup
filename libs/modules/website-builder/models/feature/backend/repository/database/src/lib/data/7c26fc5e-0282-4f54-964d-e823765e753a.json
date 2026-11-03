@@ -1,0 +1,18 @@
+{
+  "className": null,
+  "id": "7c26fc5e-0282-4f54-964d-e823765e753a",
+  "createdAt": "2026-10-23T20:18:06.575Z",
+  "updatedAt": "2026-10-23T20:18:06.575Z",
+  "variant": "card",
+  "title": {
+    "en": "Make it your product",
+    "ru": "Добавьте свои правила"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Describe a concrete business change, inspect the result and keep the account and payment flows working.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Опишите конкретное бизнес-изменение, проверьте результат и сохраните рабочими сценарии аккаунта и оплаты.\"}]}]}"
+  },
+  "adminTitle": "Make it your product",
+  "slug": "framework-about-start-feature-2"
+}

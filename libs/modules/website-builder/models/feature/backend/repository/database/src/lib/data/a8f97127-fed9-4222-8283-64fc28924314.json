@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "a8f97127-fed9-4222-8283-64fc28924314",
+  "createdAt": "2026-10-26T00:11:26.225Z",
+  "updatedAt": "2026-10-27T14:59:50.321Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Payment status is saved",
+    "ru": "Состояние платежа сохраняется"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Distinguish pending and confirmed payments. This lets you base the next step on the payment result.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Различайте ожидаемую и подтверждённую оплату. Это позволяет строить следующий шаг вокруг результата платежа.\"}]}]}"
+  },
+  "adminTitle": "Состояние платежа сохраняется",
+  "slug": "framework-reviewed-article-billing-introduction-feature-1"
+}

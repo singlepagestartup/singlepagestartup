@@ -1,0 +1,27 @@
+{
+  "id": "broadcast.message.admin-v2-table",
+  "title": "broadcast message / admin-v2-table",
+  "description": "Local records for Studio component design.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "broadcast",
+    "entityType": "model",
+    "entity": "message",
+    "variant": "admin-v2-table"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "broadcast.message",
+    "pageName": "broadcast",
+    "variantName": "admin-v2-table",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

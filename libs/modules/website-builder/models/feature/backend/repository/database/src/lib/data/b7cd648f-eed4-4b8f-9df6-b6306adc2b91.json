@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "b7cd648f-eed4-4b8f-9df6-b6306adc2b91",
+  "createdAt": "2026-10-27T08:40:58.765Z",
+  "updatedAt": "2026-10-27T14:59:52.912Z",
+  "variant": "landing-followup",
+  "title": {
+    "en": "Continue working in chat",
+    "ru": "Продолжайте работу в чате"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Create a topic for your next task. The AI assistant can use project knowledge in the new conversation.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Создайте тему для следующей задачи. ИИ-помощник сможет использовать знания о проекте в новом разговоре.\"}]}]}"
+  },
+  "adminTitle": "AI Chat: followup",
+  "slug": "ai-chat-editable-followup"
+}

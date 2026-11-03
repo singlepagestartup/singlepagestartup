@@ -1,0 +1,21 @@
+{
+  "id": "0963da6d-e913-4174-abed-3fbdb8c32574",
+  "className": "",
+  "createdAt": "2026-10-26T00:12:46.862Z",
+  "updatedAt": "2026-10-27T15:00:26.745Z",
+  "variant": "article-find-guides",
+  "adminTitle": "Узнайте, как работает фреймворк",
+  "slug": "framework-reviewed-articles",
+  "title": {
+    "en": "See how the framework works",
+    "ru": "Узнайте, как работает фреймворк"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "",
+    "ru": ""
+  }
+}

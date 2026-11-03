@@ -1,72 +1,39 @@
----
-confirmation:
-  confirmed: false
----
+# Стратегия
 
-# Strategy
+<!-- Краткая маркетинговая стратегия всего проекта на основании брифа, продуктов и внешнего исследования. Описать цели, аудитории, позиционирование, роли продуктов и согласованную работу привлечения, конверсии, удержания и роста.
+Показать, как устроен проект в целевом состоянии с учётом известных ограничений. Отделять желаемые результаты от наблюдаемых. Не превращать стратегию в дорожную карту, список задач или перечень недостающих материалов. Начальные условия принадлежат брифу; здесь нужны только факты, обосновывающие решения, границы доказательств и существенные ограничения. Источники конкретных утверждений доступны в соответствующем разделе. Подробности предложений и исследований — на видимых страницах продуктов в Storybook.
+Формат одинаков для фреймворка и клиентских проектов. Аудитории, каналы и модели выручки примера не являются значениями по умолчанию. Не придумывать продукт, повторную покупку или сценарий взаимодействия человека с агентом ради заполнения шаблона. -->
 
-<!-- A compact, project-wide marketing strategy built from Brief and external
-research. Explain goals, audience choices, positioning, product roles,
-coordinated acquisition, conversion, retention and growth.
-Describe one concrete final picture of the whole project after it satisfies the
-approved Brief as fully as known constraints allow. Explain how the resulting
-marketing system and its durable decision rules work. Keep intended outcomes
-distinct from observed results, but do not narrate a roadmap, transition phases,
-next tasks, preparation work or missing product deliverables.
-Keep only the current facts needed to justify a target decision, proof boundary
-or material constraint; the current business intake belongs to Brief.
-Claim-keyed sources and review state stay in metadata. Detailed offers, campaign
-plans and tests belong to products.
-Use this same structure and quality standard in framework and downstream
-projects. Populate it from the active project's Brief and relevant research;
-example audiences, products, channels, revenue models and metrics are not defaults.
-Use only applicable journeys/outcomes; do not invent another product, recurring
-purchase or human/agent workflow to fill the template. -->
+<!-- Рекомендуется около 600–1 000 слов; полезные подробности могут требовать большего объёма. Названия и порядок H2 фиксированы. Подробные данные и спецификации — по ссылкам на видимые истории Storybook с якорями. Неизвестное не подменять предположением. -->
 
-## Strategic direction
+## Стратегическое направление
 
-Describe the coherent target state for the project: the business and
-audience-growth outcomes, selected positioning, product relationship and the
-main strategic trade-off. Explain how this final picture fulfills the approved
-Brief. Do not describe the sequence for reaching it.
+Описать согласованное целевое состояние: бизнес-результат, рост аудитории, позиционирование, связь продуктов и главный компромисс. Как это состояние выполняет задачу из брифа? Здесь нужен результат и устройство системы, а не порядок её создания.
 
-## Audiences and product roles
+## Аудитории и роли продуктов
 
-| Audience and situation | Value and promise | Product role and desired behavior |
-| ---------------------- | ----------------- | --------------------------------- |
-|                        |                   |                                   |
+| Аудитория и ситуация | Ценность и обещание | Роль продукта и желаемое поведение |
+| -------------------- | ------------------- | ---------------------------------- |
+|                      |                     |                                    |
 
-Use the confirmed Brief product IDs. Explain complementary roles and separate
-revenue and adoption outcomes without removing any confirmed catalog product.
+Использовать ID продуктов из брифа. Объяснить, как дополняются их роли, отдельно обозначить выручку и распространение. Не удалять согласованный продукт из каталога без решения оператора.
 
-## Growth system
+## Система роста
 
-| Channel or mechanism | Role and audience | Content or value | Destination and contribution to growth |
-| -------------------- | ----------------- | ---------------- | -------------------------------------- |
-|                      |                   |                  |                                        |
+| Канал или механизм | Роль и аудитория | Контент или ценность | Куда ведёт и как помогает росту |
+| ------------------ | ---------------- | -------------------- | ------------------------------- |
+|                    |                  |                      |                                 |
 
-Describe the coherent, prioritized channel system in its intended operating
-state. Explain how channels reinforce the product experience, repeat use,
-recommendations and discoverability.
-Do not substitute an unprioritized platform list or content calendar.
+Описать приоритеты и взаимосвязь каналов: как они помогают знакомству с продуктом, повторному использованию и рекомендациям. Не заменять эту систему списком площадок или календарём публикаций.
 
-## Customer journey
+## Путь клиента
 
-Describe the customer's intended journey through discovery, first useful
-result, each conversion, continued use, recommendation and cross-product
-adoption. This is a customer experience inside the final system, not a project
-implementation sequence. Match the user's skills and the intended human/agent
-division of work. Keep product implementation detail out.
+Описать путь от знакомства до первого полезного результата, каждой конверсии, продолжения работы, рекомендации и перехода к другому продукту. Это опыт клиента в готовой системе, а не последовательность разработки. Учитывать навыки пользователя и распределение работы между человеком и агентом. Подробности реализации продукта здесь не нужны.
 
-## Measurement and priorities
+## Измерения и приоритеты
 
-| Strategic outcome | Observable signals | Management consequence |
-| ----------------- | ------------------ | ---------------------- |
-|                   |                    |                        |
+| Стратегический результат | Наблюдаемые признаки | Следствие для управления |
+| ------------------------ | -------------------- | ------------------------ |
+|                          |                      |                          |
 
-State the durable priority order, resource-allocation principles and management
-rules, plus only the material risks that can change the direction. Describe how
-the system should operate; do not list what must be prepared, configured or done
-next. Do not invent numerical targets, ongoing budgets or capacity. Product-level
-tests may be one concise line: no mandatory first experiment, test track, sample
-size, trial calendar or stop-rule table here.
+Зафиксировать порядок приоритетов, распределение ресурсов и правила управления. Указать только риски, которые могут изменить направление. Не придумывать числовые цели, постоянные бюджеты и мощности. Не перечислять подготовительные задачи. Проверки на уровне продукта допустимы одной строкой; подробные эксперименты, размеры выборок, календарь и условия остановки находятся в документах продукта.

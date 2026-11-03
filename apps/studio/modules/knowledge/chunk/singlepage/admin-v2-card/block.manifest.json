@@ -1,0 +1,27 @@
+{
+  "id": "knowledge.chunk.admin-v2-card",
+  "title": "knowledge chunk / admin-v2-card",
+  "description": "Local records for Studio component design.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "knowledge",
+    "entityType": "model",
+    "entity": "chunk",
+    "variant": "admin-v2-card"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "knowledge.chunk",
+    "pageName": "knowledge",
+    "variantName": "admin-v2-card",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

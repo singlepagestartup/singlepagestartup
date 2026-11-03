@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "3551fca1-85bb-4814-8236-0fdf4c00a74f",
+  "createdAt": "2026-10-26T00:12:07.696Z",
+  "updatedAt": "2026-10-27T14:59:31.576Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Schedule",
+    "ru": "Расписание"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Enquiry summary\\n\\nAn example recurring task configuration.\\n\\nWhen: every day at 09:00\\n\\nData: new school enquiries\\n\\nResult: a message to the owner\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Сводка о заявках\\n\\nПример настройки повторяющейся задачи.\\n\\nКогда: каждый день в 09:00\\n\\nДанные: новые заявки школы\\n\\nРезультат: сообщение владельцу\"}]}]}"
+  },
+  "adminTitle": "Расписание",
+  "slug": "framework-reviewed-article-agent-example-feature-0"
+}

@@ -1,0 +1,46 @@
+{
+  "scope": "Production AI Chat account settings purchase presentation and paid order collection",
+  "tests": {
+    "rbac_cart_and_history": 7,
+    "rbac_query_cache": 2,
+    "purchase_details_and_receipts": 3,
+    "passed": 12
+  },
+  "host_typecheck": {
+    "exitCode": 0,
+    "log": "/private/tmp/ai-chat-purchases-host-tsc.log"
+  },
+  "api_typecheck": {
+    "existingErrors": 25,
+    "newDiagnostics": [],
+    "log": "/private/tmp/ai-chat-purchases-api-tsc.log"
+  },
+  "browser": {
+    "desktopCssWidth": 1386,
+    "mobileCssWidth": 375,
+    "mobileScrollWidth": 375,
+    "title": "Purchases",
+    "caption": "View purchases and receipts.",
+    "currentHistory": "empty",
+    "mobilePicker": "Purchases selected through the settings combobox",
+    "backToWorkspace": "absent"
+  },
+  "referenceComparison": {
+    "iconGeometry": "identical Phosphor regular wallet SVG",
+    "headingFontSize": "20px",
+    "headingLineHeight": "28px",
+    "headingGap": "12px",
+    "captionFontSize": "14px",
+    "captionLineHeight": "24px",
+    "cardPadding": "20px",
+    "cardRadius": "16px",
+    "cardBackground": "rgb(255, 255, 255)"
+  },
+  "limits": [
+    "The live signed-in account has no paid orders. Populated purchase rows and receipt links were verified with isolated component fixtures.",
+    "Payments, sign-out, identity changes and account deletion were not executed."
+  ],
+  "codePlacement": "passed",
+  "diffWhitespace": "passed",
+  "unrelatedBaselineChanges": []
+}

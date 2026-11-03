@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "4b1cbbaa-1cf5-4a3d-ac02-c049f6719fd1",
+  "createdAt": "2026-10-24T01:05:53.421Z",
+  "updatedAt": "2026-10-24T01:05:53.421Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Host",
+    "ru": "Host"
+  },
+  "subtitle": {
+    "en": "Experience",
+    "ru": "Интерфейс"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Pages, layouts, metadata and the exact Widget instances that make a page.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Страницы, layouts, метаданные и точные экземпляры Widget, из которых состоит страница.\"}]}]}"
+  },
+  "adminTitle": "Host",
+  "slug": "framework-journey-module-host"
+}
