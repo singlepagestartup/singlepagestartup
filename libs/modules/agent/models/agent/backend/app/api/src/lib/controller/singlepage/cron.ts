@@ -1,15 +1,23 @@
 import {
-  AGENT_MAX_DURATION_IN_SECONDS,
-  API_SERVICE_URL,
+  AGENT_CRON_MAX_CONCURRENCY,
   RBAC_SECRET_KEY,
+  limitedParallelExecution,
 } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../service";
-import { api as broadcastChannelApi } from "@sps/broadcast/models/channel/sdk/server";
 import { IModel as IAgentAgent } from "@sps/agent/models/agent/sdk/model";
-import cronParser from "cron-parser";
 import { getHttpErrorType, logger } from "@sps/backend-utils";
+import {
+  type IAgentRunDispatch,
+  type IAgentRunMarker,
+} from "../../service/singlepage/agent-run";
+
+export interface IDueAgent {
+  agent: IAgentAgent;
+  markers: IAgentRunMarker[];
+  supersedes?: string;
+}
 
 export class Handler {
   service: Service;
@@ -24,221 +32,62 @@ export class Handler {
         throw new Error("Configuration error. RBAC_SECRET_KEY not set");
       }
 
-      const [agents, cronChannels] = await Promise.all([
+      const channel = await this.service.agentRun.findChannel();
+
+      const [agents, markers] = await Promise.all([
         this.service.find(),
-        this.service.broadcastModule.channel.find({
-          params: {
-            filters: {
-              and: [{ column: "slug", method: "eq", value: "cron" }],
-            },
-          },
-        }),
+        this.service.agentRun.findMarkers({ channel }),
       ]);
 
-      if (!cronChannels || cronChannels.length !== 1) {
-        throw new Error("Validation error. Invalid cron channel configuration");
-      }
+      const now = new Date();
+      const dueAgents: IDueAgent[] = [];
 
-      const cronChannel = cronChannels[0];
-
-      const channelsToMessages =
-        await this.service.broadcastModule.channelsToMessages.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "channelId",
-                  method: "eq",
-                  value: cronChannel.id,
-                },
-              ],
-            },
-          },
+      for (const agent of agents || []) {
+        const agentMarkers = markers.filter(
+          (marker) => marker.slug === agent.slug,
+        );
+        const decision = this.service.agentRun.isDue({
+          agent,
+          marker: agentMarkers[0],
+          now,
         });
 
-      const messages = channelsToMessages?.length
-        ? await this.service.broadcastModule.message.find({
-            params: {
-              filters: {
-                and: [
-                  {
-                    column: "id",
-                    method: "inArray",
-                    value: Array.from(
-                      new Set(channelsToMessages.map((item) => item.messageId)),
-                    ),
-                  },
-                ],
-              },
-            },
-          })
-        : [];
-
-      const executions =
-        messages?.map((message) => ({
-          id: message.id,
-          datetime: new Date(JSON.parse(message.payload).datetime),
-          slug: JSON.parse(message.payload).slug,
-          result: JSON.parse(message.payload).result,
-        })) || [];
-
-      const executingAgents: IAgentAgent[] = [];
-
-      const tasks = agents?.map(async (agent) => {
-        try {
-          const currentExecutions = executions
-            .filter((execution) => execution.slug === agent.slug)
-            .sort((a, b) => b.datetime.getTime() - a.datetime.getTime());
-
-          const lastExecution = currentExecutions[0];
-
-          let lastExecutionTime: Date | null = lastExecution
-            ? new Date(lastExecution.datetime)
-            : null;
-
-          const youngerThanMaxDuration =
-            lastExecutionTime &&
-            lastExecutionTime.getTime() >
-              new Date().getTime() - AGENT_MAX_DURATION_IN_SECONDS * 1000;
-
-          if (
-            lastExecution &&
-            !lastExecution.result &&
-            youngerThanMaxDuration
-          ) {
-            return;
-          }
-
-          if (!agent.interval) {
-            return;
-          }
-
-          const now = new Date();
-          let needToExecute = false;
-
-          try {
-            const interval = cronParser.parseExpression(agent.interval, {
-              currentDate: lastExecutionTime || now,
-            });
-            const nextExecutionTime = interval.next().toDate();
-
-            if (!lastExecutionTime) {
-              needToExecute = true;
-            } else if (now >= nextExecutionTime) {
-              needToExecute = true;
-            }
-          } catch (err) {
-            logger.error(
-              `❌ Invalid cron expression for agent ${agent.slug}:`,
-              err,
-            );
-            return;
-          }
-
-          if (!needToExecute) {
-            return;
-          }
-
-          executingAgents.push(agent);
-
-          await this.executeCronTask(agent, cronChannel, currentExecutions);
-        } catch (err) {
-          logger.error(`❌ An error during agent '${agent.slug}':`, err);
+        if (!decision.due) {
+          continue;
         }
-      });
 
-      if (tasks) {
-        await Promise.allSettled(tasks);
+        dueAgents.push({
+          agent,
+          markers: agentMarkers,
+          supersedes: decision.supersedes,
+        });
       }
 
-      return c.json({ data: executingAgents });
-    } catch (error: any) {
-      const { status, message, details } = getHttpErrorType(error);
-      throw new HTTPException(status, { message, cause: details });
-    }
-  }
-
-  async executeCronTask(
-    agent: IAgentAgent,
-    cronChannel: any,
-    currentExecutions: any[],
-  ) {
-    try {
-      if (!RBAC_SECRET_KEY) {
-        throw new Error("Configuration error. RBAC_SECRET_KEY not set");
-      }
-
-      await Promise.allSettled(
-        currentExecutions.map(async (execution) => {
+      await limitedParallelExecution<IAgentRunDispatch | null>(
+        dueAgents.map((dueAgent) => async () => {
           try {
-            if (!RBAC_SECRET_KEY) {
-              throw new Error("Configuration error. RBAC_SECRET_KEY not set");
-            }
-
-            await broadcastChannelApi.messageDelete({
-              id: cronChannel.id,
-              messageId: execution.id,
-              options: { headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY } },
+            return await this.service.agentRun.dispatch({
+              agent: dueAgent.agent,
+              supersedes: dueAgent.supersedes,
+              channel,
+              previousMarkers: dueAgent.markers,
             });
           } catch (error) {
             logger.error(
-              `❌ Error during deleting message ${execution.id}:`,
+              `❌ An error during agent '${dueAgent.agent.slug}':`,
               error,
             );
+
+            return null;
           }
         }),
+        AGENT_CRON_MAX_CONCURRENCY,
       );
 
-      await broadcastChannelApi.pushMessage({
-        data: {
-          slug: "cron",
-          payload: JSON.stringify({
-            datetime: new Date().toISOString(),
-            slug: agent.slug,
-          }),
-        },
-        options: { headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY } },
-      });
-
-      const url = API_SERVICE_URL + "/api/agent/agents/" + agent.slug;
-
-      const agentExecutionResult = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-      })
-        .then(async (res) => {
-          if (!res.ok) {
-            const errorText = await res.text();
-            throw new Error(
-              `Internal error. Error request: ${res.status} - ${errorText}`,
-            );
-          }
-          return res.json();
-        })
-        .catch((error) => {
-          logger.error(`❌ Error during agent '${agent.slug}':`, error);
-          return { error: error?.message || "Unknown error" };
-        });
-
-      await broadcastChannelApi.pushMessage({
-        data: {
-          slug: "cron",
-          payload: JSON.stringify({
-            datetime: new Date().toISOString(),
-            slug: agent.slug,
-            result: agentExecutionResult,
-          }),
-        },
-        options: { headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY } },
-      });
-    } catch (error) {
-      logger.error(
-        `❌ Error durng executeCronTask for agent '${agent.slug}':`,
-        error,
-      );
+      return c.json({ data: dueAgents.map((dueAgent) => dueAgent.agent) });
+    } catch (error: any) {
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

@@ -1,3 +1,5 @@
+import type { IModel as IBillingModuleCurrency } from "@sps/billing/models/currency/sdk/model";
+import type { ReactNode } from "react";
 export { type IModel } from "@sps/ecommerce/models/product/sdk/model";
 import { IModel } from "@sps/ecommerce/models/product/sdk/model";
 import {
@@ -10,6 +12,7 @@ export const variant = "currency-toggle-group-default" as const;
 
 export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
+  onCurrenciesResolved?: (currencies: IBillingModuleCurrency[]) => void;
   formFieldName: string;
   form: UseFormReturn<any>;
   label?: string;
@@ -22,3 +25,9 @@ export interface IComponentPropsExtended
     typeof variant,
     IComponentProps
   > {}
+
+export interface IClientComponentProps {
+  currencies?: IBillingModuleCurrency[];
+  onCurrenciesResolved?: IComponentProps["onCurrenciesResolved"];
+  children?: ReactNode;
+}

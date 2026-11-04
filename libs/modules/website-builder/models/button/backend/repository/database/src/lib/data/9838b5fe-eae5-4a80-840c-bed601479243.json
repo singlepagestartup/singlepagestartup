@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "AI Chat",
+    "ru": "AI-чат"
+  },
+  "subtitle": {},
+  "url": "/",
+  "className": "w-fit",
+  "id": "9838b5fe-eae5-4a80-840c-bed601479243",
+  "createdAt": "2026-10-23T20:18:01.981Z",
+  "updatedAt": "2026-10-23T20:18:01.981Z",
+  "variant": "primary",
+  "adminTitle": "AI Chat",
+  "slug": "framework-header-ai-chat"
+}

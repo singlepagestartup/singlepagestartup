@@ -1,0 +1,52 @@
+{
+  "date": "2026-10-12",
+  "wrapper": "@sps/shared-frontend-components/singlepage/default",
+  "provider": "@sps/crm/models/form/sdk/client",
+  "clientApi": "@sps/crm/models/form/sdk/client",
+  "serverApi": "@sps/crm/models/form/sdk/server",
+  "serverSdkRecord": {
+    "id": "3d00218e-2511-4526-8cc0-f8913faf4c0f",
+    "variant": "support-ai-chat",
+    "slug": "ai-chat-support",
+    "className": null,
+    "updatedAt": "2026-10-11T20:42:47.519Z"
+  },
+  "browser": {
+    "className": "min-w-0",
+    "fields": ["Topic", "What happened?", "What result do you need?"],
+    "id": "3d00218e-2511-4526-8cc0-f8913faf4c0f",
+    "insideWidget": "891660ec-0b4d-4051-b595-e3f0debcefaa"
+  },
+  "checks": {
+    "recordLoadingTests": {
+      "passed": 3,
+      "total": 3
+    },
+    "hostTypeScript": "passed",
+    "codePlacement": "passed",
+    "whitespace": "passed",
+    "fieldValueBinding": "CRM SDK binding check read back from textarea",
+    "requiredFieldValidation": "three errors shown and first invalid field focused"
+  },
+  "supportRequestSubmitted": false,
+  "databaseWrites": false,
+  "files": [
+    "libs/modules/crm/models/form/frontend/component/src/lib/singlepage/support-ai-chat/index.tsx",
+    "libs/modules/crm/models/form/frontend/component/src/lib/singlepage/support-ai-chat/interface.ts",
+    "libs/modules/crm/models/form/frontend/component/src/lib/singlepage/support-ai-chat/Component.tsx",
+    "libs/modules/crm/models/form/frontend/component/src/lib/singlepage/support-ai-chat/Component.spec.tsx",
+    "libs/modules/crm/models/form/README.md",
+    "thoughts/shared/processes/singlepagestartup/ISSUE-ai-chat-production-integration.md"
+  ],
+  "browserChecks": {
+    "validation": {
+      "errors": [
+        "Choose a topic.",
+        "Describe what happened.",
+        "Tell us what result you need."
+      ],
+      "focusedField": "Topic"
+    },
+    "consoleErrors": []
+  }
+}

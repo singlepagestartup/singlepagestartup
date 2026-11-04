@@ -1,3 +1,4 @@
+import { Component as Content } from "./Content";
 import {
   Card,
   CardContent,
@@ -31,7 +32,15 @@ export function Component(props: IComponentPropsExtended) {
               <TipTap value={props.data.description[props.language] || ""} />
             ) : null}
           </CardHeader>
-          <CardContent>{props.children}</CardContent>
+          <CardContent>
+            {props.children ?? (
+              <Content
+                isServer={props.isServer}
+                language={props.language}
+                profileId={props.profileId}
+              />
+            )}
+          </CardContent>
         </Card>
       </div>
     </div>

@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "a53244d7-59e1-43e1-ad35-2fc86b197c65",
+  "createdAt": "2026-10-26T00:11:48.429Z",
+  "updatedAt": "2026-10-27T14:59:49.295Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "website-builder",
+    "ru": "website-builder"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Use media in website blocks.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Используйте медиа в блоках сайта.\"}]}]}"
+  },
+  "adminTitle": "website-builder",
+  "slug": "framework-reviewed-article-file-storage-connections-feature-0"
+}

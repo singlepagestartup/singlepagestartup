@@ -1,0 +1,28 @@
+{
+  "id": "rbac.widget.subject-me-authentication-registration-ai-chat",
+  "title": "subject-me-authentication-registration-ai-chat",
+  "description": "RBAC registration form composed in its Website Builder presentation.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "subject-me-authentication-registration-ai-chat"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "rbac.widget",
+    "pageName": "rbac",
+    "variantName": "subject-me-authentication-registration-ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["rbac", "widget", "subject-me-authentication-registration-ai-chat"]
+}

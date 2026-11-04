@@ -14,13 +14,30 @@ import {
   type IFindByIdChatFindProps,
   type IFindByIdChatFindResult,
 } from "./chat-find";
+import {
+  authorFind,
+  authorFindCount,
+  authorFindById,
+  type IAuthorFindProps,
+  type IAuthorFindCountProps,
+  type IAuthorFindByIdProps,
+  type IAuthorFindResult,
+  type IAuthorFindCountResult,
+  type IAuthorFindByIdResult,
+} from "./authors";
 
 export type IProps = {
   IFindByIdChatFindProps: IFindByIdChatFindProps;
+  IAuthorFindProps: IAuthorFindProps;
+  IAuthorFindCountProps: IAuthorFindCountProps;
+  IAuthorFindByIdProps: IAuthorFindByIdProps;
 };
 
 export type IResult = {
   IFindByIdChatFindResult: IFindByIdChatFindResult;
+  IAuthorFindResult: IAuthorFindResult;
+  IAuthorFindCountResult: IAuthorFindCountResult;
+  IAuthorFindByIdResult: IAuthorFindByIdResult;
 };
 
 export const api = {
@@ -32,4 +49,7 @@ export const api = {
     options,
   }),
   findByIdChatFind,
+  authorFind,
+  authorFindCount,
+  authorFindById,
 };

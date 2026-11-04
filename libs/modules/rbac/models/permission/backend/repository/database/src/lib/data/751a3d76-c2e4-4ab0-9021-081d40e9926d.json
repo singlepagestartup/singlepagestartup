@@ -1,0 +1,9 @@
+{
+  "id": "751a3d76-c2e4-4ab0-9021-081d40e9926d",
+  "createdAt": "2026-10-11T21:55:39.468Z",
+  "updatedAt": "2026-10-11T21:55:39.468Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "POST",
+  "path": "/api/rbac/subjects/303302a0-4eb7-4cef-af04-74d7e8e72442/social-module/profiles/[social.profiles.id]/chats/[social.chats.id]/profiles/11571df7-9729-4d77-b4dc-92bcecf353ad/skills"
+}

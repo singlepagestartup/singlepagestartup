@@ -11,7 +11,7 @@ import { app as notificationApp } from "@sps/notification/backend/app/api";
 import { app as rbacApp } from "@sps/rbac/backend/app/api";
 import { app as startupApp } from "@sps/startup/backend/app/api";
 import { app as websiteBuilderApp } from "@sps/website-builder/backend/app/api";
-import { logger } from "@sps/backend-utils";
+import { logger, requestHostRevalidation } from "@sps/backend-utils";
 
 import { exit } from "process";
 import {
@@ -338,18 +338,11 @@ import {
       logger.error("🚀 ~ /api/http-cache/clear error:", error);
     });
 
-  await fetch(
-    HOST_SERVICE_URL + "/api/revalidation/revalidate?path=/&type=layout",
-    {
-      headers: {
-        "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-      },
+  await requestHostRevalidation({ path: "/", type: "layout" }).catch(
+    (error) => {
+      logger.error("Host layout invalidation failed", error);
     },
-  )
-    .then((res) => res.json())
-    .catch((error) => {
-      logger.error("🚀 ~ /api/revalidation/revalidate error:", error);
-    });
+  );
 
   setTimeout(async () => {
     await fetch(HOST_SERVICE_URL)

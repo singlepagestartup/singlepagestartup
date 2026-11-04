@@ -1,8 +1,17 @@
 ############################
-# Envs
+# Secrets
 ############################
-.env*
-!.env.example
+**/.env*
+**/*.env
+**/*.env.*
+!**/.env.example
+!**/*.env.example
+**/*.pem
+**/*.pem.base64
+**/*.key
+**/*-wallet.txt
+**/.aws
+**/.ssh
 
 ############################
 # Local services

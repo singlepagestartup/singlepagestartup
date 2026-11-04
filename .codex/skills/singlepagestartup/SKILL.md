@@ -1,27 +1,23 @@
 ---
-name: "singlepagestartup"
-description: "Starts, resumes, or updates the quality-gated pre-development workflow, reconciles relevant GitHub changes before each invocation, asks for missing operator facts, obtains required approvals, and maintains its living artifacts."
+name: singlepagestartup
+description: Подготовить или продолжить работу Studio в выбранном разделе.
 ---
 
 # singlepagestartup
 
-Canonical source: `.agents/workflows/pre-development.md`.
+Полностью прочитайте `.agents/workflows/pre-development.md`. Передайте параметры
+оператора `--section`, `--product`, `--skip`, `--complete` или `--next` в
+`npm run singlepagestartup -- ...`. Без параметров продолжайте сохранённую работу.
+Определяйте возможности по `.agents/tools/providers/codex.yaml`. Возвращённый
+раздел определяет текущую работу: диагностика и история проверки не перемещают
+его и не требуют завершить предыдущие этапы. Запросы обычным языком используют
+тот же процесс. Документы и ответы оператору пишите на русском.
 
-Read the canonical workflow completely and execute it in the current Codex
-thread. Resolve provider-neutral capabilities through
-`.agents/tools/providers/codex.yaml`. Run the canonical
-`singlepagestartup:github:check` preflight without a caller-selected layer,
-read the durable stage cursor, then run
-`npm run singlepagestartup:pipeline:check -- --format text` and repair its gaps
-before accepting the stage or launching an owner. Both commands use the shared
-repository-layer resolver; treat the reported layer as authoritative and never
-bypass it with a stale local comparison. Natural-language requests to start,
-continue, inspect, or change the active project before engineering route to
-this skill.
+## Редактура текста
 
-## Final editorial pass
+Перед сохранением документов и ответом пользователю применяйте навык `unslop`
+по `.agents/contracts/editorial-pass.md`.
 
-When this skill writes or returns prose intended for a person, load the project
-`unslop` skill and apply `.agents/contracts/editorial-pass.md` after the
-canonical workflow is complete. Preserve exact facts, evidence, identifiers,
-paths, commands, required structure, and approval state.
+Для структуры документов и связей материалов применять `.agents/workflows/pre-development.md` и `.agents/references/materials.md`: фиксированные разделы шаблонов, полный контекст проекта и продукта, привязка к аудитории и этапу CJM. Результат каждого материала проверять по пути до действия из продаж. Данные исследований видны в Studio; внутренние ссылки ведут на истории и их разделы.
+
+Для подбора тем и подготовки статей прочитать `.agents/references/seo-articles.md`. Одна статья отвечает на один вопрос одного читателя и ведёт к действию своего этапа CJM. Исследование, текст и производные форматы готовит агент; сведения и выводы доступны в истории статьи Studio.

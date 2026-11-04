@@ -1,0 +1,27 @@
+{
+  "id": "rbac.subject.me-social-module-profile-id-chat-id-thread-create-form-ai-chat",
+  "title": "me-social-module-profile-id-chat-id-thread-create-form-ai-chat",
+  "description": "Current Subject action and participant context.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "subject",
+    "variant": "me-social-module-profile-id-chat-id-thread-create-form-ai-chat"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "rbac.subject",
+    "pageName": "rbac",
+    "variantName": "me-social-module-profile-id-chat-id-thread-create-form-ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

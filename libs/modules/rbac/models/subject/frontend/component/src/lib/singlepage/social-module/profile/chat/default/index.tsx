@@ -1,4 +1,5 @@
 import { IComponentProps } from "./interface";
+import { Component as ChildComponent } from "./Component";
 import Client from "./client";
 import Server from "./server";
 import { Provider } from "@sps/rbac/models/subject/sdk/client";
@@ -8,6 +9,11 @@ import { Suspense } from "react";
 import { Skeleton } from "./Skeleton";
 
 export function Component(props: IComponentProps) {
+  if (props.dataSource === "props") {
+    return props.socialModuleChat ? (
+      <ChildComponent {...props} socialModuleChat={props.socialModuleChat} />
+    ) : null;
+  }
   const Comp: any = props.isServer ? Server : Client;
 
   return (

@@ -1,11 +1,11 @@
 const languages = [
   {
-    title: "English",
-    code: "en",
-  },
-  {
     title: "Russian",
     code: "ru",
+  },
+  {
+    title: "English",
+    code: "en",
   },
 ];
 

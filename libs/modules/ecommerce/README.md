@@ -7,7 +7,8 @@ The Ecommerce module manages product catalogs, stores, orders, and shopping cart
 ## Layering Boundary
 
 - Ecommerce provides reusable domain models/relations and UI primitives for product/order/cart data.
-- Authenticated cart/product orchestration belongs to RBAC subject surfaces (`rbac > ecommerce`).
+- Purchasing scenarios belong to public RBAC Widget variants; RBAC Subject owns the current session, private cart queries and purchase actions (`rbac > ecommerce`).
+- Product data, entity presentation and commercial calculations remain Ecommerce capabilities. Host contains no parallel Ecommerce Product/Order/Widget registries.
 - Ecommerce must not import RBAC subject implementation code (no reverse dependency from ecommerce to rbac).
 
 ### It solves the following tasks:

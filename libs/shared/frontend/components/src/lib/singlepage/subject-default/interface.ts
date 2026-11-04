@@ -6,6 +6,8 @@ export interface IComponentProps<M extends { id: string }, V>
   extends ISpsComponentBase {
   variant: V;
   data: M;
+  /** Render the Subject supplied by the owning reader without another read. */
+  dataSource?: "api" | "props";
   apiProps?: {
     params?: IFindByIdProps["params"];
     options?: IFindByIdProps["options"];

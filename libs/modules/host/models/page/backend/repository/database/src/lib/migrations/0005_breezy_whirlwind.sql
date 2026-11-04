@@ -1,0 +1,1 @@
+ALTER TABLE "sps_h_page" DROP COLUMN "indexing";

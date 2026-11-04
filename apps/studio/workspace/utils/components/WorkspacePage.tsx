@@ -1,25 +1,28 @@
-import { documentConfirmation } from "../../../../../tools/studio/workspace/document";
 import type { IWorkspacePageView } from "../pages";
 import { MarkdownDocument } from "./ArtifactBrowser";
-import { ConfirmationBadge } from "./DocumentStatus";
 import { PresentationPdfDownload } from "./PresentationPdfDownload";
 
 export function WorkspacePage({
   page,
   hideTitle = false,
-  hideConfirmation = false,
   resolveLink,
+  navigationHref,
 }: {
   page: IWorkspacePageView;
   hideTitle?: boolean;
   hideConfirmation?: boolean;
+  navigationHref?: string;
   resolveLink?: (url: string) => string | { href: string; target: "_top" };
 }) {
   const Component = page.Component;
   if (Component) {
     const content = (
       <div className="overflow-x-auto">
-        <Component text={page.text} />
+        <Component
+          text={page.text}
+          navigationHref={navigationHref}
+          resolveLink={resolveLink}
+        />
       </div>
     );
     return page.export === "pdf" ? (
@@ -32,15 +35,7 @@ export function WorkspacePage({
   }
   if (page.kind === "markdown")
     return (
-      <article className="space-y-5 p-6 md:p-10">
-        {!hideConfirmation && (
-          <ConfirmationBadge
-            confirmation={
-              page.confirmation ??
-              documentConfirmation(page.markdown ?? "", page.layer)
-            }
-          />
-        )}
+      <article className="space-y-5 p-6 md:p-10 md:pt-6">
         <MarkdownDocument
           baseUrl={page.url}
           hideTitle={hideTitle}
@@ -99,8 +94,12 @@ export function WorkspacePage({
     );
   return (
     <div className="p-6">
-      <a className="text-teal-700 underline" href={page.url} download>
-        {page.title} — Download file
+      <a
+        className="text-[var(--workspace-brand-muted)] underline"
+        href={page.url}
+        download
+      >
+        {page.title} — Скачать файл
       </a>
     </div>
   );

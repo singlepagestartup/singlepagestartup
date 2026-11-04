@@ -1,0 +1,16 @@
+{
+  "id": "83d5388f-328e-4bb3-8477-9289be25f4fd",
+  "createdAt": "2026-10-23T21:43:18.762Z",
+  "updatedAt": "2026-10-23T21:43:18.762Z",
+  "variant": "default",
+  "type": "topup",
+  "field": "number",
+  "adminTitle": "Token credit top-up",
+  "slug": "token-credit-topup",
+  "title": {
+    "en": "Tokens",
+    "ru": "Токены"
+  },
+  "prefix": {},
+  "suffix": {}
+}

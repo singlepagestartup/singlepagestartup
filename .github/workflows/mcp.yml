@@ -11,15 +11,20 @@ on:
         required: true
         type: boolean
 
+permissions:
+  contents: read
+
 jobs:
   trigger-service-update:
     name: Update service
     runs-on: ubuntu-latest
+    env:
+      IMAGE_TAG: ${{ inputs.TAG }}
     steps:
       - name: Send webhook for preview service update
         if: ${{ inputs.PRERELEASE == true }}
-        run: curl --fail --silent --show-error --max-time 40 --request POST "${{ secrets.PREVIEW_PORTAINER_MCP_UPDATE_URL }}?tag=${{ inputs.TAG }}"
+        run: curl --fail --silent --show-error --max-time 40 --request POST "${{ secrets.PREVIEW_PORTAINER_MCP_UPDATE_URL }}?tag=${IMAGE_TAG}"
 
       - name: Send webhook for production service update
         if: ${{ inputs.PRERELEASE == false }}
-        run: curl --fail --silent --show-error --max-time 40 --request POST "${{ secrets.PORTAINER_MCP_UPDATE_URL }}?tag=${{ inputs.TAG }}"
+        run: curl --fail --silent --show-error --max-time 40 --request POST "${{ secrets.PORTAINER_MCP_UPDATE_URL }}?tag=${IMAGE_TAG}"

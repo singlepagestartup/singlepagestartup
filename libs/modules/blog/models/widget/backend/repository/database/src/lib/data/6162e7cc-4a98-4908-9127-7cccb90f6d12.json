@@ -1,0 +1,21 @@
+{
+  "id": "6162e7cc-4a98-4908-9127-7cccb90f6d12",
+  "className": "",
+  "createdAt": "2026-10-26T00:13:00.984Z",
+  "updatedAt": "2026-10-27T15:00:27.796Z",
+  "variant": "article-overview-linked",
+  "adminTitle": "База знаний для ИИ",
+  "slug": "framework-reviewed-linked-knowledge",
+  "title": {
+    "en": "AI knowledge base",
+    "ru": "База знаний для ИИ"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "",
+    "ru": ""
+  }
+}

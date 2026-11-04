@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Work with Analytic.",
+    "ru": "Работайте с Analytic."
+  },
+  "subtitle": {
+    "en": "Foundation",
+    "ru": "Основа"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Metric records and widgets for presenting their values.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Записи метрик и Widgets для отображения их значений.\"}]}]}"
+  },
+  "anchor": "module-analytic",
+  "className": "@5xl:grid-cols-2",
+  "id": "b1d08a80-899c-4e0d-927b-a8fcb3cc1a19",
+  "createdAt": "2026-10-24T01:06:13.813Z",
+  "updatedAt": "2026-10-24T01:06:13.813Z",
+  "variant": "content-definition-grid-page",
+  "adminTitle": "Work with Analytic.",
+  "slug": "framework-journey-guide-analytic-overview"
+}

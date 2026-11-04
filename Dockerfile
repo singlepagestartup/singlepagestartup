@@ -1,11 +1,11 @@
-FROM node:24.21.0-bookworm
+FROM node:24.22.2-bookworm
 
 # Keep in step with the bun package version in package-lock.json.
-ARG BUN_VERSION=1.2.5
+ARG BUN_VERSION=1.3.6
 
 RUN apt-get update && \
     apt-get -qy full-upgrade && \
-    apt-get install -qy curl ffmpeg python3 python3-venv && \
+    apt-get install -qy curl ffmpeg poppler-utils python3 python3-venv && \
     curl -fsSL https://bun.sh/install | BUN_INSTALL=/usr/local bash -s "bun-v$BUN_VERSION" && \
     test "$(bun --version)" = "$BUN_VERSION" && \
     apt-get clean && rm -rf /var/lib/apt/lists/*

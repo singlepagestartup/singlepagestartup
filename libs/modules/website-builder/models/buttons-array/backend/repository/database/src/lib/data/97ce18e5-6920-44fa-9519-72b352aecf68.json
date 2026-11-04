@@ -1,0 +1,17 @@
+{
+  "id": "97ce18e5-6920-44fa-9519-72b352aecf68",
+  "createdAt": "2026-10-26T00:11:17.237Z",
+  "updatedAt": "2026-10-27T15:00:20.355Z",
+  "variant": "footer-column",
+  "className": "",
+  "title": {
+    "en": "Materials",
+    "ru": "Материалы"
+  },
+  "description": {
+    "en": "",
+    "ru": ""
+  },
+  "adminTitle": "Материалы",
+  "slug": "framework-reviewed-footer-2"
+}

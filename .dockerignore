@@ -29,6 +29,8 @@ tmp
 **/*.pem.base64
 **/*.key
 **/*-wallet.txt
+**/.aws
+**/.ssh
 
 ############################
 # AI development artifacts

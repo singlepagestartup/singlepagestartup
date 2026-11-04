@@ -1,0 +1,21 @@
+{
+  "id": "360d595a-8a3a-49ec-84b9-18fdede77004",
+  "className": "",
+  "createdAt": "2026-10-26T00:12:58.739Z",
+  "updatedAt": "2026-10-27T15:00:27.343Z",
+  "variant": "article-overview-linked",
+  "adminTitle": "Страницы и навигация",
+  "slug": "framework-reviewed-linked-host",
+  "title": {
+    "en": "Pages and navigation",
+    "ru": "Страницы и навигация"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "",
+    "ru": ""
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Help",
+    "ru": "Помощь"
+  },
+  "subtitle": {},
+  "url": "/ai-chat/help",
+  "className": "",
+  "id": "caafd7d6-b9f4-49b6-a22e-da4b3aae3541",
+  "createdAt": "2026-10-27T08:55:55.223Z",
+  "updatedAt": "2026-10-27T15:00:15.906Z",
+  "variant": "footer-link",
+  "adminTitle": "Помощь",
+  "slug": "ai-chat-editable-content-ai-chat-reset-password-links-0"
+}

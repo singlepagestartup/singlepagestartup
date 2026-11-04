@@ -1,0 +1,97 @@
+{
+  "schema": {
+    "module": "crm",
+    "entity": "option",
+    "entityType": "model",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "adminTitle",
+        "label": "Admin Title",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "title",
+        "label": "Title",
+        "kind": "jsonb",
+        "nullable": true,
+        "default": {}
+      },
+      {
+        "key": "slug",
+        "label": "Slug",
+        "kind": "text",
+        "nullable": false
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "1aba319e-ac3a-420c-acbe-6f1be9ef0124",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "className": null,
+      "variant": "default",
+      "adminTitle": "option example 1",
+      "title": {
+        "en": "option example 1"
+      },
+      "slug": "option-example-1"
+    },
+    {
+      "id": "d66eaccb-bfe0-4b87-a484-a2ebbfa2049a",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "className": null,
+      "variant": "default",
+      "adminTitle": "option example 2",
+      "title": {
+        "en": "option example 2"
+      },
+      "slug": "option-example-2"
+    },
+    {
+      "id": "09197f96-b109-46ca-a6fc-6d7d82c92a04",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "className": null,
+      "variant": "default",
+      "adminTitle": "option example 3",
+      "title": {
+        "en": "option example 3"
+      },
+      "slug": "option-example-3"
+    }
+  ]
+}

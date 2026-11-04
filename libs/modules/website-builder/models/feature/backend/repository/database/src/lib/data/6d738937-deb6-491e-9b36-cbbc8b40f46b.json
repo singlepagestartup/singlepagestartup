@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "6d738937-deb6-491e-9b36-cbbc8b40f46b",
+  "createdAt": "2026-10-27T08:40:57.576Z",
+  "updatedAt": "2026-10-27T14:59:39.869Z",
+  "variant": "demo-document",
+  "title": {
+    "en": "Design.md",
+    "ru": "Дизайн.md"
+  },
+  "subtitle": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The design describes pages, blocks and the booking form. Discuss what a visitor should see on the studio's home page.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"В дизайне описаны страницы, блоки и форма записи. Обсудите, что посетитель должен увидеть на главной странице мастерской.\"}]}]}"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"## Pages\\nHome page, workshop schedule and class booking.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"## Home page blocks\\nStudio photos, the first class programme, participants' work and upcoming dates.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"## Booking form\\nName, contact details and selected date. Visitors see the number of places in the group before submitting an enquiry.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"## Страницы\\nГлавная, расписание мастер-классов и запись на занятие.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"## Блоки главной страницы\\nФотографии мастерской, программа первого занятия, работы участников и ближайшие даты.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"## Форма записи\\nИмя, контакт для связи и выбранная дата. До отправки заявки посетитель видит, сколько мест в группе.\"}]}]}"
+  },
+  "adminTitle": "AI Chat: demo-design",
+  "slug": "ai-chat-editable-demo-design"
+}

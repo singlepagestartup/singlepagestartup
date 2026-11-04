@@ -1,7 +1,7 @@
-import { IComponentPropsExtended } from "../interface";
+import { IExternalWidgetProps } from "../interface";
 import { Component as FileStorageModuleWidget } from "@sps/file-storage/models/widget/frontend/component";
 
-export function Component(props: IComponentPropsExtended) {
+export function Component(props: IExternalWidgetProps) {
   return (
     <FileStorageModuleWidget
       isServer={props.isServer}
