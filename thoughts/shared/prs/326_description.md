@@ -9,8 +9,9 @@ and runs the application as the existing `node` user with uid/gid 1000.
 ## Changes
 
 - Root and LLM build contexts exclude credentials, including nested env files
-  and local AWS/SSH state. Root builds retain the four tracked runtime defaults,
-  example env files and the two helpers used by `create_env.sh`.
+  local AWS/SSH state and checkout-owned MCP client connections. Root builds
+  retain the four tracked runtime defaults, example env files and the two
+  helpers used by `create_env.sh`.
 - Pin the application image to Node 24.22.2 on Bookworm, Bun to 1.3.6 from
   `package-lock.json`, and the local Redis image to 8.10.3 on Trixie.
 - Install Bun in `/usr/local`, copy application files with owner 1000:1000 and
@@ -24,10 +25,19 @@ and runs the application as the existing `node` user with uid/gid 1000.
 
 The main update contained one conflict in the Docker dependency installation
 step. The resolved version includes Poppler and the pinned Bun installation.
-Docker build checks and Ansible syntax checks passed. Both synthetic build
-contexts excluded their credential fixtures and retained only the expected
-defaults and helpers. All 11 Next static synchronization and service-readiness
-tests passed. Runtime image checks are in progress.
+- Docker build checks and Ansible syntax checks passed.
+- Both synthetic build contexts excluded their credential fixtures and retained
+  the expected defaults and helpers. A separate context check excluded generated
+  MCP client configurations and retained their public examples.
+- All 11 static synchronization and service-readiness tests passed.
+- The application Dockerfile through runtime dependency installation built
+  successfully. Node 24.22.2, Bun 1.3.6, Poppler and uid/gid 1000 were verified.
+- The local Redis image ran version 8.10.3 and passed authenticated set/get.
+- Under uid 1000, upload write/delete and real Next static synchronization passed
+  on a new volume. An existing root-owned volume rejected writes, then passed
+  synchronization after ownership transfer and preserved the older chunk.
+- The [full image verification run](https://github.com/singlepagestartup/singlepagestartup/actions/runs/41831086895)
+  uses `VERIFY_ONLY=true`.
 
 ## Downstream migration
 

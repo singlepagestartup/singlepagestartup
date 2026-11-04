@@ -39,6 +39,14 @@ tmp
 .claude
 .codex
 .cursor
+.mcp.json
+.opencode
+opencode.json
+opencode.jsonc
+.kimi-code
+.mimocode
+mimocode.json
+mimocode.jsonc
 thoughts
 
 ############################
