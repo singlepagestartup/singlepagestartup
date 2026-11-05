@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Create a product",
+    "ru": "Создать продукт"
+  },
+  "subtitle": {},
+  "url": "/ai-chat/create-account",
+  "className": "",
+  "id": "b38ffd02-024c-4a29-89fd-7bb68f63802b",
+  "createdAt": "2026-10-26T00:11:15.762Z",
+  "updatedAt": "2026-10-27T15:00:14.467Z",
+  "variant": "action",
+  "adminTitle": "Создать продукт",
+  "slug": "framework-reviewed-nav-start-0"
+}

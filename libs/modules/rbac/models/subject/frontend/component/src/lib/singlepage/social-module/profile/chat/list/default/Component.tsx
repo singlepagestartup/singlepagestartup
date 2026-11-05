@@ -11,6 +11,7 @@ export function Component(props: IComponentPropsExtended) {
       className={props.className}
       socialModuleProfile={props.socialModuleProfile}
       socialModuleChats={props.socialModuleChats}
+      currentSocialModuleChatId={props.currentSocialModuleChatId}
     />
   );
 }

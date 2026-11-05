@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Start with the business decision.",
+    "ru": "Начните с бизнес-решения."
+  },
+  "subtitle": {
+    "en": "AI Chat → Code Framework",
+    "ru": "AI-чат → Code Framework"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Tell AI Chat who the product serves, what it offers and how a customer completes the main task. Review the documents and give them to your coding agent as context for choosing modules and making changes.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Расскажите AI-чату, для кого продукт, что он предлагает и как клиент решает основную задачу. Проверьте документы и передайте их coding agent для выбора модулей и доработки продукта.\"}]}]}"
+  },
+  "anchor": "module-preparation",
+  "className": "",
+  "id": "472bd36f-fc10-43d6-bc7b-b6b9ca9aefbe",
+  "createdAt": "2026-10-24T01:06:16.761Z",
+  "updatedAt": "2026-10-24T01:06:16.761Z",
+  "variant": "content-offer",
+  "adminTitle": "Start with the business decision.",
+  "slug": "framework-journey-modules-preparation"
+}

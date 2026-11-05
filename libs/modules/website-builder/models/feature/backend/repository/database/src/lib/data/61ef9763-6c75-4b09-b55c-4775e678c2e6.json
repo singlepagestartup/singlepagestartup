@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "61ef9763-6c75-4b09-b55c-4775e678c2e6",
+  "createdAt": "2026-10-26T00:11:24.569Z",
+  "updatedAt": "2026-10-27T14:59:37.866Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "blog",
+    "ru": "blog"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Explain the product in an article and link to the offer.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Объясните продукт в статье и добавьте переход к предложению.\"}]}]}"
+  },
+  "adminTitle": "blog",
+  "slug": "framework-reviewed-article-ecommerce-connections-feature-2"
+}

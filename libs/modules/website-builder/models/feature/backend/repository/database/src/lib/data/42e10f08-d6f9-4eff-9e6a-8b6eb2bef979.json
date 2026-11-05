@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "42e10f08-d6f9-4eff-9e6a-8b6eb2bef979",
+  "createdAt": "2026-10-26T00:11:58.240Z",
+  "updatedAt": "2026-10-27T14:59:33.626Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "/brief · Prepare a brief",
+    "ru": "/brief · Подготовить бриф"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Helps describe the product's audience, task and use case. Asks follow-up questions, then turns the answers into a brief.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Помогает описать аудиторию, задачу и сценарий продукта. Задаёт уточняющие вопросы, затем оформляет ответы в бриф.\"}]}]}"
+  },
+  "adminTitle": "/brief · Подготовить бриф",
+  "slug": "framework-reviewed-article-social-profile-skills-feature-0"
+}

@@ -1,0 +1,129 @@
+{
+  "schema": {
+    "module": "website-builder",
+    "entity": "feature",
+    "entityType": "model",
+    "fields": [
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "title",
+        "label": "Title",
+        "kind": "jsonb",
+        "nullable": true,
+        "default": {}
+      },
+      {
+        "key": "subtitle",
+        "label": "Subtitle",
+        "kind": "jsonb",
+        "nullable": true,
+        "default": {}
+      },
+      {
+        "key": "description",
+        "label": "Description",
+        "kind": "jsonb",
+        "nullable": true,
+        "default": {}
+      },
+      {
+        "key": "adminTitle",
+        "label": "Admin Title",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "slug",
+        "label": "Slug",
+        "kind": "text",
+        "nullable": false
+      }
+    ]
+  },
+  "records": [
+    {
+      "className": null,
+      "id": "5b2ce075-4aad-4ee8-ade1-b42cbe5c972f",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "title": {
+        "en": "feature example 1"
+      },
+      "subtitle": {
+        "en": "feature example 1"
+      },
+      "description": {
+        "en": "feature example 1"
+      },
+      "adminTitle": "feature example 1",
+      "slug": "feature-example-1"
+    },
+    {
+      "className": null,
+      "id": "43ae1965-ff03-4d36-adc9-bde97b4fd87e",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "title": {
+        "en": "feature example 2"
+      },
+      "subtitle": {
+        "en": "feature example 2"
+      },
+      "description": {
+        "en": "feature example 2"
+      },
+      "adminTitle": "feature example 2",
+      "slug": "feature-example-2"
+    },
+    {
+      "className": null,
+      "id": "0ebab4ce-80f5-41ea-a789-e3798063eb40",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "title": {
+        "en": "feature example 3"
+      },
+      "subtitle": {
+        "en": "feature example 3"
+      },
+      "description": {
+        "en": "feature example 3"
+      },
+      "adminTitle": "feature example 3",
+      "slug": "feature-example-3"
+    }
+  ]
+}

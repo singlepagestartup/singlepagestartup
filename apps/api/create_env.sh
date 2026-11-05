@@ -91,8 +91,15 @@ MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET=$(generate_secret 32) || exit 1
 add_env "MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET" $MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET
 add_env "MCP_SERVICE_URL" "http://127.0.0.1:3001/mcp"
 
+HOST_SERVICE_REVALIDATION_SECRET=$(generate_secret 32) || exit 1
+add_env "HOST_SERVICE_REVALIDATION_SECRET" $HOST_SERVICE_REVALIDATION_SECRET
+
 add_env "FILE_STORAGE_PROVIDER" "local"
 add_env "FILE_STORAGE_MAX_UPLOAD_BYTES" "52428800"
+
+# Local development keeps the dummy provider, which marks an invoice paid
+# without a payment provider. Deployments set the list in tools/deployer/.env.
+add_env "ALLOWED_BILLING_SERVICE_PROVIDERS" "stripe,0xprocessing,payselection,cloudpayments,tiptoppay,dummy"
 
 add_env "LLM_SERVICE_URL" "http://localhost:8765"
 add_env "KNOWLEDGE_EMBEDDING_PROVIDER" "llm"

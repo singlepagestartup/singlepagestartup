@@ -1,10 +1,44 @@
 {
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "Product catalog — SinglePageStartup",
+        "ru": "Каталог продуктов — SinglePageStartup"
+      },
+      "description": {
+        "en": "Explore SinglePageStartup products, their descriptions and available catalog options.",
+        "ru": "Изучите продукты SinglePageStartup, их описание и доступные варианты в каталоге."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "Product catalog — SinglePageStartup",
+        "ru": "Каталог продуктов — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "Product catalog — SinglePageStartup",
+        "ru": "Каталог продуктов — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Explore SinglePageStartup products, their descriptions and available catalog options.",
+        "ru": "Изучите продукты SinglePageStartup, их описание и доступные варианты в каталоге."
+      },
+      "opengraphDescription": {
+        "en": "Explore SinglePageStartup products, their descriptions and available catalog options.",
+        "ru": "Изучите продукты SinglePageStartup, их описание и доступные варианты в каталоге."
+      }
+    }
+  },
   "id": "563182ee-1135-45a2-ac4a-32304683ab17",
   "title": "Ecommerce",
   "url": "/ecommerce",
   "description": "Description",
   "createdAt": "2025-05-07T17:20:27.988Z",
-  "updatedAt": "2025-11-15T09:32:28.406Z",
+  "updatedAt": "2026-10-30T22:25:07.008Z",
   "variant": "default",
   "className": null,
   "language": "en",

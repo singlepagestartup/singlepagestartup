@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "b2e9180d-f92d-4f40-a616-1a9b2cfaca01",
+  "createdAt": "2026-10-26T00:11:55.463Z",
+  "updatedAt": "2026-10-27T14:59:51.541Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Knowledge",
+    "ru": "Knowledge"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Sources for the AI assistant. In ordinary AI Chat, search them by including @knowledge.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Источники для ИИ-помощника. В обычном AI Chat поиск по ним включается через @knowledge.\"}]}]}"
+  },
+  "adminTitle": "Knowledge",
+  "slug": "framework-reviewed-article-social-connections-feature-3"
+}

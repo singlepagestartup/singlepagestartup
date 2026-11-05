@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Module structure",
+    "ru": "Устройство модуля"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Page defines the address and composition; Layout defines the shared layout; Metadata stores titles and descriptions. Widget connects a page to specific blocks. Data and operations stay in their owning modules.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Page задаёт адрес и состав страницы, Layout — общий макет, Metadata — заголовки и описания. Widget соединяет страницу с конкретными блоками. Данные и операции остаются в модулях, которым они принадлежат.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "117506ab-29d7-4b87-8f87-529cc3cbbbca",
+  "createdAt": "2026-10-26T00:11:41.449Z",
+  "updatedAt": "2026-10-27T14:58:48.153Z",
+  "variant": "content-rich",
+  "adminTitle": "Устройство модуля",
+  "slug": "framework-reviewed-article-host-technical"
+}

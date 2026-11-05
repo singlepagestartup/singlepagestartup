@@ -1,0 +1,21 @@
+{
+  "componentName": "social.widget",
+  "pageName": "social",
+  "variantName": "author-list-default",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "social.widget.author-list-default",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "social/widget/singlepage/author-list-default",
+    "sps.figma.component": "social.widget",
+    "sps.figma.variant": "author-list-default",
+    "sps.source.module": "social",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "author-list-default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/social/widget/singlepage/author-list-default/Component.tsx",
+    "sps.code.story": "apps/studio/modules/social/widget/singlepage/author-list-default/Component.stories.tsx"
+  }
+}

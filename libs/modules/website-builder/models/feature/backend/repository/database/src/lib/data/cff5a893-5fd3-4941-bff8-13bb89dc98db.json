@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "cff5a893-5fd3-4941-bff8-13bb89dc98db",
+  "createdAt": "2026-10-27T08:40:54.948Z",
+  "updatedAt": "2026-10-27T14:59:56.207Z",
+  "variant": "landing-introduction",
+  "title": {
+    "en": "Your notes, photos and plans in one project chat",
+    "ru": "Ваши заметки, фотографии и планы — в чате проекта"
+  },
+  "subtitle": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"AI assistant for your business idea\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"ИИ-помощник для вашей бизнес-идеи\"}]}]}"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Upload your materials or describe your idea. The AI assistant will ask questions and help you prepare a business description, strategy, brand, design and products. Open documents, discuss changes and use saved knowledge in new tasks.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Documents can be edited, downloaded and used outside AI Chat.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Загрузите свои материалы или опишите идею. ИИ-помощник задаст вопросы и поможет подготовить описание бизнеса, стратегию, бренд, дизайн и продукты. Открывайте документы, обсуждайте изменения и используйте сохранённые знания в новых задачах.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Документы можно редактировать, скачивать и использовать за пределами AI Chat.\"}]}]}"
+  },
+  "adminTitle": "AI Chat: hero",
+  "slug": "ai-chat-editable-hero"
+}

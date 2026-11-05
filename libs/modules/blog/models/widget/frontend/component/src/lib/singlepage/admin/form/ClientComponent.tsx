@@ -50,7 +50,7 @@ export function Component(props: IComponentPropsExtended) {
   return (
     <ParentAdminForm<IModel, typeof variant>
       {...props}
-      module="website-builder"
+      module="blog"
       form={form}
       id={props.data?.id}
       onSubmit={onSubmit}
@@ -148,6 +148,12 @@ export function Component(props: IComponentPropsExtended) {
           ? props.widgetsToCategories({
               data: props.data,
               isServer: props.isServer,
+            })
+          : null}
+        {props.widgetsToWebsiteBuilderModuleWidgets
+          ? props.widgetsToWebsiteBuilderModuleWidgets({
+              data: props.data,
+              isServer: false,
             })
           : null}
       </div>

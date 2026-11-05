@@ -1,0 +1,94 @@
+{
+  "id": "framework",
+  "title": "Host Page / framework",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Code Framework landing with preparation, capabilities, module overview, setup, architecture Articles and the existing functional examples.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "blocks": [
+    {
+      "id": "website-builder.widget.content-feature-split",
+      "path": "../../../../website-builder/widget/singlepage/content-feature-split"
+    },
+    {
+      "id": "website-builder.widget.content-definition-grid",
+      "path": "../../../../website-builder/widget/singlepage/content-definition-grid"
+    },
+    {
+      "id": "website-builder.widget.content-steps",
+      "path": "../../../../website-builder/widget/singlepage/content-steps"
+    },
+    {
+      "id": "website-builder.widget.content-offer",
+      "path": "../../../../website-builder/widget/singlepage/content-offer"
+    },
+    {
+      "id": "website-builder.widget.content-collection",
+      "path": "../../../../website-builder/widget/singlepage/content-collection"
+    },
+    {
+      "id": "website-builder.widget.content-faq",
+      "path": "../../../../website-builder/widget/singlepage/content-faq"
+    },
+    {
+      "id": "website-builder.widget.content-feature-find-row",
+      "path": "../../../../website-builder/widget/singlepage/content-feature-find-row"
+    },
+    {
+      "id": "website-builder.feature.definition-item",
+      "path": "../../../../website-builder/feature/singlepage/definition-item"
+    },
+    {
+      "id": "website-builder.feature.step",
+      "path": "../../../../website-builder/feature/singlepage/step"
+    },
+    {
+      "id": "website-builder.feature.copy-request",
+      "path": "../../../../website-builder/feature/singlepage/copy-request"
+    },
+    {
+      "id": "blog.article.card",
+      "path": "../../../../blog/article/singlepage/card"
+    },
+    {
+      "id": "ecommerce.widget.product-find-card",
+      "path": "../../../../ecommerce/widget/singlepage/product-find-card"
+    },
+    {
+      "id": "ecommerce.widget.category-find-card",
+      "path": "../../../../ecommerce/widget/singlepage/category-find-card"
+    },
+    {
+      "id": "website-builder.slider.default",
+      "path": "../../../../website-builder/slider/singlepage/default"
+    },
+    {
+      "id": "rbac.subject.me-crm-module-form-default",
+      "path": "../../../../rbac/subject/singlepage/me-crm-module-form-default"
+    },
+    {
+      "id": "website-builder.widget.content-hero",
+      "path": "../../../../website-builder/widget/singlepage/content-hero"
+    },
+    {
+      "id": "website-builder.widget.content-feature-split-reverse",
+      "path": "../../../../website-builder/widget/singlepage/content-feature-split-reverse"
+    },
+    {
+      "id": "website-builder.feature.definition-checklist",
+      "path": "../../../../website-builder/feature/singlepage/definition-checklist"
+    }
+  ],
+  "figma": {
+    "componentName": "host.page",
+    "pageName": "host",
+    "variantName": "framework",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

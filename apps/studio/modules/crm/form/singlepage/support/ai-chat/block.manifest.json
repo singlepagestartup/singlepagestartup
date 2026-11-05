@@ -1,0 +1,27 @@
+{
+  "id": "crm.form.support-ai-chat",
+  "title": "support-ai-chat",
+  "description": "Support form display with a Subject action slot.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "crm",
+    "entityType": "model",
+    "entity": "form",
+    "variant": "support-ai-chat"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "crm.form",
+    "pageName": "crm",
+    "variantName": "support-ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

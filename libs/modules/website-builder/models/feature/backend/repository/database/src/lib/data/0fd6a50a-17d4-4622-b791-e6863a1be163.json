@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "0fd6a50a-17d4-4622-b791-e6863a1be163",
+  "createdAt": "2026-10-26T00:11:48.660Z",
+  "updatedAt": "2026-10-27T14:59:24.262Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "ecommerce",
+    "ru": "ecommerce"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Add images to offers.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Добавьте изображения к предложениям.\"}]}]}"
+  },
+  "adminTitle": "ecommerce",
+  "slug": "framework-reviewed-article-file-storage-connections-feature-1"
+}

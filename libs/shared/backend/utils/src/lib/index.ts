@@ -1,4 +1,9 @@
 export { util as authorization } from "./authorization";
+export { estimateAiContextTokens } from "./ai-context-tokens";
+export {
+  assertKnowledgeAttachmentBytes,
+  type IKnowledgeAttachmentBytesProps,
+} from "./knowledge-attachments";
 export { util as logger } from "./logger";
 export { util as websocketManager } from "./websocket-manager";
 export { util as getHttpErrorType } from "./http-error";
@@ -19,3 +24,17 @@ export {
   isBcryptHash,
   isBcryptSalt,
 } from "./bcrypt-columns";
+export {
+  getProfileDocumentSkillSlug,
+  getAIChatDocumentForSkill,
+  getPrivateAIChatSkillProfileId,
+} from "./ai-chat-document-skills";
+export {
+  validateWebhookIdentifiers,
+  type IValidateWebhookIdentifiersProps,
+} from "./webhook-identifiers";
+
+export {
+  requestHostRevalidation,
+  type IHostRevalidationRequest,
+} from "./host-revalidation";

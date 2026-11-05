@@ -1,0 +1,14 @@
+{
+  "id": "5a6b19b2-0afa-4dad-a182-2bf2e3204a67",
+  "createdAt": "2026-10-23T20:18:03.861Z",
+  "updatedAt": "2026-10-23T20:18:03.861Z",
+  "variant": "footer-column",
+  "className": "",
+  "title": {
+    "en": "Products",
+    "ru": "Продукты"
+  },
+  "description": {},
+  "adminTitle": "Products",
+  "slug": "framework-footer-products"
+}

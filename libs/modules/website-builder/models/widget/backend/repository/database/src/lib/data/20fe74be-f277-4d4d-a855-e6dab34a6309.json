@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "One course's materials in different sections",
+    "ru": "Материалы одного курса в разных разделах"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The cover appears in the catalogue, photos appear on the course page and a PDF is used in learning materials. See how the same files serve several tasks.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Storing a file does not automatically make it private. Paid or personal materials need a configured delivery mechanism and access checks. Storage location and allowed sizes depend on project configuration.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Обложка появляется в каталоге, фотографии — на странице курса, а PDF используется в учебных материалах. Посмотрите, как одни и те же файлы участвуют в нескольких задачах.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Хранение файла не делает его автоматически закрытым для посторонних. Для платных или личных материалов нужно отдельно настроить способ выдачи и проверить доступ. Место хранения и допустимые размеры зависят от конфигурации проекта.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "20fe74be-f277-4d4d-a855-e6dab34a6309",
+  "createdAt": "2026-10-26T00:11:47.384Z",
+  "updatedAt": "2026-10-27T14:58:52.003Z",
+  "variant": "content-rich",
+  "adminTitle": "Материалы одного курса в разных разделах",
+  "slug": "framework-reviewed-article-file-storage-example"
+}

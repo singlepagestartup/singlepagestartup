@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Add features as your product grows",
+    "ru": "Добавляйте возможности по мере роста продукта"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Social owns social records and relations. Other modules extend particular use cases; you do not need to connect them all at once.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Social отвечает за социальные записи и связи. Остальные модули дополняют конкретный сценарий — их не нужно подключать все сразу.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "2765803e-317b-4ac6-8796-e09a20b1bd81",
+  "createdAt": "2026-10-26T00:11:54.669Z",
+  "updatedAt": "2026-10-27T14:58:52.783Z",
+  "variant": "content-rich",
+  "adminTitle": "Добавляйте возможности по мере роста продукта",
+  "slug": "framework-reviewed-article-social-connections"
+}
