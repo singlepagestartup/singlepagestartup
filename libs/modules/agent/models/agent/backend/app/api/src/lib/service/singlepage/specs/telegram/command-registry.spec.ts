@@ -6,7 +6,7 @@
  * Then: system and AI commands are dispatched by an overrideable registry.
  */
 
-import { type ITelegramCommandDefinitionOverride, Service } from "./index";
+import { type ITelegramCommandDefinitionOverride, Service } from "../../index";
 
 class StartupService extends Service {
   protected override getTelegramCommandDefinitions() {

@@ -435,7 +435,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       if (updated) return updated;
     }
     throw new Error(
-      "Thread preferences changed concurrently. Retry with the current thread.",
+      "Conflict error. Thread preferences changed concurrently. Retry with the current thread.",
     );
   }
 

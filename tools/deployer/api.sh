@@ -15,7 +15,6 @@ HOST_SERVICE_REVALIDATION_SECRET=$(get_env "$BASH_SOURCE" "HOST_SERVICE_REVALIDA
 SERVICE_NAME=$(get_env "$BASH_SOURCE" "API_SERVICE_NAME")
 SERVICE_SUBDOMAIN=$(get_env "$BASH_SOURCE" "API_SERVICE_SUBDOMAIN")
 FILE_STORAGE_FOLDER=$(get_env_or_default "$BASH_SOURCE" "FILE_STORAGE_FOLDER" "file-storage/dynamic")
-AGENT_CRON_SECRET=$(get_env "$BASH_SOURCE" "AGENT_CRON_SECRET")
 
 PORTAINER_USERNAME=$(get_env "$BASH_SOURCE" "PORTAINER_USERNAME")
 PORTAINER_PASSWORD=$(get_env "$BASH_SOURCE" "PORTAINER_PASSWORD")
@@ -120,12 +119,6 @@ fi
 
 if [ "$1" != "down" ]
 then
-    if [ -z "$AGENT_CRON_SECRET" ]
-    then
-        echo "Error: AGENT_CRON_SECRET must be set before API deployment" >&2
-        exit 1
-    fi
-
     ./domain.sh present $SERVICE_URL $SERVICE_A && \
     ./pull_docker_image.sh "$DOCKER_HUB_URL/$DOCKER_HUB_SERVICE_REPOSITORY" "$ENVIRONMENT_TYPE" && \
     ansible-playbook \
@@ -140,7 +133,6 @@ then
             DATABASE_PASSWORD=$DATABASE_PASSWORD \
             RBAC_JWT_SECRET=$RBAC_JWT_SECRET \
             RBAC_SECRET_KEY=$RBAC_SECRET_KEY \
-            AGENT_CRON_SECRET=$AGENT_CRON_SECRET \
             RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS=$RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS \
             MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET=$MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET \
             MCP_SERVICE_URL=$MCP_SERVICE_URL \
@@ -188,8 +180,7 @@ then
             ENVIRONMENT_TYPE=$ENVIRONMENT_TYPE" && \
     ansible-playbook \
         ./api/set_cron_jobs.yaml \
-        -e "API_SERVICE_URL=$SERVICE_URL \
-            AGENT_CRON_SECRET=$AGENT_CRON_SECRET" && \
+        -e "API_SERVICE_URL=$SERVICE_URL" && \
     ansible-playbook \
         ./api/fill_github.yaml \
         -e "GITHUB_TOKEN=$GITHUB_TOKEN \

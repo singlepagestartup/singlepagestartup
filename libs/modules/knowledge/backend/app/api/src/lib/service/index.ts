@@ -109,7 +109,9 @@ export class KnowledgeService {
     const updated = await this.source.updateSourceWithAttachments(props);
     const source = updated?.source;
     if (!source)
-      throw new Error(`Knowledge Source ${props.sourceId} was not found.`);
+      throw new Error(
+        `Not Found error. Knowledge Source ${props.sourceId} was not found.`,
+      );
     let processingError: string | undefined;
     if (updated?.attachmentsChanged) {
       try {
@@ -139,7 +141,9 @@ export class KnowledgeService {
     const source = await this.source.findSourceById(sourceId);
 
     if (!source) {
-      throw new Error(`Knowledge source ${sourceId} was not found.`);
+      throw new Error(
+        `Not Found error. Knowledge source ${sourceId} was not found.`,
+      );
     }
 
     return this.source.deleteSourceWithDerivedData(sourceId);
@@ -191,7 +195,7 @@ export class KnowledgeService {
     const query = props.query?.trim();
 
     if (!query) {
-      throw new Error("Knowledge search query is required.");
+      throw new Error("Validation error. Knowledge search query is required.");
     }
 
     const sourceIds = Array.isArray(props.sourceIds)
@@ -319,7 +323,7 @@ export class KnowledgeService {
     const source = await this.source.findSourceById(id);
 
     if (!source) {
-      throw new Error(`Knowledge source ${id} was not found.`);
+      throw new Error(`Not Found error. Knowledge source ${id} was not found.`);
     }
 
     const indexer = new KnowledgeIndexer({
@@ -339,9 +343,12 @@ export class KnowledgeService {
     onSourceSaved?: (sourceId: string) => Promise<void>;
   }) {
     const slug = props.slug.trim();
-    if (!slug) throw new Error("Knowledge learn slug is required.");
+    if (!slug)
+      throw new Error("Validation error. Knowledge learn slug is required.");
     if (!props.content.trim() && !props.fileIds?.length)
-      throw new Error("Knowledge learn content or files are required.");
+      throw new Error(
+        "Validation error. Knowledge learn content or files are required.",
+      );
     if (props.fileIds?.length)
       await this.source.validateAttachments(props.fileIds);
     const source = await this.source.upsertSourceBySlug(

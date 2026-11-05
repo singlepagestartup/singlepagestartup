@@ -28,7 +28,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         throw new Error(`Stored file could not be read: ${response.status}`);
       if (Number(response.headers.get("content-length")) > maxBytes) {
         await response.body?.cancel();
-        throw new Error("Stored file exceeds the byte-read limit.");
+        throw new Error(
+          "Validation error. Stored file exceeds the byte-read limit.",
+        );
       }
       if (!response.body) return Buffer.alloc(0);
       const reader = response.body.getReader();
@@ -40,7 +42,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           if (part.done) break;
           size += part.value.byteLength;
           if (size > maxBytes)
-            throw new Error("Stored file exceeds the byte-read limit.");
+            throw new Error(
+              "Validation error. Stored file exceeds the byte-read limit.",
+            );
           chunks.push(Buffer.from(part.value));
         }
       } finally {
@@ -50,7 +54,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
     const relative = path.normalize(file.file.replace(/^\/+/, ""));
     if (relative.startsWith(".."))
-      throw new Error("Invalid file-storage path.");
+      throw new Error("Validation error. Invalid file-storage path.");
     for (const root of [
       path.join(process.cwd(), "public"),
       path.join(process.cwd(), "apps/api/public"),
@@ -58,13 +62,17 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       try {
         const location = path.join(root, relative);
         if ((await fs.stat(location)).size > maxBytes)
-          throw new Error("Stored file exceeds the byte-read limit.");
+          throw new Error(
+            "Validation error. Stored file exceeds the byte-read limit.",
+          );
         return await fs.readFile(location);
       } catch (error: any) {
         if (error.code !== "ENOENT") throw error;
       }
     }
-    throw new Error("Stored file is missing from file storage.");
+    throw new Error(
+      "Not Found error. Stored file is missing from file storage.",
+    );
   }
 
   async importPath(props: {

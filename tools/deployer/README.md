@@ -187,7 +187,7 @@ openssl rand -hex 32
 
 That applies to `RBAC_SECRET_KEY`, `RBAC_JWT_SECRET`,
 `RBAC_COOKIE_SESSION_SECRET`, `MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET`,
-`AGENT_CRON_SECRET`, `HOST_SERVICE_REVALIDATION_SECRET`, `DATABASE_PASSWORD`,
+`HOST_SERVICE_REVALIDATION_SECRET`, `DATABASE_PASSWORD`,
 `REDIS_PASSWORD`, `TRAEFIK_PASSWORD` and `PORTAINER_PASSWORD`. Do not copy these
 values out of a locally bootstrapped `apps/api/.env` into a deployment; generate
 fresh ones for each environment, and keep production and `PREVIEW_` sets distinct.
@@ -229,7 +229,6 @@ secrets end every session, so plan the window.
 | `REDIS_PASSWORD`                             | follow the coordinated procedure above: update the secret, deploy Redis, API and MCP as one rollout, then force-update `api_api` and `mcp_mcp`                               | cache and KV unavailable for the window                                                                                                                   |
 | `RBAC_JWT_SECRET`                            | rotate in `tools/deployer/.env` and in the GitHub secrets, then deploy API, Telegram and MCP together                                                                        | every access and refresh token is invalidated. It also rotates the MCP OAuth signing key, because the MCP template falls back to this value               |
 | `RBAC_SECRET_KEY`                            | rotate in `tools/deployer/.env` and in the GitHub secrets, then deploy API, Telegram and MCP                                                                                 | this is the full authorization bypass. The middleware also accepts it from an `rbac.secret-key` cookie, so any browser that received it holds a copy      |
-| `AGENT_CRON_SECRET`                          | rotate in `tools/deployer/.env` and in the GitHub secrets, then run `./api.sh up`, which writes the API environment and the server crontab in one run                        | opens only `POST /api/agent/agents/cron`; cron calls are refused between the API restart and the crontab update                                           |
 | `MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET` | rotate and deploy API and MCP together                                                                                                                                       | the API-to-MCP exchange fails until both sides match                                                                                                      |
 | `HOST_SERVICE_REVALIDATION_SECRET`           | rotate in `tools/deployer/.env` and in the GitHub secrets, then deploy API and host together                                                                                 | the Host rejects invalidation until both sides match and the outbox retries pending batches                                                               |
 | `RBAC_COOKIE_SESSION_SECRET`                 | rotate for hygiene                                                                                                                                                           | no runtime effect: nothing reads it today                                                                                                                 |
@@ -245,9 +244,8 @@ Four copies survive a rotation unless they are handled as well:
 - **GitHub Actions secrets.** Replace both the production and the `PREVIEW_`
   variants of the four RBAC values.
 - **`tools/deployer/.env`** on the operator's own machine.
-- **The server crontab.** It holds `AGENT_CRON_SECRET`, per the row above. A
-  crontab installed before that value existed holds `RBAC_SECRET_KEY` until
-  `./api.sh up` runs once.
+- **The server crontab.** Run `./api.sh up` to replace an older entry that
+  contains credentials with the credential-free trigger.
 
 Afterwards, treat the window before the rotation as one in which the old
 `RBAC_SECRET_KEY` could have been guessed. Review the action log for requests
@@ -257,11 +255,11 @@ force password resets if the deployment is public.
 
 ### Agent cron
 
-`api.sh` installs a root crontab entry that calls
-`POST /api/agent/agents/cron` every minute with `AGENT_CRON_SECRET` in the
-`X-AGENT-CRON-SECRET` header. That secret opens the cron route and no other
-route; the API also accepts the operator credential there. `api.sh` refuses to
-deploy while `AGENT_CRON_SECRET` is empty.
+`api.sh` installs an empty POST to `/api/agent/agents/cron` every minute.
+No credential is needed in cron or GitHub Secrets for this call. Apply the
+agent repository migration before starting the updated API. The queue in
+PostgreSQL keeps track of running jobs and their next eligible interval.
+The API uses its own RBAC credential to dispatch individual handlers.
 
 The job calls the public API hostname and verifies its certificate. With
 `USE_CLOUDFLARE_SSL=true` the hostname resolves to Cloudflare, which presents
@@ -271,9 +269,8 @@ itself while Traefik holds a Cloudflare Origin CA certificate, curl cannot
 verify the chain: add `--cacert` with the Cloudflare Origin CA root to the job
 in `api/set_cron_jobs.yaml` rather than disabling verification.
 
-curl appends each response to `/home/code/api_agent_agents_cron.log`. A body
-with `"status":401` there means the crontab and the API environment hold
-different values; run `./api.sh up` to write both again.
+Successful ticks return HTTP 204 with an empty body. curl appends errors to
+`/home/code/api_agent_agents_cron.log`.
 
 ### Host revalidation secret
 

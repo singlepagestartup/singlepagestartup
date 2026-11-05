@@ -28,14 +28,17 @@ function isAuthorized(request: Request) {
 
 function invalidRequest() {
   return NextResponse.json(
-    { error: "Invalid revalidation request" },
+    { error: "Validation error. Invalid revalidation request" },
     { status: 400 },
   );
 }
 
 export async function POST(request: Request) {
   if (!isAuthorized(request)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json(
+      { error: "Authentication error. Unauthorized" },
+      { status: 401 },
+    );
   }
 
   const raw = await request.text();

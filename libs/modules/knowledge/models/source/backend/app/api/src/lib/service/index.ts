@@ -51,7 +51,9 @@ export class Service extends CRUDService<Source> {
   }
   private dependencies() {
     if (!this.services)
-      throw new Error("Knowledge Source services are not configured.");
+      throw new Error(
+        "Configuration error. Knowledge Source services are not configured.",
+      );
     return this.services;
   }
   private owner() {
@@ -110,7 +112,8 @@ export class Service extends CRUDService<Source> {
   }
   async delete(props: { id: string }): Promise<Source> {
     const source = await this.deleteSourceWithDerivedData(props.id);
-    if (!source) throw new Error("Knowledge Source was not found.");
+    if (!source)
+      throw new Error("Not Found error. Knowledge Source was not found.");
     return source;
   }
   findSourceById(id: string) {
@@ -433,7 +436,9 @@ export class Service extends CRUDService<Source> {
         ? await relationService.findById({ id: props.id })
         : null;
       if (props.action !== "create" && !previous)
-        throw new Error("Knowledge file relation was not found.");
+        throw new Error(
+          "Not Found error. Knowledge file relation was not found.",
+        );
       const ids = [
         previous?.fileStorageModuleFileId,
         props.data?.fileStorageModuleFileId,
@@ -451,7 +456,7 @@ export class Service extends CRUDService<Source> {
           current.fileStorageModuleFileId !== previous.fileStorageModuleFileId
         )
           throw new Error(
-            "Knowledge file relation changed. Retry the operation.",
+            "Conflict error. Knowledge file relation changed. Retry the operation.",
           );
       }
       const relation =
@@ -497,7 +502,8 @@ export class Service extends CRUDService<Source> {
       const sources = await scope.owner().lock(sourceIds);
       const fileService = scope.dependencies().fileStorageFile;
       const previous = await fileService.findById({ id: props.id });
-      if (!previous) throw new Error("Stored file was not found.");
+      if (!previous)
+        throw new Error("Not Found error. Stored file was not found.");
       if (props.action === "update" && sourceIds.length) {
         const next = { ...previous, ...props.data };
         assertKnowledgeAttachmentBytes({
@@ -527,7 +533,8 @@ export class Service extends CRUDService<Source> {
     return this.run(async (scope) => {
       await scope.lockFiles(fileIds);
       const sources = await scope.owner().lock([sourceId]);
-      if (!sources.length) throw new Error("Knowledge Source was not found.");
+      if (!sources.length)
+        throw new Error("Not Found error. Knowledge Source was not found.");
       if (
         await scope
           .dependencies()
@@ -555,7 +562,8 @@ export class Service extends CRUDService<Source> {
       await scope.lockFiles(fileIds, "key share", false);
       await scope.lockFiles(fileIds.filter((id) => !existingIds.has(id)));
       const sources = await scope.owner().lock([sourceId]);
-      if (!sources.length) throw new Error("Knowledge Source was not found.");
+      if (!sources.length)
+        throw new Error("Not Found error. Knowledge Source was not found.");
       if (
         expectedContentHash !== undefined &&
         sources[0].contentHash !== expectedContentHash

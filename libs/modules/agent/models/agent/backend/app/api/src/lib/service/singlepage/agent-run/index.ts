@@ -1,13 +1,10 @@
-import { randomUUID } from "node:crypto";
 import {
   AGENT_CRON_DISPATCH_TIMEOUT_IN_SECONDS,
   AGENT_CRON_CHANNEL_SLUG,
-  AGENT_CRON_MARKER_MIN_LIFETIME_IN_SECONDS,
   AGENT_MAX_DURATION_IN_SECONDS,
   API_SERVICE_URL,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
-import { api as broadcastChannelApi } from "@sps/broadcast/models/channel/sdk/server";
 import {
   IModel as IAgentAgent,
   route,
@@ -15,7 +12,7 @@ import {
 } from "@sps/agent/models/agent/sdk/model";
 import cronParser from "cron-parser";
 import { logger } from "@sps/backend-utils";
-import { type IBroadcastModule } from "../../di";
+import { type IBroadcastModule } from "../../../di";
 
 export interface IAgentRunChannel {
   id: string;
@@ -54,6 +51,12 @@ export interface IAgentRunDispatch {
   error?: string;
 }
 
+export interface IAgentRunClaim {
+  agent: IAgentAgent;
+  runId: string;
+  supersedes?: string;
+}
+
 export interface IAgentRunProps {
   broadcastModule: IBroadcastModule;
 }
@@ -61,14 +64,14 @@ export interface IAgentRunProps {
 /**
  * Owns the lifecycle of one scheduled agent execution.
  *
- * A run is a pair of Broadcast messages on the `cron` channel: a running marker
- * written before the dispatch and a finished marker written by the side that
- * observed the outcome. The cron runner never records a result for a handler it
- * did not see finish; the handler closes its own run through the agent-run
- * route middleware.
+ * Broadcast owns delivery. The handler acknowledges the message after its work finishes.
  */
 export class AgentRun {
   broadcastModule: IBroadcastModule;
+
+  get queue() {
+    return this.broadcastModule.message.queue;
+  }
 
   constructor(props: IAgentRunProps) {
     this.broadcastModule = props.broadcastModule;
@@ -97,34 +100,8 @@ export class AgentRun {
   }): Promise<IAgentRunMarker[]> {
     const channel = props?.channel || (await this.findChannel());
 
-    const channelsToMessages =
-      await this.broadcastModule.channelsToMessages.find({
-        params: {
-          filters: {
-            and: [{ column: "channelId", method: "eq", value: channel.id }],
-          },
-        },
-      });
-
-    if (!channelsToMessages?.length) {
-      return [];
-    }
-
-    const messages = await this.broadcastModule.message.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "id",
-              method: "inArray",
-              value: Array.from(
-                new Set(channelsToMessages.map((item: any) => item.messageId)),
-              ),
-            },
-          ],
-        },
-      },
-    });
+    const messages =
+      await this.broadcastModule.message.transientChannelMessages(channel.id);
 
     const markers: IAgentRunMarker[] = [];
 
@@ -132,10 +109,17 @@ export class AgentRun {
       try {
         const payload = JSON.parse(message.payload);
 
+        const datetime = new Date(payload.datetime);
+        if (
+          typeof payload.slug !== "string" ||
+          !Number.isFinite(datetime.getTime())
+        ) {
+          throw new Error("A cron marker requires a slug and timestamp");
+        }
         markers.push({
           id: message.id,
           slug: payload.slug,
-          datetime: new Date(payload.datetime),
+          datetime,
           runId: payload.runId,
           supersedes: payload.supersedes,
           result: payload.result,
@@ -151,20 +135,9 @@ export class AgentRun {
     return this.sortMarkers(markers);
   }
 
-  async getLatestMarker(props: {
-    slug: string;
-    markers?: IAgentRunMarker[];
-  }): Promise<IAgentRunMarker | undefined> {
-    const markers = props.markers || (await this.findMarkers());
-
-    return this.sortMarkers(
-      markers.filter((marker) => marker.slug === props.slug),
-    )[0];
-  }
-
   isDue(props: {
     agent: IAgentAgent;
-    marker?: IAgentRunMarker;
+    marker?: Pick<IAgentRunMarker, "datetime" | "result" | "runId">;
     now?: Date;
   }): IAgentRunDecision {
     const { agent, marker } = props;
@@ -217,122 +190,93 @@ export class AgentRun {
     return { due: true, reason: "scheduled" };
   }
 
-  async markRunning(props: {
-    slug: string;
-    runId: string;
-    supersedes?: string;
-    channel?: IAgentRunChannel;
-    previousMarkers?: IAgentRunMarker[];
-  }): Promise<void> {
-    if (!RBAC_SECRET_KEY) {
-      throw new Error("Configuration error. RBAC_SECRET_KEY not set");
-    }
-
-    const channel = props.channel || (await this.findChannel());
-    const previousMarkers =
-      props.previousMarkers ||
-      (await this.findMarkers({ channel })).filter(
-        (marker) => marker.slug === props.slug,
-      );
-
-    await Promise.allSettled(
-      previousMarkers.map(async (marker) => {
-        try {
-          if (!RBAC_SECRET_KEY) {
-            throw new Error("Configuration error. RBAC_SECRET_KEY not set");
-          }
-
-          await broadcastChannelApi.messageDelete({
-            id: channel.id,
-            messageId: marker.id,
-            options: { headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY } },
-          });
-        } catch (error) {
-          logger.error(`❌ Error during deleting message ${marker.id}:`, error);
-        }
-      }),
-    );
-
-    await this.pushMarker({
-      payload: {
-        datetime: new Date().toISOString(),
-        slug: props.slug,
-        runId: props.runId,
-        ...(props.supersedes ? { supersedes: props.supersedes } : {}),
-      },
-    });
+  private async owner(slug: string, receipt: string) {
+    const channel = await this.findChannel();
+    return { channelId: channel.id, key: slug, receipt };
   }
 
   async markFinished(props: {
     slug: string;
     runId: string;
     result: Record<string, unknown>;
-  }): Promise<boolean> {
-    const latest = await this.getLatestMarker({ slug: props.slug });
+    pendingOnly?: boolean;
+  }) {
+    const owner = await this.owner(props.slug, props.runId);
+    const payload = JSON.stringify({
+      slug: props.slug,
+      runId: props.runId,
+      datetime: new Date().toISOString(),
+      result: props.result,
+    });
+    return this.queue.acknowledge(owner, payload, props.pendingOnly);
+  }
 
-    if (!latest || latest.runId !== props.runId || latest.result) {
-      logger.info(
-        `Agent run '${props.runId}' of '${props.slug}' no longer owns the slug, its result is not recorded`,
-      );
-
-      return false;
+  async startHandler(props: { slug: string; runId: string }) {
+    const owner = await this.owner(props.slug, props.runId);
+    if (!(await this.queue.start(owner))) {
+      return;
     }
 
-    await this.pushMarker({
-      payload: {
-        datetime: new Date().toISOString(),
-        slug: props.slug,
-        runId: props.runId,
-        result: props.result,
-      },
-    });
+    // Renew only while the handler actually runs. An API crash stops renewal.
+    let renewing = false;
+    const heartbeatIntervalMs = Math.min(
+      30_000,
+      Math.max(100, (AGENT_MAX_DURATION_IN_SECONDS * 1000) / 3),
+    );
+    const timer = setInterval(async () => {
+      if (renewing) {
+        return;
+      }
 
-    return true;
+      renewing = true;
+      try {
+        await this.queue.renew(owner, AGENT_MAX_DURATION_IN_SECONDS);
+      } catch (error) {
+        logger.error(`Failed to renew scheduled agent '${owner.key}'`, error);
+      } finally {
+        renewing = false;
+      }
+    }, heartbeatIntervalMs);
+    timer.unref();
+    return () => clearInterval(timer);
   }
 
   async isRunSuperseded(props: {
     slug: string;
     runId: string;
   }): Promise<boolean> {
-    const latest = await this.getLatestMarker({ slug: props.slug });
-
-    return !!latest && latest.runId !== props.runId;
+    const owner = await this.owner(props.slug, props.runId);
+    return !(await this.queue.owns(owner));
   }
 
-  async dispatch(props: {
-    agent: IAgentAgent;
-    runId?: string;
-    supersedes?: string;
-    channel?: IAgentRunChannel;
-    previousMarkers?: IAgentRunMarker[];
-  }): Promise<IAgentRunDispatch> {
+  async dispatch(props: IAgentRunClaim): Promise<IAgentRunDispatch> {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC_SECRET_KEY not set");
     }
 
     const slug = props.agent.slug;
-    const runId = props.runId || randomUUID();
-
-    await this.markRunning({
-      slug,
-      runId,
-      supersedes: props.supersedes,
-      channel: props.channel,
-      previousMarkers: props.previousMarkers,
-    });
+    const runId = props.runId;
 
     try {
-      const res = await fetch(`${API_SERVICE_URL}${route}/${slug}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          [runIdHeader]: runId,
+      if (!slug || slug === "." || slug === ".." || slug === "cron") {
+        throw new Error("Invalid agent route");
+      }
+
+      const res = await fetch(
+        `${API_SERVICE_URL}${route}/${encodeURIComponent(slug)}`,
+        {
+          redirect: "error",
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            [runIdHeader]: runId,
+          },
+          signal: AbortSignal.timeout(
+            AGENT_CRON_DISPATCH_TIMEOUT_IN_SECONDS * 1000,
+          ),
         },
-        signal: AbortSignal.timeout(
-          AGENT_CRON_DISPATCH_TIMEOUT_IN_SECONDS * 1000,
-        ),
-      });
+      );
 
       if (res.ok) {
         return { slug, runId, status: "finished" };
@@ -375,6 +319,7 @@ export class AgentRun {
       slug: props.slug,
       runId: props.runId,
       result: { error: props.error },
+      pendingOnly: true,
     });
 
     return {
@@ -385,36 +330,9 @@ export class AgentRun {
     };
   }
 
-  protected markerExpiresAt(props?: { now?: Date }): string {
-    const now = props?.now || new Date();
-    const lifetimeInSeconds = Math.max(
-      AGENT_CRON_MARKER_MIN_LIFETIME_IN_SECONDS,
-      AGENT_MAX_DURATION_IN_SECONDS,
-    );
-
-    return new Date(now.getTime() + lifetimeInSeconds * 1000).toISOString();
-  }
-
   protected sortMarkers(markers: IAgentRunMarker[]): IAgentRunMarker[] {
     return [...markers].sort(
       (a, b) => b.datetime.getTime() - a.datetime.getTime(),
     );
-  }
-
-  protected async pushMarker(props: {
-    payload: Record<string, unknown>;
-  }): Promise<void> {
-    if (!RBAC_SECRET_KEY) {
-      throw new Error("Configuration error. RBAC_SECRET_KEY not set");
-    }
-
-    await broadcastChannelApi.pushMessage({
-      data: {
-        slug: AGENT_CRON_CHANNEL_SLUG,
-        expiresAt: this.markerExpiresAt(),
-        payload: JSON.stringify(props.payload),
-      },
-      options: { headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY } },
-    });
   }
 }

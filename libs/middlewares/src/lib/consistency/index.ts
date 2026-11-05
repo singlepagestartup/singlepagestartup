@@ -62,7 +62,7 @@ export class Middleware {
           (ref: unknown) => typeof ref === "string" && ref.length < 128,
         )
       )
-        return c.json({ error: "Invalid refs" }, 400);
+        return c.json({ error: "Validation error. Invalid refs" }, 400);
       return c.json({
         data: await this.runtime.check(
           body.refs,

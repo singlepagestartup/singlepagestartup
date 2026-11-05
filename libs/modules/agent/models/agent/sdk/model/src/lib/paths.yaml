@@ -161,50 +161,14 @@ paths:
     post:
       tags:
         - "agent-agent"
-      summary: Run cron
+      summary: Check the agent schedule
       description: >-
-        Execute agent cron tasks. Requires the agent cron secret or the operator
-        credential; the server crontab sends the cron secret.
-      parameters:
-        - name: X-AGENT-CRON-SECRET
-          in: header
-          required: false
-          schema:
-            type: string
-          description: AGENT_CRON_SECRET, which opens this route and no other
-        - name: X-RBAC-SECRET-KEY
-          in: header
-          required: false
-          schema:
-            type: string
-          description: Operator credential
-      requestBody:
-        required: false
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                data:
-                  type: string
-                  description: JSON string
-                  example: "{}"
+        Anyone can request a tick. The scheduler chooses due agents and available
+        worker slots. Repeated requests in the same minute are coalesced.
+      security: []
       responses:
-        "200":
-          description: Cron execution result
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: "agent-agent.yaml"
-                required:
-                  - data
-        "401":
-          description: Neither the cron secret nor the operator credential matches
+        "204":
+          description: Tick processed or coalesced. The response has no body.
 
   /agent/agents/dummy:
     post:

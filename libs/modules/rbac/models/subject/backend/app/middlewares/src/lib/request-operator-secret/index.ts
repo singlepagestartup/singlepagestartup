@@ -6,7 +6,7 @@ export class Middleware {
     return createMiddleware(async (c, next) => {
       if (!rbacSecretMatches(readRbacSecret(c)))
         throw new HTTPException(403, {
-          message: "Operator credentials required",
+          message: "Permission error. Operator credentials required",
         });
       return next();
     });

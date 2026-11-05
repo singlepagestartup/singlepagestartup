@@ -1,50 +1,13 @@
 Closes #319.
 
-## Current review status
+The server crontab used to send the operator credential to the public API with
+TLS verification disabled. It now sends an empty HTTPS POST and checks the
+certificate. The cron route returns 204 without credentials. Internal worker
+routes retain their authorization.
 
-Updated from main `9e06cabad7` after PR #327. Three conflicts in middleware
-exports, cron environment settings and deployment documentation are resolved.
-
-Keep this PR open pending credential-handling fixes. The review reproduced:
-
-- New Traefik access logs retain OAuth query parameters despite dropping headers.
-- The cron credential is visible in curl process arguments.
-- Fresh inventory and API environment files are created with mode 0644 under
-  the tested default permissions, exposing credentials to other local readers.
-
-These findings are not fixed by this update. Detailed evidence and proposed
-corrections: [security review](https://github.com/singlepagestartup/singlepagestartup/blob/claude/issue-319-deployer-hardening/thoughts/shared/research/singlepagestartup/2026-11-05-pr328-deployer-security-review.md).
-
-Current checks: Agent 126 tests, Backend Utils 170, Middlewares 61; three
-TypeScript checks; scoped ESLint with parser project loading disabled after a
-4 GiB heap failure (types checked separately); zero module dependency violations; six
-Ansible syntax checks; five rendered Compose configurations. An isolated SSH
-server accepted a stored host key and refused its replacement. Production was
-not changed or audited.
-
-## Summary
-
-The deployer installed a root crontab line that called the agent cron route every minute with the operator secret (`RBAC_SECRET_KEY`, the full authorization bypass) on its command line and with certificate verification off (`curl -k`). Traefik kept no access log, the public routers sent no security headers, and Ansible accepted whatever host key a server presented.
-
-After this change:
-
-- `POST /api/agent/agents/cron` admits a dedicated `AGENT_CRON_SECRET` in `X-AGENT-CRON-SECRET`, or the operator credential, and nothing else. The crontab holds only the cron secret and verifies the certificate.
-- Traefik writes a JSON access log without header values, with log rotation, and the api, host, mcp and telegram routers send HSTS, `nosniff` and a referrer policy.
-- Ansible records a new server's host key once and refuses a changed one, with key or password authentication.
-
-The per-minute schedule and password SSH keep working. CORS, uploads, the anonymous cart, framed widgets and MCP OAuth are not touched.
-
-## Changes
-
-### Agent cron route (`39a1b6b0ce`)
-
-- `libs/modules/agent/models/agent/backend/app/middlewares/` (new package, shaped like the rbac subject middleware package): `RequestCanRunCron` admits `rbacSecretMatches(readRbacSecret(c))`, the operator secret in the header or the `rbac.secret-key` cookie, or `secretMatches(AGENT_CRON_SECRET, X-AGENT-CRON-SECRET)`, and throws one 401 `Unauthorized` otherwise. An unset `AGENT_CRON_SECRET` matches nobody.
-- `.../controller/singlepage/index.ts`: the guard is bound to `POST /cron` in the route table.
-- `libs/middlewares/src/lib/is-authorized/routes/singlepage.ts`: an anchored `POST /api/agent/agents/cron$` allow rule. Route middleware runs after is-authorized, so without the rule the cron secret would never reach the guard; for this route the guard is the whole check, and a project can subtract the rule through `routes/startup.ts`.
-- `libs/shared/backend/utils/src/lib/rbac-secret/index.ts`: the constant-time comparison becomes `secretMatches(configured, provided)`; `rbacSecretMatches` delegates to it.
-- `libs/shared/utils/src/lib/envs/artificial-intelligence.ts`: `AGENT_CRON_SECRET`, no default. `apps/api/create_env.sh` generates one for new local environments.
-- Deployer: `tools/deployer/.env.example`; `api.sh` reads the value, refuses to deploy while it is empty, and passes it to both plays; `api/api.env.j2`; `api/set_cron_jobs.yaml` (cron header, no `-k`, `no_log`); `github_deployer.sh` and `.github/workflows/ansible.yml` (production and `PREVIEW_` secrets).
-- Docs: the OpenAPI path (both headers, 401), the agent model README, and the deployer README (secret list, rotation rows, an "Agent cron" section with the certificate note).
+Concurrent ticks reserve work under a short PostgreSQL lock. A handler starts
+each reserved run ID once, renews its slot until completion, and can outlive
+the dispatch HTTP timeout. The Broadcast Message service stores the payload on Message and the delivery key, receipt and lease on the channel-to-message relation. Completed runs keep their schedule across ordinary message expiry.
 
 ### Traefik (`5fdbc85ef1`)
 
@@ -58,51 +21,51 @@ The per-minute schedule and password SSH keep working. CORS, uploads, the anonym
 - `tools/deployer/create_inventory.sh` and both inventory examples: `-o StrictHostKeyChecking=accept-new` without `-o UserKnownHostsFile=/dev/null`.
 - Deployer README: first connection, rebuilt servers (`ssh-keygen -R`), CI runners.
 
-### Records (`5f8e22704a`)
-
-- Research, plan, process log and progress file for #319 under `thoughts/shared/`.
-
-## Original branch verification
-
-- [x] `npx nx run @sps/agent:jest:test`: 18 suites, 95 tests (new `request-can-run-cron` suite, 7 tests).
-- [x] `npx nx run @sps/backend-utils:jest:test`: 6 suites, 129 tests.
-- [x] `npx nx run @sps/middlewares:jest:test`: 10 suites, 65 tests.
-- [x] Mutation checks: a pass-through in place of the guard fails 5 of its 7 tests; `===` in place of `secretMatches` fails the two unset-secret tests; removing the allow rule fails its case; a `secretMatches` that admits an unset secret fails 3 primitive tests and 2 guard tests.
-- [x] `eslint:lint` for `@sps/agent`, `@sps/backend-utils` and `@sps/shared-utils`, and eslint on the changed `libs/middlewares` files.
-- [x] `tsc --noEmit` for `libs/modules/agent`, `libs/middlewares`, `libs/shared/backend/utils` and `libs/shared/utils`: 0 errors, as before the change.
-- [x] HTTP on a local API (port 4319) with throwaway secrets and a throwaway, freshly migrated database: cron secret 200; operator header 200; operator cookie 200; no credential 401; wrong cron secret 401; cron secret in `X-RBAC-SECRET-KEY` 401; cron secret on `POST /api/agent/agents/dummy` 403 and on `GET /api/agent/agents/cron` 403.
-- [x] `ansible-playbook --syntax-check` for `api/set_cron_jobs.yaml`, `api/create_api.yaml`, `traefik/create_traefik.yaml`, `host/create_host.yaml`, `mcp/create_mcp.yaml` and `telegram/create_telegram.yaml`.
-- [x] Templates rendered with Ansible's Jinja2 and strict undefined variables: the cron job is one line with the cron header, no `-k` and no operator header; `api.env` carries `AGENT_CRON_SECRET` only when it is set; the five compose files parse and pass `docker compose config`.
-- [x] `api.sh up` with an empty `AGENT_CRON_SECRET`: exit 1 with an error, before any DNS or Ansible step.
-- [x] Against a throwaway `sshd` on 127.0.0.1: the new settings record host key A and connect twice, then refuse the server once it presents key B; the previous settings connect to key B. `sshpass` reaches authentication with `accept-new` and fails with "Host key verification failed" under the SSH default.
-- [ ] On a deployed server, not run here: `./up.sh`, then the checks under Downstream migration.
-
-## Notes
-
-- A JWT holding the root permission no longer opens `POST /api/agent/agents/cron`; the route answers to the two secrets only. Nothing in the frontend, the SDKs, MCP, Telegram or the tests calls it.
-- The dispatcher still calls each due agent's route with the operator secret from the API's own environment; that secret stays inside the API process.
-- The headers middleware is defined per service, beside its router, not once on the Traefik service. Traefik restarts on every service deployment, and a middleware defined on its own labels can be missing after a restart ([traefik/traefik#9363](https://github.com/traefik/traefik/issues/9363)), which would stop every router that references it.
-- Not in this change: a TLS minimum version (Traefik 3 defaults to TLS 1.2), a Content-Security-Policy or frame policy (pages embed widgets in frames), HSTS `includeSubDomains` or `preload`, and host key pinning for CI runners (the deployer README says how).
-- `AGENT_CRON_SECRET` is not part of the API boot strength check: an absent value is a valid setting that leaves the route to the operator secret.
+API errors preserve their category and HTTP status through the SDK. Failed sign-in returns the same 401 for an unknown email or incorrect password. The Host shows one error toast for a failed action, and a stale delivery receipt stays a conflict.
 
 ## Downstream migration
 
-Adaptation is required for every project that deploys with `tools/deployer`.
+Run `npx nx run api:db:migrate` before starting queue workers and drain older workers during rollout. Replace credential-bearing cron entries with an empty HTTPS POST to `/api/agent/agents/cron` by rerunning `./api.sh up` in the deployer. Remove obsolete cron secrets from project-owned scripts. Keep the internal worker credential server-side. Check custom error handlers that match message text, and use the HTTP status and framework category instead. Check custom proxy headers, secret file permissions and SSH host verification against the deployer guidance.
 
-**Applies to:** projects that deploy with `tools/deployer`, locally or through the ansible workflow; projects that call `POST /api/agent/agents/cron` from anything other than the deployer crontab; projects whose startup agent controller rebinds the agent routes; projects with their own compose templates, additional browser-facing Traefik routers, or their own inventory or `ansible.cfg`.
+Verify an anonymous tick returns 204, concurrent ticks respect the schedule, and an obsolete receipt returns 409. Check sign-in errors and private channel visibility in any overridden UI.
 
-**New environment variable:**
+## Verification
 
-| Variable            | Where                                                                                                          | Meaning                                                                                                                                        |
-| ------------------- | -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `AGENT_CRON_SECRET` | `tools/deployer/.env`, repository secrets `AGENT_CRON_SECRET` and `PREVIEW_AGENT_CRON_SECRET`, API environment | Opens `POST /api/agent/agents/cron` and nothing else; the crontab sends it in `X-AGENT-CRON-SECRET`, and `api.sh` refuses to deploy without it |
+On two local API processes sharing PostgreSQL, bursts of 60 anonymous requests
+returned 204. A real order-check handler stayed active past the HTTP timeout,
+kept its single test slot and blocked the waiting job. Replaying delivery
+returned 409, and calling a worker anonymously returned 403. After the first
+job completed, the waiting job could run and the daily job kept its schedule. Recovery on another API process used a new run ID after the worker was killed.
 
-**Actions:**
+All four agents from the repository ran against a local API and a fresh
+PostgreSQL database. With one slot, the first POST ran all four in sequence:
+Billing failed an expired payment intent, Ecommerce marked an unpaid order
+as `canceling`, RBAC changed it to `canceled`, and the daily cleanup deleted
+an inactive anonymous subject while keeping the order owner and a new
+visitor. Five more POSTs in the same minute started no work. Three POSTs in
+the next minute started only the three minute jobs, once each.
 
-- Generate `AGENT_CRON_SECRET` with `openssl rand -hex 32`, add it to `tools/deployer/.env` and to both repository secrets (`github_deployer.sh` syncs it), then run `./api.sh up` once so the API environment and the crontab receive it. Until then the existing crontab keeps working, because the route still admits the operator secret.
-- Point any other caller of the cron route at `X-AGENT-CRON-SECRET` or the operator credential; a JWT is no longer accepted there.
-- A startup controller that rebinds the agent routes keeps `RequestCanRunCron` on `POST /cron`, because the allow rule lets the request past is-authorized.
-- Run `./up.sh`, or `./traefik.sh up` plus each service's script, so the access log and the headers reach the server. Give any project router that serves browsers the same three header labels under a middleware named after that router, and keep a CSP or frame policy in the application.
-- After rebuilding a server on the same address, remove its old entry with `ssh-keygen -R <host>`, or `ssh-keygen -R '[<host>]:<port>'` for a port other than 22. Remove `-o UserKnownHostsFile=/dev/null` from any project inventory or `ansible.cfg`, keep `-o StrictHostKeyChecking=accept-new`, and set `host_key_checking = True`.
+The same requests with the default three slots produced the same seven
+worker starts. The RBAC check ran alongside Ecommerce and finished the
+cancellation on the next minute's run.
 
-**Verify:** `sudo crontab -l` shows the agent line with `X-AGENT-CRON-SECRET` and without `-k` or `X-RBAC-SECRET-KEY`; `/home/code/api_agent_agents_cron.log` receives a JSON body with a `data` array each minute; `curl -sI` against the api, host, mcp and telegram hostnames shows `Strict-Transport-Security`, `X-Content-Type-Options` and `Referrer-Policy`; `docker service logs traefik_traefik` shows JSON access lines without header values; `ansible all -m ping`, run twice from `tools/deployer`, succeeds and records the host key once.
+An independent consumer used the Broadcast HTTP API on two replicas. Fourteen
+simultaneous publications of the same key produced one message. Twenty reserve
+requests produced one receipt. A second reservation rejected the old receipt
+and published the completed payload to the channel. PostgreSQL used the key
+and expiry indexes with 25,000 ordinary messages in the table. An existing
+daily marker kept its schedule after migration and after cleanup deleted 241
+expired messages. The server SDK also published to a separate channel.
+
+The Agent, Broadcast and middleware suites and the Agent and Broadcast
+TypeScript checks pass. The full API type check reports the same 18 diagnostics as
+the earlier baseline. The repository placement check flags the existing Studio
+interface-kit Files component.
+
+The final Broadcast schema was installed on an empty database and upgraded from main with an existing message and relation. The next generated model and relation migrations applied successfully in an isolated database. The consistency check covered all 159 resources. Six concurrent HTTP clients published and reserved one job. A browser login and SDK notification tests verified error feedback.
+
+## Open security findings
+
+The Traefik access log can include OAuth query parameters. The generated
+inventory and API environment files were readable by other users under the
+tested default umask. Both findings are recorded in the security review.

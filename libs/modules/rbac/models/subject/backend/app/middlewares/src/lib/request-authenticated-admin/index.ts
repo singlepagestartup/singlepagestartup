@@ -19,13 +19,18 @@ export class Middleware {
       const token = c.req
         .header("Authorization")
         ?.match(/^Bearer (\S+)$/i)?.[1];
-      if (!token) throw new HTTPException(401, { message: "Unauthorized" });
+      if (!token)
+        throw new HTTPException(401, {
+          message: "Authentication error. Unauthorized",
+        });
       if (!RBAC_JWT_SECRET) {
         throw new Error("Configuration error. RBAC_JWT_SECRET not set");
       }
 
       const claims = await verifyJwt(token, RBAC_JWT_SECRET).catch(() => {
-        throw new HTTPException(401, { message: "Unauthorized" });
+        throw new HTTPException(401, {
+          message: "Authentication error. Unauthorized",
+        });
       });
       const subjectId = claims.subject?.["id"];
       const { exp, iat } = claims;
@@ -40,16 +45,20 @@ export class Middleware {
         exp <= iat ||
         exp - iat > RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS + 1
       ) {
-        throw new HTTPException(401, { message: "Unauthorized" });
+        throw new HTTPException(401, {
+          message: "Authentication error. Unauthorized",
+        });
       }
 
       const subject = await options.authenticationMe({ subjectId });
       if (!subject?.authenticated) {
-        throw new HTTPException(401, { message: "Unauthorized" });
+        throw new HTTPException(401, {
+          message: "Authentication error. Unauthorized",
+        });
       }
       if (!(await options.isAdmin(subjectId))) {
         throw new HTTPException(403, {
-          message: "Administrator role required",
+          message: "Permission error. Administrator role required",
         });
       }
 

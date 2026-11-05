@@ -27,44 +27,48 @@ configuration metadata used by the automation layer.
 
 ## Scheduled Run Lifecycle
 
-`POST /api/agent/agents/cron` decides which agents are due and starts their
-runs; it does not wait for them. The decisions and the marker reads and writes
-belong to the agent-run service (`service/singlepage/agent-run.ts`), and the
-controller only composes them.
+`POST /api/agent/agents/cron` accepts an empty request without credentials and
+returns HTTP 204. The server crontab calls it once per minute. On this route,
+the Agent middleware admits one tick per calendar minute per API process.
+Repeat requests skip the queue, observer, revalidation and action log.
+The route chooses the jobs from the configured agents. A caller cannot
+choose a job or force one to run early.
 
-One run is a pair of Broadcast messages on the `cron` channel. Before the
-dispatch the runner replaces the slug's earlier markers with a running marker
-that carries a `runId`; the finished marker with the same `runId` is written by
-whoever observed the outcome. A handler that the runner dispatched records its
-own completion through the `agent-run` route middleware
-(`backend/app/middlewares/src/lib/agent-run`), which reads the
-`X-SPS-AGENT-RUN-ID` header and writes the marker in a `finally`, so a failing
-handler also closes its run. The runner records a result only when the dispatch
-itself failed, for example a refused connection or an immediate error status; a
-handler that is still working when the dispatch window closes is left running.
+Each scheduled slug has one durable Broadcast message in the `cron` channel. Replicas use a
+short PostgreSQL transaction to check available slots and reserve due jobs.
+The transaction commits before the API dispatches any work. Agents that have
+never run go first, followed by those that have waited longest. A finished
+job is eligible at the next occurrence of its cron expression after completion.
+Each tick uses one schedule cutoff as it fills newly freed slots.
 
-A running marker blocks the next dispatch of the same slug until it is finished
-or `AGENT_MAX_DURATION_IN_SECONDS` passes. After that the run counts as lost:
-the next due tick claims the slug again and its marker names the superseded
-`runId`, and the lost run can no longer record a result. Running and finished
-markers expire no earlier than the maximum run duration.
+The API sends its internal RBAC credential and the reserved run ID to the
+agent handler. Bind the exported `AgentRun` middleware to custom scheduled
+handlers, as the built-in routes do. It starts that ID once, renews its lease while working,
+and records completion even if the dispatching HTTP client has timed out. A
+crashed process stops renewing. After the lease expires, a later tick can
+reclaim the job when its schedule allows. If a worker loses the database
+connection for longer than the lease while an external side effect is in
+progress, recovery can repeat that effect. Handlers that charge or send
+messages need their own deduplication at that boundary.
 
-Environment knobs:
+Subscribers to the `cron` channel can read the current run ID and its result
+from the same message. On first use, the scheduler reads the most recent
+ordinary cron message for each missing slug to preserve existing schedules.
+Routine message expiry leaves the durable delivery in place. See the
+[Broadcast Message contract](../../../broadcast/models/message/README.md).
 
-- `AGENT_MAX_DURATION_IN_SECONDS` (default 5400): how long a running marker
-  blocks re-dispatch, and the minimum lifetime of a marker.
-- `AGENT_CRON_MAX_CONCURRENCY` (default 3): how many agents one tick dispatches
-  at a time.
-- `AGENT_CRON_DISPATCH_TIMEOUT_IN_SECONDS` (default 10): how long a dispatch
-  waits for the response before handing the run over to the handler.
-- `AGENT_PAGE_CACHE_MAX_CONSECUTIVE_FAILURES` (default 10): how many pages in a
-  row may fail before `host-module-page-cache` stops. That handler also stops
-  between URLs when its run was superseded.
-
-Invalid cron intervals are rejected before the first dispatch. A page-cache run
-stopped by repeated fetch failures returns HTTP 502; a superseded run returns
-HTTP 409. The completion middleware records these HTTP failures instead of a
-successful run. Manual callers should check both the status and `data.stopped`.
+- `AGENT_CRON_MAX_CONCURRENCY` (default 3) limits active scheduled jobs across
+  replicas, including handlers still working after the HTTP timeout. Set it to
+  1 to run one job at a time. With multiple slots, the RBAC order check can
+  start before Ecommerce changes an unpaid order to `canceling`. In that
+  case RBAC can finish the cancellation on its next scheduled run.
+- `AGENT_MAX_DURATION_IN_SECONDS` (default 5400) is the recovery window after
+  the last heartbeat. The renewal interval is one third of that window,
+  capped at 30 seconds.
+- `AGENT_CRON_DISPATCH_TIMEOUT_IN_SECONDS` (default 10) bounds the dispatcher's
+  wait for the HTTP response.
+- `AGENT_PAGE_CACHE_MAX_CONSECUTIVE_FAILURES` (default 10) stops page warming
+  after consecutive failures. A superseded page-cache run stops between URLs.
 
 ## Seeded Agents
 
@@ -79,25 +83,6 @@ them and the cron dispatcher runs each one on its interval.
   `POST /api/rbac/subjects/delete-anonymous`. The retention rules and the batch
   size belong to the rbac module; see
   `libs/modules/rbac/models/subject/README.md`.
-
-## Cron Dispatcher Access
-
-`POST /api/agent/agents/cron` runs every agent whose `interval` is due. The
-server crontab that `tools/deployer/api/set_cron_jobs.yaml` installs calls it
-every minute. The route admits two credentials, compares both in constant time
-and answers any other request with `401`:
-
-- `AGENT_CRON_SECRET` in the `X-AGENT-CRON-SECRET` header. It opens this route
-  and no other, and it is the value the crontab holds.
-- The operator credential in `X-RBAC-SECRET-KEY` or the `rbac.secret-key`
-  cookie.
-
-The route is on the is-authorized allow-list, so its guard,
-`RequestCanRunCron` in `backend/app/middlewares`, is the whole access check and
-a JWT does not open it. Without `AGENT_CRON_SECRET`, only the operator
-credential opens the route. The dispatcher calls each due agent's route with
-the operator secret from the API's own environment, whichever credential
-opened the cron route.
 
 ## Telegram Thread Commands
 

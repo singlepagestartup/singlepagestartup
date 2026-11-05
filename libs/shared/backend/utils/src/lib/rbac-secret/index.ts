@@ -14,21 +14,18 @@ export function readRbacSecret(c: Context): string | undefined {
 }
 
 /**
- * Compares a caller-supplied credential with a configured secret in constant
- * time.
+ * Compares a caller-supplied credential with the configured `RBAC_SECRET_KEY`
+ * in constant time.
  *
  * A deployment that configures no secret matches nobody: a guard standing on an
  * unset variable must refuse every caller rather than admit every caller.
  */
-export function secretMatches(
-  configured?: string | null,
-  provided?: string | null,
-): boolean {
-  if (!configured || !provided) {
+export function rbacSecretMatches(provided?: string | null): boolean {
+  if (!RBAC_SECRET_KEY || !provided) {
     return false;
   }
 
-  const expected = Buffer.from(configured, "utf8");
+  const expected = Buffer.from(RBAC_SECRET_KEY, "utf8");
   const candidate = Buffer.from(provided, "utf8");
 
   // timingSafeEqual throws on buffers of different sizes, so the length is
@@ -36,12 +33,4 @@ export function secretMatches(
   return (
     expected.length === candidate.length && timingSafeEqual(expected, candidate)
   );
-}
-
-/**
- * Compares a caller-supplied credential with the configured `RBAC_SECRET_KEY`
- * through `secretMatches`.
- */
-export function rbacSecretMatches(provided?: string | null): boolean {
-  return secretMatches(RBAC_SECRET_KEY, provided);
 }

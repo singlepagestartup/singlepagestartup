@@ -12,7 +12,7 @@ export class Handler {
       const parsed = seoResolveSchema.safeParse(c.req.query());
       if (!parsed.success)
         throw new HTTPException(400, {
-          message: parsed.error.issues[0].message,
+          message: `Validation error. ${parsed.error.issues[0].message}`,
         });
       return c.json({
         data: await this.service.seo.resolve(parsed.data.url),
