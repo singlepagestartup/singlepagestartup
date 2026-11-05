@@ -1,18 +1,17 @@
 ## Summary
 
-The local Redis compose starts `redis-server` on `REDIS_PORT` inside the container but published `${REDIS_PORT}:6379`. With any port other than 6379 the host port led to a socket nothing listened on, so the API, the cache tests and the scenario lane on a developer machine could not reach Redis after `./up.sh`. The container now exposes and publishes `REDIS_PORT` on both sides.
+When port 6379 is busy, local setup picks a free port for Redis and writes it to the API configuration. Previously Docker still forwarded connections to port 6379 inside the container, so the API could not reach Redis.
 
 ## Changes
 
-- `apps/redis/docker-compose.redis.yaml`: `expose` and `ports` use `${REDIS_PORT:-6379}` on both sides of the mapping.
+Local Compose now passes the resolved `REDIS_PORT` to the Redis process and uses it for both sides of the port mapping. A shell override takes precedence over the Redis `.env` file. The default is 6379. The production deployer uses a separate template.
 
 ## Verification
 
-- [x] `docker compose -f apps/redis/docker-compose.redis.yaml --env-file apps/redis/.env config` renders `6384:6384` with the local `.env`.
-- [x] After recreating the local container, a `PING` from the host to `127.0.0.1:6384` answers `PONG`; before the change the connection was accepted and closed without a reply.
-- [ ] `./up.sh` on a fresh checkout reaches Redis from the API start-up (manual).
+- With port 6379 occupied, the setup scripts selected 6380 for both Redis and the API. An authenticated host `PING` returned `PONG`, and the API KV provider wrote, read and deleted a key. Redis rejected an unauthenticated `PING`.
+- With 6379 in the Redis `.env` and `REDIS_PORT=6380` in the shell, the host received `PONG` on port 6380.
+- Compose rendered `6379:6379` with the default configuration. All seven Redis provider tests passed.
 
-## Notes
+## Downstream migration
 
-- The deployer template `tools/deployer/redis/docker-compose.redis.yaml.j2` runs Redis on `REDIS_PORT` inside the overlay network without a published port, so production is not affected.
-- Downstream migration: none. The file is the local development compose; a merge brings the fix.
+Projects using the shared local Compose file receive the fix on merge. For a project-owned copy with a configurable Redis listener, pass the resolved port to the container and use it as the mapping target. Recreate the local Redis service and check for an authenticated `PONG` on the published port. If overriding that port manually, set the API's `KV_PORT` to match.
