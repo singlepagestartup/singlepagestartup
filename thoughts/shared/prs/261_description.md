@@ -33,12 +33,12 @@ Closes #223
 - [x] Shared Utils Jest suite: 17 suites, 117 tests passed.
 - [x] `tsc --noEmit -p libs/modules/agent/tsconfig.json` passed.
 - [x] Changed-file ESLint rules passed for 17 TypeScript files, with parser
-      project loading disabled and TypeScript checked separately.
+  project loading disabled and TypeScript checked separately.
 - [x] Module dependency check: 15520 source files, zero violations.
 - [x] Inline type-import audit and `git diff --check` passed.
 - [x] Real Bun/Hono loopback harness: a 1.5 s handler outlived a 1 s dispatch
-      timeout, the next tick remained blocked, and the handler recorded its own
-      completion for the same run id. No duplicate handler execution occurred.
+  timeout, the next tick remained blocked, and the handler recorded its own
+  completion for the same run id. No duplicate handler execution occurred.
 
 ## Downstream migration
 

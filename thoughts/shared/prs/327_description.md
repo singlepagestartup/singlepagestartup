@@ -22,14 +22,23 @@ Paths without a prefix are under `libs/modules/billing/models/payment-intent/bac
 
 ## Verification
 
-- [x] `npx nx run @sps/billing:jest:test` — 7 suites, 22 tests (4 and 12 before the change).
-- [x] `npx nx run @sps/shared-utils:jest:test` — 13 suites, 76 tests.
-- [x] `npx nx run @sps/billing:eslint:lint`, `npx nx run @sps/shared-utils:eslint:lint` and `npx nx run api:eslint:lint` (two existing warnings in untouched jest configs).
-- [x] `npx tsc --noEmit` for `libs/modules/billing`, `libs/shared/utils` and `apps/api/specs/scenario` — 0 errors.
-- [x] `node tools/agents/code-placement.mjs`.
-- [x] Mutation checks: without the webhook check the webhook spec fails; without the creation check the creation spec fails; a substring or prefix predicate fails the predicate spec; without the webhook check the DB-backed scenario fails (`Expected: 400, Received: 200`).
-- [x] The scenario against an API on port 4302, with and without `dummy` in the list — 2 passed each time.
-- [x] The HTTP checks below against the same API, with throwaway fixtures deleted afterwards.
+Updated from main after PR #326 (`b803f86325`). Resolved two conflicts in the
+webhook handler and payment-intent README, preserving the current missing-provider
+validation and PayKeeper identifier documentation.
+
+- [x] Billing: 9 suites, 49 tests, including refusal of all eight disabled
+  provider names before JSON parsing.
+- [x] Shared Utils: 18 suites, 119 tests.
+- [x] Billing TypeScript check and scoped ESLint passed.
+- [x] Module dependency check: zero violations. API environment script syntax passed.
+- [x] Real local API and PostgreSQL: four scenarios with `stripe` allowed and
+  the same four with `stripe,dummy` allowed. Disabled callbacks leave invoices
+  and payment intents unpaid; an enabled provider settles a zero-amount invoice.
+  Non-zero dummy invoices obey the list both anonymously and with the operator
+  credential. Temporary records were deleted after each scenario.
+
+Live external payment-provider callbacks were not exercised in this review.
+Provider signature implementations are unchanged by this PR.
 
 ## How to verify it
 

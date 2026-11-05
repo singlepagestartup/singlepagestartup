@@ -25,7 +25,6 @@ and runs the application as the existing `node` user with uid/gid 1000.
 
 The main update contained one conflict in the Docker dependency installation
 step. The resolved version includes Poppler and the pinned Bun installation.
-
 - Docker build checks and Ansible syntax checks passed.
 - Both synthetic build contexts excluded their credential fixtures and retained
   the expected defaults and helpers. A separate context check excluded generated

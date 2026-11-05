@@ -32,13 +32,13 @@ Only RBAC backend code, tests, Subject docs and PR artifacts change against main
 - `node node_modules/jest/bin/jest.js --config libs/modules/rbac/jest.config.ts --runInBand`:
   187 suites, 1065 tests pass (`RBAC_SECRET_KEY` supplied for the isolated checkout).
 - `jest --config libs/modules/rbac/jest.integration.config.ts --runInBand --runTestsByPath
-.../ecommerce/order/create.integration.spec.ts`: three PostgreSQL tests pass.
+  .../ecommerce/order/create.integration.spec.ts`: three PostgreSQL tests pass.
   Four requests through independent Service/Repository instances yield one success,
   three conflicts and one complete graph with quantity 2. Pricing is not called
   for a blocked Product. A failed Store relation leaves no ownership/line writes;
   retry succeeds. History and another Subject permit new Orders.
 - `jest --config apps/api/jest.scenario.config.ts --runInBand --runTestsByPath
-apps/api/specs/scenario/singlepagestartup/issue-258/backend-cart-duplicate.scenario.spec.ts`:
+  apps/api/specs/scenario/singlepagestartup/issue-258/backend-cart-duplicate.scenario.spec.ts`:
   one full API scenario passes with disposable Subject/catalog fixtures. Its first
   attempt used `payload.message`; the standard response uses `payload.error`.
   Correcting that assertion produces a passing scenario; runtime behavior was unchanged.

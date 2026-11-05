@@ -25,17 +25,17 @@ cart for the same Product. A history or cancelled Order permits another purchase
 
 - [x] RBAC unit suite: 187 suites, 1065 tests passed.
 - [x] PostgreSQL integration: 3 tests passed, including four concurrent requests
-      across independent service instances, graph rollback/retry, history and Subject isolation.
+  across independent service instances, graph rollback/retry, history and Subject isolation.
 - [x] Full API DB-backed scenario: one test passed through the running candidate API.
 - [x] Additional HTTP checks: concurrent responses `200,409,409,409`; different store
-      and currency still return 409; history transition permits another add; warmed
-      cart reads reflect creation and history changes without cache-busting parameters.
+  and currency still return 409; history transition permits another add; warmed
+  cart reads reflect creation and history changes without cache-busting parameters.
 - [x] Browser with Turbopack Host: add a temporary priced Product, see one cart row,
-      and observe its quantity/total update from a second client without reloading.
+  and observe its quantity/total update from a second client without reloading.
 - [x] Scoped ESLint: eight TypeScript files, zero errors/warnings; inline type-import
-      audit: zero; module dependency check: zero violations.
+  audit: zero; module dependency check: zero violations.
 - [x] RBAC TypeScript comparison: no added diagnostics against main. The full
-      typecheck still reports 63 existing test diagnostics.
+  typecheck still reports 63 existing test diagnostics.
 
 Detailed evidence: `thoughts/shared/research/singlepagestartup/2026-11-02-pr264-cart-duplicate-validation.md`.
 

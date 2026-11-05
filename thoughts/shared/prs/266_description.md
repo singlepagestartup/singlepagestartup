@@ -25,12 +25,12 @@ the UUID-backed Payment Intent–Invoice relation. A valid unknown UUID retains
 - [x] Billing unit suite: six suites, 31 tests passed.
 - [x] Backend utils unit suite: nine suites, 167 tests passed.
 - [x] Full API + PostgreSQL scenario: nine tests passed with malformed form/JSON
-      payloads, invalid field types and a random unknown UUID. No live invoice,
-      payment provider call or settlement is used.
+  payloads, invalid field types and a random unknown UUID. No live invoice,
+  payment provider call or settlement is used.
 - [x] Billing and backend-utils TypeScript checks pass.
 - [x] API TypeScript comparison: 18 existing diagnostics, none added against main.
 - [x] Scoped ESLint: six TypeScript files, zero errors/warnings. Module dependency
-      check: zero violations. Inline type-import AST audit: zero occurrences.
+  check: zero violations. Inline type-import AST audit: zero occurrences.
 
 Detailed evidence: `thoughts/shared/research/singlepagestartup/2026-11-02-pr266-paykeeper-validation.md`.
 
