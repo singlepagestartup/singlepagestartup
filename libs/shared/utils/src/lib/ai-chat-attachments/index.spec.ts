@@ -27,3 +27,18 @@ it("allows supported images and text documents but rejects SVG and mismatched MI
     ]),
   ).toThrow("bad.svg");
 });
+
+it("accepts HTML only for Social messages and keeps standalone SVG blocked", () => {
+  for (const name of ["demo.html", "demo.HTM"]) {
+    const file = { name, type: "text/html; charset=utf-8" };
+    expect(() =>
+      assertSupportedAiChatAttachments([file], "message"),
+    ).not.toThrow();
+    expect(() => assertSupportedAiChatAttachments([file])).toThrow(
+      "Unsupported files",
+    );
+    expect(
+      isSupportedAiChatAttachment({ name, type: "image/svg+xml" }, "message"),
+    ).toBe(false);
+  }
+});

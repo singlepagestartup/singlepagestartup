@@ -14,10 +14,8 @@ import {
   BillRouteMiddleware,
   controllerGuardedRoutes,
 } from "@sps/middlewares";
-import {
-  FILE_CONTENT_SECURITY_HEADERS,
-  MIDDLEWARE_HTTP_CACHE,
-} from "@sps/shared-utils";
+import { MIDDLEWARE_HTTP_CACHE } from "@sps/shared-utils";
+import { getFileContentHeaders } from "@sps/backend-utils";
 import { app as agentApp } from "@sps/agent/backend/app/api";
 import { app as analyticApp } from "@sps/analytic/backend/app/api";
 import { app as hostApp } from "@sps/host/backend/app/api";
@@ -122,7 +120,7 @@ app.on(["GET", "HEAD"], "/public/*", async (c) => {
       continue;
     }
 
-    const headers = new Headers(FILE_CONTENT_SECURITY_HEADERS);
+    const headers = getFileContentHeaders(relativePath, file.type);
     if (file.type) {
       headers.set("Content-Type", file.type);
     }

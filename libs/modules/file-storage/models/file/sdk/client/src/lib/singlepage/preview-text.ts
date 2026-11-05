@@ -29,15 +29,13 @@ export async function readPreviewText(
     cache: "no-store",
   });
   if (!response.ok)
-    throw new Error(
-      "This file could not be loaded. Open or download the original.",
-    );
+    throw new Error("This file could not be loaded. Download the original.");
   if (
     Number(response.headers.get("content-length")) > FILE_PREVIEW_TEXT_MAX_BYTES
   ) {
     await response.body?.cancel();
     throw new Error(
-      "This file is too large for text preview. Open or download the original.",
+      "This file is too large for text preview. Download the original.",
     );
   }
   const reader = response.body?.getReader();
@@ -45,7 +43,7 @@ export async function readPreviewText(
     const data = await response.arrayBuffer();
     if (data.byteLength > FILE_PREVIEW_TEXT_MAX_BYTES)
       throw new Error(
-        "This file is too large for text preview. Open or download the original.",
+        "This file is too large for text preview. Download the original.",
       );
     return new TextDecoder().decode(data);
   }
@@ -59,7 +57,7 @@ export async function readPreviewText(
       if (size > FILE_PREVIEW_TEXT_MAX_BYTES) {
         await reader.cancel();
         throw new Error(
-          "This file is too large for text preview. Open or download the original.",
+          "This file is too large for text preview. Download the original.",
         );
       }
       chunks.push(value);
@@ -89,7 +87,7 @@ export function action(props: IProps) {
       queryFn: ({ signal }) => {
         if ((props.file.size || 0) > FILE_PREVIEW_TEXT_MAX_BYTES)
           throw new Error(
-            "This file is too large for text preview. Open or download the original.",
+            "This file is too large for text preview. Download the original.",
           );
         const src = /^https?:\/\//i.test(props.file.file)
           ? props.file.file

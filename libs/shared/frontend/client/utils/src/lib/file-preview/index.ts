@@ -1,5 +1,6 @@
 export type FilePreviewKind =
   | "image"
+  | "html"
   | "pdf"
   | "markdown"
   | "text"
@@ -20,6 +21,8 @@ export function getFilePreviewKind(props: {
   const mimeType = props.mimeType?.split(";")[0].trim().toLowerCase();
   if (mimeType === "image/svg+xml" || ["svg", "svgz"].includes(extension))
     return "unsupported";
+  if (mimeType === "text/html" || ["html", "htm"].includes(extension))
+    return "html";
   if (
     mimeType?.startsWith("image/") ||
     (!mimeType &&

@@ -59,9 +59,18 @@ snapshot. Both declared and streamed text sizes are limited to 2 MiB.
 credentials for PDF rendering and the Download action. Preview does not widen
 File metadata access. PDF pages render in the browser through the app's lazy
 PDF.js bundle; images support zoom, Markdown has formatted/source modes, and
-text formats use a scrolling plain-text view. Unsupported formats and preview
-errors retain original/download actions. Blocked legacy SVG/unavailable
-attachments keep their noninteractive card.
+text formats use a scrolling plain-text view. The Social message composer also
+accepts HTML and HTM. Knowledge source uploads keep their own format list.
+Legacy SVG attachments keep their noninteractive card.
+
+Opening an HTML attachment reads up to 2 MiB into an isolated document.
+Inline JavaScript runs there. Scripts and stylesheets may load from
+`cdn.tailwindcss.com`, `cdn.jsdelivr.net` and `cdnjs.cloudflare.com`.
+The attachment has an opaque origin. The enclosing frame restricts navigation
+to data documents, and the inherited content policy blocks API requests.
+The viewer also offers source text and a download. A draft never links to a
+top-level Blob document. External CDN requests disclose the viewer's IP to the
+CDN. Only open an interactive preview when you want its scripts to run.
 
 ## Protected article media
 
@@ -77,17 +86,15 @@ Blob URLs are revoked on replacement, denial and unmount. A 401/403 removes the
 previous source immediately; transient failures preserve currently mounted media
 while exposing Retry. No protected Blob enters the global action debug snapshot.
 
-### Protected bytes
+### Reading file content by ID
 
-`GET` and `HEAD /api/file-storage/files/:uuid/content` use the owning File
-service to return managed bytes after the API host verifies all private roots.
-The client/server SDK operation `content` returns a Blob and supports request
-cancellation. It sends current credentials with no-store request options;
-protected responses have private/no-store headers. The protected File reader
-owns the temporary object URL and removes it when its access scope closes.
-The public `download` operation keeps its existing behavior.
+`GET` and `HEAD /api/file-storage/files/:uuid/content` resolve a File record
+by ID and read the original bytes through the File service. The `content`
+SDK operation sends the caller's credentials and supports cancellation.
+Responses carry `Cache-Control: private, no-store`. The ordinary API route
+permissions govern access. The File handler does not check article subscriptions.
 
-The same access check protects File metadata, canonical managed byte aliases
-and direct `/public/...` GET/HEAD paths. A protected file's storage location
-cannot be replaced through ordinary multipart update. Private graphs use
-isolated managed bytes; existing public files are copied before marking.
+The API also serves local files under `/public/...` by path. Anyone with a
+public URL can read those bytes. Both API routes sandbox directly opened
+documents and send HTML as an attachment. Raw object-storage URLs use the
+storage provider's own delivery headers and access rules.

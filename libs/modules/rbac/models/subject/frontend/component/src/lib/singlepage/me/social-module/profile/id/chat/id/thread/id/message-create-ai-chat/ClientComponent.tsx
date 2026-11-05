@@ -8,8 +8,8 @@ import { api as subjectApi } from "@sps/rbac/models/subject/sdk/client";
 import {
   CHAT_FOLLOW_LATEST_EVENT,
   assertSupportedAiChatAttachments,
-  AI_CHAT_ATTACHMENT_ACCEPT,
-  AI_CHAT_ATTACHMENT_FORMAT_LABEL,
+  AI_CHAT_MESSAGE_ATTACHMENT_ACCEPT,
+  AI_CHAT_MESSAGE_ATTACHMENT_FORMAT_LABEL,
   isSupportedAiChatAttachment,
 } from "@sps/shared-utils";
 import {
@@ -179,7 +179,10 @@ export function Component(props: IComponentPropsExtended) {
         sending.current = true;
         setError("");
         try {
-          assertSupportedAiChatAttachments(files.map((item) => item.file));
+          assertSupportedAiChatAttachments(
+            files.map((item) => item.file),
+            "message",
+          );
           const submittedMessage = message.trim()
             ? message
             : ru
@@ -363,21 +366,23 @@ export function Component(props: IComponentPropsExtended) {
               }
               className="sr-only"
               type="file"
-              accept={AI_CHAT_ATTACHMENT_ACCEPT}
+              accept={AI_CHAT_MESSAGE_ATTACHMENT_ACCEPT}
               multiple
               disabled={createMessage.isPending}
               onChange={(event) => {
                 const incoming = Array.from(event.target.files || []);
                 const rejected = incoming.filter(
-                  (file) => !isSupportedAiChatAttachment(file),
+                  (file) => !isSupportedAiChatAttachment(file, "message"),
                 );
                 setError(
                   rejected.length
-                    ? `${ru ? "Неподдерживаемые файлы" : "Unsupported files"}: ${rejected.map((file) => file.name).join(", ")}. ${ru ? "Допустимые форматы" : "Allowed formats"}: ${AI_CHAT_ATTACHMENT_FORMAT_LABEL}.`
+                    ? `${ru ? "Неподдерживаемые файлы" : "Unsupported files"}: ${rejected.map((file) => file.name).join(", ")}. ${ru ? "Допустимые форматы" : "Allowed formats"}: ${AI_CHAT_MESSAGE_ATTACHMENT_FORMAT_LABEL}.`
                     : "",
                 );
                 const selected = incoming
-                  .filter(isSupportedAiChatAttachment)
+                  .filter((file) =>
+                    isSupportedAiChatAttachment(file, "message"),
+                  )
                   .map((file) => ({
                     id: `attachment-${++fileSequence.current}`,
                     file,

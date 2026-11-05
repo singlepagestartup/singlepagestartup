@@ -74,7 +74,9 @@ describe("public delivery of uploaded files", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toBe("image/svg+xml");
     expect(response.headers.get("x-content-type-options")).toBe("nosniff");
-    expect(response.headers.get("content-security-policy")).toBe("sandbox");
+    expect(response.headers.get("content-security-policy")).toContain(
+      "sandbox; default-src 'none'",
+    );
     expect(await response.text()).toBe(svg);
   });
 
@@ -90,7 +92,9 @@ describe("public delivery of uploaded files", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toBe("image/svg+xml");
     expect(response.headers.get("x-content-type-options")).toBe("nosniff");
-    expect(response.headers.get("content-security-policy")).toBe("sandbox");
+    expect(response.headers.get("content-security-policy")).toContain(
+      "sandbox; default-src 'none'",
+    );
   });
 
   it.each(["GET", "HEAD"])(
@@ -107,11 +111,55 @@ describe("public delivery of uploaded files", () => {
       expect(response.status).toBe(200);
       expect(response.headers.get("content-type")).toBe("image/svg+xml");
       expect(response.headers.get("x-content-type-options")).toBe("nosniff");
-      expect(response.headers.get("content-security-policy")).toBe("sandbox");
+      expect(response.headers.get("content-security-policy")).toContain(
+        "sandbox; default-src 'none'",
+      );
       expect(response.headers.get("cache-control")).toContain("no-store");
       expect(await response.text()).toBe(method === "GET" ? svg : "");
     },
   );
+
+  it("delivers HTML as a download through both URLs, with identical bytes and no external subresources", async () => {
+    const html = '<script src="https://cdn.tailwindcss.com"></script>';
+    const form = new FormData();
+    form.append(
+      "data",
+      JSON.stringify({ adminTitle: "HTML delivery fixture" }),
+    );
+    form.append(
+      "file",
+      new File([html], "preview.html", { type: "text/html" }),
+    );
+    const response = await fetch(`${getApiUrl()}/api/file-storage/files`, {
+      method: "POST",
+      headers: operatorHeaders(),
+      body: form,
+    });
+    expect(response.status).toBe(201);
+    const { data } = await response.json();
+    try {
+      for (const path of [
+        `/public${data.file}`,
+        `/api/file-storage/files/${data.id}/content`,
+      ]) {
+        for (const method of ["GET", "HEAD"]) {
+          const result = await fetch(getApiUrl() + path, {
+            method,
+            headers: operatorHeaders(),
+          });
+          expect(result.status).toBe(200);
+          expect(result.headers.get("content-disposition")).toBe("attachment");
+          expect(result.headers.get("content-security-policy")).toContain(
+            "sandbox; default-src 'none'",
+          );
+          expect(result.headers.get("x-content-type-options")).toBe("nosniff");
+          expect(await result.text()).toBe(method === "GET" ? html : "");
+        }
+      }
+    } finally {
+      await deleteFile(data.id);
+    }
+  });
 
   /**
    * BDD Scenario

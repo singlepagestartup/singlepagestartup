@@ -208,7 +208,7 @@ export class Handler {
         });
         if (chat?.variant === "ai-chat") {
           try {
-            assertSupportedAiChatAttachments(files);
+            assertSupportedAiChatAttachments(files, "message");
             for (const file of files) {
               assertKnowledgeAttachmentBytes({
                 bytes: new Uint8Array(await file.arrayBuffer()),

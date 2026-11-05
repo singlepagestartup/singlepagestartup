@@ -290,3 +290,49 @@ it("shows a readable error and a retry while keeping the original available", ()
   expect(retry).toHaveBeenCalledTimes(1);
   expect(screen.getByRole("link", { name: "Open original" })).toBeTruthy();
 });
+
+it("loads stored HTML only after opening and keeps its executable markup outside the chat document", () => {
+  const html = '<script id="from-upload">window.fromUpload = true</script>';
+  const stored = {
+    ...file,
+    file: "/stored/page.htm",
+    adminTitle: "Demo",
+    mimeType: "",
+    extension: "",
+  };
+  mockText.mockReturnValue({ data: html, isPending: false, isError: false });
+  render(
+    <FileStorageFile
+      {...({
+        isServer: false,
+        variant: "attachment-ai-chat",
+        dataSource: "props",
+        data: stored,
+      } as any)}
+    />,
+  );
+  expect(mockText).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("button", { name: "Preview Demo" }));
+  expect(mockText).toHaveBeenCalledWith({ file: stored });
+  const frame = screen.getByTitle("HTML preview");
+  expect(frame.getAttribute("sandbox")).toBe("allow-scripts");
+  const wrapper = new DOMParser().parseFromString(
+    frame.getAttribute("srcdoc")!,
+    "text/html",
+  );
+  const inner = wrapper.querySelector("iframe")!;
+  expect(inner.getAttribute("sandbox")).toBe("allow-scripts");
+  expect(inner.src).toBe(
+    "data:text/html;charset=utf-8," + encodeURIComponent(html),
+  );
+  const policy = wrapper
+    .querySelector('meta[http-equiv="Content-Security-Policy"]')!
+    .getAttribute("content");
+  expect(policy).toContain("frame-src data:");
+  expect(policy).toContain("connect-src 'none'");
+  expect(screen.queryByRole("link", { name: "Open original" })).toBeNull();
+  expect(document.getElementById("from-upload")).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Source" }));
+  expect(screen.getByText(html).tagName).toBe("PRE");
+  expect(screen.queryByTitle("HTML preview")).toBeNull();
+});

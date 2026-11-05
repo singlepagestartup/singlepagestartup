@@ -225,6 +225,29 @@ describe("Given: rbac social message create author relation", () => {
     mockRbacSubjectNotify.mockResolvedValue({});
   });
 
+  it("uploads HTML and links the stored File to the AI Chat message", async () => {
+    const context = createContext([]);
+    const form = await context.req.formData();
+    const file = new File(["<p>Example</p>"], "demo.html", {
+      type: "text/html",
+    });
+    form.set("files", file);
+    mockFileStorageFileCreate.mockResolvedValueOnce({ id: "html-file" });
+    const handler = new Handler(createService());
+    handler.notifyOtherSubjectsInChat = jest.fn().mockResolvedValue(undefined);
+    await handler.execute(context, jest.fn());
+    expect(mockFileStorageFileCreate).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { adminTitle: file.name, file } }),
+    );
+    expect(mockSocialModuleMessagesToFilesCreate).toHaveBeenCalledWith({
+      data: {
+        messageId: "message-1",
+        fileStorageModuleFileId: "html-file",
+        orderIndex: 0,
+      },
+    });
+  });
+
   /**
    * BDD Scenario
    * Given: a thread message create request succeeds.

@@ -42,3 +42,8 @@ export interface IPdfPreviewProps {
   localFile?: File;
   onDownload?: (signal?: AbortSignal) => Promise<Blob>;
 }
+
+export interface IHtmlPreviewProps {
+  text: string;
+  language?: string;
+}

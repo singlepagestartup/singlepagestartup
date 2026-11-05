@@ -1,7 +1,6 @@
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { FILE_CONTENT_SECURITY_HEADERS } from "@sps/shared-utils";
-import { getHttpErrorType } from "@sps/backend-utils";
+import { getFileContentHeaders, getHttpErrorType } from "@sps/backend-utils";
 import type { Service } from "../../../service";
 export class Handler {
   constructor(readonly service: Service) {}
@@ -12,18 +11,16 @@ export class Handler {
       const file = await this.service.findById({ id });
       if (!file) throw new Error("Not Found error. File not found");
       const bytes = await this.service.readBytes(file);
-      c.header("Cache-Control", "private, no-store");
-      c.header("Vary", "Authorization, Cookie");
-      c.header("Content-Type", file.mimeType || "application/octet-stream");
-      c.header("Content-Length", String(bytes.byteLength));
+      const headers = getFileContentHeaders(file.file, file.mimeType);
+      headers.set("Cache-Control", "private, no-store");
+      headers.set("Vary", "Authorization, Cookie");
+      headers.set("Content-Type", file.mimeType || "application/octet-stream");
+      headers.set("Content-Length", String(bytes.byteLength));
+      headers.forEach((value, name) => c.header(name, value));
       return new Response(
         c.req.method === "HEAD" ? null : new Uint8Array(bytes),
         {
-          status: 200,
-          headers: {
-            ...Object.fromEntries(c.res.headers),
-            ...FILE_CONTENT_SECURITY_HEADERS,
-          },
+          headers: c.res.headers,
         },
       );
     } catch (error) {
