@@ -6,9 +6,15 @@ export const NEXT_PUBLIC_API_SERVICE_URL =
   "http://localhost:4000";
 export const API_SERVICE_URL =
   process.env["API_SERVICE_URL"] || "http://localhost:4000";
+/**
+ * Payment providers the API accepts, comma-separated (issue #302). Payment
+ * creation and provider webhooks both refuse a provider that is not an entry.
+ * `dummy` marks an invoice paid without a payment provider, so the default
+ * leaves it out; a project that runs without real payments lists it.
+ */
 export const ALLOWED_BILLING_SERVICE_PROVIDERS =
   process.env["ALLOWED_BILLING_SERVICE_PROVIDERS"] ||
-  "stripe,0xprocessing,payselection,cloudpayments,tiptoppay,dummy";
+  "stripe,0xprocessing,payselection,cloudpayments,tiptoppay";
 export const API_SERVICE_PORT = Number(process.env["API_SERVICE_PORT"]) || 4000;
 export const NEXT_PUBLIC_HOST_SERVICE_URL =
   process.env["NEXT_PUBLIC_HOST_SERVICE_URL"] || "http://localhost:3000";
