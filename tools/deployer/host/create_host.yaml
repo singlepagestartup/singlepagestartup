@@ -38,6 +38,23 @@
         src: docker-compose.host.yaml.j2
         dest: /home/code/docker-compose.host.yaml
 
+    # The host image runs as uid 1000 and rewrites the chunks in this volume at
+    # every start, so the volume has to belong to that uid.
+    - name: Find next_static volume
+      shell: docker volume inspect --format '{% raw %}{{ .Mountpoint }}{% endraw %}' host_next_static
+      register: next_static_volume
+      failed_when: false
+      changed_when: false
+
+    - name: Give next_static volume to the image user
+      file:
+        path: "{{ next_static_volume.stdout }}"
+        state: directory
+        owner: "1000"
+        group: "1000"
+        recurse: yes
+      when: next_static_volume.rc == 0
+
     - name: Run host service
       shell: docker stack deploy --with-registry-auth --compose-file=/home/code/docker-compose.host.yaml host
 
