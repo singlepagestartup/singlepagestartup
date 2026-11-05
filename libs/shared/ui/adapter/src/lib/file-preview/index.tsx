@@ -136,35 +136,42 @@ function LocalText({ file, kind, language }: ILocalTextProps) {
       return;
     }
     reader.onload = () => {
-      if (active) setResult({ text: String(reader.result || "") });
+      if (active) {
+        setResult({ text: String(reader.result || "") });
+      }
     };
     reader.onerror = () => {
-      if (active)
+      if (active) {
         setResult({
           error:
             language === "ru"
               ? "Не удалось прочитать файл. Скачайте оригинал."
               : "This file could not be read. Download the original.",
         });
+      }
     };
     reader.readAsText(file);
     return () => {
       active = false;
-      if (reader.readyState === FileReader.LOADING) reader.abort();
+      if (reader.readyState === FileReader.LOADING) {
+        reader.abort();
+      }
     };
   }, [file, language]);
-  if (result.error)
+  if (result.error) {
     return (
       <p role="alert" className="p-6 text-sm text-muted-foreground">
         {result.error}
       </p>
     );
-  if (result.text === undefined)
+  }
+  if (result.text === undefined) {
     return (
       <p role="status" className="p-6 text-sm text-muted-foreground">
         {language === "ru" ? "Загрузка предпросмотра…" : "Loading preview…"}
       </p>
     );
+  }
   return <FilePreviewText text={result.text} kind={kind} language={language} />;
 }
 
@@ -180,7 +187,9 @@ export function FilePreview(props: IFilePreviewProps) {
     extension: props.extension,
   });
   useEffect(() => {
-    if (!props.localFile || kind !== "image") return;
+    if (!props.localFile || kind !== "image") {
+      return;
+    }
     const url = URL.createObjectURL(props.localFile);
     setLocalUrl(url);
     return () => URL.revokeObjectURL(url);
@@ -192,9 +201,106 @@ export function FilePreview(props: IFilePreviewProps) {
     .replace(/^\./, "")
     .toUpperCase();
   const text = kind === "text" || kind === "markdown" || kind === "html";
-  const Glyph = kind === "pdf" ? FileType2 : text ? FileText : File;
+  let Glyph = File;
+  if (kind === "pdf") {
+    Glyph = FileType2;
+  } else if (text) {
+    Glyph = FileText;
+  }
+  let downloadLabel = props.language === "ru" ? "Скачать" : "Download";
+  if (downloading) {
+    downloadLabel = props.language === "ru" ? "Скачивание…" : "Downloading…";
+  }
   const openOriginal =
     src && !props.localFile && !src.startsWith("blob:") && kind !== "html";
+  function renderPreview() {
+    if ((!props.localFile && !src) || failed) {
+      return (
+        <p role="alert" className="p-6 text-sm text-muted-foreground">
+          {props.language === "ru"
+            ? "Предпросмотр недоступен. Скачайте оригинал."
+            : "Preview is unavailable. Download the original."}
+        </p>
+      );
+    }
+    if (kind === "image") {
+      return (
+        <>
+          <div className="flex shrink-0 items-center justify-end gap-2 border-b border-border p-2">
+            <button
+              type="button"
+              aria-label={props.language === "ru" ? "Уменьшить" : "Zoom out"}
+              disabled={zoom <= 1}
+              onClick={() => setZoom((value) => Math.max(1, value - 0.5))}
+              className="grid size-9 place-items-center rounded-lg hover:bg-muted disabled:opacity-40"
+            >
+              <Minus className="size-4" />
+            </button>
+            <span className="min-w-12 text-center text-xs tabular-nums">
+              {Math.round(zoom * 100)}%
+            </span>
+            <button
+              type="button"
+              aria-label={props.language === "ru" ? "Увеличить" : "Zoom in"}
+              disabled={zoom >= 3}
+              onClick={() => setZoom((value) => Math.min(3, value + 0.5))}
+              className="grid size-9 place-items-center rounded-lg hover:bg-muted disabled:opacity-40"
+            >
+              <Plus className="size-4" />
+            </button>
+          </div>
+          <div className="min-h-0 flex-1 overflow-auto p-3">
+            <div
+              className={cn("grid h-full place-items-center", {
+                "w-full": zoom === 1,
+                "w-[150%] h-[150%]": zoom === 1.5,
+                "w-[200%] h-[200%]": zoom === 2,
+                "w-[250%] h-[250%]": zoom === 2.5,
+                "w-[300%] h-[300%]": zoom === 3,
+              })}
+            >
+              <img
+                src={src}
+                alt={props.name}
+                onError={() => setFailed(true)}
+                className="h-full w-full object-contain"
+              />
+            </div>
+          </div>
+        </>
+      );
+    }
+    if (kind === "pdf") {
+      return (
+        <PdfPreview
+          language={props.language}
+          name={props.name}
+          localFile={props.localFile}
+          onDownload={props.onDownload}
+        />
+      );
+    }
+    if (text) {
+      if (props.localFile) {
+        return (
+          <LocalText
+            file={props.localFile}
+            kind={kind}
+            language={props.language}
+          />
+        );
+      }
+      return props.textContent;
+    }
+    return (
+      <p className="p-6 text-sm text-muted-foreground">
+        {props.language === "ru"
+          ? "Предпросмотр этого формата недоступен. Скачайте оригинал."
+          : "Preview is not available for this format. Download the original."}
+      </p>
+    );
+  }
+
   return (
     <Dialog
       onOpenChange={() => {
@@ -260,87 +366,7 @@ export function FilePreview(props: IFilePreviewProps) {
           </DialogDescription>
         </div>
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-background">
-          {(!props.localFile && !src) || failed ? (
-            <p role="alert" className="p-6 text-sm text-muted-foreground">
-              {props.language === "ru"
-                ? "Предпросмотр недоступен. Скачайте оригинал."
-                : "Preview is unavailable. Download the original."}
-            </p>
-          ) : kind === "image" ? (
-            <>
-              <div className="flex shrink-0 items-center justify-end gap-2 border-b border-border p-2">
-                <button
-                  type="button"
-                  aria-label={
-                    props.language === "ru" ? "Уменьшить" : "Zoom out"
-                  }
-                  disabled={zoom <= 1}
-                  onClick={() => setZoom((value) => Math.max(1, value - 0.5))}
-                  className="grid size-9 place-items-center rounded-lg hover:bg-muted disabled:opacity-40"
-                >
-                  <Minus className="size-4" />
-                </button>
-                <span className="min-w-12 text-center text-xs tabular-nums">
-                  {Math.round(zoom * 100)}%
-                </span>
-                <button
-                  type="button"
-                  aria-label={props.language === "ru" ? "Увеличить" : "Zoom in"}
-                  disabled={zoom >= 3}
-                  onClick={() => setZoom((value) => Math.min(3, value + 0.5))}
-                  className="grid size-9 place-items-center rounded-lg hover:bg-muted disabled:opacity-40"
-                >
-                  <Plus className="size-4" />
-                </button>
-              </div>
-              <div className="min-h-0 flex-1 overflow-auto p-3">
-                <div
-                  className={cn(
-                    "grid h-full place-items-center",
-                    zoom === 1.5
-                      ? "w-[150%] h-[150%]"
-                      : zoom === 2
-                        ? "w-[200%] h-[200%]"
-                        : zoom === 2.5
-                          ? "w-[250%] h-[250%]"
-                          : zoom === 3
-                            ? "w-[300%] h-[300%]"
-                            : "w-full",
-                  )}
-                >
-                  <img
-                    src={src}
-                    alt={props.name}
-                    onError={() => setFailed(true)}
-                    className="h-full w-full object-contain"
-                  />
-                </div>
-              </div>
-            </>
-          ) : kind === "pdf" ? (
-            <PdfPreview
-              language={props.language}
-              name={props.name}
-              localFile={props.localFile}
-              onDownload={props.onDownload}
-            />
-          ) : text ? (
-            props.localFile ? (
-              <LocalText
-                file={props.localFile}
-                kind={kind}
-                language={props.language}
-              />
-            ) : (
-              props.textContent
-            )
-          ) : (
-            <p className="p-6 text-sm text-muted-foreground">
-              {props.language === "ru"
-                ? "Предпросмотр этого формата недоступен. Скачайте оригинал."
-                : "Preview is not available for this format. Download the original."}
-            </p>
-          )}
+          {renderPreview()}
         </div>
         {downloadError && (
           <p role="alert" className="px-4 py-2 text-xs text-destructive">
@@ -394,13 +420,7 @@ export function FilePreview(props: IFilePreviewProps) {
                   className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground"
                 >
                   <Download className="size-4" />
-                  {props.language === "ru"
-                    ? downloading
-                      ? "Скачивание…"
-                      : "Скачать"
-                    : downloading
-                      ? "Downloading…"
-                      : "Download"}
+                  {downloadLabel}
                 </button>
               )}
             </>

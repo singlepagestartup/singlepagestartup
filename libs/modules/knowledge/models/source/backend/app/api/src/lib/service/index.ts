@@ -609,11 +609,14 @@ export class Service extends CRUDService<Source> {
     minSimilarity?: number;
     sourceIds?: string[];
   }): Promise<KnowledgeSearchResult[]> {
-    if (props.sourceIds && !props.sourceIds.length) return [];
-    if (!this.dependencies().inTransaction)
+    if (props.sourceIds && !props.sourceIds.length) {
+      return [];
+    }
+    if (!this.dependencies().inTransaction) {
       return this.dependencies().readSnapshot((source) =>
         source.searchChunks(props),
       );
+    }
     const services = this.dependencies();
     const collect = (
       chunks: Awaited<ReturnType<ChunkService["search"]>>,
@@ -625,16 +628,17 @@ export class Service extends CRUDService<Source> {
       return chunks.flatMap((chunk) => {
         const link = linkByChunk.get(chunk.id);
         const source = link && sourceById.get(link.sourceId);
-        return source
-          ? [
-              {
-                ...chunk,
-                sourceId: source.id,
-                sourceTitle: source.title,
-                retrievalRole: "seed" as const,
-              },
-            ]
-          : [];
+        if (!source) {
+          return [];
+        }
+        return [
+          {
+            ...chunk,
+            sourceId: source.id,
+            sourceTitle: source.title,
+            retrievalRole: "seed" as const,
+          },
+        ];
       });
     };
     if (props.sourceIds) {
@@ -650,9 +654,13 @@ export class Service extends CRUDService<Source> {
       return collect(chunks, links, sources);
     }
     const total = await services.chunk.count();
-    if (!total) return [];
+    if (!total) {
+      return [];
+    }
     let limit = Math.min(total, Math.max(64, props.topK * 4));
-    for (;;) {
+    let result: KnowledgeSearchResult[];
+    let needsMoreCandidates: boolean;
+    do {
       // Keep the unfiltered global vector scan eligible for HNSW. Only ranked
       // candidates cross service boundaries; Source content is never loaded.
       const chunks = await services.chunk.search({
@@ -666,15 +674,15 @@ export class Service extends CRUDService<Source> {
       const sources = await this.freshHeaders([
         ...new Set(links.map((link) => link.sourceId)),
       ]);
-      const result = collect(chunks, links, sources);
-      if (
-        result.length >= props.topK ||
-        chunks.length < limit ||
-        limit >= total
-      )
-        return result.slice(0, props.topK);
-      limit = Math.min(total, limit * 2);
-    }
+      result = collect(chunks, links, sources);
+      needsMoreCandidates =
+        result.length < props.topK && chunks.length >= limit && limit < total;
+      if (needsMoreCandidates) {
+        limit = Math.min(total, limit * 2);
+      }
+    } while (needsMoreCandidates);
+
+    return result.slice(0, props.topK);
   }
   async findNeighborChunks(props: {
     seeds: {

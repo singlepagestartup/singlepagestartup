@@ -136,7 +136,9 @@ describe("file upload routes", () => {
         ["file", ""],
         ["file", logo()],
       ];
-      if (!textFirst) fields.reverse();
+      if (!textFirst) {
+        fields.reverse();
+      }
       fields.push(["data", JSON.stringify({ adminTitle: "Logo" })]);
       const request = await multipart(fields);
       const response = await hono.request(path, { method, ...request });

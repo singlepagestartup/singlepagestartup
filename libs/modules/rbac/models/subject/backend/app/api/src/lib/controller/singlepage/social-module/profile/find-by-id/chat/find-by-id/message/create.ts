@@ -92,9 +92,6 @@ export class Handler {
         data?: {
           [key: string]: any;
         };
-        files?: {
-          [key: string]: File | File[];
-        };
       } = {};
 
       try {
@@ -140,10 +137,11 @@ export class Handler {
           selectedSourceId !== undefined &&
           (typeof selectedSourceId !== "string" ||
             !document.sourceIds.includes(selectedSourceId))
-        )
+        ) {
           throw new Error(
             "Authorization error. Selected Knowledge Source does not belong to this document.",
           );
+        }
         const skill = await this.service.socialModuleProfileDocumentSkillFind({
           socialModuleProfileId: document.profileId,
           documentKey: document.key,
@@ -222,7 +220,6 @@ export class Handler {
             );
           }
         }
-        parsedBody.files = { files };
       }
 
       // Object storage work finishes before the short database transaction.
@@ -248,7 +245,7 @@ export class Handler {
           await this.service.socialModule.profilesToMessages.create({
             data: { messageId: message.id, profileId: socialModuleProfileId },
           });
-          for (const [orderIndex, file] of uploadedFiles.entries())
+          for (const [orderIndex, file] of uploadedFiles.entries()) {
             await this.service.socialModule.messagesToFileStorageModuleFiles.create(
               {
                 data: {
@@ -258,6 +255,7 @@ export class Handler {
                 },
               },
             );
+          }
           return message as ISocialModuleMessage;
         }),
       );

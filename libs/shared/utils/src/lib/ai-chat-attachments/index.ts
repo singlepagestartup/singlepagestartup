@@ -19,7 +19,9 @@ export function isSupportedAiChatAttachment(
       ? AI_CHAT_MESSAGE_ATTACHMENT_FORMATS
       : AI_CHAT_ATTACHMENT_FORMATS;
   const extension = file.name.split(".").pop()?.toLowerCase() || "";
-  if (!Object.hasOwn(allowed, extension)) return false;
+  if (!Object.hasOwn(allowed, extension)) {
+    return false;
+  }
   const type = file.type?.toLowerCase().split(";")[0].trim();
   return (
     !type ||

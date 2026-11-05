@@ -36,21 +36,12 @@ export class Handler {
         throw new Error("Validation error. Invalid url");
       }
 
-      const file = await fetch(data.url)
-        .then(async (res) => {
-          return await this.readBody(res);
-        })
-        .then((blob) => {
-          const fullFileName = data.url.split("?")[0].split("/").pop();
-          const fileName = fullFileName.split(".")[0];
-          const extension = fullFileName.split(".").pop();
-
-          return new File([blob], `${fileName}.${extension}`);
-        });
-
-      if (!file) {
-        throw new Error("Validation error. Invalid file");
-      }
+      const response = await fetch(data.url);
+      const blob = await this.readBody(response);
+      const fullFileName = data.url.split("?")[0].split("/").pop();
+      const fileName = fullFileName.split(".")[0];
+      const extension = fullFileName.split(".").pop();
+      const file = new File([blob], `${fileName}.${extension}`);
 
       const fileStorage = new Provider({
         type: FILE_STORAGE_PROVIDER,
@@ -132,22 +123,20 @@ export class Handler {
     const chunks: Uint8Array<ArrayBuffer>[] = [];
     let size = 0;
 
-    for (;;) {
-      const { done, value } = await reader.read();
+    try {
+      let chunk = await reader.read();
+      while (!chunk.done) {
+        size += chunk.value.byteLength;
+        if (size > FILE_STORAGE_MAX_UPLOAD_BYTES) {
+          await reader.cancel();
+          throw new Error(tooLargeMessage);
+        }
 
-      if (done) {
-        break;
+        chunks.push(chunk.value);
+        chunk = await reader.read();
       }
-
-      size += value.byteLength;
-
-      if (size > FILE_STORAGE_MAX_UPLOAD_BYTES) {
-        await reader.cancel();
-
-        throw new Error(tooLargeMessage);
-      }
-
-      chunks.push(value);
+    } finally {
+      reader.releaseLock();
     }
 
     return new Blob(chunks);

@@ -7,9 +7,13 @@ export class Handler {
   async execute(c: Context): Promise<Response> {
     try {
       const id = c.req.param("uuid");
-      if (!id) throw new Error("Validation error. File id required");
+      if (!id) {
+        throw new Error("Validation error. File id required");
+      }
       const file = await this.service.findById({ id });
-      if (!file) throw new Error("Not Found error. File not found");
+      if (!file) {
+        throw new Error("Not Found error. File not found");
+      }
       const bytes = await this.service.readBytes(file);
       const headers = getFileContentHeaders(file.file, file.mimeType);
       headers.set("Cache-Control", "private, no-store");
@@ -24,7 +28,9 @@ export class Handler {
         },
       );
     } catch (error) {
-      if (error instanceof HTTPException) throw error;
+      if (error instanceof HTTPException) {
+        throw error;
+      }
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });
     }

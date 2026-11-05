@@ -22,14 +22,17 @@ export async function readPreviewText(
   signal?: AbortSignal,
 ): Promise<string> {
   const url = getFilePreviewUrl(src);
-  if (!url) throw new Error("This file URL cannot be previewed.");
+  if (!url) {
+    throw new Error("This file URL cannot be previewed.");
+  }
   const response = await fetch(url, {
     signal,
     credentials: "omit",
     cache: "no-store",
   });
-  if (!response.ok)
+  if (!response.ok) {
     throw new Error("This file could not be loaded. Download the original.");
+  }
   if (
     Number(response.headers.get("content-length")) > FILE_PREVIEW_TEXT_MAX_BYTES
   ) {
@@ -41,26 +44,27 @@ export async function readPreviewText(
   const reader = response.body?.getReader();
   if (!reader) {
     const data = await response.arrayBuffer();
-    if (data.byteLength > FILE_PREVIEW_TEXT_MAX_BYTES)
+    if (data.byteLength > FILE_PREVIEW_TEXT_MAX_BYTES) {
       throw new Error(
         "This file is too large for text preview. Download the original.",
       );
+    }
     return new TextDecoder().decode(data);
   }
   let size = 0;
   const chunks: Uint8Array[] = [];
   try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      size += value.byteLength;
+    let chunk = await reader.read();
+    while (!chunk.done) {
+      size += chunk.value.byteLength;
       if (size > FILE_PREVIEW_TEXT_MAX_BYTES) {
         await reader.cancel();
         throw new Error(
           "This file is too large for text preview. Download the original.",
         );
       }
-      chunks.push(value);
+      chunks.push(chunk.value);
+      chunk = await reader.read();
     }
   } finally {
     reader.releaseLock();
@@ -85,10 +89,11 @@ export function action(props: IProps) {
     {
       queryKey: [key, props.file.file, props.file.updatedAt],
       queryFn: ({ signal }) => {
-        if ((props.file.size || 0) > FILE_PREVIEW_TEXT_MAX_BYTES)
+        if ((props.file.size || 0) > FILE_PREVIEW_TEXT_MAX_BYTES) {
           throw new Error(
             "This file is too large for text preview. Download the original.",
           );
+        }
         const src = /^https?:\/\//i.test(props.file.file)
           ? props.file.file
           : `${NEXT_PUBLIC_API_SERVICE_URL}/public${props.file.file}`;

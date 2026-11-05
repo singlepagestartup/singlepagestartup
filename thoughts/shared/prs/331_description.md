@@ -4,7 +4,7 @@ Closes #304.
 
 When someone opens an uploaded SVG or HTML document, the browser runs it under the API origin unless the response restricts it. Both `/public/...` and `/api/file-storage/files/:uuid/content` send a sandbox policy and `X-Content-Type-Options: nosniff` on GET and HEAD. HTML downloads as an attachment. Markup documents such as SVG also block external subresources. The content route retains its private, no-store cache policy. Direct S3 and Vercel Blob URLs use their provider's delivery settings.
 
-File create and update accept one uploaded file per request. A text field with the same name can accompany the file. Two files, including two under the same field name, receive HTTP 400 before storage. A metadata-only PATCH still updates the existing File.
+File create and update accept one uploaded file per request. A text field with the same name can accompany the file. Two files, including two under the same field name, receive HTTP 400 before storage. A metadata-only PATCH updates the existing File. Social messages accept multiple uploads in one multipart request. The Subject handler sends one File Storage request per attachment.
 
 `FILE_STORAGE_MAX_UPLOAD_BYTES` defaults to 50 MiB. It limits the entire multipart body on create and update, and the downloaded response on `create-from-url`. Oversized requests and downloads return HTTP 413. The API uses main's shared error category table. Server-side URL destination checks are tracked in #307. The separate API-wide CORS allowlist is tracked in #308.
 
@@ -18,6 +18,8 @@ The policy blocks API connections, forms, popups and top-level navigation.
 Users can switch to escaped source text or download the file.
 
 ## Verification
+
+- A temporary Subject sent one Social AI Chat message with HTML, Markdown and TXT using its session JWT. The response and a fresh thread read returned the same three distinct Files in order. Each file’s bytes matched the input, and the three persisted message relations had order indices 0, 1 and 2. A metadata-only update preserved the stored path. Replacing the middle attachment kept its File ID, its position and the other two files’ bytes. A direct File Storage POST or PATCH with two files returned HTTP 400.
 
 - 52 File Storage tests, 16 Social composer/handler tests, 6 Social message-list tests, 2 attachment-format tests, 177 backend utility tests, 3 module integration tests and 6 HTTP scenario tests passed. File Storage's TypeScript check reports the same five diagnostics as `main`, all in existing frontend and client SDK tests.
 - A running API and Chromium exercised the same uploaded SVG by both URLs. Its script was blocked in each document. GET returned the original bytes, HEAD returned the security headers, and deleting the fixture removed the public file.

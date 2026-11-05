@@ -19,26 +19,33 @@ export function getFilePreviewKind(props: {
     .replace(/^\./, "")
     .toLowerCase();
   const mimeType = props.mimeType?.split(";")[0].trim().toLowerCase();
-  if (mimeType === "image/svg+xml" || ["svg", "svgz"].includes(extension))
+  if (mimeType === "image/svg+xml" || ["svg", "svgz"].includes(extension)) {
     return "unsupported";
-  if (mimeType === "text/html" || ["html", "htm"].includes(extension))
+  }
+  if (mimeType === "text/html" || ["html", "htm"].includes(extension)) {
     return "html";
+  }
   if (
     mimeType?.startsWith("image/") ||
     (!mimeType &&
       ["png", "jpg", "jpeg", "webp", "gif", "avif"].includes(extension))
-  )
+  ) {
     return "image";
-  if (mimeType === "application/pdf" || extension === "pdf") return "pdf";
-  if (["md", "markdown"].includes(extension) || mimeType === "text/markdown")
+  }
+  if (mimeType === "application/pdf" || extension === "pdf") {
+    return "pdf";
+  }
+  if (["md", "markdown"].includes(extension) || mimeType === "text/markdown") {
     return "markdown";
+  }
   if (
     ["txt", "csv", "json", "log", "yaml", "yml"].includes(extension) ||
     ["text/plain", "text/csv", "application/json", "text/json"].includes(
       mimeType || "",
     )
-  )
+  ) {
     return "text";
+  }
   return "unsupported";
 }
 

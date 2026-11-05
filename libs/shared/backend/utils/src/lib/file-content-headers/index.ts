@@ -9,7 +9,9 @@ export function getFileContentHeaders(path: string, mimeType?: string | null) {
     mime === "text/html" ||
     mime === "application/xhtml+xml" ||
     /\.(?:html?|xhtml)$/i.test(name);
-  if (html) headers.set("Content-Disposition", "attachment");
+  if (html) {
+    headers.set("Content-Disposition", "attachment");
+  }
   if (html || mime?.endsWith("xml") || /\.(?:svgz?|xml|xsl)$/i.test(name)) {
     headers.set(
       "Content-Security-Policy",

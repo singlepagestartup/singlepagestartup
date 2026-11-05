@@ -225,27 +225,42 @@ describe("Given: rbac social message create author relation", () => {
     mockRbacSubjectNotify.mockResolvedValue({});
   });
 
-  it("uploads HTML and links the stored File to the AI Chat message", async () => {
+  it("stores each attachment separately and links all of them in message order", async () => {
     const context = createContext([]);
     const form = await context.req.formData();
-    const file = new File(["<p>Example</p>"], "demo.html", {
-      type: "text/html",
-    });
-    form.set("files", file);
-    mockFileStorageFileCreate.mockResolvedValueOnce({ id: "html-file" });
+    const files = [
+      new File(["<p>Example</p>"], "demo.html", { type: "text/html" }),
+      new File(["# Notes"], "notes.md", { type: "text/markdown" }),
+    ];
+    for (const file of files) {
+      form.append("files", file);
+      mockFileStorageFileCreate.mockResolvedValueOnce({ id: file.name });
+    }
     const handler = new Handler(createService());
     handler.notifyOtherSubjectsInChat = jest.fn().mockResolvedValue(undefined);
+
     await handler.execute(context, jest.fn());
-    expect(mockFileStorageFileCreate).toHaveBeenCalledWith(
-      expect.objectContaining({ data: { adminTitle: file.name, file } }),
+
+    expect(mockFileStorageFileCreate).toHaveBeenCalledTimes(files.length);
+    expect(mockSocialModuleMessagesToFilesCreate).toHaveBeenCalledTimes(
+      files.length,
     );
-    expect(mockSocialModuleMessagesToFilesCreate).toHaveBeenCalledWith({
-      data: {
-        messageId: "message-1",
-        fileStorageModuleFileId: "html-file",
-        orderIndex: 0,
-      },
-    });
+    for (const [index, file] of files.entries()) {
+      expect(mockFileStorageFileCreate).toHaveBeenNthCalledWith(
+        index + 1,
+        expect.objectContaining({ data: { adminTitle: file.name, file } }),
+      );
+      expect(mockSocialModuleMessagesToFilesCreate).toHaveBeenNthCalledWith(
+        index + 1,
+        {
+          data: {
+            messageId: "message-1",
+            fileStorageModuleFileId: file.name,
+            orderIndex: index,
+          },
+        },
+      );
+    }
   });
 
   /**
