@@ -1,5 +1,6 @@
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
+import { FILE_CONTENT_SECURITY_HEADERS } from "@sps/shared-utils";
 import { getHttpErrorType } from "@sps/backend-utils";
 import type { Service } from "../../../service";
 export class Handler {
@@ -15,10 +16,15 @@ export class Handler {
       c.header("Vary", "Authorization, Cookie");
       c.header("Content-Type", file.mimeType || "application/octet-stream");
       c.header("Content-Length", String(bytes.byteLength));
-      c.header("X-Content-Type-Options", "nosniff");
       return new Response(
         c.req.method === "HEAD" ? null : new Uint8Array(bytes),
-        { status: 200, headers: Object.fromEntries(c.res.headers) },
+        {
+          status: 200,
+          headers: {
+            ...Object.fromEntries(c.res.headers),
+            ...FILE_CONTENT_SECURITY_HEADERS,
+          },
+        },
       );
     } catch (error) {
       if (error instanceof HTTPException) throw error;

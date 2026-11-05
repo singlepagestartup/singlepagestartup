@@ -43,6 +43,8 @@ jobs:
           echo "ARGS: ${ARGS}"
       - name: Add deployer PREVIEW secrets to env file
         if: contains(env.BRANCH_NAME, '-preview')
+        env:
+          FILE_STORAGE_MAX_UPLOAD_BYTES: ${{ secrets.PREVIEW_FILE_STORAGE_MAX_UPLOAD_BYTES }}
         run: |
           secrets=(\
             "PROJECT_NAME ${{ secrets.PREVIEW_PROJECT_NAME }}"\
@@ -83,6 +85,7 @@ jobs:
             "API_SERVICE_SUBDOMAIN ${{ secrets.PREVIEW_API_SERVICE_SUBDOMAIN }}"\
             "API_SERVICE_DOCKER_HUB_REPOSITORY_NAME ${{ secrets.PREVIEW_API_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"\
             "FILE_STORAGE_FOLDER ${{ secrets.PREVIEW_FILE_STORAGE_FOLDER }}"\
+            "FILE_STORAGE_MAX_UPLOAD_BYTES $FILE_STORAGE_MAX_UPLOAD_BYTES"\
             "LLM_SERVICE_NAME ${{ secrets.PREVIEW_LLM_SERVICE_NAME }}"\
             "LLM_SERVICE_DOCKER_HUB_REPOSITORY_NAME ${{ secrets.PREVIEW_LLM_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"\
             "LLM_SERVICE_URL ${{ secrets.PREVIEW_LLM_SERVICE_URL }}"\
@@ -164,6 +167,8 @@ jobs:
           done
       - name: Add deployer default secrets to env file
         if: ${{ !contains(env.BRANCH_NAME, '-preview') }}
+        env:
+          FILE_STORAGE_MAX_UPLOAD_BYTES: ${{ secrets.FILE_STORAGE_MAX_UPLOAD_BYTES }}
         run: |
           secrets=(\
             "PROJECT_NAME ${{ secrets.PROJECT_NAME }}"\
@@ -204,6 +209,7 @@ jobs:
             "API_SERVICE_SUBDOMAIN ${{ secrets.API_SERVICE_SUBDOMAIN }}"\
             "API_SERVICE_DOCKER_HUB_REPOSITORY_NAME ${{ secrets.API_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"\
             "FILE_STORAGE_FOLDER ${{ secrets.FILE_STORAGE_FOLDER }}"\
+            "FILE_STORAGE_MAX_UPLOAD_BYTES $FILE_STORAGE_MAX_UPLOAD_BYTES"\
             "LLM_SERVICE_NAME ${{ secrets.LLM_SERVICE_NAME }}"\
             "LLM_SERVICE_DOCKER_HUB_REPOSITORY_NAME ${{ secrets.LLM_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"\
             "LLM_SERVICE_URL ${{ secrets.LLM_SERVICE_URL }}"\

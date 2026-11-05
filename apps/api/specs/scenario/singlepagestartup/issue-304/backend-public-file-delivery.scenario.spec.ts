@@ -93,6 +93,26 @@ describe("public delivery of uploaded files", () => {
     expect(response.headers.get("content-security-policy")).toBe("sandbox");
   });
 
+  it.each(["GET", "HEAD"])(
+    "sandboxes the same SVG on %s through the File content route",
+    async (method) => {
+      const response = await fetch(
+        `${getApiUrl()}/api/file-storage/files/${fileId}/content`,
+        {
+          method,
+          headers: operatorHeaders(),
+        },
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toBe("image/svg+xml");
+      expect(response.headers.get("x-content-type-options")).toBe("nosniff");
+      expect(response.headers.get("content-security-policy")).toBe("sandbox");
+      expect(response.headers.get("cache-control")).toContain("no-store");
+      expect(await response.text()).toBe(method === "GET" ? svg : "");
+    },
+  );
+
   /**
    * BDD Scenario
    * Given: the uploaded SVG and its record.

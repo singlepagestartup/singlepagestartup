@@ -44,7 +44,8 @@ The File Storage module manages uploaded media and file metadata. It provides mo
 multipart body with a `data` field holding JSON and one file under the field
 `file`. The stored URL is written to the record's `file` column. A request with
 more than one file answers `400 Validation error. Multiple files are not
-allowed` and stores nothing; send one request per file instead.
+allowed` before storage. A text value alongside the file under the same field
+name is ignored. A metadata-only PATCH updates the existing File.
 
 ### Size limit
 
@@ -59,11 +60,12 @@ above that also needs `maxRequestBodySize` raised in `apps/api/server.ts`.
 
 With the `local` provider, files are written to
 `apps/api/public/<FILE_STORAGE_FOLDER>` and served by the API at
-`/public/<FILE_STORAGE_FOLDER>/<name>`. Every file response carries two
-headers:
+`/public/<FILE_STORAGE_FOLDER>/<name>`. The API also serves original bytes at
+`/api/file-storage/files/:uuid/content`. Both routes send the following
+headers on GET and HEAD. The content route also sends `Cache-Control: private, no-store`.
 
-- `X-Content-Type-Options: nosniff`: the browser uses the declared type, taken
-  from the file extension, instead of guessing one from the content.
+- `X-Content-Type-Options: nosniff` makes browsers respect the declared MIME
+  type for script and stylesheet requests.
 - `Content-Security-Policy: sandbox`: a file opened as a document, such as an
   SVG or HTML file in a tab, gets an opaque origin with scripts, forms and
   plugins disabled, so it cannot act as the API origin.

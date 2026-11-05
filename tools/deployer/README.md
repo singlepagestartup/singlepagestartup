@@ -457,7 +457,10 @@ a placeholder token would break uploads on the next deploy.
 FILE_STORAGE_MAX_UPLOAD_BYTES=52428800
 ```
 
-`api.sh` writes it into the server API environment. Bun refuses request bodies
+`github_deployer.sh` syncs the value to `FILE_STORAGE_MAX_UPLOAD_BYTES` for
+production and `PREVIEW_FILE_STORAGE_MAX_UPLOAD_BYTES` for preview. The
+Ansible workflow reads the corresponding secret and `api.sh` writes the
+limit into the server API environment. Bun refuses request bodies
 above 128 MiB, so a larger value also needs `maxRequestBodySize` raised in
 `apps/api/server.ts`.
 
