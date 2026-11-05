@@ -1,5 +1,6 @@
 import { Service as SubjectsToEcommerceModuleOrdersService } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/service";
 import {
+  INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
   NEXT_PUBLIC_API_SERVICE_URL,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
@@ -22,9 +23,10 @@ export const ACTIVE_SUBSCRIPTION_ORDER_STATUSES = [
 export type IExecuteProps =
   | {
       id: string;
-      email: string;
+      email?: string;
       provider: string;
-      comment: string;
+      account?: string | null;
+      comment?: string;
       billingModule?: {
         currency?: {
           id?: string;
@@ -38,9 +40,9 @@ export type IExecuteProps =
     }
   | {
       id: string;
-      account: string;
+      account?: string | null;
       provider: "telegram-star";
-      comment: string;
+      comment?: string;
       billingModule?: {
         currency?: {
           id?: string;
@@ -145,6 +147,15 @@ export class Service {
     if (!ecommerceModuleProducts?.length) {
       throw new Error("Not Found error. No ecommerce module products found");
     }
+
+    if (
+      ecommerceModuleProducts.some(
+        (product) => product.slug === INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
+      )
+    )
+      throw new Error(
+        "Permission error. Initial Free is available only through authentication bootstrap",
+      );
 
     const ecommerceModuleProductsToAttributes =
       await this.ecommerceModule.productsToAttributes.find({
@@ -387,9 +398,9 @@ export class Service {
           };
         }),
       },
-      account: props["account"],
+      account: props.account || "",
       email: props["email"],
-      comment: props["comment"],
+      comment: props.comment || "",
     };
 
     const ordersToBillingModuleCurrencies =

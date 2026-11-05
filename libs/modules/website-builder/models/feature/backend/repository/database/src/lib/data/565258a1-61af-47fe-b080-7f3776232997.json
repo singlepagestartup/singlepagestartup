@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "565258a1-61af-47fe-b080-7f3776232997",
+  "createdAt": "2026-10-27T08:40:57.057Z",
+  "updatedAt": "2026-10-27T14:59:36.368Z",
+  "variant": "demo-document",
+  "title": {
+    "en": "Strategy.md",
+    "ru": "Стратегия.md"
+  },
+  "subtitle": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The strategy describes the audience, offer and path to booking a class. Discuss what customers need to know before choosing a date.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"В стратегии описаны аудитория, предложение и путь к записи на занятие. Обсудите, какие сведения нужны клиенту перед выбором даты.\"}]}]}"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"## Audience\\nAdults who want to try pottery for the first time.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"## Offer\\nA weekend workshop for a group of up to six people.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"## Introducing the studio\\nShow the class process and participants' work. Guide visitors from learning about the format to choosing a date and submitting an enquiry.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"## Аудитория\\nВзрослые, которые хотят впервые попробовать керамику.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"## Предложение\\nМастер-класс выходного дня в группе до шести человек.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"## Как знакомим с мастерской\\nПоказываем процесс занятия и работы участников. Ведём посетителя от знакомства с форматом к выбору даты и заявке.\"}]}]}"
+  },
+  "adminTitle": "AI Chat: demo-strategy",
+  "slug": "ai-chat-editable-demo-strategy"
+}

@@ -8,7 +8,6 @@ export interface IPresentationSlide {
   id: string;
   label: string;
   content: ReactNode;
-  text?: string;
 }
 
 interface IProjectPresentationProps {
@@ -16,7 +15,6 @@ interface IProjectPresentationProps {
   slides: readonly IPresentationSlide[];
   width?: number;
   height?: number;
-  formatSlideText?: (slide: IPresentationSlide, index: number) => string;
 }
 
 export function requestedSlideIndex(
@@ -37,7 +35,6 @@ export function ProjectPresentation({
   slides,
   width = 1600,
   height = 900,
-  formatSlideText,
 }: IProjectPresentationProps) {
   const workspace = usePresentationWorkspace();
   const selected = requestedSlideIndex(
@@ -52,7 +49,6 @@ export function ProjectPresentation({
         width={width}
         height={height}
         selectedIndex={selected}
-        formatSlideText={formatSlideText}
       />
     );
   return (

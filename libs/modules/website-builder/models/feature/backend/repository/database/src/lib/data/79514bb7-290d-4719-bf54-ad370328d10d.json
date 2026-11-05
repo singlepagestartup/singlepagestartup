@@ -1,0 +1,18 @@
+{
+  "className": "",
+  "id": "79514bb7-290d-4719-bf54-ad370328d10d",
+  "createdAt": "2026-10-24T01:05:47.935Z",
+  "updatedAt": "2026-10-24T01:05:47.935Z",
+  "variant": "definition-item",
+  "title": {
+    "en": "Articles and categories",
+    "ru": "Статьи и категории"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Blog stores article content, categories and the links used to present them.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Blog хранит статьи, категории и связи для их отображения.\"}]}]}"
+  },
+  "adminTitle": "Articles and categories",
+  "slug": "framework-journey-module-group-2"
+}

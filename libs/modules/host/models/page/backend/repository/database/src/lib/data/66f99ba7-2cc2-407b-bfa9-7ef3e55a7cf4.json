@@ -1,0 +1,46 @@
+{
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "Recover AI Chat access — SinglePageStartup",
+        "ru": "Восстановление доступа к AI Chat — SinglePageStartup"
+      },
+      "description": {
+        "en": "Request a link to recover access to an AI Chat account.",
+        "ru": "Запрос ссылки для восстановления доступа к аккаунту AI Chat."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "Recover AI Chat access — SinglePageStartup",
+        "ru": "Восстановление доступа к AI Chat — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "Recover AI Chat access — SinglePageStartup",
+        "ru": "Восстановление доступа к AI Chat — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Request a link to recover access to an AI Chat account.",
+        "ru": "Запрос ссылки для восстановления доступа к аккаунту AI Chat."
+      },
+      "opengraphDescription": {
+        "en": "Request a link to recover access to an AI Chat account.",
+        "ru": "Запрос ссылки для восстановления доступа к аккаунту AI Chat."
+      }
+    }
+  },
+  "id": "66f99ba7-2cc2-407b-bfa9-7ef3e55a7cf4",
+  "title": "AI Chat — forgot-password",
+  "url": "/ai-chat/forgot-password",
+  "description": "Description",
+  "createdAt": "2026-10-11T02:04:35.032Z",
+  "updatedAt": "2026-10-30T22:25:07.159Z",
+  "variant": "noindex",
+  "className": "",
+  "language": "en",
+  "adminTitle": "gleaming gray cod"
+}

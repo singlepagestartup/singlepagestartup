@@ -1,0 +1,27 @@
+{
+  "id": "social.profile.knowledge-module-source-list-sidebar-ai-chat",
+  "title": "knowledge-module-source-list-sidebar-ai-chat",
+  "description": "Profile document navigation list.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "profile",
+    "variant": "knowledge-module-source-list-sidebar-ai-chat"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "social.profile",
+    "pageName": "social",
+    "variantName": "knowledge-module-source-list-sidebar-ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

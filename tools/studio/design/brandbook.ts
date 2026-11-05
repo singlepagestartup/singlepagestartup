@@ -6,17 +6,7 @@ import {
   hasMarkdownContent,
   parseDocument,
   type DocumentLayer,
-  type IDocumentConfirmation,
 } from "../workspace/document";
-
-/** Stage order of the pre-development pipeline, used to gate this check. */
-const stages = [
-  "00-business",
-  "10-strategy",
-  "20-brand",
-  "30-design",
-  "40-products",
-] as const;
 
 export interface IBrandbookFinding {
   requirement: string;
@@ -41,15 +31,11 @@ function meaningfulMarkdown(value: string): boolean {
 
 function reachedDesign(cursor: string): boolean {
   const parsed = cursor.trim() ? (parse(cursor) as unknown) : undefined;
-  const stage =
+  const section =
     parsed && typeof parsed === "object" && !Array.isArray(parsed)
-      ? (parsed as { active_stage?: unknown }).active_stage
+      ? (parsed as { active_section?: unknown }).active_section
       : undefined;
-  const index =
-    typeof stage === "string"
-      ? stages.indexOf(stage as (typeof stages)[number])
-      : -1;
-  return index >= stages.indexOf("30-design");
+  return section === "design" || section === "materials";
 }
 
 function registeredAssets(source: string): number {
@@ -62,30 +48,14 @@ function registeredAssets(source: string): number {
   }
 }
 
-/** Name the document's own state, and the layer when an approval sits upstream. */
-function describeOwnership(
-  confirmation: IDocumentConfirmation | undefined,
-): string {
-  if (!confirmation) return "unconfirmed";
-  const { state, underlying, layer, sources } = confirmation;
-  const named =
-    underlying && underlying !== "unconfirmed"
-      ? `${state} over ${underlying}`
-      : state;
-  const from = sources?.length ? ` from ${sources.join(", ")}` : "";
-  const where = layer === "startup" ? "" : ` in the ${layer} layer`;
-  return `${named}${from}${where}`;
-}
-
 /**
  * A downstream project must own its brandbook rather than shipping the
  * framework's. Inheritance is the explicit starting state, so this only applies
- * once that project's own cursor has reached `30-design`.
+ * when that project has selected Design or Materials.
  */
 export async function findUnownedBrandbook(
   workspaceRoot: string,
   layer: DocumentLayer,
-  confirmation: IDocumentConfirmation | undefined,
 ): Promise<IBrandbookFinding[]> {
   if (layer !== "startup") return [];
 
@@ -103,17 +73,6 @@ export async function findUnownedBrandbook(
       detail:
         "The document is empty, so the project would ship the framework's visual system as if it were its own.",
     });
-  } else {
-    // The resolved review owns this state. Recomputing it here would hash the
-    // layer's own file while the stamp covers the body a reader is shown, so
-    // one document would answer two different questions. An inherited
-    // singlepage approval still never satisfies a startup gate.
-    const own = confirmation?.underlying ?? confirmation?.state;
-    if (own !== "confirmed" || confirmation?.layer !== "startup")
-      findings.push({
-        requirement: "design/startup.md holds its own confirmation",
-        detail: `Resolved state is ${describeOwnership(confirmation)}; a downstream Design needs its own operator approval.`,
-      });
   }
 
   const assets = await read(path.join(workspaceRoot, "assets", "startup.yaml"));
@@ -130,21 +89,16 @@ export async function findUnownedBrandbook(
 export async function validateOwnedBrandbook(
   workspaceRoot: string,
   layer: DocumentLayer,
-  confirmation: IDocumentConfirmation | undefined,
 ): Promise<void> {
-  const findings = await findUnownedBrandbook(
-    workspaceRoot,
-    layer,
-    confirmation,
-  );
+  const findings = await findUnownedBrandbook(workspaceRoot, layer);
   if (!findings.length) return;
   throw new Error(
     [
-      "This project reached 30-design without owning its brandbook:",
+      "The selected project does not own its brandbook:",
       ...findings.map(
         ({ requirement, detail }) => `- ${requirement}\n  ${detail}`,
       ),
-      "Write the startup layer's own Design and Assets, or move the cursor back to the stage that is actually current.",
+      "Record this project's Design and Assets when that work is selected. This diagnostic does not change the workflow cursor.",
     ].join("\n"),
   );
 }

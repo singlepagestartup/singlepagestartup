@@ -23,3 +23,8 @@ Assigns articles to categories for grouping and listing.
 - `admin-select-input`: admin select input for choosing a relation.
 - `admin-table`: admin table listing relations.
 - `admin-table-row`: admin row showing relation fields.
+
+The default renderer accepts a typed `renderAuthor` slot. It resolves the slot
+with its loaded Article and passes an `author` JSX node to the Article view,
+using `dataSource="props"` to retain the owning read. The relation does not
+import Social or select a Profile.

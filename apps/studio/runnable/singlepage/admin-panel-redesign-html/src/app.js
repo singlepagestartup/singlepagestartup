@@ -11,7 +11,6 @@
     { id: "agent", name: "Agent", icon: "🤖" },
     { id: "broadcast", name: "Broadcast", icon: "📡" },
     { id: "analytic", name: "Analytic", icon: "📈" },
-    { id: "telegram", name: "Telegram", icon: "✈️" },
     { id: "startup", name: "Startup", icon: "🚀" },
     { id: "host", name: "Host", icon: "🧩" },
     { id: "rbac", name: "RBAC", icon: "🔐" },
@@ -48,7 +47,6 @@
       "widget",
     ],
     startup: ["widget"],
-    telegram: ["page", "widget"],
     "website-builder": [
       "button",
       "buttons-array",
@@ -442,15 +440,6 @@
       confirmLabel: "Clear cache",
       successMessage: "Backend cache has been cleared.",
     },
-    frontendRevalidate: {
-      endpoint: "/api/revalidate?path=/&type=layout",
-      method: "GET",
-      title: "Revalidate frontend layout?",
-      description:
-        "Frontend layout revalidation will be triggered for the root path.",
-      confirmLabel: "Revalidate",
-      successMessage: "Frontend revalidation has been triggered.",
-    },
   };
 
   const state = {
@@ -466,10 +455,6 @@
     itemsPerPage: 4,
     settingsOperations: {
       backendCacheClear: {
-        status: "idle",
-        message: "",
-      },
-      frontendRevalidate: {
         status: "idle",
         message: "",
       },
@@ -1994,11 +1979,7 @@
 
   function renderSettingsPage() {
     const backendCacheState = state.settingsOperations.backendCacheClear;
-    const frontendRevalidateState = state.settingsOperations.frontendRevalidate;
     const backendStatus = getSettingsOperationStatus(backendCacheState.status);
-    const frontendStatus = getSettingsOperationStatus(
-      frontendRevalidateState.status,
-    );
 
     dom.entityList.innerHTML = `
       <section
@@ -2033,34 +2014,6 @@
                 ${backendCacheState.status === "loading" ? "disabled" : ""}
               >
                 ${backendCacheState.status === "loading" ? "Running..." : "Run action"}
-              </button>
-            </div>
-
-            <div
-              data-testid="settings-card-frontend-revalidate"
-              class="rounded-lg border border-slate-300 bg-slate-50 p-4"
-            >
-              <div class="flex items-center justify-between gap-2">
-                <h3 class="text-base font-semibold">Revalidate Frontend Layout</h3>
-                <span class="inline-flex items-center rounded-md border px-2 py-1 text-xs font-medium ${frontendStatus.badgeClass}">
-                  ${frontendStatus.text}
-                </span>
-              </div>
-              <p class="mt-2 text-sm text-slate-600">
-                Triggers frontend revalidation via <code class="rounded bg-white px-1 py-0.5 font-mono text-xs">/api/revalidate?path=/&amp;type=layout</code>.
-              </p>
-              <p class="mt-2 min-h-5 text-xs text-slate-500">${escapeHtml(
-                frontendRevalidateState.message || "",
-              )}</p>
-              <button
-                type="button"
-                data-action="settings-operation-confirm"
-                data-operation="frontendRevalidate"
-                data-testid="settings-action-frontend-revalidate"
-                class="mt-3 inline-flex items-center rounded-md border border-slate-400 bg-slate-900 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:border-slate-500 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
-                ${frontendRevalidateState.status === "loading" ? "disabled" : ""}
-              >
-                ${frontendRevalidateState.status === "loading" ? "Running..." : "Run action"}
               </button>
             </div>
           </div>

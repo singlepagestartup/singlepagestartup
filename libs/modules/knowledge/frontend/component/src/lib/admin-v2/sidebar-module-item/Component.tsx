@@ -55,19 +55,9 @@ export function Component(props: IComponentProps) {
             active={isAdminRoute(props.url, "knowledge", "source")}
           />
           <SidebarLink
-            href={`${ADMIN_BASE_PATH}/knowledge/document`}
-            label="Documents"
-            active={isAdminRoute(props.url, "knowledge", "document")}
-          />
-          <SidebarLink
             href={`${ADMIN_BASE_PATH}/knowledge/chunk`}
             label="Chunks"
             active={isAdminRoute(props.url, "knowledge", "chunk")}
-          />
-          <SidebarLink
-            href={`${ADMIN_BASE_PATH}/knowledge/edit-suggestion`}
-            label="Edit Suggestions"
-            active={isAdminRoute(props.url, "knowledge", "edit-suggestion")}
           />
         </div>
       ) : null}

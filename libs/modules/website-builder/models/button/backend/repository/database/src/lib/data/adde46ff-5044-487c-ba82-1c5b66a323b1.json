@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "All modules",
+    "ru": "Все модули"
+  },
+  "subtitle": {},
+  "url": "/framework/modules",
+  "className": "w-fit",
+  "id": "adde46ff-5044-487c-ba82-1c5b66a323b1",
+  "createdAt": "2026-10-24T01:06:08.094Z",
+  "updatedAt": "2026-10-24T01:06:08.094Z",
+  "variant": "secondary",
+  "adminTitle": "All modules",
+  "slug": "framework-journey-guide-agent-actions-0"
+}

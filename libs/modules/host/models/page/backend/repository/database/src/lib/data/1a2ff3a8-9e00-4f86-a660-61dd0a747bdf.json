@@ -1,10 +1,76 @@
 {
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "SinglePageStartup blog",
+        "ru": "Блог SinglePageStartup"
+      },
+      "description": {
+        "en": "Articles about development, Code Framework modules and building digital products.",
+        "ru": "Статьи о разработке, устройстве модулей Code Framework и создании цифровых продуктов."
+      },
+      "keywords": {
+        "en": [],
+        "ru": []
+      }
+    },
+    "seoDisplay": {
+      "author": {
+        "en": "",
+        "ru": ""
+      },
+      "twitterUrl": {
+        "en": "",
+        "ru": ""
+      },
+      "twitterSite": {
+        "en": "",
+        "ru": ""
+      },
+      "opengraphUrl": {
+        "en": "",
+        "ru": ""
+      },
+      "twitterTitle": {
+        "en": "SinglePageStartup blog",
+        "ru": "Блог SinglePageStartup"
+      },
+      "twitterDomain": {
+        "en": "",
+        "ru": ""
+      },
+      "opengraphTitle": {
+        "en": "SinglePageStartup blog",
+        "ru": "Блог SinglePageStartup"
+      },
+      "twitterCreator": {
+        "en": "",
+        "ru": ""
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterAppCountry": {
+        "en": "",
+        "ru": ""
+      },
+      "twitterDescription": {
+        "en": "Articles about development, Code Framework modules and building digital products.",
+        "ru": "Статьи о разработке, устройстве модулей Code Framework и создании цифровых продуктов."
+      },
+      "opengraphDescription": {
+        "en": "Articles about development, Code Framework modules and building digital products.",
+        "ru": "Статьи о разработке, устройстве модулей Code Framework и создании цифровых продуктов."
+      }
+    }
+  },
   "id": "1a2ff3a8-9e00-4f86-a660-61dd0a747bdf",
   "title": "Blog",
   "url": "/blog",
   "description": "Description",
   "createdAt": "2025-05-06T17:05:36.520Z",
-  "updatedAt": "2025-11-15T09:32:28.404Z",
+  "updatedAt": "2026-10-30T22:25:04.432Z",
   "variant": "default",
   "className": null,
   "language": "en",

@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Work with Agent.",
+    "ru": "Работайте с Agent."
+  },
+  "subtitle": {
+    "en": "Business",
+    "ru": "Бизнес"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Agent definitions, task orchestration and conversation commands.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Определения агентов, оркестрация задач и команды беседы.\"}]}]}"
+  },
+  "anchor": "module-agent",
+  "className": "@5xl:grid-cols-2",
+  "id": "2f978a4c-9b2a-4a7e-a0c5-7cbae9842232",
+  "createdAt": "2026-10-24T01:06:07.696Z",
+  "updatedAt": "2026-10-24T01:06:07.696Z",
+  "variant": "content-definition-grid-page",
+  "adminTitle": "Work with Agent.",
+  "slug": "framework-journey-guide-agent-overview"
+}

@@ -3,43 +3,34 @@
 import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { FormField } from "@sps/ui-adapter";
-import { useEffect } from "react";
 
 export function Component(props: IComponentPropsExtended) {
-  useEffect(() => {
-    props.form.setValue(`${props.path}id`, props.data.id);
-    props.form.setValue(`${props.path}slug`, props.data.slug);
-    props.form.setValue(`${props.path}adminTitle`, props.data.adminTitle);
-    props.form.setValue(`${props.path}className`, props.data.className);
-    props.form.setValue(`${props.path}description`, props.data.description);
-    props.form.setValue(`${props.path}isRequired`, props.data.isRequired);
-    props.form.setValue(`${props.path}label`, props.data.label);
-    props.form.setValue(`${props.path}placeholder`, props.data.placeholder);
-    props.form.setValue(`${props.path}title`, props.data.title);
-    props.form.setValue(`${props.path}subtitle`, props.data.subtitle);
-    props.form.setValue(`${props.path}type`, props.data.type);
-    props.form.setValue(`${props.path}variant`, props.data.variant);
-    props.form.setValue(`${props.path}string`, "");
-    props.form.setValue(`${props.path}number`, undefined);
-    props.form.setValue(`${props.path}boolean`, undefined);
-    props.form.setValue(`${props.path}option`, undefined);
-    props.form.setValue(`${props.path}file`, undefined);
-  }, [props.path]);
-
   return (
     <FormField
       ui="shadcn"
       data-module="crm"
       data-model="input"
       type="text"
-      label={props.data.label?.[props.language] ?? ""}
+      label={props.data.label?.[props.language] ?? props.data.label?.en ?? ""}
       name={`${props.path}string`}
       form={props.form}
+      disabled={props.disabled}
+      required={
+        props.data.isRequired
+          ? props.language === "ru"
+            ? "Заполните поле"
+            : "This field is required."
+          : false
+      }
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      placeholder={props.data.placeholder?.[props.language] ?? ""}
+      placeholder={
+        props.data.placeholder?.[props.language] ??
+        props.data.placeholder?.en ??
+        ""
+      }
       className={cn(
-        "flex w-full flex-col",
+        "flex w-full min-w-0 flex-col gap-2 [&_label]:text-sm [&_label]:font-medium [&_input]:min-h-11 [&_input]:rounded-xl [&_input]:bg-card [&_textarea]:min-h-28 [&_textarea]:rounded-xl [&_textarea]:bg-card [&_button]:min-h-11 [&_button]:rounded-xl [&_button]:bg-card",
         props.data.className,
         props.className,
       )}

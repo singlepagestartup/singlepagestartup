@@ -1,0 +1,46 @@
+{
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "AI Chat settings — SinglePageStartup",
+        "ru": "Настройки AI Chat — SinglePageStartup"
+      },
+      "description": {
+        "en": "Account and workspace settings in AI Chat.",
+        "ru": "Настройки аккаунта и параметров работы в AI Chat."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "AI Chat settings — SinglePageStartup",
+        "ru": "Настройки AI Chat — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "AI Chat settings — SinglePageStartup",
+        "ru": "Настройки AI Chat — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Account and workspace settings in AI Chat.",
+        "ru": "Настройки аккаунта и параметров работы в AI Chat."
+      },
+      "opengraphDescription": {
+        "en": "Account and workspace settings in AI Chat.",
+        "ru": "Настройки аккаунта и параметров работы в AI Chat."
+      }
+    }
+  },
+  "id": "a22958f9-92e8-4231-b992-81672bd57dfc",
+  "title": "AI Chat — settings",
+  "url": "/ai-chat/settings",
+  "description": "Description",
+  "createdAt": "2026-10-11T02:04:01.998Z",
+  "updatedAt": "2026-10-30T22:25:08.657Z",
+  "variant": "noindex",
+  "className": "",
+  "language": "en",
+  "adminTitle": "nutritious magenta kite"
+}

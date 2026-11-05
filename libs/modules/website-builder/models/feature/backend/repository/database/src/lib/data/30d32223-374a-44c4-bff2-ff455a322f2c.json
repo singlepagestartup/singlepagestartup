@@ -1,0 +1,18 @@
+{
+  "className": "",
+  "id": "30d32223-374a-44c4-bff2-ff455a322f2c",
+  "createdAt": "2026-10-24T01:06:04.705Z",
+  "updatedAt": "2026-10-24T01:06:04.705Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Keep a clear owner.",
+    "ru": "Сохраните ответственность модуля."
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Use Billing for its own records and operations. Connect other capabilities through their public interfaces and explicit relations; keep the business task in its owning domain.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Используйте Billing для его записей и операций. Подключайте другие возможности через публичные интерфейсы и явные связи; бизнес-задача остаётся в своём домене.\"}]}]}"
+  },
+  "adminTitle": "Keep a clear owner.",
+  "slug": "framework-journey-guide-billing-owner"
+}

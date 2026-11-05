@@ -55,3 +55,13 @@ The Website Builder module defines the content-building primitives used to compo
 | [widgets-to-sliders](./relations/widgets-to-sliders/README.md)                                         | Attach sliders to widgets        |
 
 ---
+
+## Domain Widget slots
+
+Website Builder Widgets own presentation and editable content. A higher domain
+Widget such as RBAC supplies its functional form through a rendered JSX slot
+and selects the exact presentation using its standard relation. This module
+loads no Subject and chooses no authentication or project operation. Static
+blocks may be linked directly from Host. Follow the
+[frontend composition contract](../../../.agents/contracts/engineering/frontend-components.md)
+and the [Widget variants](./models/widget/README.md).

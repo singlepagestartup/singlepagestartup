@@ -5,6 +5,7 @@ import { Table } from "@sps/social/models/profile/backend/repository/database";
 import { Context, Next } from "hono";
 import { Service } from "../../service";
 import { Handler as FindByIdChatFind } from "./chat/find";
+import { Handler as Authors } from "./authors";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
@@ -14,6 +15,25 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     super(service);
     this.service = service;
     this.bindHttpRoutes([
+      ...(["GET", "HEAD"] as const).flatMap((method) => [
+        {
+          method,
+          path: "/authors",
+          handler: (c: Context) => new Authors(this.service).execute(c, "find"),
+        },
+        {
+          method,
+          path: "/authors/count",
+          handler: (c: Context) =>
+            new Authors(this.service).execute(c, "count"),
+        },
+        {
+          method,
+          path: "/authors/:id",
+          handler: (c: Context) =>
+            new Authors(this.service).execute(c, "detail"),
+        },
+      ]),
       {
         method: "GET",
         path: "/",

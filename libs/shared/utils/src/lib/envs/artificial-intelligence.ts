@@ -4,6 +4,13 @@ export const AGENT_MAX_DURATION_IN_SECONDS =
 // sends it in `X-AGENT-CRON-SECRET` instead of holding RBAC_SECRET_KEY. No
 // default: when it is absent, only the operator secret opens the cron route.
 export const AGENT_CRON_SECRET = process.env.AGENT_CRON_SECRET;
+export const AGENT_CRON_MAX_CONCURRENCY =
+  parseInt(process.env.AGENT_CRON_MAX_CONCURRENCY as string) || 3;
+export const AGENT_CRON_DISPATCH_TIMEOUT_IN_SECONDS =
+  parseInt(process.env.AGENT_CRON_DISPATCH_TIMEOUT_IN_SECONDS as string) || 10;
+export const AGENT_PAGE_CACHE_MAX_CONSECUTIVE_FAILURES =
+  parseInt(process.env.AGENT_PAGE_CACHE_MAX_CONSECUTIVE_FAILURES as string) ||
+  10;
 export const OPEN_AI_API_KEY = process.env.OPEN_AI_API_KEY;
 export const OPEN_AI_TRANSCRIPTION_MODEL =
   process.env.OPEN_AI_TRANSCRIPTION_MODEL;

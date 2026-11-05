@@ -66,6 +66,7 @@ import {
   type ITelegramAssistantConversationContext,
   type ITelegramAssistantConversationTransport,
 } from "./telegram-assistant-conversation";
+import { AgentRun } from "./agent-run";
 
 const activeSubscriptionProductsCheckoutMessage =
   "Checking out order has active subscription products.";
@@ -169,6 +170,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   notificationModule: INotificationModule;
   fileStorageModule: IFileStorageModule;
   telegramConversationRuntime: ITelegramConversationRuntime;
+  agentRun: AgentRun;
 
   constructor(
     @inject(DI.IRepository) repository: Repository,
@@ -194,6 +196,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     this.notificationModule = notificationModule;
     this.fileStorageModule = fileStorageModule;
     this.telegramConversationRuntime = telegramConversationRuntime;
+    this.agentRun = new AgentRun({ broadcastModule });
   }
 
   statusMessages = telegramBotServiceMessages;
@@ -2257,7 +2260,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       const telegramRequiredSubscriptionChannel =
         this.getTelegramRequiredSubscriptionChannelConfiguration();
 
-      if (telegramRequiredSubscriptionChannel.isPartiallyConfigured) {
+      if (
+        props.socialModuleChat.variant === "telegram" &&
+        telegramRequiredSubscriptionChannel.isPartiallyConfigured
+      ) {
         throw new Error(
           "Configuration error. Telegram required subscription channel information is incomplete. Set TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_ID, TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME, and TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_LINK together, or omit all three to disable subscription enforcement.",
         );
@@ -2343,6 +2349,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         });
 
       if (
+        props.socialModuleChat.variant === "telegram" &&
         telegramRequiredSubscriptionChannel.isConfigured &&
         requiredTelegramChannelSubscriptionRbacModuleRole &&
         !requiredTelegramChannelSubscriptionRbacModuleSubjectToRole
@@ -2380,7 +2387,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         );
       }
 
-      if (!rbacModuleSubjectToPayableRoles?.length) {
+      if (
+        props.socialModuleChat.variant !== "ai-chat" &&
+        !rbacModuleSubjectToPayableRoles?.length
+      ) {
         return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
           {
             id: props.rbacModuleSubject.id,
@@ -2458,60 +2468,67 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             "Validation error. You do not have access to this resource because you have not 'subjectsToBillingModuleCurrencies' for pay that route",
           )
         ) {
+          let reply: ISocialModuleMessage;
           if (socialModuleThreadId) {
-            await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
-              {
-                id: props.rbacModuleSubject.id,
-                socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-                socialModuleChatId: props.socialModuleChat.id,
-                socialModuleThreadId,
-                data: this.withSystemMessageMetadata({
-                  source: "agent.openrouter.status",
-                  data: {
-                    description:
-                      this.statusMessages.openRouterNotEnoughTokens.ru,
-                  },
-                }),
-                options: {
-                  headers: {
-                    Authorization: "Bearer " + props.jwtToken,
+            reply =
+              await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
+                {
+                  id: props.rbacModuleSubject.id,
+                  socialModuleProfileId:
+                    props.shouldReplySocialModuleProfile.id,
+                  socialModuleChatId: props.socialModuleChat.id,
+                  socialModuleThreadId,
+                  data: this.withSystemMessageMetadata({
+                    source: "agent.openrouter.status",
+                    data: {
+                      description:
+                        this.statusMessages.openRouterNotEnoughTokens.ru,
+                    },
+                  }),
+                  options: {
+                    headers: {
+                      Authorization: "Bearer " + props.jwtToken,
+                    },
                   },
                 },
-              },
-            );
+              );
           } else {
-            await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
-              {
-                id: props.rbacModuleSubject.id,
-                socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-                socialModuleChatId: props.socialModuleChat.id,
-                data: this.withSystemMessageMetadata({
-                  source: "agent.openrouter.status",
-                  data: {
-                    description:
-                      this.statusMessages.openRouterNotEnoughTokens.ru,
-                  },
-                }),
-                options: {
-                  headers: {
-                    Authorization: "Bearer " + props.jwtToken,
+            reply =
+              await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+                {
+                  id: props.rbacModuleSubject.id,
+                  socialModuleProfileId:
+                    props.shouldReplySocialModuleProfile.id,
+                  socialModuleChatId: props.socialModuleChat.id,
+                  data: this.withSystemMessageMetadata({
+                    source: "agent.openrouter.status",
+                    data: {
+                      description:
+                        this.statusMessages.openRouterNotEnoughTokens.ru,
+                    },
+                  }),
+                  options: {
+                    headers: {
+                      Authorization: "Bearer " + props.jwtToken,
+                    },
                   },
                 },
-              },
-            );
+              );
           }
-          await this.telegramBotPremiumMessageWithKeyboardCreate({
-            jwtToken: props.jwtToken,
-            messageFromSocialModuleProfile:
-              props.messageFromSocialModuleProfile,
-            rbacModuleSubject: props.rbacModuleSubject,
-            shouldReplySocialModuleProfile:
-              props.shouldReplySocialModuleProfile,
-            socialModuleMessage: props.socialModuleMessage,
-            socialModuleChat: props.socialModuleChat,
-          });
+          if (props.socialModuleChat.variant === "telegram") {
+            await this.telegramBotPremiumMessageWithKeyboardCreate({
+              jwtToken: props.jwtToken,
+              messageFromSocialModuleProfile:
+                props.messageFromSocialModuleProfile,
+              rbacModuleSubject: props.rbacModuleSubject,
+              shouldReplySocialModuleProfile:
+                props.shouldReplySocialModuleProfile,
+              socialModuleMessage: props.socialModuleMessage,
+              socialModuleChat: props.socialModuleChat,
+            });
+          }
 
-          throw error;
+          return reply;
         }
       }
 

@@ -1,3 +1,4 @@
+import { Component as Loading } from "../loading";
 import {
   Provider,
   api as clientApi,
@@ -10,6 +11,7 @@ import { Component as ChildComponent } from "./Component";
 export function Component(props: IComponentProps) {
   return (
     <ParentComponent
+      Skeleton={<Loading isServer={props.isServer} variant="loading" />}
       Component={ChildComponent as any}
       Provider={Provider}
       clientApi={clientApi}

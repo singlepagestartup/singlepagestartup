@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "How the framework is organized",
+    "ru": "Как устроен фреймворк"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The same patterns are used in the running Framework examples and the articles in this blog.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Эти паттерны используются в работающих примерах Framework и описаны в статьях блога.\"}]}]}"
+  },
+  "anchor": "architecture",
+  "className": "[&_.grid]:xl:grid-cols-3",
+  "id": "830a3ac0-2c7a-41c8-ac4e-d42760406daa",
+  "createdAt": "2026-10-23T20:18:05.546Z",
+  "updatedAt": "2026-10-23T20:18:05.546Z",
+  "variant": "content-feature-find-card",
+  "adminTitle": "How the framework is organized",
+  "slug": "framework-about-architecture"
+}

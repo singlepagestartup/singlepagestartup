@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Read Blog source guide",
+    "ru": "Документация Blog"
+  },
+  "subtitle": {},
+  "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/modules/blog/README.md",
+  "className": "w-fit",
+  "id": "cf1c5c8a-13b4-47f0-b99a-928b9f7c6e6b",
+  "createdAt": "2026-10-24T01:05:57.513Z",
+  "updatedAt": "2026-10-24T01:05:57.513Z",
+  "variant": "primary",
+  "adminTitle": "Read Blog source guide",
+  "slug": "framework-journey-guide-blog-actions-1"
+}

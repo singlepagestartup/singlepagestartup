@@ -1,5 +1,26 @@
 Closes #319.
 
+## Current review status
+
+Updated from main `9e06cabad7` after PR #327. Three conflicts in middleware
+exports, cron environment settings and deployment documentation are resolved.
+
+Keep this PR open pending credential-handling fixes. The review reproduced:
+
+- New Traefik access logs retain OAuth query parameters despite dropping headers.
+- The cron credential is visible in curl process arguments.
+- Fresh inventory and API environment files are created with mode 0644 under
+  the tested default permissions, exposing credentials to other local readers.
+
+These findings are not fixed by this update. Detailed evidence and proposed
+corrections: [security review](https://github.com/singlepagestartup/singlepagestartup/blob/claude/issue-319-deployer-hardening/thoughts/shared/research/singlepagestartup/2026-11-05-pr328-deployer-security-review.md).
+
+Current checks: Agent 126 tests, Backend Utils 170, Middlewares 61; three
+TypeScript checks; scoped ESLint; zero module dependency violations; six
+Ansible syntax checks; five rendered Compose configurations. An isolated SSH
+server accepted a stored host key and refused its replacement. Production was
+not changed or audited.
+
 ## Summary
 
 The deployer installed a root crontab line that called the agent cron route every minute with the operator secret (`RBAC_SECRET_KEY`, the full authorization bypass) on its command line and with certificate verification off (`curl -k`). Traefik kept no access log, the public routers sent no security headers, and Ansible accepted whatever host key a server presented.
@@ -40,7 +61,7 @@ The per-minute schedule and password SSH keep working. CORS, uploads, the anonym
 
 - Research, plan, process log and progress file for #319 under `thoughts/shared/`.
 
-## Verification
+## Original branch verification
 
 - [x] `npx nx run @sps/agent:jest:test`: 18 suites, 95 tests (new `request-can-run-cron` suite, 7 tests).
 - [x] `npx nx run @sps/backend-utils:jest:test`: 6 suites, 129 tests.

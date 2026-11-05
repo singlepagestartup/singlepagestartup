@@ -24,7 +24,10 @@ The approved page is split into elements, components and widgets, and each one
 is matched to a block in `apps/studio/modules`. That directory mirrors
 `libs/modules`: every component and model described there should have a
 projection here, at
-`apps/studio/modules/<module>/<models|relations>/<entity>/<layer>/<variant>/`.
+`apps/studio/modules/<module>/<model>/<layer>/<variant>/` for the current
+model projections. Studio currently excludes relation projections; production
+relations retain their own packages in `libs/modules`. Read the Studio inventory
+and README before adding a new projection kind.
 
 Storybook renders these blocks with whatever data the author supplies. Nothing
 has to be fetched, no endpoint has to exist and no model has to be wired, so
@@ -51,13 +54,10 @@ questions reach `libs/modules`.
 
 ## Current coverage
 
-`apps/studio/modules` projects 7 of the 16 modules in `libs/modules`: `blog`,
-`crm`, `ecommerce`, `host`, `rbac`, `social` and `website-builder`. The other
-nine — `agent`, `analytic`, `billing`, `broadcast`, `file-storage`,
-`knowledge`, `notification`, `startup` and `telegram` — have no Studio
-projection yet, so work touching them has no visual stage to pass through. The
-rule is that they should have one; the gap is recorded here rather than implied
-by its absence.
+`apps/studio/modules` projects the fifteen business modules in `libs/modules`.
+The Studio inventory and catalog checks validate native model coverage.
+Telegram transport runs separately in `apps/telegram`; there is no Telegram
+business module or Studio module projection.
 
 ## Final editorial pass
 

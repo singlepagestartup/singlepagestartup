@@ -1,1 +1,8 @@
-export { Component as Skeleton } from "@sps/shared-frontend-components/singlepage/default/Skeleton";
+export function Skeleton() {
+  return (
+    <div
+      aria-busy="true"
+      className="h-20 w-full animate-pulse border-b border-border bg-background"
+    />
+  );
+}

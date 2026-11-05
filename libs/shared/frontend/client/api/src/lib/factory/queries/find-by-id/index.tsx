@@ -65,7 +65,14 @@ export function query<T>(props: IQueryProps<T>): () => Promise<T | undefined> {
         throw error;
       }
 
-      toast.error(error.message);
+      const networkError =
+        error instanceof TypeError && /fetch|network/i.test(error.message);
+      toast.error(networkError ? "Connection error" : error.message, {
+        id: `api-read:${props.host}${props.route}`,
+        ...(networkError
+          ? { description: "Couldn’t reach the server. Try again." }
+          : {}),
+      });
 
       throw error;
     }
