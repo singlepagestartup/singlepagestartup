@@ -81,8 +81,14 @@ and AGENT_CRON_SECRET, and both cron and Host revalidation deployment docs.
   and an unrelated bearer token do not. The cron key cannot call POST dummy or
   GET cron. Existing dispatcher and completion-marker tests pass.
 - Backend Utils: 9 suites, 170 tests. Middlewares: 12 suites, 61 tests.
-- TypeScript checks for Agent, Backend Utils and Middlewares pass. Scoped ESLint,
-  shell syntax and the module dependency check pass (zero dependency violations).
+- TypeScript checks for Agent, Backend Utils and Middlewares pass. Scoped ESLint
+  passes with `--parser-options '{"project":null}'`; type-aware ESLint exhausted
+  its default 4 GiB heap, so TypeScript was checked separately. The scoped run
+  found a duplicate middleware import introduced by the merge; it is consolidated.
+  Shell syntax and module dependencies pass (zero dependency violations).
+- The repository-wide placement check reports an existing Studio collision:
+  `apps/studio/workspace/design/singlepage/interface-kit/Files.tsx` beside `Files/`.
+  Both paths are present in main and are unchanged by this PR.
 - Six deployer playbooks pass Ansible syntax checks. API, Host, MCP, Telegram
   and Traefik Jinja templates render with synthetic values and pass Compose config.
 - An isolated SSH server with key A accepts two connections using accept-new.

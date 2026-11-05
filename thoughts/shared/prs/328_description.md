@@ -16,7 +16,8 @@ These findings are not fixed by this update. Detailed evidence and proposed
 corrections: [security review](https://github.com/singlepagestartup/singlepagestartup/blob/claude/issue-319-deployer-hardening/thoughts/shared/research/singlepagestartup/2026-11-05-pr328-deployer-security-review.md).
 
 Current checks: Agent 126 tests, Backend Utils 170, Middlewares 61; three
-TypeScript checks; scoped ESLint; zero module dependency violations; six
+TypeScript checks; scoped ESLint with parser project loading disabled after a
+4 GiB heap failure (types checked separately); zero module dependency violations; six
 Ansible syntax checks; five rendered Compose configurations. An isolated SSH
 server accepted a stored host key and refused its replacement. Production was
 not changed or audited.

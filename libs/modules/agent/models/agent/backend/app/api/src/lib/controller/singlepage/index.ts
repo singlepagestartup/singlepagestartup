@@ -4,7 +4,7 @@ import { DI, RESTController } from "@sps/shared-backend-api";
 import { Table } from "@sps/agent/models/agent/backend/repository/database";
 import { Service } from "../../service";
 import { Context } from "hono";
-import { RequestCanRunCron } from "../../../../../middlewares";
+import { AgentRun, RequestCanRunCron } from "../../../../../middlewares";
 import { Handler as Dummy } from "./dummy";
 import { Handler as Cron } from "./cron";
 import { Handler as HostModulePageCache } from "./page/cache";
@@ -19,7 +19,6 @@ import { Handler as NotificationModuleTopicsSendAll } from "./notification-modul
 import { Handler as BroadcastModuleMessageDeleteExpired } from "./broadcast-module/message/delete-expied";
 import { Handler as RbacModuleSubjectDeleteAnonymous } from "./rbac-module/subject/delete-anonymous";
 import { Handler as RbacModuleSubjectCheck } from "./rbac-module/subject/check";
-import { AgentRun } from "../../../../../middlewares";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
