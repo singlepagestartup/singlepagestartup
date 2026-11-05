@@ -10,7 +10,7 @@ export class Handler {
       await this.service.revalidateHostCache();
     } catch (error) {
       throw new HTTPException(502, {
-        message: "Host cache invalidation failed",
+        message: "Internal error. Host cache invalidation failed",
         cause: error,
       });
     }

@@ -39,3 +39,14 @@ it("keeps a server permission denial distinct from a transport failure", async (
     id: "api-read:http://api.test/api/social/chats",
   });
 });
+
+it("keeps an expected 404 silent when the API returns a structured error", async () => {
+  const missing = Object.assign(new Error("Not Found error. Channel missing"), {
+    status: 404,
+  });
+  jest.mocked(actions.find).mockRejectedValue(missing);
+  await expect(
+    query({ host: "http://api.test", route: "/api/broadcast/channels" })(),
+  ).rejects.toBe(missing);
+  expect(toast.error).not.toHaveBeenCalled();
+});

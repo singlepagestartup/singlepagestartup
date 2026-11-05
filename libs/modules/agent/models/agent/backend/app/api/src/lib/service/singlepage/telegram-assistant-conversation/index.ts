@@ -14,7 +14,7 @@ import type {
   ITelegramConversationRuntime,
   ITelegramConversationState,
   TTelegramAssistantPage,
-} from "./telegram-conversation";
+} from "../telegram-conversation";
 
 const pageSize = 6;
 const inlineEditorValueMaxLength = 4_000;

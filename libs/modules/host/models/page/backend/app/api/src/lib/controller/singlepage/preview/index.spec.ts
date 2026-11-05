@@ -56,7 +56,7 @@ describe("Page SEO preview HTTP contract", () => {
     const response = await request(draft);
     expect(response.status).toBe(503);
     expect(await response.json()).toEqual({
-      error: "Preview is temporarily unavailable",
+      error: "Internal error. Preview is temporarily unavailable",
     });
   });
 });

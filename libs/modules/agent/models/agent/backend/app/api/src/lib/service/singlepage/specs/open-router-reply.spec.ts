@@ -43,7 +43,7 @@ jest.mock("hono/jwt", () => {
   };
 });
 
-import { Service } from "./index";
+import { Service } from "../index";
 import { api as rbacModuleSubjectApi } from "@sps/rbac/models/subject/sdk/server";
 import { api as socialModuleMessageApi } from "@sps/social/models/message/sdk/server";
 import * as jwt from "hono/jwt";

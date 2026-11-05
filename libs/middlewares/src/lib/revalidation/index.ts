@@ -3,6 +3,7 @@ import {
   ICompiledTopicRule,
   IRouteRule,
   ITopicRule,
+  MUTATION_SKIPPED_CONTEXT_KEY,
   resolveTopicsForPath,
   RouteMatcher,
   singlepageTopicRules,
@@ -87,7 +88,10 @@ export class Middleware {
 
       await next();
 
-      if (this.notRevalidatingRoutesMatcher.matches(reqPath, method)) {
+      if (
+        c.get(MUTATION_SKIPPED_CONTEXT_KEY) ||
+        this.notRevalidatingRoutesMatcher.matches(reqPath, method)
+      ) {
         return;
       }
 

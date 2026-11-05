@@ -66,6 +66,7 @@ import {
   type ITelegramAssistantConversationContext,
   type ITelegramAssistantConversationTransport,
 } from "./telegram-assistant-conversation";
+import { CronQueue } from "./cron-queue";
 import { AgentRun } from "./agent-run";
 
 const activeSubscriptionProductsCheckoutMessage =
@@ -171,6 +172,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   fileStorageModule: IFileStorageModule;
   telegramConversationRuntime: ITelegramConversationRuntime;
   agentRun: AgentRun;
+  cronQueue: CronQueue;
 
   constructor(
     @inject(DI.IRepository) repository: Repository,
@@ -197,6 +199,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     this.fileStorageModule = fileStorageModule;
     this.telegramConversationRuntime = telegramConversationRuntime;
     this.agentRun = new AgentRun({ broadcastModule });
+    this.cronQueue = new CronQueue(repository, this.agentRun);
   }
 
   statusMessages = telegramBotServiceMessages;

@@ -4,7 +4,7 @@
  * When: Agent resolves an attachment for a conversation editor.
  * Then: it downloads the canonical file without imposing avatar-only MIME rules.
  */
-import { Service } from "./index";
+import { Service } from "../../index";
 
 describe("Telegram assistant persisted editor files", () => {
   /**

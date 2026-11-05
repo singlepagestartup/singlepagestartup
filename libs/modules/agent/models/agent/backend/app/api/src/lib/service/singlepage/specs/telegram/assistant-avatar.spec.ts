@@ -4,7 +4,7 @@
  * When: Agent renders the Telegram assistant home.
  * Then: it resolves only the latest image relation into a public avatar link.
  */
-import { Service } from "./index";
+import { Service } from "../../index";
 
 function createService(props: {
   relations?: Array<{ fileStorageModuleFileId?: string }>;

@@ -18,7 +18,7 @@ import { Handler as NotificationModuleTopicsSendAll } from "./notification-modul
 import { Handler as BroadcastModuleMessageDeleteExpired } from "./broadcast-module/message/delete-expied";
 import { Handler as RbacModuleSubjectDeleteAnonymous } from "./rbac-module/subject/delete-anonymous";
 import { Handler as RbacModuleSubjectCheck } from "./rbac-module/subject/check";
-import { AgentRun } from "../../../../../middlewares";
+import { AgentRun, CronTick } from "../../../../../middlewares";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
@@ -39,6 +39,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       {
         method: "POST",
         path: "/cron",
+        middlewares: [new CronTick().init()],
         handler: this.cron,
       },
       {

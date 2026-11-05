@@ -1,14 +1,4 @@
-/**
- * BDD Suite: agent run markers own the lifecycle of a scheduled execution.
- *
- * Given: the cron channel holds the running and finished markers of an agent.
- * When: the runner decides whether the agent is due and dispatches it.
- * Then: a live run blocks re-dispatch, a lost run is superseded, and only the
- * side that observed the outcome records a result.
- */
-
-const mockPushMessage = jest.fn();
-const mockMessageDelete = jest.fn();
+const mockAcknowledge = jest.fn();
 const mockLoggerError = jest.fn();
 const mockLoggerInfo = jest.fn();
 
@@ -25,13 +15,6 @@ jest.mock("@sps/agent/models/agent/sdk/model", () => ({
   runIdHeader: "X-SPS-AGENT-RUN-ID",
 }));
 
-jest.mock("@sps/broadcast/models/channel/sdk/server", () => ({
-  api: {
-    pushMessage: (...args: unknown[]) => mockPushMessage(...args),
-    messageDelete: (...args: unknown[]) => mockMessageDelete(...args),
-  },
-}));
-
 jest.mock("@sps/backend-utils", () => ({
   logger: {
     error: (...args: unknown[]) => mockLoggerError(...args),
@@ -39,8 +22,7 @@ jest.mock("@sps/backend-utils", () => ({
   },
 }));
 
-import { AGENT_CRON_MARKER_MIN_LIFETIME_IN_SECONDS } from "@sps/shared-utils";
-import { AgentRun } from "./agent-run";
+import { AgentRun } from "./index";
 
 const originalFetch = globalThis.fetch;
 
@@ -58,22 +40,11 @@ function createBroadcastModule(markers: IStoredMarker[]) {
       find: jest.fn().mockResolvedValue([{ id: "cron-channel-id" }]),
       findById: jest.fn(),
     },
-    channelsToMessages: {
-      find: jest
-        .fn()
-        .mockResolvedValue(markers.map((marker) => ({ messageId: marker.id }))),
-      findById: jest.fn(),
-    },
     message: {
-      find: jest.fn().mockResolvedValue(
+      transientChannelMessages: jest.fn().mockResolvedValue(
         markers.map((marker) => ({
           id: marker.id,
-          payload: JSON.stringify({
-            datetime: marker.datetime,
-            slug: marker.slug,
-            runId: marker.runId,
-            result: marker.result,
-          }),
+          payload: JSON.stringify(marker),
         })),
       ),
       findById: jest.fn(),
@@ -82,18 +53,17 @@ function createBroadcastModule(markers: IStoredMarker[]) {
 }
 
 function createAgentRun(markers: IStoredMarker[] = []) {
-  return new AgentRun({ broadcastModule: createBroadcastModule(markers) });
-}
-
-function parsePushedPayload(call: number) {
-  return JSON.parse(mockPushMessage.mock.calls[call][0].data.payload);
+  const broadcastModule = createBroadcastModule(markers);
+  mockAcknowledge.mockImplementation(async (owner: { receipt: string }) =>
+    markers.some((marker) => marker.runId === owner.receipt && !marker.result),
+  );
+  broadcastModule.message.queue = { acknowledge: mockAcknowledge };
+  return new AgentRun({ broadcastModule });
 }
 
 describe("Given: an agent whose executions are tracked on the cron channel", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockPushMessage.mockResolvedValue(undefined);
-    mockMessageDelete.mockResolvedValue(undefined);
   });
 
   afterEach(() => {
@@ -122,8 +92,6 @@ describe("Given: an agent whose executions are tracked on the cron channel", () 
     const decision = createAgentRun().isDue({
       agent: { slug: "host-module-page-cache", interval: "* * * * *" } as any,
       marker: {
-        id: "marker-1",
-        slug: "host-module-page-cache",
         datetime: new Date("2026-09-19T11:55:00.000Z"),
         runId: "run-1",
       },
@@ -145,8 +113,6 @@ describe("Given: an agent whose executions are tracked on the cron channel", () 
     const decision = createAgentRun().isDue({
       agent: { slug: "host-module-page-cache", interval: "* * * * *" } as any,
       marker: {
-        id: "marker-1",
-        slug: "host-module-page-cache",
         datetime: new Date("2026-09-19T11:40:00.000Z"),
         runId: "run-1",
       },
@@ -198,55 +164,6 @@ describe("Given: an agent whose executions are tracked on the cron channel", () 
   });
 
   /**
-   * BDD Scenario: the running marker outlives the maximum run duration.
-   *
-   * Given: a previous marker for the same slug.
-   * When: the runner claims the slug for a new run.
-   * Then: the previous marker is deleted and the new marker carries the run id
-   * and an expiry that covers the maximum run duration.
-   */
-  it("Then: replaces previous markers with a running marker that outlives the run", async () => {
-    const agentRun = createAgentRun();
-    const before = Date.now();
-
-    await agentRun.markRunning({
-      slug: "host-module-page-cache",
-      runId: "run-2",
-      supersedes: "run-1",
-      channel: { id: "cron-channel-id" },
-      previousMarkers: [
-        {
-          id: "marker-1",
-          slug: "host-module-page-cache",
-          datetime: new Date(before),
-          runId: "run-1",
-        },
-      ],
-    });
-
-    expect(mockMessageDelete).toHaveBeenCalledWith({
-      id: "cron-channel-id",
-      messageId: "marker-1",
-      options: { headers: { "X-RBAC-SECRET-KEY": "test-rbac-secret" } },
-    });
-
-    const payload = parsePushedPayload(0);
-
-    expect(payload.slug).toBe("host-module-page-cache");
-    expect(payload.runId).toBe("run-2");
-    expect(payload.supersedes).toBe("run-1");
-    expect(payload.result).toBeUndefined();
-
-    const expiresAt = new Date(
-      mockPushMessage.mock.calls[0][0].data.expiresAt,
-    ).getTime();
-
-    expect(expiresAt - before).toBeGreaterThanOrEqual(
-      AGENT_CRON_MARKER_MIN_LIFETIME_IN_SECONDS * 1000,
-    );
-  });
-
-  /**
    * BDD Scenario: a superseded run cannot report a result.
    *
    * Given: the newest marker of the slug belongs to a later run.
@@ -270,7 +187,15 @@ describe("Given: an agent whose executions are tracked on the cron channel", () 
     });
 
     expect(recorded).toBe(false);
-    expect(mockPushMessage).not.toHaveBeenCalled();
+    expect(mockAcknowledge).toHaveBeenCalledWith(
+      {
+        channelId: "cron-channel-id",
+        key: "host-module-page-cache",
+        receipt: "run-1",
+      },
+      expect.any(String),
+      undefined,
+    );
   });
 
   /**
@@ -291,8 +216,6 @@ describe("Given: an agent whose executions are tracked on the cron channel", () 
     const dispatch = await agentRun.dispatch({
       agent: { slug: "host-module-page-cache" } as any,
       runId: "run-1",
-      channel: { id: "cron-channel-id" },
-      previousMarkers: [],
     });
 
     expect(fetchAgent).toHaveBeenCalledWith(
@@ -310,8 +233,7 @@ describe("Given: an agent whose executions are tracked on the cron channel", () 
       runId: "run-1",
       status: "left-running",
     });
-    expect(mockPushMessage).toHaveBeenCalledTimes(1);
-    expect(parsePushedPayload(0).result).toBeUndefined();
+    expect(mockAcknowledge).not.toHaveBeenCalled();
   });
 
   /**
@@ -335,8 +257,6 @@ describe("Given: an agent whose executions are tracked on the cron channel", () 
     const dispatch = await agentRun.dispatch({
       agent: { slug: "dummy" } as any,
       runId: "run-1",
-      channel: { id: "cron-channel-id" },
-      previousMarkers: [],
     });
 
     expect(dispatch.status).toBe("finished");
@@ -367,8 +287,6 @@ describe("Given: an agent whose executions are tracked on the cron channel", () 
     const dispatch = await agentRun.dispatch({
       agent: { slug: "dummy" } as any,
       runId: "run-1",
-      channel: { id: "cron-channel-id" },
-      previousMarkers: [],
     });
 
     expect(dispatch).toEqual({
@@ -377,8 +295,8 @@ describe("Given: an agent whose executions are tracked on the cron channel", () 
       status: "failed",
       error: "Unable to connect",
     });
-    expect(mockPushMessage).toHaveBeenCalledTimes(2);
-    expect(parsePushedPayload(1).result).toEqual({
+    expect(mockAcknowledge).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(mockAcknowledge.mock.calls[0][1]).result).toEqual({
       error: "Unable to connect",
     });
   });

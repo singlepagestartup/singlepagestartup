@@ -1,5 +1,5 @@
 {
-  "fingerprint": "ef7ba315efdd33a39ca48756e398e6e6ae3f9a22109542d7188dc76d6fe0241b",
+  "fingerprint": "46bd7d1b02fe7d4d530de224b270b6282ad531b9a677ee7f0fe25e82df69525f",
   "resources": [
     {
       "resource": "public.bg_as_to_ee_me_ps_bd9",
@@ -972,6 +972,13 @@
         "variant": "variant",
         "orderIndex": "order_index",
         "className": "class_name",
+        "feedVisible": "feed_visible",
+        "deliveryKey": "delivery_key",
+        "receipt": "receipt",
+        "claimedAt": "claimed_at",
+        "startedAt": "started_at",
+        "leaseUntil": "lease_until",
+        "finishedAt": "finished_at",
         "channelId": "cl_id",
         "messageId": "me_id"
       }

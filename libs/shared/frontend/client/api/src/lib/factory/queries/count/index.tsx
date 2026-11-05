@@ -59,7 +59,7 @@ export function query(props: IQueryProps): () => Promise<number | undefined> {
         return res;
       });
     } catch (error: any) {
-      if (error.message.includes("404 |")) {
+      if (error.status === 404) {
         throw error;
       }
 

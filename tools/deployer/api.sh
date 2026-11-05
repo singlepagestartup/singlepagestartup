@@ -180,8 +180,7 @@ then
             ENVIRONMENT_TYPE=$ENVIRONMENT_TYPE" && \
     ansible-playbook \
         ./api/set_cron_jobs.yaml \
-        -e "API_SERVICE_URL=$SERVICE_URL \
-            RBAC_SECRET_KEY=$RBAC_SECRET_KEY" && \
+        -e "API_SERVICE_URL=$SERVICE_URL" && \
     ansible-playbook \
         ./api/fill_github.yaml \
         -e "GITHUB_TOKEN=$GITHUB_TOKEN \

@@ -52,6 +52,18 @@ ansible all -m ping
 Inventory generation restricts the configured private key to mode `0600`,
 which is accepted by OpenSSH and prevents accidental group or public access.
 
+The first connection records the server's host key in `~/.ssh/known_hosts`
+(`StrictHostKeyChecking=accept-new`), and every later connection must present
+the same key; a changed key stops the connection with key and password
+authentication alike. After rebuilding a server on the same address, remove its
+old entry before deploying:
+
+```bash
+ssh-keygen -R 203.0.113.10
+# when ANSIBLE_PORT is not 22
+ssh-keygen -R '[203.0.113.10]:2222'
+```
+
 Then provision the server and deploy all configured services:
 
 ```bash
@@ -175,10 +187,10 @@ openssl rand -hex 32
 
 That applies to `RBAC_SECRET_KEY`, `RBAC_JWT_SECRET`,
 `RBAC_COOKIE_SESSION_SECRET`, `MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET`,
-`HOST_SERVICE_REVALIDATION_SECRET`, `DATABASE_PASSWORD`, `REDIS_PASSWORD`,
-`TRAEFIK_PASSWORD` and `PORTAINER_PASSWORD`. Do not copy these values out of a
-locally bootstrapped `apps/api/.env` into a deployment; generate fresh ones for
-each environment, and keep the production and `PREVIEW_` sets distinct.
+`HOST_SERVICE_REVALIDATION_SECRET`, `DATABASE_PASSWORD`,
+`REDIS_PASSWORD`, `TRAEFIK_PASSWORD` and `PORTAINER_PASSWORD`. Do not copy these
+values out of a locally bootstrapped `apps/api/.env` into a deployment; generate
+fresh ones for each environment, and keep production and `PREVIEW_` sets distinct.
 
 The API refuses to start on a secret it can recognize as guessable. Its
 `API_SECRET_STRENGTH` variable defaults to `enforce`, which stops the process
@@ -216,7 +228,7 @@ secrets end every session, so plan the window.
 | `POSTGRES_PASSWORD` / `DATABASE_PASSWORD`    | run `ALTER ROLE "<user>" WITH PASSWORD '<new>';` inside the running PostgreSQL container, then update `tools/deployer/.env` and the GitHub secret, then redeploy API and MCP | editing `apps/db/.env` alone does nothing: the image is a stock PostgreSQL entrypoint and `POSTGRES_PASSWORD` applies only at the first init of `db_data` |
 | `REDIS_PASSWORD`                             | follow the coordinated procedure above: update the secret, deploy Redis, API and MCP as one rollout, then force-update `api_api` and `mcp_mcp`                               | cache and KV unavailable for the window                                                                                                                   |
 | `RBAC_JWT_SECRET`                            | rotate in `tools/deployer/.env` and in the GitHub secrets, then deploy API, Telegram and MCP together                                                                        | every access and refresh token is invalidated. It also rotates the MCP OAuth signing key, because the MCP template falls back to this value               |
-| `RBAC_SECRET_KEY`                            | rotate in `tools/deployer/.env` and in the GitHub secrets, deploy API, Telegram and MCP, and **re-run the cron play** so the server crontab receives the new value           | this is the full authorization bypass. The middleware also accepts it from an `rbac.secret-key` cookie, so any browser that received it holds a copy      |
+| `RBAC_SECRET_KEY`                            | rotate in `tools/deployer/.env` and in the GitHub secrets, then deploy API, Telegram and MCP                                                                                 | this is the full authorization bypass. The middleware also accepts it from an `rbac.secret-key` cookie, so any browser that received it holds a copy      |
 | `MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET` | rotate and deploy API and MCP together                                                                                                                                       | the API-to-MCP exchange fails until both sides match                                                                                                      |
 | `HOST_SERVICE_REVALIDATION_SECRET`           | rotate in `tools/deployer/.env` and in the GitHub secrets, then deploy API and host together                                                                                 | the Host rejects invalidation until both sides match and the outbox retries pending batches                                                               |
 | `RBAC_COOKIE_SESSION_SECRET`                 | rotate for hygiene                                                                                                                                                           | no runtime effect: nothing reads it today                                                                                                                 |
@@ -232,13 +244,33 @@ Four copies survive a rotation unless they are handled as well:
 - **GitHub Actions secrets.** Replace both the production and the `PREVIEW_`
   variants of the four RBAC values.
 - **`tools/deployer/.env`** on the operator's own machine.
-- **The server crontab**, per the `RBAC_SECRET_KEY` row above.
+- **The server crontab.** Run `./api.sh up` to replace an older entry that
+  contains credentials with the credential-free trigger.
 
 Afterwards, treat the window before the rotation as one in which the old
 `RBAC_SECRET_KEY` could have been guessed. Review the action log for requests
 carrying `X-RBAC-SECRET-KEY` from unexpected sources, confirm the identity and
 subject tables hold no account that was not created through a normal flow, and
 force password resets if the deployment is public.
+
+### Agent cron
+
+`api.sh` installs an empty POST to `/api/agent/agents/cron` every minute.
+No credential is needed in cron or GitHub Secrets for this call. Apply the
+agent repository migration before starting the updated API. The queue in
+PostgreSQL keeps track of running jobs and their next eligible interval.
+The API uses its own RBAC credential to dispatch individual handlers.
+
+The job calls the public API hostname and verifies its certificate. With
+`USE_CLOUDFLARE_SSL=true` the hostname resolves to Cloudflare, which presents
+its edge certificate; otherwise Traefik serves the Let's Encrypt certificate.
+Both chains are publicly trusted. If the server resolves the API hostname to
+itself while Traefik holds a Cloudflare Origin CA certificate, curl cannot
+verify the chain: add `--cacert` with the Cloudflare Origin CA root to the job
+in `api/set_cron_jobs.yaml` rather than disabling verification.
+
+Successful ticks return HTTP 204 with an empty body. curl appends errors to
+`/home/code/api_agent_agents_cron.log`.
 
 ### Host revalidation secret
 
@@ -284,6 +316,40 @@ docker service logs traefik_traefik --since 10m
 
 Never leave `DEBUG` enabled after troubleshooting; it can repeatedly expose
 dynamic routing details and credential hashes in logs.
+
+### Traefik access log and security headers
+
+Traefik writes one JSON line per request to stdout, beside its own log, and
+drops every request header value from that line because requests carry
+credentials in headers. Read both with:
+
+```bash
+docker service logs traefik_traefik --since 10m
+```
+
+The Traefik container log rotates at 10 MB and keeps three files, like the
+application services.
+
+The api, host, mcp and telegram routers attach a headers middleware that sends:
+
+- `Strict-Transport-Security: max-age=31536000`, without `includeSubDomains` or
+  `preload`, because the host may run on the apex domain and hostnames outside
+  this deployer would be pinned to HTTPS as well;
+- `X-Content-Type-Options: nosniff`;
+- `Referrer-Policy: strict-origin-when-cross-origin`.
+
+No `Content-Security-Policy` and no frame policy are sent: pages embed widgets
+in frames, and a content policy has to be written for each application.
+
+Each service defines its middleware in its own labels, beside its router.
+Traefik restarts on every service deployment, because `domain.sh` forces a
+Traefik update to load the service certificate, and a middleware defined on the
+Traefik service's own labels can be missing after a restart
+([traefik/traefik#9363](https://github.com/traefik/traefik/issues/9363)); every
+router that references a missing middleware stops being served.
+
+`./traefik.sh up` applies the access log, and each service's own script applies
+its headers. `./up.sh` runs both.
 
 ### Hardened rollout and verification
 
@@ -397,6 +463,12 @@ Leave `ANSIBLE_PASSWORD` empty. Preview deployments use the corresponding
 with mode `0600` before Ansible connects. When `github_deployer.sh` is used, it
 encodes `ANSIBLE_PRIVATE_KEY_FILE` automatically if
 `ANSIBLE_PRIVATE_KEY_BASE64` is empty.
+
+GitHub-hosted runners start every run with an empty `known_hosts`, so each
+workflow run accepts the host key the server presents first. Host key checking
+therefore protects deployments run from an operator's machine; to protect
+workflow runs as well, write the server's verified key to the runner's
+`~/.ssh/known_hosts` before the deployer connects.
 
 A deployment runs when a pull request from `main` into one of the branches that
 `github_deployer.sh` creates is merged: `ansible-up` or `ansible-down`, and

@@ -104,4 +104,5 @@ export const allowedRoutes: IRouteRule[] = [
     regexPath: /\/api\/rbac\/permissions\/.*/,
     methods: ["GET"],
   },
+  { regexPath: /^\/api\/agent\/agents\/cron$/, methods: ["POST"] },
 ];

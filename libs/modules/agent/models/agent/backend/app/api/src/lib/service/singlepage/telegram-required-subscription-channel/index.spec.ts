@@ -6,7 +6,7 @@
  * Then: subscription enforcement is enabled only for a complete configuration.
  */
 
-import { resolveTelegramRequiredSubscriptionChannelConfiguration } from "./telegram-required-subscription-channel";
+import { resolveTelegramRequiredSubscriptionChannelConfiguration } from "./index";
 
 describe("Telegram required subscription channel configuration", () => {
   /**

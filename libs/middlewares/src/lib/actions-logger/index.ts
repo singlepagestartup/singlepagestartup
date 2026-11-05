@@ -3,6 +3,7 @@ import { Provider as StoreProvider } from "@sps/providers-kv";
 import {
   IRouteRule,
   KV_PROVIDER,
+  MUTATION_SKIPPED_CONTEXT_KEY,
   normalizeRoutePath,
   RBAC_JWT_SECRET,
   RBAC_SECRET_KEY,
@@ -51,7 +52,10 @@ export class Middleware {
 
       await next();
 
-      if (!this.loggingRoutesMatcher.matches(reqPath, method)) {
+      if (
+        c.get(MUTATION_SKIPPED_CONTEXT_KEY) ||
+        !this.loggingRoutesMatcher.matches(reqPath, method)
+      ) {
         return;
       }
 

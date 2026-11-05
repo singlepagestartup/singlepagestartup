@@ -111,6 +111,35 @@ describe("owned password changes through the Identity service", () => {
   });
 });
 
+it("returns the same authentication failure for an unknown login and a wrong password", async () => {
+  const email = "sps-login@example.invalid";
+  const salt = await bcrypt.genSalt(4);
+  const signIn = () =>
+    new Service({} as any).emailAndPassowrd({
+      data: {
+        type: "login",
+        login: email,
+        password: "wrong-password",
+      },
+    });
+  mockRows = [];
+  await expect(signIn()).rejects.toThrow(
+    /^Authentication error\. Invalid credentials$/,
+  );
+  mockRows = [
+    {
+      id: "test",
+      email,
+      provider: "email_and_password",
+      salt,
+      password: await bcrypt.hash("test-password", salt),
+    },
+  ];
+  await expect(signIn()).rejects.toThrow(
+    /^Authentication error\. Invalid credentials$/,
+  );
+});
+
 function register(login: string, password = "correct horse battery") {
   return new Service({} as any).emailAndPassowrd({
     data: { type: "registration", login, password },

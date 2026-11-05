@@ -29,7 +29,7 @@ jest.mock("@sps/rbac/models/subject/sdk/server", () => {
   };
 });
 
-import { Service } from "./index";
+import { Service } from "../../index";
 import { api as rbacModuleSubjectApi } from "@sps/rbac/models/subject/sdk/server";
 
 const mockedEcommerceModuleProductCheckout =
