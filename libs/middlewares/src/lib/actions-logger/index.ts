@@ -3,6 +3,7 @@ import { Provider as StoreProvider } from "@sps/providers-kv";
 import {
   IRouteRule,
   KV_PROVIDER,
+  MUTATION_SKIPPED_CONTEXT_KEY,
   normalizeRoutePath,
   RBAC_JWT_SECRET,
   RBAC_SECRET_KEY,
@@ -51,7 +52,10 @@ export class Middleware {
 
       await next();
 
-      if (!this.loggingRoutesMatcher.matches(reqPath, method)) {
+      if (
+        c.get(MUTATION_SKIPPED_CONTEXT_KEY) ||
+        !this.loggingRoutesMatcher.matches(reqPath, method)
+      ) {
         return;
       }
 
@@ -68,7 +72,7 @@ export class Middleware {
           void (async () => {
             try {
               const resJson = await c.res.clone().json();
-              const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
+              const decoded = await jwt.verify(token, RBAC_JWT_SECRET, "HS256");
 
               const contentType = c.req.header("content-type");
               let requestData: any = {};

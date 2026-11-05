@@ -8,6 +8,7 @@
  */
 
 import {
+  extractRouteParams,
   composeRouteRules,
   createLayeredRouteMatcher,
   normalizeRoutePath,
@@ -245,5 +246,55 @@ describe("createLayeredRouteMatcher", () => {
 
     expect(matcher.matches("/api/x/public")).toBe(true);
     expect(matcher.matches("/api/x/secret")).toBe(false);
+  });
+});
+
+describe("resolved Page parameters", () => {
+  // Given a saved mask, all dynamic keys resolve from the same path snapshot.
+  it("extracts the complete thread context and ignores query/hash", () => {
+    expect(
+      extractRouteParams({
+        mask: "/ai-chat/profiles/[social.profiles.id]/chats/[social.chats.id]/threads/[social.threads.id]",
+        url: "/ai-chat/profiles/p/chats/c/threads/t/?create=1#draft",
+      }),
+    ).toEqual({
+      "social.profiles.id": "p",
+      "social.chats.id": "c",
+      "social.threads.id": "t",
+    });
+  });
+  it("retains encoded values and exact names", () => {
+    expect(
+      extractRouteParams({
+        mask: "/products/[ecommerce.products.slug]",
+        url: "/products/a%2Fb",
+      }),
+    ).toEqual({ "ecommerce.products.slug": "a%2Fb" });
+  });
+  it("returns an empty map for a static page", () => {
+    expect(
+      extractRouteParams({
+        mask: "/ai-chat/projects",
+        url: "/ai-chat/projects",
+      }),
+    ).toEqual({});
+  });
+  it("defaults only the omitted pagination token", () => {
+    expect(
+      extractRouteParams({
+        mask: "/blog/[blog.articles.:pagination:10]",
+        url: "/blog",
+      }),
+    ).toEqual({ "blog.articles.:pagination:10": "1" });
+    expect(() =>
+      extractRouteParams({ mask: "/blog/[blog.articles.slug]", url: "/blog" }),
+    ).toThrow("Missing URL segment");
+  });
+  it.each([
+    ["/other/x", "/products/[id]"],
+    ["/products/x/extra", "/products/[id]"],
+    ["/a/b", "/[id]/[id]"],
+  ])("rejects mismatched or ambiguous masks", (url, mask) => {
+    expect(() => extractRouteParams({ url, mask })).toThrow("Validation error");
   });
 });

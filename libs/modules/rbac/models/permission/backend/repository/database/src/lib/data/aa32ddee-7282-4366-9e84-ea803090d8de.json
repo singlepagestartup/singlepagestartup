@@ -1,0 +1,9 @@
+{
+  "id": "aa32ddee-7282-4366-9e84-ea803090d8de",
+  "createdAt": "2026-10-12T12:47:48.066Z",
+  "updatedAt": "2026-10-12T12:47:48.066Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "PATCH",
+  "path": "/api/rbac/subjects/eae83f65-0e90-4453-9575-7a54b9b2917e/identities/634a6b12-f379-4d49-b2a6-b83f39ac4852"
+}

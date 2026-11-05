@@ -1,0 +1,82 @@
+{
+  "schema": {
+    "module": "rbac",
+    "entity": "role",
+    "entityType": "model",
+    "fields": [
+      {
+        "key": "title",
+        "label": "Title",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "slug",
+        "label": "Slug",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "availableOnRegistration",
+        "label": "Available On Registration",
+        "kind": "boolean",
+        "nullable": false,
+        "default": false
+      }
+    ]
+  },
+  "records": [
+    {
+      "title": "role example 1",
+      "slug": "role-example-1",
+      "id": "33d6f66a-939e-40eb-a8a4-3dfc63564569",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "availableOnRegistration": false
+    },
+    {
+      "title": "role example 2",
+      "slug": "role-example-2",
+      "id": "6565bb16-696a-4310-a6c8-6eb0a93e4b81",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "availableOnRegistration": false
+    },
+    {
+      "title": "role example 3",
+      "slug": "role-example-3",
+      "id": "9d4716fb-877c-445c-a75f-dadc4b5b7dad",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "availableOnRegistration": false
+    }
+  ]
+}

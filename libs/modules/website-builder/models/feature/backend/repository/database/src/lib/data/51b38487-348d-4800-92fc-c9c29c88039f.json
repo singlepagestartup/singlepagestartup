@@ -1,0 +1,18 @@
+{
+  "className": "",
+  "id": "51b38487-348d-4800-92fc-c9c29c88039f",
+  "createdAt": "2026-10-24T01:05:52.573Z",
+  "updatedAt": "2026-10-24T01:05:52.573Z",
+  "variant": "dropdown",
+  "title": {
+    "en": "Does AI Chat publish my website?",
+    "ru": "Публикует ли AI-чат сайт?"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Website assembly and automatic server deployment are future services. You can export the reviewed documents now and develop with a coding agent and Code Framework.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Сборка сайтов и автоматическое развёртывание на сервере относятся к будущим сервисам. Сейчас можно экспортировать проверенные документы и разрабатывать продукт с coding agent и Code Framework.\"}]}]}"
+  },
+  "adminTitle": "Does AI Chat publish my website?",
+  "slug": "framework-journey-faq-4"
+}

@@ -27,6 +27,7 @@ export const aiExecutionActionStepKinds = [
   "skill",
   "knowledge",
   "mcp",
+  "context",
 ] as const;
 
 export type TAiExecutionActionRunStatus =

@@ -1,92 +1,125 @@
-import { IComponentPropsExtended } from "./interface";
+import { memo } from "react";
+import type { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
-import {
-  Button,
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-  TipTap,
-} from "@sps/shared-ui-shadcn";
+import { TipTap } from "@sps/shared-ui-shadcn";
 import { Component as ArticlesToFileStorageModuleFiles } from "@sps/blog/relations/articles-to-file-storage-module-files/frontend/component";
 import Link from "next/link";
 import { internationalization } from "@sps/shared-configuration";
 import { saveLanguageContext } from "@sps/shared-utils";
-
-export function Component(props: IComponentPropsExtended) {
+import { Icon } from "@sps/ui-adapter";
+import { Categories } from "./Categories";
+export const Component = memo(function Component(
+  props: IComponentPropsExtended,
+) {
   const href = saveLanguageContext(
     `/blog/articles/${props.data.slug}`,
     props.language,
     internationalization.languages,
   );
-
+  const title =
+    props.data.title?.[props.language]?.trim() || props.data.title?.en?.trim();
+  const createdAt =
+    props.data.createdAt instanceof Date
+      ? props.data.createdAt
+      : new Date(String(props.data.createdAt));
+  const hasDate = !Number.isNaN(createdAt.getTime());
   return (
-    <Link
+    <article
       data-module="blog"
       data-model="article"
-      data-id={props.data?.id || ""}
+      data-id={props.data.id}
       data-variant={props.variant}
-      href={href}
       className={cn(
-        "flex flex-col w-full cursor-pointer",
+        "group relative isolate flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-border bg-card transition hover:border-foreground motion-reduce:transition-none",
         props.data.className,
         props.className,
       )}
     >
-      <Card className="w-full flex flex-col hover:border-primary duration-300">
-        <CardHeader className="flex flex-col gap-1">
-          {props.data.title ? (
-            <CardTitle className="font-bold lg:text-2xl">
-              {props.data.title?.[props.language]}
-            </CardTitle>
-          ) : null}
-        </CardHeader>
-        <CardContent>
-          <ArticlesToFileStorageModuleFiles
+      <ArticlesToFileStorageModuleFiles
+        isServer={props.isServer}
+        variant="find"
+        apiProps={{
+          params: {
+            filters: {
+              and: [
+                { column: "articleId", method: "eq", value: props.data.id },
+                { column: "variant", method: "eq", value: "default" },
+              ],
+            },
+            orderBy: { and: [{ column: "orderIndex", method: "asc" }] },
+          },
+        }}
+      >
+        {({ data }) =>
+          data?.length ? (
+            <div className="grid gap-2 overflow-hidden [&_[data-model=file]]:aspect-square [&_[data-model=file]]:overflow-hidden [&_img]:h-full [&_img]:w-full [&_img]:object-cover [&_a]:relative [&_a]:z-10 [&_audio]:relative [&_audio]:z-10 [&_video]:relative [&_video]:z-10">
+              {data.map((link) => (
+                <ArticlesToFileStorageModuleFiles
+                  key={link.id}
+                  isServer={props.isServer}
+                  variant="default"
+                  dataSource="props"
+                  data={link}
+                  language={props.language}
+                />
+              ))}
+            </div>
+          ) : null
+        }
+      </ArticlesToFileStorageModuleFiles>
+      <div className="flex flex-1 flex-col gap-3 p-5 sm:p-6">
+        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+          <Categories
             isServer={props.isServer}
-            variant="find"
-            apiProps={{
-              params: {
-                filters: {
-                  and: [
-                    {
-                      column: "articleId",
-                      method: "eq",
-                      value: props.data.id,
-                    },
-                  ],
-                },
-              },
-            }}
-          >
-            {({ data }) => {
-              return data?.map((entity, index) => {
-                return (
-                  <ArticlesToFileStorageModuleFiles
-                    key={index}
-                    isServer={props.isServer}
-                    variant={entity.variant as any}
-                    data={entity}
-                  />
-                );
-              });
-            }}
-          </ArticlesToFileStorageModuleFiles>
-
-          {props.data.subtitle?.[props.language] ? (
-            <TipTap
-              value={props.data.subtitle[props.language] || ""}
-              className="prose:text-secondary"
-            />
+            articleId={props.data.id}
+            language={props.language}
+          />
+          {hasDate ? (
+            <time dateTime={createdAt.toISOString()}>
+              {createdAt.toLocaleDateString(props.language, {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+                timeZone: "UTC",
+              })}
+            </time>
           ) : null}
-        </CardContent>
-        <CardFooter>
-          <Button variant="outline">
-            <p>Read more</p>
-          </Button>
-        </CardFooter>
-      </Card>
-    </Link>
+        </div>
+        <h3 className="break-words text-xl font-semibold leading-snug tracking-normal">
+          <Link
+            href={href}
+            aria-label={
+              title ||
+              (props.language === "ru" ? "Читать статью" : "Read article")
+            }
+            className="after:absolute after:inset-0 after:z-[1] after:rounded-2xl hover:underline focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-offset-[-2px] focus-visible:after:outline-foreground"
+          >
+            {title}
+          </Link>
+        </h3>
+        {props.data.subtitle?.[props.language] || props.data.subtitle?.en ? (
+          <TipTap
+            value={
+              props.data.subtitle?.[props.language] ||
+              props.data.subtitle?.en ||
+              ""
+            }
+            className="text-sm leading-6 text-muted-foreground [&_a]:relative [&_a]:z-10"
+          />
+        ) : null}
+        <span
+          aria-hidden="true"
+          className="mt-auto inline-flex min-h-11 w-fit items-center gap-2 text-sm font-medium"
+        >
+          {props.language === "ru" ? "Читать статью" : "Read article"}
+          <Icon name="arrow-right" />
+        </span>
+        {props.author ? (
+          <div className="border-t border-border pt-4 [&_a]:relative [&_a]:z-10">
+            {props.author}
+          </div>
+        ) : null}
+      </div>
+    </article>
   );
-}
+});

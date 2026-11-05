@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "A request for your project",
+    "ru": "Запрос для вашего проекта"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"I want a workshop page: a photo cover, description, programme, teacher information and enquiry form. Use existing blocks and my materials.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Хочу страницу мастер-класса: обложка с фотографией, описание, программа, информация о преподавателе и форма заявки. Используйте существующие блоки и мои материалы.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "34c76049-eb93-408b-bc14-5b3c1cb4d730",
+  "createdAt": "2026-10-26T00:11:37.804Z",
+  "updatedAt": "2026-10-27T14:58:54.848Z",
+  "variant": "content-rich",
+  "adminTitle": "Запрос для вашего проекта",
+  "slug": "framework-reviewed-article-website-builder-task"
+}

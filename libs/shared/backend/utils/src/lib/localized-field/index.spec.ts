@@ -7,6 +7,7 @@
  */
 
 import { localizedFieldHasValue, normalizeLocalizedField } from "./index";
+import { internationalization } from "@sps/shared-configuration";
 
 describe("localized backend field utilities", () => {
   /**
@@ -21,7 +22,7 @@ describe("localized backend field utilities", () => {
         entityName: "Chat",
       }),
     ).toMatchObject({
-      en: "Telegram admin chat",
+      [internationalization.defaultLanguage.code]: "Telegram admin chat",
     });
   });
 

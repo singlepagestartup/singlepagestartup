@@ -4,6 +4,7 @@ import path from "path";
 
 const config = defineConfig({
   schema: [path.resolve(__dirname, "./schema.ts")],
+  out: "./libs/providers/db/src/lib/drizzle/migrations",
   dialect: "postgresql",
   dbCredentials: DATABASE_OPTIONS,
   verbose: true,

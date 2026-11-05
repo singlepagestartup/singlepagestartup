@@ -1,0 +1,29 @@
+{
+  "$schema": "../../../../../block.schema.json",
+  "id": "social.thread.chat-settings",
+  "title": "Social Thread / List / Default",
+  "description": "Local chat details, thread settings and membership.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "thread",
+    "variant": "chat-settings"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "social.thread",
+    "pageName": "social",
+    "variantName": "chat-settings",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["social", "thread", "chat"],
+  "contentSlots": []
+}

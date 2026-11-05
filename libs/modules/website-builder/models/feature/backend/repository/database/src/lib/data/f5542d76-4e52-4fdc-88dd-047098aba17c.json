@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "f5542d76-4e52-4fdc-88dd-047098aba17c",
+  "createdAt": "2026-10-26T00:12:43.717Z",
+  "updatedAt": "2026-10-27T15:00:02.334Z",
+  "variant": "document",
+  "title": {
+    "en": "Brand",
+    "ru": "Бренд"
+  },
+  "subtitle": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"heading\",\"attrs\":{\"level\":4},\"content\":[{\"type\":\"text\",\"text\":\"Example content\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The school's name is Firstship. A calm tone, explanations through examples and a focus on independent practice.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"heading\",\"attrs\":{\"level\":4},\"content\":[{\"type\":\"text\",\"text\":\"Пример содержания\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Название школы — Firstship. Спокойный тон, объяснения на примерах, акцент на самостоятельной практике.\"}]}]}"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The brand defines the name, character, tone of voice and visual references. These guide text and design preparation.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Бренд задаёт название, характер, тон общения и визуальные ориентиры. На них можно опираться при подготовке текстов и оформления.\"}]}]}"
+  },
+  "adminTitle": "Бренд",
+  "slug": "framework-reviewed-context-doc-document-three"
+}

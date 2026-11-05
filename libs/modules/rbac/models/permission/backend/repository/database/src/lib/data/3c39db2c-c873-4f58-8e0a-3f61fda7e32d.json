@@ -1,0 +1,9 @@
+{
+  "id": "3c39db2c-c873-4f58-8e0a-3f61fda7e32d",
+  "createdAt": "2026-10-23T20:18:01.818Z",
+  "updatedAt": "2026-10-23T20:18:01.818Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/social/widgets-to-website-builder-module-widgets"
+}

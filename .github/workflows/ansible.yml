@@ -8,29 +8,41 @@ on:
         required: true
         type: string
 
+permissions:
+  contents: read
+
 jobs:
   ansible:
     timeout-minutes: 60
     name: ansible run script
     runs-on: ubuntu-latest
+    env:
+      BRANCH_NAME: ${{ inputs.BRANCH || github.ref_name }}
     defaults:
       run:
         working-directory: ./tools/deployer
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - name: Set up MCP config generator Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: "1.3.6"
       - name: Set script file name
         id: set-script-file-name
-        run: echo "SCRIPT_FILE_NAME=$(echo ${{ github.ref_name }} | cut -d'-' -f2)" >> $GITHUB_OUTPUT
+        run: echo "SCRIPT_FILE_NAME=$(echo "$BRANCH_NAME" | cut -d'-' -f2)" >> "$GITHUB_OUTPUT"
       - name: Set script args
         id: set-script-args
-        run: echo "ARGS=$(echo ${{ github.ref_name }} | cut -d'-' -f3- | tr '-' ' ')" >> $GITHUB_OUTPUT
+        run: echo "ARGS=$(echo "$BRANCH_NAME" | cut -d'-' -f3- | tr '-' ' ')" >> "$GITHUB_OUTPUT"
       - name: Script and args
+        env:
+          SCRIPT_FILE_NAME: ${{ steps.set-script-file-name.outputs.SCRIPT_FILE_NAME }}
+          ARGS: ${{ steps.set-script-args.outputs.ARGS }}
         run: |
-          echo SCRIPT: ${{ steps.set-script-file-name.outputs.SCRIPT_FILE_NAME }}.sh
-          echo ARGS: ${{ steps.set-script-args.outputs.ARGS }}
+          echo "SCRIPT: ${SCRIPT_FILE_NAME}.sh"
+          echo "ARGS: ${ARGS}"
       - name: Add deployer PREVIEW secrets to env file
-        if: contains(github.ref_name, '-preview')
+        if: contains(env.BRANCH_NAME, '-preview')
         run: |
           secrets=(\
             "PROJECT_NAME ${{ secrets.PREVIEW_PROJECT_NAME }}"\
@@ -66,6 +78,7 @@ jobs:
             "HOST_SERVICE_NAME ${{ secrets.PREVIEW_HOST_SERVICE_NAME }}"\
             "HOST_SERVICE_SUBDOMAIN ${{ secrets.PREVIEW_HOST_SERVICE_SUBDOMAIN }}"\
             "HOST_DOCKER_HUB_REPOSITORY_NAME ${{ secrets.PREVIEW_HOST_DOCKER_HUB_REPOSITORY_NAME }}"\
+            "HOST_SERVICE_REVALIDATION_SECRET ${{ secrets.PREVIEW_HOST_SERVICE_REVALIDATION_SECRET }}"\
             "API_SERVICE_NAME ${{ secrets.PREVIEW_API_SERVICE_NAME }}"\
             "API_SERVICE_SUBDOMAIN ${{ secrets.PREVIEW_API_SERVICE_SUBDOMAIN }}"\
             "API_SERVICE_DOCKER_HUB_REPOSITORY_NAME ${{ secrets.PREVIEW_API_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"\
@@ -86,6 +99,7 @@ jobs:
             "WHISPER_COMPUTE_TYPE ${{ secrets.PREVIEW_WHISPER_COMPUTE_TYPE }}"\
             "MCP_SERVICE_NAME ${{ secrets.PREVIEW_MCP_SERVICE_NAME }}"\
             "MCP_SERVICE_SUBDOMAIN ${{ secrets.PREVIEW_MCP_SERVICE_SUBDOMAIN }}"\
+            "MCP_CLIENT_OPENCODE_VERSION ${{ secrets.PREVIEW_MCP_CLIENT_OPENCODE_VERSION }}"\
             "MCP_SERVICE_DOCKER_HUB_REPOSITORY_NAME ${{ secrets.PREVIEW_MCP_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"\
             "MCP_SERVICE_ALLOW_RBAC_SECRET_FALLBACK ${{ secrets.PREVIEW_MCP_SERVICE_ALLOW_RBAC_SECRET_FALLBACK }}"\
             "MCP_SERVICE_ALLOWED_ORIGINS ${{ secrets.PREVIEW_MCP_SERVICE_ALLOWED_ORIGINS }}"\
@@ -123,7 +137,7 @@ jobs:
             "DOCKER_HUB_URL ${{ secrets.PREVIEW_DOCKER_HUB_URL }}"\
             "DOCKER_HUB_LOGIN_USERNAME ${{ secrets.PREVIEW_DOCKER_HUB_LOGIN_USERNAME }}"\
             "GITHUB_TOKEN ${{ secrets.PREVIEW_GH_TOKEN }}"\
-            "GITHUB_REPOSITORY ${{ github.repository_owner }}/${{ github.event.repository.name }}"\
+            "GITHUB_REPOSITORY ${GITHUB_REPOSITORY}"\
             "GOOGLE_TAG_MANAGER_ID ${{ secrets.PREVIEW_GOOGLE_TAG_MANAGER_ID }}"\
             "GOOGLE_ANALYTICS_ID ${{ secrets.PREVIEW_GOOGLE_ANALYTICS_ID }}"\
             "STRIPE_API_KEY ${{ secrets.PREVIEW_STRIPE_API_KEY }}"\
@@ -149,7 +163,7 @@ jobs:
             echo "$secret_name=$secret_value" >> .env
           done
       - name: Add deployer default secrets to env file
-        if: ${{ !contains(github.ref_name, '-preview') }}
+        if: ${{ !contains(env.BRANCH_NAME, '-preview') }}
         run: |
           secrets=(\
             "PROJECT_NAME ${{ secrets.PROJECT_NAME }}"\
@@ -185,6 +199,7 @@ jobs:
             "HOST_SERVICE_NAME ${{ secrets.HOST_SERVICE_NAME }}"\
             "HOST_SERVICE_SUBDOMAIN ${{ secrets.HOST_SERVICE_SUBDOMAIN }}"\
             "HOST_SERVICE_DOCKER_HUB_REPOSITORY_NAME ${{ secrets.HOST_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"\
+            "HOST_SERVICE_REVALIDATION_SECRET ${{ secrets.HOST_SERVICE_REVALIDATION_SECRET }}"\
             "API_SERVICE_NAME ${{ secrets.API_SERVICE_NAME }}"\
             "API_SERVICE_SUBDOMAIN ${{ secrets.API_SERVICE_SUBDOMAIN }}"\
             "API_SERVICE_DOCKER_HUB_REPOSITORY_NAME ${{ secrets.API_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"\
@@ -205,6 +220,7 @@ jobs:
             "WHISPER_COMPUTE_TYPE ${{ secrets.WHISPER_COMPUTE_TYPE }}"\
             "MCP_SERVICE_NAME ${{ secrets.MCP_SERVICE_NAME }}"\
             "MCP_SERVICE_SUBDOMAIN ${{ secrets.MCP_SERVICE_SUBDOMAIN }}"\
+            "MCP_CLIENT_OPENCODE_VERSION ${{ secrets.MCP_CLIENT_OPENCODE_VERSION }}"\
             "MCP_SERVICE_DOCKER_HUB_REPOSITORY_NAME ${{ secrets.MCP_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"\
             "MCP_SERVICE_ALLOW_RBAC_SECRET_FALLBACK ${{ secrets.MCP_SERVICE_ALLOW_RBAC_SECRET_FALLBACK }}"\
             "MCP_SERVICE_ALLOWED_ORIGINS ${{ secrets.MCP_SERVICE_ALLOWED_ORIGINS }}"\
@@ -242,7 +258,7 @@ jobs:
             "DOCKER_HUB_URL ${{ secrets.DOCKER_HUB_URL }}"\
             "DOCKER_HUB_LOGIN_USERNAME ${{ secrets.DOCKER_HUB_LOGIN_USERNAME }}"\
             "GITHUB_TOKEN ${{ secrets.GH_TOKEN }}"\
-            "GITHUB_REPOSITORY ${{ github.repository_owner }}/${{ github.event.repository.name }}"\
+            "GITHUB_REPOSITORY ${GITHUB_REPOSITORY}"\
             "GOOGLE_TAG_MANAGER_ID ${{ secrets.GOOGLE_TAG_MANAGER_ID }}"\
             "GOOGLE_ANALYTICS_ID ${{ secrets.GOOGLE_ANALYTICS_ID }}"\
             "STRIPE_API_KEY ${{ secrets.STRIPE_API_KEY }}"\
@@ -270,7 +286,18 @@ jobs:
       - name: Make script file executable
         run: |
           chmod +x \
-            ./$(echo ${{ github.ref_name }} | cut -d'-' -f2).sh
+            "./$(echo "$BRANCH_NAME" | cut -d'-' -f2).sh"
       - name: Run service script
+        env:
+          MCP_CLIENT_CONFIG_OUTPUT_DIR: ${{ runner.temp }}/mcp-client-configs
+          SCRIPT_FILE_NAME: ${{ steps.set-script-file-name.outputs.SCRIPT_FILE_NAME }}
         run: |
-          ./$(echo ${{ steps.set-script-file-name.outputs.SCRIPT_FILE_NAME }}).sh
+          "./${SCRIPT_FILE_NAME}.sh"
+      - name: Upload generated MCP client configs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: mcp-client-configs
+          path: ${{ runner.temp }}/mcp-client-configs
+          include-hidden-files: true
+          if-no-files-found: ignore

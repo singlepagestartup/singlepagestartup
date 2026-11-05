@@ -24,6 +24,7 @@ describe("saturate-headers", () => {
         "Content-Type": "application/json",
       }),
     ).toEqual({
+      "X-SPS-Consistency": "1",
       "Content-Type": "application/json",
       Authorization: "Bearer token",
     });
@@ -37,6 +38,7 @@ describe("saturate-headers", () => {
         "X-Request-Id": "req-1",
       }),
     ).toEqual({
+      "X-SPS-Consistency": "1",
       "X-Request-Id": "req-1",
     });
   });

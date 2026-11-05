@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "f5af899d-da9a-4cf4-bcb7-245fda51bae7",
+  "createdAt": "2026-10-26T00:11:45.301Z",
+  "updatedAt": "2026-10-27T15:00:02.864Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "file-storage",
+    "ru": "file-storage"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Add a cover and illustrations.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Добавьте обложку и иллюстрации.\"}]}]}"
+  },
+  "adminTitle": "file-storage",
+  "slug": "framework-reviewed-article-blog-connections-feature-2"
+}

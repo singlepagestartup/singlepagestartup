@@ -1,0 +1,9 @@
+{
+  "id": "71eb24c4-9a01-4bbc-9715-8977fc2e278d",
+  "createdAt": "2026-10-12T17:27:29.439Z",
+  "updatedAt": "2026-10-12T17:27:29.439Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "POST",
+  "path": "/api/rbac/subjects/2a7ce1bf-98d7-4190-a04c-b6111002b51c/identities/6c7beea5-0e56-4263-a121-07009b3eefe3/email-change/code"
+}

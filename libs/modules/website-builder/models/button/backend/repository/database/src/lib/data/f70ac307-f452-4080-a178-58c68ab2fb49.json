@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Read architecture articles",
+    "ru": "Статьи об архитектуре"
+  },
+  "subtitle": {},
+  "url": "/blog",
+  "className": "w-fit",
+  "id": "f70ac307-f452-4080-a178-58c68ab2fb49",
+  "createdAt": "2026-10-24T01:06:00.697Z",
+  "updatedAt": "2026-10-24T01:06:00.697Z",
+  "variant": "ghost",
+  "adminTitle": "Read architecture articles",
+  "slug": "framework-journey-guide-crm-actions-2"
+}
