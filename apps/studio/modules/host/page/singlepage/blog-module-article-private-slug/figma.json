@@ -1,0 +1,21 @@
+{
+  "componentName": "host.page",
+  "pageName": "host",
+  "variantName": "blog-module-article-private-slug",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "host.page.blog-module-article-private-slug",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "host/page/singlepage/blog-module-article-private-slug",
+    "sps.figma.component": "host.page",
+    "sps.figma.variant": "blog-module-article-private-slug",
+    "sps.source.module": "host",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "page",
+    "sps.source.variant": "blog-module-article-private-slug",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/host/page/singlepage/blog-module-article-private-slug/Component.tsx",
+    "sps.code.story": "apps/studio/modules/host/page/singlepage/blog-module-article-private-slug/Component.stories.tsx"
+  }
+}

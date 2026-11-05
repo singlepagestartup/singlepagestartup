@@ -1,0 +1,18 @@
+{
+  "className": "",
+  "id": "e224aade-327a-4ddf-8346-3efac342dd3e",
+  "createdAt": "2026-10-24T01:05:49.392Z",
+  "updatedAt": "2026-10-24T01:05:49.392Z",
+  "variant": "definition-item",
+  "title": {
+    "en": "Pages and content",
+    "ru": "Страницы и контент"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Host composes pages and metadata; Website Builder supplies reusable content sections.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Host собирает страницы и метаданные; Website Builder предоставляет секции контента.\"}]}]}"
+  },
+  "adminTitle": "Pages and content",
+  "slug": "framework-journey-module-group-6"
+}

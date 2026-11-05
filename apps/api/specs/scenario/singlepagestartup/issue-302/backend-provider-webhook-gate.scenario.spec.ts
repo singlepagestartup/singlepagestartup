@@ -22,10 +22,10 @@ describe("Given: issue-302 provider webhook gate scenario", () => {
     };
   };
 
-  async function createZeroAmountPayment() {
+  async function createPayment(amount = 0) {
     const invoice = await invoiceApi.create({
       data: {
-        amount: 0,
+        amount,
         status: "open",
       },
       options: {
@@ -41,7 +41,7 @@ describe("Given: issue-302 provider webhook gate scenario", () => {
 
     const paymentIntent = await paymentIntentApi.create({
       data: {
-        amount: 0,
+        amount,
         status: "requires_payment_method",
         type: "one_off",
       },
@@ -75,13 +75,17 @@ describe("Given: issue-302 provider webhook gate scenario", () => {
     return { invoiceId: invoice.id, paymentIntentId: paymentIntent.id };
   }
 
-  function postWebhook(props: { provider: string; invoiceId: string }) {
+  function postWebhook(props: {
+    provider: string;
+    invoiceId: string;
+    authenticated?: boolean;
+  }) {
     return fetch(
       `${getApiUrl()}/api/billing/payment-intents/${props.provider}/webhook`,
       {
         method: "POST",
         headers: {
-          ...secretHeaders(),
+          ...(props.authenticated === false ? {} : secretHeaders()),
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ data: { id: props.invoiceId } }),
@@ -132,7 +136,7 @@ describe("Given: issue-302 provider webhook gate scenario", () => {
     expect(ALLOWED_BILLING_SERVICE_PROVIDERS.split(",")).not.toContain(
       provider,
     );
-    const payment = await createZeroAmountPayment();
+    const payment = await createPayment();
 
     const response = await postWebhook({
       provider,
@@ -146,6 +150,26 @@ describe("Given: issue-302 provider webhook gate scenario", () => {
     });
   });
 
+  it.each([false, true])(
+    "When: dummy receives a non-zero invoice (operator credential: %s) Then: the allow-list controls settlement",
+    async (authenticated) => {
+      const payment = await createPayment(100);
+      const allowed =
+        ALLOWED_BILLING_SERVICE_PROVIDERS.split(",").includes("dummy");
+      const response = await postWebhook({
+        provider: "dummy",
+        invoiceId: payment.invoiceId,
+        authenticated,
+      });
+
+      expect(response.status).toBe(allowed ? 200 : 400);
+      await expect(readStatuses(payment)).resolves.toEqual({
+        invoice: allowed ? "paid" : "open",
+        paymentIntent: allowed ? "succeeded" : "requires_payment_method",
+      });
+    },
+  );
+
   /**
    * BDD Scenario: webhook for a listed provider.
    *
@@ -155,7 +179,7 @@ describe("Given: issue-302 provider webhook gate scenario", () => {
    */
   it("When: the webhook names a listed provider Then: it settles the zero-amount invoice and its payment intent", async () => {
     const [provider] = ALLOWED_BILLING_SERVICE_PROVIDERS.split(",");
-    const payment = await createZeroAmountPayment();
+    const payment = await createPayment();
 
     const response = await postWebhook({
       provider,

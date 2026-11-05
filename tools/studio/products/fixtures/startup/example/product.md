@@ -1,6 +1,5 @@
 ---
 customer_segments: [learners, teams]
-confirmation: { confirmed: false }
 ---
 
 # Independent course

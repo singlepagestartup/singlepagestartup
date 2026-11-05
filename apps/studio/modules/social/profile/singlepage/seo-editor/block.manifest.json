@@ -1,0 +1,29 @@
+{
+  "$schema": "../../../../../block.schema.json",
+  "id": "social.profile.seo-editor",
+  "title": "Profile / seo-editor",
+  "description": "Localized SEO editing and preview.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "profile",
+    "variant": "seo-editor"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "social.profile",
+    "pageName": "social",
+    "variantName": "seo-editor",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["social", "profile", "seo"]
+}

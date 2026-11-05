@@ -4,7 +4,7 @@ import { IClientComponentProps } from "./interface";
 import { getLocalizedPlainText } from "../plain-text";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { ScrollArea } from "@sps/shared-ui-shadcn";
-import { Component as KnowledgeModuleDocumentChatSidebarItem } from "@sps/knowledge/models/document/frontend/component/src/lib/singlepage/chat-sidebar-item";
+import { Component as KnowledgeModuleSourceChatSidebarItem } from "@sps/knowledge/models/source/frontend/component/src/lib/singlepage/chat-sidebar-item";
 import { Component as SocialModuleProfileChatProfileAvatar } from "@sps/social/models/profile/frontend/component/src/lib/singlepage/chat-profile-avatar";
 import { Component as SocialModuleSkillChatSidebarItem } from "@sps/social/models/skill/frontend/component/src/lib/singlepage/chat-sidebar-item";
 import { resolveMcpServerConfiguration } from "@sps/social/models/profile/sdk/model";
@@ -47,7 +47,7 @@ export function Component(props: IClientComponentProps) {
     props.language,
   );
   const skills = props.skills || [];
-  const knowledgeDocuments = props.knowledgeDocuments || [];
+  const knowledgeSources = props.knowledgeSources || [];
   const mcpServers = resolveMcpServerConfiguration(
     props.data.allowedMcpServerIds || [],
   ).supported;
@@ -270,54 +270,54 @@ export function Component(props: IClientComponentProps) {
                 <h3 className="text-xs font-semibold uppercase tracking-normal text-slate-500">
                   Knowledge
                 </h3>
-                {!props.isKnowledgeDocumentsLoading &&
-                !props.hasKnowledgeDocumentsError ? (
+                {!props.isKnowledgeSourcesLoading &&
+                !props.hasKnowledgeSourcesError ? (
                   <span className="text-xs text-slate-400">
-                    {knowledgeDocuments.length}
+                    {knowledgeSources.length}
                   </span>
                 ) : null}
               </div>
-              {props.onKnowledgeDocumentCreate ? (
+              {props.onKnowledgeSourceCreate ? (
                 <button
                   type="button"
                   className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
                   aria-label={`New knowledge for ${props.data.slug}`}
                   title="New knowledge"
                   onClick={() => {
-                    props.onKnowledgeDocumentCreate?.(props.data);
+                    props.onKnowledgeSourceCreate?.(props.data);
                   }}
                 >
                   <Plus className="h-3.5 w-3.5" />
                 </button>
               ) : null}
             </div>
-            {props.isKnowledgeDocumentsLoading ? (
+            {props.isKnowledgeSourcesLoading ? (
               <p className="text-sm text-slate-400">Loading knowledge...</p>
-            ) : props.hasKnowledgeDocumentsError ? (
+            ) : props.hasKnowledgeSourcesError ? (
               <p className="text-sm text-amber-600">
                 Knowledge could not be loaded. Check access permissions and try
                 again.
               </p>
-            ) : knowledgeDocuments.length ? (
+            ) : knowledgeSources.length ? (
               <div className="space-y-1">
-                {knowledgeDocuments.map((document) => {
+                {knowledgeSources.map((document) => {
                   return (
-                    <KnowledgeModuleDocumentChatSidebarItem
+                    <KnowledgeModuleSourceChatSidebarItem
                       key={document.id}
                       isServer={false}
                       variant="chat-sidebar-item"
                       data={document}
                       language={props.language}
                       isSelected={
-                        props.selectedKnowledgeDocument?.id === document.id
+                        props.selectedKnowledgeSource?.id === document.id
                       }
-                      onSelect={props.onKnowledgeDocumentSelect}
+                      onSelect={props.onKnowledgeSourceSelect}
                     />
                   );
                 })}
               </div>
             ) : (
-              <p className="text-sm text-slate-400">No knowledge documents.</p>
+              <p className="text-sm text-slate-400">No knowledge sources.</p>
             )}
           </section>
         </div>

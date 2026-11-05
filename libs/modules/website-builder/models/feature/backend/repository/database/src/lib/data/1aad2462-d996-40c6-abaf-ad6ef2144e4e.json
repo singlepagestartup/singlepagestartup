@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "1aad2462-d996-40c6-abaf-ad6ef2144e4e",
+  "createdAt": "2026-10-26T00:12:36.693Z",
+  "updatedAt": "2026-10-27T14:59:26.218Z",
+  "variant": "copy-request",
+  "title": {
+    "en": "Want to work with the code yourself?",
+    "ru": "Хотите работать с кодом самостоятельно?"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Using the attached, checked business and product documents, plan the first version of my product on SinglePageStartup Code Framework. Help me run the project on my computer. Use suitable existing features, remove what I do not need and adapt the rest to my requirements. List open questions separately and show what I need to check.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"На основе приложенных и проверенных документов о бизнесе и продукте составь план первой версии моего продукта на SinglePageStartup Code Framework. Помоги запустить проект на моём компьютере. Используй подходящие готовые функции, убери ненужные и адаптируй остальные под мои требования. Отдельно укажи нерешённые вопросы и покажи, что мне нужно проверить.\"}]}]}"
+  },
+  "adminTitle": "Хотите работать с кодом самостоятельно?",
+  "slug": "framework-reviewed-setup-request"
+}

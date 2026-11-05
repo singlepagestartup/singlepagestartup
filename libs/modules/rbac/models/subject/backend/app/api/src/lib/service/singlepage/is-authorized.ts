@@ -45,7 +45,7 @@ export class Service {
 
   protected async getSubjectRoleIds(subjectId: string) {
     const cacheKey = `subjects-to-roles:subject:${subjectId}`;
-    const cachedRoleIds = cache.get<string[]>(cacheKey);
+    const cachedRoleIds = await cache.getAsync<string[]>(cacheKey);
 
     if (cachedRoleIds) {
       return cachedRoleIds;
@@ -168,7 +168,8 @@ export class Service {
 
     if (authorization) {
       const tokenCacheKey = `jwt:subject:${authorization}`;
-      subjectId = cache.get<string>(tokenCacheKey);
+      // Verify exp on every authorization, even while role data is cached.
+      subjectId = undefined;
 
       if (!subjectId) {
         const decoded = await verifyJwt(authorization, RBAC_JWT_SECRET);
@@ -193,7 +194,7 @@ export class Service {
       props.permission.route,
     ].join(":");
 
-    let permissionResolution = cache.get<
+    let permissionResolution = await cache.getAsync<
       Awaited<ReturnType<PermissionService["resolveByRoute"]>>
     >(permissionResolutionCacheKey);
 

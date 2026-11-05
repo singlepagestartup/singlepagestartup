@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "e913aa71-7238-4ff1-a6ba-31af8aacc819",
+  "createdAt": "2026-10-24T01:05:59.427Z",
+  "updatedAt": "2026-10-24T01:05:59.427Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "CRM",
+    "ru": "CRM"
+  },
+  "subtitle": {
+    "en": "Experience",
+    "ru": "Интерфейс"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Forms, steps, fields and saved contact requests.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Формы, шаги, поля и сохранённые контактные заявки.\"}]}]}"
+  },
+  "adminTitle": "CRM",
+  "slug": "framework-journey-module-crm"
+}

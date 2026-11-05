@@ -1,6 +1,9 @@
 import { HostGraphPreviewInputSchema, IHostGraphPreviewInput } from "./schemas";
 import { getMcpSdkOptions } from "./auth";
-import { requireContentEntityDescriptor } from "./registry";
+import {
+  getContentEntityDescriptor,
+  requireContentEntityDescriptor,
+} from "./registry";
 import {
   IContentEntityDescriptor,
   IContentQueryParams,
@@ -119,14 +122,13 @@ async function resolveExternalWidget(props: {
   registry?: IContentEntityDescriptor[];
   authHeaders: Record<string, string>;
 }) {
-  if (props.externalWidgetRelation.externalModule !== "blog") {
-    return;
-  }
-
-  const descriptor = await requireContentEntityDescriptor(
-    "blog.widget",
+  const module = getStringValue(props.externalWidgetRelation.externalModule);
+  if (!module) return;
+  const descriptor = await getContentEntityDescriptor(
+    `${module}.widget`,
     props.registry,
   );
+  if (!descriptor) return;
   const externalWidgetId = getStringValue(
     props.externalWidgetRelation.externalWidgetId,
   );
@@ -143,11 +145,62 @@ async function resolveExternalWidget(props: {
 
   return {
     selector: {
-      module: "blog",
+      module,
       model: "widget",
     },
     widget,
   };
+}
+
+/**
+ * Follow the explicit Widget -> Website Builder content relation. This is one
+ * supported edge in page-preview, not recursive traversal of arbitrary relations.
+ * Other registered relations are available through the relation-record tools.
+ */
+async function findNestedWebsiteWidgets(props: {
+  module: string;
+  widgetId: string;
+  registry?: IContentEntityDescriptor[];
+  authHeaders: Record<string, string>;
+}) {
+  const descriptor = await getContentEntityDescriptor(
+    `${props.module}.widgets-to-website-builder-module-widgets`,
+    props.registry,
+  );
+  if (!descriptor) return [];
+  const websiteDescriptor = await requireContentEntityDescriptor(
+    "website-builder.widget",
+    props.registry,
+  );
+  const links = await findByFilters({
+    descriptor,
+    authHeaders: props.authHeaders,
+    params: {
+      ...buildFilterParams({
+        and: [{ column: "widgetId", method: "eq", value: props.widgetId }],
+      }),
+      orderBy: { and: [{ column: "orderIndex", method: "asc" }] },
+    },
+  });
+  return await Promise.all(
+    links.map(async (relation) => {
+      const id = getStringValue(relation.websiteBuilderModuleWidgetId);
+      if (!id)
+        throw new Error(
+          "Validation error. Widget link has no websiteBuilderModuleWidgetId",
+        );
+      const widget = await findById({
+        descriptor: websiteDescriptor,
+        id,
+        authHeaders: props.authHeaders,
+      });
+      if (!widget)
+        throw new Error(
+          `Not Found error. Linked Website Builder Widget '${id}' not found`,
+        );
+      return { relation, widget };
+    }),
+  );
 }
 
 function summarizeCandidate(props: {
@@ -215,6 +268,9 @@ function getCandidateSearchValues(candidate: IHostGraphCandidate) {
     candidate.summary.title,
     candidate.summary.slug,
     candidate.summary.variant,
+    ...(candidate.composition ?? []).map((hop) =>
+      getStringValue(hop.relation.id),
+    ),
   ].filter((value): value is string => Boolean(value));
 }
 
@@ -267,6 +323,7 @@ export function filterHostGraphCandidates(props: {
   });
 }
 
+/** Read-only URL lookup through Host's links and one nested WB content edge. */
 export async function resolveHostGraph(
   input: IHostGraphPreviewInput | unknown,
   options?: IHostGraphOptions,
@@ -423,6 +480,41 @@ export async function resolveHostGraph(
           language: parsed.data.language,
         }),
       );
+      if (
+        externalWidget?.widget?.id &&
+        externalWidget.selector.module !== "website-builder"
+      ) {
+        const nested = await findNestedWebsiteWidgets({
+          module: externalWidget.selector.module,
+          widgetId: externalWidget.widget.id,
+          registry,
+          authHeaders,
+        });
+        for (const child of nested) {
+          candidates.push({
+            ...summarizeCandidate({
+              page,
+              pageWidget,
+              hostWidget,
+              externalWidgetRelation,
+              externalSelector: { module: "website-builder", model: "widget" },
+              externalWidget: child.widget,
+              language: parsed.data.language,
+            }),
+            composition: [
+              {
+                ownerSelector: externalWidget.selector,
+                ownerWidget: externalWidget.widget,
+                relationSelector: {
+                  module: externalWidget.selector.module,
+                  relation: "widgets-to-website-builder-module-widgets",
+                },
+                relation: child.relation,
+              },
+            ],
+          });
+        }
+      }
     }
   }
 

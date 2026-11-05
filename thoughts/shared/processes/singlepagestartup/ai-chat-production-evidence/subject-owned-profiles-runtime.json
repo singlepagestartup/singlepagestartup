@@ -1,0 +1,15 @@
+{
+  "status": "VERIFIED",
+  "ownerSubjectId": "cfde7727-55de-4e6a-a4d7-e14a830d4c59",
+  "otherTestSubjectId": "2d2d8480-068e-463d-adce-bf32fa0741fc",
+  "personalProfileCountBeforeProject": 1,
+  "emptyProjects": [],
+  "generatedName": "developing-chocolate-parakeet-4254",
+  "generatedSlug": "subject-cfde7727-55de-4e6a-a4d7-e14a830d4c59",
+  "ownedProfilesAfterProject": 2,
+  "defaultLinkCount": 1,
+  "assistantLinkCount": 1,
+  "foreignGetStatus": 403,
+  "anonymousGetStatus": 403,
+  "otherSeesProject": false
+}

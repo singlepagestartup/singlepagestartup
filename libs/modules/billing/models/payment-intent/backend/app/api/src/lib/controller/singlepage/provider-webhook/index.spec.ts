@@ -102,6 +102,37 @@ describe("Given: the payment-intent provider webhook handler", () => {
     expect(mockInvoiceUpdate).not.toHaveBeenCalled();
   });
 
+  it.each([
+    "stripe",
+    "0xprocessing",
+    "payselection",
+    "cloudpayments",
+    "tiptoppay",
+    "paykeeper",
+    "telegram-star",
+    "dummy",
+  ])("Then: refuses disabled %s before parsing its body", async (provider) => {
+    const service = createService({ allowedProviders: [] });
+    const app = new Hono();
+    app.post("/:provider/webhook", (c) =>
+      new Handler(service as any).execute(c, undefined),
+    );
+
+    const response = await app.request(`/${provider}/webhook`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "invalid json",
+    });
+
+    expect(response.status).toBe(400);
+    await expect(response.text()).resolves.toContain(
+      `Provider ${provider} is not allowed`,
+    );
+    expect(service.billingModule.invoice.findById).not.toHaveBeenCalled();
+    expect(service.updatePaymentIntentStatus).not.toHaveBeenCalled();
+    expect(mockInvoiceUpdate).not.toHaveBeenCalled();
+  });
+
   /**
    * BDD Scenario
    *

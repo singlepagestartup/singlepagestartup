@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "f9c15b5e-815d-4fd7-a525-fa3066345f97",
+  "createdAt": "2026-10-26T00:12:28.263Z",
+  "updatedAt": "2026-10-27T15:00:03.728Z",
+  "variant": "selectable",
+  "title": {
+    "en": "Course store",
+    "ru": "Магазин курсов"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Customers choose a course, add it to the cart and place an order. Learning materials become available after confirmation.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Покупатель выбирает курс, добавляет его в корзину и оформляет заказ. После подтверждения открывается учебный материал.\"}]}]}"
+  },
+  "adminTitle": "Магазин курсов",
+  "slug": "framework-reviewed-showcase-courses"
+}

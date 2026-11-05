@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  KnowledgeDocument,
-  KnowledgeDocumentDraft,
-  SocialSkill,
-} from "../types";
+import { KnowledgeSource, KnowledgeSourceDraft, SocialSkill } from "../types";
 import { api as rbacSubjectApi } from "@sps/rbac/models/subject/sdk/client";
 import { route as rbacSubjectRoute } from "@sps/rbac/models/subject/sdk/model";
 import { queryClient } from "@sps/shared-frontend-client-api";
@@ -30,11 +26,11 @@ export type ProfileSidebarProfileUpdateValues = {
   avatarFile?: File | null;
 };
 
-const newKnowledgeDocumentId = "new-knowledge-document";
+const newKnowledgeSourceId = "new-knowledge-source";
 
-function createDraftKnowledgeDocument(): KnowledgeDocument {
+function createDraftKnowledgeSource(): KnowledgeSource {
   return {
-    id: newKnowledgeDocumentId,
+    id: newKnowledgeSourceId,
     createdAt: new Date(0),
     updatedAt: new Date(0),
     variant: "default",
@@ -42,11 +38,9 @@ function createDraftKnowledgeDocument(): KnowledgeDocument {
     adminTitle: "New knowledge",
     slug: "new-knowledge",
     title: "",
-    description: "",
-    status: "draft",
-    summary: null,
-    tags: [],
-    metadata: {},
+    content: "",
+    description: null,
+    indexedContentHash: null,
     contentHash: "",
     lastIndexedAt: null,
   };
@@ -57,20 +51,19 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
     useState<ISocialModuleProfile | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
-  const [selectedKnowledgeDocumentId, setSelectedKnowledgeDocumentId] =
-    useState<string | null>(null);
-  const [createdKnowledgeDocument, setCreatedKnowledgeDocument] =
-    useState<KnowledgeDocument | null>(null);
-  const [knowledgeDocumentDraft, setKnowledgeDocumentDraft] =
-    useState<KnowledgeDocumentDraft>({
+  const [selectedKnowledgeSourceId, setSelectedKnowledgeSourceId] = useState<
+    string | null
+  >(null);
+  const [createdKnowledgeSource, setCreatedKnowledgeSource] =
+    useState<KnowledgeSource | null>(null);
+  const [knowledgeSourceDraft, setKnowledgeSourceDraft] =
+    useState<KnowledgeSourceDraft>({
       title: "",
-      description: "",
+      content: "",
     });
-  const [
-    knowledgeDocumentsNeedingReindex,
-    setKnowledgeDocumentsNeedingReindex,
-  ] = useState<Record<string, boolean>>({});
-  const [reindexingKnowledgeDocumentId, setReindexingKnowledgeDocumentId] =
+  const [knowledgeSourcesNeedingReindex, setKnowledgeSourcesNeedingReindex] =
+    useState<Record<string, boolean>>({});
+  const [reindexingKnowledgeSourceId, setReindexingKnowledgeSourceId] =
     useState<string | null>(null);
   const selectedProfileId = selectedProfile?.id;
   const canManageSelectedProfile = Boolean(
@@ -128,11 +121,11 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
   }, [skills]);
 
   const {
-    data: knowledgeDocumentsQuery,
-    isError: hasKnowledgeDocumentsError,
-    isLoading: isKnowledgeDocumentsLoading,
-    refetch: refetchKnowledgeDocuments,
-  } = rbacSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFind(
+    data: knowledgeSourcesQuery,
+    isError: hasKnowledgeSourcesError,
+    isLoading: isKnowledgeSourcesLoading,
+    refetch: refetchKnowledgeSources,
+  } = rbacSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFind(
     {
       id: props.subjectId,
       socialModuleProfileId: props.socialModuleProfileId,
@@ -149,80 +142,76 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
     },
   );
 
-  const knowledgeDocuments = useMemo(() => {
-    const documents = (knowledgeDocumentsQuery || []) as KnowledgeDocument[];
+  const knowledgeSources = useMemo(() => {
+    const documents = (knowledgeSourcesQuery || []) as KnowledgeSource[];
 
     if (
-      createdKnowledgeDocument &&
-      !documents.some((document) => document.id === createdKnowledgeDocument.id)
+      createdKnowledgeSource &&
+      !documents.some((document) => document.id === createdKnowledgeSource.id)
     ) {
-      return [...documents, createdKnowledgeDocument];
+      return [...documents, createdKnowledgeSource];
     }
 
     return documents;
-  }, [createdKnowledgeDocument, knowledgeDocumentsQuery]);
+  }, [createdKnowledgeSource, knowledgeSourcesQuery]);
 
-  const isCreatingKnowledgeDocument =
-    selectedKnowledgeDocumentId === newKnowledgeDocumentId;
-  const selectedKnowledgeDocument = useMemo(() => {
-    if (isCreatingKnowledgeDocument) {
-      return createDraftKnowledgeDocument();
+  const isCreatingKnowledgeSource =
+    selectedKnowledgeSourceId === newKnowledgeSourceId;
+  const selectedKnowledgeSource = useMemo(() => {
+    if (isCreatingKnowledgeSource) {
+      return createDraftKnowledgeSource();
     }
 
-    return knowledgeDocuments.find((document) => {
-      return document.id === selectedKnowledgeDocumentId;
+    return knowledgeSources.find((document) => {
+      return document.id === selectedKnowledgeSourceId;
     });
-  }, [
-    isCreatingKnowledgeDocument,
-    knowledgeDocuments,
-    selectedKnowledgeDocumentId,
-  ]);
-  const isKnowledgeDocumentDirty = Boolean(
-    selectedKnowledgeDocument &&
-      (knowledgeDocumentDraft.title !== selectedKnowledgeDocument.title ||
-        knowledgeDocumentDraft.description !==
-          selectedKnowledgeDocument.description),
+  }, [isCreatingKnowledgeSource, knowledgeSources, selectedKnowledgeSourceId]);
+  const isKnowledgeSourceDirty = Boolean(
+    selectedKnowledgeSource &&
+      (knowledgeSourceDraft.title !== selectedKnowledgeSource.title ||
+        knowledgeSourceDraft.content !== selectedKnowledgeSource.content),
   );
-  const selectedKnowledgeDocumentNeedsReindex = Boolean(
-    selectedKnowledgeDocument &&
-      knowledgeDocumentsNeedingReindex[selectedKnowledgeDocument.id],
+  const selectedKnowledgeSourceNeedsReindex = Boolean(
+    selectedKnowledgeSource &&
+      selectedKnowledgeSource.contentHash !==
+        selectedKnowledgeSource.indexedContentHash,
   );
 
-  const knowledgeDocumentUpdate =
-    rbacSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFindByIdUpdate(
+  const knowledgeSourceUpdate =
+    rbacSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdUpdate(
       {
         id: props.subjectId,
         socialModuleProfileId: props.socialModuleProfileId,
         socialModuleChatId: props.socialModuleChatId,
         targetSocialModuleProfileId: selectedProfileId || "missing-profile",
-        knowledgeModuleDocumentId:
-          selectedKnowledgeDocumentId || "missing-document",
+        knowledgeModuleSourceId:
+          selectedKnowledgeSourceId || "missing-document",
       },
     );
-  const knowledgeDocumentReindex =
-    rbacSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFindByIdReindex(
+  const knowledgeSourceReindex =
+    rbacSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdReindex(
       {
         id: props.subjectId,
         socialModuleProfileId: props.socialModuleProfileId,
         socialModuleChatId: props.socialModuleChatId,
         targetSocialModuleProfileId: selectedProfileId || "missing-profile",
-        knowledgeModuleDocumentId:
-          selectedKnowledgeDocumentId || "missing-document",
+        knowledgeModuleSourceId:
+          selectedKnowledgeSourceId || "missing-document",
       },
     );
-  const knowledgeDocumentDelete =
-    rbacSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFindByIdDelete(
+  const knowledgeSourceDelete =
+    rbacSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdDelete(
       {
         id: props.subjectId,
         socialModuleProfileId: props.socialModuleProfileId,
         socialModuleChatId: props.socialModuleChatId,
         targetSocialModuleProfileId: selectedProfileId || "missing-profile",
-        knowledgeModuleDocumentId:
-          selectedKnowledgeDocumentId || "missing-document",
+        knowledgeModuleSourceId:
+          selectedKnowledgeSourceId || "missing-document",
       },
     );
-  const knowledgeDocumentCreate =
-    rbacSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentCreate(
+  const knowledgeSourceCreate =
+    rbacSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceCreate(
       {
         id: props.subjectId,
         socialModuleProfileId: props.socialModuleProfileId,
@@ -242,9 +231,9 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
     selectedProfileId,
   ]);
 
-  const knowledgeDocumentsQueryKey = useMemo(() => {
+  const knowledgeSourcesQueryKey = useMemo(() => {
     return [
-      `${rbacSubjectRoute}/${props.subjectId}/social-module/profiles/${props.socialModuleProfileId}/chats/${props.socialModuleChatId}/profiles/${selectedProfileId || "missing-profile"}/knowledge/documents`,
+      `${rbacSubjectRoute}/${props.subjectId}/social-module/profiles/${props.socialModuleProfileId}/chats/${props.socialModuleChatId}/profiles/${selectedProfileId || "missing-profile"}/knowledge/sources`,
     ];
   }, [
     props.socialModuleChatId,
@@ -263,18 +252,18 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
     }
   }, [canManageSelectedProfile, refetchSkills, skillQueryKey]);
 
-  const refetchKnowledgeDocumentQueries = useCallback(() => {
+  const refetchKnowledgeSourceQueries = useCallback(() => {
     void queryClient.invalidateQueries({
-      queryKey: knowledgeDocumentsQueryKey,
+      queryKey: knowledgeSourcesQueryKey,
     });
 
     if (canManageSelectedProfile) {
-      void refetchKnowledgeDocuments();
+      void refetchKnowledgeSources();
     }
   }, [
     canManageSelectedProfile,
-    knowledgeDocumentsQueryKey,
-    refetchKnowledgeDocuments,
+    knowledgeSourcesQueryKey,
+    refetchKnowledgeSources,
   ]);
 
   const refetchProfileAvatarQueries = useCallback(() => {
@@ -293,11 +282,11 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
 
   const openProfile = useCallback((profile: ISocialModuleProfile) => {
     setSelectedProfile(profile);
-    setSelectedKnowledgeDocumentId(null);
-    setCreatedKnowledgeDocument(null);
-    setKnowledgeDocumentDraft({
+    setSelectedKnowledgeSourceId(null);
+    setCreatedKnowledgeSource(null);
+    setKnowledgeSourceDraft({
       title: "",
-      description: "",
+      content: "",
     });
     setIsSidebarOpen(true);
 
@@ -312,34 +301,34 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
   function closeProfile() {
     setIsSidebarOpen(false);
     setIsMobileSheetOpen(false);
-    setSelectedKnowledgeDocumentId(null);
-    setCreatedKnowledgeDocument(null);
+    setSelectedKnowledgeSourceId(null);
+    setCreatedKnowledgeSource(null);
   }
 
-  function selectKnowledgeDocument(document: KnowledgeDocument) {
-    setCreatedKnowledgeDocument(null);
-    setSelectedKnowledgeDocumentId(document.id);
-    setKnowledgeDocumentDraft({
+  function selectKnowledgeSource(document: KnowledgeSource) {
+    setCreatedKnowledgeSource(null);
+    setSelectedKnowledgeSourceId(document.id);
+    setKnowledgeSourceDraft({
       title: document.title,
-      description: document.description,
+      content: document.content,
     });
   }
 
-  function createKnowledgeDocument(profile: ISocialModuleProfile) {
+  function createKnowledgeSource(profile: ISocialModuleProfile) {
     setSelectedProfile(profile);
-    setSelectedKnowledgeDocumentId(newKnowledgeDocumentId);
-    setKnowledgeDocumentDraft({
+    setSelectedKnowledgeSourceId(newKnowledgeSourceId);
+    setKnowledgeSourceDraft({
       title: "",
-      description: "",
+      content: "",
     });
   }
 
-  function closeKnowledgeDocument() {
-    setSelectedKnowledgeDocumentId(null);
-    setCreatedKnowledgeDocument(null);
-    setKnowledgeDocumentDraft({
+  function closeKnowledgeSource() {
+    setSelectedKnowledgeSourceId(null);
+    setCreatedKnowledgeSource(null);
+    setKnowledgeSourceDraft({
       title: "",
-      description: "",
+      content: "",
     });
   }
 
@@ -380,22 +369,22 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
     }
   }
 
-  function saveKnowledgeDocument(document: KnowledgeDocument) {
+  function saveKnowledgeSource(document: KnowledgeSource) {
     if (!canManageSelectedProfile || !selectedProfileId) {
       return;
     }
 
-    const title = knowledgeDocumentDraft.title.trim() || document.title;
+    const title = knowledgeSourceDraft.title.trim() || document.title;
 
-    if (document.id === newKnowledgeDocumentId) {
-      const description = knowledgeDocumentDraft.description.trim();
+    if (document.id === newKnowledgeSourceId) {
+      const content = knowledgeSourceDraft.content.trim();
 
-      if (!title || !description) {
+      if (!title || !content) {
         toast.error("Knowledge title and content are required");
         return;
       }
 
-      knowledgeDocumentCreate.mutate(
+      knowledgeSourceCreate.mutate(
         {
           id: props.subjectId,
           socialModuleProfileId: props.socialModuleProfileId,
@@ -403,23 +392,20 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
           targetSocialModuleProfileId: selectedProfileId,
           data: {
             title,
-            description,
-            orderIndex: knowledgeDocuments.length,
-            metadata: {
-              socialModuleChatId: props.socialModuleChatId,
-            },
+            content,
+            orderIndex: knowledgeSources.length,
           },
         },
         {
           onSuccess(createdDocument) {
-            toast.success("Knowledge document created");
-            setCreatedKnowledgeDocument(createdDocument);
-            setSelectedKnowledgeDocumentId(createdDocument.id);
-            setKnowledgeDocumentDraft({
+            toast.success("Knowledge Source created");
+            setCreatedKnowledgeSource(createdDocument);
+            setSelectedKnowledgeSourceId(createdDocument.id);
+            setKnowledgeSourceDraft({
               title: createdDocument.title,
-              description: createdDocument.description,
+              content: createdDocument.content,
             });
-            refetchKnowledgeDocumentQueries();
+            refetchKnowledgeSourceQueries();
           },
         },
       );
@@ -427,169 +413,177 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
       return;
     }
 
-    knowledgeDocumentUpdate.mutate(
+    knowledgeSourceUpdate.mutate(
       {
         id: props.subjectId,
         socialModuleProfileId: props.socialModuleProfileId,
         socialModuleChatId: props.socialModuleChatId,
         targetSocialModuleProfileId: selectedProfileId,
-        knowledgeModuleDocumentId: document.id,
+        knowledgeModuleSourceId: document.id,
         data: {
           title,
-          description: knowledgeDocumentDraft.description,
+          content: knowledgeSourceDraft.content,
         },
       },
       {
         onSuccess(updatedDocument) {
-          toast.success("Knowledge document saved");
-          setSelectedKnowledgeDocumentId(updatedDocument.id);
-          setKnowledgeDocumentsNeedingReindex((current) => {
+          toast.success("Knowledge Source saved");
+          setSelectedKnowledgeSourceId(updatedDocument.id);
+          setKnowledgeSourcesNeedingReindex((current) => {
             return {
               ...current,
-              [updatedDocument.id]: true,
+              [updatedDocument.id]:
+                updatedDocument.contentHash !==
+                updatedDocument.indexedContentHash,
             };
           });
-          setKnowledgeDocumentDraft({
+          setKnowledgeSourceDraft({
             title: updatedDocument.title,
-            description: updatedDocument.description,
+            content: updatedDocument.content,
           });
-          refetchKnowledgeDocumentQueries();
+          refetchKnowledgeSourceQueries();
         },
       },
     );
   }
 
-  async function reindexKnowledgeDocument(document: KnowledgeDocument) {
+  async function reindexKnowledgeSource(document: KnowledgeSource) {
     if (!canManageSelectedProfile || !selectedProfileId) {
       return;
     }
 
-    setReindexingKnowledgeDocumentId(document.id);
+    setReindexingKnowledgeSourceId(document.id);
 
     try {
-      await knowledgeDocumentReindex.mutateAsync({
+      await knowledgeSourceReindex.mutateAsync({
         id: props.subjectId,
         socialModuleProfileId: props.socialModuleProfileId,
         socialModuleChatId: props.socialModuleChatId,
         targetSocialModuleProfileId: selectedProfileId,
-        knowledgeModuleDocumentId: document.id,
+        knowledgeModuleSourceId: document.id,
       });
-      toast.success("Knowledge document reindexed");
-      setKnowledgeDocumentsNeedingReindex((current) => {
+      toast.success("Knowledge Source reindexed");
+      setKnowledgeSourcesNeedingReindex((current) => {
         const next = { ...current };
         delete next[document.id];
         return next;
       });
-      refetchKnowledgeDocumentQueries();
+      refetchKnowledgeSourceQueries();
     } catch (error: any) {
-      toast.error(error?.message || "Failed to reindex Knowledge document");
+      toast.error(error?.message || "Failed to reindex Knowledge Source");
     } finally {
-      setReindexingKnowledgeDocumentId(null);
+      setReindexingKnowledgeSourceId(null);
     }
   }
 
-  async function deleteKnowledgeDocument(document: KnowledgeDocument) {
+  async function deleteKnowledgeSource(
+    document: KnowledgeSource,
+    unlink = false,
+  ) {
     if (
       !canManageSelectedProfile ||
       !selectedProfileId ||
-      document.id === newKnowledgeDocumentId
+      document.id === newKnowledgeSourceId
     ) {
       return;
     }
 
     try {
-      await knowledgeDocumentDelete.mutateAsync({
+      await knowledgeSourceDelete.mutateAsync({
         id: props.subjectId,
         socialModuleProfileId: props.socialModuleProfileId,
         socialModuleChatId: props.socialModuleChatId,
         targetSocialModuleProfileId: selectedProfileId,
-        knowledgeModuleDocumentId: document.id,
+        knowledgeModuleSourceId: document.id,
+        ...(unlink ? { unlink: true } : {}),
       });
-      toast.success("Knowledge document deleted");
-      setSelectedKnowledgeDocumentId(null);
-      setCreatedKnowledgeDocument(null);
-      setKnowledgeDocumentsNeedingReindex((current) => {
+      toast.success(unlink ? "Source unlinked from profile" : "Source deleted");
+      setSelectedKnowledgeSourceId(null);
+      setCreatedKnowledgeSource(null);
+      setKnowledgeSourcesNeedingReindex((current) => {
         const next = { ...current };
         delete next[document.id];
         return next;
       });
-      setKnowledgeDocumentDraft({
+      setKnowledgeSourceDraft({
         title: "",
-        description: "",
+        content: "",
       });
-      refetchKnowledgeDocumentQueries();
+      refetchKnowledgeSourceQueries();
     } catch (error: any) {
-      toast.error(error?.message || "Failed to delete Knowledge document");
+      toast.error(error?.message || "Failed to delete Knowledge Source");
     }
   }
 
   useEffect(() => {
-    setSelectedKnowledgeDocumentId(null);
-    setCreatedKnowledgeDocument(null);
-    setKnowledgeDocumentDraft({
+    setSelectedKnowledgeSourceId(null);
+    setCreatedKnowledgeSource(null);
+    setKnowledgeSourceDraft({
       title: "",
-      description: "",
+      content: "",
     });
   }, [selectedProfileId]);
 
   useEffect(() => {
-    if (!selectedKnowledgeDocumentId) {
+    if (!selectedKnowledgeSourceId) {
       return;
     }
 
-    if (selectedKnowledgeDocumentId === newKnowledgeDocumentId) {
+    if (selectedKnowledgeSourceId === newKnowledgeSourceId) {
       return;
     }
 
-    const selectedDocumentStillExists = knowledgeDocuments.some((document) => {
-      return document.id === selectedKnowledgeDocumentId;
+    const selectedDocumentStillExists = knowledgeSources.some((document) => {
+      return document.id === selectedKnowledgeSourceId;
     });
 
     if (!selectedDocumentStillExists) {
-      setSelectedKnowledgeDocumentId(null);
-      setKnowledgeDocumentDraft({
+      setSelectedKnowledgeSourceId(null);
+      setKnowledgeSourceDraft({
         title: "",
-        description: "",
+        content: "",
       });
     }
-  }, [knowledgeDocuments, selectedKnowledgeDocumentId]);
+  }, [knowledgeSources, selectedKnowledgeSourceId]);
 
   return {
     canManageSelectedProfile,
-    closeKnowledgeDocument,
+    closeKnowledgeSource,
     closeProfile,
-    hasKnowledgeDocumentsError:
-      canManageSelectedProfile && hasKnowledgeDocumentsError,
-    isKnowledgeDocumentsLoading:
-      canManageSelectedProfile && isKnowledgeDocumentsLoading,
-    isKnowledgeDocumentDirty,
+    hasKnowledgeSourcesError:
+      canManageSelectedProfile && hasKnowledgeSourcesError,
+    isKnowledgeSourcesLoading:
+      canManageSelectedProfile && isKnowledgeSourcesLoading,
+    isKnowledgeSourceDirty,
     isMobileSheetOpen,
     isSidebarOpen,
-    isCreatingKnowledgeDocument,
-    isSavingKnowledgeDocument:
-      knowledgeDocumentUpdate.isPending || knowledgeDocumentCreate.isPending,
-    isDeletingKnowledgeDocument: knowledgeDocumentDelete.isPending,
-    isReindexingKnowledgeDocument: Boolean(
-      selectedKnowledgeDocument &&
-        reindexingKnowledgeDocumentId === selectedKnowledgeDocument.id,
+    isCreatingKnowledgeSource,
+    isSavingKnowledgeSource:
+      knowledgeSourceUpdate.isPending || knowledgeSourceCreate.isPending,
+    isDeletingKnowledgeSource: knowledgeSourceDelete.isPending,
+    isReindexingKnowledgeSource: Boolean(
+      selectedKnowledgeSource &&
+        reindexingKnowledgeSourceId === selectedKnowledgeSource.id,
     ),
     isSavingProfile: profileUpdate.isPending || profileAvatarUpdate.isPending,
     isSkillsLoading: canManageSelectedProfile && isSkillsLoading,
-    knowledgeDocumentDraft,
-    knowledgeDocuments: canManageSelectedProfile ? knowledgeDocuments : [],
-    onKnowledgeDocumentDraftChange: setKnowledgeDocumentDraft,
-    onKnowledgeDocumentCreate: createKnowledgeDocument,
-    onKnowledgeDocumentDelete: deleteKnowledgeDocument,
-    onKnowledgeDocumentReindex: reindexKnowledgeDocument,
-    onKnowledgeDocumentSave: saveKnowledgeDocument,
-    onKnowledgeDocumentSelect: selectKnowledgeDocument,
+    knowledgeSourceDraft,
+    knowledgeSources: canManageSelectedProfile ? knowledgeSources : [],
+    onKnowledgeSourceDraftChange: setKnowledgeSourceDraft,
+    onKnowledgeSourceCreate: createKnowledgeSource,
+    onKnowledgeSourceDelete: deleteKnowledgeSource,
+    onKnowledgeSourceUnlink: (source: KnowledgeSource) =>
+      deleteKnowledgeSource(source, true),
+    onKnowledgeSourceReindex: reindexKnowledgeSource,
+    onKnowledgeSourceSave: saveKnowledgeSource,
+    onKnowledgeSourceSelect: selectKnowledgeSource,
     onProfileSave: saveProfile,
     openProfile,
     profileSkillIds,
-    refetchKnowledgeDocumentQueries,
+    refetchKnowledgeSourceQueries,
     refetchSkillQueries,
-    selectedKnowledgeDocument,
-    selectedKnowledgeDocumentNeedsReindex,
+    selectedKnowledgeSource,
+    selectedKnowledgeSourceNeedsReindex,
     selectedProfile,
     setIsMobileSheetOpen,
     skills: canManageSelectedProfile ? skills : [],

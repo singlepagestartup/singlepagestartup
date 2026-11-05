@@ -128,6 +128,7 @@ export class Coder {
           type === "generate"
             ? {
                 executor: "nx:run-commands",
+                cache: false,
                 options: {
                   parallel: false,
                   cwd: `libs/modules/${moduleName}/models/${modelName}/backend/repository/database`,
@@ -138,6 +139,10 @@ export class Coder {
                     {
                       command:
                         "drizzle-kit generate --config=./src/lib/config.ts",
+                    },
+                    {
+                      command:
+                        "npx nx run @sps/providers-db:repository-generate",
                     },
                   ],
                 },

@@ -1,0 +1,38 @@
+{
+  "date": "2026-10-11",
+  "variant": "thread-list-sidebar-ai-chat",
+  "reference": "modules-host-models-page-singlepage-rbac-module-subject-me-social-module-profile-id-chat-id-thread-id-ai-chat--default",
+  "browser": {
+    "referenceDefaultExpanded": true,
+    "referencePointerAndEnterToggle": true,
+    "productionDefaultExpanded": true,
+    "productionPointerEnterAndSpaceToggle": true,
+    "collapsedDocumentLinkHidden": true,
+    "currentDocumentAriaCurrent": "page",
+    "settingsAndThreadCreationToggle": true,
+    "documentLinkReturnsToWorkspace": true,
+    "mobile": {
+      "cssViewportWidth": 375,
+      "documentScrollWidth": 375,
+      "toggleInProjectNavigation": true
+    },
+    "viewportOverrideReset": true,
+    "dataMutationsSubmitted": false
+  },
+  "checks": {
+    "hostTypescript": {
+      "command": "npx tsc --noEmit -p apps/host/tsconfig.json",
+      "exitCode": 0
+    },
+    "codePlacement": {
+      "command": "node tools/agents/code-placement.mjs",
+      "exitCode": 0
+    },
+    "gitWhitespace": { "command": "git diff --check", "exitCode": 0 }
+  },
+  "screenshots": [
+    "documents-sidebar-expanded.png",
+    "documents-sidebar-collapsed.png",
+    "documents-sidebar-mobile.png"
+  ]
+}

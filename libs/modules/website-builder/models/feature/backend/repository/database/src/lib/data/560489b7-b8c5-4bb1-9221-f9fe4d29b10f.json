@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "560489b7-b8c5-4bb1-9221-f9fe4d29b10f",
+  "createdAt": "2026-10-26T00:12:11.316Z",
+  "updatedAt": "2026-10-27T14:59:36.103Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "After the event",
+    "ru": "После события"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"List updated\\n\\nA new enquiry arrived in this example.\\n\\nAnna's enquiry\\n\\nMichael's enquiry\\n\\nOlga's new enquiry\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Список обновлён\\n\\nВ примере поступила новая заявка.\\n\\nЗаявка Анны\\n\\nЗаявка Михаила\\n\\nНовая заявка Ольги\"}]}]}"
+  },
+  "adminTitle": "После события",
+  "slug": "framework-reviewed-article-broadcast-example-feature-1"
+}

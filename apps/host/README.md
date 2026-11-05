@@ -1,5 +1,25 @@
 # Host app
 
+## Runtime versions and bundlers
+
+Install from the repository root with `npm ci`. Next.js 16.4.3 and React/React
+DOM 19.3.1 use stable React types; the former `types-react@rc` overrides are
+removed. The root manifest and lockfile own installation. Nx regenerates the
+Host deployment manifest during its production build.
+
+`npm run host:dev` uses Turbopack. `npm run host:build` keeps Webpack through the
+Host target's explicit `webpack: true` option, supported by Nx 22.7.12.
+`npm run host:start` serves the production build. Keep cold dev compilation and
+production builds sequential on machines with limited RAM; see
+[runtime memory guidance](../../tools/runtime/README.md#local-host-memory-budget).
+
+The authenticated `POST /api/revalidate` accepts tags and a page or layout path.
+It expires each tag with `revalidateTag(tag, { expire: 0 })`, so the next read
+refreshes the data before responding. See the [server contract](../../libs/middlewares/src/lib/revalidation/README.md#next-tag-delivery).
+
+Shared agent instructions live in the root `AGENTS.md`. The Next `agentRules`
+option is disabled so dev startup does not generate another instruction file.
+
 ## Guidelines
 
 - **TailwindCSS only**: use Tailwind utility classes. If you need new tokens (colors, spacing, radii, etc.), extend `apps/host/styles/presets/shadcn.ts`; never introduce ad-hoc CSS classes.
@@ -8,6 +28,55 @@
 - Keep any extra helpers in an `assets/` directory and import them from the main variant file. If you find the place for double usage of utility or component, that is not related to model - add it to `libs/shared/`.
 - Data access must go through module SDK providers (`Provider`, `clientApi`, `serverApi`). Relation components should use `variant="find"` with filters supplied via `apiProps.params.filters.and`.
 - For advanced fetching/transform logic, mirror the `singlepage/default` pattern: move data-handling into `client.tsx` / `server.tsx` wrappers so `Component.tsx` stays purely presentational.
+
+## Theme and fonts
+
+`styles/presets/shadcn.ts` defines the light and dark defaults through semantic
+CSS variables. Components use `primary` / `primary-foreground` for actions,
+`default` / `default-foreground` / `default-muted-foreground` for strong surfaces,
+`card`, `muted`, `foreground`, `muted-foreground`, `border`, and `input` for
+ordinary surfaces, text and fields. Errors use `destructive`,
+`destructive-surface`, and `destructive-border`.
+
+A downstream project changes the corresponding variables in its Host preset or
+base theme, such as `--primary` and `--primary-foreground`, without editing module
+components. Color values are HSL channels, for example `270 60% 50%`.
+Tailwind opacity modifiers such as `bg-primary/25` remain available.
+
+`font-default` and `font-sans` both use `--font-default`. `font-primary` uses
+`--font-primary`. `app/fonts.tsx` loads those two existing roles from
+`styles/fonts/Default` and `styles/fonts/Primary`; downstream projects replace
+those files with their own fonts.
+
+Studio's independent `runtime/theme.css` exposes the same semantic color and
+font roles. Its font assets remain local to Studio.
+
+The image generator resolves fonts according to the build output. Turbopack
+file URLs are read directly. Webpack can return relative
+`/_next/static/media/...` URLs with an empty protocol; these map to the active
+build directory's `static/media` files (`SPS_HOST_DIST_DIR`, or `.next`).
+Absolute HTTP URLs use HTTP loading. Source font names and emitted names can
+differ because the build adds content hashes.
+
+## Locale redirects
+
+The locale proxy adds the default language prefix while preserving the request
+Host header. It clears the internal server port before applying Host, so redirects
+behind a reverse proxy use the public domain and local redirects retain their
+explicit port. The path and query parameters remain in the redirect.
+
+`skipProxyUrlNormalize` prevents Next from rewriting loopback hosts in the
+outgoing Location header; a login on `127.0.0.1` keeps the same cookie origin.
+
+The public `[language]/[[...url]]` page keeps `generateStaticParams()` empty in development and
+production. With `dynamicParams = true`, the Host page reader resolves each
+requested URL on demand and caches its HTML with ISR. Its layout reads the locale
+from route parameters. Admin has a separate request-rendered route. Current-user
+controls load through their client readers and do not personalize cached HTML.
+Expanding every page mask across user-owned entities
+can exceed Next's fixed 5 MiB development static-path cache and repeat that
+expensive enumeration on each request. The URL enumeration API remains available
+for explicit consumers such as the sitemap.
 
 ## Testing
 
