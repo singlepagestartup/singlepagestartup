@@ -1,6 +1,6 @@
-import { Component as ParentComponent } from "@sps/agent/models/agent/frontend/component";
+import { Component as ClientComponent } from "./ClientComponent";
 import { IComponentProps } from "./interface";
 
 export function Component(props: IComponentProps) {
-  return <ParentComponent variant="admin-v2-card" isServer={props.isServer} />;
+  return <ClientComponent isServer={props.isServer} variant={props.variant} />;
 }
