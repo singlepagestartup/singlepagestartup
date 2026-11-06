@@ -6,6 +6,7 @@ get_environment_type $2
 ./create_inventory.sh
 
 . ./get_env.sh
+. ./github/input.sh
 
 ANSIBLE_HOST=$(get_env "$BASH_SOURCE" "ANSIBLE_HOST")
 ANSIBLE_PORT=$(get_env "$BASH_SOURCE" "ANSIBLE_PORT")
@@ -37,6 +38,9 @@ DOMAIN=$(get_env "$BASH_SOURCE" "DOMAIN")
 DATABASE_NAME=$(get_env "$BASH_SOURCE" "DATABASE_NAME")
 DATABASE_USERNAME=$(get_env "$BASH_SOURCE" "DATABASE_USERNAME")
 DATABASE_PASSWORD=$(get_env "$BASH_SOURCE" "DATABASE_PASSWORD")
+POSTGRES_USER=$(get_env "$BASH_SOURCE" "POSTGRES_USER")
+POSTGRES_PASSWORD=$(get_env "$BASH_SOURCE" "POSTGRES_PASSWORD")
+DATABASE_BACKUP_RETENTION_DAYS=$(get_env "$BASH_SOURCE" "DATABASE_BACKUP_RETENTION_DAYS")
 
 REDIS_PASSWORD=$(get_env "$BASH_SOURCE" "REDIS_PASSWORD")
 REDIS_PORT=$(get_env "$BASH_SOURCE" "REDIS_PORT")
@@ -161,6 +165,9 @@ SECRETS=(\
     "DATABASE_NAME $DATABASE_NAME" \
     "DATABASE_USERNAME $DATABASE_USERNAME" \
     "DATABASE_PASSWORD $DATABASE_PASSWORD" \
+    "POSTGRES_USER $POSTGRES_USER" \
+    "POSTGRES_PASSWORD $POSTGRES_PASSWORD" \
+    "DATABASE_BACKUP_RETENTION_DAYS $DATABASE_BACKUP_RETENTION_DAYS" \
     "REDIS_PASSWORD $REDIS_PASSWORD" \
     "REDIS_PORT $REDIS_PORT" \
     "PORTAINER_USERNAME $PORTAINER_USERNAME" \
@@ -274,10 +281,7 @@ then
     for i in "${BRANCHES[@]}"
     do
         BRANCH_NAME=$i
-        node ./github/github-node-api/create_branch.js \
-            $GITHUB_TOKEN \
-            $GITHUB_REPOSITORY \
-            $BRANCH_NAME
+        github_command create_branch BRANCH_NAME || exit 1
     done
 
     for i in "${SECRETS[@]}"
@@ -285,13 +289,9 @@ then
         SECRET_NAME="${i%% *}"
         SECRET_CONTENT="${i#* }"
 
-        if [ ! -z $SECRET_CONTENT ]
+        if [ -n "$SECRET_CONTENT" ]
         then
-            node ./github/github-node-api/create_secret.js \
-                $GITHUB_TOKEN \
-                $GITHUB_REPOSITORY \
-                "${PREFIX}${SECRET_NAME}" \
-                $SECRET_CONTENT
+            SECRET_NAME="${PREFIX}${SECRET_NAME}" github_command create_secret SECRET_NAME SECRET_CONTENT || exit 1
         fi
     done
 else
@@ -302,9 +302,6 @@ else
         SECRET_NAME="${i%% *}"
         SECRET_CONTENT="${i#* }"
 
-        node ./github/github-node-api/delete_secret.js \
-            $GITHUB_TOKEN \
-            $GITHUB_REPOSITORY \
-            "${PREFIX}${SECRET_NAME}"
+        SECRET_NAME="${PREFIX}${SECRET_NAME}" github_command delete_secret SECRET_NAME || exit 1
     done
 fi

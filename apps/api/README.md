@@ -2,6 +2,19 @@
 
 ## Environment
 
+The API and its migrations use `DATABASE_USERNAME` and `DATABASE_PASSWORD`.
+They check the authenticated PostgreSQL role before listening or running the
+migration sequence. A missing pair, a privileged login or explicit role
+memberships stop startup. For an old database, follow the
+[ownership move](../../tools/deployer/README.md#moving-an-existing-installation-to-the-application-role).
+
+On startup, `server.ts` imports the configured app, verifies the database
+login, calls `startConsistency()` to check capture coverage and start its
+workers, then opens the HTTP listener. Put custom startup queries and
+background workers in this explicit startup phase. Embedders that previously
+relied on importing `apps/api/app.ts` to start Consistency must now start it
+after their role check.
+
 Audio transcription runs inside the API/RBAC message flow and uses:
 
 - `OPEN_AI_API_KEY` - required when audio transcription should run.

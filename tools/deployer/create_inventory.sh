@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -euo pipefail
+umask 077
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$SCRIPT_DIR/get_env.sh"
@@ -85,6 +86,8 @@ elif [ -z "$ANSIBLE_PASSWORD" ]; then
 fi
 
 mkdir -p "$(dirname "$INVENTORY_PATH")"
+inventory_tmp=$(mktemp "${INVENTORY_PATH}.XXXXXX")
+trap 'rm -f "$inventory_tmp"' EXIT
 
 {
     echo "ungrouped:"
@@ -100,4 +103,5 @@ mkdir -p "$(dirname "$INVENTORY_PATH")"
     else
         printf "      ansible_password: %s\n" "$(yaml_quote "$ANSIBLE_PASSWORD")"
     fi
-} > "$INVENTORY_PATH"
+} > "$inventory_tmp"
+mv "$inventory_tmp" "$INVENTORY_PATH"

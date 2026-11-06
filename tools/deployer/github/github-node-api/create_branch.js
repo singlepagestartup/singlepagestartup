@@ -1,3 +1,4 @@
+const { readFileSync } = require("node:fs");
 const { Octokit } = require("octokit");
 const sodium = require("libsodium-wrappers");
 
@@ -30,10 +31,10 @@ async function createBranch({ token, ownerWithRepository, branchName }) {
 
 (async () => {
   try {
-    var args = process.argv.slice(2);
-    const token = args[0];
-    const ownerWithRepository = args[1];
-    const branchName = args[2];
+    const input = JSON.parse(readFileSync(0, "utf8"));
+    const token = input.GITHUB_TOKEN;
+    const ownerWithRepository = input.GITHUB_REPOSITORY;
+    const branchName = input.BRANCH_NAME;
 
     await createBranch({
       token,
@@ -45,4 +46,7 @@ async function createBranch({ token, ownerWithRepository, branchName }) {
       throw error;
     }
   }
-})();
+})().catch((error) => {
+  console.error("GitHub request failed", error.status ?? "");
+  process.exitCode = 1;
+});

@@ -144,6 +144,7 @@ class Fixture {
       "tools/mcp/client-configs.ts",
       "tools/deployer/mcp.sh",
       "tools/deployer/get_env.sh",
+      "tools/deployer/ansible_vars.sh",
       "tools/deployer/get_environment_type.sh",
     ]) {
       const destination = join(this.root, relative);

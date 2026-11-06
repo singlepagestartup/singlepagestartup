@@ -175,6 +175,104 @@ docker service update --force api_api
 docker service update --force mcp_mcp
 ```
 
+### PostgreSQL roles
+
+The PostgreSQL stack holds two roles:
+
+- `POSTGRES_USER`, the superuser the image creates on the first start of an
+  empty `/home/code/postgres_data`. Only the stack receives it, and the
+  administration commands above use it.
+- `DATABASE_USERNAME`, the role the API connects as, for its requests and for
+  the migrations and seed it runs at start. It owns `DATABASE_NAME` and
+  everything the migrations create in it. It cannot run programs through
+  `COPY ... PROGRAM`, read server files, create databases or roles, or change
+  objects it does not own.
+
+On that first start the image runs `apps/db/create_application_role.sh`, which
+the PostgreSQL playbook copies to `/home/code/create_application_role.sh` and
+the stack mounts into `/docker-entrypoint-initdb.d`. The script creates the
+`vector` extension, which only a superuser may create, and the application
+role. `apps/db` mounts the same script for local development, where
+`apps/db/create_env.sh` writes `POSTGRES_USER=postgres` and the repository name
+as `DATABASE_USERNAME`. For a repository named `postgres` or starting with
+`pg_`, local bootstrap prefixes the login with `sps_`, for example `sps_postgres`.
+
+Ansible installs `/home/code/docker-compose.postgres.yaml` with owner and group
+`root:root` and mode `0600`. Reapplying the play corrects older file permissions
+even when the contents match. This file contains both passwords. Configure
+distinct passwords for the administrator and the application.
+
+PostgreSQL and API deployment require both credential pairs. The API will
+not start and the migration command will not run if the actual database
+session is privileged or has role memberships. An existing volume still
+needs the [ownership move](#moving-an-existing-installation-to-the-application-role)
+before switching the API. The application remains the owner of its database:
+it can change or delete application data.
+
+The deployer passes database and RBAC credentials to Ansible through the
+controller process environment. In a service script, `. ./ansible_vars.sh` loads
+`ansible_with_vars`. The call names the playbook and its variables; Ansible
+reads their values from the environment. GitHub and Portainer helpers read their input
+from stdin. Their arguments contain no credential values. Use a trusted
+controller account: root, Docker administrators and processes running as that
+account can still access deployment credentials.
+
+### Local database dump
+
+Run `./apps/db/dump.sh` from the repository root to back up this checkout's
+running Compose `db` service. It uses the application login and writes a custom
+PostgreSQL archive to `apps/db/db_backups/`. Set `DATABASE_BACKUP_DIRECTORY` to
+an absolute path to choose another directory. These private backups are excluded
+from Git and Docker builds. A Git commit does not start a backup.
+
+### Nightly database dumps
+
+`./server.sh up` installs `/home/code/create_db_dump.sh` and a root cron job
+that runs it at 00:00 server time. The script uses password authentication over TCP on the container network
+as `DATABASE_USERNAME` inside the PostgreSQL container. It writes a custom
+`pg_dump` archive to `/home/code/db_backups/<DATABASE_NAME>_<dd-mm-yyyy>.dump`.
+The archive contains application objects and data. The target bootstrap installs
+`vector`; backup and restore omit object grants. Reapply any project-specific
+access grants separately from reviewed configuration after recovery.
+
+A dump contains every table, identities and subjects included. The directory is
+`0700` and each dump `0600`, both owned by root, and the script also tightens
+dumps that an earlier version left readable. A new dump replaces nothing until
+`pg_dump` succeeds, and only then are dumps older than
+`DATABASE_BACKUP_RETENTION_DAYS` deleted (default `14`; `0` keeps every dump).
+Set the retention to 1–9 decimal digits, including `0` to disable pruning.
+GitHub Actions uses `DATABASE_BACKUP_RETENTION_DAYS` for production and
+`PREVIEW_DATABASE_BACKUP_RETENTION_DAYS` for preview. Ansible checks the value
+before editing root's crontab. The cron environment holds the normalized
+number and the scheduled command always invokes the same script.
+The job appends its output to `/home/code/create_db_dump.log`. Run
+`./server.sh up` on an existing server to install the script, the directory
+mode and the cron entry. Files that the earlier host-side script left in the
+directory are usually empty, because that script could not reach the database.
+
+Keep a copy off the database host for recovery after host loss. To restore:
+
+1. Prepare a separate, empty SPS PostgreSQL container with its own volume and
+   both credential pairs. Let the bootstrap install `vector`. Do not connect
+   the API or run migrations yet.
+2. On the host holding the backup, name the **target** container explicitly:
+
+   ```bash
+   /home/code/restore_db_dump.sh "$TARGET_CONTAINER_ID" < "$BACKUP_FILE"
+   ```
+
+3. Check the exit status, a known row, sequence values and the application
+   schema on the target. Start the API against it only after those checks.
+
+The restore connects as the target application login. `pg_restore` ignores
+original ownership and grants, and rolls back the transaction on the first
+error. A populated target is refused. A dump can run source-defined SQL
+during restore. Use a trusted backup; inspect an unfamiliar archive in a
+disposable, isolated environment. Earlier plain SQL dumps cannot be used by
+this command. If the source is available, take a new archive. Otherwise keep
+the original untouched and plan an isolated recovery; do not replay it as the
+database administrator. See [PostgreSQL's pg_restore documentation](https://www.postgresql.org/docs/17/app-pgrestore.html).
+
 ### Generating deployment secrets
 
 Every `X`-placeholder credential in `tools/deployer/.env.example` is operator
@@ -187,7 +285,7 @@ openssl rand -hex 32
 
 That applies to `RBAC_SECRET_KEY`, `RBAC_JWT_SECRET`,
 `RBAC_COOKIE_SESSION_SECRET`, `MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET`,
-`HOST_SERVICE_REVALIDATION_SECRET`, `DATABASE_PASSWORD`,
+`HOST_SERVICE_REVALIDATION_SECRET`, `POSTGRES_PASSWORD`, `DATABASE_PASSWORD`,
 `REDIS_PASSWORD`, `TRAEFIK_PASSWORD` and `PORTAINER_PASSWORD`. Do not copy these
 values out of a locally bootstrapped `apps/api/.env` into a deployment; generate
 fresh ones for each environment, and keep production and `PREVIEW_` sets distinct.
@@ -227,16 +325,17 @@ instead by rotating value by value, as below.
 On a deployment that must keep its data, rotate in this order. The two token
 secrets end every session, so plan the window.
 
-| Value                                        | What to do                                                                                                                                                                   | Effect                                                                                                                                                    |
-| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `POSTGRES_PASSWORD` / `DATABASE_PASSWORD`    | run `ALTER ROLE "<user>" WITH PASSWORD '<new>';` inside the running PostgreSQL container, then update `tools/deployer/.env` and the GitHub secret, then redeploy API and MCP | editing `apps/db/.env` alone does nothing: the image is a stock PostgreSQL entrypoint and `POSTGRES_PASSWORD` applies only at the first init of `db_data` |
-| `REDIS_PASSWORD`                             | follow the coordinated procedure above: update the secret, deploy Redis, API and MCP as one rollout, then force-update `api_api` and `mcp_mcp`                               | cache and KV unavailable for the window                                                                                                                   |
-| `RBAC_JWT_SECRET`                            | rotate in `tools/deployer/.env` and in the GitHub secrets, then deploy API, Telegram and MCP together                                                                        | every access and refresh token is invalidated. It also rotates the MCP OAuth signing key, because the MCP template falls back to this value               |
-| `RBAC_SECRET_KEY`                            | rotate in `tools/deployer/.env` and in the GitHub secrets, then deploy API, Telegram and MCP                                                                                 | this is the full authorization bypass. The middleware also accepts it from an `rbac.secret-key` cookie, so any browser that received it holds a copy      |
-| `MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET` | rotate and deploy API and MCP together                                                                                                                                       | the API-to-MCP exchange fails until both sides match                                                                                                      |
-| `HOST_SERVICE_REVALIDATION_SECRET`           | rotate in `tools/deployer/.env` and in the GitHub secrets, then deploy API and host together                                                                                 | the Host rejects invalidation until both sides match and the outbox retries pending batches                                                               |
-| `RBAC_COOKIE_SESSION_SECRET`                 | rotate for hygiene                                                                                                                                                           | no runtime effect: nothing reads it today                                                                                                                 |
-| Administrator identity password              | change it through the API or the admin UI, then update `apps/api/.env` and `.agents/.env`                                                                                    | editing `.env` alone does not change the stored bcrypt hash; that value is only the bootstrap input                                                       |
+| Value                                        | What to do                                                                                                                                                                         | Effect                                                                                                                                               |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POSTGRES_PASSWORD`                          | run `ALTER ROLE "<POSTGRES_USER>" WITH PASSWORD '<new>';` inside the running PostgreSQL container, then update `tools/deployer/.env` and the GitHub secret and redeploy PostgreSQL | Application traffic uses a separate login. Editing the image environment alone does not change the password of an existing role.                     |
+| `DATABASE_PASSWORD`                          | update the deployer and GitHub values, pause writers and run `./postgres.sh migrate-role` as in the procedure below, then deploy the API and restore its replica count             | the API cannot open new connections between the script and its redeploy                                                                              |
+| `REDIS_PASSWORD`                             | follow the coordinated procedure above: update the secret, deploy Redis, API and MCP as one rollout, then force-update `api_api` and `mcp_mcp`                                     | cache and KV unavailable for the window                                                                                                              |
+| `RBAC_JWT_SECRET`                            | rotate in `tools/deployer/.env` and in the GitHub secrets, then deploy API, Telegram and MCP together                                                                              | every access and refresh token is invalidated. It also rotates the MCP OAuth signing key, because the MCP template falls back to this value          |
+| `RBAC_SECRET_KEY`                            | rotate in `tools/deployer/.env` and in the GitHub secrets, then deploy API, Telegram and MCP                                                                                       | this is the full authorization bypass. The middleware also accepts it from an `rbac.secret-key` cookie, so any browser that received it holds a copy |
+| `MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET` | rotate and deploy API and MCP together                                                                                                                                             | the API-to-MCP exchange fails until both sides match                                                                                                 |
+| `HOST_SERVICE_REVALIDATION_SECRET`           | rotate in `tools/deployer/.env` and in the GitHub secrets, then deploy API and host together                                                                                       | the Host rejects invalidation until both sides match and the outbox retries pending batches                                                          |
+| `RBAC_COOKIE_SESSION_SECRET`                 | rotate for hygiene                                                                                                                                                                 | no runtime effect: nothing reads it today                                                                                                            |
+| Administrator identity password              | change it through the API or the admin UI, then update `apps/api/.env` and `.agents/.env`                                                                                          | editing `.env` alone does not change the stored bcrypt hash; that value is only the bootstrap input                                                  |
 
 Four copies survive a rotation unless they are handled as well:
 
@@ -256,6 +355,108 @@ Afterwards, treat the window before the rotation as one in which the old
 carrying `X-RBAC-SECRET-KEY` from unexpected sources, confirm the identity and
 subject tables hold no account that was not created through a normal flow, and
 force password resets if the deployment is public.
+
+#### Moving an existing installation to the application role
+
+**Run the commands below on your deployment workstation, in `tools/deployer`.**
+Ansible connects to the database server named in `tools/deployer/.env`. For an
+existing Swarm installation the command that changes database ownership is
+`./postgres.sh migrate-role`. For a new server, use the normal `./up.sh`;
+the PostgreSQL image creates the role when it initializes an empty volume.
+
+**1. Prepare the release and credentials.** Have the new API image ready. In
+`tools/deployer/.env`, keep `DATABASE_NAME` and set the following four values.
+If you also deploy through GitHub Actions, set the same values in GitHub
+Secrets for the target environment (preview uses the `PREVIEW_` prefix).
+
+| Variable            | Value for the existing installation                                                 |
+| ------------------- | ----------------------------------------------------------------------------------- |
+| `POSTGRES_USER`     | The original database administrator, previously used as `DATABASE_USERNAME`.        |
+| `POSTGRES_PASSWORD` | The current password of that administrator, previously used as `DATABASE_PASSWORD`. |
+| `DATABASE_USERNAME` | A different, dedicated application login, e.g. `project_api`.                       |
+| `DATABASE_PASSWORD` | A new password for that login; generate it with `openssl rand -hex 32`.             |
+
+**2. Open a maintenance window.** Record the desired replica count of the old
+API and scale it to zero. You can scale the service in Portainer or use the commands below.
+The example uses the default service name `api_api`.
+For a custom service name, use the name printed by the listing. Stop any
+additional writers on this database. Keep PostgreSQL running. Take a verified
+backup or a database-consistent provider snapshot of the existing volume
+before proceeding. The new nightly dump command requires the new login and
+therefore cannot supply the backup for this first move.
+
+```bash
+cd tools/deployer
+./create_inventory.sh
+ansible all --become -m command -a 'docker service ls --filter label=com.docker.stack.namespace=api'
+ansible all --become -m command -a 'docker service scale --detach=false api_api=0'
+```
+
+**3. Move and verify the database login.** From the same directory, run:
+
+```bash
+./postgres.sh migrate-role
+```
+
+This command targets the manager hosting the running `postgres_postgres`
+container. It checks the existing data directory, the maintenance window,
+and the original administrator credentials before changing the stack. The credential check requires SCRAM or MD5 password authentication on the container network. It then
+redeploys PostgreSQL on the **same volume**, waits for it, and runs
+`/docker-entrypoint-initdb.d/create_application_role.sh` **inside the updated
+container**. The last Ansible task connects over TCP with the new application
+password and verifies its privileges and database ownership.
+
+If the role transfer fails, leave the API stopped. The SQL transaction rolls
+back its role, password and ownership changes. Review the reported privilege,
+choose a dedicated login or correct the unsafe grant, then repeat
+`./postgres.sh migrate-role`. A grant to `PUBLIC` also applies to a new login.
+Review custom extensions, privileged routines, foreign servers and other
+databases the login can reach when upgrading a shared cluster.
+
+For a membership error, an administrator can list grants involving the
+proposed login in `psql`:
+
+```sql
+\set app_role 'project_api'
+SELECT roleid::regrole AS granted_role, member::regrole AS grantee,
+       inherit_option, set_option, admin_option
+FROM pg_auth_members
+WHERE member = to_regrole(:'app_role') OR roleid = to_regrole(:'app_role');
+```
+
+The migration transfers ordinary application objects and preserves ownership
+of extensions, security-definer routines and routines in untrusted languages.
+A refusal names the affected catalog or routine when its grants need review.
+
+**4. Bring the new API online.** After the login check succeeds, deploy the
+new API, restore the recorded replica count (the example uses one), and
+check its service state:
+
+```bash
+./api.sh up
+ansible all --become -m command -a 'docker service scale --detach=false api_api=1'
+ansible all --become -m command -a 'docker service ps api_api'
+```
+
+The new API checks its actual database login before accepting requests.
+Confirm the service is healthy and read a known record through the API
+before ending the maintenance window.
+
+**Local Compose checkout.** On your workstation, stop the local API, back up
+its volume, keep the original `POSTGRES_*` pair in `apps/db/.env`, and add
+the new `DATABASE_USERNAME` and `DATABASE_PASSWORD`. From the repository
+root, run:
+
+```bash
+cd apps/db
+docker compose up -d --wait db
+docker compose exec -T db /docker-entrypoint-initdb.d/create_application_role.sh
+docker compose exec -T db /docker-entrypoint-initdb.d/create_application_role.sh --check-login
+```
+
+Put the same application pair in `apps/api/.env`, then restart the local API.
+If PostgreSQL is still starting, wait for it to accept connections before
+running the two `exec` commands.
 
 ### Agent cron
 
@@ -449,12 +650,13 @@ cd tools/deployer
 ```
 
 The PostgreSQL and Redis playbooks intentionally stay small: render the Compose
-file and deploy the stack. The Redis wrapper rejects an empty password, and the
-container command refuses to start unless it can launch Redis with
-`requirepass`. Redis stores its RDB snapshot in `/data`, which is backed by
-`/home/code/redis_data` on the server. Its singleton Swarm service uses the
-default stop-first update order so two Redis processes never write to that
-directory at the same time.
+file and deploy the stack, and for PostgreSQL copy the role script the stack
+mounts. The Redis wrapper rejects an empty password, and the container command
+refuses to start unless it can launch Redis with `requirepass`. Redis stores its
+RDB snapshot in `/data`, which is backed by `/home/code/redis_data` on the
+server. Both singleton Swarm services use the default stop-first update order,
+so two PostgreSQL or two Redis processes never write to the same data directory
+at the same time.
 
 After deployment:
 
@@ -630,6 +832,11 @@ service and endpoint from the existing Portainer webhook; no separate service
 ID map is required. A paused update, rollback, missing health check or timeout
 fails the job and keeps dependent services on their previous images. Check the
 gate with `node --test tools/deployer/portainer/wait-service.test.mjs`.
+
+The service deploy creates its Portainer webhook or retrieves the matching one
+if the service already has a hook. A login failure or a mismatched hook stops
+the play before publishing an update URL. The server and the deployer keep the
+token-bearing files readable only by their owner (mode `0600`).
 
 Release workflows still update each service through its Portainer webhook. A
 shared preparation job first pulls every unique release image through the

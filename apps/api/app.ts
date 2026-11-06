@@ -159,4 +159,6 @@ if (MIDDLEWARE_HTTP_CACHE === "true") {
 for (const [name, module] of Object.entries(apiModules))
   app.route("/api/" + name, module.hono);
 
-await consistencyMiddleware.start();
+export function startConsistency() {
+  return consistencyMiddleware.start();
+}

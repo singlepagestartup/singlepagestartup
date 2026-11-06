@@ -693,6 +693,10 @@ cannot identify their migration instructions afterward.
 
 ## Documentation
 
+Deploying over an existing PostgreSQL installation that used the administrator
+login for the API requires a one-time role migration. Run it from your
+workstation using the [existing database upgrade instructions](tools/deployer/README.md#moving-an-existing-installation-to-the-application-role).
+
 Detailed documentation for each module can be found in their respective directories:
 
 - [agent](./libs/modules/agent/README.md) - automation, scheduled jobs, AI utilities, agent widgets.

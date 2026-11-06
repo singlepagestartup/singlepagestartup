@@ -29,6 +29,8 @@
       ansible.builtin.template:
         src: host.env.local.j2
         dest: /home/code/host.env.local
+        mode: "0600"
+      no_log: true
       vars:
         AWS_ACCESS_KEY_ID: "{{ aws_access_key_id.stdout }}"
         AWS_SECRET_ACCESS_KEY: "{{ aws_secret_access_key.stdout }}"
@@ -64,18 +66,37 @@
       register: cmd_host_service_id
 
     - name: Run set-portainer-webhook.js
-      shell:
-        cmd: node /home/code/set-portainer-webhook.js "{{ cmd_host_service_id.stdout_lines[0] }}" "{{ cmd_docker_hub_registry_id.stdout }}" "{{ portainer_url }}" "{{ portainer_username }}" "{{ portainer_password }}" "host_webhook"
+      no_log: true
+      ansible.builtin.command:
+        argv: [node, /home/code/set-portainer-webhook.js]
+        stdin: >-
+          {{ {
+            'service_id': cmd_host_service_id.stdout_lines[0],
+            'registry_id': cmd_docker_hub_registry_id.stdout,
+            'url': portainer_url,
+            'portainer_username': portainer_username,
+            'portainer_password': portainer_password,
+            'file_name': 'host_webhook'
+          } | to_json }}
       register: cmd_set_host_webhook
 
     # - debug:
     #     msg: "{{ cmd_set_host_webhook }}"
 
-    - name: Copy webhook info file
-      fetch:
+    - name: Read the webhook file for the controller
+      ansible.builtin.slurp:
         src: /home/code/host_webhook.json
-        dest: "./"
-        flat: yes
+      register: webhook_file
+      no_log: true
+
+    - name: Save a private webhook file on the controller
+      ansible.builtin.copy:
+        content: "{{ webhook_file.content | b64decode }}"
+        dest: "{{ playbook_dir }}/host_webhook.json"
+        mode: "0600"
+      delegate_to: localhost
+      become: false
+      no_log: true
 
     - name: Delete artifacts
       file:

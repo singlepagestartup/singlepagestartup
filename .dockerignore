@@ -79,6 +79,7 @@ apps/studio
 # Database
 ############################
 apps/db/db_data
+apps/db/db_backups/
 
 ############################
 # redis
