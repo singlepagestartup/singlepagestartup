@@ -1,4 +1,14 @@
 import {
+  action as blogModuleArticleCreate,
+  type IProps as IBlogModuleArticleCreateProps,
+  type IResult as IBlogModuleArticleCreateResult,
+} from "./blog-module/article/create";
+import {
+  action as ecommerceModuleOrderFreezeSubscriptionPeriod,
+  type IProps as IEcommerceModuleOrderFreezeSubscriptionPeriodProps,
+  type IResult as IEcommerceModuleOrderFreezeSubscriptionPeriodResult,
+} from "./ecommerce-module/order/freeze-subscription-period";
+import {
   action as socialModuleProfileFindByIdAvatarFind,
   type IProps as ISocialModuleProfileFindByIdAvatarFindProps,
   type IResult as ISocialModuleProfileFindByIdAvatarFindResult,
@@ -464,7 +474,16 @@ import {
   type IResult as ISocialModuleChatFindByIdProfileDeleteResult,
 } from "./social-module/chat/find-by-id/profile/delete";
 
+import {
+  action as hostCacheRevalidate,
+  type IProps as IHostCacheRevalidateProps,
+  type IResult as IHostCacheRevalidateResult,
+} from "./host-cache/revalidate";
+
 export type IProps = {
+  IHostCacheRevalidateProps: IHostCacheRevalidateProps;
+  IBlogModuleArticleCreateProps: IBlogModuleArticleCreateProps;
+  IEcommerceModuleOrderFreezeSubscriptionPeriodProps: IEcommerceModuleOrderFreezeSubscriptionPeriodProps;
   IBillingModuleBalanceProps: IBillingModuleBalanceProps;
   IIdentityChangeEmailRequestProps: IIdentityChangeEmailRequestProps;
   IIdentityChangeEmailVerifyProps: IIdentityChangeEmailVerifyProps;
@@ -564,6 +583,9 @@ export type IProps = {
 };
 
 export type IResult = {
+  IHostCacheRevalidateResult: IHostCacheRevalidateResult;
+  IBlogModuleArticleCreateResult: IBlogModuleArticleCreateResult;
+  IEcommerceModuleOrderFreezeSubscriptionPeriodResult: IEcommerceModuleOrderFreezeSubscriptionPeriodResult;
   IBillingModuleBalanceResult: IBillingModuleBalanceResult;
   IIdentityChangeEmailRequestResult: IIdentityChangeEmailRequestResult;
   IIdentityChangeEmailVerifyResult: IIdentityChangeEmailVerifyResult;
@@ -663,6 +685,9 @@ export type IResult = {
 };
 
 export const api = {
+  hostCacheRevalidate,
+  blogModuleArticleCreate,
+  ecommerceModuleOrderFreezeSubscriptionPeriod,
   socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdate,
   socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesFind,
   ...factory<IModel>({

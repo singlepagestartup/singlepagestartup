@@ -90,7 +90,7 @@ export function SubjectMeProfileInformation(props?: IComponentProps) {
         }
         data-profile-id={profileId}
       >
-        Profile unavailable in this preview.
+        Профиль недоступен в этом примере.
       </p>
     );
   return (
@@ -155,7 +155,7 @@ function ProfileSettingsForm(props: IProfileSettingsFormProps) {
       slugInput.current?.reportValidity();
       setInvalid(true);
       setMessage(
-        "Use lowercase letters, numbers and single hyphens for the slug.",
+        "Используйте строчные латинские буквы, цифры и одиночные дефисы.",
       );
       return false;
     }
@@ -197,21 +197,19 @@ function ProfileSettingsForm(props: IProfileSettingsFormProps) {
           type="button"
           onClick={() => setViewOpen(true)}
         >
-          View profile
+          Открыть профиль
         </Button>
       </div>
       <form
         className="mt-6"
         onInvalidCapture={() => {
           setInvalid(true);
-          setMessage("Check the name and slug before saving.");
+          setMessage("Проверьте имя и адрес профиля перед сохранением.");
         }}
         onSubmit={(event) => {
           event.preventDefault();
           if (!checkSlug()) {
-            setMessage(
-              "This slug is already used by another profile in this preview.",
-            );
+            setMessage("Этот адрес уже занят другим профилем в примере.");
             slugInput.current?.focus();
             return;
           }
@@ -226,25 +224,27 @@ function ProfileSettingsForm(props: IProfileSettingsFormProps) {
               });
           } catch {
             setInvalid(true);
-            setMessage("Could not save this profile. Try a smaller image.");
+            setMessage(
+              "Не удалось сохранить профиль. Попробуйте изображение меньшего размера.",
+            );
             return;
           }
           setSavedProfile(draft);
           setInvalid(false);
           setMessage("");
-          toast.success("Profile saved", {
-            description: "Your profile changes are saved in this preview.",
+          toast.success("Профиль сохранён", {
+            description: "Изменения профиля сохранены в примере.",
           });
         }}
       >
         <fieldset className="min-w-0 border-0 p-0">
-          <legend className="text-sm font-medium">Avatar</legend>
+          <legend className="text-sm font-medium">Аватар</legend>
           <div className="mt-3 flex flex-wrap items-center gap-4">
             <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-2xl bg-muted">
               {avatar ? (
                 <img
                   src={avatar}
-                  alt={draft.title || "Profile avatar"}
+                  alt={draft.title || "Аватар профиля"}
                   className="h-full w-full object-cover"
                   onError={() => setAvatar("")}
                 />
@@ -259,7 +259,7 @@ function ProfileSettingsForm(props: IProfileSettingsFormProps) {
                   type="button"
                   onClick={() => fileInput.current?.click()}
                 >
-                  Choose image
+                  Выбрать изображение
                 </Button>
                 <Button
                   variant="plain"
@@ -270,14 +270,15 @@ function ProfileSettingsForm(props: IProfileSettingsFormProps) {
                     setAvatar("");
                     setInvalid(false);
                     if (fileInput.current) fileInput.current.value = "";
-                    setMessage("Avatar removed in this preview.");
+                    setMessage("Аватар удалён в этом примере.");
                   }}
                 >
-                  Remove
+                  Удалить
                 </Button>
               </div>
               <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                PNG, JPEG, WebP or GIF, up to 2 MB. Save to apply changes.
+                PNG, JPEG, WebP или GIF до 2 МБ. Сохраните профиль, чтобы
+                применить изменения.
               </p>
             </div>
             <input
@@ -285,7 +286,7 @@ function ProfileSettingsForm(props: IProfileSettingsFormProps) {
               type="file"
               accept="image/png,image/jpeg,image/webp,image/gif"
               className="sr-only"
-              aria-label="Choose avatar image"
+              aria-label="Выберите изображение для аватара"
               tabIndex={-1}
               onChange={(event) => {
                 const file = event.target.files?.[0];
@@ -302,7 +303,7 @@ function ProfileSettingsForm(props: IProfileSettingsFormProps) {
                   file.size > 2 * 1024 * 1024
                 ) {
                   setInvalid(true);
-                  setMessage("Choose a PNG, JPEG, WebP or GIF up to 2 MB.");
+                  setMessage("Выберите PNG, JPEG, WebP или GIF до 2 МБ.");
                   return;
                 }
                 const upload = new FileReader();
@@ -311,11 +312,15 @@ function ProfileSettingsForm(props: IProfileSettingsFormProps) {
                   if (typeof upload.result !== "string") return;
                   setAvatar(upload.result);
                   setInvalid(false);
-                  setMessage("Image selected. Save your profile to apply it.");
+                  setMessage(
+                    "Изображение выбрано. Сохраните профиль, чтобы применить его.",
+                  );
                 };
                 upload.onerror = () => {
                   setInvalid(true);
-                  setMessage("Could not read this image. Try another file.");
+                  setMessage(
+                    "Не удалось прочитать изображение. Попробуйте другой файл.",
+                  );
                 };
                 upload.readAsDataURL(file);
               }}
@@ -324,7 +329,7 @@ function ProfileSettingsForm(props: IProfileSettingsFormProps) {
         </fieldset>
         <div className="mt-6 grid min-w-0 gap-5 lg:grid-cols-2">
           <label className="block min-w-0">
-            <span className="text-sm font-medium">Name</span>
+            <span className="text-sm font-medium">Имя</span>
             <input
               name="title"
               required
@@ -334,7 +339,7 @@ function ProfileSettingsForm(props: IProfileSettingsFormProps) {
             />
           </label>
           <label className="block min-w-0">
-            <span className="text-sm font-medium">Headline</span>
+            <span className="text-sm font-medium">Подзаголовок</span>
             <input
               name="subtitle"
               className={fieldClass}
@@ -343,7 +348,7 @@ function ProfileSettingsForm(props: IProfileSettingsFormProps) {
             />
           </label>
           <label className="block min-w-0 lg:col-span-2">
-            <span className="text-sm font-medium">Description</span>
+            <span className="text-sm font-medium">Описание</span>
             <textarea
               name="description"
               className={`${fieldClass} min-h-32`}
@@ -355,7 +360,7 @@ function ProfileSettingsForm(props: IProfileSettingsFormProps) {
           </label>
           <div className="min-w-0 lg:col-span-2">
             <label htmlFor={`${id}-slug`} className="text-sm font-medium">
-              Slug
+              Адрес профиля
             </label>
             <div className="mt-2 flex min-w-0 flex-wrap items-start gap-3">
               <input
@@ -371,15 +376,15 @@ function ProfileSettingsForm(props: IProfileSettingsFormProps) {
                 onChange={(event) => updateDraft("slug", event.target.value)}
               />
               <Button variant="secondary" type="button" onClick={checkSlug}>
-                Check availability
+                Проверить адрес
               </Button>
             </div>
             <p
               id={`${id}-slug-help`}
               className="mt-2 text-xs leading-5 text-muted-foreground"
             >
-              Lowercase letters, numbers and single hyphens. Availability is
-              checked only against profiles in this preview.
+              Строчные латинские буквы, цифры и одиночные дефисы. Проверяем
+              адрес только среди профилей этого примера.
             </p>
             <p
               role="status"
@@ -387,8 +392,8 @@ function ProfileSettingsForm(props: IProfileSettingsFormProps) {
             >
               {slugCheck
                 ? slugCheck.available
-                  ? "Available in this preview. Server availability has not been checked."
-                  : "Already used by another profile in this preview."
+                  ? "Адрес свободен в примере. Доступность на сервере не проверялась."
+                  : "Адрес уже занят другим профилем в примере."
                 : ""}
             </p>
           </div>
@@ -413,7 +418,7 @@ function ProfileSettingsForm(props: IProfileSettingsFormProps) {
             role="alert"
             className="mt-4 rounded-xl border border-destructive bg-destructive-surface p-4 text-sm text-destructive"
           >
-            <p className="font-semibold">Profile could not be saved</p>
+            <p className="font-semibold">Не удалось сохранить профиль</p>
             <p className="mt-1 break-words leading-6">{message}</p>
           </div>
         ) : message ? (
@@ -433,7 +438,7 @@ function ProfileSettingsForm(props: IProfileSettingsFormProps) {
           <section
             role="dialog"
             aria-modal="true"
-            aria-label="Profile preview"
+            aria-label="Предпросмотр профиля"
             className="relative max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-3xl bg-card p-6"
             onClick={(event) => event.stopPropagation()}
             onKeyDown={(event) => {
@@ -454,7 +459,7 @@ function ProfileSettingsForm(props: IProfileSettingsFormProps) {
               onClick={closePreview}
             >
               <X className="h-5 w-5" />
-              Close preview
+              Закрыть предпросмотр
             </Button>
             {avatar ? (
               <img
@@ -474,7 +479,7 @@ function ProfileSettingsForm(props: IProfileSettingsFormProps) {
               {savedProfile.slug}
             </p>
             <p className="mt-6 text-xs text-muted-foreground">
-              Local profile preview
+              Предпросмотр профиля в примере
             </p>
           </section>
         </div>
@@ -518,13 +523,12 @@ function Button({
 export const defaultSubjectMeProfileInformationProps: SubjectMeProfileInformationProps =
   {
     user: defaultRbacUser,
-    title: "Profile",
+    title: "Профиль",
     bio: defaultRbacProfiles[0].description ?? "",
-    saveLabel: "Save profile",
+    saveLabel: "Сохранить профиль",
     profile: defaultRbacProfiles[0],
     profiles: defaultRbacProfiles,
-    description:
-      "Edit the name, headline and information on your public profile.",
+    description: "Измените имя, заголовок и описание публичного профиля.",
   };
 const fieldClass =
   "mt-2 min-h-12 w-full rounded-xl border border-border bg-card px-4 py-2.5 text-base text-foreground outline-none transition focus-visible:border-foreground focus-visible:ring-2 focus-visible:ring-foreground aria-[invalid=true]:border-destructive";

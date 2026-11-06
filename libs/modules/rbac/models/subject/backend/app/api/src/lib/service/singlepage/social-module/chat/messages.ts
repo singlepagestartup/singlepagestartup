@@ -4,6 +4,7 @@ import type {
   IChatMessage,
 } from "@sps/social/models/message/sdk/model";
 import { assertKnowledgeAttachmentBytes } from "@sps/backend-utils";
+import { Service as Presentations } from "./presentations";
 
 export class Service {
   constructor(
@@ -69,11 +70,24 @@ export class Service {
       }
     }
     const filesById = new Map(safeFiles.map((file) => [file.id, file]));
+    const messageIds = new Set(messages.map((message) => message.id));
+    const scopedAuthors = authors.filter((link) =>
+      messageIds.has(link.messageId),
+    );
+    const profiles = await new Presentations(this.service).find(
+      scopedAuthors.map((link) => link.profileId),
+    );
     return messages.map((message) => ({
       ...message,
-      authorProfileIds: authors
+      authorProfileIds: scopedAuthors
         .filter((link) => link.messageId === message.id)
         .map((link) => link.profileId),
+      authorProfiles: scopedAuthors
+        .filter((link) => link.messageId === message.id)
+        .flatMap((link) => {
+          const profile = profiles.get(link.profileId);
+          return profile ? [profile] : [];
+        }),
       attachments: links
         .filter((link) => link.messageId === message.id)
         .sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0))

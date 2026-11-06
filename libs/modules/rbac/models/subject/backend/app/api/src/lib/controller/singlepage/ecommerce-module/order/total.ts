@@ -39,7 +39,7 @@ export class Handler {
         throw new Error("Validation error. No token");
       }
 
-      const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
+      const decoded = await jwt.verify(token, RBAC_JWT_SECRET, "HS256");
 
       if (decoded?.["subject"]?.["id"] !== id) {
         throw new Error("Validation error. Only order owner can update order");
@@ -64,6 +64,7 @@ export class Handler {
         if (!subjectsToEcommerceModuleOrders?.length) {
           return c.json({
             data: [],
+            unpriced: [],
           });
         }
 
@@ -98,6 +99,7 @@ export class Handler {
         if (!ecommerceModuleOrdersWithCartType?.length) {
           return c.json({
             data: [],
+            unpriced: [],
           });
         }
 
@@ -112,13 +114,16 @@ export class Handler {
           }
         >();
 
+        const unpriced: import("@sps/ecommerce/relations/orders-to-products/sdk/model").IUnpricedOrderToProduct[] =
+          [];
         for (const ecommerceModuleOrder of ecommerceModuleOrdersWithCartType) {
           const ecommerceModuleOrderTotals =
             await this.service.ecommerceModule.order.findByIdTotal({
               id: ecommerceModuleOrder.id,
             });
 
-          for (const ecommerceModuleOrderTotal of ecommerceModuleOrderTotals) {
+          unpriced.push(...ecommerceModuleOrderTotals.unpriced);
+          for (const ecommerceModuleOrderTotal of ecommerceModuleOrderTotals.totals) {
             const currencyId =
               ecommerceModuleOrderTotal.billingModuleCurrency.id;
             if (totalsMap.has(currencyId)) {
@@ -128,7 +133,7 @@ export class Handler {
               if (!entry.orders.some((o) => o.id === ecommerceModuleOrder.id)) {
                 entry.orders.push({
                   ...ecommerceModuleOrder,
-                  total: ecommerceModuleOrderTotals,
+                  total: ecommerceModuleOrderTotals.totals,
                 });
               }
             } else {
@@ -139,7 +144,7 @@ export class Handler {
                 orders: [
                   {
                     ...ecommerceModuleOrder,
-                    total: ecommerceModuleOrderTotals,
+                    total: ecommerceModuleOrderTotals.totals,
                   },
                 ],
               });
@@ -149,6 +154,7 @@ export class Handler {
 
         return c.json({
           data: Array.from(totalsMap.values()),
+          unpriced,
         });
       });
     } catch (error: any) {

@@ -25,7 +25,7 @@ function Icon({
   const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
@@ -634,7 +634,7 @@ export function Component({
             {view === "workspace" ? (
               <form onSubmit={createTopic} className="grid gap-5">
                 <p className={`text-sm leading-6 ${muted}`}>
-                  The thread uses the current knowledge of this profile.
+                  Переписка использует текущие знания профиля.
                 </p>
                 <div className="grid gap-2">
                   <label

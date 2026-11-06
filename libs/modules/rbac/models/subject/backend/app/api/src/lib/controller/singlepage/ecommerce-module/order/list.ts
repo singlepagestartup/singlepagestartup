@@ -40,7 +40,7 @@ export class Handler {
         throw new Error("Validation error. No token");
       }
 
-      const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
+      const decoded = await jwt.verify(token, RBAC_JWT_SECRET, "HS256");
 
       if (decoded?.["subject"]?.["id"] !== id) {
         throw new Error("Validation error. Only order owner can read orders");
@@ -172,7 +172,14 @@ export class Handler {
             const file = files?.find((file) => file.id === id);
             return file ? [file] : [];
           });
-          purchases.push({ ...order, purchaseDetails: { totals, receipts } });
+          purchases.push({
+            ...order,
+            purchaseDetails: {
+              totals: totals.totals,
+              receipts,
+              ...(totals.unpriced.length ? { unpriced: totals.unpriced } : {}),
+            },
+          });
         }
         return c.json({ data: purchases });
       });

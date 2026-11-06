@@ -35,7 +35,7 @@ export async function readProjectFiles(
   );
   if (unsupported.length)
     throw new Error(
-      `Unsupported files: ${unsupported.map((file) => file.name).join(", ")}. Allowed formats: ${AI_CHAT_ATTACHMENT_FORMAT_LABEL}.`,
+      `Неподдерживаемые файлы: ${unsupported.map((file) => file.name).join(", ")}. Допустимые форматы: ${AI_CHAT_ATTACHMENT_FORMAT_LABEL}.`,
     );
   const prepared = await Promise.all(
     Array.from(files).map(async (file) => {
@@ -44,7 +44,7 @@ export async function readProjectFiles(
         file.type.startsWith("text/");
       if (plain && file.size > 100000)
         throw new Error(
-          `${file.name} is too long for a document draft. Add a shorter text file.`,
+          `${file.name} слишком велик для черновика. Добавьте текстовый файл меньшего размера.`,
         );
       return {
         file,

@@ -1,3 +1,4 @@
+import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
 import { Component as AdminV2SidebarItem } from "./admin-v2/sidebar-item";
 import { Component as AdminV2Card } from "./admin-v2/card";
 import { Component as AdminV2Form } from "./admin-v2/form";
@@ -12,7 +13,10 @@ import { Component as AdminForm } from "./admin/form";
 import { Component as Default } from "./default";
 import { Component as AttachmentAiChat } from "./attachment-ai-chat";
 
+import { Component as AuthenticatedContent } from "./authenticated-content";
+
 export const variants = {
+  hidden: Hidden,
   find: Find,
   "admin-table-row": AdminTableRow,
   "admin-table": AdminTable,
@@ -25,5 +29,6 @@ export const variants = {
   "admin-v2-card": AdminV2Card,
   "admin-v2-sidebar-item": AdminV2SidebarItem,
   default: Default,
+  "authenticated-content": AuthenticatedContent,
   "attachment-ai-chat": AttachmentAiChat,
 };

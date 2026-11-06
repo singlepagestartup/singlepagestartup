@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "44865483-3012-42cb-bd57-0665282b3fc5",
+  "createdAt": "2026-10-26T00:12:13.713Z",
+  "updatedAt": "2026-10-27T14:59:33.866Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Metrics match your work",
+    "ru": "Показатели соответствуют вашей работе"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Choose the numbers you need and name them. For a school, these may be enquiries and orders; for a service, completed tasks.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Выберите нужные числа и их названия. Для школы это могут быть заявки и заказы, для сервиса — количество выполненных задач.\"}]}]}"
+  },
+  "adminTitle": "Показатели соответствуют вашей работе",
+  "slug": "framework-reviewed-article-analytic-introduction-feature-0"
+}

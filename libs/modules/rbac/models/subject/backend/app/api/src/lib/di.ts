@@ -1,4 +1,7 @@
+import type { Service as EcommerceOrderService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service";
+import type { ICartDetails } from "@sps/ecommerce/models/order/sdk/model";
 import type { Service as CrmRequestService } from "@sps/crm/models/request/backend/app/api/src/lib/service";
+import type { Service as SocialProfileService } from "@sps/social/models/profile/backend/app/api/src/lib/service";
 export interface IReadService {
   find: (props?: any) => Promise<any>;
   findById: (props: { id: string }) => Promise<any>;
@@ -25,10 +28,17 @@ export interface IExtendedReadService extends IReadService {
 
 export interface IEcommerceOrderReadService
   extends IExtendedReadService,
-    ICreateService {
-  findByIdCartDetails: (props: {
-    id: string;
-  }) => Promise<import("@sps/ecommerce/models/order/sdk/model").ICartDetails>;
+    ICreateService,
+    Pick<
+      EcommerceOrderService,
+      | "acceptSubscriptionPeriod"
+      | "freezeSubscriptionPeriod"
+      | "assertSubscriptionPayment"
+      | "lockForLifecycle"
+      | "revokeSubscription"
+      | "update"
+    > {
+  findByIdCartDetails: (props: { id: string }) => Promise<ICartDetails>;
   findByIdTotal: (props: { id: string }) => Promise<any>;
   findByIdQuantity: (props: { id: string }) => Promise<any>;
   findByIdCheckoutAttributes: (props: {
@@ -46,7 +56,14 @@ export interface IEcommerceOrdersToProductsService extends ICreateService {
 }
 
 export interface ISocialModule {
-  profile: IReadService;
+  profile: ICreateService &
+    Pick<
+      SocialProfileService,
+      | "authorFind"
+      | "authorFindCount"
+      | "authorFindById"
+      | "profilePresentation"
+    >;
   skill: ICreateUpdateService;
   chat: IReadService;
   thread: IUpdateService;
@@ -62,6 +79,7 @@ export interface ISocialModule {
   profilesToMessages: ICreateService;
   profilesToActions: IReadService;
   profilesToAttributes: IReadService;
+  profilesToBlogModuleArticles: ICreateService;
   chatsToThreads: IReadService;
   chatsToMessages: ICreateService;
   chatsToActions: IReadService;
@@ -79,8 +97,8 @@ export interface IEcommerceModule {
   attributeKey: IReadService;
   storesToOrders: ICreateService;
   ordersToProducts: IEcommerceOrdersToProductsService;
-  ordersToBillingModuleCurrencies: ICreateService;
-  ordersToBillingModulePaymentIntents: IReadService;
+  ordersToBillingModuleCurrencies: ICreateDeleteService & IUpdateService;
+  ordersToBillingModulePaymentIntents: ICreateService;
   ordersToFileStorageModuleFiles: IReadService;
   productsToAttributes: IReadService;
   productsToFileStorageModuleFiles: IReadService;
@@ -90,10 +108,16 @@ export interface IEcommerceModule {
 
 export interface IBillingModule {
   currency: IReadService;
-  paymentIntent: IReadService;
-  paymentIntentsToCurrencies: IReadService;
-  invoice: IReadService;
-  paymentIntentsToInvoices: IReadService;
+  paymentIntent: ICreateUpdateService;
+  paymentIntentsToCurrencies: ICreateService;
+  invoice: ICreateUpdateService;
+  paymentIntentsToInvoices: ICreateService;
+}
+
+export interface IBlogModule {
+  article: ICreateService;
+  category: IReadService;
+  categoriesToArticles: ICreateService;
 }
 
 export interface INotificationModule {
@@ -132,6 +156,10 @@ export interface IBroadcastModule {
 }
 
 export const SubjectDI = {
+  IBlogModule: Symbol.for("rbac.subject.blog.module"),
+  ISubjectsToBlogModuleArticlesService: Symbol.for(
+    "rbac.subject.subjects-to-blog-module-articles.service",
+  ),
   ISocialModule: Symbol.for("rbac.subject.social.module"),
   IEcommerceModule: Symbol.for("rbac.subject.ecommerce.module"),
   IBillingModule: Symbol.for("rbac.subject.billing.module"),

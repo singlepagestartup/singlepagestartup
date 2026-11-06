@@ -2,6 +2,7 @@ import path from "node:path";
 
 /** Exact UI-only public entries shared by Studio and production. No package barrels. */
 const pureEntries = new Map([
+  ["@sps/shared-utils/metadata", "libs/shared/utils/src/lib/metadata/index.ts"],
   [
     "@sps/shared-frontend-client-utils/chat-scroll",
     "libs/shared/frontend/client/utils/src/lib/chat-scroll/index.ts",
@@ -27,13 +28,14 @@ export function isPureStudioUtilityFile(root: string, file: string): boolean {
   )
     return true;
   return [
+    "libs/shared/utils/src/lib/metadata",
     "libs/shared/ui/adapter/src/lib/toast",
     "libs/shared/ui/adapter/src/lib/icons",
   ].some((entry) => file.startsWith(path.join(root, entry) + path.sep));
 }
 
 export function isPureStudioExternal(specifier: string): boolean {
-  return ["react", "sonner", "tailwind-merge"].includes(specifier);
+  return ["react", "sonner", "tailwind-merge", "zod"].includes(specifier);
 }
 
 export function pureStudioUtilities(root: string): string[] {

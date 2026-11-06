@@ -85,11 +85,48 @@ jest.mock("@sps/file-storage/models/file/frontend/component", () => ({
           .Component(props),
 }));
 import { Component } from "./Component";
+it("keeps Russian message controls and file previews in the selected locale", () => {
+  render(
+    <Component
+      {...({
+        language: "ru",
+        data: [
+          {
+            id: "user-message",
+            description: "Мои материалы",
+            createdAt: "2026-10-13T00:00:00Z",
+          },
+          {
+            id: "assistant-message",
+            description: "Ответ помощника",
+            createdAt: "2026-10-13T00:00:01Z",
+          },
+        ],
+        requesterProfileId: "requester",
+        onProfileOpen: jest.fn(),
+      } as any)}
+    />,
+  );
+
+  expect(
+    screen.getByRole("button", { name: "Открыть профиль помощника" }),
+  ).toBeTruthy();
+  expect(screen.getByRole("button", { name: "О помощнике" })).toBeTruthy();
+  const files = screen.getByRole("list", { name: "Файлы сообщения" });
+  expect(
+    within(files).getByRole("button", { name: "Открыть First.png" }),
+  ).toBeTruthy();
+  const ownMessage = screen.getByText("Мои материалы").closest("article");
+  expect(ownMessage?.classList.contains("ml-auto")).toBe(true);
+  expect(within(ownMessage!).queryByText(/^(You|Вы)$/)).toBeNull();
+});
+
 it("opens the actual assistant author from both the avatar and name; user messages remain noninteractive", () => {
   const open = jest.fn();
   render(
     <Component
       {...({
+        language: "en",
         data: [
           {
             id: "user-message",
@@ -122,6 +159,7 @@ it("opens the project assistant for an empty document introduction", () => {
   render(
     <Component
       {...({
+        language: "en",
         data: [],
         assistantProfileId: "project",
         onProfileOpen: open,
@@ -136,6 +174,7 @@ it("preserves attachment order, opens supported originals and blocks legacy SVG"
   render(
     <Component
       {...({
+        language: "en",
         data: [
           {
             id: "user-message",
@@ -190,7 +229,9 @@ it("follows new replies and growing attachments but preserves the position when 
   ];
   const view = (data: any[]) => (
     <div data-testid="pane" data-ai-chat-messages>
-      <Component {...({ data, requesterProfileId: "requester" } as any)} />
+      <Component
+        {...({ language: "en", data, requesterProfileId: "requester" } as any)}
+      />
     </div>
   );
   try {
@@ -240,6 +281,7 @@ it("renders scoped authors and all files without reading generic relations", () 
   render(
     <Component
       {...({
+        language: "en",
         data: [
           {
             id: "scoped-user-message",

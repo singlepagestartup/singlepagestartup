@@ -3,9 +3,9 @@ issue_number: 223
 issue_title: "Prevent long page-cache agents from being marked aborted while still running"
 repository: singlepagestartup
 created_at: 2026-09-17T23:21:55Z
-last_updated: 2026-09-17T23:21:55Z
+last_updated: 2026-09-18T23:45:00Z
 status: active
-current_phase: research
+current_phase: implement
 ---
 
 # Process Log: ISSUE-223 - Prevent long page-cache agents from being marked aborted while still running
@@ -18,10 +18,10 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 - Create: completed
 - Research: completed
-- Plan: not_started
-- Implement: not_started
-- Current phase: research
-- Next step: human review, then core/20-plan
+- Plan: completed
+- Implement: completed
+- Current phase: implement
+- Next step: lead verification on a running API instance, then PR and code review
 
 ## Phase Notes
 
@@ -39,21 +39,21 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 ### Plan
 
-- Summary:
-- Outputs:
-- Notes:
+- Summary: Planned the fix as a decomposition rather than a new mechanism: an agent-run service owns the marker lifecycle and the due decision, the cron controller composes, and a route middleware in the agent model's middlewares package closes a run on the handler side. Storage stays the Broadcast `cron` channel with the existing payload plus a `runId`. Plan approval was delegated to the lead, so the phases ran without a review pause.
+- Outputs: `thoughts/shared/plans/singlepagestartup/ISSUE-223.md`, https://github.com/singlepagestartup/singlepagestartup/issues/223#issuecomment-5737432602
+- Notes: The lead's audit supplied the bounds the plan had to respect (SEC-28, SEC-30, appendix F23) and named `limitedParallelExecution` as the concurrency helper to finally use. The research's open question about the 262-second abort stayed open on purpose: the design no longer depends on why the caller is aborted, because the caller's outcome is no longer the run's result.
 
 ### Implement
 
-- Summary:
-- Outputs:
-- Notes:
+- Summary: Implemented the three phases. The runner writes a running marker, starts the self request with the run-id header and a dispatch timeout, and returns; the `agent-run` middleware records the outcome on the handler side; a running marker blocks re-dispatch until it finishes or `AGENT_MAX_DURATION_IN_SECONDS` passes, after which the next tick supersedes it and the lost run can no longer write a result. Markers now carry an explicit expiry that covers the maximum run duration. The page-cache handler stops on a superseded run or on consecutive page failures.
+- Outputs: `thoughts/shared/handoffs/singlepagestartup/ISSUE-223-progress.md`, the agent-run service, the agent middlewares package, the rewritten cron controller, four spec files, `libs/modules/agent/models/agent/README.md`.
+- Notes: `npx nx run @sps/agent:jest:test` (19 suites, 103 tests) and `npx nx run @sps/agent:eslint:lint` pass, as do the `@sps/shared-utils` lanes; `npx tsc --noEmit -p libs/modules/agent/tsconfig.json` exits 0. No PR was created in this session.
 
 ## Incident Log
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 3 -->
+<!-- incident-count: 4 -->
 
 ### Incident 1 — Editorial-pass contract referenced by CLAUDE.md is missing
 
@@ -85,6 +85,16 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Preventive Action**: In worktree sessions keep each git/gh invocation on its own simple command line, quote glob patterns, and use the Write tool for files.
 - **References**: worktree isolation guard for `.claude/worktrees/*` sessions; `thoughts/shared/processes/singlepagestartup/ISSUE-218.md` (Write-tool and helper conventions)
 
+### Incident 4 — A thrown Hono handler does not reject `await next()`
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: The agent-run middleware spec expected `markFinished` to receive the handler's error message and received `{ status: 500, error: "Internal error. Agent responded with 500" }` instead.
+- **Root Cause**: Hono's `compose` catches a handler exception at that handler's dispatch index and turns it into a response through the application error handler, so an upstream middleware's `await next()` resolves with the error response rather than rejecting.
+- **Fix**: The spec asserts the status the middleware actually observes, and a second scenario drives the middleware directly with a rejecting `next` to cover the defensive catch branch.
+- **Preventive Action**: A Hono middleware that must react to a handler failure reads the response status after `await next()`; the `catch` branch only covers errors that escape the application error handler.
+- **References**: `libs/modules/agent/models/agent/backend/app/middlewares/src/lib/agent-run/index.ts`, `node_modules/hono/dist/cjs/compose.js`
+
 ## Reusable Learnings
 
 - Cron execution markers are Broadcast messages with a default `expiresAt` of one hour and are purged opportunistically on any message create; any state stored as Broadcast markers has an implicit one-hour lifetime regardless of `AGENT_MAX_DURATION_IN_SECONDS`.
@@ -92,3 +102,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - In Swarm deployments the API self-fetch uses `API_SERVICE_URL=http://api:4000` on the overlay network, while the minute-level system cron trigger goes through Traefik over HTTPS; the two paths have different intermediaries.
 - The deployer env template does not define `AGENT_MAX_DURATION_IN_SECONDS`; the tracked `apps/api/.env.production` sets it to 1200 but no API script loads that file explicitly.
 - Focused Agent tests run with `npx nx run @sps/agent:jest:test --testFile=<path>`; the generic `npm run test:file` wrapper has a known Nx parsing failure (from #169 and #218 process logs).
+- Route middleware registered through the `middlewares` field of a route definition is bound with `hono.use(path, middleware)` immediately before that route's handler (`libs/shared/backend/api/src/lib/app/default/index.ts:72-82`), so it runs for every method on that path; a middleware that must only act on one flow gates itself on a request header.
+- A model's middlewares package is a plain folder under `backend/app/middlewares` with `index.ts` -> `src/index.ts` -> `src/lib/<name>/index.ts`; it belongs to the module's Nx project, so its specs run in the module's `jest:test` lane, and its middlewares declare a structural service type instead of importing the API package.
+- `expiresAt` passed in the `pushMessage` data reaches the Broadcast message row: the repository insert converts the string to a `Date` and the insert schema drops the keys that are not columns (`libs/shared/backend/api/src/lib/repository/database/index.ts:191-205`).
+- `limitedParallelExecution` awaits `Promise.race` once `concurrency` tasks are in flight, so task `concurrency + 1` starts only after one of the first `concurrency` settles; that is the property a concurrency test can assert.

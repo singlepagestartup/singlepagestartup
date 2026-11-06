@@ -4,13 +4,28 @@ The `sps_consistency` schema stores resource generations, a transactional outbox
 a delivery journal and temporary query registrations. It is infrastructure;
 model CRUD routes and data snapshot seeding do not expose these tables.
 
-Generate and apply infrastructure migrations from the repository root:
+## Model and relation changes
+
+Every existing model/relation `repository-generate` target runs Drizzle followed
+by `@sps/providers-db:repository-generate`. New model and relation generators
+create the same sequence. Generation targets run uncached because they write
+migration files and the capture catalog.
+
+For example, after changing Startup Widget fields, run from the repository root:
 
 ```sh
-npx nx run @sps/providers-db:repository-generate
-npx nx run @sps/providers-db:repository-migrate
+npx nx run @sps/startup:models:widget:repository-generate
+npx nx run api:db:migrate
 npx nx run @sps/providers-db:consistency-check
 ```
+
+Use the matching model or relation target for other entities. Capture generation
+scans every module's effective `schema.ts` Table and SDK route, including new
+Startup models, relations and fields inherited through `fields/startup.ts`.
+Commit the generated entity migrations, infrastructure migration, Drizzle
+metadata and `capture.json` together. Never add tables to capture SQL or edit
+the catalog by hand. Repeating generation without schema or capture changes
+creates no new capture migration.
 
 `api:db:migrate` applies infrastructure first. Each model/relation migrator
 installs capture after its own table migration. The infrastructure migrator

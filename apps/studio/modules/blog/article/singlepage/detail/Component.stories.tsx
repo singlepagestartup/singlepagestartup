@@ -14,10 +14,12 @@ const meta = {
     <Article
       {...args}
       tagsCard={
-        <Widget
-          variant="article-find-by-id-tag-find-default"
-          tags={args?.tags}
-        />
+        args.tags?.length ? (
+          <Widget
+            variant="article-find-by-id-tag-find-default"
+            tags={args?.tags}
+          />
+        ) : undefined
       }
       variant="detail"
     />

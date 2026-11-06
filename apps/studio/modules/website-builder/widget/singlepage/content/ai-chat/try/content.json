@@ -1,28 +1,28 @@
 {
   "workflow": {
-    "title": "Try the chat.",
+    "title": "Посмотрите работу на примере мастерской",
     "paragraphs": [
-      "Check the workshop files and send an answer. Review Products.md, work on another file, then open a topic with the documents you saved."
+      "Откройте исходные файлы гончарной мастерской, уточните аудиторию и сохраните описание занятия. Затем используйте его в новом разговоре: например, для приглашения на мастер-класс. Это вымышленный пример."
     ],
     "items": [
       {
-        "title": "Add materials",
-        "text": "Bring notes, photos, plans or describe the idea in chat."
+        "title": "Добавьте сведения",
+        "text": "Заметки, прайс, документы, изображения или описание задачи в чате."
       },
       {
-        "title": "Review",
-        "text": "AI checks the material and asks about what is missing."
+        "title": "Выберите результат",
+        "text": "Статья, рекламное сообщение, описание продукта или техническое задание."
       },
       {
-        "title": "Edit together",
-        "text": "Discuss and edit each document in its own thread. Review it when ready."
+        "title": "Обсудите правки",
+        "text": "Ассистент использует источники и уточняет условия. Вы редактируете содержание в документе."
       },
       {
-        "title": "Keep working",
-        "text": "Open a topic and attach the saved documents you want to use."
+        "title": "Продолжайте с сохранёнными знаниями",
+        "text": "Новая задача использует документы выбранного продукта. Результат можно экспортировать."
       }
     ],
     "links": []
   },
-  "uploadNote": "Interactive walkthrough; changes stay in this page."
+  "uploadNote": "Интерактивный пример; изменения остаются на этой странице."
 }

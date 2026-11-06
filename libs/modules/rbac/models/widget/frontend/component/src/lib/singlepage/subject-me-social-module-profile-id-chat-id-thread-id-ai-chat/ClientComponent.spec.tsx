@@ -81,7 +81,7 @@ it.each(entryPoints)(
     const html = renderToStaticMarkup(<View {...(props as any)} />);
     expect(mockProjectReads).toHaveBeenCalledTimes(1);
     expect(html).toContain(
-      View === ProjectCreate ? "My projects" : "Workspace content",
+      View === ProjectCreate ? "Мои проекты" : "Workspace content",
     );
     expect(html).not.toContain("Sign in to your workspace");
     expect(mockAuthenticationProps.mock.calls[0][0]).toMatchObject({
@@ -108,7 +108,7 @@ it.each([Thread, ThreadCreate, ProjectSettings])(
         {...({ ...props, socialModuleProfileId: "foreign-profile" } as any)}
       />,
     );
-    expect(html).toContain("This project is unavailable in your workspace.");
+    expect(html).toContain("Этот проект недоступен в вашем аккаунте.");
     expect(html).not.toContain("Workspace content");
     expect(html).not.toContain("Sign in to your workspace");
   },
@@ -135,14 +135,14 @@ it.each(["session", "projects"])(
     else mockProjectsState = "error";
     const html = renderToStaticMarkup(<Thread {...(props as any)} />);
     expect(html).toContain('data-workspace-state="error"');
-    expect(html).toContain("Try again");
+    expect(html).toContain("Повторить");
     expect(html).not.toContain("Workspace content");
   },
 );
 
 it("shows owned project links in the chooser without rendering a creation form", () => {
   const html = renderToStaticMarkup(<ProjectCreate {...(props as any)} />);
-  expect(html).toContain("My projects");
+  expect(html).toContain("Мои проекты");
   expect(html).toContain(
     'href="/ru/ai-chat/social/profiles/owned-profile/chats/owned-chat/threads/owned-thread"',
   );
@@ -158,7 +158,7 @@ it.each(["pending", "error"])(
     expect(html).not.toContain("Owned project");
     expect(html).not.toContain("owned-thread");
     expect(html).toContain(
-      state === "pending" ? 'aria-busy="true"' : "Try again",
+      state === "pending" ? 'aria-busy="true"' : "Повторить",
     );
   },
 );

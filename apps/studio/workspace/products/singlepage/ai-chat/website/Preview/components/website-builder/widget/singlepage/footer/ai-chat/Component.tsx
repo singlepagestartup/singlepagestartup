@@ -1,13 +1,13 @@
 import { Component as WebsiteBuilderModuleLogotype } from "../../../../logotype/index";
 import { Component as WebsiteBuilderModuleButtonsArray } from "../../../../buttons-array/index";
 import type { IWebsiteSection } from "../../content/ai-chat/content";
-import defaultContent from "./content.json";
+import websiteContent from "../../../../../../../../../../../utils/products/ai-chat-website.generated.json";
 
 export interface IAIChatFooterProps {
   content?: IWebsiteSection;
 }
 export function Component({
-  content = defaultContent,
+  content = websiteContent.footer,
 }: IAIChatFooterProps = {}) {
   return (
     <footer
@@ -18,7 +18,7 @@ export function Component({
         <WebsiteBuilderModuleLogotype variant="brand-ai-chat" />
         <WebsiteBuilderModuleButtonsArray
           variant="default"
-          ariaLabel="AI Chat footer"
+          ariaLabel="Подвал AI Chat"
           buttons={content.links.map((link) => ({
             label: link.text,
             href: link.href,

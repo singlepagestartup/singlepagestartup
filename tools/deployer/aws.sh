@@ -6,6 +6,7 @@ get_environment_type $2
 ./create_inventory.sh
 
 . ./get_env.sh
+. ./ansible_vars.sh
 
 PROJECT_NAME=$(get_env "$BASH_SOURCE" "PROJECT_NAME")
 
@@ -37,47 +38,22 @@ fi
 
 if [ "$1" != "down" ]
 then
-    ansible-playbook \
-        ./aws/create_iam_user.yaml \
-        -e "ROOT_AWS_ACCESS_KEY_ID=$ROOT_AWS_ACCESS_KEY_ID \
-            ROOT_AWS_SECRET_ACCESS_KEY=$ROOT_AWS_SECRET_ACCESS_KEY \
-            PROJECT_NAME=$PROJECT_NAME \
-            AWS_S3_BUCKET_NAME=$AWS_S3_BUCKET_NAME \
-            ENVIRONMENT_TYPE=$ENVIRONMENT_TYPE" && \
-    ansible-playbook \
-        ./aws/create_s3.yaml \
-        -e "ROOT_AWS_ACCESS_KEY_ID=$ROOT_AWS_ACCESS_KEY_ID \
-            ROOT_AWS_SECRET_ACCESS_KEY=$ROOT_AWS_SECRET_ACCESS_KEY \
-            AWS_REGION=$AWS_REGION \
-            PROJECT_NAME=$PROJECT_NAME \
-            AWS_S3_BUCKET_NAME=$AWS_S3_BUCKET_NAME \
-            ENVIRONMENT_TYPE=$ENVIRONMENT_TYPE" && \
-    ansible-playbook \
-        ./aws/fill_github.yaml \
-        -e "GITHUB_TOKEN=$GITHUB_TOKEN \
-            GITHUB_REPOSITORY=$GITHUB_REPOSITORY \
-            AWS_REGION=$AWS_REGION \
-            PROJECT_NAME=$PROJECT_NAME \
-            AWS_S3_BUCKET_NAME=$AWS_S3_BUCKET_NAME \
-            ENVIRONMENT_TYPE=$ENVIRONMENT_TYPE"
+    ansible_with_vars ./aws/create_iam_user.yaml \
+        ROOT_AWS_ACCESS_KEY_ID ROOT_AWS_SECRET_ACCESS_KEY PROJECT_NAME AWS_S3_BUCKET_NAME \
+        ENVIRONMENT_TYPE && \
+    ansible_with_vars ./aws/create_s3.yaml \
+        ROOT_AWS_ACCESS_KEY_ID ROOT_AWS_SECRET_ACCESS_KEY AWS_REGION PROJECT_NAME \
+        AWS_S3_BUCKET_NAME ENVIRONMENT_TYPE && \
+    ansible_with_vars ./aws/fill_github.yaml \
+        GITHUB_TOKEN GITHUB_REPOSITORY AWS_REGION PROJECT_NAME AWS_S3_BUCKET_NAME \
+        ENVIRONMENT_TYPE
 else
-    ansible-playbook \
-        ./aws/clear_github.yaml \
-        -e "GITHUB_TOKEN=$GITHUB_TOKEN \
-            GITHUB_REPOSITORY=$GITHUB_REPOSITORY \
-            ENVIRONMENT_TYPE=$ENVIRONMENT_TYPE" && \
-    ansible-playbook \
-        ./aws/delete_iam_user.yaml \
-        -e "ROOT_AWS_ACCESS_KEY_ID=$ROOT_AWS_ACCESS_KEY_ID \
-            ROOT_AWS_SECRET_ACCESS_KEY=$ROOT_AWS_SECRET_ACCESS_KEY \
-            PROJECT_NAME=$PROJECT_NAME \
-            ENVIRONMENT_TYPE=$ENVIRONMENT_TYPE" && \
-    ansible-playbook \
-        ./aws/delete_s3.yaml \
-        -e "ROOT_AWS_ACCESS_KEY_ID=$ROOT_AWS_ACCESS_KEY_ID \
-            ROOT_AWS_SECRET_ACCESS_KEY=$ROOT_AWS_SECRET_ACCESS_KEY \
-            PROJECT_NAME=$PROJECT_NAME \
-            AWS_S3_BUCKET_NAME=$AWS_S3_BUCKET_NAME \
-            ENVIRONMENT_TYPE=$ENVIRONMENT_TYPE"
+    ansible_with_vars ./aws/clear_github.yaml \
+        GITHUB_TOKEN GITHUB_REPOSITORY ENVIRONMENT_TYPE && \
+    ansible_with_vars ./aws/delete_iam_user.yaml \
+        ROOT_AWS_ACCESS_KEY_ID ROOT_AWS_SECRET_ACCESS_KEY PROJECT_NAME ENVIRONMENT_TYPE && \
+    ansible_with_vars ./aws/delete_s3.yaml \
+        ROOT_AWS_ACCESS_KEY_ID ROOT_AWS_SECRET_ACCESS_KEY PROJECT_NAME AWS_S3_BUCKET_NAME \
+        ENVIRONMENT_TYPE
     
 fi

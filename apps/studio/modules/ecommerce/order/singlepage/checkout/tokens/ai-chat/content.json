@@ -1,25 +1,25 @@
 {
   "sections": {
     "hero": {
-      "title": "Keep working on your project.",
+      "title": "Продолжайте работу над проектом.",
       "paragraphs": [
-        "Your uploaded material, saved documents and current task remain in place while you choose a top-up."
+        "Загруженные материалы, сохранённые документы и текущая задача остаются на месте, пока вы выбираете пополнение."
       ],
       "items": [],
       "links": []
     },
     "balance": {
-      "title": "Current balance",
+      "title": "Текущий баланс",
       "paragraphs": [
-        "See the available free and purchased token balance and the task you will return to after payment. The balance may be negative."
+        "Посмотрите доступные бесплатные и купленные токены и задачу, к которой вернётесь после оплаты. Баланс может быть отрицательным."
       ],
       "items": [],
       "links": []
     },
     "packages": {
-      "title": "Choose a top-up",
+      "title": "Выберите пополнение",
       "paragraphs": [
-        "Every package uses the same price of 0.13 roubles per internal token. Larger packages have no discount."
+        "Во всех пакетах внутренняя единица стоит 0,13 рубля. Скидок на большие пакеты нет."
       ],
       "items": [
         {
@@ -46,71 +46,71 @@
       "links": []
     },
     "purchase": {
-      "title": "Before payment",
+      "title": "Перед оплатой",
       "paragraphs": [
-        "Purchased tokens do not expire. After a successful payment, return to your saved upload, document or chat task."
+        "Купленные токены не сгорают. После успешной оплаты вернитесь к сохранённой загрузке, документу или задаче в чате."
       ],
       "items": [],
       "links": []
     },
     "debt": {
-      "title": "When the balance limits new requests",
+      "title": "Когда баланс ограничивает новые запросы",
       "paragraphs": [
-        "New paid AI requests are restricted at **−2,000 internal tokens or lower**, equivalent to **−USD 2 of provider cost**. A request already in progress settles at its final cost and may take the balance below that threshold.",
-        "Top up to bring the balance above −2,000 tokens and continue the saved task."
+        "Новые платные AI-запросы ограничены при балансе **−2 000 внутренних токенов или ниже**, что соответствует **−2 долларам расходов провайдера**. Уже запущенный запрос рассчитывается по итоговой стоимости и может опустить баланс ниже порога.",
+        "Пополните баланс выше −2 000 токенов, чтобы продолжить сохранённую задачу."
       ],
       "items": [],
       "links": []
     },
     "scope": {
-      "title": "Future services",
+      "title": "Будущие услуги",
       "paragraphs": [
-        "Landing-page creation and paid server deployment are future capabilities with prices and availability not yet set."
+        "Создание лендинга и платное развёртывание на сервере — будущие возможности. Цены и доступность не определены."
       ],
       "items": [],
       "links": []
     },
     "charging": {
-      "title": "How AI requests are charged",
+      "title": "Как оплачиваются AI-запросы",
       "paragraphs": [
-        "One internal token represents USD 0.001 of provider cost. The purchase price includes a thirty per cent margin at a fixed conversion of 100 roubles per dollar. The margin is charged at top-up; model use consumes the balance at provider cost.",
-        "One token is charged when your input is sent. A successful answer settles at its actual cost, rounded up to a whole internal token, with a minimum charge of one token, or 0.13 roubles at the purchase price."
+        "Один внутренний токен соответствует 0,001 доллара расходов провайдера. Цена покупки включает наценку 30% при фиксированном пересчёте 100 рублей за доллар. Наценка взимается при пополнении; использование моделей расходует баланс по стоимости провайдера.",
+        "При отправке ввода списывается один токен. Успешный ответ рассчитывается по фактической стоимости с округлением вверх до целого внутреннего токена. Минимум — один токен, или 0,13 рубля по цене покупки."
       ],
       "items": [],
       "links": []
     },
     "refunds": {
-      "title": "Failed requests and refunds",
+      "title": "Неудачные запросы и возвраты",
       "paragraphs": [
-        "If an AI request fails or is cancelled, every deduction for it is restored, including the initial token and any settlement charge. Its net charge is zero. The service bears any provider expense.",
-        "This token reversal is separate from a cash refund for a top-up. Purchases are normally final; cash refunds are decided case by case and are not a published entitlement."
+        "Если AI-запрос завершился ошибкой или отменён, возвращаются все списания по нему, включая начальный токен и итоговый расчёт. Чистое списание равно нулю. Расходы провайдера несёт сервис.",
+        "Возврат токенов отличается от денежного возврата пополнения. Обычно покупки окончательны; денежный возврат рассматривается индивидуально и не заявлен как общее право покупателя."
       ],
       "items": [],
       "links": []
     },
     "recovery": {
-      "title": "If payment does not complete",
+      "title": "Если оплата не завершилась",
       "paragraphs": [
-        "A failed or cancelled payment leaves your saved work and token balance unchanged. Check the payment result, try again or ask for support. You can also return to the workspace without buying."
+        "Неудачная или отменённая оплата не меняет сохранённую работу и баланс. Проверьте результат, повторите попытку или обратитесь в поддержку. Можно вернуться в рабочее пространство без покупки."
       ],
       "items": [],
       "links": []
     },
     "success": {
-      "title": "Package selected",
+      "title": "Пакет выбран",
       "paragraphs": [
-        "Review the selected amount and token total. You can choose a different package or return to your workspace."
+        "Проверьте сумму и количество токенов. Можно выбрать другой пакет или вернуться в рабочее пространство."
       ],
       "items": [],
       "links": []
     },
     "controls": {
-      "title": "Interface labels",
+      "title": "Подписи интерфейса",
       "paragraphs": [],
       "items": [
         {
           "title": "back-label",
-          "text": "Back to workspace"
+          "text": "Назад в рабочее пространство"
         },
         {
           "title": "back-href",
@@ -118,51 +118,51 @@
         },
         {
           "title": "balance-label",
-          "text": "Current balance"
+          "text": "Текущий баланс"
         },
         {
           "title": "balance-unit",
-          "text": "tokens remaining"
+          "text": "токенов осталось"
         },
         {
           "title": "package-label",
-          "text": "Choose a top-up"
+          "text": "Выберите пополнение"
         },
         {
           "title": "selected-label",
-          "text": "Selected package"
+          "text": "Выбранный пакет"
         },
         {
           "title": "select-prompt",
-          "text": "Choose an amount"
+          "text": "Выберите сумму"
         },
         {
           "title": "token-amount-label",
-          "text": "Estimated tokens"
+          "text": "Примерное число токенов"
         },
         {
           "title": "total-label",
-          "text": "Total"
+          "text": "Итого"
         },
         {
           "title": "terms-label",
-          "text": "Token and payment terms"
+          "text": "Условия токенов и оплаты"
         },
         {
           "title": "credit-note",
-          "text": "Amount at the stated rate. The final credited amount will be shown before payment."
+          "text": "Расчёт по указанной цене. Итоговое начисление будет показано перед оплатой."
         },
         {
           "title": "free-balance-label",
-          "text": "Free tokens"
+          "text": "Бесплатные токены"
         },
         {
           "title": "paid-balance-label",
-          "text": "Purchased tokens"
+          "text": "Купленные токены"
         },
         {
           "title": "balance-source",
-          "text": "Free and purchased tokens in this account"
+          "text": "Бесплатные и купленные токены этого аккаунта"
         },
         {
           "title": "currency",
@@ -170,19 +170,19 @@
         },
         {
           "title": "rate-label",
-          "text": "0.13 roubles per internal token"
+          "text": "0,13 рубля за внутренний токен"
         },
         {
           "title": "continue-payment",
-          "text": "Continue to payment"
+          "text": "Перейти к оплате"
         },
         {
           "title": "retry",
-          "text": "Try again"
+          "text": "Повторить"
         },
         {
           "title": "return-without-buying",
-          "text": "Return without buying"
+          "text": "Вернуться без покупки"
         },
         {
           "title": "return-href",
@@ -190,7 +190,7 @@
         },
         {
           "title": "help-label",
-          "text": "Ask for help"
+          "text": "Обратиться за помощью"
         },
         {
           "title": "help-href",
@@ -198,35 +198,35 @@
         },
         {
           "title": "success-message",
-          "text": "Package selected."
+          "text": "Пакет выбран."
         }
       ],
       "links": []
     }
   },
   "labels": {
-    "back-label": "Back to workspace",
+    "back-label": "Назад в рабочее пространство",
     "back-href": "/ai-chat/social/profiles/example",
-    "balance-label": "Current balance",
-    "balance-unit": "tokens remaining",
-    "package-label": "Choose a top-up",
-    "selected-label": "Selected package",
-    "select-prompt": "Choose an amount",
-    "token-amount-label": "Estimated tokens",
-    "total-label": "Total",
-    "terms-label": "Token and payment terms",
-    "credit-note": "Amount at the stated rate. The final credited amount will be shown before payment.",
-    "free-balance-label": "Free tokens",
-    "paid-balance-label": "Purchased tokens",
-    "balance-source": "Free and purchased tokens in this account",
+    "balance-label": "Текущий баланс",
+    "balance-unit": "токенов осталось",
+    "package-label": "Выберите пополнение",
+    "selected-label": "Выбранный пакет",
+    "select-prompt": "Выберите сумму",
+    "token-amount-label": "Примерное число токенов",
+    "total-label": "Итого",
+    "terms-label": "Условия токенов и оплаты",
+    "credit-note": "Расчёт по указанной цене. Итоговое начисление будет показано перед оплатой.",
+    "free-balance-label": "Бесплатные токены",
+    "paid-balance-label": "Купленные токены",
+    "balance-source": "Бесплатные и купленные токены этого аккаунта",
     "currency": "RUB",
-    "rate-label": "0.13 roubles per internal token",
-    "continue-payment": "Continue to payment",
-    "retry": "Try again",
-    "return-without-buying": "Return without buying",
+    "rate-label": "0,13 рубля за внутренний токен",
+    "continue-payment": "Перейти к оплате",
+    "retry": "Повторить",
+    "return-without-buying": "Вернуться без покупки",
     "return-href": "/ai-chat/social/profiles/example",
-    "help-label": "Ask for help",
+    "help-label": "Обратиться за помощью",
     "help-href": "/ai-chat/help",
-    "success-message": "Package selected."
+    "success-message": "Пакет выбран."
   }
 }

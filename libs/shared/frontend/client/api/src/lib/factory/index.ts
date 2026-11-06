@@ -38,6 +38,7 @@ import { deriveTopicsFromPath, STALE_TIME } from "@sps/shared-utils";
 import { createId } from "@paralleldrive/cuid2";
 import QueryString from "qs";
 import { useEffect } from "react";
+import { useQueryScope, scopedQueryOptions } from "../provider/query-scope";
 import { queryConsistency, consistencyQueryKey } from "../consistency";
 import {
   appendToListQueries,
@@ -320,6 +321,7 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
       reactQueryOptions?: any;
     }) => {
       const route = `${factoryProps.route}/${props.id}`;
+      const queryScope = useQueryScope();
 
       useEffect(() => {
         if (props.id) {
@@ -360,6 +362,13 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
             ? factoryProps.staleTime
             : STALE_TIME,
         ...restReactQueryOptions,
+        ...scopedQueryOptions(
+          queryScope,
+          consistencyQueryKey(route, props.params, factoryProps.host),
+          props.id
+            ? { topics: deriveTopicsFromPath(route), ...(userMeta ?? {}) }
+            : {},
+        ),
       });
     },
     find: (props?: {
@@ -367,6 +376,7 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
       options?: IFindQueryProps<T>["options"];
       reactQueryOptions?: any;
     }) => {
+      const queryScope = useQueryScope();
       useEffect(() => {
         const unsubscribe = subscription(
           factoryProps.route,
@@ -411,6 +421,18 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
             ? factoryProps.staleTime
             : STALE_TIME,
         ...restReactQueryOptions,
+        ...scopedQueryOptions(
+          queryScope,
+          consistencyQueryKey(
+            factoryProps.route,
+            props?.params,
+            factoryProps.host,
+          ),
+          {
+            topics: deriveTopicsFromPath(factoryProps.route),
+            ...(userMeta ?? {}),
+          },
+        ),
       });
     },
     count: (props?: {
@@ -419,6 +441,7 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
       reactQueryOptions?: any;
     }) => {
       const route = `${factoryProps.route}/count`;
+      const queryScope = useQueryScope();
 
       useEffect(() => {
         const unsubscribe = subscription(route, factoryProps.queryClient);
@@ -453,6 +476,11 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
             ? factoryProps.staleTime
             : STALE_TIME,
         ...restReactQueryOptions,
+        ...scopedQueryOptions(
+          queryScope,
+          consistencyQueryKey(route, props?.params, factoryProps.host),
+          { topics: deriveTopicsFromPath(route), ...(userMeta ?? {}) },
+        ),
       });
     },
     create: (props?: {

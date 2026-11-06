@@ -38,7 +38,7 @@ export function SourceProvider({
         title: "Products",
         content: "",
         description:
-          "Describe the products, their customers, value and current availability.",
+          "Опишите продукты, их клиентов, ценность и текущую доступность.",
       },
   );
   const [fileIds, setFileIds] = useState(initialFileIds);
@@ -68,6 +68,6 @@ export function SourceProvider({
 }
 export function useSource() {
   const context = useContext(SourceContext);
-  if (!context) throw new Error("AI Chat Source requires SourceProvider.");
+  if (!context) throw new Error("AI Chat Source требует SourceProvider.");
   return context;
 }

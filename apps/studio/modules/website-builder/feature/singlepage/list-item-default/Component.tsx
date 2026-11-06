@@ -1,4 +1,8 @@
-import type { IComponentProps, FeatureListItemDefaultProps } from "./interface";
+import {
+  type IComponentProps,
+  type FeatureListItemDefaultProps,
+  type ModuleIcon,
+} from "./interface";
 export type { FeatureListItemDefaultProps } from "./interface";
 import { Component as SharedIcon } from "../../../../shared/icon";
 import { forwardRef, type SVGProps } from "react";
@@ -70,5 +74,3 @@ export const defaultFeatureListItemDefaultProps = {
   label: "Modular architecture",
   className: "",
 };
-
-import type { ModuleIcon } from "./interface";

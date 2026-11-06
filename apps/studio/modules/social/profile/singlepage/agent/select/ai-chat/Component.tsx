@@ -51,12 +51,12 @@ export function Component({
       data-model="profile"
       data-variant={variant}
     >
-      <legend className={kit.label}>Agent</legend>
+      <legend className={kit.label}>Помощник</legend>
       <div className="flex items-center gap-2">
         <div className="min-w-0 flex-1">
           <Select
-            aria-label="Thread agent"
-            placeholder="Select an agent"
+            aria-label="Помощник в обсуждении"
+            placeholder="Выберите помощника"
             value={agentId}
             onValueChange={(value) => {
               setAgentId(value);
@@ -72,7 +72,7 @@ export function Component({
       <p className="text-xs leading-5 text-muted-foreground">
         {agentId
           ? knowledgeAgent.description
-          : "Choose the agent for this conversation."}
+          : "Выберите помощника для этого обсуждения."}
       </p>
       <AgentProfile agent={profile} onClose={() => setProfile(null)} />
     </fieldset>

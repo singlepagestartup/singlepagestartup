@@ -17,7 +17,7 @@ export function Component({
       href={file.fileUrl}
       target="_blank"
       rel="noreferrer"
-      aria-label={`Open ${file.name}`}
+      aria-label={`Открыть ${file.name}`}
       data-module="file-storage"
       data-model="file"
       data-variant={variant}

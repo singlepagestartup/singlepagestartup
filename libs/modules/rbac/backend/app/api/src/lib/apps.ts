@@ -1,3 +1,4 @@
+import { app as widgetsToEcommerceModuleWidgets } from "@sps/rbac/relations/widgets-to-ecommerce-module-widgets/backend/app/api";
 import { app as widgetsToCrmModuleWidgets } from "@sps/rbac/relations/widgets-to-crm-module-widgets/backend/app/api";
 import { app as widgetsToWebsiteBuilderModuleWidgets } from "@sps/rbac/relations/widgets-to-website-builder-module-widgets/backend/app/api";
 import { app as subjectsToEcommerceModuleProducts } from "@sps/rbac/relations/subjects-to-ecommerce-module-products/backend/app/api";
@@ -20,6 +21,8 @@ import { app as rolesToEcommerceModuleProductsApp } from "@sps/rbac/relations/ro
 import { app as subjectsToBillingModuleCurrenciesApp } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/app/api";
 import { app as permissionsToBillingModuleCurrenciesApp } from "@sps/rbac/relations/permissions-to-billing-module-currencies/backend/app/api";
 import { DefaultApp } from "@sps/shared-backend-api";
+import type { Controller as SubjectController } from "@sps/rbac/models/subject/backend/app/api/src/lib/controller/singlepage";
+import type { Controller as SubjectRoleController } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/controller/singlepage";
 
 export class Apps {
   apps: { type: "model" | "relation"; route: string; app: DefaultApp<any> }[] =
@@ -29,7 +32,21 @@ export class Apps {
     this.bindApps();
   }
 
+  configure() {
+    const revocation = (
+      subject.controller as SubjectController
+    ).configureRoleRevocation();
+    (subjectsToRoles.controller as SubjectRoleController).configureRevocation(
+      revocation,
+    );
+  }
+
   bindApps() {
+    this.apps.push({
+      type: "relation",
+      route: "/widgets-to-ecommerce-module-widgets",
+      app: widgetsToEcommerceModuleWidgets,
+    });
     this.apps.push({
       type: "relation",
       route: "/widgets-to-crm-module-widgets",

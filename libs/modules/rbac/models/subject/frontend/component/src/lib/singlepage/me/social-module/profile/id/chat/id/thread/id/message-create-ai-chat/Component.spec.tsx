@@ -45,6 +45,7 @@ it("accumulates file selections, removes files, reorders with arrows and draggin
   send.mockResolvedValue({ id: "sent" });
   render(
     <Component
+      language="en"
       {...({
         data: { id: "subject" },
         project: {
@@ -97,6 +98,7 @@ it("sends file-only messages with Ctrl Enter and retains attachments when sendin
   send.mockRejectedValue(new Error("Upload failed"));
   render(
     <Component
+      language="en"
       {...({
         data: { id: "subject" },
         project: {
@@ -129,6 +131,7 @@ it("keeps project Knowledge search for ordinary conversations without showing do
   send.mockResolvedValue({ id: "message" });
   render(
     <Component
+      language="en"
       {...({
         data: { id: "subject" },
         project: {
@@ -163,6 +166,7 @@ it("sends through the requester profile and preserves the selected Knowledge con
   send.mockResolvedValue({ id: "message" });
   render(
     <Component
+      language="en"
       {...({
         isServer: false,
         variant:
@@ -219,6 +223,7 @@ it("falls back to the whole document when a selected Source is not connected to 
   send.mockResolvedValue({ id: "message" });
   render(
     <Component
+      language="en"
       {...({
         data: { id: "subject" },
         project: {
@@ -262,6 +267,7 @@ it("rejects new SVG attachments without replacing earlier supported files", asyn
   send.mockResolvedValue({ id: "sent" });
   render(
     <Component
+      language="en"
       {...({
         data: { id: "subject" },
         project: {
@@ -290,8 +296,11 @@ it("rejects new SVG attachments without replacing earlier supported files", asyn
     "Attach files to message",
   ) as HTMLInputElement;
   expect(input.accept).not.toContain(".svg");
+  expect(input.accept).toContain(".html");
   const first = new File(["data"], "first.png", { type: "image/png" });
-  const second = new File(["data"], "second.jpg", { type: "image/jpeg" });
+  const second = new File(["<p>preview</p>"], "second.html", {
+    type: "text/html",
+  });
   fireEvent.change(input, { target: { files: [first] } });
   fireEvent.change(input, {
     target: {
@@ -313,6 +322,7 @@ it("previews staged Markdown and PDF locally without submitting, then keeps remo
   URL.revokeObjectURL = jest.fn();
   const { unmount } = render(
     <Component
+      language="en"
       {...({
         data: { id: "subject" },
         project: {
@@ -341,7 +351,13 @@ it("previews staged Markdown and PDF locally without submitting, then keeps remo
     unobserve() {}
   };
   fireEvent.change(screen.getByLabelText("Attach files to message"), {
-    target: { files: [markdown, pdf] },
+    target: {
+      files: [
+        markdown,
+        pdf,
+        new File(["<h1>Demo</h1>"], "Demo.html", { type: "text/html" }),
+      ],
+    },
   });
   const message = screen.getByRole("textbox", { name: "Message" });
   fireEvent.change(message, { target: { value: "Unsent message" } });
@@ -357,6 +373,11 @@ it("previews staged Markdown and PDF locally without submitting, then keeps remo
   fireEvent.click(screen.getByRole("button", { name: "Source", exact: true }));
   expect(screen.getByText(/# Local notes/).tagName).toBe("PRE");
   fireEvent.click(screen.getByRole("button", { name: "Close", exact: true }));
+  fireEvent.click(screen.getByRole("button", { name: "Preview Demo.html" }));
+  const frame = await screen.findByTitle("HTML preview");
+  expect(frame.getAttribute("sandbox")).toBe("allow-scripts");
+  expect(screen.queryByRole("link", { name: "Open original" })).toBeNull();
+  fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
   fireEvent.click(screen.getByRole("button", { name: "Preview Guide.pdf" }));
   await waitFor(() => expect(screen.getByText("Page 1 of 1")).toBeTruthy());
   fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
@@ -365,5 +386,5 @@ it("previews staged Markdown and PDF locally without submitting, then keeps remo
   expect((message as HTMLTextAreaElement).value).toBe("Unsent message");
   expect(send).not.toHaveBeenCalled();
   unmount();
-  expect(URL.revokeObjectURL).toHaveBeenCalledTimes(2);
+  expect(URL.createObjectURL).not.toHaveBeenCalled();
 });

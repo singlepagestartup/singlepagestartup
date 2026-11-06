@@ -8,9 +8,8 @@ import { defaultRbacProfiles, type RbacAccountProfile } from "../../../shared";
 
 export const defaultSubjectMeSocialModuleProfileFindInformationProps: SubjectMeSocialModuleProfileFindInformationProps =
   {
-    title: "Profile",
-    description:
-      "Edit the name, headline and information on your public profile.",
+    title: "Профиль",
+    description: "Измените имя, заголовок и описание публичного профиля.",
     profiles: defaultRbacProfiles,
   };
 
@@ -48,7 +47,7 @@ export function SubjectMeSocialModuleProfileFindInformation(
         <div className="rounded-2xl border border-border bg-card p-6">
           <h2 className="text-xl font-semibold">{title}</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            No public profile is connected.
+            Публичный профиль пока не подключён.
           </p>
         </div>
       )}

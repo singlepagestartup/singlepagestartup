@@ -15,6 +15,14 @@ for await (const file of new Bun.Glob(
   if (!module.Table) continue;
   const config = getTableConfig(module.Table);
   const entityRoot = file.split("/backend/")[0];
+  if (entityRoot.includes("/models/") && config.foreignKeys.length) {
+    const target = getTableConfig(
+      config.foreignKeys[0].reference().foreignTable,
+    );
+    throw new Error(
+      `${file}: move the foreign key from ${config.name} to ${target.name} into a relation`,
+    );
+  }
   const sdk = await import(resolve(root, entityRoot, "sdk/model/index.ts"));
   const topic = String(sdk.route)
     .replace(/^\/api\//, "")

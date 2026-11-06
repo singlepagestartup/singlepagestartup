@@ -1,723 +1,950 @@
 "use client";
-import { cn } from "@sps/shared-frontend-client-utils";
-import type {
-  IChatPreviewProps,
-  IThreadRowProps,
-  IAttachedDocument,
-  IThreadMessage,
-  ITopic,
-  TView,
-} from "./interface";
-import { Icon } from "@sps/ui-adapter";
-
 import {
   memo,
   useCallback,
-  useEffect,
   useId,
   useRef,
   useState,
   type FormEvent,
 } from "react";
+import Markdown from "markdown-to-jsx";
+import { Download, Menu, Upload } from "lucide-react";
 import {
-  AI_CHAT_WEBSITE_CONTENT as defaultContent,
-  type IAIChatWebsiteContent,
-} from "@sps/shared-utils";
-/** Artifact-derived local prototype: prepared files and scripted replies, no AI calls. */
-export function Component({
-  content = defaultContent,
-  className,
-}: IChatPreviewProps) {
-  const id = useId();
-  const label = content.labels;
-  const sequence = useRef(0);
-  const editor = useRef<HTMLTextAreaElement>(null);
-  const [stage, setStage] = useState(0);
-  const [view, setView] = useState<TView>("materials");
-  const [answer, setAnswer] = useState("");
-  const [submittedAnswer, setSubmittedAnswer] = useState("");
-  const [selected, setSelected] = useState("Products");
-  const [drafts, setDrafts] = useState<Record<string, string>>(() =>
-    Object.fromEntries(
-      content.demoDocuments.items.map(({ title, text }) => [title, text]),
-    ),
+  ChatWorkspace,
+  ChatThreadPanel,
+  FilePreview,
+  Icon,
+} from "@sps/ui-adapter";
+import { cn } from "@sps/shared-frontend-client-utils";
+import { internationalization } from "@sps/shared-configuration";
+import { Component as FileStorageModuleFile } from "@sps/file-storage/models/file/frontend/component";
+import type {
+  IChatPreviewProps,
+  IDemoAttachment,
+  IDemoFileProps,
+  IDemoMessage,
+  IDemoMessageProps,
+  IDemoTopic,
+  IDemoNavigationProps,
+  IDemoDocumentState,
+} from "./interface";
+
+const focus =
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
+const button = `inline-flex min-h-10 items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold ${focus}`;
+
+const DemoFile = memo(function DemoFile({
+  attachment,
+  language,
+}: IDemoFileProps) {
+  const [file] = useState(
+    () =>
+      attachment.file ??
+      (attachment.record
+        ? undefined
+        : new File([attachment.text ?? ""], attachment.name, {
+            type: "text/plain",
+          })),
   );
-  const [threads, setThreads] = useState<Record<string, IThreadMessage[]>>(() =>
-    Object.fromEntries(
-      content.demoThreadPrompts.items.map(({ title, text }) => [
-        title,
-        [{ id: `${title}-intro`, role: "assistant", text }],
-      ]),
-    ),
-  );
-  const [threadInputs, setThreadInputs] = useState<Record<string, string>>(() =>
-    Object.fromEntries(
-      content.demoThreadInputs.items.map(({ title, text }) => [title, text]),
-    ),
-  );
-  const [topics, setTopics] = useState<ITopic[]>([]);
-  const [selectedTopic, setSelectedTopic] = useState("");
-  const [topicInputs, setTopicInputs] = useState<Record<string, string>>({});
-  const [topicTitle, setTopicTitle] = useState(label["demo-topic-title"]);
-  const [attachments, setAttachments] = useState<string[]>([]);
-  const activeTopic = topics.find((topic) => topic.id === selectedTopic);
-  const needsAnswer = selected === "Products" && !submittedAnswer;
-  const messages =
-    view === "topic"
-      ? (activeTopic?.messages ?? [])
-      : (threads[selected] ?? []);
-  const heading =
-    view === "document"
-      ? `${selected}.md`
-      : view === "topic"
-        ? activeTopic?.title
-        : view === "workspace"
-          ? label["demo-workspace"]
-          : view === "files"
-            ? label["demo-files"]
-            : label["demo-materials-thread"];
-  const selectDocument = useCallback((name: string) => {
-    setSelected(name);
-    setView("document");
-    setStage(2);
-  }, []);
-  const selectTopic = useCallback((name: string) => {
-    setSelectedTopic(name);
-    setView("topic");
-    setStage(3);
-  }, []);
-  useEffect(() => {
-    if (view === "document" && !needsAnswer) editor.current?.focus();
-  }, [view, selected, needsAnswer]);
-  function message(
-    role: IThreadMessage["role"],
-    text: string,
-    documents?: IAttachedDocument[],
-  ): IThreadMessage {
-    return { id: `message-${sequence.current++}`, role, text, documents };
-  }
-  function reset() {
-    setStage(0);
-    setView("materials");
-    setAnswer("");
-    setSubmittedAnswer("");
-    setSelected("Products");
-    setDrafts(
-      Object.fromEntries(
-        content.demoDocuments.items.map(({ title, text }) => [title, text]),
-      ),
-    );
-    setThreads(
-      Object.fromEntries(
-        content.demoThreadPrompts.items.map(({ title, text }) => [
-          title,
-          [{ id: `${title}-intro`, role: "assistant", text }],
-        ]),
-      ),
-    );
-    setThreadInputs(
-      Object.fromEntries(
-        content.demoThreadInputs.items.map(({ title, text }) => [title, text]),
-      ),
-    );
-    setTopics([]);
-    setSelectedTopic("");
-    setTopicInputs({});
-    setAttachments([]);
-    setTopicTitle(label["demo-topic-title"]);
-  }
-  function checkMaterials() {
-    setAnswer(label["demo-answer-value"]);
-    setStage(1);
-    setView("materials");
-  }
-  function answerQuestion(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const reply = answer.trim();
-    if (!reply) return;
-    const audience = reply.replace(/[.!?]+$/, "");
-    const draft = content.demoReadyDocument.items
-      .map(
-        ({ title, text }) =>
-          `${title}: ${text.replaceAll("{audience}", audience)}`,
-      )
-      .join("\n\n");
-    setSubmittedAnswer(reply);
-    setDrafts((current) => ({ ...current, Products: draft }));
-    const response = [
-      message("user", reply),
-      message("assistant", content.demoConversation.items[2]?.text ?? ""),
-    ];
-    setThreads((current) => ({
-      ...current,
-      Products: [...(current.Products ?? []), ...response],
-    }));
-    setSelected("Products");
-    setView("document");
-    setStage(2);
-  }
-  function editDocument(value: string) {
-    setDrafts((current) => ({ ...current, [selected]: value }));
-    setStage(2);
-  }
-  function sendDocumentMessage(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const text = threadInputs[selected]?.trim();
-    if (!text || needsAnswer) return;
-    const response = [
-      message("user", text),
-      message(
-        "assistant",
-        label["demo-thread-reply"].replace("{document}", `${selected}.md`),
-      ),
-    ];
-    setThreads((current) => ({
-      ...current,
-      [selected]: [...(current[selected] ?? []), ...response],
-    }));
-    setDrafts((current) => ({
-      ...current,
-      [selected]: `${current[selected] ?? ""}\n\n${label["demo-working-note"]}: ${text}`,
-    }));
-    setThreadInputs((current) => ({ ...current, [selected]: "" }));
-    setStage(2);
-    editor.current?.focus();
-  }
-  function openWorkspace() {
-    setAttachments(
-      content.demoDocuments.items.map((document) => document.title),
-    );
-    setTopicTitle(label["demo-topic-title"]);
-    setView("workspace");
-    setStage(3);
-  }
-  function topicReply(names: string[]): IThreadMessage {
-    return message(
-      "assistant",
-      label["demo-topic-reply"],
-      names
-        .map((name) => ({ name, text: drafts[name] }))
-        .filter((document) => document.text),
-    );
-  }
-  function createTopic(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const title = topicTitle.trim();
-    if (!title) return;
-    const topicId = `topic-${sequence.current++}`;
-    const topic: ITopic = {
-      id: topicId,
-      title,
-      documents: [...attachments],
-      messages: [message("user", title), topicReply(attachments)],
-    };
-    setTopics((current) => [...current, topic]);
-    setTopicInputs((current) => ({
-      ...current,
-      [topicId]: label["demo-topic-message"],
-    }));
-    setSelectedTopic(topicId);
-    setView("topic");
-    setStage(3);
-  }
-  function sendTopicMessage(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const text = topicInputs[selectedTopic]?.trim();
-    if (!text || !activeTopic) return;
-    const response = [message("user", text), topicReply(activeTopic.documents)];
-    setTopics((current) =>
-      current.map((topic) =>
-        topic.id === selectedTopic
-          ? { ...topic, messages: [...topic.messages, ...response] }
-          : topic,
-      ),
-    );
-    setTopicInputs((current) => ({ ...current, [selectedTopic]: "" }));
-  }
-  function renderMessage(item: IThreadMessage) {
+  if (attachment.record)
     return (
-      <div
-        key={item.id}
-        className={
-          item.role === "user"
-            ? "ml-6 rounded-xl bg-card p-4"
-            : "flex items-start gap-3"
-        }
-      >
-        {item.role === "assistant" ? (
-          <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground">
-            <Icon name="robot" className="size-4" />
-          </span>
-        ) : null}
-        <div className="min-w-0 flex-1">
-          <p className="text-xs font-semibold">
-            {item.role === "user" ? label["demo-you"] : label["demo-agent"]}
-          </p>
-          <p className="mt-2 whitespace-pre-wrap text-sm leading-6">
-            {item.text}
-          </p>
-          {item.documents?.map((document) => (
-            <blockquote
-              key={document.name}
-              className="mt-3 border-l-2 border-primary pl-3"
-            >
-              <p className="text-xs font-semibold">{document.name}.md</p>
-              <p
-                className={`mt-2 whitespace-pre-wrap text-sm leading-6 ${muted}`}
-              >
-                {document.text}
-              </p>
-            </blockquote>
-          ))}
-        </div>
-      </div>
+      <FileStorageModuleFile
+        isServer={false}
+        variant="attachment-ai-chat"
+        dataSource="props"
+        data={attachment.record}
+        language={language}
+      />
     );
-  }
+  return (
+    <FilePreview
+      name={attachment.name}
+      localFile={file}
+      mimeType={file?.type}
+      language={language}
+      thumbnailClassName="h-16"
+    />
+  );
+});
+const Message = memo(function Message({
+  message,
+  language,
+}: IDemoMessageProps) {
+  const outgoing = message.role === "user";
   return (
     <div
-      className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm"
-      data-module="website-builder"
-      data-model="widget"
-      data-variant="landing-ai-chat-demo"
+      className={cn(
+        "flex min-w-0 items-start gap-3",
+        outgoing ? "justify-end pl-6" : "pr-4",
+      )}
     >
-      <ol
-        aria-label={content.workflow.title}
+      {!outgoing && (
+        <span
+          aria-hidden="true"
+          className="grid size-8 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground"
+        >
+          <Icon name="robot" size={20} />
+        </span>
+      )}
+      <div
         className={cn(
-          "grid grid-cols-2 border-b border-border bg-card md:grid-cols-4",
-          className,
+          "min-w-0 max-w-full text-sm leading-6",
+          outgoing ? "rounded-2xl rounded-br-sm bg-muted p-4" : "",
         )}
       >
-        {content.workflow.items.map((item, index) => (
-          <li
-            key={item.title}
-            aria-current={stage === index ? "step" : undefined}
-            className={`flex items-center gap-2 border-b border-border px-3 py-4 text-xs md:border-b-0 md:px-5 ${stage === index ? "font-semibold" : muted}`}
-          >
-            <span
-              className={`grid size-6 shrink-0 place-items-center rounded-full ${stage >= index ? "bg-primary text-primary-foreground" : "bg-card"}`}
-            >
-              {stage > index ? (
-                <Icon name="check" className="size-3" />
-              ) : (
-                index + 1
-              )}
-            </span>
-            {item.title}
-          </li>
-        ))}
-      </ol>
-      <div className="grid min-w-0 md:grid-cols-[220px_minmax(0,1fr)]">
-        <aside className="min-w-0 bg-default p-5 text-default-foreground">
-          <div className="flex items-center gap-3">
-            <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-card/10">
-              <Icon name="folder-open" />
-            </span>
-            <p className="text-sm font-semibold">{content.demoDraft.title}</p>
-          </div>
-          <p className="mb-2 mt-6 text-xs font-semibold text-default-foreground/60">
-            {label["demo-document-threads"]}
+        {!outgoing && (
+          <p className="mb-1 text-[10px] font-semibold text-muted-foreground">
+            {language === "ru"
+              ? "Помощник по документам"
+              : "Document assistant"}
           </p>
-          <div className="grid grid-cols-2 gap-1 md:grid-cols-1">
-            {content.demoDocuments.items.map((document) => (
-              <ThreadRow
-                key={document.title}
-                name={document.title}
-                selected={view === "document" && selected === document.title}
-                disabled={stage === 0}
-                onSelect={selectDocument}
-              />
+        )}
+        <p className="whitespace-pre-wrap break-words">{message.text}</p>
+        {!!message.files?.length && (
+          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {message.files.map((file) => (
+              <DemoFile key={file.id} attachment={file} language={language} />
             ))}
           </div>
-          <button
-            type="button"
-            onClick={() => setView("files")}
-            aria-pressed={view === "files"}
-            className={`mt-4 inline-flex min-h-11 items-center gap-2 rounded-lg border border-default-foreground/20 px-3 text-sm ${focus}`}
-          >
-            <Icon name="paperclip" className="size-4" />
-            {label["demo-files"]}
-            <span className="text-default-foreground/60">
-              {content.demoFiles.items.length}
-            </span>
-          </button>
-          <div className="mt-6 border-t border-default-foreground/15 pt-4">
-            <p className="mb-2 text-xs font-semibold text-default-foreground/60">
-              {label["demo-workspace"]}
-            </p>
-            <button
-              type="button"
-              onClick={openWorkspace}
-              aria-pressed={view === "workspace"}
-              className={`mb-2 inline-flex min-h-11 w-full items-center gap-2 rounded-lg border border-default-foreground/20 px-3 text-left text-sm disabled:opacity-50 ${focus}`}
-            >
-              <Icon name="plus" className="size-4" />
-              {label["demo-new-topic"]}
-            </button>
-            {topics.map((topic) => (
-              <ThreadRow
-                key={topic.id}
-                name={topic.title}
-                value={topic.id}
-                topic
-                selected={view === "topic" && selectedTopic === topic.id}
-                onSelect={selectTopic}
-              />
-            ))}
-            {!topics.length ? (
-              <p className="mt-2 text-xs leading-5 text-default-foreground/60">
-                {label["demo-topic-hint"]}
-              </p>
-            ) : null}
-          </div>
-        </aside>
-        <section aria-label={heading} className="min-w-0">
-          <header className="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
-            <div className="min-w-0 flex-1">
-              <p className={`text-xs ${muted}`}>
-                {view === "document"
-                  ? label["demo-document-thread"]
-                  : view === "topic" || view === "workspace"
-                    ? label["demo-workspace"]
-                    : label["demo-chat"]}
-              </p>
-              <h3 className="mt-1 break-words text-sm font-semibold">
-                {heading}
-              </h3>
-            </div>
-            <button
-              type="button"
-              onClick={reset}
-              className={`min-h-10 shrink-0 rounded-lg px-2 text-xs underline underline-offset-4 ${muted} ${focus}`}
-            >
-              {label["demo-reset"]}
-            </button>
-          </header>
-          <div className="space-y-5 p-5 md:p-6">
-            {view === "materials" ? (
-              <>
-                <div className="ml-6 rounded-xl bg-card p-4">
-                  <p className="text-xs font-semibold">{label["demo-you"]}</p>
-                  <p className="mt-2 text-sm leading-6">
-                    {content.demoDraft.paragraphs[0]}
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {content.demoFiles.items.map((file) => (
-                      <span
-                        key={file.title}
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-2 py-1.5 text-xs"
-                      >
-                        <Icon
-                          name={
-                            file.title.endsWith(".jpg") ? "image" : "file-text"
-                          }
-                          className="size-3"
-                        />
-                        {file.title}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                {renderMessage({
-                  id: "materials-check",
-                  role: "assistant",
-                  text:
-                    content.demoConversation.items[stage === 0 ? 0 : 1]?.text ??
-                    "",
-                })}
-                {stage === 0 ? (
-                  <button
-                    type="button"
-                    onClick={checkMaterials}
-                    className={kit.button}
-                  >
-                    <Icon name="magnifying-glass" className="size-4" />
-                    {label["demo-check"]}
-                  </button>
-                ) : (
-                  <form onSubmit={answerQuestion} className="ml-11 grid gap-3">
-                    <label
-                      className="text-sm font-semibold"
-                      htmlFor={`${id}-answer`}
-                    >
-                      {label["demo-answer-label"]}
-                    </label>
-                    <input
-                      id={`${id}-answer`}
-                      value={answer}
-                      onChange={(event) => setAnswer(event.target.value)}
-                      placeholder={label["demo-answer-placeholder"]}
-                      className={field}
-                    />
-                    <button
-                      type="submit"
-                      disabled={!answer.trim()}
-                      className={`${kit.button} justify-self-start disabled:opacity-50`}
-                    >
-                      <Icon name="paper-plane-tilt" className="size-4" />
-                      {label["demo-answer"]}
-                    </button>
-                  </form>
-                )}
-              </>
-            ) : null}
-            {view === "files" ? (
-              <>
-                <dl className="space-y-4">
-                  {content.demoFiles.items.map((file) => (
-                    <div
-                      key={file.title}
-                      className="rounded-xl border border-border p-4"
-                    >
-                      <dt className="inline-flex items-center gap-2 text-sm font-semibold">
-                        <Icon name="file-text" className="size-4" />
-                        {file.title}
-                      </dt>
-                      <dd className={`mt-2 text-sm leading-6 ${muted}`}>
-                        {file.text}
-                      </dd>
-                    </div>
-                  ))}
-                </dl>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (stage === 0) checkMaterials();
-                    else setView(submittedAnswer ? "document" : "materials");
-                  }}
-                  className={kit.button}
-                >
-                  {stage === 0
-                    ? label["demo-check"]
-                    : label["demo-back-to-work"]}
-                  <Icon name="arrow-right" className="size-4" />
-                </button>
-              </>
-            ) : null}
-            {view === "document" ? (
-              <>
-                <p className={`text-sm leading-6 ${muted}`}>
-                  {label["demo-thread-intro"]}
-                </p>
-                <div className="space-y-4" aria-live="polite">
-                  {messages.map(renderMessage)}
-                </div>
-                {needsAnswer ? (
-                  <form onSubmit={answerQuestion} className="grid gap-3">
-                    <label
-                      htmlFor={`${id}-answer`}
-                      className="text-sm font-semibold"
-                    >
-                      {label["demo-answer-label"]}
-                    </label>
-                    <input
-                      id={`${id}-answer`}
-                      value={answer}
-                      onChange={(event) => setAnswer(event.target.value)}
-                      className={field}
-                    />
-                    <button
-                      type="submit"
-                      disabled={!answer.trim()}
-                      className={`${kit.button} justify-self-start disabled:opacity-50`}
-                    >
-                      {label["demo-answer"]}
-                      <Icon name="paper-plane-tilt" className="size-4" />
-                    </button>
-                  </form>
-                ) : (
-                  <>
-                    <div className="rounded-xl border border-border">
-                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-3">
-                        <label
-                          htmlFor={`${id}-document`}
-                          className="inline-flex items-center gap-2 text-sm font-semibold"
-                        >
-                          <Icon name="file-text" className="size-4" />
-                          {selected}.md
-                        </label>
-                      </div>
-                      <div className="p-4">
-                        <textarea
-                          ref={editor}
-                          id={`${id}-document`}
-                          aria-label={`${label["demo-editor"]}: ${selected}`}
-                          rows={6}
-                          value={drafts[selected] ?? ""}
-                          onChange={(event) => editDocument(event.target.value)}
-                          className={`${field} resize-y`}
-                        />
-                      </div>
-                    </div>
-                    <form onSubmit={sendDocumentMessage} className="grid gap-3">
-                      <label
-                        htmlFor={`${id}-message`}
-                        className="text-sm font-semibold"
-                      >
-                        {label["demo-thread-message"]}
-                      </label>
-                      <textarea
-                        id={`${id}-message`}
-                        aria-label={`${label["demo-thread-message"]}: ${selected}`}
-                        rows={2}
-                        value={threadInputs[selected] ?? ""}
-                        onChange={(event) => {
-                          const value = event.target.value;
-                          setThreadInputs((current) => ({
-                            ...current,
-                            [selected]: value,
-                          }));
-                        }}
-                        placeholder={label["demo-message-placeholder"]}
-                        className={`${field} resize-y`}
-                      />
-                      <button
-                        type="submit"
-                        disabled={!threadInputs[selected]?.trim()}
-                        className={`${kit.button} justify-self-start disabled:opacity-50`}
-                      >
-                        <Icon name="paper-plane-tilt" className="size-4" />
-                        {label["demo-send"]}
-                      </button>
-                    </form>
-                    <button
-                      type="button"
-                      onClick={openWorkspace}
-                      className={`${kit.button} border border-border !bg-card`}
-                    >
-                      <Icon name="plus" className="size-4" />
-                      {label["demo-open-workspace"]}
-                    </button>
-                  </>
-                )}
-              </>
-            ) : null}
-            {view === "workspace" ? (
-              <form onSubmit={createTopic} className="grid gap-5">
-                <p className={`text-sm leading-6 ${muted}`}>
-                  The thread uses the current knowledge of this profile.
-                </p>
-                <div className="grid gap-2">
-                  <label
-                    htmlFor={`${id}-topic-title`}
-                    className="text-sm font-semibold"
-                  >
-                    {label["demo-topic-title-label"]}
-                  </label>
-                  <input
-                    id={`${id}-topic-title`}
-                    value={topicTitle}
-                    onChange={(event) => setTopicTitle(event.target.value)}
-                    className={field}
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={!topicTitle.trim()}
-                  className={`${kit.button} justify-self-start disabled:opacity-50`}
-                >
-                  <Icon name="plus" className="size-4" />
-                  {label["demo-create-topic"]}
-                </button>
-              </form>
-            ) : null}
-            {view === "topic" && activeTopic ? (
-              <>
-                <div
-                  className="flex flex-wrap gap-2"
-                  aria-label={label["demo-topic-documents"]}
-                >
-                  {activeTopic.documents.map((name) => (
-                    <span
-                      key={name}
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs"
-                    >
-                      <Icon name="paperclip" className="size-3" />
-                      {name}.md
-                    </span>
-                  ))}
-                </div>
-                <div className="space-y-4" aria-live="polite">
-                  {messages.map(renderMessage)}
-                </div>
-                <form onSubmit={sendTopicMessage} className="grid gap-3">
-                  <label
-                    htmlFor={`${id}-topic-message`}
-                    className="text-sm font-semibold"
-                  >
-                    {label["demo-topic-message-label"]}
-                  </label>
-                  <textarea
-                    id={`${id}-topic-message`}
-                    rows={2}
-                    value={topicInputs[selectedTopic] ?? ""}
-                    onChange={(event) => {
-                      const value = event.target.value;
-                      setTopicInputs((current) => ({
-                        ...current,
-                        [selectedTopic]: value,
-                      }));
-                    }}
-                    className={`${field} resize-y`}
-                  />
-                  <button
-                    type="submit"
-                    disabled={!topicInputs[selectedTopic]?.trim()}
-                    className={`${kit.button} justify-self-start disabled:opacity-50`}
-                  >
-                    <Icon name="paper-plane-tilt" className="size-4" />
-                    {label["demo-send"]}
-                  </button>
-                </form>
-              </>
-            ) : null}
-          </div>
-        </section>
+        )}
       </div>
     </div>
   );
-}
-const focusPresentation =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
-const buttonBase =
-  "inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold transition motion-reduce:transition-none enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50";
-const field =
-  "w-full rounded-xl border border-border bg-card px-4 py-3 text-sm leading-6 outline-none focus-visible:ring-2 focus-visible:ring-foreground";
-const muted = "text-muted-foreground";
-const focus =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
-const kit = {
-  button: `${buttonBase} bg-primary text-primary-foreground enabled:hover:brightness-95 ${focusPresentation}`,
-};
-const ThreadRow = memo(function ThreadRow({
-  name,
-  value,
-  selected,
-  disabled,
-  status,
-  topic,
-  onSelect,
-}: IThreadRowProps) {
+});
+
+const DemoNavigation = memo(function DemoNavigation(
+  props: IDemoNavigationProps,
+) {
+  const id = useId();
+  const [open, setOpen] = useState(true);
+  const ru = props.language === "ru";
+  const navFocus =
+    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
   return (
-    <button
-      type="button"
-      disabled={disabled}
-      aria-pressed={selected}
-      onClick={() => onSelect(value ?? name)}
-      className={`flex min-h-12 w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm disabled:opacity-50 ${selected ? "bg-card/10" : "hover:bg-card/5"} ${focus}`}
-    >
-      <Icon
-        name={topic ? "chat-circle" : "file-text"}
-        className="size-4 shrink-0 text-default-foreground/60"
-      />
-      <span className="min-w-0 flex-1 break-words">
-        <span className="block font-semibold">{name}</span>
-        {status ? (
-          <span className="mt-0.5 block text-xs text-default-foreground/60">
-            {status}
-          </span>
-        ) : null}
-      </span>
-    </button>
+    <div>
+      <h3 className="mb-3 break-words text-lg font-semibold">
+        {props.projectTitle}
+      </h3>
+      <nav
+        aria-label={ru ? "Навигация по проекту" : "Project navigation"}
+        className="space-y-1"
+      >
+        {props.settings}
+        <div className="my-4 rounded-xl bg-black/20 p-1.5">
+          <button
+            type="button"
+            aria-label={
+              open
+                ? ru
+                  ? "Скрыть список документов"
+                  : "Hide documents"
+                : ru
+                  ? "Показать список документов"
+                  : "Show documents"
+            }
+            aria-expanded={open}
+            aria-controls={`${id}-documents`}
+            onClick={() => setOpen((current) => !current)}
+            className={`flex min-h-11 w-full items-center gap-2 rounded-lg bg-card/10 px-3 py-2 text-left text-sm font-semibold ${navFocus}`}
+          >
+            <Icon name="folder-open" size={20} />
+            <span className="flex-1">{ru ? "Документы" : "Documents"}</span>
+            <span className="text-xs text-default-foreground/60">
+              {props.documents.length}
+            </span>
+            <Icon
+              name="caret-down"
+              size={20}
+              className={open ? "rotate-180" : ""}
+            />
+          </button>
+          <div id={`${id}-documents`} hidden={!open} className="ml-3 mt-1">
+            {props.documents.map((document) => (
+              <button
+                key={document.key}
+                type="button"
+                aria-pressed={
+                  document.key === props.selectedDocumentKey &&
+                  !props.topicId &&
+                  !props.creating
+                }
+                onClick={() => props.onSelectDocument(document.key)}
+                className={`flex min-h-10 w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm text-default-foreground/80 hover:bg-card/10 ${document.key === props.selectedDocumentKey && !props.topicId && !props.creating ? "bg-card/10" : ""} ${navFocus}`}
+              >
+                <Icon name="file-text" size={20} />
+                <span className="min-w-0 truncate">{document.title}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </nav>
+      <section
+        aria-label={ru ? "Обсуждения проекта" : "Project discussions"}
+        className="mt-5 border-t border-default-foreground/10 pt-4"
+      >
+        <h4 className="mb-3 text-xs font-semibold text-default-foreground/60">
+          {ru ? "Обсуждения" : "Discussions"}
+        </h4>
+        {props.topics.map((topic) => (
+          <button
+            key={topic.id}
+            type="button"
+            aria-pressed={topic.id === props.topicId && !props.creating}
+            onClick={() => props.onSelectTopic(topic.id)}
+            className={`mb-1 flex min-h-10 w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm text-default-foreground/80 hover:bg-card/10 ${topic.id === props.topicId && !props.creating ? "bg-card/10" : ""} ${navFocus}`}
+          >
+            <Icon name="chat-circle" size={20} />
+            <span className="min-w-0 break-words">{topic.title}</span>
+          </button>
+        ))}
+        <button
+          type="button"
+          onClick={props.onCreateTopic}
+          className={`flex min-h-11 w-full items-center gap-2 rounded-xl border border-default-foreground/15 px-3 py-2 text-left text-sm text-default-foreground/80 hover:bg-card/10 ${props.creating ? "bg-card/15" : ""} ${navFocus}`}
+        >
+          <Icon name="plus" size={20} />
+          {ru ? "Новое обсуждение" : "New discussion"}
+        </button>
+      </section>
+    </div>
   );
 });
+
+/** A local workspace demonstration. It reads no account, creates no project and calls no AI. */
+export function Component({
+  projectTitle,
+  reply: preparedReply,
+  documents: initialDocuments,
+  settings,
+  handoff,
+  language = internationalization.defaultLanguage.code,
+  className,
+}: IChatPreviewProps) {
+  const ru = language === "ru";
+  const id = useId();
+  const sequence = useRef(0);
+  const upload = useRef<HTMLInputElement>(null);
+  const dragDepth = useRef(0);
+  const log = useRef<HTMLDivElement>(null);
+  const [navigationOpen, setNavigationOpen] = useState(false);
+  const [pane, setPane] = useState<"chat" | "document">("chat");
+  const [selectedDocumentKey, setSelectedDocumentKey] = useState<string>(
+    initialDocuments[0].key,
+  );
+  const [documents, setDocuments] = useState<IDemoDocumentState[]>(() =>
+    initialDocuments.map((copy): IDemoDocumentState => {
+      const key = copy.key;
+      return {
+        key,
+        title: copy.title,
+        text: copy.text,
+        savedText: copy.text,
+        sectionTitle: copy.section,
+        savedSectionTitle: copy.section,
+        saveStatus: "",
+        editing: true,
+        messages: [{ id: `intro-${key}`, role: "assistant", text: copy.intro }],
+        knowledgeFiles: copy.files.map((file, index) => ({
+          ...file,
+          id: `knowledge-${key}-${index}`,
+        })),
+      };
+    }),
+  );
+  const selectedDocument = documents.find(
+    (document) => document.key === selectedDocumentKey,
+  )!;
+  const {
+    text: document,
+    savedText: savedDocument,
+    sectionTitle,
+    savedSectionTitle,
+    saveStatus,
+    editing,
+    knowledgeFiles,
+  } = selectedDocument;
+  const updateDocument = useCallback(
+    (update: (document: IDemoDocumentState) => IDemoDocumentState) => {
+      setDocuments((current) =>
+        current.map((document) =>
+          document.key === selectedDocumentKey ? update(document) : document,
+        ),
+      );
+    },
+    [selectedDocumentKey],
+  );
+  const [sectionContext, setSectionContext] = useState("document");
+  const [topics, setTopics] = useState<IDemoTopic[]>([]);
+  const [topicId, setTopicId] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
+  const [topicTitle, setTopicTitle] = useState("");
+  const [input, setInput] = useState("");
+  const [files, setFiles] = useState<IDemoAttachment[]>([]);
+  const [fileError, setFileError] = useState("");
+  const [dropping, setDropping] = useState(false);
+  const [draggingFile, setDraggingFile] = useState<string | null>(null);
+  const [insertion, setInsertion] = useState<string | null>(null);
+  const activeTopic = topics.find((topic) => topic.id === topicId);
+  const currentMessages = activeTopic?.messages ?? selectedDocument.messages;
+  const heading = creating
+    ? ru
+      ? "Новое обсуждение"
+      : "New discussion"
+    : (activeTopic?.title ?? selectedDocument.title);
+  const addFiles = useCallback(
+    (incoming: FileList | File[]) => {
+      const selected = Array.from(incoming);
+      const allowed = selected.filter((file) => file.size <= 10 * 1024 * 1024);
+      setFileError(
+        allowed.length !== selected.length
+          ? ru
+            ? "Размер одного файла не должен превышать 10 МБ."
+            : "Each file must be 10 MB or smaller."
+          : "",
+      );
+      setFiles((current) => {
+        const added = allowed.map((file) => ({
+          id: `upload-${sequence.current++}`,
+          name: file.name,
+          file,
+        }));
+        return [
+          ...current,
+          ...added.filter(
+            (item) =>
+              !current.some(
+                (existing) =>
+                  existing.file?.name === item.file.name &&
+                  existing.file.size === item.file.size &&
+                  existing.file.lastModified === item.file.lastModified,
+              ),
+          ),
+        ];
+      });
+    },
+    [ru],
+  );
+  function send(event: FormEvent) {
+    event.preventDefault();
+    const text = input.trim();
+    if (!text && !files.length) return;
+    const sent: IDemoMessage = {
+      id: `message-${sequence.current++}`,
+      role: "user",
+      text:
+        sectionContext === "section" && !topicId
+          ? `${ru ? "Раздел" : "Section"} «${savedSectionTitle}»\n\n${text}`
+          : text,
+      files,
+    };
+    const reply: IDemoMessage = {
+      id: `message-${sequence.current++}`,
+      role: "assistant",
+      text: preparedReply,
+    };
+    if (activeTopic)
+      setTopics((current) =>
+        current.map((topic) =>
+          topic.id === activeTopic.id
+            ? { ...topic, messages: [...topic.messages, sent, reply] }
+            : topic,
+        ),
+      );
+    else
+      updateDocument((current) => ({
+        ...current,
+        messages: [...current.messages, sent, reply],
+      }));
+    setInput("");
+    setFiles([]);
+    requestAnimationFrame(() =>
+      log.current?.parentElement?.scrollTo({
+        top: log.current.parentElement.scrollHeight,
+        behavior: "smooth",
+      }),
+    );
+  }
+  function createTopic(event: FormEvent) {
+    event.preventDefault();
+    const title = topicTitle.trim();
+    if (!title) return;
+    const topic: IDemoTopic = {
+      id: `topic-${sequence.current++}`,
+      title,
+      messages: [
+        {
+          id: `intro-${sequence.current++}`,
+          role: "assistant",
+          text: ru
+            ? `В этом обсуждении можно использовать документ ${selectedDocument.title}.\n\n${savedDocument}`
+            : `You can use ${selectedDocument.title} in this discussion.\n\n${savedDocument}`,
+        },
+      ],
+    };
+    setTopics((current) => [...current, topic]);
+    setTopicId(topic.id);
+    setCreating(false);
+    setTopicTitle("");
+    setInput("");
+  }
+  function downloadDocument() {
+    const url = URL.createObjectURL(
+      new Blob([savedDocument], { type: "text/markdown;charset=utf-8" }),
+    );
+    const anchor = window.document.createElement("a");
+    anchor.href = url;
+    anchor.download = selectedDocument.title;
+    anchor.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  const selectDocument = useCallback((key: string) => {
+    setSelectedDocumentKey(key);
+    setFiles([]);
+    setFileError("");
+    setTopicId(null);
+    setCreating(false);
+    setInput("");
+    setSectionContext("document");
+    setPane("chat");
+    setNavigationOpen(false);
+  }, []);
+  const selectTopic = useCallback((id: string) => {
+    setTopicId(id);
+    setCreating(false);
+    setInput("");
+    setFiles([]);
+    setFileError("");
+    setSectionContext("document");
+    setNavigationOpen(false);
+  }, []);
+  const createDiscussion = useCallback(() => {
+    setCreating(true);
+    setInput("");
+    setFiles([]);
+    setFileError("");
+    setNavigationOpen(false);
+  }, []);
+  const navigationDocuments = documents.map(({ key, title }) => ({
+    key,
+    title,
+  }));
+  const navigation = (
+    <DemoNavigation
+      language={language}
+      projectTitle={projectTitle}
+      documents={navigationDocuments}
+      selectedDocumentKey={selectedDocumentKey}
+      topics={topics}
+      topicId={topicId}
+      creating={creating}
+      onSelectDocument={selectDocument}
+      onSelectTopic={selectTopic}
+      onCreateTopic={createDiscussion}
+      settings={settings}
+    />
+  );
+  return (
+    <div
+      className={cn("relative min-w-0 text-foreground", className)}
+      data-module="website-builder"
+      data-model="widget"
+      data-variant="landing-ai-chat-demo"
+      onDragEnter={(event) => {
+        if (Array.from(event.dataTransfer.types).includes("Files")) {
+          event.preventDefault();
+          dragDepth.current++;
+          setDropping(true);
+        }
+      }}
+      onDragOver={(event) => {
+        if (Array.from(event.dataTransfer.types).includes("Files")) {
+          event.preventDefault();
+          event.dataTransfer.dropEffect = "copy";
+        }
+      }}
+      onDragLeave={(event) => {
+        if (Array.from(event.dataTransfer.types).includes("Files")) {
+          dragDepth.current = Math.max(0, dragDepth.current - 1);
+          if (!dragDepth.current) setDropping(false);
+        }
+      }}
+      onDrop={(event) => {
+        if (event.dataTransfer.files.length) {
+          event.preventDefault();
+          addFiles(event.dataTransfer.files);
+        }
+        dragDepth.current = 0;
+        setDropping(false);
+      }}
+    >
+      <ChatWorkspace
+        navigation={navigation}
+        className="h-[min(760px,calc(100dvh-9rem))]"
+      >
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+          {navigationOpen && (
+            <nav
+              aria-label={ru ? "Меню проекта" : "Project menu"}
+              className="max-h-72 shrink-0 overflow-y-auto bg-default p-4 text-default-foreground lg:hidden"
+            >
+              {navigation}
+            </nav>
+          )}
+          <ChatThreadPanel
+            title={heading}
+            language={language}
+            isDocument={!topicId && !creating}
+            pane={pane}
+            onPaneChange={setPane}
+            navigation={
+              <button
+                type="button"
+                aria-label={ru ? "Меню проекта" : "Project menu"}
+                aria-expanded={navigationOpen}
+                onClick={() => setNavigationOpen((open) => !open)}
+                className={`flex size-11 items-center justify-center lg:hidden ${focus}`}
+              >
+                <Menu className="size-5" />
+              </button>
+            }
+            messages={
+              creating ? (
+                <form onSubmit={createTopic} className="space-y-4 p-6">
+                  <label
+                    htmlFor={`${id}-topic`}
+                    className="block text-sm font-semibold"
+                  >
+                    {ru ? "Название обсуждения" : "Discussion title"}
+                  </label>
+                  <input
+                    id={`${id}-topic`}
+                    value={topicTitle}
+                    onChange={(event) => setTopicTitle(event.target.value)}
+                    className={`min-h-11 w-full rounded-xl border border-border bg-background px-3 text-sm ${focus}`}
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    {ru
+                      ? `Обсуждение использует сохранённый текст ${selectedDocument.title} из примера.`
+                      : `This discussion uses the saved text of ${selectedDocument.title} from the example.`}
+                  </p>
+                  <button
+                    type="submit"
+                    disabled={!topicTitle.trim()}
+                    className={`${button} bg-primary text-primary-foreground disabled:opacity-50`}
+                  >
+                    {ru ? "Создать обсуждение" : "Create discussion"}
+                  </button>
+                </form>
+              ) : (
+                <div
+                  ref={log}
+                  role="log"
+                  aria-label={ru ? "Сообщения демонстрации" : "Demo messages"}
+                  aria-live="polite"
+                  className="space-y-5 p-4"
+                >
+                  {currentMessages.map((message) => (
+                    <Message
+                      key={message.id}
+                      message={message}
+                      language={language}
+                    />
+                  ))}
+                </div>
+              )
+            }
+            composer={
+              creating ? null : (
+                <form
+                  onSubmit={send}
+                  className="max-h-[75%] min-w-0 shrink-0 overflow-y-auto border-t border-border p-4"
+                >
+                  <div className="min-w-0 rounded-2xl border border-border bg-card p-3">
+                    {!!files.length && (
+                      <ul
+                        aria-label={
+                          ru ? "Вложения сообщения" : "Message attachments"
+                        }
+                        className="mb-3 grid max-h-36 grid-cols-3 gap-2 overflow-y-auto"
+                      >
+                        {files.map((file) => (
+                          <li
+                            key={file.id}
+                            draggable
+                            className="relative min-w-0 cursor-grab"
+                            onDragStart={(event) => {
+                              setDraggingFile(file.id);
+                              event.dataTransfer.setData("text/plain", file.id);
+                              event.dataTransfer.effectAllowed = "move";
+                            }}
+                            onDragEnd={() => {
+                              setDraggingFile(null);
+                              setInsertion(null);
+                            }}
+                            onDragOver={(event) => {
+                              if (draggingFile) {
+                                event.preventDefault();
+                                setInsertion(file.id);
+                              }
+                            }}
+                            onDrop={(event) => {
+                              if (!draggingFile) return;
+                              event.preventDefault();
+                              event.stopPropagation();
+                              setFiles((current) => {
+                                const moved = current.find(
+                                  (item) => item.id === draggingFile,
+                                );
+                                if (!moved || moved.id === file.id)
+                                  return current;
+                                const rest = current.filter(
+                                  (item) => item.id !== moved.id,
+                                );
+                                rest.splice(
+                                  rest.findIndex((item) => item.id === file.id),
+                                  0,
+                                  moved,
+                                );
+                                return rest;
+                              });
+                              setDraggingFile(null);
+                              setInsertion(null);
+                            }}
+                          >
+                            {insertion === file.id &&
+                              draggingFile !== file.id && (
+                                <span
+                                  className="absolute inset-y-0 -left-1 w-1 rounded bg-primary"
+                                  aria-hidden="true"
+                                />
+                              )}
+                            <DemoFile attachment={file} language={language} />
+                            <button
+                              type="button"
+                              aria-label={
+                                ru
+                                  ? `Удалить ${file.name} из сообщения`
+                                  : `Remove ${file.name} from message`
+                              }
+                              onClick={() =>
+                                setFiles((current) =>
+                                  current.filter((item) => item.id !== file.id),
+                                )
+                              }
+                              className={`absolute right-1 top-1 grid size-7 place-items-center rounded-full bg-default text-default-foreground ${focus}`}
+                            >
+                              <Icon name="x" size={20} />
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    <label htmlFor={`${id}-message`} className="sr-only">
+                      {ru ? "Сообщение" : "Message"}
+                    </label>
+                    <textarea
+                      id={`${id}-message`}
+                      value={input}
+                      onChange={(event) => setInput(event.target.value)}
+                      placeholder={
+                        topicId
+                          ? ru
+                            ? "Какую задачу хотите обсудить?"
+                            : "What would you like to discuss?"
+                          : ru
+                            ? "Обсудите знания или предложите изменение."
+                            : "Discuss the document or suggest a change."
+                      }
+                      onKeyDown={(event) => {
+                        if (
+                          (event.metaKey || event.ctrlKey) &&
+                          event.key === "Enter" &&
+                          !event.nativeEvent.isComposing
+                        ) {
+                          event.preventDefault();
+                          event.currentTarget.form?.requestSubmit();
+                        }
+                      }}
+                      className={`h-32 min-h-24 max-h-[min(50dvh,480px)] w-full resize-y rounded-lg border-0 bg-transparent text-sm leading-6 outline-none ${focus}`}
+                    />
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                      <button
+                        type="button"
+                        onClick={() => upload.current?.click()}
+                        className={`inline-flex min-h-10 items-center gap-2 text-xs font-semibold text-muted-foreground ${focus}`}
+                      >
+                        <Icon name="paperclip" size={20} />
+                        {ru ? "Прикрепить файлы" : "Attach files"}
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={!input.trim() && !files.length}
+                        className={`${button} bg-primary text-primary-foreground disabled:opacity-50`}
+                      >
+                        <Icon name="paper-plane-tilt" size={20} />
+                        {ru ? "Отправить" : "Send"}
+                      </button>
+                    </div>
+                    <p className="mt-2 text-[10px] leading-5 text-muted-foreground">
+                      {ru
+                        ? "⌘ Enter / Ctrl Enter — отправить. Enter — новая строка."
+                        : "⌘ Enter / Ctrl Enter to send. Enter adds a new line."}
+                    </p>
+                  </div>
+                  {fileError && (
+                    <p role="alert" className="mt-2 text-xs text-destructive">
+                      {fileError}
+                    </p>
+                  )}
+                </form>
+              )
+            }
+            documentDownload={
+              <button
+                type="button"
+                aria-label={
+                  ru
+                    ? `Скачать ${selectedDocument.title}`
+                    : `Download ${selectedDocument.title}`
+                }
+                onClick={downloadDocument}
+                className={`${button} shrink-0 border border-border bg-card text-xs`}
+              >
+                <Download className="size-4" />
+                .md
+              </button>
+            }
+            knowledge={
+              <>
+                <article
+                  aria-label={
+                    ru
+                      ? `Знания документа ${selectedDocument.title}`
+                      : `Knowledge in ${selectedDocument.title}`
+                  }
+                  className="min-w-0 rounded-xl border border-border bg-card p-3"
+                >
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                    <input
+                      aria-label={
+                        ru
+                          ? "Название раздела знаний"
+                          : "Knowledge section title"
+                      }
+                      value={sectionTitle}
+                      maxLength={200}
+                      onChange={(event) => {
+                        const title = event.target.value;
+                        updateDocument((current) => ({
+                          ...current,
+                          sectionTitle: title,
+                          saveStatus: "",
+                        }));
+                      }}
+                      className={`min-h-10 min-w-0 flex-1 rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold ${focus}`}
+                    />
+                    <div
+                      role="group"
+                      aria-label={ru ? "Вид документа" : "Document view"}
+                      className="flex rounded-lg bg-muted p-1 text-xs font-semibold"
+                    >
+                      {[true, false].map((edit) => (
+                        <button
+                          key={String(edit)}
+                          type="button"
+                          aria-pressed={editing === edit}
+                          onClick={() =>
+                            updateDocument((current) => ({
+                              ...current,
+                              editing: edit,
+                            }))
+                          }
+                          className={`min-h-8 rounded-md px-2 ${editing === edit ? "bg-card" : "text-muted-foreground"} ${focus}`}
+                        >
+                          {edit
+                            ? ru
+                              ? "Редактор"
+                              : "Editor"
+                            : ru
+                              ? "Предпросмотр"
+                              : "Preview"}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  {editing ? (
+                    <>
+                      <label htmlFor={`${id}-editor`} className="sr-only">
+                        {ru ? "Текст документа" : "Document text"}
+                      </label>
+                      <textarea
+                        id={`${id}-editor`}
+                        value={document}
+                        onChange={(event) => {
+                          const text = event.target.value;
+                          updateDocument((current) => ({
+                            ...current,
+                            text,
+                            saveStatus: "",
+                          }));
+                        }}
+                        className={`min-h-44 w-full resize-y rounded-xl border border-border bg-card p-3 font-mono text-sm leading-6 text-muted-foreground ${focus}`}
+                      />
+                    </>
+                  ) : (
+                    <div className="prose prose-sm min-h-44 max-w-none break-words rounded-xl border border-border p-3 text-foreground">
+                      <Markdown
+                        options={{
+                          disableParsingRawHTML: true,
+                          overrides: {
+                            img: {
+                              component: () => (
+                                <span>{ru ? "[Изображение]" : "[Image]"}</span>
+                              ),
+                            },
+                            a: { component: "span" },
+                          },
+                        }}
+                      >
+                        {document}
+                      </Markdown>
+                    </div>
+                  )}
+                  <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSectionContext("section");
+                        setPane("chat");
+                        requestAnimationFrame(() =>
+                          window.document
+                            .getElementById(`${id}-message`)
+                            ?.focus(),
+                        );
+                      }}
+                      className={`flex min-h-10 items-center gap-2 text-xs font-semibold text-muted-foreground ${focus}`}
+                    >
+                      <Icon name="chat-circle" size={20} />
+                      {ru ? "Обсудить раздел" : "Discuss section"}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={
+                        !document.trim() ||
+                        !sectionTitle.trim() ||
+                        (document === savedDocument &&
+                          sectionTitle === savedSectionTitle)
+                      }
+                      onClick={() => {
+                        updateDocument((current) => ({
+                          ...current,
+                          savedText: current.text,
+                          savedSectionTitle: current.sectionTitle,
+                          saveStatus: ru
+                            ? "Знания сохранены в этом примере."
+                            : "Knowledge saved in this example.",
+                        }));
+                      }}
+                      className={`${button} bg-primary text-primary-foreground text-xs disabled:opacity-50`}
+                    >
+                      {ru ? "Сохранить знания" : "Save knowledge"}
+                    </button>
+                  </div>
+                  {saveStatus && (
+                    <p
+                      role="status"
+                      className="mt-2 text-xs text-muted-foreground"
+                    >
+                      {saveStatus}
+                    </p>
+                  )}
+                  <div className="mt-4 border-t border-border pt-3">
+                    <p className="text-xs text-muted-foreground">
+                      {ru ? "Файлы" : "Files"} · {knowledgeFiles.length}
+                    </p>
+                    <div className="mt-3 grid grid-cols-2 gap-2">
+                      {knowledgeFiles.map((file) => (
+                        <div key={file.id} className="relative min-w-0">
+                          <DemoFile attachment={file} language={language} />
+                          <button
+                            type="button"
+                            aria-label={
+                              ru
+                                ? `Удалить ${file.name} из знаний`
+                                : `Remove ${file.name} from knowledge`
+                            }
+                            onClick={() =>
+                              updateDocument((current) => ({
+                                ...current,
+                                knowledgeFiles: current.knowledgeFiles.filter(
+                                  (item) => item.id !== file.id,
+                                ),
+                              }))
+                            }
+                            className={`absolute right-1 top-1 grid size-7 place-items-center rounded-full bg-default text-default-foreground ${focus}`}
+                          >
+                            <Icon name="x" size={20} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <label
+                    className={`mt-4 flex min-h-10 cursor-pointer items-center gap-2 border-t border-border pt-3 text-xs font-semibold text-muted-foreground ${focus}`}
+                  >
+                    <Upload className="size-4" />
+                    {ru ? "Загрузить файлы" : "Upload files"}
+                    <input
+                      type="file"
+                      multiple
+                      className="sr-only"
+                      onChange={(event) => {
+                        const selected = Array.from(
+                          event.target.files ?? [],
+                        ).filter((file) => file.size <= 10 * 1024 * 1024);
+                        updateDocument((current) => ({
+                          ...current,
+                          knowledgeFiles: [
+                            ...current.knowledgeFiles,
+                            ...selected.map((file) => ({
+                              id: `knowledge-${sequence.current++}`,
+                              name: file.name,
+                              file,
+                            })),
+                          ],
+                        }));
+                        event.target.value = "";
+                      }}
+                    />
+                  </label>
+                </article>
+                {handoff}
+              </>
+            }
+          />
+        </div>
+      </ChatWorkspace>
+      <input
+        ref={upload}
+        type="file"
+        multiple
+        className="sr-only"
+        aria-label={ru ? "Файлы сообщения" : "Message files"}
+        onChange={(event) => {
+          if (event.target.files) addFiles(event.target.files);
+          event.target.value = "";
+        }}
+      />
+      {dropping && (
+        <div className="pointer-events-none absolute inset-0 z-30 grid place-items-center rounded-2xl border-2 border-dashed border-primary bg-primary/20">
+          <span className="rounded-xl border border-primary bg-card px-5 py-3 text-sm font-semibold shadow-sm">
+            {ru
+              ? "Перетащите файлы, чтобы прикрепить к сообщению"
+              : "Drop files to attach them to the message"}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}

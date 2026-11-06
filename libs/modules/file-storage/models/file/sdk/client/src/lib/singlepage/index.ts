@@ -1,4 +1,9 @@
 "use client";
+import {
+  action as content,
+  type IProps as IContentProps,
+  type IResult as IContentResult,
+} from "./content";
 
 import {
   IModel,
@@ -21,16 +26,19 @@ import {
 export { Provider, queryClient } from "@sps/shared-frontend-client-api";
 
 export type IProps = {
+  IContentProps: IContentProps;
   IPreviewTextProps: IPreviewTextProps;
   IDownloadProps: IDownloadProps;
 };
 
 export type IResult = {
+  IContentResult: IContentResult;
   IPreviewTextResult: IPreviewTextResult;
   IDownloadResult: IDownloadResult;
 };
 
 export const api = {
+  content,
   ...factory<IModel>({
     queryClient,
     route,

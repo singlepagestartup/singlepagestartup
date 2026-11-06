@@ -1,13 +1,22 @@
-import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { canonicalHeading } from "../workspace/headings";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  writeFileSync,
+} from "node:fs";
 import { createHash } from "node:crypto";
 import path from "node:path";
 import {
-  parseAIChatWebsite,
-  parseAIChatServicePage,
+  type IAIChatWebsiteContent,
+  type IAIChatServicePageContent,
   parseProjectDocumentDefinitions,
   parseProjectDocumentGuides,
   validateProjectDocumentGuides,
 } from "../../../apps/studio/workspace/utils/products/ai-chat-content";
+
+import { readOwnedContent } from "./read-owned-content";
 
 const root = path.resolve(import.meta.dir, "../../..");
 const source = path.join(
@@ -31,6 +40,17 @@ function publish(relative: string, data: string | Buffer) {
     )
       throw new Error(`AI Chat publication differs: ${relative}`);
   } else {
+    // Preserve existing formatting and avoid needless file watcher updates.
+    if (existsSync(destination)) {
+      const current = readFileSync(destination);
+      if (
+        relative.endsWith(".json")
+          ? JSON.stringify(JSON.parse(current.toString("utf8"))) ===
+            JSON.stringify(JSON.parse(String(data)))
+          : current.equals(Buffer.from(data))
+      )
+        return;
+    }
     mkdirSync(path.dirname(destination), { recursive: true });
     writeFileSync(destination, data);
   }
@@ -101,8 +121,8 @@ const copies = {
   tokens: "ecommerce/order/checkout/tokens/ai-chat",
 };
 const website = servicePaths(
-  parseAIChatWebsite(readFileSync(path.join(source, "page.md"), "utf8")),
-) as ReturnType<typeof parseAIChatWebsite>;
+  readOwnedContent<IAIChatWebsiteContent>(path.join(source, "Landing.tsx")),
+) as IAIChatWebsiteContent;
 publish(
   "apps/studio/workspace/utils/products/ai-chat-website.generated.json",
   JSON.stringify(website, null, 2) + "\n",
@@ -137,16 +157,17 @@ for (const [variant, copy] of Object.entries(landingCopies))
   );
 for (const [name, owner] of Object.entries(copies)) {
   const [module, entity, ...variant] = owner.split("/");
-  const text = readFileSync(path.join(source, `${name}.md`), "utf8");
-  const copy = parseAIChatServicePage(text);
+  const copy = readOwnedContent<IAIChatServicePageContent>(
+    path.join(source, `${name[0].toUpperCase()}${name.slice(1)}.tsx`),
+  );
   publish(
     `apps/studio/modules/${module}/${entity}/singlepage/${variant.join("/")}/content.json`,
     JSON.stringify(servicePaths(copy), null, 2) + "\n",
   );
 }
 const helpCopy = servicePaths(
-  parseAIChatServicePage(readFileSync(path.join(source, "help.md"), "utf8")),
-) as ReturnType<typeof parseAIChatServicePage>;
+  readOwnedContent<IAIChatServicePageContent>(path.join(source, "Help.tsx")),
+) as IAIChatServicePageContent;
 publish(
   "apps/studio/modules/crm/form/singlepage/support/ai-chat/content.json",
   JSON.stringify(
@@ -196,10 +217,10 @@ for (const [name, form] of Object.entries({
   register: "registration-form",
 })) {
   const copy = servicePaths(
-    parseAIChatServicePage(
-      readFileSync(path.join(source, `${name}.md`), "utf8"),
+    readOwnedContent<IAIChatServicePageContent>(
+      path.join(source, `${name[0].toUpperCase()}${name.slice(1)}.tsx`),
     ),
-  ) as ReturnType<typeof parseAIChatServicePage>;
+  ) as IAIChatServicePageContent;
   const labels = Object.fromEntries(
     Object.entries(copy.labels).filter(
       ([key]) => !/^(back-|photo-|secondary-photo-)/.test(key),
@@ -259,8 +280,8 @@ const guidePublication = Object.fromEntries(
     if (!guide.basis) throw new Error(`Missing methodological basis: ${id}`);
     const templateSource = `.agents/templates/${id === "products" ? "products.yaml" : `${id}.md`}`;
     const template = readFileSync(path.join(root, templateSource), "utf8");
-    const headings = [...template.matchAll(/^## (.+)$/gm)].map(
-      (match) => match[1],
+    const headings = [...template.matchAll(/^## (.+)$/gm)].map((match) =>
+      canonicalHeading(match[1]),
     );
     const fields = definitions[id].sections.map((section) => section.title);
     if (
@@ -302,15 +323,14 @@ publish(
   JSON.stringify(guidePublication, null, 2) + "\n",
 );
 const materials = readFileSync(path.join(source, "new-project.md"), "utf8");
+const disclosureStart = materials.search(
+  /^## (?:How your materials are processed and stored|Как обрабатываются и хранятся материалы)$/m,
+);
+if (disclosureStart < 0)
+  throw new Error("AI Chat materials processing disclosure is missing.");
 publish(
   "apps/studio/modules/website-builder/widget/singlepage/content/ai-chat/materials-processing/disclosure.json",
-  JSON.stringify(
-    materials.slice(
-      materials.indexOf("## How your materials are processed and stored"),
-    ),
-    null,
-    2,
-  ) + "\n",
+  JSON.stringify(materials.slice(disclosureStart), null, 2) + "\n",
 );
 console.log(
   check

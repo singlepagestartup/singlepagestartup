@@ -35,7 +35,7 @@ export class Middleware {
           );
         const token = authorization(c);
         if (!token) throw new Error("Validation error. No token");
-        const decoded = await verify(token, RBAC_JWT_SECRET);
+        const decoded = await verify(token, RBAC_JWT_SECRET, "HS256");
         if (decoded?.["subject"]?.["id"] !== subjectId)
           throw new Error(
             "Authorization error. Only identity owner can update identity.",

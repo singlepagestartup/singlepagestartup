@@ -1,4 +1,5 @@
 "use client";
+import { Component as WidgetsToEcommerceModuleWidgets } from "@sps/rbac/relations/widgets-to-ecommerce-module-widgets/frontend/component";
 import { Component as WidgetsToWebsiteBuilderModuleWidgets } from "@sps/rbac/relations/widgets-to-website-builder-module-widgets/frontend/component";
 import { Component as WidgetsToCrmModuleWidgets } from "@sps/rbac/relations/widgets-to-crm-module-widgets/frontend/component";
 
@@ -18,6 +19,23 @@ export function Component(props: IComponentProps) {
             variant="admin-v2-table"
             leftModelAdminFormLabel="RBAC Widget"
             rightModelAdminFormLabel="Website Builder Widget"
+            apiProps={{
+              params: {
+                filters: {
+                  and: [{ column: "widgetId", method: "eq", value: data.id }],
+                },
+              },
+            }}
+          />
+        ) : null
+      }
+      widgetsToEcommerceModuleWidgets={({ data }) =>
+        data ? (
+          <WidgetsToEcommerceModuleWidgets
+            isServer={false}
+            variant="admin-v2-table"
+            leftModelAdminFormLabel="RBAC Widget"
+            rightModelAdminFormLabel="Ecommerce Widget"
             apiProps={{
               params: {
                 filters: {

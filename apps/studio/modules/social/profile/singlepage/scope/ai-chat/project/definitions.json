@@ -5,27 +5,31 @@
     "sections": [
       {
         "title": "Project and products",
-        "prompt": "What is this project, which products belong to it, and what is outside its scope? Keep exact names, IDs, owners and current or intended availability."
+        "prompt": "Что это за проект, какие продукты ему принадлежат и что выходит за его границы? Сохраните точные имена, ID, владельцев и текущую или предполагаемую доступность."
       },
       {
         "title": "Customers and value",
-        "prompt": "Who uses, buys or benefits from the offer? Describe their situation, problem and the value currently delivered or intended."
+        "prompt": "Кто использует, покупает или получает пользу? Опишите ситуацию, проблему и текущую либо предполагаемую ценность."
+      },
+      {
+        "title": "Competitors",
+        "prompt": "Какие альтернативы уже знает владелец? Запишите ссылки и причины сравнения или укажите, что альтернативы ещё не найдены."
       },
       {
         "title": "Current state",
-        "prompt": "What exists or has been observed? Attribute supplied statements, tested work, results and assets; distinguish them from intentions."
+        "prompt": "Что существует или наблюдалось? Укажите происхождение утверждений, проверенных работ, результатов и ресурсов; отделите их от намерений."
       },
       {
         "title": "Business and resources",
-        "prompt": "What is known about channels, delivery, prices, revenue, funding, people, partners, costs and capacity? State units, sources and constraints."
+        "prompt": "Что известно о каналах, выполнении, ценах, выручке, финансировании, людях, партнёрах, расходах и возможностях? Укажите единицы, источники и ограничения."
       },
       {
         "title": "Goals and success",
-        "prompt": "What does the owner want to achieve, with which priorities, baseline, target and time horizon where supplied?"
+        "prompt": "Чего хочет достичь владелец? Укажите приоритеты, исходный уровень, цель и срок, если они заданы."
       },
       {
         "title": "Visual reference intake",
-        "prompt": "Record identity and references for interface and website, typography, photography, illustration and marketing creative. Attach exact files and record preferences, rights and review state."
+        "prompt": "Запишите айдентику и референсы интерфейса и сайта, типографики, фотографии, иллюстраций и креативов. Прикрепите точные файлы, предпочтения, права и состояние проверки."
       }
     ]
   },
@@ -35,23 +39,23 @@
     "sections": [
       {
         "title": "Strategic direction",
-        "prompt": "Describe the intended marketing system, positioning and durable trade-offs that fulfill the reviewed Brief."
+        "prompt": "Опишите маркетинговую систему, позиционирование и устойчивые компромиссы, выполняющие проверенный бриф."
       },
       {
         "title": "Audiences and product roles",
-        "prompt": "Which audiences and situations matter, what value does each confirmed product deliver, and what behavior should it support?"
+        "prompt": "Какие аудитории и ситуации приоритетны, какую ценность даёт каждый подтверждённый продукт и какое поведение поддерживает?"
       },
       {
         "title": "Growth system",
-        "prompt": "How do prioritized channels work together? Give each a role, audience, content or value, destination and growth mechanism."
+        "prompt": "Как работают вместе приоритетные каналы? Укажите для каждого роль, аудиторию, содержание или ценность, назначение перехода и механизм роста."
       },
       {
         "title": "Customer journey",
-        "prompt": "Describe discovery, useful value, purchase or adoption, continued use and recommendations from the customer's perspective."
+        "prompt": "Опишите знакомство, полезный результат, покупку или внедрение, продолжение работы и рекомендации с точки зрения клиента."
       },
       {
         "title": "Measurement and priorities",
-        "prompt": "Connect outcomes to observable signals and management decisions. State resource priorities and risks that could change the direction."
+        "prompt": "Свяжите результаты с наблюдаемыми сигналами и управленческими решениями. Укажите приоритеты ресурсов и риски изменения направления."
       }
     ]
   },
@@ -61,23 +65,23 @@
     "sections": [
       {
         "title": "Brand identity",
-        "prompt": "What are the exact public brand and product names, their relationship, naming rules and optional slogan?"
+        "prompt": "Каковы точные публичные имена бренда и продуктов, их связь, правила названий и необязательный слоган?"
       },
       {
         "title": "Intended perception",
-        "prompt": "What should the audience understand, trust and remember? Describe character, difference and impressions to avoid."
+        "prompt": "Что аудитория должна понять, чему доверять и что запомнить? Опишите характер, отличие и нежелательные впечатления."
       },
       {
         "title": "Meaning and message hierarchy",
-        "prompt": "Connect the audience's situation to the promise, supporting proof, objections and next action."
+        "prompt": "Свяжите ситуацию аудитории с обещанием, доказательствами, возражениями и следующим действием."
       },
       {
         "title": "Voice and language",
-        "prompt": "Define terminology, tone, sentence and evidence rules, with examples of suitable and unsuitable wording."
+        "prompt": "Определите термины, тон, правила предложений и доказательств; приведите подходящие и неподходящие формулировки."
       },
       {
         "title": "Consistency rules",
-        "prompt": "Which naming, promise, evidence, commercial and support rules must hold across products and channels?"
+        "prompt": "Какие правила названий, обещаний, доказательств, коммерческих условий и поддержки общие для продуктов и каналов?"
       }
     ]
   },
@@ -86,36 +90,32 @@
     "title": "Design",
     "sections": [
       {
-        "title": "Design intent",
-        "prompt": "Describe the reviewed visual preferences, brand character, reusable graphic language and do/do-not rules. Keep all five taste categories distinct."
+        "title": "Общие правила дизайна",
+        "prompt": "Опишите проверенные визуальные предпочтения, характер бренда, общую графику и правила допустимого. Сохраните различия пяти категорий вкуса."
       },
       {
         "title": "Identity application",
-        "prompt": "Describe how the approved name and identity assets appear in lockups and different contexts. Attach real sources."
+        "prompt": "Опишите применение согласованного имени и файлов айдентики в композициях и разных ситуациях. Прикрепите реальные источники."
       },
       {
         "title": "Visual system",
-        "prompt": "Define semantic colors, typography, weights, languages, licenses, fallbacks and their usage."
+        "prompt": "Определите семантические цвета, типографику, начертания, языки, лицензии, запасные шрифты и применение."
       },
       {
         "title": "Iconography",
-        "prompt": "Name the library, version, source and license, or the custom drawing method. Specify the family, states, labels and actual glyph examples."
+        "prompt": "Назовите библиотеку, версию, источник и лицензию либо метод рисования. Укажите семейство, состояния, подписи и настоящие примеры значков."
       },
       {
         "title": "Interface and product surfaces",
-        "prompt": "Define reusable layout, components, interaction states, accessibility and responsive principles. Product-specific pages belong to that product."
+        "prompt": "Определите общие макеты, компоненты, состояния взаимодействия, доступность и адаптивность. Страницы конкретного продукта принадлежат ему."
       },
       {
         "title": "Photography",
-        "prompt": "Define purpose, evidence limits, style prompt, production specification, example assets and the review gate. Preserve masters and prepare square deliveries separately."
+        "prompt": "Определите назначение, границы доказательств, стилевой промпт, спецификацию производства, примеры и условия проверки. Сохраняйте мастеры и отдельно готовьте квадратные версии."
       },
       {
         "title": "Illustration and diagrams",
-        "prompt": "Define purpose, evidence limits, style prompt, production specification, example assets and the review gate for illustrations and diagrams."
-      },
-      {
-        "title": "Outputs and provenance",
-        "prompt": "Identify actual supplied and generated assets, originals and deliveries, prompts, tools, rights, review and permitted use."
+        "prompt": "Определите назначение, границы доказательств, стилевой промпт, спецификацию производства, примеры и условия проверки иллюстраций и схем."
       }
     ]
   },
@@ -125,73 +125,61 @@
     "sections": [
       {
         "title": "Products",
-        "prompt": "List every confirmed product with a stable ID, name, summary and its own document. Retain drafts and products outside the current priority."
+        "prompt": "Перечислите подтверждённые продукты: постоянный ID, имя, краткое описание и собственный документ. Сохраните черновики и продукты вне текущего приоритета."
       }
     ]
   },
   "product": {
     "id": "product",
-    "title": "Product document",
+    "title": "Документ продукта",
     "sections": [
       {
-        "title": "Product identity",
-        "prompt": "State the brand, product name, category, lifecycle, owner and boundary."
+        "title": "Что это за продукт",
+        "prompt": "Категория, конкретная задача, выдаваемый результат и пример применения. Текущая стадия важна, если меняет доступность."
       },
       {
-        "title": "Customer Segments",
-        "prompt": "Distinguish user, buyer, payer, beneficiary and decision-maker. Give segments stable IDs, qualifying situations, triggers and exclusions."
+        "title": "Кому подходит",
+        "prompt": "Ситуации людей или организаций, ожидаемый результат и роли участника, покупателя и плательщика. ID сегментов сохраняются."
       },
       {
-        "title": "Problem and desired progress",
-        "prompt": "Describe the customer's circumstance, desired progress, functional, social and emotional forces, pains and gains."
+        "title": "Что входит",
+        "prompt": "Проверенный состав и возможности с пользой для клиента. Для программы — реальные модули и их связи; для услуги — состав работ и результат."
       },
       {
-        "title": "Value Propositions",
-        "prompt": "Compare actual alternatives, differentiated capabilities and the customer value they enable. Link the offer to jobs, pains and gains."
+        "title": "Как пользоваться",
+        "prompt": "Получение продукта, необходимые вводные, действия продукта и пользователя, результат и существенные настройки."
       },
       {
-        "title": "Offer and usage",
-        "prompt": "Define access or deliverable unit, included and excluded scope, experience, support, rights and dependencies."
+        "title": "Стоимость и условия",
+        "prompt": "Цена или расчёт, дополнительные расходы, условия получения и поддержки. Подробные денежные правила принадлежат экономике."
       },
       {
-        "title": "Revenue Streams",
-        "prompt": "For each segment state payer, unit, price or pricing rule, currency, cadence, payment timing and conditions. For a free offer record the intended non-cash exchange separately from money revenue."
+        "title": "Развитие продукта",
+        "prompt": "Существенные планы, помогающие понять продукт. Отделить их от доступных возможностей."
       },
       {
-        "title": "Key Activities",
-        "prompt": "Which work creates and delivers the value, and who owns it? Reference the Sales process without duplicating it."
+        "title": "Аудитория",
+        "prompt": "Ситуации, критерии, вероятные возражения с ответами и вывод об аудитории. Агент собирает доступные исследования и источники самостоятельно."
       },
       {
-        "title": "Key Resources",
-        "prompt": "Identify people, infrastructure, finance and intellectual resources, owners, availability and constraints. Record this product's share and allocation basis for shared resources."
+        "title": "Конкуренты",
+        "prompt": "Реальное сравнение альтернатив, цены, ограничения, сильные стороны и вывод о нашем месте среди них."
       },
       {
-        "title": "Key Partnerships",
-        "prompt": "Which suppliers and partners contribute, what do they do, and which dependencies or agreements have evidence?"
+        "title": "Семантика",
+        "prompt": "Поисковые фразы, параметры и результаты измерений, выдача, группы, назначение страниц и приоритет. Кандидаты отличать от измеренного спроса."
       },
       {
-        "title": "Cost Structure",
-        "prompt": "Describe fixed and variable costs, amount, currency, period and calculation basis. Separate cash from founder time and state shared allocations. Include Funding: capital or subsidy provider, conditions and limits, separately from customer revenue."
-      },
-      {
-        "title": "Assumptions and decision rules",
-        "prompt": "Give material assumptions stable IDs, sources and states, with signals and consequences for the affected decisions. Link the Research that tests them."
-      },
-      {
-        "title": "Business goals and metrics",
-        "prompt": "Connect acquisition, customer value, adoption, revenue and continued use to relevant business signals and management decisions. Give numerical targets a basis."
+        "title": "Экономика",
+        "prompt": "Выручка, действия, ресурсы, партнёры, затраты и финансирование. Общие расходы учитывать с основанием распределения."
       },
       {
         "title": "Sales",
-        "prompt": "Describe the complete customer process for each segment: discovery, evaluation, purchase or adoption, delivery, use, help and continued use. Reference the Product's money terms."
+        "prompt": "Путь каждого сегмента от знакомства до получения, использования и продолжения. У шага понятны действие клиента и ответ бизнеса."
       },
       {
         "title": "Promotion",
-        "prompt": "Describe this product's Website, Marketing Creative and Presentation where relevant, applying the reviewed Strategy, Brand and Design."
-      },
-      {
-        "title": "Analytics & Research",
-        "prompt": "Keep measured results, source and time window separate from research findings and hypotheses. Link findings to this Product's assumptions."
+        "prompt": "Сайт, презентация, рекламные креативы и статьи: конкретное содержание для аудитории с понятным следующим действием."
       }
     ]
   }

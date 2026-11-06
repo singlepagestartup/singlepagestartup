@@ -13,6 +13,7 @@ export function Component(props: IComponentPropsExtended) {
       widgetsToWebsiteBuilderModuleWidgets={
         props.widgetsToWebsiteBuilderModuleWidgets
       }
+      widgetsToEcommerceModuleWidgets={props.widgetsToEcommerceModuleWidgets}
       widgetsToCrmModuleWidgets={props.widgetsToCrmModuleWidgets}
     />
   );

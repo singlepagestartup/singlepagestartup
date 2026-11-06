@@ -13,6 +13,7 @@ export function Component(props: IComponentPropsExtended) {
 
   return (
     <ChildComponent
+      language={props.language}
       isServer={false}
       variant={props.variant}
       data={props.data}

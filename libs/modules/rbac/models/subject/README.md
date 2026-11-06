@@ -10,11 +10,72 @@ Subjects represent visitors, registered accounts and actors, and connect identit
 - Frontend variants such as `me-ecommerce-module-product-cart-default`, `me-ecommerce-module-product-checkout-default`, and `me-ecommerce-module-cart-default` are the supported entry points for host/cart behavior.
 - Dependency direction is one-way: `rbac > ecommerce`. RBAC may compose ecommerce SDK/components; ecommerce must not import RBAC subject implementation.
 
+### Current-Subject cart components
+
+The cart sheet, Product cart actions and Product checkout use the public variants
+`me-ecommerce-module-cart-default`, `me-ecommerce-module-product-cart-default`
+and `me-ecommerce-module-product-checkout-default`. Each has one view and two
+Subject sources: the default reader resolves `authenticationMe`; with
+`dataSource="props"`, `data` is required and the view uses that already-loaded
+Subject without another session read or Provider. An owning card or overview
+passes its live Subject through this mode. Cart reads and mutations still use
+the client Subject SDK and the API's JWT/ownership checks. Guest sessions are
+supported; a supplied Subject does not establish API authorization.
+
+Product views and actions live in their owning `me` variant directories. The
+former `ecommerce-module-product-cart-default` and
+`ecommerce-module-product-checkout-default` registrations are removed; owned
+compositions should select the corresponding `me` variant and pass
+`dataSource="props"` when they already own the current Subject.
+
+### Duplicate products in an open cart
+
+The Subject order-create route permits one open cart Order per Product for that
+Subject. An open cart has `type="cart"` and `status="new"`. Store and selected
+currency do not partition the cart. A repeat add returns HTTP 409 with
+`Conflict error. Product is already in the cart`; quantity changes use the
+existing Subject order-update route.
+
+`ecommerceModuleOrderCreate` uses the existing Subject repository's
+`withSubjectLock` transaction. The duplicate lookup, currency resolution and all
+Order graph writes run under the same PostgreSQL lock, including requests from
+different API processes. A relation failure rolls back the graph. The lookup
+narrows from Subject links to active cart Orders and then to their Product
+lines through the owning services. History and cancelled Orders do not block
+another purchase, and another Subject has an independent cart.
+
+The guard covers this Subject operation. Generic administrative writes retain
+their existing behavior, and existing duplicate carts require explicit data
+reconciliation; this change does not delete them.
+
+### Product pricing before cart creation
+
+The Subject order-create handler resolves a currency from the Product's price
+attribute links before opening its existing write transaction. A Product with no
+price currency or a requested currency outside that set returns 400 without
+creating an Order or its associations. The default billing currency wins when
+it is supported; otherwise the first supported currency is used.
+
+The current order-create form consumes the Product currency selector's
+`onCurrenciesResolved` callback. It stays disabled while loading and displays
+«Нет цены» / “No price” for an empty result, including empty intermediate
+relations. Switching Products resets the form's Product and currency inputs.
+Legacy unpriced cart rows remain removable; the cart shows a warning and blocks
+checkout without dropping the amounts of priced rows.
+
+Single-order total and quantity handlers reuse `ecommerceModuleOrderAssertAccess`
+and the registered ownership middleware. They check ownership before reading an
+Order; foreign and unknown IDs return the same 403. The existing HTTP cache
+configuration remains the one from main; retired route files are not restored.
+
 ### Current-Subject cart reads
 
 `GET /api/rbac/subjects/:id/ecommerce-module/orders?includeCartDetails=true`
 returns only that Subject's active cart orders, including `cartDetails.lines`
-(with Product records), `cartDetails.totals` and `cartDetails.storeIds`. Owner
+(with Product records), `cartDetails.totals`, `cartDetails.storeIds`,
+`cartDetails.availableCurrencyIds` and the saved
+`cartDetails.billingModuleCurrencyId`. Available currencies are the intersection
+of the current price currencies across all lines of each Order. Owner
 scope and active-cart restrictions are enforced even with caller filters.
 The projection runs in withConsistencySnapshot; the lower Ecommerce
 findByIdCartDetails capability owns line/product loading and amount calculation.
@@ -24,16 +85,31 @@ Product controls, quantity editing and the cart sheet use the Subject order-list
 render-reader with this parameter. Their matching SDK query is shared; they do
 not fetch personal Order or OrdersToProducts data through generic Ecommerce
 read endpoints. Public Product price/media readers remain Ecommerce operations.
-The cart sheet groups the server-calculated amounts by currency from the same
-projection as its rows; it makes no separate total request and hides checkout
-when the cart is empty. The extended response has its own query key; captured dependencies and the
+Each cart Order has a currency selector. Rows and the footer show only the
+selected currency amounts from the same server projection. A missing or obsolete
+selection blocks checkout until the customer chooses an available currency.
+Checkout is also disabled while a cart update or its list refresh is pending;
+email validation and API errors are shown inline. The sheet makes no separate
+total request and hides checkout when the cart is empty. The extended response has its own query key; captured dependencies and the
 legacy SDK topics retain cross-client invalidation after line, quantity or
-price changes. Mutable reads remain no-store at the Next boundary.
+price or selected-currency changes. Mutable reads remain no-store at the Next boundary.
 
 Cart routes use RequestSubjectIdOwner first. Order-ID routes additionally use
 RequestSubjectOwnsEcommerceModuleOrder. The owning Subject service verifies the
 Subject–Order link and, for quantity edits, every submitted Order–Product line.
 A caller's own Subject ID alone does not authorize changes to another order.
+
+### Changing a cart currency
+
+`PATCH /api/rbac/subjects/:id/ecommerce-module/orders/:orderId` accepts
+`{ "billingModule": { "currency": { "id": "<UUID>" } } }` as its `data` payload.
+Send currency and `ordersToProducts` quantity edits in separate requests. The
+Subject service checks ownership, locks the Order and requires an active
+`cart` with status `new`. Every line must currently offer the requested currency;
+Initial Free is excluded. Validation precedes writes in one transaction. The
+service creates a missing currency link or updates the existing link and removes
+legacy duplicates. It does not create a payment or invoice. Checkout continues
+to calculate against the saved Order currency and current Product prices.
 
 ## Authorization Layering
 
@@ -47,6 +123,19 @@ A caller's own Subject ID alone does not authorize changes to another order.
 - Domain-specific guards must live in the module middleware package and be exported from `backend/app/middlewares/src/index.ts`; do not define middleware bodies inside controllers.
 - For example, chat thread routes use `RequestSubjectOwnsSocialModuleChat` and `RequestSocialModuleThreadBelongsToChat`, which call `socialModuleChatLifecycleAssertSubjectOwnsChat` and `socialModuleChatLifecycleAssertThreadBelongsToChat`.
 - Handlers may keep the same assertions as a defense-in-depth check, but the access model must not depend on custom route exceptions inside the global authorization service.
+
+### Reading the current Subject
+
+`GET /api/rbac/subjects/:id` accepts a verified session JWT whose Subject ID
+matches the requested ID. This includes guest sessions without identities or
+roles. The controller registers `RequestSubjectReadAccess` before the existing
+find-by-id handler. A foreign Subject requires an explicit RBAC permission;
+the operator secret retains its existing access. Missing, expired and invalid
+session tokens cannot read a Subject.
+
+The exact UUID read delegates authorization to this controller guard. Subject
+collection, count and nested routes keep their existing access rules. The read
+bypasses HTTP response caches so a cached response cannot skip the guard.
 
 ### Social Thread Permission Routes
 
@@ -259,9 +348,15 @@ delete action is called.
 
 ### Subject Profile collection
 
-`GET /api/rbac/subjects/:id/social-module/profiles` returns the Subject's own Profiles and Profiles connected through its Chats, with caller filters applied within that scope.
+`GET /api/rbac/subjects/:id/social-module/profiles` returns only Profiles explicitly owned by that Subject. Caller filters apply within this scope; shared Chat membership does not grant ownership.
 
-`POST` at the same URL accepts `data.title` and `data.variant` (`default` or `artificial-intelligence`). Profile model defaults generate `slug` and `adminTitle`; caller values for those fields are not forwarded. The AI Chat form supplies `artificial-intelligence` and asks only for the project name. AI Profile creation also provisions its Chat, default Thread and Agent Subject using the existing bootstrap. The returned model is the created Profile.
+`POST` at the same URL creates an `artificial-intelligence` Profile from its title. The authenticated registration flow provisions the single personal Profile; callers cannot create another personal Profile through this endpoint. Model defaults generate `slug` and `adminTitle`; caller values for those fields are not forwarded. AI Profile creation also provisions its Chat, default Thread and Agent Subject through the existing bootstrap. The returned model is the created Profile.
+
+### Publishing an Article
+
+`POST /api/rbac/subjects/:id/blog-module/articles` requires the current Subject's JWT and a registered human Identity. Its strict JSON envelope contains `data.requestId`, localized `title` and TipTap-serialized `description`, optional localized `subtitle`, and an optional `categoryId`. The server chooses the caller's personal Social Profile and atomically creates Article, ownership, authorship and optional category links. A retry with the same request UUID and unchanged payload returns the same Article; a changed or foreign request conflicts. This operation publishes immediately.
+
+Public author URLs use `/authors/<Social Profile UUID>`. Social's `authors`, `authors/count` and `authors/:id` reads expose allowlisted author presentation and explicitly linked Articles/Products. They omit private Profile handles, Subject IDs and AI workspace data. Standard Profile reads follow RBAC Permissions: an exact public GET Permission can open one Profile without opening its collection or other IDs. No separate administrative Profile middleware overrides that decision. Account settings use the existing Subject scope. Authorized Chat reads carry current participant and historical sender/actor presentation, including avatars, within their Chat scope.
 
 ## Variants
 
@@ -295,8 +390,8 @@ delete action is called.
 - `identity-settings-default`: identity settings form.
 - `get-emails`: helper to fetch identity emails.
 - `crm-module-form-request-create`: create CRM form request.
-- `ecommerce-module-product-cart-default`: cart product actions for subject.
-- `ecommerce-module-product-checkout-default`: product checkout flow.
+- `me-ecommerce-module-product-cart-default`: current-Subject cart product actions.
+- `me-ecommerce-module-product-checkout-default`: current-Subject product checkout flow.
 - `ecommerce-module-order-create-default`: create order action.
 - `ecommerce-module-order-update-default`: update order action.
 - `ecommerce-module-order-delete-default`: delete order action.
@@ -371,6 +466,17 @@ The Subject-owned `metadata.aiChatDocument` contract has `key`, `profileId` and
 presentation variant or title cannot mark a conversation as a document. Each
 document displays only its listed Sources from the selected project Profile.
 Source attachment preserves the document key and other Thread metadata.
+
+The document Source list includes one development handoff for the whole saved
+document. It uses the same scoped, linked Sources and Thread filename as the
+Markdown export. Copying places instructions on the clipboard; the user reviews
+the text, saves any notes to include, exports the document and attaches it to a
+coding agent separately. Unsaved editor notes and unconfirmed chat proposals
+are excluded from the saved export. The action is disabled when the saved
+document has no effective text or its read is unavailable. Saved-record changes
+reset copy feedback and discard stale clipboard completions. The Framework
+link retains the current locale. Source editing, proposal confirmation and the
+download flow retain their existing owners and behavior.
 
 Ordinary Threads show messages and the composer across the workspace width.
 They have no Knowledge editor, export action or document context selector. The
@@ -522,9 +628,11 @@ permits startup specialization; controllers do not construct ProfileSkills.
 `ecommerceProductCheckout` creates the Product checkout graph and delegates to
 `ecommerceOrderCheckout`, which performs payment checkout and retains its
 compensation behavior. The Product HTTP handler and both order-renewal paths use
-the same public capability. Authentication bootstrap and the Telegram
-free-subscription flow also invoke it directly after selecting the configured
-zero-price Product. The public HTTP checkout retains its Subject JWT ownership
+the same public capability. Authentication and Telegram initial-Free grants use
+a separate direct-Service transaction for the zero-price graph and settlement.
+That operation grants 3000 credits once, rejects an ambient outer transaction
+and dispatches effects after its own commit. It does not invoke HTTP checkout
+or renew the Free allowance. The public HTTP checkout retains its Subject JWT ownership
 check. Proceed receives a deferred DI callback so resolving Subject and Proceed
 does not form a constructor cycle, and startup Subject methods remain effective.
 
@@ -577,15 +685,25 @@ Foreign records are `ecommerceModuleProduct`, `ecommerceModuleStore` and
 RBAC import. `me-navigation-controls-ai-chat` owns the session, project selector
 and account controls; it receives explicit Social IDs and `settingsSelected`.
 
+Public Product details also use the Subject registry:
+`ecommerce-module-product-category-default` and
+`ecommerce-module-product-profile-default` accept `ecommerceModuleProductId`
+and `language`. Categories use the ordinary filtered CategoriesToProducts and
+Category components. Profiles use Social's allowlisted `authorFind` SDK and
+public author bylines. These variants have no current-Subject read and support
+server rendering before session initialization. Product cards, overviews and
+RBAC Widgets select them through the public Subject component; they do not
+import private helpers from `me/.../card-default`.
+
 Current-Subject variants are grouped under `singlepage/me/` by module, model
 and operation. Public variant strings remain stable when folders move; callers
 use the public Subject registry.
 
 The `me-blog-module-article-private-content-default` variant accepts an explicit
 blogModuleArticle and language. Its client view owns the authorization wrapper
-and reads the Article's Website Builder associations through their component
-SDK. Blog Widgets receive the rendered operation through a typed slot; this
-Subject variant receives no routing map.
+and reads ordered content through the current-Subject content SDK. Blog Widgets
+receive the rendered operation through a typed slot; this Subject variant
+receives no routing map.
 
 ### Authorized Chat participants
 
@@ -623,3 +741,35 @@ target Profile in a Chat. An ordinary requester must participate; the existing
 administrative Chat scope may read without joining. The target Profile must
 still belong to that Chat and each Source must belong to the target Profile.
 Membership denial is a permission error, rather than an expired session.
+
+### Article widget access example
+
+The me-blog-module-article-private-content-default frontend variant checks the
+current client's permission for the article-widget relation before mounting its
+readers. Without permission it shows the subscription presentation. Authorized
+readers load the Article's relations through their ordinary SDK and render each
+saved variant, including private. This is a presentation example; ordinary
+resource APIs and managed files have no article-graph policy.
+
+Private article delivery through a dedicated Subject operation is outside this
+example. The previous graph, global content/byte guards and scoped content SDK
+have been removed. Generic RBAC and ownership guards remain in force.
+
+The operator-only maintenance operation
+`POST /api/rbac/subjects/:id/ecommerce-module/orders/:ecommerceModuleOrderId/subscription-period/freeze`
+uses SDK `ecommerceModuleOrderFreezeSubscriptionPeriod`. It accepts an expected
+stored update timestamp, verifies the exact owned Order and current complete
+Product Roles, and delegates period freezing to Ecommerce. Callers cannot
+supply arbitrary period timestamps.
+
+### Shared account menu and cart
+
+`me-account` resolves the current session and delegates its authenticated view to
+`me-account-ai-chat`, so public pages and AI Chat use the same profile, token
+balance and account actions. Its guest link uses `/ai-chat/sign-in`.
+
+The cart drawer uses compact Product rows and totals from the authorized
+`includeCartDetails` response. Quantity controls update one exact order line
+through the Subject SDK, then invalidate that Subject’s order collection.
+Pending state and failures remain within the changed line; payment links are
+shown only after checkout returns them.

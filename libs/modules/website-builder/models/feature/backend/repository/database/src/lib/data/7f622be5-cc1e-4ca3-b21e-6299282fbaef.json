@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "7f622be5-cc1e-4ca3-b21e-6299282fbaef",
+  "createdAt": "2026-10-26T00:11:43.323Z",
+  "updatedAt": "2026-10-27T14:59:41.612Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Expertise is visible before purchase",
+    "ru": "Опыт виден до покупки"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Add detailed text, images and example blocks. A profile relation shows a particular author's publications.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Добавляйте подробный текст, изображения и блоки с примерами. Связь с профилем показывает публикации конкретного автора.\"}]}]}"
+  },
+  "adminTitle": "Опыт виден до покупки",
+  "slug": "framework-reviewed-article-blog-introduction-feature-1"
+}

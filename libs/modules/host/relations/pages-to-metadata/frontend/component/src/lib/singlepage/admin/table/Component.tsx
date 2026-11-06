@@ -5,10 +5,10 @@ import { Component as ParentComponent } from "@sps/shared-frontend-components/si
 export function Component(props: IComponentPropsExtended) {
   return (
     <ParentComponent<IModel, typeof variant> {...props}>
-      {props.data.map((entity, index) => {
+      {props.data.map((entity) => {
         return (
           <AdminTableRow
-            key={index}
+            key={entity.id}
             module="host"
             name="pages-to-metadata"
             type="relation"

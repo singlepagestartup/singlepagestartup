@@ -19,52 +19,71 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     options: { maxBytes?: number; timeoutMs?: number } = {},
   ) {
     const maxBytes = options.maxBytes ?? 100 * 1024 * 1024;
-    if (!file.file) throw new Error("Stored file has no location.");
+    if (!file.file) {
+      throw new Error("Stored file has no location.");
+    }
     if (/^https?:\/\//i.test(file.file)) {
       const response = await fetch(file.file, {
         signal: AbortSignal.timeout(options.timeoutMs ?? 30000),
       });
-      if (!response.ok)
+      if (!response.ok) {
         throw new Error(`Stored file could not be read: ${response.status}`);
+      }
       if (Number(response.headers.get("content-length")) > maxBytes) {
         await response.body?.cancel();
-        throw new Error("Stored file exceeds the byte-read limit.");
+        throw new Error(
+          "Validation error. Stored file exceeds the byte-read limit.",
+        );
       }
-      if (!response.body) return Buffer.alloc(0);
+      if (!response.body) {
+        return Buffer.alloc(0);
+      }
       const reader = response.body.getReader();
       const chunks: Buffer[] = [];
       let size = 0;
       try {
-        for (;;) {
-          const part = await reader.read();
-          if (part.done) break;
+        let part = await reader.read();
+        while (!part.done) {
           size += part.value.byteLength;
-          if (size > maxBytes)
-            throw new Error("Stored file exceeds the byte-read limit.");
+          if (size > maxBytes) {
+            throw new Error(
+              "Validation error. Stored file exceeds the byte-read limit.",
+            );
+          }
           chunks.push(Buffer.from(part.value));
+          part = await reader.read();
         }
       } finally {
         await reader.cancel();
+        reader.releaseLock();
       }
       return Buffer.concat(chunks, size);
     }
     const relative = path.normalize(file.file.replace(/^\/+/, ""));
-    if (relative.startsWith(".."))
-      throw new Error("Invalid file-storage path.");
+    if (relative.startsWith("..")) {
+      throw new Error("Validation error. Invalid file-storage path.");
+    }
     for (const root of [
       path.join(process.cwd(), "public"),
       path.join(process.cwd(), "apps/api/public"),
     ]) {
       try {
         const location = path.join(root, relative);
-        if ((await fs.stat(location)).size > maxBytes)
-          throw new Error("Stored file exceeds the byte-read limit.");
+        if ((await fs.stat(location)).size > maxBytes) {
+          throw new Error(
+            "Validation error. Stored file exceeds the byte-read limit.",
+          );
+        }
         return await fs.readFile(location);
       } catch (error: any) {
-        if (error.code !== "ENOENT") throw error;
+        if (error.code !== "ENOENT") {
+          throw error;
+        }
       }
     }
-    throw new Error("Stored file is missing from file storage.");
+    throw new Error(
+      "Not Found error. Stored file is missing from file storage.",
+    );
   }
 
   async importPath(props: {

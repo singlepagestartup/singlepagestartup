@@ -35,6 +35,7 @@ export function Component(props: IExternalWidgetProps) {
                 data={entity}
                 language={props.language}
                 profileSlug={routeParams?.["social.profiles.slug"]}
+                profileId={routeParams?.["social.profiles.id"]}
                 variant={entity.variant as any}
               />
             ))

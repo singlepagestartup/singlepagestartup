@@ -1,3 +1,4 @@
+import { localizedHeading } from "../../../../../../../../../../../../../../../tools/studio/workspace/headings";
 import {
   documentAgent,
   resolveThreadAgent,
@@ -99,7 +100,7 @@ export function createProjectProfile(
   id: string,
   name: string,
 ): IProjectProfile {
-  if (!name.trim()) throw new Error("A project needs a name.");
+  if (!name.trim()) throw new Error("Проекту нужно название.");
   return {
     variant: "scope-ai-chat-project",
     id,
@@ -125,7 +126,7 @@ export function sendProjectMessage(
   const topic = project.topics.find((item) => item.id === conversationId);
   const conversation = document ?? topic;
   if (!conversation)
-    throw new Error("Choose a document chat or project thread.");
+    throw new Error("Выберите чат документа или переписку проекта.");
   const agent = document
     ? documentAgent(document.id)
     : resolveThreadAgent(topic?.agent);
@@ -226,12 +227,15 @@ export function prepareProjectDocuments(
 ): IProjectProfile {
   const sourceText = [
     ...(project.notes.trim()
-      ? [`Project notes:\n${project.notes.trim()}`]
+      ? [
+          `Заметки проекта:
+${project.notes.trim()}`,
+        ]
       : []),
     ...project.sources.map((source) =>
       source.text
         ? `${source.name}:\n${source.text}`
-        : `${source.name}: attached material; interpretation needs review.`,
+        : `${source.name}: прикреплённый материал; интерпретация требует проверки.`,
     ),
   ].join("\n\n");
   const documents = definitions.map((definition): IProjectDocument => {
@@ -239,8 +243,9 @@ export function prepareProjectDocuments(
     if (definition.id === "brief") {
       values["Project and products"] = project.name;
       if (sourceText)
-        values["Current state"] =
-          `Supplied intake (needs review):\n\n${sourceText}`;
+        values["Current state"] = `Исходные сведения (нужна проверка):
+
+${sourceText}`;
     }
     const next = definition.sections.find((section) => !values[section.title]);
     return {
@@ -264,7 +269,7 @@ export function prepareProjectDocuments(
           id: `${definition.id}-intro`,
           role: "assistant",
           agent: snapshotAgent(documentAgent(definition.id)),
-          text: `${definition.title}.md is ready to work on. ${next?.prompt ?? "Check the draft and correct any inaccurate statements."}`,
+          text: `${definition.title}.md готов к работе. ${next?.prompt ?? "Проверьте черновик и исправьте неточные утверждения."}`,
         },
       ],
     };
@@ -274,18 +279,21 @@ export function prepareProjectDocuments(
 
 export function projectDocumentText(document: IProjectDocument): string {
   return (
-    `# ${document.title}\n\n` +
+    `# ${localizedHeading(document.title)}\n\n` +
     document.sections
       .map(
         (section) =>
-          `## ${section.title}\n\n${document.values[section.title]?.trim() ? document.values[section.title] : "Unknown — needs information."}` +
+          `## ${localizedHeading(section.title)}\n\n${document.values[section.title]?.trim() ? document.values[section.title] : "Неизвестно — нужны сведения."}` +
           (document.assets ?? [])
             .filter((asset) => asset.section === section.title)
             .map(
               (asset) =>
-                `\n\n### ${asset.file.name}\n\nFile: [${asset.file.name}](./${encodeURIComponent(asset.file.name)})` +
+                `\n\n### ${asset.file.name}
+
+Файл: [${asset.file.name}](./${encodeURIComponent(asset.file.name)})` +
                 (asset.delivery
-                  ? `\nDelivery: [${asset.delivery.name}](./${encodeURIComponent(asset.delivery.name)})`
+                  ? `
+Подготовленный файл: [${asset.delivery.name}](./${encodeURIComponent(asset.delivery.name)})`
                   : ""),
             )
             .join(""),
@@ -301,7 +309,7 @@ export function attachProjectAsset(
   id: string,
 ): IProjectDocument {
   if (!document.sections.some((field) => field.title === section))
-    throw new Error("Choose a document section for this file.");
+    throw new Error("Выберите раздел документа для файла.");
   // The production Source/File pair is unique, irrespective of display category.
   if (
     document.assets?.some(
@@ -374,7 +382,7 @@ export function createProjectTopic(
   documentIds: string[] = project.documents.map((document) => document.id),
   agent: IProjectAgent | null = documentAgent("thread"),
 ): IProjectProfile {
-  if (!title.trim()) throw new Error("A topic needs a name.");
+  if (!title.trim()) throw new Error("Теме нужно название.");
   const ids = [...new Set(documentIds)].filter((documentId) =>
     project.documents.some((item) => item.id === documentId),
   );
@@ -393,7 +401,7 @@ export function createProjectTopic(
             id: `${id}-intro`,
             role: "assistant",
             agent: agent ? snapshotAgent(agent) : null,
-            text: "What would you like to work on?",
+            text: "Над чем хотите поработать?",
             context: topicAgentContext(project, { documentIds: ids }),
           },
         ],
@@ -420,14 +428,16 @@ export function documentAgentContext(
   const intakeInBrief = project.documents.some(
     (document) =>
       document.id === "brief" &&
-      document.values["Current state"]?.includes("Supplied intake"),
+      /Supplied intake|Исходные сведения|Переданные материалы/.test(
+        document.values["Current state"] ?? "",
+      ),
   );
   const notesInDocument = Object.values(currentDocument.values).some(
     (text) => project.notes.trim() && text.includes(project.notes.trim()),
   );
   if (!intakeInBrief && !notesInDocument && project.notes.trim())
     context.push({
-      name: "Project notes",
+      name: "Заметки проекта",
       text: project.notes.trim(),
       status: "source",
     });
@@ -451,7 +461,7 @@ export function documentAgentContext(
     text: supplied
       .map(
         (section) =>
-          `## ${section.title}\n\n${currentDocument.values[section.title]}`,
+          `## ${localizedHeading(section.title)}\n\n${currentDocument.values[section.title]}`,
       )
       .join("\n\n"),
     assets: currentDocument.assets,

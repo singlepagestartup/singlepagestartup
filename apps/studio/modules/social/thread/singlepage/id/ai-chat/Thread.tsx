@@ -77,7 +77,7 @@ function ThreadStateProvider({
           id: `${data.id}:intro`,
           role: "assistant",
           agent: knowledgeAgent,
-          text: `${data.title} is ready to work on. ${source.description ?? "Discuss this knowledge or request a change."}`,
+          text: `${data.title} готов к работе. ${source.description ?? "Обсудите документ или попросите внести изменения."}`,
         },
       ],
   );
@@ -141,7 +141,7 @@ function ThreadStateProvider({
     if (!proposal) return;
     if (proposal.original !== source.content) {
       setError(
-        "The knowledge changed after this proposal. Send a new message before applying it.",
+        "Документ изменился после этого предложения. Отправьте новое сообщение перед применением.",
       );
       return;
     }

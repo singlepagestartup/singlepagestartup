@@ -1,5 +1,8 @@
 import type { Service as SubjectService } from "../../index";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import {
+  INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
+  RBAC_SECRET_KEY,
+} from "@sps/shared-utils";
 import { api as ecommerceOrdersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
 import { api as ecommerceOrderApi } from "@sps/ecommerce/models/order/sdk/server";
 import { api as ecommerceStoresToOrdersToApi } from "@sps/ecommerce/relations/stores-to-orders/sdk/server";
@@ -43,6 +46,14 @@ export class Service {
     if (!id || !productId || !data || typeof data !== "object")
       throw new Error(
         "Validation error. Subject, Product and data are required",
+      );
+    const product = await this.service.ecommerceModule.product.findById({
+      id: productId,
+    });
+    if (!product) throw new Error("Not Found error. Product not found");
+    if (product.slug === INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG)
+      throw new Error(
+        "Permission error. Initial Free is available only through authentication bootstrap",
       );
     let storeId = data.storeId;
     let billingModuleCurrencyId = data["billingModule"]?.currency?.id;

@@ -1,11 +1,13 @@
 "use client";
+import { internationalization } from "@sps/shared-configuration";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Bot, X } from "lucide-react";
 import { getLocalizedPlainText } from "../plain-text";
 import type { IComponentPropsExtended } from "./interface";
 
 export function Component(props: IComponentPropsExtended) {
-  const language = props.language || "en";
+  const language = props.language || internationalization.defaultLanguage.code;
+  const ru = language === "ru";
   const title =
     props.data.title?.[language] ||
     props.data.title?.en ||
@@ -37,13 +39,15 @@ export function Component(props: IComponentPropsExtended) {
                   {title}
                 </Dialog.Title>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Assistant profile
+                  {ru ? "Профиль помощника" : "Assistant profile"}
                 </p>
               </div>
               <Dialog.Close asChild>
                 <button
                   type="button"
-                  aria-label="Close agent profile"
+                  aria-label={
+                    ru ? "Закрыть профиль помощника" : "Close agent profile"
+                  }
                   className="grid min-h-10 min-w-10 place-items-center rounded-xl border border-border hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2"
                 >
                   <X className="size-5" />
@@ -51,19 +55,28 @@ export function Component(props: IComponentPropsExtended) {
               </Dialog.Close>
             </div>
             <Dialog.Description className="mt-4 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
-              {description || "No profile description provided."}
+              {description ||
+                (ru
+                  ? "Описание профиля не добавлено."
+                  : "No profile description provided.")}
             </Dialog.Description>
           </div>
           <div className="min-h-0 flex-1 space-y-6 overflow-y-auto p-5">
-            <section aria-label="Assistant skills" className="space-y-3">
+            <section
+              aria-label={ru ? "Навыки помощника" : "Assistant skills"}
+              className="space-y-3"
+            >
               <h3 className="text-sm font-semibold">
-                Skills · {props.skillsCount || 0}
+                {ru ? "Навыки" : "Skills"} · {props.skillsCount || 0}
               </h3>
               {props.skills}
             </section>
-            <section aria-label="Profile knowledge" className="space-y-3">
+            <section
+              aria-label={ru ? "Знания профиля" : "Profile knowledge"}
+              className="space-y-3"
+            >
               <h3 className="text-sm font-semibold">
-                Knowledge · {props.knowledgeCount || 0}
+                {ru ? "Знания" : "Knowledge"} · {props.knowledgeCount || 0}
               </h3>
               {props.children}
             </section>

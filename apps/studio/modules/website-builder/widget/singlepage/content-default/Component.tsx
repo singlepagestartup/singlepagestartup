@@ -8,6 +8,10 @@ export function ContentDefault({
   eyebrow = defaultContentProps.eyebrow,
   title,
   description,
+  descriptionContent,
+  media,
+  children,
+  actions,
   primaryAction,
   secondaryAction,
   mediaLabel = defaultContentProps.mediaLabel,
@@ -51,12 +55,22 @@ export function ContentDefault({
           <h1 className="m-0 max-w-[16ch] text-[2.5rem] font-semibold leading-[1.08] tracking-normal text-default-foreground sm:text-5xl xl:text-[4rem]">
             {title}
           </h1>
-          {description ? (
-            <p className="m-0 max-w-lg text-base leading-7 text-default-muted-foreground sm:text-lg sm:leading-8">
-              {description}
-            </p>
-          ) : null}
+          {descriptionContent ??
+            (description ? (
+              <p className="m-0 max-w-lg text-base leading-7 text-default-muted-foreground sm:text-lg sm:leading-8">
+                {description}
+              </p>
+            ) : null)}
           <div className="flex flex-wrap items-center gap-3 pt-1">
+            {actions?.map((action) => (
+              <a
+                key={action.id}
+                href={action.href}
+                className={buttonPrimaryClass}
+              >
+                {action.label}
+              </a>
+            ))}
             {primaryAction ? (
               <a className={buttonPrimaryClass} href={primaryAction.href}>
                 {primaryAction.label}
@@ -74,20 +88,26 @@ export function ContentDefault({
           className="min-h-72 w-full overflow-hidden rounded-b-3xl bg-card lg:relative lg:rounded-r-3xl lg:rounded-bl-none"
           aria-label={mediaLabel}
         >
-          {mediaSrc ? (
-            <img
-              className="aspect-square h-full w-full object-cover lg:absolute lg:inset-0"
-              src={mediaSrc}
-              alt={mediaAlt ?? ""}
-            />
-          ) : (
-            <div
-              className="aspect-square h-full w-full bg-border"
-              aria-hidden="true"
-            />
-          )}
+          {media ??
+            (mediaSrc ? (
+              <img
+                className="aspect-square h-full w-full object-cover lg:absolute lg:inset-0"
+                src={mediaSrc}
+                alt={mediaAlt ?? ""}
+              />
+            ) : (
+              <div
+                className="aspect-square h-full w-full bg-border"
+                aria-hidden="true"
+              />
+            ))}
         </div>
       </div>
+      {children ? (
+        <div className="mx-auto mt-8 w-full max-w-7xl space-y-8 px-4 sm:px-6 lg:px-8">
+          {children}
+        </div>
+      ) : null}
     </div>
   );
 }

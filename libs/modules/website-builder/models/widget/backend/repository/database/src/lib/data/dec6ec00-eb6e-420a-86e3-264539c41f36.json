@@ -1,12 +1,18 @@
 {
-  "title": {},
+  "title": {
+    "en": "How your materials are processed and stored",
+    "ru": "Обработка и хранение материалов"
+  },
   "subtitle": {},
-  "description": {},
-  "anchor": null,
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The service and uploaded materials are hosted on a Contabo server in Amsterdam. Originals and versions prepared for search are kept in the service's own storage and PostgreSQL. The pgvector extension stores vectors used to find relevant passages.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Document text is sent to OpenRouter to prepare search representations. Retrieved passages are also sent through OpenRouter as context for AI responses. These requests are processed under the selected provider's terms. Uploading a file may send its text outside the service.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Deleting your account removes the account and active project data accessible to the service. Contabo backups may remain for up to six months after deletion. The service cannot shorten this retention period.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"This information is available before registration and file upload, and next to the account deletion action in settings.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Сервис и загруженные материалы размещены на сервере Contabo в Амстердаме. Оригиналы и подготовленные для поиска представления хранятся в собственном хранилище сервиса и PostgreSQL. Расширение pgvector хранит векторы для поиска подходящих фрагментов.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Текст документов передаётся в OpenRouter для подготовки поисковых представлений. Найденные фрагменты также передаются через OpenRouter как контекст для ответа ИИ. Эти запросы обрабатываются по условиям выбранного провайдера. При загрузке файла его текст может покидать сервис.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Удаление аккаунта удаляет аккаунт и доступные сервису активные данные проектов. Резервные копии Contabo могут храниться до шести месяцев после удаления. Сервис не может сократить этот срок.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Эта информация доступна до регистрации и загрузки файлов, а также рядом с удалением аккаунта в настройках.\"}]}]}"
+  },
+  "anchor": "how-your-materials-are-processed-and-stored",
   "className": null,
   "id": "dec6ec00-eb6e-420a-86e3-264539c41f36",
   "createdAt": "2026-10-11T21:17:54.953Z",
-  "updatedAt": "2026-10-11T21:17:54.953Z",
+  "updatedAt": "2026-10-27T14:59:17.811Z",
   "variant": "content-ai-chat-materials-processing",
   "adminTitle": "AI Chat · Materials processing",
   "slug": "ai-chat-materials-processing"

@@ -33,6 +33,7 @@ export * from "./lib/di/constants";
 export * from "./lib/service";
 export * from "./lib/repository";
 export {
+  consistencyContext,
   trackRepositoryRead,
   withConsistencyDatabase,
   withConsistencySnapshot,

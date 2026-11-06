@@ -38,3 +38,7 @@ export const DailyFreeBalance: StoryObj<typeof meta> = {
 export const FractionalBalance: StoryObj<typeof meta> = {
   args: { showTokens: true, balance: { free: 27.654321, purchased: 1500 } },
 };
+
+export const BeforeFirstArticle: StoryObj<typeof meta> = {
+  args: { authorPublished: false },
+};

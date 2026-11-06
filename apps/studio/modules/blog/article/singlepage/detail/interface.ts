@@ -41,6 +41,9 @@ export type ArticleDetailProps = {
   authorRole: string;
   authorAvatar: string;
   date: string;
+  createdAt?: string;
+  excerpt?: string;
+  categorySlug?: string;
   readTime: string;
   totalComments: number;
   content: string;
@@ -50,6 +53,14 @@ export type ArticleDetailProps = {
 } & {
   cover?: ReactNode;
   tagsCard?: ReactNode;
+  widgets?: ReactNode;
+  breadcrumb?: ReactNode;
+  outline?: { id: string; title: string }[];
+  contents?: ReactNode;
+  navigation?: ReactNode;
+  author?: ReactNode;
+  authorCard?: ReactNode;
+  commentsContent?: ReactNode;
 };
 
 type IVariantInputs = NonNullable<
@@ -60,4 +71,6 @@ export interface IComponentProps extends Omit<IVariantInputs, "variant"> {
   variant?: "detail";
 }
 
-export interface IComponentPropsExtended extends IComponentProps {}
+export interface IComponentPropsExtended extends ArticleDetailProps {
+  variant?: "detail";
+}

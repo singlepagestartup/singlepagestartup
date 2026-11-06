@@ -2,7 +2,7 @@
 import "client-only";
 
 import AuthenticationMe from "../../../../authentication/me-default/client";
-import type { IComponentProps } from "./interface";
+import type { IApiComponentProps as IComponentProps } from "./interface";
 import { Component as ChildComponent } from "./Component";
 
 export default function Client(props: IComponentProps) {

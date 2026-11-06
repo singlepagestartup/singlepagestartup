@@ -82,7 +82,7 @@ export function SubjectMeProfileSettings({
   const sections = [
     {
       id: "profile",
-      label: "Profile",
+      label: "Профиль",
       content: (
         <Subject
           variant="me-social-module-profile-id-settings-ai-chat"
@@ -92,12 +92,12 @@ export function SubjectMeProfileSettings({
     },
     {
       id: "sign-in",
-      label: "Sign-in methods",
+      label: "Способы входа",
       content: <Subject variant="me-identity-find-information" />,
     },
     {
       id: "purchases",
-      label: showTokens ? "Tokens and purchases" : "Purchases",
+      label: showTokens ? "Токены и покупки" : "Покупки",
       content: (
         <Subject
           variant="me-ecommerce-module-order-list-ai-chat"
@@ -108,7 +108,7 @@ export function SubjectMeProfileSettings({
     },
     {
       id: "data",
-      label: "Data and privacy",
+      label: "Данные и конфиденциальность",
       content: <Subject variant="me-delete-ai-chat" copy={copy} />,
     },
   ];
@@ -126,11 +126,11 @@ export function SubjectMeProfileSettings({
         <header className="mb-8 flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
             <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-              Account settings
+              Настройки аккаунта
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-              Edit your profile, manage how you sign in and review your account
-              data.
+              Измените профиль, настройте способы входа и посмотрите данные
+              аккаунта.
             </p>
           </div>
           <Button
@@ -143,7 +143,7 @@ export function SubjectMeProfileSettings({
             }}
           >
             <LogOut className="size-4" />
-            {signedOut ? "Signed out" : "Sign out"}
+            {signedOut ? "Вы вышли из аккаунта" : "Выйти"}
           </Button>
         </header>
         {signedOut ? (
@@ -151,7 +151,7 @@ export function SubjectMeProfileSettings({
             role="status"
             className="rounded-xl border border-border bg-card p-6"
           >
-            You are signed out.{" "}
+            Вы вышли из аккаунта.{" "}
             <a
               className="underline"
               href={
@@ -161,7 +161,7 @@ export function SubjectMeProfileSettings({
               }
               target={showTokens ? undefined : "_top"}
             >
-              Sign in again
+              Войти снова
             </a>
           </p>
         ) : (
@@ -171,11 +171,11 @@ export function SubjectMeProfileSettings({
                 className="mb-2 block text-sm font-medium"
                 htmlFor={`${id}-select`}
               >
-                Settings section
+                Раздел настроек
               </label>
               <Select
                 id={`${id}-select`}
-                aria-label="Settings section"
+                aria-label="Раздел настроек"
                 value={activeSection}
                 onValueChange={setActiveSection}
                 options={sections.map(({ id, label }) => ({
@@ -185,7 +185,7 @@ export function SubjectMeProfileSettings({
               />
             </div>
             <nav
-              aria-label="Settings"
+              aria-label="Настройки"
               className="sticky top-24 hidden space-y-1 md:block"
             >
               {sections.map(({ id: sectionId, label }) => (

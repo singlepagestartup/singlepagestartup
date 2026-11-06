@@ -94,6 +94,7 @@ export class Service {
       const decoded = await jwt.verify(
         authorization,
         RBAC_JWT_SECRET as string,
+        "HS256",
       );
 
       if (!decoded.subject?.["id"]) {

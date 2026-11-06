@@ -710,7 +710,7 @@ export function EcommerceProductAdminV2List({
             key={editing.id || "new"}
             product={editing}
             embedded
-            attributes={<Attribute variant="list" />}
+            attributes={<Attribute variant="admin-v2-table" />}
             onSave={(product) => {
               const saved = {
                 ...product,

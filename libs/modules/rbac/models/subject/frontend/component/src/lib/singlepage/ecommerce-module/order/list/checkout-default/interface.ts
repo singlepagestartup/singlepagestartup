@@ -1,9 +1,13 @@
-export { type IModel } from "@sps/rbac/models/subject/sdk/model";
-import { IModel } from "@sps/rbac/models/subject/sdk/model";
-import {
+import type { IModel } from "@sps/rbac/models/subject/sdk/model";
+import type { IResult as ISubjectSdkResult } from "@sps/rbac/models/subject/sdk/server";
+import type { ICartDetails } from "@sps/ecommerce/models/order/sdk/model";
+import type { UseFormReturn } from "react-hook-form";
+import type {
   IComponentProps as IParentComponentProps,
   IComponentPropsExtended as IParentComponentPropsExtended,
 } from "@sps/shared-frontend-components/singlepage/default/interface";
+
+export type { IModel };
 
 export const variant = "ecommerce-module-order-list-checkout-default" as const;
 
@@ -21,8 +25,18 @@ export interface IComponentPropsExtended
 
 export interface IRowProps {
   subject: IModel;
-  ecommerceModuleOrder: import("@sps/rbac/models/subject/sdk/server").IResult["IEcommerceModuleOrderListResult"][number];
+  ecommerceModuleOrder: ISubjectSdkResult["IEcommerceModuleOrderListResult"][number];
   index: number;
   language: string;
-  form: import("react-hook-form").UseFormReturn<any>;
+  form: UseFormReturn<any>;
 }
+
+export interface IQuantityProps {
+  subjectId: string;
+  orderId: string;
+  line: ICartDetails["lines"][number];
+  language: string;
+}
+
+export interface ICurrencyProps
+  extends Pick<IRowProps, "subject" | "ecommerceModuleOrder" | "language"> {}

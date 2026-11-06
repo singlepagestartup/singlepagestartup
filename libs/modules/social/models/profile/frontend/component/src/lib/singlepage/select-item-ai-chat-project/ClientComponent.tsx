@@ -4,11 +4,16 @@ import { memo } from "react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { Icon } from "@sps/ui-adapter";
 import type { IComponentPropsExtended } from "./interface";
+import { internationalization } from "@sps/shared-configuration";
 
 export const Component = memo(function Component(
   props: IComponentPropsExtended,
 ) {
-  const title = props.data.title?.en || props.data.adminTitle;
+  const language = props.language || internationalization.defaultLanguage.code;
+  const title =
+    props.data.title?.[language] ||
+    props.data.title?.en ||
+    props.data.adminTitle;
   return (
     <DropdownMenu.Item asChild>
       <Link

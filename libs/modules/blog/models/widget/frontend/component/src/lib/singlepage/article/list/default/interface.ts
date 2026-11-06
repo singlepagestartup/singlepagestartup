@@ -1,3 +1,4 @@
+import type { TRenderAuthor } from "@sps/blog/models/article/frontend/component";
 export { type IModel } from "@sps/blog/models/widget/sdk/model";
 import { IModel } from "@sps/blog/models/widget/sdk/model";
 import {
@@ -10,6 +11,7 @@ export const variant = "article-list-default" as const;
 export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
   language: string;
+  renderAuthor?: TRenderAuthor;
 }
 
 export interface IComponentPropsExtended

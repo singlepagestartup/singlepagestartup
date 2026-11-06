@@ -115,6 +115,21 @@ blob-report/
 .claude/.env
 .agents/.env
 
+# Checkout-owned AI client connections; shared defaults live in *.example.
+/.codex/config.toml
+/.mcp.json
+/.cursor/mcp.json
+/.vscode/mcp.json
+/opencode.json
+/opencode.jsonc
+/.opencode/opencode.json
+/.opencode/opencode.jsonc
+/.kimi-code/mcp.json
+/.mimocode/mimocode.json
+/.mimocode/mimocode.jsonc
+/mimocode.json
+/mimocode.jsonc
+
 # Checkout-owned SinglePageStartup workspace selection
 apps/studio/workspace/utils/config.local.yaml
 

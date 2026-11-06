@@ -262,7 +262,9 @@ function relative(from: string, target: string) {
 function write(file: string, content: string, preserve = false) {
   if (preserve && existsSync(file)) return;
   mkdirSync(path.dirname(file), { recursive: true });
-  writeFileSync(file, content.endsWith("\n") ? content : content + "\n");
+  const next = content.endsWith("\n") ? content : content + "\n";
+  if (!existsSync(file) || readFileSync(file, "utf8") !== next)
+    writeFileSync(file, next);
 }
 
 function exportedComponent(file: string): string {
@@ -541,20 +543,53 @@ export function scaffoldEntity(root: string, entity: ModuleEntityRecord) {
     existsSync(fieldsFile) ? fieldsFile : path.join(nativeRoot, "schema.ts"),
   );
   const table = path.join(directory, "singlepage/admin-v2-table");
-  const records = [1, 2, 3].map((index) =>
-    fixtureRecord(entity.module, entity.entity, fields, index),
-  );
+  const dataFile = path.join(table, "data.json");
+  const previousData = existsSync(dataFile)
+    ? JSON.parse(readFileSync(dataFile, "utf8"))
+    : undefined;
+  const generatedData =
+    previousData?.schema?.fields && Array.isArray(previousData.records);
+  const previous = generatedData
+    ? (previousData.records as Record<string, unknown>[])
+    : undefined;
+  const records = (
+    previous ??
+    [1, 2, 3].map((index) =>
+      fixtureRecord(entity.module, entity.entity, fields, index),
+    )
+  ).map((record, index) => {
+    const defaults = fixtureRecord(
+      entity.module,
+      entity.entity,
+      fields,
+      index + 1,
+    );
+    return Object.fromEntries(
+      fields.map(({ key }) => [
+        key,
+        Object.hasOwn(record, key) ? record[key] : defaults[key],
+      ]),
+    );
+  });
   const schema = {
     module: entity.module,
     entity: entity.entity,
     entityType: entity.entityType,
     fields,
   };
-  write(
-    path.join(table, "data.json"),
-    JSON.stringify({ schema, records }, null, 2),
-    true,
-  );
+  if (!previousData || generatedData)
+    write(
+      dataFile,
+      JSON.stringify(
+        {
+          ...previousData,
+          schema: { ...previousData?.schema, ...schema },
+          records,
+        },
+        null,
+        2,
+      ),
+    );
   const fieldType = (field: CatalogField) => {
     const kind = field.kind.replace(/\[\]$/, "");
     const type =
@@ -581,11 +616,37 @@ export function scaffoldEntity(root: string, entity: ModuleEntityRecord) {
               : "string";
     return `${field.kind.endsWith("[]") ? `Array<${type}>` : type}${field.nullable ? " | null" : ""}`;
   };
-  write(
-    path.join(table, "interface.ts"),
-    `export type JsonValue = null | string | number | boolean | JsonValue[] | { [key: string]: JsonValue };\n\nexport interface IRecord {\n${fields.map((field) => `  ${field.key}: ${fieldType(field)};`).join("\n")}\n}\n${projectionInterface("admin-v2-table")}`,
-    true,
-  );
+  const recordFields = fields
+    .map((field) => `  ${field.key}: ${fieldType(field)};`)
+    .join("\n");
+  const interfaceFile = path.join(table, "interface.ts");
+  if (existsSync(interfaceFile)) {
+    const content = readFileSync(interfaceFile, "utf8");
+    const tree = ts.createSourceFile(
+      interfaceFile,
+      content,
+      ts.ScriptTarget.Latest,
+      true,
+    );
+    const record = tree.statements.find(
+      (node): node is ts.InterfaceDeclaration =>
+        ts.isInterfaceDeclaration(node) && node.name.text === "IRecord",
+    );
+    if (!record)
+      throw new Error(`Missing schema-owned IRecord in ${interfaceFile}`);
+    write(
+      interfaceFile,
+      content.slice(0, record.members.pos) +
+        "\n" +
+        recordFields +
+        "\n" +
+        content.slice(record.end - 1),
+    );
+  } else
+    write(
+      interfaceFile,
+      `export type JsonValue = null | string | number | boolean | JsonValue[] | { [key: string]: JsonValue };\n\nexport interface IRecord {\n${recordFields}\n}\n${projectionInterface("admin-v2-table")}`,
+    );
   write(
     path.join(directory, "interface.ts"),
     'export type { IRecord as IModel } from "./singlepage/admin-v2-table/interface";',
@@ -595,7 +656,11 @@ export function scaffoldEntity(root: string, entity: ModuleEntityRecord) {
   const existing = variantAliases(
     path.join(directory, "singlepage/variants.ts"),
   );
-  for (const variant of ["admin-v2-table", "admin-v2-card", "list"].filter(
+  const projections =
+    entity.entity === "widget"
+      ? ["admin-v2-table", "admin-v2-card", "list"]
+      : ["admin-v2-table", "admin-v2-card"];
+  for (const variant of projections.filter(
     (variant) => !existing.has(variant) || existing.get(variant) === variant,
   )) {
     const folder = path.join(directory, "singlepage", variant);

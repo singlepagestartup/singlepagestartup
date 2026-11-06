@@ -17,9 +17,12 @@ export function Component(props: IComponentProps) {
       clientApi={clientApi}
       serverApi={serverApi}
       {...props}
-      Skeleton={props.skeleton ?? <Skeleton />}
-      skeleton={props.skeleton ?? <Skeleton />}
-      loading={props.loading ?? props.skeleton ?? <Skeleton />}
+      Skeleton={props.skeleton ?? <Skeleton language={props.language} />}
+      skeleton={props.skeleton ?? <Skeleton language={props.language} />}
+      loading={
+        props.loading ??
+        props.skeleton ?? <Skeleton language={props.language} />
+      }
     />
   );
 }

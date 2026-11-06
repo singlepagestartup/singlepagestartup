@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "8a0e0667-025f-4472-9c93-3294314e13f6",
+  "createdAt": "2026-10-26T00:12:03.993Z",
+  "updatedAt": "2026-10-27T14:59:43.105Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Customer",
+    "ru": "Клиент"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Enquiry received\\n\\nAn example message after submitting a form.\\n\\nYou selected Pomeranian grooming\\n\\nAn administrator will contact you\\n\\nThe appointment time is not confirmed yet\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Заявка получена\\n\\nПример сообщения после отправки формы.\\n\\nВы выбрали стрижку шпица\\n\\nАдминистратор свяжется с вами\\n\\nВремя визита ещё не подтверждено\"}]}]}"
+  },
+  "adminTitle": "Клиент",
+  "slug": "framework-reviewed-article-notification-example-feature-0"
+}

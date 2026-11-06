@@ -77,7 +77,7 @@ function ThreadStateProvider({
           id: `${data.id}:intro`,
           role: "assistant",
           agent: knowledgeAgent,
-          text: `${data.title} is ready to work on. ${source.description ?? "Discuss this knowledge or request a change."}`,
+          text: `${data.title} готов к работе. ${source.description ?? "Обсудите знание или попросите изменить его."}`,
         },
       ],
   );
@@ -141,7 +141,7 @@ function ThreadStateProvider({
     if (!proposal) return;
     if (proposal.original !== source.content) {
       setError(
-        "The knowledge changed after this proposal. Send a new message before applying it.",
+        "После этого предложения знание изменилось. Отправьте новое сообщение перед применением.",
       );
       return;
     }
@@ -184,6 +184,6 @@ function ThreadStateProvider({
 }
 export function useThread() {
   const context = useContext(ThreadContext);
-  if (!context) throw new Error("AI Chat Thread requires ThreadProvider.");
+  if (!context) throw new Error("AI Chat Thread требует ThreadProvider.");
   return context;
 }

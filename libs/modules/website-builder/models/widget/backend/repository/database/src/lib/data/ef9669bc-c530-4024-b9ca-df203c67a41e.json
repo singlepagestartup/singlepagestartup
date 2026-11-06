@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Build your product on SinglePageStartup",
+    "ru": "Создайте свой продукт на SinglePageStartup"
+  },
+  "subtitle": {
+    "en": "Code Framework · Free code",
+    "ru": "Code Framework · Бесплатный код"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Start with registration, carts and payments already in the framework. Add your business rules to the Next.js frontend and the Hono API. The code and documentation are free; hosted AI Chat is a separate service.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Начните с регистрации, корзины и платежей, которые уже есть во фреймворке. Добавляйте свои бизнес-правила во frontend на Next.js и API на Hono. Код и документация бесплатны; AI-чат — отдельный сервис.\"}]}]}"
+  },
+  "anchor": "about-framework",
+  "className": null,
+  "id": "ef9669bc-c530-4024-b9ca-df203c67a41e",
+  "createdAt": "2026-10-23T20:18:04.435Z",
+  "updatedAt": "2026-10-23T20:18:04.435Z",
+  "variant": "content-hero",
+  "adminTitle": "Build your product on SinglePageStartup",
+  "slug": "framework-about-hero"
+}

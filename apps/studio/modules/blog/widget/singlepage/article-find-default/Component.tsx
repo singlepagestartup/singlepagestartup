@@ -1,4 +1,5 @@
 import type { IComponentProps, ArticleFindDefaultProps } from "./interface";
+import { frameworkArticlePreviews } from "../../../article";
 export type { ArticleFindDefaultProps } from "./interface";
 
 import { Component as SharedIcon } from "../../../../shared/icon";
@@ -43,6 +44,8 @@ interface BlogPostItem {
   excerpt: string;
   date: string;
   readTime: string;
+  href?: string;
+  authorName?: string;
 }
 
 export function ArticleFindDefault(props?: IComponentProps) {
@@ -80,7 +83,7 @@ export function ArticleFindDefault(props?: IComponentProps) {
         <div className="grid items-stretch gap-6 md:grid-cols-3">
           {posts.map((post) => (
             <a
-              href={articleHref}
+              href={post.href ?? articleHref}
               target="_top"
               className={`group flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-border bg-card transition hover:border-foreground motion-reduce:transition-none ${kit.focus}`}
               key={post.title}
@@ -105,6 +108,11 @@ export function ArticleFindDefault(props?: IComponentProps) {
                 <p className="mt-3 line-clamp-2 flex-1 text-sm leading-[22px] text-muted-foreground">
                   {post.excerpt}
                 </p>
+                {post.authorName && (
+                  <p className="mt-4 text-xs text-muted-foreground">
+                    {post.authorName}
+                  </p>
+                )}
                 <div className="mt-6 flex items-center justify-between border-t border-border pt-4 text-sm">
                   <span className="text-muted-foreground">{post.readTime}</span>
                   <span className="inline-flex items-center gap-2 font-medium">
@@ -131,39 +139,28 @@ const kit = {
   focus: focus,
 };
 export const defaultArticleFindDefaultProps = {
-  eyebrow: "Latest Articles",
-  title: "From the Blog",
-  viewAllAction: { label: "View all posts", href: "/blog" },
-  posts: [
-    {
-      image:
-        "/module-assets/images/singlepage/generated/living-focus/singlepagestartup-photography-business-conversation-square.png",
-      tag: "Analytics",
-      title: "How to Build Data-Driven Dashboards",
-      excerpt:
-        "Learn how to leverage the Analytics module to create insightful dashboards and track key performance metrics.",
-      date: "Feb 18, 2026",
-      readTime: "5 min read",
-    },
-    {
-      image:
-        "/module-assets/images/singlepage/generated/living-focus/singlepagestartup-photography-moment-of-focus-square.png",
-      tag: "Infrastructure",
-      title: "Scaling Your Platform Architecture",
-      excerpt:
-        "Best practices for scaling from a single-page startup to enterprise-grade infrastructure with our Host module.",
-      date: "Feb 12, 2026",
-      readTime: "8 min read",
-    },
-    {
-      image:
-        "/module-assets/images/singlepage/generated/living-focus/singlepagestartup-photography-work-in-motion-square.png",
-      tag: "Development",
-      title: "API Integration Step-by-Step",
-      excerpt:
-        "A comprehensive tutorial for integrating with our REST API and building custom workflows with webhooks.",
-      date: "Feb 5, 2026",
-      readTime: "12 min read",
-    },
-  ] satisfies BlogPostItem[],
+  eyebrow: "The Framework journal",
+  title: "Learn how the pieces work together.",
+  viewAllAction: {
+    label: "View all articles",
+    href: "/?path=/story/modules-host-models-page-singlepage-blog-module-article-find--default",
+  },
+  posts: frameworkArticlePreviews
+    .filter((article) =>
+      [
+        "nextjs-server-client-readers-and-widget-slots",
+        "hono-api-layers-di-and-owned-middleware",
+        "nx-bun-docker-and-generated-migrations",
+      ].includes(article.slug),
+    )
+    .map((article) => ({
+      image: article.coverImage,
+      tag: article.category,
+      title: article.title,
+      excerpt: article.excerpt,
+      date: article.date,
+      readTime: article.readTime,
+      href: article.href,
+      authorName: article.authorName,
+    })) satisfies BlogPostItem[],
 };

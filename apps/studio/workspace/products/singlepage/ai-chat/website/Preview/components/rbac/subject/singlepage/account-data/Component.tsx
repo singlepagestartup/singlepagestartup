@@ -289,7 +289,7 @@ function Icon({
   const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
@@ -337,8 +337,8 @@ export function Component({
               showTokens
                 ? sections.purchases
                 : {
-                    title: "Purchases",
-                    paragraphs: ["Review your purchase history and receipts."],
+                    title: "Покупки",
+                    paragraphs: ["История покупок и чеки."],
                     items: [],
                     links: [],
                   }
@@ -348,8 +348,8 @@ export function Component({
             {showTokens && (
               <p className="mt-4 text-sm text-[color:var(--workspace-brand-muted)]">
                 {aiChatAccount.balance
-                  ? `${(aiChatAccount.balance.free + aiChatAccount.balance.purchased).toLocaleString("en-US")} tokens available`
-                  : "Balance unavailable"}
+                  ? `${(aiChatAccount.balance.free + aiChatAccount.balance.purchased).toLocaleString("en-US")} токенов доступно`
+                  : "Баланс недоступен"}
               </p>
             )}
             <div className="mt-5 flex flex-wrap gap-3">
@@ -455,8 +455,8 @@ export function Component({
               {deletionChecked && (
                 <div className="mt-4">
                   <Feedback>
-                    Deletion request confirmed in this preview. No account or
-                    project data was deleted.
+                    Удаление подтверждено в примере. Аккаунт и данные проекта не
+                    удалены.
                   </Feedback>
                 </div>
               )}

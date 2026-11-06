@@ -96,7 +96,7 @@ export function Component({ id, open }: IProjectProcessingDisclosureProps) {
       <summary
         className={`min-h-9 cursor-pointer underline underline-offset-4 ${kit.focus}`}
       >
-        How your materials are processed and stored
+        Как обрабатываются и хранятся ваши материалы
       </summary>
       <div className={`${kit.card} mt-3 text-sm`}>
         <MarkdownDocument>{disclosure}</MarkdownDocument>

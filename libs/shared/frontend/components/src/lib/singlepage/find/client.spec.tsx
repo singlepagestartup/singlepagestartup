@@ -4,6 +4,27 @@ import { Component } from "./client";
 jest.mock("client-only", () => ({}));
 jest.mock("@sps/shared-frontend-client-api", () => ({ factory: jest.fn() }));
 
+it("forwards the caller's filters unchanged and retains returned records of every variant", () => {
+  const data = [{ id: "hidden-record", variant: "hidden" }];
+  const find = jest.fn(() => ({ data, isFetching: false, isLoading: false }));
+  const apiProps = {
+    params: {
+      filters: { and: [{ column: "variant", method: "eq", value: "hidden" }] },
+    },
+  };
+  render(
+    <Component
+      {...({
+        api: { find },
+        apiProps,
+        children: ({ data }: any) => <p>{data[0].id}</p>,
+      } as any)}
+    />,
+  );
+  expect(find).toHaveBeenCalledWith(apiProps);
+  expect(screen.getByText("hidden-record")).toBeTruthy();
+});
+
 it("keeps the mounted form, draft, focus and selection during background fetch/error", () => {
   const data = [{ id: "one" }];
   const find = jest.fn(() => ({
@@ -53,4 +74,36 @@ it("keeps the mounted form, draft, focus and selection during background fetch/e
   });
   view.rerender(<Component {...props} keepDataWhileFetching={false} />);
   expect(screen.queryByRole("textbox", { name: "Draft" })).toBeNull();
+});
+
+it("renders the supplied collection skeleton only while data is unavailable", () => {
+  const find = jest.fn(() => ({
+    data: undefined,
+    isFetching: true,
+    isLoading: true,
+  }));
+  const props: any = {
+    api: { find },
+    skeleton: <div role="status">Loading collection</div>,
+    children: ({ data }: any) => <p>{data?.[0]?.id}</p>,
+  };
+  const view = render(<Component {...props} />);
+  expect(screen.getByRole("status").textContent).toBe("Loading collection");
+  find.mockReturnValue({
+    data: [{ id: "loaded" }] as any,
+    isFetching: false,
+    isLoading: false,
+  });
+  view.rerender(<Component {...props} />);
+  expect(screen.queryByRole("status")).toBeNull();
+  expect(screen.getByText("loaded")).toBeTruthy();
+  find.mockReturnValue({
+    data: [{ id: "loaded" }] as any,
+    isFetching: true,
+    isLoading: false,
+  });
+  view.rerender(<Component {...props} />);
+  expect(screen.queryByRole("status")).toBeNull();
+  view.rerender(<Component {...props} keepDataWhileFetching={false} />);
+  expect(screen.getByRole("status")).toBeTruthy();
 });

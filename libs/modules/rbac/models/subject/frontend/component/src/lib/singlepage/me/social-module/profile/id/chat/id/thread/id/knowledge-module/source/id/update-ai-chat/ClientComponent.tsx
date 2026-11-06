@@ -1,4 +1,5 @@
 "use client";
+import { internationalization } from "@sps/shared-configuration";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { api as subjectApi } from "@sps/rbac/models/subject/sdk/client";
@@ -7,14 +8,17 @@ import { Component as FileStorageModuleFile } from "@sps/file-storage/models/fil
 import type { IComponentPropsExtended, ISourceFileProps } from "./interface";
 
 const SourceFile = memo(function SourceFile({
+  language,
   file,
   removing,
   onRemove,
 }: ISourceFileProps) {
-  const title = file.adminTitle || file.alt || "File";
+  const ru = language === "ru";
+  const title = file.adminTitle || file.alt || (ru ? "Файл" : "File");
   return (
     <li className="relative min-w-0">
       <FileStorageModuleFile
+        language={language}
         isServer={false}
         variant="attachment-ai-chat"
         data={file}
@@ -22,7 +26,9 @@ const SourceFile = memo(function SourceFile({
       />
       <button
         type="button"
-        aria-label={`Remove ${title} from knowledge`}
+        aria-label={
+          ru ? `Удалить ${title} из знаний` : `Remove ${title} from knowledge`
+        }
         disabled={removing}
         onClick={() => onRemove(file.id)}
         className="absolute right-1 top-1 z-10 grid size-7 place-items-center rounded-full bg-foreground text-background hover:opacity-80 disabled:opacity-40"
@@ -31,7 +37,7 @@ const SourceFile = memo(function SourceFile({
       </button>
       {removing && (
         <p className="mt-1 text-xs text-muted-foreground" role="status">
-          Removing…
+          {ru ? "Удаление…" : "Removing\u2026"}
         </p>
       )}
     </li>
@@ -40,6 +46,8 @@ const SourceFile = memo(function SourceFile({
 export const Component = memo(function Component(
   props: IComponentPropsExtended,
 ) {
+  const language = props.language || internationalization.defaultLanguage.code;
+  const ru = language === "ru";
   const { data, project, source, onDiscuss } = props;
   const [expanded, setExpanded] = useState(false);
   const [removingId, setRemovingId] = useState<string | null>(null);
@@ -77,7 +85,11 @@ export const Component = memo(function Component(
   const remove = useCallback(
     async (fileId: string) => {
       if (removalInFlight.current !== null) {
-        setFileError("Wait for the current file operation to finish.");
+        setFileError(
+          ru
+            ? "Дождитесь завершения текущей операции с файлом."
+            : "Wait for the current file operation to finish.",
+        );
         return;
       }
       removalInFlight.current = fileId;
@@ -94,21 +106,29 @@ export const Component = memo(function Component(
           },
         });
         if (result.analysisPending)
-          setFileStatus("File removed. Analyzing remaining files…");
+          setFileStatus(
+            ru
+              ? "Файл удалён. Анализируем оставшиеся файлы…"
+              : "File removed. Analyzing remaining files…",
+          );
         if (result.processingError)
           setFileError(
-            `File removed; analysis failed: ${result.processingError}`,
+            `${ru ? "Файл удалён; не удалось проанализировать материалы" : "File removed; analysis failed"}: ${result.processingError}`,
           );
       } catch (error) {
         setFileError(
-          error instanceof Error ? error.message : "File could not be removed.",
+          error instanceof Error
+            ? error.message
+            : ru
+              ? "Не удалось удалить файл."
+              : "File could not be removed.",
         );
       } finally {
         removalInFlight.current = null;
         setRemovingId(null);
       }
     },
-    [files.mutateAsync, scope, source.id, source.contentHash],
+    [files.mutateAsync, scope, source.id, source.contentHash, ru],
   );
   const save = useCallback(
     async (data: { title: string; content: string }) => {
@@ -118,10 +138,12 @@ export const Component = memo(function Component(
         data,
       });
       return result.indexingError
-        ? `Saved; indexing failed: ${result.indexingError}`
-        : "Saved";
+        ? `${ru ? "Сохранено; не удалось подготовить поиск" : "Saved; indexing failed"}: ${result.indexingError}`
+        : ru
+          ? "Сохранено"
+          : "Saved";
     },
-    [update.mutateAsync, scope, source.id],
+    [update.mutateAsync, scope, source.id, ru],
   );
   const attach = useCallback(
     async (data: FileList) => {
@@ -132,13 +154,14 @@ export const Component = memo(function Component(
       });
       if (result.processingError)
         throw new Error(
-          `Files saved; analysis failed: ${result.processingError}`,
+          `${ru ? "Файлы сохранены; не удалось проанализировать материалы" : "Files saved; analysis failed"}: ${result.processingError}`,
         );
     },
-    [files.mutateAsync, scope, source.id],
+    [files.mutateAsync, scope, source.id, ru],
   );
   return (
     <KnowledgeModuleSource
+      language={language}
       isServer={false}
       variant="id-ai-chat"
       data={source}
@@ -147,7 +170,7 @@ export const Component = memo(function Component(
       attachments={
         <div className="mt-4 border-t border-border pt-3">
           <p className="mb-3 text-xs text-muted-foreground">
-            Files · {attachments.data?.length || 0}
+            {ru ? "Файлы ·" : "Files ·"} {attachments.data?.length || 0}
           </p>
           {attachments.error && (
             <p role="alert" className="text-xs text-destructive">
@@ -165,12 +188,13 @@ export const Component = memo(function Component(
             </p>
           )}
           <ul
-            aria-label="Knowledge attachments"
+            aria-label={ru ? "Вложения знаний" : "Knowledge attachments"}
             className="grid min-w-0 grid-cols-2 gap-2"
           >
             {(expanded ? attachments.data : attachments.data?.slice(0, 2))?.map(
               ({ file, relation }) => (
                 <SourceFile
+                  language={language}
                   key={relation.id}
                   file={file}
                   removing={removingId === file.id}
@@ -186,7 +210,13 @@ export const Component = memo(function Component(
               className="mt-3 min-h-9 w-full rounded-lg border border-border px-3 text-xs font-semibold"
               onClick={() => setExpanded((value) => !value)}
             >
-              {expanded ? "Show less" : "Show more"}
+              {expanded
+                ? ru
+                  ? "Свернуть"
+                  : "Show less"
+                : ru
+                  ? "Показать ещё"
+                  : "Show more"}
             </button>
           )}
         </div>

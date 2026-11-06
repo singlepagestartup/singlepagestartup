@@ -1,195 +1,182 @@
 ---
-confirmation:
-  confirmed: true
-  by: operator
-  at: 2026-09-17
-  source: "Operator confirmed the complete revised Business workspace in chat: «Здесь всё окей, можно подтверждать и давать следующую страницу»."
-  content_sha256: b6dcff3727fcebc01171b581bd96aa6fb45cb9273193633a6153ca84d36e8321
-review:
-  dependencies:
-    product.ai-chat.page.content.project-model: f17aa0f1649f24c00b387547fb0800c632db2e752cdc54fd696b53e07d8a3473
-    product.ai-chat.website: db31acbb2f6bff59d196207b3f6245f4fc7674dbe685f71a18c890fef7e2d2cf
 ---
 
-# Project chat
+# Чат проекта
 
-Open a document's working thread to discuss and edit it with the AI agent. Each file keeps its own conversation, draft and review state. The agent points out gaps and proposes changes; review the text before saving it. In the general project workspace, create separate threads and attach selected saved documents for each conversation. The documents remain available for export.
+Откройте рабочую переписку документа для обсуждения и редактирования с агентом. Каждый файл сохраняет свои сообщения, черновик и состояние проверки. Агент указывает пробелы и предлагает изменения; проверяйте текст перед сохранением. В общем рабочем пространстве создавайте отдельные переписки и прикрепляйте выбранные сохранённые документы. Выгрузка документов доступна.
 
-## Choose and manage a project
+## Выбор проекта и управление
 
-The project selector lists this account's projects. **New project** first asks for a name. Creating the named project opens its material-upload screen. Switching projects preserves each project's name, files, messages and document drafts.
+Переключатель показывает проекты аккаунта. **Новый проект** сначала запрашивает название, затем открывает экран загрузки материалов. Переключение сохраняет имя, файлы, сообщения и черновики каждого проекта.
 
-**Project settings** belongs to the selected project. Rename it, open its products and document threads, or export its current texts. Password changes, purchases and account deletion remain in account Settings. The profile menu shows the account's remaining free and purchased tokens, including a negative balance, and links to token purchases and account Settings. Export reviewed documents appears below the project-name form.
+**Настройки проекта** относятся к выбранному проекту: переименование, продукты, переписки документов и выгрузка текстов. Пароль, покупки и удаление аккаунта остаются в настройках аккаунта. Меню профиля показывает остаток бесплатных и купленных токенов, включая отрицательный баланс, и ссылки на покупку и настройки. Выгрузка проверенных документов находится под формой имени проекта.
 
-## Project setup
+## Настройка проекта
 
-| Step             | Screen and action                                                                                                                                          |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **1. Name**      | Enter a project name and create its workspace.                                                                                                             |
-| **2. Materials** | Upload documents, notes and images, with an optional explanation. Review the processing disclosure before upload.                                          |
-| **3. Analysis**  | Follow the analysis progress, inspect the supplied sources and see which document drafts need information. Open the document chats when analysis is ready. |
-| **4. Documents** | Discuss each file with the AI agent, review proposed changes and edit its sections. Save the version you have checked.                                     |
-| **5. Work**      | Name a topic and attach selected reviewed documents as its knowledge base. Continue the conversation in that thread.                                       |
+| Шаг              | Экран и действие                                                                                                           |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| **1. Название**  | Назовите проект и создайте рабочее пространство.                                                                           |
+| **2. Материалы** | Загрузите документы, заметки и изображения с необязательным объяснением. Перед загрузкой изучите условия обработки.        |
+| **3. Анализ**    | Следите за прогрессом, проверяйте источники и сведения, недостающие черновикам. После готовности откройте чаты документов. |
+| **4. Документы** | Обсудите файлы с агентом, проверьте изменения, отредактируйте разделы и сохраните проверенную версию.                      |
+| **5. Работа**    | Назовите тему и прикрепите выбранные проверенные документы как базу знаний. Продолжайте разговор в этой переписке.         |
 
-Upload and analysis are separate setup screens. Document chats have a file list, conversation, message composer and editable document. Each file retains its own messages and draft when you switch files. Project threads become available after the first document has a reviewed version; other files can remain unfinished.
+Загрузка и анализ — отдельные экраны. В чате документа есть список файлов, переписка, поле сообщения и редактируемый текст. При переключении каждый файл сохраняет сообщения и черновик. Темы проекта доступны после появления первой проверенной версии документа; остальные файлы могут оставаться незавершёнными.
 
-The arrow beside **Documents** collapses or opens the document list while keeping project threads visible. Opening or creating a project thread collapses the list automatically. The account navbar stays visible at the top while scrolling. The selected conversation header sticks below it. On mobile, the menu icon in the conversation header opens a drawer below the navbar containing project settings, documents and threads; selecting an item closes the drawer. The navbar remains accessible above the drawer. On wider screens, the same icon hides or shows the navigation panel; the selected conversation, messages and drafts remain in place. On mobile, Help and the project picker open from the header menu; the profile icon to the left of the menu button opens its own dropdown. On wider screens, Help and the project picker remain visible beside Profile. Working on uses a menu with checkboxes for multiple sections. Analysis progress uses the same lime accent and rounded track as the other controls.
+Стрелка у **Документов** сворачивает список, сохраняя видимость тем проекта. Открытие или создание темы автоматически сворачивает список. Верхняя панель аккаунта остаётся видимой при прокрутке, заголовок выбранной переписки закреплён под ней. На мобильном экране значок меню открывает под панелью шторку с настройками проекта, документами и темами; выбор закрывает шторку. Верхняя панель доступна над ней. На широком экране тот же значок скрывает или показывает навигацию; переписка, сообщения и черновики сохраняются. На мобильном помощь и выбор проекта открываются из меню заголовка; значок профиля слева открывает собственный список. На широком экране помощь и выбор проекта видны рядом с профилем. «Работаем над» использует меню с флажками для нескольких разделов. У прогресса анализа тот же лаймовый акцент и скруглённая полоса, что у других элементов.
 
-Setup steps stay in one horizontal row, with scrolling to the screen edges when needed. Completed steps show a check circle; pressing it opens the step explanation. Current and future steps keep their labels.
+Шаги настройки стоят в одном горизонтальном ряду с прокруткой до краёв экрана при необходимости. Завершённые шаги показывают круг с галочкой; нажатие открывает объяснение шага. Текущий и будущие шаги сохраняют подписи.
 
-The sidebar groups **Settings** and **Documents** in one navigation block, each with an icon. Documents uses a folder icon and shows the file count and its expandable list. The whole Documents block has a darker background, with a permanently grey button above the inset list. The file list stays in one column at every screen width. File rows use the same grey highlight on hover and when selected. File names appear on a single row without a Draft label; a green circle with a dark grey check to the right marks a reviewed document and disappears when that document changes. **Threads** follows below this block. When New thread is unavailable, hovering over or focusing it shows that at least one document must be filled in and saved as reviewed.
+Боковая панель объединяет **Настройки** и **Документы** в одном блоке с отдельными значками. У документов значок папки, число файлов и раскрываемый список. Фон всего блока темнее, кнопка над вложенным списком постоянно серая. Файлы идут в одну колонку при любой ширине экрана. При наведении и выборе строка получает одинаковую серую подсветку. Имя занимает одну строку без метки черновика; зелёный круг с тёмно-серой галочкой справа отмечает проверенный документ и исчезает при его изменении. Ниже идут **Темы**. Если новая тема недоступна, наведение или фокус объясняет необходимость заполнить и сохранить как проверенный хотя бы один документ.
 
-On mobile, the conversation log is at least half a screen high, with the message composer below it.
+На мобильном переписка занимает минимум половину экрана, поле сообщения расположено ниже.
 
-The document shown in Document is included in its chat automatically. Working on sits in the message composer: choose the whole document, one section or several sections. Selecting a section's discussion action opens chat with that section selected. Each reply records the scope and context used; later selection or document edits leave that record unchanged. Document chat replies show the context they used in a compact disclosure. Project threads show their current context documents in the header. The agent profile shows only the role.
+Показанный документ автоматически входит в контекст его чата. «Работаем над» находится в поле сообщения: выберите весь документ, один или несколько разделов. Действие обсуждения раздела открывает чат с этим разделом. Ответ фиксирует использованные область и контекст; последующие выборы и изменения документа не меняют эту запись. В чате документа контекст ответа раскрывается компактным списком. В теме проекта текущие документы показаны в заголовке. Профиль агента показывает только роль.
 
-Attach documents or images directly in a document chat or project thread. The composer shows the selected files, with image previews and a removal button for each attachment. Send them with a message or on their own. Press ⌘ Enter on Mac or Ctrl Enter on Windows to send; Enter adds a new line. Unsent attachments stay with their own conversation when switching documents, threads or projects. Sent files remain beside the message and in that conversation's context. Attach a sent file to a document section when it belongs there; document changes and file approval still require review. After Brief has a reviewed version, document chats use it without repeating the original notes and source text as separate context items.
+Прикрепляйте документы и изображения прямо в чате документа или теме проекта. Поле сообщения показывает выбранные файлы, предпросмотры изображений и кнопку удаления каждого вложения. Отправляйте их с текстом или отдельно. ⌘ Enter на Mac и Ctrl Enter на Windows отправляют сообщение; Enter добавляет строку. Неотправленные вложения сохраняются за своей перепиской при переключении документов, тем и проектов. Отправленные файлы остаются у сообщения и в контексте переписки. Прикрепите отправленный файл к подходящему разделу документа; изменение текста и принятие файла по-прежнему требуют проверки. После появления проверенного брифа чаты используют его без повторения исходных заметок отдельными элементами контекста.
 
-## References and generated files
+## Референсы и созданные файлы
 
-Uploaded images retain their originals and appear as previews in Brief’s Visual reference intake and Design’s Outputs and provenance sections. Their contents and intended use remain open until discussed and reviewed. Classify visual references as identity, interface and website, typography, photography, illustration or marketing creative, then attach them to the relevant document section.
+Загруженные изображения сохраняют оригиналы и появляются как предпросмотры во вводных визуальных референсах брифа и результатах с происхождением дизайна. Содержание и применение остаются вопросами до обсуждения и проверки. Относите референсы к айдентике, интерфейсу и сайту, типографике, фотографии, иллюстрации или креативам и прикрепляйте к нужному разделу.
 
-Each section holds references and generated files alongside its text. Attach an existing project file or upload another one. A file card shows its preview, origin, category, intended use and review status. Generated files also retain the generation prompt and tool; a prepared square delivery can be linked to its original. Both files remain available for download. Approving a file is a separate action from reviewing the document text.
+Раздел хранит референсы и созданные файлы рядом с текстом. Прикрепляйте существующий файл проекта или загружайте новый. Карточка показывает предпросмотр, происхождение, категорию, применение и состояние проверки. У созданного файла сохраняются промпт и инструмент; квадратная подготовленная версия связывается с оригиналом. Оба файла доступны для скачивания. Принятие файла — отдельное действие от проверки текста.
 
-Reviewed document versions include the attached files and their metadata. Later edits or detachment leave the last reviewed version available to project threads until the revised document is reviewed. Thread messages retain the file context used for that answer.
+Проверенные версии документов включают файлы и метаданные. Последующие правки или открепление не меняют последнюю проверенную версию, доступную темам, до новой проверки. Сообщения сохраняют файловый контекст своего ответа.
 
-## Project stages
+## Этапы проекта
 
-| Section      | What you review                                                                                                                 |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------- |
-| **Brief**    | The project, current situation, products, intended result, boundaries, constraints and supplied material.                       |
-| **Strategy** | Priority audiences, product roles, positioning, customer paths, channels and measures of success.                               |
-| **Brand**    | Meaning, promise, supported claims, evidence, voice, objections and calls to action.                                            |
-| **Design**   | A written description of the visual direction, existing assets and constraints.                                                 |
-| **Products** | Separate products with their own descriptions, operations and economics, Sales, Promotion, Analytics and research where needed. |
+| Раздел        | Что проверить                                                                                                  |
+| ------------- | -------------------------------------------------------------------------------------------------------------- |
+| **Бриф**      | Проект, ситуация, продукты, результат, границы, ограничения и материалы.                                       |
+| **Продукты**  | Отдельные описания, операции и экономика, продажи, продвижение и исследования аудитории, конкурентов и поиска. |
+| **Стратегия** | Приоритетные аудитории, роли продуктов, позиционирование, пути клиентов, каналы и критерии успеха.             |
+| **Бренд**     | Смысл, обещание, допустимые утверждения, доказательства, голос, возражения и действия.                         |
+| **Дизайн**    | Текстовое описание визуального направления, ресурсов и ограничений.                                            |
 
-Selecting Brief.md, Strategy.md, Brand.md, Design.md or Products.md opens that file's thread, with its conversation and editable text. Selecting a product opens that product's own sections:
+Выбор Brief.md, Strategy.md, Brand.md, Design.md или Products.md открывает его переписку и редактируемый текст. Выбор продукта открывает собственные разделы:
 
-| Product section            | Contents                                                                                                                                                |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Product**                | Customer, problem, offer, value and conditions.                                                                                                         |
-| **Operations & Economics** | Delivery, revenue, resources, activities, partners, costs and financing owned by this Product. Shared resources include this Product's allocated share. |
-| **Sales**                  | Discovery, evaluation, purchase, delivery, use, support and continued use.                                                                              |
-| **Promotion**              | A written description of how this product will be presented publicly, with Website, Creative and Presentation texts where relevant.                     |
-| **Analytics & Research**   | Measures, observations, questions and evidence needed to examine this Product's assumptions.                                                            |
+| Раздел продукта                       | Содержание                                                                                                                     |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| **Описание**                          | Что это, кому подходит, состав, применение, стоимость и поддержка.                                                             |
+| **Экономика**                         | Выполнение, выручка, ресурсы, действия, партнёры, расходы и финансирование продукта. Для общих ресурсов — выделенная ему доля. |
+| **Продажи**                           | Знакомство, оценка, покупка, получение, использование, поддержка и продолжение.                                                |
+| **Продвижение**                       | Текстовое описание публичной подачи: сайт, креативы и презентация, где они нужны.                                              |
+| **Аудитория, конкуренты и семантика** | Результаты исследований клиентов, альтернатив и поискового спроса.                                                             |
 
-Text is marked **accepted**, **proposal**, **unknown** or **conflict**. Acceptance records your review of the wording, not proof that its assumptions are true. Resolve a supplied conflict or leave an unknown fact open; the agent does not invent an answer.
+Метки текста: **accepted — принято**, **proposal — предложение**, **unknown — неизвестно**, **conflict — противоречие**. Принятие фиксирует проверку формулировки, а не истинность предположений. Разрешите противоречие или оставьте факт неизвестным; агент не придумывает ответ.
 
-## Work with AI Chat
+## Работа с AI Chat
 
-| Action                              | What happens                                                                                                 |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| **Evaluate an idea**                | Compare it with your reviewed descriptions, examine its assumptions and weigh alternatives.                  |
-| **Correct identified shortcomings** | Review what the AI agent points out and edit the affected description.                                       |
-| **Change a section**                | Review a proposed revision before it replaces accepted text.                                                 |
-| **Improve supplied material**       | Revise an uploaded document or draft written content using the reviewed project.                             |
-| **Add another product**             | Create its own Product, Operations & Economics, Sales, Promotion, Analytics and research sections as needed. |
-| **Export the documents**            | Download the current texts as Markdown or HTML and freely use them outside AI Chat.                          |
+| Действие                | Что происходит                                                                                                   |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| **Оценить идею**        | Сравнить с проверенными описаниями, исследовать предположения и взвесить альтернативы.                           |
+| **Исправить недочёты**  | Проверить замечания агента и изменить соответствующее описание.                                                  |
+| **Изменить раздел**     | Проверить новую редакцию перед заменой принятого текста.                                                         |
+| **Улучшить материал**   | Отредактировать загруженный документ или подготовить текст с проверенным контекстом.                             |
+| **Добавить продукт**    | Создать его описание, операции и экономику, продажи, продвижение и исследования аудитории, конкурентов и поиска. |
+| **Выгрузить документы** | Скачать текущие тексты в Markdown или HTML и свободно использовать вне AI Chat.                                  |
 
-## Create a project thread
+## Создание темы проекта
 
-Choose **New thread** and give it a name. **Create thread** opens a separate conversation with the project's current assistant profile. All Knowledge connected to that profile is available for its replies. Changes to a document are reviewed in that file's working thread.
+Выберите **Новая тема** и назовите её. **Создать тему** открывает отдельную переписку с текущим профилем ассистента проекта. Все знания Knowledge, подключённые к профилю, доступны для ответов. Изменения документов проверяются в рабочих переписках соответствующих файлов.
 
-New threads have no automatically selected skill. To use a connected skill for a request, include `/skill-slug` in the message. The open thread shows its conversation and composer.
+В новой теме навык не выбран автоматически. Чтобы использовать подключённый навык, включите `/skill-slug` в сообщение. Открытая тема показывает переписку и поле сообщения.
 
-Attached document names appear on the right side of the thread header, beside its settings button. Thread settings lets you rename the thread, add or remove reviewed documents for future replies, or delete the thread and its messages after confirmation. Changing context documents preserves earlier messages and their recorded context. Removing every document leaves future replies with the conversation and its sent attachments. Closing settings without saving leaves the thread unchanged.
+Имена прикреплённых документов находятся справа в заголовке рядом с настройками. В настройках можно переименовать тему, добавить или убрать проверенные документы для будущих ответов либо удалить тему с сообщениями после подтверждения. Смена контекста сохраняет старые сообщения и записанный контекст. Если убрать все документы, будущие ответы используют переписку и отправленные вложения. Закрытие без сохранения не меняет тему.
 
-You can start a thread with one reviewed document while other sections remain unfinished. When you edit a reviewed document, project threads keep using its last reviewed version until you save the new text after review.
+Начать тему можно с одним проверенным документом, пока другие не завершены. При редактировании темы продолжают использовать последнюю проверенную версию до сохранения нового проверенного текста.
 
-## Continue working
+## Продолжение работы
 
-Documents remain visible beside the conversation. A green check marks a reviewed document; editing it removes the mark until the revised version is reviewed. The token balance remains visible. It may go below zero. At −2,000 internal tokens or lower, new paid AI requests are restricted; top up above the threshold to continue the saved task. Failed or cancelled AI requests restore all their token deductions for a net charge of zero.
+Документы видны рядом с перепиской. Зелёная галочка отмечает проверенный документ; правка убирает её до новой проверки. Баланс токенов виден постоянно и может быть отрицательным. При −2 000 внутренних токенов или ниже новые платные AI-запросы ограничены; пополните выше порога для продолжения сохранённой задачи. Ошибка или отмена AI-запроса возвращает все его списания; чистое списание равно нулю.
 
-If a text edit cannot be saved, keep the last saved description, name the failed action and offer retry or support. Proposed changes remain available for review. Export does not create another editable copy inside the workspace or establish rights in third-party inputs.
+При ошибке сохранения оставьте последнее сохранённое описание, назовите неудавшееся действие и предложите повторить или обратиться за помощью. Предложенные правки остаются доступными. Выгрузка не создаёт вторую редактируемую копию внутри рабочего пространства и не устанавливает права на сторонние материалы.
 
-Landing-page generation and paid server deployment are future capabilities outside this first release. Their descriptions remain available under future capabilities; creation and publication are disabled.
+Генерация лендинга и платное развёртывание на сервере относятся к будущим возможностям. Описания доступны в соответствующем разделе; создание и публикация отключены.
 
-[Buy tokens](/ai-chat/rbac/subjects/tokens) · [Add project material](/ai-chat/social/profiles/example#materials) · [Export the documents](/ai-chat/social/profiles/example#documents)
+[Купить токены](/ai-chat/rbac/subjects/tokens) · [Добавить материалы](/ai-chat/social/profiles/example#materials) · [Выгрузить документы](/ai-chat/social/profiles/example#documents)
 
-## Document fields
+## Поля документов
 
-These fields remain available in each document's editor. The agent discusses the selected field in that document’s chat. The fields follow Studio’s canonical document templates; the question beside a file or section opens its purpose, completion guidance and methodological basis in a right-hand panel. Empty fields stay marked as unknown. A suggested edit requires an explicit **Apply to draft** action; **Save reviewed version** records the user's review, including any questions left open.
+Поля доступны в редакторе документа. Агент обсуждает выбранное поле в его чате. Структура соответствует каноническим шаблонам Studio; вопрос у файла или раздела открывает справа назначение, подсказки заполнения и методическую основу. Пустые поля остаются неизвестными. Предложенная правка требует явного действия **Применить к черновику**; **Сохранить проверенную версию** фиксирует проверку пользователя, включая открытые вопросы.
 
-Each section has **Editor** and **Preview** modes. Filled sections open in Preview; empty sections open in Editor. Preview displays Markdown headings, lists, tables, links and emphasis. Editor retains the source text, including significant whitespace. Switching modes does not change the draft or its reviewed status. The downloaded document and agent context use this same Markdown.
+У раздела есть **Редактор** и **Предпросмотр**. Заполненный раздел открывается в предпросмотре, пустой — в редакторе. Предпросмотр показывает Markdown: заголовки, списки, таблицы, ссылки и выделения. Редактор сохраняет исходный текст, включая значимые пробелы. Переключение режимов не меняет черновик и состояние проверки. Скачивание и контекст агента используют тот же Markdown.
 
 <!-- document: brief -->
 
 ### Brief.md
 
-| Field                   | Question or information to work through                                                                                                                                                     |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Project and products    | What is this project, which products belong to it, and what is outside its scope? Keep exact names, IDs, owners and current or intended availability.                                       |
-| Customers and value     | Who uses, buys or benefits from the offer? Describe their situation, problem and the value currently delivered or intended.                                                                 |
-| Current state           | What exists or has been observed? Attribute supplied statements, tested work, results and assets; distinguish them from intentions.                                                         |
-| Business and resources  | What is known about channels, delivery, prices, revenue, funding, people, partners, costs and capacity? State units, sources and constraints.                                               |
-| Goals and success       | What does the owner want to achieve, with which priorities, baseline, target and time horizon where supplied?                                                                               |
-| Visual reference intake | Record identity and references for interface and website, typography, photography, illustration and marketing creative. Attach exact files and record preferences, rights and review state. |
+| Поле                    | Вопрос или сведения для уточнения                                                                                                                                       |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Project and products    | Что это за проект, какие продукты ему принадлежат и что выходит за его границы? Сохраните точные имена, ID, владельцев и текущую или предполагаемую доступность.        |
+| Customers and value     | Кто использует, покупает или получает пользу? Опишите ситуацию, проблему и текущую либо предполагаемую ценность.                                                        |
+| Competitors             | Какие альтернативы уже знает владелец? Запишите ссылки и причины сравнения или укажите, что альтернативы ещё не найдены.                                                |
+| Current state           | Что существует или наблюдалось? Укажите происхождение утверждений, проверенных работ, результатов и ресурсов; отделите их от намерений.                                 |
+| Business and resources  | Что известно о каналах, выполнении, ценах, выручке, финансировании, людях, партнёрах, расходах и возможностях? Укажите единицы, источники и ограничения.                |
+| Goals and success       | Чего хочет достичь владелец? Укажите приоритеты, исходный уровень, цель и срок, если они заданы.                                                                        |
+| Visual reference intake | Запишите айдентику и референсы интерфейса и сайта, типографики, фотографии, иллюстраций и креативов. Прикрепите точные файлы, предпочтения, права и состояние проверки. |
 
 <!-- document: strategy -->
 
 ### Strategy.md
 
-| Field                       | Question or information to work through                                                                                               |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| Strategic direction         | Describe the intended marketing system, positioning and durable trade-offs that fulfill the reviewed Brief.                           |
-| Audiences and product roles | Which audiences and situations matter, what value does each confirmed product deliver, and what behavior should it support?           |
-| Growth system               | How do prioritized channels work together? Give each a role, audience, content or value, destination and growth mechanism.            |
-| Customer journey            | Describe discovery, useful value, purchase or adoption, continued use and recommendations from the customer's perspective.            |
-| Measurement and priorities  | Connect outcomes to observable signals and management decisions. State resource priorities and risks that could change the direction. |
+| Поле                        | Вопрос или сведения для уточнения                                                                                                            |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Strategic direction         | Опишите маркетинговую систему, позиционирование и устойчивые компромиссы, выполняющие проверенный бриф.                                      |
+| Audiences and product roles | Какие аудитории и ситуации приоритетны, какую ценность даёт каждый подтверждённый продукт и какое поведение поддерживает?                    |
+| Growth system               | Как работают вместе приоритетные каналы? Укажите для каждого роль, аудиторию, содержание или ценность, назначение перехода и механизм роста. |
+| Customer journey            | Опишите знакомство, полезный результат, покупку или внедрение, продолжение работы и рекомендации с точки зрения клиента.                     |
+| Measurement and priorities  | Свяжите результаты с наблюдаемыми сигналами и управленческими решениями. Укажите приоритеты ресурсов и риски изменения направления.          |
 
 <!-- document: brand -->
 
 ### Brand.md
 
-| Field                         | Question or information to work through                                                                           |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Brand identity                | What are the exact public brand and product names, their relationship, naming rules and optional slogan?          |
-| Intended perception           | What should the audience understand, trust and remember? Describe character, difference and impressions to avoid. |
-| Meaning and message hierarchy | Connect the audience's situation to the promise, supporting proof, objections and next action.                    |
-| Voice and language            | Define terminology, tone, sentence and evidence rules, with examples of suitable and unsuitable wording.          |
-| Consistency rules             | Which naming, promise, evidence, commercial and support rules must hold across products and channels?             |
+| Поле                          | Вопрос или сведения для уточнения                                                                                  |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Brand identity                | Каковы точные публичные имена бренда и продуктов, их связь, правила названий и необязательный слоган?              |
+| Intended perception           | Что аудитория должна понять, чему доверять и что запомнить? Опишите характер, отличие и нежелательные впечатления. |
+| Meaning and message hierarchy | Свяжите ситуацию аудитории с обещанием, доказательствами, возражениями и следующим действием.                      |
+| Voice and language            | Определите термины, тон, правила предложений и доказательств; приведите подходящие и неподходящие формулировки.    |
+| Consistency rules             | Какие правила названий, обещаний, доказательств, коммерческих условий и поддержки общие для продуктов и каналов?   |
 
 <!-- document: design -->
 
 ### Design.md
 
-| Field                          | Question or information to work through                                                                                                                                 |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Design intent                  | Describe the reviewed visual preferences, brand character, reusable graphic language and do/do-not rules. Keep all five taste categories distinct.                      |
-| Identity application           | Describe how the approved name and identity assets appear in lockups and different contexts. Attach real sources.                                                       |
-| Visual system                  | Define semantic colors, typography, weights, languages, licenses, fallbacks and their usage.                                                                            |
-| Iconography                    | Name the library, version, source and license, or the custom drawing method. Specify the family, states, labels and actual glyph examples.                              |
-| Interface and product surfaces | Define reusable layout, components, interaction states, accessibility and responsive principles. Product-specific pages belong to that product.                         |
-| Photography                    | Define purpose, evidence limits, style prompt, production specification, example assets and the review gate. Preserve masters and prepare square deliveries separately. |
-| Illustration and diagrams      | Define purpose, evidence limits, style prompt, production specification, example assets and the review gate for illustrations and diagrams.                             |
-| Outputs and provenance         | Identify actual supplied and generated assets, originals and deliveries, prompts, tools, rights, review and permitted use.                                              |
+| Поле                           | Вопрос или сведения для уточнения                                                                                                                                               |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Общие правила дизайна          | Опишите проверенные визуальные предпочтения, характер бренда, общую графику и правила допустимого. Сохраните различия пяти категорий вкуса.                                     |
+| Identity application           | Опишите применение согласованного имени и файлов айдентики в композициях и разных ситуациях. Прикрепите реальные источники.                                                     |
+| Visual system                  | Определите семантические цвета, типографику, начертания, языки, лицензии, запасные шрифты и применение.                                                                         |
+| Iconography                    | Назовите библиотеку, версию, источник и лицензию либо метод рисования. Укажите семейство, состояния, подписи и настоящие примеры значков.                                       |
+| Interface and product surfaces | Определите общие макеты, компоненты, состояния взаимодействия, доступность и адаптивность. Страницы конкретного продукта принадлежат ему.                                       |
+| Photography                    | Определите назначение, границы доказательств, стилевой промпт, спецификацию производства, примеры и условия проверки. Сохраняйте мастеры и отдельно готовьте квадратные версии. |
+| Illustration and diagrams      | Определите назначение, границы доказательств, стилевой промпт, спецификацию производства, примеры и условия проверки иллюстраций и схем.                                        |
 
 <!-- document: products -->
 
 ### Products.md
 
-| Field    | Question or information to work through                                                                                                     |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| Products | List every confirmed product with a stable ID, name, summary and its own document. Retain drafts and products outside the current priority. |
+| Поле     | Вопрос или сведения для уточнения                                                                                                                         |
+| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Products | Перечислите подтверждённые продукты: постоянный ID, имя, краткое описание и собственный документ. Сохраните черновики и продукты вне текущего приоритета. |
 
 <!-- document: product -->
 
-### Product document
+### Документ продукта
 
-| Field                          | Question or information to work through                                                                                                                                                                                                                 |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Product identity               | State the brand, product name, category, lifecycle, owner and boundary.                                                                                                                                                                                 |
-| Customer Segments              | Distinguish user, buyer, payer, beneficiary and decision-maker. Give segments stable IDs, qualifying situations, triggers and exclusions.                                                                                                               |
-| Problem and desired progress   | Describe the customer's circumstance, desired progress, functional, social and emotional forces, pains and gains.                                                                                                                                       |
-| Value Propositions             | Compare actual alternatives, differentiated capabilities and the customer value they enable. Link the offer to jobs, pains and gains.                                                                                                                   |
-| Offer and usage                | Define access or deliverable unit, included and excluded scope, experience, support, rights and dependencies.                                                                                                                                           |
-| Revenue Streams                | For each segment state payer, unit, price or pricing rule, currency, cadence, payment timing and conditions. For a free offer record the intended non-cash exchange separately from money revenue.                                                      |
-| Key Activities                 | Which work creates and delivers the value, and who owns it? Reference the Sales process without duplicating it.                                                                                                                                         |
-| Key Resources                  | Identify people, infrastructure, finance and intellectual resources, owners, availability and constraints. Record this product's share and allocation basis for shared resources.                                                                       |
-| Key Partnerships               | Which suppliers and partners contribute, what do they do, and which dependencies or agreements have evidence?                                                                                                                                           |
-| Cost Structure                 | Describe fixed and variable costs, amount, currency, period and calculation basis. Separate cash from founder time and state shared allocations. Include Funding: capital or subsidy provider, conditions and limits, separately from customer revenue. |
-| Assumptions and decision rules | Give material assumptions stable IDs, sources and states, with signals and consequences for the affected decisions. Link the Research that tests them.                                                                                                  |
-| Business goals and metrics     | Connect acquisition, customer value, adoption, revenue and continued use to relevant business signals and management decisions. Give numerical targets a basis.                                                                                         |
-| Sales                          | Describe the complete customer process for each segment: discovery, evaluation, purchase or adoption, delivery, use, help and continued use. Reference the Product's money terms.                                                                       |
-| Promotion                      | Describe this product's Website, Marketing Creative and Presentation where relevant, applying the reviewed Strategy, Brand and Design.                                                                                                                  |
-| Analytics & Research           | Keep measured results, source and time window separate from research findings and hypotheses. Link findings to this Product's assumptions.                                                                                                              |
+| Поле                | Содержание                                                                                                                                   |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Что это за продукт  | Категория, конкретная задача, выдаваемый результат и пример применения. Текущая стадия важна, если меняет доступность.                       |
+| Кому подходит       | Ситуации людей или организаций, ожидаемый результат и роли участника, покупателя и плательщика. ID сегментов сохраняются.                    |
+| Что входит          | Проверенный состав и возможности с пользой для клиента. Для программы — реальные модули и их связи; для услуги — состав работ и результат.   |
+| Как пользоваться    | Получение продукта, необходимые вводные, действия продукта и пользователя, результат и существенные настройки.                               |
+| Стоимость и условия | Цена или расчёт, дополнительные расходы, условия получения и поддержки. Подробные денежные правила принадлежат экономике.                    |
+| Развитие продукта   | Существенные планы, помогающие понять продукт. Отделить их от доступных возможностей.                                                        |
+| Аудитория           | Ситуации, критерии, вероятные возражения с ответами и вывод об аудитории. Агент собирает доступные исследования и источники самостоятельно.  |
+| Конкуренты          | Реальное сравнение альтернатив, цены, ограничения, сильные стороны и вывод о нашем месте среди них.                                          |
+| Семантика           | Поисковые фразы, параметры и результаты измерений, выдача, группы, назначение страниц и приоритет. Кандидаты отличать от измеренного спроса. |
+| Экономика           | Выручка, действия, ресурсы, партнёры, затраты и финансирование. Общие расходы учитывать с основанием распределения.                          |
+| Sales               | Путь каждого сегмента от знакомства до получения, использования и продолжения. У шага понятны действие клиента и ответ бизнеса.              |
+| Promotion           | Сайт, презентация, рекламные креативы и статьи: конкретное содержание для аудитории с понятным следующим действием.                          |

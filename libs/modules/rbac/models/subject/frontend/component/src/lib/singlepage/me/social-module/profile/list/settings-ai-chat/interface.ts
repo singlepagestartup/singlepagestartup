@@ -10,7 +10,9 @@ import type { IModel as IIdentity } from "@sps/rbac/models/identity/sdk/model";
 import type { ISpsComponentBase } from "@sps/ui-adapter";
 export const variant =
   "me-social-module-profile-list-settings-ai-chat" as const;
-export interface IComponentProps extends IParent<IModel, typeof variant> {}
+export interface IComponentProps extends IParent<IModel, typeof variant> {
+  language?: string;
+}
 export interface IComponentPropsExtended
   extends IParentExtended<IModel, typeof variant, IComponentProps> {
   /** Loaded by the specialized socialModuleProfileFind reader; retry is client-only. */

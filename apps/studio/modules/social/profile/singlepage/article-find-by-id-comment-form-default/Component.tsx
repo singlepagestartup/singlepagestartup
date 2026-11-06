@@ -68,7 +68,7 @@ export function ProfileArticleFindByIdCommentFormDefault(
         className="mb-3 block text-sm font-semibold"
         htmlFor="social-comment-draft"
       >
-        Your comment
+        Ваш комментарий
       </label>
       <textarea
         id="social-comment-draft"
@@ -93,6 +93,6 @@ export function ProfileArticleFindByIdCommentFormDefault(
 }
 const Send = createIcon("paper-plane-tilt");
 export const defaultProfileArticleFindByIdCommentFormDefaultProps = {
-  placeholder: "Write a comment...",
-  submitLabel: "Post comment",
+  placeholder: "Напишите комментарий…",
+  submitLabel: "Отправить комментарий",
 };

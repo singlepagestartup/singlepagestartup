@@ -27,7 +27,8 @@
           "bun node_modules/drizzle-kit/bin.cjs generate --config=libs/providers/db/src/lib/drizzle/config.ts",
           "bun tools/plugins/sps-generator-plugin/src/utils/consistency-migrations/generate.ts"
         ]
-      }
+      },
+      "cache": false
     },
     "repository-migrate": {
       "executor": "nx:run-commands",

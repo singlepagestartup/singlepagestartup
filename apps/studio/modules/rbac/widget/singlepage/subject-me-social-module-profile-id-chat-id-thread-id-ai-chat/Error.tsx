@@ -13,17 +13,17 @@ export function Component({
   const failed = state === "error";
   const needsSignIn = state === "sign-in-required";
   const title = failed
-    ? "Couldn't load your workspace."
+    ? "Не удалось загрузить рабочее пространство."
     : needsSignIn
-      ? "Sign in to open your workspace"
-      : "This project is unavailable in your workspace.";
+      ? "Войдите, чтобы открыть проект"
+      : "Этот проект недоступен в вашем аккаунте.";
   const description =
     message ??
     (failed
-      ? "Try again to reconnect to your workspace."
+      ? "Попробуйте снова подключиться к проекту."
       : needsSignIn
-        ? "Sign in to your account to access your projects and conversations."
-        : "Choose one of your projects or sign in with a different account.");
+        ? "Войдите в аккаунт, чтобы открыть свои проекты и обсуждения."
+        : "Выберите свой проект или войдите в другой аккаунт.");
   const control =
     "inline-flex min-h-11 items-center justify-center rounded-xl border border-border bg-card px-5 py-2 text-sm font-semibold text-foreground no-underline hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
   const content = (
@@ -48,19 +48,19 @@ export function Component({
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           {failed ? (
             <button type="button" className={control} onClick={onRetry}>
-              Try again
+              Попробовать ещё раз
             </button>
           ) : (
             <a
               href={needsSignIn ? signInHref : projectsHref}
               className={control}
             >
-              {needsSignIn ? "Sign in" : "My projects"}
+              {needsSignIn ? "Войти" : "Мои проекты"}
             </a>
           )}
           {state === "access-denied" && (
             <a href={signInHref} className={control}>
-              Switch account
+              Сменить аккаунт
             </a>
           )}
         </div>

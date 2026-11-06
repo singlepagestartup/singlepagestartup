@@ -8,7 +8,11 @@ const meta = {
   parameters: {
     layout: "fullscreen",
   },
-  args: { variant: "social-module-profile-slug-author" },
+  args: {
+    variant: "social-module-profile-slug-author",
+    authorSlug: "sps-editorial",
+  },
+  argTypes: { authorSlug: { control: "text" } },
 } satisfies Meta<
   Extract<
     React.ComponentProps<typeof Page>,
@@ -23,3 +27,4 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   name: "Default",
 };
+export const Missing: Story = { args: { authorSlug: "not-in-the-journal" } };

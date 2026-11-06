@@ -51,6 +51,6 @@ export function ProfilesProvider({
 }
 export function useProfiles() {
   const context = useContext(ProfilesContext);
-  if (!context) throw new Error("Project profiles require ProfilesProvider.");
+  if (!context) throw new Error("Профили проектов требуют ProfilesProvider.");
   return context;
 }

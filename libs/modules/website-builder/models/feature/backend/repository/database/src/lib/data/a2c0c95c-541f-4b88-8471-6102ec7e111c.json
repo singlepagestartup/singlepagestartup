@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "a2c0c95c-541f-4b88-8471-6102ec7e111c",
+  "createdAt": "2026-10-26T00:12:21.001Z",
+  "updatedAt": "2026-10-27T14:59:48.546Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "host",
+    "ru": "host"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Give the section its own address.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Разместите раздел по отдельному адресу.\"}]}]}"
+  },
+  "adminTitle": "host",
+  "slug": "framework-reviewed-article-startup-connections-feature-1"
+}

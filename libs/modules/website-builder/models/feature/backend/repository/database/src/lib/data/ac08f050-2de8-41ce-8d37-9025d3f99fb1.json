@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "ac08f050-2de8-41ce-8d37-9025d3f99fb1",
+  "createdAt": "2026-10-26T00:11:54.891Z",
+  "updatedAt": "2026-10-27T14:59:50.842Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "RBAC",
+    "ru": "RBAC"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Account, current-user and conversation access checks. An account and a public profile are separate records.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Аккаунт, текущего пользователя и проверки доступа к переписке. Аккаунт и публичный профиль — разные записи.\"}]}]}"
+  },
+  "adminTitle": "RBAC",
+  "slug": "framework-reviewed-article-social-connections-feature-0"
+}

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 export const variant = "featured";
 
 export type ArticleFeaturedProps = {
@@ -10,7 +11,9 @@ export type ArticleFeaturedProps = {
   authorName: string;
   authorSlug: string;
   authorAvatar: string;
+  author?: ReactNode;
   date: string;
+  createdAt?: string;
   readTime: string;
   target: ArticleFeaturedTarget | undefined;
 };

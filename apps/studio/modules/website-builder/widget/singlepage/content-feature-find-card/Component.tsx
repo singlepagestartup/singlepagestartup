@@ -1,4 +1,8 @@
-import type { IComponentProps, ContentFeatureFindCardProps } from "./interface";
+import {
+  type IComponentProps,
+  type ContentFeatureFindCardProps,
+  type IModuleIconProps,
+} from "./interface";
 export type { ContentFeatureFindCardProps } from "./interface";
 
 import { Component as SharedIcon } from "../../../../shared/icon";
@@ -169,5 +173,3 @@ export const defaultContentFeatureFindCardProps = {
     },
   ] satisfies FeatureItem[],
 };
-
-import type { IModuleIconProps } from "./interface";

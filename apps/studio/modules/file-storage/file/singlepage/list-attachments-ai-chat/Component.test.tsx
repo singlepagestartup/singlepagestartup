@@ -3,13 +3,16 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { Component as File } from "../../index";
 import { FilesProvider } from "./Files";
 import { readProjectFiles } from "./utils";
-import { aiChatAttachmentFixture } from "../../../../social/profile/singlepage/scope/ai-chat/project/fixtures";
+import {
+  aiChatAttachmentFixture,
+  aiChatSourceFixture,
+} from "../../../../social/profile/singlepage/scope/ai-chat/project/fixtures";
 import {
   moveThreadAttachment,
   reorderThreadAttachment,
   appendThreadExchange,
 } from "../../../../social/thread/singlepage/id/ai-chat/state";
-import { aiChatSourceFixture } from "../../../../social/profile/singlepage/scope/ai-chat/project/fixtures";
+
 import { knowledgeAgent } from "../../../../social/profile/singlepage/agent/id/ai-chat";
 function renderAttachments(
   props: { initialExpanded?: boolean; pendingFileId?: string } = {},

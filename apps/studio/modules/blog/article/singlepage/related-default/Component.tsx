@@ -1,3 +1,4 @@
+import { frameworkArticlePreviews } from "../card/Component";
 import type { IComponentProps, ArticleRelatedDefaultProps } from "./interface";
 export type { ArticleRelatedDefaultProps } from "./interface";
 /**
@@ -42,14 +43,8 @@ const buttonBase =
 const kit = {
   focus: focus,
 };
-export const defaultArticleRelatedDefaultProps = {
-  href: undefined as string | undefined,
-  slug: "getting-started",
-  category: "guides",
-  title: "Getting Started: From Zero to Your First Module",
-  date: "Feb 3, 2026",
-  readTime: "5 min read",
-  target: undefined as ArticleRelatedDefaultTarget | undefined,
+export const defaultArticleRelatedDefaultProps: ArticleRelatedDefaultProps = {
+  ...frameworkArticlePreviews[1],
+  href: undefined,
+  target: undefined,
 };
-
-import type { ArticleRelatedDefaultTarget } from "./interface";

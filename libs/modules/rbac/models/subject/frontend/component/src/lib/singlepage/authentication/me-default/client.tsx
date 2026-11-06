@@ -1,7 +1,7 @@
 "use client";
 import "client-only";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useJwt } from "react-jwt";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
@@ -43,6 +43,31 @@ export default function Client(props: IComponentProps) {
   const token = useJwt<{ exp: number; iat: number; subject: IModel }>(
     rawToken || "",
   );
+
+  const reEvaluateToken = useRef(token.reEvaluateToken);
+  reEvaluateToken.current = token.reEvaluateToken;
+
+  useEffect(() => {
+    const expiresAt = token.decodedToken?.exp;
+    if (!rawToken || !expiresAt || !Number.isFinite(expiresAt)) return;
+    let timeout: ReturnType<typeof setTimeout>;
+    const checkExpiry = () => {
+      // An old deadline must not invalidate a refreshed cookie.
+      const currentToken = readAuthenticationJwtCookie();
+      if (currentToken !== rawToken) {
+        setRawToken(currentToken);
+        return;
+      }
+      const remaining = expiresAt * 1000 - Date.now();
+      if (remaining >= 0) {
+        timeout = setTimeout(checkExpiry, Math.min(remaining + 1, 2147483647));
+        return;
+      }
+      reEvaluateToken.current(rawToken);
+    };
+    checkExpiry();
+    return () => clearTimeout(timeout);
+  }, [rawToken, token.decodedToken?.exp]);
 
   const decoded = useMemo(
     () => token.decodedToken,
@@ -126,7 +151,7 @@ export default function Client(props: IComponentProps) {
     router,
   ]);
 
-  if (!decoded?.subject || token.isExpired) {
+  if (!rawToken || !decoded?.subject || token.isExpired) {
     return props.unauthenticatedRedirectHref
       ? (props.skeleton ?? <Skeleton />)
       : (props.fallback ?? <Skeleton />);

@@ -1,5 +1,3 @@
-confirmation:
-  confirmed: false
 schema: singlepagestartup.asset-index.v1
 assets:
   - id: singlepage-legacy-orange-favicon
@@ -5650,8 +5648,10 @@ assets:
     alt: "A man reviewing a project sketch beside his laptop."
 
   - id: singlepage-generated-account-mascot
-    path: apps/studio/workspace/assets/singlepage/generated/living-focus/singlepagestartup-account-mascot.png
+    path: assets/singlepage/generated/living-focus/singlepagestartup-account-mascot.png
     source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
     evidence: false
     rights_status: AI-generated illustrative draft for Studio preview.
     purpose: Original user-avatar mascot master.
@@ -5673,8 +5673,10 @@ assets:
     source_or_tool: Built-in image_gen, text generation.
 
   - id: singlepage-generated-account-mascot-square
-    path: apps/studio/workspace/assets/singlepage/generated/living-focus/singlepagestartup-account-mascot-square.png
+    path: assets/singlepage/generated/living-focus/singlepagestartup-account-mascot-square.png
     source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
     evidence: false
     rights_status: AI-generated illustrative draft for Studio preview.
     purpose: Square delivery avatar from the preserved mascot master.
@@ -5686,3 +5688,304 @@ assets:
       Preserve the whole mascot without cropping or redesign; center it with
       transparent breathing room for a circular UI avatar.
     source_or_tool: Built-in image_gen, referenced-image edit.
+
+  - id: singlepage-generated-framework-ads-v2-business
+    path: "assets/singlepage/generated/framework-ads-v2/business.png"
+    design_role: null
+    design_key: null
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-ads-v2"
+    evidence: false
+    rights_status: "AI-generated photograph of fictional adults; conceptual advertising imagery."
+    purpose: "Code Framework advertising: business. Preserved original photograph; complete landscape composition for advertising."
+    production_stage: "original-master"
+    source_or_tool: "Built-in ImageGen. Copied unchanged from /Users/rogwild/.codex/generated_images/01a179bf-013e-7121-bb0f-2aa1c907a875/exec-aef91fc8-3dcb-45be-a44e-8c76cf0c4d5d.png."
+    content_sha256: "f844ed18558730baec3a98af9730f0f5d9eb5d5be614c3d29db96f81a75d2497"
+    style_master_sha256: "9425ac405b2e6979438a4f25a5c23823c9b2e768f0f3bfe594905aa28db64dae"
+    reference_use: "Five local references inspected for lighting, depth and gesture. Written style brief used for new generation; no image inputs."
+    display_derivative_asset_id: "singlepage-generated-framework-ads-v2-business-square"
+    related_artifacts: [singlepage.design, product.singlepagestartup.marketing-creative]
+    allowed_use: ["Complete photographs in product advertising and derived square layouts; keep copy editable outside the image."]
+    prohibited_use: ["Do not present fictional people as customers, testimonials or evidence of business results.", "Do not stretch or crop away people and gestures."]
+    reference_asset_ids: ["singlepage-photography-reference-motion-portrait", "singlepage-photography-reference-motion-runner", "singlepage-photography-reference-hand-light-streaks", "singlepage-generated-living-focus-photography-business-conversation-square", "singlepage-generated-living-focus-photography-work-in-motion-square"]
+    dimensions: { width: 1536, height: 1024 }
+    prompt: "Use case: photorealistic-natural. A single editorial photograph for a SinglePageStartup advertising creative, Living Focus art direction. Candid people doing real work, cool blue / teal window daylight balanced with warm natural skin, graphite and pale neutral surroundings, a clear human gesture, softly blurred foreground and background, tactile honest textures. Contemporary documentary advertising photography, strong focal point visible as a thumbnail. Fictional adults; not an endorsement or testimonial. No text, watermarks, logos, UI graphics, AI symbols, generic handshake, staged victory, or stock-photo grin. Keep all faces and working hands safely inside the frame; choose a complete natural composition. Faces must be different from the dark curly short-haired woman in previous brand photography. Scene: a small design workshop. A 38-year-old man with close-cropped dark hair and light stubble, wearing a deep petrol-blue work shirt, and a 30-year-old woman with long straight blonde hair loosely tied back, in a cream blouse, discuss how to present their handmade wooden table lamp online. The lamp and an open unbranded laptop sit together on a worktable. The man rotates the lamp gently; the woman looks thoughtfully at the screen. Main man face in three-quarter view, visible engaged expression, no looking at camera. Tight editorial framing connects people, their tangible product and laptop. Diagonal composition, softly lit cool grey workshop, foreground edge out of focus. One photograph only."
+    visual_review:
+      status: visually-verified
+      source: Agent image inspection.
+      findings: Distinct people and work gestures; cool daylight and natural skin; no embedded text or visible anatomical defects.
+
+  - id: singlepage-generated-framework-ads-v2-business-square
+    path: "assets/singlepage/generated/framework-ads-v2/business-square.png"
+    design_role: null
+    design_key: null
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-ads-v2"
+    evidence: false
+    rights_status: "AI-generated photograph of fictional adults; conceptual advertising imagery."
+    purpose: "Code Framework advertising: business. Square delivery with expanded canvas."
+    production_stage: "square-delivery"
+    source_or_tool: "Built-in ImageGen. Copied unchanged from /Users/rogwild/.codex/generated_images/01a179bf-013e-7121-bb0f-2aa1c907a875/exec-995cd6e1-5fba-48a8-a16a-213fb0e6280d.png."
+    content_sha256: "a24cfd28d6cb67e0eccfda8882e5551d3ba4f2d4a89f559b69fc09bd6a9956a2"
+    style_master_sha256: "9425ac405b2e6979438a4f25a5c23823c9b2e768f0f3bfe594905aa28db64dae"
+    reference_use: "Square outpainting of the corresponding original."
+    source_master_asset_id: "singlepage-generated-framework-ads-v2-business"
+    related_artifacts: [singlepage.design, product.singlepagestartup.marketing-creative]
+    allowed_use: ["Complete photographs in product advertising and derived square layouts; keep copy editable outside the image."]
+    prohibited_use: ["Do not present fictional people as customers, testimonials or evidence of business results.", "Do not stretch or crop away people and gestures."]
+    reference_asset_ids: ["singlepage-generated-framework-ads-v2-business"]
+    dimensions: { width: 1254, height: 1254 }
+    prompt: "Use case: precise-object-edit. Expand this complete landscape photograph to a SQUARE delivery canvas by outpainting the short dimension, adding space above and below. Preserve the ENTIRE source frame and all people, faces, hair, clothing, hands, gestures, furniture and objects. No crop, stretching, zooming, reframing, rearrangement or replacement. Continue the room and window above, table and soft foreground below with the same cool teal daylight, natural warm skin, perspective and optical depth. Keep the original photographic composition intact. No text, logo, graphics or additional people. Opaque square photograph; intended delivery size 1254 by 1254 where supported."
+    visual_review:
+      status: visually-verified
+      source: Agent image inspection.
+      findings: Distinct people and work gestures; cool daylight and natural skin; no embedded text or visible anatomical defects.
+
+  - id: singlepage-generated-framework-ads-v2-courses
+    path: "assets/singlepage/generated/framework-ads-v2/courses.png"
+    design_role: null
+    design_key: null
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-ads-v2"
+    evidence: false
+    rights_status: "AI-generated photograph of fictional adults; conceptual advertising imagery."
+    purpose: "Code Framework advertising: courses. Preserved original photograph; complete landscape composition for advertising."
+    production_stage: "original-master"
+    source_or_tool: "Built-in ImageGen. Copied unchanged from /Users/rogwild/.codex/generated_images/01a179bf-013e-7121-bb0f-2aa1c907a875/exec-2d311605-9ccf-4c83-b453-5384d6ca004c.png."
+    content_sha256: "bd253688e52777d5209e163e80830a4dcc9a854c301586cd0eb7e3984a20e351"
+    style_master_sha256: "9425ac405b2e6979438a4f25a5c23823c9b2e768f0f3bfe594905aa28db64dae"
+    reference_use: "Five local references inspected for lighting, depth and gesture. Written style brief used for new generation; no image inputs."
+    display_derivative_asset_id: "singlepage-generated-framework-ads-v2-courses-square"
+    related_artifacts: [singlepage.design, product.singlepagestartup.marketing-creative]
+    allowed_use: ["Complete photographs in product advertising and derived square layouts; keep copy editable outside the image."]
+    prohibited_use: ["Do not present fictional people as customers, testimonials or evidence of business results.", "Do not stretch or crop away people and gestures."]
+    reference_asset_ids: ["singlepage-photography-reference-motion-portrait", "singlepage-photography-reference-motion-runner", "singlepage-photography-reference-hand-light-streaks", "singlepage-generated-living-focus-photography-business-conversation-square", "singlepage-generated-living-focus-photography-work-in-motion-square"]
+    dimensions: { width: 1536, height: 1024 }
+    prompt: "Use case: photorealistic-natural. A single editorial photograph for a SinglePageStartup advertising creative, Living Focus art direction. Candid people doing real work, cool blue / teal window daylight balanced with warm natural skin, graphite and pale neutral surroundings, a clear human gesture, softly blurred foreground and background, tactile honest textures. Contemporary documentary advertising photography, strong focal point visible as a thumbnail. Fictional adults; not an endorsement or testimonial. No text, watermarks, logos, UI graphics, AI symbols, generic handshake, staged victory, or stock-photo grin. Keep all faces and working hands safely inside the frame; choose a complete natural composition. Faces must be different from the dark curly short-haired woman in previous brand photography. Scene: an independent educator creating an online course. A 46-year-old woman with straight shoulder-length chestnut hair and round thin-frame glasses, wearing a textured off-white shirt, explains a lesson outline to a 25-year-old male colleague with short brown hair seen in soft side profile. They sit beside a tall window, open laptop and a notebook with indistinct pencil diagrams on the table; the educator's open palm gestures toward the notebook. Her face is sharply focused in the upper center-right, colleague softer at the left. Blue-grey daylight, lively natural expression of explaining, editorial intimacy. Include the notebook and hands, no readable writing. One photograph only."
+    visual_review:
+      status: visually-verified
+      source: Agent image inspection.
+      findings: Distinct people and work gestures; cool daylight and natural skin; no embedded text or visible anatomical defects.
+
+  - id: singlepage-generated-framework-ads-v2-courses-square
+    path: "assets/singlepage/generated/framework-ads-v2/courses-square.png"
+    design_role: null
+    design_key: null
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-ads-v2"
+    evidence: false
+    rights_status: "AI-generated photograph of fictional adults; conceptual advertising imagery."
+    purpose: "Code Framework advertising: courses. Square delivery with expanded canvas."
+    production_stage: "square-delivery"
+    source_or_tool: "Built-in ImageGen. Copied unchanged from /Users/rogwild/.codex/generated_images/01a179bf-013e-7121-bb0f-2aa1c907a875/exec-b23a7b44-a4a2-4b62-b1fb-c1795f342cb1.png."
+    content_sha256: "be878a348fb8f5dcf3139a65942b70955a9db2db1e31c85cc16aa38b3a17a19f"
+    style_master_sha256: "9425ac405b2e6979438a4f25a5c23823c9b2e768f0f3bfe594905aa28db64dae"
+    reference_use: "Square outpainting of the corresponding original."
+    source_master_asset_id: "singlepage-generated-framework-ads-v2-courses"
+    related_artifacts: [singlepage.design, product.singlepagestartup.marketing-creative]
+    allowed_use: ["Complete photographs in product advertising and derived square layouts; keep copy editable outside the image."]
+    prohibited_use: ["Do not present fictional people as customers, testimonials or evidence of business results.", "Do not stretch or crop away people and gestures."]
+    reference_asset_ids: ["singlepage-generated-framework-ads-v2-courses"]
+    dimensions: { width: 1254, height: 1254 }
+    prompt: "Use case: precise-object-edit. Expand this complete landscape photograph to a SQUARE delivery canvas by outpainting the short dimension, adding space above and below. Preserve the ENTIRE source frame and all people, faces, hair, clothing, hands, gestures, furniture and objects. No crop, stretching, zooming, reframing, rearrangement or replacement. Continue the room and window above, table and soft foreground below with the same cool teal daylight, natural warm skin, perspective and optical depth. Keep the original photographic composition intact. No text, logo, graphics or additional people. Opaque square photograph; intended delivery size 1254 by 1254 where supported."
+    visual_review:
+      status: visually-verified
+      source: Agent image inspection.
+      findings: Distinct people and work gestures; cool daylight and natural skin; no embedded text or visible anatomical defects.
+
+  - id: singlepage-generated-framework-ads-v2-workflow
+    path: "assets/singlepage/generated/framework-ads-v2/workflow.png"
+    design_role: null
+    design_key: null
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-ads-v2"
+    evidence: false
+    rights_status: "AI-generated photograph of fictional adults; conceptual advertising imagery."
+    purpose: "Code Framework advertising: workflow. Preserved original photograph; complete landscape composition for advertising."
+    production_stage: "original-master"
+    source_or_tool: "Built-in ImageGen. Copied unchanged from /Users/rogwild/.codex/generated_images/01a179bf-013e-7121-bb0f-2aa1c907a875/exec-f5417a36-d906-439a-b286-bcc06d4dbc81.png."
+    content_sha256: "2bcf8bacfe34d54655717abf738754639931921afa1252d23a028bf54141a37b"
+    style_master_sha256: "9425ac405b2e6979438a4f25a5c23823c9b2e768f0f3bfe594905aa28db64dae"
+    reference_use: "Five local references inspected for lighting, depth and gesture. Written style brief used for new generation; no image inputs."
+    display_derivative_asset_id: "singlepage-generated-framework-ads-v2-workflow-square"
+    related_artifacts: [singlepage.design, product.singlepagestartup.marketing-creative]
+    allowed_use: ["Complete photographs in product advertising and derived square layouts; keep copy editable outside the image."]
+    prohibited_use: ["Do not present fictional people as customers, testimonials or evidence of business results.", "Do not stretch or crop away people and gestures."]
+    reference_asset_ids: ["singlepage-photography-reference-motion-portrait", "singlepage-photography-reference-motion-runner", "singlepage-photography-reference-hand-light-streaks", "singlepage-generated-living-focus-photography-business-conversation-square", "singlepage-generated-living-focus-photography-work-in-motion-square"]
+    dimensions: { width: 1536, height: 1024 }
+    prompt: "Use case: photorealistic-natural. A single editorial photograph for a SinglePageStartup advertising creative, Living Focus art direction. Candid people doing real work, cool blue / teal window daylight balanced with warm natural skin, graphite and pale neutral surroundings, a clear human gesture, softly blurred foreground and background, tactile honest textures. Contemporary documentary advertising photography, strong focal point visible as a thumbnail. Fictional adults; not an endorsement or testimonial. No text, watermarks, logos, UI graphics, AI symbols, generic handshake, staged victory, or stock-photo grin. Keep all faces and working hands safely inside the frame; choose a complete natural composition. Faces must be different from the dark curly short-haired woman in previous brand photography. Scene: two business owners reviewing a change to their ordering process on a laptop in a small contemporary studio. A 52-year-old man with short silver hair, clean shaven, in a dark charcoal overshirt sits beside a 29-year-old woman with long dark braids in a muted teal sweater. She points with one finger at the laptop screen; he leans forward attentively. Eye-level side angle shows both faces, hands, full laptop silhouette and a few product sample boxes on the table. Cool afternoon daylight, natural warm skin, soft foreground blur, expressive moment of collaboration, not a posed meeting. One photograph only."
+    visual_review:
+      status: visually-verified
+      source: Agent image inspection.
+      findings: Distinct people and work gestures; cool daylight and natural skin; no embedded text or visible anatomical defects.
+
+  - id: singlepage-generated-framework-ads-v2-workflow-square
+    path: "assets/singlepage/generated/framework-ads-v2/workflow-square.png"
+    design_role: null
+    design_key: null
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-ads-v2"
+    evidence: false
+    rights_status: "AI-generated photograph of fictional adults; conceptual advertising imagery."
+    purpose: "Code Framework advertising: workflow. Square delivery with expanded canvas."
+    production_stage: "square-delivery"
+    source_or_tool: "Built-in ImageGen. Copied unchanged from /Users/rogwild/.codex/generated_images/01a179bf-013e-7121-bb0f-2aa1c907a875/exec-68156ec3-9f42-4793-be65-fea053b10b5b.png."
+    content_sha256: "63838ee032d3c6285ca632fb43cc2a1d71c7955da64152e2891bbeec920ddb08"
+    style_master_sha256: "9425ac405b2e6979438a4f25a5c23823c9b2e768f0f3bfe594905aa28db64dae"
+    reference_use: "Square outpainting of the corresponding original."
+    source_master_asset_id: "singlepage-generated-framework-ads-v2-workflow"
+    related_artifacts: [singlepage.design, product.singlepagestartup.marketing-creative]
+    allowed_use: ["Complete photographs in product advertising and derived square layouts; keep copy editable outside the image."]
+    prohibited_use: ["Do not present fictional people as customers, testimonials or evidence of business results.", "Do not stretch or crop away people and gestures."]
+    reference_asset_ids: ["singlepage-generated-framework-ads-v2-workflow"]
+    dimensions: { width: 1254, height: 1254 }
+    prompt: "Use case: precise-object-edit. Expand this complete landscape photograph to a SQUARE delivery canvas by outpainting the short dimension, adding space above and below. Preserve the ENTIRE source frame and all people, faces, hair, clothing, hands, gestures, furniture and objects. No crop, stretching, zooming, reframing, rearrangement or replacement. Continue the room and window above, table and soft foreground below with the same cool teal daylight, natural warm skin, perspective and optical depth. Keep the original photographic composition intact. No text, logo, graphics or additional people. Opaque square photograph; intended delivery size 1254 by 1254 where supported."
+    visual_review:
+      status: visually-verified
+      source: Agent image inspection.
+      findings: Distinct people and work gestures; cool daylight and natural skin; no embedded text or visible anatomical defects.
+
+  - id: "singlepage-editorial-photographer"
+    path: "assets/singlepage/generated/editorial-v1/photographer.png"
+    source_type: "generated"
+    evidence: false
+    rights_status: "Иллюстрация вымышленных людей и учебных ситуаций, созданная с ИИ."
+    purpose: "Фотография для статей и материалов AI Chat."
+    production_stage: "original-master"
+    source_or_tool: "Built-in ImageGen; сохранено без изменения изображения."
+    content_sha256: "f6f937a25df7b663f7c8fe318aa326ff754d95fb6018c58687cd6d319ed3693d"
+    dimensions: {"width": 1536, "height": 1024}
+    prompt: "Use case: photorealistic-natural.\nAsset type: editorial photograph for SinglePageStartup AI Chat landing, presentation and ads.\nCreate one NEW candid photograph, landscape 3:2. A female small-business owner and product photographer, late 30s, short dark curly hair, olive skin, distinctive angular face, graphite shirt, sits at her working table with a fair-haired male client wearing a dark blue shirt. Both people are different identities from all references. They are seriously but warmly reviewing printed product photographs and an unbranded price sheet beside an open laptop in a small bright photography studio. Her fingertip naturally points at one print of a ceramic object while the client looks at it. Show both faces, plausible hands, laptop, camera on the table, and useful printed work. No one looks into the camera.\nThe five reference images define ONLY photographic style: cool blue/teal window daylight, natural warm skin, tactile materials, candid human work, calm graphite clothing, shallow depth with clear main action. Do not copy their people, setting or pose.\nComposition: medium-close editorial framing, clean human-centered scene, both heads and hands fully inside the canvas, space around them; printed work and laptop lower center, no obstructing foreground face. Realistic skin texture and anatomy.\nNo readable writing, no text overlays, no UI, no logos, no watermarks, no stock handshake, no generic smiling-at-camera pose, no fake testimonial.\n\nLocal edit:\nEdit this existing photograph with one microscopic local change only: remove every visible brand name and logo marking from the black camera at lower right, including the white mark on top and markings around the lens. Replace those small markings with natural unbranded black camera surfaces. Preserve EXACTLY the same people, facial identity, facial expressions, hand anatomy, clothing, composition, all photographic prints, price sheet, studio, light, crop, aspect ratio and resolution. Do not add or remove any object. No readable text or logos anywhere. Output the same full landscape 3:2 frame."
+    related_artifacts: ["product.ai-chat.materials", "product.singlepagestartup.articles"]
+    allowed_use: ["Иллюстрация учебной ситуации и рекламные макеты."]
+    prohibited_use: ["Выдавать вымышленных людей за клиентов или отзывы."]
+    visual_review: {"status": "visually-verified", "findings": "Лица, руки и рабочие предметы проверены; читаемых логотипов нет."}
+
+  - id: "singlepage-editorial-photographer-square"
+    path: "assets/singlepage/generated/editorial-v1/photographer-square.png"
+    source_type: "generated"
+    evidence: false
+    rights_status: "Иллюстрация вымышленных людей и учебных ситуаций, созданная с ИИ."
+    purpose: "Фотография для статей и материалов AI Chat."
+    production_stage: "square-delivery"
+    source_or_tool: "Built-in ImageGen; сохранено без изменения изображения."
+    content_sha256: "0a87f27859d6144d80e077c1eaab67a65486033b055a165a49afe1c4beb08595"
+    dimensions: {"width": 1254, "height": 1254}
+    prompt: "Expand this exact photograph to a SQUARE 1:1 canvas by outpainting, never by cropping. Keep the ENTIRE original landscape photograph visible at the same scale relative to itself, including both people, their faces and hands, laptop at left, unbranded black camera at right, all printed product photographs and price sheet. Preserve exact identities, pose, original pixels, lighting and every existing object. Add plausible continuation of the bright studio above and the wooden working table and more ordinary blank space below as needed. The people remain the clear focal point, with comfortable margins. Keep cool blue/teal daylight and natural warm skin, graphite and dark blue clothing. No new people, no new readable text, no logos, no graphics, no watermark. Output a true square photograph suitable for a square advertising layout."
+    related_artifacts: ["product.ai-chat.materials", "product.singlepagestartup.articles"]
+    allowed_use: ["Иллюстрация учебной ситуации и рекламные макеты."]
+    prohibited_use: ["Выдавать вымышленных людей за клиентов или отзывы."]
+    visual_review: {"status": "visually-verified", "findings": "Лица, руки и рабочие предметы проверены; читаемых логотипов нет."}
+    source_master_asset_id: "singlepage-editorial-photographer"
+
+  - id: "singlepage-editorial-ceramics"
+    path: "assets/singlepage/generated/editorial-v1/ceramics.png"
+    source_type: "generated"
+    evidence: false
+    rights_status: "Иллюстрация вымышленных людей и учебных ситуаций, созданная с ИИ."
+    purpose: "Фотография для статей и материалов AI Chat."
+    production_stage: "original-master"
+    source_or_tool: "Built-in ImageGen; сохранено без изменения изображения."
+    content_sha256: "245bcb3947a9813ed45619e437b593eacca064f04f749b211a4d092d0c8754ef"
+    dimensions: {"width": 1536, "height": 1024}
+    prompt: "Use case: photorealistic-natural. Asset: editorial hero photograph for a practical article about opening a small ceramic online shop, landscape 3:2 master, high resolution. Scene: an authentic small pottery workshop with cool daylight through a large side window, white and cool gray surfaces, softly blurred shelves of pottery. A middle-aged female ceramic artisan, straight copper-red hair tied back, wearing a dark charcoal apron, and a male assistant with short fair hair, both new distinctive people, are calmly checking white handmade mugs and blue ceramic plates at a worktable. A laptop is open beside a paper order with no readable text; screen faces mostly away from camera and contains no recognizable UI. The artisan holds a white mug with anatomically natural hands while assistant checks the plates. Candid focused interaction, meaningful working gesture, neither looks at the camera. All people, hands and important items fully within the landscape composition. Editorial photographic style: cool blue/teal daylight with natural warm skin, soft depth of field, restrained graphite clothing, real ceramic glaze and workshop textures, no stock-photo handshake or posed success. Style informed by the five provided Living Focus references; do not copy their faces or scenes. No text, letters, logos, watermark, fake interface or decorative graphics. Photograph only."
+    related_artifacts: ["product.ai-chat.materials", "product.singlepagestartup.articles"]
+    allowed_use: ["Иллюстрация учебной ситуации и рекламные макеты."]
+    prohibited_use: ["Выдавать вымышленных людей за клиентов или отзывы."]
+    visual_review: {"status": "visually-verified", "findings": "Лица, руки и рабочие предметы проверены; читаемых логотипов нет."}
+
+  - id: "singlepage-editorial-ceramics-square"
+    path: "assets/singlepage/generated/editorial-v1/ceramics-square.png"
+    source_type: "generated"
+    evidence: false
+    rights_status: "Иллюстрация вымышленных людей и учебных ситуаций, созданная с ИИ."
+    purpose: "Фотография для статей и материалов AI Chat."
+    production_stage: "square-delivery"
+    source_or_tool: "Built-in ImageGen; сохранено без изменения изображения."
+    content_sha256: "9ed2c7d9558516d8be5efe6408855b8cb61cb3a89baff3154b5a66496004993b"
+    dimensions: {"width": 1254, "height": 1254}
+    prompt: "Expand this existing landscape editorial photograph into a SQUARE 1:1 image by extending the canvas above and below. Preserve the entire original landscape scene at its original proportions, including both people's complete visible heads, faces, hands, the white mug, blue plates, laptop and all original edges; do not crop, zoom, reframe, stretch or replace any original scene content. Add seamless realistic continuation of the cool daylight pottery workshop above and of the worktable below. Keep the same copper-haired female artisan and fair-haired male assistant, natural skin and hands, charcoal aprons, ceramic textures and restrained cool photographic color grade. Add no readable text, logos, watermark or artificial UI. Output must be square, with the existing photograph spanning the full width and additional workshop/table space filling top and bottom."
+    related_artifacts: ["product.ai-chat.materials", "product.singlepagestartup.articles"]
+    allowed_use: ["Иллюстрация учебной ситуации и рекламные макеты."]
+    prohibited_use: ["Выдавать вымышленных людей за клиентов или отзывы."]
+    visual_review: {"status": "visually-verified", "findings": "Лица, руки и рабочие предметы проверены; читаемых логотипов нет."}
+    source_master_asset_id: "singlepage-editorial-ceramics"
+
+  - id: "singlepage-editorial-furniture"
+    path: "assets/singlepage/generated/editorial-v1/furniture.png"
+    source_type: "generated"
+    evidence: false
+    rights_status: "Иллюстрация вымышленных людей и учебных ситуаций, созданная с ИИ."
+    purpose: "Фотография для статей и материалов AI Chat."
+    production_stage: "original-master"
+    source_or_tool: "Built-in ImageGen; сохранено без изменения изображения."
+    content_sha256: "1f88a942b45f066f5e54bae4ef3df9faab37552a208818d10987132ee53906e7"
+    dimensions: {"width": 1536, "height": 1024}
+    prompt: "Use case: photorealistic-natural.\nAsset: editorial photograph for a Russian furniture repair service article in SinglePageStartup. Generate a new landscape photograph, approximately 3:2.\nScene: a real small furniture restoration workshop beside a tall daylight window. A male craftsman around fifty, short grey hair, slight stubble, graphite work shirt, is consulting a woman customer in her early forties with long straight dark hair and a muted blue shirt. Both are focused on a wooden chair between them. The craftsman points to a visibly loose joint between the chair leg and seat, while the customer holds a smartphone and photographs the chair condition. The chair, both people’s heads, hands, and phone are all clearly visible. Candid interaction, not a posed portrait.\nStyle: natural editorial photography; cool blue and teal daylight, warm natural skin, pale cool workshop walls, wood texture, soft depth of field. Close human-centered composition and a clear working gesture, realistic anatomy and skin. Use the atmosphere of the five supplied Living Focus reference images without reusing their people or scene.\nNo readable words, logos, watermarks, fake interface, celebratory poses or stock handshake. This is a fictional illustrative service scene, not testimonial evidence. Keep all meaningful subjects inside the frame with space for a later square canvas expansion."
+    related_artifacts: ["product.ai-chat.materials", "product.singlepagestartup.articles"]
+    allowed_use: ["Иллюстрация учебной ситуации и рекламные макеты."]
+    prohibited_use: ["Выдавать вымышленных людей за клиентов или отзывы."]
+    visual_review: {"status": "visually-verified", "findings": "Лица, руки и рабочие предметы проверены; читаемых логотипов нет."}
+
+  - id: "singlepage-editorial-furniture-square"
+    path: "assets/singlepage/generated/editorial-v1/furniture-square.png"
+    source_type: "generated"
+    evidence: false
+    rights_status: "Иллюстрация вымышленных людей и учебных ситуаций, созданная с ИИ."
+    purpose: "Фотография для статей и материалов AI Chat."
+    production_stage: "square-delivery"
+    source_or_tool: "Built-in ImageGen; сохранено без изменения изображения."
+    content_sha256: "2b7a9a14c39d7504d48ab9b32d5542cba5801e3b5403631227690c1628375394"
+    dimensions: {"width": 1254, "height": 1254}
+    prompt: "Edit the supplied landscape editorial photograph into a square 1:1 image by EXPANDING the canvas above and below. Preserve the full original scene as the central area: both people's faces and bodies, every hand, the smartphone, the wooden chair and visible damage, the workbench, the window, camera angle, lighting, colors and photographic texture. Do not crop any part of the original frame. Do not zoom, reframe, resize subjects relative to each other, rearrange or replace anyone. Extend the workshop window/walls naturally above and the workbench naturally below; complete the top of the wooden chair in the expanded area if needed. Keep the same natural cool blue/teal daylight, graphite work clothes, natural skin and pale workshop. No new people, no readable words, no logos or watermarks. The output must be a square editorial photo, with all content from the original landscape still visible."
+    related_artifacts: ["product.ai-chat.materials", "product.singlepagestartup.articles"]
+    allowed_use: ["Иллюстрация учебной ситуации и рекламные макеты."]
+    prohibited_use: ["Выдавать вымышленных людей за клиентов или отзывы."]
+    visual_review: {"status": "visually-verified", "findings": "Лица, руки и рабочие предметы проверены; читаемых логотипов нет."}
+    source_master_asset_id: "singlepage-editorial-furniture"
+
+  - id: singlepage-framework-preview-contact
+    path: assets/singlepage/generated/framework-example-previews/contact-hd.jpg
+    source_type: generated
+    evidence: false
+    rights_status: Existing project preview, copied without modification.
+    purpose: Product-owned interface example for the Framework presentation.
+    related_artifacts: [singlepage.design]
+    source_or_tool: Existing Studio delivery image; no generation or editing in this transfer.
+    lifecycle: proposed
+
+  - id: singlepage-framework-preview-community
+    path: assets/singlepage/generated/framework-example-previews/community-hd.jpg
+    source_type: generated
+    evidence: false
+    rights_status: Existing project preview, copied without modification.
+    purpose: Product-owned interface example for the Framework presentation.
+    related_artifacts: [singlepage.design]
+    source_or_tool: Existing Studio delivery image; no generation or editing in this transfer.
+    lifecycle: proposed
+
+  - id: singlepage-framework-preview-courses
+    path: assets/singlepage/generated/framework-example-previews/courses-hd.jpg
+    source_type: generated
+    evidence: false
+    rights_status: Existing project preview, copied without modification.
+    purpose: Product-owned interface example for the Framework presentation.
+    related_artifacts: [singlepage.design]
+    source_or_tool: Existing Studio delivery image; no generation or editing in this transfer.
+    lifecycle: proposed
+
+  - id: singlepage-framework-preview-journal
+    path: assets/singlepage/generated/framework-example-previews/journal-hd.jpg
+    source_type: generated
+    evidence: false
+    rights_status: Existing project preview, copied without modification.
+    purpose: Product-owned interface example for the Framework presentation.
+    related_artifacts: [singlepage.design]
+    source_or_tool: Existing Studio delivery image; no generation or editing in this transfer.
+    lifecycle: proposed

@@ -126,7 +126,7 @@ function Icon({
   const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
@@ -225,13 +225,13 @@ const ArrowRight = createIcon("arrow-right");
 export const defaultButtonsArrayProps: ButtonsArrayDefaultProps = {
   buttons: [
     {
-      label: "Open admin panel",
+      label: "Открыть панель управления",
       href: "/admin",
       variant: "primary",
       icon: ArrowRight,
     },
     {
-      label: "Learn more",
+      label: "Подробнее",
       href: "#features",
       variant: "secondary",
       icon: Play,

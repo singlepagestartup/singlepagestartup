@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "b1c8addb-12dd-4bdb-9b56-62ce6022a55d",
+  "createdAt": "2026-10-26T00:11:27.833Z",
+  "updatedAt": "2026-10-27T14:59:51.322Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "notification",
+    "ru": "notification"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Send a message about confirmed payment.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Отправьте сообщение о подтверждённой оплате.\"}]}]}"
+  },
+  "adminTitle": "notification",
+  "slug": "framework-reviewed-article-billing-connections-feature-2"
+}

@@ -24,7 +24,7 @@ test("the same account shows its name/avatar with optional AI Chat tokens", () =
     expect(html).not.toContain("Upload avatar");
     expect(html).toContain("singlepagestartup-account-mascot-square.png");
   }
-  expect(render(true)).toContain("1,250 tokens");
+  expect(render(true)).toContain("1 250 токенов");
   expect(render(false)).not.toContain("tokens");
 });
 
@@ -37,7 +37,7 @@ test("guest headers share one sign-in control with the appropriate destination",
   );
   for (const html of [chat, website]) {
     expect(html).toContain('data-ds-block="rbac.subject.me-account"');
-    expect(html).toContain("Sign in");
+    expect(html).toContain("Войти");
     expect(html).not.toContain("Admin Panel");
   }
   expect(chat).toContain(
@@ -80,7 +80,7 @@ test("browser session data cannot override explicit story props", () => {
   );
   expect(member).toContain("Alex");
   expect(member).not.toContain("Other account");
-  expect(guest).toContain("Sign in");
+  expect(guest).toContain("Войти");
   expect(guest).not.toContain('data-ds-block="social.profile.account-menu"');
   expect(storageReads).toBe(0);
   expect(storageWrites).toBe(0);

@@ -1,3 +1,4 @@
+import { ChatWorkspace } from "@sps/ui-adapter";
 import type { IComponentPropsExtended } from "./interface";
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -6,12 +7,11 @@ export function Component(props: IComponentPropsExtended) {
       data-model="profile"
       data-variant="id-ai-chat-project"
       data-id={props.data.id}
-      className="flex h-[calc(100dvh-9rem)] min-h-[560px] min-w-0 overflow-hidden rounded-2xl border border-border bg-card"
+      className="min-w-0"
     >
-      <aside className="hidden w-56 shrink-0 overflow-y-auto bg-default p-4 text-default-foreground lg:block">
-        {props.navigation}
-      </aside>
-      {props.children}
+      <ChatWorkspace navigation={props.navigation}>
+        {props.children}
+      </ChatWorkspace>
     </section>
   );
 }

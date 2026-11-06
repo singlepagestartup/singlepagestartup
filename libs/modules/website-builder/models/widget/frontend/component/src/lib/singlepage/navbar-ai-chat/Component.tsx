@@ -1,13 +1,9 @@
-import Link from "next/link";
-import { getLocalizedHref } from "@sps/shared-frontend-client-utils";
-import { Icon } from "@sps/ui-adapter";
+import { Component as WidgetsToButtonsArrays } from "@sps/website-builder/relations/widgets-to-buttons-arrays/frontend/component";
 import { Component as WidgetLogotypes } from "@sps/website-builder/relations/widgets-to-logotypes/frontend/component";
 import type { IComponentPropsExtended } from "./interface";
+import { internationalization } from "@sps/shared-configuration";
 export function Component(props: IComponentPropsExtended) {
-  const localeBase = `/${props.language || "en"}`;
-  const helpSelected = props.helpSelected ?? false;
-  const focus =
-    "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
+  const language = props.language || internationalization.defaultLanguage.code;
   return (
     <header
       data-module="website-builder"
@@ -17,7 +13,9 @@ export function Component(props: IComponentPropsExtended) {
       className="border-b border-border bg-card font-default text-foreground"
     >
       <nav
-        aria-label="AI Chat navigation"
+        aria-label={
+          language === "ru" ? "Навигация AI Chat" : "AI Chat navigation"
+        }
         className="mx-auto flex min-h-18 max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-3 md:min-h-24 md:py-5 sm:px-6"
       >
         <WidgetLogotypes
@@ -40,31 +38,48 @@ export function Component(props: IComponentPropsExtended) {
                 isServer={props.isServer}
                 variant="default"
                 className="w-auto"
+                dataSource="props"
                 data={link}
-                language={props.language || "en"}
+                language={language}
               />
             ))
           }
         </WidgetLogotypes>
         <div className="flex flex-wrap items-center gap-1 text-sm">
-          <Link
-            href={getLocalizedHref(localeBase, "/ai-chat/help")}
-            aria-current={helpSelected ? "page" : undefined}
-            className={`inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm ${focus} ${helpSelected ? "bg-default font-semibold text-default-foreground" : "text-muted-foreground hover:bg-muted"}`}
+          <WidgetsToButtonsArrays
+            isServer={props.isServer}
+            variant="find"
+            apiProps={{
+              params: {
+                filters: {
+                  and: [
+                    { column: "widgetId", method: "eq", value: props.data.id },
+                  ],
+                },
+                orderBy: {
+                  and: [
+                    { column: "orderIndex", method: "asc" },
+                    { column: "id", method: "asc" },
+                  ],
+                },
+              },
+            }}
           >
-            <Icon name="question" />
-            Help
-          </Link>
+            {({ data }) =>
+              data?.map((link) => (
+                <WidgetsToButtonsArrays
+                  key={link.id}
+                  isServer={props.isServer}
+                  variant="default"
+                  dataSource="props"
+                  data={link}
+                  language={language}
+                  className="w-auto max-w-full"
+                />
+              ))
+            }
+          </WidgetsToButtonsArrays>
           {props.children}
-          {!props.children && (
-            <Link
-              href={getLocalizedHref(localeBase, "/ai-chat/sign-in")}
-              className={`inline-flex min-h-11 items-center gap-2 rounded-xl px-3 font-semibold hover:bg-muted ${focus}`}
-            >
-              <Icon name="user-circle" />
-              Sign in
-            </Link>
-          )}
         </div>
       </nav>
     </header>

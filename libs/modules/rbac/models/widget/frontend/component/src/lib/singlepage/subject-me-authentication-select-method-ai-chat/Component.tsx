@@ -1,3 +1,4 @@
+import { internationalization } from "@sps/shared-configuration";
 import { Component as WidgetsToWebsiteBuilderModuleWidgets } from "@sps/rbac/relations/widgets-to-website-builder-module-widgets/frontend/component";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import type { IComponentPropsExtended } from "./interface";
@@ -33,13 +34,19 @@ export function Component(props: IComponentPropsExtended) {
                 language={props.language}
               >
                 <Subject
+                  language={props.language}
                   isServer={props.isServer}
                   variant="me-authentication-email-and-password-authentication-form-ai-chat"
                 />
               </WidgetsToWebsiteBuilderModuleWidgets>
             ))
           ) : (
-            <p role="alert">Authentication content is unavailable.</p>
+            <p role="alert">
+              {(props.language || internationalization.defaultLanguage.code) ===
+              "ru"
+                ? "Страница входа недоступна."
+                : "Authentication content is unavailable."}
+            </p>
           )
         }
       </WidgetsToWebsiteBuilderModuleWidgets>

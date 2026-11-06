@@ -1,56 +1,46 @@
 ---
-confirmation:
-  confirmed: true
-  by: operator
-  at: 2026-09-17
-  source: "Operator confirmed the revised One-hour setup in chat: «Да, вполне
-    неплохо, это подтверждаем»."
-  content_sha256: 5edf6142ad96e63ea20961d62ef08e3da2fb4cf1c2b585d69f33704787a45141
-review:
-  dependencies:
-    product.ai-chat.product: 5212a0163b9d453689340ff925ed6d6d94d729e0c890e8e0d75209b6e6eb50bb
 ---
 
-# One-hour setup
+# Первая настройка за час
 
-Name a project, then upload existing notes, files and images or add a description. Follow the analysis on its own screen before opening the document chats. The AI agent checks the material and drafts short written descriptions in the same five stages as Workspace: Brief, Strategy, Brand, Design and Products. The first session is planned for about one focused hour. You may pause, leave a question open or return to a text later.
+Назовите проект, затем загрузите заметки, файлы и изображения или добавьте описание. Следите за анализом на отдельном экране, затем откройте чаты документов. AI-агент проверяет материалы и готовит короткие тексты по этапам Workspace: бриф, продукты, стратегия, бренд и дизайн. Первая сессия рассчитана примерно на час сосредоточенной работы. Можно прерваться, оставить вопрос открытым или вернуться к тексту позже.
 
-## Start with existing material
+## Начните с имеющихся материалов
 
-Supply the material in its current form, or explain the project directly. The agent links proposed statements to supplied sources and identifies shortcomings in the draft. Correct those shortcomings, resolve supplied contradictions and review the wording before accepting it. Unknown prices, budgets, rights, capacity and evidence stay open until the material or your answer establishes them.
+Передайте материалы как есть или расскажите о проекте. Агент связывает предлагаемые утверждения с источниками и находит недочёты черновика. Исправьте их, разрешите противоречия и проверьте формулировки перед принятием. Цены, бюджеты, права, возможности выполнения и доказательства остаются неизвестными, пока материал или ответ пользователя не установит их.
 
-## Five short text stages
+## Пять коротких текстовых этапов
 
-| Stage        | Written result                                                                                        |
-| ------------ | ----------------------------------------------------------------------------------------------------- |
-| **Brief**    | Project, current situation, products, intended result, boundaries, constraints and supplied material. |
-| **Strategy** | Priority audiences, product roles, positioning, customer paths, channels and measures of success.     |
-| **Brand**    | Meaning, promise, supported claims, evidence, voice, objections and calls to action.                  |
-| **Design**   | A written description of the visual direction, existing assets, interface principles and constraints. |
-| **Products** | Separate product texts, with the sections below for each product.                                     |
+| Этап          | Текстовый результат                                                                                |
+| ------------- | -------------------------------------------------------------------------------------------------- |
+| **Бриф**      | Проект, ситуация, продукты, результат, границы, ограничения и материалы.                           |
+| **Продукты**  | Отдельные описания с разделами каждого продукта, перечисленными ниже.                              |
+| **Стратегия** | Приоритетные аудитории, роли продуктов, позиционирование, пути клиентов, каналы и критерии успеха. |
+| **Бренд**     | Смысл, обещание, допустимые утверждения, доказательства, голос, возражения и действия.             |
+| **Дизайн**    | Текстовое описание визуального направления, ресурсов, принципов интерфейса и ограничений.          |
 
-Design describes appearance in text. Visual generation, landing-page assembly and publication are outside the first release.
+Дизайн описывает внешний вид словами. Генерация изображений, сборка и публикация лендинга не входят в первый выпуск.
 
-## Each product has its own sections
+## У каждого продукта свои разделы
 
-| Product section            | Written decisions                                                                                                                   |
-| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| **Product**                | Customer segments and roles, problems, desired progress, alternatives, offer, value and conditions.                                 |
-| **Operations & Economics** | Delivery, revenue, resources, activities, partners, costs and financing.                                                            |
-| **Sales**                  | Discovery, evaluation, purchase, delivery, use, support and continued use.                                                          |
-| **Promotion**              | A written description of how this product will be presented publicly, with Website, Creative and Presentation texts where relevant. |
-| **Analytics & Research**   | Measures, observations, questions and evidence needed to examine assumptions, with research where needed.                           |
+| Раздел                       | Записанные решения                                                                                         |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| **Продукт**                  | Клиентские сегменты и роли, проблемы, желаемые изменения, альтернативы, предложение, ценность и условия.   |
+| **Операции и экономика**     | Выполнение, выручка, ресурсы, действия, партнёры, расходы и финансирование.                                |
+| **Продажи**                  | Знакомство, оценка, покупка, получение, использование, поддержка и продолжение.                            |
+| **Продвижение**              | Текстовое описание публичной подачи, включая сайт, креативы и презентацию, где они нужны.                  |
+| **Аналитика и исследования** | Измерения, наблюдения, вопросы и доказательства для проверки предположений; исследования по необходимости. |
 
-The Product owns its economics. If products share resources, each states its allocated share under the same resource identifier. Operations & Economics is a view of that Product's decisions, not a shared intermediate model.
+Экономика принадлежит продукту. При общих ресурсах каждый продукт указывает свою долю с одинаковым идентификатором ресурса. Операции и экономика показывают решения продукта без промежуточной общей модели.
 
-## Review pattern
+## Порядок проверки
 
-Each document opens a working thread with its own conversation, editable text, sources and identified shortcomings. Edit a statement, answer the agent there or leave a question open. Switching files preserves each thread's discussion and draft. Accept the visible description after review. Acceptance does not create evidence or guarantee a business result.
+Документ открывается в рабочей переписке со своим текстом, источниками и найденными недочётами. Измените утверждение, ответьте агенту или оставьте вопрос открытым. При переключении файлов обсуждения и черновики сохраняются. Принимайте видимое описание после проверки. Принятие не создаёт доказательств и не гарантирует результат бизнеса.
 
-The project view lists Brief.md, Strategy.md, Brand.md, Design.md and Products.md as document threads. Each product opens its own sections. Progress counts reviewed sections; missing facts and contradictions remain visible separately. Time spent or text length does not establish completion.
+В проекте Brief.md, Strategy.md, Brand.md, Design.md и Products.md показаны как переписки документов. Продукт открывает собственные разделы. Прогресс учитывает проверенные разделы; пробелы и противоречия видны отдельно. Потраченное время и длина текста не подтверждают завершение.
 
-## Completion and continued use
+## Завершение и дальнейшая работа
 
-The first setup produces a reviewed, editable set of project and product descriptions. Unanswered questions and supplied conflicts remain visible. The user can freely export the documents or create a topic in the general project workspace, attaching selected saved documents to evaluate an idea or draft written content. Corrections return to the owning document's thread. A topic can use one reviewed file while other documents remain unfinished. The last reviewed version stays available while a new draft is being revised; the new text replaces it after review.
+Первая настройка даёт проверенные, редактируемые описания проекта и продуктов. Вопросы и исходные противоречия остаются видимыми. Пользователь может выгрузить документы или создать тему общего рабочего пространства, прикрепив выбранные файлы для оценки идеи или подготовки текста. Исправления проходят через переписку соответствующего документа. Тема может использовать один проверенный файл, пока другие не завершены. Последняя проверенная версия доступна во время редактирования черновика и заменяется после проверки.
 
-The [Project documents](workspace-map.md) remain the basis for later work. Landing-page generation for initial enquiries and hypothesis testing, followed by paid server deployment, belongs to subsequent development; neither enquiries nor a successful test is guaranteed.
+[Документы проекта](workspace-map.md) остаются основой дальнейшей работы. Генерация лендинга для первых обращений и проверки гипотезы, затем платное развёртывание на сервере относятся к будущему развитию. Обращения и успешная проверка не гарантированы.

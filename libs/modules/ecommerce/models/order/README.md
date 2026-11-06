@@ -14,6 +14,67 @@ Orders store cart and checkout information, including status and metadata.
 - `type`: order type (default: `cart`).
 - `receipt`: receipt reference string.
 - `comment`: optional comment.
+- `subscriptionPeriodStartsAt`, `subscriptionPeriodEndsAt`: nullable fixed
+  subscription delivery interval.
+- `subscriptionPeriodInvoiceId`: nullable accepted paid Invoice anchor.
+- `subscriptionRevokedAt`: nullable server time of explicit Role revocation;
+  ordinary updates cannot set or clear it.
+
+## Subscription delivery period
+
+RBAC order proceed calls the internal `acceptSubscriptionPeriod` capability
+after checking the current Subject's ownership and product Role grants. The
+Order service reads the configured interval and its own paid Invoices. It
+accepts the latest Invoice by immutable `createdAt`, then ID, using one
+conditional write for the complete period. A replay or competing retry cannot
+extend the same Invoice twice. The first period starts at confirmation;
+renewal extends the end by one interval from the later of confirmation and
+the previous end. An early renewal preserves the start of continuous paid
+coverage; a late renewal starts a new covered span at confirmation.
+
+Generic create/update cannot change period fields. Unchanged fields in existing
+full-record update payloads are removed before writing. An OPEN Invoice and an
+unrelated Order update do not change the deadline. Access expires at
+`now >= subscriptionPeriodEndsAt`; requested cancellation keeps the original
+deadline. Explicit Role deletion stamps `subscriptionRevokedAt` on affected
+owned subscription Orders. Proceed, repeated paid transitions, recreated Roles
+and automatic renewal cannot restore those Orders.
+
+Extended Order reads preserve existing payment terms when a Product's prices
+or offered currencies change. The read uses the Order's matching-currency paid
+Invoice amount and its Payment Intent's saved subscription interval. Commerce
+Product type still selects delivery: a Telegram `one_off` payment transport can
+settle a subscription while retaining its saved interval. The latest
+paid Invoice wins by creation time, then ID; an accepted period anchor must
+still belong to that paid context. The read never rewrites the accepted period.
+A sole unpaid Invoice remains visible with its saved amount and interval, while
+its unpaid status and missing entitlement stay unchanged. Missing anchors,
+conflicting payment currencies and ambiguous Invoice contexts require
+reconciliation rather than an arbitrary fallback.
+
+An unbilled new cart uses current Product prices. If its previously selected
+currency is no longer offered, its extended read can show the saved
+Order-to-Currency amount. This keeps an old cart inspectable; the checkout
+attributes command still requires a current Product price in that currency.
+The internal initial-Free zero one-off settlement retains its Product's
+subscription delivery contract. No retired price is added to the public catalog
+or new checkout through this read compatibility.
+
+Natural recurring expiry removes its grant through the internal fulfillment
+operation and sets `status=expired`, retaining its paid Invoice anchor. A later
+newer paid Invoice can reactivate that same unrevoked Order for a full interval.
+Role changes, credits and period acceptance share one transaction with Subject
+and Order locks; failure leaves the paid Order retryable. Notifications and
+automatic follow-up checkout run after commit. Urgent paid/cleanup work precedes
+the bounded recurring scan, which rotates by ID without changing delivery dates.
+
+Legacy delivering orders require the operator-only Subject freeze operation.
+It checks exact ownership, current product Roles and the expected previous
+`updatedAt`, then calls `freezeSubscriptionPeriod`. The server preserves the
+old delivery start and calendar interval; it does not accept caller-supplied
+period timestamps. Missing grants, unpaid or ambiguous invoice context and
+concurrent changes require data reconciliation. Repeating a completed freeze
+does not change the period.
 
 ## Variants
 
@@ -46,7 +107,25 @@ inputs must be covered in both the query and the backend topic rule.
 
 The backend Service exposes findByIdCartDetails for a caller that has already
 established Order access. It loads the Order's lines, only their referenced
-Products and totals through existing services. It does not establish a Subject
+Products, totals and saved Order–Currency links through existing services. The
+projection exposes `availableCurrencyIds` (the intersection of price currencies
+across every line) and `billingModuleCurrencyId` when exactly one distinct
+currency is saved. A saved currency may be obsolete; readers must check that it
+is still available before offering checkout. It does not establish a Subject
 or bypass caller authorization. The RBAC Subject order-list endpoint supplies
 ownership scope and a consistent read snapshot before invoking this capability.
 The SDK model exports ICartDetails; no database field or migration is needed.
+
+## Unpriced cart lines
+
+`findByIdTotal` returns `{ totals, unpriced, availableCurrencyIds }` internally. HTTP total routes keep
+amount arrays under `data` and return diagnostics beside them. Existing SDK
+`total` readers retain the `data` array. `findByIdCartDetails` and Subject purchase
+history keep `totals` as an array and expose optional `unpriced` diagnostics;
+each diagnostic names `ordersToProductsId`, `productId` and `reason`.
+
+A missing or incomplete product price contributes no amount and leaves its cart
+line available for removal. Missing order lines, missing configuration and source
+failures still fail the read. Current Subject checkout shows the diagnostics and
+blocks payment until those lines are removed. Payment calculation retains its
+separate checkout validation; an omitted cart amount is not a zero-price grant.

@@ -25,8 +25,11 @@ jest.mock("@sps/backend-utils", () => {
 import { api as subjectApi } from "@sps/rbac/models/subject/sdk/server";
 import { Handler } from "./react-by-openrouter";
 import { blobifyFiles } from "@sps/backend-utils";
-import { NEXT_PUBLIC_API_SERVICE_URL } from "@sps/shared-utils";
-import { AI_CHAT_DOCUMENTS } from "@sps/shared-utils";
+import {
+  NEXT_PUBLIC_API_SERVICE_URL,
+  AI_CHAT_DOCUMENTS,
+} from "@sps/shared-utils";
+
 import type { KnowledgeSearchResult } from "@sps/knowledge/backend/app/api/src/lib/types";
 
 interface IFindThreadMessageIdsInChatHandler {

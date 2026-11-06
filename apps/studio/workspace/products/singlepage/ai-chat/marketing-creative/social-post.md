@@ -1,19 +1,9 @@
----
-confirmation:
-  confirmed: false
-review:
-  dependencies:
-    product.ai-chat.creative: 046608e08cbb233ac0bdfd6f4a8d60c10d71b66a40a757efc83beee71a434ef2
----
+# Как превратить прайс в описание услуги
 
-# Your notes, photos and plans. One project chat.
+«Профессиональная съёмка с индивидуальным подходом» не объясняет, что получит заказчик.
 
-Attach your notes, documents, screenshots and images in chat.
+В учебном примере услуги фотографа есть точные условия: до десяти товаров, по три обработанных снимка каждого, 15 000 ₽ и три рабочих дня после съёмки. Из них получается описание для сайта, которое можно проверить по прайсу.
 
-AI Chat checks the material and asks for anything missing. Discuss and edit each project and product document in its own thread.
+В статье — заполненный пример, шаблон и запрос к ИИ. Они помогают сохранить состав, цену и срок, когда заметки превращаются в текст страницы.
 
-Review a document, then create a project topic and choose which saved files to attach. You can also freely export them and use them elsewhere.
-
-> Describe the project. Take a first step toward customers.
-
-[Start with my files](/register)
+[Посмотреть пример описания услуги](/?path=/story/workspace-50-materials-singlepage-ai-chat-articles--articles-project-description)

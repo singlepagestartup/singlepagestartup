@@ -52,7 +52,7 @@ function PasswordField({
         <ButtonPresentation
           variant="plain"
           onClick={() => setVisible(!visible)}
-          aria-label={`${visible ? "Hide" : "Show"} ${label.toLowerCase()}`}
+          aria-label={`${visible ? "Скрыть" : "Показать"} ${label.toLowerCase()}`}
           aria-pressed={visible}
           className="absolute top-0.5 right-1 min-h-11 w-11 px-2"
         >
@@ -111,16 +111,16 @@ export function Component({
       data-model="subject"
       data-variant={variant}
     >
-      <h4 className="font-semibold">Connect {meta.title}</h4>
+      <h4 className="font-semibold">Подключить {meta.title}</h4>
       <p className="mt-2 text-sm leading-6 text-muted-foreground">
         {credentials
-          ? "Add your email and password, then verify the email address."
+          ? "Укажите почту и пароль, затем подтвердите адрес."
           : wallet
-            ? "Choose a wallet, then approve an ownership signature. No transaction or payment is required."
-            : `Continue with ${meta.title}, then approve access to sign in.`}
+            ? "Выберите кошелёк и подтвердите владение подписью. Платёж не требуется."
+            : `Продолжите через ${meta.title}, затем подтвердите вход.`}
       </p>
       <p className="mt-2 text-xs text-muted-foreground">
-        Connection preview. No external account or wallet is contacted.
+        Предварительный просмотр. Внешний аккаунт и кошелёк не подключаются.
       </p>
       {stage === "me-account" ? (
         <form
@@ -135,10 +135,10 @@ export function Component({
             htmlFor={id}
           >
             {wallet
-              ? "Wallet address"
+              ? "Адрес кошелька"
               : provider === "telegram"
-                ? "Telegram username"
-                : "Account email"}
+                ? "Имя пользователя Telegram"
+                : "Почта аккаунта"}
             <input
               autoFocus
               id={id}
@@ -161,7 +161,7 @@ export function Component({
           </label>
           {credentials && (
             <PasswordField
-              label="Password"
+              label="Пароль"
               name="password"
               autoComplete="new-password"
               required
@@ -172,13 +172,13 @@ export function Component({
           <div className="flex flex-wrap gap-2">
             <Button type="submit">
               {credentials
-                ? "Send verification code"
+                ? "Отправить код"
                 : wallet
-                  ? "Continue with wallet"
-                  : `Continue with ${meta.title}`}
+                  ? "Продолжить с кошельком"
+                  : `Продолжить через ${meta.title}`}
             </Button>
             <Button variant="secondary" type="button" onClick={onCancel}>
-              Cancel
+              Отмена
             </Button>
           </div>
         </form>
@@ -188,7 +188,7 @@ export function Component({
           onSubmit={(event) => {
             event.preventDefault();
             if (code !== "123456") {
-              setError("That code is incorrect. Use the preview code 123456.");
+              setError("Код неверный. В этом примере используйте 123456.");
               return;
             }
             onComplete?.(value.trim().toLowerCase());
@@ -199,7 +199,7 @@ export function Component({
         >
           <p className="break-all text-sm">Verify {value}</p>
           <label className="grid min-w-0 gap-2 text-sm font-medium">
-            Verification code
+            Код подтверждения
             <input
               autoFocus
               required
@@ -216,7 +216,8 @@ export function Component({
             />
           </label>
           <p className="text-xs text-muted-foreground">
-            Preview code: 123456. No email is sent. Passwords are not stored.
+            Код для примера: 123456. Письмо не отправляется, пароли не
+            сохраняются.
           </p>
           {error && (
             <p role="alert" className="text-sm text-destructive">
@@ -224,7 +225,7 @@ export function Component({
             </p>
           )}
           <div className="flex flex-wrap gap-2">
-            <Button type="submit">Connect email</Button>
+            <Button type="submit">Подключить почту</Button>
             <Button
               type="button"
               variant="secondary"
@@ -237,7 +238,7 @@ export function Component({
               Back
             </Button>
             <Button type="button" variant="plain" onClick={onCancel}>
-              Cancel
+              Отмена
             </Button>
           </div>
         </form>
@@ -246,7 +247,7 @@ export function Component({
           <p className="break-all text-sm font-medium">{value}</p>
           <p className="text-sm leading-6 text-muted-foreground">
             {wallet
-              ? "Confirm the signature request to verify this wallet belongs to you."
+              ? "Подпишите запрос, чтобы подтвердить владение кошельком."
               : `Approve the sign-in request for this ${meta.title} account.`}
           </p>
           <div className="flex flex-wrap gap-2">
@@ -256,23 +257,23 @@ export function Component({
                 setStage("complete");
               }}
             >
-              {wallet ? "Approve signature" : "Approve connection"}
+              {wallet ? "Подтвердить подпись" : "Подтвердить подключение"}
             </Button>
             <Button variant="secondary" onClick={() => setStage("me-account")}>
               Back
             </Button>
             <Button variant="plain" onClick={onCancel}>
-              Cancel
+              Отмена
             </Button>
           </div>
         </div>
       ) : (
         <div className="mt-5 space-y-4">
           <p role="status" className="text-sm">
-            {meta.title} connected in this preview.
+            {meta.title} подключено in this preview.
           </p>
           <Button variant="secondary" onClick={onCancel}>
-            Done
+            Готово
           </Button>
         </div>
       )}

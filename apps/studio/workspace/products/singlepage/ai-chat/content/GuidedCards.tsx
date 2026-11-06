@@ -8,80 +8,78 @@ import {
 const stages = [
   {
     id: "brief",
-    label: "Brief",
-    time: "10 min",
+    label: "Бриф",
+    time: "10 мин",
     question:
-      "What are you working on, and what should be true when this project is useful?",
+      "Над чем вы работаете и каким должен быть полезный результат проекта?",
     answer:
-      "A hosted workspace that drafts short project and product documents from existing material. Each file has its own working thread; saved texts can be attached to project topics.",
+      "Облачная рабочая область составляет короткие документы проекта и продуктов из имеющихся материалов. У каждого файла своя переписка; сохранённые тексты прикрепляются к темам проекта.",
     found: [
-      "The first product is a hosted AI chat.",
-      "Existing notes, files and screenshots should be accepted.",
-      "The first result is written descriptions the user can edit, review and export.",
+      "Первый продукт — облачный AI-чат.",
+      "Можно передавать существующие заметки, файлы и снимки экрана.",
+      "Первый результат — текстовые описания для правки, проверки и выгрузки.",
     ],
-    result: "Scope, desired result, products and constraints",
+    result: "Границы, ожидаемый результат, продукты и ограничения",
   },
   {
     id: "strategy",
-    label: "Strategy",
-    time: "10 min",
-    question:
-      "What should the complete project look like when it is working as intended?",
+    label: "Стратегия",
+    time: "10 мин",
+    question: "Как должен работать весь проект, когда замысел реализован?",
     answer:
-      "A person adds material, discusses each file in its own thread and reviews the text. Selected saved documents become context for new project topics. The owner evaluates this flow before adding landing-page creation and paid deployment.",
+      "Человек добавляет материалы, обсуждает каждый файл отдельно и проверяет текст. Выбранные документы становятся контекстом новых тем. Владелец оценивает процесс перед добавлением посадочных и платного развёртывания.",
     found: [
-      "The chat is the main hosted product.",
-      "The first release creates written project and product documents.",
-      "Landing-page generation and paid deployment are future capabilities.",
-      "Each product has its own sections, including economics, Sales, Promotion and Analytics.",
+      "Чат — основной облачный продукт.",
+      "Первый выпуск создаёт письменные документы проекта и продуктов.",
+      "Генерация посадочной и платное развёртывание — будущие возможности.",
+      "У каждого продукта свои разделы, включая экономику, продажи, продвижение и аналитику.",
     ],
-    result: "Final picture, audiences, product roles and customer path",
+    result: "Итоговая картина, аудитории, роли продуктов и путь клиента",
   },
   {
     id: "brand",
-    label: "Brand",
-    time: "8 min",
-    question:
-      "What should people understand and remember after using the product?",
+    label: "Бренд",
+    time: "8 мин",
+    question: "Что человек должен понять и запомнить после использования?",
     answer:
-      "Describe the project from the notes, files and decisions already available. Correct the shortcomings the AI agent identifies and use the reviewed texts as a first step toward customers.",
+      "Опишите проект по имеющимся заметкам, файлам и решениям. Исправьте найденные агентом недостатки и используйте проверенный текст как первый шаг к клиентам.",
     found: [
-      "Existing material is the starting point for written project descriptions.",
-      "The product should feel practical and direct.",
-      "Claims need support from the person's actual material.",
+      "Существующие материалы — отправная точка описания проекта.",
+      "Продукт должен быть практичным и понятным.",
+      "Утверждения опираются на реальные материалы человека.",
     ],
-    result: "Meaning, promise, proof, voice and primary action",
+    result: "Смысл, обещание, подтверждение, голос и основное действие",
   },
   {
     id: "design",
-    label: "Design",
-    time: "7 min",
-    question: "How should this meaning become visible and easy to use?",
+    label: "Дизайн",
+    time: "7 мин",
+    question: "Как сделать этот смысл видимым и удобным в работе?",
     answer:
-      "A written Design description: Onest text, cool neutral surfaces, graphite, lime actions and one description in focus at a time.",
+      "Текстовый Дизайн: Onest, холодные нейтральные поверхности, графит, лаймовые действия и одно описание в центре внимания.",
     found: [
-      "Graphite, cool gray, white and lime form the current palette.",
-      "The first-release Design result is text describing intended appearance.",
-      "Uploaded images remain source material, not automatic design decisions.",
+      "Текущая палитра: графит, холодный серый, белый и лайм.",
+      "Дизайн первого выпуска — текст об ожидаемом внешнем виде.",
+      "Загруженные картинки — источники, а не автоматически принятые решения дизайна.",
     ],
-    result: "Visual direction, interface principles and available assets",
+    result: "Визуальное направление, принципы интерфейса и доступные ресурсы",
   },
   {
     id: "products",
-    label: "Products",
-    time: "15 min",
+    label: "Продукты",
+    time: "15 мин",
     question:
-      "Who receives what value, and how is the offer delivered and sustained?",
+      "Кто получает какую ценность, как предложение поставляется и поддерживается?",
     answer:
-      "Early-stage project owners receive written descriptions and continued chat. Every product has its own Product, Operations & Economics, Sales, Promotion, and Analytics & Research sections. AI Chat owns its token revenue and service costs.",
+      "Владельцы ранних проектов получают описания и продолжение в чате. У каждого продукта свои Продукт, Операции и экономика, Продажи, Продвижение, Аналитика и исследования. Выручка токенов и расходы сервиса относятся к AI Chat.",
     found: [
-      "The user, buyer and decision-maker may initially be one person.",
-      "AI Chat and Code Framework are separate related products.",
+      "Пользователь, покупатель и принимающий решение сначала могут быть одним человеком.",
+      "AI Chat и Code Framework — отдельные связанные продукты.",
       "One internal token costs 0.13 roubles. Top-ups are 100, 300, 500, 1,000 or 3,000 roubles, with no package discount.",
       "Purchased tokens do not expire; cash refunds for top-ups are decided case by case. Failed or cancelled AI requests restore all token deductions and have a net charge of zero; the service bears any provider expense. Customer demand remains unverified.",
     ],
     result:
-      "Separate product texts: Product, Operations & Economics, Sales, Promotion, Analytics & Research",
+      "Отдельные тексты продукта: паспорт, операции и экономика, продажи, продвижение, аналитика и исследования",
   },
 ];
 
@@ -161,16 +159,16 @@ export default function GuidedCards({
               <div>
                 <p className="text-sm font-semibold">SinglePageStartup</p>
                 <p className="text-sm text-[var(--workspace-brand-muted)]">
-                  New project setup
+                  Настройка нового проекта
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <span className="rounded-full border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] px-3 py-2 text-sm font-semibold">
-                {accepted.size} of 5 reviewed
+                {accepted.size} из 5 проверено
               </span>
               <span className="rounded-full border border-[var(--workspace-brand-line)] bg-white px-3 py-2 text-sm font-medium">
-                About one hour
+                Около часа
               </span>
             </div>
           </header>
@@ -179,11 +177,11 @@ export default function GuidedCards({
         <div className="grid @[700px]:grid-cols-[180px_minmax(0,1fr)] @[1200px]:grid-cols-[200px_minmax(0,1fr)_280px]">
           <aside className="border-b border-[var(--workspace-brand-line)] bg-white p-4 lg:border-r lg:border-b-0">
             <p className="px-2 text-sm font-semibold text-[var(--workspace-brand-muted)]">
-              Document threads
+              Переписки документов
             </p>
             <nav
               className="mt-3 grid gap-2 @[500px]:grid-cols-2 @[700px]:grid-cols-1"
-              aria-label="Setup stages"
+              aria-label="Этапы настройки"
             >
               {stages.map((item, index) => {
                 const state = accepted.has(index)
@@ -227,7 +225,9 @@ export default function GuidedCards({
                       <span
                         className={`block text-sm ${active === index ? "text-[var(--workspace-brand-muted-on-primary)]" : "text-[var(--workspace-brand-muted)]"}`}
                       >
-                        {state === "unknown" ? "Unknown saved" : item.time}
+                        {state === "unknown"
+                          ? "Неизвестное сохранено"
+                          : item.time}
                       </span>
                     </span>
                   </button>
@@ -237,18 +237,18 @@ export default function GuidedCards({
 
             <div className="mt-5 rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] p-4">
               <p className="text-sm font-semibold text-[var(--workspace-brand-muted)]">
-                Material bundle
+                Набор материалов
               </p>
-              <p className="mt-2 text-sm font-semibold">Project materials</p>
+              <p className="mt-2 text-sm font-semibold">Материалы проекта</p>
               <p className="mt-1 text-base leading-7 text-[var(--workspace-brand-muted)]">
-                Notes, files and images added in the project chat
+                Заметки, файлы и изображения в чате проекта
               </p>
               <button
                 className={`${kit.plain} mt-3 px-0 underline underline-offset-4`}
                 onClick={onAddMaterials}
                 type="button"
               >
-                Add more
+                Добавить ещё
               </button>
             </div>
           </aside>
@@ -258,27 +258,27 @@ export default function GuidedCards({
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="text-sm font-semibold text-[var(--workspace-brand-muted)]">
-                    Stage {active + 1} · {stage.time} suggested
+                    Этап {active + 1} · {stage.time} предложено
                   </p>
                   <h1 className="mt-2 text-[40px] font-semibold leading-[1.1] [font-family:var(--workspace-brand-font-display)] sm:text-5xl">
                     {stage.label}
                   </h1>
                 </div>
                 <span className="rounded-full border border-[var(--workspace-brand-line)] bg-white px-3 py-2 text-sm font-semibold">
-                  One decision in focus
+                  Одно решение в центре внимания
                 </span>
               </div>
 
               <section className="mt-7 rounded-2xl border border-[var(--workspace-brand-line)] bg-white p-5 sm:p-6">
                 <div className="flex items-center justify-between gap-4">
                   <p className="text-sm font-semibold text-[var(--workspace-brand-muted)]">
-                    Found in your material
+                    Найдено в ваших материалах
                   </p>
                   <button
                     className={`${kit.plain} px-0 underline underline-offset-4`}
                     type="button"
                   >
-                    See sources
+                    Посмотреть источники
                   </button>
                 </div>
                 <ul className="mt-4 space-y-3">
@@ -295,7 +295,7 @@ export default function GuidedCards({
                         {index === stage.found.length - 1 &&
                         item.includes("unknown") ? (
                           <>
-                            <span className="sr-only">Unknown</span>
+                            <span className="sr-only">Неизвестно</span>
                             <Icon name="question" className="size-5 shrink-0" />
                           </>
                         ) : (
@@ -317,7 +317,7 @@ export default function GuidedCards({
                   className="mt-5 block"
                   htmlFor={`${id}-answer-${stage.id}`}
                 >
-                  <span className="sr-only">Your answer</span>
+                  <span className="sr-only">Ваш ответ</span>
                   <textarea
                     className={`${kit.field} min-h-40 resize-y`}
                     id={`${id}-answer-${stage.id}`}
@@ -341,7 +341,7 @@ export default function GuidedCards({
                     onClick={() => advance("unknown")}
                     type="button"
                   >
-                    I don't know yet
+                    Пока не знаю
                   </button>
                   <button
                     className={kit.button}
@@ -350,8 +350,8 @@ export default function GuidedCards({
                     type="button"
                   >
                     {active === stages.length - 1
-                      ? "Finish review"
-                      : "Accept and continue"}
+                      ? "Завершить проверку"
+                      : "Принять и продолжить"}
                     {active < stages.length - 1 ? (
                       <Icon name="arrow-right" className="size-5 shrink-0" />
                     ) : null}
@@ -361,18 +361,17 @@ export default function GuidedCards({
 
               <details className="mt-4 rounded-xl border border-[var(--workspace-brand-line)] bg-white px-4 py-3 text-sm">
                 <summary className="cursor-pointer font-semibold">
-                  Add detail only if it changes the result
+                  Добавляйте подробность, только если она меняет результат
                 </summary>
                 <p className="mt-3 leading-6 text-[var(--workspace-brand-muted)]">
-                  Optional prompts stay collapsed. AI Chat opens one only when
-                  the answer would change this stage or the material being
-                  prepared.
+                  Необязательные вопросы свёрнуты. AI Chat открывает вопрос,
+                  только если ответ изменит этап или готовящийся материал.
                 </p>
               </details>
               {stage.id === "products" && !empty ? (
                 <section
                   className="mt-6 space-y-4"
-                  aria-label="Separate product documents"
+                  aria-label="Отдельные документы продуктов"
                 >
                   {["AI Chat", "Code Framework"].map((product) => (
                     <article
@@ -383,24 +382,24 @@ export default function GuidedCards({
                       <dl className="mt-3 divide-y divide-[var(--workspace-brand-line)]">
                         {[
                           [
-                            "Product",
-                            "This product's customer, problem, offer and conditions.",
+                            "Продукт",
+                            "Клиент, проблема, предложение и условия продукта.",
                           ],
                           [
-                            "Operations & Economics",
-                            "This product's delivery, revenue, resources, allocated shares and costs.",
+                            "Операции и экономика",
+                            "Поставка продукта, доходы, ресурсы, распределённые доли и расходы.",
                           ],
                           [
-                            "Sales",
-                            "This product's customer process, including support and continued use.",
+                            "Продажи",
+                            "Путь клиента продукта, включая поддержку и продолжение.",
                           ],
                           [
-                            "Promotion",
-                            "Written public presentation of this product, with Website, Creative and Presentation texts where relevant.",
+                            "Продвижение",
+                            "Текстовая публичная подача продукта: сайт, креативы и презентация по необходимости.",
                           ],
                           [
-                            "Analytics & Research",
-                            "This product's measures, observations and evidence questions where needed.",
+                            "Аналитика и исследования",
+                            "Измерения, наблюдения и вопросы к доказательствам этого продукта.",
                           ],
                         ].map(([title, text]) => (
                           <div key={title} className="py-3">
@@ -421,15 +420,15 @@ export default function GuidedCards({
           <aside className="border-t border-[var(--workspace-brand-line)] bg-white p-5 xl:border-t-0 xl:border-l">
             <div className="flex items-center justify-between">
               <p className="text-sm font-semibold text-[var(--workspace-brand-muted)]">
-                Project texts
+                Тексты проекта
               </p>
               <span
                 className="size-2 rounded-full bg-[var(--workspace-brand-accent)]"
-                aria-label="Saved"
+                aria-label="Сохранено"
               />
             </div>
             <p className="mt-2 text-base leading-7 text-[var(--workspace-brand-muted)]">
-              Updates as each decision is reviewed.
+              Обновляется после проверки каждого решения.
             </p>
 
             <div className="mt-5 space-y-2">
@@ -456,10 +455,10 @@ export default function GuidedCards({
                       }`}
                     >
                       {accepted.has(index)
-                        ? "Accepted"
+                        ? "Принято"
                         : unknown.has(index)
-                          ? "Unknown"
-                          : "Draft"}
+                          ? "Неизвестно"
+                          : "Черновик"}
                     </span>
                   </span>
                   <span className="mt-2 block text-base leading-7 text-[var(--workspace-brand-muted)]">
@@ -471,12 +470,12 @@ export default function GuidedCards({
 
             <div className="mt-6 rounded-3xl bg-[var(--workspace-brand-foreground)] p-6 text-white">
               <p className="text-sm font-semibold text-[var(--workspace-brand-accent)]">
-                Useful context, then depth
+                Полезный контекст, затем подробности
               </p>
               <p className="mt-2 text-base leading-7 text-[var(--workspace-brand-muted-on-primary)]">
-                Work on each document in its own thread. Review the text, then
-                freely export it or attach its saved version to a new project
-                topic. Other files can keep their open questions.
+                Работайте с каждым документом в своей переписке. Проверьте
+                текст, затем выгрузите его или прикрепите сохранённую версию к
+                новой теме. В других файлах могут оставаться открытые вопросы.
               </p>
             </div>
           </aside>

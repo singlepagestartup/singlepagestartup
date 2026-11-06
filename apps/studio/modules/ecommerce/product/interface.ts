@@ -18,3 +18,14 @@ export interface ISkeletonProps {
 export type { ProductTierProps } from "./singlepage/tier/interface";
 
 export type { ProductOverviewDefaultProps } from "./singlepage/overview-default/interface";
+
+export type {
+  ProductCardProps,
+  IProductCardAttribute,
+  IProductCardPrice,
+  IProductCardOption,
+  IProductCardOptionValue,
+  IProductCardPaymentMethod,
+  IProductCardSelection,
+  IProductCardCheckout,
+} from "./singlepage/card/interface";

@@ -21,6 +21,7 @@ function Icon(props: {
 export function Component({
   variant = "me-account",
   showTokens = false,
+  authorPublished = true,
   signedIn,
   user,
   page,
@@ -59,8 +60,8 @@ export function Component({
         <span className="grid size-8 shrink-0 place-items-center overflow-hidden rounded-full bg-muted">
           <Icon name="user-circle" className="size-6" />
         </span>
-        <span className="hidden text-sm font-semibold sm:inline">Sign in</span>
-        <span className="sr-only sm:hidden">Sign in</span>
+        <span className="hidden text-sm font-semibold sm:inline">Войти</span>
+        <span className="sr-only sm:hidden">Войти</span>
       </a>
     );
   return (
@@ -77,6 +78,21 @@ export function Component({
         balance={balance === undefined ? session.account.balance : balance}
         showTokens={showTokens}
         settingsHref={settingsHref}
+        createArticleHref={
+          showTokens
+            ? undefined
+            : "/?path=/story/modules-rbac-models-widget-singlepage-subject-me-blog-module-article-create--default"
+        }
+        authorHref={
+          !showTokens && authorPublished
+            ? "/?path=/story/modules-social-models-widget-singlepage-author-overview-default--default"
+            : undefined
+        }
+        chatsHref={
+          showTokens
+            ? "/ai-chat/projects"
+            : "/?path=/story/modules-rbac-models-widget-singlepage-subject-me-social-module-profile-chat-list-default--default"
+        }
         settingsTarget={showTokens ? undefined : "_top"}
         page={page}
         onNavigate={onNavigate}

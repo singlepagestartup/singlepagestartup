@@ -29,7 +29,7 @@ test("empty, zero count and missing data render the empty state", () => {
     const html = renderToStaticMarkup(
       <RecordList schema={schema} records={records} {...props} />,
     );
-    expect(html).toContain("No records to display.");
+    expect(html).toContain("Нет записей для отображения.");
     expect(html).not.toContain("<article");
   }
 });

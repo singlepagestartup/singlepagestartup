@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "ce16f6a8-f0ca-43e4-a20f-83d157c50aa8",
+  "createdAt": "2026-10-26T00:12:12.261Z",
+  "updatedAt": "2026-10-27T14:59:55.544Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "rbac",
+    "ru": "rbac"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Preserve access restrictions during updates.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Сохраняйте ограничения доступа при обновлении.\"}]}]}"
+  },
+  "adminTitle": "rbac",
+  "slug": "framework-reviewed-article-broadcast-connections-feature-2"
+}

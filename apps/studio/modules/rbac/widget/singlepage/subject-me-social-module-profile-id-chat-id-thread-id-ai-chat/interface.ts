@@ -10,6 +10,7 @@ export interface ISubjectThreadWorkspaceProps {
   errorMessage?: string;
   onRetry?: () => void;
   subjectId?: string;
+  embedded?: boolean;
   profileId: string;
   chatId: string;
   threadId?: string;

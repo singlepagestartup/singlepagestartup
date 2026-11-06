@@ -29,6 +29,9 @@ function Component({
         initialFileIds={withFiles ? fileIds : []}
       >
         <div className="mx-auto max-w-xl p-4">
+          <div className="mb-3 flex justify-end">
+            <Source variant="download-ai-chat" />
+          </div>
           <Source variant="id-ai-chat" />
         </div>
       </SourceProvider>

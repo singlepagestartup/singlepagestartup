@@ -1,3 +1,4 @@
+import { defaultArticleCardProps } from "../card/Component";
 import type { IComponentProps, ArticleRowProps } from "./interface";
 export type { ArticleRowProps } from "./interface";
 /**
@@ -72,21 +73,7 @@ const buttonBase =
 const kit = {
   focus: focus,
 };
-const defaultCover =
-  "/module-assets/images/singlepage/generated/living-focus/singlepagestartup-photography-business-conversation-square.png";
 export const defaultArticleRowProps = {
-  href: undefined as string | undefined,
-  slug: "how-to-choose",
-  coverImage: defaultCover,
-  category: "guides",
-  tags: ["pricing", "plans", "getting-started"],
-  title: "How to Choose the Right Plan for Your Business",
-  excerpt:
-    "A comprehensive guide to evaluating subscription tiers, comparing features, and making the right decision for your team size and growth trajectory.",
-  date: "Feb 18, 2026",
-  readTime: "7 min read",
-  commentCount: 3,
-  target: undefined as ArticleRowTarget | undefined,
+  ...defaultArticleCardProps,
+  tags: [] as string[],
 };
-
-import type { ArticleRowTarget } from "./interface";

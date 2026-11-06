@@ -114,6 +114,8 @@ The Knowledge module SDK uses `sourceIds` and `reindexSource`. Source content ed
 
 ## Runtime configuration
 
+PostgreSQL uses `pgvector/pgvector:pg17`. The database bootstrap creates the untrusted `vector` extension as the PostgreSQL administrator before the API role runs migrations. If migrations report `permission denied to create extension "vector"`, follow [Moving an existing installation to the application role](../../../tools/deployer/README.md#moving-an-existing-installation-to-the-application-role).
+
 Embeddings and chat configuration live in `backend/app/api/src/lib/configuration.ts`; vector dimensions are 768. File analysis and synthesis use `openai/gpt-6.1-sol` with `high` reasoning from the shared model policy in `libs/shared/utils/src/lib/constants/open-router-models.ts`.
 
 | Variable                             | Default            |

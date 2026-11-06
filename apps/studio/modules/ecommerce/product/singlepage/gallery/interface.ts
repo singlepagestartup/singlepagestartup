@@ -8,6 +8,8 @@ export interface GalleryImage {
 export interface ProductGalleryProps {
   variant?: "gallery";
   images?: GalleryImage[];
+  title?: string;
+  eyebrow?: string;
   blockId?: string;
   importedBlockId?: string;
 }

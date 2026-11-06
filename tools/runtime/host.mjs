@@ -1,5 +1,6 @@
 import { spawn } from "node:child_process";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
+import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 
 /** Browser SDKs must not detect Node's experimental localStorage during SSR. */
@@ -22,10 +23,13 @@ if (
     process.exitCode = 1;
   } else {
     const root = fileURLToPath(new URL("../../", import.meta.url));
+    const require = createRequire(import.meta.url);
+    const nxManifestPath = require.resolve("nx/package.json");
+    const nxManifest = require(nxManifestPath);
     const child = spawn(
       process.execPath,
       [
-        resolve(root, "node_modules/nx/bin/nx.js"),
+        resolve(dirname(nxManifestPath), nxManifest.bin.nx),
         "run",
         `host:next:${mode}`,
         ...process.argv.slice(3),

@@ -98,8 +98,8 @@ export function Component({
           <Button
             variant="plain"
             className="min-h-9 shrink-0 px-2"
-            aria-label="Thread settings"
-            title="Thread settings"
+            aria-label="Настройки обсуждения"
+            title="Настройки обсуждения"
           >
             <Icon name="gear-six" />
           </Button>
@@ -122,17 +122,17 @@ export function Component({
             <div className="flex items-start justify-between gap-3 border-b border-border p-5">
               <div>
                 <Dialog.Title className="text-lg font-semibold">
-                  Thread settings
+                  Настройки обсуждения
                 </Dialog.Title>
                 <Dialog.Description className="mt-1 text-sm leading-6 text-muted-foreground">
-                  Rename or delete this thread.
+                  Измените название или удалите обсуждение.
                 </Dialog.Description>
               </div>
               <Dialog.Close asChild>
                 <Button
                   variant="plain"
                   className="min-h-9 px-2"
-                  aria-label="Close thread settings"
+                  aria-label="Закрыть настройки обсуждения"
                 >
                   <Icon name="x" />
                 </Button>
@@ -149,7 +149,7 @@ export function Component({
                 }}
               >
                 <TextField
-                  label="Thread name"
+                  label="Название обсуждения"
                   value={title}
                   onChange={(event) => setTitle(event.target.value)}
                   required
@@ -157,14 +157,14 @@ export function Component({
                 />
                 <Button type="submit" disabled={!title.trim()}>
                   <Icon name="floppy-disk" />
-                  Save changes
+                  Сохранить изменения
                 </Button>
               </form>
               <div className="border-t border-border pt-5">
                 {confirmDelete ? (
                   <div className="space-y-3">
                     <p className="break-words text-sm leading-6">
-                      Delete “{topic.title}” and its messages?
+                      Удалить «{topic.title}» и все сообщения?
                     </p>
                     <div className="flex flex-wrap gap-2">
                       <Button
@@ -174,13 +174,13 @@ export function Component({
                           onDelete();
                         }}
                       >
-                        Delete thread
+                        Удалить обсуждение
                       </Button>
                       <Button
                         variant="secondary"
                         onClick={() => setConfirmDelete(false)}
                       >
-                        Cancel
+                        Отмена
                       </Button>
                     </div>
                   </div>
@@ -190,7 +190,7 @@ export function Component({
                     onClick={() => setConfirmDelete(true)}
                   >
                     <Icon name="trash" />
-                    Delete thread
+                    Удалить обсуждение
                   </Button>
                 )}
               </div>

@@ -1,12 +1,21 @@
 {
-  "title": {},
-  "subtitle": {},
-  "description": {},
+  "title": {
+    "en": "What do you need help with?",
+    "ru": "С чем нужна помощь?"
+  },
+  "subtitle": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Tell us what you wanted to do, what happened and what result you need. Include the project or payment if it relates to your question.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Расскажите, что вы хотели сделать, что произошло и какой результат нужен. Укажите проект или платёж, если вопрос связан с ним.\"}]}]}"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"heading\",\"attrs\":{\"level\":2},\"content\":[{\"type\":\"text\",\"text\":\"What happens next\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"We respond to initial requests within 24 hours. Resolution time depends on the question. We do not currently offer round-the-clock support chat.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Your saved documents and tasks remain available while you wait for a reply. Return to your project.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"heading\",\"attrs\":{\"level\":2},\"content\":[{\"type\":\"text\",\"text\":\"Что будет дальше\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"На первое обращение отвечаем в течение 24 часов. Срок решения зависит от вопроса. Круглосуточного чата поддержки сейчас нет.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Сохранённые документы и задачи остаются доступны, пока вы ждёте ответа. Вернуться к проекту.\"}]}]}"
+  },
   "anchor": null,
   "className": null,
   "id": "891660ec-0b4d-4051-b595-e3f0debcefaa",
   "createdAt": "2026-10-11T21:17:54.923Z",
-  "updatedAt": "2026-10-11T21:17:54.923Z",
+  "updatedAt": "2026-10-27T14:59:06.529Z",
   "variant": "content-ai-chat-help",
   "adminTitle": "AI Chat · help content",
   "slug": "ai-chat-help-content"

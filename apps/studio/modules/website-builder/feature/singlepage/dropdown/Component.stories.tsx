@@ -27,3 +27,23 @@ export const Collapsed: Story = {
   name: "collapsed",
   args: { open: false },
 };
+
+export const Card: Story = {
+  args: {
+    appearance: "card",
+    open: false,
+    question: "Нужно ли уметь программировать, чтобы начать?",
+    answer:
+      "Опишите свою идею ИИ-помощнику и выберите функции для первой версии.",
+  },
+};
+export const Document: Story = {
+  args: {
+    appearance: "document",
+    open: false,
+    question: "Бриф",
+    answer: "Для кого продукт и какую задачу он решает.",
+    exampleLabel: "Пример содержания",
+    example: "Школа создания ИИ-продуктов.",
+  },
+};

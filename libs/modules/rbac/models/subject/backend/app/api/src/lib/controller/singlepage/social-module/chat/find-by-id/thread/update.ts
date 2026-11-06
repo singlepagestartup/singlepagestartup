@@ -167,7 +167,7 @@ export class Handler {
         });
         if (!updated)
           throw new Error(
-            "Thread document changed concurrently. Retry with the current thread.",
+            "Conflict error. Thread document changed concurrently. Retry with the current thread.",
           );
         socialModuleThread = updated;
       }

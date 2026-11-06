@@ -24,11 +24,13 @@ export function ArticleOverviewDefaultWidget(props?: IComponentProps) {
         {...props}
         variant="overview-default"
         tagsCard={
-          props?.tagsCard ?? (
+          props?.tagsCard ??
+          ((props?.tags ?? defaultArticleOverviewDefaultProps.tags).length >
+          0 ? (
             <ArticleFindByIdTagFind
               tags={props?.tags ?? defaultArticleOverviewDefaultProps.tags}
             />
-          )
+          ) : undefined)
         }
       />
     </div>

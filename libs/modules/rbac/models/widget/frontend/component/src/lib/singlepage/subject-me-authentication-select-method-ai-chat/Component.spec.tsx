@@ -86,6 +86,29 @@ jest.mock("@sps/website-builder/models/widget/sdk/server", () => ({ api: {} }));
 jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
   Component: (props: any) => <form aria-label={props.variant} />,
 }));
+jest.mock(
+  "@sps/website-builder/relations/widgets-to-file-storage-module-files/frontend/component",
+  () => ({
+    Component: (props: any) =>
+      props.variant === "find" ? (
+        props.children({
+          data: [
+            {
+              id: "saved-photo-link",
+              widgetId: props.apiProps.params.filters.and[0].value,
+            },
+          ],
+        })
+      ) : (
+        <img
+          src={`/images/${props.data.widgetId}.png`}
+          alt={
+            props.language === "ru" ? "Фотография страницы" : "Page photograph"
+          }
+        />
+      ),
+  }),
+);
 import { Component as Widget } from "@sps/rbac/models/widget/frontend/component";
 afterEach(() => {
   cleanup();
@@ -127,9 +150,7 @@ it.each(["select-method", "registration", "forgot-password", "reset-password"])(
         `[data-variant="${action === "select-method" ? "content-ai-chat-authentication" : `content-ai-chat-${action}`}" ]`,
       ),
     ).toBeTruthy();
-    expect(screen.getAllByRole("img")).toHaveLength(
-      action === "registration" ? 2 : 1,
-    );
+    expect(screen.getAllByRole("img")).toHaveLength(1);
     const subjectVariant =
       action === "select-method" ? "authentication" : action;
     expect(
@@ -202,5 +223,5 @@ it("renders saved localized registration copy through the default relation witho
       '[data-relation="widgets-to-website-builder-module-widgets"][data-variant="default"]',
     ),
   ).toBeTruthy();
-  expect(screen.getAllByRole("img")).toHaveLength(2);
+  expect(screen.getAllByRole("img")).toHaveLength(1);
 });

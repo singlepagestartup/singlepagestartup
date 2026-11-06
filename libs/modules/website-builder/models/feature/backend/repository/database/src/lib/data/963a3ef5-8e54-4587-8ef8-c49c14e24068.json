@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "963a3ef5-8e54-4587-8ef8-c49c14e24068",
+  "createdAt": "2026-10-26T00:11:40.104Z",
+  "updatedAt": "2026-10-27T14:59:45.894Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Home",
+    "ru": "Главная"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Photography school\\n\\nAn introduction to the school with links to offers.\\n\\nAddress: /\\n\\nAbout the school and teachers\\n\\nCourse catalogue link\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Школа фотографии\\n\\nЗнакомство со школой и переход к предложениям.\\n\\nАдрес: /\\n\\nО школе и преподавателях\\n\\nСсылка на каталог курсов\"}]}]}"
+  },
+  "adminTitle": "Главная",
+  "slug": "framework-reviewed-article-host-example-feature-0"
+}

@@ -1,11 +1,45 @@
 {
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "AI Chat project settings — SinglePageStartup",
+        "ru": "Настройки проекта AI Chat — SinglePageStartup"
+      },
+      "description": {
+        "en": "Settings for the selected AI Chat project and its conversations.",
+        "ru": "Настройки выбранного проекта AI Chat и его обсуждений."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "AI Chat project settings — SinglePageStartup",
+        "ru": "Настройки проекта AI Chat — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "AI Chat project settings — SinglePageStartup",
+        "ru": "Настройки проекта AI Chat — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Settings for the selected AI Chat project and its conversations.",
+        "ru": "Настройки выбранного проекта AI Chat и его обсуждений."
+      },
+      "opengraphDescription": {
+        "en": "Settings for the selected AI Chat project and its conversations.",
+        "ru": "Настройки выбранного проекта AI Chat и его обсуждений."
+      }
+    }
+  },
   "id": "9e761df6-d548-4adf-a8dc-6f6571d0b6ae",
   "title": "AI Chat — project-settings",
   "url": "/ai-chat/social/profiles/[social.profiles.id]/chats/[social.chats.id]/settings",
   "description": "Description",
   "createdAt": "2026-10-11T02:00:31.587Z",
-  "updatedAt": "2026-10-11T02:00:31.587Z",
-  "variant": "default",
+  "updatedAt": "2026-10-30T22:25:08.427Z",
+  "variant": "noindex",
   "className": "",
   "language": "en",
   "adminTitle": "supreme rose cicada"

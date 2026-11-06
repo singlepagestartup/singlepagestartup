@@ -11,6 +11,7 @@ export function Component(props: IComponentProps) {
       <Suspense fallback={<Skeleton />}>
         <Provider>
           <ChildComponent
+            language={props.language}
             isServer={props.isServer}
             variant={props.variant}
             mode={props.mode}

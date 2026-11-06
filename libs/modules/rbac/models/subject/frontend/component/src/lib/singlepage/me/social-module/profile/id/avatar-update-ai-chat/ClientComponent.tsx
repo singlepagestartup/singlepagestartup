@@ -1,4 +1,5 @@
 "use client";
+import { internationalization } from "@sps/shared-configuration";
 import { memo, useState } from "react";
 import { api as subjectApi } from "@sps/rbac/models/subject/sdk/client";
 import { Component as SocialModuleProfile } from "@sps/social/models/profile/frontend/component";
@@ -7,6 +8,8 @@ import type { IComponentPropsExtended } from "./interface";
 export const Component = memo(function Component(
   props: IComponentPropsExtended,
 ) {
+  const language = props.language || internationalization.defaultLanguage.code;
+  const ru = language === "ru";
   const subjectId = props.data.id;
   const profileId = props.profile.id;
   const preview = {
@@ -23,16 +26,20 @@ export const Component = memo(function Component(
         socialModuleProfileId: profileId,
         data,
       });
-      setStatus("Avatar saved");
+      setStatus(ru ? "Аватар сохранён" : "Avatar saved");
     } catch (error) {
       setStatus(
-        error instanceof Error ? error.message : "Avatar could not be saved",
+        error instanceof Error
+          ? error.message
+          : ru
+            ? "Не удалось сохранить аватар"
+            : "Avatar could not be saved",
       );
     }
   }
   return (
     <div className="mt-6">
-      <p className="mb-3 text-sm font-semibold">Avatar</p>
+      <p className="mb-3 text-sm font-semibold">{ru ? "Аватар" : "Avatar"}</p>
       <div className="flex flex-wrap items-center gap-4">
         <div className="size-20 overflow-hidden rounded-2xl bg-muted">
           <SocialModuleProfile
@@ -52,9 +59,11 @@ export const Component = memo(function Component(
         <div>
           <div className="flex flex-wrap items-center gap-3">
             <label className="flex min-h-11 cursor-pointer items-center rounded-xl border border-border px-4 text-sm font-semibold">
-              Choose image
+              {ru ? "Выбрать изображение" : "Choose image"}
               <input
-                aria-label="Choose profile avatar"
+                aria-label={
+                  ru ? "Выбрать аватар профиля" : "Choose profile avatar"
+                }
                 type="file"
                 accept="image/png,image/jpeg,image/webp,image/gif"
                 className="sr-only"
@@ -63,7 +72,11 @@ export const Component = memo(function Component(
                   const file = event.target.files?.[0];
                   if (!file) return;
                   if (file.size > 2 * 1024 * 1024) {
-                    setStatus("Choose an image up to 2 MB.");
+                    setStatus(
+                      ru
+                        ? "Выберите изображение размером до 2 МБ."
+                        : "Choose an image up to 2 MB.",
+                    );
                     return;
                   }
                   void save({ file });
@@ -76,11 +89,13 @@ export const Component = memo(function Component(
               onClick={() => void save({ reset: true })}
               className="min-h-11 px-3 text-sm font-semibold text-muted-foreground disabled:opacity-50"
             >
-              Remove
+              {ru ? "Удалить" : "Remove"}
             </button>
           </div>
           <p className="mt-2 text-xs text-muted-foreground">
-            PNG, JPEG, WebP or GIF, up to 2 MB. Image changes save immediately.
+            {ru
+              ? "PNG, JPEG, WebP или GIF, до 2 МБ. Изменение изображения сохраняется сразу."
+              : "PNG, JPEG, WebP or GIF, up to 2 MB. Image changes save immediately."}
           </p>
         </div>
       </div>

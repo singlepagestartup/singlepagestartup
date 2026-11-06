@@ -58,12 +58,12 @@ export function Component({ profileId, chatId }: IThreadCreatePageProps) {
       >
         {(navigation) => (
           <section
-            aria-label="New thread"
+            aria-label="Новая переписка"
             className="flex min-h-0 flex-1 flex-col"
           >
             <PanelHeader
-              title="New thread"
-              label="Thread"
+              title="Новая переписка"
+              label="Тема"
               navigation={navigation}
             />
             <SocialModuleThread

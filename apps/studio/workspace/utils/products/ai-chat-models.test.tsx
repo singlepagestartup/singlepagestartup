@@ -5,6 +5,7 @@ import { aiChatAccount } from "./ai-chat-account-fixture";
 import { aiChatWorkspaceFixture } from "./ai-chat-workspace-fixture";
 import { createProjectProfile } from "./ai-chat-workspace";
 import { AIChatPreview } from "../../products/singlepage/ai-chat/website/Preview";
+import { resolveAIChatRoute as resolvePreviewRoute } from "../../products/singlepage/ai-chat/website/Preview/components/host/layout/singlepage/ai-chat-landing/routes";
 import {
   aiChatProfileHref,
   aiChatServiceHrefs,
@@ -13,6 +14,10 @@ import {
 } from "./ai-chat-routes";
 
 test("AI Chat service routes identify Social Profiles and RBAC Subjects", () => {
+  for (const href of ["/", "/?from=framework", "/ai-chat/"]) {
+    expect(resolveAIChatRoute(href)).toEqual({ page: "landing" });
+    expect(resolvePreviewRoute(href)).toEqual({ page: "landing" });
+  }
   for (const [page, href] of Object.entries(aiChatServiceHrefs)) {
     const expected = { page: page as keyof typeof aiChatServiceHrefs };
     expect(resolveAIChatRoute(href)).toEqual(expected);
@@ -141,4 +146,24 @@ test("route IDs select profiles from the supplied examples", () => {
   );
   expect(ownHtml).toContain('data-profile-id="pottery"');
   expect(ownHtml).not.toContain("Project profile unavailable");
+});
+
+test("project workspace preserves editing controls and renders site navigation once", () => {
+  const html = renderToStaticMarkup(
+    <AIChatPreview initialHref="/ai-chat/social/profiles/pottery" />,
+  );
+  expect(html).toContain(
+    'data-ds-block="social.profile.overview-ai-chat-project"',
+  );
+  expect(html).toContain('aria-label="Беседы проекта"');
+  expect(html).toContain('aria-label="Сообщение"');
+  expect(html).toContain('aria-label="Products.md editor"');
+  expect(html).toContain('data-profile-id="pottery"');
+  expect(
+    html.match(/data-ds-block="website-builder.widget.navbar-ai-chat"/g),
+  ).toHaveLength(1);
+  expect(
+    html.match(/data-ds-block="website-builder.widget.footer-ai-chat"/g),
+  ).toHaveLength(1);
+  expect(html).not.toContain("Restart walkthrough");
 });

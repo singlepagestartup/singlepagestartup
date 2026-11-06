@@ -2,6 +2,8 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { parse } from "yaml";
 import ts from "typescript";
+import { documentVisibleText } from "../workspace/document";
+import { localizedHeading } from "../workspace/headings";
 
 import {
   flattenDesignSections,
@@ -83,47 +85,47 @@ export type SpecimenId =
  * translate its heading.
  */
 export const specimenTitles: Record<SpecimenId, string> = {
-  surfaces: "Surfaces and media",
-  actions: "Actions",
-  icons: "Icons",
-  selection: "Selection",
-  status: "Status and progress",
-  fields: "Fields and data rows",
-  navigation: "Navigation",
-  "dark-pair": "Dark pair",
-  choices: "Checkboxes, radios and switches",
-  combobox: "Combobox",
-  "date-time": "Date and time",
-  range: "Range and slider",
-  tabs: "Tabs",
-  breadcrumbs: "Breadcrumbs",
-  pagination: "Pagination",
-  avatars: "Avatars",
-  "data-table": "Data table",
-  accordion: "Accordion",
-  "structured-list": "Structured list",
-  alerts: "Alerts",
-  toast: "Toast",
-  loading: "Loading and skeleton",
-  "empty-error": "Empty and error states",
-  dialog: "Dialog",
-  confirmation: "Confirmation dialog",
-  sheet: "Sheet",
-  popover: "Popover and tooltip",
-  menu: "Dropdown menu",
-  command: "Command search",
-  "file-upload": "File upload",
-  attachments: "Attachments",
-  message: "Messages",
-  composer: "Message composer",
-  "editorial-entry": "Editorial entry",
-  "content-card": "Photo cards",
-  "icon-card": "Icon cards",
-  "media-and-text": "Illustration and text",
-  "numbered-steps": "Numbered steps",
-  "item-grid": "Repeated item grid",
-  "offer-comparison": "Offer comparison",
-  "contextual-sheet": "Contextual sheet",
+  surfaces: "Поверхности и медиа",
+  actions: "Действия",
+  icons: "Иконки",
+  selection: "Выбор",
+  status: "Статус и прогресс",
+  fields: "Поля и строки данных",
+  navigation: "Навигация",
+  "dark-pair": "Тёмная пара",
+  choices: "Флажки, радио и переключатели",
+  combobox: "Выбор с поиском",
+  "date-time": "Дата и время",
+  range: "Диапазон и ползунок",
+  tabs: "Вкладки",
+  breadcrumbs: "Путь страницы",
+  pagination: "Пагинация",
+  avatars: "Аватары",
+  "data-table": "Таблица данных",
+  accordion: "Раскрывающиеся разделы",
+  "structured-list": "Структурированный список",
+  alerts: "Сообщения",
+  toast: "Всплывающее уведомление",
+  loading: "Загрузка и каркас",
+  "empty-error": "Пустые состояния и ошибки",
+  dialog: "Диалог",
+  confirmation: "Диалог подтверждения",
+  sheet: "Выдвижная панель",
+  popover: "Всплывающий блок и подсказка",
+  menu: "Выпадающее меню",
+  command: "Поиск команд",
+  "file-upload": "Загрузка файлов",
+  attachments: "Вложения",
+  message: "Сообщения",
+  composer: "Поле сообщения",
+  "editorial-entry": "Вводная композиция",
+  "content-card": "Фотокарточки",
+  "icon-card": "Карточки с иконками",
+  "media-and-text": "Иллюстрация и текст",
+  "numbered-steps": "Нумерованные шаги",
+  "item-grid": "Сетка повторяющихся элементов",
+  "offer-comparison": "Сравнение предложений",
+  "contextual-sheet": "Контекстная панель",
 };
 
 /** Stable taxonomy for agents; a project's tokens and content supply its style. */
@@ -269,7 +271,7 @@ export function readSpecimenDeclarations(
     visit(tree);
     return found;
   }
-  const html = source.replace(/<!--[\s\S]*?-->/g, "");
+  const html = documentVisibleText(source);
   const marks = [...html.matchAll(/data-specimen="([a-z0-9-]+)"/g)];
   return marks.map((mark, index) => {
     const fragment = html.slice(
@@ -407,7 +409,7 @@ export async function findSpecimenDeviations(
   );
   for (const section of flattenDesignSections(layout.sections)) {
     const owned = frameworkTitles.get(section.id);
-    if (owned && section.title !== owned)
+    if (owned && localizedHeading(section.title) !== localizedHeading(owned))
       findings.push({
         requirement: `Design section \`${section.id}\` keeps its framework title`,
         detail: `design/${layout.layer}/layout.yaml calls it "${section.title}"; the framework section is "${owned}". A project restyles a section, it does not rename one.`,
@@ -449,7 +451,10 @@ export async function findSpecimenDeviations(
                 });
             }
           }
-          if (heading !== undefined && heading !== title)
+          if (
+            heading !== undefined &&
+            localizedHeading(heading) !== localizedHeading(title)
+          )
             findings.push({
               requirement: `Specimen \`${specimen}\` keeps its framework title`,
               detail: `design/${layout.layer}/${source} heads it "${heading}"; the framework calls it "${title}". The wrapper name is the framework's, the content is the project's.`,

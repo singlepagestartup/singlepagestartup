@@ -8,7 +8,10 @@ import type { Preview } from "@storybook/react";
 const preview: Preview = {
   decorators: [
     (Story, context) => {
-      if (!context.id.startsWith("modules-")) return createElement(Story);
+      if (!context.title.startsWith("Modules/"))
+        return context.id.startsWith("workspace-")
+          ? createElement("div", { lang: "ru" }, createElement(Story))
+          : createElement(Story);
       const layer = context.id.includes("-singlepage-")
         ? "singlepage"
         : "startup";
@@ -50,13 +53,17 @@ const preview: Preview = {
           "Modules",
           "Workspace",
           [
-            "README",
-            "00 Client Request",
-            ["01 Brief"],
-            "10 Strategy",
-            "20 Brand",
-            "30 Design",
-            "40 Products",
+            "Инструкция",
+            "00 Бриф",
+            ["default", "singlepage", "startup"],
+            "10 Продукты",
+            "20 Стратегия",
+            ["default", "singlepage", "startup"],
+            "30 Бренд",
+            ["default", "singlepage", "startup"],
+            "40 Дизайн",
+            ["default", "singlepage", "startup"],
+            "50 Материалы",
           ],
         ],
       },

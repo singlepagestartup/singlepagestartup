@@ -1,14 +1,11 @@
 /**
  * Canonical realtime topic derivation (issue #195, framework-grade layer).
  *
- * ONE algorithm shared by three layers so that precision is symmetric by
- * construction for any model in any project built on the framework:
+ * Shared topic vocabulary for mutation notifications and browser subscriptions:
  *
  * 1. Backend revalidation middleware — derives topics for mutation broadcasts.
  * 2. Frontend factory queries — derive `meta.topics` subscriptions from their
  *    read routes.
- * 3. HTTP-cache middleware — derives topic version keys for GET cache keys and
- *    mutation version bumps.
  *
  * Canonical topic space (both URL shapes reduce to the same space):
  * - flat module routes:        /api/<module>/<collection>[/<id>]...
@@ -101,9 +98,7 @@ function parseSteps(segments: string[]): ITopicStep[] {
  * trigger realtime updates MUST be covered by an explicit topic rule (see the
  * `singlepage.ts` framework defaults + `startup.ts` project layer in this
  * topics folder) that maps the action path to the real reader topics. Those
- * rules are consumed by BOTH the revalidation broadcast and the http-cache
- * version bump (the single shared resolver below), so the two layers always
- * agree.
+ * rules map mutation broadcasts to the topics subscribed to by their readers.
  */
 export function deriveTopicsFromPath(path: string): string[] {
   const normalizedPath = (path || "").split("?")[0];
@@ -271,9 +266,8 @@ function resolveTopicsFromRules(
 /**
  * Resolves the realtime topic set for a mutation/read `path`: explicit topic
  * rules first (a matching rule, even non-`stop`, suppresses canonical
- * derivation), canonical `deriveTopicsFromPath` otherwise. This is the exact
- * function BOTH the revalidation broadcast and the http-cache version bump
- * call, so the two layers always compute identical topics (issue #195).
+ * derivation), canonical `deriveTopicsFromPath` otherwise. Mutation broadcasts
+ * and browser subscriptions use the same topic vocabulary.
  */
 export function resolveTopicsForPath(
   path: string,
@@ -293,9 +287,8 @@ export { singlepageTopicRules, startupTopicRules };
 /**
  * Framework default compiled rule set: the project `startup.ts` layer is
  * evaluated BEFORE the framework `singlepage.ts` defaults (so a project rule
- * with `stop: true` overrides). Consumed by the http-cache version bump (which
- * takes no constructor topic-rule options); the revalidation middleware
- * prepends its own constructor-options rules on top of these same two layers.
+ * with `stop: true` overrides). The revalidation middleware prepends its own
+ * constructor-options rules on top of these same two layers.
  */
 export const defaultCompiledTopicRules: ICompiledTopicRule[] =
   compileTopicRules([...startupTopicRules, ...singlepageTopicRules]);

@@ -555,19 +555,19 @@ export function Specimen({
         <summary
           className={`w-fit cursor-pointer rounded-md font-medium ${kit.focus}`}
         >
-          States, usage and class recipe
+          Состояния, применение и классы
         </summary>
         <dl className="mt-4 grid gap-3">
           <div>
-            <dt className="font-semibold">States</dt>
+            <dt className="font-semibold">Состояния</dt>
             <dd className={kit.muted}>{states.join(" · ")}</dd>
           </div>
           <div>
-            <dt className="font-semibold">Usage</dt>
+            <dt className="font-semibold">Применение</dt>
             <dd className={kit.muted}>{usage}</dd>
           </div>
           <div>
-            <dt className="font-semibold">Class recipe</dt>
+            <dt className="font-semibold">Классы</dt>
             <dd className={`whitespace-pre-wrap break-words ${kit.muted}`}>
               {recipe}
             </dd>

@@ -44,7 +44,7 @@ export const Component = memo(function Component({
         name="file-text"
         className="size-4 shrink-0 text-default-foreground/50"
       />
-      Products.md
+      {source.title}.md
     </a>
   );
 });

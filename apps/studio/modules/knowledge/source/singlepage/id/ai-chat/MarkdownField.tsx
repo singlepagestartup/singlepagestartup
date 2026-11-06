@@ -146,7 +146,7 @@ export const MarkdownField = memo(function MarkdownField({
           {onHelp && (
             <button
               type="button"
-              aria-label={helpLabel ?? `About ${section}`}
+              aria-label={helpLabel ?? `О помощнике ${section}`}
               aria-haspopup="dialog"
               onClick={(event) => onHelp(event.currentTarget, section)}
               className={`inline-flex shrink-0 items-center justify-center rounded p-0.5 text-muted-foreground hover:text-foreground focus:outline-none ${kit.focus}`}
@@ -157,14 +157,14 @@ export const MarkdownField = memo(function MarkdownField({
         </div>
         <div
           role="group"
-          aria-label={`${label} display`}
+          aria-label={`${label} — вид документа`}
           className="flex rounded-lg bg-muted p-1"
         >
           {(["editor", "preview"] as const).map((option) => (
             <button
               key={option}
               type="button"
-              aria-label={`${label}: ${option === "editor" ? "Editor" : "Preview"}`}
+              aria-label={`${label}: ${option === "editor" ? "Редактор" : "Предпросмотр"}`}
               aria-pressed={mode === option}
               aria-controls={option === "editor" ? id : `${id}-preview`}
               onClick={() => {
@@ -175,7 +175,7 @@ export const MarkdownField = memo(function MarkdownField({
               }}
               className={`min-h-7 rounded-md px-2 text-xs font-semibold ${kit.focus} ${mode === option ? "bg-card text-foreground" : kit.muted}`}
             >
-              {option === "editor" ? "Editor" : "Preview"}
+              {option === "editor" ? "Редактор" : "Предпросмотр"}
             </button>
           ))}
         </div>
@@ -195,7 +195,7 @@ export const MarkdownField = memo(function MarkdownField({
         <div
           id={`${id}-preview`}
           role="region"
-          aria-label={`${label} preview`}
+          aria-label={`${label} — предпросмотр`}
           className="min-h-32 min-w-0 rounded-xl border border-border px-3 py-2"
         >
           {value.trim() ? (

@@ -1,17 +1,9 @@
-import type { IDocumentConfirmation } from "../../../../../tools/studio/workspace/document";
-import { ConfirmationBadge } from "./DocumentStatus";
-
 export interface ILayerDataStatusProps {
-  confirmation?: IDocumentConfirmation;
   kind: "design" | "presentation";
   sourcePaths: string[];
 }
 
-export function LayerDataStatus({
-  confirmation,
-  kind,
-  sourcePaths,
-}: ILayerDataStatusProps) {
+export function LayerDataStatus({ kind, sourcePaths }: ILayerDataStatusProps) {
   return (
     <main
       className="min-h-screen font-[family-name:var(--workspace-brand-font-body)] bg-[var(--workspace-brand-background)] px-5 py-12 text-[var(--workspace-brand-foreground)] md:px-10"
@@ -19,19 +11,15 @@ export function LayerDataStatus({
     >
       <section className="w-full rounded-3xl border border-[var(--workspace-brand-line)] bg-white p-8  md:p-12">
         <p className="text-xs font-semibold tracking-normal text-[var(--workspace-brand-muted)]">
-          Startup data slot
+          Место данных startup
         </p>
-        {confirmation ? (
-          <div className="mt-4 flex flex-wrap">
-            <ConfirmationBadge confirmation={confirmation} />
-          </div>
-        ) : null}
         <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-6xl">
-          No startup {kind} data has been defined.
+          Данные startup: {kind === "design" ? "дизайн" : "презентация"} пока не
+          заданы.
         </h1>
         <p className="mt-6 max-w-2xl text-base leading-7 text-[var(--workspace-brand-muted)] md:text-lg">
-          The default view uses the SinglePageStartup data unchanged. Add
-          meaningful startup content to replace it in the resolved presentation.
+          Данные клиента сохраняются в указанных файлах startup. Раздел default
+          показывает результат их применения к оформлению singlepage.
         </p>
         <div className="mt-8 grid gap-2">
           {sourcePaths.map((sourcePath) => (

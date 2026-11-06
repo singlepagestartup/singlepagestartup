@@ -13,7 +13,8 @@ export default function Client(props: IComponentProps) {
     socialModuleProfileId: profileId,
     reactQueryOptions: { retry: false },
   });
-  if (preview.isPending) return props.skeleton ?? <Skeleton />;
+  if (preview.isPending)
+    return props.skeleton ?? <Skeleton language={props.language} />;
   return (
     <ChildComponent
       {...props}

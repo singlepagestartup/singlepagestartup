@@ -1,6 +1,12 @@
-import type { IComponentPropsExtended as IParentExtended } from "@sps/shared-frontend-components/singlepage/default/interface";
+import type { ReactNode } from "react";
+import type { IModel as IFeature } from "@sps/website-builder/models/feature/sdk/model";
+import type { IModel as IWidgetFeature } from "@sps/website-builder/relations/widgets-to-features/sdk/model";
+import type { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
+import {
+  type IComponentPropsExtended as IParentExtended,
+  type IComponentProps as IParent,
+} from "@sps/shared-frontend-components/singlepage/default/interface";
 import type { IModel } from "@sps/website-builder/models/widget/sdk/model";
-import type { IComponentProps as IParent } from "@sps/shared-frontend-components/singlepage/default/interface";
 
 export const variant = "landing-ai-chat" as const;
 export interface IComponentProps extends IParent<IModel, typeof variant> {
@@ -9,34 +15,84 @@ export interface IComponentProps extends IParent<IModel, typeof variant> {
 export interface IComponentPropsExtended
   extends IParentExtended<IModel, typeof variant, IComponentProps> {}
 
-import type { IAIChatWebsiteContent } from "@sps/shared-utils";
 export interface IChatPreviewProps {
   className?: string;
-  content?: IAIChatWebsiteContent;
+  language?: string;
+  projectTitle: string;
+  reply: string;
+  documents: IDemoDocument[];
+  settings?: ReactNode;
+  handoff?: ReactNode;
 }
-export interface IThreadRowProps {
+export interface IDemoAttachment {
+  id: string;
   name: string;
-  value?: string;
-  selected: boolean;
-  disabled?: boolean;
-  status?: string;
-  topic?: boolean;
-  onSelect: (name: string) => void;
+  text?: string;
+  file?: File;
+  record?: IFileStorageModuleFile;
 }
-export interface IAttachedDocument {
-  name: string;
-  text: string;
-}
-export interface IThreadMessage {
+export interface IDemoMessage {
   id: string;
   role: "user" | "assistant";
   text: string;
-  documents?: IAttachedDocument[];
+  files?: IDemoAttachment[];
 }
-export interface ITopic {
+export interface IDemoTopic {
   id: string;
   title: string;
-  documents: string[];
-  messages: IThreadMessage[];
+  messages: IDemoMessage[];
 }
-export type TView = "materials" | "document" | "files" | "workspace" | "topic";
+export interface IDemoMessageProps {
+  message: IDemoMessage;
+  language: string;
+}
+export interface IDemoFileProps {
+  attachment: IDemoAttachment;
+  language: string;
+}
+
+export interface IDemoNavigationProps {
+  language: string;
+  projectTitle: string;
+  documents: Pick<IDemoDocumentState, "key" | "title">[];
+  selectedDocumentKey: string;
+  topics: IDemoTopic[];
+  topicId: string | null;
+  creating: boolean;
+  onSelectDocument: (key: string) => void;
+  onSelectTopic: (id: string) => void;
+  onCreateTopic: () => void;
+  settings?: ReactNode;
+}
+
+export interface IDemoDocumentState {
+  key: string;
+  title: string;
+  text: string;
+  savedText: string;
+  sectionTitle: string;
+  savedSectionTitle: string;
+  saveStatus: string;
+  editing: boolean;
+  messages: IDemoMessage[];
+  knowledgeFiles: IDemoAttachment[];
+}
+
+export interface IDemoDocument {
+  key: string;
+  title: string;
+  text: string;
+  section: string;
+  intro: string;
+  files: IDemoAttachment[];
+}
+export interface ISectionsProps {
+  links: IWidgetFeature[];
+  features: IFeature[];
+  isServer: boolean;
+  language: string;
+}
+export interface IDemoContentProps
+  extends Pick<ISectionsProps, "features" | "isServer" | "language"> {}
+
+export type IDemoFiles = IFileStorageModuleFile[];

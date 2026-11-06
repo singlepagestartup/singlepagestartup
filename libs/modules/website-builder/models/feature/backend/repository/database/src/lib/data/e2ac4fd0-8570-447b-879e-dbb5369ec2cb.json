@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "e2ac4fd0-8570-447b-879e-dbb5369ec2cb",
+  "createdAt": "2026-10-26T00:12:10.423Z",
+  "updatedAt": "2026-10-27T14:59:59.866Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Conversations continue on the open page",
+    "ru": "Переписка продолжается на открытой странице"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"A new-message event lets the interface update the conversation. The conversation module stores the actual text and participants.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Событие о новом сообщении позволяет интерфейсу обновить разговор. Сам текст и участники хранятся в модуле общения.\"}]}]}"
+  },
+  "adminTitle": "Переписка продолжается на открытой странице",
+  "slug": "framework-reviewed-article-broadcast-introduction-feature-0"
+}

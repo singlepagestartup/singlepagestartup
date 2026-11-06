@@ -1,11 +1,45 @@
 {
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "New AI Chat conversation — SinglePageStartup",
+        "ru": "Новое обсуждение AI Chat — SinglePageStartup"
+      },
+      "description": {
+        "en": "Create a new conversation thread in the selected AI Chat project.",
+        "ru": "Создание новой темы обсуждения в выбранном проекте AI Chat."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "New AI Chat conversation — SinglePageStartup",
+        "ru": "Новое обсуждение AI Chat — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "New AI Chat conversation — SinglePageStartup",
+        "ru": "Новое обсуждение AI Chat — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Create a new conversation thread in the selected AI Chat project.",
+        "ru": "Создание новой темы обсуждения в выбранном проекте AI Chat."
+      },
+      "opengraphDescription": {
+        "en": "Create a new conversation thread in the selected AI Chat project.",
+        "ru": "Создание новой темы обсуждения в выбранном проекте AI Chat."
+      }
+    }
+  },
   "id": "a9b2427c-ebd4-4072-b707-ac108bfebb48",
   "title": "AI Chat — new-thread",
   "url": "/ai-chat/social/profiles/[social.profiles.id]/chats/[social.chats.id]/threads/create",
   "description": "Description",
   "createdAt": "2026-10-11T02:03:56.095Z",
-  "updatedAt": "2026-10-11T02:03:56.095Z",
-  "variant": "default",
+  "updatedAt": "2026-10-30T22:25:07.490Z",
+  "variant": "noindex",
   "className": "",
   "language": "en",
   "adminTitle": "unsightly silver mink"

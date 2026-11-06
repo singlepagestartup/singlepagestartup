@@ -1,4 +1,5 @@
 "use client";
+import { internationalization } from "@sps/shared-configuration";
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { getLocalizedHref } from "@sps/shared-frontend-client-utils";
@@ -16,6 +17,8 @@ import {
 import { projectHref } from "@sps/rbac/models/subject/sdk/model";
 import type { IComponentPropsExtended } from "./interface";
 export function Component(props: IComponentPropsExtended) {
+  const language = props.language || internationalization.defaultLanguage.code;
+  const ru = language === "ru";
   const router = useRouter();
   const pathname = usePathname();
   const [name, setName] = useState("");
@@ -27,11 +30,13 @@ export function Component(props: IComponentPropsExtended) {
     return (
       <div
         role="status"
-        aria-label="Loading projects"
+        aria-label={ru ? "Загрузка проектов" : "Loading projects"}
         aria-busy="true"
         className="mt-8 grid gap-4"
       >
-        <span className="sr-only">Loading projects…</span>
+        <span className="sr-only">
+          {ru ? "Загрузка проектов…" : "Loading projects…"}
+        </span>
         <div
           aria-hidden="true"
           className="grid gap-4 motion-safe:animate-pulse"
@@ -70,7 +75,9 @@ export function Component(props: IComponentPropsExtended) {
           );
           if (!project)
             throw new Error(
-              "The profile was created but its conversation is unavailable. Retry to open it.",
+              ru
+                ? "Профиль создан, но его чат недоступен. Повторите попытку, чтобы открыть его."
+                : "The profile was created but its conversation is unavailable. Retry to open it.",
             );
           await queryClient.invalidateQueries({
             queryKey: getProjectsQueryKey(props.data.id),
@@ -78,7 +85,11 @@ export function Component(props: IComponentPropsExtended) {
           router.push(getLocalizedHref(pathname, projectHref(project)));
         } catch (error) {
           setError(
-            error instanceof Error ? error.message : "Project creation failed",
+            error instanceof Error
+              ? error.message
+              : ru
+                ? "Не удалось создать проект"
+                : "Project creation failed",
           );
         } finally {
           setCreating(false);
@@ -86,11 +97,11 @@ export function Component(props: IComponentPropsExtended) {
       }}
     >
       <label htmlFor="ai-chat-project-name" className="text-sm font-semibold">
-        Project name
+        {ru ? "Название проекта" : "Project name"}
       </label>
       <input
         id="ai-chat-project-name"
-        placeholder="What are you working on?"
+        placeholder={ru ? "Над чем вы работаете?" : "What are you working on?"}
         className="min-h-12 rounded-xl border border-border px-4 bg-card text-foreground outline-none focus:border-foreground focus:ring-2 focus:ring-foreground focus:ring-offset-2 focus:ring-offset-card"
         value={name}
         onChange={(event) => setName(event.target.value)}
@@ -105,17 +116,23 @@ export function Component(props: IComponentPropsExtended) {
       >
         <Icon name="plus" />
         {creating
-          ? "Creating…"
+          ? ru
+            ? "Создаём…"
+            : "Creating…"
           : createdProfile
-            ? "Open project"
-            : "Create project"}
+            ? ru
+              ? "Открыть проект"
+              : "Open project"
+            : ru
+              ? "Создать проект"
+              : "Create project"}
       </button>
       {!props.hideBackLink && (
         <Link
           href={getLocalizedHref(pathname, "/ai-chat/projects")}
           className="rounded-xl py-3 text-center text-sm font-semibold text-muted-foreground hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
         >
-          Back to projects
+          {ru ? "К проектам" : "Back to projects"}
         </Link>
       )}
       {error && (

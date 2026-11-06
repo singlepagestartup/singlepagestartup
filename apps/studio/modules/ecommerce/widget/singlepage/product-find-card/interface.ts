@@ -5,7 +5,10 @@ export interface ProductFindCategory {
   label: string;
 }
 
-export interface ProductFindProduct {
+import type { ProductCardProps } from "../../../product";
+import type { ReactNode } from "react";
+export interface ProductFindProduct
+  extends Omit<ProductCardProps, "variant" | "id"> {
   id: string;
   slug: string;
   href?: string;
@@ -20,6 +23,9 @@ export interface ProductFindProduct {
 }
 
 export type ProductFindCardProps = {
+  embedded?: boolean;
+  title?: string;
+  description?: ReactNode;
   categories: ProductFindCategory[];
   products: ProductFindProduct[];
 };

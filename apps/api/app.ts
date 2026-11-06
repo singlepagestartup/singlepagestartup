@@ -1,32 +1,21 @@
-import { Hono } from "hono";
+import { Hono, type Env } from "hono";
 import { cors } from "hono/cors";
-import { createBunWebSocket } from "hono/bun";
 import { join, normalize } from "node:path";
-import { type ServerWebSocket } from "bun";
-import {
-  ExceptionFilter,
-  ParseQueryMiddleware,
-  createConsistencyRuntime,
-} from "@sps/shared-backend-api";
+import { ExceptionFilter, ParseQueryMiddleware } from "@sps/shared-backend-api";
 import {
   IsAuthorizedMiddleware,
+  SearchIndexingMiddleware,
   RevalidationMiddleware,
+  ConsistencyMiddleware,
   HTTPCacheMiddleware,
   ObserverMiddleware,
   RequestIdMiddleware,
   ActionLoggerMiddleware,
   BillRouteMiddleware,
-  OperatorSecretMiddleware,
+  controllerGuardedRoutes,
 } from "@sps/middlewares";
-import {
-  MIDDLEWARE_HTTP_CACHE,
-  RBAC_JWT_SECRET,
-  expandLegacyTopics,
-} from "@sps/shared-utils";
-import { v4 as uuidv4 } from "uuid";
-import { ContentfulStatusCode } from "hono/utils/http-status";
-import { websocketManager, verifyJwt } from "@sps/backend-utils";
-
+import { MIDDLEWARE_HTTP_CACHE } from "@sps/shared-utils";
+import { getFileContentHeaders } from "@sps/backend-utils";
 import { app as agentApp } from "@sps/agent/backend/app/api";
 import { app as analyticApp } from "@sps/analytic/backend/app/api";
 import { app as hostApp } from "@sps/host/backend/app/api";
@@ -43,8 +32,34 @@ import { app as fileStorageApp } from "@sps/file-storage/backend/app/api";
 import { app as socialApp } from "@sps/social/backend/app/api";
 import { app as knowledgeApp } from "@sps/knowledge/backend/app/api";
 
-export const app = new Hono().basePath("/");
-const { upgradeWebSocket } = createBunWebSocket<ServerWebSocket>();
+export const app = new Hono<Env>().basePath("/");
+const apiModules = {
+  host: hostApp,
+  rbac: rbacApp,
+  startup: startupApp,
+  crm: crmApp,
+  ecommerce: ecommerceApp,
+  notification: notificationApp,
+  blog: blogApp,
+  billing: billingApp,
+  "website-builder": websiteBuilderApp,
+  "file-storage": fileStorageApp,
+  analytic: analyticApp,
+  social: socialApp,
+  knowledge: knowledgeApp,
+  agent: agentApp,
+  broadcast: broadcastApp,
+};
+hostApp.configureRouting(apiModules);
+
+const revalidationMiddleware = new RevalidationMiddleware();
+const consistencyMiddleware = new ConsistencyMiddleware({
+  revalidation: revalidationMiddleware,
+});
+const httpCacheMiddleware = new HTTPCacheMiddleware({
+  runtime: consistencyMiddleware.runtime,
+  excludedRoutes: controllerGuardedRoutes,
+});
 
 app.use(
   cors({
@@ -74,8 +89,9 @@ app.use(
   }),
 );
 
+app.use("/api/*", new SearchIndexingMiddleware().init());
 const exceptionFilter = new ExceptionFilter();
-app.onError((err, c) => exceptionFilter.catch(err, c));
+app.onError((error, c) => exceptionFilter.catch(error, c));
 
 app.on(["GET", "HEAD"], "/public/*", async (c) => {
   const relativePath = normalize(
@@ -104,7 +120,7 @@ app.on(["GET", "HEAD"], "/public/*", async (c) => {
       continue;
     }
 
-    const headers = new Headers();
+    const headers = getFileContentHeaders(relativePath, file.type);
     if (file.type) {
       headers.set("Content-Type", file.type);
     }
@@ -124,156 +140,25 @@ app.on(["GET", "HEAD"], "/public/*", async (c) => {
   return c.notFound();
 });
 
-const requestIdMiddleware = new RequestIdMiddleware();
-app.use(requestIdMiddleware.init());
-
-const consistencyMode = process.env.SPS_CONSISTENCY_MODE || "compatibility";
-if (!["off", "observe", "compatibility", "enabled"].includes(consistencyMode))
-  throw new Error("Invalid SPS_CONSISTENCY_MODE");
-export const consistencyRuntime = createConsistencyRuntime({
-  verifyAuthorization: async (authorization) => {
-    if (!authorization) return; // Only anonymous query capabilities can match.
-    if (!RBAC_JWT_SECRET) throw new Error("JWT verification is not configured");
-    await verifyJwt(authorization.replace(/^Bearer\s+/i, ""), RBAC_JWT_SECRET);
-  },
-  invalidateTags: async (tags) => {
-    await revalidationMiddleware.revalidateTags(tags, true);
-  },
-  publishLegacy: async (topics) => {
-    topics = expandLegacyTopics(topics);
-    await httpCacheMiddleware.invalidateTopics(topics);
-    const now = Date.now();
-    websocketManager.broadcastMessage({
-      slug: "revalidation",
-      payload: "/api",
-      topics,
-      createdAt: new Date(now).toISOString(),
-      expiresAt: new Date(now + 60000).toISOString(),
-    });
-  },
-});
-if (consistencyMode !== "off")
-  app.use(
-    consistencyRuntime.middleware({ metadata: consistencyMode !== "observe" }),
-  );
-app.post("/api/consistency/check", async (c) => {
-  const body = await c.req.json();
-  if (
-    !Array.isArray(body.refs) ||
-    body.refs.length > 100 ||
-    !body.refs.every(
-      (ref: unknown) => typeof ref === "string" && ref.length < 128,
-    )
-  )
-    return c.json({ error: "Invalid refs" }, 400);
-  const authorization = c.req.header("Authorization") || "";
-  return c.json({
-    data: await consistencyRuntime.check(body.refs, authorization),
-  });
-});
-app.get(
-  "/api/consistency/status",
-  new OperatorSecretMiddleware().init(),
-  async (c) =>
-    c.json({
-      data: {
-        ...(await consistencyRuntime.store.diagnostics()),
-        ...consistencyRuntime.metrics(),
-      },
-    }),
-);
-
-app.options("*", (c) => {
-  return c.text("OK", 204 as ContentfulStatusCode);
-});
-
-const observerMiddleware = new ObserverMiddleware();
-app.use(observerMiddleware.init());
-
-app.get(
-  "/ws/revalidation",
-  upgradeWebSocket((c) => {
-    const clientId = c.req.header("X-Client-ID") || uuidv4();
-    let consistencySocket:
-      | { send: (message: string) => void; close: () => void }
-      | undefined;
-
-    return {
-      onOpen(event, ws) {
-        websocketManager.addClient(clientId, ws);
-        consistencySocket = {
-          send: (message) => ws.send(message),
-          close: () => ws.close(),
-        };
-      },
-      onMessage(event, ws) {
-        if (consistencyMode === "off" || !consistencySocket) return;
-        // Modern clients reconcile through their private query capabilities.
-        void consistencyRuntime
-          .receive(consistencySocket, String(event.data))
-          .catch(() => ws.close(1008, "Invalid subscription"));
-      },
-      onClose: () => {
-        websocketManager.removeClient(clientId);
-        if (consistencySocket) consistencyRuntime.disconnect(consistencySocket);
-      },
-    };
-  }),
-);
-
-/**
- * Ordering contract (issue #195): RevalidationMiddleware MUST be registered
- * BEFORE HTTPCacheMiddleware. Hono unwinds post-next() code inner-first, so
- * the inner http-cache version bump completes before the outer revalidation
- * WS broadcast. Otherwise another client's immediate refetch (triggered by
- * the broadcast) could be served a stale cached response.
- */
-const revalidationMiddleware = new RevalidationMiddleware();
+app.use(new RequestIdMiddleware().init());
+app.use(consistencyMiddleware.init());
+consistencyMiddleware.registerRoutes(app);
+app.options("*", (c) => c.body(null, 204));
+app.use(new ObserverMiddleware().init());
 app.use(revalidationMiddleware.init());
-
-/**
- * Construct the invalidator independently of HTTP cache registration: direct
- * service writes must bump topic versions before Next/WS revalidation, including
- * when this process does not cache responses. GET caching remains opt-in through
- * MIDDLEWARE_HTTP_CACHE below; scoped reads also need exclusions or no-store.
- */
-const httpCacheMiddleware = new HTTPCacheMiddleware();
-
-const actionLoggerMiddleware = new ActionLoggerMiddleware();
-app.use(actionLoggerMiddleware.init());
-
-const isAuthorizedMiddleware = new IsAuthorizedMiddleware();
-app.use(isAuthorizedMiddleware.init());
-
-const billRouteMiddleware = new BillRouteMiddleware();
-app.use(billRouteMiddleware.init());
-
-const parseQueryMiddleware = new ParseQueryMiddleware();
-app.use(parseQueryMiddleware.init());
+app.use(new ActionLoggerMiddleware().init());
+app.use(new IsAuthorizedMiddleware().init());
+app.use(new BillRouteMiddleware().init());
+app.use(new ParseQueryMiddleware().init());
 
 if (MIDDLEWARE_HTTP_CACHE === "true") {
-  if (consistencyMode !== "off")
-    app.use(
-      consistencyRuntime.cache({ observe: consistencyMode === "observe" }),
-    );
-  else app.use(httpCacheMiddleware.init());
-  httpCacheMiddleware.setRoutes(app);
+  httpCacheMiddleware.registerRoutes(app);
+  app.use(httpCacheMiddleware.init());
 }
 
-app.route("/api/agent", agentApp.hono);
-app.route("/api/host", hostApp.hono);
-app.route("/api/rbac", rbacApp.hono);
-app.route("/api/startup", startupApp.hono);
-app.route("/api/crm", crmApp.hono);
-app.route("/api/ecommerce", ecommerceApp.hono);
-app.route("/api/notification", notificationApp.hono);
-app.route("/api/blog", blogApp.hono);
-app.route("/api/billing", billingApp.hono);
-app.route("/api/website-builder", websiteBuilderApp.hono);
-app.route("/api/broadcast", broadcastApp.hono);
-app.route("/api/file-storage", fileStorageApp.hono);
-app.route("/api/analytic", analyticApp.hono);
-app.route("/api/social", socialApp.hono);
-app.route("/api/knowledge", knowledgeApp.hono);
-await consistencyRuntime.store.assertCoverage();
-consistencyRuntime.start();
+for (const [name, module] of Object.entries(apiModules))
+  app.route("/api/" + name, module.hono);
+
+export function startConsistency() {
+  return consistencyMiddleware.start();
+}

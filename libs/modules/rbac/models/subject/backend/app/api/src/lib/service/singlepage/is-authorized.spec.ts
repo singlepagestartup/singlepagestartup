@@ -35,7 +35,11 @@ function createPermissionService(props: {
   permission?: Record<string, unknown>;
   rootPermission?: Record<string, unknown>;
 }) {
-  const service = new PermissionService({} as any, { find: jest.fn() } as any);
+  const service = new PermissionService(
+    {} as any,
+    { find: jest.fn() } as any,
+    { find: jest.fn() } as any,
+  );
 
   service.find = jest.fn().mockResolvedValue([]);
   service.resolveByRoute = jest.fn().mockResolvedValue({

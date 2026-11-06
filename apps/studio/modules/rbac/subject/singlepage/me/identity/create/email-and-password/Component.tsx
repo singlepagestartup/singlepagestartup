@@ -36,9 +36,9 @@ export function Component({
       >
         <Glyph className="size-5 shrink-0" />
         <span className="min-w-0 flex-1">
-          {reconnect ? "Reconnect" : meta.title}
+          {reconnect ? "Подключить заново" : meta.title}
         </span>
-        {connected && <span className="text-xs">Connected</span>}
+        {connected && <span className="text-xs">Подключено</span>}
       </button>
       {open && (
         <ProviderConnect

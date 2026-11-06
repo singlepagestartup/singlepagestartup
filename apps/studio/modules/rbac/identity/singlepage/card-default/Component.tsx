@@ -102,7 +102,7 @@ function ConfirmationDialog({
             <div className="mt-6 flex flex-wrap justify-end gap-2">
               <AlertDialog.Cancel asChild>
                 <Button ref={cancel} variant="secondary">
-                  Cancel
+                  Отмена
                 </Button>
               </AlertDialog.Cancel>
               <AlertDialog.Action asChild>
@@ -220,7 +220,7 @@ export const IdentityCardDefault = memo(function IdentityCardDefault(
         </div>
         <span className="hidden shrink-0 items-center gap-1 text-xs text-muted-foreground sm:inline-flex">
           <Check className="size-3" />
-          Connected
+          Подключено
         </span>
       </div>
       <p className="mt-3 text-sm leading-6 text-muted-foreground">
@@ -276,16 +276,16 @@ export const IdentityCardDefault = memo(function IdentityCardDefault(
       )}
       <details className="group mt-4 border-t border-border pt-2">
         <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-lg text-xs font-medium text-muted-foreground focus-visible:outline-2 [&::-webkit-details-marker]:hidden">
-          <span>Connection details</span>
+          <span>Данные подключения</span>
           <ChevronDown className="size-4 shrink-0 transition group-open:rotate-180" />
         </summary>
         <dl className="grid min-w-0 gap-3 text-xs sm:grid-cols-2">
           <div>
-            <dt className="text-muted-foreground">Connected</dt>
+            <dt className="text-muted-foreground">Подключено</dt>
             <dd className="mt-1">{formatRbacDateTime(identity.createdAt)}</dd>
           </div>
           <div>
-            <dt className="text-muted-foreground">Last updated</dt>
+            <dt className="text-muted-foreground">Последнее обновление</dt>
             <dd className="mt-1">{formatRbacDateTime(identity.updatedAt)}</dd>
           </div>
         </dl>
@@ -298,11 +298,14 @@ export const IdentityCardDefault = memo(function IdentityCardDefault(
           }}
           title={`Remove ${meta.title}?`}
           description={`Remove ${getIdentityPrimaryLogin(identity)} from the sign-in methods in this preview? No external account is deleted.`}
-          confirmLabel="Remove identity"
+          confirmLabel="Отключить способ входа"
           onConfirm={() => {
             if (!pendingAction) return;
             if (onAction) onAction(identity, pendingAction);
-            else setLocalResult("Identity removal requested in this preview.");
+            else
+              setLocalResult(
+                "В этом примере отправлен запрос на отключение способа входа.",
+              );
             setPendingAction(null);
           }}
           portalContainer={portalContainer}

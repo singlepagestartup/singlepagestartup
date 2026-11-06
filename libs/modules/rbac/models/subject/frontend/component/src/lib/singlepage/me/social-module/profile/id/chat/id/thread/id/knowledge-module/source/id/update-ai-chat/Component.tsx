@@ -4,6 +4,7 @@ import type { IComponentPropsExtended } from "./interface";
 export function Component(props: IComponentPropsExtended) {
   return (
     <ClientComponent
+      language={props.language}
       attachmentsRead={props.attachmentsRead}
       isServer={props.isServer}
       variant={props.variant}

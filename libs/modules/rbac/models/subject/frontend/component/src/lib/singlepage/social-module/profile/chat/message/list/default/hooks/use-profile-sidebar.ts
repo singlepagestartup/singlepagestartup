@@ -364,8 +364,9 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
       }
 
       toast.success("Profile saved");
-    } catch (error: any) {
-      toast.error(error?.message || "Failed to save profile");
+    } catch {
+      // The SDK already displayed the mutation error.
+      return;
     }
   }
 
@@ -469,8 +470,9 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
         return next;
       });
       refetchKnowledgeSourceQueries();
-    } catch (error: any) {
-      toast.error(error?.message || "Failed to reindex Knowledge Source");
+    } catch {
+      // The SDK already displayed the mutation error.
+      return;
     } finally {
       setReindexingKnowledgeSourceId(null);
     }
@@ -510,8 +512,9 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
         content: "",
       });
       refetchKnowledgeSourceQueries();
-    } catch (error: any) {
-      toast.error(error?.message || "Failed to delete Knowledge Source");
+    } catch {
+      // The SDK already displayed the mutation error.
+      return;
     }
   }
 

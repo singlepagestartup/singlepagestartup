@@ -13,6 +13,7 @@ export function Component({
   return (
     <div
       data-sps-theme="singlepage"
+      lang="ru"
       data-ds-block="host.layout.ai-chat-landing"
       className="@container min-h-screen min-w-0 flex flex-col bg-muted font-default text-foreground"
       data-module="host"
@@ -24,7 +25,7 @@ export function Component({
         target="_self"
         className="sr-only focus:not-sr-only focus:block focus:px-6 focus:py-4 focus-visible:outline-2 focus-visible:outline-primary"
       >
-        Skip to page content
+        Перейти к содержимому
       </a>
       <WebsiteBuilderModuleWidget
         variant="navbar-ai-chat-landing"

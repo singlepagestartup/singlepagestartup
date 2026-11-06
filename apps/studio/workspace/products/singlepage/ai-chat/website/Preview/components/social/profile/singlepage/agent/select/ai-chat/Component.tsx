@@ -38,7 +38,7 @@ function Icon({
   const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
@@ -67,12 +67,12 @@ export function Component({ onChange }: IThreadAgentSelectProps) {
       data-ds-block="social.profile.agent-select-ai-chat"
       className="min-w-0 space-y-3"
     >
-      <legend className={kit.label}>Agent</legend>
+      <legend className={kit.label}>Агент</legend>
       <div className="flex items-center gap-2">
         <div className="min-w-0 flex-1">
           <Select
-            aria-label="Thread agent"
-            placeholder="Select an agent"
+            aria-label="Агент переписки"
+            placeholder="Выбрать агента"
             value={agentId}
             onValueChange={(value) => {
               setAgentId(value);
@@ -86,9 +86,7 @@ export function Component({ onChange }: IThreadAgentSelectProps) {
         )}
       </div>
       <p className="text-xs leading-5 text-[color:var(--workspace-brand-muted)]">
-        {agentId
-          ? knowledgeAgent.description
-          : "Choose the agent for this conversation."}
+        {agentId ? knowledgeAgent.description : "Выберите агента этой беседы."}
       </p>
       <AgentProfile agent={profile} onClose={() => setProfile(null)} />
     </fieldset>

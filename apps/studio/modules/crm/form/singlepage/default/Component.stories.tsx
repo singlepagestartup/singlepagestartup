@@ -22,3 +22,6 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   name: "default",
 };
+
+import { frameworkContactForm } from "../../../shared/demo-crm";
+export const Framework: Story = { args: { form: frameworkContactForm } };

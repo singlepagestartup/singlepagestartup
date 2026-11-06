@@ -5,6 +5,7 @@ export function Component(props: IComponentPropsExtended) {
     <ClientComponent
       isServer={props.isServer}
       variant={props.variant}
+      language={props.language}
       data={props.data}
       className={props.className}
       children={props.children}

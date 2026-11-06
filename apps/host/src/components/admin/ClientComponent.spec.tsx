@@ -11,6 +11,7 @@ let mockSubjectRoles: { subjectId: string; roleId: string }[];
 let mockRoles: { id: string; slug: string }[];
 let mockAuthorizedSubjects: Set<string>;
 const mockAuthorization = jest.fn();
+const mockAdminContent = jest.fn();
 
 jest.mock("@sps/rbac/models/subject/sdk/model", () => ({
   route: "/api/rbac/subjects",
@@ -74,13 +75,19 @@ jest.mock("@sps/rbac/models/role/frontend/component", () => ({
 jest.mock("./assets/Dashboard", () => ({
   Component: () => <div>Admin content</div>,
 }));
+jest.mock("../admin-v2/Component", () => ({
+  Component: (props: unknown) => {
+    mockAdminContent(props);
+    return <div>Admin content</div>;
+  },
+}));
 
 import { Component as Admin } from "./ClientComponent";
 import { Component as AdminV2 } from "../admin-v2/ClientComponent";
 
 describe.each([
   ["Admin", () => <Admin />],
-  ["AdminV2", () => <AdminV2>Admin content</AdminV2>],
+  ["AdminV2", () => <AdminV2 url="/admin/host" language="ru" />],
 ] as const)("%s role checks", (_, view) => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -107,6 +114,7 @@ describe.each([
     expect(mockSubjectRoleReader).not.toHaveBeenCalled();
     expect(mockRoleReader).not.toHaveBeenCalled();
     expect(screen.queryByText("Admin content")).toBeNull();
+    expect(mockAdminContent).not.toHaveBeenCalled();
   });
 
   it("does not show admin controls for an ordinary member", () => {
@@ -134,6 +142,14 @@ describe.each([
     mockSubjectRoles = [{ subjectId: "visitor", roleId: "admin-role" }];
     const { rerender } = render(view());
     expect(screen.getByText("Admin content")).toBeTruthy();
+    if (mockAdminContent.mock.calls.length) {
+      expect(mockAdminContent).toHaveBeenLastCalledWith({
+        isServer: false,
+        url: "/admin/host",
+        language: "ru",
+        className: undefined,
+      });
+    }
 
     mockRoleReader.mockClear();
     mockSubject = { id: "anonymous-after-logout" };

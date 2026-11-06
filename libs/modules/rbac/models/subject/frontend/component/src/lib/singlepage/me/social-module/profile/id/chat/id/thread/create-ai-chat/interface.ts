@@ -10,6 +10,7 @@ import type {
 export const variant =
   "me-social-module-profile-id-chat-id-thread-create-ai-chat" as const;
 export interface IComponentProps extends IParent<IModel, typeof variant> {
+  language?: string;
   projects?: IAIChatProject[];
   project?: IAIChatProject;
   socialModuleThreadId?: string;

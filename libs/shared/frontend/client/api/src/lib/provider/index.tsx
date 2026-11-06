@@ -29,3 +29,6 @@ export function Provider({
     </QueryClientProvider>
   );
 }
+
+export { QueryScopeProvider, useQueryScope } from "./query-scope";
+export type { IQueryScopeProviderProps } from "./query-scope";

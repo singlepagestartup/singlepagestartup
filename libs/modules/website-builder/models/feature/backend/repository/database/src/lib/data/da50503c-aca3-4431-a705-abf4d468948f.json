@@ -1,0 +1,18 @@
+{
+  "className": "",
+  "id": "da50503c-aca3-4431-a705-abf4d468948f",
+  "createdAt": "2026-10-24T01:05:47.208Z",
+  "updatedAt": "2026-10-24T01:05:47.208Z",
+  "variant": "definition-item",
+  "title": {
+    "en": "Accounts and permissions",
+    "ru": "Аккаунты и разрешения"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"RBAC manages registration, identities, roles and access to resources.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"RBAC управляет регистрацией, идентификацией, ролями и доступом к ресурсам.\"}]}]}"
+  },
+  "adminTitle": "Accounts and permissions",
+  "slug": "framework-journey-module-group-0"
+}

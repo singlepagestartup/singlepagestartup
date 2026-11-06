@@ -1,11 +1,22 @@
 export const variant = "footer-default";
 
+export interface IFooterLink {
+  label: string;
+  href: string;
+  target?: "_self" | "_top";
+}
+
+export interface IFooterColumn {
+  title: string;
+  links: IFooterLink[];
+}
+
 export type FooterDefaultProps = {
   brand: string;
   description: string;
   copyright: string;
-  columns: { title: string; links: string[] }[];
-  legalLinks: string[];
+  columns: IFooterColumn[];
+  legalLinks: IFooterLink[];
 };
 
 type IVariantInputs = NonNullable<

@@ -73,6 +73,11 @@ export function CrmStepDefault(props?: IComponentProps) {
       <h2 className="mb-5 text-lg font-semibold text-foreground">
         {step.title}
       </h2>
+      {step.description ? (
+        <p className="mb-5 text-sm leading-6 text-muted-foreground">
+          {step.description}
+        </p>
+      ) : null}
       <div className="grid min-w-0 gap-5 sm:grid-cols-2">
         {step.inputs.map((input) => (
           <div

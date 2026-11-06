@@ -1,12 +1,15 @@
 "use client";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import { projectHref } from "@sps/rbac/models/subject/sdk/model";
+import { internationalization } from "@sps/shared-configuration";
 import type { IComponentPropsExtended } from "./interface";
 import { useCallback } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Component as Projects } from "./Projects";
 import { Component as WidgetsToWebsiteBuilderModuleWidgets } from "@sps/rbac/relations/widgets-to-website-builder-module-widgets/frontend/component";
 export function Component(props: IComponentPropsExtended) {
+  const language = props.language || internationalization.defaultLanguage.code;
+  const ru = language === "ru";
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -34,26 +37,36 @@ export function Component(props: IComponentPropsExtended) {
       <Subject
         isServer={false}
         variant="authentication-me-default"
-        skeleton={<Projects projects={[]} pending />}
+        skeleton={<Projects language={language} projects={[]} pending />}
         fallback={
           <Projects
+            language={language}
             projects={[]}
             error
             onRetry={() => window.location.reload()}
           />
         }
-        unauthenticatedRedirectHref={`/${props.language || "en"}/ai-chat/sign-in`}
+        unauthenticatedRedirectHref={`/${language}/ai-chat/sign-in`}
       >
         {({ data, authenticated }) => {
           if (!data || !authenticated) return null;
           return (
             <Subject
+              language={language}
               isServer={false}
               variant="me-social-module-profile-list-ai-chat"
               data={data}
-              loading={<Projects projects={[]} pending onCreate={openCreate} />}
+              loading={
+                <Projects
+                  language={language}
+                  projects={[]}
+                  pending
+                  onCreate={openCreate}
+                />
+              }
               renderError={({ retry }) => (
                 <Projects
+                  language={language}
                   projects={[]}
                   error
                   onRetry={retry}
@@ -63,6 +76,7 @@ export function Component(props: IComponentPropsExtended) {
               renderProjects={({ projects }) => {
                 return (
                   <Projects
+                    language={language}
                     variant={props.variant}
                     creating={creating}
                     onCreate={openCreate}
@@ -70,10 +84,10 @@ export function Component(props: IComponentPropsExtended) {
                     projects={projects.map((project) => ({
                       id: project.profile.id,
                       name:
-                        project.profile.title?.[props.language || "en"] ||
+                        project.profile.title?.[language] ||
                         project.profile.title?.en ||
-                        "Untitled project",
-                      href: `/${props.language || "en"}${projectHref(project)}`,
+                        (ru ? "Проект без названия" : "Untitled project"),
+                      href: `/${language}${projectHref(project)}`,
                     }))}
                   >
                     <WidgetsToWebsiteBuilderModuleWidgets
@@ -102,9 +116,10 @@ export function Component(props: IComponentPropsExtended) {
                               variant="default"
                               dataSource="props"
                               data={link}
-                              language={props.language}
+                              language={language}
                             >
                               <Subject
+                                language={language}
                                 isServer={false}
                                 variant="me-social-module-profile-create-ai-chat"
                                 data={data}
@@ -115,7 +130,9 @@ export function Component(props: IComponentPropsExtended) {
                           ))
                         ) : (
                           <p role="alert">
-                            Project creation content is unavailable.
+                            {ru
+                              ? "Не удалось загрузить страницу создания проекта."
+                              : "Project creation content is unavailable."}
                           </p>
                         )
                       }
