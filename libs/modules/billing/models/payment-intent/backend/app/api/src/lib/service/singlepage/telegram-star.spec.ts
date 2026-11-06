@@ -7,6 +7,7 @@
  */
 
 const mockSendInvoice = jest.fn();
+const mockSettle = jest.fn();
 
 jest.mock("@sps/shared-utils", () => {
   const actual = jest.requireActual("@sps/shared-utils");
@@ -81,7 +82,7 @@ describe("Telegram Star invoice creation", () => {
     mockedPaymentIntentToInvoiceCreate.mockResolvedValue({});
 
     await expect(
-      new Service().proceed({
+      new Service({ settle: mockSettle }).proceed({
         action: "create",
         account: "telegram-account-1",
         currency: "telegram-star",
@@ -150,7 +151,7 @@ describe("Telegram Star invoice creation", () => {
     mockSendInvoice.mockRejectedValue(new Error("telegram-unavailable"));
 
     await expect(
-      new Service().proceed({
+      new Service({ settle: mockSettle }).proceed({
         action: "create",
         account: "telegram-account-1",
         currency: "telegram-star",
@@ -180,10 +181,10 @@ describe("Telegram Star payment webhook", () => {
    * BDD Scenario
    * Given: the successful_payment payload references an open Telegram Star invoice.
    * When: the webhook is processed.
-   * Then: the invoice is marked paid and the payment intent callback is called.
+   * Then: settlement is delegated to the atomic billing service.
    */
   it("marks the invoice paid from successful_payment data", async () => {
-    const service = new Service();
+    const service = new Service({ settle: mockSettle });
     const invoice = {
       id: "invoice-1",
       amount: 25,
@@ -197,7 +198,6 @@ describe("Telegram Star payment webhook", () => {
       status: "paid",
       providerId: "telegram-charge-1",
     };
-    const callback = jest.fn().mockResolvedValue({ ok: true });
     const fetchSpy = jest.spyOn(globalThis, "fetch");
 
     mockedInvoiceFind.mockResolvedValue([invoice]);
@@ -213,27 +213,19 @@ describe("Telegram Star payment webhook", () => {
           telegram_payment_charge_id: "telegram-charge-1",
           provider_payment_charge_id: "provider-charge-1",
         },
-        callback,
       }),
     ).resolves.toEqual({ code: 0 });
 
     expect(fetchSpy).not.toHaveBeenCalledWith(
       expect.stringContaining("getStarTransactions"),
     );
-    expect(mockedInvoiceUpdate).toHaveBeenCalledWith({
-      id: "invoice-1",
-      data: expect.objectContaining({
-        providerId: "telegram-charge-1",
-        amount: 25,
-        status: "paid",
-      }),
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": "rbac-secret",
-        },
-      },
+    expect(mockSettle).toHaveBeenCalledWith({
+      invoiceId: "invoice-1",
+      provider: "telegram-star",
+      amount: 25,
+      settledProviderId: "telegram-charge-1",
     });
-    expect(callback).toHaveBeenCalledWith({ invoice: updatedInvoice });
+    expect(mockedInvoiceUpdate).not.toHaveBeenCalled();
 
     fetchSpy.mockRestore();
   });
@@ -245,7 +237,7 @@ describe("Telegram Star payment webhook", () => {
    * Then: the service refuses to mark the invoice paid.
    */
   it("rejects mismatched Telegram Star amounts", async () => {
-    const service = new Service();
+    const service = new Service({ settle: mockSettle });
 
     mockedInvoiceFind.mockResolvedValue([
       {
@@ -267,7 +259,6 @@ describe("Telegram Star payment webhook", () => {
           telegram_payment_charge_id: "telegram-charge-1",
           provider_payment_charge_id: "provider-charge-1",
         },
-        callback: jest.fn(),
       }),
     ).rejects.toThrow("Telegram Star amount does not match");
 
