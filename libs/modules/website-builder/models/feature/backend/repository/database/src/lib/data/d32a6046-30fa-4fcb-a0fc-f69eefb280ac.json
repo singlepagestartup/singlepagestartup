@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "d32a6046-30fa-4fcb-a0fc-f69eefb280ac",
+  "createdAt": "2026-10-26T00:12:01.635Z",
+  "updatedAt": "2026-10-27T14:59:56.640Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "file-storage",
+    "ru": "file-storage"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Keep original documents and recordings.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Храните исходные документы и записи.\"}]}]}"
+  },
+  "adminTitle": "file-storage",
+  "slug": "framework-reviewed-article-knowledge-connections-feature-1"
+}

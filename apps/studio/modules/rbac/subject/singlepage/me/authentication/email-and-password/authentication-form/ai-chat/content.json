@@ -1,0 +1,23 @@
+{
+  "title": "Войти",
+  "description": [],
+  "successDescription": [
+    "Откройте рабочее пространство, чтобы вернуться к документам и перепискам."
+  ],
+  "labels": {
+    "email-label": "Электронная почта",
+    "email-placeholder": "you@example.com",
+    "password-label": "Пароль",
+    "submit": "Войти",
+    "forgot-label": "Забыли пароль?",
+    "forgot-href": "/ai-chat/help",
+    "register-label": "Создать аккаунт",
+    "register-href": "/ai-chat/rbac/subjects/authentication/registration",
+    "no-account": "Ещё нет аккаунта?",
+    "continue-label": "Открыть рабочее пространство",
+    "continue-href": "/ai-chat/social/profiles/example",
+    "email-error": "Введите корректный адрес электронной почты.",
+    "password-error": "Введите пароль.",
+    "success-message": "Вы снова с нами."
+  }
+}

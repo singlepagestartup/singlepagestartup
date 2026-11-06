@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Read all articles",
+    "ru": "Все статьи"
+  },
+  "subtitle": {},
+  "url": "/blog",
+  "className": "w-fit",
+  "id": "03dc7bbb-370d-4076-88ac-77cdf9f9882c",
+  "createdAt": "2026-10-24T01:05:51.184Z",
+  "updatedAt": "2026-10-24T01:05:51.184Z",
+  "variant": "secondary",
+  "adminTitle": "Read all articles",
+  "slug": "framework-journey-articles-actions-0"
+}

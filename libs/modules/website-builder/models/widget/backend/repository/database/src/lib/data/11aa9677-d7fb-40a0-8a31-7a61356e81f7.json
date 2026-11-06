@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Choose the execution side",
+    "ru": "Выберите сторону выполнения"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Next.js Server Components and Client Components have different capabilities. \"},{\"type\":\"text\",\"text\":\"Next.js documentation\",\"marks\":[{\"type\":\"link\",\"attrs\":{\"href\":\"https://nextjs.org/docs/15/app/getting-started/server-and-client-components\",\"target\":\"_blank\",\"rel\":\"noopener noreferrer\"}}]},{\"type\":\"text\",\"text\":\" describes serializable props and composition through \"},{\"type\":\"text\",\"text\":\"children\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\". In SPS, the reading entrypoint is chosen by \"},{\"type\":\"text\",\"text\":\"index.tsx\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\"; readers load data, while hooks and browser state belong to \"},{\"type\":\"text\",\"text\":\"ClientComponent.tsx\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\".\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"An ordinary record uses the shared reader. A specialized operation may use local \"},{\"type\":\"text\",\"text\":\"client.tsx\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" and \"},{\"type\":\"text\",\"text\":\"server.tsx\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" readers that pass the same result type to the view. They replace the read instead of wrapping the existing reader in another Provider. The \"},{\"type\":\"text\",\"text\":\"isServer\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" prop selects the SPS read path; the client JSX boundary must still be explicit.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Серверные компоненты Next.js и клиентские компоненты имеют разные возможности. \"},{\"type\":\"text\",\"text\":\"Документация Next.js\",\"marks\":[{\"type\":\"link\",\"attrs\":{\"href\":\"https://nextjs.org/docs/15/app/getting-started/server-and-client-components\",\"target\":\"_blank\",\"rel\":\"noopener noreferrer\"}}]},{\"type\":\"text\",\"text\":\" описывает передачу сериализуемых параметров и композицию через \"},{\"type\":\"text\",\"text\":\"children\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\". В SPS точку чтения выбирает \"},{\"type\":\"text\",\"text\":\"index.tsx\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\", данные получают reader-компоненты, а hooks и состояние браузера принадлежат \"},{\"type\":\"text\",\"text\":\"ClientComponent.tsx\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\".\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Для обычной записи используется общий reader. Для особой операции допустимы локальные \"},{\"type\":\"text\",\"text\":\"client.tsx\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" и \"},{\"type\":\"text\",\"text\":\"server.tsx\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\", которые передают представлению одинаковый тип результата. Они заменяют чтение, а не оборачивают прежний reader ещё одним Provider. Параметр \"},{\"type\":\"text\",\"text\":\"isServer\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" выбирает способ чтения SPS; границу клиентского JSX всё равно нужно задать явно.\"}]}]}"
+  },
+  "anchor": "ru-section-nextjs-server-client-readers-and-widget-slots-3",
+  "className": "",
+  "id": "11aa9677-d7fb-40a0-8a31-7a61356e81f7",
+  "createdAt": "2026-10-26T07:34:00.665Z",
+  "updatedAt": "2026-10-27T14:58:48.400Z",
+  "variant": "content-rich",
+  "adminTitle": "Выберите сторону выполнения",
+  "slug": "ru-section-nextjs-server-client-readers-and-widget-slots-3"
+}

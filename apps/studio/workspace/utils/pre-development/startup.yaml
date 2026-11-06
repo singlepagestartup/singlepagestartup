@@ -1,6 +1,6 @@
-schema: singlepagestartup.pre-development-state.v1
+schema: singlepagestartup.pre-development-state.v2
 active_stage: 00-business
+active_section: brief
 status: not_started
-active_artifacts:
-  - brief
-blockers: []
+progress:
+  brief: not_started

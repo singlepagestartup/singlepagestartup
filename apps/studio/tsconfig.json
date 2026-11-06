@@ -1,6 +1,26 @@
 {
-  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "baseUrl": "../..",
+    "paths": {
+      "@sps/shared-utils/metadata": [
+        "libs/shared/utils/src/lib/metadata/index.ts"
+      ],
+      "@sps/shared-frontend-client-utils/chat-scroll": [
+        "libs/shared/frontend/client/utils/src/lib/chat-scroll/index.ts"
+      ],
+      "@sps/shared-utils/chat-scroll": [
+        "libs/shared/utils/src/lib/constants/chat-scroll.ts"
+      ],
+      "@sps/ui-adapter/toast": [
+        "libs/shared/ui/adapter/src/lib/toast/index.tsx"
+      ]
+    },
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
     "allowJs": true,
     "checkJs": false,
     "isolatedModules": true,
@@ -8,6 +28,7 @@
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "noEmit": true,
     "strict": true,
+    "noImplicitAny": false,
     "types": ["node", "bun"]
   },
   "include": [
@@ -15,7 +36,9 @@
     "raw-imports.d.ts",
     "workspace/**/*.ts",
     "workspace/**/*.tsx",
-    "workspace/**/*.jsx"
+    "workspace/**/*.jsx",
+    "modules/**/*.ts",
+    "modules/**/*.tsx"
   ],
   "exclude": ["node_modules", "runnable/**"]
 }

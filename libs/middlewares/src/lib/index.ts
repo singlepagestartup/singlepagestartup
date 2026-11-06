@@ -1,9 +1,4 @@
 export {
-  Middleware as HTTPCacheMiddleware,
-  type IMiddlewareGeneric as IHTTPCacheMiddlewareGeneric,
-  type IMiddlewareOptions as IHTTPCacheMiddlewareOptions,
-} from "./http-cache";
-export {
   Middleware as RevalidationMiddleware,
   type IMiddlewareGeneric as IRevalidationMiddlewareGeneric,
   type IMiddlewareOptions as IRevalidationMiddlewareOptions,
@@ -14,6 +9,7 @@ export {
   type IMiddlewareGeneric as IIsAuthorizedMiddlewareGeneric,
   type IMiddlewareOptions as IIsAuthorizedMiddlewareOptions,
 } from "./is-authorized";
+export { controllerGuardedRoutes } from "./is-authorized/routes";
 export {
   Middleware as ObserverMiddleware,
   type IMiddlewareGeneric as IObserverMiddlewareGeneric,
@@ -37,3 +33,13 @@ export {
   Middleware as OperatorSecretMiddleware,
   type IMiddlewareGeneric as IOperatorSecretMiddlewareGeneric,
 } from "./operator-secret";
+
+export { Middleware as SearchIndexingMiddleware } from "./search-indexing";
+export {
+  Middleware as HTTPCacheMiddleware,
+  type IMiddlewareOptions as IHTTPCacheMiddlewareOptions,
+} from "./http-cache";
+export {
+  Middleware as ConsistencyMiddleware,
+  type IMiddlewareOptions as IConsistencyMiddlewareOptions,
+} from "./consistency";

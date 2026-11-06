@@ -1,0 +1,39 @@
+{
+  "newProjectUrl": "http://localhost:3000/en/ai-chat/social/profiles/11571df7-9729-4d77-b4dc-92bcecf353ad/chats/4d624a4c-c205-4203-80ef-ba8287584554/threads/664afc97-cd08-40f6-b2e1-3d2ceec11347",
+  "newOrdinaryThreadUrl": "http://localhost:3000/en/ai-chat/social/profiles/11571df7-9729-4d77-b4dc-92bcecf353ad/chats/4d624a4c-c205-4203-80ef-ba8287584554/threads/0df80267-b0c1-422d-b896-502682dd0465",
+  "ordinaryThread": {
+    "documentButtons": 0,
+    "editorCount": 0,
+    "knowledgeCount": 0,
+    "scrollWidth": 1600,
+    "width": 1600
+  },
+  "mobileDocument": {
+    "editors": [
+      {
+        "label": "Brief.md editor",
+        "visible": true
+      }
+    ],
+    "scrollWidth": 375,
+    "width": 375
+  },
+  "mobileOrdinaryThread": {
+    "width": 375,
+    "scrollWidth": 375,
+    "editorCount": 0
+  },
+  "existingProducts": {
+    "knowledgeCards": [
+      "Products",
+      "Bookings"
+    ],
+    "documentCount": 5
+  },
+  "consoleErrors": 0,
+  "consoleWarnings": [
+    "Existing Next.js smooth-scroll configuration warning"
+  ],
+  "viewportReset": true,
+  "temporaryTabClosed": true
+}

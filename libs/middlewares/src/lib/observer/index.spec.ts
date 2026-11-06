@@ -198,3 +198,39 @@ describe("Given: a stored pipeline step names a non-public address", () => {
     expect(mockMessageDelete).not.toHaveBeenCalled();
   });
 });
+
+it("resolves repeated nested observer placeholders using their matched boundaries", async () => {
+  const fetchMock = jest
+    .spyOn(global, "fetch")
+    .mockResolvedValue(new Response(null, { status: 400 }));
+  try {
+    await new Middleware().executePipeline({
+      message: { id: "message-id" } as never,
+      index: 0,
+      triggerResult: { article: { title: "Framework" } },
+      previouseResult: { id: "previous-id" },
+      pipe: [
+        {
+          method: "POST",
+          url: "http://api:4000/next",
+          headers: {},
+          body: {
+            data: {
+              title:
+                "[triggerResult.article.title] / [triggerResult.article.title]",
+              previous: "[previouseResult.id]",
+            },
+          },
+        },
+      ],
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const body = fetchMock.mock.calls[0][1]?.body as FormData;
+    expect(JSON.parse(body.get("data") as string)).toEqual({
+      title: "Framework / Framework",
+      previous: "previous-id",
+    });
+  } finally {
+    fetchMock.mockRestore();
+  }
+});

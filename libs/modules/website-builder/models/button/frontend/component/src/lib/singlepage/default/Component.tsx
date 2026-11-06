@@ -19,7 +19,11 @@ export function Component(props: IComponentPropsExtended) {
       data-model="button"
       data-id={props.data?.id || ""}
       data-variant={props.data.variant}
-      className={cn("w-full", props.data.className, props.className)}
+      className={cn(
+        "min-h-10 w-fit rounded-xl px-4 text-sm font-medium",
+        props.data.className,
+        props.className,
+      )}
       variant="default"
       asChild={true}
     >

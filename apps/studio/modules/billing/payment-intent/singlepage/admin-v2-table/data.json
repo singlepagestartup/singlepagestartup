@@ -1,0 +1,93 @@
+{
+  "schema": {
+    "module": "billing",
+    "entity": "payment-intent",
+    "entityType": "model",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "amount",
+        "label": "Amount",
+        "kind": "integer",
+        "nullable": false,
+        "default": 0
+      },
+      {
+        "key": "status",
+        "label": "Status",
+        "kind": "text",
+        "nullable": false,
+        "default": "requires_payment_method"
+      },
+      {
+        "key": "interval",
+        "label": "Interval",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "type",
+        "label": "Type",
+        "kind": "text",
+        "nullable": false,
+        "default": "one_off"
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "0d4f37aa-b633-4623-a778-cb916da66de0",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "amount": 0,
+      "status": "requires_payment_method",
+      "interval": null,
+      "type": "one_off"
+    },
+    {
+      "id": "bf8311ba-e9e1-4e7f-a9d7-b01ca2f42eb0",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "amount": 0,
+      "status": "requires_payment_method",
+      "interval": null,
+      "type": "one_off"
+    },
+    {
+      "id": "a28f4286-4966-4234-a49f-94578bbf4af0",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "amount": 0,
+      "status": "requires_payment_method",
+      "interval": null,
+      "type": "one_off"
+    }
+  ]
+}

@@ -17,14 +17,18 @@ export interface IProps {
     [key: string]: any;
   };
   options?: Partial<NextRequestOptions>;
-  data?: any;
+  data?: {
+    orderId?: string;
+    ordersToProducts?: { id: string; quantity: number }[];
+    billingModule?: { currency: { id: string } };
+  };
 }
 
 export type IResult = IModel;
 
 export async function action(props: IProps): Promise<IResult> {
   const { id, params, data, options, host = serverHost } = props;
-  const orderId = props.orderId || props.data["orderId"];
+  const orderId = props.orderId || props.data?.orderId;
 
   if (!orderId) {
     throw new Error("Validation error. orderId is required");

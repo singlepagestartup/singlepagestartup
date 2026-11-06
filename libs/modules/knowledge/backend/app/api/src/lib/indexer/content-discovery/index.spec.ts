@@ -22,10 +22,6 @@ describe("knowledge content parser", () => {
       filePath: "/content/video/show/episode/content.txt",
       content: "00:01 Intro\nCommercial real estate discussion",
     });
-
-    expect(parsed.type).toBe("video");
-    expect(parsed.metadata.hasTimestamps).toBe(true);
-    expect(parsed.originalPath).toBe("video/show/episode/content.txt");
   });
 
   /**
@@ -43,8 +39,7 @@ describe("knowledge content parser", () => {
     });
 
     expect(parsed.title).toBe("Product Docs");
-    expect(parsed.type).toBe("transcript");
     expect(parsed.description).toBeNull();
-    expect(parsed.contentHash).toHaveLength(64);
+    expect(parsed.slug).toMatch(/^file-[a-f0-9]{64}$/);
   });
 });

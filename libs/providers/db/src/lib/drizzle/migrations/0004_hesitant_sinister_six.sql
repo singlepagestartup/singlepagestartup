@@ -1,0 +1,1 @@
+ALTER TABLE "sps_consistency"."query" ADD COLUMN "collections" jsonb DEFAULT '{}'::jsonb NOT NULL;

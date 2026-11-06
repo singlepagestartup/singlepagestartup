@@ -1,92 +1,122 @@
-import { useState } from "react";
+import { useEffect, useId, useState } from "react";
 import "../../../../styles/singlepage.css";
+import {
+  Icon,
+  kit,
+} from "../../../../design/singlepage/interface-kit/primitives";
 
 const stages = [
   {
-    id: "request",
-    label: "Request",
-    time: "10 min",
+    id: "brief",
+    label: "Бриф",
+    time: "10 мин",
     question:
-      "What are you working on, and what should be true when this project is useful?",
+      "Над чем вы работаете и каким должен быть полезный результат проекта?",
     answer:
-      "A hosted workspace that turns a founder's existing material into a usable business model and keeps it available to the chat.",
+      "Облачная рабочая область составляет короткие документы проекта и продуктов из имеющихся материалов. У каждого файла своя переписка; сохранённые тексты прикрепляются к темам проекта.",
     found: [
-      "The first product is a hosted AI chat.",
-      "Existing notes, files and screenshots should be accepted.",
-      "The person wants a useful result in one focused session.",
+      "Первый продукт — облачный AI-чат.",
+      "Можно передавать существующие заметки, файлы и снимки экрана.",
+      "Первый результат — текстовые описания для правки, проверки и выгрузки.",
     ],
-    result: "Scope, desired result, products and constraints",
+    result: "Границы, ожидаемый результат, продукты и ограничения",
   },
   {
     id: "strategy",
-    label: "Strategy",
-    time: "10 min",
-    question:
-      "What should the complete project look like when it is working as intended?",
+    label: "Стратегия",
+    time: "10 мин",
+    question: "Как должен работать весь проект, когда замысел реализован?",
     answer:
-      "A person moves from mixed material to an accepted project model, uses it in ordinary chat, prepares a landing-page sandbox and can publish it through a user-owned repository and server.",
+      "Человек добавляет материалы, обсуждает каждый файл отдельно и проверяет текст. Выбранные документы становятся контекстом новых тем. Владелец оценивает процесс перед добавлением посадочных и платного развёртывания.",
     found: [
-      "The chat is the main hosted product.",
-      "The landing page remains private until the user starts publication.",
-      "GitHub repository creation and server connection lead to a public site.",
-      "Code Framework supplies the deployable foundation.",
+      "Чат — основной облачный продукт.",
+      "Первый выпуск создаёт письменные документы проекта и продуктов.",
+      "Генерация посадочной и платное развёртывание — будущие возможности.",
+      "У каждого продукта свои разделы, включая экономику, продажи, продвижение и аналитику.",
     ],
-    result: "Final picture, audiences, product roles and customer path",
+    result: "Итоговая картина, аудитории, роли продуктов и путь клиента",
   },
   {
     id: "brand",
-    label: "Brand",
-    time: "8 min",
-    question:
-      "What should people understand and remember after using the product?",
+    label: "Бренд",
+    time: "8 мин",
+    question: "Что человек должен понять и запомнить после использования?",
     answer:
-      "Start with one clear page, then add depth only when the next decision or material needs it.",
+      "Опишите проект по имеющимся заметкам, файлам и решениям. Исправьте найденные агентом недостатки и используйте проверенный текст как первый шаг к клиентам.",
     found: [
-      "Single Page means a compact starting point.",
-      "The product should feel practical and direct.",
-      "Claims need support from the person's actual material.",
+      "Существующие материалы — отправная точка описания проекта.",
+      "Продукт должен быть практичным и понятным.",
+      "Утверждения опираются на реальные материалы человека.",
     ],
-    result: "Meaning, promise, proof, voice and primary action",
+    result: "Смысл, обещание, подтверждение, голос и основное действие",
   },
   {
     id: "design",
-    label: "Design",
-    time: "7 min",
-    question: "How should this meaning become visible and easy to use?",
+    label: "Дизайн",
+    time: "7 мин",
+    question: "Как сделать этот смысл видимым и удобным в работе?",
     answer:
-      "A calm document workspace with strong typography, visible progress and one decision in focus at a time.",
+      "Текстовый Дизайн: Onest, холодные нейтральные поверхности, графит, лаймовые действия и одно описание в центре внимания.",
     found: [
-      "Black, warm white and acid green form the current palette.",
-      "The interface combines editorial pages with practical controls.",
-      "Uploaded images remain source material, not automatic design decisions.",
+      "Текущая палитра: графит, холодный серый, белый и лайм.",
+      "Дизайн первого выпуска — текст об ожидаемом внешнем виде.",
+      "Загруженные картинки — источники, а не автоматически принятые решения дизайна.",
     ],
-    result: "Visual direction, interface principles and available assets",
+    result: "Визуальное направление, принципы интерфейса и доступные ресурсы",
   },
   {
     id: "products",
-    label: "Products",
-    time: "15 min",
+    label: "Продукты",
+    time: "15 мин",
     question:
-      "Who receives what value, and how is the offer delivered and sustained?",
+      "Кто получает какую ценность, как предложение поставляется и поддерживается?",
     answer:
-      "Early-stage project owners receive a maintained project model and relevant chat. Token purchases fund hosted work; shared operations support the chat and later products.",
+      "Владельцы ранних проектов получают описания и продолжение в чате. У каждого продукта свои Продукт, Операции и экономика, Продажи, Продвижение, Аналитика и исследования. Выручка токенов и расходы сервиса относятся к AI Chat.",
     found: [
-      "The user, buyer and decision-maker may initially be one person.",
-      "AI Chat and Code Framework are separate related products.",
-      "Prices, package sizes and customer demand are still unknown.",
+      "Пользователь, покупатель и принимающий решение сначала могут быть одним человеком.",
+      "AI Chat и Code Framework — отдельные связанные продукты.",
+      "One internal token costs 0.13 roubles. Top-ups are 100, 300, 500, 1,000 or 3,000 roubles, with no package discount.",
+      "Purchased tokens do not expire; cash refunds for top-ups are decided case by case. Failed or cancelled AI requests restore all token deductions and have a net charge of zero; the service bears any provider expense. Customer demand remains unverified.",
     ],
-    result: "Customer, value, access, money, delivery, sales and learning",
+    result:
+      "Отдельные тексты продукта: паспорт, операции и экономика, продажи, продвижение, аналитика и исследования",
   },
 ];
 
-export default function GuidedCards() {
-  const [active, setActive] = useState(1);
-  const [accepted, setAccepted] = useState(() => new Set([0]));
+interface IGuidedCardsProps {
+  embedded?: boolean;
+  empty?: boolean;
+  onAddMaterials?: () => void;
+  onDocumentsChange?: (
+    documents: Record<string, string>,
+    reviewed: string[],
+  ) => void;
+}
+
+export default function GuidedCards({
+  embedded = false,
+  empty = false,
+  onAddMaterials,
+  onDocumentsChange,
+}: IGuidedCardsProps = {}) {
+  const id = useId();
+  const [active, setActive] = useState(empty ? 0 : 1);
+  const [accepted, setAccepted] = useState(
+    () => new Set<number>(empty ? [] : [0]),
+  );
   const [unknown, setUnknown] = useState(() => new Set<number>());
   const [answers, setAnswers] = useState(() =>
-    Object.fromEntries(stages.map((stage) => [stage.id, stage.answer])),
+    Object.fromEntries(
+      stages.map((stage) => [stage.id, empty ? "" : stage.answer]),
+    ),
   );
   const stage = stages[active];
+  useEffect(() => {
+    onDocumentsChange?.(
+      answers,
+      [...accepted].map((index) => stages[index].id),
+    );
+  }, [answers, accepted, onDocumentsChange]);
 
   const advance = (state: "accepted" | "unknown") => {
     if (state === "accepted") {
@@ -108,36 +138,50 @@ export default function GuidedCards() {
   };
 
   return (
-    <div className="min-h-[820px] bg-[#111111] p-3 text-[#111111] [font-family:var(--workspace-brand-font-body)] sm:p-6">
-      <div className="mx-auto max-w-[1440px] overflow-hidden rounded-[28px] border border-[#343434] bg-[#f7f6f2] shadow-2xl">
-        <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[#cbc9c3] bg-white px-5 py-4 sm:px-7">
-          <div className="flex items-center gap-3">
-            <div className="grid size-9 place-items-center rounded-lg bg-[#111111] text-sm font-bold text-[#bfef61]">
-              S
+    <div
+      data-workspace-projection="singlepage"
+      className={`@container bg-[var(--workspace-brand-background)] text-[var(--workspace-brand-foreground)] [font-family:var(--workspace-brand-font-body)] ${embedded ? "" : "min-h-[820px] p-3 sm:p-6"}`}
+    >
+      <div className="mx-auto max-w-[1440px] overflow-hidden rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)]">
+        {!embedded && (
+          <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--workspace-brand-line)] bg-white px-5 py-4 sm:px-7">
+            <div className="flex items-center gap-3">
+              <div className="grid size-10 place-items-center rounded-xl bg-[var(--workspace-brand-foreground)] text-[var(--workspace-brand-accent)]">
+                <img
+                  src="/workspace-assets/singlepage/intake/operator-logo-square-white.svg"
+                  data-asset-id="singlepage-operator-logo-square-white"
+                  alt=""
+                  width={24}
+                  height={24}
+                  className="size-6"
+                />
+              </div>
+              <div>
+                <p className="text-sm font-semibold">SinglePageStartup</p>
+                <p className="text-sm text-[var(--workspace-brand-muted)]">
+                  Настройка нового проекта
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-semibold">SinglePageStartup</p>
-              <p className="text-xs text-[#6b6b66]">New project setup</p>
+            <div className="flex items-center gap-2">
+              <span className="rounded-full border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] px-3 py-2 text-sm font-semibold">
+                {accepted.size} из 5 проверено
+              </span>
+              <span className="rounded-full border border-[var(--workspace-brand-line)] bg-white px-3 py-2 text-sm font-medium">
+                Около часа
+              </span>
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="rounded-full border border-[#cbc9c3] bg-[#f7f6f2] px-3 py-2 text-xs font-semibold">
-              {accepted.size} of 5 reviewed
-            </span>
-            <span className="rounded-full bg-[#bfef61] px-3 py-2 text-xs font-semibold">
-              About one hour
-            </span>
-          </div>
-        </header>
+          </header>
+        )}
 
-        <div className="grid lg:grid-cols-[210px_minmax(0,1fr)] xl:grid-cols-[210px_minmax(0,1fr)_310px]">
-          <aside className="border-b border-[#cbc9c3] bg-white p-4 lg:border-r lg:border-b-0">
-            <p className="px-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#6b6b66]">
-              Five stages
+        <div className="grid @[700px]:grid-cols-[180px_minmax(0,1fr)] @[1200px]:grid-cols-[200px_minmax(0,1fr)_280px]">
+          <aside className="border-b border-[var(--workspace-brand-line)] bg-white p-4 lg:border-r lg:border-b-0">
+            <p className="px-2 text-sm font-semibold text-[var(--workspace-brand-muted)]">
+              Переписки документов
             </p>
             <nav
-              className="mt-3 grid gap-1 sm:grid-cols-5 lg:grid-cols-1"
-              aria-label="Setup stages"
+              className="mt-3 grid gap-2 @[500px]:grid-cols-2 @[700px]:grid-cols-1"
+              aria-label="Этапы настройки"
             >
               {stages.map((item, index) => {
                 const state = accepted.has(index)
@@ -150,34 +194,40 @@ export default function GuidedCards() {
                 return (
                   <button
                     aria-current={active === index ? "step" : undefined}
-                    className={`flex min-w-0 items-center gap-3 rounded-xl px-3 py-3 text-left transition ${
+                    className={`flex min-h-11 min-w-0 items-center gap-3 rounded-xl px-3 py-3 text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-accent)] ${
                       active === index
-                        ? "bg-[#111111] text-white"
-                        : "hover:bg-[#f2f1ec]"
+                        ? "bg-[var(--workspace-brand-foreground)] text-white"
+                        : "hover:bg-[var(--workspace-brand-background)]"
                     }`}
                     key={item.id}
                     onClick={() => setActive(index)}
                     type="button"
                   >
                     <span
-                      className={`grid size-7 shrink-0 place-items-center rounded-full border text-xs font-semibold ${
+                      className={`grid size-7 shrink-0 place-items-center rounded-full border text-sm font-semibold ${
                         state === "accepted"
-                          ? "border-[#bfef61] bg-[#bfef61] text-[#111111]"
+                          ? "border-[var(--workspace-brand-accent)] bg-[var(--workspace-brand-accent)] text-[var(--workspace-brand-foreground)]"
                           : active === index
-                            ? "border-[#666]"
-                            : "border-[#cbc9c3] text-[#6b6b66]"
+                            ? "border-[var(--workspace-brand-muted)]"
+                            : "border-[var(--workspace-brand-line)] text-[var(--workspace-brand-muted)]"
                       }`}
                     >
-                      {state === "accepted" ? "✓" : index + 1}
+                      {state === "accepted" ? (
+                        <Icon name="check" className="h-4 w-4" />
+                      ) : (
+                        index + 1
+                      )}
                     </span>
                     <span className="min-w-0">
-                      <span className="block truncate text-xs font-semibold sm:text-sm">
+                      <span className="block truncate text-sm font-semibold sm:text-sm">
                         {item.label}
                       </span>
                       <span
-                        className={`block text-[10px] ${active === index ? "text-[#b9b9b4]" : "text-[#777772]"}`}
+                        className={`block text-sm ${active === index ? "text-[var(--workspace-brand-muted-on-primary)]" : "text-[var(--workspace-brand-muted)]"}`}
                       >
-                        {state === "unknown" ? "Unknown saved" : item.time}
+                        {state === "unknown"
+                          ? "Неизвестное сохранено"
+                          : item.time}
                       </span>
                     </span>
                   </button>
@@ -185,19 +235,20 @@ export default function GuidedCards() {
               })}
             </nav>
 
-            <div className="mt-5 rounded-2xl border border-[#cbc9c3] bg-[#f7f6f2] p-4">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#6b6b66]">
-                Material bundle
+            <div className="mt-5 rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] p-4">
+              <p className="text-sm font-semibold text-[var(--workspace-brand-muted)]">
+                Набор материалов
               </p>
-              <p className="mt-2 text-sm font-semibold">7 files processed</p>
-              <p className="mt-1 text-xs leading-5 text-[#6b6b66]">
-                Notes, pitch deck, price table, screenshots
+              <p className="mt-2 text-sm font-semibold">Материалы проекта</p>
+              <p className="mt-1 text-base leading-7 text-[var(--workspace-brand-muted)]">
+                Заметки, файлы и изображения в чате проекта
               </p>
               <button
-                className="mt-3 text-xs font-semibold underline underline-offset-4"
+                className={`${kit.plain} mt-3 px-0 underline underline-offset-4`}
+                onClick={onAddMaterials}
                 type="button"
               >
-                Add more
+                Добавить ещё
               </button>
             </div>
           </aside>
@@ -206,45 +257,50 @@ export default function GuidedCards() {
             <div className="mx-auto max-w-3xl">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6b6b66]">
-                    Stage {active + 1} · {stage.time} suggested
+                  <p className="text-sm font-semibold text-[var(--workspace-brand-muted)]">
+                    Этап {active + 1} · {stage.time} предложено
                   </p>
-                  <h1 className="mt-2 text-4xl font-semibold leading-none [font-family:var(--workspace-brand-font-display)] sm:text-5xl">
+                  <h1 className="mt-2 text-[40px] font-semibold leading-[1.1] [font-family:var(--workspace-brand-font-display)] sm:text-5xl">
                     {stage.label}
                   </h1>
                 </div>
-                <span className="rounded-full border border-[#cbc9c3] bg-white px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.14em]">
-                  One decision in focus
+                <span className="rounded-full border border-[var(--workspace-brand-line)] bg-white px-3 py-2 text-sm font-semibold">
+                  Одно решение в центре внимания
                 </span>
               </div>
 
-              <section className="mt-7 rounded-2xl border border-[#cbc9c3] bg-white p-5 shadow-sm sm:p-6">
+              <section className="mt-7 rounded-2xl border border-[var(--workspace-brand-line)] bg-white p-5 sm:p-6">
                 <div className="flex items-center justify-between gap-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#6b6b66]">
-                    Found in your material
+                  <p className="text-sm font-semibold text-[var(--workspace-brand-muted)]">
+                    Найдено в ваших материалах
                   </p>
                   <button
-                    className="text-xs font-semibold underline underline-offset-4"
+                    className={`${kit.plain} px-0 underline underline-offset-4`}
                     type="button"
                   >
-                    See sources
+                    Посмотреть источники
                   </button>
                 </div>
                 <ul className="mt-4 space-y-3">
-                  {stage.found.map((item, index) => (
-                    <li className="flex gap-3 text-sm leading-6" key={item}>
+                  {(empty ? [] : stage.found).map((item, index) => (
+                    <li className="flex gap-3 text-base leading-7" key={item}>
                       <span
-                        className={`mt-1 grid size-5 shrink-0 place-items-center rounded-full text-[10px] font-bold ${
+                        className={`mt-1 grid size-6 shrink-0 place-items-center rounded-full text-sm font-bold ${
                           index === stage.found.length - 1 &&
                           item.includes("unknown")
-                            ? "bg-[#f4d67a]"
-                            : "bg-[#dff5b5]"
+                            ? "bg-[var(--workspace-brand-background)] text-[var(--workspace-brand-foreground)]"
+                            : "bg-[var(--workspace-brand-background)]"
                         }`}
                       >
                         {index === stage.found.length - 1 &&
-                        item.includes("unknown")
-                          ? "?"
-                          : "✓"}
+                        item.includes("unknown") ? (
+                          <>
+                            <span className="sr-only">Неизвестно</span>
+                            <Icon name="question" className="size-5 shrink-0" />
+                          </>
+                        ) : (
+                          <Icon name="check" className="h-4 w-4" />
+                        )}
                       </span>
                       <span>{item}</span>
                     </li>
@@ -252,72 +308,127 @@ export default function GuidedCards() {
                 </ul>
               </section>
 
-              <section className="mt-4 rounded-2xl border-2 border-[#111111] bg-[#bfef61] p-5 sm:p-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em]">
-                  Current question
-                </p>
+              <section className="mt-6 rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-5 sm:p-8">
+                <p className="text-sm font-semibold">AI Chat</p>
                 <h2 className="mt-3 text-2xl font-semibold leading-tight [font-family:var(--workspace-brand-font-display)] sm:text-3xl">
                   {stage.question}
                 </h2>
-                <label className="mt-5 block" htmlFor={`answer-${stage.id}`}>
-                  <span className="sr-only">Your answer</span>
+                <label
+                  className="mt-5 block"
+                  htmlFor={`${id}-answer-${stage.id}`}
+                >
+                  <span className="sr-only">Ваш ответ</span>
                   <textarea
-                    className="min-h-28 w-full resize-y rounded-xl border border-[#8ead50] bg-white p-4 text-sm leading-6 outline-none focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/15"
-                    id={`answer-${stage.id}`}
-                    onChange={(event) =>
+                    className={`${kit.field} min-h-40 resize-y`}
+                    id={`${id}-answer-${stage.id}`}
+                    onChange={(event) => {
+                      setAccepted((previous) => {
+                        const next = new Set(previous);
+                        next.delete(active);
+                        return next;
+                      });
                       setAnswers((previous) => ({
                         ...previous,
                         [stage.id]: event.target.value,
-                      }))
-                    }
+                      }));
+                    }}
                     value={answers[stage.id]}
                   />
                 </label>
                 <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                   <button
-                    className="rounded-xl px-3 py-2 text-xs font-semibold hover:bg-black/5"
+                    className={kit.plain}
                     onClick={() => advance("unknown")}
                     type="button"
                   >
-                    I don't know yet
+                    Пока не знаю
                   </button>
                   <button
-                    className="rounded-xl bg-[#111111] px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#2b2b2b]"
+                    className={kit.button}
+                    disabled={!answers[stage.id].trim()}
                     onClick={() => advance("accepted")}
                     type="button"
                   >
                     {active === stages.length - 1
-                      ? "Finish review"
-                      : "Accept and continue →"}
+                      ? "Завершить проверку"
+                      : "Принять и продолжить"}
+                    {active < stages.length - 1 ? (
+                      <Icon name="arrow-right" className="size-5 shrink-0" />
+                    ) : null}
                   </button>
                 </div>
               </section>
 
-              <details className="mt-4 rounded-xl border border-[#cbc9c3] bg-white px-4 py-3 text-sm">
+              <details className="mt-4 rounded-xl border border-[var(--workspace-brand-line)] bg-white px-4 py-3 text-sm">
                 <summary className="cursor-pointer font-semibold">
-                  Add detail only if it changes the result
+                  Добавляйте подробность, только если она меняет результат
                 </summary>
-                <p className="mt-3 leading-6 text-[#5f5f5a]">
-                  Optional prompts stay collapsed. AI Chat opens one only when
-                  the answer would change this stage or the material being
-                  prepared.
+                <p className="mt-3 leading-6 text-[var(--workspace-brand-muted)]">
+                  Необязательные вопросы свёрнуты. AI Chat открывает вопрос,
+                  только если ответ изменит этап или готовящийся материал.
                 </p>
               </details>
+              {stage.id === "products" && !empty ? (
+                <section
+                  className="mt-6 space-y-4"
+                  aria-label="Отдельные документы продуктов"
+                >
+                  {["AI Chat", "Code Framework"].map((product) => (
+                    <article
+                      key={product}
+                      className="rounded-2xl border border-[var(--workspace-brand-line)] bg-white p-5"
+                    >
+                      <h2 className="text-lg font-semibold">{product}</h2>
+                      <dl className="mt-3 divide-y divide-[var(--workspace-brand-line)]">
+                        {[
+                          [
+                            "Продукт",
+                            "Клиент, проблема, предложение и условия продукта.",
+                          ],
+                          [
+                            "Операции и экономика",
+                            "Поставка продукта, доходы, ресурсы, распределённые доли и расходы.",
+                          ],
+                          [
+                            "Продажи",
+                            "Путь клиента продукта, включая поддержку и продолжение.",
+                          ],
+                          [
+                            "Продвижение",
+                            "Текстовая публичная подача продукта: сайт, креативы и презентация по необходимости.",
+                          ],
+                          [
+                            "Аналитика и исследования",
+                            "Измерения, наблюдения и вопросы к доказательствам этого продукта.",
+                          ],
+                        ].map(([title, text]) => (
+                          <div key={title} className="py-3">
+                            <dt className="text-sm font-semibold">{title}</dt>
+                            <dd className="mt-1 text-sm leading-6 text-[var(--workspace-brand-muted)]">
+                              {text}
+                            </dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </article>
+                  ))}
+                </section>
+              ) : null}
             </div>
           </main>
 
-          <aside className="border-t border-[#cbc9c3] bg-white p-5 xl:border-t-0 xl:border-l">
+          <aside className="border-t border-[var(--workspace-brand-line)] bg-white p-5 xl:border-t-0 xl:border-l">
             <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6b6b66]">
-                Live project page
+              <p className="text-sm font-semibold text-[var(--workspace-brand-muted)]">
+                Тексты проекта
               </p>
               <span
-                className="size-2 rounded-full bg-[#6a9c08]"
-                aria-label="Saved"
+                className="size-2 rounded-full bg-[var(--workspace-brand-accent)]"
+                aria-label="Сохранено"
               />
             </div>
-            <p className="mt-2 text-xs leading-5 text-[#6b6b66]">
-              Updates as each decision is reviewed.
+            <p className="mt-2 text-base leading-7 text-[var(--workspace-brand-muted)]">
+              Обновляется после проверки каждого решения.
             </p>
 
             <div className="mt-5 space-y-2">
@@ -325,8 +436,8 @@ export default function GuidedCards() {
                 <button
                   className={`w-full rounded-xl border p-3 text-left ${
                     active === index
-                      ? "border-[#111111] bg-[#f7f6f2]"
-                      : "border-[#deddd8] bg-white"
+                      ? "border-[var(--workspace-brand-foreground)] bg-[var(--workspace-brand-background)]"
+                      : "border-[var(--workspace-brand-line)] bg-white"
                   }`}
                   key={item.id}
                   onClick={() => setActive(index)}
@@ -335,35 +446,36 @@ export default function GuidedCards() {
                   <span className="flex items-center justify-between gap-2">
                     <span className="text-sm font-semibold">{item.label}</span>
                     <span
-                      className={`rounded-full px-2 py-1 text-[9px] font-semibold uppercase tracking-wide ${
+                      className={`rounded-full px-2 py-1 text-sm font-semibold ${
                         accepted.has(index)
-                          ? "bg-[#dff5b5]"
+                          ? "bg-[var(--workspace-brand-background)]"
                           : unknown.has(index)
-                            ? "bg-[#f5e9bd]"
-                            : "bg-[#ededE9]"
+                            ? "bg-[var(--workspace-brand-background)] text-[var(--workspace-brand-foreground)] ring-1 ring-inset ring-[var(--workspace-brand-line)]"
+                            : "bg-[var(--workspace-brand-background)]"
                       }`}
                     >
                       {accepted.has(index)
-                        ? "Accepted"
+                        ? "Принято"
                         : unknown.has(index)
-                          ? "Unknown"
-                          : "Draft"}
+                          ? "Неизвестно"
+                          : "Черновик"}
                     </span>
                   </span>
-                  <span className="mt-2 block text-xs leading-5 text-[#666661]">
+                  <span className="mt-2 block text-base leading-7 text-[var(--workspace-brand-muted)]">
                     {item.result}
                   </span>
                 </button>
               ))}
             </div>
 
-            <div className="mt-5 rounded-2xl bg-[#111111] p-4 text-white">
-              <p className="text-xs font-semibold text-[#bfef61]">
-                Useful context, then depth
+            <div className="mt-6 rounded-3xl bg-[var(--workspace-brand-foreground)] p-6 text-white">
+              <p className="text-sm font-semibold text-[var(--workspace-brand-accent)]">
+                Полезный контекст, затем подробности
               </p>
-              <p className="mt-2 text-xs leading-5 text-[#d5d5cf]">
-                Finish the five-stage review to use this model in chat. Detailed
-                Studio documents can be added later without repeating intake.
+              <p className="mt-2 text-base leading-7 text-[var(--workspace-brand-muted-on-primary)]">
+                Работайте с каждым документом в своей переписке. Проверьте
+                текст, затем выгрузите его или прикрепите сохранённую версию к
+                новой теме. В других файлах могут оставаться открытые вопросы.
               </p>
             </div>
           </aside>

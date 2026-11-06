@@ -1,0 +1,34 @@
+{
+  "metadata": {
+    "seo": {
+      "description": {
+        "en": "Editable copy, media, navigation and presentation sections with slots for domain content.",
+        "ru": "Редактируемые тексты, медиа, навигация и оформление с местами для функционального содержимого."
+      }
+    },
+    "seoDisplay": {
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Editable copy, media, navigation and presentation sections with slots for domain content.",
+        "ru": "Редактируемые тексты, медиа, навигация и оформление с местами для функционального содержимого."
+      },
+      "opengraphDescription": {
+        "en": "Editable copy, media, navigation and presentation sections with slots for domain content.",
+        "ru": "Редактируемые тексты, медиа, навигация и оформление с местами для функционального содержимого."
+      }
+    }
+  },
+  "id": "3997f3d0-b608-4fcb-ae1f-a63d33ead8d3",
+  "title": "Website Builder · Code Framework",
+  "url": "/framework/modules/website-builder",
+  "description": "Editable copy, media, navigation and presentation sections with slots for domain content.",
+  "createdAt": "2026-10-24T01:05:55.364Z",
+  "updatedAt": "2026-10-30T22:25:05.506Z",
+  "variant": "default",
+  "className": "",
+  "language": "en",
+  "adminTitle": "Website Builder · Code Framework"
+}

@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "97cd6d49-e36d-46cf-a259-ad58b6dfa0d1",
+  "createdAt": "2026-10-26T00:11:40.833Z",
+  "updatedAt": "2026-10-27T14:59:46.606Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "website-builder",
+    "ru": "website-builder"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Build page content from blocks.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Оформите содержимое страниц из блоков.\"}]}]}"
+  },
+  "adminTitle": "website-builder",
+  "slug": "framework-reviewed-article-host-connections-feature-0"
+}

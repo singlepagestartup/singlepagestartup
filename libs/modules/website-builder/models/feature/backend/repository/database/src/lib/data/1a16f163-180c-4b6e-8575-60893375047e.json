@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "1a16f163-180c-4b6e-8575-60893375047e",
+  "createdAt": "2026-10-27T08:40:55.946Z",
+  "updatedAt": "2026-10-27T14:59:25.969Z",
+  "variant": "demo-project",
+  "title": {
+    "en": "Pottery studio",
+    "ru": "Мастерская керамики"
+  },
+  "subtitle": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Save your offer, audience and workshop format in the document. In this example, you can edit the document and use it in a new discussion.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Сохраните предложение, аудиторию и формат мастер-классов в документе. В этом примере вы можете отредактировать текст документа и использовать его в новом обсуждении.\"}]}]}"
+  },
+  "description": {
+    "en": "",
+    "ru": ""
+  },
+  "adminTitle": "AI Chat: demo-project",
+  "slug": "ai-chat-editable-demo-project"
+}

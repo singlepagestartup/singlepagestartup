@@ -1,0 +1,27 @@
+{
+  "id": "billing.payment-intent.admin-v2-table",
+  "title": "billing payment-intent / admin-v2-table",
+  "description": "Local records for Studio component design.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "billing",
+    "entityType": "model",
+    "entity": "payment-intent",
+    "variant": "admin-v2-table"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "billing.payment-intent",
+    "pageName": "billing",
+    "variantName": "admin-v2-table",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

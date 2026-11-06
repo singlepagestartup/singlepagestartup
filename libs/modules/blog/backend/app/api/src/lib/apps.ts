@@ -1,3 +1,4 @@
+import { app as widgetsToWebsiteBuilderModuleWidgets } from "@sps/blog/relations/widgets-to-website-builder-module-widgets/backend/app/api";
 import { app as widgetsToArticles } from "@sps/blog/relations/widgets-to-articles/backend/app/api";
 import { app as articlesToEcommerceModuleProducts } from "@sps/blog/relations/articles-to-ecommerce-module-products/backend/app/api";
 import { app as widgetApp } from "@sps/blog/models/widget/backend/app/api";
@@ -19,6 +20,11 @@ export class Apps {
   }
 
   bindApps() {
+    this.apps.push({
+      type: "relation",
+      route: "/widgets-to-website-builder-module-widgets",
+      app: widgetsToWebsiteBuilderModuleWidgets,
+    });
     this.apps.push({
       type: "relation",
       route: "/widgets-to-articles",

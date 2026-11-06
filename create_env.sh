@@ -1,5 +1,7 @@
 #!/bin/bash
 
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 write_runtime_env() {
   local target_path="$1"
 
@@ -47,9 +49,14 @@ elif [ "$1" = "mcp" ]; then
   fi
 fi
 
+# The API's script runs before the host, Telegram and MCP scripts, which copy
+# the secrets it generates from apps/api/.env.
 cd apps/db && ./create_env.sh
 cd ../redis && ./create_env.sh
-cd ../host && ./create_env.sh
 cd ../api && ./create_env.sh
+cd ../host && ./create_env.sh
 cd ../telegram && ./create_env.sh
 cd ../mcp && ./create_env.sh
+
+# MCP client connections are configured explicitly with mcp:clients:generate.
+cd "$REPO_ROOT" || exit 1

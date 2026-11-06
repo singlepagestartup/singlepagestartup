@@ -36,28 +36,15 @@ export class Handler {
         throw new Error("Validation error. Invalid url");
       }
 
-      const file = await fetchOutboundUrl(
-        data.url,
-        {},
-        {
-          maxResponseBytes: FILE_STORAGE_MAX_UPLOAD_BYTES,
-          limitName: "upload",
-        },
-      )
-        .then(async (res) => {
-          return await res.blob();
-        })
-        .then((blob) => {
-          const fullFileName = data.url.split("?")[0].split("/").pop();
-          const fileName = fullFileName.split(".")[0];
-          const extension = fullFileName.split(".").pop();
-
-          return new File([blob], `${fileName}.${extension}`);
-        });
-
-      if (!file) {
-        throw new Error("Validation error. Invalid file");
-      }
+      const response = await fetchOutboundUrl(data.url, {}, {
+        maxResponseBytes: FILE_STORAGE_MAX_UPLOAD_BYTES,
+        limitName: "upload",
+      });
+      const blob = await response.blob();
+      const fullFileName = data.url.split("?")[0].split("/").pop();
+      const fileName = fullFileName.split(".")[0];
+      const extension = fullFileName.split(".").pop();
+      const file = new File([blob], `${fileName}.${extension}`);
 
       const fileStorage = new Provider({
         type: FILE_STORAGE_PROVIDER,

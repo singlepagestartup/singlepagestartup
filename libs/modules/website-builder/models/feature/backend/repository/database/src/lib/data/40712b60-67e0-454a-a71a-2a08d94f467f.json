@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "40712b60-67e0-454a-a71a-2a08d94f467f",
+  "createdAt": "2026-10-26T00:12:50.378Z",
+  "updatedAt": "2026-10-27T14:59:32.860Z",
+  "variant": "context-heading",
+  "title": {
+    "en": "Other questions",
+    "ru": "Что ещё стоит знать."
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[]}",
+    "ru": "{\"type\":\"doc\",\"content\":[]}"
+  },
+  "adminTitle": "Что ещё стоит знать.",
+  "slug": "framework-reviewed-faq-heading"
+}

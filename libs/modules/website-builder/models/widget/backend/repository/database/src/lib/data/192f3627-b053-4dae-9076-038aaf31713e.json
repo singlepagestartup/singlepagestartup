@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "A daily summary for a school owner",
+    "ru": "Ежедневная сводка для владельца школы"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Suppose you want a list of new enquiries every morning. The project needs configured steps to retrieve enquiries, prepare a message and deliver it. Agent schedules this workflow.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Agent does not perform an arbitrary business task from its name alone. Actions and connections must be configured. If an action uses AI or external services, those calls may consume tokens or incur a separate cost.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Предположим, вы хотите утром получать список новых заявок. Для этого в проекте настраивают получение заявок, подготовку сообщения и его доставку. Agent задаёт запуск этого сценария по расписанию.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Agent не выполняет произвольную бизнес-задачу только по её названию. Нужны настроенные действия и подключения. Если действие использует ИИ или внешние сервисы, их вызовы могут расходовать токены или иметь отдельную стоимость.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "192f3627-b053-4dae-9076-038aaf31713e",
+  "createdAt": "2026-10-26T00:12:07.498Z",
+  "updatedAt": "2026-10-27T14:58:49.705Z",
+  "variant": "content-rich",
+  "adminTitle": "Ежедневная сводка для владельца школы",
+  "slug": "framework-reviewed-article-agent-example"
+}

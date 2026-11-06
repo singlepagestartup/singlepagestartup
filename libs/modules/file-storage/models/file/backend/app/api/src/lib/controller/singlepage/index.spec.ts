@@ -131,6 +131,39 @@ describe("file upload routes", () => {
     fetchSpy = undefined;
   });
 
+  it.each([
+    { method: "POST", path: "/", textFirst: true },
+    { method: "PATCH", path: "/file-1", textFirst: false },
+  ])(
+    "stores the one file in a repeated multipart field on $method",
+    async ({ method, path, textFirst }) => {
+      const { hono, service } = await createApp();
+      const fields: [string, string | File][] = [
+        ["file", ""],
+        ["file", logo()],
+      ];
+      if (!textFirst) {
+        fields.reverse();
+      }
+      fields.push(["data", JSON.stringify({ adminTitle: "Logo" })]);
+      const request = await multipart(fields);
+      const response = await hono.request(path, { method, ...request });
+
+      expect(response.status).toBe(201);
+      expect(mockUploadFile).toHaveBeenCalledTimes(1);
+      expect(
+        method === "POST" ? service.create : service.update,
+      ).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            file: uploadedFileUrl,
+            adminTitle: "Logo",
+          }),
+        }),
+      );
+    },
+  );
+
   /**
    * BDD Scenario
    * Given: a create request carrying one SVG file under the field `file`.

@@ -4,6 +4,14 @@ import { QueryClient, replaceEqualDeep } from "@tanstack/react-query";
 
 type WithId = { id: string };
 
+function listQueries(queryClient: QueryClient, route: string) {
+  return queryClient.getQueryCache().findAll({
+    predicate: ({ queryKey }) =>
+      queryKey[0] === route ||
+      (typeof queryKey[0] === "string" && queryKey[0].startsWith(`${route}?`)),
+  });
+}
+
 /**
  * Returns true when the query key carries any serialized params. Any non-empty
  * params can change membership, sort order, pagination, search, or projection,
@@ -60,15 +68,20 @@ export function appendToListQueries<T extends WithId>(
     return;
   }
 
-  const matchingQueries = queryClient
-    .getQueryCache()
-    .findAll({ queryKey: [route] });
+  const matchingQueries = listQueries(queryClient, route);
 
   for (const query of matchingQueries) {
     const key = query.queryKey as unknown[];
     const serializedParams = key[1];
 
-    if (hasMeaningfulParams(serializedParams)) {
+    const urlParams =
+      typeof key[0] === "string" && key[0].startsWith(`${route}?`)
+        ? key[0].slice(route.length + 1)
+        : undefined;
+    if (
+      hasMeaningfulParams(serializedParams) ||
+      hasMeaningfulParams(urlParams)
+    ) {
       // Targeted immediate invalidation - do not await (fire-and-forget is fine
       // for cache invalidation; the component will refetch on next render).
       void queryClient.invalidateQueries({ queryKey: key });
@@ -111,9 +124,7 @@ export function patchInListQueries<T extends WithId>(
   id: string,
   patch: Partial<T>,
 ): void {
-  const matchingQueries = queryClient
-    .getQueryCache()
-    .findAll({ queryKey: [route] });
+  const matchingQueries = listQueries(queryClient, route);
 
   for (const query of matchingQueries) {
     const key = query.queryKey as unknown[];
@@ -145,9 +156,7 @@ export function removeFromListQueries(
   route: string,
   id: string,
 ): void {
-  const matchingQueries = queryClient
-    .getQueryCache()
-    .findAll({ queryKey: [route] });
+  const matchingQueries = listQueries(queryClient, route);
 
   for (const query of matchingQueries) {
     const key = query.queryKey as unknown[];

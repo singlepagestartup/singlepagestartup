@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "A school sells classes and materials",
+    "ru": "Школа продаёт занятия и материалы"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The school offers an introductory course, a practical workshop and an exercise collection. Customers choose what they need now. Compare three steps: the catalogue, cart and created order.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The catalogue stores offers and orders. Accepting money requires Billing and a payment service. Delivery, booking a particular time and granting access need business-specific rules.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"У школы есть вводный курс, практикум и сборник заданий. Клиент выбирает то, что нужно ему сейчас. Сравните три части этого пути: каталог, корзину и созданный заказ.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Каталог хранит предложения и заказы. Для приёма денег подключают Billing и платёжный сервис. Доставка, бронирование конкретного времени и выдача доступа требуют правил вашего бизнеса.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "5de30263-b571-4e26-bbd2-95140047b51f",
+  "createdAt": "2026-10-26T00:11:23.070Z",
+  "updatedAt": "2026-10-27T14:59:01.385Z",
+  "variant": "content-rich",
+  "adminTitle": "Школа продаёт занятия и материалы",
+  "slug": "framework-reviewed-article-ecommerce-example"
+}

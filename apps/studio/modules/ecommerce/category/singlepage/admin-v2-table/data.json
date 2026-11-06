@@ -1,0 +1,129 @@
+{
+  "schema": {
+    "module": "ecommerce",
+    "entity": "category",
+    "entityType": "model",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "adminTitle",
+        "label": "Admin Title",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "slug",
+        "label": "Slug",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "title",
+        "label": "Title",
+        "kind": "jsonb",
+        "nullable": true,
+        "default": {}
+      },
+      {
+        "key": "subtitle",
+        "label": "Subtitle",
+        "kind": "jsonb",
+        "nullable": true,
+        "default": {}
+      },
+      {
+        "key": "description",
+        "label": "Description",
+        "kind": "jsonb",
+        "nullable": true,
+        "default": {}
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "13eca0d6-09a2-4687-abc4-920c079b449e",
+      "className": null,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "adminTitle": "category example 1",
+      "slug": "category-example-1",
+      "title": {
+        "en": "category example 1"
+      },
+      "subtitle": {
+        "en": "category example 1"
+      },
+      "description": {
+        "en": "category example 1"
+      }
+    },
+    {
+      "id": "8b48b67c-02db-4455-ab11-63e385dbe2e7",
+      "className": null,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "adminTitle": "category example 2",
+      "slug": "category-example-2",
+      "title": {
+        "en": "category example 2"
+      },
+      "subtitle": {
+        "en": "category example 2"
+      },
+      "description": {
+        "en": "category example 2"
+      }
+    },
+    {
+      "id": "c7b24082-24be-49ca-a748-b2775df1e121",
+      "className": null,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "adminTitle": "category example 3",
+      "slug": "category-example-3",
+      "title": {
+        "en": "category example 3"
+      },
+      "subtitle": {
+        "en": "category example 3"
+      },
+      "description": {
+        "en": "category example 3"
+      }
+    }
+  ]
+}

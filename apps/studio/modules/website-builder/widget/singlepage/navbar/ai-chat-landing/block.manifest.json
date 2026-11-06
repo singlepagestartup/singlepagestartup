@@ -1,0 +1,27 @@
+{
+  "id": "website-builder.widget.navbar-ai-chat-landing",
+  "title": "navbar-ai-chat-landing",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Landing navigation with AI Chat logo, Try the chat button and supplied Subject slot.",
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "navbar-ai-chat-landing"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "website-builder.widget",
+    "pageName": "website-builder",
+    "variantName": "navbar-ai-chat-landing",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

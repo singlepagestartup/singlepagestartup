@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "28c84a2c-b76d-43d3-8b8c-6c9d79298452",
+  "createdAt": "2026-10-26T00:11:52.871Z",
+  "updatedAt": "2026-10-27T14:59:29.304Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Attribute Key",
+    "ru": "Attribute Key"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Describes a field's name, type, prefix and suffix. Defines the label and display format of its value.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Описание такого поля: название, тип, префикс и суффикс. Задаёт подпись и формат отображения значения.\"}]}]}"
+  },
+  "adminTitle": "Attribute Key",
+  "slug": "framework-reviewed-article-social-models-feature-2"
+}

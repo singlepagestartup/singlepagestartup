@@ -1,5 +1,6 @@
 import {
   IRouteRule,
+  MUTATION_SKIPPED_CONTEXT_KEY,
   NEXT_PUBLIC_API_SERVICE_URL,
   prepareFormDataToSend,
   RBAC_SECRET_KEY,
@@ -54,7 +55,10 @@ export class Middleware {
 
       await next();
 
-      if (this.skippedRoutesMatcher.matches(path)) {
+      if (
+        c.get(MUTATION_SKIPPED_CONTEXT_KEY) ||
+        this.skippedRoutesMatcher.matches(path)
+      ) {
         return;
       }
 
@@ -88,10 +92,7 @@ export class Middleware {
             return;
           }
 
-          /**
-           * Without passing Cache-Control data are mismatched, because
-           * http-cache middleware uses these models.
-           */
+          // Notification reads need current data rather than reusable responses.
           const messagesByChannels = await Promise.all(
             observerChannels.map((channel) => {
               if (!RBAC_SECRET_KEY) {
@@ -220,7 +221,7 @@ export class Middleware {
             bodyString.replace(
               new RegExp(`\\[${key}\\.[a-zA-Z0-9.]+\\]`, "g"),
               (match) => {
-                const path = match.replace(`[${key}.`, "").replace("]", "");
+                const path = match.slice(key.length + 2, -1);
                 const value = path.split(".").reduce((acc, key) => {
                   return acc[key];
                 }, data);
