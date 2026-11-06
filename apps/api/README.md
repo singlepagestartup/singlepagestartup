@@ -2,6 +2,12 @@
 
 ## Environment
 
+The API and its migrations use `DATABASE_USERNAME` and `DATABASE_PASSWORD`.
+They check the authenticated PostgreSQL role before listening or running the
+migration sequence. A missing pair, a privileged login or explicit role
+memberships stop startup. For an old database, follow the
+[ownership move](../../tools/deployer/README.md#moving-an-existing-installation-to-the-application-role).
+
 Audio transcription runs inside the API/RBAC message flow and uses:
 
 - `OPEN_AI_API_KEY` - required when audio transcription should run.

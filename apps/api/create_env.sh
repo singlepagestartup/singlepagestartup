@@ -12,6 +12,14 @@ if [ -f .env ]; then
     exit 1
 fi
 
+DATABASE_NAME=$(get_env "$BASH_SOURCE" "POSTGRES_DB" ../db/.env)
+DATABASE_USERNAME=$(get_env "$BASH_SOURCE" "DATABASE_USERNAME" ../db/.env)
+DATABASE_PASSWORD=$(get_env "$BASH_SOURCE" "DATABASE_PASSWORD" ../db/.env)
+POSTGRES_USER=$(get_env "$BASH_SOURCE" "POSTGRES_USER" ../db/.env) \
+POSTGRES_PASSWORD=$(get_env "$BASH_SOURCE" "POSTGRES_PASSWORD" ../db/.env) \
+POSTGRES_DB="$DATABASE_NAME" DATABASE_USERNAME="$DATABASE_USERNAME" DATABASE_PASSWORD="$DATABASE_PASSWORD" \
+    sh ../db/create_application_role.sh --check-config || exit 1
+
 # Clear env file
 umask 077
 > .env
@@ -60,22 +68,9 @@ fi
 DATABASE_HOST=localhost
 add_env "DATABASE_HOST" $DATABASE_HOST
 
-DATABASE_NAME=$(get_env "$BASH_SOURCE" "POSTGRES_DB" "../db/.env")
-add_env "DATABASE_NAME" $DATABASE_NAME
-
-DATABASE_USERNAME=$(get_env "$BASH_SOURCE" "DATABASE_USERNAME" ../db/.env)
-DATABASE_PASSWORD=$(get_env "$BASH_SOURCE" "DATABASE_PASSWORD" ../db/.env)
-
-# An apps/db/.env written before the application role existed holds only the
-# superuser, and its db_data has no other role to connect as.
-if [ -z "$DATABASE_USERNAME" ]; then
-    echo "apps/db/.env has no DATABASE_USERNAME, so the API connects as the PostgreSQL superuser. See \"PostgreSQL roles\" in tools/deployer/README.md."
-    DATABASE_USERNAME=$(get_env "$BASH_SOURCE" "POSTGRES_USER" ../db/.env)
-    DATABASE_PASSWORD=$(get_env "$BASH_SOURCE" "POSTGRES_PASSWORD" ../db/.env)
-fi
-
-add_env "DATABASE_USERNAME" $DATABASE_USERNAME
-add_env "DATABASE_PASSWORD" $DATABASE_PASSWORD
+add_env "DATABASE_NAME" "$DATABASE_NAME"
+add_env "DATABASE_USERNAME" "$DATABASE_USERNAME"
+add_env "DATABASE_PASSWORD" "$DATABASE_PASSWORD"
 
 DATABASE_PORT=$(get_env "$BASH_SOURCE" "POSTGRES_PORT" ../db/.env)
 add_env "DATABASE_PORT" $DATABASE_PORT

@@ -3,14 +3,13 @@
  * Given apps/db/create_env.sh and apps/api/create_env.sh run in a checkout
  * When the API environment is generated from the database environment
  * Then the API receives the application role, which is a different role with a
- *      different password from the PostgreSQL superuser, and a database
- *      environment written before that role existed keeps the API on the
- *      superuser it was initialized with
+ *      different password from the PostgreSQL superuser, or generation stops
  */
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { spawnSync } from "node:child_process";
 import {
   copyFileSync,
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -90,6 +89,7 @@ function createCheckout(name: string, remoteName = repositoryName): string {
     "tools/deployer/generate_secret.sh",
     "tools/deployer/get_env.sh",
     "apps/db/create_env.sh",
+    "apps/db/create_application_role.sh",
     "apps/api/create_env.sh",
   ]) {
     copyFileSync(path.join(repositoryRoot, file), path.join(checkout, file));
@@ -209,35 +209,31 @@ describe("a fresh bootstrap", () => {
 });
 
 describe("a checkout bootstrapped before the application role", () => {
-  /**
-   * BDD Scenario: A database environment without the application role
-   * Given apps/db/.env holds only the superuser, as it did before the role
-   *      existed, and its data directory has no other role
-   * When only apps/api/.env is regenerated
-   * Then the API keeps the superuser credentials and the script says so
-   */
-  test("keeps the API on the superuser and says so", () => {
-    const checkout = createCheckout("legacy");
-    const superuserPassword = "a".repeat(64);
+  test.each([
+    ["missing application pair", "", ""],
+    ["same login", repositoryName, "different-password"],
+    ["same password", "app", "admin-password"],
+  ])(
+    "rejects %s without leaving a partial API .env",
+    (label, user, password) => {
+      const checkout = createCheckout(label);
+      writeFileSync(
+        path.join(checkout, "apps/db/.env"),
+        [
+          `POSTGRES_DB=${repositoryName}`,
+          `POSTGRES_USER=${repositoryName}`,
+          "POSTGRES_PASSWORD=admin-password",
+          `DATABASE_USERNAME=${user}`,
+          `DATABASE_PASSWORD=${password}`,
+        ].join("\n"),
+      );
 
-    writeFileSync(
-      path.join(checkout, "apps/db/.env"),
-      [
-        `COMPOSE_PROJECT_NAME=${repositoryName}`,
-        `POSTGRES_DB=${repositoryName}`,
-        `POSTGRES_USER=${repositoryName}`,
-        `POSTGRES_PASSWORD=${superuserPassword}`,
-        "POSTGRES_PORT=5433",
-        "",
-      ].join("\n"),
-    );
-
-    const apiRun = runCreateEnv(checkout, "api");
-    const api = readEnv(path.join(checkout, "apps/api/.env"));
-
-    expect(api["DATABASE_USERNAME"]).toBe(repositoryName);
-    expect(api["DATABASE_PASSWORD"]).toBe(superuserPassword);
-    expect(api["DATABASE_PORT"]).toBe("5433");
-    expect(apiRun.stdout).toContain("connects as the PostgreSQL superuser");
-  });
+      const result = runShell(
+        path.join(checkout, "apps/api"),
+        "bash create_env.sh",
+      );
+      expect(result.status).not.toBe(0);
+      expect(existsSync(path.join(checkout, "apps/api/.env"))).toBe(false);
+    },
+  );
 });

@@ -101,24 +101,13 @@ function createWebhook({
   });
 }
 
-var args = process.argv.slice(2);
-
-const service_id = args[0];
-
-const registry_id = args[1];
-const url = args[2];
-const portainer_username = args[3];
-const portainer_password = args[4];
-const file_name = args[5];
-
-createWebhook({
-  service_id,
-  registry_id,
-  url,
-  portainer_username,
-  portainer_password,
-  file_name,
-}).then((res) => {
-  process.stdout.write(JSON.stringify(res));
-  // console.log(res);
-});
+const input = JSON.parse(fs.readFileSync(0, "utf8"));
+process.umask(0o077);
+createWebhook(input)
+  .then((files) => {
+    process.stdout.write(JSON.stringify(files));
+  })
+  .catch(() => {
+    console.error("Could not create Portainer webhook");
+    process.exitCode = 1;
+  });

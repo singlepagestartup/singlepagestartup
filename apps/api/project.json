@@ -82,6 +82,9 @@
         "cwd": ".",
         "commands": [
           {
+            "command": "bun --cwd apps/api src/db/check-application-role.ts"
+          },
+          {
             "command": "npx nx run @sps/providers-db:repository-migrate"
           },
           {

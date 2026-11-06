@@ -1,14 +1,13 @@
 #!/bin/bash
 
-# Writes a plain SQL dump of the application database to /home/code/db_backups.
+# Writes a custom-format archive of the application database to /home/code/db_backups.
 # Root's crontab runs it every night (server/set_cron_jobs.yaml).
 #
-# pg_dump runs inside the postgres_postgres container as its POSTGRES_USER over
-# the local socket, so the client matches the server version and no password is
-# read or passed. The dump holds every table, identities included, so the
-# directory is 0700 and every dump in it 0600. A new dump is moved into place
-# only after pg_dump succeeds, and only then are dumps older than
-# DATABASE_BACKUP_RETENTION_DAYS deleted (default 14; 0 keeps every dump).
+# pg_dump runs inside the postgres_postgres container as the application login over
+# loopback TCP, so the client matches the server version. The archive includes
+# identity records. The directory is 0700 and each dump 0600. The job publishes
+# the archive and prunes old dumps only after pg_dump succeeds. Retention is
+# DATABASE_BACKUP_RETENTION_DAYS days (default 14; 0 keeps every dump).
 
 set -euo pipefail
 
@@ -38,13 +37,22 @@ mkdir -p "$BACKUP_DIRECTORY"
 chmod 700 "$BACKUP_DIRECTORY"
 
 DATABASE_NAME="$(docker exec "$POSTGRES_CONTAINER_ID" printenv POSTGRES_DB)"
+if [[ "$DATABASE_NAME" = */* || -z "$DATABASE_NAME" ]]; then
+    echo "Error: database name cannot be used as a backup filename" >&2
+    exit 1
+fi
 DUMP_PATH="$BACKUP_DIRECTORY/${DATABASE_NAME}_$(date +%d-%m-%Y).dump"
 PARTIAL_DUMP_PATH="$(mktemp "$BACKUP_DIRECTORY/.partial.XXXXXX")"
 
 trap 'rm -f "$PARTIAL_DUMP_PATH"' EXIT
 
 if ! docker exec "$POSTGRES_CONTAINER_ID" \
-    sh -c 'exec pg_dump --username "$POSTGRES_USER" --dbname "$POSTGRES_DB"' \
+    sh -ec '
+        /docker-entrypoint-initdb.d/create_application_role.sh --check-login >&2
+        export PGDATABASE="$POSTGRES_DB" PGPASSWORD="$DATABASE_PASSWORD"
+        exec pg_dump --host=127.0.0.1 --username="$DATABASE_USERNAME" --no-password \
+            --format=custom --no-acl --exclude-extension=vector
+    ' \
     > "$PARTIAL_DUMP_PATH"
 then
     echo "Error: pg_dump failed, the existing dumps are kept" >&2

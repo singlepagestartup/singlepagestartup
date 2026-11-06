@@ -38,12 +38,8 @@ export const DATABASE_PORT = parseInt(
   `${process.env["DATABASE_PORT"] || "5432"}`,
 );
 export const DATABASE_NAME = `${process.env["DATABASE_NAME"] || process.env["POSTGRES_DATABASE"] || "sps"}`;
-export const DATABASE_USERNAME = `${process.env["DATABASE_USERNAME"] || process.env["POSTGRES_USER"] || "sps"}`;
-export const DATABASE_PASSWORD = `${
-  process.env["DATABASE_PASSWORD"] ||
-  process.env["POSTGRES_PASSWORD"] ||
-  "password"
-}`;
+export const DATABASE_USERNAME = process.env["DATABASE_USERNAME"] || "";
+export const DATABASE_PASSWORD = process.env["DATABASE_PASSWORD"] || "";
 export const DATABASE_NO_SSL = process.env["DATABASE_NO_SSL"];
 export const DATABASE_URL = `postgres://${DATABASE_USERNAME}:${DATABASE_PASSWORD}@${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}`;
 

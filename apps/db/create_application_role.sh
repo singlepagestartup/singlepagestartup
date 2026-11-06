@@ -14,48 +14,137 @@
 # - creates DATABASE_USERNAME as a login role without superuser, database or
 #   role creation rights, and sets its password to DATABASE_PASSWORD;
 # - makes that role the owner of POSTGRES_DB and of every schema, table,
-#   sequence, view, type and routine the superuser owns in it, so migrations
+#   sequence, view, type and ordinary application routine the superuser owns, so migrations
 #   running as the role can change them.
 #
 # The migration is atomic. An existing application login must have ordinary
-# attributes and no explicit memberships. When DATABASE_USERNAME is empty,
-# only the extension is created and the legacy application keeps
-# connecting as the superuser.
+# attributes, no memberships and no extra privileges on protected objects.
 
 set -eu
 
-superuser="${POSTGRES_USER:-postgres}"
-database="${POSTGRES_DB:-$superuser}"
+superuser="${POSTGRES_USER:-}"
+database="${POSTGRES_DB:-}"
 application_role="${DATABASE_USERNAME:-}"
 
 psql_as_superuser() {
   psql -v ON_ERROR_STOP=1 --username "$superuser" --no-password --no-psqlrc --dbname "$database" "$@"
 }
 
-if [ -z "$application_role" ]; then
-  psql_as_superuser -c 'CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA public'
-  echo "create_application_role.sh: DATABASE_USERNAME is unset, so the application connects as the superuser." >&2
-  exit 0
-fi
-
-if [ "$application_role" = "$superuser" ]; then
-  echo "create_application_role.sh: DATABASE_USERNAME must differ from POSTGRES_USER." >&2
+if [ -z "$superuser" ] || [ -z "${POSTGRES_PASSWORD:-}" ] || [ -z "$database" ] ||
+   [ -z "$application_role" ] || [ -z "${DATABASE_PASSWORD:-}" ]; then
+  echo "Configure the database name and both PostgreSQL credential pairs. See 'Moving an existing installation to the application role' in tools/deployer/README.md." >&2
   exit 1
 fi
 
-if [ -z "${DATABASE_PASSWORD:-}" ]; then
-  echo "create_application_role.sh: DATABASE_PASSWORD must be set for the role $application_role." >&2
+if [ "$application_role" = "$superuser" ] || [ "$DATABASE_PASSWORD" = "$POSTGRES_PASSWORD" ]; then
+  echo "The PostgreSQL administrator and application must have different names and passwords." >&2
   exit 1
 fi
 
-if [ "$DATABASE_PASSWORD" = "${POSTGRES_PASSWORD:-}" ]; then
-  echo "create_application_role.sh: The application and administrator need separate passwords." >&2
-  exit 1
+case "${1:-}" in
+  --check-config) exit 0 ;;
+  --check-login|"") ;;
+  *) echo "Usage: create_application_role.sh [--check-config|--check-login]" >&2; exit 2 ;;
+esac
+
+protected_object_checks() {
+  cat <<'EOSQL'
+-- initdb records non-default built-in ACLs in pg_init_privs. A restricted
+-- routine such as lo_import must not become executable by this login, even
+-- through PUBLIC. A custom SECURITY DEFINER may run arbitrary owner SQL.
+SELECT (
+  SELECT p.oid::regprocedure::text
+  FROM pg_proc p
+  JOIN pg_language l ON l.oid = p.prolang
+  LEFT JOIN pg_init_privs i ON i.classoid = 'pg_proc'::regclass
+    AND i.objoid = p.oid AND i.objsubid = 0
+  WHERE has_function_privilege(:'application_role', p.oid, 'EXECUTE')
+    AND (
+      (i.initprivs IS NOT NULL AND NOT EXISTS (
+        SELECT FROM aclexplode(i.initprivs) a
+        WHERE a.grantee = 0 AND a.privilege_type = 'EXECUTE'
+      ))
+      OR (p.oid >= 16384 AND (
+        (p.prosecdef AND p.proowner <> (SELECT oid FROM pg_roles WHERE rolname = :'application_role'))
+        OR (NOT l.lanpltrusted AND NOT EXISTS (
+          SELECT FROM pg_depend d
+          WHERE d.classid = 'pg_proc'::regclass AND d.objid = p.oid AND d.deptype = 'e'
+        ))
+      ))
+    )
+  LIMIT 1) AS unsafe_routine
+\gset
+\if :{?unsafe_routine}
+  \echo Refusing application access to protected routine :unsafe_routine
+  DO $$ BEGIN RAISE EXCEPTION 'Review the routine ACL, including PUBLIC, before migrating.'; END $$;
+\endif
+
+SELECT EXISTS (
+  SELECT FROM pg_namespace n WHERE n.nspname IN ('pg_catalog', 'information_schema')
+    AND has_schema_privilege(:'application_role', n.oid, 'CREATE')
+) AS writable_catalog
+\gset
+\if :writable_catalog
+  DO $$ BEGIN RAISE EXCEPTION 'Review CREATE on the system schema before migrating.'; END $$;
+\endif
+
+-- Extra table or column grants on the server catalogs (e.g. pg_authid)
+-- can expose passwords or permit catalog writes without role membership.
+WITH catalog_acl AS (
+  SELECT c.oid, c.relname, a.grantee, a.privilege_type, 0 AS column_id
+  FROM pg_class c CROSS JOIN LATERAL aclexplode(c.relacl) a
+  WHERE c.relnamespace = 'pg_catalog'::regnamespace
+  UNION ALL
+  SELECT c.oid, c.relname, a.grantee, a.privilege_type, col.attnum
+  FROM pg_class c JOIN pg_attribute col ON col.attrelid = c.oid
+  CROSS JOIN LATERAL aclexplode(col.attacl) a
+  WHERE c.relnamespace = 'pg_catalog'::regnamespace
+)
+SELECT (
+  SELECT acl.relname FROM catalog_acl acl
+  WHERE (acl.grantee = 0 OR pg_has_role(:'application_role', NULLIF(acl.grantee, 0::oid), 'USAGE'))
+    AND NOT EXISTS (
+      SELECT FROM pg_init_privs i CROSS JOIN LATERAL aclexplode(i.initprivs) a
+      WHERE i.classoid = 'pg_class'::regclass AND i.objoid = acl.oid
+        AND i.objsubid IN (0, acl.column_id) AND a.grantee = 0
+        AND a.privilege_type = acl.privilege_type
+    )
+  LIMIT 1
+) AS unsafe_catalog
+\gset
+\if :{?unsafe_catalog}
+  \echo Refusing application grant on system catalog :unsafe_catalog
+  DO $$ BEGIN RAISE EXCEPTION 'Review the system catalog ACL before migrating.'; END $$;
+\endif
+EOSQL
+}
+
+# The dump and restore clients authenticate over TCP as the actual app login.
+# Recheck the live target before reading or executing an archive.
+if [ "${1:-}" = "--check-login" ]; then
+  {
+    cat <<'EOSQL'
+SET search_path = pg_catalog;
+SELECT EXISTS (
+  SELECT FROM pg_roles r JOIN pg_database d ON d.datdba = r.oid
+  WHERE r.rolname = session_user AND d.datname = current_database()
+    AND NOT (r.rolsuper OR r.rolcreatedb OR r.rolcreaterole OR r.rolreplication OR r.rolbypassrls)
+    AND NOT EXISTS (SELECT FROM pg_auth_members WHERE member = r.oid OR roleid = r.oid)
+) AS ordinary_owner
+\gset
+\if :ordinary_owner
+\else
+  DO $$ BEGIN RAISE EXCEPTION 'Backup requires the dedicated application login that owns this database.'; END $$;
+\endif
+EOSQL
+    protected_object_checks
+  } | PGPASSWORD="$DATABASE_PASSWORD" PGDATABASE="$database" psql -Xq --no-password \
+        -h 127.0.0.1 -U "$application_role" -v ON_ERROR_STOP=1 -v application_role="$application_role"
+  exit $?
 fi
 
-psql_as_superuser \
-  --set database="$database" \
-  --set application_role="$application_role" <<'EOSQL'
+bootstrap_sql() {
+  cat <<'EOSQL'
 \getenv application_password DATABASE_PASSWORD
 BEGIN;
 SET LOCAL search_path = pg_catalog;
@@ -77,16 +166,21 @@ SELECT EXISTS (
   END $$;
 \endif
 
-CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA public;
-
+-- Also check PUBLIC privileges for a brand-new login. If the check fails
+-- this transaction rolls back the CREATE ROLE as well.
 SELECT format('CREATE ROLE %I', :'application_role')
 WHERE NOT EXISTS (SELECT FROM pg_roles WHERE rolname = :'application_role')
 \gexec
+
+CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA public;
 
 ALTER ROLE :"application_role" WITH LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS PASSWORD :'application_password';
 
 ALTER DATABASE :"database" OWNER TO :"application_role";
 
+EOSQL
+  protected_object_checks
+  cat <<'EOSQL'
 SELECT format('ALTER SCHEMA %I OWNER TO %I', n.nspname, :'application_role')
 FROM pg_namespace n
 WHERE n.nspowner = current_user::regrole
@@ -144,7 +238,9 @@ WHERE t.typowner = current_user::regrole
 SELECT format('ALTER ROUTINE %s OWNER TO %I', p.oid::regprocedure, :'application_role')
 FROM pg_proc p
 JOIN pg_namespace n ON n.oid = p.pronamespace
-WHERE p.proowner = current_user::regrole
+JOIN pg_language l ON l.oid = p.prolang
+WHERE l.lanpltrusted AND NOT p.prosecdef
+  AND p.proowner = current_user::regrole
   AND p.prokind IN ('f', 'p')
   AND n.nspname <> 'information_schema'
   AND n.nspname NOT LIKE 'pg\_%'
@@ -155,3 +251,8 @@ WHERE p.proowner = current_user::regrole
 \gexec
 COMMIT;
 EOSQL
+}
+
+bootstrap_sql | psql_as_superuser \
+  --set database="$database" \
+  --set application_role="$application_role"

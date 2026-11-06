@@ -91,8 +91,18 @@
       register: cmd_api_service_id
 
     - name: Run set-portainer-webhook.js
-      shell:
-        cmd: node /home/code/set-portainer-webhook.js "{{ cmd_api_service_id.stdout_lines[0] }}" "{{ cmd_docker_hub_registry_id.stdout }}" "{{ portainer_url }}" "{{ portainer_username }}" "{{ portainer_password }}" "api_webhook"
+      no_log: true
+      ansible.builtin.command:
+        argv: [node, /home/code/set-portainer-webhook.js]
+        stdin: >-
+          {{ {
+            'service_id': cmd_api_service_id.stdout_lines[0],
+            'registry_id': cmd_docker_hub_registry_id.stdout,
+            'url': portainer_url,
+            'portainer_username': portainer_username,
+            'portainer_password': portainer_password,
+            'file_name': 'api_webhook'
+          } | to_json }}
       register: cmd_set_api_webhook
 
     # - debug:

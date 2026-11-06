@@ -27,8 +27,6 @@ get_available_port() {
     echo $START
 }
 
-add_env "CREATE_DUMP_ON_COMMIT" "true"
-
 REPO_NAME=$(basename -s .git `git config --get remote.origin.url`)
 
 add_env "COMPOSE_PROJECT_NAME" $REPO_NAME

@@ -198,11 +198,7 @@ describe("a successful dump", () => {
 
     expect(result.status).toBe(0);
     expect(
-      result.calls.some(
-        (call) =>
-          call.startsWith("exec postgres-container sh -c") &&
-          call.includes("pg_dump"),
-      ),
+      result.calls.some((call) => call.includes("pg_dump --host=127.0.0.1")),
     ).toBe(true);
   });
 
