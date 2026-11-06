@@ -8,6 +8,7 @@ export const categoryStatus = {
   "Configuration error": 500,
   "Not Found error": 404,
   "Conflict error": 409,
+  "Payload Too Large error": 413,
   "Unprocessable Entity error": 422,
   "Internal error": 500,
   Other: 500,

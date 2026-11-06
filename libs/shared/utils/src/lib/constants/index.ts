@@ -1,6 +1,12 @@
 export const TIPTAP_EMPTY_DOC =
   '{"type":"doc","content":[{"type":"paragraph"}]}';
 
+/** Browser policy for uploaded bytes served as documents from the API origin. */
+export const FILE_CONTENT_SECURITY_HEADERS = {
+  "content-security-policy": "sandbox",
+  "x-content-type-options": "nosniff",
+} as const;
+
 export const UUID_PATH_SUFFIX_REGEX =
   /\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}(?=\/?$|\?.*$)/;
 
