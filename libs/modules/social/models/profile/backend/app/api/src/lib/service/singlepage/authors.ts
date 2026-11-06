@@ -162,6 +162,7 @@ export class Service {
   async presentation(profile: IProfile): Promise<IProfilePresentation> {
     const links = await this.dependencies.profilesToFiles.find({
       params: {
+        limit: 1,
         filters: {
           and: [{ column: "profileId", method: "eq", value: profile.id }],
         },

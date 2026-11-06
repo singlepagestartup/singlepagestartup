@@ -21,6 +21,15 @@ import { IRouteRule } from "@sps/shared-utils";
  */
 export const sensitiveRoutes: IRouteRule[] = [
   {
+    regexPath: /^\/api\/social\/chats(?:\/.*)?$/i,
+    methods: ["GET", "HEAD"],
+  },
+  {
+    regexPath:
+      /^\/api\/social\/profiles-to-file-storage-module-files(?:\/.*)?$/i,
+    methods: ["GET", "HEAD"],
+  },
+  {
     regexPath: /^\/api\/rbac\/identities(\/.*)?$/i,
     methods: ["GET"],
   },

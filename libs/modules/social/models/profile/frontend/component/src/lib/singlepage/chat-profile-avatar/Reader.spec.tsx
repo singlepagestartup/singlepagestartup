@@ -1,61 +1,48 @@
 import { renderToStaticMarkup } from "react-dom/server";
+import { Component } from "./index";
+import Client from "./client";
+import Server from "./server";
 
 jest.mock("server-only", () => ({}));
 jest.mock("client-only", () => ({}));
-const mockRelations = jest.fn();
-const mockFiles = jest.fn();
-jest.mock(
-  "@sps/social/relations/profiles-to-file-storage-module-files/frontend/component",
-  () => ({
-    Component: (props: any) => {
-      mockRelations(props);
-      return props.children({
-        data: [{ id: "link", fileStorageModuleFileId: "avatar" }],
-      });
-    },
-  }),
-);
-jest.mock("@sps/file-storage/models/file/frontend/component", () => ({
-  Component: (props: any) => {
-    mockFiles(props);
-    return props.children({ data: [] });
-  },
+const mockClientRead = jest.fn();
+const mockServerRead = jest.fn();
+jest.mock("@sps/social/models/profile/sdk/client", () => ({
+  Provider: ({ children }: any) => children,
+  api: { authorFind: (props: unknown) => mockClientRead(props) },
+}));
+jest.mock("@sps/social/models/profile/sdk/server", () => ({
+  api: { authorFind: (props: unknown) => mockServerRead(props) },
 }));
 
-import { Component } from "../../index";
+const props = {
+  isServer: false,
+  variant: "chat-profile-avatar" as const,
+  language: "en",
+  data: { id: "profile", title: { en: "Jane" } },
+};
+beforeEach(() => jest.clearAllMocks());
 
-it("keeps avatar relation readers in the client subtree even when composed by a server parent", () => {
-  const html = renderToStaticMarkup(
-    <Component
-      variant="chat-profile-avatar"
-      isServer={true}
-      language="en"
-      data={{ id: "profile", title: { en: "Jane" } } as any}
-    />,
-  );
-  expect(html).toContain("J");
-  expect(mockRelations).toHaveBeenCalledWith(
-    expect.objectContaining({ isServer: false, variant: "find" }),
-  );
-  expect(mockFiles).toHaveBeenCalledWith(
-    expect.objectContaining({ isServer: false, variant: "find" }),
-  );
+it("scopes the public author read to this profile on both runtimes", async () => {
+  const author = { avatar: null };
+  mockClientRead.mockReturnValue({ data: [author] });
+  mockServerRead.mockResolvedValue([author]);
+  expect(renderToStaticMarkup(<Client {...props} />)).toContain("J");
+  expect(
+    renderToStaticMarkup(await Server({ ...props, isServer: true })),
+  ).toContain("J");
+  expect(mockClientRead).toHaveBeenCalledWith({
+    params: { profileId: "profile" },
+  });
+  expect(mockServerRead).toHaveBeenCalledWith({
+    params: { profileId: "profile" },
+  });
 });
-
-it("uses a supplied scoped File result without querying global relation lists", () => {
-  mockRelations.mockClear();
-  mockFiles.mockClear();
+it("uses a supplied scoped File result without a public lookup", () => {
   const html = renderToStaticMarkup(
-    <Component
-      variant="chat-profile-avatar"
-      isServer={true}
-      language="en"
-      data={{ id: "profile", title: { en: "Jane" } } as any}
-      file={null}
-      fallback={<span>No avatar</span>}
-    />,
+    <Component {...props} file={null} fallback={<span>No avatar</span>} />,
   );
   expect(html).toContain("No avatar");
-  expect(mockRelations).not.toHaveBeenCalled();
-  expect(mockFiles).not.toHaveBeenCalled();
+  expect(mockClientRead).not.toHaveBeenCalled();
+  expect(mockServerRead).not.toHaveBeenCalled();
 });
