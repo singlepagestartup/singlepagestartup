@@ -2,8 +2,152 @@ import { parse } from "yaml";
 
 export type ProductCatalogLayer = "singlepage" | "startup";
 
-export function productStoryId(layer: ProductCatalogLayer, productId: string) {
-  return `workspace-40-products-${layer}--product-${productId}`;
+export function productStoryId(
+  layer: ProductCatalogLayer,
+  productId: string,
+  document = "product",
+) {
+  return `workspace-10-products-${layer}-${productId}--${document}`;
+}
+
+export function materialStoryId(
+  layer: ProductCatalogLayer,
+  productId: string,
+  material: string,
+  group?: string,
+) {
+  return `workspace-50-materials-${layer}-${productId}${group ? `-${group}` : ""}--${material}`;
+}
+
+/** Product working documents in reading order. */
+export function productDocumentEntries(product: IProductCatalogEntry) {
+  return [
+    { id: "product", title: "Описание", source: product.product },
+    { id: "audience", title: "Аудитория", source: product.audience },
+    { id: "competitors", title: "Конкуренты", source: product.competitors },
+    { id: "semantics", title: "Семантика", source: product.semantics },
+    {
+      id: "economics",
+      title: "Экономика",
+      source: product.economics,
+    },
+    { id: "sales", title: "Продажи", source: product.sales },
+  ].filter(
+    (document): document is { id: string; title: string; source: string } =>
+      Boolean(document.source),
+  );
+}
+
+/** Sources belonging to the product materials. */
+export function productMaterialEntries(product: IProductCatalogEntry) {
+  const entries: { id: string; title: string; source?: string }[] = [];
+  if (product.website)
+    entries.push({
+      id: "website",
+      title: "Требования к сайту",
+      source: product.website,
+    });
+  if (product.marketing_creative)
+    entries.push({
+      id: "creative",
+      title: "Требования к креативам",
+      source: product.marketing_creative,
+    });
+  for (const section of product.sections.filter(({ id }) =>
+    ["website", "creative", "articles"].includes(id),
+  )) {
+    const visit = (pages: IProductPage[]) =>
+      pages.forEach((page) => {
+        if (page.source)
+          entries.push({
+            id: `${section.id}-${page.id}`,
+            title: page.title,
+            source: page.source,
+          });
+        visit(page.children);
+      });
+    visit(section.pages);
+  }
+  if (product.presentation)
+    entries.push({
+      id: "presentation",
+      title: "Презентация",
+      source: product.presentation,
+    });
+  return entries;
+}
+
+interface IMaterialNavigationNode {
+  id: string;
+  children: IMaterialNavigationNode[];
+}
+
+/** A derivative opens the complete material that owns it. */
+export function materialNavigationTarget(
+  product: { sections: { id: string; pages: IMaterialNavigationNode[] }[] },
+  materialId: string,
+): { group?: string; story: string; anchor?: string } {
+  if (materialId === "website" || materialId === "website-landing")
+    return { group: "website", story: "website" };
+  if (materialId === "creative" || materialId.startsWith("creative-"))
+    return { group: "creative", story: "creative", anchor: materialId };
+  const contains = (page: IMaterialNavigationNode): boolean =>
+    `articles-${page.id}` === materialId || page.children.some(contains);
+  const article = product.sections
+    .find(({ id }) => id === "articles")
+    ?.pages.find(contains);
+  if (article)
+    return {
+      group: "articles",
+      story: `articles-${article.id}`,
+      anchor: materialId,
+    };
+  return {
+    group: materialId === "presentation" ? materialId : undefined,
+    story: materialId,
+  };
+}
+
+export function materialNavigationOwner(
+  product: { sections: { id: string; pages: IMaterialNavigationNode[] }[] },
+  materialId: string,
+): string | undefined {
+  return materialNavigationTarget(product, materialId).group;
+}
+
+export interface IProductMaterialStoryGroup {
+  id: string;
+  title: string;
+  items: { id: string; title: string }[];
+}
+
+/** Products are folders; each complete material is one story. */
+export function productMaterialStoryGroups(
+  product: IProductCatalogEntry,
+): IProductMaterialStoryGroup[] {
+  const groups: IProductMaterialStoryGroup[] = [];
+  const add = (id: string, title: string) =>
+    groups.push({ id, title, items: [{ id, title }] });
+  if (product.website || product.sections.some(({ id }) => id === "website"))
+    add("website", "Сайт");
+  if (product.presentation) add("presentation", "Презентация");
+  if (
+    product.marketing_creative ||
+    product.sections.some(({ id }) => id === "creative")
+  )
+    add("creative", "Рекламные материалы");
+  const articles =
+    product.sections.find(({ id }) => id === "articles")?.pages ?? [];
+  if (articles.length)
+    groups.push({
+      id: "articles",
+      title: "Статьи",
+      items: articles.map((article) => ({
+        id: `articles-${article.id}`,
+        title: article.title,
+      })),
+    });
+  return groups;
 }
 
 export interface IProductPage {
@@ -12,7 +156,6 @@ export interface IProductPage {
   source?: string;
   route?: string;
   uses?: string[];
-  representations?: { text: string; preview?: string };
   export?: "pdf";
   children: IProductPage[];
 }
@@ -24,37 +167,25 @@ export interface IProductSection {
 }
 
 export interface IProductCatalogEntry {
-  analytics?: string;
-  model?: string;
+  audience: string;
+  competitors: string;
+  semantics: string;
+  economics: string;
   sections: IProductSection[];
-  content?: string;
   id: string;
   marketing_creative?: string;
   name: string;
   presentation?: string;
-  presentation_data?: string;
   product: string;
-  research: string;
   sales: string;
   summary: string;
   website?: string;
-  website_component?: string;
 }
 
 export interface IProductCatalog {
-  models: IProductModel[];
   layer: ProductCatalogLayer;
   products: IProductCatalogEntry[];
-  schema:
-    | "singlepagestartup.product-catalog.v1"
-    | "singlepagestartup.product-catalog.v2";
-}
-
-export interface IProductModel {
-  id: string;
-  name: string;
-  source: string;
-  uses: string[];
+  schema: "singlepagestartup.product-catalog.v2";
 }
 
 function safeRelativePath(value: unknown, field: string): string {
@@ -100,6 +231,19 @@ function pages(
     throw new Error(`${productId} section/group needs pages`);
   return value.map((raw) => {
     const { node, id, title } = namedNode(raw, `${productId} page`);
+    for (const key of Object.keys(node))
+      if (
+        ![
+          "id",
+          "title",
+          "source",
+          "route",
+          "uses",
+          "children",
+          "export",
+        ].includes(key)
+      )
+        throw new Error(`${productId}.${id} has unknown page field ${key}`);
     if (id === "overview" || ids.has(id))
       throw new Error(`${productId} page id ${id} is reserved or repeated`);
     ids.add(id);
@@ -115,31 +259,6 @@ function pages(
       return path;
     };
     owned(source);
-    let representations: IProductPage["representations"];
-    if (node.representations !== undefined) {
-      if (source)
-        throw new Error(
-          `${productId}.${id} cannot mix source and representations`,
-        );
-      const variants = record(
-        node.representations,
-        `${productId}.${id}.representations`,
-      );
-      const text = owned(
-        safeRelativePath(variants.text, `${productId}.${id}.text`),
-      )!;
-      const preview = owned(
-        optionalSafeRelativePath(
-          variants.preview,
-          `${productId}.${id}.preview`,
-        ),
-      );
-      if (!/\.md$/i.test(text))
-        throw new Error(`${productId}.${id} text must be Markdown`);
-      if (preview && !/\.(tsx|jsx|html|htm)$/i.test(preview))
-        throw new Error(`${productId}.${id} preview must be React or HTML`);
-      representations = { text, preview };
-    }
     const route = node.route;
     if (
       route !== undefined &&
@@ -159,8 +278,11 @@ function pages(
     )
       throw new Error(`${productId}.${id}.uses must contain document IDs`);
     const children =
-      node.children === undefined ? [] : pages(node.children, productId, ids);
-    if (!source && !representations && !children.length)
+      node.children === undefined ||
+      (Array.isArray(node.children) && node.children.length === 0)
+        ? []
+        : pages(node.children, productId, ids);
+    if (!source && !children.length)
       throw new Error(`${productId}.${id} needs a source or children`);
     if (
       node.export !== undefined &&
@@ -173,7 +295,6 @@ function pages(
       source,
       route: route as string | undefined,
       uses: [...new Set(uses as string[])],
-      representations,
       children,
       export: node.export as "pdf" | undefined,
     };
@@ -187,6 +308,10 @@ function sections(value: unknown, productId: string): IProductSection[] {
   const ids = new Set<string>();
   return value.map((raw) => {
     const { node, id, title } = namedNode(raw, `${productId} section`);
+    if (id === "research")
+      throw new Error(
+        `${productId}: research belongs in visible audience, competitors and semantics documents`,
+      );
     if (ids.has(id)) throw new Error(`${productId} repeats section ${id}`);
     ids.add(id);
     return { id, title, pages: pages(node.pages, productId, new Set()) };
@@ -198,59 +323,37 @@ export function parseProductCatalog(
   layer: ProductCatalogLayer,
 ): IProductCatalog {
   const value = parse(source) as Record<string, unknown> | null;
-  if (
-    value?.schema !== "singlepagestartup.product-catalog.v1" &&
-    value?.schema !== "singlepagestartup.product-catalog.v2"
-  ) {
+  if (value?.schema !== "singlepagestartup.product-catalog.v2") {
     throw new Error(`${layer} products use an unsupported schema`);
   }
   if (!Array.isArray(value.products)) {
     throw new Error(`${layer} products must be an array`);
   }
-  const modelIds = new Set<string>();
-  if (value.models !== undefined && !Array.isArray(value.models))
-    throw new Error(`${layer}.models must be an array`);
-  const models: IProductModel[] = ((value.models ?? []) as unknown[]).map(
-    (raw) => {
-      const model = record(raw, `${layer} model`);
-      const id = typeof model.id === "string" ? model.id.trim() : "";
-      const name = typeof model.name === "string" ? model.name.trim() : "";
-      if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id) || modelIds.has(id) || !name)
-        throw new Error(`${layer} model needs a unique kebab-case id and name`);
-      modelIds.add(id);
-      const source = safeRelativePath(model.source, `${layer}.${id}.source`);
-      if (
-        !source.startsWith(`models/${id}/`) ||
-        !source.endsWith(".md") ||
-        /[?#%:]/.test(source)
-      )
-        throw new Error(
-          `${layer}.${id} model source must be Markdown in models/${id}/`,
-        );
-      if (
-        model.uses !== undefined &&
-        (!Array.isArray(model.uses) ||
-          model.uses.some((item) => typeof item !== "string"))
-      )
-        throw new Error(`${layer}.${id}.uses must contain model IDs`);
-      return { id, name, source, uses: (model.uses ?? []) as string[] };
-    },
-  );
-  const visitModel = (id: string, trail: string[] = []) => {
-    if (trail.includes(id))
-      throw new Error(`Model dependency cycle: ${[...trail, id].join(" -> ")}`);
-    const model = models.find((candidate) => candidate.id === id);
-    if (!model) throw new Error(`${layer} references missing model ${id}`);
-    model.uses.forEach((dependency) => visitModel(dependency, [...trail, id]));
-  };
-  models.forEach(({ id }) => visitModel(id));
-  if (!value.products.length && models.length)
-    throw new Error(
-      `${layer} empty product catalog cannot define orphan models`,
-    );
+  const rootKeys = new Set(["schema", "products"]);
+  for (const key of Object.keys(value))
+    if (!rootKeys.has(key))
+      throw new Error(`${layer} catalog has unknown field ${key}`);
   const ids = new Set<string>();
   const products = value.products.map((raw, index) => {
-    const product = raw as Record<string, unknown>;
+    const product = record(raw, `${layer} product`);
+    const fields = new Set([
+      "id",
+      "name",
+      "summary",
+      "product",
+      "audience",
+      "competitors",
+      "semantics",
+      "economics",
+      "sales",
+      "website",
+      "marketing_creative",
+      "presentation",
+      "sections",
+    ]);
+    for (const key of Object.keys(product))
+      if (!fields.has(key))
+        throw new Error(`${layer} product has unknown field ${key}`);
     const id = typeof product.id === "string" ? product.id.trim() : "";
     const name = typeof product.name === "string" ? product.name.trim() : "";
     const summary =
@@ -263,80 +366,52 @@ export function parseProductCatalog(
     if (!name || !summary) {
       throw new Error(`${layer} product ${id} needs name and summary`);
     }
-    const model = typeof product.model === "string" ? product.model : undefined;
-    if (model && !modelIds.has(model))
-      throw new Error(
-        `${layer}.${id} names model ${model}, which its own catalog does not declare`,
-      );
-    if (Boolean(product.presentation) !== Boolean(product.presentation_data))
-      throw new Error(
-        `${layer}.${id} presentation and presentation_data must be declared together`,
-      );
-    const materialPath =
-      value.schema === "singlepagestartup.product-catalog.v2"
-        ? optionalSafeRelativePath
-        : safeRelativePath;
-    if (product.content !== undefined && product.video !== undefined) {
-      throw new Error(
-        `${layer} product ${id} cannot define both content and legacy video`,
-      );
-    }
     const productSections = sections(product.sections, id);
-    if (
-      (product.content !== undefined || product.video !== undefined) &&
-      productSections.some((section) => section.id === "content")
-    )
-      throw new Error(
-        `${layer}.${id} cannot define both content and sections.content`,
-      );
     return {
-      analytics: optionalSafeRelativePath(
-        product.analytics,
-        `${layer}.${id}.analytics`,
+      audience: safeRelativePath(product.audience, `${layer}.${id}.audience`),
+      competitors: safeRelativePath(
+        product.competitors,
+        `${layer}.${id}.competitors`,
       ),
-      model,
+      semantics: safeRelativePath(
+        product.semantics,
+        `${layer}.${id}.semantics`,
+      ),
+      economics: safeRelativePath(
+        product.economics,
+        `${layer}.${id}.economics`,
+      ),
       sections: productSections,
-      content: optionalSafeRelativePath(
-        product.content ?? product.video,
-        `${layer}.${id}.content`,
-      ),
       id,
-      marketing_creative: materialPath(
+      marketing_creative: optionalSafeRelativePath(
         product.marketing_creative,
         `${layer}.${id}.marketing_creative`,
       ),
       name,
-      presentation: materialPath(
+      presentation: optionalSafeRelativePath(
         product.presentation,
         `${layer}.${id}.presentation`,
       ),
       product: safeRelativePath(product.product, `${layer}.${id}.product`),
-      presentation_data: materialPath(
-        product.presentation_data,
-        `${layer}.${id}.presentation_data`,
-      ),
-      research: safeRelativePath(product.research, `${layer}.${id}.research`),
       sales: safeRelativePath(product.sales, `${layer}.${id}.sales`),
       summary,
-      website: materialPath(product.website, `${layer}.${id}.website`),
-      website_component: optionalSafeRelativePath(
-        product.website_component,
-        `${layer}.${id}.website_component`,
+      website: optionalSafeRelativePath(
+        product.website,
+        `${layer}.${id}.website`,
       ),
     };
   });
   for (const product of products) {
     for (const field of [
-      "analytics",
+      "audience",
+      "competitors",
+      "semantics",
+      "economics",
       "product",
-      "research",
       "sales",
       "website",
       "marketing_creative",
       "presentation",
-      "presentation_data",
-      "content",
-      "website_component",
     ] as const) {
       const source = product[field];
       if (
@@ -349,7 +424,6 @@ export function parseProductCatalog(
     }
   }
   return {
-    models,
     layer,
     products,
     schema: value.schema,

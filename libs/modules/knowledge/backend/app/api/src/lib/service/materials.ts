@@ -1,0 +1,75 @@
+import type { Service as SourceService } from "@sps/knowledge/models/source/backend/app/api/src/lib/service";
+import { MediaService } from "./media";
+import { assembleContent, readUserContext } from "./utils";
+
+export interface MaterialServiceProps {
+  source: SourceService;
+  media?: MediaService;
+}
+
+export class MaterialService {
+  private media: MediaService;
+  constructor(private props: MaterialServiceProps) {
+    this.media =
+      props.media ||
+      new MediaService({
+        readFile: (file) => props.source.readFileBytes(file),
+      });
+  }
+
+  async rebuild(sourceId: string) {
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const source = await this.props.source.findSourceById(sourceId);
+      if (!source) return;
+      const userContext = readUserContext(source.content);
+      const reset = await this.props.source.invalidateFileContent(
+        sourceId,
+        userContext,
+        source.contentHash,
+      );
+      if (!reset) continue;
+      const files = await this.props.source.sourceFiles(sourceId);
+      const snapshot = this.fileSnapshot(files);
+      const parts: string[] = [];
+      for (const { file } of files) {
+        try {
+          parts.push(
+            `### ${file.adminTitle || file.alt || "Материал"}\n${await this.media.analyze(file, userContext)}`,
+          );
+        } catch (error) {
+          throw new Error(
+            `Knowledge file analysis failed for ${file.adminTitle || file.id}: ${error instanceof Error ? error.message : String(error)}`,
+          );
+        }
+      }
+      const materials = parts.join("\n\n");
+      const overview = materials
+        ? await this.media.synthesize(materials, userContext)
+        : "";
+      const saved = await this.props.source.saveAnalyzedContent({
+        sourceId,
+        expectedContentHash: reset.contentHash,
+        fileSnapshot: snapshot,
+        content: assembleContent(userContext, materials, overview),
+      });
+      if (!saved) continue;
+      return saved;
+    }
+    throw new Error(
+      "Conflict error. Knowledge material changed repeatedly during analysis. Retry with the current files and context.",
+    );
+  }
+
+  private fileSnapshot(
+    files: Awaited<ReturnType<SourceService["sourceFiles"]>>,
+  ) {
+    return JSON.stringify(
+      files.map(({ relation, file }) => [
+        relation.id,
+        relation.fileStorageModuleFileId,
+        relation.orderIndex,
+        file.updatedAt,
+      ]),
+    );
+  }
+}

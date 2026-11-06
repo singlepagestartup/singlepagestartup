@@ -1,24 +1,24 @@
 "use client";
 
 import { Component as SocialModuleProfile } from "@sps/social/models/profile/frontend/component";
-import type { KnowledgeDocument, SocialSkill } from "../types";
+import type { KnowledgeSource, SocialSkill } from "../types";
 import type { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
 
 interface ProfileSidebarPanelProps {
-  hasKnowledgeDocumentsError: boolean;
-  isKnowledgeDocumentsLoading: boolean;
+  hasKnowledgeSourcesError: boolean;
+  isKnowledgeSourcesLoading: boolean;
   isSkillsLoading: boolean;
-  knowledgeDocuments: KnowledgeDocument[];
+  knowledgeSources: KnowledgeSource[];
   language: string;
-  onKnowledgeDocumentCreate?: (profile: ISocialModuleProfile) => void;
-  onKnowledgeDocumentSelect: (document: KnowledgeDocument) => void;
+  onKnowledgeSourceCreate?: (profile: ISocialModuleProfile) => void;
+  onKnowledgeSourceSelect: (document: KnowledgeSource) => void;
   onMcpServersEdit?: (profile: ISocialModuleProfile) => void;
   onProfileEdit?: (profile: ISocialModuleProfile) => void;
   onSkillCreate?: (profile: ISocialModuleProfile) => void;
   onSkillEdit?: (skill: SocialSkill) => void;
   onClose?: () => void;
   profile: ISocialModuleProfile | null;
-  selectedKnowledgeDocument?: KnowledgeDocument | null;
+  selectedKnowledgeSource?: KnowledgeSource | null;
   skills: SocialSkill[];
 }
 
@@ -34,13 +34,13 @@ export function ProfileSidebarPanel(props: ProfileSidebarPanelProps) {
       data={props.profile}
       language={props.language}
       skills={props.skills}
-      knowledgeDocuments={props.knowledgeDocuments}
-      selectedKnowledgeDocument={props.selectedKnowledgeDocument}
+      knowledgeSources={props.knowledgeSources}
+      selectedKnowledgeSource={props.selectedKnowledgeSource}
       isSkillsLoading={props.isSkillsLoading}
-      isKnowledgeDocumentsLoading={props.isKnowledgeDocumentsLoading}
-      hasKnowledgeDocumentsError={props.hasKnowledgeDocumentsError}
-      onKnowledgeDocumentSelect={props.onKnowledgeDocumentSelect}
-      onKnowledgeDocumentCreate={props.onKnowledgeDocumentCreate}
+      isKnowledgeSourcesLoading={props.isKnowledgeSourcesLoading}
+      hasKnowledgeSourcesError={props.hasKnowledgeSourcesError}
+      onKnowledgeSourceSelect={props.onKnowledgeSourceSelect}
+      onKnowledgeSourceCreate={props.onKnowledgeSourceCreate}
       onMcpServersEdit={props.onMcpServersEdit}
       onProfileEdit={props.onProfileEdit}
       onSkillCreate={props.onSkillCreate}

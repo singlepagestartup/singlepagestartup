@@ -1,0 +1,14 @@
+{
+  "id": "46a27c35-dc78-41e1-8673-6f2c42031855",
+  "createdAt": "2026-10-27T08:40:59.457Z",
+  "updatedAt": "2026-10-27T08:40:59.457Z",
+  "variant": "navigation-inline",
+  "className": "",
+  "title": {
+    "en": "terms",
+    "ru": "terms"
+  },
+  "description": {},
+  "adminTitle": "AI Chat: terms",
+  "slug": "ai-chat-editable-terms-actions"
+}

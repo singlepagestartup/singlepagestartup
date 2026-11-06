@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Explore module",
+    "ru": "Изучить модуль"
+  },
+  "subtitle": {},
+  "url": "/framework/modules/blog",
+  "className": "w-fit",
+  "id": "568d9c8b-75d3-45af-a9f0-22aa77fc7119",
+  "createdAt": "2026-10-24T01:05:56.578Z",
+  "updatedAt": "2026-10-24T01:05:56.578Z",
+  "variant": "secondary",
+  "adminTitle": "Explore module",
+  "slug": "framework-journey-module-blog-actions-0"
+}

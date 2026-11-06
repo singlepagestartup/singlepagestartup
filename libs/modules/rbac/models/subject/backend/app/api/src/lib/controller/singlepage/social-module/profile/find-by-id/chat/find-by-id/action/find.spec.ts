@@ -23,7 +23,11 @@ describe("Given: thread-scoped social actions", () => {
    */
   it("When: finding actions by thread Then: returns only thread-linked actions", async () => {
     const service = {
+      socialModuleChatLifecycleAssertSubjectOwnsChat: jest
+        .fn()
+        .mockResolvedValue(undefined),
       socialModule: {
+        profilesToActions: { find: jest.fn().mockResolvedValue([]) },
         chatsToThreads: {
           find: jest.fn().mockResolvedValue([
             {
@@ -137,6 +141,8 @@ describe("Given: thread-scoped social actions", () => {
         {
           id: "action-1",
           description: "thread action",
+          actorProfileIds: [],
+          actorProfiles: [],
         },
       ],
     });
@@ -151,6 +157,9 @@ describe("Given: thread-scoped social actions", () => {
    */
   it("When: finding actions by stale thread Then: returns empty actions", async () => {
     const service = {
+      socialModuleChatLifecycleAssertSubjectOwnsChat: jest
+        .fn()
+        .mockResolvedValue(undefined),
       socialModule: {
         chatsToThreads: {
           find: jest.fn().mockResolvedValue([]),

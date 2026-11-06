@@ -5,6 +5,9 @@ import tailwindcss from "@tailwindcss/postcss";
 
 export default defineConfig({
   root: fileURLToPath(new URL(".", import.meta.url)),
+  publicDir: fileURLToPath(
+    new URL("../../../../../../apps/host/public", import.meta.url),
+  ),
   plugins: [react()],
   css: { postcss: { plugins: [tailwindcss()] } },
   server: { host: "127.0.0.1", port: 4330, strictPort: true },

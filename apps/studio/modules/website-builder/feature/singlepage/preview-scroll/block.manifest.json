@@ -1,0 +1,45 @@
+{
+  "$schema": "../../../../../block.schema.json",
+  "id": "website-builder.feature.preview-scroll",
+  "title": "preview-scroll",
+  "description": "Props-driven feature presentation for preview-scroll.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "feature",
+    "variant": "preview-scroll"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "src",
+      "type": "image",
+      "required": true
+    },
+    {
+      "name": "alt",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "label",
+      "type": "text",
+      "required": true
+    }
+  ],
+  "figma": {
+    "componentName": "website-builder.feature",
+    "pageName": "website-builder",
+    "variantName": "preview-scroll",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["website-builder", "feature", "preview-scroll"]
+}

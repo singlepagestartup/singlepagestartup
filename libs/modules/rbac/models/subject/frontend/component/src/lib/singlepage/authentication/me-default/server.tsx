@@ -4,6 +4,7 @@ import "server-only";
 import { IComponentProps } from "./interface";
 import { api } from "@sps/rbac/models/subject/sdk/server";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 async function me(props: IComponentProps) {
   const cookieStore = await cookies();
@@ -34,11 +35,15 @@ export default async function Server(props: IComponentProps) {
   const data = await me(props);
 
   if (!data) {
-    return <></>;
+    return props.fallback ?? <></>;
+  }
+
+  if (props.unauthenticatedRedirectHref && !data.authenticated) {
+    redirect(props.unauthenticatedRedirectHref);
   }
 
   if (props.children) {
-    return props.children({ data });
+    return props.children({ data, authenticated: data.authenticated });
   }
 
   return <></>;

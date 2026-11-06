@@ -1,0 +1,34 @@
+{
+  "id": "social-module-profile-slug-author",
+  "title": "Social Profile Find By Id Overview Author",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Editorial author profile and its supplied Framework guides, selected by explicit author slug.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "blocks": [
+    {
+      "id": "host.layout.website",
+      "path": "../../../layout/singlepage/website"
+    },
+    {
+      "id": "social.profile.author-overview-default",
+      "path": "../../../../social/profile/singlepage/author-overview-default"
+    },
+    {
+      "id": "blog.widget.article-find-card-default",
+      "path": "../../../../blog/widget/singlepage/article-find-card-default"
+    }
+  ],
+  "figma": {
+    "componentName": "host.page",
+    "pageName": "host",
+    "variantName": "social-module-profile-slug-author",
+    "nodeId": "716:300",
+    "variantNodeId": "983:1759",
+    "syncStatus": "needs-update",
+    "metadataFile": "figma.json"
+  }
+}

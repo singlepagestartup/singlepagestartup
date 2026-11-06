@@ -4,6 +4,10 @@ import { IFindProps } from "@sps/shared-frontend-api";
 
 export interface IComponentProps<M, V> extends ISpsComponentBase {
   variant: V;
+  /** Render the owning SDK reader's current results without another query. */
+  dataSource?: "api" | "props";
+  data?: M[];
+  keepDataWhileFetching?: boolean;
   set?: Dispatch<SetStateAction<M[] | undefined>>;
   children?: ({ data }: { data: M[] | undefined }) => any;
   apiProps?: {

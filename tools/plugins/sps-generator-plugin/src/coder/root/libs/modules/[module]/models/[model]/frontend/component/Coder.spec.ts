@@ -206,3 +206,85 @@ describe("Component RegexCreator", () => {
     });
   });
 });
+
+it("exports variant-specific public props and replaces the base contract with a startup override", () => {
+  const ts = require("typescript") as typeof import("typescript");
+  const { readFileSync } = require("node:fs") as typeof import("node:fs");
+  const path = require("node:path") as typeof import("node:path");
+  const root = path.resolve("/sps-frontend-contract");
+  const files = new Map<string, string>([
+    [
+      path.join(root, "index.ts"),
+      readFileSync(path.join(__dirname, "files/src/index.ts.template"), "utf8"),
+    ],
+    [path.join(root, "lib/index.ts"), "export const Component = () => null;"],
+    [
+      path.join(root, "lib/interface.ts"),
+      readFileSync(
+        path.join(__dirname, "files/src/lib/interface.ts.template"),
+        "utf8",
+      ),
+    ],
+    [
+      path.join(root, "lib/singlepage/interface.ts"),
+      'export type IComponentProps = {variant: "first"; original: string} | {variant: "second"; count: number};',
+    ],
+    [
+      path.join(root, "lib/startup/interface.ts"),
+      'export type IComponentProps = {variant: "first"; replacement: boolean} | {variant: "startup-only"; title: string};',
+    ],
+    [
+      path.join(root, "consumer.ts"),
+      `import type { IComponentProps } from "./index";
+      const first: IComponentProps = {variant: "first", replacement: true};
+      const second: IComponentProps = {variant: "second", count: 1};
+      const startup: IComponentProps = {variant: "startup-only", title: "Custom"};
+      // @ts-expect-error startup replaces the original required props
+      const stale: IComponentProps = {variant: "first", original: "Old"};
+      // @ts-expect-error the other variant has a different required field
+      const missing: IComponentProps = {variant: "second", replacement: true};
+      // @ts-expect-error unknown literal
+      const unknown: IComponentProps = {variant: "unknown"};
+    `,
+    ],
+  ]);
+  const options = { strict: true, noEmit: true, skipLibCheck: true, types: [] };
+  const host = ts.createCompilerHost(options);
+  const original = {
+    fileExists: host.fileExists,
+    readFile: host.readFile,
+    getSourceFile: host.getSourceFile,
+    directoryExists: host.directoryExists,
+  };
+  host.fileExists = (file) => files.has(file) || original.fileExists(file);
+  host.readFile = (file) => files.get(file) ?? original.readFile(file);
+  host.directoryExists = (directory) =>
+    directory.startsWith(root) ||
+    Boolean(original.directoryExists?.(directory));
+  host.getSourceFile = (
+    file,
+    languageVersion,
+    onError,
+    shouldCreateNewSourceFile,
+  ) =>
+    files.has(file)
+      ? ts.createSourceFile(file, files.get(file)!, languageVersion, true)
+      : original.getSourceFile(
+          file,
+          languageVersion,
+          onError,
+          shouldCreateNewSourceFile,
+        );
+  const program = ts.createProgram(
+    [path.join(root, "consumer.ts")],
+    options,
+    host,
+  );
+  expect(
+    ts
+      .getPreEmitDiagnostics(program)
+      .map((diagnostic) =>
+        ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n"),
+      ),
+  ).toEqual([]);
+});

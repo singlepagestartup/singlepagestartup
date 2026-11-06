@@ -2,9 +2,8 @@ import { Component as CrmModuleWidgetsToForms } from "@sps/crm/relations/widgets
 import { Component as CrmModuleWidgetsToWebsiteBuilderModuleWidgets } from "@sps/crm/relations/widgets-to-website-builder-module-widgets/frontend/component";
 import { Component as CrmModuleForm } from "@sps/crm/models/form/frontend/component";
 import { Component as WebsiteBuilderModuleWidget } from "@sps/website-builder/models/widget/frontend/component";
-import { Component as RbacSubject } from "../../../../../../rbac/subject";
+import { Component as RbacSubject } from "@sps/rbac/models/subject/frontend/component";
 import { IComponentProps } from "./interface";
-
 export function Component(props: IComponentProps) {
   return (
     <CrmModuleWidgetsToWebsiteBuilderModuleWidgets
@@ -48,7 +47,7 @@ export function Component(props: IComponentProps) {
                 return crmModuleWidgetsToForms?.map((entity, index) => {
                   return (
                     <CrmModuleForm
-                      key={index}
+                      key={entity.id}
                       isServer={props.isServer}
                       variant="find"
                       apiProps={{
@@ -69,7 +68,7 @@ export function Component(props: IComponentProps) {
                         return data?.map((entity, index) => {
                           return (
                             <CrmModuleForm
-                              key={index}
+                              key={entity.id}
                               isServer={props.isServer}
                               variant={entity.variant as any}
                               data={entity}
@@ -92,12 +91,11 @@ export function Component(props: IComponentProps) {
             </CrmModuleWidgetsToForms>
           );
         }
-
         return crmModuleWidgetsToWebsiteBuilderModuleWidgets.map(
           (crmModuleWidgetToWebsiteBuilderModuleWidget, index) => {
             return (
               <WebsiteBuilderModuleWidget
-                key={index}
+                key={crmModuleWidgetToWebsiteBuilderModuleWidget.id}
                 isServer={props.isServer}
                 variant="find"
                 apiProps={{
@@ -120,7 +118,7 @@ export function Component(props: IComponentProps) {
                     (websiteBuilderModuleWidget, index) => {
                       return (
                         <WebsiteBuilderModuleWidget
-                          key={index}
+                          key={websiteBuilderModuleWidget.id}
                           isServer={props.isServer}
                           variant={websiteBuilderModuleWidget.variant as any}
                           data={websiteBuilderModuleWidget}
@@ -148,7 +146,7 @@ export function Component(props: IComponentProps) {
                                 (entity, index) => {
                                   return (
                                     <CrmModuleForm
-                                      key={index}
+                                      key={entity.id}
                                       isServer={props.isServer}
                                       variant="find"
                                       apiProps={{
@@ -169,7 +167,7 @@ export function Component(props: IComponentProps) {
                                         return data?.map((entity, index) => {
                                           return (
                                             <CrmModuleForm
-                                              key={index}
+                                              key={entity.id}
                                               isServer={props.isServer}
                                               variant={entity.variant as any}
                                               data={entity}

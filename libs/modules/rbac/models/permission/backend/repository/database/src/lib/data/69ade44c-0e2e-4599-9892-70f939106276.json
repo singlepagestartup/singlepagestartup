@@ -1,0 +1,9 @@
+{
+  "id": "69ade44c-0e2e-4599-9892-70f939106276",
+  "createdAt": "2026-10-14T21:32:51.313Z",
+  "updatedAt": "2026-10-14T21:32:51.313Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/rbac/subjects/ad50fa23-8b7c-4750-99eb-004ce1d518de/social-module/profiles/projects"
+}

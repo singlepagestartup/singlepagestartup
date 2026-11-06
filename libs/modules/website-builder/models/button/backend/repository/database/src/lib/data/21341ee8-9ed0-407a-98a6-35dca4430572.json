@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Start",
+    "ru": "Начать"
+  },
+  "subtitle": {},
+  "url": "/ai-chat/create-account",
+  "className": "",
+  "id": "21341ee8-9ed0-407a-98a6-35dca4430572",
+  "createdAt": "2026-10-26T00:12:49.704Z",
+  "updatedAt": "2026-10-27T15:00:07.106Z",
+  "variant": "action-inverse",
+  "adminTitle": "Начать",
+  "slug": "framework-reviewed-cta-actions-0"
+}

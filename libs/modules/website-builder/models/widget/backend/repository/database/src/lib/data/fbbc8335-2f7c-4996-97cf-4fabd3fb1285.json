@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Work with Startup.",
+    "ru": "Работайте с Startup."
+  },
+  "subtitle": {
+    "en": "Foundation",
+    "ru": "Основа"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Project-specific widgets for the product you build on this foundation.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Widgets конкретного продукта, который разрабатывается на этой основе.\"}]}]}"
+  },
+  "anchor": "module-startup",
+  "className": "@5xl:grid-cols-2",
+  "id": "fbbc8335-2f7c-4996-97cf-4fabd3fb1285",
+  "createdAt": "2026-10-24T01:06:15.353Z",
+  "updatedAt": "2026-10-24T01:06:15.353Z",
+  "variant": "content-definition-grid-page",
+  "adminTitle": "Work with Startup.",
+  "slug": "framework-journey-guide-startup-overview"
+}

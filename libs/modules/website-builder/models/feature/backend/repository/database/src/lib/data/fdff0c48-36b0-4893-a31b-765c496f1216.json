@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "fdff0c48-36b0-4893-a31b-765c496f1216",
+  "createdAt": "2026-10-26T00:11:37.398Z",
+  "updatedAt": "2026-10-27T15:00:04.847Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "file-storage",
+    "ru": "file-storage"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Add photos and videos to the description.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Добавьте фотографии и видео к описанию.\"}]}]}"
+  },
+  "adminTitle": "file-storage",
+  "slug": "framework-reviewed-article-website-builder-connections-feature-2"
+}

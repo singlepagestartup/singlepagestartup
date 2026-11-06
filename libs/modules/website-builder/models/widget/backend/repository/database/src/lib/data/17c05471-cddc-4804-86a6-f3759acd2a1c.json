@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "An enquiry at a dog grooming salon",
+    "ru": "Заявка в салон ухода за собаками"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The owner chooses a service, describes the pet and leaves contact details. The salon receives the information needed to call back. This is a booking enquiry; the appointment time still needs confirmation.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The form saves the request but does not itself reserve a calendar slot. Scheduling, enquiry assignment and customer messages are connected to match your business process.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Хозяин выбирает услугу и описывает питомца, затем оставляет контакт. Салон получает сведения для обратного звонка. Это заявка на запись; время визита ещё предстоит подтвердить.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Форма сохраняет запрос, но сама не бронирует время в календаре. Расписание, распределение заявок и сообщения клиенту подключают под процесс вашего бизнеса.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "17c05471-cddc-4804-86a6-f3759acd2a1c",
+  "createdAt": "2026-10-26T00:11:30.166Z",
+  "updatedAt": "2026-10-27T14:58:49.439Z",
+  "variant": "content-rich",
+  "adminTitle": "Заявка в салон ухода за собаками",
+  "slug": "framework-reviewed-article-crm-example"
+}

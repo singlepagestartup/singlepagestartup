@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Describe the full query",
+    "ru": "Опишите запрос полностью"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The \"},{\"type\":\"text\",\"text\":\"find\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\", \"},{\"type\":\"text\",\"text\":\"findById\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" and \"},{\"type\":\"text\",\"text\":\"count\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" operations use \"},{\"type\":\"text\",\"text\":\"consistencyQueryKey\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\": route, parameters and API address. Partitioning also accounts for the current user without placing secrets in the key. A different filter, page or API means a different dataset.\"}]},{\"type\":\"codeBlock\",\"attrs\":{\"language\":\"ts\"},\"content\":[{\"type\":\"text\",\"text\":\"import { consistencyQueryKey } from \\\"@sps/shared-frontend-client-api\\\";\\n\\nconst key = consistencyQueryKey(\\\"/api/blog/articles\\\", { filters: { and: [{ column: \\\"slug\\\", method: \\\"eq\\\", value: articleSlug }] } }, clientHost);\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The owning reader receives the example's variables. \"},{\"type\":\"text\",\"text\":\"The TanStack Query guide\",\"marks\":[{\"type\":\"link\",\"attrs\":{\"href\":\"https://tanstack.com/query/v5/docs/framework/react/guides/query-keys\",\"target\":\"_blank\",\"rel\":\"noopener noreferrer\"}}]},{\"type\":\"text\",\"text\":\" explains including parameters in the key. SPS adds API-address and current-user rules.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Операции \"},{\"type\":\"text\",\"text\":\"find\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\", \"},{\"type\":\"text\",\"text\":\"findById\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" и \"},{\"type\":\"text\",\"text\":\"count\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" используют \"},{\"type\":\"text\",\"text\":\"consistencyQueryKey\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\": маршрут, параметры и адрес API. Разделение учитывает и текущего пользователя, не помещая в ключ его секретные данные. Фильтр, страница или другой API означают другой набор данных.\"}]},{\"type\":\"codeBlock\",\"attrs\":{\"language\":\"ts\"},\"content\":[{\"type\":\"text\",\"text\":\"import { consistencyQueryKey } from \\\"@sps/shared-frontend-client-api\\\";\\n\\nconst key = consistencyQueryKey(\\\"/api/blog/articles\\\", { filters: { and: [{ column: \\\"slug\\\", method: \\\"eq\\\", value: articleSlug }] } }, clientHost);\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Переменные примера получает владеющий reader. \"},{\"type\":\"text\",\"text\":\"Руководство TanStack Query\",\"marks\":[{\"type\":\"link\",\"attrs\":{\"href\":\"https://tanstack.com/query/v5/docs/framework/react/guides/query-keys\",\"target\":\"_blank\",\"rel\":\"noopener noreferrer\"}}]},{\"type\":\"text\",\"text\":\" объясняет включение параметров в ключ. SPS добавляет правила адреса API и текущего пользователя.\"}]}]}"
+  },
+  "anchor": "ru-section-react-query-realtime-and-principal-scopes-1",
+  "className": "",
+  "id": "98f4fbc8-46c0-478a-b24a-46e09ebffe95",
+  "createdAt": "2026-10-26T07:34:02.325Z",
+  "updatedAt": "2026-10-27T14:59:08.973Z",
+  "variant": "content-rich",
+  "adminTitle": "Опишите запрос полностью",
+  "slug": "ru-section-react-query-realtime-and-principal-scopes-1"
+}

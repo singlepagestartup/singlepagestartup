@@ -1,0 +1,14 @@
+{
+  "id": "dc20b159-47f0-42e8-a8f4-561925db9333",
+  "createdAt": "2026-10-24T01:06:06.488Z",
+  "updatedAt": "2026-10-24T01:06:06.488Z",
+  "variant": "default",
+  "className": "w-full",
+  "title": {
+    "en": "Actions",
+    "ru": "Действия"
+  },
+  "description": {},
+  "adminTitle": "Actions",
+  "slug": "framework-journey-guide-knowledge-actions"
+}

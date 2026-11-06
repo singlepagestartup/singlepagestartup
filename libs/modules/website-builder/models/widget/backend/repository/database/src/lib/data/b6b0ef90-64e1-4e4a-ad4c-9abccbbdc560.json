@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "A request for your project",
+    "ru": "Запрос для вашего проекта"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"I need a school owner's dashboard showing weekly enquiry and order counts. Define each metric's source and calculation, then display the values in the project.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Нужна панель владельца школы с количеством заявок и заказов за неделю. Определите источники и расчёт каждого показателя, затем покажите значения в проекте.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "b6b0ef90-64e1-4e4a-ad4c-9abccbbdc560",
+  "createdAt": "2026-10-26T00:12:15.759Z",
+  "updatedAt": "2026-10-27T14:59:14.804Z",
+  "variant": "content-rich",
+  "adminTitle": "Запрос для вашего проекта",
+  "slug": "framework-reviewed-article-analytic-task"
+}

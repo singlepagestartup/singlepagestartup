@@ -1,0 +1,118 @@
+{
+  "schema": {
+    "module": "social",
+    "entity": "thread",
+    "entityType": "model",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "title",
+        "label": "Title",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "description",
+        "label": "Description",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "sourceSystemId",
+        "label": "Source System Id",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "metadata",
+        "label": "Metadata",
+        "kind": "jsonb",
+        "nullable": false,
+        "default": {}
+      },
+      {
+        "key": "adminTitle",
+        "label": "Admin Title",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "slug",
+        "label": "Slug",
+        "kind": "text",
+        "nullable": false
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "5b7450ce-2b3a-464e-a131-5536a401bede",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "className": null,
+      "variant": "default",
+      "title": "thread example 1",
+      "description": null,
+      "sourceSystemId": null,
+      "metadata": {},
+      "adminTitle": "thread example 1",
+      "slug": "thread-example-1"
+    },
+    {
+      "id": "b3fd521c-dc85-452c-af9c-0c155bd2613c",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "className": null,
+      "variant": "default",
+      "title": "thread example 2",
+      "description": null,
+      "sourceSystemId": null,
+      "metadata": {},
+      "adminTitle": "thread example 2",
+      "slug": "thread-example-2"
+    },
+    {
+      "id": "0c3fc9db-ede4-4858-a157-68e0bc2aefb0",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "className": null,
+      "variant": "default",
+      "title": "thread example 3",
+      "description": null,
+      "sourceSystemId": null,
+      "metadata": {},
+      "adminTitle": "thread example 3",
+      "slug": "thread-example-3"
+    }
+  ]
+}

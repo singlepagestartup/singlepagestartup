@@ -13,6 +13,26 @@ export class Action<SCHEMA extends Record<string, unknown>> {
 
   async execute(props: { id: string; data: any }) {
     delete props.data.updatedAt;
+    if (
+      Object.hasOwn(props.data, "metadata") &&
+      Object.hasOwn(props.data, "_expectedMetadata")
+    ) {
+      const expectedMetadata = props.data._expectedMetadata;
+      delete props.data._expectedMetadata;
+      const result = await this.repository.consumeFirstByField(
+        "id",
+        props.id,
+        props.data,
+        {
+          and: [{ column: "metadata", method: "eq", value: expectedMetadata }],
+        },
+      );
+      if (!result)
+        throw new Error(
+          "Conflict error. Metadata changed. Reload the record before saving again.",
+        );
+      return result;
+    }
 
     const result = await this.repository.updateFirstByField(
       "id",

@@ -1,5 +1,3 @@
-import type { IDocumentConfirmation } from "../../../../tools/studio/workspace/document";
-
 export interface IStudioArtifact {
   id: string;
   kind: string;
@@ -13,7 +11,6 @@ export interface IStudioArtifact {
   uses: string[];
   usedBy: string[];
   content: string;
-  confirmation?: IDocumentConfirmation;
 }
 
 export interface IStudioWorkspace {

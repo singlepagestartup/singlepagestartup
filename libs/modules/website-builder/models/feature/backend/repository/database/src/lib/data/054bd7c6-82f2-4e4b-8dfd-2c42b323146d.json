@@ -1,0 +1,18 @@
+{
+  "className": null,
+  "id": "054bd7c6-82f2-4e4b-8dfd-2c42b323146d",
+  "createdAt": "2026-10-23T20:18:05.225Z",
+  "updatedAt": "2026-10-23T20:18:05.225Z",
+  "variant": "card",
+  "title": {
+    "en": "Catalog, carts and payments",
+    "ru": "Каталог, корзина и платежи"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Products, orders, currencies and payment integrations form the commerce flow.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Товары, заказы, валюты и платежные интеграции составляют общий сценарий покупки.\"}]}]}"
+  },
+  "adminTitle": "Catalog, carts and payments",
+  "slug": "framework-about-foundation-feature-1"
+}
