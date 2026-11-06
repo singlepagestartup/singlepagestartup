@@ -28,31 +28,21 @@ the catalog by hand. Repeating generation without schema or capture changes
 creates no new capture migration.
 
 `api:db:migrate` applies infrastructure first. Each model/relation migrator
-installs capture after its own table migration, so newly created tables receive
-triggers. The infrastructure migrator also reconciles the generated catalog
-with deployed tables. `consistency-check` checks both catalog freshness and
-installed database triggers; run it after applying the complete migration set.
-
-Client-owned or manually added generation targets must preserve the same
-uncached, sequential Drizzle-then-capture contract. Run the infrastructure
-command from the workspace root when introducing a custom migration workflow.
-Models and relations in the standard module layout need no manual capture list
-or second relation graph.
-
-## Infrastructure changes
-
-When changing the consistency schema or capture generator itself, run:
-
-```sh
-npx nx run @sps/providers-db:repository-generate
-npx nx run api:db:migrate
-npx nx run @sps/providers-db:consistency-check
-```
+installs capture after its own table migration. The infrastructure migrator
+also discovers the effective project Tables and SDK routes, reconciles their
+catalog with deployed tables and removes retired resource registrations.
+Startup overrides take effect without copying the upstream catalog's physical
+table names. Catalog changes invalidate existing consistency capabilities;
+application records and historical generation rows remain intact. The generator
+reads effective Tables and SDK routes; no second relation graph is maintained.
+A new generator template runs infrastructure generation after model generation.
+An existing manually configured repository target must also run the
+infrastructure generation command when its Table changes.
 
 Drizzle creates schema migrations and custom migration entries. The capture
 extension fills only a newly generated custom migration and records a catalog
 fingerprint. Repeating generation without Table/function changes creates no
-migration. Coverage checking fails when a catalog table lacks its capture
+migration. Coverage checking reads the same effective catalog and fails when a current table lacks its capture
 trigger; uncovered reads cannot receive cache capabilities.
 
 ## Writes and delivery
