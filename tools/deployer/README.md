@@ -201,6 +201,10 @@ maintenance window, and leaving it set is an explicit decision to keep running
 on an authorization bypass that can be found offline. The report names keys and
 verdicts only, never a value.
 
+The API deployment uses `API_ERROR_DETAILS=brief`. The client can give the
+operator its request ID to locate the incident in the private server journal.
+See [Finding an API error](#finding-an-api-error).
+
 ### Rotating the secrets of a deployment that already bootstrapped
 
 Until this change, the bootstrap scripts derived every generated credential from
@@ -317,6 +321,87 @@ docker service logs traefik_traefik --since 10m
 Never leave `DEBUG` enabled after troubleshooting; it can repeatedly expose
 dynamic routing details and credential hashes in logs.
 
+### Finding an API error
+
+The standard Swarm deployment sends API output to the Linux system journal on
+the node that ran the task. The tag is `sps-api-<API_SERVICE_NAME>`; the default
+is `sps-api-api`. The deployer checks that a new entry reaches
+`/var/log/journal` **before** replacing the API service. Task replacement
+preserves the node's journal. On a multi-manager Swarm, check the node of each
+relevant task with `docker service ps api_api`. A different node has its own
+history. Logs written by an older deployment using Docker's json-file driver
+stay with that old container. To see which driver the running deployment
+uses, run `docker service inspect api_api --format '{{json .Spec.TaskTemplate.LogDriver}}'`.
+For a service still using Docker's default or json-file driver, start with
+`docker service logs api_api --since 1h`. See the [Docker journald driver](https://docs.docker.com/engine/logging/drivers/journald/) and [systemd retention settings](https://www.freedesktop.org/software/systemd/man/latest/journald.conf.html).
+
+Connect to the node by SSH with an authorized operator account. These examples
+use `jq` to select only incident records from API output. Use the ID shown in
+the failed HTTP response, or in a Telegram alert:
+
+```bash
+tag=sps-api-api
+request_id='paste-the-request-id'
+sudo journalctl -t "$tag" --since '7 days ago' --no-pager -o cat |
+  jq -Rc --arg id "$request_id" 'fromjson? | objects | select(.event == "api.error" and .requestId == $id)'
+```
+
+Start with `category`, `reason` (when recognized), `status`, `route`,
+`operation.stage` and `locations[].frames`. The first application location
+identifies a source line in the deployed revision; use the task's image to
+match it to the release. `ids` contains UUID route parameters, which identify
+resources. `subjectId` identifies the subject only when its signed JWT verified.
+Operator calls, anonymous requests and unverifiable credentials are marked
+separately. An error in a database driver can carry an allowlisted driver code.
+For chat attachments the stage distinguishes parsing, validation, storage and
+message persistence. Reproduce the operation with a test Subject, equivalent
+permissions, synthetic input and the same file types and sizes.
+
+To follow a failing call, copy its `traceId`. Read each linked
+`downstreamRequestId` separately if a nested call started another trace. A
+repository or background error in the same request can appear as `runtime.error`:
+
+```bash
+trace_id='paste-the-trace-id'
+sudo journalctl -t "$tag" --since '7 days ago' --no-pager -o cat |
+  jq -Rc --arg id "$trace_id" 'fromjson? | objects | select((.event == "api.error" or .event == "runtime.error") and .traceId == $id) | {occurredAt,event,requestId,parentRequestId,downstreamRequestId,route,status,operation,locations}'
+```
+
+To watch new incidents, or review which routes returned the most server errors:
+
+```bash
+sudo journalctl -t "$tag" -f -o cat |
+  jq --unbuffered -Rc 'fromjson? | objects | select(.event == "api.error" or .event == "api.telegram.unavailable")'
+sudo journalctl -t "$tag" --since yesterday --no-pager -o cat |
+  jq -Rr 'fromjson? | objects | select(.event == "api.error" and .status >= 500) | .route' |
+  sort | uniq -c | sort -nr
+```
+
+The node administrator controls journal rotation, rate limiting and free space.
+`sudo journalctl --disk-usage` shows current usage;
+`sudo journalctl -t "$tag" --no-pager -o short-iso | head -1` shows the oldest
+available API entry. A seven-day query does not guarantee seven days of
+retention. Disk loss, rotation and journal rate limits can remove entries.
+For a fixed retention period or recovery after node loss, forward the
+allowlisted incident events to a private store with an explicit quota and TTL.
+
+Telegram is optional. Set the four `BUG_SERVICE_*` entries in the deployer's
+`.env.example` in your local `.env`, or supply the corresponding repository
+secrets for Actions (with `PREVIEW_` on preview deployments). Keep the bot
+token private. A blocked network results in one delivery attempt, a local
+`api.telegram.unavailable` event and a cooldown. There is no backlog to replay.
+See [API diagnostics](../../apps/api/README.md#environment) for the precise
+per-process limits and the one allowed chat-migration retry.
+
+Only trusted server operators should have journal or Docker access. Both
+grant visibility beyond API incidents. For a future admin view, the narrowest
+option is read-only aggregates by route, status and time. For per-incident
+lookup, project only the allowlisted fields into a private store, enforce
+authenticated RBAC Subject plus a dedicated diagnostics permission and tenant
+scope, and audit access. Bound date ranges and pagination. Give the app
+neither the Docker socket nor access to host journals, shell commands or
+arbitrary file paths. Treat the request ID as a lookup key, never a credential.
+
 ### Traefik access log and security headers
 
 Traefik writes one JSON line per request to stdout, beside its own log, and
@@ -327,8 +412,8 @@ credentials in headers. Read both with:
 docker service logs traefik_traefik --since 10m
 ```
 
-The Traefik container log rotates at 10 MB and keeps three files, like the
-application services.
+The Traefik container log rotates at 10 MB and keeps three files. The API uses
+the persistent system journal described above.
 
 The api, host, mcp and telegram routers attach a headers middleware that sends:
 

@@ -1,3 +1,4 @@
+import { serverRequestOptions } from "./request-options";
 import {
   actions,
   IFindByIdProps,
@@ -35,6 +36,11 @@ export interface IFactoryProps {
 }
 
 export function factory<T>(params: IFactoryProps) {
+  function requestOptions(props?: { options?: IFactoryProps["options"] }) {
+    const options =
+      props && Object.hasOwn(props, "options") ? props.options : params.options;
+    return serverRequestOptions(params.host, options);
+  }
   const api = {
     findById: async (
       props: Omit<IFindByIdProps, "model" | "route" | "host">,
@@ -44,10 +50,7 @@ export function factory<T>(params: IFactoryProps) {
           props && Object.hasOwn(props, "params")
             ? props.params
             : params.params,
-        options:
-          props && Object.hasOwn(props, "options")
-            ? props.options
-            : params.options,
+        options: requestOptions(props),
         tag: props?.tag,
         revalidate: props?.revalidate,
         id: props.id,
@@ -61,10 +64,7 @@ export function factory<T>(params: IFactoryProps) {
           props && Object.hasOwn(props, "params")
             ? props.params
             : params.params,
-        options:
-          props && Object.hasOwn(props, "options")
-            ? props.options
-            : params.options,
+        options: requestOptions(props),
         tag: props?.tag,
         revalidate: props?.revalidate,
         catchErrors: props?.catchErrors,
@@ -78,10 +78,7 @@ export function factory<T>(params: IFactoryProps) {
           props && Object.hasOwn(props, "params")
             ? props.params
             : params.params,
-        options:
-          props && Object.hasOwn(props, "options")
-            ? props.options
-            : params.options,
+        options: requestOptions(props),
         tag: props?.tag,
         revalidate: props?.revalidate,
         catchErrors: props?.catchErrors,
@@ -95,10 +92,7 @@ export function factory<T>(params: IFactoryProps) {
           props && Object.hasOwn(props, "params")
             ? props.params
             : params.params,
-        options:
-          props && Object.hasOwn(props, "options")
-            ? props.options
-            : params.options,
+        options: requestOptions(props),
         tag: props?.tag,
         revalidate: props?.revalidate,
         id: props.id,
@@ -113,10 +107,7 @@ export function factory<T>(params: IFactoryProps) {
           props && Object.hasOwn(props, "params")
             ? props.params
             : params.params,
-        options:
-          props && Object.hasOwn(props, "options")
-            ? props.options
-            : params.options,
+        options: requestOptions(props),
         tag: props?.tag,
         revalidate: props?.revalidate,
         data: props.data,
@@ -132,10 +123,7 @@ export function factory<T>(params: IFactoryProps) {
           props && Object.hasOwn(props, "params")
             ? props.params
             : params.params,
-        options:
-          props && Object.hasOwn(props, "options")
-            ? props.options
-            : params.options,
+        options: requestOptions(props),
         tag: props?.tag,
         revalidate: props?.revalidate,
         data: props.data,
@@ -149,10 +137,7 @@ export function factory<T>(params: IFactoryProps) {
           props && Object.hasOwn(props, "params")
             ? props.params
             : params.params,
-        options:
-          props && Object.hasOwn(props, "options")
-            ? props.options
-            : params.options,
+        options: requestOptions(props),
         tag: props?.tag,
         revalidate: props?.revalidate,
         id: props.id,
@@ -168,10 +153,7 @@ export function factory<T>(params: IFactoryProps) {
           props && Object.hasOwn(props, "params")
             ? props.params
             : params.params,
-        options:
-          props && Object.hasOwn(props, "options")
-            ? props.options
-            : params.options,
+        options: requestOptions(props),
         tag: props?.tag,
         revalidate: props?.revalidate,
         data: props.data,
@@ -187,10 +169,7 @@ export function factory<T>(params: IFactoryProps) {
           props && Object.hasOwn(props, "params")
             ? props.params
             : params.params,
-        options:
-          props && Object.hasOwn(props, "options")
-            ? props.options
-            : params.options,
+        options: requestOptions(props),
         tag: props?.tag,
         revalidate: props?.revalidate,
         data: props.data,

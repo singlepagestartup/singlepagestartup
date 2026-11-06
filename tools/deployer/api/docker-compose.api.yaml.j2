@@ -17,10 +17,9 @@ services:
       start_period: 30m
       retries: 6
     logging:
-      driver: "json-file"
+      driver: journald
       options:
-        max-size: "10m"
-        max-file: "3"
+        tag: "sps-api-{{ SERVICE_NAME }}"
     deploy:
       update_config:
         order: start-first

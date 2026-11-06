@@ -45,6 +45,10 @@ jobs:
         if: contains(env.BRANCH_NAME, '-preview')
         env:
           FILE_STORAGE_MAX_UPLOAD_BYTES: ${{ secrets.PREVIEW_FILE_STORAGE_MAX_UPLOAD_BYTES }}
+          BUG_SERVICE_PROJECT: ${{ secrets.PREVIEW_BUG_SERVICE_PROJECT }}
+          BUG_SERVICE_TELEGRAM_CHAT_ID: ${{ secrets.PREVIEW_BUG_SERVICE_TELEGRAM_CHAT_ID }}
+          BUG_SERVICE_TELEGRAM_BOT_TOKEN: ${{ secrets.PREVIEW_BUG_SERVICE_TELEGRAM_BOT_TOKEN }}
+          BUG_SERVICE_REPORT_WINDOW_IN_SECONDS: ${{ secrets.PREVIEW_BUG_SERVICE_REPORT_WINDOW_IN_SECONDS }}
         run: |
           secrets=(\
             "PROJECT_NAME ${{ secrets.PREVIEW_PROJECT_NAME }}"\
@@ -86,6 +90,10 @@ jobs:
             "API_SERVICE_DOCKER_HUB_REPOSITORY_NAME ${{ secrets.PREVIEW_API_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"\
             "FILE_STORAGE_FOLDER ${{ secrets.PREVIEW_FILE_STORAGE_FOLDER }}"\
             "FILE_STORAGE_MAX_UPLOAD_BYTES $FILE_STORAGE_MAX_UPLOAD_BYTES"\
+            "BUG_SERVICE_PROJECT $BUG_SERVICE_PROJECT"\
+            "BUG_SERVICE_TELEGRAM_CHAT_ID $BUG_SERVICE_TELEGRAM_CHAT_ID"\
+            "BUG_SERVICE_TELEGRAM_BOT_TOKEN $BUG_SERVICE_TELEGRAM_BOT_TOKEN"\
+            "BUG_SERVICE_REPORT_WINDOW_IN_SECONDS $BUG_SERVICE_REPORT_WINDOW_IN_SECONDS"\
             "LLM_SERVICE_NAME ${{ secrets.PREVIEW_LLM_SERVICE_NAME }}"\
             "LLM_SERVICE_DOCKER_HUB_REPOSITORY_NAME ${{ secrets.PREVIEW_LLM_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"\
             "LLM_SERVICE_URL ${{ secrets.PREVIEW_LLM_SERVICE_URL }}"\
@@ -159,9 +167,10 @@ jobs:
             "YANDEX_METRIKA_ID ${{ secrets.PREVIEW_YANDEX_METRIKA_ID }}"\
           )
 
+          umask 077
           for secret in "${secrets[@]}"; do
-            secret_name=$(echo "$secret" | cut -d' ' -f1)
-            secret_value=$(echo "$secret" | cut -d' ' -f2)
+            secret_name=${secret%% *}
+            secret_value=${secret#* }
 
             echo "$secret_name=$secret_value" >> .env
           done
@@ -169,6 +178,10 @@ jobs:
         if: ${{ !contains(env.BRANCH_NAME, '-preview') }}
         env:
           FILE_STORAGE_MAX_UPLOAD_BYTES: ${{ secrets.FILE_STORAGE_MAX_UPLOAD_BYTES }}
+          BUG_SERVICE_PROJECT: ${{ secrets.BUG_SERVICE_PROJECT }}
+          BUG_SERVICE_TELEGRAM_CHAT_ID: ${{ secrets.BUG_SERVICE_TELEGRAM_CHAT_ID }}
+          BUG_SERVICE_TELEGRAM_BOT_TOKEN: ${{ secrets.BUG_SERVICE_TELEGRAM_BOT_TOKEN }}
+          BUG_SERVICE_REPORT_WINDOW_IN_SECONDS: ${{ secrets.BUG_SERVICE_REPORT_WINDOW_IN_SECONDS }}
         run: |
           secrets=(\
             "PROJECT_NAME ${{ secrets.PROJECT_NAME }}"\
@@ -210,6 +223,10 @@ jobs:
             "API_SERVICE_DOCKER_HUB_REPOSITORY_NAME ${{ secrets.API_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"\
             "FILE_STORAGE_FOLDER ${{ secrets.FILE_STORAGE_FOLDER }}"\
             "FILE_STORAGE_MAX_UPLOAD_BYTES $FILE_STORAGE_MAX_UPLOAD_BYTES"\
+            "BUG_SERVICE_PROJECT $BUG_SERVICE_PROJECT"\
+            "BUG_SERVICE_TELEGRAM_CHAT_ID $BUG_SERVICE_TELEGRAM_CHAT_ID"\
+            "BUG_SERVICE_TELEGRAM_BOT_TOKEN $BUG_SERVICE_TELEGRAM_BOT_TOKEN"\
+            "BUG_SERVICE_REPORT_WINDOW_IN_SECONDS $BUG_SERVICE_REPORT_WINDOW_IN_SECONDS"\
             "LLM_SERVICE_NAME ${{ secrets.LLM_SERVICE_NAME }}"\
             "LLM_SERVICE_DOCKER_HUB_REPOSITORY_NAME ${{ secrets.LLM_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"\
             "LLM_SERVICE_URL ${{ secrets.LLM_SERVICE_URL }}"\
@@ -283,9 +300,10 @@ jobs:
             "YANDEX_METRIKA_ID ${{ secrets.YANDEX_METRIKA_ID }}"\
           )
 
+          umask 077
           for secret in "${secrets[@]}"; do
-            secret_name=$(echo "$secret" | cut -d' ' -f1)
-            secret_value=$(echo "$secret" | cut -d' ' -f2)
+            secret_name=${secret%% *}
+            secret_value=${secret#* }
 
             echo "$secret_name=$secret_value" >> .env
           done

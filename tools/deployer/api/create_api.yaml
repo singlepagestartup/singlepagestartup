@@ -9,6 +9,34 @@
     portainer_url: "{{ PORTAINER_URL }}"
     telegram_service_bot_token: "{{ TELEGRAM_SERVICE_BOT_TOKEN }}"
   tasks:
+    # Keep API history on the Swarm node across task replacement. Respect an
+    # operator's explicit journald policy; fail before replacing the service
+    # if the host cannot store new events on disk.
+    - name: Enable disk storage for hosts using journald Storage=auto
+      ansible.builtin.file:
+        path: /var/log/journal
+        state: directory
+        owner: root
+        group: systemd-journal
+        mode: "2755"
+
+    - name: Flush the journal to persistent storage
+      ansible.builtin.command: journalctl --flush
+      changed_when: false
+
+    - name: Verify new entries are readable from the on-disk journal
+      ansible.builtin.shell: |
+        set -eu
+        marker=$(cat /proc/sys/kernel/random/uuid)
+        logger -t sps-journal-check -- "$marker"
+        journalctl --sync
+        journalctl --directory="/var/log/journal/$(cat /etc/machine-id)" -t sps-journal-check --since "1 minute ago" -o cat | grep -Fx "$marker"
+      register: journal_probe
+      retries: 3
+      delay: 1
+      until: journal_probe.rc == 0
+      changed_when: false
+
     # The API image runs as uid 1000 and writes uploads into this directory.
     - name: Create api_data directory
       file:
@@ -39,7 +67,13 @@
       ansible.builtin.template:
         src: api.env.j2
         dest: /home/code/api.env
+        mode: "0600"
+      no_log: true
       vars:
+        BUG_SERVICE_PROJECT: "{{ lookup('ansible.builtin.env', 'BUG_SERVICE_PROJECT') }}"
+        BUG_SERVICE_TELEGRAM_CHAT_ID: "{{ lookup('ansible.builtin.env', 'BUG_SERVICE_TELEGRAM_CHAT_ID') }}"
+        BUG_SERVICE_TELEGRAM_BOT_TOKEN: "{{ lookup('ansible.builtin.env', 'BUG_SERVICE_TELEGRAM_BOT_TOKEN') }}"
+        BUG_SERVICE_REPORT_WINDOW_IN_SECONDS: "{{ lookup('ansible.builtin.env', 'BUG_SERVICE_REPORT_WINDOW_IN_SECONDS') }}"
         AWS_ACCESS_KEY_ID: "{{ aws_access_key_id.stdout }}"
         AWS_SECRET_ACCESS_KEY: "{{ aws_secret_access_key.stdout }}"
 

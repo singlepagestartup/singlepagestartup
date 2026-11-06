@@ -7,15 +7,14 @@ export { type IFilter } from "./interface";
 import {
   getHttpErrorType,
   logger,
+  requestDiagnostics,
+  rbacSecretMatches,
+  readRbacSecret,
   sanitizeErrorMessage,
 } from "@sps/backend-utils";
-import { Bot } from "grammy";
-import {
-  BUG_SERVICE_PROJECT,
-  BUG_SERVICE_TELEGRAM_BOT_TOKEN,
-  BUG_SERVICE_TELEGRAM_CHAT_ID,
-} from "@sps/shared-utils";
-import { decode } from "hono/jwt";
+import { API_ERROR_DETAILS } from "@sps/shared-utils";
+import { errorEvent } from "./diagnostics";
+import { reportToTelegram } from "./telegram";
 
 @injectable()
 export class Filter implements IFilter {
@@ -23,16 +22,31 @@ export class Filter implements IFilter {
     error: Error | HTTPResponseError,
     c: Context<any>,
   ): Promise<Response> {
-    const requestId = c.req.header("x-request-id") || "unknown";
+    const { requestId } = requestDiagnostics(c);
 
     const { status, category, message: detail } = getHttpErrorType(error);
     const message =
       detail === category + "." || detail.startsWith(category + ". ")
         ? detail
         : `${category}. ${detail}`;
+    const event = await errorEvent(c, error, status, category);
+    logger.errorEvent(event);
+    reportToTelegram(event);
+
+    const body = {
+      requestId,
+      path: event.route,
+      method: event.method,
+      status,
+      error: message,
+    };
+    if (API_ERROR_DETAILS !== "full" && !rbacSecretMatches(readRbacSecret(c))) {
+      if (status >= 500) {
+        body.error = category + ".";
+      }
+      return c.json(body, status);
+    }
     const stack = sanitizeErrorMessage(error.stack || "");
-    const path = c.req.url;
-    const method = c.req.method;
     const causes: { message: string; stack?: string }[] = [];
     try {
       const downstream = JSON.parse(error.message);
@@ -56,65 +70,6 @@ export class Filter implements IFilter {
     }
     causes.push({ message, stack });
 
-    logger.error(
-      `🚨 Exception [${requestId}] ${method} ${path}`,
-      JSON.stringify({ message, stack, status, causes }, null, 2),
-    );
-
-    if (
-      BUG_SERVICE_TELEGRAM_BOT_TOKEN &&
-      BUG_SERVICE_TELEGRAM_CHAT_ID &&
-      BUG_SERVICE_PROJECT &&
-      status >= 500
-    ) {
-      try {
-        const authorizationHeader = c.req.header("Authorization") || "";
-        let jwt = "";
-
-        if (authorizationHeader) {
-          jwt = decode(authorizationHeader.replace("Bearer ", "") || "").payload
-            ?.subject?.["id"];
-        }
-
-        const bot = new Bot(BUG_SERVICE_TELEGRAM_BOT_TOKEN);
-
-        let chatId = BUG_SERVICE_TELEGRAM_CHAT_ID;
-        const report = `<b>${BUG_SERVICE_PROJECT}</b>\n🚨 <i>${status} | ${method}${jwt ? " by " + jwt : ""}</i> <pre>${path}</pre>\nError: ${message}`;
-
-        try {
-          await bot.api.sendMessage(chatId, report, {
-            parse_mode: "HTML",
-          });
-        } catch (telegramError: any) {
-          // Handle chat migration to supergroup
-          if (
-            telegramError?.error_code === 400 &&
-            telegramError?.parameters?.migrate_to_chat_id
-          ) {
-            chatId = telegramError.parameters.migrate_to_chat_id.toString();
-            await bot.api.sendMessage(chatId, report, {
-              parse_mode: "HTML",
-            });
-          } else {
-            throw telegramError;
-          }
-        }
-      } catch (error) {
-        console.error("Failed to send error message to Telegram bot:", error);
-      }
-    }
-
-    return c.json(
-      {
-        requestId,
-        path,
-        method,
-        status,
-        error: message,
-        stack,
-        cause: causes,
-      },
-      status,
-    );
+    return c.json({ ...body, stack, cause: causes }, status);
   }
 }

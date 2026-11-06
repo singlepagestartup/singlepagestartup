@@ -13,6 +13,7 @@ import { IModel as ISocialModuleMessagesToFileStorageModuleFile } from "@sps/soc
 import {
   assertKnowledgeAttachmentBytes,
   getHttpErrorType,
+  currentRequestDiagnostics,
   logger,
 } from "@sps/backend-utils";
 import {
@@ -43,6 +44,16 @@ export class Handler {
   }
 
   async execute(c: Context, next: any): Promise<Response> {
+    const diagnostics = currentRequestDiagnostics();
+    const operation = {
+      stage: "chat.access",
+      attachmentCount: 0,
+      attachmentBytes: 0,
+      attachmentTypes: [] as string[],
+    };
+    if (diagnostics) {
+      diagnostics.operation = operation;
+    }
     try {
       if (!RBAC_JWT_SECRET) {
         throw new Error("Configuration error. RBAC_JWT_SECRET not set");
@@ -78,7 +89,25 @@ export class Handler {
         socialModuleChatId,
       });
 
+      operation.stage = "message.parse";
       const formData = await c.req.formData();
+      const files = formData
+        .getAll("files")
+        .filter((item): item is File => item instanceof File);
+      operation.attachmentCount = files.length;
+      operation.attachmentBytes = files.reduce(
+        (size, file) => size + file.size,
+        0,
+      );
+      for (const file of files.slice(0, 8)) {
+        // MIME values come from the client. Store only a fixed family.
+        const family = file.type.split("/", 1)[0];
+        operation.attachmentTypes.push(
+          ["audio", "video", "image", "text", "application"].includes(family)
+            ? family
+            : "other",
+        );
+      }
       const dataField = formData.get("data");
 
       if (typeof dataField !== "string") {
@@ -96,10 +125,8 @@ export class Handler {
 
       try {
         parsedBody.data = JSON.parse(dataField);
-      } catch (error) {
-        throw new Error(
-          "Validation error. Invalid JSON in body['data']. Got: " + dataField,
-        );
+      } catch {
+        throw new Error("Validation error. Invalid JSON in body['data']");
       }
 
       const aiReactionRequest = parseRbacAiReactionRequestMetadata(
@@ -116,6 +143,7 @@ export class Handler {
         typeof parsedBody.data?.threadId === "string"
           ? parsedBody.data.threadId.trim()
           : "";
+      operation.stage = "thread.resolve";
       const socialModuleThreadId = await this.resolveTargetThreadId({
         socialModuleChatId,
         pathSocialModuleThreadId: socialModuleThreadIdFromPath || undefined,
@@ -125,6 +153,7 @@ export class Handler {
       const thread = await this.service.socialModule.thread.findById({
         id: socialModuleThreadId,
       });
+      operation.stage = "message.prepare";
       const document = getAIChatDocument(thread?.metadata);
       if (
         document &&
@@ -197,9 +226,7 @@ export class Handler {
         }
       }
 
-      const files = formData
-        .getAll("files")
-        .filter((item) => item instanceof File) as File[];
+      operation.stage = "attachment.validate";
       if (files.length) {
         const chat = await this.service.socialModule.chat.findById({
           id: socialModuleChatId,
@@ -223,6 +250,7 @@ export class Handler {
       }
 
       // Object storage work finishes before the short database transaction.
+      operation.stage = "attachment.store";
       const uploadedFiles: IFileStorageModuleFile[] = [];
       for (const file of files) {
         const stored = await fileStorageModuleFileApi.create({
@@ -231,6 +259,7 @@ export class Handler {
         });
         uploadedFiles.push(stored);
       }
+      operation.stage = "message.persist";
       let socialModuleMessage = await getDrizzle({}).transaction((tx) =>
         withConsistencyDatabase(tx, async () => {
           const message = await this.service.socialModule.message.create({
@@ -260,6 +289,7 @@ export class Handler {
         }),
       );
 
+      operation.stage = "message.read";
       const socialModuleMessagesToFileStorageModuleFiles =
         await this.service.socialModule.messagesToFileStorageModuleFiles.find({
           params: {
