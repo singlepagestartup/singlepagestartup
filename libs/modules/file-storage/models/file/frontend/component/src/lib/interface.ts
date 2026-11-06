@@ -2,3 +2,4 @@ import { IComponentProps as ISpsLiteComponentProps } from "./singlepage/interfac
 import { IComponentProps as IStartupComponentProps } from "./startup/interface";
 
 export type IComponentProps = ISpsLiteComponentProps | IStartupComponentProps;
+export type { IProtectedMediaProviderProps } from "./singlepage/authenticated-content/interface";

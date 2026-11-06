@@ -1,0 +1,631 @@
+{
+  "schema": "sps.platform-example-input.v1",
+  "commercialConfirmation": {
+    "source": "User instructions in the ISSUE-376 conversation: Pro 29 USD or 1900 RUB per month with 5000 tokens; top-ups 100/300/500/1000/3000 RUB at 0.13 RUB per token. Pack precision policy is documented in ISSUE-376-commercial-review.md; existing token consumption rules remain unchanged.",
+    "proPeriod": "month",
+    "prices": [
+      {
+        "currency": "usd",
+        "amount": 29
+      },
+      {
+        "currency": "rub",
+        "amount": 1900
+      }
+    ],
+    "tokenRate": 0.13,
+    "packs": [
+      {
+        "price": 100,
+        "credits": 769.230769
+      },
+      {
+        "price": 300,
+        "credits": 2307.692307
+      },
+      {
+        "price": 500,
+        "credits": 3846.153846
+      },
+      {
+        "price": 1000,
+        "credits": 7692.307692
+      },
+      {
+        "price": 3000,
+        "credits": 23076.923076
+      }
+    ]
+  },
+  "targets": [
+    {
+      "key": "token-credit-topup-key",
+      "entity": "ecommerce.attribute-key",
+      "selector": {
+        "slug": "token-credit-topup"
+      },
+      "data": {
+        "slug": "token-credit-topup",
+        "variant": "default",
+        "adminTitle": "Token credit top-up",
+        "type": "topup",
+        "field": "number",
+        "title": {
+          "en": "Tokens",
+          "ru": "Токены"
+        }
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-pro-topup-5000-key",
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "id": "01edc8c0-d9a4-41c8-b5c2-e017fe8cd217",
+      "selector": {
+        "id": "01edc8c0-d9a4-41c8-b5c2-e017fe8cd217",
+        "attributeId": "01923afc-f42f-4239-83ad-81cd3b8af967"
+      },
+      "data": {
+        "attributeKeyId": {
+          "$ref": "token-credit-topup-key"
+        }
+      },
+      "switch": true,
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-100-rub-topup-key",
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "id": "9be020bf-d960-4975-b185-bdb42406b793",
+      "selector": {
+        "id": "9be020bf-d960-4975-b185-bdb42406b793",
+        "attributeId": "7af6edc7-d36a-468c-a020-c66e0a4063e0"
+      },
+      "data": {
+        "attributeKeyId": {
+          "$ref": "token-credit-topup-key"
+        }
+      },
+      "switch": true,
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-300-rub-topup-key",
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "id": "f0a4c2d2-2858-4bad-a1b2-a0eff38c0ee5",
+      "selector": {
+        "id": "f0a4c2d2-2858-4bad-a1b2-a0eff38c0ee5",
+        "attributeId": "59da8472-93d6-495e-8630-52561136ff3e"
+      },
+      "data": {
+        "attributeKeyId": {
+          "$ref": "token-credit-topup-key"
+        }
+      },
+      "switch": true,
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-500-rub-topup-key",
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "id": "afa4d198-516b-40e6-87d6-50abbb53b517",
+      "selector": {
+        "id": "afa4d198-516b-40e6-87d6-50abbb53b517",
+        "attributeId": "89a80a9f-604b-408a-9e3d-91cd9ddddb43"
+      },
+      "data": {
+        "attributeKeyId": {
+          "$ref": "token-credit-topup-key"
+        }
+      },
+      "switch": true,
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-1000-rub-topup-key",
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "id": "e5feca52-91de-49dd-9b38-cb46050a6fe5",
+      "selector": {
+        "id": "e5feca52-91de-49dd-9b38-cb46050a6fe5",
+        "attributeId": "79af0755-25e8-4ab1-9f82-8e22dcd4a9f6"
+      },
+      "data": {
+        "attributeKeyId": {
+          "$ref": "token-credit-topup-key"
+        }
+      },
+      "switch": true,
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-3000-rub-topup-key",
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "id": "89c8d5e2-fc03-4ccd-b3c7-a26076b3637e",
+      "selector": {
+        "id": "89c8d5e2-fc03-4ccd-b3c7-a26076b3637e",
+        "attributeId": "a69236b0-1a39-4ff2-b2ef-197c596fa5f4"
+      },
+      "data": {
+        "attributeKeyId": {
+          "$ref": "token-credit-topup-key"
+        }
+      },
+      "switch": true,
+      "requiresCommercialConfirmation": true
+    }
+  ],
+  "protectedSelections": [
+    {
+      "entity": "ecommerce.order",
+      "selector": {}
+    },
+    {
+      "entity": "ecommerce.orders-to-products",
+      "selector": {}
+    },
+    {
+      "entity": "ecommerce.orders-to-billing-module-payment-intents",
+      "selector": {}
+    },
+    {
+      "entity": "ecommerce.stores-to-orders",
+      "selector": {}
+    },
+    {
+      "entity": "billing.payment-intent",
+      "selector": {}
+    },
+    {
+      "entity": "billing.invoice",
+      "selector": {}
+    },
+    {
+      "entity": "billing.payment-intents-to-invoices",
+      "selector": {}
+    },
+    {
+      "entity": "billing.payment-intents-to-currencies",
+      "selector": {}
+    },
+    {
+      "entity": "rbac.subjects-to-ecommerce-module-orders",
+      "selector": {}
+    },
+    {
+      "entity": "rbac.subjects-to-billing-module-payment-intents",
+      "selector": {}
+    },
+    {
+      "entity": "rbac.subjects-to-billing-module-currencies",
+      "selector": {}
+    },
+    {
+      "entity": "rbac.subjects-to-roles",
+      "selector": {}
+    },
+    {
+      "entity": "rbac.roles-to-ecommerce-module-products",
+      "selector": {}
+    },
+    {
+      "entity": "blog.articles-to-ecommerce-module-products",
+      "selector": {}
+    },
+    {
+      "entity": "blog.articles-to-website-builder-module-widgets",
+      "selector": {}
+    },
+    {
+      "entity": "ecommerce.store",
+      "selector": {
+        "id": "92aefa1f-247b-49a9-b1b9-c8029cc840dc"
+      }
+    },
+    {
+      "entity": "ecommerce.product",
+      "selector": {
+        "id": "2a167247-3770-4365-ad17-a2e916cf0659"
+      }
+    },
+    {
+      "entity": "ecommerce.product",
+      "selector": {
+        "id": "bb2473b0-9b2e-4dd2-9e38-46806bfde826"
+      }
+    },
+    {
+      "entity": "ecommerce.product",
+      "selector": {
+        "id": "e13709ae-58ea-416f-b6d5-d2802c9f5bce"
+      }
+    },
+    {
+      "entity": "website-builder.widget",
+      "selector": {
+        "id": "6580e777-393d-4255-94b9-58f3607ce465"
+      }
+    },
+    {
+      "entity": "ecommerce.products-to-attributes",
+      "selector": {
+        "productId": "2a167247-3770-4365-ad17-a2e916cf0659"
+      }
+    },
+    {
+      "entity": "ecommerce.products-to-attributes",
+      "selector": {
+        "productId": "bb2473b0-9b2e-4dd2-9e38-46806bfde826"
+      }
+    },
+    {
+      "entity": "ecommerce.products-to-attributes",
+      "selector": {
+        "productId": "e13709ae-58ea-416f-b6d5-d2802c9f5bce"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-file-storage-module-files",
+      "selector": {
+        "widgetId": "6580e777-393d-4255-94b9-58f3607ce465"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-buttons-arrays",
+      "selector": {
+        "widgetId": "6580e777-393d-4255-94b9-58f3607ce465"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "selector": {
+        "widgetId": "6580e777-393d-4255-94b9-58f3607ce465"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-sliders",
+      "selector": {
+        "widgetId": "6580e777-393d-4255-94b9-58f3607ce465"
+      }
+    },
+    {
+      "entity": "ecommerce.orders-to-billing-module-currencies",
+      "selector": {}
+    },
+    {
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "id": "01f52293-5bfe-4d09-b76a-0b3061c42c55"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "id": "08473c38-270c-4657-a0a6-9af67107f5a5"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "id": "0a93cd6c-a6d6-409c-9b2d-e5679c09ca25"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "id": "352e4ca5-c906-493e-9526-4259d1716f3b"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "id": "386e253f-640d-4e81-8341-d8f39db4123b"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "id": "5bc4ac3a-4cfb-4289-a0cd-6cc839a7c9ed"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "id": "5bfa4e33-38cb-4570-89ae-fa187888ff01"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "id": "61fc814f-d323-4e11-98d7-7bfd9d3e59b3"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "id": "680c3673-7fc5-4925-ac4b-4502a3c2bf27"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "id": "77b773f6-fa62-4e06-a482-eb05f8295b5a"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "id": "7937d1e7-e00a-4249-9d6c-6f100773e32c"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "id": "a839cfa3-1c13-4b93-aaa2-53334f4d701a"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "id": "bfe0e777-06b1-4268-b44c-45cb01541850"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "id": "c1d96e94-87fb-4edd-bd41-8dbe15bcecde"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "id": "e1fefd64-ea15-4f6e-9871-f24a7e942bd6"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "id": "e9c39940-608c-45a6-897c-1d28c47c43dd"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-key",
+      "selector": {
+        "id": "3b7980e7-cdef-4726-beaa-9db8ec0ebdb6"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-key",
+      "selector": {
+        "id": "920f92df-e58b-4b64-b138-3bf105ebebaa"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-key",
+      "selector": {
+        "id": "e005389b-41c4-4efb-89a2-6d84a354cfed"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-key",
+      "selector": {
+        "id": "f11a4f3f-6fcc-43fb-bc30-6421ee5d92e9"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "10143938-464c-4502-833e-b0987be82262"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "17a70f01-b190-4f6e-81ec-481a98fc4a8d"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "224d6d95-c464-401d-b88a-78c22678ebee"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "23746508-fc8e-4911-aa7a-07e00406af15"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "32bac88c-2d16-4910-bb14-ebfa240e20f4"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "57f2f70e-7260-4363-8aa9-e3dc112f08f6"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "5f4a3a38-191e-4628-9b71-c76f0155c7ff"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "640bff85-5f9e-4f02-9139-2eb0baf46d48"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "746751b4-9ff6-4eae-a362-145468660296"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "8698cfbf-aa0c-4083-9630-c4fd32885e98"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "8db9e14a-dabc-431a-a0d2-3298410ca62d"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "97b3b38c-fcec-440c-b396-556c764b3619"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "b65170b4-d749-4635-8768-dda90f0a6f3f"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "c5b278ee-e473-477a-9519-a0d2b91ea5e8"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "c66f1de0-682e-43cf-9a45-d4bfd8336a8e"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "d87a9546-28c7-4181-9ef4-25510cf1307e"
+      }
+    },
+    {
+      "entity": "ecommerce.attributes-to-billing-module-currencies",
+      "selector": {
+        "id": "38a862d8-b64c-40aa-8453-184f3951b15c"
+      }
+    },
+    {
+      "entity": "ecommerce.attributes-to-billing-module-currencies",
+      "selector": {
+        "id": "44e0a5fc-f6a9-4daf-b571-eed7a5817f02"
+      }
+    },
+    {
+      "entity": "ecommerce.attributes-to-billing-module-currencies",
+      "selector": {
+        "id": "5e2b166b-0d6e-4b65-b31f-bdf84884049d"
+      }
+    },
+    {
+      "entity": "ecommerce.attributes-to-billing-module-currencies",
+      "selector": {
+        "id": "63a8b58b-8e25-4440-8d0d-ad0dde5c8122"
+      }
+    },
+    {
+      "entity": "ecommerce.attributes-to-billing-module-currencies",
+      "selector": {
+        "id": "6a859670-63d0-452f-b6c9-a5638a7f2ba3"
+      }
+    },
+    {
+      "entity": "ecommerce.attributes-to-billing-module-currencies",
+      "selector": {
+        "id": "794e54d3-b5d7-432b-95c9-487f0d56fb28"
+      }
+    },
+    {
+      "entity": "ecommerce.attributes-to-billing-module-currencies",
+      "selector": {
+        "id": "7fee7e01-2584-409d-bb23-01547d46db2c"
+      }
+    },
+    {
+      "entity": "ecommerce.attributes-to-billing-module-currencies",
+      "selector": {
+        "id": "9bb17099-0512-41f5-9a5e-966832090877"
+      }
+    },
+    {
+      "entity": "ecommerce.attributes-to-billing-module-currencies",
+      "selector": {
+        "id": "af67b273-9feb-4180-acb7-616edf0efa55"
+      }
+    },
+    {
+      "entity": "ecommerce.stores-to-products",
+      "selector": {
+        "id": "92a451ea-95f5-447d-9390-ae057acd40bc"
+      }
+    },
+    {
+      "entity": "ecommerce.stores-to-products",
+      "selector": {
+        "id": "9be0fc96-2def-47f8-9f87-61423ad46ead"
+      }
+    },
+    {
+      "entity": "billing.currency",
+      "selector": {
+        "id": "1e20efba-ad34-4173-8c77-e7b282161652"
+      }
+    },
+    {
+      "entity": "billing.currency",
+      "selector": {
+        "id": "311da2ee-6ee0-466c-bfca-bd0ecff7b549"
+      }
+    },
+    {
+      "entity": "billing.currency",
+      "selector": {
+        "id": "0c409156-5614-4fba-9c87-d32d1c256b5a"
+      }
+    },
+    {
+      "entity": "ecommerce.product",
+      "selector": {
+        "id": "34da615d-433a-4e1a-b424-9dac843d98b3"
+      }
+    },
+    {
+      "entity": "ecommerce.products-to-attributes",
+      "selector": {
+        "productId": "34da615d-433a-4e1a-b424-9dac843d98b3"
+      }
+    },
+    {
+      "entity": "ecommerce.product",
+      "selector": {
+        "id": "b0929dd6-b345-4574-976e-4c1cbb40e094"
+      }
+    },
+    {
+      "entity": "ecommerce.products-to-attributes",
+      "selector": {
+        "productId": "b0929dd6-b345-4574-976e-4c1cbb40e094"
+      }
+    },
+    {
+      "entity": "ecommerce.widget",
+      "selector": {
+        "id": "c96424b4-27a2-4a90-ab01-c3be638adb82"
+      }
+    },
+    {
+      "entity": "ecommerce.widgets-to-products",
+      "selector": {
+        "widgetId": "c96424b4-27a2-4a90-ab01-c3be638adb82"
+      }
+    }
+  ]
+}

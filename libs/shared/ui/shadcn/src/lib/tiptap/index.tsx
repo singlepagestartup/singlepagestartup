@@ -32,6 +32,8 @@ import {
 import { Input } from "../input";
 import { Button } from "../button";
 import { toast } from "sonner";
+import { TipTapContent, type ITipTapContentProps } from "./content";
+export { TipTapContent, type ITipTapContentProps } from "./content";
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
@@ -130,11 +132,6 @@ export type ITipTapEditableProps = {
   editable: boolean;
   field: ControllerRenderProps<any, string>;
   onChange?: ChangeEventHandler<any>;
-};
-
-export type ITipTapContentProps = {
-  value: string;
-  className?: string;
 };
 
 export type ITipTapProps = ITipTapEditableProps | ITipTapContentProps;
@@ -387,31 +384,6 @@ export const TipTapEditable = forwardRef<
   );
 });
 
-export const TipTapContent = forwardRef<HTMLDivElement, ITipTapContentProps>(
-  (props: ITipTapContentProps, ref) => {
-    const editor = useEditor({
-      extensions: [StarterKit, Link, CopyButton],
-      content: props.value,
-      editorProps: {
-        attributes: {
-          class: cn(
-            "w-full prose mx-auto focus:outline-hidden",
-            props.className,
-          ),
-        },
-      },
-      editable: false,
-      immediatelyRender: false,
-    });
-
-    if (!editor) {
-      return;
-    }
-
-    return <EditorContent editor={editor} />;
-  },
-);
-
 export const TipTap = forwardRef<HTMLInputElement, ITipTapProps>(
   (props: ITipTapProps, ref) => {
     if ("editable" in props) {
@@ -446,30 +418,10 @@ export const TipTap = forwardRef<HTMLInputElement, ITipTapProps>(
       );
     }
 
-    try {
-      typeof props.value === "string" && props.value !== ""
-        ? JSON.parse(props.value)
-        : props.value;
-    } catch (error) {
-      console.log(
-        "TipTap editor was replaced by text input, because of error:",
-        error,
-      );
-      if (typeof props.value === "string") {
-        return <p>{props.value}</p>;
-      }
-
-      return null;
-    }
-
     return (
       <TipTapContent
-        {...props}
-        value={
-          typeof props.value === "string" && props.value !== ""
-            ? JSON.parse(props.value)
-            : props.value
-        }
+        className={props.className}
+        value={props.value}
         ref={ref}
       />
     );

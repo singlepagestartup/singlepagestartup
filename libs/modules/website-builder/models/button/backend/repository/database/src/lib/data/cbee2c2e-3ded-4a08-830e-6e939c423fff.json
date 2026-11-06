@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Read Notification source guide",
+    "ru": "Документация Notification"
+  },
+  "subtitle": {},
+  "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/modules/notification/README.md",
+  "className": "w-fit",
+  "id": "cbee2c2e-3ded-4a08-830e-6e939c423fff",
+  "createdAt": "2026-10-24T01:06:11.277Z",
+  "updatedAt": "2026-10-24T01:06:11.277Z",
+  "variant": "primary",
+  "adminTitle": "Read Notification source guide",
+  "slug": "framework-journey-guide-notification-actions-1"
+}

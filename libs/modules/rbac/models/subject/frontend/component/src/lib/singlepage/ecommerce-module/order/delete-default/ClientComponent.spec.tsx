@@ -29,7 +29,7 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   Provider: ({ children }: any) => <>{children}</>,
   api: {
     ecommerceModuleOrderDelete: () => ({
-      mutate: mutateMock,
+      mutateAsync: mutateMock,
       isSuccess: false,
     }),
     ecommerceModuleOrderOrdersToProducts: (...args: unknown[]) =>
@@ -104,12 +104,12 @@ describe("Given: order delete-default action component", () => {
         isServer={false}
         variant="ecommerce-module-order-delete-default"
         data={{ id: "subject-1" } as any}
-        order={{ id: "order-1" } as any}
+        ecommerceModuleOrder={{ id: "order-1" } as any}
         language="en"
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Delete" }));
+    fireEvent.click(screen.getByRole("button", { name: "Remove from cart" }));
 
     expect(ecommerceModuleOrderOrdersToProductsMock).toHaveBeenCalledWith(
       expect.objectContaining({

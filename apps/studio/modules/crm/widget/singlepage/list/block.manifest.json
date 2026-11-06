@@ -1,0 +1,27 @@
+{
+  "id": "crm.widget.list",
+  "title": "crm widget / list",
+  "description": "Local records for Studio component design.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "crm",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "list"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "crm.widget",
+    "pageName": "crm",
+    "variantName": "list",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

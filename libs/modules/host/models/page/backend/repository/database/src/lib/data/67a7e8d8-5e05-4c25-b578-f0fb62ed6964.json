@@ -1,11 +1,45 @@
 {
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "Choose a sign-in method — SinglePageStartup",
+        "ru": "Способ входа — SinglePageStartup"
+      },
+      "description": {
+        "en": "Choose an available method to sign in to a SinglePageStartup account.",
+        "ru": "Выбор доступного способа входа в аккаунт SinglePageStartup."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "Choose a sign-in method — SinglePageStartup",
+        "ru": "Способ входа — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "Choose a sign-in method — SinglePageStartup",
+        "ru": "Способ входа — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Choose an available method to sign in to a SinglePageStartup account.",
+        "ru": "Выбор доступного способа входа в аккаунт SinglePageStartup."
+      },
+      "opengraphDescription": {
+        "en": "Choose an available method to sign in to a SinglePageStartup account.",
+        "ru": "Выбор доступного способа входа в аккаунт SinglePageStartup."
+      }
+    }
+  },
   "id": "67a7e8d8-5e05-4c25-b578-f0fb62ed6964",
   "title": "RBAC | Subject | Select Method",
   "url": "/rbac/subject/authentication/select-method",
   "description": "Description",
   "createdAt": "2025-01-24T23:47:55.460Z",
-  "updatedAt": "2025-11-15T09:32:28.373Z",
-  "variant": "default",
+  "updatedAt": "2026-10-30T22:25:07.287Z",
+  "variant": "noindex",
   "className": null,
   "language": "en",
   "adminTitle": "appalling crimson snail"

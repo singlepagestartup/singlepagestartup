@@ -7,7 +7,6 @@ import {
   parseSalesProcess,
   salesOverviewMarkdown,
 } from "../../../../apps/studio/workspace/utils/products/sales";
-import { salesSegmentPages } from "../../../../apps/studio/workspace/utils/components/SalesSegment";
 import type {
   IProductCatalogView,
   IProductDocument,
@@ -16,22 +15,13 @@ import { extensionProduct } from "./catalog";
 import Deck from "./startup/example/presentation/Deck";
 import ReviewDeck from "./startup/example/presentation/ReviewDeck";
 import salesSource from "./startup/example/sales.yaml?raw";
-import presentationSource from "./startup/example/presentation/data.yaml?raw";
 
 const catalog = parseProductCatalog(
   stringify({
     schema: "singlepagestartup.product-catalog.v2",
-    models: [
-      {
-        id: "training",
-        name: "Course economics",
-        source: "models/training/model.md",
-      },
-    ],
     products: [
       {
         ...extensionProduct,
-        model: "training",
         sections: [
           ...extensionProduct.sections.map((section) =>
             section.id === "creative"
@@ -42,45 +32,17 @@ const catalog = parseProductCatalog(
                     {
                       id: "cover",
                       title: "Course cover",
-                      representations: {
-                        text: "example/marketing-creative/cover.md",
-                        preview: "example/marketing-creative/Cover.tsx",
-                      },
+                      source: "example/marketing-creative/Cover.tsx",
                     },
                     {
                       id: "motion",
                       title: "Course motion",
-                      representations: {
-                        text: "example/marketing-creative/cover.md",
-                        preview: "example/marketing-creative/Motion.tsx",
-                      },
+                      source: "example/marketing-creative/Motion.tsx",
                     },
                   ],
                 }
               : section,
           ),
-          {
-            id: "research",
-            title: "Research",
-            pages: [
-              {
-                id: "segments",
-                title: "Customer segments",
-                children: [
-                  {
-                    id: "learners",
-                    title: "Individual learners",
-                    source: "example/research/learners.md",
-                  },
-                  {
-                    id: "teams",
-                    title: "Training teams",
-                    source: "example/research/teams.md",
-                  },
-                ],
-              },
-            ],
-          },
         ],
       },
     ],
@@ -113,68 +75,29 @@ const sections = resolveProductSections(
     files: new Set(Object.keys(keys(files))),
   },
 );
-const confirmation = {
-  confirmed: false,
-  state: "unconfirmed",
-  layer: "startup",
-} as const;
-const sales = parseSalesProcess(salesSource, "example");
-const sourcePath = (file: string) =>
-  `apps/studio/workspace/products/startup/${file}`;
-sections.push({
-  id: "sales",
-  title: "Sales",
-  pages: salesSegmentPages(
-    sales,
-    "startup",
-    sourcePath("example/sales.yaml"),
-    confirmation,
-  ),
-});
-const documents: IProductDocument[] = (
-  [
-    ["product", "example/product.md"],
-    ["model", "models/training/model.md"],
-    ["research", "example/research.md"],
-    ["website", "example/website.md"],
-    ["creative", "example/marketing-creative.md"],
-  ] as const
-).map(([kind, file]) => ({
-  kind,
-  label: kind,
-  sourcePath: sourcePath(file),
-  content: keys(markdown)[`startup/${file}`],
-  confirmation,
-}));
-documents.push({
-  kind: "sales",
-  label: "Sales",
-  sourcePath: sourcePath("example/sales.yaml"),
-  content: salesOverviewMarkdown(sales),
-  confirmation,
-});
+const sourcePath = (source: string) =>
+  `apps/studio/workspace/products/startup/${source}`;
 const view: IProductCatalogView = {
   id: "startup",
-  label: "Independent startup",
+  label: "Startup",
   inherited: false,
   sourcePaths: [],
   products: [
     {
       id: "example",
-      name: "Independent course",
-      summary: "Startup-owned course materials.",
-      model: {
-        id: "training",
-        name: "Course economics",
-        products: ["example"],
-      },
+      name: "Extension fixture",
+      summary: "Owned materials",
       sections,
-      documents,
+      documents: [
+        {
+          kind: "product",
+          label: "Описание",
+          content: "# Описание\n\nСобственные данные проекта.",
+          sourcePath: sourcePath("example/product.md"),
+        },
+      ],
       presentation: {
         Component: Deck,
-        content: parse(presentationSource).content,
-        confirmation,
-        dataSourcePath: sourcePath("example/presentation/data.yaml"),
         sourcePath: sourcePath("example/presentation/Deck.tsx"),
       },
     },

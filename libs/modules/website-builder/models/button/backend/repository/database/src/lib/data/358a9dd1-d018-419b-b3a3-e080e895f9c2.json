@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Authors",
+    "ru": "Авторы"
+  },
+  "subtitle": {},
+  "url": "/authors",
+  "className": "w-fit",
+  "id": "358a9dd1-d018-419b-b3a3-e080e895f9c2",
+  "createdAt": "2026-10-23T20:18:03.047Z",
+  "updatedAt": "2026-10-23T20:18:03.047Z",
+  "variant": "ghost",
+  "adminTitle": "Authors",
+  "slug": "framework-footer-resources-authors"
+}

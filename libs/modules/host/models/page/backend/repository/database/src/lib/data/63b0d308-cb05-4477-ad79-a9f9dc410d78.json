@@ -1,11 +1,45 @@
 {
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "Recover password — SinglePageStartup",
+        "ru": "Восстановление пароля — SinglePageStartup"
+      },
+      "description": {
+        "en": "Request password recovery for a SinglePageStartup account.",
+        "ru": "Запрос восстановления пароля аккаунта SinglePageStartup."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "Recover password — SinglePageStartup",
+        "ru": "Восстановление пароля — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "Recover password — SinglePageStartup",
+        "ru": "Восстановление пароля — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Request password recovery for a SinglePageStartup account.",
+        "ru": "Запрос восстановления пароля аккаунта SinglePageStartup."
+      },
+      "opengraphDescription": {
+        "en": "Request password recovery for a SinglePageStartup account.",
+        "ru": "Запрос восстановления пароля аккаунта SinglePageStartup."
+      }
+    }
+  },
   "id": "63b0d308-cb05-4477-ad79-a9f9dc410d78",
   "title": "RBAC | Subject | Forgot Password",
   "url": "/rbac/subject/authentication/email-and-password/forgot-password",
   "description": "Description",
   "createdAt": "2025-01-24T23:47:55.458Z",
-  "updatedAt": "2025-11-15T09:32:28.409Z",
-  "variant": "default",
+  "updatedAt": "2026-10-30T22:25:06.228Z",
+  "variant": "noindex",
   "className": null,
   "language": "en",
   "adminTitle": "tragic salmon termite"

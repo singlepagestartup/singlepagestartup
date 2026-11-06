@@ -1,3 +1,19 @@
+import type { IModel as IBillingModuleCurrency } from "@sps/billing/models/currency/sdk/model";
+
+export interface IUnpricedOrderToProduct {
+  ordersToProductsId: string;
+  productId: string;
+  reason: string;
+}
+export interface IOrderLineTotal {
+  total: number;
+  billingModuleCurrency: IBillingModuleCurrency;
+}
+export interface IOrderLineTotals {
+  totals: IOrderLineTotal[];
+  unpriced: IUnpricedOrderToProduct[];
+}
+
 export {
   type ISelectSchema as IModel,
   type IInsertSchema,

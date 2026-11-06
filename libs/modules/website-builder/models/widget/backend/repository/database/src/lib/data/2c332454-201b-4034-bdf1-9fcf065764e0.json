@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Create your product today",
+    "ru": "Создайте свой продукт уже сегодня"
+  },
+  "subtitle": {
+    "en": "Websites and web services in 1 day",
+    "ru": "Сайты и веб-сервисы за 1 день"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Describe your idea to the AI assistant. It will help you choose features, assemble pages from existing blocks and add your text and images. Publish the first version directly from chat and get a link to share with customers.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Опишите свою идею ИИ-помощнику. Он поможет выбрать функции, собрать страницы из готовых блоков и добавить ваши тексты и изображения. Опубликуйте первую версию прямо из чата и получите ссылку, которую можно отправить клиентам.\"}]}]}"
+  },
+  "anchor": "cf-hero",
+  "className": "",
+  "id": "2c332454-201b-4034-bdf1-9fcf065764e0",
+  "createdAt": "2026-10-26T00:12:24.270Z",
+  "updatedAt": "2026-10-27T14:58:53.569Z",
+  "variant": "content-hero",
+  "adminTitle": "Создайте свой продукт уже сегодня",
+  "slug": "framework-reviewed-hero"
+}

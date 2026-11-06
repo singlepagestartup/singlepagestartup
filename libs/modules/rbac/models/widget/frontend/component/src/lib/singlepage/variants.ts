@@ -1,3 +1,25 @@
+import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
+import { Component as SubjectMeBlogModuleArticleCreate } from "./subject/me/blog-module/article/create";
+import { Component as SubjectMeCrmModuleFormRequestCreate } from "./subject-me-crm-module-form-request-create";
+import { Component as SubjectMeSocialModuleProfileChatOverviewDefault } from "./subject/me/social-module/profile/chat/overview-default";
+import { Component as SubjectMeSocialModuleProfileChatListDefault } from "./subject/me/social-module/profile/chat/list-default";
+import { Component as SubjectMeEcommerceModuleStoreOverviewDefault } from "./subject-me-ecommerce-module-store-overview-default";
+import { Component as SubjectMeEcommerceModuleCategoryOverviewDefault } from "./subject-me-ecommerce-module-category-overview-default";
+import { Component as SubjectMeEcommerceModuleProductOverviewDefault } from "./subject-me-ecommerce-module-product-overview-default";
+import { Component as SubjectMeEcommerceModuleProductListDefault } from "./subject-me-ecommerce-module-product-list-default";
+import { Component as SubjectMeEcommerceModuleTokenFind } from "./subject-me-ecommerce-module-token-find";
+import { Component as SubjectEcommerceOrder } from "./subject-ecommerce-order";
+import { Component as SubjectEcommerceProductListDefault } from "./subject-ecommerce-product-list-default";
+import { Component as SubjectMeCrmModuleFormSupportAiChat } from "./subject-me-crm-module-form-support-ai-chat";
+import { Component as SubjectMeAuthenticationResetPasswordAiChat } from "./subject-me-authentication-reset-password-ai-chat";
+import { Component as SubjectMeAuthenticationForgotPasswordAiChat } from "./subject-me-authentication-forgot-password-ai-chat";
+import { Component as SubjectMeAuthenticationRegistrationAiChat } from "./subject-me-authentication-registration-ai-chat";
+import { Component as SubjectMeAuthenticationSelectMethodAiChat } from "./subject-me-authentication-select-method-ai-chat";
+import { Component as SubjectMeProfileSettings } from "./subject-me-profile-settings";
+import { Component as SubjectMeSocialModuleProfileIdChatIdThreadCreateAiChat } from "./subject-me-social-module-profile-id-chat-id-thread-create-ai-chat";
+import { Component as SubjectMeSocialModuleProfileIdSettingsAiChat } from "./subject-me-social-module-profile-id-settings-ai-chat";
+import { Component as SubjectMeSocialModuleProfileIdChatIdThreadIdAiChat } from "./subject-me-social-module-profile-id-chat-id-thread-id-ai-chat";
+import { Component as SubjectMeSocialModuleProfileCreateAiChat } from "./subject-me-social-module-profile-create-ai-chat";
 import { Component as SubjectListSocialModuleProfileDefault } from "./subject/list/social-module/profile/default";
 import { Component as SubjectOverviewSocialModuleProfileOverviewDefault } from "./subject/overview/social-module/profile/overview/default";
 import { Component as SubjectOverviewEcommerceModuleProductListDefault } from "./subject/overview/ecommerce-module/product/list/default";
@@ -23,6 +45,44 @@ import { Component as SubjectOverviewDefault } from "./subject/overview/default"
 import { Component as SubjectListDefault } from "./subject/list/default";
 
 export const variants = {
+  hidden: Hidden,
+  "subject-me-blog-module-article-create": SubjectMeBlogModuleArticleCreate,
+  "subject-me-crm-module-form-request-create":
+    SubjectMeCrmModuleFormRequestCreate,
+  "subject-me-social-module-profile-chat-overview-default":
+    SubjectMeSocialModuleProfileChatOverviewDefault,
+  "subject-me-social-module-profile-chat-list-default":
+    SubjectMeSocialModuleProfileChatListDefault,
+  "subject-me-ecommerce-module-store-overview-default":
+    SubjectMeEcommerceModuleStoreOverviewDefault,
+  "subject-me-ecommerce-module-category-overview-default":
+    SubjectMeEcommerceModuleCategoryOverviewDefault,
+  "subject-me-ecommerce-module-product-overview-default":
+    SubjectMeEcommerceModuleProductOverviewDefault,
+  "subject-me-ecommerce-module-product-list-default":
+    SubjectMeEcommerceModuleProductListDefault,
+  "subject-me-ecommerce-module-token-find": SubjectMeEcommerceModuleTokenFind,
+  "subject-ecommerce-order": SubjectEcommerceOrder,
+  "subject-ecommerce-product-list-default": SubjectEcommerceProductListDefault,
+  "subject-me-crm-module-form-support-ai-chat":
+    SubjectMeCrmModuleFormSupportAiChat,
+  "subject-me-authentication-reset-password-ai-chat":
+    SubjectMeAuthenticationResetPasswordAiChat,
+  "subject-me-authentication-forgot-password-ai-chat":
+    SubjectMeAuthenticationForgotPasswordAiChat,
+  "subject-me-authentication-registration-ai-chat":
+    SubjectMeAuthenticationRegistrationAiChat,
+  "subject-me-authentication-select-method-ai-chat":
+    SubjectMeAuthenticationSelectMethodAiChat,
+  "subject-me-profile-settings": SubjectMeProfileSettings,
+  "subject-me-social-module-profile-id-chat-id-thread-create-ai-chat":
+    SubjectMeSocialModuleProfileIdChatIdThreadCreateAiChat,
+  "subject-me-social-module-profile-id-settings-ai-chat":
+    SubjectMeSocialModuleProfileIdSettingsAiChat,
+  "subject-me-social-module-profile-id-chat-id-thread-id-ai-chat":
+    SubjectMeSocialModuleProfileIdChatIdThreadIdAiChat,
+  "subject-me-social-module-profile-create-ai-chat":
+    SubjectMeSocialModuleProfileCreateAiChat,
   "subject-list-social-module-profile-default":
     SubjectListSocialModuleProfileDefault,
   "subject-overview-social-module-profile-overview-default":

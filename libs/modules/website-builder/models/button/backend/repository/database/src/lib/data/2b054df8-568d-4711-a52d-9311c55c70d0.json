@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Read architecture articles",
+    "ru": "Статьи об архитектуре"
+  },
+  "subtitle": {},
+  "url": "/blog",
+  "className": "w-fit",
+  "id": "2b054df8-568d-4711-a52d-9311c55c70d0",
+  "createdAt": "2026-10-24T01:06:03.703Z",
+  "updatedAt": "2026-10-24T01:06:03.703Z",
+  "variant": "ghost",
+  "adminTitle": "Read architecture articles",
+  "slug": "framework-journey-guide-ecommerce-actions-2"
+}

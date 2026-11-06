@@ -1,16 +1,20 @@
+jest.mock("@sps/shared-backend-api", () => ({
+  withConsistencySnapshot: async (operation: () => Promise<unknown>) =>
+    operation(),
+}));
 /**
  * BDD Suite: active cart read controllers.
  *
  * Given: a subject owns orders that may already have progressed past the new state.
- * When: cart list, quantity, and total endpoints load the subject's orders.
- * Then: without filters every order query is restricted to type cart and status new,
- * and filters passed to the list only narrow the subject's own orders.
+ * When: cart list, quantity, and total endpoints load the subject's active cart.
+ * Then: every order query is restricted to type cart and status new.
  */
 
 const authorizationMock = jest.fn();
 const verifyMock = jest.fn();
 
 jest.mock("@sps/shared-utils", () => ({
+  ...jest.requireActual("@sps/shared-utils"),
   RBAC_JWT_SECRET: "jwt-secret",
   RBAC_SECRET_KEY: "rbac-secret",
 }));
@@ -32,12 +36,19 @@ import { Handler as ListHandler } from "./list";
 import { Handler as QuantityHandler } from "./quantity";
 import { Handler as TotalHandler } from "./total";
 
-function createContext(parsedQuery?: unknown) {
+function createContext(params?: unknown) {
   return {
+    get: () => {
+      if (!params) return params;
+      const { includePurchaseDetails, includeCartDetails, ...parsed } =
+        params as Record<string, unknown>;
+      return parsed;
+    },
     req: {
       param: (name: string) => (name === "id" ? "subject-1" : undefined),
+      query: (name: string) =>
+        (params as Record<string, unknown> | undefined)?.[name],
     },
-    get: (name: string) => (name === "parsedQuery" ? parsedQuery : undefined),
     json: jest.fn((payload: unknown) => payload),
   } as any;
 }
@@ -136,33 +147,226 @@ describe("Given: an authenticated subject with historical cart orders", () => {
 
     expectActiveCartFilters(orderFind);
   });
+});
 
-  /**
-   * BDD Scenario: list the subject's orders of every status.
-   *
-   * Given: the caller filters the list by type cart only.
-   * When: the cart list endpoint executes.
-   * Then: the filter replaces the active-cart default and the query stays
-   * restricted to the orders linked to the subject.
-   */
-  it("When: the list is filtered by the caller Then: the filters apply within the subject's orders", async () => {
-    const { orderFind, service } = createService();
-    const typeFilter = { column: "type", method: "eq", value: "cart" };
+describe("Subject order history", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    authorizationMock.mockReturnValue("token");
+    verifyMock.mockResolvedValue({ subject: { id: "subject-1" } });
+  });
 
-    await new ListHandler(service).execute(
-      createContext({ filters: { and: [typeFilter] } }),
+  it("returns paid history through the collection endpoint while preserving ownership", async () => {
+    const { service, orderFind } = createService();
+    orderFind.mockResolvedValue([
+      { id: "order-1", type: "history", status: "paid" },
+    ]);
+    const filters = [
+      { column: "type", method: "eq", value: "history" },
+      { column: "status", method: "inArray", value: ["paid", "completed"] },
+    ];
+    const result = await new ListHandler(service).execute(
+      createContext({ filters: { and: filters } }),
       jest.fn(),
     );
-
     expect(orderFind).toHaveBeenCalledWith({
       params: {
         filters: {
           and: [
             { column: "id", method: "inArray", value: ["order-1"] },
-            typeFilter,
+            ...filters,
           ],
         },
       },
     });
+    expect(result).toEqual({
+      data: [{ id: "order-1", type: "history", status: "paid" }],
+    });
   });
+
+  it("does not return another subject's order if an OR query widens the repository result", async () => {
+    const { service, orderFind } = createService();
+    orderFind.mockResolvedValue([{ id: "order-1" }, { id: "foreign-order" }]);
+    const result = await new ListHandler(service).execute(
+      createContext({
+        filters: { or: [{ column: "status", method: "eq", value: "paid" }] },
+      }),
+      jest.fn(),
+    );
+    expect(result).toEqual({ data: [{ id: "order-1" }] });
+  });
+
+  it("rejects a request for another subject's collection", async () => {
+    const { service, orderFind } = createService();
+    verifyMock.mockResolvedValue({ subject: { id: "subject-2" } });
+    await expect(
+      new ListHandler(service).execute(createContext(), jest.fn()),
+    ).rejects.toThrow("Only order owner can read orders");
+    expect(orderFind).not.toHaveBeenCalled();
+  });
+
+  it("returns an empty list without querying orders when the subject has no links", async () => {
+    const { service, orderFind } = createService();
+    service.subjectsToEcommerceModuleOrders.find.mockResolvedValue([]);
+    expect(
+      await new ListHandler(service).execute(createContext(), jest.fn()),
+    ).toEqual({ data: [] });
+    expect(orderFind).not.toHaveBeenCalled();
+  });
+
+  it("enriches only owned purchases with zero totals and linked receipt files", async () => {
+    const { service, orderFind } = createService();
+    orderFind.mockResolvedValue([
+      { id: "order-1", type: "history" },
+      { id: "foreign-order" },
+    ]);
+    const totals = [
+      {
+        total: 0,
+        billingModuleCurrency: { id: "usd", slug: "usd", symbol: "$" },
+      },
+    ];
+    service.ecommerceModule.order.findByIdTotal.mockResolvedValue({
+      totals,
+      unpriced: [],
+    });
+    service.ecommerceModule.ordersToFileStorageModuleFiles = {
+      find: jest
+        .fn()
+        .mockResolvedValue([{ fileStorageModuleFileId: "receipt" }]),
+    };
+    service.fileStorageModule = {
+      file: {
+        find: jest
+          .fn()
+          .mockResolvedValue([
+            { id: "receipt", file: "/receipt.pdf" },
+            { id: "foreign-file" },
+          ]),
+      },
+    };
+    const result = await new ListHandler(service).execute(
+      createContext({
+        includePurchaseDetails: "true",
+        filters: { and: [{ column: "type", method: "eq", value: "history" }] },
+      }),
+      jest.fn(),
+    );
+    expect(service.ecommerceModule.order.findByIdTotal).toHaveBeenCalledTimes(
+      1,
+    );
+    expect(service.ecommerceModule.order.findByIdTotal).toHaveBeenCalledWith({
+      id: "order-1",
+    });
+    expect(
+      service.ecommerceModule.ordersToFileStorageModuleFiles.find,
+    ).toHaveBeenCalledWith({
+      params: {
+        filters: {
+          and: [
+            { column: "orderId", method: "eq", value: "order-1" },
+            { column: "variant", method: "eq", value: "receipt-default" },
+          ],
+        },
+      },
+    });
+    expect(result).toEqual({
+      data: [
+        {
+          id: "order-1",
+          type: "history",
+          purchaseDetails: {
+            totals,
+            receipts: [{ id: "receipt", file: "/receipt.pdf" }],
+          },
+        },
+      ],
+    });
+  });
+});
+
+describe("Private cart projection", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    authorizationMock.mockReturnValue("token");
+    verifyMock.mockResolvedValue({ subject: { id: "subject-1" } });
+  });
+  it("expands only the caller's active orders, even with broad OR filters", async () => {
+    const { service, orderFind } = createService();
+    orderFind.mockResolvedValue([
+      { id: "order-1", type: "cart", status: "new" },
+      { id: "foreign", type: "cart", status: "new" },
+      { id: "old", type: "history", status: "paid" },
+    ]);
+    service.subjectsToEcommerceModuleOrders.find.mockResolvedValue([
+      { ecommerceModuleOrderId: "order-1" },
+      { ecommerceModuleOrderId: "old" },
+    ]);
+    service.ecommerceModule.order.findByIdCartDetails = jest
+      .fn()
+      .mockResolvedValue({
+        lines: [{ id: "my-line", productId: "product", quantity: 2 }],
+        totals: [{ total: 250 }],
+      });
+    service.ecommerceModule.storesToOrders = {
+      find: jest.fn().mockResolvedValue([{ storeId: "store" }]),
+    };
+    const result = await new ListHandler(service).execute(
+      createContext({
+        includeCartDetails: "true",
+        filters: { or: [{ column: "status", method: "eq", value: "paid" }] },
+      }),
+      jest.fn(),
+    );
+    expect(result).toEqual({
+      data: [
+        {
+          id: "order-1",
+          type: "cart",
+          status: "new",
+          cartDetails: {
+            lines: [{ id: "my-line", productId: "product", quantity: 2 }],
+            totals: [{ total: 250 }],
+            storeIds: ["store"],
+          },
+        },
+      ],
+    });
+    expect(
+      service.ecommerceModule.order.findByIdCartDetails,
+    ).toHaveBeenCalledTimes(1);
+    expect(
+      service.ecommerceModule.order.findByIdCartDetails,
+    ).toHaveBeenCalledWith({ id: "order-1" });
+  });
+  it("rejects a token for a different subject before reading data", async () => {
+    const { service } = createService();
+    verifyMock.mockResolvedValue({ subject: { id: "other" } });
+    await expect(
+      new ListHandler(service).execute(
+        createContext({ includeCartDetails: "true" }),
+        jest.fn(),
+      ),
+    ).rejects.toThrow();
+    expect(service.subjectsToEcommerceModuleOrders.find).not.toHaveBeenCalled();
+  });
+});
+
+describe("Empty cart total response", () => {
+  beforeEach(() => {
+    authorizationMock.mockReturnValue("token");
+    verifyMock.mockResolvedValue({ subject: { id: "subject-1" } });
+  });
+  it.each([false, true])(
+    "keeps the total envelope when subject order links exist: %s",
+    async (hasLinks) => {
+      const { service } = createService();
+      service.subjectsToEcommerceModuleOrders.find.mockResolvedValue(
+        hasLinks ? [{ ecommerceModuleOrderId: "order-1" }] : [],
+      );
+      expect(
+        await new TotalHandler(service).execute(createContext(), jest.fn()),
+      ).toEqual({ data: [], unpriced: [] });
+    },
+  );
 });

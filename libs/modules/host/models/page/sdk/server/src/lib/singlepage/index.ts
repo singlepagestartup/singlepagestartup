@@ -1,3 +1,10 @@
+import {
+  action as generate,
+  generatePageSeo,
+  resolvePageSeo,
+} from "./actions/generate";
+import { preview as previewSeo, resolveSeo } from "./actions/seo";
+export type { IGeneratePageSeoProps, IPageSeoResult } from "./actions/generate";
 import { factory } from "@sps/shared-frontend-server-api";
 import { action as findByUrl } from "./actions/find-by-url";
 import { action as urls } from "./actions/urls";
@@ -24,6 +31,11 @@ export const api = {
     params: query,
   }),
   findByUrl,
+  generate,
+  generatePageSeo,
+  resolvePageSeo,
+  resolveSeo,
+  previewSeo,
   urls,
   urlSegmentValue,
 };

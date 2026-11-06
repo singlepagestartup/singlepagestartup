@@ -4,6 +4,12 @@ import { HTTPException } from "hono/http-exception";
 import * as jwt from "hono/jwt";
 import { authorization, getHttpErrorType } from "@sps/backend-utils";
 import { Service } from "../../../../service";
+import { withConsistencySnapshot } from "@sps/shared-backend-api";
+import type {
+  IModel as IEcommerceModuleOrder,
+  IPurchaseDetails,
+  ICartDetails,
+} from "@sps/ecommerce/models/order/sdk/model";
 
 export class Handler {
   service: Service;
@@ -34,80 +40,148 @@ export class Handler {
         throw new Error("Validation error. No token");
       }
 
-      const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
+      const decoded = await jwt.verify(token, RBAC_JWT_SECRET, "HS256");
 
       if (decoded?.["subject"]?.["id"] !== id) {
-        throw new Error("Validation error. Only order owner can update order");
+        throw new Error("Validation error. Only order owner can read orders");
       }
 
-      const subjectsToEcommerceModuleOrders =
-        await this.service.subjectsToEcommerceModuleOrders.find({
+      return await withConsistencySnapshot(async () => {
+        const subjectsToEcommerceModuleOrders =
+          await this.service.subjectsToEcommerceModuleOrders.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "subjectId",
+                    method: "eq",
+                    value: id,
+                  },
+                ],
+              },
+            },
+          });
+
+        if (!subjectsToEcommerceModuleOrders?.length) {
+          return c.json({
+            data: [],
+          });
+        }
+
+        const params = c.get("parsedQuery");
+        const includeCartDetails = c.req.query("includeCartDetails") === "true";
+        const includePurchaseDetails =
+          c.req.query("includePurchaseDetails") === "true";
+        const ownedOrderIds = subjectsToEcommerceModuleOrders.map(
+          (relation) => relation.ecommerceModuleOrderId,
+        );
+        const defaultFilters = [
+          { column: "type", method: "eq", value: "cart" },
+          { column: "status", method: "eq", value: "new" },
+        ];
+        const orders = await this.service.ecommerceModule.order.find({
           params: {
+            ...params,
             filters: {
+              ...params?.filters,
               and: [
-                {
-                  column: "subjectId",
-                  method: "eq",
-                  value: id,
-                },
+                { column: "id", method: "inArray", value: ownedOrderIds },
+                ...(includeCartDetails || !params?.filters
+                  ? defaultFilters
+                  : []),
+                ...(params?.filters?.and ?? []),
               ],
             },
           },
         });
 
-      if (!subjectsToEcommerceModuleOrders?.length) {
-        return c.json({
-          data: [],
-        });
-      }
-
-      /**
-       * Without filters the route answers the active cart. A caller's filters
-       * replace that default but only narrow the subject's own orders, because
-       * the id constraint is always applied (issue #303).
-       */
-      const queryFilters = c.get("parsedQuery")?.filters?.["and"];
-
-      const ecommerceModuleOrders =
-        await this.service.ecommerceModule.order.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "id",
-                  method: "inArray",
-                  value: subjectsToEcommerceModuleOrders.map(
-                    (subjectToEcommerceModuleOrder) =>
-                      subjectToEcommerceModuleOrder.ecommerceModuleOrderId,
-                  ),
+        // An OR filter must never widen the result beyond the subject's orders.
+        const ownedIds = new Set(ownedOrderIds);
+        const ownedOrders = (orders ?? []).filter((order) =>
+          ownedIds.has(order.id),
+        );
+        if (includeCartDetails) {
+          const carts: (IEcommerceModuleOrder & {
+            cartDetails: ICartDetails & { storeIds: string[] };
+          })[] = [];
+          for (const order of ownedOrders) {
+            // Defense against OR filters: private cart expansion never includes historical orders.
+            if (order.type !== "cart" || order.status !== "new") continue;
+            const stores =
+              await this.service.ecommerceModule.storesToOrders.find({
+                params: {
+                  filters: {
+                    and: [{ column: "orderId", method: "eq", value: order.id }],
+                  },
                 },
-                ...(queryFilters?.length
-                  ? queryFilters
-                  : [
+              });
+            carts.push({
+              ...order,
+              cartDetails: {
+                ...(await this.service.ecommerceModule.order.findByIdCartDetails(
+                  { id: order.id },
+                )),
+                storeIds: (stores ?? []).map(
+                  (link: { storeId: string }) => link.storeId,
+                ),
+              },
+            });
+          }
+          return c.json({ data: carts });
+        }
+        if (!includePurchaseDetails) return c.json({ data: ownedOrders });
+        const purchases: (IEcommerceModuleOrder & {
+          purchaseDetails: IPurchaseDetails;
+        })[] = [];
+        for (const order of ownedOrders) {
+          const totals = await this.service.ecommerceModule.order.findByIdTotal(
+            { id: order.id },
+          );
+          const links =
+            await this.service.ecommerceModule.ordersToFileStorageModuleFiles.find(
+              {
+                params: {
+                  filters: {
+                    and: [
+                      { column: "orderId", method: "eq", value: order.id },
                       {
-                        column: "type",
+                        column: "variant",
                         method: "eq",
-                        value: "cart",
+                        value: "receipt-default",
                       },
-                      {
-                        column: "status",
-                        method: "eq",
-                        value: "new",
-                      },
-                    ]),
-              ],
+                    ],
+                  },
+                },
+              },
+            );
+          const receiptIds = (links || []).map(
+            (link) => link.fileStorageModuleFileId,
+          );
+          const files = receiptIds.length
+            ? await this.service.fileStorageModule.file.find({
+                params: {
+                  filters: {
+                    and: [
+                      { column: "id", method: "inArray", value: receiptIds },
+                    ],
+                  },
+                },
+              })
+            : [];
+          const receipts = receiptIds.flatMap((id) => {
+            const file = files?.find((file) => file.id === id);
+            return file ? [file] : [];
+          });
+          purchases.push({
+            ...order,
+            purchaseDetails: {
+              totals: totals.totals,
+              receipts,
+              ...(totals.unpriced.length ? { unpriced: totals.unpriced } : {}),
             },
-          },
-        });
-
-      if (!ecommerceModuleOrders?.length) {
-        return c.json({
-          data: [],
-        });
-      }
-
-      return c.json({
-        data: ecommerceModuleOrders,
+          });
+        }
+        return c.json({ data: purchases });
       });
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);

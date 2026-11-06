@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "1639fff3-89b2-43c8-bd07-ee2448c23d10",
+  "createdAt": "2026-10-26T00:11:46.797Z",
+  "updatedAt": "2026-10-27T14:59:25.243Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Your materials appear on the site",
+    "ru": "На сайте видны ваши материалы"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Show photos, videos and galleries using existing views. Media is linked to a particular product, article or block.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Покажите фотографии, видео и галереи через готовые представления. Медиа связано с конкретным товаром, статьёй или блоком.\"}]}]}"
+  },
+  "adminTitle": "На сайте видны ваши материалы",
+  "slug": "framework-reviewed-article-file-storage-introduction-feature-0"
+}

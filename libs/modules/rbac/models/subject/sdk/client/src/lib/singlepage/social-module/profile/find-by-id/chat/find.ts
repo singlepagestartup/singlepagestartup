@@ -10,7 +10,11 @@ import {
   type IResult as IParentResult,
 } from "@sps/rbac/models/subject/sdk/server";
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
-import { queryClient, subscription } from "@sps/shared-frontend-client-api";
+import {
+  queryClient,
+  subscription,
+  consistencyQueryKey,
+} from "@sps/shared-frontend-client-api";
 import { deriveTopicsFromPath, STALE_TIME } from "@sps/shared-utils";
 import { useEffect } from "react";
 
@@ -37,7 +41,7 @@ export function action(props: IProps) {
   }, [queryKey]);
 
   return useQuery<IResult>({
-    queryKey: [queryKey],
+    queryKey: consistencyQueryKey(queryKey, props.params, clientHost),
     // Canonical realtime subscription (issue #195): hand-written SDK queries
     // MUST declare meta.topics, otherwise the topic branch in subscription()
     // never matches and the route fallback cannot bridge the differently
@@ -47,8 +51,8 @@ export function action(props: IProps) {
     // the backend emitter and factory use, so a chat create/update/delete
     // (topic `social.chats`) invalidates this list.
     meta: {
-      topics: deriveTopicsFromPath(queryKey),
       ...(userMeta ?? {}),
+      topics: deriveTopicsFromPath(queryKey),
     },
     queryFn: async () => {
       const result = await api.socialModuleProfileFindByIdChatFind({

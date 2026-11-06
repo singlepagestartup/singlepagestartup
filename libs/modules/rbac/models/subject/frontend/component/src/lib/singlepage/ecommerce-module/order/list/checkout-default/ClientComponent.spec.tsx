@@ -5,31 +5,25 @@
 /**
  * BDD Suite: rbac order list checkout behavior.
  *
- * Given: checkout list dependencies are mocked with deterministic order, order line and payment data.
- * When: the cart list renders and checkout is submitted from it.
- * Then: orders and their lines come from the subject's owner-checked routes, a single invoice
- * redirects immediately, and multiple invoices render payment links.
+ * Given: checkout list dependencies are mocked with deterministic order and payment data.
+ * When: checkout is submitted from cart list context.
+ * Then: single invoice redirects immediately, while multiple invoices render payment links.
  */
 
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 const mutateAsyncMock = jest.fn();
+let updatingCartCount = 0;
+let fetchingCartCount = 0;
+jest.mock("@tanstack/react-query", () => ({
+  ...jest.requireActual("@tanstack/react-query"),
+  useIsMutating: () => updatingCartCount,
+  useIsFetching: () => fetchingCartCount,
+  useQueryClient: () => ({ invalidateQueries: jest.fn() }),
+}));
 const useFormMock = jest.fn();
-const ecommerceModuleOrderListMock = jest.fn();
-const ecommerceModuleOrderOrdersToProductsMock = jest.fn();
-const ecommerceModuleOrderVariantMock = jest.fn();
-const ecommerceModuleOrdersToProductsMock = jest.fn();
-const subjectsToEcommerceModuleOrdersMock = jest.fn();
-
-const ordersToProducts = [
-  {
-    id: "line-1",
-    orderId: "order-1",
-    productId: "product-1",
-    quantity: 1,
-    total: [{ total: 100, billingModuleCurrency: { id: "usd", symbol: "$" } }],
-  },
-];
+const ecommerceModuleOrderApiPropsMock = jest.fn();
+let cartOrders: any[];
 
 const submitPayload = {
   provider: "stripe",
@@ -54,8 +48,6 @@ afterAll(() => {
   });
 });
 
-jest.mock("server-only", () => ({}), { virtual: true });
-
 jest.mock("next/link", () => ({
   __esModule: true,
   default: ({ children, href, target }: any) => (
@@ -66,16 +58,15 @@ jest.mock("next/link", () => ({
 }));
 
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
-  Provider: ({ children }: any) => <>{children}</>,
   api: {
+    ecommerceModuleOrderUpdate: () => ({
+      mutateAsync: jest.fn(),
+      isPending: false,
+    }),
     ecommerceModuleOrderCheckout: () => ({
       mutateAsync: mutateAsyncMock,
       isPending: false,
     }),
-    ecommerceModuleOrderList: (...args: unknown[]) =>
-      ecommerceModuleOrderListMock(...args),
-    ecommerceModuleOrderOrdersToProducts: (...args: unknown[]) =>
-      ecommerceModuleOrderOrdersToProductsMock(...args),
   },
 }));
 
@@ -103,60 +94,46 @@ jest.mock("@sps/shared-ui-shadcn", () => ({
 }));
 
 jest.mock("@sps/ui-adapter", () => ({
-  ErrorBoundary: ({ children }: any) => <>{children}</>,
   FormField: ({ name }: any) => <div data-testid={`field-${name}`} />,
+  Select: () => null,
 }));
 
 jest.mock(
   "@sps/rbac/relations/subjects-to-ecommerce-module-orders/frontend/component",
   () => ({
-    Component: (props: any) => {
-      subjectsToEcommerceModuleOrdersMock(props);
-
-      return null;
-    },
-  }),
-);
-
-jest.mock(
-  "@sps/ecommerce/relations/orders-to-products/frontend/component",
-  () => ({
-    Component: (props: any) => {
-      ecommerceModuleOrdersToProductsMock(props);
-
-      return null;
-    },
+    Component: ({ children }: any) =>
+      children
+        ? children({
+            data: [{ ecommerceModuleOrderId: "order-1" }],
+          })
+        : null,
   }),
 );
 
 jest.mock("@sps/ecommerce/models/order/frontend/component", () => ({
-  Component: ({ variant, children, data, ordersToProducts }: any) => {
-    ecommerceModuleOrderVariantMock(variant, data, ordersToProducts);
+  Component: ({ variant, children, apiProps }: any) => {
+    if (variant === "find") {
+      ecommerceModuleOrderApiPropsMock(apiProps);
+      return children ? children({ data: [{ id: "order-1" }] }) : null;
+    }
 
     if (variant === "cart-default") {
-      return (
-        <div data-testid={`cart-order-${data.id}`}>
-          {ordersToProducts.map((orderToProduct: any) => (
-            <p key={orderToProduct.id}>line {orderToProduct.id}</p>
-          ))}
-          {children}
-        </div>
-      );
+      return <div data-testid="cart-order">{children}</div>;
     }
 
     if (variant === "form-field-default") {
-      return <input data-testid={`order-id-field-${data.id}`} readOnly />;
+      return <input data-testid="order-id-field" readOnly={true} />;
     }
 
     return null;
   },
 }));
 
-jest.mock("../../update-default/Component", () => ({
+jest.mock("../../update-default", () => ({
   Component: () => <div data-testid="update-action">update</div>,
 }));
 
-jest.mock("../../delete-default/Component", () => ({
+jest.mock("../../delete-default", () => ({
   Component: () => <div data-testid="delete-action">delete</div>,
 }));
 
@@ -169,42 +146,52 @@ jest.mock("../total-default", () => ({
       : null,
 }));
 
+jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
+  Component: (props: any) => {
+    ecommerceModuleOrderApiPropsMock(props.apiProps);
+    return props.children?.({
+      data: cartOrders,
+    });
+  },
+}));
+jest.mock("@sps/ecommerce/models/product/frontend/component", () => ({
+  Component: () => null,
+}));
 import { Component } from "./ClientComponent";
-
-function renderList() {
-  return render(
-    <Component
-      isServer={false}
-      variant="ecommerce-module-order-list-checkout-default"
-      data={{ id: "subject-1" } as any}
-      language="en"
-    />,
-  );
-}
 
 describe("Given: order list checkout component", () => {
   beforeEach(() => {
+    cartOrders = [
+      {
+        id: "order-1",
+        cartDetails: {
+          lines: [],
+          totals: [
+            {
+              total: 100,
+              billingModuleCurrency: { id: "rub", symbol: "₽", title: "RUB" },
+            },
+          ],
+          availableCurrencyIds: ["rub"],
+          billingModuleCurrencyId: "rub",
+        },
+      },
+    ];
+    updatingCartCount = 0;
+    fetchingCartCount = 0;
     mutateAsyncMock.mockReset();
     useFormMock.mockReset();
-    ecommerceModuleOrderListMock.mockReset();
-    ecommerceModuleOrderOrdersToProductsMock.mockReset();
-    ecommerceModuleOrderVariantMock.mockReset();
-    ecommerceModuleOrdersToProductsMock.mockReset();
-    subjectsToEcommerceModuleOrdersMock.mockReset();
+    ecommerceModuleOrderApiPropsMock.mockReset();
     (window.location as any).href = "";
-
-    ecommerceModuleOrderListMock.mockReturnValue({
-      data: [{ id: "order-1", type: "cart", status: "new" }],
-    });
-    ecommerceModuleOrderOrdersToProductsMock.mockReturnValue({
-      data: ordersToProducts,
-    });
 
     useFormMock.mockReturnValue({
       control: {},
       handleSubmit:
-        (submit: (data: typeof submitPayload) => Promise<void>) => () =>
-          submit(submitPayload),
+        (submit: (data: typeof submitPayload) => Promise<void>) =>
+        (event: { preventDefault: () => void }) => {
+          event.preventDefault();
+          return submit(submitPayload);
+        },
     });
   });
 
@@ -215,9 +202,16 @@ describe("Given: order list checkout component", () => {
       },
     });
 
-    renderList();
+    render(
+      <Component
+        isServer={false}
+        variant="ecommerce-module-order-list-checkout-default"
+        data={{ id: "subject-1" } as any}
+        language="en"
+      />,
+    );
 
-    fireEvent.click(screen.getByRole("button", { name: "Checkout" }));
+    fireEvent.click(screen.getByRole("button", { name: "Proceed to payment" }));
 
     await waitFor(() => {
       expect(mutateAsyncMock).toHaveBeenCalledWith({
@@ -241,52 +235,135 @@ describe("Given: order list checkout component", () => {
       },
     });
 
-    renderList();
+    render(
+      <Component
+        isServer={false}
+        variant="ecommerce-module-order-list-checkout-default"
+        data={{ id: "subject-1" } as any}
+        language="en"
+      />,
+    );
 
-    fireEvent.click(screen.getByRole("button", { name: "Checkout" }));
+    fireEvent.click(screen.getByRole("button", { name: "Proceed to payment" }));
 
     await waitFor(() => {
-      const links = screen.getAllByText("Payment Link");
+      const links = screen.getAllByRole("link", { name: "Proceed to payment" });
       expect(links.length).toBe(2);
+      expect(links.map((link) => link.getAttribute("href"))).toEqual([
+        "https://pay.local/one",
+        "https://pay.local/two",
+      ]);
+      expect(
+        links.every((link) => link.getAttribute("target") === "_blank"),
+      ).toBe(true);
     });
 
     expect((window.location as any).href).toBe("");
   });
 
   /**
-   * BDD Scenario: read the cart through the subject's own routes.
+   * BDD Scenario: render only active cart orders.
    *
-   * Given: the subject's cart route answers one active cart order, and the
-   * subject's order line route answers its line.
-   * When: the checkout list renders.
-   * Then: the list asks those routes for the subject's cart and the order's
-   * lines, and renders the order card with the lines and its form field from
-   * the answers, without the module-level order and order line reads or the
-   * subject-to-order relation, which require the Admin role.
+   * Given: the subject has both active and historical cart relations.
+   * When: the checkout list requests its order models.
+   * Then: the model query is restricted to status new and bypasses stale caches.
    */
-  it("When: checkout list renders Then: it reads the cart and its lines through the subject's own routes", () => {
-    renderList();
+  it("When: checkout list renders Then: it requests only new cart orders", () => {
+    render(
+      <Component
+        isServer={false}
+        variant="ecommerce-module-order-list-checkout-default"
+        data={{ id: "subject-1" } as any}
+        language="en"
+      />,
+    );
 
-    expect(ecommerceModuleOrderListMock).toHaveBeenCalledWith(
-      expect.objectContaining({ id: "subject-1" }),
-    );
-    expect(ecommerceModuleOrderOrdersToProductsMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        id: "subject-1",
-        params: {
-          filters: {
-            and: [{ column: "orderId", method: "eq", value: "order-1" }],
-          },
+    expect(ecommerceModuleOrderApiPropsMock).toHaveBeenCalledWith({
+      params: { includeCartDetails: true },
+    });
+  });
+  it("renders totals from the same private snapshot and leaves cached amounts unchanged", () => {
+    const first = {
+      total: 125,
+      billingModuleCurrency: { id: "eur", symbol: "€" },
+    };
+    cartOrders = [
+      {
+        id: "one",
+        cartDetails: {
+          lines: [],
+          totals: [first],
+          availableCurrencyIds: ["eur"],
+          billingModuleCurrencyId: "eur",
         },
-      }),
+      },
+      {
+        id: "two",
+        cartDetails: {
+          lines: [],
+          availableCurrencyIds: ["eur"],
+          billingModuleCurrencyId: "eur",
+          totals: [
+            { total: 250, billingModuleCurrency: { id: "eur", symbol: "€" } },
+          ],
+        },
+      },
+    ];
+    render(
+      <Component
+        isServer={false}
+        variant="ecommerce-module-order-list-checkout-default"
+        data={{ id: "subject-1" } as any}
+        language="en"
+      />,
     );
-    expect(screen.getByTestId("cart-order-order-1")).toBeTruthy();
-    expect(screen.getByText("line line-1")).toBeTruthy();
-    expect(screen.getByTestId("order-id-field-order-1")).toBeTruthy();
-    expect(subjectsToEcommerceModuleOrdersMock).not.toHaveBeenCalled();
-    expect(ecommerceModuleOrdersToProductsMock).not.toHaveBeenCalled();
+    expect(screen.getByText("375 €")).toBeTruthy();
+    expect(first.total).toBe(125);
+  });
+  it("does not offer checkout for an empty cart", () => {
+    cartOrders = [];
+    render(
+      <Component
+        isServer={false}
+        variant="ecommerce-module-order-list-checkout-default"
+        data={{ id: "subject-1" } as any}
+        language="en"
+      />,
+    );
+    expect(screen.getByText("Your cart is empty.")).toBeTruthy();
     expect(
-      ecommerceModuleOrderVariantMock.mock.calls.map(([variant]) => variant),
-    ).not.toContain("find");
+      screen.queryByRole("button", { name: "Proceed to payment" }),
+    ).toBeNull();
+  });
+  it("blocks checkout for a legacy unpriced line while retaining the cart and amounts", async () => {
+    cartOrders[0].cartDetails = {
+      availableCurrencyIds: ["rub"],
+      billingModuleCurrencyId: "rub",
+      lines: [],
+      totals: [
+        { total: 100, billingModuleCurrency: { id: "rub", symbol: "₽" } },
+      ],
+      unpriced: [
+        {
+          ordersToProductsId: "bad-line",
+          productId: "bad",
+          reason: "No price",
+        },
+      ],
+    };
+    render(
+      <Component
+        isServer={false}
+        variant="ecommerce-module-order-list-checkout-default"
+        data={{ id: "subject-1" } as any}
+        language="ru"
+      />,
+    );
+    expect(screen.getByRole("alert").textContent).toContain("нет цены");
+    const button = screen.getByRole("button", { name: "Перейти к оплате" });
+    expect(button.hasAttribute("disabled")).toBe(true);
+    fireEvent.click(button);
+    expect(mutateAsyncMock).not.toHaveBeenCalled();
+    expect(screen.getAllByText("100 ₽")).toHaveLength(2);
   });
 });

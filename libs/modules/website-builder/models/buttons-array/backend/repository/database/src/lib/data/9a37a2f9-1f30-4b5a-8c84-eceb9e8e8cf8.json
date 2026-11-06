@@ -1,0 +1,14 @@
+{
+  "id": "9a37a2f9-1f30-4b5a-8c84-eceb9e8e8cf8",
+  "createdAt": "2026-10-23T20:18:02.087Z",
+  "updatedAt": "2026-10-23T20:18:02.087Z",
+  "variant": "default",
+  "className": "",
+  "title": {
+    "en": "AI Chat",
+    "ru": "AI-чат"
+  },
+  "description": {},
+  "adminTitle": "AI Chat",
+  "slug": "framework-header-ai-chat-array"
+}

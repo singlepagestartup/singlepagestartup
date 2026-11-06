@@ -1,0 +1,18 @@
+{
+  "className": null,
+  "id": "60187bee-e128-4b52-801f-20870d807fdb",
+  "createdAt": "2026-10-23T20:18:05.936Z",
+  "updatedAt": "2026-10-23T20:18:05.936Z",
+  "variant": "card",
+  "title": {
+    "en": "Access follows the resource",
+    "ru": "Доступ проверяется для ресурса"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Subject operations check the current account and ownership before returning private records.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Операции Subject проверяют текущий аккаунт и владение перед возвратом приватных записей.\"}]}]}"
+  },
+  "adminTitle": "Access follows the resource",
+  "slug": "framework-about-architecture-feature-3"
+}

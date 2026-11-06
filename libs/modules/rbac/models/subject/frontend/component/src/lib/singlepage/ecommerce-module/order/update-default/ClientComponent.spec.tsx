@@ -33,7 +33,7 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   Provider: ({ children }: any) => <>{children}</>,
   api: {
     ecommerceModuleOrderUpdate: () => ({
-      mutate: mutateMock,
+      mutateAsync: mutateMock,
       isSuccess: false,
     }),
     ecommerceModuleOrderOrdersToProducts: (...args: unknown[]) =>
@@ -75,6 +75,17 @@ jest.mock(
   }),
 );
 
+jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
+  Component: (props: any) =>
+    props.children?.({
+      data: [
+        {
+          id: "order-1",
+          cartDetails: { lines: [{ id: "line-1", quantity: 1 }] },
+        },
+      ],
+    }),
+}));
 import { Component } from "./ClientComponent";
 
 describe("Given: order update-default action component", () => {
@@ -90,8 +101,12 @@ describe("Given: order update-default action component", () => {
 
     useFormMock.mockReturnValue({
       control: {},
-      handleSubmit: (submit: (data: typeof submitPayload) => void) => () =>
-        submit(submitPayload),
+      handleSubmit:
+        (submit: (data: typeof submitPayload) => void) =>
+        (event: { preventDefault: () => void }) => {
+          event.preventDefault();
+          return submit(submitPayload);
+        },
     });
   });
 
@@ -108,7 +123,7 @@ describe("Given: order update-default action component", () => {
         isServer={false}
         variant="ecommerce-module-order-update-default"
         data={{ id: "subject-1" } as any}
-        order={{ id: "order-1" } as any}
+        ecommerceModuleOrder={{ id: "order-1" } as any}
         language="en"
       />,
     );
