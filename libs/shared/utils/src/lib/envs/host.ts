@@ -137,7 +137,14 @@ export const BUG_SERVICE_PROJECT = process.env["BUG_SERVICE_PROJECT"];
  * within this window, so a burst of one failure sends one message and a failure
  * that persists is reported again after the window passes.
  */
+const reportWindow = Number(
+  process.env["BUG_SERVICE_REPORT_WINDOW_IN_SECONDS"],
+);
 export const BUG_SERVICE_REPORT_WINDOW_IN_SECONDS =
-  Number(process.env["BUG_SERVICE_REPORT_WINDOW_IN_SECONDS"]) || 300;
+  Number.isSafeInteger(reportWindow) &&
+  reportWindow > 0 &&
+  reportWindow <= 86400
+    ? reportWindow
+    : 300;
 
 export const ADMIN_BASE_PATH = process.env["ADMIN_BASE_PATH"] || "/admin";

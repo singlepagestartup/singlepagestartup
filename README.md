@@ -463,24 +463,24 @@ WebSocket path reconciles other subscribed clients and derived changes.
 
 ### Middlewares
 
-| Middleware             | Purpose                                 |
-| ---------------------- | --------------------------------------- |
-| RequestIdMiddleware    | Generates unique ID for each request    |
-| ObserverMiddleware     | Logs requests and collects metrics      |
-| ParseQueryMiddleware   | Parses complex query parameters         |
-| LoggerMiddleware       | Logs all incoming requests              |
-| RevalidationMiddleware | Manages content revalidation strategies |
-| HTTPCacheMiddleware    | Caches responses conditionally          |
-| ExceptionFilter        | Centralized error catching              |
+| Middleware             | Purpose                                              |
+| ---------------------- | ---------------------------------------------------- |
+| RequestIdMiddleware    | Generates unique ID for each request                 |
+| ObserverMiddleware     | Runs configured pipelines after successful mutations |
+| ParseQueryMiddleware   | Parses complex query parameters                      |
+| ActionLoggerMiddleware | Records selected successful Subject actions          |
+| RevalidationMiddleware | Manages content revalidation strategies              |
+| HTTPCacheMiddleware    | Caches responses conditionally                       |
+| ExceptionFilter        | Centralized error catching                           |
 
 ### Error Handling
 
-- All errors intercepted through `ExceptionFilter`
+- Exceptions caught by the shared API filter generate an incident record. Explicit HTTP responses bypass this filter.
 - Standardized error responses:
   - `status` — HTTP status code
   - `error` — error message
-  - `requestId` — unique ID for request traceability; the API log records the failure with its stack under `🚨 Exception [<requestId>]`
-  - `path`, `method` — the failed request
+  - `requestId` — server-generated ID of the structured API incident. See the [server incident runbook](tools/deployer/README.md#finding-an-api-error)
+  - `path`, `method` — the matched route pattern and HTTP method
   - `stack`, `cause` — only when `API_ERROR_DETAILS` resolves to `full` or the request carries the operator secret (see `apps/api/README.md`, "Environment")
 
 #### Automatic Error Categorization

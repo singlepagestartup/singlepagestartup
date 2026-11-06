@@ -55,6 +55,7 @@ async function createHarness(props: IHarnessProps = {}) {
 
   jest.doMock("grammy", () => {
     return {
+      ...jest.requireActual("grammy"),
       Bot: jest.fn().mockImplementation(() => {
         return { api: { sendMessage } };
       }),
@@ -65,6 +66,7 @@ async function createHarness(props: IHarnessProps = {}) {
     return {
       ...jest.requireActual("@sps/shared-utils"),
       RBAC_SECRET_KEY: OPERATOR_SECRET,
+      RBAC_JWT_SECRET: "synthetic-jwt-signing-secret",
       BUG_SERVICE_TELEGRAM_BOT_TOKEN: props.bugService ? BOT_TOKEN : undefined,
       BUG_SERVICE_TELEGRAM_CHAT_ID: props.bugService ? "bug-chat" : undefined,
       BUG_SERVICE_PROJECT: props.bugService ? "spec-project" : undefined,
@@ -78,7 +80,7 @@ async function createHarness(props: IHarnessProps = {}) {
   const { HTTPException } = await import("hono/http-exception");
 
   const logError = jest
-    .spyOn(logger, "error")
+    .spyOn(logger, "errorEvent")
     .mockImplementation(() => undefined);
   const filter = new Filter();
   const app = new Hono();
@@ -96,6 +98,14 @@ async function createHarness(props: IHarnessProps = {}) {
     });
   });
 
+  app.post("/messages/:chatId", async (c) => {
+    const input = await c.req.json();
+    throw new Error("Internal error. " + input.message, {
+      cause: Object.assign(new Error("driver echoed " + input.message), {
+        code: "23503",
+      }),
+    });
+  });
   return { app, logError, sendMessage };
 }
 
@@ -130,10 +140,10 @@ describe("Given: a deployment that sets NODE_ENV=production", () => {
    * Given: NODE_ENV=production and no API_ERROR_DETAILS.
    * When: a route fails with an internal error.
    * Then: the body carries the message, status, method, path and request id
-   *       and no stack or cause, while the log keeps the stack under the same
+   *       and no stack or cause, while the log keeps source locations under the same
    *       request id.
    */
-  it("hides the stack and the cause of a 5xx and keeps them in the log", async () => {
+  it("hides the 5xx details from the caller and records its source locations", async () => {
     const { app, logError } = await createHarness({ nodeEnv: "production" });
 
     const response = await app.request("/pages/abc", {
@@ -144,16 +154,28 @@ describe("Given: a deployment that sets NODE_ENV=production", () => {
     expect(response.status).toBe(500);
     expect(Object.keys(body).sort()).toEqual(BRIEF_BODY_KEYS);
     expect(body).toMatchObject({
-      requestId: "request-production-500",
+      requestId: expect.stringMatching(/^[0-9a-f-]{36}$/),
       method: "GET",
       status: 500,
-      error: "Internal error. database unavailable",
+      error: "Internal error.",
     });
 
-    const [line, record] = logError.mock.calls[0];
-
-    expect(line).toContain("[request-production-500]");
-    expect(JSON.parse(record).stack).toContain("database unavailable");
+    const [record] = logError.mock.calls[0];
+    expect(record).toMatchObject({
+      event: "api.error",
+      status: 500,
+      category: "Internal error",
+      requestId: body.requestId,
+      route: "/pages/:id",
+    });
+    expect(record).toMatchObject({
+      locations: [
+        expect.objectContaining({
+          frames: expect.arrayContaining([expect.stringMatching(/:\d+:\d+$/)]),
+        }),
+      ],
+    });
+    expect(JSON.stringify(record)).not.toContain("database unavailable");
   });
 
   /**
@@ -349,7 +371,10 @@ describe("Given: a request that never passed the request-id middleware", () => {
     const body = await readBody(response);
 
     expect(body.requestId).toMatch(/^[0-9a-f-]{36}$/);
-    expect(logError.mock.calls[0][0]).toContain(`[${body.requestId}]`);
+    expect(logError.mock.calls[0][0]).toHaveProperty(
+      "requestId",
+      body.requestId,
+    );
   });
 });
 
@@ -376,6 +401,9 @@ describe("Given: the bug chat is configured", () => {
     ]).finally(() => clearTimeout(timeout));
 
     expect(response.status).toBe(500);
+    await Promise.all(
+      Array.from({ length: 30 }, () => app.request("/widgets")),
+    );
     expect(sendMessage).toHaveBeenCalledTimes(1);
   });
 
@@ -384,19 +412,21 @@ describe("Given: the bug chat is configured", () => {
    *
    * Given: a configured bug chat.
    * When: a route fails with a 5xx.
-   * Then: the chat receives the project, status, method, URL and message in
-   *       the existing HTML format.
+   * Then: the chat receives the project, status, method, route pattern and
+   *       server request ID as plain text.
    */
-  it("sends the report in the existing format", async () => {
+  it("reports the route and request id even with an invalid bearer credential", async () => {
     const { app, sendMessage } = await createHarness({ bugService: true });
 
-    await app.request("/pages/abc");
+    const body = await readBody(
+      await app.request("/pages/abc?token=query-secret", {
+        headers: { Authorization: "Bearer invalid-secret" },
+      }),
+    );
     await flushReports();
-
     expect(sendMessage).toHaveBeenCalledWith(
       "bug-chat",
-      "<b>spec-project</b>\n🚨 <i>500 | GET</i> <pre>http://localhost/pages/abc</pre>\nError: Internal error. database unavailable",
-      { parse_mode: "HTML" },
+      `spec-project\n500 GET /pages/:id\nrequestId: ${body.requestId}`,
     );
   });
 
@@ -406,10 +436,10 @@ describe("Given: the bug chat is configured", () => {
    * Given: a send that fails with grammY's network error, whose nested error
    *        names the request URL with the bot token in it.
    * When: a route fails with a 5xx.
-   * Then: the caller still gets the response, and the log records the error
-   *       message without the token.
+   * Then: the caller still gets the response, and the journal records delivery
+   *       failure without its raw error or bot token.
    */
-  it("logs a failed send by its message and never logs the bot token", async () => {
+  it("records delivery failure without the bot token and pauses further sends", async () => {
     const networkError = Object.assign(
       new Error("Network request for 'sendMessage' failed!"),
       {
@@ -429,9 +459,11 @@ describe("Given: the bug chat is configured", () => {
 
     expect(response.status).toBe(500);
     expect(logError).toHaveBeenCalledWith(
-      "Failed to send error message to Telegram bot:",
-      "Network request for 'sendMessage' failed!",
+      expect.objectContaining({ event: "api.telegram.unavailable" }),
     );
+    await app.request("/widgets");
+    await flushReports();
+    expect(sendMessage).toHaveBeenCalledTimes(1);
     expect(loggedText(logError)).not.toContain(BOT_TOKEN);
   });
 
@@ -507,5 +539,78 @@ describe("Given: the bug chat is configured", () => {
     await flushReports();
 
     expect(sendMessage).not.toHaveBeenCalled();
+  });
+});
+
+describe("Incident diagnostics", () => {
+  it("links only a verified actor and stores locations without submitted secrets", async () => {
+    const { app, logError, sendMessage } = await createHarness({
+      bugService: true,
+    });
+    const { sign } = await import("hono/jwt");
+    const subjectId = "ec5df57a-1014-4869-9c1f-adc6c436e26b";
+    const chatId = "da76786a-aafe-4ead-adba-15fa07e7a9bb";
+    const token = await sign(
+      { subject: { id: subjectId }, exp: Math.floor(Date.now() / 1000) + 300 },
+      "synthetic-jwt-signing-secret",
+      "HS256",
+    );
+    const privateValue = "synthetic-private-value";
+    const request = (authorization: string) =>
+      app.request("/messages/" + chatId + "?key=" + privateValue, {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + authorization,
+          "Content-Type": "application/json",
+          "X-Request-Id": privateValue,
+        },
+        body: JSON.stringify({
+          message:
+            privateValue + "\n    at injected (/libs/private-marker.ts:1:1)",
+        }),
+      });
+    const first = await readBody(await request(token));
+    const second = await readBody(await request(token + "invalid"));
+    await flushReports();
+    expect(first.requestId).not.toBe(second.requestId);
+    expect(logError.mock.calls[0][0]).toMatchObject({
+      actor: "subject",
+      subjectId,
+      ids: { chatId },
+      route: "/messages/:chatId",
+      requestId: first.requestId,
+      locations: expect.arrayContaining([
+        expect.objectContaining({ code: "23503" }),
+      ]),
+    });
+    expect(logError.mock.calls[1][0]).toMatchObject({
+      actor: "unverified",
+      requestId: second.requestId,
+    });
+    expect(logError.mock.calls[1][0]).not.toHaveProperty("subjectId");
+    const recorded = JSON.stringify([
+      first,
+      second,
+      logError.mock.calls,
+      sendMessage.mock.calls,
+    ]);
+    for (const excluded of [privateValue, "private-marker.ts", token]) {
+      expect(recorded).not.toContain(excluded);
+    }
+  });
+
+  it("records the failed downstream request ID carried by the server SDK", async () => {
+    const { app, logError } = await createHarness();
+    const { responsePipe } = await import("@sps/shared-utils");
+    app.get("/outer", async (c) => {
+      await responsePipe({ res: await app.request("/widgets") });
+      return c.json({});
+    });
+    const body = await readBody(await app.request("/outer"));
+    const inner = logError.mock.calls[0][0];
+    expect(logError.mock.calls[1][0]).toMatchObject({
+      requestId: body.requestId,
+      downstreamRequestId: inner.requestId,
+    });
   });
 });

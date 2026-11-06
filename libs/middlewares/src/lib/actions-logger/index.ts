@@ -10,7 +10,7 @@ import {
   RouteMatcher,
 } from "@sps/shared-utils";
 import { MiddlewareHandler } from "hono";
-import { authorization, logger } from "@sps/backend-utils";
+import { authorization, logger, requestDiagnostics } from "@sps/backend-utils";
 import * as jwt from "hono/jwt";
 import { api as rbacActionApi } from "@sps/rbac/models/action/sdk/server";
 import { api as rbacSubjectsToActionsApi } from "@sps/rbac/relations/subjects-to-actions/sdk/server";
@@ -112,9 +112,12 @@ export class Middleware {
 
                 void (async () => {
                   try {
+                    const { requestId, traceId } = requestDiagnostics(c);
                     const rbacAction = await rbacActionApi.create({
                       data: {
                         payload: {
+                          requestId,
+                          traceId,
                           route: path,
                           method,
                           type: "HTTP",

@@ -16,7 +16,7 @@ export const API_SECRET_STRENGTH: "enforce" | "report" =
  * is `development` or `test` and `brief` otherwise. An unset `NODE_ENV` counts
  * as a deployment because the Docker image and the deployer set none, so a
  * developer machine opts in with `API_ERROR_DETAILS=full`, which
- * `apps/api/create_env.sh` writes. In both modes the log keeps the full record
+ * `apps/api/create_env.sh` writes. In both modes the incident log records safe source locations
  * under the request id, and a caller presenting `RBAC_SECRET_KEY` receives the
  * full body.
  */

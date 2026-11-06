@@ -4,6 +4,7 @@ export {
   assertKnowledgeAttachmentBytes,
   type IKnowledgeAttachmentBytesProps,
 } from "./knowledge-attachments";
+export { failureLocations } from "./error-locations";
 export { util as logger } from "./logger";
 export { util as websocketManager } from "./websocket-manager";
 export { util as getHttpErrorType } from "./http-error";
@@ -40,3 +41,10 @@ export {
   requestHostRevalidation,
   type IHostRevalidationRequest,
 } from "./host-revalidation";
+
+export {
+  diagnosticId,
+  requestDiagnostics,
+  runWithRequestDiagnostics,
+  currentRequestDiagnostics,
+} from "./request-diagnostics";
