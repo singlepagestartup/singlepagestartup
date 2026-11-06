@@ -1,7 +1,6 @@
 "use client";
 
 import { IComponentPropsExtended } from "../interface";
-import { Component as Identity } from "@sps/rbac/models/identity/frontend/component";
 import { IModel as IIdentity } from "@sps/rbac/models/identity/sdk/model";
 import {
   Button,
@@ -43,28 +42,30 @@ export function Component(
   });
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
-    updateIdentity.mutate({
-      id: props.data.id,
-      identityId: props.identity.id,
-      data,
-    });
+    try {
+      await updateIdentity.mutateAsync({
+        id: props.data.id,
+        identityId: props.identity.id,
+        data,
+      });
+      setIsOpen(false);
+      form.reset();
+    } catch {
+      /* The mutation exposes the error below. */
+    }
   }
 
   return (
     <Dialog
       open={isOpen}
-      onOpenChange={() => {
-        setIsOpen(!isOpen);
+      onOpenChange={(open) => {
+        setIsOpen(open);
+        updateIdentity.reset();
+        if (!open) form.reset();
       }}
     >
       <DialogTrigger asChild={true}>
-        <Button
-          variant="outline"
-          className="w-fit"
-          onClick={() => {
-            setIsOpen(true);
-          }}
-        >
+        <Button variant="outline" className="w-fit">
           Change password
         </Button>
       </DialogTrigger>
@@ -73,15 +74,20 @@ export function Component(
           <DialogTitle>Change Password</DialogTitle>
           <DialogDescription>Update your account password.</DialogDescription>
         </DialogHeader>
+        {updateIdentity.isError && (
+          <p role="alert" className="text-sm text-destructive">
+            {updateIdentity.error.message}
+          </p>
+        )}
         <Form {...form}>
           <div className="w-full flex flex-col gap-3">
-            <Identity
-              isServer={false}
-              variant="form-field-default"
+            <FormField
+              ui="shadcn"
               form={form}
-              field="password"
-              type="text"
-              data={props.identity}
+              name="password"
+              type="password"
+              label="Current password"
+              placeholder="Enter current password"
             />
             <FormField
               ui="shadcn"

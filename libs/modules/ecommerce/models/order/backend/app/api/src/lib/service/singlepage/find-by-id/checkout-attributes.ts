@@ -1,7 +1,6 @@
 import { inject, injectable } from "inversify";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { IModel as IAttribute } from "@sps/ecommerce/models/attribute/sdk/model";
-import { internationalization } from "@sps/shared-configuration";
 import { Service as AttributeService } from "@sps/ecommerce/models/attribute/backend/app/api/src/lib/service";
 import { Service as AttributeKeyService } from "@sps/ecommerce/models/attribute-key/backend/app/api/src/lib/service";
 import { Service as ProductService } from "@sps/ecommerce/models/product/backend/app/api/src/lib/service";
@@ -319,8 +318,8 @@ export class Service {
         continue;
       }
 
-      const nextIntervalRaw =
-        productIntervals[0].string?.[internationalization.defaultLanguage.code];
+      // Billing interval identifiers use the canonical English value, not UI copy.
+      const nextIntervalRaw = productIntervals[0].string?.en;
 
       if (nextIntervalRaw && !isSupportedOrderInterval(nextIntervalRaw)) {
         throw new Error(

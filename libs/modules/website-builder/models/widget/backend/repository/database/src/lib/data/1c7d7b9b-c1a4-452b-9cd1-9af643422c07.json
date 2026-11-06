@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "",
+    "ru": ""
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The customer proceeds to payment while the project stores the amount, currency and payment state. You can connect a confirmed payment to an order or access to your offer.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Clicking Pay does not mean the money has arrived. A person may close the payment page or receive a rejection. The project must save the payment attempt and obtain its result from the connected payment service.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Клиент переходит к оплате, а проект сохраняет сумму, валюту и состояние платежа. Вы можете связать подтверждённую оплату с заказом или доступом к вашему предложению.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Нажатие кнопки «Оплатить» ещё не означает, что деньги поступили. Человек может закрыть платёжную страницу или столкнуться с отказом. Проекту нужно сохранить попытку оплаты и получить её результат от подключённого платёжного сервиса.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "1c7d7b9b-c1a4-452b-9cd1-9af643422c07",
+  "createdAt": "2026-10-26T00:11:25.852Z",
+  "updatedAt": "2026-10-27T14:58:50.968Z",
+  "variant": "content-rich",
+  "adminTitle": "framework-reviewed-article-billing-introduction",
+  "slug": "framework-reviewed-article-billing-introduction"
+}

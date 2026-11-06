@@ -1,0 +1,148 @@
+{
+  "sections": {
+    "hero": {
+      "title": "Ваши файлы и обсуждения сохранены",
+      "paragraphs": [
+        "Войдите, чтобы вернуться к проекту или задаче, на которой остановились. В каждом обсуждении сохраняются сообщения, черновик и связанные документы."
+      ],
+      "items": [],
+      "links": []
+    },
+    "account": {
+      "title": "Войти",
+      "paragraphs": [],
+      "items": [],
+      "links": []
+    },
+    "recovery": {
+      "title": "Не получается войти?",
+      "paragraphs": [
+        "Забыли пароль? [Напишите в поддержку](/ai-chat/help). Если войти не удалось, проверьте почту и пароль, затем попробуйте ещё раз.",
+        "Ещё нет аккаунта? [Зарегистрируйтесь](/ai-chat/rbac/subjects/authentication/registration)."
+      ],
+      "items": [],
+      "links": [
+        {
+          "text": "Contact support",
+          "href": "/ai-chat/help"
+        },
+        {
+          "text": "Create one",
+          "href": "/ai-chat/rbac/subjects/authentication/registration"
+        }
+      ]
+    },
+    "success": {
+      "title": "Return to your project",
+      "paragraphs": [
+        "Откройте проект, чтобы продолжить работу с документами и обсуждениями."
+      ],
+      "items": [],
+      "links": []
+    },
+    "controls": {
+      "title": "Подписи интерфейса",
+      "paragraphs": [],
+      "items": [
+        {
+          "title": "back-label",
+          "text": "К AI Chat"
+        },
+        {
+          "title": "back-href",
+          "text": "/ai-chat/"
+        },
+        {
+          "title": "email-label",
+          "text": "Электронная почта"
+        },
+        {
+          "title": "email-placeholder",
+          "text": "you@example.com"
+        },
+        {
+          "title": "password-label",
+          "text": "Пароль"
+        },
+        {
+          "title": "submit",
+          "text": "Войти"
+        },
+        {
+          "title": "forgot-label",
+          "text": "Забыли пароль?"
+        },
+        {
+          "title": "forgot-href",
+          "text": "/ai-chat/help"
+        },
+        {
+          "title": "register-label",
+          "text": "Создать аккаунт"
+        },
+        {
+          "title": "register-href",
+          "text": "/ai-chat/rbac/subjects/authentication/registration"
+        },
+        {
+          "title": "no-account",
+          "text": "Ещё нет аккаунта?"
+        },
+        {
+          "title": "continue-label",
+          "text": "Открыть проект"
+        },
+        {
+          "title": "continue-href",
+          "text": "/ai-chat/social/profiles/example"
+        },
+        {
+          "title": "email-error",
+          "text": "Укажите адрес электронной почты."
+        },
+        {
+          "title": "password-error",
+          "text": "Введите пароль."
+        },
+        {
+          "title": "success-message",
+          "text": "Вы вошли в аккаунт."
+        },
+        {
+          "title": "photo-src",
+          "text": "/workspace-assets/singlepage/generated/living-focus/singlepagestartup-photography-work-in-motion-square.png"
+        },
+        {
+          "title": "photo-asset-id",
+          "text": "singlepage-generated-living-focus-photography-work-in-motion-square"
+        },
+        {
+          "title": "photo-alt",
+          "text": "Мастер в гончарной мастерской."
+        }
+      ],
+      "links": []
+    }
+  },
+  "labels": {
+    "back-label": "К AI Chat",
+    "back-href": "/ai-chat/",
+    "email-label": "Электронная почта",
+    "email-placeholder": "you@example.com",
+    "password-label": "Пароль",
+    "submit": "Войти",
+    "forgot-label": "Забыли пароль?",
+    "forgot-href": "/ai-chat/help",
+    "register-label": "Создать аккаунт",
+    "register-href": "/ai-chat/rbac/subjects/authentication/registration",
+    "no-account": "Ещё нет аккаунта?",
+    "continue-label": "Открыть проект",
+    "continue-href": "/ai-chat/social/profiles/example",
+    "email-error": "Укажите адрес электронной почты.",
+    "password-error": "Введите пароль.",
+    "success-message": "Вы вошли в аккаунт.",
+    "photo-src": "/workspace-assets/singlepage/generated/living-focus/singlepagestartup-photography-work-in-motion-square.png",
+    "photo-asset-id": "singlepage-generated-living-focus-photography-work-in-motion-square",
+    "photo-alt": "Мастер в гончарной мастерской."
+  }
+}

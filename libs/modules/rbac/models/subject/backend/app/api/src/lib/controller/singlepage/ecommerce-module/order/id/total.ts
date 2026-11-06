@@ -1,13 +1,12 @@
-import {
-  RBAC_JWT_ALGORITHM,
-  RBAC_JWT_SECRET,
-  RBAC_SECRET_KEY,
-} from "@sps/shared-utils";
+import { withConsistencySnapshot } from "@sps/shared-backend-api";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import * as jwt from "hono/jwt";
-import { authorization, getHttpErrorType } from "@sps/backend-utils";
+import { getHttpErrorType } from "@sps/backend-utils";
 import { Service } from "../../../../../service";
+import { type IResult } from "@sps/ecommerce/models/order/sdk/server";
+import { IModel as IEcommerceModuleOrder } from "@sps/ecommerce/models/order/sdk/model";
+import { IModel as IBillingModuleCurrency } from "@sps/billing/models/currency/sdk/model";
+import { type IUnpricedOrderToProduct } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
 
 export class Handler {
   service: Service;
@@ -18,69 +17,81 @@ export class Handler {
 
   async execute(c: Context, next: any): Promise<Response> {
     try {
-      if (!RBAC_JWT_SECRET) {
-        throw new Error("Configuration error. RBAC_JWT_SECRET not set");
-      }
+      return await withConsistencySnapshot(async () => {
+        const id = c.req.param("id");
 
-      if (!RBAC_SECRET_KEY) {
-        throw new Error("Configuration error. RBAC_SECRET_KEY not set");
-      }
+        if (!id) {
+          throw new Error("Validation error. No id provided");
+        }
 
-      const id = c.req.param("id");
+        const orderId = c.req.param("orderId");
 
-      if (!id) {
-        throw new Error("Validation error. No id provided");
-      }
+        if (!orderId) {
+          throw new Error("Validation error. No orderId provided");
+        }
 
-      const orderId = c.req.param("orderId");
+        // Ownership is checked before the order is read: a missing order and
+        // another subject's order are refused alike, so the answer does not
+        // reveal which order ids exist.
+        await this.service.ecommerceModuleOrderAssertAccess({
+          subjectId: id,
+          orderId,
+        });
 
-      if (!orderId) {
-        throw new Error("Validation error. No orderId provided");
-      }
+        const ecommerceModuleOrder =
+          await this.service.ecommerceModule.order.findById({
+            id: orderId,
+          });
 
-      const body = await c.req.parseBody();
+        if (!ecommerceModuleOrder) {
+          throw new Error("Not Found error. No order found");
+        }
 
-      if (typeof body["data"] !== "string") {
-        throw new Error("Validation error. Invalid body");
-      }
+        const ecommerceModuleOrderTotals =
+          await this.service.ecommerceModule.order.findByIdTotal({
+            id: orderId,
+          });
 
-      const data = JSON.parse(body["data"]);
+        const totalsMap = new Map<
+          string,
+          {
+            billingModuleCurrency: IBillingModuleCurrency;
+            total: number;
+            orders: (IEcommerceModuleOrder & {
+              total: IResult["ITotalResult"];
+            })[];
+          }
+        >();
 
-      const token = authorization(c);
+        const unpriced: IUnpricedOrderToProduct[] = [
+          ...ecommerceModuleOrderTotals.unpriced,
+        ];
 
-      if (!token) {
-        throw new Error("Validation error. No token");
-      }
+        for (const ecommerceModuleOrderTotal of ecommerceModuleOrderTotals.totals) {
+          const currencyId = ecommerceModuleOrderTotal.billingModuleCurrency.id;
+          const entry = totalsMap.get(currencyId);
 
-      const decoded = await jwt.verify(
-        token,
-        RBAC_JWT_SECRET,
-        RBAC_JWT_ALGORITHM,
-      );
+          if (entry) {
+            entry.total += ecommerceModuleOrderTotal.total;
+          } else {
+            totalsMap.set(currencyId, {
+              billingModuleCurrency:
+                ecommerceModuleOrderTotal.billingModuleCurrency,
+              total: ecommerceModuleOrderTotal.total,
+              orders: [
+                {
+                  ...ecommerceModuleOrder,
+                  total: ecommerceModuleOrderTotals.totals,
+                },
+              ],
+            });
+          }
+        }
 
-      if (decoded?.["subject"]?.["id"] !== id) {
-        throw new Error("Validation error. Only order owner can update order");
-      }
-
-      const order = await this.service.ecommerceModule.order.findById({
-        id: orderId,
-      });
-
-      if (!order) {
-        throw new Error("Not Found error. No order found");
-      }
-
-      if (order.status !== "new") {
-        throw new Error("Not Found error. Order is not in 'new' status");
-      }
-
-      await this.service.deanonymize({
-        id,
-        email: data["email"],
-      });
-
-      return c.json({
-        data: true,
+        return c.json({
+          data: Array.from(totalsMap.values()),
+          unpriced,
+        });
       });
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);

@@ -48,13 +48,13 @@ test("canonical roles and workflows require the final editorial pass", () => {
   // is loaded beside one and needs the pointer, not a repeated section.
   for (const path of workflows) {
     const content = source(path);
-    assert.match(content, /## Final editorial pass/, path);
+    assert.match(content, /## (?:Final editorial pass|Редактура текста)/, path);
     assert.ok(content.includes(contractPath), path);
   }
   for (const path of roles) {
     const content = source(path);
     assert.ok(content.includes(contractPath), path);
-    assert.doesNotMatch(content, /## Final editorial pass/, path);
+    assert.doesNotMatch(content, /## (?:Final editorial pass|Редактура текста)/, path);
   }
 });
 
@@ -85,8 +85,8 @@ test("Codex skills route human-facing prose through unslop", () => {
 
   for (const path of skills.filter((value) => value !== unslop)) {
     const content = source(path);
-    assert.match(content, /## Final editorial pass/, path);
-    assert.ok(content.includes("`unslop` skill"), path);
+    assert.match(content, /## (?:Final editorial pass|Редактура текста)/, path);
+    assert.ok((/`unslop` skill|навык `unslop`/).test(content), path);
     assert.ok(content.includes(contractPath), path);
   }
 });

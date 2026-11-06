@@ -1,0 +1,27 @@
+{
+  "componentName": "host.page",
+  "pageName": "host",
+  "nodeId": "716:300",
+  "variantNodeId": "983:1759",
+  "variantName": "social-module-profile-slug-author",
+  "metadata": {
+    "singlepagestartup.studio.blockId": "host.page.social-module-profile-slug-author",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "host/page/singlepage/social-module-profile-slug-author",
+    "sps.figma.component": "host.page",
+    "sps.figma.variant": "social-module-profile-slug-author",
+    "sps.source.module": "host",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "page",
+    "sps.source.variant": "social-module-profile-slug-author",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/host/page/singlepage/social-module-profile-slug-author/Component.tsx",
+    "sps.code.story": "apps/studio/modules/host/page/singlepage/social-module-profile-slug-author/Component.stories.tsx",
+    "sps.figma.nodeId": "716:300",
+    "sps.figma.variantNodeId": "983:1759",
+    "sps.figma.storybookReferenceNodeId": "983:1902",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "983:1902",
+  "storybookImageCount": 1
+}

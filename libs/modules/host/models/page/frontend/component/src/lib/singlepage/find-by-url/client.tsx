@@ -6,11 +6,11 @@ import { IComponentProps } from "./interface";
 import { api } from "@sps/host/models/page/sdk/client";
 
 export default function Client(props: IComponentProps) {
-  const { data, isFetching, isLoading } = api.findByUrl({
+  const { data, isLoading } = api.findByUrl({
     url: props.url,
   });
 
-  if (isFetching || isLoading) {
+  if (isLoading) {
     return <Skeleton />;
   }
 

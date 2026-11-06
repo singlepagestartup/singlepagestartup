@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "",
+    "ru": ""
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Create a community, expert platform or AI assistant service. Members can introduce themselves, ask an author a question and continue the conversation in a separate topic.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"From an author card to a conversation with AI: one foundation for different ways to communicate.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Создайте сообщество, платформу экспертов или сервис с ИИ-помощником. Участники смогут рассказать о себе, задать вопрос автору и продолжить разговор в отдельной теме.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"От карточки автора до разговора с ИИ: одна основа для разных способов общения.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "ab978f30-090f-4f10-8445-49dcdd4d7388",
+  "createdAt": "2026-10-26T00:11:50.176Z",
+  "updatedAt": "2026-10-27T14:59:12.594Z",
+  "variant": "content-rich",
+  "adminTitle": "framework-reviewed-article-social-introduction",
+  "slug": "framework-reviewed-article-social-introduction"
+}

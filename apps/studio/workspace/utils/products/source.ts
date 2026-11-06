@@ -1,10 +1,5 @@
-import {
-  documentConfirmation,
-  type IDocumentConfirmation,
-} from "../../../../../tools/studio/workspace/document";
 import type { ComponentType } from "react";
 
-import { workspaceReviews } from "../review-source";
 import {
   parseProductCatalog,
   resolveProductCatalog,
@@ -15,13 +10,10 @@ import singlepageCatalogSource from "../../products/singlepage/catalog.yaml?raw"
 import startupCatalogSource from "../../products/startup/catalog.yaml?raw";
 import {
   parseSalesProcess,
-  salesOverviewMarkdown,
+  salesProcessMarkdown,
   validateSalesSegments,
 } from "./sales";
 import { parseDocument } from "../../../../../tools/studio/workspace/document";
-import { salesSegmentPages } from "../components/SalesSegment";
-import { splitProductDocument } from "./economics";
-import { parseProductPresentation } from "./presentation-data";
 import {
   resolveProductSections,
   type IProductSectionView,
@@ -37,7 +29,7 @@ const documentSources = import.meta.glob<string>(
 );
 
 interface IPresentationModule {
-  default?: ComponentType<{ content: Record<string, unknown> }>;
+  default?: ComponentType;
 }
 
 interface IProductSurfaceModule {
@@ -45,15 +37,17 @@ interface IProductSurfaceModule {
 }
 
 const componentModules = import.meta.glob<IProductSurfaceModule>(
-  "../../products/{singlepage,startup}/**/*.{tsx,jsx}",
+  [
+    "../../products/{singlepage,startup}/**/*.{tsx,jsx}",
+    "!../../products/**/*.{test,spec,stories}.{tsx,jsx}",
+    "!../../products/**/__tests__/**",
+  ],
   { eager: true },
 );
 const presentationModules = componentModules as Record<
   string,
   IPresentationModule
 >;
-const websiteModules = componentModules;
-const contentModules = componentModules;
 const fileModules = import.meta.glob(
   "../../products/{singlepage,startup}/**/*",
   { query: "?url", import: "default" },
@@ -76,41 +70,30 @@ const pageSources = {
 };
 
 export interface IProductDocument {
-  confirmation: IDocumentConfirmation;
   content: string;
   kind:
-    | "analytics"
+    | "audience"
+    | "competitors"
+    | "semantics"
+    | "economics"
     | "creative"
     | "product"
-    | "research"
     | "sales"
-    | "website"
-    | "model";
+    | "website";
   label: string;
   sourcePath: string;
 }
 
 export interface IProductView {
-  model?: { id: string; name: string; products: string[] };
   sections: IProductSectionView[];
-  content?: IProductSurface;
   documents: IProductDocument[];
   id: string;
   name: string;
   presentation?: {
-    Component: ComponentType<{ content: Record<string, unknown> }>;
-    content: Record<string, unknown>;
-    confirmation: IDocumentConfirmation;
-    dataSourcePath: string;
+    Component: ComponentType;
     sourcePath: string;
   };
   summary: string;
-  websiteComponent?: IProductSurface;
-}
-
-interface IProductSurface {
-  Component: ComponentType;
-  sourcePath: string;
 }
 
 export interface IProductCatalogView {
@@ -138,49 +121,12 @@ function documentSource(
   return source;
 }
 
-function productSurface(
-  modules: Record<string, IProductSurfaceModule>,
-  layer: ProductCatalogLayer,
-  relativePath: string | undefined,
-  surface: string,
-): IProductSurface | undefined {
-  if (!relativePath) return undefined;
-  const Component = modules[moduleKey(layer, relativePath)]?.default;
-  if (!Component) {
-    throw new Error(
-      `Missing product ${surface}: products/${layer}/${relativePath}`,
-    );
-  }
-  return {
-    Component,
-    sourcePath: `apps/studio/workspace/products/${layer}/${relativePath}`,
-  };
-}
-
 function view(
   id: IProductCatalogView["id"],
   catalog: IProductCatalog,
   inherited: boolean,
 ): IProductCatalogView {
   const products = catalog.products.map((entry) => {
-    const presentationContent = entry.presentation_data
-      ? parseProductPresentation<Record<string, unknown>>(
-          documentSource(catalog.layer, entry.presentation_data),
-          entry.id,
-        )
-      : {};
-    const confirmation = (
-      kind: IProductDocument["kind"] | "presentation",
-      relativePath: string,
-    ) =>
-      workspaceReviews[id === "singlepage" ? "singlepage" : "default"].get(
-        `product.${entry.id}.${kind}`,
-      )?.confirmation ??
-      documentConfirmation(
-        documentSource(catalog.layer, relativePath),
-        catalog.layer,
-        relativePath.endsWith(".yaml") ? "yaml" : "markdown",
-      );
     const presentationPath = entry.presentation
       ? moduleKey(catalog.layer, entry.presentation)
       : "";
@@ -190,29 +136,11 @@ function view(
         `Missing product presentation: products/${catalog.layer}/${entry.presentation}`,
       );
     }
-    const model = catalog.models.find(({ id }) => id === entry.model);
-    const productHalves = splitProductDocument(
-      documentSource(catalog.layer, entry.product),
-    );
     const sections = resolveProductSections(
       entry.sections,
       catalog.layer,
       pageSources,
     );
-    for (const section of sections) {
-      const attach = (pages: IProductPageView[]) =>
-        pages.forEach((page) => {
-          page.confirmation = workspaceReviews[
-            id === "singlepage" ? "singlepage" : "default"
-          ].get(
-            `product.${entry.id}.page.${section.id}.${page.id}`,
-          )?.confirmation;
-          if (page.representations)
-            page.representations.text.confirmation = page.confirmation;
-          attach(page.children);
-        });
-      attach(section.pages);
-    }
     const sales = parseSalesProcess(
       documentSource(catalog.layer, entry.sales),
       entry.id,
@@ -222,85 +150,43 @@ function view(
       parseDocument(documentSource(catalog.layer, entry.product)).metadata
         .customer_segments,
     );
-    const segmentPages = salesSegmentPages(
-      sales,
-      catalog.layer,
-      `apps/studio/workspace/products/${catalog.layer}/${entry.sales}`,
-      confirmation("sales", entry.sales),
-    );
-    if (segmentPages.length) {
-      const extension = sections.find((section) => section.id === "sales");
-      if (extension) extension.pages = [...segmentPages, ...extension.pages];
-      else sections.push({ id: "sales", title: "Sales", pages: segmentPages });
-    }
     return {
-      model: model
-        ? {
-            id: model.id,
-            name: model.name,
-            products: catalog.products
-              .filter((product) => product.model === model.id)
-              .map(({ name }) => name),
-          }
-        : undefined,
       sections,
-      content: productSurface(
-        contentModules,
-        catalog.layer,
-        entry.content,
-        "content",
-      ),
       documents: [
+        ...(
+          [
+            ["audience", "Аудитория"],
+            ["competitors", "Конкуренты"],
+            ["semantics", "Семантика"],
+            ["economics", "Экономика"],
+          ] as const
+        ).map(([kind, label]) => ({
+          kind,
+          label,
+          content: documentSource(catalog.layer, entry[kind]),
+          sourcePath: `apps/studio/workspace/products/${catalog.layer}/${entry[kind]}`,
+        })),
         {
-          content: productHalves.offer,
+          content: documentSource(catalog.layer, entry.product),
           kind: "product" as const,
-          confirmation: confirmation("product", entry.product),
-          label: "01 Product" as const,
+
+          label: "01 Описание" as const,
           sourcePath: `apps/studio/workspace/products/${catalog.layer}/${entry.product}`,
         },
-        ...(productHalves.economics
-          ? [
-              {
-                content: productHalves.economics,
-                kind: "model" as const,
-                label: "02 Operations & Economics",
-                confirmation: confirmation("product", entry.product),
-                sourcePath: `apps/studio/workspace/products/${catalog.layer}/${entry.product}`,
-              },
-            ]
-          : []),
         {
-          content: documentSource(catalog.layer, entry.research),
-          kind: "research" as const,
-          confirmation: confirmation("research", entry.research),
-          label: "02 Research" as const,
-          sourcePath: `apps/studio/workspace/products/${catalog.layer}/${entry.research}`,
-        },
-        {
-          content: salesOverviewMarkdown(sales),
+          content: salesProcessMarkdown(sales),
           kind: "sales" as const,
-          confirmation: confirmation("sales", entry.sales),
-          label: "03 Sales" as const,
+
+          label: "03 Продажи" as const,
           sourcePath: `apps/studio/workspace/products/${catalog.layer}/${entry.sales}`,
         },
-        ...(entry.analytics
-          ? [
-              {
-                content: documentSource(catalog.layer, entry.analytics),
-                kind: "analytics" as const,
-                confirmation: confirmation("analytics", entry.analytics),
-                label: "06 Analytics" as const,
-                sourcePath: `apps/studio/workspace/products/${catalog.layer}/${entry.analytics}`,
-              },
-            ]
-          : []),
         ...(entry.website
           ? [
               {
                 content: documentSource(catalog.layer, entry.website),
                 kind: "website" as const,
-                confirmation: confirmation("website", entry.website),
-                label: "04 Website" as const,
+
+                label: "Задача и структура сайта" as const,
                 sourcePath: `apps/studio/workspace/products/${catalog.layer}/${entry.website}`,
               },
             ]
@@ -313,11 +199,7 @@ function view(
                   entry.marketing_creative,
                 ),
                 kind: "creative" as const,
-                confirmation: confirmation(
-                  "creative",
-                  entry.marketing_creative,
-                ),
-                label: "05 Marketing Creative" as const,
+                label: "Задание на рекламу" as const,
                 sourcePath: `apps/studio/workspace/products/${catalog.layer}/${entry.marketing_creative}`,
               },
             ]
@@ -326,25 +208,13 @@ function view(
       id: entry.id,
       name: entry.name,
       presentation:
-        Component && entry.presentation && entry.presentation_data
+        Component && entry.presentation
           ? {
               Component,
-              content: presentationContent,
-              confirmation: confirmation(
-                "presentation",
-                entry.presentation_data,
-              ),
-              dataSourcePath: `apps/studio/workspace/products/${catalog.layer}/${entry.presentation_data}`,
               sourcePath: `apps/studio/workspace/products/${catalog.layer}/${entry.presentation}`,
             }
           : undefined,
       summary: entry.summary,
-      websiteComponent: productSurface(
-        websiteModules,
-        catalog.layer,
-        entry.website_component,
-        "website component",
-      ),
     };
   });
   return {
@@ -353,16 +223,17 @@ function view(
     label:
       id === "default"
         ? inherited
-          ? "default · inherited singlepage catalog"
-          : "default · startup catalog"
-        : `${id} source`,
+          ? "default · каталог из singlepage"
+          : "default · каталог startup"
+        : `Источник: ${id}`,
     products,
-    sourcePaths: [
-      "apps/studio/workspace/products/singlepage/catalog.yaml",
-      ...(id === "singlepage"
-        ? []
-        : ["apps/studio/workspace/products/startup/catalog.yaml"]),
-    ],
+    sourcePaths:
+      id === "default"
+        ? [
+            "apps/studio/workspace/products/singlepage/catalog.yaml",
+            "apps/studio/workspace/products/startup/catalog.yaml",
+          ]
+        : [`apps/studio/workspace/products/${id}/catalog.yaml`],
   };
 }
 

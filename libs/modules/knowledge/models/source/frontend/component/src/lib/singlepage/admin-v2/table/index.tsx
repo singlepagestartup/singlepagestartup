@@ -12,7 +12,7 @@ export function Component(props: IComponentProps) {
     <ParentComponent
       module="knowledge"
       name="source"
-      searchableFields={["contentHash", "originalPath", "status", "type"]}
+      searchableFields={["title", "content", "description"]}
       Component={ChildComponent}
       Provider={Provider}
       clientApi={clientApi}

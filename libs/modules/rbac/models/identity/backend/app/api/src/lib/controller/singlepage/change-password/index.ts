@@ -22,6 +22,9 @@ export class Handler {
       const data = JSON.parse(body["data"]);
 
       const uuid = c.req.param("uuid");
+      if (!uuid) {
+        throw new Error("Validation error. Invalid id");
+      }
 
       if (!uuid) {
         throw new Error("Validation error. No uuid provided");

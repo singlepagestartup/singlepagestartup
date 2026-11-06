@@ -1,0 +1,27 @@
+{
+  "id": "analytic.metric.admin-v2-table",
+  "title": "analytic metric / admin-v2-table",
+  "description": "Local records for Studio component design.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "analytic",
+    "entityType": "model",
+    "entity": "metric",
+    "variant": "admin-v2-table"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "analytic.metric",
+    "pageName": "analytic",
+    "variantName": "admin-v2-table",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

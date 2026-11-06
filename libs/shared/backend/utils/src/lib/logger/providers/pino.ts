@@ -1,16 +1,20 @@
 import pino from "pino";
 import { ILogger } from "../interface";
+import { runtimeErrorRecord } from "../error-record";
 
 export class PinoLogger implements ILogger {
   private logger;
+  private incidents;
 
-  constructor(config: { level: string; isDev: boolean }) {
+  constructor(config: { level: string }) {
     this.logger = pino({
       level: config.level,
-      transport: config.isDev
-        ? { target: "pino-pretty", options: { colorize: true } }
-        : undefined,
     });
+    this.incidents = this.logger.child({}, { level: "error" });
+  }
+
+  errorEvent(record: Record<string, unknown>) {
+    this.incidents.error(record);
   }
 
   info(...args: any[]) {
@@ -22,7 +26,7 @@ export class PinoLogger implements ILogger {
   }
 
   error(...args: any[]) {
-    this.logger.error(...args);
+    this.errorEvent(runtimeErrorRecord(args));
   }
 
   debug(...args: any[]) {

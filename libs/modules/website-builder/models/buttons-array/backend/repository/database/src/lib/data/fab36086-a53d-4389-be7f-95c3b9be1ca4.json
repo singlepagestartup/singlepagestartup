@@ -1,0 +1,14 @@
+{
+  "id": "fab36086-a53d-4389-be7f-95c3b9be1ca4",
+  "createdAt": "2026-10-24T01:05:45.871Z",
+  "updatedAt": "2026-10-24T01:05:45.871Z",
+  "variant": "default",
+  "className": "w-full",
+  "title": {
+    "en": "Actions",
+    "ru": "Действия"
+  },
+  "description": {},
+  "adminTitle": "Actions",
+  "slug": "framework-journey-preparation-actions"
+}

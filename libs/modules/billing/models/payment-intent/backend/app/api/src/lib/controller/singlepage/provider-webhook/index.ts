@@ -28,9 +28,14 @@ export class Handler {
       }
 
       const provider = c.req.param("provider");
-
       if (!provider) {
-        throw new Error("Validation error. No provider provided");
+        throw new Error("Validation error. Invalid provider");
+      }
+
+      if (!this.service.isProviderAllowed({ provider })) {
+        throw new Error(
+          `Validation error. Provider ${provider} is not allowed`,
+        );
       }
 
       const contentType = c.req.header("content-type");

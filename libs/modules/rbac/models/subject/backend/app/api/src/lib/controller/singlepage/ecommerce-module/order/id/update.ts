@@ -1,5 +1,5 @@
 import {
-  RBAC_JWT_ALGORITHM,
+  INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
   RBAC_JWT_SECRET,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
@@ -9,6 +9,7 @@ import * as jwt from "hono/jwt";
 import { authorization, getHttpErrorType } from "@sps/backend-utils";
 import { Service } from "../../../../../service";
 import { api as ecommerceOrderApi } from "@sps/ecommerce/models/order/sdk/server";
+import { z } from "zod";
 
 export class Handler {
   service: Service;
@@ -45,11 +46,7 @@ export class Handler {
         throw new Error("Validation error. No token");
       }
 
-      const decoded = await jwt.verify(
-        token,
-        RBAC_JWT_SECRET,
-        RBAC_JWT_ALGORITHM,
-      );
+      const decoded = await jwt.verify(token, RBAC_JWT_SECRET, "HS256");
 
       if (decoded?.["subject"]?.["id"] !== id) {
         throw new Error("Validation error. Only order owner can update order");
@@ -63,7 +60,35 @@ export class Handler {
 
       const data = JSON.parse(body["data"]);
 
-      if (!data.ordersToProducts) {
+      if (data && Object.hasOwn(data, "billingModule")) {
+        const currency = z
+          .string()
+          .uuid()
+          .safeParse(data.billingModule?.currency?.id);
+        if (!currency.success || data.ordersToProducts !== undefined) {
+          throw new Error(
+            "Validation error. Send one valid billingModule.currency.id separately from quantity changes",
+          );
+        }
+        await this.service.ecommerceModuleOrderSetCurrency({
+          subjectId: id,
+          orderId,
+          currencyId: currency.data,
+        });
+        return c.json({ data: await this.service.findById({ id }) });
+      }
+
+      if (
+        !Array.isArray(data.ordersToProducts) ||
+        !data.ordersToProducts.length ||
+        data.ordersToProducts.some(
+          (line: { id?: string; quantity?: number }) =>
+            !line ||
+            typeof line.id !== "string" ||
+            !Number.isSafeInteger(line.quantity) ||
+            Number(line.quantity) <= 0,
+        )
+      ) {
         throw new Error("Validation error. No ordersToProducts provided");
       }
 
@@ -74,6 +99,12 @@ export class Handler {
       if (!entity) {
         throw new Error("Not Found error. No entity found");
       }
+
+      await this.service.ecommerceModuleOrderAssertAccess({
+        subjectId: id,
+        orderId,
+        lineIds: data.ordersToProducts.map((line: { id: string }) => line.id),
+      });
 
       const order = await this.service.ecommerceModule.order.findById({
         id: orderId,
@@ -87,9 +118,33 @@ export class Handler {
         throw new Error("Not Found error. Order is not in 'new' status");
       }
 
+      const lines = await this.service.ecommerceModule.ordersToProducts.find({
+        params: {
+          filters: {
+            and: [{ column: "orderId", method: "eq", value: orderId }],
+          },
+        },
+      });
+      for (const line of lines) {
+        const product = await this.service.ecommerceModule.product.findById({
+          id: line.productId,
+        });
+        if (product?.slug === INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG)
+          throw new Error(
+            "Permission error. Initial Free cannot be changed through a cart",
+          );
+      }
+
       await ecommerceOrderApi.update({
         id: orderId,
-        data,
+        data: {
+          ordersToProducts: data.ordersToProducts.map(
+            (line: { id: string; quantity: number }) => ({
+              id: line.id,
+              quantity: line.quantity,
+            }),
+          ),
+        },
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,

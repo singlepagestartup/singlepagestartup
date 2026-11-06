@@ -1,0 +1,26 @@
+{
+  "id": "ecommerce.attribute.admin-v2-select-input",
+  "title": "Ecommerce Attribute / Admin V2 Select Input",
+  "description": "Model-owned attribute selector for local relation previews.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "ecommerce",
+    "entityType": "model",
+    "entity": "attribute",
+    "variant": "admin-v2-select-input"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "ecommerce.attribute",
+    "pageName": "ecommerce",
+    "variantName": "admin-v2-select-input",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

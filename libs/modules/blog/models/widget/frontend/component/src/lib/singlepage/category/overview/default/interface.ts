@@ -1,3 +1,4 @@
+import type { TRenderAuthor } from "@sps/blog/models/article/frontend/component";
 export { type IModel } from "@sps/blog/models/widget/sdk/model";
 import { IModel } from "@sps/blog/models/widget/sdk/model";
 import {
@@ -10,6 +11,8 @@ export const variant = "category-overview-default" as const;
 export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
   language: string;
+  renderAuthor?: TRenderAuthor;
+  categorySlug?: string;
 }
 
 export interface IComponentPropsExtended
@@ -18,3 +21,10 @@ export interface IComponentPropsExtended
     typeof variant,
     IComponentProps
   > {}
+
+export interface IContentProps {
+  isServer: boolean;
+  language: string;
+  renderAuthor?: TRenderAuthor;
+  categorySlug?: string;
+}

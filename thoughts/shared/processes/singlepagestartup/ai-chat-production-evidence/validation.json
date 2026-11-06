@@ -1,0 +1,48 @@
+{
+  "tests": {
+    "rbacProjectsAndThreadDocuments": 8,
+    "rbacProfileAndAvatar": 7,
+    "agentOpenRouterAndTelegram": 22,
+    "totalPassed": 37
+  },
+  "hostTypeScript": "passed",
+  "hostBuild": "passed",
+  "buildPageGenerationComplete": true,
+  "apiTypeScript": {
+    "status": "existing-errors",
+    "count": 25,
+    "newDiagnostics": [],
+    "diagnostics": [
+      "libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/telegram-assistant-conversation.ts(463,11): error TS2322: Type '{ caption: string; file: import(\"buffer\").File; }' is not assignable to type '{ caption: string; file: File; }'.",
+      "libs/modules/billing/models/payment-intent/backend/app/api/src/lib/controller/singlepage/check/index.ts(217,17): error TS18046: 'paymentsList' is of type 'unknown'.",
+      "libs/modules/billing/models/payment-intent/backend/app/api/src/lib/controller/singlepage/check/index.ts(218,36): error TS18046: 'paymentsList' is of type 'unknown'.",
+      "libs/modules/billing/models/payment-intent/backend/app/api/src/lib/service/singlepage/cloudpayments.ts(123,13): error TS2322: Type 'unknown' is not assignable to type '{ Model: { Id: string; Number: number; Amount: number; Currency: \"RUB\" | \"USD\" | \"EUR\" | \"GBP\"; CurrencyCode: number; Email: string; Phone: string | undefined; Description: string; RequireConfirmation: boolean | undefined; ... 8 more ...; InternalId: number; }; Success: boolean; Message: null; }'.",
+      "libs/modules/billing/models/payment-intent/backend/app/api/src/lib/service/singlepage/index.ts(588,13): error TS2322: Type 'unknown' is not assignable to type '{ redirectUrl: string; id: number; }'.",
+      "libs/modules/billing/models/payment-intent/backend/app/api/src/lib/service/singlepage/index.ts(1078,13): error TS2322: Type 'unknown' is not assignable to type '{ Id: string; Status: string; Url: string; Invoice: string; Description: string; Amount: string; Currency: string; CreatedDate: string; } | { Code: string; Description: string; }'.",
+      "libs/modules/billing/models/payment-intent/backend/app/api/src/lib/service/singlepage/paykeeper.ts(251,13): error TS2322: Type 'unknown' is not assignable to type 'IPayKeeperTokenResponse'.",
+      "libs/modules/billing/models/payment-intent/backend/app/api/src/lib/service/singlepage/paykeeper.ts(412,15): error TS2322: Type 'unknown' is not assignable to type 'IPayKeeperPaymentResponse'.",
+      "libs/modules/billing/models/payment-intent/backend/app/api/src/lib/service/singlepage/tiptoppay.ts(121,13): error TS2322: Type 'unknown' is not assignable to type '{ Model: { Id: string; Number: number; Amount: number; Currency: \"KZT\"; CurrencyCode: number; Email: string; Phone: string | undefined; Description: string; RequireConfirmation: boolean | undefined; ... 8 more ...; InternalId: number; }; Success: boolean; Message: null; }'.",
+      "libs/modules/file-storage/models/file/backend/app/api/src/lib/controller/singlepage/create-from-url/index.ts(57,9): error TS2322: Type 'File' is not assignable to type 'Blob | Buffer<ArrayBufferLike>'.",
+      "libs/modules/host/models/page/backend/app/api/src/lib/service/singlepage/index.ts(218,33): error TS2339: Property 'data' does not exist on type '{}'.",
+      "libs/modules/host/models/page/backend/app/api/src/lib/service/singlepage/index.ts(222,20): error TS2339: Property 'data' does not exist on type '{}'.",
+      "libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/audio-transcription.ts(166,31): error TS2739: Type 'File' is missing the following properties from type 'File': json, formData",
+      "libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/audio-transcription.ts(168,44): error TS2739: Type 'File' is missing the following properties from type 'File': json, formData",
+      "libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/audio-transcription.ts(171,11): error TS2322: Type 'File' is not assignable to type 'Uploadable'.",
+      "libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/audio-transcription.ts(672,24): error TS2322: Type 'ArrayBuffer' is not assignable to type 'Blob | BinaryLike'.",
+      "libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/create.ts(142,21): error TS2352: Conversion of type '(FormDataEntryValue & File)[]' to type 'File[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.",
+      "libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/update.ts(85,21): error TS2352: Conversion of type '(FormDataEntryValue & File)[]' to type 'File[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.",
+      "libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/profile/find-by-id/knowledge/source/find-by-id/files/index.ts(28,35): error TS2677: A type predicate's type must be assignable to its parameter's type.",
+      "libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/profile/find-by-id/knowledge/source/find-by-id/files/index.ts(35,36): error TS2339: Property 'name' does not exist on type 'FormDataEntryValue'.",
+      "libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/profile/find-by-id/knowledge/source/find-by-id/files/index.ts(35,52): error TS2339: Property 'name' does not exist on type 'FormDataEntryValue'.",
+      "libs/modules/rbac/models/subject/backend/app/api/src/lib/service/singlepage/telegram/bootstrap.ts(334,35): error TS2339: Property 'ok' does not exist on type '{}'.",
+      "libs/modules/rbac/models/subject/backend/app/api/src/lib/service/singlepage/telegram/bootstrap.ts(336,48): error TS2339: Property 'description' does not exist on type '{}'.",
+      "libs/providers/file-storage/src/lib/vercel-blob/index.ts(79,5): error TS2322: Type 'Blob' is not assignable to type 'Blob | Buffer<ArrayBufferLike> | null'.",
+      "libs/shared/third-parties/src/lib/z-ai/index.ts(35,12): error TS18046: 'data' is of type 'unknown'."
+    ]
+  },
+  "baselineFilesChanged": [],
+  "schemaChanges": false,
+  "migrations": false,
+  "githubIssue": null,
+  "viewportCSSWidth": 390
+}

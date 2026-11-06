@@ -15,6 +15,7 @@ export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/crm/inputs";
 export const variants = [
+  "hidden",
   "default",
   "text-default",
   "textarea-default",

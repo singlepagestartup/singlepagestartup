@@ -1,0 +1,14 @@
+{
+  "id": "89d245b5-3e3e-483a-a5c5-32860e073f9b",
+  "createdAt": "2026-10-23T20:18:03.248Z",
+  "updatedAt": "2026-10-23T20:18:03.248Z",
+  "variant": "footer-column",
+  "className": "",
+  "title": {
+    "en": "Resources",
+    "ru": "Материалы"
+  },
+  "description": {},
+  "adminTitle": "Resources",
+  "slug": "framework-footer-resources"
+}

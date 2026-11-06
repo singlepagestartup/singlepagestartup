@@ -16,6 +16,7 @@ export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/<%= module_name_kebab_cased %>/<%= model_name_kebab_cased_plural %>";
 export const variants = [
   "default",
+  "hidden",
 ];
 export const query = {};
 export const options = {

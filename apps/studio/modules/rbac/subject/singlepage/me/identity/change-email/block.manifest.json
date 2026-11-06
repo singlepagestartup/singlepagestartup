@@ -1,0 +1,27 @@
+{
+  "id": "rbac.subject.me-identity-change-email",
+  "title": "me-identity-change-email",
+  "description": "Current Subject action and participant context.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "subject",
+    "variant": "me-identity-change-email"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "rbac.subject",
+    "pageName": "rbac",
+    "variantName": "me-identity-change-email",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

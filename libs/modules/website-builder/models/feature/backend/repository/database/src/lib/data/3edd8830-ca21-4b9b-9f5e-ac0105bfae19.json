@@ -1,0 +1,18 @@
+{
+  "className": null,
+  "id": "3edd8830-ca21-4b9b-9f5e-ac0105bfae19",
+  "createdAt": "2026-10-23T20:18:05.614Z",
+  "updatedAt": "2026-10-23T20:18:05.614Z",
+  "variant": "card",
+  "title": {
+    "en": "Modules own their data",
+    "ru": "Модули владеют своими данными"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"A model owns its service and repository. Higher modules compose lower capabilities through explicit relations.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"У модели есть собственные service и repository. Верхние модули используют возможности нижних через явные связи.\"}]}]}"
+  },
+  "adminTitle": "Modules own their data",
+  "slug": "framework-about-architecture-feature-0"
+}

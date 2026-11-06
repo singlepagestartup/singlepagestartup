@@ -1,0 +1,62 @@
+{
+  "date": "2026-10-12",
+  "composition": [
+    "host.widgets-to-external-widgets resolves persisted Website Builder Widget",
+    "website-builder.widget.content-ai-chat-help owns the support card and renders children",
+    "Host supplies rbac.subject.me-crm-module-form-support-ai-chat through children",
+    "RBAC loads crm.form.support-ai-chat by SDK and owns validation and submission",
+    "CRM Form renders support fields, errors and caller actions"
+  ],
+  "browser": {
+    "crmContainsHeading": false,
+    "crmContainsWebsiteBuilder": false,
+    "crmFormId": "3d00218e-2511-4526-8cc0-f8913faf4c0f",
+    "fieldNames": ["topic", "details", "result"],
+    "formInsideWebsiteBuilder": true,
+    "headingOwner": "website-builder",
+    "subjectVariant": "me-crm-module-form-support-ai-chat",
+    "supportCard": "Support request",
+    "widgetId": "891660ec-0b4d-4051-b595-e3f0debcefaa"
+  },
+  "validation": {
+    "errors": [
+      "Choose a topic.",
+      "Describe what happened.",
+      "Tell us what result you need."
+    ],
+    "focusedField": "Topic",
+    "invalidFields": ["Topic", "details", "result"],
+    "submitDisabled": false
+  },
+  "checks": {
+    "hostCompositionTests": {
+      "passed": 2,
+      "total": 2
+    },
+    "studioIsolationAndAIChatTests": {
+      "passed": 24,
+      "total": 24
+    },
+    "hostTypeScript": "passed",
+    "studioTypeScript": "passed",
+    "browserConsoleErrors": 0,
+    "codePlacement": "passed",
+    "whitespace": "passed"
+  },
+  "supportRequestSubmitted": false,
+  "schemaChanges": false,
+  "repositoryDataSnapshotChanges": false,
+  "files": [
+    "libs/modules/crm/models/form/frontend/component/src/lib/singlepage/support-ai-chat/Component.tsx",
+    "libs/modules/website-builder/models/widget/frontend/component/src/lib/singlepage/content-ai-chat-help/Component.tsx",
+    "libs/modules/website-builder/models/widget/frontend/component/src/lib/singlepage/content-ai-chat-help/interface.ts",
+    "apps/studio/modules/crm/form/singlepage/support/ai-chat/Component.tsx",
+    "apps/studio/modules/website-builder/widget/singlepage/content/ai-chat/help/Component.tsx",
+    "apps/studio/modules/website-builder/widget/singlepage/content/ai-chat/help/Component.stories.tsx",
+    "libs/modules/host/relations/widgets-to-external-widgets/README.md",
+    "libs/modules/crm/models/form/README.md",
+    "libs/modules/website-builder/models/widget/README.md",
+    "libs/modules/host/relations/widgets-to-external-widgets/frontend/component/src/lib/singlepage/default/website-builder/Component.spec.tsx",
+    "apps/studio/modules/host/page/singlepage/ai-chat/Component.test.tsx"
+  ]
+}

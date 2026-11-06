@@ -9,50 +9,50 @@
         {
           "name": "color/background",
           "css": "var(--sps-color-background)",
-          "light": "#eaf0f7",
-          "dark": "#0f172a",
+          "light": "#f4f6f8",
+          "dark": "#18232a",
           "scopes": ["FRAME_FILL", "SHAPE_FILL"]
         },
         {
           "name": "color/foreground",
           "css": "var(--sps-color-foreground)",
-          "light": "#111827",
-          "dark": "#f8fafc",
+          "light": "#18232a",
+          "dark": "#ffffff",
           "scopes": ["TEXT_FILL"]
         },
         {
           "name": "color/surface",
           "css": "var(--sps-color-surface)",
           "light": "#ffffff",
-          "dark": "#111827",
+          "dark": "#18232a",
           "scopes": ["FRAME_FILL", "SHAPE_FILL"]
         },
         {
           "name": "color/border",
           "css": "var(--sps-color-border)",
-          "light": "#d6dfeb",
-          "dark": "#334155",
+          "light": "#dce2e6",
+          "dark": "#5b6870",
           "scopes": ["STROKE_COLOR"]
         },
         {
           "name": "color/primary",
           "css": "var(--sps-color-primary)",
-          "light": "#111827",
-          "dark": "#f8fafc",
+          "light": "#18232a",
+          "dark": "#ffffff",
           "scopes": ["FRAME_FILL", "SHAPE_FILL", "TEXT_FILL"]
         },
         {
           "name": "color/secondary",
           "css": "var(--sps-color-secondary)",
-          "light": "#2563eb",
-          "dark": "#60a5fa",
+          "light": "#ffffff",
+          "dark": "#18232a",
           "scopes": ["FRAME_FILL", "SHAPE_FILL", "TEXT_FILL"]
         },
         {
           "name": "color/accent",
           "css": "var(--sps-color-accent)",
-          "light": "#14b8a6",
-          "dark": "#2dd4bf",
+          "light": "#bfef61",
+          "dark": "#bfef61",
           "scopes": ["FRAME_FILL", "SHAPE_FILL", "TEXT_FILL"]
         }
       ]

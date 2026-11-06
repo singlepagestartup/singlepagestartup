@@ -1,4 +1,5 @@
 "use server";
+
 import "server-only";
 
 import { IComponentProps, IComponentPropsExtended } from "./interface";
@@ -35,6 +36,9 @@ export async function Component<
   delete passProps.Component;
   delete passProps.Skeleton;
   delete passProps.api;
+  delete passProps.Provider;
+  delete passProps.clientApi;
+  delete passProps.serverApi;
 
   return <Child {...passProps} data={data} />;
 }
