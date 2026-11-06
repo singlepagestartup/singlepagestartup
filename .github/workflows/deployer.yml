@@ -2,10 +2,15 @@ name: Env
 on:
   pull_request:
     types: [closed]
+    branches:
+      - "ansible-*"
+
+permissions:
+  contents: read
 
 jobs:
   server:
-    if: contains(github.ref_name, 'ansible') && github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true
     uses: ./.github/workflows/ansible.yml
     secrets: inherit
     with:

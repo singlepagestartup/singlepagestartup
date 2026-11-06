@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "ec2b82ca-e342-4ebe-abaf-c5ada73b8253",
+  "createdAt": "2026-10-26T00:12:17.076Z",
+  "updatedAt": "2026-10-27T15:00:01.019Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Adapt a section to your task",
+    "ru": "Раздел можно доработать под задачу"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Use an existing block variant or add a new one in the project's code. Edit its content through the administrative view.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Используйте существующий вариант блока или добавьте новый в коде проекта. Содержимое можно редактировать через административное представление.\"}]}]}"
+  },
+  "adminTitle": "Раздел можно доработать под задачу",
+  "slug": "framework-reviewed-article-startup-introduction-feature-1"
+}

@@ -26,24 +26,6 @@ interface UseChatComposerProps {
   threadMessagesCache: ThreadMessagesCache;
 }
 
-function getErrorMessage(error: unknown, fallback: string) {
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-
-  if (
-    typeof error === "object" &&
-    error &&
-    "message" in error &&
-    typeof error.message === "string" &&
-    error.message
-  ) {
-    return error.message;
-  }
-
-  return fallback;
-}
-
 export function useChatComposer(props: UseChatComposerProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -145,9 +127,6 @@ export function useChatComposer(props: UseChatComposerProps) {
             props.threadMessagesCache.refetch();
           }
           resetComposer();
-        },
-        onError(error: unknown) {
-          toast.error(getErrorMessage(error, "Message creation failed"));
         },
       },
     );

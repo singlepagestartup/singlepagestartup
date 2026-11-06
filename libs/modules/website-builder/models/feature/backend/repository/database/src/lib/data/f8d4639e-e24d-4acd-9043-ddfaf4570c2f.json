@@ -1,0 +1,18 @@
+{
+  "className": "",
+  "id": "f8d4639e-e24d-4acd-9043-ddfaf4570c2f",
+  "createdAt": "2026-10-24T01:05:46.757Z",
+  "updatedAt": "2026-10-24T01:05:46.757Z",
+  "variant": "definition-checklist",
+  "title": {
+    "en": "Code and guidance together",
+    "ru": "Код и инструкции рядом"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Keep the Next.js frontend, Hono API, module documentation and coding-agent instructions in one repository.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Frontend на Next.js, API на Hono, документация модулей и инструкции coding agent находятся в одном репозитории.\"}]}]}"
+  },
+  "adminTitle": "Code and guidance together",
+  "slug": "framework-journey-foundation-3"
+}

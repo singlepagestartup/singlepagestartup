@@ -1,10 +1,38 @@
 import { IRouteRule, UUID_PATH_SUFFIX_REGEX } from "@sps/shared-utils";
 
+/** Routes whose controllers authenticate the caller and enforce resource access. */
+export const controllerGuardedRoutes: IRouteRule[] = [
+  {
+    regexPath: /^\/api\/rbac\/subjects\/host-cache\/revalidate\/?$/,
+    methods: ["POST"],
+  },
+  {
+    regexPath: /^\/api\/rbac\/subjects\/[^/]+\/blog-module\/articles\/?$/,
+    methods: ["POST"],
+  },
+  {
+    regexPath:
+      /^\/api\/rbac\/subjects\/[^/]+\/blog-module\/articles\/[^/]+\/content$/,
+    methods: ["GET"],
+  },
+  {
+    regexPath: /^\/api\/file-storage\/files\/[^/]+\/content$/,
+    methods: ["GET", "HEAD"],
+  },
+  {
+    regexPath: new RegExp(
+      `^/api/rbac/subjects${UUID_PATH_SUFFIX_REGEX.source}`,
+    ),
+    methods: ["GET"],
+  },
+];
+
 /**
- * Framework-default routes allowed WITHOUT authentication (singlepage layer).
+ * Framework routes that skip the global role check (singlepage layer).
  *
- * A request matching any of these (path + method) skips the is-authorized
- * check. Projects add their own in `./startup.ts` or via constructor options.
+ * Public endpoints accept anonymous requests; controller-guarded routes still
+ * enforce their own authentication and ownership checks. Projects add rules
+ * in `./startup.ts` or via constructor options.
  *
  * Every rule is anchored at both ends and names the routes it opens: the
  * matcher tests the lowercased path, so a rule without `^` and `$` also opens
@@ -13,6 +41,7 @@ import { IRouteRule, UUID_PATH_SUFFIX_REGEX } from "@sps/shared-utils";
  * decided by the permission service like every other route.
  */
 export const allowedRoutes: IRouteRule[] = [
+  ...controllerGuardedRoutes,
   {
     regexPath: /^\/favicon\.ico$/,
     methods: ["GET"],
@@ -90,4 +119,7 @@ export const allowedRoutes: IRouteRule[] = [
     regexPath: /^\/api\/host\/pages\/(find-by-url|urls|url-segment-value)$/,
     methods: ["GET"],
   },
+  { regexPath: /^\/api\/host\/pages\/seo\/?$/, methods: ["GET"] },
+  { regexPath: /^\/api\/host\/pages\/seo-preview\/?$/, methods: ["POST"] },
+  { regexPath: /^\/api\/agent\/agents\/cron$/, methods: ["POST"] },
 ];

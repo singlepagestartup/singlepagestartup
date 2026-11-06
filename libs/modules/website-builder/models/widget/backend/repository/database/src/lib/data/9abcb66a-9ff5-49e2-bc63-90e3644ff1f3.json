@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Prepare your business before you build.",
+    "ru": "Подготовьте бизнес перед разработкой."
+  },
+  "subtitle": {
+    "en": "AI Chat plans and tokens",
+    "ru": "Тарифы и токены AI-чата"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Work through your business model, product concept and project documents in AI Chat. Use the prepared material to brief the coding agents that develop your product with Code Framework.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Code Framework is free under the MIT licence. AI Chat plans and tokens pay for AI work on your project materials.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Проработайте бизнес-модель, концепцию продукта и документы проекта в AI-чате. Передайте подготовленные материалы coding agent для разработки продукта на Code Framework.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Code Framework доступен бесплатно по MIT. Тарифы и токены AI-чата оплачивают работу ИИ с материалами вашего проекта.\"}]}]}"
+  },
+  "anchor": "ai-chat-plans-introduction",
+  "className": "",
+  "id": "9abcb66a-9ff5-49e2-bc63-90e3644ff1f3",
+  "createdAt": "2026-10-24T01:06:17.439Z",
+  "updatedAt": "2026-10-24T01:35:50.454Z",
+  "variant": "content-page-header",
+  "adminTitle": "Prepare your business before you build.",
+  "slug": "framework-journey-tokens-introduction"
+}

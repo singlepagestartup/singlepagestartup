@@ -1,0 +1,18 @@
+{
+  "logotype": {
+    "id": "688fe8ba-0801-4e61-84ce-e2b7712325e2",
+    "slug": "ai-chat-brand"
+  },
+  "authenticationWidget": {
+    "id": "df6b9acf-ec77-42c2-b03e-1d8200d5a73c",
+    "slug": "ai-chat-authentication-content"
+  },
+  "previewChat": {
+    "id": "1ac957b9-78e0-49c7-9e26-69d9c5c08aee",
+    "slug": "ai-chat-preview"
+  },
+  "widgetLogotypeRelations": [
+    "9e6560d7-4163-4893-8d41-a53fb5af6512",
+    "b32c7915-8d53-4093-b1a1-1a5c85b16608"
+  ]
+}

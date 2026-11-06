@@ -1,0 +1,27 @@
+{
+  "componentName": "rbac.subject",
+  "pageName": "rbac",
+  "nodeId": "859:27",
+  "variantNodeId": "981:99",
+  "variantName": "me-crm-module-form-default",
+  "metadata": {
+    "singlepagestartup.studio.blockId": "rbac.subject.me-crm-module-form-default",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "rbac/subject/singlepage/me-crm-module-form-default",
+    "sps.figma.component": "rbac.subject",
+    "sps.figma.variant": "me-crm-module-form-default",
+    "sps.source.module": "rbac",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "subject",
+    "sps.source.variant": "me-crm-module-form-default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/rbac/subject/singlepage/me-crm-module-form-default/Component.tsx",
+    "sps.code.story": "apps/studio/modules/rbac/subject/singlepage/me-crm-module-form-default/Component.stories.tsx",
+    "sps.figma.nodeId": "859:27",
+    "sps.figma.variantNodeId": "981:99",
+    "sps.figma.storybookReferenceNodeId": "981:250",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "981:250",
+  "storybookImageCount": 1
+}

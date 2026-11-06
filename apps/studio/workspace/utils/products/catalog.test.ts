@@ -1,264 +1,162 @@
-/**
- * BDD Suite: Atomic product-catalog inheritance
- * Given singlepage has framework products and startup may define downstream products
- * When default resolves its product catalog
- * Then an empty startup inherits everything and a non-empty startup replaces everything
- */
-
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
-
-import { parseProductCatalog, resolveProductCatalog } from "./catalog";
-
-function catalog(ids: string[]): string {
-  if (!ids.length) {
-    return "schema: singlepagestartup.product-catalog.v1\nproducts: []\n";
-  }
-  return `schema: singlepagestartup.product-catalog.v1\nproducts:\n${ids
-    .map(
-      (id) =>
-        `  - { id: ${id}, name: ${id}, summary: ${id}, research: ${id}/research.md, sales: ${id}/sales.yaml, product: ${id}/product.md, website: ${id}/website.md, marketing_creative: ${id}/marketing-creative.md, presentation: ${id}/presentation/ProjectPresentation.tsx, presentation_data: ${id}/presentation/data.yaml }`,
-    )
-    .join("\n")}\n`;
-}
-
-describe("product catalog", () => {
-  /**
-   * BDD Scenario: Restore both client-confirmed framework products
-   * Given the live framework catalog and an empty startup catalog
-   * When the default catalog is resolved
-   * Then Code Framework and AI Chat both remain available
-   */
-  test("retains both client-confirmed products in the live catalog", () => {
-    const base = parseProductCatalog(
-      readFileSync(
-        new URL("../../products/singlepage/catalog.yaml", import.meta.url),
-        "utf8",
-      ),
-      "singlepage",
-    );
-    const resolved = resolveProductCatalog(
-      base,
-      parseProductCatalog(
-        readFileSync(
-          new URL("../../products/startup/catalog.yaml", import.meta.url),
-          "utf8",
-        ),
-        "startup",
-      ),
-    );
-    expect(resolved.catalog.products.map(({ id }) => id)).toEqual([
+import { stringify } from "yaml";
+import {
+  parseProductCatalog,
+  resolveProductCatalog,
+  productDocumentEntries,
+  productMaterialStoryGroups,
+} from "./catalog";
+import {
+  validateProductCatalogFiles,
+  validateProductSectionFiles,
+} from "../../../../../tools/studio/products/validate";
+import path from "node:path";
+const root = path.resolve(import.meta.dir, "../../products");
+const base = parseProductCatalog(
+  readFileSync(path.join(root, "singlepage/catalog.yaml"), "utf8"),
+  "singlepage",
+);
+const source = (products: unknown[], extra = {}) =>
+  stringify({
+    schema: "singlepagestartup.product-catalog.v2",
+    products,
+    ...extra,
+  });
+describe("current product catalog", () => {
+  test("real products resolve every declared source", async () => {
+    expect(base.products.map((p) => p.id)).toEqual([
       "singlepagestartup",
       "ai-chat",
     ]);
-    expect(
-      base.products.every((product) =>
-        product.presentation_data?.endsWith("/presentation/data.yaml"),
-      ),
-    ).toBe(true);
-    expect(
-      base.products.every((product) =>
-        product.analytics?.endsWith("/analytics.md"),
-      ),
-    ).toBe(true);
-  });
-
-  /**
-   * BDD Scenario: Give AI Chat the complete Studio product workspace
-   * Given AI Chat uses the same extensible product contract as Code Framework
-   * When its authored catalog structure is read
-   * Then Website exposes routed Pages with Text and Layout and Product Content remains available
-   */
-  test("keeps AI Chat website pages and product content explicit", () => {
-    const parsed = parseProductCatalog(
-      readFileSync(
-        new URL("../../products/singlepage/catalog.yaml", import.meta.url),
-        "utf8",
-      ),
-      "singlepage",
-    );
-    const product = parsed.products.find(({ id }) => id === "ai-chat");
-    const website = product?.sections.find(({ id }) => id === "website");
-    const pages = website?.pages.find(({ id }) => id === "pages");
-    const content = product?.sections.find(({ id }) => id === "content");
-
-    expect(product?.sections.map(({ id }) => id)).toEqual([
-      "research",
-      "website",
-      "creative",
-      "content",
-    ]);
-    expect(pages?.title).toBe("Pages");
-    expect(pages?.children.map(({ route }) => route)).toEqual([
-      "/",
-      "/register",
-      "/login",
-      "/projects/new",
-      "/projects/[project-id]",
-      "/projects/[project-id]/landing-page",
-      "/projects/[project-id]/landing-page/publish",
-      "/tokens",
-      "/settings",
-      "/help",
-    ]);
-    expect(
-      pages?.children.find(({ id }) => id === "new-project")?.uses,
-    ).toEqual(["product.ai-chat.page.content.one-hour-setup"]);
-    expect(
-      pages?.children.find(({ id }) => id === "project-workspace")?.uses,
-    ).toEqual(["product.ai-chat.page.content.project-model"]);
-    expect(
-      pages?.children.find(({ id }) => id === "landing-page-workspace")?.uses,
-    ).toEqual(["product.ai-chat.page.content.project-model"]);
-    expect(
-      pages?.children.every(
-        ({ representations }) =>
-          representations?.text.endsWith(".md") &&
-          representations.preview?.endsWith(".tsx"),
-      ),
-    ).toBe(true);
-    expect(content?.title).toBe("Product Content");
-    expect(
-      content?.pages.every(
-        ({ representations }) =>
-          representations?.text.endsWith(".md") &&
-          representations.preview?.endsWith(".tsx"),
-      ),
-    ).toBe(true);
-  });
-
-  /**
-   * BDD Scenario: Replace every real framework product with one client product
-   * Given singlepage contains Code Framework and AI Chat
-   * When startup defines its first product
-   * Then default contains only that product and its startup-owned sources
-   */
-  test("replaces the two real products with the first startup product", () => {
-    const base = parseProductCatalog(
-      readFileSync(
-        new URL("../../products/singlepage/catalog.yaml", import.meta.url),
-        "utf8",
-      ),
-      "singlepage",
-    );
-    const resolved = resolveProductCatalog(
-      base,
-      parseProductCatalog(catalog(["client-service"]), "startup"),
-    );
-    expect(resolved.catalog.layer).toBe("startup");
-    expect(resolved.catalog.products.map(({ id }) => id)).toEqual([
-      "client-service",
-    ]);
-    expect(resolved.catalog.products[0].presentation_data).toBe(
-      "client-service/presentation/data.yaml",
-    );
-  });
-  /**
-   * BDD Scenario: Keep the complete product context in one folder
-   * Given an independently owned startup product
-   * When its catalog is parsed
-   * Then Research and Sales resolve to that product's own source paths
-   */
-  test("keeps research and sales with the selected product", () => {
-    const parsed = parseProductCatalog(catalog(["course"]), "startup");
-
-    expect(parsed.products[0].research).toBe("course/research.md");
-    expect(parsed.products[0].sales).toBe("course/sales.yaml");
-  });
-
-  /**
-   * BDD Scenario: Reject incomplete product context
-   * Given a product without its Research or Sales reference
-   * When the catalog is parsed
-   * Then it fails instead of inheriting another product's inputs
-   */
-  test("rejects products missing research or sales", () => {
-    for (const reference of [
-      "research: course/research.md, ",
-      "sales: course/sales.yaml, ",
-    ]) {
-      expect(() =>
-        parseProductCatalog(
-          catalog(["course"]).replace(reference, ""),
-          "startup",
-        ),
-      ).toThrow();
+    await validateProductCatalogFiles(base, path.join(root, "singlepage"));
+    await validateProductSectionFiles(base, path.join(root, "singlepage"));
+    for (const product of base.products) {
+      expect(productDocumentEntries(product).map((d) => d.id)).toEqual([
+        "product",
+        "audience",
+        "competitors",
+        "semantics",
+        "economics",
+        "sales",
+      ]);
+      expect(
+        productMaterialStoryGroups(product).map((g) => g.id),
+      ).not.toContain("launch-plan");
     }
   });
-
-  /**
-   * BDD Scenario: Pass the framework catalog through
-   * Given startup has no products
-   * When default is resolved
-   * Then it contains the complete singlepage catalog
-   */
-  test("inherits all singlepage products when startup is empty", () => {
-    const singlepage = parseProductCatalog(
-      catalog(["one", "two"]),
-      "singlepage",
-    );
-    const startup = parseProductCatalog(catalog([]), "startup");
-    const resolved = resolveProductCatalog(singlepage, startup);
-
-    expect(resolved.inherited).toBe(true);
-    expect(resolved.catalog.products.map(({ id }) => id)).toEqual([
-      "one",
-      "two",
-    ]);
+  test("an empty startup inherits the entire catalog; its first product replaces it", () => {
+    expect(
+      resolveProductCatalog(base, parseProductCatalog(source([]), "startup"))
+        .catalog,
+    ).toBe(base);
+    const own = parseProductCatalog(source([base.products[1]]), "startup");
+    expect(resolveProductCatalog(base, own)).toEqual({
+      catalog: own,
+      inherited: false,
+    });
   });
-
-  /**
-   * BDD Scenario: Replace the framework catalog atomically
-   * Given startup defines one product
-   * When default is resolved
-   * Then no singlepage product remains in default
-   */
-  test("uses only startup products when startup is non-empty", () => {
-    const singlepage = parseProductCatalog(
-      catalog(["one", "two"]),
-      "singlepage",
-    );
-    const startup = parseProductCatalog(catalog(["client-product"]), "startup");
-    const resolved = resolveProductCatalog(singlepage, startup);
-
-    expect(resolved.inherited).toBe(false);
-    expect(resolved.catalog.products.map(({ id }) => id)).toEqual([
-      "client-product",
-    ]);
+  test("only the current schema and fields are accepted", () => {
+    expect(() =>
+      parseProductCatalog(
+        "schema: singlepagestartup.product-catalog.v1\nproducts: []",
+        "startup",
+      ),
+    ).toThrow("unsupported schema");
+    expect(() =>
+      parseProductCatalog(source([], { models: [] }), "startup"),
+    ).toThrow("unknown field models");
+    for (const key of [
+      "research",
+      "model",
+      "content",
+      "video",
+      "presentation_data",
+      "website_component",
+    ])
+      expect(() =>
+        parseProductCatalog(
+          source([{ ...base.products[0], [key]: "unused" }]),
+          "startup",
+        ),
+      ).toThrow(`unknown field ${key}`);
   });
-
-  /**
-   * BDD Scenario: Add optional product-local review surfaces
-   * Given a startup product has a rendered website and flexible content
-   * When its catalog is parsed
-   * Then both safe component paths remain attached to that product
-   */
-  test("keeps optional website and content surfaces product-local", () => {
-    const source = catalog(["course"]).replace(
-      "presentation: course/presentation/ProjectPresentation.tsx",
-      "presentation: course/presentation/ProjectPresentation.tsx, website_component: course/website/Website.tsx, content: course/content/Content.tsx",
-    );
-    const parsed = parseProductCatalog(source, "startup");
-
-    expect(parsed.products[0].website_component).toBe(
-      "course/website/Website.tsx",
-    );
-    expect(parsed.products[0].content).toBe("course/content/Content.tsx");
+  test("requires all six visible working documents and rejects a hidden research section", () => {
+    for (const key of [
+      "product",
+      "audience",
+      "competitors",
+      "semantics",
+      "economics",
+      "sales",
+    ]) {
+      const product: Record<string, unknown> = { ...base.products[0] };
+      delete product[key];
+      expect(() => parseProductCatalog(source([product]), "startup")).toThrow(
+        `${key} must be a safe layer-relative path`,
+      );
+    }
+    expect(() =>
+      parseProductCatalog(
+        source([
+          {
+            ...base.products[0],
+            sections: [
+              {
+                id: "research",
+                title: "Research",
+                pages: [
+                  {
+                    id: "notes",
+                    title: "Notes",
+                    source: "singlepagestartup/notes.md",
+                  },
+                ],
+              },
+            ],
+          },
+        ]),
+        "startup",
+      ),
+    ).toThrow("research belongs in visible");
   });
-
-  /**
-   * BDD Scenario: Read a catalog created before the Content migration
-   * Given a product still declares its optional surface as video
-   * When the v1 catalog is parsed
-   * Then the path is exposed through the generic content contract
-   */
-  test("maps the legacy video surface to content", () => {
-    const source = catalog(["course"]).replace(
-      "presentation: course/presentation/ProjectPresentation.tsx",
-      "presentation: course/presentation/ProjectPresentation.tsx, video: course/video/Video.tsx",
-    );
-    const parsed = parseProductCatalog(source, "startup");
-
-    expect(parsed.products[0].content).toBe("course/video/Video.tsx");
+  test("rejects ambiguous or unsafe artifact ownership", () => {
+    const page = (extra = {}) => ({
+      ...base.products[0],
+      sections: [
+        {
+          id: "website",
+          title: "Сайт",
+          pages: [
+            {
+              id: "landing",
+              title: "Страница",
+              source: "singlepagestartup/website/Landing.tsx",
+              ...extra,
+            },
+          ],
+        },
+      ],
+    });
+    expect(() =>
+      parseProductCatalog(
+        source([
+          page({ representations: { text: "singlepagestartup/text.md" } }),
+        ]),
+        "startup",
+      ),
+    ).toThrow("unknown page field");
+    expect(() =>
+      parseProductCatalog(
+        source([page({ source: "ai-chat/website/Landing.tsx" })]),
+        "startup",
+      ),
+    ).toThrow("inside its product");
+    expect(() =>
+      parseProductCatalog(
+        source([page({ source: "../private.md" })]),
+        "startup",
+      ),
+    ).toThrow("safe layer-relative");
   });
 });

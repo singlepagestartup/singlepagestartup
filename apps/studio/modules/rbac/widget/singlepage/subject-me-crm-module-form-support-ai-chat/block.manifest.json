@@ -1,0 +1,28 @@
+{
+  "id": "rbac.widget.subject-me-crm-module-form-support-ai-chat",
+  "title": "subject-me-crm-module-form-support-ai-chat",
+  "description": "RBAC support form and project context in the Website Builder Help presentation.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "subject-me-crm-module-form-support-ai-chat"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "rbac.widget",
+    "pageName": "rbac",
+    "variantName": "subject-me-crm-module-form-support-ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["rbac", "widget", "subject-me-crm-module-form-support-ai-chat"]
+}

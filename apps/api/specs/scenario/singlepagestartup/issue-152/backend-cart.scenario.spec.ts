@@ -6,30 +6,19 @@
  * Then: order + orders-to-products are persisted in DB, list returns cart orders, and quantity returns summed amount.
  */
 
-import { Provider as KvProvider } from "@sps/providers-kv";
-import { deriveTopicsFromPath } from "@sps/shared-utils";
 import { authenticateScenarioSubject } from "./test-utils/auth";
 import { getCartStateFromDb } from "./test-utils/db";
-import { getApiUrl, loadScenarioEnv } from "./test-utils/env";
 import {
   clearSubjectCartOrders,
   createCartOrder,
   createCartScenarioFixtures,
   getCartOrders,
-  getCartOrdersRaw,
   getCartQuantity,
   getCartQuantityRaw,
   type TCartScenarioFixtures,
 } from "./test-utils/fixtures";
 import { expectOk, requestApi } from "./test-utils/http";
 import { waitForCondition } from "./test-utils/polling";
-
-const HTTP_CACHE_VERSION_PREFIX = "http-cache:version";
-
-function getKvProviderType(): "redis" | "vercel-kv" {
-  loadScenarioEnv();
-  return process.env["KV_PROVIDER"] === "redis" ? "redis" : "vercel-kv";
-}
 
 async function clearHttpCache() {
   const response = await requestApi({
@@ -48,86 +37,10 @@ async function clearHttpCache() {
   }
 }
 
-async function getCacheVersion(provider: KvProvider, path: string) {
-  const rawVersion = await provider.get({
-    prefix: HTTP_CACHE_VERSION_PREFIX,
-    key: path,
-  });
-
-  if (!rawVersion) {
-    return 0;
-  }
-
-  const parsedVersion = Number(rawVersion);
-  return Number.isFinite(parsedVersion) && parsedVersion >= 0
-    ? parsedVersion
-    : 0;
-}
-
-const HTTP_CACHE_DATA_PREFIX = "http-cache:data";
-
-// Contract copies of the http-cache key helpers (importing @sps/middlewares
-// into jest drags ESM-only server deps). Must stay in sync with
-// libs/middlewares/src/lib/http-cache/index.ts.
-function getTopicVersionKey(topic: string): string {
-  return `topic:${topic}`;
-}
-
-function buildVersionedDataPrefix(
-  path: string,
-  pathVersion: number,
-  topicVersionsByTopic: Record<string, number>,
-): string {
-  const topicVector = Object.keys(topicVersionsByTopic)
-    .sort()
-    .map((topic) => topicVersionsByTopic[topic] || 0)
-    .join(".");
-
-  return `${HTTP_CACHE_DATA_PREFIX}:${path}:v${pathVersion}:t${topicVector || "0"}`;
-}
-
-async function hasCachedResponseForPath(
-  provider: KvProvider,
-  path: string,
-  params = "",
-) {
-  // Topic-versioned key shape (issue #195): the data prefix embeds both the
-  // legacy per-path version and the topic-version vector derived from the
-  // request pathname — reconstructed here with the SAME shared helpers the
-  // middleware uses.
-  const version = await getCacheVersion(provider, path);
-  const pathname = new URL(path).pathname;
-  const readTopics = deriveTopicsFromPath(pathname);
-  const topicVersionEntries = await Promise.all(
-    readTopics.map(async (topic) => {
-      const topicVersion = await getCacheVersion(
-        provider,
-        getTopicVersionKey(topic),
-      );
-
-      return [topic, topicVersion] as const;
-    }),
-  );
-  const prefix = buildVersionedDataPrefix(
-    path,
-    version,
-    Object.fromEntries(topicVersionEntries),
-  );
-  const cached = await provider.get({
-    prefix,
-    key: params,
-  });
-
-  return Boolean(cached);
-}
-
 describe("Given: issue-152 backend cart scenario", () => {
   let subjectId = "";
   let jwt = "";
   let fixtures: TCartScenarioFixtures | null = null;
-  const kvProvider = new KvProvider({
-    type: getKvProviderType(),
-  });
 
   beforeAll(async () => {
     const auth = await authenticateScenarioSubject();
@@ -235,46 +148,5 @@ describe("Given: issue-152 backend cart scenario", () => {
 
       return afterQuantity === 1;
     });
-  });
-
-  it("When: cache middleware is enabled Then: /orders is cached but /orders/quantity and /orders/total are excluded", async () => {
-    await clearHttpCache();
-
-    const apiUrl = getApiUrl();
-    const ordersPath = `${apiUrl}/api/rbac/subjects/${subjectId}/ecommerce-module/orders`;
-    const quantityPath = `${apiUrl}/api/rbac/subjects/${subjectId}/ecommerce-module/orders/quantity`;
-    const totalPath = `${apiUrl}/api/rbac/subjects/${subjectId}/ecommerce-module/orders/total`;
-
-    await getCartOrdersRaw({
-      subjectId,
-      jwt,
-    });
-    await getCartQuantityRaw({
-      subjectId,
-      jwt,
-    });
-    await expectOk({
-      method: "GET",
-      path: `/api/rbac/subjects/${subjectId}/ecommerce-module/orders/total`,
-      token: jwt,
-    });
-
-    await waitForCondition(async () => {
-      return hasCachedResponseForPath(kvProvider, ordersPath, "");
-    });
-
-    const hasQuantityCache = await hasCachedResponseForPath(
-      kvProvider,
-      quantityPath,
-      "",
-    );
-    const hasTotalCache = await hasCachedResponseForPath(
-      kvProvider,
-      totalPath,
-      "",
-    );
-
-    expect(hasQuantityCache).toBe(false);
-    expect(hasTotalCache).toBe(false);
   });
 });

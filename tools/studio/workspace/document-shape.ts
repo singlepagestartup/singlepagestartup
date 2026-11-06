@@ -2,13 +2,7 @@ import { check as prettierCheck, resolveConfig } from "prettier";
 
 import { parseDocument } from "./document";
 
-/**
- * A confirmation stamp hashes the body, and the repository formats every
- * Markdown file on commit, so an unformatted document and the committed one are
- * two different bodies. A heading is the other half of the same problem: the
- * framework names a section once and every layer reads that name, so a
- * translated heading turns one section into two.
- */
+/** Formatting and headings used by inherited documents. */
 export interface IDocumentShapeFinding {
   requirement: string;
   detail: string;
@@ -68,7 +62,7 @@ export async function findUnformattedDocuments(
     findings.push({
       requirement: `${path} is already in its committed form`,
       detail:
-        "The commit hook formats Markdown, so this body still changes after it is approved. Run the repository's format command, then read the fingerprint and confirm.",
+        "The commit hook formats Markdown, so this body still changes after it is approved. Run the repository's format command. Review history remains separate from navigation.",
     });
   }
   return findings;

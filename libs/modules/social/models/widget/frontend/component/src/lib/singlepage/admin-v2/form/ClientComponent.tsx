@@ -144,6 +144,12 @@ export function Component(props: IComponentPropsExtended) {
           placeholder="Type title"
           options={variants.map((variant) => [variant, variant])}
         />
+        {props.widgetsToWebsiteBuilderModuleWidgets
+          ? props.widgetsToWebsiteBuilderModuleWidgets({
+              data: props.data,
+              isServer: false,
+            })
+          : null}
       </div>
     </ParentAdminForm>
   );

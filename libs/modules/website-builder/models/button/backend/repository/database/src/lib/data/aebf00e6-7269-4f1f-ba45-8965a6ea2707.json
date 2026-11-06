@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Help",
+    "ru": "Помощь"
+  },
+  "subtitle": {},
+  "url": "/ai-chat/help",
+  "className": "",
+  "id": "aebf00e6-7269-4f1f-ba45-8965a6ea2707",
+  "createdAt": "2026-10-27T08:41:00.538Z",
+  "updatedAt": "2026-10-27T15:00:14.055Z",
+  "variant": "navigation",
+  "adminTitle": "Помощь",
+  "slug": "ai-chat-editable-navbar-button-1"
+}

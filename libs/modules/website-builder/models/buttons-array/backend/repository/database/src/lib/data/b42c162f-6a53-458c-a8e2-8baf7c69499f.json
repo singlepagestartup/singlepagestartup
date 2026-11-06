@@ -1,0 +1,14 @@
+{
+  "id": "b42c162f-6a53-458c-a8e2-8baf7c69499f",
+  "createdAt": "2026-10-23T20:18:04.656Z",
+  "updatedAt": "2026-10-23T20:18:04.656Z",
+  "variant": "default",
+  "className": "",
+  "title": {
+    "en": "Start here",
+    "ru": "Начать"
+  },
+  "description": {},
+  "adminTitle": "Start here",
+  "slug": "framework-about-hero-actions"
+}

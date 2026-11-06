@@ -1,0 +1,114 @@
+{
+  "layoutId": "815c3653-933e-4938-b768-1124be773268",
+  "pages": [
+    {
+      "key": "landing",
+      "variant": "landing-ai-chat",
+      "url": "/ai-chat",
+      "hostWidgetId": "5600ca7a-e9fd-4e88-ba5b-91e07505dc4b",
+      "pageId": "c9d1562a-ff09-4381-a46d-23d67fa62643",
+      "externalModule": "website-builder",
+      "websiteWidgetId": "631ec56d-556c-46c1-b6a4-f8d3f49560fd"
+    },
+    {
+      "key": "projects",
+      "variant": "content-ai-chat-profile-create",
+      "url": "/ai-chat/projects",
+      "hostWidgetId": "e09d0410-5c69-4111-ac68-18032e12b0ce",
+      "pageId": "89ffc350-ca96-467e-acb1-1b02604d98ce",
+      "externalModule": "website-builder",
+      "websiteWidgetId": "cfff32c1-462c-432c-8bd2-c747ecf62430",
+      "materialsHostWidgetId": "d0298dfd-fce7-437e-b674-072cfe23ab3f"
+    },
+    {
+      "key": "workspace",
+      "variant": "subject-me-social-module-profile-id-chat-id-thread-id-ai-chat",
+      "url": "/ai-chat/social/profiles/[social.profiles.id]/chats/[social.chats.id]/threads/[social.threads.id]",
+      "rbacWidgetId": "86d0e4be-f0b5-4277-bbc7-17f0c34a2c7d",
+      "hostWidgetId": "d32f1387-5991-4983-a52c-b78866a176ec",
+      "pageId": "b8ce23e9-63c3-406d-b44a-ba382b4cccc8"
+    },
+    {
+      "key": "project-settings",
+      "variant": "subject-me-social-module-profile-id-settings-ai-chat",
+      "url": "/ai-chat/social/profiles/[social.profiles.id]/chats/[social.chats.id]/settings",
+      "rbacWidgetId": "f31b4dcd-da9d-462e-b24e-f6fb93bf18ed",
+      "hostWidgetId": "6bb3df80-b72a-4766-b878-7276de8cc640",
+      "pageId": "9e761df6-d548-4adf-a8dc-6f6571d0b6ae"
+    },
+    {
+      "key": "new-thread",
+      "variant": "subject-me-social-module-profile-id-chat-id-thread-create-ai-chat",
+      "url": "/ai-chat/social/profiles/[social.profiles.id]/chats/[social.chats.id]/threads/create",
+      "rbacWidgetId": "74680c2d-bc2d-4864-8d2d-2079aa24f574",
+      "hostWidgetId": "e9fe3cd2-0515-4c11-94f7-229b90c2cd69",
+      "pageId": "a9b2427c-ebd4-4072-b707-ac108bfebb48"
+    },
+    {
+      "key": "settings",
+      "variant": "subject-me-profile-settings",
+      "url": "/ai-chat/settings",
+      "rbacWidgetId": "5ba75ff3-1e83-4a3a-a5f3-c17825f8411f",
+      "hostWidgetId": "48fdb9cc-4eb4-4597-8ec7-2da82e1f05fc",
+      "pageId": "a22958f9-92e8-4231-b992-81672bd57dfc"
+    },
+    {
+      "key": "sign-in",
+      "variant": "subject-me-authentication-select-method-ai-chat",
+      "url": "/ai-chat/sign-in",
+      "rbacWidgetId": "699ab73b-dc60-4361-b446-639ea2733ef8",
+      "hostWidgetId": "c8bd3e55-d091-40f3-b00b-ba6a2e72e9c3",
+      "pageId": "7068a7fc-c85c-49f9-9f4d-37ece256a38c"
+    },
+    {
+      "key": "create-account",
+      "variant": "subject-me-authentication-registration-ai-chat",
+      "url": "/ai-chat/create-account",
+      "rbacWidgetId": "9aa9a2dd-adca-4b3f-8138-b6b1cbd080ba",
+      "hostWidgetId": "059fc6a7-e258-443e-a886-de34a8513758",
+      "pageId": "f3f4a647-dae0-4fa9-b0b3-deb25fbd4eb5"
+    },
+    {
+      "key": "forgot-password",
+      "variant": "subject-me-authentication-forgot-password-ai-chat",
+      "url": "/ai-chat/forgot-password",
+      "rbacWidgetId": "219564c8-5ea5-4a75-a844-143ebc42d626",
+      "hostWidgetId": "6921d9a3-3508-4994-94f3-c88b0828d106",
+      "pageId": "66f99ba7-2cc2-407b-bfa9-7ef3e55a7cf4"
+    },
+    {
+      "key": "reset-password",
+      "variant": "subject-me-authentication-reset-password-ai-chat",
+      "url": "/ai-chat/reset-password",
+      "rbacWidgetId": "3d36832c-cec5-4e31-bc36-778cb5dd37af",
+      "hostWidgetId": "06c6b2be-5e47-4e51-af48-1bdf6ee09098",
+      "pageId": "cdd585f7-62a8-4344-96c6-f9b593d37f1c"
+    },
+    {
+      "key": "help",
+      "variant": "content-ai-chat-help",
+      "url": "/ai-chat/help",
+      "hostWidgetId": "02895855-e6ed-4044-a002-7e4026a6f706",
+      "pageId": "01f39ad8-5b96-4121-adc1-2a79951c0e2a",
+      "formId": "3d00218e-2511-4526-8cc0-f8913faf4c0f",
+      "externalModule": "website-builder",
+      "websiteWidgetId": "891660ec-0b4d-4051-b595-e3f0debcefaa"
+    }
+  ],
+  "layoutWidgets": [
+    {
+      "variant": "navbar-ai-chat",
+      "hostWidgetId": "e9eadf30-c2bc-4d4d-b711-222e41fd2abd",
+      "websiteWidgetId": "e87a5a6d-0a5d-4b42-a598-f62489df5022",
+      "relationId": "7336f18b-7850-4ea2-b73b-fb44e1579bbc",
+      "slot": "default"
+    },
+    {
+      "variant": "footer-ai-chat",
+      "hostWidgetId": "de0edad2-a563-4e6a-9807-66da773282c4",
+      "websiteWidgetId": "9766a057-17ad-4d54-8ad5-4c98c7954e61",
+      "relationId": "c616e30a-d033-462a-9096-46c41d8f4dc6",
+      "slot": "additional"
+    }
+  ]
+}

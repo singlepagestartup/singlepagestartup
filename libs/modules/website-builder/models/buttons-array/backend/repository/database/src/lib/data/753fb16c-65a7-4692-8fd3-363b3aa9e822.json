@@ -1,0 +1,14 @@
+{
+  "id": "753fb16c-65a7-4692-8fd3-363b3aa9e822",
+  "createdAt": "2026-10-27T08:40:58.424Z",
+  "updatedAt": "2026-10-27T08:40:58.424Z",
+  "variant": "actions",
+  "className": "",
+  "title": {
+    "en": "demo-handoff",
+    "ru": "demo-handoff"
+  },
+  "description": {},
+  "adminTitle": "AI Chat: demo-handoff",
+  "slug": "ai-chat-editable-demo-handoff-actions"
+}

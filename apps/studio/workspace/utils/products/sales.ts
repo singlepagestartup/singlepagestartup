@@ -59,12 +59,9 @@ export interface ISalesProcess {
   pricing: string;
   product_id: string;
   readiness: SalesProcessReadiness;
-  schema:
-    | "singlepagestartup.sales-process.v1"
-    | "singlepagestartup.sales-process.v2";
+  schema: "singlepagestartup.sales-process.v2";
   segments: ISalesSegment[];
   seller: string;
-  stages: ISalesStage[];
 }
 
 function requiredString(value: unknown, field: string): string {
@@ -243,10 +240,7 @@ export function parseSalesProcess(
 ): ISalesProcess {
   const value = record(parse(source), "sales");
   const schema = value.schema;
-  if (
-    schema !== "singlepagestartup.sales-process.v1" &&
-    schema !== "singlepagestartup.sales-process.v2"
-  )
+  if (schema !== "singlepagestartup.sales-process.v2")
     throw new Error("sales process uses an unsupported schema");
   const productId = requiredString(value.product_id, "sales.product_id");
   if (expectedProductId && productId !== expectedProductId)
@@ -261,26 +255,16 @@ export function parseSalesProcess(
     throw new Error(
       `${productId} cannot be ready with unresolved business decisions`,
     );
-  if (schema.endsWith(".v2") && value.stages !== undefined)
+  if (value.stages !== undefined)
     throw new Error(
       `${productId} v2 journeys belong to segments, not a second stages list`,
     );
-  if (schema.endsWith(".v1") && value.segments !== undefined)
-    throw new Error(`${productId} segments require sales-process.v2`);
-  const segments = schema.endsWith(".v2")
-    ? parseSegments(
-        value.segments,
-        `${productId}.segments`,
-        readiness === "ready",
-      )
-    : [];
-  const stages = schema.endsWith(".v1")
-    ? parseStages(value.stages, `${productId}.stages`)
-    : [];
-  if (
-    !(segments.length || stages.length) &&
-    !(readiness === "blocked" && blockers.length)
-  )
+  const segments = parseSegments(
+    value.segments,
+    `${productId}.segments`,
+    readiness === "ready",
+  );
+  if (!segments.length && !(readiness === "blocked" && blockers.length))
     throw new Error(
       `${productId} sales needs a customer journey, or blocked intake with explicit unknowns`,
     );
@@ -293,7 +277,6 @@ export function parseSalesProcess(
     readiness,
     schema,
     seller: requiredString(value.seller, `${productId}.seller`),
-    stages,
     segments,
   };
 }
@@ -307,7 +290,6 @@ export function validateSalesSegments(
   process: ISalesProcess,
   productSegmentIds: unknown,
 ): void {
-  if (process.schema.endsWith(".v1")) return;
   const ids = stringList(
     productSegmentIds,
     `${process.product_id}.customer_segments`,
@@ -329,89 +311,55 @@ export function validateSalesSegments(
 }
 
 function list(values: string[]): string {
-  return values.length ? values.map(cell).join("<br />") : "None";
-}
-
-function legacySalesMarkdown(process: ISalesProcess): string {
-  const rows = process.stages
-    .map(
-      (stage) =>
-        `| ${cell(stage.name)} | ${cell(stage.owner)} | ${list(stage.entry_conditions)} | ${list(stage.required_fields)} | ${cell(stage.action)} | ${cell(stage.exit_condition)} | ${cell(stage.failure)} | ${cell(stage.metric)} |`,
-    )
-    .join("\n");
-  const blockers = process.blockers.length
-    ? process.blockers.map((blocker) => `- ${blocker}`).join("\n")
-    : "- None";
-  return `# Sales process
-
-## Process definition
-
-| Field | Definition |
-| --- | --- |
-| Process completeness | ${process.readiness === "ready" ? "Defined" : "Business decisions needed"} |
-| Process owner | ${cell(process.owner)} |
-| Seller | ${cell(process.seller)} |
-| Pricing | ${cell(process.pricing)} |
-| Capacity | ${cell(process.capacity)} |
-
-## Customer journey
-
-| Stage | Owner | Entry conditions | Information needed | Action | Next step reached when | Alternative and continuation | Metric |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-${rows}
-
-## Business decisions needed
-
-${blockers}
-`;
+  return values.length ? values.map(cell).join("<br />") : "Нет";
 }
 
 export const journeyRows: { label: string; key: keyof ISalesJourneyStep }[] = [
-  { label: "Customer goal", key: "customer_goal" },
-  { label: "Customer action", key: "customer_action" },
-  { label: "Question before continuing", key: "customer_question" },
-  { label: "Desired experience", key: "experience" },
-  { label: "Touchpoint", key: "touchpoint" },
-  { label: "Our response", key: "action" },
-  { label: "Next step", key: "exit_condition" },
-  { label: "Relationship / alternative", key: "failure" },
-  { label: "Business metric", key: "metric" },
+  { label: "Цель клиента", key: "customer_goal" },
+  { label: "Действие клиента", key: "customer_action" },
+  { label: "Вопрос перед продолжением", key: "customer_question" },
+  { label: "Желаемый опыт", key: "experience" },
+  { label: "Точка контакта", key: "touchpoint" },
+  { label: "Наш ответ", key: "action" },
+  { label: "Следующий шаг", key: "exit_condition" },
+  { label: "Отношения / альтернатива", key: "failure" },
+  { label: "Бизнес-показатель", key: "metric" },
 ];
 
 export function salesSegmentProfileMarkdown(segment: ISalesSegment): string {
   return `# ${segment.name}
 
-## Customer and situation
+## Клиент и ситуация
 
 ${segment.audience}
 
 ${segment.roles}
 
-## Needs and pains
+## Потребности и трудности
 
 ${segment.needs.map((item) => `- ${item}`).join("\n")}
 
-## Why they choose
+## Причины выбора
 
 ${segment.motivations.map((item) => `- ${item}`).join("\n")}
 
-**Decision trigger:** ${segment.purchase_trigger}
+**Момент решения:** ${segment.purchase_trigger}
 
-**Value proposition:** ${segment.value_proposition}
+**Ценностное предложение:** ${segment.value_proposition}
 
-## Decision criteria
+## Критерии решения
 
 ${segment.decision_criteria.map((item) => `- ${item}`).join("\n")}
 
-## Objections and sales arguments
+## Возражения и аргументы
 
-| Concern | Our response | What to show |
+| Возражение | Наш ответ | Что показать |
 | --- | --- | --- |
 ${segment.objections.map((item) => `| ${cell(item.concern)} | ${cell(item.response)} | ${cell(item.evidence)} |`).join("\n")}
 
-## Acquisition and message
+## Привлечение и сообщение
 
-| Channel | Customer context | Message | Call to action | Destination |
+| Канал | Ситуация клиента | Сообщение | Призыв к действию | Куда ведёт |
 | --- | --- | --- | --- | --- |
 ${segment.acquisition.map((item) => `| ${cell(item.channel)} | ${cell(item.context)} | ${cell(item.message)} | ${cell(item.cta)} | ${cell(item.destination)} |`).join("\n")}
 `;
@@ -419,40 +367,39 @@ ${segment.acquisition.map((item) => `| ${cell(item.channel)} | ${cell(item.conte
 
 export function salesJourneyMarkdown(segment: ISalesSegment): string {
   if (!segment.journey.length)
-    return "## Customer Journey Map (CJM)\n\nThe customer journey has not been defined.";
-  return `## Customer Journey Map (CJM)
+    return "## Карта пути клиента (CJM)\n\nПуть клиента пока не определён.";
+  return `## Карта пути клиента (CJM)
 
-| Perspective | ${segment.journey.map((step, i) => `${i + 1}. ${cell(step.name)}`).join(" | ")} |
+| Аспект | ${segment.journey.map((step, i) => `${i + 1}. ${cell(step.name)}`).join(" | ")} |
 | --- | ${segment.journey.map(() => "---").join(" | ")} |
 ${journeyRows.map(({ label, key }) => `| ${label} | ${segment.journey.map((step) => cell(String(step[key]))).join(" | ")} |`).join("\n")}
 
-### Responsibilities and handoffs
+### Ответственность и передача работы
 
-| Journey point | Owner | Entry conditions | Information needed |
+| Шаг пути | Ответственный | Условия входа | Нужные данные |
 | --- | --- | --- | --- |
 ${segment.journey.map((step) => `| ${cell(step.name)} | ${cell(step.owner)} | ${list(step.entry_conditions)} | ${list(step.required_fields)} |`).join("\n")}
 `;
 }
 
 export function salesOverviewMarkdown(process: ISalesProcess): string {
-  if (process.schema.endsWith(".v1")) return legacySalesMarkdown(process);
-  return `# Sales
+  return `# Продажи
 
-## Customer segments
+## Сегменты клиентов
 
-| Segment | Customer and context | Why they choose |
+| Сегмент | Клиент и контекст | Причины выбора |
 | --- | --- | --- |
 ${process.segments.map((segment) => `| ${cell(segment.name)} | ${cell(segment.audience)} | ${cell(segment.value_proposition)} |`).join("\n")}
 
-## Commercial model and relationships
+## Коммерческая модель и отношения
 
-| Field | Definition |
+| Поле | Описание |
 | --- | --- |
-| Process owner | ${cell(process.owner)} |
-| Seller | ${cell(process.seller)} |
-| Pricing | ${cell(process.pricing)} |
-| Support and capacity | ${cell(process.capacity)} |
-${process.blockers.length ? `\n## Business decisions needed\n\n${process.blockers.map((item) => `- ${item}`).join("\n")}\n` : ""}`;
+| Ответственный | ${cell(process.owner)} |
+| Продавец | ${cell(process.seller)} |
+| Цена и оплата | ${cell(process.pricing)} |
+| Поддержка и возможности обслуживания | ${cell(process.capacity)} |
+${process.blockers.length ? `\n## Нужны бизнес-решения\n\n${process.blockers.map((item) => `- ${item}`).join("\n")}\n` : ""}`;
 }
 
 export function salesProcessMarkdown(process: ISalesProcess): string {

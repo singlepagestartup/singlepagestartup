@@ -48,17 +48,15 @@ usage. API reference: https://www.remotion.dev/docs/web-renderer/render-media-on
 
 ## Text and layout
 
-Use catalog `representations: { text: "product/copy.md", preview:
-"product/Layout.tsx" }` for a cover, article, storyboard, post or README. Group
-related outputs in the catalog tree. Text is the canonical wording; the layout
-receives it as `text?: string`. Read only that document's own content. If a static
-and animated cover share wording, both consume the same Markdown. Controls and
-confirmation belong to the review header, never inside the exported artboard.
-Download Markdown strips review frontmatter from customer-facing output.
+A catalog page has one `source`. Use Markdown for an article or business context,
+and a React/HTML source for a finished website, ad or presentation. Edit copy and
+layout together in that source. When a static and animated composition share
+wording, keep it in their own shared data module.
 
-Presentation follows the shared slide browser. Its YAML remains its own copy
-source; per-slide Markdown is a view of that data. Custom decks may supply explicit
-slide text without extracting prose from rendered HTML or other business documents.
-A slide's PNG contains that slide; full-deck PDF contains every slide. Product
-Content remains optional and project-defined; a repository README is an example,
-not a universal downstream requirement.
+Group related outputs under the product. Each article is one Storybook story
+with its brief, SEO, article, video, social posts and publication results.
+Export controls stay outside the artboard.
+
+Presentation content belongs to its product's React source. A slide's PNG
+contains that slide; full-deck PDF contains every slide. Shared utilities supply
+the frame and export, while the product supplies the content and layout.

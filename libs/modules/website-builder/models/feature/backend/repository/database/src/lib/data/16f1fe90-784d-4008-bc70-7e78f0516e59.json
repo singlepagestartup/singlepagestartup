@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "16f1fe90-784d-4008-bc70-7e78f0516e59",
+  "createdAt": "2026-10-26T00:11:53.329Z",
+  "updatedAt": "2026-10-27T14:59:25.493Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Widget",
+    "ru": "Widget"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Blocks for displaying profiles and authors. They connect Social data with page presentation; conversation authorization stays in RBAC.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Блоки для показа профилей и авторов. Они соединяют данные Social с оформлением страницы; авторизация переписки остаётся в RBAC.\"}]}]}"
+  },
+  "adminTitle": "Widget",
+  "slug": "framework-reviewed-article-social-models-feature-4"
+}

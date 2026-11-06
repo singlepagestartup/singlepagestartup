@@ -4,60 +4,71 @@ import { Component as RbacSubject } from "@sps/rbac/models/subject/frontend/comp
 import { Component as RbacRole } from "@sps/rbac/models/role/frontend/component";
 import { Component as RbacSubjectsToRoles } from "@sps/rbac/relations/subjects-to-roles/frontend/component";
 import { Component as Dashboard } from "./assets/Dashboard";
+import { Component as Access } from "./access";
 
 export function Component() {
   return (
     <RbacSubject isServer={false} variant="authentication-me-default">
-      {({ data: me }) => {
-        if (!me) {
+      {({ data: me, authenticated }) => {
+        if (!me || !authenticated) {
           return;
         }
 
         return (
-          <RbacRole isServer={false} variant="find">
-            {({ data: roles }) => {
-              const adminRole = roles?.find((role) => {
-                return role.slug === "admin";
-              });
+          <Access subjectId={me.id}>
+            <RbacSubjectsToRoles
+              isServer={false}
+              variant="find"
+              apiProps={{
+                params: {
+                  filters: {
+                    and: [{ column: "subjectId", method: "eq", value: me.id }],
+                  },
+                },
+              }}
+            >
+              {({ data: subjectsToRoles }) => {
+                if (!subjectsToRoles?.length) {
+                  return;
+                }
 
-              if (!adminRole) {
-                return;
-              }
-
-              return (
-                <RbacSubjectsToRoles
-                  isServer={false}
-                  variant="find"
-                  apiProps={{
-                    params: {
-                      filters: {
-                        and: [
-                          {
-                            column: "subjectId",
-                            method: "eq",
-                            value: me.id,
-                          },
-                          {
-                            column: "roleId",
-                            method: "eq",
-                            value: adminRole.id,
-                          },
-                        ],
+                return (
+                  <RbacRole
+                    isServer={false}
+                    variant="find"
+                    apiProps={{
+                      params: {
+                        filters: {
+                          and: [
+                            {
+                              column: "id",
+                              method: "inArray",
+                              value: subjectsToRoles.map(
+                                (relation) => relation.roleId,
+                              ),
+                            },
+                            {
+                              column: "slug",
+                              method: "eq",
+                              value: "admin",
+                            },
+                          ],
+                        },
                       },
-                    },
-                  }}
-                >
-                  {({ data: subjectsToRoles }) => {
-                    if (!subjectsToRoles?.length) {
-                      return;
-                    }
+                    }}
+                  >
+                    {({ data: roles }) => {
+                      if (!roles?.length) {
+                        return;
+                      }
 
-                    return <Dashboard isServer={false} />;
-                  }}
-                </RbacSubjectsToRoles>
-              );
-            }}
-          </RbacRole>
+                      return <Dashboard isServer={false} />;
+                    }}
+                  </RbacRole>
+                );
+              }}
+            </RbacSubjectsToRoles>
+          </Access>
         );
       }}
     </RbacSubject>

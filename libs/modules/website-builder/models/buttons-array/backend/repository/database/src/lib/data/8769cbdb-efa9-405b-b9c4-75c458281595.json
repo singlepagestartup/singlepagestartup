@@ -1,0 +1,14 @@
+{
+  "id": "8769cbdb-efa9-405b-b9c4-75c458281595",
+  "createdAt": "2026-10-23T20:18:02.608Z",
+  "updatedAt": "2026-10-23T20:18:02.608Z",
+  "variant": "footer-column",
+  "className": "",
+  "title": {
+    "en": "Framework",
+    "ru": "Фреймворк"
+  },
+  "description": {},
+  "adminTitle": "Framework",
+  "slug": "framework-footer-framework"
+}
