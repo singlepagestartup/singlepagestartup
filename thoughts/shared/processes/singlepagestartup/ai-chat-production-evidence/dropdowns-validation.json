@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-11",
+  "scope": "AI Chat production dropdowns matching Studio",
+  "checks": {
+    "hostTypescript": {
+      "command": "npx tsc --noEmit -p apps/host/tsconfig.json",
+      "exitCode": 0
+    },
+    "codePlacement": {
+      "command": "node tools/agents/code-placement.mjs",
+      "exitCode": 0
+    },
+    "gitWhitespace": { "command": "git diff --check", "exitCode": 0 },
+    "nativeAiChatSelectElements": 0
+  },
+  "browser": {
+    "projectSelection": "Blue Kiln opens its Profile/Chat/Thread route; its menu row has aria-current=page and a check glyph.",
+    "newProject": "Opens /en/ai-chat/projects with the Project name field and Create project action.",
+    "keyboard": "Enter opens the project menu. Escape closes it and restores focus to the Project trigger.",
+    "agentSelection": "Selecting Blue Kiln updates the Thread agent combobox.",
+    "workingContext": "Bookings selection updates the trigger and checked radio state. Source IDs remain the option values. Whole document is restored after verification.",
+    "mobile": {
+      "cssViewportWidth": 375,
+      "documentScrollWidth": 375,
+      "settingsSelection": "Purchases",
+      "projectMenuFits": true
+    },
+    "viewportOverrideReset": true,
+    "creationAndMessageFormsSubmitted": false
+  },
+  "screenshots": [
+    "project-menu-desktop.png",
+    "project-menu-mobile.png",
+    "agent-select-menu.png",
+    "working-context-menu.png"
+  ]
+}

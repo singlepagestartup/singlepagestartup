@@ -1,0 +1,22 @@
+{
+  "status": "verified",
+  "exampleSkill": "business-analyst",
+  "profile": "knowledge-assistant",
+  "profileSkillsCount": 1,
+  "source": "apps/studio/workspace/products/singlepage/ai-chat/content/agent-roles/business-analyst.md",
+  "displayedSection": "Mission and boundary",
+  "specializationSkills": [
+    "account-manager",
+    "brand-designer",
+    "business-analyst",
+    "communication-strategist",
+    "market-researcher",
+    "strategist",
+    "web-designer"
+  ],
+  "relation": "social.profiles-to-skills",
+  "typescriptStudioExitCode": 0,
+  "browserConsoleErrors": [],
+  "screenshot": "storybook-specialization-skill.jpg",
+  "storybookPort": 4321
+}

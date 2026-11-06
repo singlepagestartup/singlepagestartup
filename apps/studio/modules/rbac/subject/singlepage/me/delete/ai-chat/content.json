@@ -1,0 +1,223 @@
+{
+  "sections": {
+    "hero": {
+      "title": "Ваш аккаунт.",
+      "paragraphs": [
+        "Измените пароль, посмотрите покупки или управляйте данными аккаунта. Выбирайте проекты и управляйте ими в [чате проекта](/ai-chat/social/profiles/example)."
+      ],
+      "items": [],
+      "links": [
+        {
+          "text": "чате проекта",
+          "href": "/ai-chat/social/profiles/example"
+        }
+      ]
+    },
+    "account": {
+      "title": "Изменить пароль",
+      "paragraphs": [
+        "Введите текущий пароль, затем дважды новый."
+      ],
+      "items": [
+        {
+          "title": "Текущий пароль",
+          "text": "Подтвердить доступ к аккаунту."
+        },
+        {
+          "title": "Новый пароль",
+          "text": "Заменить текущий пароль."
+        },
+        {
+          "title": "Повтор пароля",
+          "text": "Проверить совпадение двух значений."
+        }
+      ],
+      "links": []
+    },
+    "purchases": {
+      "title": "Токены и покупки",
+      "paragraphs": [
+        "Посмотрите баланс токенов, историю покупок и чеки. [Купите токены](/ai-chat/rbac/subjects/tokens), чтобы продолжить сохранённую задачу, когда баланс ограничивает новые платные AI-запросы."
+      ],
+      "items": [],
+      "links": [
+        {
+          "text": "Купите токены",
+          "href": "/ai-chat/rbac/subjects/tokens"
+        }
+      ]
+    },
+    "privacy": {
+      "title": "Материалы и удаление",
+      "paragraphs": [
+        "Для запрошенной работы сервис отправляет подходящие материалы внешним AI-провайдерам. Перед удалением аккаунта прочитайте, [как обрабатываются и хранятся материалы](/ai-chat/social/profiles/create#how-your-materials-are-processed-and-stored).",
+        "Удаление убирает аккаунт и активные данные, которыми управляет сервис, во всех проектах: загруженные материалы, документы и переписки. Резервные копии Contabo могут храниться до шести месяцев; сервис не может сократить этот срок."
+      ],
+      "items": [],
+      "links": [
+        {
+          "text": "как обрабатываются и хранятся материалы",
+          "href": "/ai-chat/social/profiles/create#how-your-materials-are-processed-and-stored"
+        }
+      ]
+    },
+    "danger": {
+      "title": "Удалить аккаунт и данные проектов",
+      "paragraphs": [
+        "Перед подтверждением проверьте, какие данные аккаунта и всех проектов будут удалены. Выберите **Отмена**, чтобы сохранить аккаунт и данные."
+      ],
+      "items": [],
+      "links": []
+    },
+    "recovery": {
+      "title": "Если изменение не сохраняется",
+      "paragraphs": [
+        "При ошибке прежняя настройка или последний сохранённый документ остаются на месте. Повторите изменение или обратитесь за помощью. Если удаление не удалось, проверьте результат перед новой попыткой."
+      ],
+      "items": [],
+      "links": []
+    },
+    "success": {
+      "title": "Пароль изменён",
+      "paragraphs": [
+        "Новый пароль сохранён. Вернитесь в рабочее пространство, чтобы продолжить работу."
+      ],
+      "items": [],
+      "links": []
+    },
+    "controls": {
+      "title": "Подписи интерфейса",
+      "paragraphs": [],
+      "items": [
+        {
+          "title": "back-label",
+          "text": "Назад в рабочее пространство"
+        },
+        {
+          "title": "back-href",
+          "text": "/ai-chat/social/profiles/example"
+        },
+        {
+          "title": "current-password-label",
+          "text": "Текущий пароль"
+        },
+        {
+          "title": "repeat-password-label",
+          "text": "Повторите новый пароль"
+        },
+        {
+          "title": "password-label",
+          "text": "Новый пароль"
+        },
+        {
+          "title": "save-account",
+          "text": "Изменить пароль"
+        },
+        {
+          "title": "purchases-label",
+          "text": "Посмотреть покупки и чеки"
+        },
+        {
+          "title": "purchases-empty",
+          "text": "Покупок пока нет."
+        },
+        {
+          "title": "account-summary-label",
+          "text": "Аккаунт"
+        },
+        {
+          "title": "project-summary-label",
+          "text": "Проекты"
+        },
+        {
+          "title": "buy-tokens",
+          "text": "Купить токены"
+        },
+        {
+          "title": "tokens-href",
+          "text": "/ai-chat/rbac/subjects/tokens"
+        },
+        {
+          "title": "delete-label",
+          "text": "Удалить аккаунт и данные проектов"
+        },
+        {
+          "title": "deletion-title",
+          "text": "Удалить этот аккаунт и данные его проектов?"
+        },
+        {
+          "title": "deletion-description",
+          "text": "Будут удалены аккаунт и активные данные всех проектов, которыми управляет сервис. Резервные копии Contabo могут храниться до шести месяцев."
+        },
+        {
+          "title": "cancel",
+          "text": "Отмена"
+        },
+        {
+          "title": "confirm-delete",
+          "text": "Подтвердить удаление"
+        },
+        {
+          "title": "deletion-message",
+          "text": "Удаление подтверждено."
+        },
+        {
+          "title": "retry",
+          "text": "Повторить"
+        },
+        {
+          "title": "help-label",
+          "text": "Обратиться за помощью"
+        },
+        {
+          "title": "help-href",
+          "text": "/ai-chat/help"
+        },
+        {
+          "title": "success-message",
+          "text": "Пароль изменён."
+        },
+        {
+          "title": "password-mismatch",
+          "text": "Новые пароли не совпадают."
+        },
+        {
+          "title": "password-unchanged",
+          "text": "Выберите пароль, отличающийся от текущего."
+        },
+        {
+          "title": "all-projects-summary",
+          "text": "Все проекты, загруженные материалы, документы и переписки."
+        }
+      ],
+      "links": []
+    }
+  },
+  "labels": {
+    "back-label": "Назад в рабочее пространство",
+    "back-href": "/ai-chat/social/profiles/example",
+    "current-password-label": "Текущий пароль",
+    "repeat-password-label": "Повторите новый пароль",
+    "password-label": "Новый пароль",
+    "save-account": "Изменить пароль",
+    "purchases-label": "Посмотреть покупки и чеки",
+    "purchases-empty": "Покупок пока нет.",
+    "account-summary-label": "Аккаунт",
+    "project-summary-label": "Проекты",
+    "buy-tokens": "Купить токены",
+    "tokens-href": "/ai-chat/rbac/subjects/tokens",
+    "delete-label": "Удалить аккаунт и данные проектов",
+    "deletion-title": "Удалить этот аккаунт и данные его проектов?",
+    "deletion-description": "Будут удалены аккаунт и активные данные всех проектов, которыми управляет сервис. Резервные копии Contabo могут храниться до шести месяцев.",
+    "cancel": "Отмена",
+    "confirm-delete": "Подтвердить удаление",
+    "deletion-message": "Удаление подтверждено.",
+    "retry": "Повторить",
+    "help-label": "Обратиться за помощью",
+    "help-href": "/ai-chat/help",
+    "success-message": "Пароль изменён.",
+    "password-mismatch": "Новые пароли не совпадают.",
+    "password-unchanged": "Выберите пароль, отличающийся от текущего.",
+    "all-projects-summary": "Все проекты, загруженные материалы, документы и переписки."
+  }
+}

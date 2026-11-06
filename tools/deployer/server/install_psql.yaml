@@ -25,8 +25,13 @@
         - postgresql-client-common
         - postgresql-client
 
-    - name: Move create_db_dump.sh
+    - name: Install database backup and restore commands
       copy:
-        src: create_db_dump.sh
-        dest: /home/code/create_db_dump.sh
-        mode: 0755
+        src: "{{ item }}"
+        dest: "/home/code/{{ item }}"
+        owner: root
+        group: root
+        mode: "0755"
+      loop:
+        - create_db_dump.sh
+        - restore_db_dump.sh

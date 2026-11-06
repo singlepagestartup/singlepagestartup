@@ -1,0 +1,34 @@
+{
+  "metadata": {
+    "seo": {
+      "description": {
+        "en": "Articles, categories, covers and content blocks for searchable explanations.",
+        "ru": "Статьи, категории, обложки и блоки содержимого для публикаций."
+      }
+    },
+    "seoDisplay": {
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Articles, categories, covers and content blocks for searchable explanations.",
+        "ru": "Статьи, категории, обложки и блоки содержимого для публикаций."
+      },
+      "opengraphDescription": {
+        "en": "Articles, categories, covers and content blocks for searchable explanations.",
+        "ru": "Статьи, категории, обложки и блоки содержимого для публикаций."
+      }
+    }
+  },
+  "id": "91a043f8-19a0-4791-83ad-cc13264e43e8",
+  "title": "Blog · Code Framework",
+  "url": "/framework/modules/blog",
+  "description": "Articles, categories, covers and content blocks for searchable explanations.",
+  "createdAt": "2026-10-24T01:05:56.875Z",
+  "updatedAt": "2026-10-30T22:25:08.142Z",
+  "variant": "default",
+  "className": "",
+  "language": "en",
+  "adminTitle": "Blog · Code Framework"
+}

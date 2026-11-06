@@ -1,0 +1,90 @@
+{
+  "schema": {
+    "module": "agent",
+    "entity": "agent",
+    "entityType": "model",
+    "fields": [
+      {
+        "key": "title",
+        "label": "Title",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "adminTitle",
+        "label": "Admin Title",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "slug",
+        "label": "Slug",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "interval",
+        "label": "Interval",
+        "kind": "text",
+        "nullable": true
+      }
+    ]
+  },
+  "records": [
+    {
+      "title": "agent example 1",
+      "adminTitle": "agent example 1",
+      "id": "e5c07125-d8a7-41ac-aa2a-53e9e6bab27c",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "slug": "agent-example-1",
+      "interval": null
+    },
+    {
+      "title": "agent example 2",
+      "adminTitle": "agent example 2",
+      "id": "171fc140-56a2-4bb6-a38e-781891cf889a",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "slug": "agent-example-2",
+      "interval": null
+    },
+    {
+      "title": "agent example 3",
+      "adminTitle": "agent example 3",
+      "id": "cfe61c5d-ea64-4fc0-abb2-732cf7c1bfa2",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "slug": "agent-example-3",
+      "interval": null
+    }
+  ]
+}

@@ -14,7 +14,7 @@ import {
 export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/billing/invoices";
-export const variants = ["default"];
+export const variants = ["hidden", "default"];
 export const statuses = ["draft", "open", "paid", "uncollectible", "void"];
 export const query = {};
 export const options = {

@@ -1,0 +1,177 @@
+import IconGlyphs from "../../../../feature/singlepage/icon/icons.json";
+function Icon({
+  name,
+  size = 20,
+  className = "",
+  svgProps,
+}: {
+  name: keyof typeof IconGlyphs;
+  size?: 20 | 24;
+  className?: string;
+  svgProps?: React.SVGProps<SVGSVGElement>;
+}) {
+  const geometry = IconGlyphs[name]
+    ?.replace(/^\s*<svg\b[^>]*>/, "")
+    .replace(/<\/svg>\s*$/, "");
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
+  return (
+    <svg
+      className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
+      width={size}
+      height={size}
+      viewBox="0 0 256 256"
+      fill="currentColor"
+      data-icon-family="phosphor"
+      data-icon-name={name}
+      data-icon-weight="regular"
+      aria-hidden="true"
+      focusable="false"
+      {...svgProps}
+      dangerouslySetInnerHTML={{ __html: geometry }}
+    />
+  );
+}
+export function Component() {
+  return (
+    <a
+      href="/ai-chat/"
+      data-ds-block="website-builder.logotype.brand-ai-chat"
+      data-module="website-builder"
+      data-model="logotype"
+      data-id="ai-chat-logotype"
+      data-variant="brand-ai-chat"
+      className={`group relative isolate inline-flex shrink-0 items-center gap-3 rounded-xl ${kit.focus}`}
+      aria-label="Главная SPS AI Chat"
+    >
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute -inset-3 -z-10 rounded-full bg-linear-to-r from-primary via-primary/30 to-muted opacity-0 blur-lg transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100 motion-reduce:transition-none"
+      />
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 200 200"
+        className="size-9 shrink-0 transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-110 group-focus-visible:-rotate-6 motion-reduce:transform-none motion-reduce:transition-none"
+      >
+        <path
+          d="M100 -4.37114e-06C146.634 -2.33268e-06 169.952 -1.31346e-06 184.642 14.2361C185.022 14.6041 185.396 14.9781 185.764 15.3579C200 30.0484 200 53.3656 200 100C200 146.634 200 169.952 185.764 184.642C185.396 185.022 185.022 185.396 184.642 185.764C169.952 200 146.634 200 100 200C53.3656 200 30.0484 200 15.3579 185.764C14.9781 185.396 14.6041 185.022 14.236 184.642C-2.26876e-05 169.952 -2.16684e-05 146.634 -1.96299e-05 100C-1.75915e-05 53.3656 -1.65722e-05 30.0484 14.2361 15.3579C14.6041 14.9781 14.9781 14.6041 15.3579 14.2361C30.0484 -7.42882e-06 53.3656 -6.40959e-06 100 -4.37114e-06Z"
+          fill="#111111"
+        />
+        <rect
+          x="85.7234"
+          y="28.6198"
+          width="28.5525"
+          height="28.5525"
+          fill="white"
+        />
+        <rect
+          x="57.1724"
+          y="57.1721"
+          width="28.5525"
+          height="28.5525"
+          fill="white"
+        />
+        <rect
+          x="114.276"
+          y="28.6199"
+          width="28.5525"
+          height="28.5525"
+          fill="white"
+        />
+        <rect
+          x="142.828"
+          y="57.1721"
+          width="28.5525"
+          height="28.5525"
+          fill="white"
+        />
+        <rect
+          x="28.6194"
+          y="114.276"
+          width="28.5525"
+          height="28.5525"
+          fill="white"
+        />
+        <rect
+          x="57.1724"
+          y="85.7238"
+          width="28.5525"
+          height="28.5525"
+          fill="white"
+        />
+        <rect
+          x="85.7234"
+          y="85.7238"
+          width="28.5525"
+          height="28.5525"
+          fill="white"
+        />
+        <rect
+          x="114.276"
+          y="114.276"
+          width="28.5525"
+          height="28.5525"
+          fill="white"
+        />
+        <rect
+          x="114.276"
+          y="85.7239"
+          width="28.5525"
+          height="28.5525"
+          fill="white"
+        />
+        <path
+          d="M85.7234 57.1721L57.1709 57.1721L85.7234 28.6196L85.7234 57.1721Z"
+          fill="white"
+        />
+        <path
+          d="M114.276 142.828H142.829L114.276 171.381V142.828Z"
+          fill="white"
+        />
+        <rect
+          x="85.7234"
+          y="142.828"
+          width="28.5525"
+          height="28.5525"
+          fill="white"
+        />
+        <rect
+          x="57.1724"
+          y="142.828"
+          width="28.5525"
+          height="28.5525"
+          fill="white"
+        />
+      </svg>
+      <span className="text-lg font-semibold tracking-tight">
+        sps{" "}
+        <span className="text-[color:var(--workspace-brand-muted)] transition-colors group-hover:text-[color:var(--workspace-brand-foreground)] group-focus-visible:text-[color:var(--workspace-brand-foreground)] motion-reduce:transition-none">
+          ai chat
+        </span>
+      </span>
+      <span
+        aria-hidden="true"
+        className="absolute -right-3 -top-2 scale-50 text-[color:var(--workspace-brand-accent)] opacity-0 transition-all duration-300 group-hover:rotate-12 group-hover:scale-100 group-hover:opacity-100 group-focus-visible:scale-100 group-focus-visible:opacity-100 motion-reduce:transition-none"
+      >
+        <Icon name="star" className="size-4" />
+      </span>
+    </a>
+  );
+}
+const focus =
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--workspace-brand-foreground)]";
+const buttonBase =
+  "inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold transition motion-reduce:transition-none enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50";
+const kit = {
+  button: `${buttonBase} bg-[color:var(--workspace-brand-accent)] text-[color:var(--workspace-brand-foreground)] enabled:hover:brightness-95 ${focus}`,
+  secondary: `${buttonBase} border border-[color:var(--workspace-brand-line)] bg-[color:var(--workspace-brand-surface)] text-[color:var(--workspace-brand-foreground)] enabled:hover:bg-[color:var(--workspace-brand-background)] ${focus}`,
+  plain: `${buttonBase} text-[color:var(--workspace-brand-muted)] enabled:hover:text-[color:var(--workspace-brand-foreground)] ${focus}`,
+  danger: `${buttonBase} border border-[color:var(--workspace-brand-danger-line)] bg-[color:var(--workspace-brand-danger-surface)] text-[color:var(--workspace-brand-danger)] enabled:hover:brightness-95 ${focus}`,
+  field:
+    "min-h-12 w-full min-w-0 rounded-xl border border-[color:var(--workspace-brand-line)] bg-[color:var(--workspace-brand-surface)] px-4 py-2 text-base text-[color:var(--workspace-brand-foreground)] outline-none transition motion-reduce:transition-none placeholder:text-[color:var(--workspace-brand-muted)] focus-visible:border-[color:var(--workspace-brand-foreground)] focus-visible:ring-2 focus-visible:ring-[color:var(--workspace-brand-foreground)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--workspace-brand-surface)] disabled:cursor-not-allowed disabled:bg-[color:var(--workspace-brand-background)] disabled:text-[color:var(--workspace-brand-muted)] disabled:opacity-60 [&[readonly]]:bg-[color:var(--workspace-brand-background)] aria-invalid:border-[color:var(--workspace-brand-danger)] aria-invalid:focus-visible:ring-[color:var(--workspace-brand-danger)]",
+  checkbox:
+    "peer h-5 w-5 shrink-0 cursor-pointer appearance-none rounded-md border border-[color:var(--workspace-brand-line)] bg-[color:var(--workspace-brand-surface)] text-[color:var(--workspace-brand-foreground)] checked:border-transparent checked:bg-[color:var(--workspace-brand-accent)] indeterminate:border-transparent indeterminate:bg-[color:var(--workspace-brand-accent)] disabled:cursor-not-allowed",
+  card: "min-w-0 rounded-2xl border border-[color:var(--workspace-brand-line)] bg-[color:var(--workspace-brand-surface)] p-5",
+  muted: "text-[color:var(--workspace-brand-muted)]",
+  label: "text-sm font-semibold text-[color:var(--workspace-brand-foreground)]",
+  focus: focus,
+};

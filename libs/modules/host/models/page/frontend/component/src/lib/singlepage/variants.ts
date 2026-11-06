@@ -1,3 +1,7 @@
+import { Component as SeoPreview } from "./seo-preview";
+import { Component as NoIndex } from "./noindex";
+import { Component as Document } from "./document";
+import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
 import { Component as AdminV2SidebarItem } from "./admin-v2/sidebar-item";
 import { Component as AdminV2Card } from "./admin-v2/card";
 import { Component as AdminV2Form } from "./admin-v2/form";
@@ -5,6 +9,7 @@ import { Component as AdminV2SelectInput } from "./admin-v2/select-input";
 import { Component as AdminV2Table } from "./admin-v2/table";
 import { Component as AdminV2TableRow } from "./admin-v2/table-row";
 import { Component as UrlSegmentValue } from "./url-segment-value";
+import { Component as UrlSegmentValues } from "./url-segment-values";
 import { Component as FindByUrl } from "./find-by-url";
 import { Component as Find } from "./find";
 import { Component as AdminTableRow } from "./admin/table-row";
@@ -13,6 +18,11 @@ import { Component as AdminSelectInput } from "./admin/select-input";
 import { Component as AdminForm } from "./admin/form";
 import { Component as Default } from "./default";
 export const variants = {
+  "seo-preview": SeoPreview,
+  noindex: NoIndex,
+  document: Document,
+  hidden: Hidden,
+  "url-segment-values": UrlSegmentValues,
   "url-segment-value": UrlSegmentValue,
   "find-by-url": FindByUrl,
   find: Find,

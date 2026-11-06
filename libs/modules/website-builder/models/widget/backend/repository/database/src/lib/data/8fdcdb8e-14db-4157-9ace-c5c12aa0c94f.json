@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "",
+    "ru": ""
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Show products, services or courses with descriptions, images and prices. Customers can compare offers, fill a cart and place an order. You retain a record of their choices.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"In a conversation, you repeatedly resend descriptions, confirm quantities and assemble purchases. A catalogue moves selection to the website. Cards explain the offer, the cart collects selections and an order records the purchase for further work.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Покажите товары, услуги или курсы с описанием, изображениями и ценой. Клиент сможет сравнить предложения, собрать корзину и оформить заказ. У вас останется запись о том, что он выбрал.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"В переписке приходится снова отправлять описание, уточнять количество и собирать состав покупки. Каталог переносит выбор на сайт. Карточка объясняет предложение, корзина собирает выбранное, а заказ фиксирует покупку для дальнейшей работы.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "8fdcdb8e-14db-4157-9ace-c5c12aa0c94f",
+  "createdAt": "2026-10-26T00:11:22.355Z",
+  "updatedAt": "2026-10-27T14:59:08.041Z",
+  "variant": "content-rich",
+  "adminTitle": "framework-reviewed-article-ecommerce-introduction",
+  "slug": "framework-reviewed-article-ecommerce-introduction"
+}

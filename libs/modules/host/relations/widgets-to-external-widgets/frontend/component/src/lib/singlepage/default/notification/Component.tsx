@@ -1,7 +1,7 @@
-import { IComponentPropsExtended } from "../interface";
+import { IExternalWidgetProps } from "../interface";
 import { Component as NotificationModuleWidget } from "@sps/notification/models/widget/frontend/component";
 
-export function Component(props: IComponentPropsExtended) {
+export function Component(props: IExternalWidgetProps) {
   return (
     <NotificationModuleWidget
       isServer={props.isServer}

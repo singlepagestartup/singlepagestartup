@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Module structure",
+    "ru": "Устройство модуля"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Source stores editable knowledge and file relations; Chunk stores searchable passages. RBAC provides the permitted sources. Social links sources to the assistant's profile. Knowledge does not decide who can access a chat.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Source хранит редактируемые знания и связи с файлами, Chunk — фрагменты для поиска. RBAC передаёт разрешённый набор источников. Social связывает источники с профилем помощника. Knowledge не решает, кто имеет доступ к чату.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "59ba9a12-962a-4b22-b300-a2a979907cf7",
+  "createdAt": "2026-10-26T00:12:02.058Z",
+  "updatedAt": "2026-10-27T14:59:00.878Z",
+  "variant": "content-rich",
+  "adminTitle": "Устройство модуля",
+  "slug": "framework-reviewed-article-knowledge-technical"
+}

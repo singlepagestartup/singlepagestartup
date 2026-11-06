@@ -23,3 +23,9 @@ Links blog articles to ecommerce products for cross-promotions and embedded prod
 - `admin-select-input`: admin select input for choosing a relation.
 - `admin-table`: admin table listing relations.
 - `admin-table-row`: admin row showing relation fields.
+
+## Subscription presentation
+
+The subscription variant presents a linked subscription Product. It does not
+establish an API access policy for the Article or its Widget descendants.
+The current article example checks access in its RBAC frontend composition.

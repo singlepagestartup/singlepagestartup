@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "bb85d307-7604-49f2-8a59-14bfb6ce64cf",
+  "createdAt": "2026-10-26T00:11:59.784Z",
+  "updatedAt": "2026-10-27T14:59:53.363Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "The question relates to your business",
+    "ru": "Вопрос относится к вашему бизнесу"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The assistant searches sources available to it. For example, it can find your school's participation terms instead of giving a general answer about courses.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Помощник ищет в источниках, которые ему доступны. Например, находит условия участия в программе школы вместо общего ответа о курсах.\"}]}]}"
+  },
+  "adminTitle": "Вопрос относится к вашему бизнесу",
+  "slug": "framework-reviewed-article-knowledge-introduction-feature-0"
+}

@@ -10,6 +10,7 @@ jest.mock("@sps/shared-frontend-api", () => ({
   actions: {
     findById: jest.fn(),
     find: jest.fn(),
+    count: jest.fn(),
     update: jest.fn(),
     create: jest.fn(),
     delete: jest.fn(),
@@ -76,6 +77,83 @@ describe("server api factory", () => {
       },
       options: { headers: { "X-Request": "abc" } },
     });
+  });
+
+  it.each([
+    "find",
+    "findById",
+    "count",
+    "create",
+    "update",
+    "delete",
+    "findOrCreate",
+    "bulkCreate",
+    "bulkUpdate",
+  ] as const)(
+    "keeps %s on the configured host and route for untyped caller props",
+    async (operation) => {
+      const api = factory({
+        host: "https://api.example.test",
+        route: "/api/ecommerce/products",
+      });
+      const input = {
+        host: "http://untrusted.example.test",
+        route: "/unexpected",
+        id: "entity-id",
+        data: operation.startsWith("bulk") ? [{}] : {},
+        params: { limit: 3 },
+        options: { headers: { "X-Request": "allowed" } },
+        tag: "request-tag",
+        revalidate: 30,
+        unexpected: "must not reach the action",
+      };
+      await api[operation](input as never);
+      expect(actions[operation]).toHaveBeenCalledWith(
+        expect.objectContaining({
+          host: "https://api.example.test",
+          route: "/api/ecommerce/products",
+          params: input.params,
+          options: input.options,
+          tag: input.tag,
+          revalidate: input.revalidate,
+        }),
+      );
+      const forwarded = (actions[operation] as jest.Mock).mock.calls[0][0];
+      expect(forwarded).not.toHaveProperty("unexpected");
+      if (["findById", "update", "delete"].includes(operation))
+        expect(forwarded.id).toBe(input.id);
+      if (
+        [
+          "create",
+          "update",
+          "findOrCreate",
+          "bulkCreate",
+          "bulkUpdate",
+        ].includes(operation)
+      )
+        expect(forwarded.data).toBe(input.data);
+    },
+  );
+
+  it("retains explicit undefined params/options overrides", async () => {
+    const api = factory({
+      host: "https://api.example.test",
+      route: "/api/ecommerce/products",
+      params: { limit: 10 },
+      options: { headers: { "X-Default": "1" } },
+    });
+    await api.find({
+      params: undefined,
+      options: undefined,
+      catchErrors: true,
+    });
+    expect(actions.find).toHaveBeenCalledWith(
+      expect.objectContaining({
+        params: undefined,
+        options: undefined,
+        catchErrors: true,
+      }),
+    );
   });
 
   it("routes mutation helpers to corresponding actions", async () => {
