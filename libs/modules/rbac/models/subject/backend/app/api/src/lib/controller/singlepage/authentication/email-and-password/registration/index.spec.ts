@@ -37,6 +37,7 @@ it("gets the visitor Subject from the verified session and ignores a body Subjec
     body,
   });
   expect(response.status).toBe(201);
+  expect(response.headers.get("set-cookie")).toBeNull();
   expect(authenticate).toHaveBeenCalledWith(
     expect.objectContaining({ type: "registration", subjectId: "visitor" }),
   );

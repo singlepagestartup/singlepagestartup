@@ -74,6 +74,44 @@ describe("MCP forwarded authentication helper", () => {
   });
 
   /**
+   * BDD Scenario: A secret cookie is not a credential
+   * Given the MCP request carries the operator secret only in an rbac.secret-key cookie
+   * When SDK auth headers are built
+   * Then no credential is forwarded and the call is refused before it reaches the API
+   */
+  it("does not forward an rbac.secret-key cookie as the root secret", () => {
+    expect(() =>
+      getMcpAuthHeaders(
+        createExtra({
+          headers: {
+            cookie: "rbac.secret-key=test-secret",
+          },
+        }),
+      ),
+    ).toThrow("Authentication error. Provide Authorization: Bearer <jwt>");
+  });
+
+  /**
+   * BDD Scenario: The JWT cookie still wins over a secret cookie
+   * Given the MCP request carries both frontend cookies
+   * When SDK auth headers are built
+   * Then only the JWT is forwarded, as a bearer Authorization header
+   */
+  it("forwards the JWT cookie and ignores a secret cookie beside it", () => {
+    expect(
+      getMcpAuthHeaders(
+        createExtra({
+          headers: {
+            cookie: "rbac.secret-key=test-secret; rbac.subject.jwt=cookie-jwt",
+          },
+        }),
+      ),
+    ).toEqual({
+      Authorization: "Bearer cookie-jwt",
+    });
+  });
+
+  /**
    * BDD Scenario: MCP auth info token is reused
    * Given an authenticated MCP transport provides authInfo.token
    * When SDK auth headers are built

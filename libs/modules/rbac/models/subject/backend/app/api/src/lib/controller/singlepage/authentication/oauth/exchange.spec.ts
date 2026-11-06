@@ -3,20 +3,17 @@
  *
  * Given: the callback handed the exchange code over as an HttpOnly cookie.
  * When: the landing page redeems it.
- * Then: the cookie is the source, the body is read only under the compatibility flag, and the cookie is cleared either way.
+ * Then: the cookie is the source, the body is read only under the compatibility flag, the cookie is cleared either way, and the session travels in the body, not in a cookie.
  */
 
 const mockEnvs = {
   RBAC_OAUTH_EXCHANGE_CODE_IN_QUERY: false,
 };
-const mockJwtVerify = jest.fn();
 const mockGetCookie = jest.fn();
 const mockSetCookie = jest.fn();
 const mockDeleteCookie = jest.fn();
 
 jest.mock("@sps/shared-utils", () => ({
-  RBAC_JWT_SECRET: "test-jwt-secret",
-  RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS: 3600,
   RBAC_OAUTH_EXCHANGE_LIFETIME_IN_SECONDS: 120,
   get RBAC_OAUTH_EXCHANGE_CODE_IN_QUERY() {
     return mockEnvs.RBAC_OAUTH_EXCHANGE_CODE_IN_QUERY;
@@ -29,10 +26,6 @@ jest.mock("@sps/backend-utils", () => ({
     message: error.message,
     details: null,
   }),
-}));
-
-jest.mock("hono/jwt", () => ({
-  verify: (...args: unknown[]) => mockJwtVerify(...args),
 }));
 
 jest.mock("hono/cookie", () => ({
@@ -71,9 +64,6 @@ describe("Given: the exchange controller redeems an OAuth code", () => {
     jest.clearAllMocks();
 
     mockEnvs.RBAC_OAUTH_EXCHANGE_CODE_IN_QUERY = false;
-    mockJwtVerify.mockResolvedValue({
-      exp: Math.floor(Date.now() / 1000) + 3600,
-    });
     mockGetCookie.mockReturnValue(undefined);
   });
 
@@ -144,7 +134,7 @@ describe("Given: the exchange controller redeems an OAuth code", () => {
    * BDD Scenario: the cookie after a successful redemption.
    *
    * Given: the code was redeemed.
-   * When: the session cookie is written.
+   * When: the controller answers.
    * Then: the exchange cookie is cleared, because the code is spent.
    */
   it("clears the exchange cookie after a successful redemption", async () => {
@@ -159,12 +149,28 @@ describe("Given: the exchange controller redeems an OAuth code", () => {
       "rbac.oauth.exchange-code",
       { path: "/" },
     );
-    expect(mockSetCookie).toHaveBeenCalledWith(
-      expect.anything(),
-      "rbac.subject.jwt",
-      "session-jwt",
-      expect.objectContaining({ sameSite: "Strict" }),
-    );
+  });
+
+  /**
+   * BDD Scenario: where the session goes.
+   *
+   * Given: the code was redeemed.
+   * When: the controller answers.
+   * Then: the token pair is in the 201 body and no cookie is written, so the
+   *       landing page persists the session itself.
+   */
+  it("answers with the token pair and writes no session cookie", async () => {
+    mockGetCookie.mockReturnValue("action-exchange");
+
+    const handler = new Handler(createService());
+
+    const result = await handler.execute(createContext(), undefined);
+
+    expect(result).toEqual({
+      payload: { data: { jwt: "session-jwt", refresh: "refresh-jwt" } },
+      status: 201,
+    });
+    expect(mockSetCookie).not.toHaveBeenCalled();
   });
 
   /**
