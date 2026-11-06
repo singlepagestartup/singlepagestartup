@@ -7,6 +7,10 @@ export interface IMiddlewareGeneric {}
 
 interface IService {
   agentRun: {
+    startHandler(owner: {
+      slug: string;
+      runId: string;
+    }): Promise<(() => void) | undefined>;
     markFinished(props: {
       slug: string;
       runId: string;
@@ -39,6 +43,17 @@ export class Middleware {
         return next();
       }
 
+      const stopHeartbeat = await this.service.agentRun.startHandler({
+        slug,
+        runId,
+      });
+      if (!stopHeartbeat) {
+        return c.json(
+          { error: "Conflict error. This agent run is no longer available" },
+          409,
+        );
+      }
+
       let result: Record<string, unknown> = { error: "Unknown error" };
 
       try {
@@ -65,6 +80,8 @@ export class Middleware {
             `❌ Error during finishing agent run '${runId}' of '${slug}':`,
             error,
           );
+        } finally {
+          stopHeartbeat();
         }
       }
     });

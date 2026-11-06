@@ -35,6 +35,7 @@ import { inject, injectable } from "inversify";
 import { CRUDService, DI } from "@sps/shared-backend-api";
 import { Repository } from "../../repository";
 import { verify } from "hono/jwt";
+import { requestHostRevalidation } from "@sps/backend-utils";
 import { RBAC_JWT_SECRET } from "@sps/shared-utils";
 import {
   Service as AiContextService,
@@ -434,7 +435,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       if (updated) return updated;
     }
     throw new Error(
-      "Thread preferences changed concurrently. Retry with the current thread.",
+      "Conflict error. Thread preferences changed concurrently. Retry with the current thread.",
     );
   }
 
@@ -509,6 +510,34 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     data: IArticleCreateInput;
   }) {
     return new BlogArticleCreate(this).execute(props);
+  }
+
+  async revalidateHostCache() {
+    await requestHostRevalidation({ path: "/", type: "layout" });
+  }
+
+  async isAdmin(subjectId: string) {
+    const [adminRole] =
+      (await this.role.find({
+        params: {
+          filters: { and: [{ column: "slug", method: "eq", value: "admin" }] },
+          limit: 1,
+        },
+      })) ?? [];
+    if (!adminRole) return false;
+
+    const links = await this.subjectsToRoles.find({
+      params: {
+        filters: {
+          and: [
+            { column: "subjectId", method: "eq", value: subjectId },
+            { column: "roleId", method: "eq", value: adminRole.id },
+          ],
+        },
+        limit: 1,
+      },
+    });
+    return Boolean(links?.length);
   }
 
   async authenticationMe(props: { subjectId: string }) {

@@ -3,13 +3,14 @@ import { Provider as StoreProvider } from "@sps/providers-kv";
 import {
   IRouteRule,
   KV_PROVIDER,
+  MUTATION_SKIPPED_CONTEXT_KEY,
   normalizeRoutePath,
   RBAC_JWT_SECRET,
   RBAC_SECRET_KEY,
   RouteMatcher,
 } from "@sps/shared-utils";
 import { MiddlewareHandler } from "hono";
-import { authorization, logger } from "@sps/backend-utils";
+import { authorization, logger, requestDiagnostics } from "@sps/backend-utils";
 import * as jwt from "hono/jwt";
 import { api as rbacActionApi } from "@sps/rbac/models/action/sdk/server";
 import { api as rbacSubjectsToActionsApi } from "@sps/rbac/relations/subjects-to-actions/sdk/server";
@@ -51,7 +52,10 @@ export class Middleware {
 
       await next();
 
-      if (!this.loggingRoutesMatcher.matches(reqPath, method)) {
+      if (
+        c.get(MUTATION_SKIPPED_CONTEXT_KEY) ||
+        !this.loggingRoutesMatcher.matches(reqPath, method)
+      ) {
         return;
       }
 
@@ -108,9 +112,12 @@ export class Middleware {
 
                 void (async () => {
                   try {
+                    const { requestId, traceId } = requestDiagnostics(c);
                     const rbacAction = await rbacActionApi.create({
                       data: {
                         payload: {
+                          requestId,
+                          traceId,
                           route: path,
                           method,
                           type: "HTTP",

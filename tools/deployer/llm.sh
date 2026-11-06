@@ -6,6 +6,7 @@ get_environment_type $2
 ./create_inventory.sh
 
 . ./get_env.sh
+. ./ansible_vars.sh
 
 DOMAIN=$(get_env "$BASH_SOURCE" "DOMAIN")
 
@@ -54,40 +55,17 @@ if [ "$1" != "down" ]
 then
     ./pull_docker_image.sh "$DOCKER_HUB_URL/$DOCKER_HUB_SERVICE_REPOSITORY" "$ENVIRONMENT_TYPE" && \
     ./pull_docker_image.sh "ollama/ollama:latest" "$ENVIRONMENT_TYPE" && \
-    ansible-playbook \
-        ./llm/create_llm.yaml \
-        -e "SERVICE_NAME=$SERVICE_NAME \
-            PORTAINER_URL=$PORTAINER_URL \
-            PORTAINER_USERNAME=$PORTAINER_USERNAME \
-            PORTAINER_PASSWORD=$PORTAINER_PASSWORD \
-            DOCKER_HUB_URL=$DOCKER_HUB_URL \
-            DOCKER_HUB_SERVICE_REPOSITORY=$DOCKER_HUB_SERVICE_REPOSITORY \
-            OPENAI_API_KEY=$OPENAI_API_KEY \
-            OPEN_AI_API_KEY=$OPEN_AI_API_KEY \
-            ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY \
-            HF_TOKEN=$HF_TOKEN \
-            OLLAMA_EMBED_MODEL=$OLLAMA_EMBED_MODEL \
-            OLLAMA_EMBED_DIMENSIONS=$OLLAMA_EMBED_DIMENSIONS \
-            OLLAMA_MODEL_IDS=$OLLAMA_MODEL_IDS \
-            LLM_PRELOAD_MODEL_IDS=$LLM_PRELOAD_MODEL_IDS \
-            LLM_MAX_LOADED_HF_MODELS=$LLM_MAX_LOADED_HF_MODELS \
-            WHISPER_MODEL=$WHISPER_MODEL \
-            WHISPER_DEVICE=$WHISPER_DEVICE \
-            WHISPER_COMPUTE_TYPE=$WHISPER_COMPUTE_TYPE \
-            ENVIRONMENT_TYPE=$ENVIRONMENT_TYPE" && \
-    ansible-playbook \
-        ./llm/fill_github.yaml \
-        -e "GITHUB_TOKEN=$GITHUB_TOKEN \
-            GITHUB_REPOSITORY=$GITHUB_REPOSITORY \
-            PORTAINER_URL=$PORTAINER_URL \
-            ENVIRONMENT_TYPE=$ENVIRONMENT_TYPE"
+    ansible_with_vars ./llm/create_llm.yaml \
+        SERVICE_NAME PORTAINER_URL PORTAINER_USERNAME PORTAINER_PASSWORD DOCKER_HUB_URL \
+        DOCKER_HUB_SERVICE_REPOSITORY OPENAI_API_KEY OPEN_AI_API_KEY ANTHROPIC_API_KEY \
+        HF_TOKEN OLLAMA_EMBED_MODEL OLLAMA_EMBED_DIMENSIONS OLLAMA_MODEL_IDS \
+        LLM_PRELOAD_MODEL_IDS LLM_MAX_LOADED_HF_MODELS WHISPER_MODEL WHISPER_DEVICE \
+        WHISPER_COMPUTE_TYPE ENVIRONMENT_TYPE && \
+    ansible_with_vars ./llm/fill_github.yaml \
+        GITHUB_TOKEN GITHUB_REPOSITORY PORTAINER_URL ENVIRONMENT_TYPE
 else
-    ansible-playbook \
-        ./llm/clear_github.yaml \
-        -e "GITHUB_TOKEN=$GITHUB_TOKEN \
-            GITHUB_REPOSITORY=$GITHUB_REPOSITORY \
-            ENVIRONMENT_TYPE=$ENVIRONMENT_TYPE" && \
-    ansible-playbook \
-        ./llm/delete_llm.yaml \
-        -e "SERVICE_NAME=$SERVICE_NAME"
+    ansible_with_vars ./llm/clear_github.yaml \
+        GITHUB_TOKEN GITHUB_REPOSITORY ENVIRONMENT_TYPE && \
+    ansible_with_vars ./llm/delete_llm.yaml \
+        SERVICE_NAME
 fi

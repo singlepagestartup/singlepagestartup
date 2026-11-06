@@ -2,6 +2,8 @@
 
 set -euo pipefail
 
+bun --cwd apps/api src/db/check-application-role.ts
+
 # NX not run all commands in project.json after last update
 # still looking for solution
 npx nx run @sps/providers-db:repository-migrate

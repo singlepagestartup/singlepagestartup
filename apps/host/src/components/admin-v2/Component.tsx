@@ -59,8 +59,7 @@ import {
   AdminV2Overview as WebsiteBuilderAdminV2Overview,
   AdminV2SidebarModuleItem as WebsiteBuilderAdminV2SidebarModuleItem,
 } from "@sps/website-builder/frontend/component";
-// import { SettingsPageClientComponent } from "./settings-page";
-// import { AccountSettingsPageClientComponent } from "./account-settings-page";
+import { SettingsPageClientComponent } from "./settings-page";
 import { IComponentProps } from "./interface";
 import { Button } from "@sps/shared-ui-shadcn";
 import { Component as PanelComponent } from "@sps/shared-frontend-components/singlepage/admin-v2/panel/Component";
@@ -78,7 +77,7 @@ export function Component(props: IComponentProps) {
       )}
     >
       <div className="flex h-screen" data-testid="admin-v2-root">
-        <PanelComponent settingsHref={"/admin/settings"}>
+        <PanelComponent settingsHref={`/${props.language}/admin/settings`}>
           <AgentAdminV2SidebarModuleItem
             isServer={props.isServer}
             url={props.url}
@@ -167,39 +166,60 @@ export function Component(props: IComponentProps) {
               </Button>
             </div>
           </header>
-          <EcommerceAdminV2Overview url={props.url} isServer={props.isServer} />
-          <AgentAdminV2Overview url={props.url} isServer={props.isServer} />
-          <AnalyticAdminV2Overview url={props.url} isServer={props.isServer} />
-          <BillingAdminV2Overview url={props.url} isServer={props.isServer} />
-          <BlogAdminV2Overview url={props.url} isServer={props.isServer} />
-          <BroadcastAdminV2Overview url={props.url} isServer={props.isServer} />
-          <CrmAdminV2Overview url={props.url} isServer={props.isServer} />
-          <FileStorageAdminV2Overview
-            url={props.url}
-            isServer={props.isServer}
-          />
-          <HostModuleAdminV2Overview
-            url={props.url}
-            isServer={props.isServer}
-          />
-          <NotificationAdminV2Overview
-            url={props.url}
-            isServer={props.isServer}
-          />
-          <KnowledgeAdminV2Overview url={props.url} isServer={props.isServer} />
-          <RbacAdminV2Overview url={props.url} isServer={props.isServer} />
-          <SocialAdminV2Overview url={props.url} isServer={props.isServer} />
-          <StartupAdminV2Overview url={props.url} isServer={props.isServer} />
-          <WebsiteBuilderAdminV2Overview
-            url={props.url}
-            isServer={props.isServer}
-          />
-          {/* <SettingsPageClientComponent adminBasePath={adminBasePath} />
-      <AccountSettingsPageClientComponent
-        adminBasePath={adminBasePath}
-        onIdentityAction={() => {}}
-        onLogout={() => {}}
-      /> */}
+          {props.url === "/admin/settings" ? (
+            <SettingsPageClientComponent language={props.language} />
+          ) : (
+            <>
+              <EcommerceAdminV2Overview
+                url={props.url}
+                isServer={props.isServer}
+              />
+              <AgentAdminV2Overview url={props.url} isServer={props.isServer} />
+              <AnalyticAdminV2Overview
+                url={props.url}
+                isServer={props.isServer}
+              />
+              <BillingAdminV2Overview
+                url={props.url}
+                isServer={props.isServer}
+              />
+              <BlogAdminV2Overview url={props.url} isServer={props.isServer} />
+              <BroadcastAdminV2Overview
+                url={props.url}
+                isServer={props.isServer}
+              />
+              <CrmAdminV2Overview url={props.url} isServer={props.isServer} />
+              <FileStorageAdminV2Overview
+                url={props.url}
+                isServer={props.isServer}
+              />
+              <HostModuleAdminV2Overview
+                url={props.url}
+                isServer={props.isServer}
+              />
+              <NotificationAdminV2Overview
+                url={props.url}
+                isServer={props.isServer}
+              />
+              <KnowledgeAdminV2Overview
+                url={props.url}
+                isServer={props.isServer}
+              />
+              <RbacAdminV2Overview url={props.url} isServer={props.isServer} />
+              <SocialAdminV2Overview
+                url={props.url}
+                isServer={props.isServer}
+              />
+              <StartupAdminV2Overview
+                url={props.url}
+                isServer={props.isServer}
+              />
+              <WebsiteBuilderAdminV2Overview
+                url={props.url}
+                isServer={props.isServer}
+              />
+            </>
+          )}
         </div>
       </div>
     </section>

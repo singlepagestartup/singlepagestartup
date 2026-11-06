@@ -51,7 +51,9 @@ export class Service extends CRUDService<Source> {
   }
   private dependencies() {
     if (!this.services)
-      throw new Error("Knowledge Source services are not configured.");
+      throw new Error(
+        "Configuration error. Knowledge Source services are not configured.",
+      );
     return this.services;
   }
   private owner() {
@@ -110,7 +112,8 @@ export class Service extends CRUDService<Source> {
   }
   async delete(props: { id: string }): Promise<Source> {
     const source = await this.deleteSourceWithDerivedData(props.id);
-    if (!source) throw new Error("Knowledge Source was not found.");
+    if (!source)
+      throw new Error("Not Found error. Knowledge Source was not found.");
     return source;
   }
   findSourceById(id: string) {
@@ -433,7 +436,9 @@ export class Service extends CRUDService<Source> {
         ? await relationService.findById({ id: props.id })
         : null;
       if (props.action !== "create" && !previous)
-        throw new Error("Knowledge file relation was not found.");
+        throw new Error(
+          "Not Found error. Knowledge file relation was not found.",
+        );
       const ids = [
         previous?.fileStorageModuleFileId,
         props.data?.fileStorageModuleFileId,
@@ -451,7 +456,7 @@ export class Service extends CRUDService<Source> {
           current.fileStorageModuleFileId !== previous.fileStorageModuleFileId
         )
           throw new Error(
-            "Knowledge file relation changed. Retry the operation.",
+            "Conflict error. Knowledge file relation changed. Retry the operation.",
           );
       }
       const relation =
@@ -497,7 +502,8 @@ export class Service extends CRUDService<Source> {
       const sources = await scope.owner().lock(sourceIds);
       const fileService = scope.dependencies().fileStorageFile;
       const previous = await fileService.findById({ id: props.id });
-      if (!previous) throw new Error("Stored file was not found.");
+      if (!previous)
+        throw new Error("Not Found error. Stored file was not found.");
       if (props.action === "update" && sourceIds.length) {
         const next = { ...previous, ...props.data };
         assertKnowledgeAttachmentBytes({
@@ -527,7 +533,8 @@ export class Service extends CRUDService<Source> {
     return this.run(async (scope) => {
       await scope.lockFiles(fileIds);
       const sources = await scope.owner().lock([sourceId]);
-      if (!sources.length) throw new Error("Knowledge Source was not found.");
+      if (!sources.length)
+        throw new Error("Not Found error. Knowledge Source was not found.");
       if (
         await scope
           .dependencies()
@@ -555,7 +562,8 @@ export class Service extends CRUDService<Source> {
       await scope.lockFiles(fileIds, "key share", false);
       await scope.lockFiles(fileIds.filter((id) => !existingIds.has(id)));
       const sources = await scope.owner().lock([sourceId]);
-      if (!sources.length) throw new Error("Knowledge Source was not found.");
+      if (!sources.length)
+        throw new Error("Not Found error. Knowledge Source was not found.");
       if (
         expectedContentHash !== undefined &&
         sources[0].contentHash !== expectedContentHash
@@ -601,11 +609,14 @@ export class Service extends CRUDService<Source> {
     minSimilarity?: number;
     sourceIds?: string[];
   }): Promise<KnowledgeSearchResult[]> {
-    if (props.sourceIds && !props.sourceIds.length) return [];
-    if (!this.dependencies().inTransaction)
+    if (props.sourceIds && !props.sourceIds.length) {
+      return [];
+    }
+    if (!this.dependencies().inTransaction) {
       return this.dependencies().readSnapshot((source) =>
         source.searchChunks(props),
       );
+    }
     const services = this.dependencies();
     const collect = (
       chunks: Awaited<ReturnType<ChunkService["search"]>>,
@@ -617,16 +628,17 @@ export class Service extends CRUDService<Source> {
       return chunks.flatMap((chunk) => {
         const link = linkByChunk.get(chunk.id);
         const source = link && sourceById.get(link.sourceId);
-        return source
-          ? [
-              {
-                ...chunk,
-                sourceId: source.id,
-                sourceTitle: source.title,
-                retrievalRole: "seed" as const,
-              },
-            ]
-          : [];
+        if (!source) {
+          return [];
+        }
+        return [
+          {
+            ...chunk,
+            sourceId: source.id,
+            sourceTitle: source.title,
+            retrievalRole: "seed" as const,
+          },
+        ];
       });
     };
     if (props.sourceIds) {
@@ -642,9 +654,13 @@ export class Service extends CRUDService<Source> {
       return collect(chunks, links, sources);
     }
     const total = await services.chunk.count();
-    if (!total) return [];
+    if (!total) {
+      return [];
+    }
     let limit = Math.min(total, Math.max(64, props.topK * 4));
-    for (;;) {
+    let result: KnowledgeSearchResult[];
+    let needsMoreCandidates: boolean;
+    do {
       // Keep the unfiltered global vector scan eligible for HNSW. Only ranked
       // candidates cross service boundaries; Source content is never loaded.
       const chunks = await services.chunk.search({
@@ -658,15 +674,15 @@ export class Service extends CRUDService<Source> {
       const sources = await this.freshHeaders([
         ...new Set(links.map((link) => link.sourceId)),
       ]);
-      const result = collect(chunks, links, sources);
-      if (
-        result.length >= props.topK ||
-        chunks.length < limit ||
-        limit >= total
-      )
-        return result.slice(0, props.topK);
-      limit = Math.min(total, limit * 2);
-    }
+      result = collect(chunks, links, sources);
+      needsMoreCandidates =
+        result.length < props.topK && chunks.length >= limit && limit < total;
+      if (needsMoreCandidates) {
+        limit = Math.min(total, limit * 2);
+      }
+    } while (needsMoreCandidates);
+
+    return result.slice(0, props.topK);
   }
   async findNeighborChunks(props: {
     seeds: {

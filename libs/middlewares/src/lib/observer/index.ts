@@ -1,5 +1,6 @@
 import {
   IRouteRule,
+  MUTATION_SKIPPED_CONTEXT_KEY,
   NEXT_PUBLIC_API_SERVICE_URL,
   prepareFormDataToSend,
   RBAC_SECRET_KEY,
@@ -54,7 +55,10 @@ export class Middleware {
 
       await next();
 
-      if (this.skippedRoutesMatcher.matches(path)) {
+      if (
+        c.get(MUTATION_SKIPPED_CONTEXT_KEY) ||
+        this.skippedRoutesMatcher.matches(path)
+      ) {
         return;
       }
 

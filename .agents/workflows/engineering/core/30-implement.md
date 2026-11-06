@@ -28,6 +28,8 @@ Follow `.agents/contracts/engineering/knowledge-first.md`: the plan, research do
 
 Follow `.agents/contracts/engineering/code-placement.md`: before creating any file, name what kind of thing it is and put it where that kind already lives. List the target directory and check the siblings are the same kind; search for an existing home before making a new one. Do not add a layer, a top-level directory or a shared package to fit a change — where nothing fits, raise it and wait rather than inventing a seam.
 
+For backend changes, follow the loop and branching rules in `.agents/contracts/engineering/backend-code-style.md`.
+
 ## Status Gate
 
 Frontend work also loads `.agents/contracts/engineering/frontend-components.md`

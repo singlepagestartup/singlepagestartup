@@ -15,6 +15,7 @@ import {
   controllerGuardedRoutes,
 } from "@sps/middlewares";
 import { MIDDLEWARE_HTTP_CACHE } from "@sps/shared-utils";
+import { getFileContentHeaders } from "@sps/backend-utils";
 import { app as agentApp } from "@sps/agent/backend/app/api";
 import { app as analyticApp } from "@sps/analytic/backend/app/api";
 import { app as hostApp } from "@sps/host/backend/app/api";
@@ -119,7 +120,7 @@ app.on(["GET", "HEAD"], "/public/*", async (c) => {
       continue;
     }
 
-    const headers = new Headers();
+    const headers = getFileContentHeaders(relativePath, file.type);
     if (file.type) {
       headers.set("Content-Type", file.type);
     }
@@ -158,4 +159,6 @@ if (MIDDLEWARE_HTTP_CACHE === "true") {
 for (const [name, module] of Object.entries(apiModules))
   app.route("/api/" + name, module.hono);
 
-await consistencyMiddleware.start();
+export function startConsistency() {
+  return consistencyMiddleware.start();
+}

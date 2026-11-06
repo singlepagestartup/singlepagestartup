@@ -1,6 +1,12 @@
 export const TIPTAP_EMPTY_DOC =
   '{"type":"doc","content":[{"type":"paragraph"}]}';
 
+/** Browser policy for uploaded bytes served as documents from the API origin. */
+export const FILE_CONTENT_SECURITY_HEADERS = {
+  "content-security-policy": "sandbox",
+  "x-content-type-options": "nosniff",
+} as const;
+
 export const UUID_PATH_SUFFIX_REGEX =
   /\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}(?=\/?$|\?.*$)/;
 
@@ -41,6 +47,9 @@ export const ADDRESS_VERIFYING_PROVIDERS = Object.freeze([
  */
 export const RBAC_PRIVILEGED_CONTEXT_KEY = "rbac.privileged";
 
+/** A route acknowledged a duplicate without executing its mutation. */
+export const MUTATION_SKIPPED_CONTEXT_KEY = "mutation.skipped";
+
 export * from "./knowledge";
 export * from "./open-router";
 
@@ -61,3 +70,6 @@ export * from "./ai-context";
 export { INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG } from "./ecommerce";
 
 export * from "./agent";
+
+export const HOST_SERVICE_REVALIDATION_SECRET_HEADER =
+  "X-HOST-REVALIDATION-SECRET";

@@ -21,6 +21,8 @@ If no plan path provided, ask for one.
 
 ## Implementation Philosophy
 
+For backend changes, follow the loop and branching rules in `.agents/contracts/engineering/backend-code-style.md`.
+
 For frontend changes, read and apply
 `.agents/contracts/engineering/frontend-components.md` before editing variants.
 

@@ -463,23 +463,25 @@ WebSocket path reconciles other subscribed clients and derived changes.
 
 ### Middlewares
 
-| Middleware             | Purpose                                 |
-| ---------------------- | --------------------------------------- |
-| RequestIdMiddleware    | Generates unique ID for each request    |
-| ObserverMiddleware     | Logs requests and collects metrics      |
-| ParseQueryMiddleware   | Parses complex query parameters         |
-| LoggerMiddleware       | Logs all incoming requests              |
-| RevalidationMiddleware | Manages content revalidation strategies |
-| HTTPCacheMiddleware    | Caches responses conditionally          |
-| ExceptionFilter        | Centralized error catching              |
+| Middleware             | Purpose                                              |
+| ---------------------- | ---------------------------------------------------- |
+| RequestIdMiddleware    | Generates unique ID for each request                 |
+| ObserverMiddleware     | Runs configured pipelines after successful mutations |
+| ParseQueryMiddleware   | Parses complex query parameters                      |
+| ActionLoggerMiddleware | Records selected successful Subject actions          |
+| RevalidationMiddleware | Manages content revalidation strategies              |
+| HTTPCacheMiddleware    | Caches responses conditionally                       |
+| ExceptionFilter        | Centralized error catching                           |
 
 ### Error Handling
 
-- All errors intercepted through `ExceptionFilter`
+- Exceptions caught by the shared API filter generate an incident record. Explicit HTTP responses bypass this filter.
 - Standardized error responses:
-  - `statusCode` — error code
-  - `message` — error description
-  - `requestId` — unique ID for request traceability
+  - `status` — HTTP status code
+  - `error` — error message
+  - `requestId` — server-generated ID of the structured API incident. See the [server incident runbook](tools/deployer/README.md#finding-an-api-error)
+  - `path`, `method` — the matched route pattern and HTTP method
+  - `stack`, `cause` — only when `API_ERROR_DETAILS` resolves to `full` or the request carries the operator secret (see `apps/api/README.md`, "Environment")
 
 #### Automatic Error Categorization
 
@@ -512,6 +514,7 @@ Here are the available categories and examples of keywords that trigger them:
 | **Payment error** | 400 | payment intent not found, stripe secret key not found, currency required |
 | **Not Found error** | 404 | not found, entity not found, form not found |
 | **Conflict error** | 409 | duplicate key value violates unique constraint, conflict error |
+| **Payload Too Large error** | 413 | payload too large |
 | **Internal error** | 500 | internal server error, jwt secret not provided, configuration error |
 
 A message that opens with a category phrase keeps that category even when its details match another one: `Validation error. Expected string, got: object` stays a 400 Validation error, while a bare `Expected string, got: object` is a 422 Unprocessable Entity error.
@@ -690,6 +693,10 @@ cannot identify their migration instructions afterward.
 
 ## Documentation
 
+Deploying over an existing PostgreSQL installation that used the administrator
+login for the API requires a one-time role migration. Run it from your
+workstation using the [existing database upgrade instructions](tools/deployer/README.md#moving-an-existing-installation-to-the-application-role).
+
 Detailed documentation for each module can be found in their respective directories:
 
 - [agent](./libs/modules/agent/README.md) - automation, scheduled jobs, AI utilities, agent widgets.
@@ -706,6 +713,12 @@ Detailed documentation for each module can be found in their respective director
 - [social](./libs/modules/social/README.md) - placeholder module (to be defined per project).
 - [startup](./libs/modules/startup/README.md) - project-specific models/relations and custom widgets.
 - [website-builder](./libs/modules/website-builder/README.md) - UI components and layout-building widgets.
+
+## Security
+
+Use GitHub private vulnerability reporting for security findings.
+[SECURITY.md](./SECURITY.md) links to the report form and explains disclosure,
+supported versions and deployment security.
 
 ## License
 

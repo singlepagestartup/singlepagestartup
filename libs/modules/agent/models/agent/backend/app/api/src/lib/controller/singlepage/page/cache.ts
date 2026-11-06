@@ -7,7 +7,11 @@ import {
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
-import { getHttpErrorType, logger } from "@sps/backend-utils";
+import {
+  getHttpErrorType,
+  logger,
+  requestHostRevalidation,
+} from "@sps/backend-utils";
 import { internationalization } from "@sps/shared-configuration";
 import { runIdHeader } from "@sps/agent/models/agent/sdk/model";
 
@@ -48,18 +52,12 @@ export class Handler {
           }
 
           for (const language of internationalization.languages) {
-            const code =
-              language.code === internationalization.defaultLanguage.code
-                ? ""
-                : language.code;
             const urlPath = url.url.replace(/^\/+|\/+$/g, "");
-            const localizedPath = [code, urlPath].filter(Boolean).join("/");
-            const rootSuffix = !urlPath && localizedPath ? "/" : "";
-
-            const path = `${hostServiceUrl}/${localizedPath}${rootSuffix}`;
+            const pathname = `/${[language.code, urlPath].filter(Boolean).join("/")}`;
+            const path = `${hostServiceUrl}${pathname}`;
 
             try {
-              await this.revalidatePage(path);
+              await this.revalidatePage(pathname);
 
               const res = await fetch(path, {
                 method: "GET",
@@ -154,20 +152,6 @@ export class Handler {
   }
 
   async revalidatePage(path: string) {
-    const res = await fetch(
-      HOST_SERVICE_URL + `/api/revalidate?path=${path}&type=page`,
-    )
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("Internal error. Failed to revalidate page");
-        }
-      })
-      .catch((err) => {
-        logger.error("Internal error. Failed to revalidate page", {
-          error: err,
-        });
-      });
-
-    return res;
+    await requestHostRevalidation({ path });
   }
 }

@@ -3,6 +3,10 @@ import { IRouteRule, UUID_PATH_SUFFIX_REGEX } from "@sps/shared-utils";
 /** Routes whose controllers authenticate the caller and enforce resource access. */
 export const controllerGuardedRoutes: IRouteRule[] = [
   {
+    regexPath: /^\/api\/rbac\/subjects\/host-cache\/revalidate\/?$/,
+    methods: ["POST"],
+  },
+  {
     regexPath: /^\/api\/rbac\/subjects\/[^/]+\/blog-module\/articles\/?$/,
     methods: ["POST"],
   },
@@ -100,4 +104,5 @@ export const allowedRoutes: IRouteRule[] = [
     regexPath: /\/api\/rbac\/permissions\/.*/,
     methods: ["GET"],
   },
+  { regexPath: /^\/api\/agent\/agents\/cron$/, methods: ["POST"] },
 ];

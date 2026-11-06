@@ -27,6 +27,7 @@ const route = "/api/agent/agents/host-module-page-cache";
 function createService() {
   return {
     agentRun: {
+      startHandler: jest.fn().mockResolvedValue(jest.fn()),
       markFinished: jest.fn().mockResolvedValue(true),
     },
   };
@@ -161,6 +162,19 @@ describe("Given: an agent route that the cron runner dispatched", () => {
       runId: "run-1",
       result: { error: "Internal error. Failed to warm the cache" },
     });
+  });
+
+  it("rejects a replay before entering or finishing the handler", async () => {
+    const service = createService();
+    service.agentRun.startHandler.mockResolvedValue(undefined);
+    const handler = jest.fn(() => new Response("ok"));
+    const response = await createApp({ service, handler }).request(route, {
+      method: "POST",
+      headers: { "X-SPS-AGENT-RUN-ID": "already-started" },
+    });
+    expect(response.status).toBe(409);
+    expect(handler).not.toHaveBeenCalled();
+    expect(service.agentRun.markFinished).not.toHaveBeenCalled();
   });
 
   /**

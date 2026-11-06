@@ -139,6 +139,14 @@ describe("is-authorized allowed routes", () => {
     expect(matcher.matches("/api/http-cache/clear", "GET")).toBe(false);
   });
 
+  it("allows anonymous POST only on the exact cron route", () => {
+    expect(matcher.matches("/api/agent/agents/cron", "POST")).toBe(true);
+    expect(matcher.matches("/api/agent/agents/cron", "GET")).toBe(false);
+    expect(matcher.matches("/api/agent/agents/cron/extra", "POST")).toBe(false);
+    expect(matcher.matches("/api/agent/agents", "POST")).toBe(false);
+    expect(matcher.matches("/api/agent/agents/dummy", "POST")).toBe(false);
+  });
+
   /**
    * BDD Scenario: Project/option extensions are honored.
    */

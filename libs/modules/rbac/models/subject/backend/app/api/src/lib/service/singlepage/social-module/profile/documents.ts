@@ -107,7 +107,7 @@ export class Service {
         });
         if (!updatedReusable)
           throw new Error(
-            "Thread document changed concurrently. Retry document initialization.",
+            "Conflict error. Thread document changed concurrently. Retry document initialization.",
           );
       }
       const thread =

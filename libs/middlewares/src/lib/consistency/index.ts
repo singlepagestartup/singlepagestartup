@@ -29,8 +29,7 @@ export class Middleware {
             RBAC_JWT_SECRET,
           );
         },
-        invalidateTags: (tags) =>
-          options.revalidation.revalidateTags(tags, true),
+        invalidateTags: (tags) => options.revalidation.revalidateTags(tags),
         publishLegacy: async (topics) => {
           const now = Date.now();
           websocketManager.broadcastMessage({
@@ -63,7 +62,7 @@ export class Middleware {
           (ref: unknown) => typeof ref === "string" && ref.length < 128,
         )
       )
-        return c.json({ error: "Invalid refs" }, 400);
+        return c.json({ error: "Validation error. Invalid refs" }, 400);
       return c.json({
         data: await this.runtime.check(
           body.refs,
