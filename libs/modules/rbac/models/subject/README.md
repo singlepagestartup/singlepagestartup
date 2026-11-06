@@ -122,6 +122,7 @@ to calculate against the saved Order currency and current Product prices.
 - Subject-owned routes must keep `RequestSubjectIdOwner` or `RequestProfileSubjectIdOwner` as the first ownership guard.
 - Domain-specific guards must live in the module middleware package and be exported from `backend/app/middlewares/src/index.ts`; do not define middleware bodies inside controllers.
 - For example, chat thread routes use `RequestSubjectOwnsSocialModuleChat` and `RequestSocialModuleThreadBelongsToChat`, which call `socialModuleChatLifecycleAssertSubjectOwnsChat` and `socialModuleChatLifecycleAssertThreadBelongsToChat`.
+- The per-order cart routes, `PATCH` and `DELETE /api/rbac/subjects/[rbac.subjects.id]/ecommerce-module/orders/[ecommerce.orders.id]` and its `quantity` and `total` reads, use `RequestSubjectOwnsEcommerceModuleOrder` after `RequestSubjectIdOwner`: the request passes only when a `subjects-to-ecommerce-module-orders` row links the subject to the order, whatever credential it carries.
 - Handlers may keep the same assertions as a defense-in-depth check, but the access model must not depend on custom route exceptions inside the global authorization service.
 
 ### Reading the current Subject
