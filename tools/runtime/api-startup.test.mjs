@@ -28,6 +28,11 @@ async function runStartup(failingTarget = "") {
       { mode: 0o755 },
     );
     await writeFile(
+      path.join(directory, "bun"),
+      '#!/bin/bash\nprintf "bun %s\\n" "$*" >> "$STARTUP_LOG"\nif [ "bun $*" = "$FAILING_TARGET" ]; then exit 17; fi\n',
+      { mode: 0o755 },
+    );
+    await writeFile(
       path.join(directory, "npx"),
       '#!/bin/bash\nprintf "%s\\n" "$*" >> "$STARTUP_LOG"\nif [ "$*" = "$FAILING_TARGET" ]; then exit 17; fi\n',
       { mode: 0o755 },
@@ -60,10 +65,10 @@ async function runStartup(failingTarget = "") {
 test("API starts only after infrastructure, model migrations and seed complete", async () => {
   const result = await runStartup();
   assert.equal(result.status, 0, result.stderr);
-  assert.equal(
-    result.commands[0],
+  assert.deepEqual(result.commands.slice(0, 2), [
+    "bun --cwd apps/api src/db/check-application-role.ts",
     "nx run @sps/providers-db:repository-migrate",
-  );
+  ]);
   assert.ok(result.commands.includes("nx run @sps/social:repository-migrate"));
   assert.deepEqual(result.commands.slice(-2), [
     "nx run api:db:seed",
@@ -134,11 +139,7 @@ async function runNxStartup(mode, failingTarget = "") {
     }
     const result = spawnSync(
       process.execPath,
-      [
-        path.join(repository, "node_modules/nx/bin/nx.js"),
-        "run",
-        `api:${mode}`,
-      ],
+      [path.join(repository, "node_modules/.bin/nx"), "run", `api:${mode}`],
       {
         cwd: directory,
         env: {
@@ -182,5 +183,16 @@ test("explicit database migration stops when infrastructure migration fails", as
     result.commands.at(-1),
     "npx nx run @sps/providers-db:repository-migrate",
   );
-  assert.ok(!result.commands.some((command) => command.startsWith("bun ")));
+  assert.equal(
+    result.commands[0],
+    "bun --cwd apps/api src/db/check-application-role.ts",
+  );
+  assert.ok(!result.commands.includes("bun run start"));
+});
+
+test("a rejected application role stops startup before migrations or seed", async () => {
+  const roleCheck = "bun --cwd apps/api src/db/check-application-role.ts";
+  const result = await runStartup(roleCheck);
+  assert.equal(result.status, 17, result.stderr);
+  assert.deepEqual(result.commands, [roleCheck]);
 });
