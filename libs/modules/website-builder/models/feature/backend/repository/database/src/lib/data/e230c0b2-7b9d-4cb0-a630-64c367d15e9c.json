@@ -1,0 +1,18 @@
+{
+  "className": "",
+  "id": "e230c0b2-7b9d-4cb0-a630-64c367d15e9c",
+  "createdAt": "2026-10-24T01:05:52.348Z",
+  "updatedAt": "2026-10-24T01:05:52.348Z",
+  "variant": "dropdown",
+  "title": {
+    "en": "What should I prepare before coding?",
+    "ru": "Что подготовить перед разработкой?"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"A description of the customer, offer, business rules, page content and visual direction. AI Chat helps you draft and review those documents; an existing brief works too.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Описание клиента, предложения, бизнес-правил, содержания страниц и визуального направления. AI-чат помогает подготовить и проверить эти документы; готовый бриф тоже подходит.\"}]}]}"
+  },
+  "adminTitle": "What should I prepare before coding?",
+  "slug": "framework-journey-faq-2"
+}

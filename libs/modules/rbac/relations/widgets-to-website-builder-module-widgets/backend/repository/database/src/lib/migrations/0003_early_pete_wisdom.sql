@@ -1,0 +1,1 @@
+DROP INDEX "rbac_widget_ai_chat_content_slot";

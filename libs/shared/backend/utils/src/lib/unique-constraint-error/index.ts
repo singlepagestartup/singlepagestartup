@@ -1,5 +1,4 @@
 const UNIQUE_VIOLATION_CODE = "23505";
-const CONFLICT_STATUS = "409";
 const uniqueViolationMessagePattern =
   /duplicate key value violates unique constraint/i;
 const conflictMessagePattern = /conflict error[.,]? entity already exists/i;
@@ -49,8 +48,8 @@ function asErrorRecord(value: unknown): IErrorRecord | undefined {
  * Reports whether an error is a PostgreSQL unique-constraint violation,
  * including one wrapped by the API response pipe into an HTTPException whose
  * message carries the serialized error payload. A hop that has already been
- * through the shared HTTP error mapper carries no driver text, so the sanitized
- * conflict message and the 409 status count as the same violation.
+ * through the shared HTTP error mapper carries no driver text, so its sanitized
+ * duplicate-entity message still identifies the violation after an SDK hop.
  */
 export function util(error: unknown, depth = 0): boolean {
   if (depth > maxErrorChainDepth || error === undefined || error === null) {
@@ -75,10 +74,6 @@ export function util(error: unknown, depth = 0): boolean {
   }
 
   if (String(record.code) === UNIQUE_VIOLATION_CODE) {
-    return true;
-  }
-
-  if (String(record.status) === CONFLICT_STATUS) {
     return true;
   }
 

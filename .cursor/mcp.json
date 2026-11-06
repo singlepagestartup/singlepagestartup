@@ -1,9 +1,0 @@
-{
-  "mcpServers": {
-    "singlepagestartup-mcp": {
-      "command": "bun",
-      "cwd": ".",
-      "args": ["/apps/mcp/server.ts"]
-    }
-  }
-}

@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "",
+    "ru": ""
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Define what should happen on a schedule or event: process a message, prepare materials or send a notification. The module stores task settings and triggers configured actions.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"An operation can be run manually once. When it is needed every day or after each event, the project needs a trigger rule. For example, a morning summary or an assistant's response to a new message should run without a separate manual start each time.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Определите, что должно происходить по расписанию или событию: обработать сообщение, подготовить материал, запустить уведомление. Модуль хранит настройки таких задач и запускает предусмотренные действия.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Одну операцию можно выполнить вручную. Когда она нужна каждый день или после каждого события, проекту требуется правило запуска. Например, подготовка сводки утром или реакция помощника на новое сообщение должна происходить без отдельного ручного запуска каждый раз.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "5e9ac309-51f0-41d3-b690-daf4996eef07",
+  "createdAt": "2026-10-26T00:12:06.662Z",
+  "updatedAt": "2026-10-27T14:59:01.887Z",
+  "variant": "content-rich",
+  "adminTitle": "framework-reviewed-article-agent-introduction",
+  "slug": "framework-reviewed-article-agent-introduction"
+}

@@ -30,10 +30,13 @@ export class Handler {
         throw new Error("Validation error. No token");
       }
 
-      const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
+      const decoded = await jwt.verify(token, RBAC_JWT_SECRET, "HS256");
 
       const uuid = c.req.param("uuid");
       const identityUuid = c.req.param("identityUuid");
+      if (!uuid || !identityUuid) {
+        throw new Error("Validation error. Invalid identity route");
+      }
 
       if (decoded?.["subject"]?.["id"] !== uuid) {
         throw new Error(

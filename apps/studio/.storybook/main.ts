@@ -23,10 +23,14 @@ const config: StorybookConfig = {
   },
   staticDirs: [
     "../runtime",
+    { from: "../runtime/assets", to: "/module-assets" },
     "../foundations",
     { from: "../workspace/assets", to: "/workspace-assets" },
     { from: "../workspace/products", to: "/workspace-products" },
     { from: "../workspace/design", to: "/workspace-design" },
+    { from: "../workspace/brief", to: "/workspace-brief" },
+    { from: "../workspace/strategy", to: "/workspace-strategy" },
+    { from: "../workspace/brand", to: "/workspace-brand" },
   ],
   viteFinal: (config) => ({
     ...config,
@@ -58,7 +62,25 @@ const config: StorybookConfig = {
     ],
     resolve: {
       ...config.resolve,
-      tsconfigPaths: true,
+      alias: {
+        ...config.resolve?.alias,
+        "@sps/shared-utils/metadata": path.resolve(
+          configDirectory,
+          "../../../libs/shared/utils/src/lib/metadata/index.ts",
+        ),
+        "@sps/ui-adapter/toast": path.resolve(
+          configDirectory,
+          "../../../libs/shared/ui/adapter/src/lib/toast/index.tsx",
+        ),
+        "@sps/shared-frontend-client-utils/chat-scroll": path.resolve(
+          configDirectory,
+          "../../../libs/shared/frontend/client/utils/src/lib/chat-scroll/index.ts",
+        ),
+        "@sps/shared-utils/chat-scroll": path.resolve(
+          configDirectory,
+          "../../../libs/shared/utils/src/lib/constants/chat-scroll.ts",
+        ),
+      },
     },
     css: {
       ...config.css,

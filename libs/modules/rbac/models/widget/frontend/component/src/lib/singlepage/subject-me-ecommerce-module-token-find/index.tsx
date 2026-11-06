@@ -1,0 +1,21 @@
+import { Provider, api as clientApi } from "@sps/rbac/models/widget/sdk/client";
+import { api as serverApi } from "@sps/rbac/models/widget/sdk/server";
+import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/default";
+import { Component as ChildComponent } from "./Component";
+import { Component as Skeleton } from "./Skeleton";
+import type { IComponentProps } from "./interface";
+
+export function Component(props: IComponentProps) {
+  return (
+    <ParentComponent
+      Skeleton={<Skeleton />}
+      Component={ChildComponent}
+      Provider={Provider}
+      clientApi={clientApi}
+      serverApi={serverApi}
+      {...props}
+    />
+  );
+}
+
+export { type IModel } from "@sps/rbac/models/widget/sdk/model";

@@ -1,0 +1,14 @@
+{
+  "status": "VERIFIED",
+  "ownerTestSubjectId": "0796ae54-6792-4de5-bd66-004247c71470",
+  "otherTestSubjectId": "eae83f65-0e90-4453-9575-7a54b9b2917e",
+  "personalProfileId": "e6cb7d53-a26e-4b8d-9265-0815711264c0",
+  "nameSaved": true,
+  "avatarUploaded": true,
+  "ownAvatarReadable": true,
+  "avatarReset": true,
+  "foreignProfilePatchStatus": 403,
+  "foreignAvatarPostStatus": 403,
+  "foreignAvatarGetStatus": 403,
+  "personalProfileCount": 1
+}

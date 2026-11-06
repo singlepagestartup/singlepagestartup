@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "What you can offer customers",
+    "ru": "Что вы сможете предложить клиентам"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[]}",
+    "ru": "{\"type\":\"doc\",\"content\":[]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "a7e0ffbd-a5cb-4603-83cc-d6b1d29108c0",
+  "createdAt": "2026-10-26T00:12:00.975Z",
+  "updatedAt": "2026-10-27T14:59:11.373Z",
+  "variant": "content-rich",
+  "adminTitle": "Что вы сможете предложить клиентам",
+  "slug": "framework-reviewed-article-knowledge-possibilities"
+}

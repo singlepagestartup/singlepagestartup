@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "One school website through three people's eyes",
+    "ru": "Один сайт школы глазами трёх людей"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Imagine a photography school. A visitor explores the programme, student Anna opens her purchased course and the owner manages the offer. Switch participants: each needs different sections on the same site.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The catalogue and payments add purchases; the conversation module adds messaging. For lessons, define which purchase unlocks which materials. This rule is configured when building the project.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Представьте школу фотографии. Посетитель знакомится с программой, ученица Анна открывает купленный курс, а владелец управляет предложением. Переключите участника: на одном сайте им нужны разные разделы.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Покупки добавляются через каталог и оплату, переписка — через модуль общения. Для уроков нужно определить, какая покупка открывает какие материалы. Это правило настраивают при создании проекта.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "aefa0499-65e2-4f50-9208-f7c7b422f905",
+  "createdAt": "2026-10-26T00:11:19.684Z",
+  "updatedAt": "2026-10-27T14:59:13.531Z",
+  "variant": "content-rich",
+  "adminTitle": "Один сайт школы глазами трёх людей",
+  "slug": "framework-reviewed-article-rbac-example"
+}

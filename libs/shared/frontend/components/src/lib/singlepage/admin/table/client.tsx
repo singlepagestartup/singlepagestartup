@@ -1,4 +1,5 @@
 "use client";
+
 import "client-only";
 
 import { factory } from "@sps/shared-frontend-client-api";
@@ -40,6 +41,7 @@ export function Component<
     if (!value) {
       return {
         ...(props.apiProps?.params ?? {}),
+        filters: props.apiProps?.params?.filters,
         offset,
         limit,
       };
@@ -90,9 +92,12 @@ export function Component<
     searchField,
   ]);
 
-  const { data: totalData, isLoading: isTotalLoading } = props.api.find({
+  const { data: totalData } = props.api.count({
+    params: { filters: params.filters },
     options: {
+      ...props.apiProps?.options,
       headers: {
+        ...props.apiProps?.options?.headers,
         "Cache-Control": "no-store",
       },
     },
@@ -100,21 +105,21 @@ export function Component<
   const { data, isLoading } = props.api.find({
     params,
     options: {
+      ...props.apiProps?.options,
       headers: {
+        ...props.apiProps?.options?.headers,
         "Cache-Control": "no-store",
       },
     },
   });
 
   useEffect(() => {
-    if (!totalData || !Array.isArray(totalData) || !setState) {
+    if (typeof totalData !== "number" || !setState) {
       return;
     }
 
     setState((prev) => {
-      const newTotal = totalData ? totalData.length : 0;
-
-      return { ...prev, total: newTotal };
+      return prev.total === totalData ? prev : { ...prev, total: totalData };
     });
   }, [totalData, setState]);
 

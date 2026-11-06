@@ -20,7 +20,9 @@ services:
       - ./redis_data:/data
     env_file:
       - .env
+    environment:
+      REDIS_PORT: ${REDIS_PORT:-6379}
     expose:
-      - 6379
+      - ${REDIS_PORT:-6379}
     ports:
-      - ${REDIS_PORT}:6379
+      - ${REDIS_PORT:-6379}:${REDIS_PORT:-6379}

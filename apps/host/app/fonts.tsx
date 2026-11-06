@@ -95,6 +95,8 @@ export const defaultFont = localFont({
   ],
   variable: "--font-default",
   display: "swap",
+  // Load the weights used by the page rather than preloading every font file.
+  preload: false,
 });
 
 export const primaryFont = localFont({
@@ -192,6 +194,7 @@ export const primaryFont = localFont({
   ],
   variable: "--font-primary",
   display: "swap",
+  preload: false,
 });
 
 export const fonts = {

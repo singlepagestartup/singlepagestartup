@@ -6,14 +6,28 @@ export const NEXT_PUBLIC_API_SERVICE_URL =
   "http://localhost:4000";
 export const API_SERVICE_URL =
   process.env["API_SERVICE_URL"] || "http://localhost:4000";
+/**
+ * Payment providers the API accepts, comma-separated (issue #302). Payment
+ * creation and provider webhooks both refuse a provider that is not an entry.
+ * `dummy` marks an invoice paid without a payment provider, so the default
+ * leaves it out; a project that runs without real payments lists it.
+ */
 export const ALLOWED_BILLING_SERVICE_PROVIDERS =
   process.env["ALLOWED_BILLING_SERVICE_PROVIDERS"] ||
-  "stripe,0xprocessing,payselection,cloudpayments,tiptoppay,dummy";
+  "stripe,0xprocessing,payselection,cloudpayments,tiptoppay";
 export const API_SERVICE_PORT = Number(process.env["API_SERVICE_PORT"]) || 4000;
 export const NEXT_PUBLIC_HOST_SERVICE_URL =
   process.env["NEXT_PUBLIC_HOST_SERVICE_URL"] || "http://localhost:3000";
 export const HOST_SERVICE_URL =
   process.env["HOST_SERVICE_URL"] || "http://localhost:3000";
+/**
+ * Shared by apps.api and apps.host (issue #315). The API sends it with every
+ * call to the host's revalidation route, and the host refuses a call without
+ * it. No default: an absent value refuses every call instead of admitting
+ * every caller.
+ */
+export const HOST_SERVICE_REVALIDATION_SECRET =
+  process.env["HOST_SERVICE_REVALIDATION_SECRET"];
 export const STALE_TIME =
   Number(process.env["NEXT_PUBLIC_STALE_TIME"]) || 60 * 1000;
 export const REVALIDATE: number | undefined =
@@ -117,5 +131,20 @@ export const BUG_SERVICE_TELEGRAM_BOT_TOKEN =
 export const BUG_SERVICE_TELEGRAM_CHAT_ID =
   process.env["BUG_SERVICE_TELEGRAM_CHAT_ID"];
 export const BUG_SERVICE_PROJECT = process.env["BUG_SERVICE_PROJECT"];
+/**
+ * How long the exception filter remembers a reported failure (issue #314). A
+ * 5xx reaches the bug chat once per status, method and matched route pattern
+ * within this window, so a burst of one failure sends one message and a failure
+ * that persists is reported again after the window passes.
+ */
+const reportWindow = Number(
+  process.env["BUG_SERVICE_REPORT_WINDOW_IN_SECONDS"],
+);
+export const BUG_SERVICE_REPORT_WINDOW_IN_SECONDS =
+  Number.isSafeInteger(reportWindow) &&
+  reportWindow > 0 &&
+  reportWindow <= 86400
+    ? reportWindow
+    : 300;
 
 export const ADMIN_BASE_PATH = process.env["ADMIN_BASE_PATH"] || "/admin";

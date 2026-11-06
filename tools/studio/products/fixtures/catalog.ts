@@ -3,12 +3,14 @@ export const extensionProduct = {
   name: "Extension fixture",
   summary: "Nested product pages.",
   product: "example/product.md",
-  research: "example/research.md",
+  audience: "example/audience.md",
+  competitors: "example/competitors.md",
+  semantics: "example/semantics.md",
+  economics: "example/economics.md",
   sales: "example/sales.yaml",
   website: "example/website.md",
   marketing_creative: "example/marketing-creative.md",
   presentation: "example/presentation/Deck.tsx",
-  presentation_data: "example/presentation/data.yaml",
   sections: [
     {
       id: "website",

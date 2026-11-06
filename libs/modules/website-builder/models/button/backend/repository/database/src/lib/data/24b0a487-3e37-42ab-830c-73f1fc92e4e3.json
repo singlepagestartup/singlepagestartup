@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "All modules",
+    "ru": "Все модули"
+  },
+  "subtitle": {},
+  "url": "/framework/modules",
+  "className": "w-fit",
+  "id": "24b0a487-3e37-42ab-830c-73f1fc92e4e3",
+  "createdAt": "2026-10-24T01:06:06.547Z",
+  "updatedAt": "2026-10-24T01:06:06.547Z",
+  "variant": "secondary",
+  "adminTitle": "All modules",
+  "slug": "framework-journey-guide-knowledge-actions-0"
+}

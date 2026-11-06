@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Read architecture articles",
+    "ru": "Статьи об архитектуре"
+  },
+  "subtitle": {},
+  "url": "/blog",
+  "className": "w-fit",
+  "id": "ef8fc974-957d-4e2c-9630-b59c31bb90db",
+  "createdAt": "2026-10-24T01:05:59.140Z",
+  "updatedAt": "2026-10-24T01:05:59.140Z",
+  "variant": "ghost",
+  "adminTitle": "Read architecture articles",
+  "slug": "framework-journey-guide-social-actions-2"
+}

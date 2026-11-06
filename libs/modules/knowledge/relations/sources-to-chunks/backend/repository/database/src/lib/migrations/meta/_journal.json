@@ -8,6 +8,13 @@
       "when": 1779659264229,
       "tag": "0000_lonely_true_believers",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791373352446,
+      "tag": "0001_supreme_warlock",
+      "breakpoints": true
     }
   ]
 }

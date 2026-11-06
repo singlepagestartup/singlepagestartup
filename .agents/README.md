@@ -24,6 +24,8 @@ canonical file it adapts. Both run in the repository checks.
 
 - `workflows/engineering/` preserves the existing GitHub-Project-gated
   development process.
+- `workflows/engineering/review_pr.md` supplies code-review guidance for PRs and
+  local diffs, including module boundaries and API/cache consistency.
 - `workflows/pre-development.md` coordinates the local process before
   engineering: the preflight, the cursor, the pipeline check, decision-scoped
   loading, the stage sequence and the handoff.
@@ -33,7 +35,7 @@ canonical file it adapts. Both run in the repository checks.
   then implement in `libs/modules` against `apps/api`.
 - `pipeline/pre-development.yaml` declares the stage machine: stage order and
   cursor vocabulary, owners, active artifacts, executable checks,
-  manual-review criteria and legacy-shape detectors.
+  manual-review criteria.
   `npm run singlepagestartup:pipeline:check` executes it and writes nothing.
 - `roles/` contains one flat file per profession with its responsibility,
   boundary, method, thresholds and handoff. `roles/SOURCES.md` is provenance
@@ -43,12 +45,13 @@ canonical file it adapts. Both run in the repository checks.
 - `contracts/` contains rules that apply across roles and workflows:
   `inheritance.md` for layers, projections, indexes, atomic catalogs and
   downstream applicability; `evidence.md` for claims, unknowns, sources and
-  assets; `document-confirmation.md` for approval and review state;
+  assets; `document-confirmation.md` for requested document review;
+  `research-ownership.md` for proactive evidence collection and concrete results;
   `github-reconciliation.md` for the commit preflight; `tool-use.md` for
   capabilities; and `editorial-pass.md`, the final pass for prose written for
   people, which every role and workflow invokes and provider adapters inherit.
-- `migrations/` holds dated one-time procedures for legacy workspace shapes,
-  loaded only when the pipeline check reports such a shape.
+  `contracts/engineering/frontend-components.md` governs SPS frontend template
+  reuse, runtime props and JSX slots at client/server boundaries.
 - `tools/` defines provider-neutral capabilities, their allowed roles and
   provider bindings.
 

@@ -3,7 +3,7 @@
  *
  * Given: the chat UI receives live model metadata from OpenRouter.
  * When: models are transformed for the composer model selector.
- * Then: Thinking support and exact efforts are derived from OpenRouter reasoning metadata.
+ * Then: only locally allowed models and reasoning efforts are exposed.
  */
 
 const mockOpenRouterGetModels = jest.fn();
@@ -73,27 +73,27 @@ describe("Given: OpenRouter model metadata", () => {
 
   /**
    * BDD Scenario
-   * Given: OpenRouter returns per-model reasoning efforts and one model without reasoning metadata.
+   * Given: OpenRouter returns GPT 6.1 Sol and other models with different reasoning defaults.
    * When: the RBAC model list endpoint groups those models.
-   * Then: each option exposes only the reasoning efforts accepted by that model.
+   * Then: only GPT 6.1 Sol with high reasoning is available to the composer.
    */
-  it("When: models are listed Then: reasoning follows OpenRouter model metadata", async () => {
+  it("When: models are listed Then: the local single-model policy applies", async () => {
     mockOpenRouterGetModels.mockResolvedValue([
       {
-        id: "openai/gpt-reasoning",
-        name: "GPT Reasoning",
+        id: "openai/gpt-6.1-sol",
+        name: "GPT 6.1 Sol",
         description: "",
         context_length: 128000,
         architecture: {
-          input_modalities: ["text"],
+          input_modalities: ["text", "image", "file"],
           output_modalities: ["text"],
         },
         supported_parameters: ["reasoning"],
         reasoning: {
           mandatory: true,
           default_enabled: true,
-          supported_efforts: ["high", "low", "none"],
-          default_effort: "high",
+          supported_efforts: ["xhigh", "high", "medium", "low"],
+          default_effort: "medium",
         },
       },
       {
@@ -141,47 +141,23 @@ describe("Given: OpenRouter model metadata", () => {
       return group.models;
     });
 
-    expect(
-      models.find((model: any) => model.id === "openai/gpt-reasoning"),
-    ).toMatchObject({
+    expect(response.data.auto.id).toBe("auto");
+    expect(response.data.groups.map((group: any) => group.id)).toEqual([
+      "vision_file",
+    ]);
+    expect(models).toHaveLength(1);
+    expect(models[0]).toMatchObject({
+      id: "openai/gpt-6.1-sol",
+      inputModalities: ["text", "image", "file"],
+      outputModalities: ["text"],
       supportedParameters: ["reasoning"],
       supportsReasoning: true,
       reasoning: {
         defaultEffort: "high",
         defaultEnabled: true,
         mandatory: true,
-        supportedEfforts: ["high", "low"],
+        supportedEfforts: ["high"],
         supportsMaxTokens: false,
-      },
-    });
-    expect(
-      models.find((model: any) => model.id === "openai/gpt-basic"),
-    ).toMatchObject({
-      supportedParameters: ["temperature"],
-      supportsReasoning: false,
-      reasoning: null,
-    });
-    expect(
-      models.find((model: any) => model.id === "openrouter/auto"),
-    ).toMatchObject({
-      supportedParameters: ["reasoning"],
-      supportsReasoning: false,
-      reasoning: null,
-    });
-    expect(
-      models.find((model: any) => model.id === "google/gemini-all-efforts"),
-    ).toMatchObject({
-      supportsReasoning: true,
-      reasoning: {
-        supportedEfforts: [
-          "max",
-          "xhigh",
-          "high",
-          "medium",
-          "low",
-          "minimal",
-          "none",
-        ],
       },
     });
   });
@@ -195,8 +171,8 @@ describe("Given: OpenRouter model metadata", () => {
   it("When: an unrelated profile lists models Then: chat membership is not required", async () => {
     mockOpenRouterGetModels.mockResolvedValue([
       {
-        id: "openai/gpt-public",
-        name: "GPT Public",
+        id: "openai/gpt-6.1-sol",
+        name: "GPT 6.1 Sol",
         description: "",
         architecture: {
           input_modalities: ["text"],
@@ -213,8 +189,24 @@ describe("Given: OpenRouter model metadata", () => {
     expect(service.socialModule.profilesToChats.find).not.toHaveBeenCalled();
     expect(response.data.groups[0].models).toEqual([
       expect.objectContaining({
-        id: "openai/gpt-public",
+        id: "openai/gpt-6.1-sol",
       }),
     ]);
+  });
+
+  it("returns an empty catalogue when the provider does not list the allowed model", async () => {
+    mockOpenRouterGetModels.mockResolvedValue([
+      {
+        id: "openrouter/auto",
+        name: "Auto Router",
+        architecture: {
+          input_modalities: ["text"],
+          output_modalities: ["text"],
+        },
+      },
+    ]);
+    const handler = new Handler(createService() as any);
+    const response = (await handler.execute(createContext(), undefined)) as any;
+    expect(response.data.groups).toEqual([]);
   });
 });

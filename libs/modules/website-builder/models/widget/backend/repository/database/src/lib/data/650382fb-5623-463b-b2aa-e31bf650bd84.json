@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "A request for your project",
+    "ru": "Запрос для вашего проекта"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"I want to accept payment for workshops. Customers see the amount, proceed to payment and gain access to the purchased class after confirmation.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Хочу принимать оплату за мастер-классы. Клиент видит сумму, переходит к оплате и после подтверждения получает доступ к купленному занятию.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "650382fb-5623-463b-b2aa-e31bf650bd84",
+  "createdAt": "2026-10-26T00:11:28.206Z",
+  "updatedAt": "2026-10-27T14:59:02.728Z",
+  "variant": "content-rich",
+  "adminTitle": "Запрос для вашего проекта",
+  "slug": "framework-reviewed-article-billing-task"
+}

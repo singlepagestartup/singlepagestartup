@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Run the project on your machine",
+    "ru": "Запустить проект локально"
+  },
+  "subtitle": {},
+  "url": "https://github.com/singlepagestartup/singlepagestartup",
+  "className": "w-fit",
+  "id": "7467351d-2699-4ea0-9bbe-9ee3af79fb88",
+  "createdAt": "2026-10-24T01:05:52.854Z",
+  "updatedAt": "2026-10-24T01:05:52.854Z",
+  "variant": "primary",
+  "adminTitle": "Run the project on your machine",
+  "slug": "framework-journey-faq-actions-0"
+}

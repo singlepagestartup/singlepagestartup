@@ -8,7 +8,6 @@ export const fields = {
   variant: pgCore.text("variant").notNull().default("default"),
   expiresAt: pgCore
     .timestamp("expires_at", { mode: "date" })
-    .notNull()
     .default(sql`NOW() + INTERVAL '1 hour'`),
   payload: pgCore.text("payload").notNull(),
 };

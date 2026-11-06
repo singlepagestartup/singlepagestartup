@@ -8,7 +8,7 @@
 import { describe, expect, test } from "bun:test";
 import { renderToStaticMarkup } from "react-dom/server";
 
-import { ArtifactDocument } from "./ArtifactBrowser";
+import { ArtifactDocument, MarkdownDocument } from "./ArtifactBrowser";
 
 import type { IStudioWorkspace } from "../types";
 
@@ -52,13 +52,13 @@ describe("ArtifactDocument", () => {
       <ArtifactDocument kind="brief" workspace={workspace} />,
     );
 
-    expect(html).toContain(">Brief</h1>");
+    expect(html).toContain(">Бриф</h1>");
     expect(html.match(/<h1(?: |>|\n)/g) ?? []).toHaveLength(1);
-    expect(html).toContain("Needs confirmation");
-    expect(html).toContain("misdirects every later decision");
+    expect(html).not.toContain("Нужна проверка");
+    expect(html).toContain("На эти сведения опираются последующие решения");
     expect(html).not.toContain("Use it to");
-    expect(html).toContain('aria-label="Download Markdown"');
-    expect(html).toContain('aria-label="Download HTML"');
+    expect(html).toContain('aria-label="Скачать Markdown"');
+    expect(html).toContain('aria-label="Скачать HTML"');
     expect(html).not.toContain("this projection is read-only");
     expect(html).not.toContain(">startup.brief</h1>");
   });
@@ -99,7 +99,7 @@ describe("ArtifactDocument", () => {
       <ArtifactDocument kind="asset-index" workspace={workspace} />,
     );
 
-    expect(html).toContain(">Assets</h1>");
+    expect(html).toContain(">Ресурсы</h1>");
     expect(html).not.toContain(">Asset Index</h1>");
     expect(html).not.toContain(">asset-index</span>");
   });
@@ -140,7 +140,28 @@ describe("ArtifactDocument", () => {
       <ArtifactDocument kind="asset-index" workspace={workspace} />,
     );
 
-    expect(html).toContain(">No Assets override</h1>");
+    expect(html).toContain(">Документ «Ресурсы» не переопределён</h1>");
     expect(html).not.toContain("No asset-index override");
   });
+});
+
+// Russian document sections must have distinct navigable anchors with or without a source URL.
+test("keeps Cyrillic heading anchors and existing English anchors", () => {
+  for (const baseUrl of [
+    undefined,
+    "/workspace-products/singlepage/test/semantics.md",
+  ]) {
+    const html = renderToStaticMarkup(
+      <MarkdownDocument baseUrl={baseUrl}>
+        {
+          "## Область поиска\n\n## Очередь подготовки\n\n## Product identity\n\n[Запросы](#область-поиска)"
+        }
+      </MarkdownDocument>,
+    );
+    expect(html).toContain('id="область-поиска"');
+    expect(html).toContain('id="очередь-подготовки"');
+    expect(html).toContain('id="product-identity"');
+    expect(decodeURI(html)).toContain('href="#область-поиска"');
+    expect(html).not.toContain('id="-"');
+  }
 });

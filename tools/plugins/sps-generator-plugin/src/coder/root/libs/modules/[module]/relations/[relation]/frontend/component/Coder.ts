@@ -1,3 +1,4 @@
+import { util as getRelationModelNames } from "../../../../../../../../utils/get-relation-model-names";
 import {
   getProjects,
   offsetFromRoot,
@@ -89,7 +90,9 @@ export class Coder {
     const leftModel = this.parent.parent.parent.project.relation.models[0];
     const leftModelModuleName = leftModel.module;
     const leftModelName = leftModel.name;
-    const leftModelNameStyles = getNameStyles({
+    const leftModelNameStyles = getRelationModelNames({
+      ownerModule: moduleName,
+      module: leftModelModuleName,
       name: leftModelName,
     });
     const leftModelIdFieldName = `${leftModelNameStyles.propertyCased.base}Id`;
@@ -98,7 +101,9 @@ export class Coder {
     const rightModel = this.parent.parent.parent.project.relation.models[1];
     const rightModelModuleName = rightModel.module;
     const rightModelName = rightModel.name;
-    const rightModelNameStyles = getNameStyles({
+    const rightModelNameStyles = getRelationModelNames({
+      ownerModule: moduleName,
+      module: rightModelModuleName,
       name: rightModelName,
     });
     const rightModelIdFieldName = `${rightModelNameStyles.propertyCased.base}Id`;
@@ -259,7 +264,10 @@ export class Coder {
     });
 
     // Process left model admin component
-    if (this.tree.exists(leftModelAdminPath)) {
+    if (
+      leftModel.module === this.parent.parent.parent.parent.name &&
+      this.tree.exists(leftModelAdminPath)
+    ) {
       const importRelationComponent = new ImportRelationComponent({
         relationNamePascalCased,
         moduleName: this.parent.parent.parent.parent.name,
@@ -292,7 +300,10 @@ export class Coder {
     }
 
     // Process right model admin component
-    if (this.tree.exists(rightModelAdminPath)) {
+    if (
+      rightModel.module === this.parent.parent.parent.parent.name &&
+      this.tree.exists(rightModelAdminPath)
+    ) {
       const importRelationComponent = new ImportRelationComponent({
         relationNamePascalCased,
         moduleName: this.parent.parent.parent.parent.name,
@@ -325,7 +336,10 @@ export class Coder {
     }
 
     // Process left model interface and form
-    if (this.tree.exists(leftModelInterfacePath)) {
+    if (
+      leftModel.module === this.parent.parent.parent.parent.name &&
+      this.tree.exists(leftModelInterfacePath)
+    ) {
       const [hasReactNode, hasSpsComponentBase] =
         await importRelationForm.checkImports(
           this.tree,
@@ -355,7 +369,10 @@ export class Coder {
     }
 
     // Process right model interface and form
-    if (this.tree.exists(rightModelInterfacePath)) {
+    if (
+      rightModel.module === this.parent.parent.parent.parent.name &&
+      this.tree.exists(rightModelInterfacePath)
+    ) {
       const [hasReactNode, hasSpsComponentBase] =
         await importRelationForm.checkImports(
           this.tree,
@@ -385,7 +402,10 @@ export class Coder {
     }
 
     // Process components
-    if (this.tree.exists(leftModelFormPath)) {
+    if (
+      leftModel.module === this.parent.parent.parent.parent.name &&
+      this.tree.exists(leftModelFormPath)
+    ) {
       await replaceInFile({
         tree: this.tree,
         pathToFile: leftModelFormPath,
@@ -394,7 +414,10 @@ export class Coder {
       });
     }
 
-    if (this.tree.exists(rightModelFormPath)) {
+    if (
+      rightModel.module === this.parent.parent.parent.parent.name &&
+      this.tree.exists(rightModelFormPath)
+    ) {
       await replaceInFile({
         tree: this.tree,
         pathToFile: rightModelFormPath,

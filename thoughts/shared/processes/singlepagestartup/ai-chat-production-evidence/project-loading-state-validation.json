@@ -1,0 +1,64 @@
+{
+  "status": "VERIFIED",
+  "hostRoute": "/en/ai-chat/projects",
+  "settingsRoute": "/en/ai-chat/settings",
+  "ownership": {
+    "collection": "/api/rbac/subjects/:id/social-module/profiles",
+    "reader": "direct Subject Profile relations",
+    "personalLinkVariant": "default",
+    "assistantLinkVariant": "assistant",
+    "personalProfileCreatedBeforeRegistrationReturns": true,
+    "sharedChatMembershipEstablishesOwnership": false,
+    "roleAccess": "concrete owner routes; private role assigned to its Subject; owner middleware retained"
+  },
+  "verified": {
+    "backendTests": 35,
+    "projectReaderRegressionTests": 6,
+    "avatarCacheTests": 2,
+    "hostTypeScript": "passed",
+    "studioTypeScript": "passed",
+    "apiTypeScript": "blocked by 25 existing errors outside changed account/profile files",
+    "storybookLoadingIndicators": 2,
+    "storybookEmptyProjectNameFields": 1,
+    "storybookEmptyCreateProjectLinks": 1,
+    "storybookEmptyLoadingIndicators": 0,
+    "hostEmptyShowsProjectCreationForm": true,
+    "settingsPersonalProfileLoaded": true,
+    "settingsProfileSaveStatus": "Profile saved",
+    "signInMethodsEmailVisible": true,
+    "emailAndPasswordDialogsOpen": true,
+    "accountMenuEmailVisible": true,
+    "freshHostConsoleErrors": 0,
+    "permissionToastsOnFreshAccountRoutes": 0,
+    "avatarCirclePx": 32,
+    "avatarIconPx": 24,
+    "avatarBackground": "rgb(244, 246, 248)",
+    "avatarGlyphFamily": "phosphor",
+    "longNameEllipsis": true,
+    "ownSubjectReadable": true,
+    "privateOwnerPermissionsPerEmailAccount": 8,
+    "identityDeletePermissionAdded": false
+  },
+  "stories": {
+    "pageLoading": "modules-host-models-page-singlepage-rbac-module-subject-me-social-module-profile-create-ai-chat--loading",
+    "pageEmpty": "modules-host-models-page-singlepage-rbac-module-subject-me-social-module-profile-create-ai-chat--empty",
+    "subjectSelectorLoading": "modules-rbac-models-subject-singlepage-me-social-module-profile-select-ai-chat--loading",
+    "subjectSelectorEmpty": "modules-rbac-models-subject-singlepage-me-social-module-profile-select-ai-chat--empty"
+  },
+  "runtimeEvidence": [
+    "subject-owned-profiles-mcp.json",
+    "subject-owned-profiles-runtime.json",
+    "account-sign-in-runtime.json",
+    "personal-profile-write-runtime.json",
+    "own-subject-read-runtime.json"
+  ],
+  "screenshots": [
+    "account-owner-before.jpg",
+    "account-owner-reference.jpg",
+    "account-owner-current.jpg",
+    "projects-owner-empty.jpg",
+    "account-owner-settings.jpg",
+    "projects-loading-story.jpg",
+    "projects-empty-story.jpg"
+  ]
+}

@@ -52,6 +52,18 @@ ansible all -m ping
 Inventory generation restricts the configured private key to mode `0600`,
 which is accepted by OpenSSH and prevents accidental group or public access.
 
+The first connection records the server's host key in `~/.ssh/known_hosts`
+(`StrictHostKeyChecking=accept-new`), and every later connection must present
+the same key; a changed key stops the connection with key and password
+authentication alike. After rebuilding a server on the same address, remove its
+old entry before deploying:
+
+```bash
+ssh-keygen -R 203.0.113.10
+# when ANSIBLE_PORT is not 22
+ssh-keygen -R '[203.0.113.10]:2222'
+```
+
 Then provision the server and deploy all configured services:
 
 ```bash
@@ -63,6 +75,46 @@ services, run `./server.sh up` instead.
 
 Password authentication remains available for other providers by leaving both
 private-key variables empty and setting `ANSIBLE_PASSWORD`.
+
+## MCP client configuration
+
+When MCP deployment succeeds, `mcp.sh up` exports a public connection bundle
+for OpenCode, Claude Code, Codex, Cursor and VS Code/Copilot under
+`.artifacts/mcp-client-configs/<client>`. `MCP_CLIENT_CONFIG_OUTPUT_DIR` selects another
+directory, including the GitHub Actions artifact location. Active client files
+in the checkout remain unchanged.
+
+The connector name uses the checkout's `origin` repository and the environment:
+`<repo-name>-production` or `<repo-name>-preview`. `--repo-name` overrides the
+name; deployment repository settings are a fallback when Git context is absent.
+The endpoint uses the deployment's actual domain and subdomain.
+
+The deployer validates bundle generation with `--check-clients` before DNS,
+image or MCP playbook operations, then writes the bundle after deployment and
+GitHub metadata updates succeed. A failed deployment, `mcp.sh down` or a skipped
+MCP image does not generate the bundle.
+
+`up.sh` and root `create_env.sh` do not generate client connections. Developers
+configure them explicitly after setting their own MCP endpoint. Client
+generation runs on Bun 1.3.6 without installing dependencies or logging in.
+
+Use `MCP_CLIENT_OPENCODE_VERSION=auto` to preserve the project's existing
+OpenCode format. A new configuration uses the installed client's version, or
+V2 when detection is unavailable. `1` and `2` select a new file's format
+explicitly. Regenerate without provisioning a server:
+
+```bash
+# From the repository root:
+npm run mcp:clients:generate -- --client codex
+```
+
+GitHub Actions saves an `mcp-client-configs` artifact with public connector
+entries after successful MCP deployment. The export excludes existing client
+settings and credentials. Local deployment and CI both export a bundle without
+changing active client files. `npm run mcp:clients:generate -- --client <client>` explicitly updates that
+client's ignored local files; shared `*.example` defaults remain in Git.
+Each client still needs the user's OAuth login. See the
+[client formats and authentication commands](../../apps/mcp/README.md#generated-project-client-configs).
 
 ## Infrastructure security and operations
 
@@ -191,10 +243,10 @@ openssl rand -hex 32
 
 That applies to `RBAC_SECRET_KEY`, `RBAC_JWT_SECRET`,
 `RBAC_COOKIE_SESSION_SECRET`, `MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET`,
-`POSTGRES_PASSWORD`, `DATABASE_PASSWORD`, `REDIS_PASSWORD`, `TRAEFIK_PASSWORD`
-and `PORTAINER_PASSWORD`. Do not copy these values out of a locally bootstrapped
-`apps/api/.env` into a deployment; generate fresh ones for each environment, and
-keep the production and `PREVIEW_` sets distinct.
+`HOST_SERVICE_REVALIDATION_SECRET`, `POSTGRES_PASSWORD`, `DATABASE_PASSWORD`,
+`REDIS_PASSWORD`, `TRAEFIK_PASSWORD` and `PORTAINER_PASSWORD`. Do not copy these
+values out of a locally bootstrapped `apps/api/.env` into a deployment; generate
+fresh ones for each environment, and keep production and `PREVIEW_` sets distinct.
 
 The API refuses to start on a secret it can recognize as guessable. Its
 `API_SECRET_STRENGTH` variable defaults to `enforce`, which stops the process
@@ -204,6 +256,10 @@ and starts anyway; it exists for a deployment that cannot rotate in the same
 maintenance window, and leaving it set is an explicit decision to keep running
 on an authorization bypass that can be found offline. The report names keys and
 verdicts only, never a value.
+
+The API deployment uses `API_ERROR_DETAILS=brief`. The client can give the
+operator its request ID to locate the incident in the private server journal.
+See [Finding an API error](#finding-an-api-error).
 
 ### Rotating the secrets of a deployment that already bootstrapped
 
@@ -233,22 +289,24 @@ secrets end every session, so plan the window.
 | `DATABASE_PASSWORD`                          | update `tools/deployer/.env` and the GitHub secret, redeploy PostgreSQL, run `create_application_role.sh` inside the container as in step 3 of the move below, which sets the new password, then redeploy the API | the API cannot open new connections between the script and its redeploy                                                                                                                                                                                                                        |
 | `REDIS_PASSWORD`                             | follow the coordinated procedure above: update the secret, deploy Redis, API and MCP as one rollout, then force-update `api_api` and `mcp_mcp`                                                                    | cache and KV unavailable for the window                                                                                                                                                                                                                                                        |
 | `RBAC_JWT_SECRET`                            | rotate in `tools/deployer/.env` and in the GitHub secrets, then deploy API, Telegram and MCP together                                                                                                             | every access and refresh token is invalidated. It also rotates the MCP OAuth signing key, because the MCP template falls back to this value                                                                                                                                                    |
-| `RBAC_SECRET_KEY`                            | rotate in `tools/deployer/.env` and in the GitHub secrets, deploy API, Telegram and MCP, and **re-run the cron play** so the server crontab receives the new value                                                | this is the full authorization bypass. The middleware also accepts it from an `rbac.secret-key` cookie, so any browser that received it holds a copy                                                                                                                                           |
+| `RBAC_SECRET_KEY`                            | rotate in `tools/deployer/.env` and in the GitHub secrets, then deploy API, Telegram and MCP                                                                                                                      | this is the full authorization bypass. The middleware also accepts it from an `rbac.secret-key` cookie, so any browser that received it holds a copy                                                                                                                                           |
 | `MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET` | rotate and deploy API and MCP together                                                                                                                                                                            | the API-to-MCP exchange fails until both sides match                                                                                                                                                                                                                                           |
+| `HOST_SERVICE_REVALIDATION_SECRET`           | rotate in `tools/deployer/.env` and in the GitHub secrets, then deploy API and host together                                                                                                                      | the Host rejects invalidation until both sides match and the outbox retries pending batches                                                                                                                                                                                                    |
 | `RBAC_COOKIE_SESSION_SECRET`                 | rotate for hygiene                                                                                                                                                                                                | no runtime effect: nothing reads it today                                                                                                                                                                                                                                                      |
 | Administrator identity password              | change it through the API or the admin UI, then update `apps/api/.env` and `.agents/.env`                                                                                                                         | editing `.env` alone does not change the stored bcrypt hash; that value is only the bootstrap input                                                                                                                                                                                            |
 
 Four copies survive a rotation unless they are handled as well:
 
-- **Docker images.** `.dockerignore` does not exclude `apps/api/.env`,
-  `apps/mcp/.env`, `apps/telegram/.env` or `tools/deployer/.env`, and the
-  Dockerfile copies the working tree, so any image built from a bootstrapped
-  checkout carries the old values. Rebuild and re-tag, and treat previously
-  pushed tags as carrying them.
+- **Docker images.** `.dockerignore` keeps env files, key material and
+  `tools/deployer` out of the build context. An image built from a
+  bootstrapped checkout with an ignore list that lacks those rules carries the
+  old values: rebuild and re-tag it, and treat tags pushed from such builds as
+  carrying them.
 - **GitHub Actions secrets.** Replace both the production and the `PREVIEW_`
   variants of the four RBAC values.
 - **`tools/deployer/.env`** on the operator's own machine.
-- **The server crontab**, per the `RBAC_SECRET_KEY` row above.
+- **The server crontab.** Run `./api.sh up` to replace an older entry that
+  contains credentials with the credential-free trigger.
 
 Afterwards, treat the window before the rotation as one in which the old
 `RBAC_SECRET_KEY` could have been guessed. Review the action log for requests
@@ -305,6 +363,46 @@ recreated with the script and the values, run
 `docker compose exec db /docker-entrypoint-initdb.d/create_application_role.sh`,
 and put the same two values into `apps/api/.env`.
 
+### Agent cron
+
+`api.sh` installs an empty POST to `/api/agent/agents/cron` every minute.
+No credential is needed in cron or GitHub Secrets for this call. Apply the
+agent repository migration before starting the updated API. The queue in
+PostgreSQL keeps track of running jobs and their next eligible interval.
+The API uses its own RBAC credential to dispatch individual handlers.
+
+The job calls the public API hostname and verifies its certificate. With
+`USE_CLOUDFLARE_SSL=true` the hostname resolves to Cloudflare, which presents
+its edge certificate; otherwise Traefik serves the Let's Encrypt certificate.
+Both chains are publicly trusted. If the server resolves the API hostname to
+itself while Traefik holds a Cloudflare Origin CA certificate, curl cannot
+verify the chain: add `--cacert` with the Cloudflare Origin CA root to the job
+in `api/set_cron_jobs.yaml` rather than disabling verification.
+
+Successful ticks return HTTP 204 with an empty body. curl appends errors to
+`/home/code/api_agent_agents_cron.log`.
+
+### Host revalidation secret
+
+Host invalidates tags and page paths through `POST /api/revalidate`. The
+API and Host share `HOST_SERVICE_REVALIDATION_SECRET`. The API sends it in
+`X-HOST-REVALIDATION-SECRET`. When Host rejects a request, Consistency leaves
+the batch pending and retries it.
+
+Configure both services before releasing the upgrade. Update the API and Host
+as part of the same rollout so their request format and credential match.
+
+1. Generate a value with `openssl rand -hex 32` for each environment.
+2. Set it as `HOST_SERVICE_REVALIDATION_SECRET` in `tools/deployer/.env` and
+   the production GitHub secret. Use `PREVIEW_HOST_SERVICE_REVALIDATION_SECRET`
+   for the preview GitHub secret.
+3. Render the API and Host environment files again through the deployment
+   workflow or `./api.sh up` and `./host.sh up` from `tools/deployer`.
+   An image release alone does not add the variable to existing services.
+
+In an existing developer checkout, set the same value in `apps/api/.env`
+and `apps/host/.env.local`, then restart both services.
+
 ### Traefik log level
 
 Traefik defaults to `INFO`. For a short troubleshooting window, set
@@ -328,6 +426,121 @@ docker service logs traefik_traefik --since 10m
 
 Never leave `DEBUG` enabled after troubleshooting; it can repeatedly expose
 dynamic routing details and credential hashes in logs.
+
+### Finding an API error
+
+The standard Swarm deployment sends API output to the Linux system journal on
+the node that ran the task. The tag is `sps-api-<API_SERVICE_NAME>`; the default
+is `sps-api-api`. The deployer checks that a new entry reaches
+`/var/log/journal` **before** replacing the API service. Task replacement
+preserves the node's journal. On a multi-manager Swarm, check the node of each
+relevant task with `docker service ps api_api`. A different node has its own
+history. Logs written by an older deployment using Docker's json-file driver
+stay with that old container. To see which driver the running deployment
+uses, run `docker service inspect api_api --format '{{json .Spec.TaskTemplate.LogDriver}}'`.
+For a service still using Docker's default or json-file driver, start with
+`docker service logs api_api --since 1h`. See the [Docker journald driver](https://docs.docker.com/engine/logging/drivers/journald/) and [systemd retention settings](https://www.freedesktop.org/software/systemd/man/latest/journald.conf.html).
+
+Connect to the node by SSH with an authorized operator account. These examples
+use `jq` to select only incident records from API output. Use the ID shown in
+the failed HTTP response, or in a Telegram alert:
+
+```bash
+tag=sps-api-api
+request_id='paste-the-request-id'
+sudo journalctl -t "$tag" --since '7 days ago' --no-pager -o cat |
+  jq -Rc --arg id "$request_id" 'fromjson? | objects | select(.event == "api.error" and .requestId == $id)'
+```
+
+Start with `category`, `reason` (when recognized), `status`, `route`,
+`operation.stage` and `locations[].frames`. The first application location
+identifies a source line in the deployed revision; use the task's image to
+match it to the release. `ids` contains UUID route parameters, which identify
+resources. `subjectId` identifies the subject only when its signed JWT verified.
+Operator calls, anonymous requests and unverifiable credentials are marked
+separately. An error in a database driver can carry an allowlisted driver code.
+For chat attachments the stage distinguishes parsing, validation, storage and
+message persistence. Reproduce the operation with a test Subject, equivalent
+permissions, synthetic input and the same file types and sizes.
+
+To follow a failing call, copy its `traceId`. Read each linked
+`downstreamRequestId` separately if a nested call started another trace. A
+repository or background error in the same request can appear as `runtime.error`:
+
+```bash
+trace_id='paste-the-trace-id'
+sudo journalctl -t "$tag" --since '7 days ago' --no-pager -o cat |
+  jq -Rc --arg id "$trace_id" 'fromjson? | objects | select((.event == "api.error" or .event == "runtime.error") and .traceId == $id) | {occurredAt,event,requestId,parentRequestId,downstreamRequestId,route,status,operation,locations}'
+```
+
+To watch new incidents, or review which routes returned the most server errors:
+
+```bash
+sudo journalctl -t "$tag" -f -o cat |
+  jq --unbuffered -Rc 'fromjson? | objects | select(.event == "api.error" or .event == "api.telegram.unavailable")'
+sudo journalctl -t "$tag" --since yesterday --no-pager -o cat |
+  jq -Rr 'fromjson? | objects | select(.event == "api.error" and .status >= 500) | .route' |
+  sort | uniq -c | sort -nr
+```
+
+The node administrator controls journal rotation, rate limiting and free space.
+`sudo journalctl --disk-usage` shows current usage;
+`sudo journalctl -t "$tag" --no-pager -o short-iso | head -1` shows the oldest
+available API entry. A seven-day query does not guarantee seven days of
+retention. Disk loss, rotation and journal rate limits can remove entries.
+For a fixed retention period or recovery after node loss, forward the
+allowlisted incident events to a private store with an explicit quota and TTL.
+
+Telegram is optional. Set the four `BUG_SERVICE_*` entries in the deployer's
+`.env.example` in your local `.env`, or supply the corresponding repository
+secrets for Actions (with `PREVIEW_` on preview deployments). Keep the bot
+token private. A blocked network results in one delivery attempt, a local
+`api.telegram.unavailable` event and a cooldown. There is no backlog to replay.
+See [API diagnostics](../../apps/api/README.md#environment) for the precise
+per-process limits and the one allowed chat-migration retry.
+
+Only trusted server operators should have journal or Docker access. Both
+grant visibility beyond API incidents. For a future admin view, the narrowest
+option is read-only aggregates by route, status and time. For per-incident
+lookup, project only the allowlisted fields into a private store, enforce
+authenticated RBAC Subject plus a dedicated diagnostics permission and tenant
+scope, and audit access. Bound date ranges and pagination. Give the app
+neither the Docker socket nor access to host journals, shell commands or
+arbitrary file paths. Treat the request ID as a lookup key, never a credential.
+
+### Traefik access log and security headers
+
+Traefik writes one JSON line per request to stdout, beside its own log, and
+drops every request header value from that line because requests carry
+credentials in headers. Read both with:
+
+```bash
+docker service logs traefik_traefik --since 10m
+```
+
+The Traefik container log rotates at 10 MB and keeps three files. The API uses
+the persistent system journal described above.
+
+The api, host, mcp and telegram routers attach a headers middleware that sends:
+
+- `Strict-Transport-Security: max-age=31536000`, without `includeSubDomains` or
+  `preload`, because the host may run on the apex domain and hostnames outside
+  this deployer would be pinned to HTTPS as well;
+- `X-Content-Type-Options: nosniff`;
+- `Referrer-Policy: strict-origin-when-cross-origin`.
+
+No `Content-Security-Policy` and no frame policy are sent: pages embed widgets
+in frames, and a content policy has to be written for each application.
+
+Each service defines its middleware in its own labels, beside its router.
+Traefik restarts on every service deployment, because `domain.sh` forces a
+Traefik update to load the service certificate, and a middleware defined on the
+Traefik service's own labels can be missing after a restart
+([traefik/traefik#9363](https://github.com/traefik/traefik/issues/9363)); every
+router that references a missing middleware stops being served.
+
+`./traefik.sh up` applies the access log, and each service's own script applies
+its headers. `./up.sh` runs both.
 
 ### Hardened rollout and verification
 
@@ -403,6 +616,46 @@ The server playbook adds `ANSIBLE_USER` to the `docker` group. An SSH session
 that was already open before provisioning must be closed and opened again
 before commands such as `docker ps` work without `sudo`.
 
+## File storage
+
+The API stores uploads with the provider named by `FILE_STORAGE_PROVIDER`.
+`api.sh` does not forward that variable, so a server deployment runs the `local`
+provider: uploads are written to `/home/code/api_data` on the server, mounted at
+`apps/api/public/file-storage/dynamic` in the API container, and served from the
+API origin under `/public`. Every file response carries
+`X-Content-Type-Options: nosniff` and `Content-Security-Policy: sandbox`, so a
+file opened in a tab cannot run script as the API origin
+(`libs/modules/file-storage/README.md`).
+
+Production deployments should store uploads with the `aws-s3` or `vercel-blob`
+provider, which serves files from an origin outside the application. Switching
+a server deployment requires forwarding more variables through `api.sh` and
+`api/api.env.j2`:
+
+- `vercel-blob`: `FILE_STORAGE_PROVIDER`; `BLOB_READ_WRITE_TOKEN` is already
+  forwarded.
+- `aws-s3`: `FILE_STORAGE_PROVIDER`, `AWS_S3_BUCKET_NAME` (the template renders
+  `AWS_S3_BUCKET`, which the provider does not read), and `AWS_ACCESS_KEY_ID`
+  and `AWS_SECRET_ACCESS_KEY`, which the template renders but `api.sh` does not
+  pass; `AWS_REGION` is already forwarded.
+
+Until then the `FILE_STORAGE_PROVIDER=vercel-blob` line in `.env.example` has
+no effect on the API. Check its token before forwarding the variable, because
+a placeholder token would break uploads on the next deploy.
+
+`FILE_STORAGE_MAX_UPLOAD_BYTES` bounds a single upload and defaults to 50 MiB:
+
+```dotenv
+FILE_STORAGE_MAX_UPLOAD_BYTES=52428800
+```
+
+`github_deployer.sh` syncs the value to `FILE_STORAGE_MAX_UPLOAD_BYTES` for
+production and `PREVIEW_FILE_STORAGE_MAX_UPLOAD_BYTES` for preview. The
+Ansible workflow reads the corresponding secret and `api.sh` writes the
+limit into the server API environment. Bun refuses request bodies
+above 128 MiB, so a larger value also needs `maxRequestBodySize` raised in
+`apps/api/server.ts`.
+
 ## Let's Encrypt certificates
 
 The non-Cloudflare deployment serves HTTP-01 challenge files through the
@@ -443,10 +696,47 @@ with mode `0600` before Ansible connects. When `github_deployer.sh` is used, it
 encodes `ANSIBLE_PRIVATE_KEY_FILE` automatically if
 `ANSIBLE_PRIVATE_KEY_BASE64` is empty.
 
+GitHub-hosted runners start every run with an empty `known_hosts`, so each
+workflow run accepts the host key the server presents first. Host key checking
+therefore protects deployments run from an operator's machine; to protect
+workflow runs as well, write the server's verified key to the runner's
+`~/.ssh/known_hosts` before the deployer connects.
+
+A deployment runs when a pull request from `main` into one of the branches that
+`github_deployer.sh` creates is merged: `ansible-up` or `ansible-down`, and
+`ansible-up-preview` or `ansible-down-preview` for the preview environment. The
+`Env` workflow (`.github/workflows/deployer.yml`) starts only for pull requests
+into `ansible-*` branches and calls `.github/workflows/ansible.yml` only after a
+merge. That workflow runs the script named by the second segment of the branch
+name, `up.sh` or `down.sh`, and uses the `PREVIEW_` secrets when the name
+contains `-preview`. Closing the pull request without merging deploys nothing.
+To start a deployment by hand, choose **Run workflow** on the `Ansible` workflow
+and select one of these branches; the run uses that branch's copy of the
+workflow files. A run started from `main` finds no script and fails.
+
 Never commit a Lightsail private key, the generated `inventory.yaml`, or a real
 `.env` file. They are ignored by the repository.
 
 ## Docker image rollout
+
+API startup applies consistency infrastructure migrations before model and
+relation migrations, finishes seeding, and then starts the HTTP listener.
+A failed migration or seed stops startup. The API service health check probes
+its loopback `authentication/me` endpoint and requires a successful HTTP
+response; an unauthenticated request returns an empty session. The 30-minute
+startup allowance covers migrations. The probe sends `Cache-Control: no-store`
+so cache-version lookups cannot stall the liveness request. Without credentials,
+the endpoint returns an empty session without querying subjects or identities.
+With `start-first` updates, Swarm retains the previous API task until the new
+task passes this check. Existing services must apply the API compose health
+check once before an image with synchronous migrations is rolled out.
+
+The API release job waits for its Swarm update and every target-image task to
+reach `running` before dependent service jobs can continue. It resolves the
+service and endpoint from the existing Portainer webhook; no separate service
+ID map is required. A paused update, rollback, missing health check or timeout
+fails the job and keeps dependent services on their previous images. Check the
+gate with `node --test tools/deployer/portainer/wait-service.test.mjs`.
 
 Release workflows still update each service through its Portainer webhook. A
 shared preparation job first pulls every unique release image through the
@@ -460,6 +750,46 @@ pull. A failed pull is retried up to three times. When Docker reports
 day to all images not referenced by a container. Running containers, their
 images, networks, and volumes are not removed. The same lock, cleanup, and
 retry behavior is used by direct Ansible service deployments.
+
+## Container user
+
+The application image runs as the base image's `node` user, uid 1000 and gid
+1000, which owns `/usr/src/app`. Two server paths outlive the containers and
+must belong to the same uid:
+
+- `/home/code/api_data`, the API upload directory, mounted at
+  `apps/api/public/file-storage/dynamic`;
+- the `host_next_static` volume, which keeps the Next.js chunks of earlier
+  releases.
+
+On Ubuntu images uid 1000 is the first user account, `ubuntu` on Lightsail, so
+uploads show that owner on the host.
+
+`./api.sh up` creates `/home/code/api_data` with that owner, and `./host.sh up`
+hands an existing `host_next_static` volume to it before deploying the stack.
+Docker fills a new volume from the image, owner included.
+
+A server that already runs the stacks holds root-owned files in both paths.
+Releases arrive through Portainer webhooks without running the plays, so give
+both paths to uid 1000 once, before the first release that runs as `node`:
+
+```bash
+sudo chown -R 1000:1000 /home/code/api_data
+sudo chown -R 1000:1000 "$(docker volume inspect --format '{{ .Mountpoint }}' host_next_static)"
+```
+
+Running `./api.sh up` and `./host.sh up` has the same effect. A container that
+still runs as root keeps working after the change of owner. Without the first
+command, uploads and deletions fail with `EACCES` while the API keeps serving;
+without the second, the host container exits with `EACCES` during the static
+sync, before Next.js starts.
+
+The root `docker-compose.yaml` keeps its own `host_next_static` volume for local
+builds, prefixed with the Compose project name. A local volume with root-owned
+files needs the same `chown`, or removal.
+
+`docker exec` into an application container opens a shell as `node`; add
+`--user root` for administrative work inside the container.
 
 ## Next.js deployment skew protection
 

@@ -1,0 +1,14 @@
+{
+  "id": "e572deda-aecf-4053-8b11-9cf9746e86f8",
+  "createdAt": "2026-10-27T08:40:58.939Z",
+  "updatedAt": "2026-10-27T08:40:58.939Z",
+  "variant": "actions",
+  "className": "",
+  "title": {
+    "en": "followup",
+    "ru": "followup"
+  },
+  "description": {},
+  "adminTitle": "AI Chat: followup",
+  "slug": "ai-chat-editable-followup-actions"
+}
