@@ -14,6 +14,8 @@ export interface IComponentProps extends ISpsComponentBase {
   currentSocialModuleChatId?: string;
   variant: typeof variant;
   className?: string;
+  dataSource?: "api" | "props";
+  socialModuleChat?: IResult["ISocialModuleProfileFindByIdChatFindByIdResult"];
 }
 
 export interface IComponentPropsExtended extends IComponentProps {

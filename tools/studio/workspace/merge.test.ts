@@ -100,3 +100,25 @@ describe("markdown overlay presence", () => {
     expect(merged.content).not.toContain("Framework default.");
   });
 });
+
+/** Russian framework headings must still match documents saved before translation. */
+test("overlays English project sections on the same Russian document sections", () => {
+  const merged = mergeMarkdown(
+    "# Бриф\n\n## Проект и продукты\n\nБазовый продукт.\n\n## Конкуренты\n\nБазовые конкуренты.\n",
+    "# Brief\n\n## Project and products\n\nClient product.\n",
+  );
+  expect(merged.content).toContain("Client product.");
+  expect(merged.content).not.toContain("Базовый продукт.");
+  expect(merged.content).toContain("Базовые конкуренты.");
+  expect(merged.content.match(/^## /gm)).toHaveLength(2);
+});
+
+test("matches the Design iconography section despite a same-named specimen", () => {
+  const merged = mergeMarkdown(
+    "# Дизайн\n\n## Иконки\n\nБазовые иконки.\n",
+    "# Design\n\n## Iconography\n\nClient icons.\n",
+  );
+  expect(merged.content).toContain("Client icons.");
+  expect(merged.content).not.toContain("Базовые иконки.");
+  expect(merged.content.match(/^## /gm)).toHaveLength(1);
+});

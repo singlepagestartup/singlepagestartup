@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Know what you want to build before you change the code.",
+    "ru": "Определите, что хотите создать, перед изменением кода."
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Prepare your business model, audience and offer in AI Chat. Review and export the documents, then give them to a coding agent working with Code Framework.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Подготовьте бизнес-модель, описание аудитории и предложение в AI-чате. Проверьте и экспортируйте документы, затем передайте их coding agent для работы с Code Framework.\"}]}]}"
+  },
+  "anchor": "prepare-your-project",
+  "className": "",
+  "id": "af9ba281-efd3-4cef-b91c-0b5d0c5be432",
+  "createdAt": "2026-10-24T01:35:39.842Z",
+  "updatedAt": "2026-10-24T01:35:39.842Z",
+  "variant": "content-offer",
+  "adminTitle": "Know what you want to build before you change the code.",
+  "slug": "framework-journal-preparation-offer"
+}

@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "09e067ac-1c19-4644-a12a-4b4f4022652c",
+  "createdAt": "2026-10-26T00:11:35.642Z",
+  "updatedAt": "2026-10-27T14:59:22.563Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "The page leads to an action",
+    "ru": "Страница ведёт к действию"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Place a button next to the programme or offer. Embed an enquiry form or product card in the relevant block.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Разместите кнопку рядом с программой или предложением. В нужный блок можно встроить форму заявки или карточку товара.\"}]}]}"
+  },
+  "adminTitle": "Страница ведёт к действию",
+  "slug": "framework-reviewed-article-website-builder-introduction-feature-1"
+}

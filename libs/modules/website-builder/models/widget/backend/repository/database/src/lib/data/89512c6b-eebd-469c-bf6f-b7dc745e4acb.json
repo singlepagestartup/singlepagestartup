@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Reuse the functions your product needs.",
+    "ru": "Используйте функции, которые нужны вашему продукту."
+  },
+  "subtitle": {
+    "en": "Your business rules belong in your product.",
+    "ru": "Добавляйте правила своего бизнеса."
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Code Framework connects the frontend, API and common business functions. Your coding agent can inspect that code and adapt it to the offer, content and customer experience in your brief.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Code Framework связывает frontend, API и общие бизнес-функции. Coding agent может изучить этот код и адаптировать его под предложение, контент и сценарии из вашего брифа.\"}]}]}"
+  },
+  "anchor": "framework-foundation",
+  "className": "border-y border-border bg-muted",
+  "id": "89512c6b-eebd-469c-bf6f-b7dc745e4acb",
+  "createdAt": "2026-10-24T01:05:46.244Z",
+  "updatedAt": "2026-10-24T01:05:46.244Z",
+  "variant": "content-feature-split-reverse",
+  "adminTitle": "Reuse the functions your product needs.",
+  "slug": "framework-journey-foundation"
+}

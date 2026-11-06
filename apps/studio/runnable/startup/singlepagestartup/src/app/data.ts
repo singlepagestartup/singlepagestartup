@@ -406,16 +406,6 @@ export const schema: Module[] = [
     ],
   },
   {
-    id: "mod-telegram",
-    name: "Telegram",
-    slug: "telegram",
-    icon: "✈️",
-    models: [
-      makeModel("telegram-page", "Page", "page"),
-      makeModel("telegram-widget", "Widget", "widget"),
-    ],
-  },
-  {
     id: "mod-startup",
     name: "Startup",
     slug: "startup",

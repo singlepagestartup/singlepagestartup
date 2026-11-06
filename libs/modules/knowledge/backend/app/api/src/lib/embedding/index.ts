@@ -4,9 +4,16 @@ import {
 } from "../configuration";
 import { createLlmGatewayNetworkError } from "../llm-gateway-error";
 
+export interface IKnowledgeEmbeddingOptions {
+  sessionId?: string;
+}
+
 export interface IKnowledgeEmbeddingClient {
-  embed(input: string): Promise<number[]>;
-  embedMany(inputs: string[]): Promise<number[][]>;
+  embed(input: string, options?: IKnowledgeEmbeddingOptions): Promise<number[]>;
+  embedMany(
+    inputs: string[],
+    options?: IKnowledgeEmbeddingOptions,
+  ): Promise<number[][]>;
   validateEmbedding(
     embedding: unknown,
     index?: number,
@@ -62,12 +69,18 @@ class OpenAiCompatibleEmbeddingClient implements IKnowledgeEmbeddingClient {
     this.createNetworkError = props.createNetworkError;
   }
 
-  async embed(input: string): Promise<number[]> {
-    const [embedding] = await this.embedMany([input]);
+  async embed(
+    input: string,
+    options?: IKnowledgeEmbeddingOptions,
+  ): Promise<number[]> {
+    const [embedding] = await this.embedMany([input], options);
     return embedding;
   }
 
-  async embedMany(inputs: string[]): Promise<number[][]> {
+  async embedMany(
+    inputs: string[],
+    options?: IKnowledgeEmbeddingOptions,
+  ): Promise<number[][]> {
     if (!inputs.length) {
       return [];
     }
@@ -80,6 +93,7 @@ class OpenAiCompatibleEmbeddingClient implements IKnowledgeEmbeddingClient {
         headers: {
           "content-type": "application/json",
           ...this.headers,
+          ...(options?.sessionId && { "x-session-id": options.sessionId }),
         },
         body: JSON.stringify({
           model: this.model,

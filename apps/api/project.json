@@ -68,18 +68,25 @@
             "command": "npx nx run @sps/agent:repository-generate"
           },
           {
-            "command": "npx nx run @sps/telegram:repository-generate"
+            "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
-      }
+      },
+      "cache": false
     },
     "db:migrate": {
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
         "parallel": false,
-        "cwd": "apps/api",
+        "cwd": ".",
         "commands": [
+          {
+            "command": "bun --cwd apps/api src/db/check-application-role.ts"
+          },
+          {
+            "command": "npx nx run @sps/providers-db:repository-migrate"
+          },
           {
             "command": "npx nx run @sps/file-storage:repository-migrate"
           },
@@ -108,10 +115,10 @@
             "command": "npx nx run @sps/rbac:repository-natural-key-repair-apply"
           },
           {
-            "command": "npx nx run @sps/social:repository-migrate"
+            "command": "npx nx run @sps/blog:repository-migrate"
           },
           {
-            "command": "npx nx run @sps/blog:repository-migrate"
+            "command": "npx nx run @sps/social:repository-migrate"
           },
           {
             "command": "npx nx run @sps/startup:repository-migrate"
@@ -123,10 +130,10 @@
             "command": "npx nx run @sps/host:repository-migrate"
           },
           {
-            "command": "npx nx run @sps/agent:repository-migrate"
+            "command": "npx nx run @sps/analytic:repository-migrate"
           },
           {
-            "command": "npx nx run @sps/telegram:repository-migrate"
+            "command": "npx nx run @sps/agent:repository-migrate"
           }
         ]
       }

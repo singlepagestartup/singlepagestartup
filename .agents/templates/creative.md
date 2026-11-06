@@ -1,47 +1,27 @@
 ---
-confirmation:
-  confirmed: false
+journey:
+  segment: ""
+  stage: ""
 ---
 
-# Marketing Creative
+# Рекламные материалы
 
-<!-- Selected formats only. -->
+<!-- Результат включает готовые креативы. Краткий документ ниже объясняет их назначение; сам по себе он не заменяет рекламу. Окончательные слова и композиция принадлежат макету. -->
 
-## Objective and selected distribution
+## Аудитория и задача
 
-- One measurable communication objective from the approved strategy
-- Only channels selected for the current experiment; explicitly list excluded
-  channels and paid-media status
-- Audience situation, entry point, destination, action, and tracking boundary
+Конкретный сегмент, его ситуация, узнаваемая задача и место размещения. Что человек должен понять и сделать после рекламы. Ссылка назначения и продолжение на целевой странице.
 
-## Message-to-format plan
+## Предложение и форматы
 
-- For each selected channel: format, role in the journey, message, proof or
-  disclosure, action, destination, and required variants
-- Reuse the approved communication hierarchy; do not create a new position,
-  unsupported claim, or generic content calendar
+Выбранные форматы, сообщение, основание обещания, CTA и различия вариантов. Состав и цена совпадают с продуктом, тон — с брендом. Вариант должен проверять содержательное отличие, а не быть копией с другим цветом.
 
-## Creative system application
+## Готовые креативы
 
-- Apply the approved brand colors, typography, logos, photography language,
-  illustration language, grid, motion, and accessibility rules
-- Define format-specific composition, safe areas, crop behavior, duration or
-  frame sequence, captions, alt text, and platform constraints
-- Do not redefine the brand system and do not include website navigation,
-  forms, validation, page sections, or post-conversion UI
+Создать макеты в React/HTML, применить дизайн продукта и подходящие ресурсы. Указать размеры и назначение форматов. Текст поверх изображений остаётся редактируемым. Предусмотреть PNG, а для выбранного видеоформата — соответствующую выгрузку. Агент проверяет чтение, композицию и экспорт в Studio.
 
-## Production specification
+## Размещение и результат
 
-- Exact asset IDs, copy, prompts, variants, source and rights status, output
-  dimensions, export target, naming, and owner
-- Tracking event and the material customer action after the click or view
-- Address material Marketing Creative constraints and unresolved questions;
-  unselected formats remain absent rather than filled with placeholders
+Фактический адрес размещения, период и доступные показатели добавить после порученной публикации. До размещения достаточно назначения и следующего действия. Не заполнять результат выдуманными показами или конверсией.
 
-<!-- Register actual selected covers, article/post copy, storyboards and optional
-motion as product-owned catalog pages with Text/Layout. Compose editable HTML
-text over registered images. Use shared utils/media artboards, PNG, and optional
-Remotion/MP4 instead of project-specific export engines. This overview owns the
-campaign direction; canonical material copy lives once in each material source.
-Review state, approval mechanics, framework behavior and generic production QA
-stay in metadata, roles and tools rather than visible material copy. -->
+<!-- В Studio: краткий контекст, затем сами макеты. Визуальные исходники находятся у продукта. Общие средства — utils/media; текст и элементы экспорта не дублировать в изображении. Видео и посты, раскрывающие статью, принадлежат комплекту статьи. -->

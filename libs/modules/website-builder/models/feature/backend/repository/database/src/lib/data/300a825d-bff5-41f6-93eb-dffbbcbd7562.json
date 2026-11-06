@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "300a825d-bff5-41f6-93eb-dffbbcbd7562",
+  "createdAt": "2026-10-26T00:12:42.756Z",
+  "updatedAt": "2026-10-27T14:59:30.343Z",
+  "variant": "document",
+  "title": {
+    "en": "Strategy",
+    "ru": "Стратегия"
+  },
+  "subtitle": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"heading\",\"attrs\":{\"level\":4},\"content\":[{\"type\":\"text\",\"text\":\"Example content\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Offer: your own AI service in six practical sessions. Acquisition: articles with worked examples and an open lesson.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"heading\",\"attrs\":{\"level\":4},\"content\":[{\"type\":\"text\",\"text\":\"Пример содержания\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Предложение: свой ИИ-сервис за шесть практических занятий. Привлечение: статьи с разборами и открытый урок.\"}]}]}"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The strategy defines the audience, offer and approach to attracting customers. It helps you choose who to address and how to describe your product.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Стратегия определяет аудиторию, предложение и способ привлечения клиентов. Она помогает выбрать, кому и как рассказывать о продукте.\"}]}]}"
+  },
+  "adminTitle": "Стратегия",
+  "slug": "framework-reviewed-context-doc-document-two"
+}

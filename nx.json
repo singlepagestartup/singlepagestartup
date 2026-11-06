@@ -60,5 +60,6 @@
     "sharedGlobals": []
   },
   "generators": {},
-  "plugins": []
+  "plugins": [],
+  "analytics": false
 }

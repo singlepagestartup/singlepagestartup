@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Framework demo",
+    "ru": "Пример фреймворка"
+  },
+  "subtitle": {},
+  "url": "/framework",
+  "className": "w-fit",
+  "id": "b2286dbf-3d3d-460d-9e75-f46e07889d8a",
+  "createdAt": "2026-10-23T20:18:02.398Z",
+  "updatedAt": "2026-10-23T20:18:02.398Z",
+  "variant": "ghost",
+  "adminTitle": "Framework demo",
+  "slug": "framework-footer-framework-framework"
+}

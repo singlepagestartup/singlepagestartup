@@ -1,23 +1,22 @@
 "use client";
 import "client-only";
 
-import { Component } from "./Component";
+import { Component as ChildComponent } from "./Component";
 import { Skeleton } from "./Skeleton";
 import { IComponentProps } from "./interface";
-import { api } from "@sps/rbac/models/subject/sdk/client";
+import { api as subjectApi } from "@sps/rbac/models/subject/sdk/client";
 
 export default function Client(props: IComponentProps) {
-  const { data, isFetching, isLoading } = api.authenticationIsAuthorized(
-    props.apiProps,
-  );
+  const { data, isFetching, isLoading, isError } =
+    subjectApi.authenticationIsAuthorized(props.apiProps);
 
   if (isFetching || isLoading) {
     return props.skeleton ?? <Skeleton />;
   }
 
-  if (!data) {
+  if (!data?.ok || isError) {
     return props.fallback ?? <></>;
   }
 
-  return <Component {...props} />;
+  return <ChildComponent {...props} />;
 }

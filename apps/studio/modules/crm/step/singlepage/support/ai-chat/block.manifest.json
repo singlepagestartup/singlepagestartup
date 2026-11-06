@@ -1,0 +1,27 @@
+{
+  "id": "crm.step.support-ai-chat",
+  "title": "support-ai-chat",
+  "description": "One step containing the support request fields.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "crm",
+    "entityType": "model",
+    "entity": "step",
+    "variant": "support-ai-chat"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "crm.step",
+    "pageName": "crm",
+    "variantName": "support-ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

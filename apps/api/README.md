@@ -2,10 +2,66 @@
 
 ## Environment
 
+The API and its migrations use `DATABASE_USERNAME` and `DATABASE_PASSWORD`.
+They check the authenticated PostgreSQL role before listening or running the
+migration sequence. A missing pair, a privileged login or explicit role
+memberships stop startup. For an old database, follow the
+[ownership move](../../tools/deployer/README.md#moving-an-existing-installation-to-the-application-role).
+
+On startup, `server.ts` imports the configured app, verifies the database
+login, calls `startConsistency()` to check capture coverage and start its
+workers, then opens the HTTP listener. Put custom startup queries and
+background workers in this explicit startup phase. Embedders that previously
+relied on importing `apps/api/app.ts` to start Consistency must now start it
+after their role check.
+
 Audio transcription runs inside the API/RBAC message flow and uses:
 
 - `OPEN_AI_API_KEY` - required when audio transcription should run.
 - `OPEN_AI_TRANSCRIPTION_MODEL` - optional, defaults to `gpt-4o-transcribe`.
+
+The shared exception filter emits one structured `api.error` record for every
+exception it handles. Both the default console logger and `LOG_PROVIDER=pino`
+write single-line JSON. The API generates a request ID and returns it in the
+error response. On the server, search for this ID to find the route pattern,
+method, HTTP status, category, elapsed time, source locations and, when
+available, a verified Subject ID. A raw path, query, header, body, exception
+message or SQL parameter can contain customer data. The incident record uses
+allowlisted fields instead. An error raised before a route handler may have
+fewer fields. Responses constructed without throwing do not pass this filter.
+The shared logger also emits `runtime.error` for repository and background
+errors. These records keep source locations and the active request and trace
+IDs, when present. Error arguments, such as raw driver errors and their SQL
+parameters, are not serialized. Other application output is not an incident
+feed and must remain restricted to server operators.
+
+`API_ERROR_DETAILS=brief` is the deployment default. The client receives the
+request ID, route, method, status and a categorized error. For 5xx the brief
+response exposes the category alone. `full` includes diagnostic details for
+all callers. Use it on a private development machine. A request with the
+operator credential also receives details. With no explicit setting,
+development and test default to full and other environments to brief.
+
+The server SDK factory propagates trace and parent IDs on calls to the
+configured API host that already carry its operator credential. The receiving
+API verifies the credential. An SDK exception can also link the caller's
+incident to a `downstreamRequestId` from the failed response. Hand-written
+fetches and separate user requests can start independent traces. Matching RBAC
+Actions store their request and trace IDs. Chat message handling records its
+processing stage, attachment count, total bytes and up to eight MIME families.
+
+When `BUG_SERVICE_PROJECT`, `BUG_SERVICE_TELEGRAM_CHAT_ID` and
+`BUG_SERVICE_TELEGRAM_BOT_TOKEN` are configured, each API process can send
+one 5xx alert at a time. New alerts during an active send are skipped. Each
+network call times out after three seconds; a Telegram chat migration allows
+one further call. On failure the process pauses all alerts for
+`BUG_SERVICE_REPORT_WINDOW_IN_SECONDS` (default 300, valid range 1–86400).
+After success the same status, method and route are suppressed for that
+window. The alert contains the project label, route pattern, method, status and
+request ID. The local journal keeps the underlying incident independently.
+
+See the [server incident runbook](../../tools/deployer/README.md#finding-an-api-error)
+for storage, retention, SSH commands and access policy.
 
 The server itself reads:
 

@@ -2,12 +2,13 @@
 
 import { IComponentPropsExtended } from "./interface";
 import { api } from "@sps/rbac/models/subject/sdk/client";
+import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import { Component as EcommerceOrdersToProducts } from "@sps/ecommerce/relations/orders-to-products/frontend/component";
 import { Button, Form } from "@sps/shared-ui-shadcn";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 const formSchema = z.object({
@@ -21,6 +22,7 @@ const formSchema = z.object({
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.ecommerceModuleOrderUpdate({});
+  const [error, setError] = useState("");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -30,11 +32,18 @@ export function Component(props: IComponentPropsExtended) {
   });
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
-    updateEntity.mutate({
-      id: props.data.id,
-      orderId: props.order.id,
-      data,
-    });
+    setError("");
+    try {
+      await updateEntity.mutateAsync({
+        id: props.data.id,
+        orderId: props.ecommerceModuleOrder.id,
+        data,
+      });
+    } catch (cause) {
+      setError(
+        cause instanceof Error ? cause.message : "Could not update the order.",
+      );
+    }
   }
 
   useEffect(() => {
@@ -45,32 +54,30 @@ export function Component(props: IComponentPropsExtended) {
 
   return (
     <Form {...form}>
-      <div className="flex flex-row gap-1">
-        <EcommerceOrdersToProducts
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="flex flex-wrap items-end gap-2"
+      >
+        <Subject
           isServer={false}
-          variant="find"
-          apiProps={{
-            params: {
-              filters: {
-                and: [
-                  {
-                    column: "orderId",
-                    method: "eq",
-                    value: props.order.id,
-                  },
-                ],
-              },
-            },
-          }}
+          variant="ecommerce-module-order-list-default"
+          data={props.data}
+          language={props.language}
+          apiProps={{ params: { includeCartDetails: true } }}
         >
-          {({ data }) => {
+          {({ data: orders }) => {
+            const data = orders.find(
+              (order) => order.id === props.ecommerceModuleOrder.id,
+            )?.cartDetails?.lines;
+
             return data?.map((entity, index) => {
               return (
-                <div key={index} className="flex w-full gap-1">
+                <div key={entity.id} className="flex min-w-0 flex-1 gap-2">
                   <EcommerceOrdersToProducts
                     isServer={false}
                     variant="form-field-default"
                     field="id"
+                    dataSource="props"
                     data={entity}
                     form={form}
                     name={`ordersToProducts.${index}.id`}
@@ -80,6 +87,7 @@ export function Component(props: IComponentPropsExtended) {
                     isServer={false}
                     variant="form-field-default"
                     field="quantity"
+                    dataSource="props"
                     data={entity}
                     form={form}
                     type="number"
@@ -89,15 +97,21 @@ export function Component(props: IComponentPropsExtended) {
               );
             });
           }}
-        </EcommerceOrdersToProducts>
+        </Subject>
+        {error && (
+          <p role="alert" className="w-full text-sm text-destructive">
+            {error}
+          </p>
+        )}
         <Button
-          onClick={form.handleSubmit(onSubmit)}
+          type="submit"
           variant="secondary"
-          className="w-fit flex shrink-0"
+          className="min-h-10 shrink-0 rounded-xl"
+          disabled={updateEntity.isPending}
         >
-          Update
+          {props.language === "ru" ? "Обновить" : "Update"}
         </Button>
-      </div>
+      </form>
     </Form>
   );
 }

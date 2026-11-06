@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "dd01a3fe-f5a6-488c-b137-043bdaa98308",
+  "createdAt": "2026-10-26T00:12:26.416Z",
+  "updatedAt": "2026-10-27T14:59:58.743Z",
+  "variant": "selectable",
+  "title": {
+    "en": "Collect contacts",
+    "ru": "Сбор контактов"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Visitors learn about the topics and host of a free webinar and register to attend. The school receives contacts for the next step.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Посетитель знакомится с темами и ведущим бесплатного вебинара и записывается на участие. Школа получает контакты для следующего шага.\"}]}]}"
+  },
+  "adminTitle": "Сбор контактов",
+  "slug": "framework-reviewed-showcase-contact"
+}

@@ -9,7 +9,11 @@ export function Component(props: IComponentPropsExtended) {
       data-model="option"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className={cn("w-full h-full flex items-center gap-4", props.className)}
+      className={cn(
+        "flex h-full w-full min-w-0 items-center gap-3 text-sm",
+        props.data.className,
+        props.className,
+      )}
     >
       <OptionsToFileStorageModuleWidgets
         isServer={props.isServer}
@@ -29,9 +33,9 @@ export function Component(props: IComponentPropsExtended) {
         }}
       >
         {({ data }) => {
-          return data?.map((entity, index) => {
+          return data?.map((entity) => {
             return (
-              <div key={index} className="relative h-5 aspect-1 shrink-0">
+              <div key={entity.id} className="relative h-5 aspect-1 shrink-0">
                 <div className="absolute inset-0">
                   <OptionsToFileStorageModuleWidgets
                     isServer={props.isServer}
@@ -44,7 +48,9 @@ export function Component(props: IComponentPropsExtended) {
           });
         }}
       </OptionsToFileStorageModuleWidgets>
-      <span>{props.data.title?.[props.language]}</span>
+      <span>
+        {props.data.title?.[props.language] || props.data.title?.en || ""}
+      </span>
     </div>
   );
 }

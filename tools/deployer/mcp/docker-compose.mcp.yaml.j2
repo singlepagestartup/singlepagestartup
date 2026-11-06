@@ -25,6 +25,12 @@ services:
         - traefik.http.routers.{{ SERVICE_NAME }}.entrypoints=websecure
         - traefik.http.routers.{{ SERVICE_NAME }}.tls=true
         - traefik.http.routers.{{ SERVICE_NAME }}.rule=Host(`{{ SERVICE_URL }}`)
+        # Security headers for this router, see "Traefik access log and
+        # security headers" in tools/deployer/README.md.
+        - traefik.http.routers.{{ SERVICE_NAME }}.middlewares={{ SERVICE_NAME }}-security-headers
+        - traefik.http.middlewares.{{ SERVICE_NAME }}-security-headers.headers.stsseconds=31536000
+        - traefik.http.middlewares.{{ SERVICE_NAME }}-security-headers.headers.contenttypenosniff=true
+        - traefik.http.middlewares.{{ SERVICE_NAME }}-security-headers.headers.referrerpolicy=strict-origin-when-cross-origin
         - traefik.swarm.network=traefik_overlay
 
 networks:

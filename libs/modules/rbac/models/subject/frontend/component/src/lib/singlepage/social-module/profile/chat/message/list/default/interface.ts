@@ -15,7 +15,7 @@ export interface IComponentProps extends ISpsComponentBase {
   socialModuleProfile: ISocialModuleProfile;
   artificialIntelligenceOpponentProfile?: ISocialModuleProfile | null;
   knowledgeAssistantProfile?: ISocialModuleProfile | null;
-  socialModuleChat: ISocialModuleChat;
+  socialModuleChat: IResult["ISocialModuleProfileFindByIdChatFindByIdResult"];
   socialModuleThread: ISocialModuleThread;
   socialModuleThreadId: string;
   variant: typeof variant;

@@ -2,10 +2,16 @@ import { serverHost, route } from "@sps/rbac/models/subject/sdk/model";
 import {
   NextRequestOptions,
   responsePipe,
+  consistencyRequestOptions,
   transformResponseItem,
 } from "@sps/shared-utils";
 import QueryString from "qs";
 import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
+
+import type {
+  IModel as ISocialModuleProfile,
+  IProfilePresentation,
+} from "@sps/social/models/profile/sdk/model";
 
 export interface IProps {
   id: string;
@@ -15,12 +21,16 @@ export interface IProps {
   tag?: string;
   revalidate?: number;
   params?: {
+    includeParticipants?: boolean;
     [key: string]: any;
   };
   options?: Partial<NextRequestOptions>;
 }
 
-export type IResult = ISocialModuleChat;
+export type IResult = ISocialModuleChat & {
+  participants?: ISocialModuleProfile[];
+  participantPresentations?: IProfilePresentation[];
+};
 
 export async function action(props: IProps): Promise<IResult> {
   const {
@@ -47,7 +57,10 @@ export async function action(props: IProps): Promise<IResult> {
 
   const res = await fetch(
     `${host}${route}/${id}/social-module/profiles/${socialModuleProfileId}/chats/${socialModuleChatId}?${stringifiedQuery}`,
-    requestOptions,
+    await consistencyRequestOptions(
+      `${host}${route}/${id}/social-module/profiles/${socialModuleProfileId}/chats/${socialModuleChatId}?${stringifiedQuery}`,
+      requestOptions,
+    ),
   );
 
   const json = await responsePipe<{ data: IResult }>({

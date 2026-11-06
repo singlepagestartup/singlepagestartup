@@ -1,8 +1,8 @@
-import { IComponentPropsExtended } from "../interface";
+import { IExternalWidgetProps } from "../interface";
 import { Component as WebsiteBuilderModuleWidget } from "@sps/website-builder/models/widget/frontend/component";
 import { Component as Widget } from "./widget";
 
-export function Component(props: IComponentPropsExtended) {
+export function Component(props: IExternalWidgetProps) {
   return (
     <WebsiteBuilderModuleWidget
       isServer={props.isServer}
@@ -22,13 +22,14 @@ export function Component(props: IComponentPropsExtended) {
       }}
     >
       {({ data }) => {
-        return data?.map((entity, index) => {
+        return data?.map((entity) => {
           return (
             <WebsiteBuilderModuleWidget
-              key={index}
+              key={entity.id}
               isServer={props.isServer}
               data={entity}
               variant={entity.variant as any}
+              dataSource="props"
               language={props.language}
             >
               <Widget

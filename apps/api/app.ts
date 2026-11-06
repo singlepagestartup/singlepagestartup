@@ -1,8 +1,6 @@
-import { Hono } from "hono";
+import { Hono, type Env } from "hono";
 import { cors } from "hono/cors";
-import { createBunWebSocket } from "hono/bun";
 import { join, normalize } from "node:path";
-import { type ServerWebSocket } from "bun";
 import {
   ExceptionFilter,
   ParseQueryMiddleware,
@@ -10,19 +8,18 @@ import {
 } from "@sps/shared-backend-api";
 import {
   IsAuthorizedMiddleware,
+  SearchIndexingMiddleware,
   RevalidationMiddleware,
+  ConsistencyMiddleware,
   HTTPCacheMiddleware,
   ObserverMiddleware,
   RequestIdMiddleware,
   ActionLoggerMiddleware,
   BillRouteMiddleware,
+  controllerGuardedRoutes,
 } from "@sps/middlewares";
 import { MIDDLEWARE_HTTP_CACHE } from "@sps/shared-utils";
-import { v4 as uuidv4 } from "uuid";
-import { ContentfulStatusCode } from "hono/utils/http-status";
-import { websocketManager } from "@sps/backend-utils";
-
-import { app as telegramApp } from "@sps/telegram/backend/app/api";
+import { getFileContentHeaders } from "@sps/backend-utils";
 import { app as agentApp } from "@sps/agent/backend/app/api";
 import { app as analyticApp } from "@sps/analytic/backend/app/api";
 import { app as hostApp } from "@sps/host/backend/app/api";
@@ -39,8 +36,34 @@ import { app as fileStorageApp } from "@sps/file-storage/backend/app/api";
 import { app as socialApp } from "@sps/social/backend/app/api";
 import { app as knowledgeApp } from "@sps/knowledge/backend/app/api";
 
-export const app = new Hono().basePath("/");
-const { upgradeWebSocket } = createBunWebSocket<ServerWebSocket>();
+export const app = new Hono<Env>().basePath("/");
+const apiModules = {
+  host: hostApp,
+  rbac: rbacApp,
+  startup: startupApp,
+  crm: crmApp,
+  ecommerce: ecommerceApp,
+  notification: notificationApp,
+  blog: blogApp,
+  billing: billingApp,
+  "website-builder": websiteBuilderApp,
+  "file-storage": fileStorageApp,
+  analytic: analyticApp,
+  social: socialApp,
+  knowledge: knowledgeApp,
+  agent: agentApp,
+  broadcast: broadcastApp,
+};
+hostApp.configureRouting(apiModules);
+
+const revalidationMiddleware = new RevalidationMiddleware();
+const consistencyMiddleware = new ConsistencyMiddleware({
+  revalidation: revalidationMiddleware,
+});
+const httpCacheMiddleware = new HTTPCacheMiddleware({
+  runtime: consistencyMiddleware.runtime,
+  excludedRoutes: controllerGuardedRoutes,
+});
 
 app.use(
   cors({
@@ -61,8 +84,11 @@ app.use(
       "X-Set-Cookie",
       "Cache-Control",
       "X-RBAC-SECRET-KEY",
+      "X-SPS-Consistency",
+      "X-SPS-Query-Tag",
     ],
     credentials: true,
+    exposeHeaders: ["x-sps-consistency"],
     maxAge: 86400,
   }),
 );
@@ -77,8 +103,9 @@ app.use(
 const requestBodyFitsLimitMiddleware = new RequestBodyFitsLimitMiddleware();
 app.use(requestBodyFitsLimitMiddleware.init());
 
+app.use("/api/*", new SearchIndexingMiddleware().init());
 const exceptionFilter = new ExceptionFilter();
-app.onError((err, c) => exceptionFilter.catch(err, c));
+app.onError((error, c) => exceptionFilter.catch(error, c));
 
 app.on(["GET", "HEAD"], "/public/*", async (c) => {
   const relativePath = normalize(
@@ -107,22 +134,11 @@ app.on(["GET", "HEAD"], "/public/*", async (c) => {
       continue;
     }
 
-    const headers = new Headers();
+    const headers = getFileContentHeaders(relativePath, file.type);
     if (file.type) {
       headers.set("Content-Type", file.type);
     }
     headers.set("Content-Length", String(file.size));
-    /**
-     * Uploaded files are served from the API origin, so a file opened in a
-     * tab must not run as a document of that origin (issue #304). `nosniff`
-     * keeps the browser on the declared type, and `sandbox` gives a file
-     * opened as a document an opaque origin with scripts, forms and plugins
-     * disabled. Browsers apply `nosniff` only to script and style loads and a
-     * CSP only to documents and workers, so `<img>`, `<video>`, `<audio>` and
-     * CSS backgrounds that embed these files are not affected.
-     */
-    headers.set("X-Content-Type-Options", "nosniff");
-    headers.set("Content-Security-Policy", "sandbox");
 
     if (c.req.method === "HEAD") {
       return new Response(null, {
@@ -138,83 +154,25 @@ app.on(["GET", "HEAD"], "/public/*", async (c) => {
   return c.notFound();
 });
 
-const requestIdMiddleware = new RequestIdMiddleware();
-app.use(requestIdMiddleware.init());
-
-app.options("*", (c) => {
-  return c.text("OK", 204 as ContentfulStatusCode);
-});
-
-const observerMiddleware = new ObserverMiddleware();
-app.use(observerMiddleware.init());
-
-app.get(
-  "/ws/revalidation",
-  upgradeWebSocket((c) => {
-    const clientId = c.req.header("X-Client-ID") || uuidv4();
-
-    return {
-      onOpen(event, ws) {
-        websocketManager.addClient(clientId, ws);
-      },
-      onMessage(event, ws) {
-        console.log(`Message from client: ${event.data}`);
-        ws.send("Hello from server!");
-      },
-      onClose: () => {
-        websocketManager.removeClient(clientId);
-      },
-    };
-  }),
-);
-
-/**
- * Ordering contract (issue #195): RevalidationMiddleware MUST be registered
- * BEFORE HTTPCacheMiddleware. Hono unwinds post-next() code inner-first, so
- * the inner http-cache version bump completes before the outer revalidation
- * WS broadcast. Otherwise another client's immediate refetch (triggered by
- * the broadcast) could be served a stale cached response.
- */
-const revalidationMiddleware = new RevalidationMiddleware();
+app.use(new RequestIdMiddleware().init());
+app.use(consistencyMiddleware.init());
+consistencyMiddleware.registerRoutes(app);
+app.options("*", (c) => c.body(null, 204));
+app.use(new ObserverMiddleware().init());
 app.use(revalidationMiddleware.init());
+app.use(new ActionLoggerMiddleware().init());
+app.use(new IsAuthorizedMiddleware().init());
+app.use(new BillRouteMiddleware().init());
+app.use(new ParseQueryMiddleware().init());
 
-/**
- * It's not secure, because authorized requests can be cached and served to unauthorized users.
- * But perfomance of the application will rediqulesly increase.
- * Now added "Cache-Control": "no-store" for preventing caching of authorized requests,
- * but it should be added to the request
- */
 if (MIDDLEWARE_HTTP_CACHE === "true") {
-  const httpCacheMiddleware = new HTTPCacheMiddleware();
+  httpCacheMiddleware.registerRoutes(app);
   app.use(httpCacheMiddleware.init());
-  httpCacheMiddleware.setRoutes(app);
 }
 
-const actionLoggerMiddleware = new ActionLoggerMiddleware();
-app.use(actionLoggerMiddleware.init());
+for (const [name, module] of Object.entries(apiModules))
+  app.route("/api/" + name, module.hono);
 
-const isAuthorizedMiddleware = new IsAuthorizedMiddleware();
-app.use(isAuthorizedMiddleware.init());
-
-const billRouteMiddleware = new BillRouteMiddleware();
-app.use(billRouteMiddleware.init());
-
-const parseQueryMiddleware = new ParseQueryMiddleware();
-app.use(parseQueryMiddleware.init());
-
-app.route("/api/agent", agentApp.hono);
-app.route("/api/host", hostApp.hono);
-app.route("/api/rbac", rbacApp.hono);
-app.route("/api/startup", startupApp.hono);
-app.route("/api/crm", crmApp.hono);
-app.route("/api/ecommerce", ecommerceApp.hono);
-app.route("/api/notification", notificationApp.hono);
-app.route("/api/blog", blogApp.hono);
-app.route("/api/billing", billingApp.hono);
-app.route("/api/website-builder", websiteBuilderApp.hono);
-app.route("/api/telegram", telegramApp.hono);
-app.route("/api/broadcast", broadcastApp.hono);
-app.route("/api/file-storage", fileStorageApp.hono);
-app.route("/api/analytic", analyticApp.hono);
-app.route("/api/social", socialApp.hono);
-app.route("/api/knowledge", knowledgeApp.hono);
+export function startConsistency() {
+  return consistencyMiddleware.start();
+}

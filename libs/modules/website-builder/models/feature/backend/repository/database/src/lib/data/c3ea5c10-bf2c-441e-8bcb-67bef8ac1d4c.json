@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "c3ea5c10-bf2c-441e-8bcb-67bef8ac1d4c",
+  "createdAt": "2026-10-26T00:12:17.504Z",
+  "updatedAt": "2026-10-27T14:59:54.945Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Enrolment",
+    "ru": "Набор"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The school's first cohort\\n\\nExample launch-page content.\\n\\nPractice in a small group\\n\\nAssignments between classes\\n\\nRegister through an enquiry form\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Первый поток школы\\n\\nПример содержимого страницы запуска.\\n\\nПрактика в небольшой группе\\n\\nЗадания между занятиями\\n\\nЗапись через форму заявки\"}]}]}"
+  },
+  "adminTitle": "Набор",
+  "slug": "framework-reviewed-article-startup-example-feature-0"
+}

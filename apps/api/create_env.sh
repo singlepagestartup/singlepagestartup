@@ -12,6 +12,14 @@ if [ -f .env ]; then
     exit 1
 fi
 
+DATABASE_NAME=$(get_env "$BASH_SOURCE" "POSTGRES_DB" ../db/.env)
+DATABASE_USERNAME=$(get_env "$BASH_SOURCE" "DATABASE_USERNAME" ../db/.env)
+DATABASE_PASSWORD=$(get_env "$BASH_SOURCE" "DATABASE_PASSWORD" ../db/.env)
+POSTGRES_USER=$(get_env "$BASH_SOURCE" "POSTGRES_USER" ../db/.env) \
+POSTGRES_PASSWORD=$(get_env "$BASH_SOURCE" "POSTGRES_PASSWORD" ../db/.env) \
+POSTGRES_DB="$DATABASE_NAME" DATABASE_USERNAME="$DATABASE_USERNAME" DATABASE_PASSWORD="$DATABASE_PASSWORD" \
+    sh ../db/create_application_role.sh --check-config || exit 1
+
 # Clear env file
 umask 077
 > .env
@@ -22,6 +30,10 @@ add_env "WEBSITE_BUILDER_SEED" true
 add_env "FILE_STORAGE_SEED" true
 add_env "STARTUP_SEED" true
 add_env "FILE_STORAGE_FOLDER" "file-storage/static"
+
+# Error bodies on this machine carry the stack trace and the cause chain; a
+# deployment answers without them (apps/api/README.md, "Environment").
+add_env "API_ERROR_DETAILS" "full"
 
 if [ ! -z $CODESPACE_NAME ]; then
     NEXT_PUBLIC_API_SERVICE_URL=https://$CODESPACE_NAME-4000.app.github.dev
@@ -56,14 +68,9 @@ fi
 DATABASE_HOST=localhost
 add_env "DATABASE_HOST" $DATABASE_HOST
 
-DATABASE_NAME=$(get_env "$BASH_SOURCE" "POSTGRES_DB" "../db/.env")
-add_env "DATABASE_NAME" $DATABASE_NAME
-
-DATABASE_USERNAME=$(get_env "$BASH_SOURCE" "POSTGRES_USER" ../db/.env)
-add_env "DATABASE_USERNAME" $DATABASE_USERNAME
-
-DATABASE_PASSWORD=$(get_env "$BASH_SOURCE" "POSTGRES_PASSWORD" ../db/.env)
-add_env "DATABASE_PASSWORD" $DATABASE_PASSWORD
+add_env "DATABASE_NAME" "$DATABASE_NAME"
+add_env "DATABASE_USERNAME" "$DATABASE_USERNAME"
+add_env "DATABASE_PASSWORD" "$DATABASE_PASSWORD"
 
 DATABASE_PORT=$(get_env "$BASH_SOURCE" "POSTGRES_PORT" ../db/.env)
 add_env "DATABASE_PORT" $DATABASE_PORT
@@ -91,8 +98,15 @@ MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET=$(generate_secret 32) || exit 1
 add_env "MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET" $MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET
 add_env "MCP_SERVICE_URL" "http://127.0.0.1:3001/mcp"
 
+HOST_SERVICE_REVALIDATION_SECRET=$(generate_secret 32) || exit 1
+add_env "HOST_SERVICE_REVALIDATION_SECRET" $HOST_SERVICE_REVALIDATION_SECRET
+
 add_env "FILE_STORAGE_PROVIDER" "local"
 add_env "FILE_STORAGE_MAX_UPLOAD_BYTES" "52428800"
+
+# Local development keeps the dummy provider, which marks an invoice paid
+# without a payment provider. Deployments set the list in tools/deployer/.env.
+add_env "ALLOWED_BILLING_SERVICE_PROVIDERS" "stripe,0xprocessing,payselection,cloudpayments,tiptoppay,dummy"
 
 add_env "LLM_SERVICE_URL" "http://localhost:8765"
 add_env "KNOWLEDGE_EMBEDDING_PROVIDER" "llm"

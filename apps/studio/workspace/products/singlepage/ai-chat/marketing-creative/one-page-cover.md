@@ -1,15 +1,10 @@
 ---
-confirmation:
-  confirmed: false
-review:
-  dependencies:
-    product.ai-chat.creative: 45271defa23617549a5078f8ce9c47e530b694ff9ac50d63196adc094b20f1d1
 ---
 
-# Your business is already in those files. Put it together.
+# Соберите описание проекта из своих материалов.
 
-Upload notes, documents and images. Review Request, Strategy, Brand, Design and Products in one compact setup, see what is missing and turn the offer into a landing page.
+Загрузите заметки, фотографии и документы. Обсудите вопросы агента и отредактируйте описание проекта. Сохранённые документы можно скачать или прикрепить к следующему разговору.
 
-> From scattered material to a business you can explain and test.
+> Ваш первый шаг к клиентам.
 
-[Organize my materials](/register)
+[Начать с моих файлов](/register)
