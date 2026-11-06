@@ -15,12 +15,10 @@ set -euo pipefail
 BACKUP_DIRECTORY="${DATABASE_BACKUP_DIRECTORY:-/home/code/db_backups}"
 RETENTION_DAYS="${DATABASE_BACKUP_RETENTION_DAYS:-14}"
 
-case "$RETENTION_DAYS" in
-    "" | *[!0-9]*)
-        echo "Error: DATABASE_BACKUP_RETENTION_DAYS must be a non-negative integer, received: $RETENTION_DAYS" >&2
-        exit 1
-        ;;
-esac
+if [[ ! "$RETENTION_DAYS" =~ ^[0-9]{1,9}$ ]]; then
+    echo "Error: DATABASE_BACKUP_RETENTION_DAYS must be a non-negative integer of up to 9 digits" >&2
+    exit 1
+fi
 
 POSTGRES_CONTAINER_ID="$(
     docker ps \

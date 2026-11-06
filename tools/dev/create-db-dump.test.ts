@@ -317,17 +317,20 @@ describe("a dump that cannot be taken", () => {
    * When the nightly job runs
    * Then it exits non-zero before dumping or deleting anything
    */
-  test("rejects a retention that is not a non-negative integer", () => {
-    const directory = createBackupDirectory();
-    const recent = writeOldDump(directory, "sps_20-09-2000.dump", 3);
-    const result = runDump({
-      backupDirectory: directory,
-      retentionDays: "two weeks",
-    });
+  test.each(["two weeks", "1234567890"])(
+    "rejects invalid retention %s",
+    (value) => {
+      const directory = createBackupDirectory();
+      const recent = writeOldDump(directory, "sps_20-09-2000.dump", 3);
+      const result = runDump({
+        backupDirectory: directory,
+        retentionDays: value,
+      });
 
-    expect(result.status).not.toBe(0);
-    expect(result.stderr).toContain("must be a non-negative integer");
-    expect(readdirSync(directory)).toEqual([path.basename(recent)]);
-    expect(result.calls).toEqual([]);
-  });
+      expect(result.status).not.toBe(0);
+      expect(result.stderr).toContain("must be a non-negative integer");
+      expect(readdirSync(directory)).toEqual([path.basename(recent)]);
+      expect(result.calls).toEqual([]);
+    },
+  );
 });

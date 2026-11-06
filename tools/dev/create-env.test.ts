@@ -74,7 +74,7 @@ function runShell(cwd: string, script: string): IShellResult {
  * origin remote names the project, as apps/db/create_env.sh derives its names
  * from it.
  */
-function createCheckout(name: string): string {
+function createCheckout(name: string, remoteName = repositoryName): string {
   const checkout = path.join(scratch, name);
 
   for (const directory of [
@@ -102,7 +102,7 @@ function createCheckout(name: string): string {
 
   const repository = runShell(
     checkout,
-    `git init --quiet && git remote add origin "https://github.com/example/${repositoryName}.git"`,
+    `git init --quiet && git remote add origin "https://github.com/example/${remoteName}.git"`,
   );
 
   expect(repository.status).toBe(0);
@@ -149,6 +149,18 @@ describe("a fresh bootstrap", () => {
     database = readEnv(path.join(checkout, "apps/db/.env"));
     api = readEnv(path.join(checkout, "apps/api/.env"));
   });
+
+  test.each(["postgres", "pg_client"])(
+    "keeps the API on a dedicated login when the repository name is %s",
+    (name) => {
+      const checkout = createCheckout(name, name);
+      runCreateEnv(checkout, "db");
+      runCreateEnv(checkout, "api");
+      const env = readEnv(path.join(checkout, "apps/api/.env"));
+      expect(env["DATABASE_NAME"]).toBe(name);
+      expect(env["DATABASE_USERNAME"]).toBe(`sps_${name}`);
+    },
+  );
 
   /**
    * BDD Scenario: The API connects as the application role

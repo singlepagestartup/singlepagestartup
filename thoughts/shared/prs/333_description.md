@@ -8,10 +8,10 @@ Fresh bootstraps and deployments now create a login role without superuser, data
 
 ## Changes
 
-- `apps/db/create_application_role.sh` (new, executable) — runs as `POSTGRES_USER` against `POSTGRES_DB`: creates the untrusted `vector` extension, creates `DATABASE_USERNAME` with `LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS` and `DATABASE_PASSWORD`, makes it the owner of the database and of every schema, table, sequence, view, type and routine the superuser owns there. Names and the password travel as psql variables, never as SQL text. Idempotent; without a separate role it creates only the extension and warns. The image runs it once from `/docker-entrypoint-initdb.d`; an initialized database is moved by running it with `docker exec`.
+- `apps/db/create_application_role.sh` (new, executable) — runs as `POSTGRES_USER` against `POSTGRES_DB`: creates the untrusted `vector` extension, creates `DATABASE_USERNAME` with `LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS` and `DATABASE_PASSWORD`, makes it the owner of the database and of every schema, table, sequence, view, type and routine the superuser owns there. Names and the password travel as psql variables, never as SQL text. The move commits in one transaction. An existing login must have ordinary attributes and no explicit role memberships in either direction. Only the legacy bootstrap without an application name creates the extension and warns. The image runs it once from `/docker-entrypoint-initdb.d`; an initialized database is moved by running it with `docker exec`.
 - Local bootstrap — `apps/db/docker-compose.postgres.yaml` mounts the script read-only (both compose entry points extend this service). `apps/db/create_env.sh` writes `POSTGRES_USER=postgres` with its own password and `DATABASE_USERNAME` (the repository name the API used before) with a separate generated password. `apps/api/create_env.sh` reads the application pair and falls back to the superuser pair, with a message, for an `apps/db/.env` that predates the role.
 - Deployer PostgreSQL stack — `postgres/create_postgres.yaml` copies the script to `/home/code/` (the `apps/llm/ollama-init.sh` pattern) and `delete_postgres.yaml` removes it; the template mounts it, takes the superuser from new `POSTGRES_USER`/`POSTGRES_PASSWORD` values, passes `DATABASE_USERNAME`/`DATABASE_PASSWORD` for the script, renders values with `to_json`, and drops `start-first` so an update never runs two postmasters on one data directory (as Redis already does). `postgres.sh` warns and falls back to the `DATABASE_*` pair when `POSTGRES_USER` is unset, and refuses a `POSTGRES_USER` without password or equal to `DATABASE_USERNAME`. `.env.example`, `github_deployer.sh` and `.github/workflows/ansible.yml` carry the two new values, production and `PREVIEW_`.
-- Nightly dump — `server/create_db_dump.sh` finds the `postgres_postgres` container, runs `pg_dump` inside it over the local socket, writes to a `mktemp` file in a `0700` directory, moves it into place only after success, tightens every `*.dump` to `0600`, then deletes dumps older than `DATABASE_BACKUP_RETENTION_DAYS` (default `14`, `0` keeps all). `server/set_cron_jobs.yaml` creates `/home/code/db_backups` as `0700`, passes the retention and logs to `/home/code/create_db_dump.log`; `server.sh` reads the retention with a default. The dump still contains every table.
+- Nightly dump — `server/create_db_dump.sh` finds the `postgres_postgres` container, runs `pg_dump` inside it over the local socket, writes to a `mktemp` file in a `0700` directory, moves it into place only after success, tightens every `*.dump` to `0600`, then deletes dumps older than `DATABASE_BACKUP_RETENTION_DAYS` (default `14`, `0` keeps all). `server/set_cron_jobs.yaml` creates `/home/code/db_backups` as `0700`, validates retention before writing it to the root cron environment and logs to `/home/code/create_db_dump.log`; `server.sh` reads the retention with a default. The dump still contains every table.
 - Tests — `tools/dev/create-env.test.ts` (credential wiring, legacy fallback) and `tools/dev/create-db-dump.test.ts` (modes, success-only replacement, pruning, failure paths), both `bun:test`, exposed as `npm run database:test`.
 - Docs — `tools/deployer/README.md`: "PostgreSQL roles", "Nightly database dumps" with a restore command, `POSTGRES_PASSWORD` among generated secrets, split rotation rows, "Moving an existing installation to the application role" (server and developer checkout), and the data-service paragraph. `libs/modules/knowledge/README.md`: where the extension comes from and a troubleshooting line.
 
@@ -19,13 +19,15 @@ No API code, schema, route or dependency changes. MCP and Telegram have no datab
 
 ## Verification
 
-- [x] `npm run database:test` — 13 pass (4 credential scenarios, 9 dump scenarios); `npm run secrets:test` — 9 pass.
+- [x] `npm run database:test` — 16 pass (6 credential scenarios, 10 dump scenarios); `npm run secrets:test` — 9 pass.
 - [x] Mutation checks: the API script reading the superuser pair again fails the regression scenario; removing the dump tightening, the directory `chmod 700`, or pruning before the success check each fails its scenario.
 - [x] `npx nx run api:jest:test` (4 tests) and `npx nx run @sps/knowledge:jest:test` (62 tests); ESLint and strict `tsc` on the new tests; `node tools/agents/code-placement.mjs`; `bash -n`/`sh -n` on every changed script; `ansible-playbook --syntax-check` on the changed plays; the stack template rendered through Ansible and accepted by `docker compose config`.
 - [x] Throwaway containers only (never the shared database): a fresh bootstrap through the real compose files runs the script at init; the role reports `rolsuper f` and the other attributes `f`; `./migrate.sh` (206 targets) and `api:db:seed` succeed as the role; 853 relations belong to it; the API as that role answers `GET /api/host/pages` 200 and session init 201 with a new row.
 - [x] Existing installation: a volume initialized with a single superuser, migrated and seeded as it, recreated with the new environment and mount, moved with the README step-3 command (310 `ALTER TABLE` plus schema, role and database), then `./migrate.sh seed` as the new role succeeds and the README step-5 query shows `sps_app | f`.
 - [x] The real dump script with the real `docker`: a 713 KB `0600` dump in a `0700` directory, an old dump pruned, a recent `0644` one tightened; the README restore command loads it into a fresh deployer-shaped stack with 0 errors.
-- [x] First-init edge cases: no application role and the same name as the superuser both initialize with the extension and a warning; a role without a password stops the init with exit 1.
+- [x] `npm run database:test:integration` exercises the PostgreSQL 17 image entrypoint and an upgrade with existing rows, a sequence and a view. Direct, indirect/SET-only role memberships and privileged attributes are refused. A fault during ownership transfer rolls back earlier changes. A safe retry succeeds and the API role cannot execute server programs or read a server file.
+- [x] Replayed the SPS Consistency and Knowledge Source/Chunk migrations against a fresh DB and a database originally migrated by the administrator. After the ownership move the app role could run the same migrations, alter the old table and read its original data. The normal dump restored the check row in a third DB.
+- [x] On Debian, the PostgreSQL Ansible template created and repaired a `0600 root:root` file even with unchanged contents. The unprivileged account could not read it. The cron play installed a fixed command with retention 14, 0 and 7 days. Shell syntax, newlines, negative and oversized values were refused before modifying the existing root crontab.
 
 ## Notes
 
@@ -43,18 +45,19 @@ Adaptation is required. Fresh bootstraps and deployments get the separate role a
 
 **New variables:**
 
-| Variable                         | Where                                  | Default                                   | Meaning                                       |
-| -------------------------------- | -------------------------------------- | ----------------------------------------- | --------------------------------------------- |
-| `POSTGRES_USER`                  | `tools/deployer/.env`, GitHub secrets  | falls back to `DATABASE_USERNAME` (warns) | Superuser the image creates                   |
-| `POSTGRES_PASSWORD`              | `tools/deployer/.env`, GitHub secrets  | required when `POSTGRES_USER` is set      | Its password                                  |
-| `DATABASE_USERNAME`, `DATABASE_PASSWORD` | `apps/db/.env` (generated)     | —                                         | Application role the init script creates      |
-| `DATABASE_BACKUP_RETENTION_DAYS` | `tools/deployer/.env`                  | `14`                                      | Dump age in days before deletion; `0` keeps all |
+| Variable                                 | Where                                   | Default                                   | Meaning                                         |
+| ---------------------------------------- | --------------------------------------- | ----------------------------------------- | ----------------------------------------------- |
+| `POSTGRES_USER`                          | `tools/deployer/.env`, GitHub secrets   | falls back to `DATABASE_USERNAME` (warns) | Superuser the image creates                     |
+| `POSTGRES_PASSWORD`                      | `tools/deployer/.env`, GitHub secrets   | required when `POSTGRES_USER` is set      | Its password                                    |
+| `DATABASE_USERNAME`, `DATABASE_PASSWORD` | `apps/db/.env` (generated)              | —                                         | Application role the init script creates        |
+| `DATABASE_BACKUP_RETENTION_DAYS`         | deployer environment and GitHub secrets | `14`                                      | Dump age in days before deletion; `0` keeps all |
 
 **Actions:**
 
 - In project-owned copies of the bootstrap scripts and deployer templates, give the superuser and the application role separate names and passwords and mount `apps/db/create_application_role.sh` into `/docker-entrypoint-initdb.d`.
 - On each server, move the current `DATABASE_USERNAME`/`DATABASE_PASSWORD` to `POSTGRES_USER`/`POSTGRES_PASSWORD`, set a new role name and generated password as `DATABASE_USERNAME`/`DATABASE_PASSWORD` (deployer `.env` and both GitHub secret sets), run `./postgres.sh up`, run the script inside the postgres container, then `./api.sh up` — "Moving an existing installation to the application role" in `tools/deployer/README.md`.
-- Run `./server.sh up` to install the dump script, the `0700` directory and the cron entry.
+- Use a dedicated application login with its own password. Review any privileged attributes or role memberships before rerunning the move. Verify Compose permissions are `0600 root:root` on every database node.
+- Run `./server.sh up` to install the dump script, the `0700` directory and the cron entry with validated numeric retention.
 - On a developer checkout, either recreate the data directory with `./up.sh` after moving the env files aside, or follow the developer paragraph of the move section.
 - Create any extension or object that requires a superuser in the init script, not in a migration.
 

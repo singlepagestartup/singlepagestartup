@@ -44,6 +44,10 @@ jobs:
       - name: Add deployer PREVIEW secrets to env file
         if: contains(env.BRANCH_NAME, '-preview')
         env:
+          POSTGRES_PASSWORD: ${{ secrets.PREVIEW_POSTGRES_PASSWORD }}
+          DATABASE_PASSWORD: ${{ secrets.PREVIEW_DATABASE_PASSWORD }}
+          POSTGRES_USER: ${{ secrets.PREVIEW_POSTGRES_USER }}
+          DATABASE_USERNAME: ${{ secrets.PREVIEW_DATABASE_USERNAME }}
           FILE_STORAGE_MAX_UPLOAD_BYTES: ${{ secrets.PREVIEW_FILE_STORAGE_MAX_UPLOAD_BYTES }}
           BUG_SERVICE_PROJECT: ${{ secrets.PREVIEW_BUG_SERVICE_PROJECT }}
           BUG_SERVICE_TELEGRAM_CHAT_ID: ${{ secrets.PREVIEW_BUG_SERVICE_TELEGRAM_CHAT_ID }}
@@ -78,10 +82,10 @@ jobs:
             "PORTAINER_PASSWORD ${{ secrets.PREVIEW_PORTAINER_PASSWORD }}"\
             "PORTAINER_SERVICE_SUBDOMAIN ${{ secrets.PREVIEW_PORTAINER_SERVICE_SUBDOMAIN }}"\
             "DATABASE_NAME ${{ secrets.PREVIEW_DATABASE_NAME }}"\
-            "DATABASE_USERNAME ${{ secrets.PREVIEW_DATABASE_USERNAME }}"\
-            "DATABASE_PASSWORD ${{ secrets.PREVIEW_DATABASE_PASSWORD }}"\
-            "POSTGRES_USER ${{ secrets.PREVIEW_POSTGRES_USER }}"\
-            "POSTGRES_PASSWORD ${{ secrets.PREVIEW_POSTGRES_PASSWORD }}"\
+            "DATABASE_USERNAME $DATABASE_USERNAME"\
+            "DATABASE_PASSWORD $DATABASE_PASSWORD"\
+            "POSTGRES_USER $POSTGRES_USER"\
+            "POSTGRES_PASSWORD $POSTGRES_PASSWORD"\
             "REDIS_PASSWORD ${{ secrets.PREVIEW_REDIS_PASSWORD }}"\
             "HOST_SERVICE_NAME ${{ secrets.PREVIEW_HOST_SERVICE_NAME }}"\
             "HOST_SERVICE_SUBDOMAIN ${{ secrets.PREVIEW_HOST_SERVICE_SUBDOMAIN }}"\
@@ -179,6 +183,10 @@ jobs:
       - name: Add deployer default secrets to env file
         if: ${{ !contains(env.BRANCH_NAME, '-preview') }}
         env:
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          DATABASE_USERNAME: ${{ secrets.DATABASE_USERNAME }}
           FILE_STORAGE_MAX_UPLOAD_BYTES: ${{ secrets.FILE_STORAGE_MAX_UPLOAD_BYTES }}
           BUG_SERVICE_PROJECT: ${{ secrets.BUG_SERVICE_PROJECT }}
           BUG_SERVICE_TELEGRAM_CHAT_ID: ${{ secrets.BUG_SERVICE_TELEGRAM_CHAT_ID }}
@@ -213,10 +221,10 @@ jobs:
             "PORTAINER_PASSWORD ${{ secrets.PORTAINER_PASSWORD }}"\
             "PORTAINER_SERVICE_SUBDOMAIN ${{ secrets.PORTAINER_SERVICE_SUBDOMAIN }}"\
             "DATABASE_NAME ${{ secrets.DATABASE_NAME }}"\
-            "DATABASE_USERNAME ${{ secrets.DATABASE_USERNAME }}"\
-            "DATABASE_PASSWORD ${{ secrets.DATABASE_PASSWORD }}"\
-            "POSTGRES_USER ${{ secrets.POSTGRES_USER }}"\
-            "POSTGRES_PASSWORD ${{ secrets.POSTGRES_PASSWORD }}"\
+            "DATABASE_USERNAME $DATABASE_USERNAME"\
+            "DATABASE_PASSWORD $DATABASE_PASSWORD"\
+            "POSTGRES_USER $POSTGRES_USER"\
+            "POSTGRES_PASSWORD $POSTGRES_PASSWORD"\
             "REDIS_PASSWORD ${{ secrets.REDIS_PASSWORD }}"\
             "HOST_SERVICE_NAME ${{ secrets.HOST_SERVICE_NAME }}"\
             "HOST_SERVICE_SUBDOMAIN ${{ secrets.HOST_SERVICE_SUBDOMAIN }}"\
@@ -317,6 +325,7 @@ jobs:
             "./$(echo "$BRANCH_NAME" | cut -d'-' -f2).sh"
       - name: Run service script
         env:
+          DATABASE_BACKUP_RETENTION_DAYS: ${{ secrets[contains(env.BRANCH_NAME, '-preview') && 'PREVIEW_DATABASE_BACKUP_RETENTION_DAYS' || 'DATABASE_BACKUP_RETENTION_DAYS'] }}
           MCP_CLIENT_CONFIG_OUTPUT_DIR: ${{ runner.temp }}/mcp-client-configs
           SCRIPT_FILE_NAME: ${{ steps.set-script-file-name.outputs.SCRIPT_FILE_NAME }}
         run: |

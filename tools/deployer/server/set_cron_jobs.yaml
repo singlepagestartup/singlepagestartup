@@ -2,10 +2,14 @@
   hosts: all
   become: yes
   vars:
-    api_service_url: "{{ API_SERVICE_URL }}"
-    rbac_secret_key: "{{ RBAC_SECRET_KEY }}"
-    database_backup_retention_days: "{{ DATABASE_BACKUP_RETENTION_DAYS | default('14', true) }}"
+    database_backup_retention_days: "{{ DATABASE_BACKUP_RETENTION_DAYS | default(14) }}"
   tasks:
+    - name: Validate backup retention before editing root's crontab
+      ansible.builtin.assert:
+        that:
+          - (database_backup_retention_days | string) is match('^[0-9]{1,9}\Z')
+        fail_msg: DATABASE_BACKUP_RETENTION_DAYS must contain 1 to 9 decimal digits
+
     - name: docker image prune cron
       cron:
         name: "docker image prune"
@@ -24,9 +28,17 @@
         state: directory
         mode: "0700"
 
+    - name: Set the backup retention in root's crontab
+      ansible.builtin.cron:
+        name: DATABASE_BACKUP_RETENTION_DAYS
+        env: true
+        value: "{{ database_backup_retention_days | int | string }}"
+        user: root
+
     - name: create postgres dump
       cron:
         name: "create postgres dump"
         minute: "0"
         hour: "0"
-        job: "DATABASE_BACKUP_RETENTION_DAYS={{ database_backup_retention_days }} /home/code/create_db_dump.sh >> /home/code/create_db_dump.log 2>&1"
+        user: root
+        job: "/home/code/create_db_dump.sh >> /home/code/create_db_dump.log 2>&1"

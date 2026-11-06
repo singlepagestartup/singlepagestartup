@@ -3,22 +3,17 @@
 
 get_environment_type $2
 
-./create_inventory.sh
-
 . ./get_env.sh
 
-RBAC_SECRET_KEY=$(get_env "$BASH_SOURCE" "RBAC_SECRET_KEY")
-DATABASE_BACKUP_RETENTION_DAYS=$(get_env_or_default "$BASH_SOURCE" "DATABASE_BACKUP_RETENTION_DAYS" "14")
-
-API_SERVICE_SUBDOMAIN=$(get_env "$BASH_SOURCE" "API_SERVICE_SUBDOMAIN")
-DOMAIN=$(get_env "$BASH_SOURCE" "DOMAIN")
-
-if [ -z "$API_SERVICE_SUBDOMAIN" ]
-then
-    API_SERVICE_URL=$DOMAIN
-else
-    API_SERVICE_URL=$API_SERVICE_SUBDOMAIN.$DOMAIN
+if [ -z "${DATABASE_BACKUP_RETENTION_DAYS:-}" ]; then
+    DATABASE_BACKUP_RETENTION_DAYS=$(get_env_or_default "$BASH_SOURCE" "DATABASE_BACKUP_RETENTION_DAYS" "14")
 fi
+if [[ ! "$DATABASE_BACKUP_RETENTION_DAYS" =~ ^[0-9]{1,9}$ ]]; then
+    echo "DATABASE_BACKUP_RETENTION_DAYS must contain 1 to 9 decimal digits" >&2
+    exit 1
+fi
+
+./create_inventory.sh
 
 ansible-playbook \
     ./server/create_working_directory.yaml \
@@ -29,6 +24,4 @@ ansible-playbook \
     ./server/init_docker_swarm.yaml &&
 ansible-playbook \
     ./server/set_cron_jobs.yaml \
-    -e "API_SERVICE_URL=$API_SERVICE_URL \
-        RBAC_SECRET_KEY=$RBAC_SECRET_KEY \
-        DATABASE_BACKUP_RETENTION_DAYS=$DATABASE_BACKUP_RETENTION_DAYS"
+    -e "DATABASE_BACKUP_RETENTION_DAYS=$DATABASE_BACKUP_RETENTION_DAYS"

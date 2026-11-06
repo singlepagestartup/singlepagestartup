@@ -17,8 +17,9 @@
 #   sequence, view, type and routine the superuser owns in it, so migrations
 #   running as the role can change them.
 #
-# Every step is safe to run again. When DATABASE_USERNAME is empty or names the
-# superuser, only the extension is created and the application keeps
+# The migration is atomic. An existing application login must have ordinary
+# attributes and no explicit memberships. When DATABASE_USERNAME is empty,
+# only the extension is created and the legacy application keeps
 # connecting as the superuser.
 
 set -eu
@@ -31,13 +32,15 @@ psql_as_superuser() {
   psql -v ON_ERROR_STOP=1 --username "$superuser" --no-password --no-psqlrc --dbname "$database" "$@"
 }
 
-psql_as_superuser <<'EOSQL'
-CREATE EXTENSION IF NOT EXISTS vector;
-EOSQL
-
-if [ -z "$application_role" ] || [ "$application_role" = "$superuser" ]; then
-  echo "create_application_role.sh: DATABASE_USERNAME is not set apart from POSTGRES_USER, so the application connects as the superuser." >&2
+if [ -z "$application_role" ]; then
+  psql_as_superuser -c 'CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA public'
+  echo "create_application_role.sh: DATABASE_USERNAME is unset, so the application connects as the superuser." >&2
   exit 0
+fi
+
+if [ "$application_role" = "$superuser" ]; then
+  echo "create_application_role.sh: DATABASE_USERNAME must differ from POSTGRES_USER." >&2
+  exit 1
 fi
 
 if [ -z "${DATABASE_PASSWORD:-}" ]; then
@@ -45,10 +48,37 @@ if [ -z "${DATABASE_PASSWORD:-}" ]; then
   exit 1
 fi
 
+if [ "$DATABASE_PASSWORD" = "${POSTGRES_PASSWORD:-}" ]; then
+  echo "create_application_role.sh: The application and administrator need separate passwords." >&2
+  exit 1
+fi
+
 psql_as_superuser \
   --set database="$database" \
-  --set application_role="$application_role" \
-  --set application_password="$DATABASE_PASSWORD" <<'EOSQL'
+  --set application_role="$application_role" <<'EOSQL'
+\getenv application_password DATABASE_PASSWORD
+BEGIN;
+SET LOCAL search_path = pg_catalog;
+
+-- A direct membership can grant privileges through a chain of roles, SET
+-- ROLE, or ADMIN OPTION. Leave existing grants intact for the operator to
+-- review. The implicit pg_database_owner role has no pg_auth_members row.
+SELECT EXISTS (
+  SELECT FROM pg_roles AS role
+  WHERE role.rolname = :'application_role'
+    AND (NOT role.rolcanlogin OR role.rolsuper OR role.rolcreatedb OR role.rolcreaterole
+      OR role.rolreplication OR role.rolbypassrls
+      OR EXISTS (SELECT FROM pg_auth_members WHERE member = role.oid OR roleid = role.oid))
+) AS unsafe_role
+\gset
+\if :unsafe_role
+  DO $$ BEGIN
+    RAISE EXCEPTION 'DATABASE_USERNAME must be a dedicated login without privileged attributes or explicit role memberships. Choose a new role or review its grants.';
+  END $$;
+\endif
+
+CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA public;
+
 SELECT format('CREATE ROLE %I', :'application_role')
 WHERE NOT EXISTS (SELECT FROM pg_roles WHERE rolname = :'application_role')
 \gexec
@@ -123,4 +153,5 @@ WHERE p.proowner = current_user::regrole
     WHERE d.classid = 'pg_proc'::regclass AND d.objid = p.oid AND d.deptype = 'e'
   )
 \gexec
+COMMIT;
 EOSQL

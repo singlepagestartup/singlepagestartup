@@ -194,7 +194,13 @@ the stack mounts into `/docker-entrypoint-initdb.d`. The script creates the
 `vector` extension, which only a superuser may create, and the application
 role. `apps/db` mounts the same script for local development, where
 `apps/db/create_env.sh` writes `POSTGRES_USER=postgres` and the repository name
-as `DATABASE_USERNAME`.
+as `DATABASE_USERNAME`. For a repository named `postgres` or starting with
+`pg_`, local bootstrap prefixes the login with `sps_`, for example `sps_postgres`.
+
+Ansible installs `/home/code/docker-compose.postgres.yaml` with owner and group
+`root:root` and mode `0600`. Reapplying the play corrects older file permissions
+even when the contents match. This file contains both passwords. Configure
+distinct passwords for the administrator and the application.
 
 `postgres.sh` refuses a `POSTGRES_USER` that has no `POSTGRES_PASSWORD` or
 equals `DATABASE_USERNAME`. When `POSTGRES_USER` is not set, it prints a warning
@@ -216,6 +222,11 @@ A dump contains every table, identities and subjects included. The directory is
 dumps that an earlier version left readable. A new dump replaces nothing until
 `pg_dump` succeeds, and only then are dumps older than
 `DATABASE_BACKUP_RETENTION_DAYS` deleted (default `14`; `0` keeps every dump).
+Set the retention to 1–9 decimal digits, including `0` to disable pruning.
+GitHub Actions uses `DATABASE_BACKUP_RETENTION_DAYS` for production and
+`PREVIEW_DATABASE_BACKUP_RETENTION_DAYS` for preview. Ansible checks the value
+before editing root's crontab. The cron environment holds the normalized
+number and the scheduled command always invokes the same script.
 The job appends its output to `/home/code/create_db_dump.log`. Run
 `./server.sh up` on an existing server to install the script, the directory
 mode and the cron entry. Files that the earlier host-side script left in the
@@ -321,7 +332,26 @@ existed has one role, the superuser, and the API connects as it. The upgrade
 leaves that directory unchanged. PostgreSQL refuses `REASSIGN OWNED BY` for the
 superuser the image created, so the script changes the owner of each schema,
 table, sequence, view, type and routine instead. Every step of the script is
-safe to repeat.
+safe to repeat. The extension, role, password and ownership transfers commit
+in one transaction.
+
+Choose a new role name or an existing, dedicated login. The script rejects
+privileged attributes and any explicit membership granted to or from the
+login, including roles reachable with `SET ROLE`. If it refuses the login,
+its password, grants, data and object ownership are preserved. Use a new
+dedicated login, or review and remove grants before retrying. On a customized
+cluster, review existing object grants separately.
+
+To list memberships for a proposed login, connect to `psql` as the database
+administrator and set the role name:
+
+```sql
+\set app_role 'proposed_login'
+SELECT roleid::regrole AS granted_role, member::regrole AS grantee,
+       inherit_option, set_option, admin_option
+FROM pg_auth_members
+WHERE member = to_regrole(:'app_role') OR roleid = to_regrole(:'app_role');
+```
 
 On a server:
 
