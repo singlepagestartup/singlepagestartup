@@ -16,6 +16,7 @@ const ordersToBillingModuleCurrenciesCreateMock = jest.fn();
 
 jest.mock("@sps/shared-utils", () => ({
   ...jest.requireActual("@sps/shared-utils"),
+  ...jest.requireActual("@sps/shared-utils"),
   RBAC_JWT_SECRET: "jwt-secret",
   RBAC_SECRET_KEY: "rbac-secret",
 }));
@@ -59,14 +60,14 @@ interface ISubjectOrder {
   productIds: string[];
 }
 
-function createContext(productId = "product-unpriced") {
+function createContext(productId = "product-unpriced", quantity = 1) {
   return {
     req: {
       param: (name: string) => (name === "id" ? "subject-1" : undefined),
       parseBody: jest.fn().mockResolvedValue({
         data: JSON.stringify({
           productId,
-          quantity: 1,
+          quantity,
         }),
       }),
     },
@@ -385,4 +386,13 @@ describe("Given: a subject adding a product it may already hold", () => {
     });
     expect(orderCreateMock).toHaveBeenCalled();
   });
+});
+
+it.each([0, -1, 1.5, 1001])("refuses quantity %s before cart writes", async (quantity) => {
+  jest.clearAllMocks();
+  const { service } = createService();
+  authorizationMock.mockReturnValue("token");
+  verifyMock.mockResolvedValue({ subject: { id: "subject-1" } });
+  await expect(new Handler(service).execute(createContext("product", quantity) as any, jest.fn())).rejects.toThrow("Quantity");
+  expect(orderCreateMock).not.toHaveBeenCalled();
 });

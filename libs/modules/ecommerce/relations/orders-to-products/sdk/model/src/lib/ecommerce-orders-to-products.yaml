@@ -5,7 +5,8 @@ allOf:
       quantity:
         type: integer
         format: int32
-        description: Quantity
+        minimum: 1
+        description: Quantity of the product in the order, a whole number of at least 1. The subject cart routes also refuse values above `quantityBounds.max` (1000) of the relation SDK model.
       orderId:
         type: string
         format: uuid

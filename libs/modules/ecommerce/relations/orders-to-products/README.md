@@ -11,7 +11,7 @@ Links orders to products, including quantity information.
 - `updatedAt`: last update timestamp.
 - `variant`: display variant.
 - `orderIndex`: ordering index for display.
-- `quantity`: quantity of the product in the order.
+- `quantity`: quantity of the product in the order, a whole number of at least 1. The subject cart routes accept 1 to `quantityBounds.max` (1000, in the relation SDK model) and refuse other values with a validation error.
 - `className`: optional CSS class name.
 - `orderId`: linked order ID.
 - `productId`: linked product ID.
