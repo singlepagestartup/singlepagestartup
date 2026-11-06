@@ -102,7 +102,7 @@ function PasswordField({
         <Button
           variant="plain"
           onClick={() => setVisible(!visible)}
-          aria-label={`${visible ? "Hide" : "Show"} ${label.toLowerCase()}`}
+          aria-label={`${visible ? "Скрыть" : "Показать"} ${label.toLowerCase()}`}
           aria-pressed={visible}
           className="absolute top-0.5 right-1 min-h-11 w-11 px-2"
         >

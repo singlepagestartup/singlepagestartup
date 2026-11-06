@@ -52,7 +52,7 @@ export function parseProjectDocumentGuides(
     guides[id] = {
       title,
       body,
-      basis: body.split(/\n## Basis\n/)[1]?.trim(),
+      basis: body.split(/\n## (?:Basis|Основания)\n/)[1]?.trim(),
       sections,
     };
   }
@@ -75,7 +75,9 @@ export function validateProjectDocumentGuides(
   guides: Record<string, IProjectDocumentGuide>,
 ) {
   if (Object.keys(definitions).join("\n") !== Object.keys(guides).join("\n"))
-    throw new Error("AI Chat document definitions and guides must match.");
+    throw new Error(
+      "Определения документов и пояснения AI Chat должны совпадать.",
+    );
   for (const [id, definition] of Object.entries(definitions)) {
     const sections = definition.sections.map((section) => section.title);
     if (sections.join("\n") !== Object.keys(guides[id].sections).join("\n"))
@@ -112,7 +114,7 @@ export function parseAIChatServicePage(
     sections[parts[index]] = parseSection(parts[index + 1] ?? "");
   }
   if (!sections.hero || !sections.controls) {
-    throw new Error("AI Chat service page needs hero and controls sections.");
+    throw new Error("Странице сервиса AI Chat нужны разделы hero и controls.");
   }
   return {
     sections,

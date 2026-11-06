@@ -86,7 +86,7 @@ function Icon({
   const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
@@ -133,16 +133,16 @@ export function Component({
       aria-label={`Connect ${meta.title}`}
       data-ds-block="rbac.subject.authentication-provider-connect-default"
     >
-      <h4 className="font-semibold">Connect {meta.title}</h4>
+      <h4 className="font-semibold">Подключить {meta.title}</h4>
       <p className="mt-2 text-sm leading-6 text-[color:var(--workspace-brand-muted)]">
         {credentials
-          ? "Add your email and password, then verify the email address."
+          ? "Укажите почту и пароль, затем подтвердите адрес."
           : wallet
-            ? "Choose a wallet, then approve an ownership signature. No transaction or payment is required."
-            : `Continue with ${meta.title}, then approve access to sign in.`}
+            ? "Выберите кошелёк и подтвердите владение подписью. Транзакция и оплата не нужны."
+            : `Продолжите через ${meta.title}и подтвердите доступ для входа.`}
       </p>
       <p className="mt-2 text-xs text-[color:var(--workspace-brand-muted)]">
-        Connection preview. No external account or wallet is contacted.
+        Пример подключения. Внешний аккаунт или кошелёк не вызывается.
       </p>
       {stage === "account" ? (
         <form
@@ -157,10 +157,10 @@ export function Component({
             htmlFor={id}
           >
             {wallet
-              ? "Wallet address"
+              ? "Адрес кошелька"
               : provider === "telegram"
-                ? "Telegram username"
-                : "Account email"}
+                ? "Имя в Telegram"
+                : "Почта аккаунта"}
             <input
               autoFocus
               id={id}
@@ -183,7 +183,7 @@ export function Component({
           </label>
           {credentials && (
             <PasswordField
-              label="Password"
+              label="Пароль"
               name="password"
               autoComplete="new-password"
               required
@@ -194,13 +194,13 @@ export function Component({
           <div className="flex flex-wrap gap-2">
             <Button type="submit">
               {credentials
-                ? "Send verification code"
+                ? "Отправить код проверки"
                 : wallet
-                  ? "Continue with wallet"
-                  : `Continue with ${meta.title}`}
+                  ? "Продолжить с кошельком"
+                  : `Продолжить через ${meta.title}`}
             </Button>
             <Button variant="secondary" type="button" onClick={onCancel}>
-              Cancel
+              Отмена
             </Button>
           </div>
         </form>
@@ -210,7 +210,7 @@ export function Component({
           onSubmit={(event) => {
             event.preventDefault();
             if (code !== "123456") {
-              setError("That code is incorrect. Use the preview code 123456.");
+              setError("Неверный код. В примере используйте 123456.");
               return;
             }
             onComplete?.(value.trim().toLowerCase());
@@ -219,9 +219,9 @@ export function Component({
             setStage("complete");
           }}
         >
-          <p className="break-all text-sm">Verify {value}</p>
+          <p className="break-all text-sm">Проверить {value}</p>
           <label className="grid min-w-0 gap-2 text-sm font-medium">
-            Verification code
+            Код проверки
             <input
               autoFocus
               required
@@ -238,7 +238,7 @@ export function Component({
             />
           </label>
           <p className="text-xs text-[color:var(--workspace-brand-muted)]">
-            Preview code: 123456. No email is sent. Passwords are not stored.
+            Код примера: 123456. Письмо не отправляется. Пароли не сохраняются.
           </p>
           {error && (
             <p
@@ -249,7 +249,7 @@ export function Component({
             </p>
           )}
           <div className="flex flex-wrap gap-2">
-            <Button type="submit">Connect email</Button>
+            <Button type="submit">Подключить почту</Button>
             <Button
               type="button"
               variant="secondary"
@@ -259,10 +259,10 @@ export function Component({
                 setError("");
               }}
             >
-              Back
+              Назад
             </Button>
             <Button type="button" variant="plain" onClick={onCancel}>
-              Cancel
+              Отмена
             </Button>
           </div>
         </form>
@@ -271,8 +271,8 @@ export function Component({
           <p className="break-all text-sm font-medium">{value}</p>
           <p className="text-sm leading-6 text-[color:var(--workspace-brand-muted)]">
             {wallet
-              ? "Confirm the signature request to verify this wallet belongs to you."
-              : `Approve the sign-in request for this ${meta.title} account.`}
+              ? "Подтвердите запрос подписи, чтобы проверить владение кошельком."
+              : `Подтвердите запрос на вход для ${meta.title} account.`}
           </p>
           <div className="flex flex-wrap gap-2">
             <Button
@@ -281,23 +281,23 @@ export function Component({
                 setStage("complete");
               }}
             >
-              {wallet ? "Approve signature" : "Approve connection"}
+              {wallet ? "Подтвердить подпись" : "Подтвердить подключение"}
             </Button>
             <Button variant="secondary" onClick={() => setStage("account")}>
-              Back
+              Назад
             </Button>
             <Button variant="plain" onClick={onCancel}>
-              Cancel
+              Отмена
             </Button>
           </div>
         </div>
       ) : (
         <div className="mt-5 space-y-4">
           <p role="status" className="text-sm">
-            {meta.title} connected in this preview.
+            {meta.title} подключено в примере.
           </p>
           <Button variant="secondary" onClick={onCancel}>
-            Done
+            Готово
           </Button>
         </div>
       )}

@@ -1,0 +1,127 @@
+---
+- name: Check the existing SPS database before updating the stack
+  hosts: all
+  become: true
+  gather_facts: false
+  any_errors_fatal: true
+  tasks:
+    - name: Check for an initialized PostgreSQL data directory
+      ansible.builtin.stat:
+        path: /home/code/postgres_data/PG_VERSION
+      register: pg_version
+
+    - name: Find the current local PostgreSQL task
+      ansible.builtin.command: >-
+        docker ps --filter label=com.docker.swarm.service.name=postgres_postgres --quiet
+      changed_when: false
+      register: old_postgres
+
+    - name: Require the existing volume and exactly one running database on this node
+      ansible.builtin.assert:
+        that:
+          - pg_version.stat.isreg | default(false)
+          - old_postgres.stdout_lines | length == 1
+        fail_msg: Target the Swarm manager hosting the running SPS database. For a new install use ./postgres.sh up.
+
+    - name: Locate the storage backing the running database
+      ansible.builtin.command:
+        argv:
+          - docker
+          - inspect
+          - --format
+          - '{% raw %}{{range .Mounts}}{{if eq .Destination "/var/lib/postgresql/data"}}{{.Source}}{{end}}{{end}}{% endraw %}'
+          - "{{ old_postgres.stdout }}"
+      changed_when: false
+      register: data_source
+
+    - name: Require the same storage as the replacement stack
+      ansible.builtin.assert:
+        that: data_source.stdout == '/home/code/postgres_data'
+        fail_msg: The running database uses a different data mount. Review the project's PostgreSQL stack before changing ownership.
+
+    - name: Check that the old API has been scaled to zero
+      ansible.builtin.command: >-
+        docker service ls --filter label=com.docker.stack.namespace=api
+        --format '{% raw %}{{.Replicas}}{% endraw %}'
+      changed_when: false
+      register: api_replicas
+      # Swarm can briefly report 1/0 while the last task is shutting down.
+      until: api_replicas.stdout_lines | select('match', '^[1-9][0-9]*/0$') | list | length == 0
+      retries: 30
+      delay: 2
+
+    - name: Require a maintenance window
+      ansible.builtin.assert:
+        that: api_replicas.stdout_lines | reject('equalto', '0/0') | list | length == 0
+        fail_msg: Record the API replica count, scale the old API to zero and stop other database writers before retrying.
+
+    - name: Authenticate the configured administrator against the original database
+      ansible.builtin.command:
+        argv:
+          - docker
+          - exec
+          - -i
+          - "{{ old_postgres.stdout }}"
+          - sh
+          - -ec
+          - |
+            test "$POSTGRES_USER" = "$1"
+            test "$POSTGRES_DB" = "$2"
+            IFS= read -r PGPASSWORD
+            # The image can trust loopback without asking for a password.
+            export PGPASSWORD PGDATABASE="$POSTGRES_DB" PGREQUIREAUTH=scram-sha-256,md5
+            exec psql -XAtqw -h "$(hostname)" -U "$POSTGRES_USER" -c 'SELECT rolsuper FROM pg_catalog.pg_roles WHERE rolname = session_user'
+          - sh
+          - "{{ lookup('ansible.builtin.env', 'POSTGRES_USER') }}"
+          - "{{ lookup('ansible.builtin.env', 'DATABASE_NAME') }}"
+        stdin: "{{ lookup('ansible.builtin.env', 'POSTGRES_PASSWORD') }}"
+      no_log: true
+      changed_when: false
+      failed_when: false
+      register: admin_login
+
+    - name: Refuse mismatched database names or credentials before redeploying
+      ansible.builtin.assert:
+        that:
+          - admin_login.rc == 0
+          - admin_login.stdout == 't'
+        fail_msg: Check DATABASE_NAME and the original administrator's POSTGRES_USER and POSTGRES_PASSWORD in tools/deployer/.env. The container network must require password authentication.
+
+- name: Install the new PostgreSQL stack on the same volume
+  ansible.builtin.import_playbook: create_postgres.yaml
+
+- name: Move database ownership and verify the application login
+  hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Find the updated local PostgreSQL task
+      ansible.builtin.command: >-
+        docker ps --filter label=com.docker.swarm.service.name=postgres_postgres --quiet
+      changed_when: false
+      register: postgres
+      until: postgres.stdout_lines | length == 1
+      retries: 30
+      delay: 2
+
+    - name: Wait for PostgreSQL to accept TCP connections
+      ansible.builtin.command:
+        argv: [docker, exec, "{{ postgres.stdout }}", sh, -ec, 'pg_isready -qh 127.0.0.1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"']
+      changed_when: false
+      register: readiness
+      until: readiness.rc == 0
+      retries: 30
+      delay: 2
+
+    - name: Apply the role and ownership changes in one transaction
+      ansible.builtin.command:
+        argv: [docker, exec, "{{ postgres.stdout }}", /docker-entrypoint-initdb.d/create_application_role.sh]
+
+    - name: Verify the application password, privileges and database owner
+      ansible.builtin.command:
+        argv: [docker, exec, "{{ postgres.stdout }}", /docker-entrypoint-initdb.d/create_application_role.sh, --check-login]
+      changed_when: false
+
+    - name: Report the next deployment step
+      ansible.builtin.debug:
+        msg: Application login verified. From tools/deployer run ./api.sh up, restore the recorded API replica count, and check the service.

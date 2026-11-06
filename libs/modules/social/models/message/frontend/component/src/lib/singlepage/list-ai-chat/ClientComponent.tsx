@@ -4,21 +4,31 @@ import { Component as MessageFiles } from "@sps/social/relations/messages-to-fil
 import { Component as Files } from "@sps/file-storage/models/file/frontend/component";
 import { memo, useCallback, useMemo } from "react";
 import { Bot, User } from "lucide-react";
+import { internationalization } from "@sps/shared-configuration";
 import Markdown from "markdown-to-jsx";
 import { useChatScroll } from "@sps/shared-frontend-client-utils";
 import type { IComponentPropsExtended } from "./interface";
 import type { IChatMessage as IModel } from "@sps/social/models/message/sdk/model";
 import type { IModel as IFile } from "@sps/file-storage/models/file/sdk/model";
 
-function AttachmentStrip({ files }: { files: IFile[] }) {
+function AttachmentStrip({
+  files,
+  language,
+}: {
+  files: IFile[];
+  language: string;
+}) {
+  const ru = language === "ru";
   if (!files.length) return null;
   return (
     <div className="mt-3 min-w-0">
       <p className="mb-2 text-xs text-muted-foreground">
-        {files.length} {files.length === 1 ? "attachment" : "attachments"}
+        {ru ? "Файлы:" : "Files:"} {files.length}
       </p>
       <ul
-        aria-label="Message attachments"
+        aria-label={
+          language === "ru" ? "Файлы сообщения" : "Message attachments"
+        }
         tabIndex={0}
         className="flex gap-2 overflow-x-auto pb-2"
       >
@@ -26,6 +36,7 @@ function AttachmentStrip({ files }: { files: IFile[] }) {
           <li key={file.id} className="w-36 shrink-0 sm:w-40">
             <Files
               isServer={false}
+              language={language}
               variant="attachment-ai-chat"
               data={file}
               dataSource="props"
@@ -39,21 +50,24 @@ function AttachmentStrip({ files }: { files: IFile[] }) {
 const Row = memo(function Row({
   message,
   own,
+  language,
   assistantProfileId,
   onProfileOpen,
 }: {
   message: IModel;
   own: boolean;
+  language: string;
   assistantProfileId?: string;
   onProfileOpen?: (profileId: string) => void;
 }) {
+  const ru = language === "ru";
   const open = useCallback(() => {
     if (assistantProfileId) onProfileOpen?.(assistantProfileId);
   }, [assistantProfileId, onProfileOpen]);
   return (
     <article
       data-id={message.id}
-      className={`flex gap-3 p-5 ${own ? "bg-muted/50" : "bg-card"}`}
+      className={`mb-3 flex w-fit max-w-[95%] gap-3 rounded-2xl p-5 ${own ? "ml-auto rounded-br-sm bg-muted/50" : "mr-auto rounded-bl-sm bg-card"}`}
     >
       <span
         className={`flex size-8 shrink-0 items-center justify-center rounded-lg ${own ? "bg-muted" : "bg-primary text-primary-foreground"}`}
@@ -63,7 +77,9 @@ const Row = memo(function Row({
         ) : onProfileOpen && assistantProfileId ? (
           <button
             type="button"
-            aria-label="Open assistant profile"
+            aria-label={
+              ru ? "Открыть профиль помощника" : "Open assistant profile"
+            }
             className="grid size-8 place-items-center rounded-lg hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2"
             onClick={open}
           >
@@ -74,28 +90,32 @@ const Row = memo(function Row({
         )}
       </span>
       <div className="min-w-0 flex-1">
-        <p className="mb-2 text-xs font-semibold text-muted-foreground">
-          {own ? (
-            "You"
-          ) : onProfileOpen && assistantProfileId ? (
-            <button
-              type="button"
-              aria-label="About this assistant"
-              onClick={open}
-              className="rounded-md text-left hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2"
-            >
-              Knowledge assistant
-            </button>
-          ) : (
-            "Knowledge assistant"
-          )}
-        </p>
+        {!own && (
+          <p className="mb-2 text-xs font-semibold text-muted-foreground">
+            {onProfileOpen && assistantProfileId ? (
+              <button
+                type="button"
+                aria-label={ru ? "О помощнике" : "About this assistant"}
+                onClick={open}
+                className="rounded-md text-left hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2"
+              >
+                {ru ? "Помощник по документам" : "Knowledge assistant"}
+              </button>
+            ) : ru ? (
+              "Помощник по документам"
+            ) : (
+              "Knowledge assistant"
+            )}
+          </p>
+        )}
         <div className="prose max-w-none break-words text-sm leading-6">
           <Markdown options={{ disableParsingRawHTML: true }}>
             {message.description || ""}
           </Markdown>
         </div>
-        {message.attachments && <AttachmentStrip files={message.attachments} />}
+        {message.attachments && (
+          <AttachmentStrip files={message.attachments} language={language} />
+        )}
         {!message.attachments && (
           <MessageFiles
             isServer={false}
@@ -116,11 +136,14 @@ const Row = memo(function Row({
               !!data?.length && (
                 <div className="mt-3 min-w-0">
                   <p className="mb-2 text-xs text-muted-foreground">
-                    {data.length}{" "}
-                    {data.length === 1 ? "attachment" : "attachments"}
+                    {ru ? "Файлы:" : "Files:"} {data.length}
                   </p>
                   <ul
-                    aria-label="Message attachments"
+                    aria-label={
+                      language === "ru"
+                        ? "Файлы сообщения"
+                        : "Message attachments"
+                    }
                     tabIndex={0}
                     className="flex gap-2 overflow-x-auto pb-2 focus-visible:outline-2 focus-visible:outline-offset-2"
                   >
@@ -151,6 +174,7 @@ const Row = memo(function Row({
                                 <Files
                                   key={file.id}
                                   isServer={false}
+                                  language={language}
                                   variant="attachment-ai-chat"
                                   data={file}
                                   dataSource="props"
@@ -171,6 +195,8 @@ const Row = memo(function Row({
   );
 });
 export function Component(props: IComponentPropsExtended) {
+  const language = props.language || internationalization.defaultLanguage.code;
+  const ru = language === "ru";
   const ordered = useMemo(
     () =>
       [...props.data].sort(
@@ -199,7 +225,7 @@ export function Component(props: IComponentPropsExtended) {
           onClick={followLatest}
           className="sticky top-3 z-10 mx-auto block rounded-full border border-border bg-card px-4 py-2 text-sm shadow-sm"
         >
-          New messages
+          {ru ? "Новые сообщения" : "New messages"}
         </button>
       )}
       {!props.data.length && !props.documentTitle && (
@@ -208,7 +234,9 @@ export function Component(props: IComponentPropsExtended) {
             {props.onProfileOpen && props.assistantProfileId ? (
               <button
                 type="button"
-                aria-label="Open assistant profile"
+                aria-label={
+                  ru ? "Открыть профиль помощника" : "Open assistant profile"
+                }
                 onClick={() => props.onProfileOpen?.(props.assistantProfileId!)}
                 className="grid size-8 place-items-center rounded-lg hover:opacity-80 focus-visible:outline-2"
               >
@@ -223,22 +251,29 @@ export function Component(props: IComponentPropsExtended) {
               {props.onProfileOpen && props.assistantProfileId ? (
                 <button
                   type="button"
-                  aria-label="About this assistant"
+                  aria-label={ru ? "О помощнике" : "About this assistant"}
                   onClick={() =>
                     props.onProfileOpen?.(props.assistantProfileId!)
                   }
                   className="rounded-md text-left hover:text-foreground focus-visible:outline-2"
                 >
-                  Knowledge assistant
+                  {ru ? "Помощник по документам" : "Knowledge assistant"}
                 </button>
+              ) : ru ? (
+                "Помощник по документам"
               ) : (
                 "Knowledge assistant"
               )}
             </p>
             <p className="text-sm leading-6">
               {props.documentTitle &&
-                `${props.documentTitle} is ready to work on. `}
-              {props.emptyMessage || "Start a conversation about your project."}
+                (ru
+                  ? `${props.documentTitle} готов к работе. `
+                  : `${props.documentTitle} is ready to work on. `)}
+              {props.emptyMessage ||
+                (ru
+                  ? "Начните разговор о своём проекте."
+                  : "Start a conversation about your project.")}
             </p>
           </div>
         </div>
@@ -248,6 +283,7 @@ export function Component(props: IComponentPropsExtended) {
           <Row
             key={message.id}
             message={message}
+            language={language}
             onProfileOpen={props.onProfileOpen}
             assistantProfileId={
               message.authorProfileIds.find(
@@ -275,6 +311,7 @@ export function Component(props: IComponentPropsExtended) {
             {({ data }) => (
               <Row
                 message={message}
+                language={language}
                 onProfileOpen={props.onProfileOpen}
                 assistantProfileId={
                   data?.find(

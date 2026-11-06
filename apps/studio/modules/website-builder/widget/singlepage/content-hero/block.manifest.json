@@ -45,6 +45,11 @@
       "name": "statusFeature",
       "type": "text",
       "required": false
+    },
+    {
+      "name": "actions",
+      "type": "richText",
+      "required": false
     }
   ],
   "figma": {

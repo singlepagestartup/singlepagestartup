@@ -2,7 +2,7 @@
   "$schema": "../../../../../block.schema.json",
   "id": "ecommerce.product.gallery",
   "title": "Ecommerce Product / Gallery",
-  "description": "Singlepage product model variant for a static gallery with a main image and thumbnail strip.",
+  "description": "One product gallery with thumbnail selection and arrows on the image.",
   "layer": "singlepage",
   "state": "draft",
   "source": {

@@ -47,6 +47,7 @@ const project = {
 };
 const props = {
   isServer: false,
+  language: "en",
   variant: "me-social-module-profile-id-chat-id-thread-create-ai-chat",
   data: subject,
   project,

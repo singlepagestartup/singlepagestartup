@@ -11,6 +11,7 @@ import type {
 
 export const variant = "me-social-module-profile-id-sidebar-ai-chat" as const;
 export interface IComponentProps extends IParent<IModel, typeof variant> {
+  language?: string;
   project: IAIChatProject;
   socialModuleProfileId: string;
   onClose: () => void;
@@ -35,10 +36,12 @@ export interface IComponentPropsExtended
   sourceFiles?: Record<string, ReactNode>;
 }
 export interface ISourceFilesProps {
+  language?: string;
   files?: IResult["ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesFindResult"];
   error?: string;
 }
 export interface ISourceFilesReaderProps {
+  language?: string;
   scope: {
     id: string;
     socialModuleProfileId: string;

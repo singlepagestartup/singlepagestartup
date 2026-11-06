@@ -45,7 +45,7 @@ function Icon({
   const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
@@ -106,7 +106,7 @@ function ThreadOverview({ navigation, messageCreate }: IThreadOverviewProps) {
     >
       <PanelHeader
         title={thread.title}
-        label="Document thread"
+        label="Переписка документа"
         navigation={navigation}
         actions={
           <div className="flex rounded-lg bg-[color:var(--workspace-brand-background)] p-1 @[900px]/chat:hidden">
@@ -118,7 +118,7 @@ function ThreadOverview({ navigation, messageCreate }: IThreadOverviewProps) {
                 onClick={() => setPane(item)}
                 className={`min-h-9 rounded-md px-3 text-xs font-semibold ${kit.focus} ${pane === item ? "bg-[color:var(--workspace-brand-surface)]" : kit.muted}`}
               >
-                {item === "chat" ? "Chat" : "Document"}
+                {item === "chat" ? "Чат" : "Документ"}
               </button>
             ))}
           </div>
@@ -136,7 +136,7 @@ function ThreadOverview({ navigation, messageCreate }: IThreadOverviewProps) {
                 className="mx-4 mb-4 rounded-xl border border-[color:var(--workspace-brand-line)] bg-[color:var(--workspace-brand-background)] p-4"
               >
                 <p className="text-xs font-semibold">
-                  Proposed update · {source.title}
+                  Предложенная правка · {source.title}
                 </p>
                 <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6">
                   {proposal.text}
@@ -144,10 +144,10 @@ function ThreadOverview({ navigation, messageCreate }: IThreadOverviewProps) {
                 <div className="mt-3 flex flex-wrap gap-2">
                   <Button onClick={apply}>
                     <Icon name="pencil-simple" className="size-4" />
-                    Apply to knowledge
+                    Применить к знанию
                   </Button>
                   <Button variant="plain" onClick={dismiss}>
-                    Dismiss
+                    Отклонить
                   </Button>
                 </div>
                 {error && (

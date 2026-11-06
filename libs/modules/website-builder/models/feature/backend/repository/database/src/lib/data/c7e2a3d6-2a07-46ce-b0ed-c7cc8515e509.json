@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "c7e2a3d6-2a07-46ce-b0ed-c7cc8515e509",
+  "createdAt": "2026-10-27T08:40:57.386Z",
+  "updatedAt": "2026-10-27T14:59:55.145Z",
+  "variant": "demo-document",
+  "title": {
+    "en": "Brand.md",
+    "ru": "Бренд.md"
+  },
+  "subtitle": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The brand document records the name and guidelines for communicating with customers. Suggest an invitation to the first class.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"В документе о бренде зафиксированы название и правила общения с клиентами. Предложите текст приглашения на первое занятие.\"}]}]}"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"## Name\\nPottery studio.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"## How we describe classes\\nShow the materials, process and participants' work. Explain what a person will make in the first class.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"## What we tell customers before booking\\nThe date, duration, price, number of places and what the workshop includes.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"## Название\\nМастерская керамики.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"## Как рассказываем о занятиях\\nПоказываем материалы, процесс и работы участников. Объясняем, что человек сделает на первом занятии.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"## Что сообщаем перед записью\\nДату, длительность, стоимость, число мест и то, что входит в мастер-класс.\"}]}]}"
+  },
+  "adminTitle": "AI Chat: demo-brand",
+  "slug": "ai-chat-editable-demo-brand"
+}

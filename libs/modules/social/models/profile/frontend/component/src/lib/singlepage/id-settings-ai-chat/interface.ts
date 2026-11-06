@@ -1,10 +1,14 @@
-import type { IComponentPropsExtended as IParentExtended } from "@sps/shared-frontend-components/singlepage/default/interface";
-import type { IComponentProps as IParent } from "@sps/shared-frontend-components/singlepage/default/interface";
+import {
+  type IComponentPropsExtended as IParentExtended,
+  type IComponentProps as IParent,
+} from "@sps/shared-frontend-components/singlepage/default/interface";
+
 import type { ISpsComponentBase } from "@sps/ui-adapter";
 import type { IModel } from "@sps/social/models/profile/sdk/model";
 import type { ReactNode } from "react";
 export const variant = "id-settings-ai-chat" as const;
 export interface IComponentProps extends IParent<IModel, typeof variant> {
+  language?: string;
   pending?: boolean;
   children?: ReactNode;
   onSave: (

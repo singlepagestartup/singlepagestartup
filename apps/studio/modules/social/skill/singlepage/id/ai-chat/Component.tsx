@@ -115,8 +115,8 @@ export function Component({
 export const businessAnalystSkill: IAIChatSkill = {
   id: "business-analyst",
   slug: "business-analyst",
-  title: "Business Analyst",
-  adminTitle: "Business Analyst",
+  title: "Бизнес-аналитик",
+  adminTitle: "Бизнес-аналитик",
   variant: "id-ai-chat",
   description:
     "Own the Products.md inventory and each selected product's document and Sales intake after Brief scope confirmation and before strategic selection; maintain models and related processes through later changes. There is no standalone Business document. Never present invented facts, prices, capacity, authority or processes as client inputs; later process designs remain explicit proposals. Read the confirmed Brief, the client conversation and materials and the existing Product customer, offer and economic sections. External Research can test a model assumption but never supplies an operator-controlled fact. Edit one owning source at a time and route conflicts to its owner.",

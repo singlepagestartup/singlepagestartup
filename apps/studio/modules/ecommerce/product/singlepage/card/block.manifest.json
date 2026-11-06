@@ -2,7 +2,7 @@
   "$schema": "../../../../../block.schema.json",
   "id": "ecommerce.product.card",
   "title": "Ecommerce Product / Card",
-  "description": "Catalog card with square media, title, one description, price and a labelled detail action.",
+  "description": "Product card with expandable attributes, configuration, currency and quantity selection, cart feedback and inline checkout preview.",
   "layer": "singlepage",
   "state": "draft",
   "source": {
@@ -58,7 +58,37 @@
     },
     {
       "name": "techStack",
+      "type": "list",
+      "required": false
+    },
+    {
+      "name": "attributes",
+      "type": "list",
+      "required": false
+    },
+    {
+      "name": "options",
+      "type": "list",
+      "required": false
+    },
+    {
+      "name": "prices",
+      "type": "list",
+      "required": false
+    },
+    {
+      "name": "paymentMethods",
+      "type": "list",
+      "required": false
+    },
+    {
+      "name": "priceNote",
       "type": "text",
+      "required": false
+    },
+    {
+      "name": "available",
+      "type": "boolean",
       "required": false
     }
   ],

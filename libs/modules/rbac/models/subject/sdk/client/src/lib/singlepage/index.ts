@@ -1,4 +1,10 @@
 "use client";
+
+import {
+  action as blogModuleArticleCreate,
+  type IProps as IBlogModuleArticleCreateProps,
+  type IResult as IBlogModuleArticleCreateResult,
+} from "./blog-module/article/create";
 import {
   action as socialModuleProfileProjects,
   type IProps as ISocialModuleProfileProjectsProps,
@@ -423,7 +429,13 @@ import {
   type IResult as ISocialModuleChatFindByIdProfileDeleteResult,
 } from "./social-module/chat/find-by-id/profile/delete";
 
+import {
+  action as hostCacheRevalidate,
+  type IResult as IHostCacheRevalidateResult,
+} from "./host-cache/revalidate";
+
 export type IProps = {
+  IBlogModuleArticleCreateProps: IBlogModuleArticleCreateProps;
   IBillingModuleBalanceProps: IBillingModuleBalanceProps;
   ISocialModuleProfileFindByIdAvatarFindProps: ISocialModuleProfileFindByIdAvatarFindProps;
   ISocialModuleProfileFindByIdAvatarUpdateProps: ISocialModuleProfileFindByIdAvatarUpdateProps;
@@ -511,6 +523,8 @@ export type IProps = {
 };
 
 export type IResult = {
+  IHostCacheRevalidateResult: IHostCacheRevalidateResult;
+  IBlogModuleArticleCreateResult: IBlogModuleArticleCreateResult;
   IBillingModuleBalanceResult: IBillingModuleBalanceResult;
   ISocialModuleProfileFindByIdAvatarFindResult: ISocialModuleProfileFindByIdAvatarFindResult;
   ISocialModuleProfileFindByIdAvatarUpdateResult: ISocialModuleProfileFindByIdAvatarUpdateResult;
@@ -598,6 +612,8 @@ export type IResult = {
 };
 
 export const api = {
+  hostCacheRevalidate,
+  blogModuleArticleCreate,
   socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdate,
   socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesFind,
   ...factory<IModel>({

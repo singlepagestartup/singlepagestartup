@@ -126,7 +126,7 @@ function Icon({
   const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
@@ -221,8 +221,8 @@ export function getIdentityProviderMeta(
       key,
       title: key.replace(/_/g, " "),
       kind: "external",
-      kindLabel: "Connected",
-      description: "Manage this connected sign-in method.",
+      kindLabel: "Подключено",
+      description: "Управление подключённым способом входа.",
       icon: KeyRound,
     }
   );
@@ -231,25 +231,29 @@ export function getIdentityActions(identity: RbacIdentity): IdentityAction[] {
   const providerMeta = getIdentityProviderMeta(identity.provider);
   if (providerMeta.kind === "credentials") {
     return [
-      { key: "change-email", label: "Change email", tone: "neutral" },
-      { key: "change-password", label: "Change password", tone: "neutral" },
-      { key: "delete", label: "Remove identity", tone: "danger" },
+      { key: "change-email", label: "Изменить почту", tone: "neutral" },
+      { key: "change-password", label: "Изменить пароль", tone: "neutral" },
+      { key: "delete", label: "Удалить способ входа", tone: "danger" },
     ];
   }
   return [
-    { key: "reconnect", label: "Reconnect", tone: "neutral" },
-    { key: "delete", label: "Remove identity", tone: "danger" },
+    { key: "reconnect", label: "Подключить снова", tone: "neutral" },
+    { key: "delete", label: "Удалить способ входа", tone: "danger" },
   ];
 }
 export function getIdentityPrimaryLogin(identity: RbacIdentity): string {
-  return identity.email || identity.account || "No public account/email stored";
+  return (
+    identity.email ||
+    identity.account ||
+    "Публичный аккаунт или почта не сохранены"
+  );
 }
 export function getIdentityOperationLabel(operationKey: string): string {
-  if (operationKey === "change-email") return "Email change flow opened";
-  if (operationKey === "change-password") return "Password change flow opened";
-  if (operationKey === "reconnect") return "Reconnect flow started";
-  if (operationKey === "delete") return "Identity removal requested";
-  return "Identity action selected";
+  if (operationKey === "change-email") return "Открыта смена почты";
+  if (operationKey === "change-password") return "Открыта смена пароля";
+  if (operationKey === "reconnect") return "Начато переподключение";
+  if (operationKey === "delete") return "Запрошено удаление способа входа";
+  return "Выбрано действие со способом входа";
 }
 const User = createIcon("user");
 const Globe = createIcon("globe");
@@ -269,7 +273,7 @@ export const defaultRbacSubject: RbacSubject = {
 export const defaultRbacUser: RbacAccountUser = {
   name: "Sarah Kim",
   email: "sarah@sps.dev",
-  role: "Head of Product",
+  role: "Руководитель продукта",
   avatar: aiChatAccount.profile.avatar!,
 };
 export const defaultRbacStudioAuthUsers: RbacStudioAuthUser[] = [
@@ -294,7 +298,7 @@ export const defaultRbacStudioAuthUsers: RbacStudioAuthUser[] = [
   {
     name: "Marcus Webb",
     email: "marcus@sps.dev",
-    role: "Lead Engineer",
+    role: "Ведущий инженер",
     slug: "marcus-webb",
     avatar: aiChatAccount.profile.avatar!,
   },
@@ -332,9 +336,9 @@ export const defaultRbacProfiles: RbacAccountProfile[] = [
   {
     id: "2f6f62e1-5c1a-4fa3-983e-08469b11fa89",
     title: "Sarah Kim",
-    subtitle: "Head of Product",
+    subtitle: "Руководитель продукта",
     description:
-      "Sarah leads product strategy for SPS, turning reusable modules into fast startup prototypes.",
+      "Sarah ведёт продуктовую стратегию SPS, создавая прототипы стартапов из готовых модулей.",
     slug: "sarah-kim",
     avatar: defaultRbacUser.avatar,
   },
@@ -356,25 +360,25 @@ export const defaultSettingsIdentities: RbacIdentity[] =
 export const defaultAccountMenuActions: AccountMenuAction[] = [
   {
     key: "profile",
-    label: "My Profile",
+    label: "Мой профиль",
     href: "/rbac/subject/settings",
     icon: User,
   },
   {
     key: "chat",
-    label: "Team Chat",
+    label: "Чат команды",
     href: "/chat",
     icon: MessageSquare,
   },
   {
     key: "settings",
-    label: "Account Settings",
+    label: "Настройки аккаунта",
     href: "/rbac/subject/settings",
     icon: Shield,
   },
   {
     key: "logout",
-    label: "Sign Out",
+    label: "Выйти",
     href: "/",
     icon: KeyRound,
     tone: "danger",
@@ -383,34 +387,34 @@ export const defaultAccountMenuActions: AccountMenuAction[] = [
 export const identityProviders: IdentityProviderMeta[] = [
   {
     key: "email_and_password",
-    title: "Email & password",
+    title: "Почта и пароль",
     kind: "credentials",
     kindLabel: "Password",
-    description: "Sign in with your email and password.",
+    description: "Войдите с почтой и паролем.",
     icon: Mail,
   },
   {
     key: "oauth_google",
     title: "Google",
     kind: "oauth",
-    kindLabel: "Connected",
-    description: "Use your Google account to sign in.",
+    kindLabel: "Подключено",
+    description: "Войдите с аккаунтом Google.",
     icon: Globe,
   },
   {
     key: "telegram",
     title: "Telegram",
     kind: "oauth",
-    kindLabel: "Connected",
-    description: "Use your Telegram account to sign in.",
+    kindLabel: "Подключено",
+    description: "Войдите с аккаунтом Telegram.",
     icon: Send,
   },
   {
     key: "ethereum_virtual_machine",
-    title: "Crypto wallet",
+    title: "Криптокошелёк",
     kind: "external",
     kindLabel: "Wallet",
-    description: "Connect a wallet and verify ownership with a signature.",
+    description: "Подключите кошелёк и подтвердите владение подписью.",
     icon: Wallet,
   },
 ];

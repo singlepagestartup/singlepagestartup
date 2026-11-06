@@ -7,6 +7,7 @@ A library of adapter components for the SinglePageStartup (SPS) project that pro
 ```
 src/
 └── lib/
+    ├── chat-workspace/   # Workspace frame and responsive conversation/document panes
     ├── button/           # Button adapter component
     ├── form-field/       # Form field adapter component
     ├── file-preview/     # Attachment preview dialog
@@ -62,12 +63,28 @@ use SVG properties for an accessible label when the icon conveys meaning.
 Static image files belong in `apps/host/public/images` or File Storage. Icons
 use shared UI components directly rather than a Website Builder Feature variant.
 
+### Chat workspace
+
+`ChatWorkspace` and `ChatThreadPanel` are presentation components shared by the
+production Social Profile/Thread views and the Website Builder landing demo.
+The workspace supplies the dark project navigation and fixed-height frame;
+the Thread panel supplies its header, scroll areas and responsive Chat/Document
+switch. Desktop navigation starts at `lg`; the 360px document column appears
+at `xl`. Below those breakpoints, the owner supplies mobile navigation and the
+panel switch selects the visible content.
+
+Pass navigation, messages, composer, knowledge and download controls as rendered
+nodes. The panel owns only its display tab, with optional controlled `pane` and
+`onPaneChange` props. Labels support `language="ru"`; domain readers, permissions,
+requests and mutations remain in the owning module. The adapter imports no SDK.
+
 ### File preview
 
 `FilePreview` from `@sps/ui-adapter` renders a keyboard-accessible thumbnail
 button and a centered dialog. Pass a local `File` through `localFile` to preview
 an unsent attachment, or pass `src`, `mimeType`, `extension` and `name` for a
-stored file. Its props live in `src/lib/file-preview/interface.ts`.
+stored file. Set `language="ru"` for Russian preview controls and messages; the
+default remains English. Its props live in `src/lib/file-preview/interface.ts`.
 
 Images support zoom. PDF.js loads on demand and renders one PDF page at a time
 with page and zoom controls; its worker is bundled with the app. Markdown has
@@ -109,7 +126,9 @@ import { Toaster, toast } from "@sps/ui-adapter/toast";
 // App shell, once:
 <Toaster />;
 // After a successful operation:
-toast.success("Profile saved", { description: "Your changes have been saved." });
+toast.success("Profile saved", {
+  description: "Your changes have been saved.",
+});
 ```
 
 Storybook exposes all notification states, action/dismiss/loading interactions,

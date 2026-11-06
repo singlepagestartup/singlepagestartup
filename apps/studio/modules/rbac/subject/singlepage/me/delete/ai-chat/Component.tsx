@@ -293,8 +293,8 @@ export function Component({
           {deletionChecked && (
             <div className="mt-4">
               <Feedback>
-                Deletion request confirmed in this preview. No account or
-                project data was deleted.
+                В примере запрос на удаление подтверждён. Данные аккаунта и
+                проектов не удалялись.
               </Feedback>
             </div>
           )}

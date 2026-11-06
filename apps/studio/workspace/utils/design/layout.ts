@@ -36,7 +36,6 @@ export interface IDesignLayout {
 export interface IDesignTemplateProps {
   /** Parsed legacy data is provided only when built-in blocks are used. */
   data?: IProjectDesignProps["data"];
-  confirmation?: IProjectDesignProps["confirmation"];
   document?: string;
   assetIndex?: string;
   children?: ReactNode;

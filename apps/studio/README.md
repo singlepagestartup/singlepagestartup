@@ -25,6 +25,30 @@ Studio does not create a second content inventory.
 registry and points to those files. No repository-root `workspace/` directory
 is used.
 
+## Project preparation
+
+Use `npm run singlepagestartup -- --section semantics --product singlepagestartup`
+to select work. Available sections: brief, products, competitors, semantics,
+strategy, brand, design, materials. No arguments resume saved work. `--skip`
+records the section as skipped; `--complete` records it prepared; `--next`
+advances without changing its preparation status. Review history is separate.
+There are no approval gates or automatic returns after dependency edits.
+
+Studio shows Brief → Products → Strategy → Brand → Design → Materials. Research,
+competitor comparison and Semantics belong to each product. Materials opens the
+same product's existing public-page and creative sources. Existing story IDs
+and product IDs remain stable despite the changed display order.
+
+Article summaries read search phrases from query-table columns in the article's
+owned sources (`Запрос`, `Query`, `Search query`). The `semantic_cluster` ID stays
+in source metadata; the summary displays phrases from the same SEO source used
+by the material and its exports.
+
+Keep main review documents to approximately 600–1,000 words. Detailed intake,
+commercial terms, strategic rationale and design specifications are linked
+references. The query map separates candidates from measured demand; absent
+measurements remain unknown. See `.agents/workflows/pre-development.md`.
+
 ## Production Docker boundary
 
 The root [`.dockerignore`](../../.dockerignore) excludes the entire
@@ -107,6 +131,13 @@ arguments on a private view do not make `variant` optional at the public model
 entry. `studio:catalog` preserves authored contracts and requires an owning
 interface before assembling custom variants. Its generated table, card and list
 views use the same structure.
+
+The catalog refreshes schema fields, ordered record keys and the schema-owned
+`IRecord` while preserving authored record values, presentation data and view
+props. New fields receive fixture defaults; retired schema fields are removed.
+Custom fixture formats remain owned by their views. The shared `MetadataEditor`
+is a named UI helper, rather than an entity with a variant registry. Entity SEO
+stories use their public model entry and identify their own DOM roots.
 
 The current tree has 63 model entries and 430 presentation variants, plus the
 shared Icon and Toast entries. Every model exports a provider-free `Skeleton` and
@@ -523,14 +554,16 @@ prepare its Studio folders. `studio:validate` reports missing layer directories.
 
 ## Workspace presentation
 
-Storybook discovers `apps/studio/workspace/utils/stories/*.stories.tsx`. Every agreed
-living-artifact section exposes three read-only projections: `default` is the
-resolved result, `singlepage` is the framework source, and `startup` is the
-project override alone. Each shared document has a readable folder such as
-`apps/studio/workspace/brand/`, containing `singlepage.md`,
-and `startup.md`. Its story in `workspace/utils/stories/` imports both sources
-directly. Studio aggregates them in memory, shows their repository paths as
-provenance, and never creates a second artifact set. Assets use
+Storybook читает `apps/studio/workspace/utils/stories/*.stories.tsx`.
+В разделах Workspace источники разделены на `singlepage` и `startup`.
+В `startup` общий документ показывает только собственный текст клиента;
+пункт «С учётом наследования» показывает результат `default`, собранный в памяти.
+Пустые источники и каталоги startup остаются видимыми. Старые адреса доступны
+через скрытые stories для совместимости с закладками.
+Общие документы сохраняются в `apps/studio/workspace/<artifact>/{singlepage,startup}.md`.
+Загрузчики в `workspace/utils/` используют эти файлы и общий механизм наследования;
+stories выбирают нужное представление. Копия результата на диск не записывается.
+Assets use
 `singlepage.yaml` and `startup.yaml`. Project facts, questions, constraints, and
 sources stay in the documents that own them. AI methods and completion rules
 live in `.agents/`; workspace has no separate decision checklist or approval
@@ -538,19 +571,16 @@ summary. Final documents merge sections and assets merge by ID. Shared professio
 together under `.agents/roles/`; artifact templates live under
 `.agents/templates/` and are referenced by the workspace indexes.
 
-Each layer also owns `apps/studio/workspace/utils/pre-development/<layer>.yaml`. This
-file is not business content and is not shown in Storybook: it is the minimal
-agent cursor for `00-business`, `10-strategy`, `20-brand`, `30-design`, or
-`40-products`.
-Every new workflow task reconciles it against the indexed artifacts before
-continuing, so Markdown/YAML remains authoritative if an earlier task ended
-between writes.
+Each layer owns `apps/studio/workspace/utils/pre-development/<layer>.yaml`.
+Its v2 state records the selected section, product and preparation progress.
+Selection and explicit next/skip/completion actions control this state;
+diagnostics and review fingerprints never move it backward.
 
 Storybook exposes owner-review documents under numbered `Workspace/**` stages.
 Engineering research, plans, and implementation notes stay exclusively in
 `thoughts/shared/**` and are not included in Studio inventory or navigation.
 
-`Workspace/30 Design/default` renders the effective Design document and assets
+`Workspace/40 Дизайн/startup/С учётом наследования` renders the effective Design document and assets
 through the selected `workspace/design/<layer>/layout.yaml`. The base lists
 reusable overview, logo, color, typography, interface, photography, and
 illustration blocks; projects may reorder or omit them, add
@@ -564,16 +594,16 @@ the legacy field schema. Startup inspection remains empty until startup has
 meaningful data or its own layout. Layout and component changes require visual
 review; document confirmation does not automatically approve extra sources.
 
-`Workspace/00 Client Request` contains Brief; initial Product, model and Sales
+`Workspace/00 Brief` contains Brief; initial Product, model and Sales
 sources are prepared next under Products.
 
-`Workspace/40 Products` displays every client-confirmed product. Each product
+`Workspace/10 Products` displays every client-confirmed product. Each product
 links a model and owns Product, Sales, Research, Website, Marketing Creative,
 and Presentation outputs; product `sections` can extend these tabs or add
 further tabs with nested Markdown, HTML, JSX/TSX, image, and media pages. Shared
 loaders and tests live in `workspace/utils/products/`; page files and supporting
 materials stay inside their product's layer folder. React decks retain PDF
-export. The catalog schema and examples are in `workspace/README.md`; the
+export. The catalog schema and examples are in `.agents/references/studio-artifacts.md`; the
 atomic catalog rule is in `.agents/contracts/inheritance.md`. The exporter
 renders the selected default product's Presentation from the same story.
 Current generated identity assets registered below the workspace asset tree
@@ -593,23 +623,6 @@ a downstream project writes only its overrides to the sibling `startup` files.
 `apps/studio/workspace/utils/index/<layer>.yaml` remains a structural registry,
 not a content store; the resolution rules are in
 `.agents/contracts/inheritance.md`.
-
-## Document confirmation
-
-Primary review sources carry `confirmation` metadata and `review.dependencies`
-snapshots as defined in
-[the shared confirmation contract](../../.agents/contracts/document-confirmation.md).
-The header shows the resolved state (`unconfirmed`, `confirmed`, `changed` or
-`stale`), the document's purpose and how to use it, and hides the metadata and
-the duplicate body H1. The agent loader, the browser and the review helper share
-`tools/studio/workspace/document.ts`, the merge contract and the review
-resolver, which adds product-local dependencies from the selected catalog.
-
-Read the current effective fingerprint without recording consent:
-
-```bash
-bun tools/studio/workspace/document-review.ts --file apps/studio/workspace/products/startup/models/example/model.md
-```
 
 ## Figma metadata
 
@@ -633,11 +646,10 @@ requires an explicitly available Figma capability and target.
   implementation, testing, analytics, deployment, and the bridge into them are
   outside issue 222.
 
-Presentation content is owned by the selected product's `presentation_data` YAML
-source and passed as `{ content }` to its React entry point. Shared components
-provide layout/export; they do not extract Strategy or other document copy.
-Document dependencies are semantic review relationships: `stale` requests an
-impact review without automatically replacing any dependent text.
+Presentation content and layout live together in the selected product's React
+entry point. Shared components provide the slide frame and PNG/PDF export.
+Edit the published wording in that React source. Markdown documents describe
+the material's audience, purpose and requirements.
 
 User menus use Subject `me-account` and Social Profile `account-menu` on every
 header. `showTokens` adds the AI Chat balance and Buy tokens action. Name, avatar,

@@ -213,7 +213,16 @@ function ProductOverviewRelatedSection({
   );
 }
 export function ProductOverviewDefault(props?: IComponentProps) {
-  const { hero, stats, related, purchase, cta } = {
+  const {
+    hero,
+    stats,
+    related,
+    purchase,
+    cta,
+    gallery,
+    descriptionContent,
+    categories,
+  } = {
     ...defaultProductOverviewDefaultProps,
     ...props,
   };
@@ -247,10 +256,33 @@ export function ProductOverviewDefault(props?: IComponentProps) {
     >
       <SectionStack>
         <ProductOverviewHeroSection hero={hero} />
+        {categories?.length ? (
+          <nav
+            aria-label="Product categories"
+            className="mx-auto flex w-full max-w-7xl flex-wrap gap-3 px-8"
+          >
+            {categories.map((category) => (
+              <a
+                key={category.id}
+                href={category.href}
+                className="inline-flex min-h-11 items-center rounded-full border border-border px-4 text-sm underline-offset-4 hover:underline"
+              >
+                {category.label}
+              </a>
+            ))}
+          </nav>
+        ) : null}
+        {descriptionContent ? (
+          <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="rounded-3xl bg-card p-6 sm:p-8">
+              {descriptionContent}
+            </div>
+          </div>
+        ) : null}
         <ProductOverviewPurchase {...resolvedPurchase} />
         <ProductOverviewStatsSection stats={stats} />
         <WebsiteBuilderModuleWidget variant="content-feature-find-grid" />
-        <ProductGallery images={defaultProductGalleryProps.images} />
+        <ProductGallery images={gallery ?? []} />
         <WebsiteBuilderModuleWidget variant="content-testimonials" />
         <WebsiteBuilderModuleWidget variant="content-faq" />
         <ProductOverviewRelatedSection related={related} />
@@ -282,6 +314,20 @@ export const defaultProductOverviewDefaultProps: ProductOverviewDefaultProps = {
       { label: "Services", href: "/ecommerce/products" },
     ],
   },
+  gallery: defaultProductGalleryProps.images,
+  descriptionContent: (
+    <WebsiteBuilderModuleWidget
+      variant="content-rich"
+      content="<h2>Built around your project</h2><p>Keep the complete product description, including <strong>formatted text</strong>, links and lists.</p><ul><li>Responsive interface</li><li>Editable content</li><li>Source code handoff</li></ul>"
+    />
+  ),
+  categories: [
+    {
+      id: "development",
+      label: "Development",
+      href: "/?path=/story/modules-host-models-page-singlepage-ecommerce-module-category-slug--default",
+    },
+  ],
   stats: [
     { value: "150+", label: "Websites Delivered" },
     { value: "99.8%", label: "Uptime Guarantee" },

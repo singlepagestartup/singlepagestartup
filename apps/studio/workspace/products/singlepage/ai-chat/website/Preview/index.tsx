@@ -21,9 +21,13 @@ import {
   aiChatServiceHrefs,
   type IAIChatRoute,
 } from "./components/host/layout/singlepage/ai-chat-landing/routes";
-import type { IAIChatServicePageContent } from "./components/website-builder/widget/singlepage/content/ai-chat/content";
+import type {
+  IAIChatServicePageContent,
+  IAIChatWebsiteContent,
+} from "./components/website-builder/widget/singlepage/content/ai-chat/content";
 export interface IAIChatPreviewProps {
   loginCopy?: IAIChatServicePageContent;
+  landingCopy?: IAIChatWebsiteContent;
   initialHref?: string;
   account?: IAIChatAccount;
   profiles?: Omit<IProfilesProviderProps, "children">;
@@ -62,18 +66,22 @@ function ProfilePage({ route }: { route: IAIChatRoute }) {
 function Pages({
   route,
   loginCopy,
+  landingCopy,
 }: {
   route: IAIChatRoute | undefined;
   loginCopy?: IAIChatServicePageContent;
+  landingCopy?: IAIChatWebsiteContent;
 }) {
   const { projects } = useProfiles();
-  if (!route) return <main role="status">Page unavailable.</main>;
+  if (!route) return <main role="status">Страница недоступна.</main>;
   const serviceVariant = servicePages[route.page as keyof typeof servicePages];
   const available = projects.some((profile) => profile.id === route.profileId);
   return (
     <>
-      {serviceVariant ===
-      "rbac-module-subject-me-authentication-select-method-ai-chat" ? (
+      {serviceVariant === "ai-chat" ? (
+        <HostModulePage variant="ai-chat" content={landingCopy} />
+      ) : serviceVariant ===
+        "rbac-module-subject-me-authentication-select-method-ai-chat" ? (
         <HostModulePage
           variant="rbac-module-subject-me-authentication-select-method-ai-chat"
           copy={loginCopy}
@@ -94,6 +102,7 @@ function Pages({
 }
 export function AIChatPreview({
   loginCopy,
+  landingCopy,
   initialHref = "/ai-chat/",
   account = aiChatAccount,
   profiles = aiChatWorkspaceFixture(),
@@ -148,7 +157,11 @@ export function AIChatPreview({
       <ProfilesProvider {...profiles}>
         <NavigationProvider navigate={navigate}>
           <div onClick={followLink} data-preview-href={href}>
-            <Pages route={resolveAIChatRoute(href)} loginCopy={loginCopy} />
+            <Pages
+              route={resolveAIChatRoute(href)}
+              loginCopy={loginCopy}
+              landingCopy={landingCopy}
+            />
           </div>
         </NavigationProvider>
       </ProfilesProvider>

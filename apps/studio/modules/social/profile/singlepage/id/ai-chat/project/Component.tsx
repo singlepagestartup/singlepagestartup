@@ -34,6 +34,7 @@ export function Component({
   profileId,
   chatId,
   selected,
+  embedded = false,
   children,
 }: IComponentProps) {
   return (
@@ -48,6 +49,7 @@ export function Component({
           profileId={profileId}
           chatId={chatId}
           selected={selected}
+          embedded={embedded}
         >
           {children}
         </IdAiChatProject>
@@ -59,8 +61,10 @@ function IdAiChatProject({
   profileId,
   chatId,
   selected,
+  embedded = false,
   children,
 }: IIdAiChatProjectProps) {
+  const Container = embedded ? "div" : "main";
   const id = useId();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -79,7 +83,7 @@ function IdAiChatProject({
         ref={drawerTrigger}
         variant="plain"
         className="min-h-9 shrink-0 px-2 @[760px]/workspace:hidden"
-        aria-label="Show sidebar"
+        aria-label="Показать меню проекта"
         aria-expanded={drawerOpen}
         aria-controls={`${id}-sidebar`}
         onClick={() => setDrawerOpen((current) => !current)}
@@ -89,7 +93,9 @@ function IdAiChatProject({
       <Button
         variant="plain"
         className="hidden min-h-9 shrink-0 px-2 @[760px]/workspace:inline-flex"
-        aria-label={sidebarOpen ? "Hide sidebar" : "Show sidebar"}
+        aria-label={
+          sidebarOpen ? "Скрыть меню проекта" : "Показать меню проекта"
+        }
         aria-expanded={sidebarOpen}
         aria-controls={`${id}-sidebar`}
         onClick={() => setSidebarOpen((current) => !current)}
@@ -99,7 +105,9 @@ function IdAiChatProject({
     </>
   );
   return (
-    <main className="@container/workspace w-full px-4 py-6 @[800px]:px-8">
+    <Container
+      className={`@container/workspace w-full ${embedded ? "" : "px-4 py-6 @[800px]:px-8"}`}
+    >
       <div
         id="documents"
         data-ds-block="social.profile.id-ai-chat-project"
@@ -116,7 +124,7 @@ function IdAiChatProject({
       >
         <button
           type="button"
-          aria-label="Close project sidebar"
+          aria-label="Закрыть меню проекта"
           tabIndex={-1}
           onMouseDown={(event) => event.preventDefault()}
           onClick={closeDrawer}
@@ -124,7 +132,7 @@ function IdAiChatProject({
         />
         <aside
           id={`${id}-sidebar`}
-          aria-label="Project conversations"
+          aria-label="Обсуждения проекта"
           onBlur={(event) => {
             if (!event.currentTarget.contains(event.relatedTarget)) {
               setDrawerOpen(false);
@@ -140,7 +148,7 @@ function IdAiChatProject({
           <button
             ref={drawerClose}
             type="button"
-            aria-label="Close sidebar"
+            aria-label="Закрыть меню"
             onClick={closeDrawer}
             className={`absolute right-3 top-3 inline-flex size-9 items-center justify-center rounded-lg hover:bg-card/10 @[760px]/workspace:hidden ${kit.focus}`}
           >
@@ -154,7 +162,7 @@ function IdAiChatProject({
         </aside>
         <div className="flex min-h-0 min-w-0 flex-col">{children(toggle)}</div>
       </div>
-    </main>
+    </Container>
   );
 }
 const focus =

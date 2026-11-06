@@ -15,6 +15,7 @@ it("shows a success toast only after a successful save and keeps success out of 
   const onSave = jest.fn().mockResolvedValue({});
   render(
     <Component
+      language="en"
       isServer={false}
       variant="id-settings-ai-chat"
       data={{ id: "profile", title: { en: "Profile" }, slug: "profile" } as any}
@@ -41,6 +42,7 @@ it("keeps failed saves in the inline alert without a success toast", async () =>
   HTMLElement.prototype.scrollIntoView = jest.fn();
   render(
     <Component
+      language="en"
       isServer={false}
       variant="id-settings-ai-chat"
       data={{ id: "profile", title: { en: "Profile" }, slug: "profile" } as any}

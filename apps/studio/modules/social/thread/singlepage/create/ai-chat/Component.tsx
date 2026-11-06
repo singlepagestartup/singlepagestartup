@@ -21,7 +21,7 @@ export function Component({
         {navigation}
         <div>
           <p className="text-xs text-muted-foreground">Thread</p>
-          <h2 className="mt-1 text-base font-semibold">New thread</h2>
+          <h2 className="mt-1 text-base font-semibold">Новое обсуждение</h2>
         </div>
       </header>
       {children}

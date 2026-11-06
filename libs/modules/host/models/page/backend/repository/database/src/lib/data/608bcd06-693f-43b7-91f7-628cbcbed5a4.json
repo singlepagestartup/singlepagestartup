@@ -1,11 +1,45 @@
 {
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "Register an account — SinglePageStartup",
+        "ru": "Регистрация аккаунта — SinglePageStartup"
+      },
+      "description": {
+        "en": "Create a SinglePageStartup account with email and password.",
+        "ru": "Создание аккаунта SinglePageStartup по электронной почте и паролю."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "Register an account — SinglePageStartup",
+        "ru": "Регистрация аккаунта — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "Register an account — SinglePageStartup",
+        "ru": "Регистрация аккаунта — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Create a SinglePageStartup account with email and password.",
+        "ru": "Создание аккаунта SinglePageStartup по электронной почте и паролю."
+      },
+      "opengraphDescription": {
+        "en": "Create a SinglePageStartup account with email and password.",
+        "ru": "Создание аккаунта SinglePageStartup по электронной почте и паролю."
+      }
+    }
+  },
   "id": "608bcd06-693f-43b7-91f7-628cbcbed5a4",
   "title": "RBAC | Subject | Email And Password | Registration",
   "url": "/rbac/subject/authentication/email-and-password/registration",
   "description": "Description",
   "createdAt": "2025-01-24T23:47:55.461Z",
-  "updatedAt": "2025-11-15T09:32:28.399Z",
-  "variant": "default",
+  "updatedAt": "2026-10-30T22:25:05.279Z",
+  "variant": "noindex",
   "className": null,
   "language": "en",
   "adminTitle": "excessive beige barnacle"

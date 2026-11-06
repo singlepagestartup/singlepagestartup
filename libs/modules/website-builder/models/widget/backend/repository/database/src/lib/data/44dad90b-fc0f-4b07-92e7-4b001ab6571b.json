@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "How it looks in the interface",
+    "ru": "Как это выглядит в интерфейсе"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Four presentation examples with fictional data. Expand an article, switch a thread or open a document. Links to the corresponding code components are at the end of the page.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Четыре образца оформления на вымышленных данных. Раскройте статью, переключите ветку или откройте документ. В конце страницы — ссылки на соответствующие компоненты в коде.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "44dad90b-fc0f-4b07-92e7-4b001ab6571b",
+  "createdAt": "2026-10-26T00:11:53.535Z",
+  "updatedAt": "2026-10-27T14:58:57.123Z",
+  "variant": "content-rich",
+  "adminTitle": "Как это выглядит в интерфейсе",
+  "slug": "framework-reviewed-article-social-components"
+}

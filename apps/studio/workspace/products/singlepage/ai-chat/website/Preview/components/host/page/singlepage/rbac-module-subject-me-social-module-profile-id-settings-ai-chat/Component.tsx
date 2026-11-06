@@ -54,12 +54,12 @@ export function Component({ profileId }: IProfilePageProps) {
       >
         {(navigation) => (
           <section
-            aria-label="Project settings"
+            aria-label="Настройки проекта"
             className="flex min-h-0 flex-1 flex-col"
           >
             <PanelHeader
-              title="Project settings"
-              label="Project"
+              title="Настройки проекта"
+              label="Проект"
               navigation={navigation}
             />
             <SocialModuleProfile

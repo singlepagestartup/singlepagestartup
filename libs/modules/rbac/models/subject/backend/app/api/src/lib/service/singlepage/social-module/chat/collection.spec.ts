@@ -23,6 +23,12 @@ function setup(admin = false) {
       profilesToChats: { find: memberships },
       chat: { find: chatFind },
       profile: {
+        profilePresentation: jest.fn(async ({ id }) => ({
+          id,
+          title: { en: id },
+          subtitle: {},
+          avatar: null,
+        })),
         find: jest.fn().mockResolvedValue([{ id: "primary" }, { id: "peer" }]),
       },
     },

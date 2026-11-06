@@ -5,6 +5,7 @@ export const variant = "me-account";
 export interface ISubjectAccountProps {
   variant?: "me-account";
   showTokens?: boolean;
+  authorPublished?: boolean;
   signedIn?: boolean;
   user?: RbacAccountUser;
   page?: string;

@@ -51,3 +51,48 @@ export const Comparison: Story = {
     </div>
   ),
 };
+
+import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget";
+export const Framework: Story = {
+  args: {
+    excerptContent: (
+      <WebsiteBuilderModuleWidget
+        variant="content-rich"
+        content="<p>A formatted <strong>article introduction</strong> with its original content.</p>"
+      />
+    ),
+    media: [
+      {
+        id: "cover",
+        src: "/module-assets/images/singlepage/generated/living-focus/singlepagestartup-photography-business-conversation-square.png",
+        alt: "A project discussion",
+      },
+      {
+        id: "detail",
+        src: "/module-assets/images/singlepage/generated/living-focus/singlepagestartup-photography-moment-of-focus-square.png",
+        alt: "Work in progress",
+      },
+    ],
+  },
+};
+
+export const Module: Story = {
+  args: {
+    layout: "module",
+    title: "Аккаунты и доступ",
+    excerpt: "Вход в аккаунт и доступ к личным данным.",
+    coverImage:
+      "/module-assets/images/singlepage/generated/framework-acquisition-v2/accounts.png",
+  },
+};
+export const Guide: Story = {
+  args: {
+    layout: "guide",
+    title: "Профили и общение",
+    excerpt: "",
+    category: "01 / Social",
+    actionLabel: "Как работает модуль",
+    coverImage:
+      "/module-assets/images/singlepage/generated/framework-article-covers-dark-v1/social.png",
+  },
+};

@@ -1,73 +1,67 @@
 ---
-confirmation:
-  confirmed: false
-review:
-  dependencies:
-    product.ai-chat.page.content.one-hour-setup: 86532294fa856d249a06ab800b909744d631caf96cb8059e720b1bab48b7b2d3
-    product.ai-chat.website: db31acbb2f6bff59d196207b3f6245f4fc7674dbe685f71a18c890fef7e2d2cf
 ---
 
-# Create a project and add your materials
+# Создайте проект и добавьте материалы
 
-Enter a project name. The next screen accepts your notes, files and images, with an optional description. Continue to a separate analysis screen, where the AI agent checks the material and prepares the project and product documents. Open a document's working thread to discuss and edit that file with the agent, then save the section after review. The first session is planned for about one focused hour; you can pause or leave a question open.
+Введите название проекта. Следующий экран принимает заметки, файлы и изображения с необязательным описанием. Затем откроется отдельный экран анализа: AI-агент проверит материалы и подготовит документы проекта и продуктов. Откройте переписку документа, обсудите и отредактируйте файл, затем сохраните раздел после проверки. Первая сессия рассчитана примерно на час сосредоточенной работы; можно прерваться или оставить вопрос открытым.
 
-## Create the project, upload and analyze
+## Создание проекта, загрузка и анализ
 
-**Project name:** Name the workspace before adding material.
+**Название проекта:** назовите рабочее пространство перед добавлением материалов.
 
-**Project notes:** What are you working on, what already exists and what result do you need?
+**Заметки о проекте:** над чем работаете, что уже есть и какой результат нужен?
 
-**Attach files:** Add documents, tables, presentations, notes, screenshots or images in their current form. The attached files remain visible in the upload list and later beside the document chats.
+**Прикрепить файлы:** добавьте документы, таблицы, презентации, заметки, снимки экрана или изображения как есть. Файлы остаются видны в списке загрузки и затем рядом с чатами документов.
 
-Before uploading, read [How your materials are processed and stored](#how-your-materials-are-processed-and-stored).
+Перед загрузкой прочитайте, [как обрабатываются и хранятся материалы](#how-your-materials-are-processed-and-stored).
 
-**Analyze materials** opens the analysis screen. It shows progress, supplied sources and draft readiness. **Open document chats** becomes available when analysis is ready.
+**Проанализировать материалы** открывает экран анализа с прогрессом, источниками и готовностью черновиков. **Открыть чаты документов** становится доступно после завершения анализа.
 
-The AI agent shows the proposed texts, their supplied sources and the shortcomings it identifies. Correct an inaccurate statement, resolve a contradiction or answer a question that affects the description. Unknown prices, budgets, rights, capacity and evidence stay unknown until a supplied source or your answer establishes them. Nothing is accepted automatically.
+Агент показывает предлагаемые тексты, источники и найденные недочёты. Исправьте неточное утверждение, разрешите противоречие или ответьте на вопрос, влияющий на описание. Цены, бюджеты, права, возможности выполнения и доказательства остаются неизвестными, пока источник или ответ не установит их. Ничего не принимается автоматически.
 
-## Five short text stages
+## Пять коротких текстовых этапов
 
-| Stage        | Written result                                                                                                                                        |
-| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Brief**    | The project, current situation, products, intended result, boundaries, constraints and supplied material.                                             |
-| **Strategy** | Priority audiences, product roles, positioning, customer paths, channels and measures of success.                                                     |
-| **Brand**    | Meaning, promise, supported claims, evidence, voice, objections and calls to action.                                                                  |
-| **Design**   | A text description of the visual direction, existing assets, interface principles and constraints.                                                    |
-| **Products** | Separate product descriptions, each with its own customer and offer, operations and economics, Sales, Promotion, Analytics and research where needed. |
+| Этап          | Текстовый результат                                                                                                         |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| **Бриф**      | Проект, ситуация, продукты, результат, границы, ограничения и материалы.                                                    |
+| **Продукты**  | Отдельные описания клиентов и предложения, операций и экономики, продаж, продвижения, аналитики и необходимых исследований. |
+| **Стратегия** | Приоритетные аудитории, роли продуктов, позиционирование, пути клиентов, каналы и критерии успеха.                          |
+| **Бренд**     | Смысл, обещание, допустимые утверждения, доказательства, голос, возражения и действия.                                      |
+| **Дизайн**    | Текстовое описание визуального направления, ресурсов, принципов интерфейса и ограничений.                                   |
 
-The AI agent drafts these shortened texts using the same stages as Workspace. Design describes intended appearance; this step does not generate the visual identity or build a landing page.
+Агент готовит сокращённые тексты по тем же этапам, что и Workspace. Дизайн описывает внешний вид; этот шаг не генерирует айдентику и не собирает лендинг.
 
-## Review each product separately
+## Проверяйте каждый продукт отдельно
 
-| Product section            | What you review                                                                                                                     |
-| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| **Product**                | Its customer, problem, offer, value, alternatives and conditions.                                                                   |
-| **Operations & Economics** | How this product is delivered, its revenue, resources, activities, partners, costs and financing.                                   |
-| **Sales**                  | How customers discover, evaluate, buy, receive and use it, including support and continued use.                                     |
-| **Promotion**              | A written description of how this product will be presented publicly, with Website, Creative and Presentation texts where relevant. |
-| **Analytics & Research**   | Measures, observations, questions and evidence needed to evaluate its assumptions. Include research where the decision needs it.    |
+| Раздел                       | Что проверить                                                                                                            |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **Продукт**                  | Клиент, проблема, предложение, ценность, альтернативы и условия.                                                         |
+| **Операции и экономика**     | Выполнение, выручка, ресурсы, действия, партнёры, расходы и финансирование.                                              |
+| **Продажи**                  | Как клиент узнаёт, оценивает, покупает, получает и использует продукт; поддержка и продолжение работы.                   |
+| **Продвижение**              | Текстовое описание публичной подачи, включая сайт, креативы и презентацию, где они нужны.                                |
+| **Аналитика и исследования** | Измерения, наблюдения, вопросы и доказательства для оценки предположений. Исследование добавляется, когда нужно решению. |
 
-Each Product owns its economics. When products share a resource, each states its allocated share under the same resource identifier. The economics view displays these Product decisions rather than introducing a shared model between products.
+Экономика принадлежит продукту. При общем ресурсе каждый продукт указывает свою долю с тем же идентификатором ресурса. Представление экономики показывает эти решения без общей модели между продуктами.
 
-## Correct, review and accept the texts
+## Исправьте, проверьте и примите тексты
 
-1. Read the draft for the selected project stage or product section.
-2. Correct the shortcomings the AI agent identifies and edit the affected text.
-3. Accept the reviewed description, or leave an unanswered question open.
-4. Create a topic in the general project workspace and attach selected saved documents for the next conversation, or freely export the documents.
+1. Прочитайте черновик выбранного этапа проекта или раздела продукта.
+2. Исправьте найденные агентом недочёты в соответствующем тексте.
+3. Примите проверенное описание либо оставьте вопрос открытым.
+4. Создайте тему общего рабочего пространства и прикрепите сохранённые документы для следующего разговора или выгрузите их.
 
-Each document keeps its own conversation, edits and review state. Opening another file leaves that thread's work in place. Acceptance applies to the text you reviewed. A new proposed change is reviewed in the owning file's thread; the last reviewed version remains available for topics until you save the revision. You can create a topic with one reviewed document while other sections still have open questions.
+У каждого документа собственные переписка, правки и состояние проверки. Открытие другого файла сохраняет эту работу. Принятие относится к проверенному тексту. Новое изменение проверяется в переписке исходного файла; последняя проверенная версия доступна темам до сохранения правки. Тему можно создать с одним проверенным документом, пока в других остаются вопросы.
 
-[Review my project texts](/ai-chat/social/profiles/example)
+[Проверить тексты проекта](/ai-chat/social/profiles/example)
 
-Each document thread shows missing information and its draft or reviewed state beside the conversation. Review progress counts the sections you have reviewed; an unanswered question stays visible. The token balance remains visible. It may go below zero. At −2,000 internal tokens or lower, new paid AI requests are restricted; top up above that threshold to continue from the saved step. Failed or cancelled AI requests restore all their token deductions for a net charge of zero.
+Рядом с перепиской показаны недостающие сведения и состояние документа: черновик или проверен. Прогресс учитывает проверенные разделы; неотвеченные вопросы остаются видимыми. Баланс токенов виден постоянно и может быть отрицательным. При −2 000 внутренних токенов или ниже новые платные AI-запросы ограничиваются; пополнение выше порога позволяет продолжить с сохранённого шага. Неудачный или отменённый AI-запрос возвращает все списания, его чистая стоимость равна нулю.
 
-## How your materials are processed and stored
+## Как обрабатываются и хранятся материалы
 
-The service and your uploaded materials are hosted on a Contabo server in Amsterdam. The original materials and their search representations remain in the service's own storage and PostgreSQL database, with pgvector storing the vectors used to find relevant passages.
+Сервис и загруженные материалы находятся на сервере Contabo в Амстердаме. Исходники и их поисковые представления хранятся в собственном хранилище сервиса и PostgreSQL; pgvector хранит векторы для поиска подходящих фрагментов.
 
-Document text is sent to OpenRouter to create those search representations. Relevant passages are also sent through OpenRouter as context for an AI answer. These requests are handled under the selected provider's terms; uploading a file does not keep its text entirely inside this service.
+Текст документов отправляется в OpenRouter для создания поисковых представлений. Подходящие фрагменты также передаются через OpenRouter как контекст AI-ответа. Запросы обрабатываются на условиях выбранного провайдера; загруженный текст не остаётся целиком внутри этого сервиса.
 
-Deleting your account removes the account and active project data the service controls. Contabo backups may retain copies for up to six months after deletion, and the service cannot shorten that period.
+Удаление аккаунта удаляет сам аккаунт и активные данные проектов, которыми управляет сервис. Резервные копии Contabo могут храниться до шести месяцев после удаления; сократить этот срок сервис не может.
 
-This information is available before registration and upload, and beside the account-deletion action in Settings.
+Эта информация доступна перед регистрацией и загрузкой, а также рядом с удалением аккаунта в настройках.

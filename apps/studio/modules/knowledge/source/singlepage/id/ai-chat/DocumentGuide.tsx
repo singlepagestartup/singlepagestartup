@@ -132,7 +132,7 @@ export function DocumentGuide({
             <Dialog.Close asChild>
               <button
                 type="button"
-                aria-label="Close document guide"
+                aria-label="Закрыть справку по документу"
                 className={`${kit.plain} size-9 shrink-0 p-0`}
               >
                 <Icon name="x" />
@@ -148,7 +148,7 @@ export function DocumentGuide({
                 <summary
                   className={`min-h-9 cursor-pointer text-sm font-semibold ${kit.focus}`}
                 >
-                  Method and sources
+                  Метод и источники
                 </summary>
                 <MarkdownDocument externalLinksNewTab>
                   {guide.basis}

@@ -1,22 +1,22 @@
 {
   "intro": {
-    "title": "Your files and conversations are waiting.",
+    "title": "Ваши файлы и переписки сохранены.",
     "paragraphs": [
-      "Sign in to return to your last active project or the task you paused. Each document's thread keeps its discussion and draft; project topics keep their attached documents."
+      "Войдите, чтобы вернуться к последнему проекту или прерванной задаче. Переписка документа хранит обсуждение и черновик; темы проекта сохраняют прикреплённые документы."
     ]
   },
   "images": [
     {
       "src": "/module-assets/images/singlepage/generated/living-focus/singlepagestartup-photography-work-in-motion-square.png",
-      "alt": "A smiling maker in a pottery studio.",
+      "alt": "Улыбающийся мастер в керамической студии.",
       "assetId": "singlepage-generated-living-focus-photography-work-in-motion-square"
     }
   ],
   "aside": {
-    "title": "Trouble signing in?",
+    "title": "Не получается войти?",
     "paragraphs": [
-      "Forgot your password? [Contact support](/ai-chat/help). If sign-in fails, check your details and try again.",
-      "No account yet? [Create one](/ai-chat/rbac/subjects/authentication/registration)."
+      "Забыли пароль? [Обратитесь в поддержку](/ai-chat/help). При ошибке входа проверьте данные и повторите попытку.",
+      "Ещё нет аккаунта? [Создайте его](/ai-chat/rbac/subjects/authentication/registration)."
     ]
   }
 }

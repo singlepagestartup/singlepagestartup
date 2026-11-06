@@ -18,7 +18,7 @@ function Icon({
   const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
@@ -65,7 +65,7 @@ export function Component({
   useEffect(() => setAvatarFailed(false), [data.avatar]);
   const balanceLabel = balance
     ? `${(balance.free + balance.purchased).toLocaleString("en-US", { maximumFractionDigits: 6 })} tokens`
-    : "— tokens";
+    : "— токенов";
   return (
     <DropdownMenu.Root modal={false}>
       <DropdownMenu.Trigger asChild>
@@ -74,7 +74,7 @@ export function Component({
           aria-label={
             showTokens
               ? `${data.title}, ${balanceLabel}`
-              : `${data.title}, account menu`
+              : `${data.title}, меню аккаунта`
           }
           data-ds-block="social.profile.account-menu"
           data-profile-id={data.id}
@@ -140,7 +140,7 @@ export function Component({
                 className={menuItemClassName}
               >
                 <Icon name="wallet" />
-                Buy tokens
+                Купить токены
               </a>
             </DropdownMenu.Item>
           )}
@@ -152,7 +152,7 @@ export function Component({
               className={menuItemClassName}
             >
               <Icon name="gear-six" />
-              Settings
+              Настройки
             </a>
           </DropdownMenu.Item>
           <DropdownMenu.Item asChild>
@@ -162,7 +162,7 @@ export function Component({
               className={menuItemClassName}
             >
               <Icon name="shield" />
-              Admin Panel
+              Панель управления
             </a>
           </DropdownMenu.Item>
           <DropdownMenu.Separator className="my-1 h-px bg-[color:var(--workspace-brand-line)]" />
@@ -173,7 +173,7 @@ export function Component({
               className={`${menuItemClassName} w-full`}
             >
               <Icon name="sign-out" />
-              Sign out
+              Выйти
             </button>
           </DropdownMenu.Item>
         </DropdownMenu.Content>

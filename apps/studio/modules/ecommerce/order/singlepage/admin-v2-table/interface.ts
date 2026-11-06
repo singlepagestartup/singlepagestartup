@@ -15,6 +15,10 @@ export interface IRecord {
   type: string;
   receipt: string;
   comment: string | null;
+  subscriptionPeriodStartsAt: string | null;
+  subscriptionPeriodEndsAt: string | null;
+  subscriptionPeriodInvoiceId: string | null;
+  subscriptionRevokedAt: string | null;
 }
 
 export const variant = "admin-v2-table";

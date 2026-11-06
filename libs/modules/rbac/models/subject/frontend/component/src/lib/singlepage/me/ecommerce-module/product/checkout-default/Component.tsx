@@ -1,17 +1,16 @@
-import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
-import type { IComponentPropsExtended } from "./interface";
+import { IComponentPropsExtended } from "./interface";
+import { Component as ClientComponent } from "./ClientComponent";
 
 export function Component(props: IComponentPropsExtended) {
   return (
-    <Subject
+    <ClientComponent
       isServer={props.isServer}
-      variant="ecommerce-module-product-checkout-default"
-      dataSource="props"
-      data={props.data}
-      ecommerceModuleProduct={props.ecommerceModuleProduct}
-      ecommerceModuleStore={props.ecommerceModuleStore}
-      language={props.language}
+      variant={props.variant}
       className={props.className}
+      ecommerceModuleProduct={props.ecommerceModuleProduct}
+      data={props.data}
+      language={props.language}
+      ecommerceModuleStore={props.ecommerceModuleStore}
     />
   );
 }

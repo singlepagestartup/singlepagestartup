@@ -17,7 +17,7 @@ function Icon({
   const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
@@ -120,8 +120,8 @@ export function Component({
               ref={navigationTrigger}
               aria-label={
                 navigationOpen
-                  ? "Close navigation menu"
-                  : "Open navigation menu"
+                  ? "Закрыть меню навигации"
+                  : "Открыть меню навигации"
               }
               aria-expanded={navigationOpen}
               aria-controls={navigationId}

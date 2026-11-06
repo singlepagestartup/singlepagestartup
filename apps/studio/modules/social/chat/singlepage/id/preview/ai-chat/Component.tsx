@@ -607,7 +607,7 @@ export function Component({
             {view === "workspace" ? (
               <form onSubmit={createTopic} className="grid gap-5">
                 <p className={`text-sm leading-6 ${muted}`}>
-                  The thread uses the current knowledge of this profile.
+                  В обсуждении используются текущие знания проекта.
                 </p>
                 <div className="grid gap-2">
                   <label

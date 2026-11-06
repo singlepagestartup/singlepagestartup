@@ -45,19 +45,19 @@ it("retains Russian in Data and privacy links and sign-out redirect", () => {
       } as any)}
     />,
   );
-  fireEvent.click(screen.getByRole("button", { name: "Data and privacy" }));
+  fireEvent.click(
+    screen.getByRole("button", { name: "Данные и конфиденциальность" }),
+  );
   expect(
     screen
       .getByRole("link", {
-        name: "how your materials are processed and stored",
+        name: "как обрабатываются и хранятся ваши материалы",
       })
       .getAttribute("href"),
   ).toBe("/ru/privacy");
   expect(
-    screen
-      .getByRole("link", { name: "Review my projects" })
-      .getAttribute("href"),
+    screen.getByRole("link", { name: "Мои проекты" }).getAttribute("href"),
   ).toBe("/ru/ai-chat/projects");
-  fireEvent.click(screen.getByRole("button", { name: "Sign out" }));
+  fireEvent.click(screen.getByRole("button", { name: "Выйти" }));
   expect(logout).toHaveBeenCalledWith({ redirectTo: "/ru/ai-chat/sign-in" });
 });

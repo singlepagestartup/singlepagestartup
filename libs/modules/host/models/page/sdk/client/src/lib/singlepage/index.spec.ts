@@ -27,12 +27,8 @@ import { api } from "./index";
 it("keeps different URL resolutions in separate cache entries", () => {
   const first = api.findByUrl({ url: "/en/first" }) as any;
   const second = api.findByUrl({ url: "/en/second" }) as any;
-  const filtered = api.findByUrl({
-    url: "/en/first",
-    params: { language: "ru" },
-  }) as any;
   expect(first.queryKey).not.toEqual(second.queryKey);
-  expect(first.queryKey).not.toEqual(filtered.queryKey);
+  expect(first.queryKey[0]).not.toContain("language");
 });
 
 it.each(["findByUrl", "urlSegmentValue"] as const)(

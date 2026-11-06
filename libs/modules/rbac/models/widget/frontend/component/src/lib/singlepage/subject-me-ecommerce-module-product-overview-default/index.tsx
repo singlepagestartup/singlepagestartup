@@ -3,10 +3,12 @@ import { api as serverApi } from "@sps/rbac/models/widget/sdk/server";
 import { IComponentProps } from "./interface";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/default";
 import { Component as ChildComponent } from "./Component";
+import { Component as Skeleton } from "./Skeleton";
 
 export function Component(props: IComponentProps) {
   return (
     <ParentComponent
+      Skeleton={<Skeleton />}
       Component={ChildComponent}
       Provider={Provider}
       clientApi={clientApi}

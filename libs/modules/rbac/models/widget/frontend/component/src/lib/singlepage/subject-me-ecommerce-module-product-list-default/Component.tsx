@@ -33,6 +33,7 @@ export function Component(props: IComponentPropsExtended) {
                 language={props.language}
               >
                 <Content
+                  widgetId={props.data.id}
                   isServer={props.isServer}
                   language={props.language || "en"}
                 />

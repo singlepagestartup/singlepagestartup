@@ -1,9 +1,10 @@
 import { Component as SharedIcon } from "../../../../shared/icon";
 
-import type {
-  IComponentProps,
-  ButtonPrimaryProps,
-  ModuleIcon,
+import {
+  type IComponentProps,
+  type ButtonPrimaryProps,
+  type ModuleIcon,
+  type IModuleIconProps,
 } from "./interface";
 export type { ButtonPrimaryProps, ModuleIcon } from "./interface";
 import { forwardRef, type SVGProps } from "react";
@@ -83,5 +84,3 @@ export const defaultButtonPrimaryProps: ButtonPrimaryProps = {
   href: "/admin",
   icon: ArrowRight,
 };
-
-import type { IModuleIconProps } from "./interface";

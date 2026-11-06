@@ -23,7 +23,9 @@ export function Component<M, V>(
   },
 ) {
   if (props.dataSource === "props") {
-    return props.children?.({ data: props.data });
+    return props.children?.({
+      data: props.data,
+    });
   }
 
   const Comp: any = props.isServer ? Server : Client;
@@ -32,7 +34,7 @@ export function Component<M, V>(
 
   return (
     <ErrorBoundary>
-      <Suspense fallback={props.Skeleton ?? <Skeleton />}>
+      <Suspense fallback={props.Skeleton ?? props.skeleton ?? <Skeleton />}>
         <Provider>
           <Comp {...props} api={api} />
         </Provider>

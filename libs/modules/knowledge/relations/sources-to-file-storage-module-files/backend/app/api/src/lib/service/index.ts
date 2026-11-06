@@ -24,7 +24,9 @@ export class Service extends CRUDService<Relation> {
   }
   async create(props: { data: any }): Promise<Relation> {
     if (!this.services)
-      throw new Error("Knowledge file relation services are not configured.");
+      throw new Error(
+        "Configuration error. Knowledge file relation services are not configured.",
+      );
     if (this.services.inTransaction) return super.create(props);
     return (await this.services.mutate({
       action: "create",
@@ -33,13 +35,17 @@ export class Service extends CRUDService<Relation> {
   }
   async update(props: { id: string; data: any }): Promise<Relation | null> {
     if (!this.services)
-      throw new Error("Knowledge file relation services are not configured.");
+      throw new Error(
+        "Configuration error. Knowledge file relation services are not configured.",
+      );
     if (this.services.inTransaction) return super.update(props);
     return this.services.mutate({ action: "update", ...props });
   }
   async delete(props: { id: string }): Promise<Relation> {
     if (!this.services)
-      throw new Error("Knowledge file relation services are not configured.");
+      throw new Error(
+        "Configuration error. Knowledge file relation services are not configured.",
+      );
     if (this.services.inTransaction) return super.delete(props);
     return (await this.services.mutate({ action: "delete", ...props }))!;
   }
@@ -93,7 +99,9 @@ export class Service extends CRUDService<Relation> {
     const links = await this.forSource(sourceId);
     if (!links.length) return [];
     if (!this.services)
-      throw new Error("Knowledge file relation services are not configured.");
+      throw new Error(
+        "Configuration error. Knowledge file relation services are not configured.",
+      );
     const files = await this.services.fileStorageFile.find({
       params: {
         filters: {

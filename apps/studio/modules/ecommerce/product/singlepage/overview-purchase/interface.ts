@@ -1,3 +1,4 @@
+import type { ProductCardProps } from "../card/interface";
 export const variant = "overview-purchase";
 
 export interface ProductOverviewPurchaseProps {
@@ -11,6 +12,7 @@ export interface ProductOverviewPurchaseProps {
   priceNote: string;
   deliverables: string[];
   techStack: string[];
+  card?: Partial<ProductCardProps>;
   onAddToCart?: (
     item: {
       id: string;

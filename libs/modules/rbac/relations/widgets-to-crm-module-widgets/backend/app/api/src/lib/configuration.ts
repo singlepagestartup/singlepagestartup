@@ -32,6 +32,37 @@ export class Configuration
           module: "rbac",
           name: "widgets-to-crm-module-widgets",
           type: "relation",
+          filters: [
+            {
+              column: "widgetId",
+              method: "eq",
+              value: ({ seeds, entity }) =>
+                seeds
+                  .find(
+                    (seed) =>
+                      seed.module === "rbac" &&
+                      seed.type === "model" &&
+                      seed.name === "widget",
+                  )
+                  ?.seeds.find((seed) => seed.dump.id === entity.dump.widgetId)
+                  ?.new?.id ?? entity.dump.widgetId,
+            },
+            {
+              column: "crmModuleWidgetId",
+              method: "eq",
+              value: ({ seeds, entity }) =>
+                seeds
+                  .find(
+                    (seed) =>
+                      seed.module === "crm" &&
+                      seed.type === "model" &&
+                      seed.name === "widget",
+                  )
+                  ?.seeds.find(
+                    (seed) => seed.dump.id === entity.dump.crmModuleWidgetId,
+                  )?.new?.id ?? entity.dump.crmModuleWidgetId,
+            },
+          ],
           transformers: [
             {
               field: "widgetId",

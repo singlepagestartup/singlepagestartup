@@ -1,4 +1,5 @@
 "use client";
+import { internationalization } from "@sps/shared-configuration";
 import { Component as SocialModuleProfile } from "@sps/social/models/profile/frontend/component";
 import { Component as SocialModuleSkill } from "@sps/social/models/skill/frontend/component";
 import { Component as KnowledgeModuleSource } from "@sps/knowledge/models/source/frontend/component";
@@ -6,6 +7,8 @@ import { Component as FileStorageModuleFile } from "@sps/file-storage/models/fil
 import type { IComponentPropsExtended, ISourceFilesProps } from "./interface";
 
 export function Component(props: IComponentPropsExtended) {
+  const language = props.language || internationalization.defaultLanguage.code;
+  const ru = language === "ru";
   const profiles = props.profilesRead;
   const profile = profiles.data?.find(
     (item) => item.id === props.socialModuleProfileId,
@@ -15,14 +18,16 @@ export function Component(props: IComponentPropsExtended) {
   if (profiles.isPending)
     return (
       <p role="status" className="p-4">
-        Loading assistant profile…
+        {ru ? "Загрузка профиля помощника…" : "Loading assistant profile…"}
       </p>
     );
   if (!profile || profiles.error)
     return (
       <p role="alert" className="p-4 text-destructive">
         {profiles.error?.message ||
-          "Assistant profile is unavailable in this Chat."}
+          (ru
+            ? "Профиль помощника недоступен в этом чате."
+            : "Assistant profile is unavailable in this Chat.")}
       </p>
     );
   return (
@@ -31,13 +36,13 @@ export function Component(props: IComponentPropsExtended) {
       variant="agent-id-ai-chat"
       data={profile}
       dataSource="props"
-      language="en"
+      language={language}
       onClose={props.onClose}
       skillsCount={skills.data?.length}
       knowledgeCount={knowledge.data?.length}
       skills={
         skills.isPending ? (
-          <p role="status">Loading skills…</p>
+          <p role="status">{ru ? "Загрузка навыков…" : "Loading skills…"}</p>
         ) : skills.error ? (
           <p role="alert">{skills.error.message}</p>
         ) : skills.data?.length ? (
@@ -48,21 +53,24 @@ export function Component(props: IComponentPropsExtended) {
               variant="id-ai-chat"
               data={skill}
               dataSource="props"
-              language="en"
+              language={language}
             />
           ))
         ) : (
-          <p className="text-sm text-muted-foreground">No linked skills.</p>
+          <p className="text-sm text-muted-foreground">
+            {ru ? "Подключённых навыков нет." : "No linked skills."}
+          </p>
         )
       }
     >
       {knowledge.isPending ? (
-        <p role="status">Loading knowledge…</p>
+        <p role="status">{ru ? "Загрузка знаний…" : "Loading knowledge…"}</p>
       ) : knowledge.error ? (
         <p role="alert">{knowledge.error.message}</p>
       ) : knowledge.data?.length ? (
         knowledge.data.map((source) => (
           <KnowledgeModuleSource
+            language={props.language}
             key={source.id}
             isServer={false}
             variant="id-sidebar-ai-chat"
@@ -73,20 +81,28 @@ export function Component(props: IComponentPropsExtended) {
           </KnowledgeModuleSource>
         ))
       ) : (
-        <p className="text-sm text-muted-foreground">No linked knowledge.</p>
+        <p className="text-sm text-muted-foreground">
+          {ru ? "Подключённых знаний нет." : "No linked knowledge."}
+        </p>
       )}
     </SocialModuleProfile>
   );
 }
-export function SourceFiles({ files, error }: ISourceFilesProps) {
+export function SourceFiles({
+  files,
+  error,
+  language = internationalization.defaultLanguage.code,
+}: ISourceFilesProps) {
+  const ru = language === "ru";
   return (
     <div className="mt-3 space-y-2 border-t border-border pt-3">
       <p className="text-xs text-muted-foreground">
-        Files · {files?.length || 0}
+        {ru ? "Файлы" : "Files"} · {files?.length || 0}
       </p>
       {error && <p role="alert">{error}</p>}
       {files?.map(({ file }) => (
         <FileStorageModuleFile
+          language={language}
           key={file.id}
           isServer={false}
           variant="attachment-ai-chat"

@@ -62,7 +62,18 @@ function dependencies() {
     slug: "generated-account-name",
     variant: "default",
   };
+  let tail = Promise.resolve();
   const service = {
+    repository: {
+      withSubjectLock: jest.fn((_scope, operation) => {
+        const next = tail.then(operation);
+        tail = next.then(
+          () => undefined,
+          () => undefined,
+        );
+        return next;
+      }),
+    },
     findById: jest.fn(async () => subject),
     subjectsToIdentities: {
       find: jest.fn(async () => [
@@ -162,6 +173,27 @@ it("keeps one personal profile under concurrent registration or login repair", a
   expect(deps.profiles.rows).toHaveLength(1);
   expect(deps.links.rows).toHaveLength(1);
   expect(deps.subjectsToRoles.rows).toHaveLength(1);
+});
+
+it("reuses an owned Telegram personal Profile even after its private slug changed", async () => {
+  const deps = dependencies();
+  deps.profiles.rows.push({
+    id: "telegram-personal",
+    slug: "changed-private-handle",
+    variant: "telegram",
+  });
+  deps.links.rows.push({
+    id: "personal-link",
+    subjectId: "owner",
+    socialModuleProfileId: "telegram-personal",
+    variant: "default",
+  });
+  const result = await new Service(deps.service as any).ensure({
+    subjectId: "owner",
+  });
+  expect(result.profile.id).toBe("telegram-personal");
+  expect(deps.profiles.create).not.toHaveBeenCalled();
+  expect(deps.links.rows).toHaveLength(1);
 });
 
 it("does not create a personal profile or ownership grant for an anonymous session", async () => {

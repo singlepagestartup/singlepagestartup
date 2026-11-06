@@ -15,7 +15,7 @@ function WebsiteBuilderModuleFeature({
   const geometry = Glyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       width={size}
@@ -111,7 +111,7 @@ export const Component = memo(function Component({
       </p>
       <div className="mt-1 flex items-center justify-between gap-1">
         <span className="text-xs text-muted-foreground">
-          {Math.max(1, Math.ceil(file.size / 1024))} KB
+          {Math.max(1, Math.ceil(file.size / 1024))} КБ
         </span>
         {onMove && (
           <div className="flex">

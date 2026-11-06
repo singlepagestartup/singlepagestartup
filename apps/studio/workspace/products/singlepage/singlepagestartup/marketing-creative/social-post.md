@@ -1,19 +1,9 @@
----
-confirmation:
-  confirmed: false
-review:
-  dependencies:
-    product.singlepagestartup.creative: 7b7e31314b3006e86852a9f7ed84b48948b0036aac28107cfb16a4338e0b286e
----
+# Минимальный заказ — шесть изделий. Как это объяснить ИИ?
 
-# Your business rule. A shared foundation.
+Три кружки и три тарелки подходят. Пять кружек — нет. Если убрать одну тарелку перед отправкой, оформление снова становится недоступно.
 
-“My store has a minimum order of six units.”
+Это разные проверки одного правила. В задании агенту нужно уточнить, что считаем общее количество изделий, разрешаем смешивать товары и проверяем минимум перед сохранением заказа на сервере.
 
-That is the kind of request you should be able to bring to a coding agent. Start with the customer and the behavior you want. Reuse the registration, cart and payment functions, then put your effort into your own business logic.
+В статье — готовое задание, сообщение покупателю и таблица проверок для владельца магазина. Пример учебный; он показывает, как поручить конкретную доработку существующей корзины.
 
-Code Framework brings the code, documentation and agent instructions together. You describe the direction, your agent changes the project, and you explore the result.
-
-The code is free. Coding-agent services and infrastructure are separate. You can build with the framework without buying AI Chat tokens.
-
-[Explore Code Framework](https://github.com/singlepagestartup/singlepagestartup)
+[Прочитать разбор минимального заказа](/?path=/story/workspace-50-materials-singlepage-singlepagestartup-articles--articles-adapt-ready-project)

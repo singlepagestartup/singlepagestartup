@@ -18,7 +18,7 @@ export function Component({
       data-id={chatId}
       data-chat-id={chatId}
       className="@container/chat flex min-h-0 min-w-0 flex-1 flex-col"
-      aria-label="Active chat"
+      aria-label="Текущий чат"
       data-module="social"
       data-model="chat"
       data-variant={variant}

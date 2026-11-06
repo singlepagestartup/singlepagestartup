@@ -5,6 +5,13 @@
     "entityType": "model",
     "fields": [
       {
+        "key": "metadata",
+        "label": "Metadata",
+        "kind": "jsonb",
+        "nullable": false,
+        "default": {}
+      },
+      {
         "key": "id",
         "label": "Id",
         "kind": "uuid",
@@ -73,6 +80,7 @@
   },
   "records": [
     {
+      "metadata": {},
       "id": "b1c9d8d1-6a1b-413f-a3ce-296c18e541a3",
       "title": "page example 1",
       "url": "/",
@@ -85,6 +93,7 @@
       "adminTitle": "page example 1"
     },
     {
+      "metadata": {},
       "id": "d3c21332-aede-44ec-ac6d-bb646da21ff5",
       "title": "page example 2",
       "url": "/",
@@ -97,6 +106,7 @@
       "adminTitle": "page example 2"
     },
     {
+      "metadata": {},
       "id": "70412fef-7b2e-4d9b-a0d4-c08071bd675c",
       "title": "page example 3",
       "url": "/",

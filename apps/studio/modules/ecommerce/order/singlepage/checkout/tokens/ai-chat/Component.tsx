@@ -262,7 +262,7 @@ export function Component({
   const amount = price ? Number(price.title) : 0;
   const rate = price ? Number(price.text) : 0;
   const number = (value: number) =>
-    value.toLocaleString("en-US", { maximumFractionDigits: 2 });
+    value.toLocaleString("ru-RU", { maximumFractionDigits: 0 });
   return (
     <ServicePage copy={copy} projectHref={projectHref} variant={variant}>
       <div className="grid min-w-0 items-start gap-6 @[900px]:grid-cols-[minmax(0,1fr)_320px]">
@@ -287,24 +287,12 @@ export function Component({
                 </p>
               </div>
             </div>
-            <dl className="mt-5 grid grid-cols-2 gap-4 border-t border-default-foreground/15 pt-5">
-              {[
-                [labels["free-balance-label"], aiChatAccount.balance?.free],
-                [
-                  labels["paid-balance-label"],
-                  aiChatAccount.balance?.purchased,
-                ],
-              ].map(([label, balance]) => (
-                <div key={label}>
-                  <dt className="text-xs text-default-foreground/70">
-                    {label}
-                  </dt>
-                  <dd className="mt-2 text-2xl font-semibold">
-                    {typeof balance === "number" ? number(balance) : "—"}
-                  </dd>
-                </div>
-              ))}
-            </dl>
+            <div className="mt-5 space-y-2 border-t border-default-foreground/15 pt-5">
+              <p className="text-sm font-medium">{labels["balance-source"]}</p>
+              <p className="text-xs leading-5 text-default-foreground/70">
+                {labels["balance-scope-note"]}
+              </p>
+            </div>
           </section>
           <PageSection section={sections.packages} icon="plus">
             <fieldset>
@@ -363,7 +351,7 @@ export function Component({
             <div className="flex items-center justify-between gap-3">
               <dt className={kit.muted}>{labels["token-amount-label"]}</dt>
               <dd className="text-right font-semibold">
-                {selected ? `≈ ${number(amount / rate)}` : "—"}
+                {selected ? `≈ ${number(Math.round(amount / rate))}` : "—"}
               </dd>
             </div>
             <div className="flex items-center justify-between gap-3">

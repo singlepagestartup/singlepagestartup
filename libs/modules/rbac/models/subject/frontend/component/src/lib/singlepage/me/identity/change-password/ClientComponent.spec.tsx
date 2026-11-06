@@ -12,6 +12,7 @@ function example() {
     <Component
       {...({
         isServer: false,
+        language: "en",
         variant: "me-identity-change-password",
         data: { id: "owner" },
         identity: { id: "identity" },

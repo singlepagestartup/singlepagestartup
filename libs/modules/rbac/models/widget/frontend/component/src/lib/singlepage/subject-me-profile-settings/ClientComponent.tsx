@@ -9,12 +9,10 @@ import {
   Component as Subject,
   Component as Orders,
 } from "@sps/rbac/models/subject/frontend/component";
-import type { IModel } from "@sps/rbac/models/subject/sdk/model";
-import type { IComponentPropsExtended } from "./interface";
-interface ISettingsProps {
-  data: IModel;
-}
+import { internationalization } from "@sps/shared-configuration";
+import type { IComponentPropsExtended, ISettingsProps } from "./interface";
 export function Component(props: IComponentPropsExtended) {
+  const language = props.language || internationalization.defaultLanguage.code;
   return (
     <div
       data-module="rbac"
@@ -26,20 +24,29 @@ export function Component(props: IComponentPropsExtended) {
       <Subject
         isServer={false}
         variant="authentication-me-default"
-        unauthenticatedRedirectHref={`/${props.language || "en"}/ai-chat/sign-in`}
+        unauthenticatedRedirectHref={`/${language}/ai-chat/sign-in`}
       >
         {({ data, authenticated }) =>
-          data && authenticated ? <Settings data={data} /> : null
+          data && authenticated ? (
+            <Settings data={data} language={language} />
+          ) : null
         }
       </Subject>
     </div>
   );
 }
 function Settings(props: ISettingsProps) {
+  const ru = props.language === "ru";
   const pathname = usePathname();
   const id = useId();
   const [section, setSection] = useState("Profile");
   const logout = api.authenticationLogout({});
+  const sectionLabels: Record<string, string> = {
+    Profile: ru ? "Профиль" : "Profile",
+    "Sign-in methods": ru ? "Способы входа" : "Sign-in methods",
+    Purchases: ru ? "Покупки" : "Purchases",
+    "Data and privacy": ru ? "Данные и конфиденциальность" : "Data and privacy",
+  };
   const sections = [
     "Profile",
     "Sign-in methods",
@@ -51,11 +58,12 @@ function Settings(props: ISettingsProps) {
       <header className="mb-8 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-            Account settings
+            {ru ? "Настройки аккаунта" : "Account settings"}
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Edit your profile, manage how you sign in and review your account
-            data.
+            {ru
+              ? "Измените профиль, способы входа и проверьте данные аккаунта."
+              : "Edit your profile, sign-in methods and account details."}
           </p>
         </div>
         <button
@@ -69,7 +77,7 @@ function Settings(props: ISettingsProps) {
           className="flex min-h-11 items-center gap-2 rounded-xl border border-border bg-card px-5 text-sm font-semibold"
         >
           <Icon name="sign-out" className="size-4" />
-          Sign out
+          {ru ? "Выйти" : "Sign out"}
         </button>
       </header>
       <div className="grid items-start gap-6 md:grid-cols-[12rem_minmax(0,1fr)]">
@@ -78,19 +86,22 @@ function Settings(props: ISettingsProps) {
             className="mb-2 block text-sm font-medium"
             htmlFor={`${id}-select`}
           >
-            Settings section
+            {ru ? "Раздел настроек" : "Settings section"}
           </label>
           <Select
             ui="shadcn"
             id={`${id}-select`}
-            aria-label="Settings section"
+            aria-label={ru ? "Раздел настроек" : "Settings section"}
             value={section}
             onValueChange={setSection}
-            options={sections.map((item) => ({ value: item, label: item }))}
+            options={sections.map((item) => ({
+              value: item,
+              label: sectionLabels[item],
+            }))}
           />
         </div>
         <nav
-          aria-label="Settings"
+          aria-label={ru ? "Настройки" : "Settings"}
           className="sticky top-24 hidden space-y-1 md:block"
         >
           {sections.map((item) => (
@@ -104,12 +115,14 @@ function Settings(props: ISettingsProps) {
               <span
                 className={`h-5 w-1 rounded-full ${section === item ? "bg-primary text-primary-foreground" : "bg-transparent"}`}
               />
-              {item}
+              {sectionLabels[item]}
             </button>
           ))}
         </nav>
         <section
-          aria-label={section === "Purchases" ? undefined : section}
+          aria-label={
+            section === "Purchases" ? undefined : sectionLabels[section]
+          }
           className={
             section === "Purchases"
               ? "min-w-0"
@@ -118,6 +131,7 @@ function Settings(props: ISettingsProps) {
         >
           {section === "Profile" && (
             <Subject
+              language={props.language}
               isServer={false}
               variant="me-social-module-profile-list-settings-ai-chat"
               data={props.data}
@@ -125,6 +139,7 @@ function Settings(props: ISettingsProps) {
           )}
           {section === "Sign-in methods" && (
             <Subject
+              language={props.language}
               isServer={false}
               variant="me-identity-list-settings-ai-chat"
               data={props.data}
@@ -132,6 +147,7 @@ function Settings(props: ISettingsProps) {
           )}
           {section === "Purchases" && (
             <Orders
+              language={props.language}
               isServer={false}
               variant="me-ecommerce-module-order-list-ai-chat"
               data={props.data}
@@ -143,16 +159,18 @@ function Settings(props: ISettingsProps) {
                 <span className="grid size-10 place-items-center rounded-xl bg-muted">
                   <Icon name="shield" />
                 </span>
-                Materials and deletion
+                {ru ? "Материалы и удаление" : "Materials and removal"}
               </h2>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                The service sends relevant material to external AI providers for
-                your requested work. Review{" "}
+                Для выполнения ваших запросов сервис передаёт нужные материалы
+                внешним ИИ-провайдерам. Прочитайте,{" "}
                 <Link
                   className="underline"
                   href={getLocalizedHref(pathname, "/privacy")}
                 >
-                  how your materials are processed and stored
+                  {ru
+                    ? "как обрабатываются и хранятся ваши материалы"
+                    : "how your materials are processed and stored"}
                 </Link>
                 .
               </p>
@@ -160,7 +178,7 @@ function Settings(props: ISettingsProps) {
                 href={getLocalizedHref(pathname, "/ai-chat/projects")}
                 className="mt-6 inline-flex min-h-11 items-center rounded-xl border border-border px-4 text-sm font-semibold"
               >
-                Review my projects
+                {ru ? "Мои проекты" : "Review my projects"}
               </Link>
             </>
           )}

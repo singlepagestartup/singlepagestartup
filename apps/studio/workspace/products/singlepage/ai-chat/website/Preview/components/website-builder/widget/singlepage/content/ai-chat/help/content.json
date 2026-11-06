@@ -1,96 +1,96 @@
 {
   "sections": {
     "hero": {
-      "title": "What stopped you?",
+      "title": "С чем нужна помощь?",
       "paragraphs": [
-        "Tell us what you were trying to do, what happened and the result you need. Name the project or payment when it matters to the question."
+        "Расскажите, что вы хотели сделать, что произошло и какой результат нужен. Укажите проект или платёж, если вопрос связан с ним."
       ],
       "items": [],
       "links": []
     },
     "request": {
-      "title": "Support request",
+      "title": "Обращение в поддержку",
       "paragraphs": [],
       "items": [
         {
-          "title": "Topic",
-          "text": "Choose the part of AI Chat your question concerns."
+          "title": "Тема",
+          "text": "Выберите, с какой частью AI Chat связан вопрос."
         },
         {
-          "title": "What happened?",
-          "text": "Describe the action, the result and any message you saw."
+          "title": "Что произошло?",
+          "text": "Опишите действие, результат и сообщение, которое вы увидели."
         },
         {
-          "title": "What result do you need?",
-          "text": "Explain what you want to continue or correct."
+          "title": "Какой результат нужен?",
+          "text": "Расскажите, что хотите продолжить или исправить."
         }
       ],
       "links": []
     },
     "topics": {
-      "title": "Choose a topic",
+      "title": "Выберите тему",
       "paragraphs": [],
       "items": [
         {
-          "title": "Account access",
-          "text": "Registration, sign-in or password help."
+          "title": "Доступ к аккаунту",
+          "text": "Регистрация, вход и восстановление доступа."
         },
         {
-          "title": "Project documents",
-          "text": "Drafts, identified shortcomings, edits and review."
+          "title": "Документы проекта",
+          "text": "Черновики, вопросы, изменения и проверка текста."
         },
         {
-          "title": "Files and images",
-          "text": "Adding material or working with supplied files."
+          "title": "Файлы и изображения",
+          "text": "Загрузка материалов и работа с файлами."
         },
         {
-          "title": "Chat threads and topics",
-          "text": "Document discussions and project conversations."
+          "title": "Обсуждения и темы",
+          "text": "Обсуждение документов и разговоры о проекте."
         },
         {
-          "title": "Export",
-          "text": "Downloading and using your documents."
+          "title": "Скачивание документов",
+          "text": "Скачивание и использование документов."
         },
         {
-          "title": "Tokens and payment",
-          "text": "Balance, top-ups, receipts or a payment result."
+          "title": "Токены и оплата",
+          "text": "Баланс, пополнение, чеки и результат оплаты."
         },
         {
-          "title": "Other",
-          "text": "Another question about AI Chat."
+          "title": "Другое",
+          "text": "Другой вопрос об AI Chat."
         }
       ],
       "links": []
     },
     "response": {
-      "title": "What happens next",
+      "title": "Что будет дальше",
       "paragraphs": [
-        "Support requests are processed within 24 hours. This is the initial response expectation, not a promise to resolve every request within that time. Continuous live support is outside the current service.",
-        "Keep your saved documents and task in place while you wait. [Return to the workspace](/ai-chat/social/profiles/example)."
+        "На первое обращение отвечаем в течение 24 часов. Срок решения зависит от вопроса. Круглосуточного чата поддержки сейчас нет.",
+        "Сохранённые документы и задачи остаются доступны, пока вы ждёте ответа. [Вернуться к проекту](/ai-chat/social/profiles/example)."
       ],
       "items": [],
       "links": [
         {
-          "text": "Return to the workspace",
+          "text": "Вернуться к проекту",
           "href": "/ai-chat/social/profiles/example"
         }
       ]
     },
     "success": {
-      "title": "Request submitted",
+      "title": "Обращение сохранено",
       "paragraphs": [
-        "We’ll respond within 24 hours. You can keep working in your workspace while you wait."
+        "Обращение сохранено. Пока его рассматривают, вы можете продолжать работу. Сохранение обращения не подтверждает доставку уведомления по электронной почте."
       ],
       "items": [],
       "links": []
     },
     "controls": {
-      "title": "Interface labels",
+      "title": "Подписи интерфейса",
       "paragraphs": [],
       "items": [
         {
           "title": "back-label",
-          "text": "Back to workspace"
+          "text": "К проекту"
         },
         {
           "title": "back-href",
@@ -98,39 +98,39 @@
         },
         {
           "title": "topic-label",
-          "text": "Topic"
+          "text": "Тема"
         },
         {
           "title": "topic-placeholder",
-          "text": "Select a topic"
+          "text": "Выберите тему"
         },
         {
           "title": "details-label",
-          "text": "What happened?"
+          "text": "Что произошло?"
         },
         {
           "title": "details-placeholder",
-          "text": "Describe what you tried and what happened."
+          "text": "Опишите, что вы сделали и что произошло."
         },
         {
           "title": "result-label",
-          "text": "What result do you need?"
+          "text": "Какой результат нужен?"
         },
         {
           "title": "result-placeholder",
-          "text": "Tell us what you want to continue or correct."
+          "text": "Расскажите, что хотите продолжить или исправить."
         },
         {
           "title": "submit",
-          "text": "Send request"
+          "text": "Отправить обращение"
         },
         {
           "title": "edit-request",
-          "text": "Edit request"
+          "text": "Изменить обращение"
         },
         {
           "title": "return-label",
-          "text": "Return to workspace"
+          "text": "Вернуться к проекту"
         },
         {
           "title": "return-href",
@@ -138,40 +138,40 @@
         },
         {
           "title": "topic-error",
-          "text": "Choose a topic."
+          "text": "Выберите тему обращения."
         },
         {
           "title": "details-error",
-          "text": "Describe what happened."
+          "text": "Опишите, что произошло."
         },
         {
           "title": "result-error",
-          "text": "Tell us what result you need."
+          "text": "Укажите, какой результат нужен."
         },
         {
           "title": "success-message",
-          "text": "Support request submitted."
+          "text": "Обращение в поддержку сохранено."
         }
       ],
       "links": []
     }
   },
   "labels": {
-    "back-label": "Back to workspace",
+    "back-label": "К проекту",
     "back-href": "/ai-chat/social/profiles/example",
-    "topic-label": "Topic",
-    "topic-placeholder": "Select a topic",
-    "details-label": "What happened?",
-    "details-placeholder": "Describe what you tried and what happened.",
-    "result-label": "What result do you need?",
-    "result-placeholder": "Tell us what you want to continue or correct.",
-    "submit": "Send request",
-    "edit-request": "Edit request",
-    "return-label": "Return to workspace",
+    "topic-label": "Тема",
+    "topic-placeholder": "Выберите тему",
+    "details-label": "Что произошло?",
+    "details-placeholder": "Опишите, что вы сделали и что произошло.",
+    "result-label": "Какой результат нужен?",
+    "result-placeholder": "Расскажите, что хотите продолжить или исправить.",
+    "submit": "Отправить обращение",
+    "edit-request": "Изменить обращение",
+    "return-label": "Вернуться к проекту",
     "return-href": "/ai-chat/social/profiles/example",
-    "topic-error": "Choose a topic.",
-    "details-error": "Describe what happened.",
-    "result-error": "Tell us what result you need.",
-    "success-message": "Support request submitted."
+    "topic-error": "Выберите тему обращения.",
+    "details-error": "Опишите, что произошло.",
+    "result-error": "Укажите, какой результат нужен.",
+    "success-message": "Обращение в поддержку сохранено."
   }
 }

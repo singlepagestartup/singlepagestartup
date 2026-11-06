@@ -74,56 +74,83 @@
     {
       "id": "57bf22b1-62de-429e-a7fb-5a9136961a96",
       "className": null,
-      "createdAt": "2026-01-01T00:00:00.000Z",
-      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "createdAt": "2026-10-23",
+      "updatedAt": "2026-10-23",
       "variant": "default",
       "title": {
-        "en": "category example 1"
+        "en": "Frontend",
+        "ru": "Фронтенд"
       },
       "subtitle": {
-        "en": "category example 1"
+        "en": "Next.js readers, client boundaries and keeping data current."
       },
       "description": {
-        "en": "category example 1"
+        "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Next.js composition, SDK readers, React Query and the client boundary in SinglePageStartup.\"}]}]}",
+        "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Композиция Next.js, SDK readers, React Query и клиентские границы SinglePageStartup.\"}]}]}"
       },
-      "adminTitle": "category example 1",
-      "slug": "category-example-1"
+      "adminTitle": "Framework Blog / Frontend",
+      "slug": "frontend"
     },
     {
       "id": "be7a3601-0014-49e8-aecd-498bc95575b6",
       "className": null,
-      "createdAt": "2026-01-01T00:00:00.000Z",
-      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "createdAt": "2026-10-23",
+      "updatedAt": "2026-10-23",
       "variant": "default",
       "title": {
-        "en": "category example 2"
+        "en": "Backend",
+        "ru": "Бэкенд"
       },
       "subtitle": {
-        "en": "category example 2"
+        "en": "Hono services, module ownership and resource access."
       },
       "description": {
-        "en": "category example 2"
+        "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Hono request handling, module ownership and server resource access in SinglePageStartup.\"}]}]}",
+        "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Обработка запросов Hono, владельцы модулей и серверный доступ к ресурсам SinglePageStartup.\"}]}]}"
       },
-      "adminTitle": "category example 2",
-      "slug": "category-example-2"
+      "adminTitle": "Framework Blog / Backend",
+      "slug": "backend"
     },
     {
       "id": "7dc88103-4627-4f0e-a11e-81607012dcea",
       "className": null,
-      "createdAt": "2026-01-01T00:00:00.000Z",
-      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "createdAt": "2026-10-23",
+      "updatedAt": "2026-10-23",
       "variant": "default",
       "title": {
-        "en": "category example 3"
+        "en": "DevOps",
+        "ru": "DevOps"
       },
       "subtitle": {
-        "en": "category example 3"
+        "en": "Run the local stack, generate migrations and verify a release."
       },
       "description": {
-        "en": "category example 3"
+        "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Local infrastructure, generated migrations, Host builds and repeatable saved-content changes.\"}]}]}",
+        "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Локальная инфраструктура, генерация миграций, сборка Host и повторяемые изменения сохранённого контента.\"}]}]}"
       },
-      "adminTitle": "category example 3",
-      "slug": "category-example-3"
+      "adminTitle": "Framework Blog / DevOps",
+      "slug": "devops"
+    }
+  ],
+  "fixtureNote": "Three categories for the supplied six Framework guides; independent Studio records, not production database state.",
+  "presentation": [
+    {
+      "id": "57bf22b1-62de-429e-a7fb-5a9136961a96",
+      "image": "/module-assets/images/singlepage/generated/living-focus/blog/next-server-client-square.png",
+      "imageAlt": "Conceptual editorial photograph of people at work.",
+      "count": 2
+    },
+    {
+      "id": "be7a3601-0014-49e8-aecd-498bc95575b6",
+      "image": "/module-assets/images/singlepage/generated/living-focus/blog/hono-layered-api-square.png",
+      "imageAlt": "Conceptual editorial photograph of people at work.",
+      "count": 2
+    },
+    {
+      "id": "7dc88103-4627-4f0e-a11e-81607012dcea",
+      "image": "/module-assets/images/singlepage/generated/living-focus/blog/nx-bun-docker-square.png",
+      "imageAlt": "Conceptual editorial photograph of people at work.",
+      "count": 2
     }
   ]
 }

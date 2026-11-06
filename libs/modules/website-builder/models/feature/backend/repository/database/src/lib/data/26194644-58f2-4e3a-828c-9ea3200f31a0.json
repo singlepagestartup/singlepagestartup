@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "26194644-58f2-4e3a-828c-9ea3200f31a0",
+  "createdAt": "2026-10-26T00:12:00.613Z",
+  "updatedAt": "2026-10-27T14:59:28.275Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Sources",
+    "ru": "Источники"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"School knowledge\\n\\nMaterials available to this assistant.\\n\\nCourse programme.pdf\\n\\nWhat to bring.md\\n\\nAnswers to student questions\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Знания школы\\n\\nМатериалы, доступные этому помощнику.\\n\\nПрограмма курса.pdf\\n\\nЧто взять на занятие.md\\n\\nОтветы на вопросы учеников\"}]}]}"
+  },
+  "adminTitle": "Источники",
+  "slug": "framework-reviewed-article-knowledge-example-feature-0"
+}

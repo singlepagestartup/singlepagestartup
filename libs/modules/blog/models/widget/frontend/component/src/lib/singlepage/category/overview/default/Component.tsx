@@ -16,6 +16,7 @@ export function Component(props: IComponentPropsExtended) {
           <Content
             isServer={props.isServer}
             language={props.language}
+            renderAuthor={props.renderAuthor}
             categorySlug={props.categorySlug}
           />
         )}

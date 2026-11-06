@@ -616,3 +616,358 @@ reconciliations:
     affected_artifacts:
       - singlepage.design
       - singlepage.products
+  - commit: 2eeed151e6af11213d8671a784e830393f1548c8
+    outcome: no-material-effect
+    summary: Locale redirects preserve the browser origin, explicit port, path and query.
+      This fixes transport behavior without changing the current offer, distribution
+      terms, business journey or a published readiness claim.
+    affected_artifacts: []
+  - commit: a826615f6dc5f317025f5bf8b05332256e7a2535
+    outcome: material
+    summary: AI Chat has a modular browser prototype with local account, document,
+      attachment and topic state. The source does not establish authenticated hosted
+      operation, extraction, payment execution or durable storage.
+    affected_artifacts:
+      - singlepage.products
+  - commit: a57a084d9b3fd520c17cc55423904d3fa24e6f8a
+    outcome: material
+    summary: Knowledge stores editable Source content and derives Chunk vectors; Social
+      owns profile access and source links, and RBAC supplies permitted IDs. This
+      changes the architecture facts and invalidates historical entity counts.
+    affected_artifacts:
+      - singlepage.brief
+      - singlepage.products
+  - commit: 9669085b41ea82fcb8c84a59e16edd83209956ad
+    outcome: material
+    summary: The Source interface can open original stored attachments, and scoped
+      Knowledge tools page complete content within a UTF-8 byte budget. Customer-facing
+      claims must retain the distinction between stored content and bounded model
+      excerpts.
+    affected_artifacts:
+      - singlepage.products
+  - commit: d3dd6365a93ca35c993327afacf182ed2715526a
+    outcome: material
+    summary: Project onboarding includes a Bun generator for five remote MCP client
+      configurations and OAuth login. It extends documented distribution tooling but
+      does not publish a license or prove a deployed endpoint.
+    affected_artifacts:
+      - singlepage.products
+  - commit: 893f21a3670c980459e454af6516ed52f389e841
+    outcome: material
+    summary: Knowledge orchestrates stored-file changes that affect Sources; File Storage
+      owns ordinary records and bytes without an upward Knowledge dependency. Framework
+      module explanations must preserve that ownership.
+    affected_artifacts:
+      - singlepage.products
+  - commit: d08dc32793470f6eb186311c3bc2eed16dfb85b5
+    outcome: material
+    summary: Studio owns local AI Chat previews, fixtures, contracts, fonts and assets
+      independently of production. The prototype Host route and production registrations
+      are removed; preview generation writes only Studio derivatives.
+    affected_artifacts:
+      - singlepage.products
+  - commit: 94f63c6a75479fe735ab8389dfbcff063592887c
+    outcome: material
+    summary: Automatic AI replies and Knowledge decisions have source implementations
+      using JEV routing and scoped capabilities. Actual answering-model usage is
+      retained for billing; routing decisions do not grant access or execute writes.
+    affected_artifacts:
+      - singlepage.products
+  - commit: f62f92ead8f38a1cce39c46a37c47d035bfd6585
+    outcome: material
+    summary: Studio exposes local model/relation entries and layered variant maps from
+      serialized fixtures. These projections expand source-backed preview coverage while
+      leaving production functionality and complete visual coverage unproven.
+    affected_artifacts:
+      - singlepage.products
+  - commit: 9dfc7700529854ad9364e1f6e92cc0468ed4f447
+    outcome: no-material-effect
+    summary: This commit repeats the catalog patch already inspected at f62f92e. Git diff
+      between these snapshots is empty for apps/studio, tools/studio and package.json;
+      differing parent AI-routing files add no second catalog fact.
+    affected_artifacts: []
+  - commit: 6664a9841bd81a9c02a711b92f1906a70ef72bcb
+    outcome: no-material-effect
+    summary: The merge tree exactly matches its second parent
+      349d6e3b760df0c117e6d4135741c70fd3cfa45f. The source, Knowledge, Studio and MCP
+      changes are assessed in their constituent commits; the merge adds no separate fact
+      or license change.
+    affected_artifacts: []
+  - commit: 54a6ba9397062caeaa0c2507f14786951a42a53b
+    outcome: material
+    summary: AI Chat account and project interfaces are connected to real domain SDKs and
+      backend document provisioning. The current intended service can cite those
+      implementations, with runtime and deployment evidence kept separate.
+    affected_artifacts:
+      - singlepage.products
+  - commit: cebcb766285c0697460f16150f190d61608d0f87
+    outcome: material
+    summary: AI Chat uses the root landing route and its shared footer points to localized
+      /framework. The Framework Website route and unavailable-Chat descriptions are
+      stale against this source configuration.
+    affected_artifacts:
+      - singlepage.products
+  - commit: 35514ae6fffd5cdd069e7604318fba2fc6919e0f
+    outcome: material
+    summary: Committed Page and RBAC snapshots configure AI Chat at root and Code
+      Framework at /framework, with account/project routes and uploaded file records.
+      They prove serialized configuration, not live access control, deployment or
+      customer processing.
+    affected_artifacts:
+      - singlepage.products
+  - commit: f9db877f819eb5abb5793bd5d77910fe31ecf98b
+    outcome: no-material-effect
+    summary: Host moves session readers into Client Components while retaining public
+      server readers and the same navigation/account behavior. This is a
+      rendering-boundary fix, not a new offer or proof of production availability.
+    affected_artifacts: []
+  - commit: 4a1d6d144f168a2f8dc6b8953cdaa07252c0afc2
+    outcome: material
+    summary: AI Chat document threads use five runtime-managed professions and exact saved
+      Knowledge proposals that require later confirmation. This adds source evidence for
+      the reviewed-document promise, with configuration and concurrency limits explicit.
+    affected_artifacts:
+      - singlepage.products
+  - commit: 8fca94741a4bf60cbf8150af7fdc7cc95c5e8564
+    outcome: material
+    summary: Authentication now provisions configured Free access and exposes the shared
+      balance. The published daily renewal configuration is historical source evidence,
+      not authority to replace the currently authorized initial allowance or paid-credit
+      preservation.
+    affected_artifacts:
+      - singlepage.brief
+      - singlepage.products
+  - commit: bb450b2aef601486a1d2a3e72ef99725ed80ab39
+    outcome: material
+    summary: The declared answering policy is one text-output GPT model at high reasoning;
+      AI Chat defaults to profile-scoped Knowledge and title-only ordinary threads.
+      Attachment editing and login refresh also change the described website behavior.
+    affected_artifacts:
+      - singlepage.brief
+      - singlepage.products
+  - commit: 51623ec44075869c3a941805e925c6cd6c8e80f5
+    outcome: material
+    summary: The distribution adds instance-bound ownership/File fixtures and a default
+      Free day/3000 attribute graph. These snapshots describe importable configuration
+      only; they do not establish a live allowance, customer permission or selected
+      campaign asset.
+    affected_artifacts:
+      - singlepage.brief
+      - singlepage.products
+  - commit: bb9799d6fd367ea62e4a10720dddd02bd2feeb3b
+    outcome: material
+    summary: New assistants bootstrap five independent profession Skills and resolve
+      document commands within the profile. Shared globally seeded Skills are no longer
+      a prerequisite for new project creation.
+    affected_artifacts:
+      - singlepage.brief
+      - singlepage.products
+  - commit: 1383fa092dfee9557cddf4117b83d30dab597b02
+    outcome: material
+    summary: Ordinary accounts use an owner-guarded balance endpoint and scoped
+      Profile/Source/message readers. The source supports ownership and single-balance
+      claims without granting global collection access or proving a deployed session.
+    affected_artifacts:
+      - singlepage.brief
+      - singlepage.products
+  - commit: f753900777fef52333f7471ca949ed98cd84cc33
+    outcome: no-material-effect
+    summary: Telegram repair inspection is restricted to provider-backed Telegram chats.
+      It preserves the already intended separate AI Chat document/discussion records and
+      changes no offer, workflow selection, claim or creative.
+    affected_artifacts: []
+  - commit: e5f0a8bef955e9cdbb8acfe2163603cbe73994a4
+    outcome: material
+    summary: The source adds versioned per-profile thread memory, exact draft staging and
+      an opt-in compact mode. Full remains the default; the limited paired experiment
+      cannot support a general cost or quality promise.
+    affected_artifacts:
+      - singlepage.brief
+      - singlepage.products
+  - commit: f939e128d0b1d1772d44903f88aaa61ad95358b2
+    outcome: material
+    summary: The website adds an authenticated project chooser with explicit loading,
+      error, creation and guest states. Studio/Workspace examples now use supplied state
+      instead of stored sessions or redirects.
+    affected_artifacts:
+      - singlepage.brief
+      - singlepage.products
+      - singlepage.design
+  - commit: ced0f3713a89d09c5627a9cc1f502a55e17d754e
+    outcome: no-material-effect
+    summary: Seven stored test attachments add three PNGs and duplicate short Brief/text
+      fixtures. They are not selected Workspace assets, new product terms,
+      implementation or customer-outcome evidence.
+    affected_artifacts: []
+  - commit: 87e24afeedb475d7780de80ac496d4cc5d843a20
+    outcome: material
+    summary: The framework retires the Telegram business module while retaining its
+      delivery app, formalizes dependency direction and makes document confirmation
+      resumable. Current module counts and source-backed capability descriptions require
+      correction.
+    affected_artifacts:
+      - singlepage.brief
+      - singlepage.products
+  - commit: c47264f32a26232785892b4c7c430f2c42e5db58
+    outcome: material
+    summary: The source narrows Knowledge attachments to supported formats, distinguishes
+      saved CRM requests from delivery, and preserves explicit domain/presentation
+      instance relations. These change website capability boundaries and framework
+      adaptation guidance.
+    affected_artifacts:
+      - singlepage.brief
+      - singlepage.products
+  - commit: c487e0a3cd3f5bc0a95c4cebb10f813e9fb7a1a8
+    outcome: material
+    summary: The document download action now consumes the authorized Thread in props
+      mode. The source removes an extra global read from the promised export path
+      without widening permissions.
+    affected_artifacts:
+      - singlepage.brief
+      - singlepage.products
+  - commit: 7ed0048b332938ea99552f810958787d8f8e1e1b
+    outcome: material
+    summary: AI Chat internal navigation uses Next Link and project creation is
+      addressable with create=1 while preserving query/history state. Current Website
+      route instructions should match those entry points.
+    affected_artifacts:
+      - singlepage.brief
+      - singlepage.products
+  - commit: def579f1be08eedca48f9a5b5e1325c7a93abaa8
+    outcome: material
+    summary: Saved and unsent attachments gain image, PDF and text/Markdown preview
+      dialogs. The available formats, byte limits, authorization boundary and
+      original/download fallback belong in the current file-view description.
+    affected_artifacts:
+      - singlepage.brief
+      - singlepage.products
+  - commit: 9bc26719ff85a14de91813407f2198fdd42043ed
+    outcome: no-material-effect
+    summary: Studio prop aliases, Host import casing and comments are refactored without
+      behavior changes. MCP documentation states the already implemented one-edge
+      preview scope; the current offer makes no arbitrary traversal promise.
+    affected_artifacts: []
+  - commit: c0ac614e8bc3232fb28887a5e4e9a2d579507959
+    outcome: material
+    summary: Generated PostgreSQL capture adds transactional generations, an outbox and
+      query dependency primitives. This is reusable infrastructure source; it does not
+      prove installed coverage or live cache correctness.
+    affected_artifacts:
+      - singlepage.brief
+      - singlepage.products
+  - commit: 9910ecffc7b9a84732882222f92b4814ed888f11
+    outcome: material
+    summary: The published framework supplies repository-read dependencies,
+      authorization-bound cache entries and durable targeted invalidation. Product
+      architecture descriptions can name those mechanisms, with deployment coverage and
+      runtime outcomes still unverified by this audit.
+    affected_artifacts:
+      - singlepage.products
+  - commit: 502e63e22cc61c9a53ad01777797903984dc2175
+    outcome: material
+    summary: The published client architecture separates principal-scoped React Query
+      data, one Host realtime transport and diagnostic event storage. Framework
+      explanations must preserve those owners and the absence of sessionStorage entity
+      restoration.
+    affected_artifacts:
+      - singlepage.products
+  - commit: b88f8ae590c1ca5ec4470bd55ce8d9b35da3ba44
+    outcome: no-material-effect
+    summary: The two Host URL readers now show skeletons only for initial loading,
+      retaining mounted navigation during background refresh. This preserves the
+      existing navigation contract and adds no offer, acquisition promise, persistence
+      guarantee or new product capability.
+    affected_artifacts: []
+  - commit: 2a1eb1f0d78395880a20f0c5bc0e5188a54d7880
+    outcome: material
+    summary: Purchase totals and receipt metadata are available through the authenticated
+      Subject projection after ownership filtering. The commerce/account architecture
+      must describe RBAC-scoped purchases rather than direct generic Ecommerce access.
+    affected_artifacts:
+      - singlepage.products
+  - commit: 586f350962c72e3c790b7737d279ecbb1dfc1f81
+    outcome: no-material-effect
+    summary: Bounded tag batches, failed-batch retry and heartbeat handling refine the
+      same consistency mechanism already accounted for in 9910/502e. They introduce no
+      additional commercial term or public availability proof; connection copy removes
+      an unsupported automatic-draft claim.
+    affected_artifacts: []
+  - commit: 5db834e161324ed6c36e9163e0cc8440b1cdfbc9
+    outcome: no-material-effect
+    summary: Host and Studio share one theme-token Toast renderer and status glyphs while
+      SDK producers retain the same Sonner store. The change follows the existing Living
+      Focus interface direction and adds no business offer, approval or measured
+      usability result.
+    affected_artifacts: []
+  - commit: b0190bd6dfa29325bd3ff685802ebb77fc45c16c
+    outcome: material
+    summary: The published framework separates domain Widget operations from Website
+      Builder copy/layout through exact saved relations and JSX slots. This supports an
+      architecture explanation, while its intermediate routing-map propagation is
+      superseded by c847 and must not become the final pattern.
+    affected_artifacts:
+      - singlepage.products
+  - commit: 6137f18820b699791bceb37498c12a0e556b2a5d
+    outcome: no-material-effect
+    summary: The cutover guard rejects duplicate presentation roots, hidden associations
+      render nothing and missing CRM translations fall back to English. These preserve
+      the intended single presentation and readable choices without changing product
+      scope, selected brand rules or licensing.
+    affected_artifacts: []
+  - commit: e1465163d4a19960c9f80a949f3765c92de28ab8
+    outcome: no-material-effect
+    summary: The named Page render-reader changes composition wiring while retaining
+      findByUrl and scalar URL compatibility. Its final public contract is already
+      covered by the later c847 owner correction; no separate business capability or
+      outcome is added by this intermediate revision.
+    affected_artifacts: []
+  - commit: 2e8d8ca2abadb99738462647d2b011232c91cef3
+    outcome: material
+    summary: Catalog and checkout controls compose through current-Subject RBAC Widgets,
+      while Ecommerce owns Product/media/pricing and calculates cart rows and totals in
+      one snapshot. The source supports a scoped commerce module explanation rather than
+      a generic public cart API claim.
+    affected_artifacts:
+      - singlepage.products
+  - commit: b324144d4cfe2a0bda2313f5fdf3edd489719c49
+    outcome: material
+    summary: Authorized Subject Chat projections supply participant data, and trusted
+      registration bootstrap invokes the existing checkout capability without opening
+      public checkout. The architecture supports account-scoped AI Chat; historical
+      free-subscription behavior must not replace the latest one-time 3000-token terms.
+    affected_artifacts:
+      - singlepage.products
+  - commit: c847a3e0e81bd39f6a66dff04f42389e76f7ace4
+    outcome: material
+    summary: Authenticated chat screens are domain-owned RBAC Widgets with shared session
+      readers; Host selects explicit route inputs and Website Builder renders exact
+      linked presentation slots. This is the final source contract for the planned
+      Framework module explanations and AI Chat example.
+    affected_artifacts:
+      - singlepage.products
+  - commit: 18dc612193f693647a0d38121109537b0b6b4139
+    outcome: no-material-effect
+    summary: The document editor hides only an untouched automatic placeholder after saved
+      sources arrive from another client. Typed text, selected files and explicitly
+      added sections stay mounted; the written-document offer and its proof limits are
+      unchanged.
+    affected_artifacts: []
+  - commit: ef09fd069a09cf3f3ea3201d25983d7c39c243a4
+    outcome: material
+    summary: AI request admission uses the aggregate of all currency balances and requires
+      at least one reserved token; zero or negative totals are refused before provider
+      generation. Current Brief/Product/Sales/Website still advertise a minus-2000 debt
+      threshold, so intended terms and implemented behavior need explicit reconciliation
+      without changing deduction math.
+    affected_artifacts:
+      - singlepage.products
+      - singlepage.strategy
+      - singlepage.brand
+  - commit: aa780be0f99f78f5d25802d259059cb1b66f4cb0
+    outcome: no-material-effect
+    summary: The merge tree equals its inspected ef09fd second parent, including the
+      cache, RBAC Widget, checkout and aggregate-admission implementations. First-parent
+      Brief changes already exist in current owning files; the remaining debt-threshold
+      contradiction belongs to ef09fd reconciliation. The merge adds no separate offer
+      or implementation result.
+    affected_artifacts: []

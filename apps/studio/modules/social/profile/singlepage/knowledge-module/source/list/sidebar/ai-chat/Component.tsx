@@ -31,14 +31,16 @@ export function Component({
     >
       <button
         type="button"
-        aria-label={open ? "Hide document list" : "Show document list"}
+        aria-label={
+          open ? "Скрыть список документов" : "Показать список документов"
+        }
         aria-expanded={open}
         aria-controls={`${id}-document-list`}
         onClick={() => setOpen((current) => !current)}
         className={`flex min-h-11 w-full items-center gap-2 rounded-lg bg-card/10 px-3 py-2 text-left text-sm font-semibold ${kit.focus}`}
       >
         <SharedIcon variant="phosphor" name="folder-open" className="size-4" />
-        <span className="flex-1">Documents</span>
+        <span className="flex-1">Документы</span>
         <span className="text-xs text-default-foreground/60">1</span>
         <SharedIcon
           variant="phosphor"

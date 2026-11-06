@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "What will you create with Social?",
+    "ru": "Какой продукт вы создадите с Social?"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Describe the task to the AI assistant. Prepare requirements together, then give them to Claude Code or Codex for development on the framework.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"I want an expert platform. Visitors explore profiles and articles, sign in and ask a question. Conversations are visible only to their participants. Help define the first user journey, the Social models needed and relations to other modules.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Опишите задачу ИИ-помощнику. Вместе подготовьте требования, а затем передайте их в Claude Code или Codex для разработки на фреймворке.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Хочу создать площадку для экспертов. Посетитель изучает профиль и статьи, входит в аккаунт и задаёт вопрос. Переписка видна только её участникам. Помоги определить первый пользовательский сценарий, необходимые модели Social и связи с другими модулями.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "6bab0cfa-b5a9-462d-9936-2c59ec75f16b",
+  "createdAt": "2026-10-26T00:11:58.645Z",
+  "updatedAt": "2026-10-27T14:59:03.487Z",
+  "variant": "content-rich",
+  "adminTitle": "Какой продукт вы создадите с Social?",
+  "slug": "framework-reviewed-article-social-start"
+}

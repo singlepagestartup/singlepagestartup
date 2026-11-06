@@ -47,8 +47,8 @@ export function appendThreadExchange(
       role: "assistant",
       agent: { ...agent },
       text: text
-        ? `Local preview: check the proposed update before applying it to ${source.title} knowledge.`
-        : "Local preview: your files are attached to this message.",
+        ? `Локальный пример: проверьте предложенное изменение перед применением к знаниям «${source.title}».`
+        : "Локальный пример: файлы прикреплены к сообщению.",
       files: files.map(copyFile),
       workingOn: scope,
       filesUsed: [

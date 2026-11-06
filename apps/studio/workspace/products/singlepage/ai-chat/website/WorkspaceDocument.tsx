@@ -36,20 +36,20 @@ export function WorkspaceDocument({
           </p>
           <nav
             className="mt-4 flex gap-2 overflow-x-auto pb-1 text-sm lg:flex-col lg:overflow-visible"
-            aria-label="Project workspace"
+            aria-label="Рабочая область проекта"
           >
             {[
               {
-                label: "Add materials",
+                label: "Добавить материалы",
                 href: "/ai-chat/social/profiles/create",
               },
               {
-                label: "Project documents",
+                label: "Документы проекта",
                 href: "/ai-chat/social/profiles/example",
               },
-              { label: "Tokens", href: "/ai-chat/rbac/subjects/tokens" },
-              { label: "Settings", href: "/ai-chat/rbac/subjects/settings" },
-              { label: "Help", href: "/ai-chat/help" },
+              { label: "Токены", href: "/ai-chat/rbac/subjects/tokens" },
+              { label: "Настройки", href: "/ai-chat/rbac/subjects/settings" },
+              { label: "Помощь", href: "/ai-chat/help" },
               {
                 label: "Code Framework",
                 href: "https://github.com/singlepagestartup/singlepagestartup",

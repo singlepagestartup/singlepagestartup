@@ -7,3 +7,4 @@ export interface IComponentProps extends ISpsComponentBase {
   blogModuleArticle: IBlogModuleArticle;
   language: string;
 }
+export interface IComponentPropsExtended extends IComponentProps {}

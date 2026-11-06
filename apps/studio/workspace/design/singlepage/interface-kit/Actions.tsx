@@ -9,7 +9,7 @@ export default function Actions() {
   const [preview, setPreview] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingResult, setLoadingResult] = useState("");
-  const [size, setSize] = useState("Default");
+  const [size, setSize] = useState("Обычный");
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(
@@ -24,7 +24,7 @@ export default function Actions() {
     setLoadingResult("");
     timer.current = setTimeout(() => {
       setLoading(false);
-      setLoadingResult("Loading demonstration complete.");
+      setLoadingResult("Демонстрация загрузки завершена.");
     }, 1200);
   }
 
@@ -32,25 +32,25 @@ export default function Actions() {
     <div className="grid gap-4">
       <Specimen
         id="actions"
-        title="Actions"
-        description="One lime action leads. Secondary and plain buttons stay quiet; destructive actions sit apart."
+        title="Действия"
+        description="Одно лаймовое действие ведёт дальше. Вторичные и текстовые кнопки сдержанны; опасные действия отделены."
         states={[
           "default",
           "hover",
-          "keyboard focus",
+          "клавиатурный фокус",
           "disabled",
           "loading",
           "compact",
           "large",
           "icon-only",
         ]}
-        usage="Buttons act on this preview only. Icon-only controls have an accessible name; loading keeps a visible label and blocks repeated activation."
+        usage="Кнопки действуют только в примере. У иконок есть доступные имена; загрузка сохраняет подпись и блокирует повторный запуск."
         recipe={`Primary: ${kit.button}\nSecondary: ${kit.secondary}\nPlain: ${kit.plain}\nDestructive: ${kit.danger}`}
       >
         <div className="flex flex-wrap items-center gap-3">
           <Button onClick={() => setNotes((value) => value + 1)}>
             <Icon name="plus" />
-            Add note
+            Добавить заметку
           </Button>
           <Button
             variant="secondary"
@@ -59,68 +59,68 @@ export default function Actions() {
             aria-controls={`${groupId}-preview`}
           >
             <Icon name="eye" />
-            {preview ? "Hide preview" : "Preview notes"}
+            {preview ? "Скрыть просмотр" : "Посмотреть заметки"}
           </Button>
           <Button
             variant="plain"
             onClick={() => setPreview(false)}
             disabled={!preview}
           >
-            Cancel
+            Отмена
           </Button>
-          <Button disabled>Unavailable</Button>
+          <Button disabled>Недоступно</Button>
         </div>
         <p className={`mt-4 text-sm ${kit.muted}`} role="status">
-          Notes added in this preview: {notes}
+          Заметки, добавленные в примере: {notes}
         </p>
         <div
           id={`${groupId}-preview`}
           hidden={!preview}
           className={`mt-4 ${kit.card} bg-[var(--workspace-brand-background)]`}
         >
-          <p className="text-sm font-semibold">Project notes</p>
+          <p className="text-sm font-semibold">Заметки проекта</p>
           <p className={`mt-2 text-sm ${kit.muted}`}>
             {notes
-              ? `${notes} sample ${notes === 1 ? "note is" : "notes are"} ready to review.`
-              : "Add a note to begin this demonstration."}
+              ? `${notes} sample ${notes === 1 ? "заметка" : "заметки"} готов к проверке.`
+              : "Добавьте заметку, чтобы начать пример."}
           </p>
         </div>
         <div className="mt-6 grid gap-6 border-t border-[var(--workspace-brand-line)] pt-6 sm:grid-cols-2">
           <div>
-            <h4 className={kit.label}>Sizes</h4>
+            <h4 className={kit.label}>Размеры</h4>
             <div className="mt-3 flex flex-wrap items-center gap-3">
               <Button
                 variant="secondary"
                 className="min-h-11 px-3 text-xs"
-                onClick={() => setSize("Compact")}
+                onClick={() => setSize("Компактный")}
               >
-                Compact
+                Компактный
               </Button>
-              <Button variant="secondary" onClick={() => setSize("Default")}>
-                Default
+              <Button variant="secondary" onClick={() => setSize("Обычный")}>
+                Обычный
               </Button>
               <Button
                 variant="secondary"
                 className="min-h-14 px-6 text-base"
-                onClick={() => setSize("Large")}
+                onClick={() => setSize("Крупный")}
               >
-                Large
+                Крупный
               </Button>
               <Button
                 variant="secondary"
                 className="h-11 w-11 p-0"
-                aria-label="Add a sample note"
+                aria-label="Добавить пример заметки"
                 onClick={() => setNotes((value) => value + 1)}
               >
                 <Icon name="plus" />
               </Button>
             </div>
             <p className={`mt-3 text-xs ${kit.muted}`} role="status">
-              Last size tried: {size}
+              Последний выбранный размер: {size}
             </p>
           </div>
           <div>
-            <h4 className={kit.label}>Loading</h4>
+            <h4 className={kit.label}>Загрузка</h4>
             <div className="mt-3">
               <Button
                 variant="secondary"
@@ -133,11 +133,11 @@ export default function Actions() {
                 ) : (
                   <Icon name="arrow-right" />
                 )}
-                {loading ? "Working…" : "Try loading state"}
+                {loading ? "Working…" : "Попробовать загрузку"}
               </Button>
             </div>
             <p className={`mt-3 min-h-5 text-xs ${kit.muted}`} role="status">
-              {loadingResult || "A short local state demonstration."}
+              {loadingResult || "Короткий пример локального состояния."}
             </p>
           </div>
         </div>
@@ -148,15 +148,15 @@ export default function Actions() {
             disabled={notes === 0 && !preview}
           >
             <Icon name="trash" />
-            Reset notes
+            Сбросить заметки
           </Button>
         </div>
         <ConfirmationDialog
           open={resetOpen}
           onOpenChange={setResetOpen}
-          title="Reset notes?"
-          description="Remove all notes from this local demonstration and close their preview."
-          confirmLabel="Reset notes"
+          title="Сбросить заметки?"
+          description="Удалить все заметки этого примера и закрыть их просмотр."
+          confirmLabel="Сбросить заметки"
           onConfirm={() => {
             setNotes(0);
             setPreview(false);

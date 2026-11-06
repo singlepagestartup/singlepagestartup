@@ -22,7 +22,7 @@ export function Component({
         target="_self"
         className="sr-only focus:not-sr-only focus:block focus:px-6 focus:py-4 focus-visible:outline-2 focus-visible:outline-[color:var(--workspace-brand-accent)]"
       >
-        Skip to page content
+        Перейти к содержимому страницы
       </a>
       <WebsiteBuilderModuleWidget
         variant="navbar-ai-chat-landing"

@@ -15,7 +15,7 @@ test("profile settings retain the requested profile and refuse an unavailable ID
     id: "maker",
     title: "Sam",
     subtitle: "Maker",
-    description: "Pottery workshops",
+    description: "Мастерская керамики",
     slug: "sam",
   };
   const html = renderToStaticMarkup(
@@ -38,7 +38,7 @@ test("profile settings retain the requested profile and refuse an unavailable ID
       />
     </AccountProvider>,
   );
-  expect(unavailable).toContain("Profile unavailable in this preview.");
+  expect(unavailable).toContain("Профиль недоступен в этом примере.");
   expect(unavailable).not.toContain("Save profile");
 });
 
@@ -57,16 +57,16 @@ test("website and AI Chat settings share current-user profile, methods and data 
     expect(html).toContain('value="alex"');
     expect(html).toContain("singlepagestartup-account-mascot-square.png");
     expect(html).not.toContain("images.unsplash.com");
-    expect(html).toContain("Choose image");
-    expect(html).toContain("Change email");
-    expect(html).toContain("Change password");
-    expect(html).toContain("Add sign-in method");
-    expect(html).toContain("View purchases and receipts");
-    expect(html).toContain("Delete account and project data");
-    expect(html).toContain("When a change cannot be saved");
+    expect(html).toContain("Выбрать изображение");
+    expect(html).toContain("Изменить почту");
+    expect(html).toContain("Изменить пароль");
+    expect(html).toContain("Добавить способ входа");
+    expect(html).toContain("Посмотрите покупки и чеки.");
+    expect(html).toContain("Удалить аккаунт и данные проектов");
+    expect(html).toContain("Если изменения не сохраняются");
     expect(html).not.toContain('name="current-password"');
     expect(html).not.toContain("Change avatar");
-    expect(html.includes("Buy tokens")).toBe(showTokens);
+    expect(html.includes("Купить токены")).toBe(showTokens);
   }
 });
 
@@ -89,13 +89,13 @@ test("profile fields come from the supplied example even with browser storage", 
         avatar: aiChatAccount.profile.avatar!,
         role: "Maker",
         slug: "alex-maker",
-        description: "Pottery workshops",
+        description: "Мастерская керамики",
       }}
     >
       <Widget variant="subject-me-profile-settings" />
     </AccountProvider>,
   );
   expect(html).toContain('value="alex-maker"');
-  expect(html).toContain("Pottery workshops");
+  expect(html).toContain("Мастерская керамики");
   expect(reads).toBe(0);
 });

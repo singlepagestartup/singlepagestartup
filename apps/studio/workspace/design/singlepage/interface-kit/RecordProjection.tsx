@@ -130,7 +130,7 @@ export function RecordList<T extends { id: string }>({
   if (!length)
     return (
       <p role="status" className="p-5">
-        No records to display.
+        Нет записей для отображения.
       </p>
     );
   return (

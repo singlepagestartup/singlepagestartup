@@ -50,12 +50,17 @@ export default async function Server(props: IComponentProps) {
                   );
                 return [
                   source.id,
-                  <SourceFiles key={source.id} files={files} />,
+                  <SourceFiles
+                    language={props.language}
+                    key={source.id}
+                    files={files}
+                  />,
                 ] as const;
               } catch (error) {
                 return [
                   source.id,
                   <SourceFiles
+                    language={props.language}
                     key={source.id}
                     error={
                       error instanceof Error

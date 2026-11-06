@@ -1,3 +1,8 @@
+import { Component as EcommerceModuleProductCategoryDefault } from "./ecommerce-module/product/category-default";
+import { Component as EcommerceModuleProductProfileDefault } from "./ecommerce-module/product/profile-default";
+import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
+import { Component as MeBlogModuleArticleCreateDefault } from "./me/blog-module/article/create-default";
+import { Component as MeAccount } from "./me/account";
 import { Component as SocialModuleProfileFind } from "./social-module/profile/find";
 import { Component as MeBlogModuleArticlePrivateContentDefault } from "./me/blog-module/article/private-content-default";
 import { Component as MeNavigationControlsAiChat } from "./me/navigation/controls-ai-chat";
@@ -69,8 +74,6 @@ import { Component as AuthenticationSelectMethodDefault } from "./authentication
 import { Component as AuthenticationEthereumVirtualMachineDefault } from "./authentication/ethereum-virtual-machine-default";
 import { Component as AuthenticationMeDefault } from "./authentication/me-default";
 import { Component as GetEmails } from "./identity/get-emails";
-import { Component as EcommerceModuleProductCheckoutDefault } from "./ecommerce-module/product/checkout-default";
-import { Component as EcommerceModuleProductCartDefault } from "./ecommerce-module/product/cart-default";
 import { Component as AuthenticationButtonDefault } from "./authentication/button-default";
 import { Component as OverviewDefault } from "./overview-default";
 import { Component as IdentityUpdateDefault } from "./identity/settings-default";
@@ -84,6 +87,13 @@ import { Component as SocialModuleProfileChatListDefault } from "./social-module
 import { Component as SocialModuleProfileChatOverviewDefault } from "./social-module/profile/chat/overview/default";
 
 export const variants = {
+  "ecommerce-module-product-category-default":
+    EcommerceModuleProductCategoryDefault,
+  "ecommerce-module-product-profile-default":
+    EcommerceModuleProductProfileDefault,
+  hidden: Hidden,
+  "me-blog-module-article-create-default": MeBlogModuleArticleCreateDefault,
+  "me-account": MeAccount,
   "social-module-profile-find": SocialModuleProfileFind,
   "me-blog-module-article-private-content-default":
     MeBlogModuleArticlePrivateContentDefault,
@@ -195,9 +205,6 @@ export const variants = {
   "authentication-email-and-password-registration-form-default":
     AuthenticationEmailAndPasswordRegistrationFormDefault,
   "identity-settings-default": IdentityUpdateDefault,
-  "ecommerce-module-product-checkout-default":
-    EcommerceModuleProductCheckoutDefault,
-  "ecommerce-module-product-cart-default": EcommerceModuleProductCartDefault,
   "get-emails": GetEmails,
   "authentication-button-default": AuthenticationButtonDefault,
   "overview-default": OverviewDefault,

@@ -1,7 +1,10 @@
 import type { UseQueryOptions } from "@tanstack/react-query";
-import type { IComponentPropsExtended as IParentExtended } from "@sps/shared-frontend-components/singlepage/default/interface";
+import {
+  type IComponentPropsExtended as IParentExtended,
+  type IComponentProps as IParent,
+} from "@sps/shared-frontend-components/singlepage/default/interface";
 import type { IModel } from "@sps/social/models/profile/sdk/model";
-import type { IComponentProps as IParent } from "@sps/shared-frontend-components/singlepage/default/interface";
+
 export const variant = "sidebar-ai-chat-project" as const;
 export interface IComponentProps extends IParent<IModel, typeof variant> {
   apiProps?: IParent<IModel, typeof variant>["apiProps"] & {

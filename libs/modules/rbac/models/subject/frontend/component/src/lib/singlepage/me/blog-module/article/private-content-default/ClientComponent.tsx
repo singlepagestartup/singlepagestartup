@@ -1,6 +1,6 @@
 "use client";
-
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
+import { Component as BlogModuleArticle } from "@sps/blog/models/article/frontend/component";
 import { Component as BlogModuleArticlesToWebsiteBuilderModuleWidgets } from "@sps/blog/relations/articles-to-website-builder-module-widgets/frontend/component";
 import type { IComponentProps } from "./interface";
 
@@ -17,7 +17,15 @@ export function Component(props: IComponentProps) {
           },
         },
       }}
-      fallback={<div className="p-5 bg-blue-400">Not authorized</div>}
+      fallback={
+        <BlogModuleArticle
+          isServer={false}
+          variant="private-content-default"
+          language={props.language}
+          access="locked"
+          actionHref={`/${props.language}/ecommerce`}
+        />
+      }
     >
       <BlogModuleArticlesToWebsiteBuilderModuleWidgets
         isServer={false}
@@ -36,19 +44,18 @@ export function Component(props: IComponentProps) {
           },
         }}
       >
-        {({ data }) => {
-          return data?.map((entity, index) => {
-            return (
-              <BlogModuleArticlesToWebsiteBuilderModuleWidgets
-                key={index}
-                isServer={false}
-                variant={entity.variant as any}
-                data={entity}
-                language={props.language}
-              />
-            );
-          });
-        }}
+        {({ data }) =>
+          data?.map((entity) => (
+            <BlogModuleArticlesToWebsiteBuilderModuleWidgets
+              key={entity.id}
+              isServer={false}
+              variant={entity.variant as any}
+              dataSource="props"
+              data={entity}
+              language={props.language}
+            />
+          ))
+        }
       </BlogModuleArticlesToWebsiteBuilderModuleWidgets>
     </Subject>
   );

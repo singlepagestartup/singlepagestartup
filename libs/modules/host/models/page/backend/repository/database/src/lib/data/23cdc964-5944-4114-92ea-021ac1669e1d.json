@@ -1,10 +1,32 @@
 {
+  "metadata": {
+    "seo": {
+      "description": {
+        "en": "An open modular framework for websites, stores and web services. Explore its structure, modules and interface examples.",
+        "ru": "Открытый модульный фреймворк для сайтов, магазинов и веб-сервисов. Изучите устройство, модули и примеры интерфейсов."
+      }
+    },
+    "seoDisplay": {
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "An open modular framework for websites, stores and web services. Explore its structure, modules and interface examples.",
+        "ru": "Открытый модульный фреймворк для сайтов, магазинов и веб-сервисов. Изучите устройство, модули и примеры интерфейсов."
+      },
+      "opengraphDescription": {
+        "en": "An open modular framework for websites, stores and web services. Explore its structure, modules and interface examples.",
+        "ru": "Открытый модульный фреймворк для сайтов, магазинов и веб-сервисов. Изучите устройство, модули и примеры интерфейсов."
+      }
+    }
+  },
   "id": "23cdc964-5944-4114-92ea-021ac1669e1d",
   "title": "Code Framework",
   "url": "/framework",
   "description": "Description",
   "createdAt": "2025-01-24T23:47:55.469Z",
-  "updatedAt": "2026-10-12T21:16:37.385Z",
+  "updatedAt": "2026-10-30T22:25:04.874Z",
   "variant": "default",
   "className": null,
   "language": "en",

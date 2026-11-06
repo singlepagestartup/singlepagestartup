@@ -124,6 +124,7 @@ export class Coder {
       template: "",
       lib_name: this.baseName,
       name_pascal_cased: this.nameStyles.pascalCased.base,
+      module_name_kebab_cased: this.nameStyles.kebabCased.base,
       offset_from_root: offsetFromRootProject,
       directory: this.baseDirectory,
     });

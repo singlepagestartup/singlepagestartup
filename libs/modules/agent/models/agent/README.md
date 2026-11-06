@@ -25,6 +25,51 @@ configuration metadata used by the automation layer.
 - `admin-form`: admin UI create/edit form.
 - `admin-table`: admin UI table for browsing agents.
 
+## Scheduled Run Lifecycle
+
+`POST /api/agent/agents/cron` accepts an empty request without credentials and
+returns HTTP 204. The server crontab calls it once per minute. On this route,
+the Agent middleware admits one tick per calendar minute per API process.
+Repeat requests skip the queue, observer, revalidation and action log.
+The route chooses the jobs from the configured agents. A caller cannot
+choose a job or force one to run early.
+
+Each scheduled slug has one durable Broadcast message in the `cron` channel. Replicas use a
+short PostgreSQL transaction to check available slots and reserve due jobs.
+The transaction commits before the API dispatches any work. Agents that have
+never run go first, followed by those that have waited longest. A finished
+job is eligible at the next occurrence of its cron expression after completion.
+Each tick uses one schedule cutoff as it fills newly freed slots.
+
+The API sends its internal RBAC credential and the reserved run ID to the
+agent handler. Bind the exported `AgentRun` middleware to custom scheduled
+handlers, as the built-in routes do. It starts that ID once, renews its lease while working,
+and records completion even if the dispatching HTTP client has timed out. A
+crashed process stops renewing. After the lease expires, a later tick can
+reclaim the job when its schedule allows. If a worker loses the database
+connection for longer than the lease while an external side effect is in
+progress, recovery can repeat that effect. Handlers that charge or send
+messages need their own deduplication at that boundary.
+
+Subscribers to the `cron` channel can read the current run ID and its result
+from the same message. On first use, the scheduler reads the most recent
+ordinary cron message for each missing slug to preserve existing schedules.
+Routine message expiry leaves the durable delivery in place. See the
+[Broadcast Message contract](../../../broadcast/models/message/README.md).
+
+- `AGENT_CRON_MAX_CONCURRENCY` (default 3) limits active scheduled jobs across
+  replicas, including handlers still working after the HTTP timeout. Set it to
+  1 to run one job at a time. With multiple slots, the RBAC order check can
+  start before Ecommerce changes an unpaid order to `canceling`. In that
+  case RBAC can finish the cancellation on its next scheduled run.
+- `AGENT_MAX_DURATION_IN_SECONDS` (default 5400) is the recovery window after
+  the last heartbeat. The renewal interval is one third of that window,
+  capped at 30 seconds.
+- `AGENT_CRON_DISPATCH_TIMEOUT_IN_SECONDS` (default 10) bounds the dispatcher's
+  wait for the HTTP response.
+- `AGENT_PAGE_CACHE_MAX_CONSECUTIVE_FAILURES` (default 10) stops page warming
+  after consecutive failures. A superseded page-cache run stops between URLs.
+
 ## Seeded Agents
 
 The repository ships the agent rows below; `npx nx run api:db:seed` creates

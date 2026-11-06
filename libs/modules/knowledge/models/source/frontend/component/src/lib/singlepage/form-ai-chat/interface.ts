@@ -5,6 +5,7 @@ import type {
 } from "@sps/shared-frontend-components/singlepage/admin/form/interface";
 
 export interface IEditorOptions {
+  language?: string;
   placeholder?: string;
   onSave: (value: { title: string; content: string }) => Promise<void | string>;
   onDiscuss?: () => void;

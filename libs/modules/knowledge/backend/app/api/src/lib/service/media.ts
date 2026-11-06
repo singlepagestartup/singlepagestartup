@@ -274,7 +274,9 @@ export class MediaService {
 
   private async read(source: string | null) {
     if (!this.props.readFile)
-      throw new Error("Knowledge File service reader is not configured.");
+      throw new Error(
+        "Configuration error. Knowledge File service reader is not configured.",
+      );
     return this.props.readFile({ file: source });
   }
 }

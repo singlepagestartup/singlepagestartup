@@ -1,89 +1,81 @@
 {
   "hero": {
-    "title": "Your notes, photos and plans. One project chat.",
+    "title": "Создавайте материалы на знаниях своего бизнеса",
     "paragraphs": [
-      "AI Chat for your business idea.",
-      "Upload what you have. AI checks for gaps and helps you edit each document in its own thread. Attach saved documents to new conversations about your project.",
-      "Your documents stay editable. Export them and use them freely outside AI Chat."
+      "AI Chat · база знаний и ИИ-ассистент для бизнеса",
+      "Соберите сведения о продуктах, цены, заметки и опыт команды. Готовьте на их основе статьи, рекламные сообщения и технические задания. Сохранённые документы помогают продолжать работу без повторного объяснения бизнеса.",
+      "Начните с одной задачи. Результат можно редактировать, скачать и использовать в своих материалах."
     ],
     "items": [],
     "links": [
       {
-        "text": "Start with my files",
+        "text": "Начать с моих материалов",
         "href": "/ai-chat/rbac/subjects/authentication/registration"
       },
       {
-        "text": "Sign in",
+        "text": "Войти",
         "href": "/ai-chat/rbac/subjects/authentication/select-method"
       }
     ]
   },
   "foundation": {
-    "title": "Your project, ready to work on.",
+    "title": "Одна база знаний — разные задачи",
     "paragraphs": [
-      "Your files become working documents you can open, edit and use in chat."
+      "Вы выбираете продукт, аудиторию и результат. Ассистент использует условия вашего бизнеса в каждом материале."
     ],
     "items": [
       {
-        "title": "Brief",
-        "text": "What you want to make and the material you have."
+        "title": "Статьи и тексты",
+        "text": "Описание услуги, опыт и вопросы клиентов → статья с понятными примерами и предложением этой услуги."
       },
       {
-        "title": "Strategy",
-        "text": "Who you want to reach and what you will offer them."
+        "title": "Рекламные сообщения",
+        "text": "Один продукт, две аудитории → разные аргументы и идеи креативов с одинаковыми ценами и условиями."
       },
       {
-        "title": "Brand",
-        "text": "How you describe the project and speak to customers."
-      },
-      {
-        "title": "Design",
-        "text": "The intended appearance and the images you can use."
-      },
-      {
-        "title": "Products",
-        "text": "Each product's customer, offer and working sections."
+        "title": "Техническое задание",
+        "text": "Задача бизнеса → действия пользователей, нужные функции и критерии готовности будущего сайта или сервиса."
       }
     ],
     "links": []
   },
   "workflow": {
-    "title": "Try the chat.",
+    "title": "Посмотрите работу на примере мастерской",
     "paragraphs": [
-      "Check the workshop files and send an answer. Review Products.md, work on another file, then open a topic with the documents you saved."
+      "Откройте исходные файлы гончарной мастерской, уточните аудиторию и сохраните описание занятия. Затем используйте его в новом разговоре: например, для приглашения на мастер-класс. Это вымышленный пример."
     ],
     "items": [
       {
-        "title": "Add materials",
-        "text": "Bring notes, photos, plans or describe the idea in chat."
+        "title": "Добавьте сведения",
+        "text": "Заметки, прайс, документы, изображения или описание задачи в чате."
       },
       {
-        "title": "Review",
-        "text": "AI checks the material and asks about what is missing."
+        "title": "Выберите результат",
+        "text": "Статья, рекламное сообщение, описание продукта или техническое задание."
       },
       {
-        "title": "Edit together",
-        "text": "Discuss and edit each document in its own thread. Review it when ready."
+        "title": "Обсудите правки",
+        "text": "Ассистент использует источники и уточняет условия. Вы редактируете содержание в документе."
       },
       {
-        "title": "Keep working",
-        "text": "Open a topic and attach the saved documents you want to use."
+        "title": "Продолжайте с сохранёнными знаниями",
+        "text": "Новая задача использует документы выбранного продукта. Результат можно экспортировать."
       }
     ],
     "links": []
   },
   "publish": {
-    "title": "Edit the document.",
+    "title": "Сохраните результат",
     "paragraphs": [
-      "Read the draft, change the wording and save the section when it is ready."
+      "Проверьте факты своего бизнеса, внесите правки и сохраните документ для следующих материалов."
     ],
     "items": [],
     "links": []
   },
   "continue": {
-    "title": "Keep working in chat.",
+    "title": "Начните с материалов своего бизнеса",
     "paragraphs": [
-      "Open a topic for your next task. Choose which saved documents to attach, then discuss the project with AI Chat."
+      "Добавьте сведения об одной услуге или продукте и выберите первую задачу: статью, рекламное сообщение или техническое задание."
     ],
     "items": [],
     "links": []
@@ -94,152 +86,156 @@
     "items": [],
     "links": [
       {
-        "text": "Start with my files",
+        "text": "Начать с моих материалов",
         "href": "/ai-chat/rbac/subjects/authentication/registration"
       },
       {
-        "text": "Sign in",
+        "text": "Войти",
         "href": "/ai-chat/rbac/subjects/authentication/select-method"
-      },
-      {
-        "text": "Code Framework",
-        "href": "/framework"
       }
     ]
   },
   "terms": {
-    "title": "Access, tokens and your materials",
+    "title": "Вопросы, стоимость и данные",
     "paragraphs": [
-      "Registration shows the current free token allowance. Paid AI work uses the token balance."
+      "При регистрации доступен текущий бесплатный лимит токенов. Дальнейшая работа оплачивается по использованию: стоимость ответа зависит от модели и объёма обработки."
     ],
     "items": [
       {
-        "title": "Token cost",
-        "text": "0.13 roubles per internal token. One token is charged when input is sent; a successful request settles at actual provider cost, rounded up to a whole internal token, with a minimum of one token."
+        "title": "У меня уже есть сайт",
+        "text": "Используйте AI Chat для статей, рекламы, писем и других материалов. Создавать новый сайт для этого не требуется."
       },
       {
-        "title": "Top-ups",
-        "text": "100, 300, 500, 1,000 or 3,000 roubles, at the same rate without package discounts. Tokens do not expire. Cash refunds for purchases are decided case by case."
+        "title": "Чем отличается от обычного чата",
+        "text": "Знания организованы вокруг бизнеса и его продуктов: состав, аудитория, условия, исследования и материалы. Вы выбираете документы для конкретной задачи."
       },
       {
-        "title": "Balance limit",
-        "text": "The balance can go below zero. At −2,000 internal tokens or lower, new paid AI requests are restricted. Top up above the threshold to return to your saved task."
+        "title": "Как сохранить условия продукта",
+        "text": "Ассистент опирается на исходные сведения. Цена, состав и ограничения сохраняются в документе продукта; вы проверяете их перед применением текста."
       },
       {
-        "title": "Failed or cancelled AI requests",
-        "text": "All token deductions are restored, including the initial token and any settlement. The net charge is zero; the service pays the provider expense."
+        "title": "Можно ли скачать результат",
+        "text": "Документы доступны для экспорта. Их можно передать сотруднику, подрядчику или использовать в другом инструменте."
       },
       {
-        "title": "Support",
-        "text": "Initial support requests are processed within 24 hours, without continuous live coverage or a promised resolution time."
+        "title": "Стоимость",
+        "text": "0,13 ₽ за внутренний токен. При отправке списывается один токен, после ответа — остаток по расходам провайдера с округлением вверх. Минимум успешного запроса — один токен."
       },
       {
-        "title": "Materials",
-        "text": "Review how your materials are processed and stored before uploading. Account deletion removes active data; infrastructure backups may retain copies for up to six months."
+        "title": "Пополнение и возвраты",
+        "text": "100, 300, 500, 1 000 или 3 000 ₽ по одной цене токена. Токены не сгорают. При ошибке или отмене запроса все его списания возвращаются; денежный возврат покупки рассматривается индивидуально."
+      },
+      {
+        "title": "Баланс и поддержка",
+        "text": "При балансе −2 000 токенов или ниже новые платные запросы доступны после пополнения выше порога. Обращения в поддержку обрабатываются в течение 24 часов; срок решения зависит от вопроса."
+      },
+      {
+        "title": "Обработка материалов",
+        "text": "Сервис использует материалы для запрошенной работы и передаёт необходимые сведения ИИ-провайдеру. После удаления аккаунта активные данные удаляются; резервные копии хостинга могут храниться до шести месяцев."
       }
     ],
     "links": [
       {
-        "text": "Buy tokens",
+        "text": "Купить токены",
         "href": "/ai-chat/rbac/subjects/tokens"
       },
       {
-        "text": "How your materials are processed and stored",
+        "text": "Обработка и хранение материалов",
         "href": "/ai-chat/social/profiles/create#how-your-materials-are-processed-and-stored"
       },
       {
-        "text": "Get help",
+        "text": "Получить помощь",
         "href": "/ai-chat/help"
       }
     ]
   },
   "demoFiles": {
-    "title": "Your files",
+    "title": "Ваши файлы",
     "paragraphs": [],
     "items": [
       {
         "title": "Notes.md",
-        "text": "I want to run weekend pottery workshops."
+        "text": "Хочу проводить гончарные мастер-классы по выходным."
       },
       {
         "title": "Plan.md",
-        "text": "Make a cup by hand in a small group."
+        "text": "Сделать чашку вручную в небольшой группе."
       },
       {
         "title": "References.jpg",
-        "text": "Photos of the studio, clay and handmade cups."
+        "text": "Фотографии мастерской, глины и чашек ручной работы."
       }
     ],
     "links": []
   },
   "demoDraft": {
-    "title": "Pottery workshops",
+    "title": "Гончарные мастер-классы",
     "paragraphs": [
-      "Weekend pottery workshops where people make a cup by hand in a small group. Who the workshop is for is still open.",
-      "Weekend pottery workshops for {audience} Make a cup by hand in a small group."
+      "Гончарные мастер-классы по выходным: участники делают чашку вручную в небольшой группе. Для кого занятие — пока открытый вопрос.",
+      "Гончарные мастер-классы по выходным для аудитории: {audience}. Сделайте чашку вручную в небольшой группе."
     ],
     "items": [
       {
-        "title": "Customer",
-        "text": "Who the workshop is for is still open."
+        "title": "Клиент",
+        "text": "Пока не определено, для кого занятие."
       },
       {
-        "title": "Offer",
-        "text": "Make a cup by hand in a small group."
+        "title": "Предложение",
+        "text": "Сделать чашку вручную в небольшой группе."
       },
       {
-        "title": "Missing",
-        "text": "Who is this workshop for?"
+        "title": "Не хватает",
+        "text": "Для кого этот мастер-класс?"
       }
     ],
     "links": []
   },
   "demoDocuments": {
-    "title": "Project documents",
+    "title": "Документы проекта",
     "paragraphs": [],
     "items": [
       {
         "title": "Brief",
-        "text": "Run weekend pottery workshops in a local studio. Start with a small group making cups by hand."
+        "text": "Проводить гончарные мастер-классы по выходным в местной мастерской. Начать с небольшой группы, которая делает чашки вручную."
       },
       {
         "title": "Strategy",
-        "text": "Reach people looking for a hands-on weekend activity. The intended audience still needs to be specified."
+        "text": "Обратиться к людям, которые ищут практическое занятие на выходные. Аудиторию ещё нужно уточнить."
       },
       {
         "title": "Brand",
-        "text": "Use warm, direct language. Show the clay, tools and process without promising results."
+        "text": "Говорить тепло и прямо. Показывать глину, инструменты и процесс без обещания результата."
       },
       {
         "title": "Design",
-        "text": "Use photographs of the studio and materials. Keep workshop information clear and readable."
+        "text": "Использовать фотографии мастерской и материалов. Сделать сведения о занятиях ясными и читаемыми."
       },
       {
         "title": "Products",
-        "text": "Weekend pottery workshops where people make a cup by hand in a small group. Who the workshop is for is still open."
+        "text": "Гончарные мастер-классы по выходным: участники делают чашку вручную в небольшой группе. Для кого занятие — пока открытый вопрос."
       }
     ],
     "links": []
   },
   "demoConversation": {
-    "title": "Project chat",
+    "title": "Чат проекта",
     "paragraphs": [],
     "items": [
       {
-        "title": "Add materials",
-        "text": "I can work with these three files. Check them to start."
+        "title": "Добавить материалы",
+        "text": "Могу работать с этими тремя файлами. Проверьте их для начала."
       },
       {
-        "title": "Review",
-        "text": "The workshop plan is clear. Who is it for: adults trying pottery, people with experience, or someone else?"
+        "title": "Проверить",
+        "text": "План занятия понятен. Для кого он: взрослых новичков, людей с опытом или другой аудитории?"
       },
       {
-        "title": "Edit together",
-        "text": "I added the audience, offer and format to Products.md. Review the draft and change anything that does not fit."
+        "title": "Редактировать вместе",
+        "text": "Я добавил аудиторию, предложение и формат в Products.md. Проверьте черновик и исправьте то, что не подходит."
       },
       {
-        "title": "Keep working",
-        "text": "Open a topic in the project workspace and choose the saved documents for that conversation."
+        "title": "Продолжить работу",
+        "text": "Откройте тему в рабочем пространстве и выберите документы для этого разговора."
       }
     ],
     "links": []
@@ -249,139 +245,139 @@
     "paragraphs": [],
     "items": [
       {
-        "title": "Customer",
+        "title": "Клиент",
         "text": "{audience}"
       },
       {
-        "title": "Offer",
-        "text": "Make a cup by hand."
+        "title": "Предложение",
+        "text": "Сделать чашку вручную."
       },
       {
-        "title": "Format",
-        "text": "A small group in a local studio."
+        "title": "Формат",
+        "text": "Небольшая группа в местной мастерской."
       }
     ],
     "links": []
   },
   "demoThreadPrompts": {
-    "title": "Document threads",
+    "title": "Переписки документов",
     "paragraphs": [],
     "items": [
       {
         "title": "Brief",
-        "text": "We have a studio workshop idea and three source files. What should the first session focus on?"
+        "text": "У нас есть идея занятия в мастерской и три исходных файла. На чём сосредоточить первое занятие?"
       },
       {
         "title": "Strategy",
-        "text": "Who should this workshop reach first?"
+        "text": "К кому обратиться с этим занятием в первую очередь?"
       },
       {
         "title": "Brand",
-        "text": "How should you invite people to the workshop?"
+        "text": "Как пригласить людей на занятие?"
       },
       {
         "title": "Design",
-        "text": "Which studio image should lead the page?"
+        "text": "Какой снимок мастерской поставить первым?"
       },
       {
         "title": "Products",
-        "text": "The workshop plan is clear. Who is it for: adults trying pottery, people with experience, or someone else?"
+        "text": "План занятия понятен. Для кого он: взрослых новичков, людей с опытом или другой аудитории?"
       }
     ],
     "links": []
   },
   "demoThreadInputs": {
-    "title": "Your next message",
+    "title": "Ваше следующее сообщение",
     "paragraphs": [],
     "items": [
       {
         "title": "Brief",
-        "text": "Keep the first session focused on making a cup."
+        "text": "Пусть первое занятие будет посвящено изготовлению чашки."
       },
       {
         "title": "Strategy",
-        "text": "Focus on adults trying pottery for the first time."
+        "text": "Ориентируйтесь на взрослых, впервые пробующих гончарное дело."
       },
       {
         "title": "Brand",
-        "text": "Use “Make your first cup” as the invitation."
+        "text": "Используйте приглашение «Сделайте свою первую чашку»."
       },
       {
         "title": "Design",
-        "text": "Lead with a close-up of hands working with clay."
+        "text": "Начните с крупного плана рук, работающих с глиной."
       },
       {
         "title": "Products",
-        "text": "Make the small group format clear."
+        "text": "Ясно обозначьте формат небольшой группы."
       }
     ],
     "links": []
   },
   "labels": {
-    "navigation-foundation": "Try the chat",
-    "navigation-workflow": "How it works",
-    "navigation-start": "Start with my files",
-    "skip-link": "Skip to page content",
-    "hero-photo-alt": "A solo founder pauses over notes for her new business.",
-    "final-title": "Bring your own project into the chat.",
-    "demo-project": "Pottery workshops",
-    "demo-chat": "Project chat",
-    "demo-files": "Your files",
-    "demo-sections": "Project documents",
-    "demo-progress": "Sections reviewed",
-    "demo-progress-note": "Unanswered questions stay visible. Review each section when it is ready.",
-    "demo-check": "Check materials",
-    "demo-answer": "Send answer",
-    "demo-answer-label": "Who is the workshop for?",
-    "demo-answer-placeholder": "Adults trying pottery for the first time.",
-    "demo-save": "Save Product description",
-    "demo-edit-label": "Product description",
-    "demo-continue": "Continue in chat",
-    "demo-message-label": "Message",
-    "demo-message-placeholder": "Ask about the project...",
-    "demo-send": "Send message",
-    "demo-reset": "Restart walkthrough",
-    "demo-ready": "Ready to review",
-    "demo-needs-input": "Needs an answer",
-    "demo-review": "Review draft",
-    "demo-accepted": "Reviewed",
-    "demo-add": "Add files",
-    "demo-upload-note": "Interactive walkthrough; changes stay in this page.",
-    "demo-you": "You",
+    "navigation-foundation": "Попробовать чат",
+    "navigation-workflow": "Как это работает",
+    "navigation-start": "Начать с моих материалов",
+    "skip-link": "Перейти к содержанию страницы",
+    "hero-photo-alt": "Фотограф и клиент обсуждают снимки товаров и условия съёмки",
+    "final-title": "Перенесите свой проект в чат.",
+    "demo-project": "Гончарные мастер-классы",
+    "demo-chat": "Чат проекта",
+    "demo-files": "Ваши файлы",
+    "demo-sections": "Документы проекта",
+    "demo-progress": "Проверено разделов",
+    "demo-progress-note": "Неотвеченные вопросы остаются видимыми. Проверяйте каждый раздел по готовности.",
+    "demo-check": "Проверить материалы",
+    "demo-answer": "Отправить ответ",
+    "demo-answer-label": "Для кого мастер-класс?",
+    "demo-answer-placeholder": "Взрослые, впервые пробующие гончарное дело.",
+    "demo-save": "Сохранить описание продукта",
+    "demo-edit-label": "Описание продукта",
+    "demo-continue": "Продолжить в чате",
+    "demo-message-label": "Сообщение",
+    "demo-message-placeholder": "Задайте вопрос о проекте…",
+    "demo-send": "Отправить сообщение",
+    "demo-reset": "Начать пример заново",
+    "demo-ready": "Готово к проверке",
+    "demo-needs-input": "Нужен ответ",
+    "demo-review": "Проверить черновик",
+    "demo-accepted": "Проверено",
+    "demo-add": "Добавить файлы",
+    "demo-upload-note": "Интерактивный пример; изменения остаются на этой странице.",
+    "demo-you": "Вы",
     "demo-agent": "AI Chat",
-    "demo-chat-saved": "Your saved documents are ready for the next conversation.",
-    "demo-followup": "How should I explain the workshop to a new customer?",
-    "demo-followup-reply": "Start with the offer in your saved Product description: {draft}",
-    "demo-editor": "Edit document",
-    "demo-save-section": "Save and review section",
-    "demo-saved-section": "Section saved and reviewed.",
-    "demo-attach": "Attach files",
-    "demo-files-added": "Files added to the chat.",
-    "demo-review-materials": "Check materials",
-    "demo-show-document": "Open document",
-    "demo-count-unit": "sections reviewed",
-    "demo-refine": "Refine this section",
-    "demo-answer-value": "Adults trying pottery for the first time.",
-    "demo-materials-thread": "Materials review",
-    "demo-document-threads": "Document threads",
-    "demo-document-thread": "Document thread",
-    "demo-workspace": "Project workspace",
-    "demo-new-topic": "New topic",
-    "demo-topic-hint": "Review a document, then attach its saved version to a new topic.",
-    "demo-thread-intro": "Discuss this file with AI Chat and edit its draft here.",
-    "demo-thread-message": "Message in this thread",
-    "demo-thread-reply": "I added your note to {document}. Review the updated draft below.",
-    "demo-working-note": "Working note",
-    "demo-open-workspace": "Open project workspace",
-    "demo-back-to-work": "Back to work",
-    "demo-workspace-intro": "Create a topic and choose the saved documents for this conversation.",
-    "demo-topic-title-label": "Topic name",
-    "demo-topic-title": "How should I explain the workshop to a new customer?",
-    "demo-topic-documents": "Attach saved documents",
-    "demo-saved-version": "Saved version",
-    "demo-create-topic": "Create topic",
-    "demo-topic-reply": "Here are the saved documents attached to this topic:",
-    "demo-topic-message": "What should I keep clear in this invitation?",
-    "demo-topic-message-label": "Message in this topic"
+    "demo-chat-saved": "Сохранённые документы готовы к следующему разговору.",
+    "demo-followup": "Подготовь приглашение на мастер-класс",
+    "demo-followup-reply": "Сделайте чашку вручную на занятии в небольшой группе. Подробности предложения из документа: {draft}",
+    "demo-editor": "Редактировать документ",
+    "demo-save-section": "Сохранить и проверить раздел",
+    "demo-saved-section": "Раздел сохранён и проверен.",
+    "demo-attach": "Прикрепить файлы",
+    "demo-files-added": "Файлы добавлены в чат.",
+    "demo-review-materials": "Проверить материалы",
+    "demo-show-document": "Открыть документ",
+    "demo-count-unit": "проверено разделов",
+    "demo-refine": "Уточнить раздел",
+    "demo-answer-value": "Взрослые, впервые пробующие гончарное дело.",
+    "demo-materials-thread": "Проверка материалов",
+    "demo-document-threads": "Переписки документов",
+    "demo-document-thread": "Переписка документа",
+    "demo-workspace": "Рабочее пространство проекта",
+    "demo-new-topic": "Новая тема",
+    "demo-topic-hint": "Проверьте документ и прикрепите сохранённую версию к новой теме.",
+    "demo-thread-intro": "Обсудите файл с AI Chat и отредактируйте черновик здесь.",
+    "demo-thread-message": "Сообщение в переписке",
+    "demo-thread-reply": "Я добавил заметку в {document}. Проверьте обновлённый черновик ниже.",
+    "demo-working-note": "Рабочая заметка",
+    "demo-open-workspace": "Открыть рабочее пространство проекта",
+    "demo-back-to-work": "Вернуться к работе",
+    "demo-workspace-intro": "Создайте тему и выберите документы для разговора.",
+    "demo-topic-title-label": "Название темы",
+    "demo-topic-title": "Подготовь приглашение на мастер-класс",
+    "demo-topic-documents": "Прикрепить сохранённые документы",
+    "demo-saved-version": "Сохранённая версия",
+    "demo-create-topic": "Создать тему",
+    "demo-topic-reply": "К теме прикреплены сохранённые документы:",
+    "demo-topic-message": "Что нужно ясно обозначить в приглашении?",
+    "demo-topic-message-label": "Сообщение в теме"
   }
 }

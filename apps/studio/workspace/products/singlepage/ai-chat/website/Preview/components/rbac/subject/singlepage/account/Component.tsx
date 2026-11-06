@@ -18,7 +18,7 @@ function Icon({
   const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
@@ -82,8 +82,8 @@ export function Component({
         className={`inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-3 text-sm text-[color:var(--workspace-brand-foreground)] no-underline hover:bg-[color:var(--workspace-brand-background)] ${kit.focus}`}
       >
         <Icon name="sign-in" />
-        <span className="hidden sm:inline">Sign in</span>
-        <span className="sr-only sm:hidden">Sign in</span>
+        <span className="hidden sm:inline">Войти</span>
+        <span className="sr-only sm:hidden">Войти</span>
       </a>
     );
   return (

@@ -4,6 +4,13 @@ const meta = {
   id: "modules-blog-models-category-singlepage-loading",
   title: "Modules/Blog/Category/Singlepage/Loading",
   component: Component,
+  decorators: [
+    (Story) => (
+      <div className="mx-auto w-full max-w-[440px]">
+        <Story />
+      </div>
+    ),
+  ],
   parameters: { layout: "padded" },
 } satisfies Meta<typeof Component>;
 export default meta;

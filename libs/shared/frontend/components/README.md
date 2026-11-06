@@ -1,5 +1,26 @@
 # Shared frontend component readers
 
+Variants select presentation components. Shared entrypoints and readers do not
+discard records because their saved variant is hidden, and the hidden view is
+invoked through the same registry as any other view. Authorization belongs to
+the API, independently of presentation.
+
+Model, relation and admin readers forward ordinary SDK filters unchanged. A
+caller that needs a subset supplies it explicitly, for example:
+
+```tsx
+apiProps={{
+  params: {
+    filters: {
+      and: [{ column: "variant", method: "ne", value: "hidden" }],
+    },
+  },
+}}
+```
+
+The selected collection and its count use the same filters. Reader helpers do
+not add variant predicates or a separate administrative visibility mode.
+
 The default model and collection readers use their SDK and Provider unless the
 caller explicitly selects `dataSource="props"`.
 

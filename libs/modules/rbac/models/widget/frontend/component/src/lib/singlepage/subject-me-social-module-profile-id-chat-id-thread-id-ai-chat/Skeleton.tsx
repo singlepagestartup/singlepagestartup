@@ -1,17 +1,23 @@
-export interface IWorkspaceSkeletonProps {
-  stage?: "checking-session" | "loading-projects" | "loading-chat";
-  embedded?: boolean;
-}
+import { internationalization } from "@sps/shared-configuration";
+import type { IWorkspaceSkeletonProps } from "./interface";
 export function Component({
+  language = internationalization.defaultLanguage.code,
   stage = "checking-session",
   embedded = false,
 }: IWorkspaceSkeletonProps) {
+  const ru = language === "ru";
   const label =
     stage === "checking-session"
-      ? "Checking your session…"
+      ? ru
+        ? "Проверка входа…"
+        : "Checking your session…"
       : stage === "loading-projects"
-        ? "Loading your projects…"
-        : "Loading your chat…";
+        ? ru
+          ? "Загрузка проектов…"
+          : "Loading your projects…"
+        : ru
+          ? "Загрузка чата…"
+          : "Loading your chat…";
   const content = (
     <section
       role="status"

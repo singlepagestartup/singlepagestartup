@@ -3,6 +3,7 @@ import type { IComponentPropsExtended } from "./interface";
 export function Component(props: IComponentPropsExtended) {
   return (
     <AuthenticationPresentation
+      isServer={props.isServer}
       variant="content-ai-chat-forgot-password"
       data={props.data}
       language={props.language}

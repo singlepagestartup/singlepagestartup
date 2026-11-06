@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "b682cfc9-b064-4598-8fad-b3cc08b09bb7",
+  "createdAt": "2026-10-26T00:12:53.727Z",
+  "updatedAt": "2026-10-27T14:59:52.426Z",
+  "variant": "dropdown",
+  "title": {
+    "en": "Who maintains the framework?",
+    "ru": "Кто поддерживает фреймворк?"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"SinglePageStartup maintains the shared codebase. Source code, bug discussions and change history are available on GitHub.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"SinglePageStartup поддерживает общую кодовую базу. Исходники, обсуждение ошибок и история изменений доступны на GitHub.\"}]}]}"
+  },
+  "adminTitle": "Кто поддерживает фреймворк?",
+  "slug": "framework-reviewed-faq-5"
+}

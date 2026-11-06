@@ -84,7 +84,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       });
 
       if (identities?.length) {
-        throw new Error("Not Found error. Identity already exists");
+        throw new Error("Conflict error. Identity already exists");
       }
 
       /**
@@ -177,7 +177,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     });
 
     if (!identities?.length) {
-      throw new Error("Not Found error. Invalid credentials");
+      throw new Error("Authentication error. Invalid credentials");
     }
 
     if (identities.length > 1) {
@@ -196,7 +196,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     );
 
     if (saltedPassword !== identity.password) {
-      throw new Error("Validation error. Invalid credentials");
+      throw new Error("Authentication error. Invalid credentials");
     }
 
     if (identity.code) {

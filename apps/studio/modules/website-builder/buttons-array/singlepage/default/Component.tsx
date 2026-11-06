@@ -1,8 +1,9 @@
-import type {
-  IComponentProps,
-  ButtonsArrayItem,
-  ButtonsArrayDefaultProps,
-  ModuleIcon,
+import {
+  type IComponentProps,
+  type ButtonsArrayItem,
+  type ButtonsArrayDefaultProps,
+  type ModuleIcon,
+  type IModuleIconProps,
 } from "./interface";
 export type {
   ButtonsArrayItem,
@@ -125,5 +126,3 @@ export const defaultButtonsArrayProps: ButtonsArrayDefaultProps = {
     },
   ] satisfies ButtonsArrayItem[],
 };
-
-import type { IModuleIconProps } from "./interface";

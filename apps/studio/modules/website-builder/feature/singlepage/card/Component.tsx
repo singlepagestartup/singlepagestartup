@@ -1,4 +1,8 @@
-import type { IComponentProps, FeatureCardProps } from "./interface";
+import {
+  type IComponentProps,
+  type FeatureCardProps,
+  type ModuleIcon,
+} from "./interface";
 export type { FeatureCardProps } from "./interface";
 import { Component as SharedIcon } from "../../../../shared/icon";
 import { forwardRef, type SVGProps } from "react";
@@ -69,5 +73,3 @@ export const defaultFeatureCardProps = {
   description:
     "Build pages visually with widgets, sliders, buttons, and logotypes managed from the admin panel.",
 };
-
-import type { ModuleIcon } from "./interface";

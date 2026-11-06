@@ -11,12 +11,6 @@ export interface IComponentProps extends ISpsComponentBase {
   ecommerceModuleStore?: import("@sps/ecommerce/models/store/sdk/model").IModel;
   language: string;
 }
-export interface IProductDetailProps extends ISpsComponentBase {
-  ecommerceModuleProduct: IEcommerceModuleProduct;
-  language: string;
-  variant?: string;
-}
-
 export interface IComponentPropsExtended extends IComponentProps {
   data: IModel;
 }

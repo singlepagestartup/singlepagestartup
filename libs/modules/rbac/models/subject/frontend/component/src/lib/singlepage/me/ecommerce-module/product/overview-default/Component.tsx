@@ -1,8 +1,6 @@
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import { Component as EcommerceModuleProduct } from "@sps/ecommerce/models/product/frontend/component";
 import type { IComponentPropsExtended } from "./interface";
-import { Component as CategoryRowButtonDefault } from "../card-default/Category";
-import { Component as SocialModuleProfileButtonDefault } from "../card-default/Profile";
 import { CardContent, CardHeader } from "@sps/shared-ui-shadcn";
 
 export function Component(props: IComponentPropsExtended) {
@@ -14,33 +12,33 @@ export function Component(props: IComponentPropsExtended) {
       data={props.ecommerceModuleProduct}
       language={props.language}
       topSlot={
-        <CardHeader className="pb-0">
-          <CategoryRowButtonDefault
+        <CardHeader className="p-0">
+          <Subject
             isServer={props.isServer}
             language={props.language}
-            variant="overview-default"
-            ecommerceModuleProduct={props.ecommerceModuleProduct}
+            variant="ecommerce-module-product-category-default"
+            ecommerceModuleProductId={props.ecommerceModuleProduct.id}
           />
         </CardHeader>
       }
       middleSlot={
-        <CardContent>
-          <SocialModuleProfileButtonDefault
+        <CardContent className="p-0">
+          <Subject
             isServer={props.isServer}
             language={props.language}
-            variant="overview-default"
-            ecommerceModuleProduct={props.ecommerceModuleProduct}
+            variant="ecommerce-module-product-profile-default"
+            ecommerceModuleProductId={props.ecommerceModuleProduct.id}
           />
         </CardContent>
       }
     >
-      <div className="w-full flex flex-col gap-4">
+      <div className="grid min-w-0 gap-4">
         <Subject
           isServer={props.isServer}
           ecommerceModuleProduct={props.ecommerceModuleProduct}
           ecommerceModuleStore={props.ecommerceModuleStore}
           language={props.language}
-          variant="ecommerce-module-product-cart-default"
+          variant="me-ecommerce-module-product-cart-default"
           dataSource="props"
           data={props.data}
           className="w-full"
@@ -50,7 +48,7 @@ export function Component(props: IComponentPropsExtended) {
           ecommerceModuleProduct={props.ecommerceModuleProduct}
           ecommerceModuleStore={props.ecommerceModuleStore}
           language={props.language}
-          variant="ecommerce-module-product-checkout-default"
+          variant="me-ecommerce-module-product-checkout-default"
           dataSource="props"
           data={props.data}
           className="w-full"

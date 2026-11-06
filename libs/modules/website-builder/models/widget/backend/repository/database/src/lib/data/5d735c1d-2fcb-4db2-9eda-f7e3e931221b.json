@@ -3,13 +3,19 @@
     "en": "Footer",
     "ru": "Футтер"
   },
-  "subtitle": {},
-  "description": {},
+  "subtitle": {
+    "en": "© 2026 SinglePageStartup",
+    "ru": "© 2026 SinglePageStartup"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Free code for your product. Explore the framework, read implementation notes or start a project in AI Chat.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Бесплатный код для вашего продукта. Изучите фреймворк, прочитайте статьи об устройстве проекта или начните работу в AI-чате.\"}]}]}"
+  },
   "anchor": "",
   "className": "",
   "id": "5d735c1d-2fcb-4db2-9eda-f7e3e931221b",
   "createdAt": "2025-01-31T12:31:37.152Z",
-  "updatedAt": "2025-11-15T09:32:28.474Z",
+  "updatedAt": "2026-10-23T20:26:08.509Z",
   "variant": "footer-default",
   "adminTitle": "productive jade bandicoot",
   "slug": "footer"

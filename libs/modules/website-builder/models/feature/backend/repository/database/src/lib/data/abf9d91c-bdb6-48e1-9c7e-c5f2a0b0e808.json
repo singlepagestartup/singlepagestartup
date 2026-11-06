@@ -1,0 +1,18 @@
+{
+  "className": null,
+  "id": "abf9d91c-bdb6-48e1-9c7e-c5f2a0b0e808",
+  "createdAt": "2026-10-23T20:18:05.340Z",
+  "updatedAt": "2026-10-23T20:18:05.340Z",
+  "variant": "card",
+  "title": {
+    "en": "Content and composition",
+    "ru": "Контент и сборка страниц"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Blog and Website Builder keep content records and the blocks that display them.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Blog и Website Builder хранят записи контента и блоки для их отображения.\"}]}]}"
+  },
+  "adminTitle": "Content and composition",
+  "slug": "framework-about-foundation-feature-2"
+}

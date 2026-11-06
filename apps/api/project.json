@@ -71,7 +71,8 @@
             "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
-      }
+      },
+      "cache": false
     },
     "db:migrate": {
       "executor": "nx:run-commands",
@@ -80,6 +81,9 @@
         "parallel": false,
         "cwd": ".",
         "commands": [
+          {
+            "command": "bun --cwd apps/api src/db/check-application-role.ts"
+          },
           {
             "command": "npx nx run @sps/providers-db:repository-migrate"
           },
@@ -124,6 +128,9 @@
           },
           {
             "command": "npx nx run @sps/host:repository-migrate"
+          },
+          {
+            "command": "npx nx run @sps/analytic:repository-migrate"
           },
           {
             "command": "npx nx run @sps/agent:repository-migrate"

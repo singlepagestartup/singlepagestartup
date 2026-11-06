@@ -152,7 +152,7 @@ function Icon({
   const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
@@ -187,17 +187,17 @@ export function SubjectMeAccountSettings({
   const sections = [
     {
       id: "profile",
-      label: "Profile",
+      label: "Профиль",
       content: <RbacModuleSubject variant="me-profile-information" />,
     },
     {
       id: "sign-in",
-      label: "Sign-in methods",
+      label: "Способы входа",
       content: <RbacModuleSubject variant="me-identity-find-information" />,
     },
     {
       id: "purchases",
-      label: showTokens ? "Tokens and purchases" : "Purchases",
+      label: showTokens ? "Токены и покупки" : "Purchases",
       content: (
         <RbacModuleSubject
           variant="account-data"
@@ -209,7 +209,7 @@ export function SubjectMeAccountSettings({
     },
     {
       id: "data",
-      label: "Data and privacy",
+      label: "Данные и конфиденциальность",
       content: (
         <RbacModuleSubject
           variant="account-data"
@@ -231,11 +231,10 @@ export function SubjectMeAccountSettings({
         <header className="mb-8 flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
             <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-              Account settings
+              Настройки аккаунта
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-[color:var(--workspace-brand-muted)]">
-              Edit your profile, manage how you sign in and review your account
-              data.
+              Измените профиль, настройте вход и проверьте данные аккаунта.
             </p>
           </div>
           <Button
@@ -248,7 +247,7 @@ export function SubjectMeAccountSettings({
             }}
           >
             <LogOut className="size-4" />
-            {signedOut ? "Signed out" : "Sign out"}
+            {signedOut ? "Вы вышли" : "Выйти"}
           </Button>
         </header>
         {signedOut ? (
@@ -256,7 +255,7 @@ export function SubjectMeAccountSettings({
             role="status"
             className="rounded-xl border border-[color:var(--workspace-brand-line)] bg-[color:var(--workspace-brand-surface)] p-6"
           >
-            You are signed out.{" "}
+            Вы вышли из аккаунта.{" "}
             <a
               className="underline"
               href={
@@ -266,7 +265,7 @@ export function SubjectMeAccountSettings({
               }
               target={showTokens ? undefined : "_top"}
             >
-              Sign in again
+              Войти снова
             </a>
           </p>
         ) : (
@@ -276,11 +275,11 @@ export function SubjectMeAccountSettings({
                 className="mb-2 block text-sm font-medium"
                 htmlFor={`${id}-select`}
               >
-                Settings section
+                Раздел настроек
               </label>
               <Select
                 id={`${id}-select`}
-                aria-label="Settings section"
+                aria-label="Раздел настроек"
                 value={activeSection}
                 onValueChange={setActiveSection}
                 options={sections.map(({ id, label }) => ({
@@ -290,7 +289,7 @@ export function SubjectMeAccountSettings({
               />
             </div>
             <nav
-              aria-label="Settings"
+              aria-label="Настройки"
               className="sticky top-24 hidden space-y-1 md:block"
             >
               {sections.map(({ id: sectionId, label }) => (

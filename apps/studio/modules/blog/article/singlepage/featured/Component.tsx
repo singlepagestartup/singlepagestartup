@@ -6,7 +6,7 @@ import { Component as SharedIcon } from "../../../../shared/icon";
 import { forwardRef, type SVGProps } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
 import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
-import { Component as SocialModuleProfile } from "../../../../social/profile/index";
+import { defaultArticleCardProps } from "../card/Component";
 interface IModuleIconProps extends SVGProps<SVGSVGElement> {
   size?: number;
 }
@@ -47,7 +47,9 @@ export function ArticleFeatured(props?: IComponentProps) {
     category,
     authorName,
     authorAvatar,
+    author,
     date,
+    createdAt,
     readTime,
     target,
   } = { ...defaultArticleFeaturedProps, ...props };
@@ -58,7 +60,6 @@ export function ArticleFeatured(props?: IComponentProps) {
       rel={target === "_blank" ? "noreferrer" : undefined}
       className={`group grid min-w-0 overflow-hidden rounded-3xl bg-default text-default-foreground md:grid-cols-2 ${kit.focus}`}
       data-ds-block="blog.article.featured"
-      data-ds-imports="social.profile.byline"
       data-ds-layer="singlepage"
       data-module="blog"
       data-model="article"
@@ -90,15 +91,17 @@ export function ArticleFeatured(props?: IComponentProps) {
         </div>
         <div>
           <div className="flex flex-wrap items-center justify-between gap-4 border-t border-default-foreground/20 pt-5 text-xs text-default-muted-foreground">
-            <SocialModuleProfile
-              variant="byline"
-              inverse
-              name={authorName}
-              avatar={authorAvatar}
-              href={null}
-              size="xs"
-            />
-            <span>{date}</span>
+            {author ?? (
+              <span className="inline-flex items-center gap-2">
+                <img
+                  src={authorAvatar}
+                  alt=""
+                  className="size-6 rounded-lg bg-card object-contain"
+                />
+                {authorName}
+              </span>
+            )}
+            <time dateTime={createdAt}>{date}</time>
           </div>
           <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
             <span className="text-xs text-default-muted-foreground">
@@ -121,23 +124,7 @@ const buttonBase =
 const kit = {
   focus: focus,
 };
-const sarahAvatar =
-  "https://images.unsplash.com/photo-1586297135537-94bc9ba060aa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx5b3VuZyUyMHdvbWFuJTIwZGV2ZWxvcGVyJTIwaGVhZHNob3R8ZW58MXx8fHwxNzcxNzE1ODgyfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral";
-export const defaultArticleFeaturedProps = {
-  href: undefined as string | undefined,
-  slug: "how-to-choose",
-  title: "How to Choose the Right Plan for Your Business",
-  excerpt:
-    "A comprehensive guide to evaluating subscription tiers, comparing features, and making the right decision for your team size and growth trajectory.",
-  coverImage:
-    "/module-assets/images/singlepage/generated/living-focus/singlepagestartup-photography-business-conversation-square.png",
-  category: "guides",
-  authorName: "Sarah Kim",
-  authorSlug: "sarah-kim",
-  authorAvatar: sarahAvatar,
-  date: "Feb 18, 2026",
-  readTime: "7 min read",
-  target: undefined as ArticleFeaturedTarget | undefined,
+export const defaultArticleFeaturedProps: ArticleFeaturedProps = {
+  ...defaultArticleCardProps,
+  target: undefined,
 };
-
-import type { ArticleFeaturedTarget } from "./interface";

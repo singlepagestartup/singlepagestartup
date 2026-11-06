@@ -1,0 +1,21 @@
+{
+  "componentName": "blog.widget",
+  "pageName": "blog",
+  "variantName": "article-feed-default",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "blog.widget.article-feed-default",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "blog/widget/singlepage/article-feed-default",
+    "sps.figma.component": "blog.widget",
+    "sps.figma.variant": "article-feed-default",
+    "sps.source.module": "blog",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "article-feed-default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/blog/widget/singlepage/article-feed-default/Component.tsx",
+    "sps.code.story": "apps/studio/modules/blog/widget/singlepage/article-feed-default/Component.stories.tsx"
+  }
+}

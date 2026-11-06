@@ -118,10 +118,10 @@ export function Component({
       }}
     >
       <p className={`text-sm leading-6 ${kit.muted}`}>
-        Give this thread a name.
+        Укажите название обсуждения.
       </p>
       <TextField
-        label="Thread name"
+        label="Название обсуждения"
         value={title}
         onChange={(event) => {
           setTitle(event.target.value);
@@ -129,21 +129,25 @@ export function Component({
         }}
         required
         maxLength={100}
-        placeholder="What do you want to work on?"
+        placeholder="Над чем хотите поработать?"
       />
       <div className="flex flex-wrap gap-3">
         <Button type="submit" disabled={!title.trim()}>
           <Icon name="chat-circle" />
-          Create thread
+          Создать обсуждение
         </Button>
         <a
           href={cancelHref}
           className={`inline-flex min-h-11 items-center rounded-xl border border-border px-5 text-sm font-semibold ${kit.focus}`}
         >
-          Cancel
+          Отмена
         </a>
       </div>
-      {previewed && <Feedback>Preview only. No thread was created.</Feedback>}
+      {previewed && (
+        <Feedback>
+          Это предварительный просмотр. Обсуждение на сервере не создано.
+        </Feedback>
+      )}
     </form>
   );
 }

@@ -148,3 +148,46 @@ export const defaultCrmRequest: CrmRequestRecord = {
   createdAt: "Feb 20, 2026",
   summary: "Contact details and project requirements saved in this preview.",
 };
+
+export const frameworkContactForm: CrmFormRecord = {
+  id: "framework-contact",
+  title: "Contact with us",
+  description: "Tell us what you are interested in.",
+  submitLabel: "Submit",
+  successLabel: "Your request is ready in this preview.",
+  steps: [
+    {
+      id: "contact",
+      title: "Contact details",
+      description: "How can we reach you?",
+      inputs: [
+        {
+          id: "name",
+          slug: "name",
+          label: "Name",
+          placeholder: "Your name",
+          required: true,
+          variant: "text-default",
+        },
+        {
+          id: "email",
+          slug: "email",
+          label: "Email",
+          placeholder: "you@example.com",
+          required: true,
+          type: "email",
+          variant: "text-default",
+        },
+        {
+          id: "interest",
+          slug: "interest",
+          label: "What you are interested in?",
+          placeholder: "Choose an option",
+          required: true,
+          variant: "select-option-default",
+          options: defaultCrmOptions,
+        },
+      ],
+    },
+  ],
+};

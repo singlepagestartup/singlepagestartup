@@ -5,7 +5,6 @@ import { Component as CheckoutDetailsDefault } from "./checkout-details-default/
 import { Component as CheckoutPaymentDefault } from "./checkout-payment-default/index";
 import { Component as CheckoutStepperDefault } from "./checkout-stepper-default/index";
 import { Component as CheckoutTokensAiChat } from "./checkout/tokens/ai-chat/index";
-import { Component as List } from "./list/index";
 import { Component as SummaryDefault } from "./summary-default/index";
 
 export const variants = {
@@ -16,6 +15,5 @@ export const variants = {
   "checkout-payment-default": CheckoutPaymentDefault,
   "checkout-stepper-default": CheckoutStepperDefault,
   "checkout-tokens-ai-chat": CheckoutTokensAiChat,
-  list: List,
   "summary-default": SummaryDefault,
 };

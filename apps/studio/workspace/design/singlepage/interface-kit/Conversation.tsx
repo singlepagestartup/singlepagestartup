@@ -42,7 +42,7 @@ export default function Conversation() {
     setAttachmentErrors([]);
     setDraft("");
     setReply(
-      "This is a simulated reply. Start by grouping the materials you already have: project notes, customer questions and existing offers. Then choose one open question to review together.",
+      "Это пример ответа. Сгруппируйте имеющиеся материалы: заметки проекта, вопросы клиентов и предложения. Затем выберите один открытый вопрос для совместной проверки.",
     );
     setVisibleCharacters(0);
     setReplyState(simulateFailure ? "error" : "streaming");
@@ -59,28 +59,23 @@ export default function Conversation() {
     <div className="grid gap-6">
       <Specimen
         id="message"
-        title="Messages"
-        description="Role, content and supporting material stay distinguishable in a conversation."
-        states={[
-          "User",
-          "Assistant",
-          "Reference attached",
-          "Feedback selected",
-        ]}
-        usage="Use readable text widths, visible role labels and explicit reference names. These are example messages, not a real model response."
+        title="Сообщения"
+        description="В переписке различимы роль, содержание и вспомогательные материалы."
+        states={["User", "Assistant", "Источник прикреплён", "Оценка выбрана"]}
+        usage="Ограничивайте ширину текста, показывайте роли и названия источников. Это примеры сообщений, не настоящий ответ модели."
         recipe="max-w-2xl rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-5 text-base leading-relaxed"
       >
         <div className="grid gap-5">
           <div className="ml-auto max-w-2xl rounded-2xl bg-[var(--workspace-brand-background)] p-5">
             <p className={`mb-2 text-xs font-semibold ${kit.muted}`}>
-              You · example
+              Вы · пример
             </p>
             <p className="text-base leading-relaxed">
-              I have project notes and customer questions. Where should I start?
+              У меня есть заметки проекта и вопросы клиентов. С чего начать?
             </p>
             <span className="mt-3 inline-flex max-w-full items-center gap-2 rounded-lg border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] px-3 py-2 text-xs">
               <Icon name="file-text" />
-              <span className="break-all">project-notes.md · sample</span>
+              <span className="break-all">project-notes.md · пример</span>
             </span>
           </div>
           <div className="max-w-2xl rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-5">
@@ -88,14 +83,14 @@ export default function Conversation() {
               <span className="rounded-lg bg-[var(--workspace-brand-accent)] p-1 text-[var(--workspace-brand-on-accent)]">
                 <Icon name="chat-circle" />
               </span>
-              <p className="text-xs font-semibold">Assistant · example</p>
+              <p className="text-xs font-semibold">Ассистент · пример</p>
             </div>
             <p className="text-base leading-relaxed">
-              Group the materials by what they explain: the offer, the people it
-              serves, and the questions that still need an answer.
+              Сгруппируйте материалы по тому, что они объясняют: предложение,
+              аудиторию и вопросы без ответа.
             </p>
             <p className={`mt-3 text-sm ${kit.muted}`}>
-              Reference: project-notes.md. This reference is illustrative.
+              Источник: project-notes.md. Это пример ссылки.
             </p>
             <Button
               variant="plain"
@@ -104,7 +99,7 @@ export default function Conversation() {
               onClick={() => setHelpful((value) => !value)}
             >
               <Icon name="check" />
-              {helpful ? "Marked helpful" : "Mark as helpful"}
+              {helpful ? "Отмечено полезным" : "Отметить полезным"}
             </Button>
           </div>
         </div>
@@ -112,36 +107,36 @@ export default function Conversation() {
 
       <Specimen
         id="composer"
-        title="Message composer"
-        description="Compose a message, attach local files, then watch, stop or retry a simulated reply."
+        title="Поле сообщения"
+        description="Напишите сообщение, прикрепите локальные файлы, затем посмотрите, остановите или повторите пример ответа."
         states={[
-          "Empty",
-          "Ready",
-          "Files attached",
-          "Attachment removed",
-          "File too large",
-          "Files-only message",
+          "Пусто",
+          "Готово",
+          "Файлы прикреплены",
+          "Вложение удалено",
+          "Файл слишком большой",
+          "Сообщение только с файлами",
           "Streaming",
-          "Stopped",
-          "Failed",
+          "Остановлено",
+          "Ошибка",
           "Retrying",
           "Complete",
         ]}
-        usage="Attach multiple files, remove a selection or send files with or without text. Each file may be up to 10 MB. Only file names, types and sizes appear in this demo; file contents stay on your device. Keep the draft editable while a reply runs. Expose Stop during streaming and Retry after interruption or failure. No model or server is connected."
-        recipe={`${kit.field} min-h-28 resize-y / ${kit.card} / ${kit.button}; attachments: shared FileRow, selected before sending and retained in the sent message`}
+        usage="Прикрепляйте несколько файлов, убирайте выбранное, отправляйте с текстом или без. До 10 МБ на файл. Пример показывает только имя, тип и размер; содержимое остаётся на устройстве. Черновик доступен при ответе. Во время ответа есть остановка, после прерывания или сбоя — повтор. Модель и сервер не подключены."
+        recipe={`${kit.field} min-h-28 resize-y / ${kit.card} / ${kit.button}; вложения: общий FileRow, выбор до отправки и сохранение в отправленном сообщении`}
       >
         <div className="mb-5 flex items-start gap-3 rounded-xl bg-[var(--workspace-brand-background)] p-4 text-sm">
           <Icon name="question" />
           <p>
-            Local interaction demo. Messages and sample replies stay in this
-            preview and disappear when it reloads.
+            Локальный пример. Сообщения и ответы остаются здесь и исчезают при
+            перезагрузке.
           </p>
         </div>
         {question || sentAttachments.length ? (
           <div className="mb-5 grid gap-4">
             <div className="ml-auto w-fit max-w-2xl rounded-2xl bg-[var(--workspace-brand-background)] p-4">
               <p className={`mb-2 text-xs font-semibold ${kit.muted}`}>
-                Your demo message
+                Ваше сообщение в примере
               </p>
               {question ? (
                 <p className="whitespace-pre-wrap break-words text-base leading-relaxed">
@@ -150,7 +145,7 @@ export default function Conversation() {
               ) : null}
               {sentAttachments.length ? (
                 <ul
-                  aria-label="Sent message attachments"
+                  aria-label="Вложения отправленного сообщения"
                   className="mt-3 grid gap-2"
                 >
                   {sentAttachments.map((file) => (
@@ -163,21 +158,20 @@ export default function Conversation() {
               className={`${kit.card} max-w-2xl`}
               aria-busy={replyState === "streaming"}
             >
-              <p className="mb-3 text-xs font-semibold">Simulated assistant</p>
+              <p className="mb-3 text-xs font-semibold">Пример ассистента</p>
               {replyState === "error" ? (
                 <div className="rounded-xl border border-[var(--workspace-brand-danger-line)] bg-[var(--workspace-brand-danger-surface)] p-4 text-sm text-[var(--workspace-brand-danger)]">
-                  <p className="font-semibold">Sample reply interrupted</p>
+                  <p className="font-semibold">Пример ответа прерван</p>
                   <p className="mt-2">
-                    The failure control is on. Retry runs the sample response
-                    locally.
+                    Включён режим ошибки. Повтор запускает ответ локально.
                   </p>
                 </div>
               ) : (
                 <p className="min-h-6 whitespace-pre-wrap break-words text-base leading-relaxed">
                   {reply.slice(0, visibleCharacters) ||
                     (replyState === "stopped"
-                      ? "Reply stopped before any text appeared."
-                      : "Preparing the sample reply…")}
+                      ? "Ответ остановлен до появления текста."
+                      : "Подготовка примера ответа…")}
                   {replyState === "streaming" ? (
                     <span
                       className="ml-1 inline-block h-4 w-1 bg-[var(--workspace-brand-primary)] motion-safe:animate-pulse"
@@ -188,7 +182,7 @@ export default function Conversation() {
               )}
               {replyState === "stopped" || replyState === "error" ? (
                 <Button variant="secondary" className="mt-4" onClick={retry}>
-                  Retry sample reply
+                  Повторить пример ответа
                 </Button>
               ) : null}
             </div>
@@ -200,14 +194,14 @@ export default function Conversation() {
           className={`mb-3 min-h-5 text-sm ${kit.muted}`}
         >
           {replyState === "streaming"
-            ? "Streaming a simulated reply…"
+            ? "Показывается пример потокового ответа…"
             : replyState === "stopped"
-              ? "Reply stopped. You can retry or send another message."
+              ? "Ответ остановлен. Можно повторить или отправить другое сообщение."
               : replyState === "error"
-                ? "Simulated failure. Retry is available."
+                ? "Пример ошибки. Доступен повтор."
                 : replyState === "complete"
-                  ? "Sample reply complete."
-                  : "Ready for a demo message."}
+                  ? "Пример ответа завершён."
+                  : "Можно отправить сообщение в примере."}
         </p>
         <form
           className="grid gap-3"
@@ -217,7 +211,7 @@ export default function Conversation() {
           }}
         >
           <label htmlFor={fieldId} className={kit.label}>
-            Your message
+            Ваше сообщение
           </label>
           <textarea
             ref={input}
@@ -226,7 +220,7 @@ export default function Conversation() {
             maxLength={2000}
             value={draft}
             aria-describedby={helpId}
-            placeholder="Ask about your project…"
+            placeholder="Спросите о своём проекте…"
             onChange={(event) => setDraft(event.target.value)}
             onKeyDown={(event) => {
               if (
@@ -246,14 +240,14 @@ export default function Conversation() {
                 type="file"
                 multiple
                 className="hidden"
-                aria-label="Attach files to your demo message"
+                aria-label="Прикрепить файлы к сообщению примера"
                 onChange={(event) => {
                   const accepted: ILocalFile[] = [];
                   const rejected: string[] = [];
                   for (const file of Array.from(event.target.files ?? [])) {
                     if (file.size > 10 * 1024 * 1024) {
                       rejected.push(
-                        `${file.name}: the demo limit is 10 MB per file.`,
+                        `${file.name}: в примере допустимы файлы до 10 МБ.`,
                       );
                     } else {
                       accepted.push({
@@ -285,10 +279,10 @@ export default function Conversation() {
                 aria-describedby={attachmentsHelpId}
               >
                 <Icon name="plus" />
-                Attach files
+                Прикрепить файлы
               </Button>
               <p id={attachmentsHelpId} className={`text-xs ${kit.muted}`}>
-                Up to 10 MB per file · local preview only
+                До 10 МБ на файл · только локальный просмотр
               </p>
             </div>
             {attachmentErrors.length ? (
@@ -302,7 +296,7 @@ export default function Conversation() {
               </div>
             ) : null}
             {attachments.length ? (
-              <ul aria-label="Files attached to draft" className="grid gap-2">
+              <ul aria-label="Файлы черновика" className="grid gap-2">
                 {attachments.map((file) => (
                   <FileRow
                     key={file.id}
@@ -314,13 +308,14 @@ export default function Conversation() {
             ) : null}
             <p role="status" className={`text-xs ${kit.muted}`}>
               {attachments.length
-                ? `${attachments.length} files attached to the draft.`
-                : "No files attached."}
+                ? `${attachments.length} — файлов в черновике.`
+                : "Файлы не прикреплены."}
             </p>
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p id={helpId} className={`text-xs ${kit.muted}`}>
-              Enter to send · Shift+Enter for a new line · {draft.length}/2000
+              Enter — отправить · Shift+Enter — новая строка · {draft.length}
+              /2000
             </p>
             {replyState === "streaming" ? (
               <Button
@@ -330,7 +325,7 @@ export default function Conversation() {
                   input.current?.focus();
                 }}
               >
-                Stop reply
+                Остановить ответ
               </Button>
             ) : (
               <Button
@@ -338,7 +333,7 @@ export default function Conversation() {
                 disabled={!draft.trim() && !attachments.length}
               >
                 <Icon name="arrow-right" />
-                Send demo message
+                Отправить сообщение примера
               </Button>
             )}
           </div>
@@ -350,7 +345,7 @@ export default function Conversation() {
               disabled={replyState === "streaming"}
               onChange={(event) => setSimulateFailure(event.target.checked)}
             />
-            Simulate a failed reply on the next send
+            Сымитировать ошибку следующего ответа
           </label>
         </form>
       </Specimen>

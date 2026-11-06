@@ -1,7 +1,7 @@
+import { Component as MeBlogModuleArticleCreateDefault } from "./me-blog-module-article-create-default";
 import { Component as AdminV2Card } from "./admin-v2-card/index";
 import { Component as AdminV2Settings } from "./admin-v2-settings/index";
 import { Component as AdminV2Table } from "./admin-v2-table/index";
-import { Component as List } from "./list/index";
 import { Component as MeCrmModuleFormDefault } from "./me-crm-module-form-default/index";
 import { Component as MeInformation } from "./me-information/index";
 import { Component as MeSocialModuleProfileFindInformation } from "./me-social-module-profile-find-information/index";
@@ -41,10 +41,10 @@ import { Component as MeSocialModuleProfileIdUpdateNameAiChat } from "./me/socia
 import { Component as MeSocialModuleProfileSelectAiChat } from "./me/social-module/profile/select/ai-chat/index";
 
 export const variants = {
+  "me-blog-module-article-create-default": MeBlogModuleArticleCreateDefault,
   "admin-v2-card": AdminV2Card,
   "admin-v2-settings": AdminV2Settings,
   "admin-v2-table": AdminV2Table,
-  list: List,
   "me-crm-module-form-default": MeCrmModuleFormDefault,
   "me-information": MeInformation,
   "me-social-module-profile-find-information":

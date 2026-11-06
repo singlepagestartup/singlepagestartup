@@ -1,1 +1,5 @@
 blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/singlepagestartup/singlepagestartup/security/advisories/new
+    about: Send a private report to the maintainers. See SECURITY.md for the reporting and disclosure policy.

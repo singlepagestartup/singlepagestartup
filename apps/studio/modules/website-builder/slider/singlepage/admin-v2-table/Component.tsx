@@ -1,7 +1,7 @@
-import type { IComponentProps } from "./interface";
+import { type IComponentProps, type IRecord } from "./interface";
 import { memo } from "react";
 import fixture from "./data.json";
-import type { IRecord } from "./interface";
+
 function FieldValue({
   field,
   value,

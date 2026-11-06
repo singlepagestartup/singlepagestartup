@@ -25,7 +25,7 @@ function Icon({
   const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
@@ -91,7 +91,7 @@ function OverviewAiChatProject({
         ref={drawerTrigger}
         variant="plain"
         className="min-h-9 shrink-0 px-2 @[760px]/workspace:hidden"
-        aria-label="Show sidebar"
+        aria-label="Показать боковую панель"
         aria-expanded={drawerOpen}
         aria-controls={`${id}-sidebar`}
         onClick={() => setDrawerOpen((current) => !current)}
@@ -101,7 +101,9 @@ function OverviewAiChatProject({
       <Button
         variant="plain"
         className="hidden min-h-9 shrink-0 px-2 @[760px]/workspace:inline-flex"
-        aria-label={sidebarOpen ? "Hide sidebar" : "Show sidebar"}
+        aria-label={
+          sidebarOpen ? "Скрыть боковую панель" : "Показать боковую панель"
+        }
         aria-expanded={sidebarOpen}
         aria-controls={`${id}-sidebar`}
         onClick={() => setSidebarOpen((current) => !current)}
@@ -131,7 +133,7 @@ function OverviewAiChatProject({
       >
         <button
           type="button"
-          aria-label="Close project sidebar"
+          aria-label="Закрыть боковую панель проекта"
           tabIndex={-1}
           onMouseDown={(event) => event.preventDefault()}
           onClick={closeDrawer}
@@ -139,7 +141,7 @@ function OverviewAiChatProject({
         />
         <aside
           id={`${id}-sidebar`}
-          aria-label="Project conversations"
+          aria-label="Беседы проекта"
           onBlur={(event) => {
             if (!event.currentTarget.contains(event.relatedTarget)) {
               setDrawerOpen(false);
@@ -155,7 +157,7 @@ function OverviewAiChatProject({
           <button
             ref={drawerClose}
             type="button"
-            aria-label="Close sidebar"
+            aria-label="Закрыть боковую панель"
             onClick={closeDrawer}
             className={`absolute right-3 top-3 inline-flex size-9 items-center justify-center rounded-lg hover:bg-white/10 @[760px]/workspace:hidden ${kit.focus}`}
           >

@@ -1,3 +1,4 @@
+import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
 import { Component as IdSidebarAiChat } from "./id-sidebar-ai-chat";
 import { Component as FormAiChat } from "./form-ai-chat";
 import { Component as IdAiChat } from "./id-ai-chat";
@@ -16,6 +17,7 @@ import { Component as AdminV2SidebarItem } from "./admin-v2/sidebar-item";
 import { Component as Default } from "./default";
 import { Component as Find } from "./find";
 export const variants = {
+  hidden: Hidden,
   "id-sidebar-ai-chat": IdSidebarAiChat,
   "form-ai-chat": FormAiChat,
   "id-ai-chat": IdAiChat,

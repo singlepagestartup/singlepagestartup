@@ -19,6 +19,7 @@ export function Component(props: IClientComponentProps) {
       className="min-w-0"
     >
       <FilePreview
+        language={props.language}
         name={props.name}
         src={props.src}
         mimeType={props.mimeType}

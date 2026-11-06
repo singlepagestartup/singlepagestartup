@@ -1,4 +1,8 @@
-import type { IComponentProps, FeatureStatusDefaultProps } from "./interface";
+import {
+  type IComponentProps,
+  type FeatureStatusDefaultProps,
+  type ModuleIcon,
+} from "./interface";
 export type { FeatureStatusDefaultProps } from "./interface";
 import { Component as SharedIcon } from "../../../../shared/icon";
 import { forwardRef, type SVGProps } from "react";
@@ -79,5 +83,3 @@ export const defaultFeatureStatusDefaultProps = {
   value: "All systems operational",
   className: "",
 };
-
-import type { ModuleIcon } from "./interface";

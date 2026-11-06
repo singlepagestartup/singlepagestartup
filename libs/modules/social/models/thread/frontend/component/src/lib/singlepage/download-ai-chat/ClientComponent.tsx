@@ -1,13 +1,20 @@
 "use client";
+import { internationalization } from "@sps/shared-configuration";
 import { ArrowDown } from "lucide-react";
 import type { IComponentPropsExtended } from "./interface";
 export function Component(props: IComponentPropsExtended) {
+  const language = props.language || internationalization.defaultLanguage.code;
+  const ru = language === "ru";
   return (
     <button
       data-module="social"
       data-model="thread"
       data-variant={props.variant}
-      aria-label="Download current Thread as Markdown"
+      aria-label={
+        ru
+          ? "Скачать текущее обсуждение в Markdown"
+          : "Download current Thread as Markdown"
+      }
       type="button"
       onClick={props.onDownload}
       disabled={props.pending}

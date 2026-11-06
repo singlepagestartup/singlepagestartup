@@ -22,7 +22,7 @@ export function Component({
         data-model="profile"
         data-variant={variant}
       >
-        Project profile unavailable. Choose a project from your profile.
+        Проект недоступен. Выберите другой проект в аккаунте.
       </main>
     );
   return (

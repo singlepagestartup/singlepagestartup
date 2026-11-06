@@ -1,3 +1,4 @@
+import { validateDesignDocument } from "../../../apps/studio/workspace/utils/design/document";
 import { readFile, realpath, stat } from "node:fs/promises";
 import path from "node:path";
 import {
@@ -43,6 +44,14 @@ export async function validateDesignLayoutFiles(
 export async function validateDesignLayouts(workspaceRoot: string) {
   for (const layer of ["singlepage", "startup"] as const) {
     const layerRoot = path.join(workspaceRoot, "design", layer);
+    const document = await readFile(
+      path.join(workspaceRoot, "design", `${layer}.md`),
+      "utf8",
+    ).catch((error: NodeJS.ErrnoException) => {
+      if (error.code === "ENOENT") return "";
+      throw error;
+    });
+    if (document.trim()) validateDesignDocument(document);
     const source = await readFile(
       path.join(layerRoot, "layout.yaml"),
       "utf8",

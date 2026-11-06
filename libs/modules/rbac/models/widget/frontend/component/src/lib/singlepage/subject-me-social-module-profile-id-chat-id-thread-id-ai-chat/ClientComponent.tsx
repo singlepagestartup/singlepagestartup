@@ -1,4 +1,5 @@
 "use client";
+import { internationalization } from "@sps/shared-configuration";
 import { Component as Profile } from "@sps/social/models/profile/frontend/component";
 import { Component as Chat } from "@sps/social/models/chat/frontend/component";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
@@ -9,6 +10,8 @@ import type { IClientComponentProps } from "./interface";
 import { Component as WorkspaceSkeleton } from "./Skeleton";
 import { Component as WorkspaceNotice } from "./Error";
 export function Component(props: IClientComponentProps) {
+  const language = props.language || internationalization.defaultLanguage.code;
+  const ru = language === "ru";
   return (
     <div
       data-module="rbac"
@@ -20,26 +23,43 @@ export function Component(props: IClientComponentProps) {
       <Subject
         isServer={props.isServer}
         variant="authentication-me-default"
-        skeleton={<WorkspaceSkeleton stage="checking-session" />}
+        skeleton={
+          <WorkspaceSkeleton language={language} stage="checking-session" />
+        }
         fallback={
           <WorkspaceNotice
+            language={language}
             state="error"
-            message="We couldn't check your session. Please try again."
+            message={
+              ru
+                ? "Не удалось проверить вход. Повторите попытку."
+                : "We couldn't check your session. Please try again."
+            }
             onRetry={() => window.location.reload()}
           />
         }
-        unauthenticatedRedirectHref={`/${props.language || "en"}/ai-chat/sign-in`}
+        unauthenticatedRedirectHref={`/${language}/ai-chat/sign-in`}
       >
         {({ data, authenticated }) => {
           if (!data || !authenticated) return null;
           return (
             <Subject
+              language={language}
               isServer={props.isServer}
               variant="me-social-module-profile-list-ai-chat"
               data={data}
-              loading={<WorkspaceSkeleton stage="loading-projects" />}
+              loading={
+                <WorkspaceSkeleton
+                  language={language}
+                  stage="loading-projects"
+                />
+              }
               renderError={({ retry }) => (
-                <WorkspaceNotice state="error" onRetry={retry} />
+                <WorkspaceNotice
+                  language={language}
+                  state="error"
+                  onRetry={retry}
+                />
               )}
               renderProjects={({ projects }) => {
                 const project = projects.find(
@@ -50,16 +70,17 @@ export function Component(props: IClientComponentProps) {
                 if (!project)
                   return (
                     <WorkspaceNotice
+                      language={language}
                       state="access-denied"
-                      projectsHref={`/${props.language || "en"}/ai-chat/projects`}
-                      signInHref={`/${props.language || "en"}/ai-chat/sign-in`}
+                      projectsHref={`/${language}/ai-chat/projects`}
+                      signInHref={`/${language}/ai-chat/sign-in`}
                     />
                   );
                 const navigation = (
                   <Subject
                     isServer={props.isServer}
                     variant="me-social-module-profile-id-navigation-ai-chat"
-                    language={props.language}
+                    language={language}
                     data={data}
                     project={project}
                     socialModuleThreadId={props.socialModuleThreadId}
@@ -97,6 +118,7 @@ export function Component(props: IClientComponentProps) {
                         }}
                       >
                         <Subject
+                          language={language}
                           isServer={props.isServer}
                           variant="me-social-module-profile-id-chat-id-thread-id-ai-chat"
                           data={data}
@@ -105,15 +127,20 @@ export function Component(props: IClientComponentProps) {
                           socialModuleThreadId={props.socialModuleThreadId}
                           renderLoadError={({ retry, unavailable }) => (
                             <WorkspaceNotice
+                              language={language}
                               state={unavailable ? "access-denied" : "error"}
                               embedded
                               onRetry={retry}
-                              projectsHref={`/${props.language || "en"}/ai-chat/projects`}
-                              signInHref={`/${props.language || "en"}/ai-chat/sign-in`}
+                              projectsHref={`/${language}/ai-chat/projects`}
+                              signInHref={`/${language}/ai-chat/sign-in`}
                             />
                           )}
                           loading={
-                            <WorkspaceSkeleton stage="loading-chat" embedded />
+                            <WorkspaceSkeleton
+                              language={language}
+                              stage="loading-chat"
+                              embedded
+                            />
                           }
                         />
                       </Chat>

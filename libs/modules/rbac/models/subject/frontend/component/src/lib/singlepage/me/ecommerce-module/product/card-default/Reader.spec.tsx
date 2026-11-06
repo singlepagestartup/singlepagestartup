@@ -7,6 +7,9 @@ let mockClientSubject: typeof mockSubject;
 const mockView = jest.fn((_props: Record<string, unknown>) => null);
 const mockClientReader = jest.fn();
 const mockServerReader = jest.fn();
+const mockProvider = jest.fn(
+  ({ children }: { children: ReactNode }) => children,
+);
 
 jest.mock("client-only", () => ({}), { virtual: true });
 jest.mock("server-only", () => ({}), { virtual: true });
@@ -14,7 +17,7 @@ jest.mock("@sps/ui-adapter", () => ({
   ErrorBoundary: ({ children }: { children: ReactNode }) => children,
 }));
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
-  Provider: ({ children }: { children: ReactNode }) => children,
+  Provider: (props: { children: ReactNode }) => mockProvider(props),
 }));
 jest.mock("../../../../authentication/me-default/client", () => ({
   __esModule: true,
@@ -181,5 +184,58 @@ it.each(variants)(
       }),
     );
     expect(mockView.mock.calls[0][0].apiProps).toBeUndefined();
+  },
+);
+
+const propsVariants = [
+  ["me-ecommerce-module-product-cart-default", ProductCart],
+  ["me-ecommerce-module-product-checkout-default", ProductCheckout],
+  ["me-ecommerce-module-cart-default", Cart],
+] as const;
+
+it.each(propsVariants)(
+  "%s renders a supplied Subject without a session reader or Provider in either runtime",
+  (variant, Entry) => {
+    mockSubject = undefined;
+    mockClientSubject = undefined;
+    const suppliedSubject = {
+      id: "loaded-current-subject",
+      authenticated: false,
+    };
+    for (const isServer of [false, true]) {
+      jest.clearAllMocks();
+      const props = {
+        variant,
+        isServer,
+        dataSource: "props" as const,
+        data: suppliedSubject,
+        language: "en",
+        className: "cart-actions",
+        ecommerceModuleProduct: { id: "product" },
+        ecommerceModuleStore: { id: "store" },
+      };
+      const LoadedEntry = Entry as ComponentType<typeof props>;
+      render(<LoadedEntry {...props} />);
+      expect(mockClientReader).not.toHaveBeenCalled();
+      expect(mockServerReader).not.toHaveBeenCalled();
+      expect(mockProvider).not.toHaveBeenCalled();
+      expect(mockView).toHaveBeenCalledTimes(1);
+      expect(mockView.mock.calls[0][0]).toEqual(
+        expect.objectContaining({
+          isServer,
+          variant,
+          data: suppliedSubject,
+          language: "en",
+          className: "cart-actions",
+          ...(variant.includes("product")
+            ? {
+                ecommerceModuleProduct: props.ecommerceModuleProduct,
+                ecommerceModuleStore: props.ecommerceModuleStore,
+              }
+            : {}),
+        }),
+      );
+      cleanup();
+    }
   },
 );

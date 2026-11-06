@@ -25,10 +25,10 @@ interface IProjectOption {
 }
 
 const projects: IProjectOption[] = [
-  { id: "coffee", name: "Coffee roastery", category: "Retail" },
-  { id: "studio", name: "Creative studio", category: "Services" },
-  { id: "garden", name: "Community garden", category: "Community" },
-  { id: "bakery", name: "Neighbourhood bakery", category: "Retail" },
+  { id: "coffee", name: "Обжарочная кофе", category: "Retail" },
+  { id: "studio", name: "Творческая студия", category: "Services" },
+  { id: "garden", name: "Общественный сад", category: "Community" },
+  { id: "bakery", name: "Пекарня у дома", category: "Retail" },
 ];
 const radio =
   "h-5 w-5 shrink-0 cursor-pointer accent-[var(--workspace-brand-foreground)] disabled:cursor-not-allowed disabled:opacity-50";
@@ -46,9 +46,9 @@ const comboboxItem =
   "flex cursor-pointer items-center justify-between gap-3 rounded-lg px-3 py-3 text-sm outline-none data-[selected=true]:bg-[var(--workspace-brand-background)]";
 
 function validateEmail(value: string): string | undefined {
-  if (!value.trim()) return "Enter a contact email.";
+  if (!value.trim()) return "Введите контактную почту.";
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim()))
-    return "Use an address such as you@example.com.";
+    return "Используйте адрес вида you@example.com.";
   return undefined;
 }
 
@@ -63,33 +63,35 @@ const choiceCard =
 
 function Selection() {
   const groupId = useId();
-  const [material, setMaterial] = useState("Notes");
+  const [material, setMaterial] = useState("Заметки");
   const [startingPoint, setStartingPoint] = useState("files");
   return (
     <Specimen
       id="selection"
-      title="Selection"
+      title="Выбор"
       guidance={
         <>
           <SurfacePatternGuidance title="Choice group" />
           <SurfacePatternGuidance title="Settings section" />
         </>
       }
-      description="A white selected surface sits within a cool gray track. Fixed slots and small lime markers keep choices steady."
+      description="Белая выбранная поверхность внутри холодной серой полосы. Фиксированные места и маленькие лаймовые отметки сохраняют геометрию."
       states={[
         "unselected",
-        "selected",
+        "выбрано",
         "hover",
-        "keyboard focus",
-        "stacked on small screens",
+        "клавиатурный фокус",
+        "друг под другом на узком экране",
       ]}
       usage="Use a segmented group for short alternatives and choice cards when an option needs a description. Native radios support arrow-key navigation."
-      recipe={`Segmented track: ${segmentedTrack}\nSegment: ${segment}\nChoice grid: ${choiceTrack}\nChoice card: ${choiceCard}`}
+      recipe={`Сегментированный переключатель: ${segmentedTrack}\nSegment: ${segment}
+Сетка выбора: ${choiceTrack}
+Карточка выбора: ${choiceCard}`}
     >
       <fieldset>
-        <legend className={`${kit.label} mb-3`}>Material type</legend>
+        <legend className={`${kit.label} mb-3`}>Тип материала</legend>
         <div className={segmentedTrack}>
-          {["Notes", "Documents", "Images"].map((option) => (
+          {["Заметки", "Документы", "Изображения"].map((option) => (
             <label key={option} className={segment}>
               <input
                 type="radio"
@@ -109,18 +111,18 @@ function Selection() {
         </div>
       </fieldset>
       <fieldset className="mt-6">
-        <legend className={`${kit.label} mb-3`}>Starting point</legend>
+        <legend className={`${kit.label} mb-3`}>Отправная точка</legend>
         <div className={choiceTrack}>
           {[
             {
               value: "files",
-              title: "Use my existing files",
-              description: "Bring notes, documents and images.",
+              title: "Использовать мои файлы",
+              description: "Добавьте заметки, документы и изображения.",
             },
             {
               value: "direct",
-              title: "Write what I know",
-              description: "Add the facts about your project directly.",
+              title: "Записать известное",
+              description: "Добавьте факты о проекте напрямую.",
             },
           ].map((option) => (
             <label key={option.value} className={choiceCard}>
@@ -149,8 +151,8 @@ function Selection() {
         </div>
       </fieldset>
       <p className={`mt-4 text-xs ${kit.muted}`} role="status">
-        Selected: {material} ·{" "}
-        {startingPoint === "files" ? "Existing files" : "Write directly"}
+        Выбрано: {material} ·{" "}
+        {startingPoint === "files" ? "Существующие файлы" : "Записать напрямую"}
       </p>
     </Specimen>
   );
@@ -167,7 +169,7 @@ function Fields() {
   const [showPassword, setShowPassword] = useState(false);
   const [search, setSearch] = useState("");
   const [errors, setErrors] = useState<IFieldErrors>({
-    email: "Use an address such as you@example.com.",
+    email: "Используйте адрес вида you@example.com.",
   });
   const [saved, setSaved] = useState("");
   const matches = projects.filter((project) =>
@@ -177,27 +179,27 @@ function Fields() {
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const nextErrors = {
-      name: name.trim() ? undefined : "Enter a project name.",
+      name: name.trim() ? undefined : "Введите название проекта.",
       email: validateEmail(email),
     };
     setErrors(nextErrors);
     setSaved("");
     if (nextErrors.name) return nameRef.current?.focus();
     if (nextErrors.email) return emailRef.current?.focus();
-    setSaved(`${name.trim()} updated in this preview.`);
+    setSaved(`${name.trim()} обновлён в этом примере.`);
   }
 
   return (
     <Specimen
       id="fields"
-      title="Fields and data rows"
+      title="Поля и строки данных"
       guidance={
         <SurfacePatternGuidance
           title="Step form"
-          context="Apply this rule when a form spans several steps."
+          context="Применяйте правило к форме из нескольких шагов."
         />
       }
-      description="Labels, helper text and errors stay beside the field. The form validates and saves values within this preview."
+      description="Подписи, пояснения и ошибки рядом с полем. Форма проверяет и сохраняет значения внутри примера."
       states={[
         "default",
         "filled",
@@ -206,9 +208,9 @@ function Fields() {
         "focus",
         "read-only",
         "disabled",
-        "password visible",
+        "пароль виден",
         "search",
-        "saved locally",
+        "сохранено локально",
       ]}
       usage="Required and invalid states are named in text. Errors use aria-describedby and aria-invalid; submitting focuses the first invalid field. Read-only values remain selectable."
       recipe={`Field: ${kit.field}\nLabel: ${kit.label}\nError: text-sm text-[var(--workspace-brand-danger)]\nRow: flex flex-wrap items-center justify-between gap-3 border-t border-[var(--workspace-brand-line)] py-3`}
@@ -217,8 +219,8 @@ function Fields() {
         <div className="grid gap-5 md:grid-cols-2">
           <div>
             <label className={kit.label} htmlFor={`${id}-name`}>
-              Project name{" "}
-              <span className={`font-normal ${kit.muted}`}>(required)</span>
+              Название проекта{" "}
+              <span className={`font-normal ${kit.muted}`}>(обязательно)</span>
             </label>
             <input
               ref={nameRef}
@@ -246,14 +248,14 @@ function Fields() {
               </p>
             ) : (
               <p id={`${id}-name-help`} className={`mt-2 text-xs ${kit.muted}`}>
-                Use the name your team recognises.
+                Название, по которому команда узнаёт проект.
               </p>
             )}
           </div>
           <div>
             <label className={kit.label} htmlFor={`${id}-email`}>
-              Contact email{" "}
-              <span className={`font-normal ${kit.muted}`}>(required)</span>
+              Контактная почта{" "}
+              <span className={`font-normal ${kit.muted}`}>(обязательно)</span>
             </label>
             <input
               ref={emailRef}
@@ -292,13 +294,13 @@ function Fields() {
                 id={`${id}-email-help`}
                 className={`mt-2 text-xs ${kit.muted}`}
               >
-                This demo does not send email.
+                Этот пример не отправляет письма.
               </p>
             )}
           </div>
           <div>
             <label className={kit.label} htmlFor={`${id}-readonly`}>
-              Workspace ID · read-only
+              ID Workspace · только чтение
             </label>
             <input
               id={`${id}-readonly`}
@@ -309,7 +311,7 @@ function Fields() {
           </div>
           <div>
             <label className={kit.label} htmlFor={`${id}-disabled`}>
-              Invite link · disabled
+              Ссылка приглашения · недоступна
             </label>
             <input
               id={`${id}-disabled`}
@@ -322,13 +324,13 @@ function Fields() {
         </div>
         <div>
           <label className={kit.label} htmlFor={`${id}-notes`}>
-            Project notes{" "}
-            <span className={`font-normal ${kit.muted}`}>(optional)</span>
+            Заметки проекта{" "}
+            <span className={`font-normal ${kit.muted}`}>(необязательно)</span>
           </label>
           <textarea
             id={`${id}-notes`}
             className={`mt-2 min-h-28 resize-y ${kit.field}`}
-            placeholder="Add context for the next person."
+            placeholder="Добавьте контекст для следующего участника."
             value={notes}
             maxLength={500}
             onChange={(event) => {
@@ -344,7 +346,7 @@ function Fields() {
         <div className="flex flex-wrap items-center gap-3">
           <Button type="submit">
             <Icon name="check" />
-            Save in preview
+            Сохранить в примере
           </Button>
           <p className={`text-sm ${kit.muted}`} role="status">
             {saved}
@@ -354,7 +356,7 @@ function Fields() {
       <div className="mt-6 grid gap-5 border-t border-[var(--workspace-brand-line)] pt-6 md:grid-cols-2">
         <div>
           <label className={kit.label} htmlFor={`${id}-password`}>
-            Demo password
+            Пароль примера
           </label>
           <div className="relative mt-2">
             <input
@@ -368,7 +370,7 @@ function Fields() {
             <Button
               variant="plain"
               className="absolute top-1 right-1 h-10 min-h-10 w-10 p-0"
-              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-label={showPassword ? "Скрыть пароль" : "Показать пароль"}
               aria-pressed={showPassword}
               onClick={() => setShowPassword((value) => !value)}
             >
@@ -378,13 +380,13 @@ function Fields() {
         </div>
         <div>
           <label className={kit.label} htmlFor={`${id}-search`}>
-            Search sample projects
+            Поиск примеров проектов
           </label>
           <input
             id={`${id}-search`}
             className={`mt-2 ${kit.field}`}
             type="search"
-            placeholder="Try coffee"
+            placeholder="Попробуйте «кофе»"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             aria-describedby={`${id}-search-results`}
@@ -396,18 +398,18 @@ function Fields() {
           >
             {matches.length
               ? matches.map((project) => project.name).join(" · ")
-              : "No matching projects."}
+              : "Проекты не найдены."}
           </p>
         </div>
       </div>
       <dl className="mt-6 text-sm">
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--workspace-brand-line)] py-3">
-          <dt className={kit.muted}>Project</dt>
+          <dt className={kit.muted}>Проект</dt>
           <dd>{name || "Untitled"}</dd>
         </div>
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--workspace-brand-line)] py-3">
-          <dt className={kit.muted}>Visibility</dt>
-          <dd>Private preview</dd>
+          <dt className={kit.muted}>Видимость</dt>
+          <dd>Частный просмотр</dd>
         </div>
       </dl>
     </Specimen>
@@ -431,23 +433,24 @@ function Choices() {
   return (
     <Specimen
       id="choices"
-      title="Checkboxes, radios and switches"
-      description="Checkboxes combine independent choices, radios choose one value, and a switch turns a setting on or off."
+      title="Флажки, радио и переключатели"
+      description="Флажки объединяют независимые варианты, радио выбирает одно значение, переключатель включает или выключает настройку."
       states={[
         "unchecked",
         "checked",
         "indeterminate",
         "disabled",
-        "keyboard focus",
-        "switch off",
-        "switch on",
+        "клавиатурный фокус",
+        "выключено",
+        "включено",
       ]}
-      usage="Checkboxes use the shared Phosphor check at 14px within a 20px control. Keep the entire label clickable. The master checkbox reflects mixed selection; switches expose their checked state and respond to Space."
-      recipe={`Checkbox: ${kit.checkbox} ${kit.focus}\nRadio: ${radio} ${kit.focus}\nSwitch track: ${switchTrack}`}
+      usage="Флажок использует Phosphor 14px внутри поля 20px. Вся подпись нажимается. Общий флажок показывает частичный выбор, переключатели сообщают checked и реагируют на Space."
+      recipe={`Checkbox: ${kit.checkbox} ${kit.focus}\nRadio: ${radio} ${kit.focus}
+Дорожка переключателя: ${switchTrack}`}
     >
       <div className="grid gap-6 lg:grid-cols-3">
         <fieldset>
-          <legend className={`${kit.label} mb-3`}>Updates</legend>
+          <legend className={`${kit.label} mb-3`}>Обновления</legend>
           <div className="grid gap-3">
             <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm font-medium">
               <Checkbox
@@ -459,7 +462,7 @@ function Choices() {
                   setWeeklyDigest(!allChecked);
                 }}
               />
-              All updates
+              Все обновления
             </label>
             <div className="grid gap-2 border-t border-[var(--workspace-brand-line)] pt-2">
               <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm">
@@ -467,26 +470,26 @@ function Choices() {
                   checked={emailUpdates}
                   onChange={(event) => setEmailUpdates(event.target.checked)}
                 />
-                Project updates
+                Обновления проекта
               </label>
               <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm">
                 <Checkbox
                   checked={weeklyDigest}
                   onChange={(event) => setWeeklyDigest(event.target.checked)}
                 />
-                Weekly digest
+                Еженедельная подборка
               </label>
               <label
                 className={`flex min-h-11 cursor-not-allowed items-center gap-3 text-sm ${kit.muted}`}
               >
                 <Checkbox disabled />
-                Disabled option
+                Недоступный вариант
               </label>
             </div>
           </div>
         </fieldset>
         <fieldset>
-          <legend className={`${kit.label} mb-3`}>Display density</legend>
+          <legend className={`${kit.label} mb-3`}>Плотность отображения</legend>
           <div className="grid gap-3">
             <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm">
               <input
@@ -497,7 +500,7 @@ function Choices() {
                 checked={density === "comfortable"}
                 onChange={() => setDensity("comfortable")}
               />
-              Comfortable
+              Просторный
             </label>
             <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm">
               <input
@@ -508,7 +511,7 @@ function Choices() {
                 checked={density === "compact"}
                 onChange={() => setDensity("compact")}
               />
-              Compact
+              Компактный
             </label>
             <label
               className={`flex min-h-11 cursor-not-allowed items-center gap-3 text-sm ${kit.muted}`}
@@ -520,12 +523,12 @@ function Choices() {
                 className={`${radio} ${kit.focus}`}
                 disabled
               />
-              Custom · disabled
+              Свой · недоступен
             </label>
           </div>
         </fieldset>
         <fieldset>
-          <legend className={`${kit.label} mb-3`}>Notifications</legend>
+          <legend className={`${kit.label} mb-3`}>Уведомления</legend>
           <label className="group flex min-h-11 cursor-pointer items-center gap-3 text-sm">
             <input
               type="checkbox"
@@ -537,7 +540,7 @@ function Choices() {
             <span className={switchTrack} aria-hidden="true">
               <span className="h-5 w-5 rounded-full bg-[var(--workspace-brand-surface)] transition motion-reduce:transition-none group-has-[:checked]:translate-x-5 group-has-[:checked]:bg-[var(--workspace-brand-on-accent)]" />
             </span>
-            Notify me
+            Уведомлять меня
           </label>
           <label
             className={`mt-3 flex min-h-11 cursor-not-allowed items-center gap-3 text-sm ${kit.muted}`}
@@ -551,13 +554,13 @@ function Choices() {
             <span className={switchTrack} aria-hidden="true">
               <span className="h-5 w-5 rounded-full bg-[var(--workspace-brand-surface)]" />
             </span>
-            Disabled switch
+            Недоступный переключатель
           </label>
         </fieldset>
       </div>
       <p className={`mt-5 text-xs ${kit.muted}`} role="status">
-        {Number(emailUpdates) + Number(weeklyDigest)} update types selected ·{" "}
-        {density} layout · notifications {notifications ? "on" : "off"}
+        {Number(emailUpdates) + Number(weeklyDigest)} типов обновлений выбрано ·{" "}
+        {density} раскладка · уведомления {notifications ? "on" : "off"}
       </p>
     </Specimen>
   );
@@ -573,24 +576,26 @@ function Combobox() {
   return (
     <Specimen
       id="combobox"
-      title="Combobox"
-      description="Use a select for a short fixed list and a searchable combobox when people need to find an option."
+      title="Выбор с поиском"
+      description="Для короткого фиксированного списка подходит селектор; для поиска варианта — поле с поиском."
       states={[
         "closed",
         "open",
         "search",
-        "keyboard highlight",
-        "selected",
-        "no results",
+        "клавиатурное выделение",
+        "выбрано",
+        "нет результатов",
         "disabled",
       ]}
-      usage="Select uses the shadcn Radix composition with a padded popup, highlighted rows, a selected check and disabled options. Both pickers use 48px fields and a Phosphor caret. Open a picker, use Arrow keys, then Enter to select. Type in the project picker to search. Escape closes either popup and restores trigger focus."
-      recipe={`Trigger: ${picker.trigger}\nSelect content: ${picker.content}\nSelect item: ${picker.item}\nPopover: ${comboboxPanel}\nOption: ${comboboxItem}`}
+      usage="Select использует shadcn Radix: отступы списка, выделение строки, отметка выбора и недоступные варианты. Оба выбора имеют поля 48px и стрелку Phosphor. Откройте список, используйте стрелки и Enter. В выборе проекта можно печатать для поиска. Escape закрывает список и возвращает фокус."
+      recipe={`Trigger: ${picker.trigger}
+Содержимое списка: ${picker.content}
+Элемент списка: ${picker.item}\nPopover: ${comboboxPanel}\nOption: ${comboboxItem}`}
     >
       <div className="grid items-start gap-6 md:grid-cols-2">
         <div className="min-w-0">
           <label className={kit.label} htmlFor={`${id}-view`}>
-            Working view
+            Рабочий вид
           </label>
           <Select
             id={`${id}-view`}
@@ -598,12 +603,15 @@ function Combobox() {
             value={view}
             onValueChange={setView}
             options={[
-              { value: "Project model", label: "Project model" },
-              { value: "Landing-page preview", label: "Landing-page preview" },
-              { value: "Files", label: "Files" },
+              { value: "Project model", label: "Модель проекта" },
+              {
+                value: "Landing-page preview",
+                label: "Предпросмотр посадочной",
+              },
+              { value: "Файлы", label: "Files" },
               {
                 value: "Calendar",
-                label: "Calendar · unavailable",
+                label: "Календарь · недоступен",
                 disabled: true,
               },
             ]}
@@ -612,19 +620,21 @@ function Combobox() {
             className={`mt-5 block ${kit.label}`}
             htmlFor={`${id}-disabled-view`}
           >
-            Disabled select
+            Недоступный селектор
           </label>
           <Select
             id={`${id}-disabled-view`}
             className="mt-2"
             disabled
             defaultValue="Workspace locked"
-            options={[{ value: "Workspace locked", label: "Workspace locked" }]}
+            options={[
+              { value: "Workspace locked", label: "Workspace заблокирован" },
+            ]}
           />
         </div>
         <div className="min-w-0">
           <label className={kit.label} htmlFor={`${id}-project`}>
-            Project
+            Проект
           </label>
           <Popover.Root
             open={open}
@@ -652,11 +662,11 @@ function Combobox() {
               sideOffset={8}
               className={comboboxPanel}
             >
-              <Command label="Sample projects">
+              <Command label="Примеры проектов">
                 <Command.Input
                   className={kit.field}
-                  placeholder="Search projects…"
-                  aria-label="Search projects"
+                  placeholder="Поиск проектов…"
+                  aria-label="Поиск проектов"
                   value={query}
                   onValueChange={setQuery}
                 />
@@ -665,7 +675,7 @@ function Combobox() {
                   className="mt-2 max-h-64 overflow-y-auto overscroll-contain"
                 >
                   <Command.Empty className={`px-3 py-5 text-sm ${kit.muted}`}>
-                    No projects match “{query}”.
+                    Нет проектов по запросу «{query}”.
                   </Command.Empty>
                   {projects.map((option) => (
                     <Command.Item
@@ -697,7 +707,7 @@ function Combobox() {
             </Popover.Content>
           </Popover.Root>
           <p className={`mt-3 text-xs ${kit.muted}`}>
-            Search is limited to the four sample projects.
+            Поиск ограничен четырьмя примерами проектов.
           </p>
         </div>
       </div>
@@ -717,23 +727,23 @@ function DateAndTime() {
   return (
     <Specimen
       id="date-time"
-      title="Date and time"
-      description="Native date and time inputs keep familiar browser pickers and keyboard editing."
+      title="Дата и время"
+      description="Нативные поля даты и времени сохраняют привычный выбор браузера и редактирование с клавиатуры."
       states={[
         "filled",
         "empty",
         "focus",
         "disabled",
-        "date limits",
-        "15-minute time step",
+        "границы дат",
+        "шаг времени 15 минут",
       ]}
-      usage="These are local sample values. Name the expected time zone in a real scheduling flow; datetime-local does not capture one."
+      usage="Это локальные значения примера. В реальном расписании укажите часовой пояс: datetime-local его не хранит."
       recipe={kit.field}
     >
       <div className="grid gap-5 md:grid-cols-2">
         <div>
           <label htmlFor={`${id}-date`} className={kit.label}>
-            Planning date
+            Плановая дата
           </label>
           <input
             id={`${id}-date`}
@@ -746,12 +756,12 @@ function DateAndTime() {
             aria-describedby={`${id}-date-help`}
           />
           <p id={`${id}-date-help`} className={`mt-2 text-xs ${kit.muted}`}>
-            Choose a date between 2026 and 2030.
+            Выберите дату между 2026 и 2030 годами.
           </p>
         </div>
         <div>
           <label htmlFor={`${id}-time`} className={kit.label}>
-            Start time
+            Время начала
           </label>
           <input
             id={`${id}-time`}
@@ -761,11 +771,11 @@ function DateAndTime() {
             value={time}
             onChange={(event) => setTime(event.target.value)}
           />
-          <p className={`mt-2 text-xs ${kit.muted}`}>15-minute steps</p>
+          <p className={`mt-2 text-xs ${kit.muted}`}>Шаг 15 минут</p>
         </div>
         <div>
           <label htmlFor={`${id}-combined`} className={kit.label}>
-            Date and time
+            Дата и время
           </label>
           <input
             id={`${id}-combined`}
@@ -777,7 +787,7 @@ function DateAndTime() {
         </div>
         <div>
           <label htmlFor={`${id}-disabled`} className={kit.label}>
-            Disabled date
+            Недоступная дата
           </label>
           <input
             id={`${id}-disabled`}
@@ -790,8 +800,8 @@ function DateAndTime() {
         </div>
       </div>
       <p className={`mt-5 text-sm ${kit.muted}`} role="status">
-        Selected: {date || "No date"} · {time || "No time"} ·{" "}
-        {dateTime ? dateTime.replace("T", " at ") : "No combined value"}
+        Выбрано: {date || "Нет даты"} · {time || "Нет времени"} ·{" "}
+        {dateTime ? dateTime.replace("T", " at ") : "Нет совмещённого значения"}
       </p>
     </Specimen>
   );
@@ -805,25 +815,25 @@ function RangeAndSlider() {
   return (
     <Specimen
       id="range"
-      title="Range and slider"
-      description="Sliders pair a visible value with a generous pointer target. A range uses two named thumbs."
+      title="Диапазон и ползунок"
+      description="Ползунок объединяет видимое значение с просторной целью указателя. У диапазона два подписанных бегунка."
       states={[
         "default",
         "dragging",
-        "keyboard focus",
+        "клавиатурный фокус",
         "minimum",
         "maximum",
-        "two thumbs",
+        "два бегунка",
         "disabled",
       ]}
-      usage="Use Arrow keys for a step, Page Up or Down for a larger move, and Home or End for limits. Name each thumb when two values share one track."
+      usage="Стрелки — один шаг, Page Up/Down — большой шаг, Home/End — границы. При двух значениях на полосе подпишите каждый бегунок."
       recipe={`Root: ${sliderRoot}\nTrack: ${sliderTrack}\nThumb: ${sliderThumb} ${kit.focus}`}
     >
       <div className="grid gap-7 md:grid-cols-2">
         <div>
           <div className="flex items-center justify-between gap-3">
             <span id={`${id}-zoom`} className={kit.label}>
-              Preview zoom
+              Масштаб просмотра
             </span>
             <output className="text-sm tabular-nums">{zoom[0]}%</output>
           </div>
@@ -851,7 +861,7 @@ function RangeAndSlider() {
         </div>
         <div>
           <div className="flex items-center justify-between gap-3">
-            <span className={kit.label}>Section range</span>
+            <span className={kit.label}>Диапазон разделов</span>
             <output className="text-sm tabular-nums">
               {range[0]}–{range[1]}
             </output>
@@ -870,11 +880,11 @@ function RangeAndSlider() {
             </Slider.Track>
             <Slider.Thumb
               className={`${sliderThumb} ${kit.focus}`}
-              aria-label="First section"
+              aria-label="Первый раздел"
             />
             <Slider.Thumb
               className={`${sliderThumb} ${kit.focus}`}
-              aria-label="Last section"
+              aria-label="Последний раздел"
             />
           </Slider.Root>
           <div className={`flex justify-between text-xs ${kit.muted}`}>
@@ -884,7 +894,7 @@ function RangeAndSlider() {
         </div>
         <div>
           <span id={`${id}-disabled`} className={kit.label}>
-            Disabled slider
+            Недоступный ползунок
           </span>
           <Slider.Root
             className={`mt-3 ${sliderRoot}`}

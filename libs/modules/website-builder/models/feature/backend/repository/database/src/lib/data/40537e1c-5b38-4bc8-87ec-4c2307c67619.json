@@ -1,0 +1,18 @@
+{
+  "className": null,
+  "id": "40537e1c-5b38-4bc8-87ec-4c2307c67619",
+  "createdAt": "2026-10-23T20:18:06.480Z",
+  "updatedAt": "2026-10-23T20:18:06.480Z",
+  "variant": "card",
+  "title": {
+    "en": "Run it locally",
+    "ru": "Запустите локально"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Install dependencies, start PostgreSQL and Redis with the setup script, then start API and Host.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Установите зависимости, запустите PostgreSQL и Redis скриптом настройки, затем API и Host.\"}]}]}"
+  },
+  "adminTitle": "Run it locally",
+  "slug": "framework-about-start-feature-1"
+}

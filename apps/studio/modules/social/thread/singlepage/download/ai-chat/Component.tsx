@@ -33,7 +33,7 @@ export function Component({
       data-variant={variant}
       data-thread-id={threadId}
       data-knowledge-source-ids={sources.map((source) => source.id).join(" ")}
-      aria-label={`Download ${fileName}`}
+      aria-label={`Скачать ${fileName}`}
       onClick={download}
       className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border bg-card px-5 py-2 text-sm font-semibold transition hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
     >

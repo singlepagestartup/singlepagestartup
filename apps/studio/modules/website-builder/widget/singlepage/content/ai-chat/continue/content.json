@@ -1,60 +1,68 @@
 {
   "continue": {
-    "title": "Keep working in chat.",
+    "title": "Начните с материалов своего бизнеса",
     "paragraphs": [
-      "Open a topic for your next task. Choose which saved documents to attach, then discuss the project with AI Chat."
+      "Добавьте сведения об одной услуге или продукте и выберите первую задачу: статью, рекламное сообщение или техническое задание."
     ],
     "items": [],
     "links": []
   },
   "terms": {
-    "title": "Access, tokens and your materials",
+    "title": "Вопросы, стоимость и данные",
     "paragraphs": [
-      "Registration shows the current free token allowance. Paid AI work uses the token balance."
+      "При регистрации доступен текущий бесплатный лимит токенов. Дальнейшая работа оплачивается по использованию: стоимость ответа зависит от модели и объёма обработки."
     ],
     "items": [
       {
-        "title": "Token cost",
-        "text": "0.13 roubles per internal token. One token is charged when input is sent; a successful request settles at actual provider cost, rounded up to a whole internal token, with a minimum of one token."
+        "title": "У меня уже есть сайт",
+        "text": "Используйте AI Chat для статей, рекламы, писем и других материалов. Создавать новый сайт для этого не требуется."
       },
       {
-        "title": "Top-ups",
-        "text": "100, 300, 500, 1,000 or 3,000 roubles, at the same rate without package discounts. Tokens do not expire. Cash refunds for purchases are decided case by case."
+        "title": "Чем отличается от обычного чата",
+        "text": "Знания организованы вокруг бизнеса и его продуктов: состав, аудитория, условия, исследования и материалы. Вы выбираете документы для конкретной задачи."
       },
       {
-        "title": "Balance limit",
-        "text": "The balance can go below zero. At −2,000 internal tokens or lower, new paid AI requests are restricted. Top up above the threshold to return to your saved task."
+        "title": "Как сохранить условия продукта",
+        "text": "Ассистент опирается на исходные сведения. Цена, состав и ограничения сохраняются в документе продукта; вы проверяете их перед применением текста."
       },
       {
-        "title": "Failed or cancelled AI requests",
-        "text": "All token deductions are restored, including the initial token and any settlement. The net charge is zero; the service pays the provider expense."
+        "title": "Можно ли скачать результат",
+        "text": "Документы доступны для экспорта. Их можно передать сотруднику, подрядчику или использовать в другом инструменте."
       },
       {
-        "title": "Support",
-        "text": "Initial support requests are processed within 24 hours, without continuous live coverage or a promised resolution time."
+        "title": "Стоимость",
+        "text": "0,13 ₽ за внутренний токен. При отправке списывается один токен, после ответа — остаток по расходам провайдера с округлением вверх. Минимум успешного запроса — один токен."
       },
       {
-        "title": "Materials",
-        "text": "Review how your materials are processed and stored before uploading. Account deletion removes active data; infrastructure backups may retain copies for up to six months."
+        "title": "Пополнение и возвраты",
+        "text": "100, 300, 500, 1 000 или 3 000 ₽ по одной цене токена. Токены не сгорают. При ошибке или отмене запроса все его списания возвращаются; денежный возврат покупки рассматривается индивидуально."
+      },
+      {
+        "title": "Баланс и поддержка",
+        "text": "При балансе −2 000 токенов или ниже новые платные запросы доступны после пополнения выше порога. Обращения в поддержку обрабатываются в течение 24 часов; срок решения зависит от вопроса."
+      },
+      {
+        "title": "Обработка материалов",
+        "text": "Сервис использует материалы для запрошенной работы и передаёт необходимые сведения ИИ-провайдеру. После удаления аккаунта активные данные удаляются; резервные копии хостинга могут храниться до шести месяцев."
       }
     ],
     "links": [
       {
-        "text": "Buy tokens",
+        "text": "Купить токены",
         "href": "/ai-chat/rbac/subjects/tokens"
       },
       {
-        "text": "How your materials are processed and stored",
+        "text": "Обработка и хранение материалов",
         "href": "/ai-chat/social/profiles/create#how-your-materials-are-processed-and-stored"
       },
       {
-        "text": "Get help",
+        "text": "Получить помощь",
         "href": "/ai-chat/help"
       }
     ]
   },
   "startLink": {
-    "text": "Start with my files",
+    "text": "Начать с моих материалов",
     "href": "/ai-chat/rbac/subjects/authentication/registration"
   }
 }

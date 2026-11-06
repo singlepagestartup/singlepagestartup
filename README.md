@@ -44,19 +44,31 @@ For issue-152, HTTP cache remains enabled in scenarios; temporary exclusion is a
 
 `apps/mcp` can run as a remote Streamable HTTP MCP server at `https://mcp.<domain>/mcp`. Deploy it with `tools/deployer/mcp.sh`; production connectors authenticate through OAuth/Bearer and then forward the caller's `rbac.subject` authentication JWT to `apps/api`. Static `X-RBAC-SECRET-KEY` auth is disabled by default for remote deployments and should only be enabled for local/private debugging.
 
-ENV creation and successful MCP deployment generate project configs for
-OpenCode, Claude Code, Codex, Cursor, and VS Code/Copilot with the project's
-HTTPS endpoint. Configure `MCP_SERVICE_NAME` and `DOMAIN` in
-`tools/deployer/.env`; `MCP_SERVICE_SUBDOMAIN` defaults to `mcp`. Client
-generation runs on Bun 1.3.6. Regenerate without deployment with:
+MCP connections for coding clients
+belong to the local checkout and are excluded from Git. Shared defaults remain
+in `*.example` files. `up.sh` and ENV creation leave client connections alone.
+
+Configure your project's `MCP_SERVICE_NAME` and `DOMAIN` in
+`tools/deployer/.env`; `MCP_SERVICE_SUBDOMAIN` defaults to `mcp`. Then generate
+a local connection explicitly for the chosen client with Bun 1.3.6:
 
 ```bash
-npm run mcp:clients:generate
+npm run mcp:clients:generate -- --client codex
 ```
 
-Existing connections such as `nx-mcp` are preserved. GitHub Actions exports an
-`mcp-client-configs` artifact. Complete OAuth login in the chosen client after
-generation; see [project client configuration](apps/mcp/README.md#generated-project-client-configs)
+The connector name comes from this checkout's `origin` repository and the
+environment, for example `client-shop-production`. The URL comes from the
+project's deployment settings; it is not inferred from the repository name.
+Existing connections such as `nx-mcp` are preserved. The `--client` choices
+include `claude`, `codex`, `kimi`, `mimo`, `opencode`, `cursor` and `vscode`.
+Without `--client`, generation exports samples without activating any client.
+Muse and native DeepSeek Harness always use export-only samples; their
+configuration and authentication need manual integration. See the
+[compatibility notes](apps/mcp/README.md#client-compatibility) before sharing
+configurations between clients. Successful MCP deployment
+exports separate client samples under `.artifacts/mcp-client-configs/<client>`; GitHub Actions publishes
+it as the `mcp-client-configs` artifact without editing local client settings.
+Complete OAuth login in the chosen client after generation; see [project client configuration](apps/mcp/README.md#generated-project-client-configs)
 for OpenCode V1/V2 formats and login commands. The following CLI commands are
 also available for manual registration.
 
@@ -191,9 +203,10 @@ Prefer the Streamable HTTP transport for Codex, Claude Code, Inspector, and any 
 http://127.0.0.1:3001/mcp
 ```
 
-Claude Code uses `.mcp.json`; Codex uses `.codex/config.toml`. Generated remote
-connectors use the `-production` suffix and retain existing local connections.
-Print repo-derived commands with:
+Claude Code uses the ignored `.mcp.json`; Codex uses the ignored
+`.codex/config.toml`. Shared defaults live in the corresponding `*.example`
+files. Explicit generation adds a `<repo-name>-production` connector and
+retains existing local connections. Print repo-derived commands with:
 
 ```bash
 tools/mcp/setup-project-mcp.sh
@@ -263,6 +276,7 @@ Strict layered architecture: Repository → Service → Controller → App.
 - Fields defined in `fields/`, table schema in `schema.ts`
 - Database structure changes are managed via generated Drizzle SQL migrations
 - After changing `schema.ts` or any `fields/*` table definition, run the matching `repository-generate` Nx target, for example `npx nx run @sps/<module>:models:<model>:repository-generate` or the corresponding relation target. Do not hand-write migration SQL, `migrations/meta/*` snapshots, or `_journal.json` entries.
+- Every model/relation generation target runs uncached and regenerates Consistency Capture after Drizzle, including client-owned Startup schemas. Commit the generated schema and capture artifacts together. Apply them with `npx nx run api:db:migrate`, then run `npx nx run @sps/providers-db:consistency-check`. Custom targets must retain the final capture-generation command. See [PostgreSQL consistency storage](libs/providers/db/README.md) for the lifecycle and checks.
 
 #### Service Layer
 
@@ -449,23 +463,25 @@ WebSocket path reconciles other subscribed clients and derived changes.
 
 ### Middlewares
 
-| Middleware             | Purpose                                 |
-| ---------------------- | --------------------------------------- |
-| RequestIdMiddleware    | Generates unique ID for each request    |
-| ObserverMiddleware     | Logs requests and collects metrics      |
-| ParseQueryMiddleware   | Parses complex query parameters         |
-| LoggerMiddleware       | Logs all incoming requests              |
-| RevalidationMiddleware | Manages content revalidation strategies |
-| HTTPCacheMiddleware    | Caches responses conditionally          |
-| ExceptionFilter        | Centralized error catching              |
+| Middleware             | Purpose                                              |
+| ---------------------- | ---------------------------------------------------- |
+| RequestIdMiddleware    | Generates unique ID for each request                 |
+| ObserverMiddleware     | Runs configured pipelines after successful mutations |
+| ParseQueryMiddleware   | Parses complex query parameters                      |
+| ActionLoggerMiddleware | Records selected successful Subject actions          |
+| RevalidationMiddleware | Manages content revalidation strategies              |
+| HTTPCacheMiddleware    | Caches responses conditionally                       |
+| ExceptionFilter        | Centralized error catching                           |
 
 ### Error Handling
 
-- All errors intercepted through `ExceptionFilter`
+- Exceptions caught by the shared API filter generate an incident record. Explicit HTTP responses bypass this filter.
 - Standardized error responses:
-  - `statusCode` — error code
-  - `message` — error description
-  - `requestId` — unique ID for request traceability
+  - `status` — HTTP status code
+  - `error` — error message
+  - `requestId` — server-generated ID of the structured API incident. See the [server incident runbook](tools/deployer/README.md#finding-an-api-error)
+  - `path`, `method` — the matched route pattern and HTTP method
+  - `stack`, `cause` — only when `API_ERROR_DETAILS` resolves to `full` or the request carries the operator secret (see `apps/api/README.md`, "Environment")
 
 #### Automatic Error Categorization
 
@@ -498,6 +514,7 @@ Here are the available categories and examples of keywords that trigger them:
 | **Payment error** | 400 | payment intent not found, stripe secret key not found, currency required |
 | **Not Found error** | 404 | not found, entity not found, form not found |
 | **Conflict error** | 409 | duplicate key value violates unique constraint, conflict error |
+| **Payload Too Large error** | 413 | payload too large |
 | **Internal error** | 500 | internal server error, jwt secret not provided, configuration error |
 
 A message that opens with a category phrase keeps that category even when its details match another one: `Validation error. Expected string, got: object` stays a 400 Validation error, while a bare `Expected string, got: object` is a 422 Unprocessable Entity error.
@@ -521,6 +538,15 @@ If no specific pattern is matched, the error will be classified as a generic Int
 ```bash
 npm install
 ```
+
+Run dependency installation from the repository root. The root `package.json`
+and `package-lock.json` control the dependencies used by local Nx commands and
+the Docker build's `npm ci`. Applications such as `apps/host` are not npm
+workspaces, so changing only their `package.json` does not update the root
+installation. For a dependency declared in multiple manifests, update all of
+them and regenerate the root lockfile with npm. Hono is pinned to the same
+version in the root, API, Host, OpenAPI and Telegram manifests; the root lockfile
+selects the version used by the running services.
 
 ### 2. Creating envs and starting Required Services
 
@@ -645,10 +671,11 @@ resolved later, then the command can be resumed. See the
 for the message format, initial compatibility audit, and checkpoint behavior.
 
 After the downstream project has its own `origin` and deployment ENV, generate
-its project MCP configs with the downstream repository name and domain:
+its local MCP configs with that repository name and its own domain. Keep the
+generated files out of Git so future projects do not inherit the connection:
 
 ```bash
-npm run mcp:clients:generate
+npm run mcp:clients:generate -- --client codex
 ```
 
 Use the helper without flags to print MCP authentication and setup commands
@@ -666,6 +693,10 @@ cannot identify their migration instructions afterward.
 
 ## Documentation
 
+Deploying over an existing PostgreSQL installation that used the administrator
+login for the API requires a one-time role migration. Run it from your
+workstation using the [existing database upgrade instructions](tools/deployer/README.md#moving-an-existing-installation-to-the-application-role).
+
 Detailed documentation for each module can be found in their respective directories:
 
 - [agent](./libs/modules/agent/README.md) - automation, scheduled jobs, AI utilities, agent widgets.
@@ -682,6 +713,12 @@ Detailed documentation for each module can be found in their respective director
 - [social](./libs/modules/social/README.md) - placeholder module (to be defined per project).
 - [startup](./libs/modules/startup/README.md) - project-specific models/relations and custom widgets.
 - [website-builder](./libs/modules/website-builder/README.md) - UI components and layout-building widgets.
+
+## Security
+
+Use GitHub private vulnerability reporting for security findings.
+[SECURITY.md](./SECURITY.md) links to the report form and explains disclosure,
+supported versions and deployment security.
 
 ## License
 

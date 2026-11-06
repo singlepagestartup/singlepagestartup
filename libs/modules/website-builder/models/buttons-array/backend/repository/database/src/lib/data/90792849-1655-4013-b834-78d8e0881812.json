@@ -1,0 +1,14 @@
+{
+  "id": "90792849-1655-4013-b834-78d8e0881812",
+  "createdAt": "2026-10-24T01:06:11.799Z",
+  "updatedAt": "2026-10-24T01:06:11.799Z",
+  "variant": "default",
+  "className": "w-full",
+  "title": {
+    "en": "Actions",
+    "ru": "Действия"
+  },
+  "description": {},
+  "adminTitle": "Actions",
+  "slug": "framework-journey-module-broadcast-actions"
+}

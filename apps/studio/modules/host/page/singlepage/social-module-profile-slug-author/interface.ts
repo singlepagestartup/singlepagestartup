@@ -2,6 +2,7 @@ export const variant = "social-module-profile-slug-author";
 
 export interface IComponentVariantProps {
   variant?: "social-module-profile-slug-author";
+  authorSlug?: string;
 }
 
 type IVariantInputs = NonNullable<IComponentVariantProps>;

@@ -3,7 +3,7 @@
   "title": "Blog Find Article Card",
   "layer": "singlepage",
   "state": "draft",
-  "description": "Host page recipe for a blog find page with article cards.",
+  "description": "Framework journal with three subjects, six supplied architecture guides, search and development preparation.",
   "files": {
     "component": "Component.tsx",
     "story": "Component.stories.tsx"
@@ -18,16 +18,16 @@
       "path": "../../../../website-builder/widget/singlepage/content-page-header"
     },
     {
-      "id": "blog.widget.article-find-featured",
-      "path": "../../../../blog/widget/singlepage/article-find-featured"
+      "id": "blog.widget.category-find-card",
+      "path": "../../../../blog/widget/singlepage/category-find-card"
     },
     {
       "id": "blog.widget.article-find-card-default",
       "path": "../../../../blog/widget/singlepage/article-find-card-default"
     },
     {
-      "id": "blog.widget.tag-find-button",
-      "path": "../../../../blog/widget/singlepage/tag-find-button"
+      "id": "website-builder.widget.content-offer",
+      "path": "../../../../website-builder/widget/singlepage/content-offer"
     }
   ],
   "figma": {

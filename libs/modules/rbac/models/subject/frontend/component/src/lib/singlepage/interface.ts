@@ -1,3 +1,8 @@
+import type { IComponentProps as IEcommerceModuleProductCategoryDefaultProps } from "./ecommerce-module/product/category-default/interface";
+import type { IComponentProps as IEcommerceModuleProductProfileDefaultProps } from "./ecommerce-module/product/profile-default/interface";
+import { IComponentProps as IHiddenComponentProps } from "@sps/shared-frontend-components/singlepage/hidden/interface";
+import type { IComponentProps as IMeBlogModuleArticleCreateDefaultProps } from "./me/blog-module/article/create-default/interface";
+import type { IComponentProps as IMeAccountProps } from "./me/account/interface";
 import type { IComponentProps as ISocialModuleProfileFindProps } from "./social-module/profile/find/interface";
 import type { IComponentProps as IMeBlogModuleArticlePrivateContentDefault } from "./me/blog-module/article/private-content-default/interface";
 import type { IComponentProps as IMeNavigationControlsAiChatInterface } from "./me/navigation/controls-ai-chat/interface";
@@ -71,8 +76,6 @@ import { IComponentProps as IAuthenticationEmailAndPasswordResetPasswordComponen
 import { IComponentProps as IAuthenticationEmailAndPasswordRegistrationFormDefaultComponentProps } from "./authentication/email-and-password/registration-form-default/interface";
 import { IComponentProps as IDefaultComponentProps } from "./default/interface";
 import { IComponentProps as IIdentityGetEmailsComponentProps } from "./identity/get-emails/interface";
-import { IComponentProps as IEcommerceModuleProductCheckoutDefaultComponentProps } from "./ecommerce-module/product/checkout-default/interface";
-import { IComponentProps as IEcommerceModuleProductCartDefaultComponentProps } from "./ecommerce-module/product/cart-default/interface";
 import { IComponentProps as IAuthenticationButtonDefaultComponentProps } from "./authentication/button-default/interface";
 import { IComponentProps as IOverviewDefaultComponentProps } from "./overview-default/interface";
 import { IComponentProps as IIdentitySettingsDefaultComponentProps } from "./identity/settings-default/interface";
@@ -85,6 +88,11 @@ import { IComponentProps as ISocialModuleProfileChatListDefaultComponentProps } 
 import { IComponentProps as ISocialModuleProfileChatOverviewDefaultComponentProps } from "./social-module/profile/chat/overview/default/interface";
 
 export type IComponentProps =
+  | IEcommerceModuleProductCategoryDefaultProps
+  | IEcommerceModuleProductProfileDefaultProps
+  | IHiddenComponentProps
+  | IMeBlogModuleArticleCreateDefaultProps
+  | IMeAccountProps
   | ISocialModuleProfileFindProps
   | IMeBlogModuleArticlePrivateContentDefault
   | IMeNavigationControlsAiChatInterface
@@ -147,10 +155,8 @@ export type IComponentProps =
   | IAdminV2CardComponentProps
   | IAdminV2SidebarItemComponentProps
   | IDefaultComponentProps
-  | IEcommerceModuleProductCheckoutDefaultComponentProps
   | IAuthenticationButtonDefaultComponentProps
   | IOverviewDefaultComponentProps
-  | IEcommerceModuleProductCartDefaultComponentProps
   | IAuthenticationInitDefaultComponentProps
   | IAuthenticationEmailAndPasswordAuthenticationFormDefaultComponentProps
   | IAuthenticationLogoutActionComponentProps

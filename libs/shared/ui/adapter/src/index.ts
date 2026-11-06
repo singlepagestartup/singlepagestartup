@@ -16,3 +16,9 @@ export type {
 
 export { Toaster, ToastIcon, toast } from "./lib/toast";
 export type { IToasterProps, IToastIconProps } from "./lib/toast";
+
+export { ChatWorkspace, ChatThreadPanel } from "./lib/chat-workspace";
+export type {
+  IChatWorkspaceProps,
+  IChatThreadPanelProps,
+} from "./lib/chat-workspace";

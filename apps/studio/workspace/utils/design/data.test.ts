@@ -6,6 +6,7 @@
  */
 
 import { describe, expect, test } from "bun:test";
+import { readFileSync } from "node:fs";
 import { projectDesignData, resolvedProjectDesignData } from "./data";
 import type { IStudioWorkspace } from "../types";
 
@@ -51,6 +52,35 @@ function workspace(design: string, assets = "assets: []"): IStudioWorkspace {
 }
 
 describe("project design data", () => {
+  test("keeps the compact project document renderable without losing identity rules or media", () => {
+    const data = projectDesignData(
+      workspace(
+        readFileSync(
+          new URL("../../design/singlepage.md", import.meta.url),
+          "utf8",
+        ),
+        readFileSync(
+          new URL("../../assets/singlepage.yaml", import.meta.url),
+          "utf8",
+        ),
+      ),
+      "singlepage",
+    );
+    expect(data.graphicRules.length).toBeGreaterThan(0);
+    expect(data.logoRules.length).toBeGreaterThan(0);
+    expect(data.interface.patterns).toHaveLength(8);
+    expect(data.typographyRoles.map(({ family }) => family)).toEqual([
+      "Onest",
+      "Onest",
+    ]);
+    expect(data.palette.accent).toBe("#BFEF61");
+    expect(data.photography.examples).toHaveLength(5);
+    expect(data.illustration.examples).toHaveLength(3);
+    expect(data.photography.masterPrompt).toContain(
+      "Естественная редакционная фотография",
+    );
+    expect(data.illustration.masterPrompt).toContain("изометрическ");
+  });
   /**
    * BDD Scenario: Render the confirmed client preference analysis
    * Given Brief owns the categorized reference intake

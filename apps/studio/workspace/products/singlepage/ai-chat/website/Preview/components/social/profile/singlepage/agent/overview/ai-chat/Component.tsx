@@ -173,7 +173,7 @@ function Icon({
   const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
@@ -222,14 +222,14 @@ export function Component({ agent, onClose }: IAgentProfileProps) {
                   {agent?.name}
                 </Dialog.Title>
                 <p className="mt-1 text-xs text-[color:var(--workspace-brand-muted)]">
-                  {agent?.custom ? "Custom agent" : "Preset agent"}
+                  {agent?.custom ? "Свой агент" : "Готовый агент"}
                 </p>
               </div>
               <Dialog.Close asChild>
                 <Button
                   variant="plain"
                   className="min-h-9 px-2"
-                  aria-label="Close agent profile"
+                  aria-label="Закрыть профиль агента"
                 >
                   <Icon name="x" />
                 </Button>
@@ -267,7 +267,11 @@ export function ProjectAgentPicker({
   function openEditor(value: IProjectAgent | null) {
     setDraft(value?.custom ? value : null);
     setName(
-      value ? (value.custom ? value.name : `${value.name} — custom`) : "",
+      value
+        ? value.custom
+          ? value.name
+          : `${value.name} — пользовательский`
+        : "",
     );
     setDescription(value?.description ?? "");
     setRole(value?.role ?? "");
@@ -293,7 +297,7 @@ export function ProjectAgentPicker({
       <div className="flex flex-wrap items-center gap-2">
         <div className="min-w-0 flex-1">
           <Select
-            aria-label="Thread agent"
+            aria-label="Агент переписки"
             value={agent?.id ?? "none"}
             onValueChange={(value) => {
               if (value === "none") {
@@ -304,7 +308,7 @@ export function ProjectAgentPicker({
               if (next) onChange(next);
             }}
             options={[
-              { value: "none", label: "No agent" },
+              { value: "none", label: "Без агента" },
               ...available.map((item) => ({
                 value: item.id,
                 label: item.name,
@@ -316,7 +320,7 @@ export function ProjectAgentPicker({
       </div>
       <p className="text-xs leading-5 text-[color:var(--workspace-brand-muted)]">
         {agent?.description ??
-          "Use the selected model with attached documents, without a preset or custom role."}
+          "Выбранная модель с прикреплёнными документами, без готовой или собственной роли."}
       </p>
       <div className="flex flex-wrap gap-2">
         <Button
@@ -325,7 +329,7 @@ export function ProjectAgentPicker({
           onClick={() => openEditor(null)}
         >
           <Icon name="plus" className="size-4" />
-          Create your own agent
+          Создать своего агента
         </Button>
         {agent && (
           <Button
@@ -334,7 +338,7 @@ export function ProjectAgentPicker({
             onClick={() => openEditor(agent)}
           >
             <Icon name="gear-six" className="size-4" />
-            {agent.custom ? "Edit agent" : "Customize role"}
+            {agent.custom ? "Изменить агента" : "Настроить роль"}
           </Button>
         )}
       </div>
@@ -346,18 +350,18 @@ export function ProjectAgentPicker({
             <div className="flex items-start justify-between gap-3 border-b border-[color:var(--workspace-brand-line)] p-5">
               <div>
                 <Dialog.Title className="text-lg font-semibold">
-                  {draft ? "Edit agent" : "Create your own agent"}
+                  {draft ? "Изменить агента" : "Создать своего агента"}
                 </Dialog.Title>
                 <Dialog.Description className="mt-1 text-sm leading-6 text-[color:var(--workspace-brand-muted)]">
-                  Define its responsibility, method and boundaries. Project
-                  context comes from the documents attached to the thread.
+                  Определите ответственность, метод и границы. Контекст проекта
+                  дают документы, прикреплённые к переписке.
                 </Dialog.Description>
               </div>
               <Dialog.Close asChild>
                 <Button
                   variant="plain"
                   className="min-h-9 px-2"
-                  aria-label="Close agent editor"
+                  aria-label="Закрыть редактор агента"
                 >
                   <Icon name="x" />
                 </Button>
@@ -365,14 +369,14 @@ export function ProjectAgentPicker({
             </div>
             <form onSubmit={save} className="space-y-5 overflow-y-auto p-5">
               <TextField
-                label="Agent name"
+                label="Имя агента"
                 value={name}
                 onChange={(event) => setName(event.target.value)}
                 required
                 maxLength={100}
               />
               <label className="block">
-                <span className={`${kit.label} mb-2 block`}>Description</span>
+                <span className={`${kit.label} mb-2 block`}>Описание</span>
                 <textarea
                   value={description}
                   onChange={(event) => setDescription(event.target.value)}
@@ -382,14 +386,14 @@ export function ProjectAgentPicker({
                 />
               </label>
               <label className="block">
-                <span className={`${kit.label} mb-2 block`}>Role</span>
+                <span className={`${kit.label} mb-2 block`}>Роль</span>
                 <textarea
                   value={role}
                   onChange={(event) => setRole(event.target.value)}
                   required
                   rows={16}
                   className={`${kit.field} font-mono`}
-                  placeholder="Describe the mission, method, boundaries and expected result."
+                  placeholder="Опишите задачу, метод, границы и ожидаемый результат."
                 />
               </label>
               <Button
@@ -397,7 +401,7 @@ export function ProjectAgentPicker({
                 disabled={!name.trim() || !description.trim() || !role.trim()}
               >
                 <Icon name="floppy-disk" />
-                Save agent
+                Сохранить агента
               </Button>
             </form>
           </Dialog.Content>
@@ -522,7 +526,7 @@ const Button = forwardRefControl<
 });
 export const knowledgeAgent: IProjectAgent = {
   id: "knowledge-assistant",
-  name: "Knowledge assistant",
-  description: "Works with the project's knowledge and its files.",
+  name: "Ассистент по знаниям",
+  description: "Работает со знаниями проекта и его файлами.",
   role: knowledgeSkill.description,
 };

@@ -98,7 +98,7 @@ function Icon({
   const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
@@ -133,11 +133,9 @@ export function Component({ chatId, cancelHref }: IThreadCreateProps) {
       }}
       className="mx-auto grid w-full max-w-xl gap-5 overflow-y-auto p-5 @[640px]:p-8"
     >
-      <p className={`text-sm leading-6 ${kit.muted}`}>
-        Give this thread a name.
-      </p>
+      <p className={`text-sm leading-6 ${kit.muted}`}>Назовите переписку.</p>
       <TextField
-        label="Thread name"
+        label="Название переписки"
         value={title}
         onChange={(event) => {
           setTitle(event.target.value);
@@ -145,21 +143,23 @@ export function Component({ chatId, cancelHref }: IThreadCreateProps) {
         }}
         required
         maxLength={100}
-        placeholder="What do you want to work on?"
+        placeholder="Над чем хотите поработать?"
       />
       <div className="flex flex-wrap gap-3">
         <Button type="submit" disabled={!title.trim()}>
           <Icon name="chat-circle" />
-          Create thread
+          Создать переписку
         </Button>
         <a
           href={cancelHref}
           className={`inline-flex min-h-11 items-center rounded-xl border border-[color:var(--workspace-brand-line)] px-5 text-sm font-semibold ${kit.focus}`}
         >
-          Cancel
+          Отмена
         </a>
       </div>
-      {previewed && <Feedback>Preview only. No thread was created.</Feedback>}
+      {previewed && (
+        <Feedback>Только предпросмотр. Переписка не создана.</Feedback>
+      )}
     </form>
   );
 }

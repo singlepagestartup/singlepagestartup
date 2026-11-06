@@ -3,14 +3,19 @@ export type { INavbarButtonsProps } from "./interface";
 import { Component as Button } from "../../../button/index";
 
 const links = [
-  { label: "Home", href: "/", story: "root" },
+  { label: "Framework", href: "/framework", story: "framework" },
   {
-    label: "Services",
-    href: "/ecommerce/products",
-    story: "ecommerce-module-product-find",
+    label: "Modules",
+    href: "/framework/modules",
+    story: "framework-module-find",
   },
   { label: "Blog", href: "/blog", story: "blog-module-article-find" },
-  { label: "Chat", href: "/chat", disabled: true },
+  {
+    label: "Tokens",
+    href: "/ecommerce",
+    story: "ecommerce-module-token-find",
+  },
+  { label: "AI Chat", href: "/", story: "ai-chat" },
 ];
 export function Component({
   variant = "navbar-default",
@@ -38,7 +43,6 @@ export function Component({
               : link.href
           }
           target={link.story ? "_top" : undefined}
-          disabled={link.disabled}
           selected={link.href === activeHref}
           onNavigate={onNavigate}
         />

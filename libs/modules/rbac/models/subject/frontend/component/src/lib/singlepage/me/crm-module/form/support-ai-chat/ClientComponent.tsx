@@ -1,4 +1,5 @@
 "use client";
+import { internationalization } from "@sps/shared-configuration";
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { api } from "@sps/rbac/models/subject/sdk/client";
@@ -37,7 +38,12 @@ export function Component(props: IComponentPropsExtended) {
             crmModuleForm={crmModuleForms[0]}
           />
         ) : (
-          <p role="alert">Support form is unavailable.</p>
+          <p role="alert">
+            {(props.language || internationalization.defaultLanguage.code) ===
+            "ru"
+              ? "Форма обращения недоступна."
+              : "Support form is unavailable."}
+          </p>
         )
       }
     </CrmModuleForm>

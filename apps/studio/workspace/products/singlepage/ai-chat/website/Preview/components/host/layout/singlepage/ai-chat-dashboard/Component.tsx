@@ -39,7 +39,7 @@ export function Component({
         }
         navigationLayout={accountAccess ? "inline" : "collapsible"}
         navigationLabel={
-          accountAccess ? "Account access" : "Account navigation"
+          accountAccess ? "Доступ к аккаунту" : "Навигация аккаунта"
         }
         profileSelect={accountAccess ? undefined : profileSelect}
         subjectAccount={accountAccess ? undefined : subjectAccount}

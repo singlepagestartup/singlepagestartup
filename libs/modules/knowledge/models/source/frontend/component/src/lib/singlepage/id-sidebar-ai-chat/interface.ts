@@ -6,6 +6,7 @@ import type {
 } from "@sps/shared-frontend-components/singlepage/default/interface";
 export const variant = "id-sidebar-ai-chat" as const;
 export interface IComponentProps extends IParent<IModel, typeof variant> {
+  language?: string;
   apiProps?: IParent<IModel, typeof variant>["apiProps"] & {
     reactQueryOptions?: Partial<UseQueryOptions<IModel | undefined>>;
   };

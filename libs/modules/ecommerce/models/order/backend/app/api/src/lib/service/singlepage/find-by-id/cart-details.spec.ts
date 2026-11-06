@@ -11,7 +11,12 @@ describe("Cart detail capability", () => {
       product: {
         find: jest.fn().mockResolvedValue([{ id: "a", title: { en: "A" } }]),
       },
-      total: jest.fn().mockResolvedValue([{ total: 250 }]),
+      ordersToCurrencies: { find: jest.fn().mockResolvedValue([]) },
+      total: jest.fn().mockResolvedValue({
+        totals: [{ total: 250 }],
+        unpriced: [],
+        availableCurrencyIds: ["rub"],
+      }),
     };
     const result = await new Service(dependencies as any).execute({
       id: "order",
@@ -36,6 +41,7 @@ describe("Cart detail capability", () => {
     const dependencies = {
       ordersToProducts: { find: jest.fn().mockResolvedValue([]) },
       product: { find: jest.fn() },
+      ordersToCurrencies: { find: jest.fn().mockResolvedValue([]) },
       total: jest.fn(),
     };
     expect(
@@ -43,5 +49,25 @@ describe("Cart detail capability", () => {
     ).toEqual({ lines: [], totals: [] });
     expect(dependencies.product.find).not.toHaveBeenCalled();
     expect(dependencies.total).not.toHaveBeenCalled();
+  });
+  it("preserves a mixed cart's priced amounts and unpriced lines as separate fields", async () => {
+    const unpriced = [
+      {
+        ordersToProductsId: "line",
+        productId: "missing-price",
+        reason: "No price",
+      },
+    ];
+    const result = await new Service({
+      ordersToProducts: {
+        find: async () => [{ id: "line", productId: "missing-price" }],
+      },
+      product: { find: async () => [{ id: "missing-price" }] },
+      ordersToCurrencies: { find: async () => [] },
+      total: async () => ({ totals: [{ total: 100 }], unpriced }),
+    } as any).execute({ id: "order" });
+    expect(result.totals.map((amount) => amount.total)).toEqual([100]);
+    expect(result.unpriced).toEqual(unpriced);
+    expect(result.lines).toHaveLength(1);
   });
 });

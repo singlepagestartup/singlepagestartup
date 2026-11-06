@@ -4,6 +4,7 @@ import { IComponentPropsExtended } from "./interface";
 import { getLocalizedPlainText } from "../plain-text";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as FileStorageModuleFile } from "@sps/file-storage/models/file/frontend/component";
+import type { IProfileAvatar } from "@sps/social/models/profile/sdk/model";
 import type { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
 import { Component as SocialModuleProfilesToFileStorageModuleFiles } from "@sps/social/relations/profiles-to-file-storage-module-files/frontend/component";
 import { NEXT_PUBLIC_API_SERVICE_URL } from "@sps/shared-utils";
@@ -13,18 +14,20 @@ import type { ReactNode } from "react";
 function getProfileDisplayName(props: IComponentPropsExtended) {
   return (
     getLocalizedPlainText(props.data.title, props.language) ||
-    props.data.adminTitle ||
-    props.data.slug
+    ("adminTitle" in props.data && typeof props.data.adminTitle === "string"
+      ? props.data.adminTitle
+      : "") ||
+    (props.language === "ru" ? "Профиль" : "Profile")
   );
 }
 
-function getFileSrc(file: IFileStorageModuleFile) {
+function getFileSrc(file: IFileStorageModuleFile | IProfileAvatar) {
   return /^https?:\/\//.test(file.file)
     ? file.file
     : `${NEXT_PUBLIC_API_SERVICE_URL}/public${file.file}`;
 }
 
-function isImageFile(file: IFileStorageModuleFile) {
+function isImageFile(file: IFileStorageModuleFile | IProfileAvatar) {
   if (file.mimeType?.startsWith("image/")) {
     return true;
   }
@@ -53,7 +56,7 @@ function FallbackAvatar(props: { className?: string; displayName: string }) {
 }
 
 function FileAvatar(props: {
-  file?: IFileStorageModuleFile | null;
+  file?: IFileStorageModuleFile | IProfileAvatar | null;
   displayName: string;
   className?: string;
   fallback: ReactNode;

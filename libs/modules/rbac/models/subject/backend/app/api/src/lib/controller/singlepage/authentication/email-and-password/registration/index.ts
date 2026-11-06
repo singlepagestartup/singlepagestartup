@@ -28,7 +28,7 @@ export class Handler {
       const data = JSON.parse(body["data"]);
       const token = authorization(c);
       const session = token
-        ? await jwt.verify(token, RBAC_JWT_SECRET)
+        ? await jwt.verify(token, RBAC_JWT_SECRET, "HS256")
         : undefined;
       const subjectId = session?.subject?.["id"];
 
@@ -39,7 +39,7 @@ export class Handler {
         subjectId: typeof subjectId === "string" ? subjectId : undefined,
       });
 
-      const decodedJwt = await jwt.verify(entity.jwt, RBAC_JWT_SECRET);
+      const decodedJwt = await jwt.verify(entity.jwt, RBAC_JWT_SECRET, "HS256");
 
       if (!decodedJwt.exp) {
         throw new Error("Validation error. Invalid token issued");

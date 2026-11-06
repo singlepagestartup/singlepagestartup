@@ -1,11 +1,12 @@
-import type { IComponentPropsExtended as IParentExtended } from "@sps/shared-frontend-components/singlepage/default/interface";
+import {
+  type IComponentPropsExtended as IParentExtended,
+  type IComponentProps as IParent,
+} from "@sps/shared-frontend-components/singlepage/default/interface";
 import type { IModel } from "@sps/website-builder/models/widget/sdk/model";
-import type { IComponentProps as IParent } from "@sps/shared-frontend-components/singlepage/default/interface";
 
 export const variant = "navbar-ai-chat" as const;
 export interface IComponentProps extends IParent<IModel, typeof variant> {
   language?: string;
-  helpSelected?: boolean;
   children?: React.ReactNode;
 }
 export interface IComponentPropsExtended

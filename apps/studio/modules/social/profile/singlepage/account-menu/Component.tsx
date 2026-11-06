@@ -27,14 +27,17 @@ export function Component({
   page,
   settingsHref = "/ai-chat/rbac/subjects/settings",
   settingsTarget,
+  createArticleHref,
+  authorHref,
+  chatsHref,
   onNavigate,
   onSignOut,
 }: IComponentProps = {}) {
   const [avatarFailed, setAvatarFailed] = useState(false);
   useEffect(() => setAvatarFailed(false), [data.avatar]);
   const balanceLabel = balance
-    ? `${(balance.free + balance.purchased).toLocaleString("en-US", { maximumFractionDigits: 6 })} tokens`
-    : "— tokens";
+    ? `${(balance.free + balance.purchased).toLocaleString("ru-RU", { maximumFractionDigits: 6 })} токенов`
+    : "— токенов";
   return (
     <DropdownMenu.Root modal={false}>
       <DropdownMenu.Trigger asChild>
@@ -43,7 +46,7 @@ export function Component({
           aria-label={
             showTokens
               ? `${data.title}, ${balanceLabel}`
-              : `${data.title}, account menu`
+              : `${data.title}, меню аккаунта`
           }
           data-ds-block="social.profile.account-menu"
           data-profile-id={data.id}
@@ -107,6 +110,42 @@ export function Component({
             )}
           </DropdownMenu.Label>
           <DropdownMenu.Separator className="my-1 h-px bg-border" />
+          {createArticleHref ? (
+            <DropdownMenu.Item asChild>
+              <a
+                href={createArticleHref}
+                target={settingsTarget}
+                className={menuItemClassName}
+              >
+                <Icon name="file-text" />
+                Создать статью
+              </a>
+            </DropdownMenu.Item>
+          ) : null}
+          {authorHref ? (
+            <DropdownMenu.Item asChild>
+              <a
+                href={authorHref}
+                target={settingsTarget}
+                className={menuItemClassName}
+              >
+                <Icon name="user-circle" />
+                Моя страница автора
+              </a>
+            </DropdownMenu.Item>
+          ) : null}
+          {chatsHref ? (
+            <DropdownMenu.Item asChild>
+              <a
+                href={chatsHref}
+                target={settingsTarget}
+                className={menuItemClassName}
+              >
+                <Icon name="chat-circle" />
+                Мои обсуждения
+              </a>
+            </DropdownMenu.Item>
+          ) : null}
           {showTokens && (
             <DropdownMenu.Item asChild>
               <a
@@ -115,7 +154,7 @@ export function Component({
                 className={menuItemClassName}
               >
                 <Icon name="wallet" />
-                Buy tokens
+                Купить токены
               </a>
             </DropdownMenu.Item>
           )}
@@ -127,7 +166,7 @@ export function Component({
               className={menuItemClassName}
             >
               <Icon name="gear-six" />
-              Settings
+              Настройки
             </a>
           </DropdownMenu.Item>
           <DropdownMenu.Separator className="my-1 h-px bg-border" />
@@ -138,7 +177,7 @@ export function Component({
               className={`${menuItemClassName} w-full`}
             >
               <Icon name="sign-out" />
-              Sign out
+              Выйти
             </button>
           </DropdownMenu.Item>
         </DropdownMenu.Content>

@@ -18,6 +18,14 @@ beforeEach(() => {
   jest.clearAllMocks();
 });
 const contentRead = jest.fn();
+const mockSavedCopy = {
+  title: { ru: "Начните с названия.", en: "Start with a name." },
+  subtitle: { ru: "Назовите проект", en: "Name your project" },
+  description: {
+    ru: "Ваши файлы. Ваш проект.",
+    en: "Your files. Your project.",
+  },
+};
 const relationRead = jest.fn();
 const link = {
   id: "project-link",
@@ -49,6 +57,7 @@ jest.mock("@sps/website-builder/models/widget/sdk/client", () => ({
           {
             id: "creation-content-widget",
             variant: "content-ai-chat-profile-create",
+            ...mockSavedCopy,
           },
         ],
         isLoading: false,
@@ -57,7 +66,11 @@ jest.mock("@sps/website-builder/models/widget/sdk/client", () => ({
     findById: (props: any) => {
       contentRead(props);
       return {
-        data: { id: props.id, variant: "content-ai-chat-profile-create" },
+        data: {
+          id: props.id,
+          variant: "content-ai-chat-profile-create",
+          ...mockSavedCopy,
+        },
         isLoading: false,
       };
     },
@@ -99,6 +112,31 @@ jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
     );
   },
 }));
+jest.mock(
+  "@sps/website-builder/relations/widgets-to-file-storage-module-files/frontend/component",
+  () => ({
+    Component: (props: any) =>
+      props.variant === "find" ? (
+        props.children({
+          data: [
+            {
+              id: "photo-link",
+              widgetId: props.apiProps.params.filters.and[0].value,
+            },
+          ],
+        })
+      ) : (
+        <img
+          src="/images/ai-chat/singlepagestartup-photography-project-start-v1-square.png"
+          alt={
+            props.language === "ru"
+              ? "Человек за работой над проектом"
+              : "A person working on their project at a desk"
+          }
+        />
+      ),
+  }),
+);
 import { Component as Widget } from "@sps/rbac/models/widget/frontend/component";
 jest.mock("@sps/rbac/models/widget/frontend/component", () => ({
   Component: (props: any) => jest.requireActual("./index").Component(props),
@@ -111,31 +149,31 @@ it("opens the original photo card without replacing the project chooser", () => 
     data: { id: "rbac-widget" },
   } as any;
   const view = render(<Widget {...props} />);
-  expect(screen.getByRole("heading", { name: "My projects" })).toBeTruthy();
+  expect(screen.getByRole("heading", { name: "Мои проекты" })).toBeTruthy();
   expect(
     screen
-      .getByRole("link", { name: "Open Existing project" })
+      .getByRole("link", { name: "Открыть Existing project" })
       .getAttribute("href"),
   ).toBe("/ru/ai-chat/social/profiles/profile/chats/chat/threads/thread");
   expect(screen.queryByRole("form")).toBeNull();
   expect(contentRead).not.toHaveBeenCalled();
-  fireEvent.click(screen.getByRole("button", { name: "Create project" }));
+  fireEvent.click(screen.getByRole("button", { name: "Создать проект" }));
   expect(mockPush).toHaveBeenCalledWith("/ru/ai-chat/projects?create=1", {
     scroll: false,
   });
   mockSearch = "create=1";
   view.rerender(<Widget {...props} />);
   expect(
-    screen.getByRole("heading", { name: "Start with a name." }),
+    screen.getByRole("heading", { name: "Начните с названия." }),
   ).toBeTruthy();
   expect(
     screen
-      .getByRole("img", { name: "A person working on their project at a desk" })
+      .getByRole("img", { name: "Человек за работой над проектом" })
       .getAttribute("src"),
   ).toBe(
     "/images/ai-chat/singlepagestartup-photography-project-start-v1-square.png",
   );
-  expect(screen.getByText("Your files. Your project.")).toBeTruthy();
+  expect(screen.getByText("Ваши файлы. Ваш проект.")).toBeTruthy();
   expect(screen.getByRole("form", { name: "Create project" })).toBeTruthy();
   expect(
     screen.queryByRole("heading", { name: "Create a project" }),
@@ -160,13 +198,13 @@ it("opens the original photo card without replacing the project chooser", () => 
       },
     }),
   );
-  fireEvent.click(screen.getByRole("button", { name: "Back to projects" }));
+  fireEvent.click(screen.getByRole("button", { name: "К проектам" }));
   expect(mockPush).toHaveBeenLastCalledWith("/ru/ai-chat/projects", {
     scroll: false,
   });
   mockSearch = "";
   view.rerender(<Widget {...props} />);
-  expect(screen.getByRole("heading", { name: "My projects" })).toBeTruthy();
+  expect(screen.getByRole("heading", { name: "Мои проекты" })).toBeTruthy();
   expect(screen.queryByRole("form")).toBeNull();
 });
 
@@ -180,14 +218,14 @@ it("opens creation from the URL and follows back/forward query changes", () => {
   } as any;
   const view = render(<Widget {...props} />);
   expect(screen.getByRole("form", { name: "Create project" })).toBeTruthy();
-  fireEvent.click(screen.getByRole("button", { name: "Back to projects" }));
+  fireEvent.click(screen.getByRole("button", { name: "К проектам" }));
   expect(mockPush).toHaveBeenLastCalledWith(
     "/ru/ai-chat/projects?source=header",
     { scroll: false },
   );
   mockSearch = "source=header";
   view.rerender(<Widget {...props} />);
-  expect(screen.getByRole("heading", { name: "My projects" })).toBeTruthy();
+  expect(screen.getByRole("heading", { name: "Мои проекты" })).toBeTruthy();
   mockSearch = "create=1&source=header";
   view.rerender(<Widget {...props} />);
   expect(screen.getByRole("form", { name: "Create project" })).toBeTruthy();

@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Explore module",
+    "ru": "Изучить модуль"
+  },
+  "subtitle": {},
+  "url": "/framework/modules/notification",
+  "className": "w-fit",
+  "id": "ace9bc2b-def6-4e02-af2f-1605a49988ae",
+  "createdAt": "2026-10-24T01:06:10.311Z",
+  "updatedAt": "2026-10-24T01:06:10.311Z",
+  "variant": "secondary",
+  "adminTitle": "Explore module",
+  "slug": "framework-journey-module-notification-actions-0"
+}

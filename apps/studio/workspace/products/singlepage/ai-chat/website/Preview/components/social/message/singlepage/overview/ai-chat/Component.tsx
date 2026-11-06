@@ -15,7 +15,7 @@ function WebsiteBuilderModuleFeature({
   const geometry = Glyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       width={size}
@@ -77,12 +77,12 @@ function MessageContext({ documents, label }: IMessageContextProps) {
               </span>
               <span className="ml-2">
                 {document.status === "draft"
-                  ? "Current draft"
-                  : "Source material"}
+                  ? "Текущий черновик"
+                  : "Исходный материал"}
               </span>
             </summary>
             <div className="mt-3 max-h-48 overflow-y-auto whitespace-pre-wrap break-words leading-5">
-              {document.text || "No text supplied yet."}
+              {document.text || "Текст пока не добавлен."}
             </div>
             {Boolean(document.assets?.length) && (
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -146,14 +146,14 @@ export const Component = memo(function Component({
         <p className={`text-xs font-semibold ${kit.muted}`}>
           {message.role === "user"
             ? "You"
-            : (replyingAgent?.name ?? "AI assistant")}
+            : (replyingAgent?.name ?? "AI-ассистент")}
         </p>
         {message.workingOn && (
           <p className="mt-2 text-xs leading-5 text-muted-foreground">
-            Working on {message.workingOn.documentName} ·{" "}
+            Работа над {message.workingOn.documentName} ·{" "}
             {message.workingOn.sections.length
               ? message.workingOn.sections.join(" · ")
-              : "Whole document"}
+              : "Весь документ"}
           </p>
         )}
         {message.text && (
@@ -168,7 +168,7 @@ export const Component = memo(function Component({
               {message.files!.length === 1 ? "attachment" : "attachments"}
             </p>
             <ul
-              aria-label="Message attachments"
+              aria-label="Вложения сообщения"
               tabIndex={0}
               className="flex gap-2 overflow-x-auto pb-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-foreground"
             >
@@ -186,7 +186,7 @@ export const Component = memo(function Component({
         {Boolean(message.filesUsed?.length) && (
           <details className={`mt-3 text-xs ${kit.muted}`}>
             <summary className={`min-h-8 cursor-pointer ${kit.focus}`}>
-              Files used · {message.filesUsed!.length}
+              Использованы файлы · {message.filesUsed!.length}
             </summary>
             <div className="mt-2 grid gap-2 @[640px]:grid-cols-2">
               {message.filesUsed!.map((file) => (
@@ -208,7 +208,10 @@ export const Component = memo(function Component({
         )}
         {showContext && message.context && (
           <div className="mt-3">
-            <MessageContext documents={message.context} label="Context used" />
+            <MessageContext
+              documents={message.context}
+              label="Использованный контекст"
+            />
           </div>
         )}
       </div>

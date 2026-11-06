@@ -1,28 +1,30 @@
 {
   "sections": {
     "hero": {
-      "title": "Bring your project into chat.",
+      "title": "Начните работу над проектом в чате",
       "paragraphs": [
-        "Create an account to add your notes, files and images. Work with AI in each document's thread, then use saved documents in new project conversations."
+        "Создайте аккаунт и добавьте заметки, файлы и изображения. Обсуждайте документы с ИИ-помощником и используйте сохранённые знания в новых задачах."
       ],
       "items": [],
       "links": []
     },
     "account": {
-      "title": "Create an account",
-      "paragraphs": ["Your free token balance appears in the workspace."],
+      "title": "Создать аккаунт",
+      "paragraphs": [
+        "После регистрации в аккаунте появятся бесплатные токены для работы с ИИ."
+      ],
       "items": [],
       "links": []
     },
     "materials": {
-      "title": "Before you add files",
+      "title": "Перед загрузкой файлов",
       "paragraphs": [
-        "Read [How your materials are processed and stored](/ai-chat/social/profiles/create#how-your-materials-are-processed-and-stored), including external AI processing and backup retention after deletion."
+        "Прочитайте, [как обрабатываются и хранятся материалы](/ai-chat/social/profiles/create#how-your-materials-are-processed-and-stored): какие сведения передаются провайдерам ИИ и как долго резервные копии могут храниться после удаления."
       ],
       "items": [],
       "links": [
         {
-          "text": "How your materials are processed and stored",
+          "text": "Обработка и хранение материалов",
           "href": "/ai-chat/social/profiles/create#how-your-materials-are-processed-and-stored"
         }
       ]
@@ -30,18 +32,18 @@
     "success": {
       "title": "Your account is ready",
       "paragraphs": [
-        "Continue to your project chat and add your notes, files and images."
+        "Перейдите к проекту и добавьте заметки, файлы и изображения."
       ],
       "items": [],
       "links": []
     },
     "controls": {
-      "title": "Interface labels",
+      "title": "Подписи интерфейса",
       "paragraphs": [],
       "items": [
         {
           "title": "back-label",
-          "text": "Back to AI Chat"
+          "text": "К AI Chat"
         },
         {
           "title": "back-href",
@@ -49,7 +51,7 @@
         },
         {
           "title": "email-label",
-          "text": "Email"
+          "text": "Электронная почта"
         },
         {
           "title": "email-placeholder",
@@ -57,15 +59,15 @@
         },
         {
           "title": "password-label",
-          "text": "Password"
+          "text": "Пароль"
         },
         {
           "title": "repeat-password-label",
-          "text": "Repeat password"
+          "text": "Повторите пароль"
         },
         {
           "title": "terms-label",
-          "text": "How your materials are processed and stored"
+          "text": "Обработка и хранение материалов"
         },
         {
           "title": "terms-href",
@@ -73,11 +75,11 @@
         },
         {
           "title": "submit",
-          "text": "Create account"
+          "text": "Создать аккаунт"
         },
         {
           "title": "sign-in-label",
-          "text": "Sign in"
+          "text": "Войти"
         },
         {
           "title": "sign-in-href",
@@ -85,11 +87,11 @@
         },
         {
           "title": "existing-account",
-          "text": "Already have an account?"
+          "text": "Уже есть аккаунт?"
         },
         {
           "title": "continue-label",
-          "text": "Open project chat"
+          "text": "Открыть чат проекта"
         },
         {
           "title": "continue-href",
@@ -97,19 +99,19 @@
         },
         {
           "title": "email-error",
-          "text": "Enter a valid email address."
+          "text": "Укажите адрес электронной почты."
         },
         {
           "title": "password-error",
-          "text": "Enter a password."
+          "text": "Придумайте пароль."
         },
         {
           "title": "repeat-password-error",
-          "text": "Enter the same password in both fields."
+          "text": "Пароли в обоих полях должны совпадать."
         },
         {
           "title": "success-message",
-          "text": "Your account is ready."
+          "text": "Аккаунт создан."
         },
         {
           "title": "photo-src",
@@ -121,7 +123,7 @@
         },
         {
           "title": "photo-alt",
-          "text": "A woman working on her project with a laptop and notebook."
+          "text": "Женщина работает над проектом с ноутбуком и блокнотом."
         },
         {
           "title": "secondary-photo-src",
@@ -133,36 +135,36 @@
         },
         {
           "title": "secondary-photo-alt",
-          "text": "A man reviewing a project sketch beside his laptop."
+          "text": "Мужчина изучает эскиз проекта рядом с ноутбуком."
         }
       ],
       "links": []
     }
   },
   "labels": {
-    "back-label": "Back to AI Chat",
+    "back-label": "К AI Chat",
     "back-href": "/ai-chat/",
-    "email-label": "Email",
+    "email-label": "Электронная почта",
     "email-placeholder": "you@example.com",
-    "password-label": "Password",
-    "repeat-password-label": "Repeat password",
-    "terms-label": "How your materials are processed and stored",
+    "password-label": "Пароль",
+    "repeat-password-label": "Повторите пароль",
+    "terms-label": "Обработка и хранение материалов",
     "terms-href": "/ai-chat/social/profiles/create#how-your-materials-are-processed-and-stored",
-    "submit": "Create account",
-    "sign-in-label": "Sign in",
+    "submit": "Создать аккаунт",
+    "sign-in-label": "Войти",
     "sign-in-href": "/ai-chat/rbac/subjects/authentication/select-method",
-    "existing-account": "Already have an account?",
-    "continue-label": "Open project chat",
+    "existing-account": "Уже есть аккаунт?",
+    "continue-label": "Открыть чат проекта",
     "continue-href": "/ai-chat/social/profiles/create",
-    "email-error": "Enter a valid email address.",
-    "password-error": "Enter a password.",
-    "repeat-password-error": "Enter the same password in both fields.",
-    "success-message": "Your account is ready.",
+    "email-error": "Укажите адрес электронной почты.",
+    "password-error": "Придумайте пароль.",
+    "repeat-password-error": "Пароли в обоих полях должны совпадать.",
+    "success-message": "Аккаунт создан.",
     "photo-src": "/workspace-assets/singlepage/generated/living-focus/singlepagestartup-photography-project-start-v1-square.png",
     "photo-asset-id": "singlepage-generated-living-focus-photography-project-start-v1-square",
-    "photo-alt": "A woman working on her project with a laptop and notebook.",
+    "photo-alt": "Женщина работает над проектом с ноутбуком и блокнотом.",
     "secondary-photo-src": "/workspace-assets/singlepage/generated/living-focus/singlepagestartup-photography-project-progress-v1-square.png",
     "secondary-photo-asset-id": "singlepage-generated-living-focus-photography-project-progress-v1-square",
-    "secondary-photo-alt": "A man reviewing a project sketch beside his laptop."
+    "secondary-photo-alt": "Мужчина изучает эскиз проекта рядом с ноутбуком."
   }
 }

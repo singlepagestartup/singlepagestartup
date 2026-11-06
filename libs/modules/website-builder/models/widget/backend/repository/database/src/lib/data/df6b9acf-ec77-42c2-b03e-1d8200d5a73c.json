@@ -1,12 +1,21 @@
 {
-  "title": {},
-  "subtitle": {},
-  "description": {},
+  "title": {
+    "en": "Your files and discussions are saved",
+    "ru": "Ваши файлы и обсуждения сохранены"
+  },
+  "subtitle": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Sign in to return to the project or task where you left off. Each discussion keeps its messages, draft and linked documents.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Войдите, чтобы вернуться к проекту или задаче, на которой остановились. В каждом обсуждении сохраняются сообщения, черновик и связанные документы.\"}]}]}"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"heading\",\"attrs\":{\"level\":2},\"content\":[{\"type\":\"text\",\"text\":\"Cannot sign in?\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Forgot your password? Contact support. If signing in fails, check your email and password, then try again.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"No account yet? Register.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"heading\",\"attrs\":{\"level\":2},\"content\":[{\"type\":\"text\",\"text\":\"Не получается войти?\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Забыли пароль? Напишите в поддержку. Если войти не удалось, проверьте почту и пароль, затем попробуйте ещё раз.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Ещё нет аккаунта? Зарегистрируйтесь.\"}]}]}"
+  },
   "anchor": null,
   "className": null,
   "id": "df6b9acf-ec77-42c2-b03e-1d8200d5a73c",
   "createdAt": "2026-10-11T23:26:12.557Z",
-  "updatedAt": "2026-10-11T23:26:12.557Z",
+  "updatedAt": "2026-10-27T14:59:18.067Z",
   "variant": "content-ai-chat-authentication",
   "adminTitle": "AI Chat authentication content",
   "slug": "ai-chat-authentication-content"

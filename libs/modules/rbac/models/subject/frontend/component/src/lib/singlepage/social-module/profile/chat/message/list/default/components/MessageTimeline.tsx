@@ -19,6 +19,7 @@ type TimelineAction = Extract<TimelineItem, { type: "action" }>["data"];
 interface MessageTimelineProps {
   deletingMessageId: string | null;
   items: ISocialModuleMessagesAndActionsQuery | undefined;
+  participants?: ISocialModuleProfile[];
   language: string;
   messagesContentRef: RefObject<HTMLDivElement | null>;
   onMessageDelete: (message: ISocialModuleMessage) => void;
@@ -30,6 +31,7 @@ interface MessageRowProps {
   isDeleting: boolean;
   language: string;
   message: TimelineMessage;
+  participants?: ISocialModuleProfile[];
   onMessageDelete: (message: ISocialModuleMessage) => void;
   onMessageEdit: (message: ISocialModuleMessage) => void;
   onProfileOpen: (profile: ISocialModuleProfile) => void;
@@ -44,13 +46,18 @@ const MemoizedMessageRow = memo(function MemoizedMessageRow(
   props: MessageRowProps,
 ) {
   return (
-    <MessageProfileLoader messageId={props.message.id}>
-      {(profile) => {
+    <MessageProfileLoader
+      message={props.message}
+      participants={props.participants}
+    >
+      {({ presentation, profile }) => {
         return (
           <SocialModuleProfile
             isServer={false}
             variant="chat-message-row"
-            data={profile}
+            data={presentation}
+            avatar={presentation.avatar}
+            profile={profile}
             language={props.language}
             message={props.message}
             isDeleting={props.isDeleting}
@@ -73,7 +80,7 @@ const MemoizedActionRow = memo(function MemoizedActionRow(
   props: ActionRowProps,
 ) {
   return (
-    <ActionProfileLoader actionId={props.action.id} language={props.language}>
+    <ActionProfileLoader action={props.action} language={props.language}>
       {(profile) => {
         if (props.action.variant === AI_EXECUTION_ACTION_VARIANT) {
           return (
@@ -126,6 +133,7 @@ export function MessageTimeline(props: MessageTimelineProps) {
               isDeleting={props.deletingMessageId === message.id}
               language={props.language}
               message={message}
+              participants={props.participants}
               onMessageDelete={props.onMessageDelete}
               onMessageEdit={props.onMessageEdit}
               onProfileOpen={props.onProfileOpen}

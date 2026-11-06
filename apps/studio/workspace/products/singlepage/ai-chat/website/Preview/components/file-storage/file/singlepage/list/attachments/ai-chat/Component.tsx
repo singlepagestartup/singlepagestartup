@@ -15,7 +15,7 @@ function WebsiteBuilderModuleFeature({
   const geometry = Glyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       width={size}
@@ -144,7 +144,7 @@ export function Component({
   const remove = useCallback(
     async (fileId: string) => {
       if (removal.current || pendingFileId) {
-        setError("Wait for the current file operation to finish.");
+        setError("Дождитесь завершения текущего действия с файлом.");
         return;
       }
       removal.current = true;
@@ -154,7 +154,7 @@ export function Component({
         await onRemove(fileId);
       } catch (cause) {
         setError(
-          cause instanceof Error ? cause.message : "File could not be removed.",
+          cause instanceof Error ? cause.message : "Не удалось убрать файл.",
         );
       } finally {
         removal.current = false;
@@ -179,7 +179,7 @@ export function Component({
     } catch (cause) {
       if (mounted.current)
         setError(
-          cause instanceof Error ? cause.message : "Could not add these files.",
+          cause instanceof Error ? cause.message : "Не удалось добавить файлы.",
         );
     } finally {
       if (mounted.current) setReading(false);
@@ -193,7 +193,7 @@ export function Component({
       data-model="file"
       data-variant={variant}
     >
-      <p className={`text-xs ${kit.muted}`}>Files · {linked.length}</p>
+      <p className={`text-xs ${kit.muted}`}>Файлы · {linked.length}</p>
       {errorMessage && (
         <p role="alert" className="text-xs text-destructive">
           {errorMessage}
@@ -205,7 +205,7 @@ export function Component({
         </p>
       )}
       <ul
-        aria-label="Knowledge attachments"
+        aria-label="Вложения знания"
         className="grid min-w-0 grid-cols-2 gap-2"
       >
         {(expanded ? linked : linked.slice(0, 2)).map((id) => (
@@ -224,7 +224,7 @@ export function Component({
           className="min-h-9 w-full rounded-lg border border-border px-3 text-xs font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-foreground"
           onClick={() => setExpanded((value) => !value)}
         >
-          {expanded ? "Show less" : "Show more"}
+          {expanded ? "Показать меньше" : "Показать больше"}
         </button>
       )}
       <div className="flex flex-wrap gap-2">
@@ -235,11 +235,11 @@ export function Component({
           onClick={() => input.current?.click()}
         >
           <Icon name="upload-simple" className="size-4" />
-          {reading ? "Adding files…" : "Upload files"}
+          {reading ? "Добавление файлов…" : "Загрузить файлы"}
         </Button>
         <input
           ref={input}
-          aria-label={`Upload files for ${section}`}
+          aria-label={`Загрузить файлы для ${section}`}
           className="sr-only"
           type="file"
           accept={AI_CHAT_ATTACHMENT_ACCEPT}
@@ -256,14 +256,14 @@ export function Component({
               className={`inline-flex min-h-9 cursor-pointer items-center gap-2 ${kit.focus}`}
             >
               <Icon name="paperclip" className="size-4" />
-              Add a file
+              Добавить файл
             </summary>
             <div className="mt-2 grid gap-2">
               <Select
-                aria-label={`Project file for ${section}`}
+                aria-label={`Файл проекта для ${section}`}
                 value={selected}
                 onValueChange={setSelected}
-                placeholder="Choose a project file"
+                placeholder="Выбрать файл проекта"
                 options={available.map((file) => ({
                   value: file.id,
                   label: file.name,
@@ -280,7 +280,7 @@ export function Component({
                   setSelected("");
                 }}
               >
-                Attach to section
+                Прикрепить к разделу
               </Button>
             </div>
           </details>
@@ -412,14 +412,14 @@ const FileAttachment = memo(function FileAttachment({
         type="button"
         onClick={remove}
         disabled={pending}
-        aria-label={`Remove ${file.name} from knowledge`}
+        aria-label={`Remove ${file.name} из знаний`}
         className="absolute right-1 top-1 z-10 grid size-7 place-items-center rounded-full bg-foreground text-background hover:opacity-80 disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
       >
         <Icon name="x" className="size-4" />
       </button>
       {pending && (
         <p className="mt-1 text-xs text-muted-foreground" role="status">
-          Removing…
+          Удаление…
         </p>
       )}
     </li>

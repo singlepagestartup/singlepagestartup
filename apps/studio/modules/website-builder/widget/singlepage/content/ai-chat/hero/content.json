@@ -1,25 +1,25 @@
 {
   "hero": {
-    "title": "Your notes, photos and plans. One project chat.",
+    "title": "Создавайте материалы на знаниях своего бизнеса",
     "paragraphs": [
-      "AI Chat for your business idea.",
-      "Upload what you have. AI checks for gaps and helps you edit each document in its own thread. Attach saved documents to new conversations about your project.",
-      "Your documents stay editable. Export them and use them freely outside AI Chat."
+      "AI Chat · база знаний и ИИ-ассистент для бизнеса",
+      "Соберите сведения о продуктах, цены, заметки и опыт команды. Готовьте на их основе статьи, рекламные сообщения и технические задания. Сохранённые документы помогают продолжать работу без повторного объяснения бизнеса.",
+      "Начните с одной задачи. Результат можно редактировать, скачать и использовать в своих материалах."
     ],
     "items": [],
     "links": [
       {
-        "text": "Start with my files",
+        "text": "Начать с моих материалов",
         "href": "/ai-chat/rbac/subjects/authentication/registration"
       },
       {
-        "text": "Sign in",
+        "text": "Войти",
         "href": "/ai-chat/rbac/subjects/authentication/select-method"
       }
     ]
   },
   "labels": {
-    "hero-photo-alt": "A solo founder pauses over notes for her new business.",
-    "navigation-foundation": "Try the chat"
+    "hero-photo-alt": "Фотограф и клиент обсуждают снимки товаров и условия съёмки",
+    "navigation-foundation": "Попробовать чат"
   }
 }

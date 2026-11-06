@@ -5,7 +5,7 @@ import type { IComponentPropsExtended } from "./interface";
 export function Component(props: IComponentPropsExtended) {
   return (
     <div
-      className={cn("min-w-0", props.data.className, props.className)}
+      className={cn("min-w-0 space-y-5", props.data.className, props.className)}
       data-module="crm"
       data-model="form"
       data-variant={props.variant}
@@ -56,7 +56,9 @@ export function Component(props: IComponentPropsExtended) {
           </FormsToSteps>
         </fieldset>
       )}
-      <div className="mt-5">{props.children}</div>
+      <div className="flex min-w-0 flex-col items-start gap-3 pt-1 sm:items-end">
+        {props.children}
+      </div>
     </div>
   );
 }

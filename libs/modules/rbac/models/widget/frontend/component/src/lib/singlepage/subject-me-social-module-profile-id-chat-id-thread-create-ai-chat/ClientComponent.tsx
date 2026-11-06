@@ -1,4 +1,5 @@
 "use client";
+import { internationalization } from "@sps/shared-configuration";
 import { Component as Profile } from "@sps/social/models/profile/frontend/component";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import type { IClientComponentProps } from "./interface";
@@ -14,12 +15,13 @@ export function Component(props: IClientComponentProps) {
       <Subject
         isServer={props.isServer}
         variant="authentication-me-default"
-        unauthenticatedRedirectHref={`/${props.language || "en"}/ai-chat/sign-in`}
+        unauthenticatedRedirectHref={`/${props.language || internationalization.defaultLanguage.code}/ai-chat/sign-in`}
       >
         {({ data, authenticated }) => {
           if (!data || !authenticated) return null;
           return (
             <Subject
+              language={props.language}
               isServer={props.isServer}
               variant="me-social-module-profile-list-ai-chat"
               data={data}
@@ -32,7 +34,10 @@ export function Component(props: IClientComponentProps) {
                 if (!project)
                   return (
                     <p role="alert" className="p-8">
-                      This project is unavailable in your workspace.
+                      {(props.language ||
+                        internationalization.defaultLanguage.code) === "ru"
+                        ? "Этот проект недоступен в вашем аккаунте."
+                        : "This project is unavailable in your workspace."}
                     </p>
                   );
                 const navigation = (
@@ -55,6 +60,7 @@ export function Component(props: IClientComponentProps) {
                       navigation={navigation}
                     >
                       <Subject
+                        language={props.language}
                         isServer={props.isServer}
                         variant="me-social-module-profile-id-chat-id-thread-create-ai-chat"
                         data={data}
