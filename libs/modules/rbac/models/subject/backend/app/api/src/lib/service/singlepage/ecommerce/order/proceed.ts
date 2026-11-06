@@ -131,6 +131,7 @@ export class Service {
   subjectsToBillingModuleCurrencies: SubjectsToBillingModuleCurrenciesService;
   subjectsToIdentities: SubjectsToIdentitiesService;
   protected processingOrderIds = new Set<string>();
+  protected reportedUnconfirmedPaymentOrders = new Set<string>();
   private recurringCursors = new Map<string, string>();
 
   constructor(
@@ -317,6 +318,10 @@ export class Service {
               extendedOrder.status,
             )
           ) {
+            if (extendedOrder.status === "delivering" && !this.isPaymentConfirmed({ extendedOrder })) {
+              this.reportUnconfirmedPayment({ order: extendedOrder, subjectId: subjectToEcommerceModuleOrder.subjectId });
+              continue;
+            }
             // A removed grant is a durable revocation. Ordinary proceed never repairs it.
             if (
               !extendedOrder.subscriptionRevokedAt &&
@@ -583,6 +588,57 @@ export class Service {
     return [...currencies.values()];
   }
 
+  protected isPaymentConfirmed(props: {
+    extendedOrder: IExtendedEcommerceModuleOrder;
+  }) {
+    return (
+      props.extendedOrder.ordersToBillingModulePaymentIntents?.some(
+        (orderToBillingModulePaymentIntent) => {
+          const billingModulePaymentIntent =
+            orderToBillingModulePaymentIntent.billingModulePaymentIntent;
+
+          return (
+            billingModulePaymentIntent?.status === "succeeded" &&
+            Boolean(
+              billingModulePaymentIntent.paymentIntentsToInvoices?.some(
+                (paymentIntentToInvoice) => {
+                  return paymentIntentToInvoice.invoice?.status === "paid";
+                },
+              ),
+            )
+          );
+        },
+      ) ?? false
+    );
+  }
+
+  /**
+   * Reports an order that fulfilment skipped for want of a confirmed payment,
+   * once per order and status for the life of the process, so the recurring
+   * check does not repeat the report every run.
+   */
+  protected reportUnconfirmedPayment(props: {
+    order: IEcommerceModuleOrder;
+    subjectId: string;
+  }) {
+    const reportKey = `${props.order.id}:${props.order.status}`;
+
+    if (this.reportedUnconfirmedPaymentOrders.has(reportKey)) {
+      return;
+    }
+
+    this.reportedUnconfirmedPaymentOrders.add(reportKey);
+
+    logger.error(
+      "RBAC ecommerce order proceed skipped an order without a confirmed payment",
+      {
+        orderId: props.order.id,
+        orderStatus: props.order.status,
+        subjectId: props.subjectId,
+      },
+    );
+  }
+
   private isInitialFree(order: IExtendedEcommerceModuleOrder) {
     return order.ordersToProducts.some(
       (line) => line.product.slug === INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
@@ -726,9 +782,18 @@ export class Service {
       throw new Error("Configuration error. RBAC_SECRET_KEY not set");
     }
 
+    if (!this.isPaymentConfirmed({ extendedOrder: props.extendedOrder })) {
+      this.reportUnconfirmedPayment({
+        order: props.order,
+        subjectId: props.subjectToEcommerceModuleOrder.subjectId,
+      });
+      return;
+    }
+
     const free = this.isInitialFree(props.extendedOrder);
     if (free && !(await this.freeDeliveryEligible(props))) return;
     const paidInvoices = props.extendedOrder.ordersToBillingModulePaymentIntents
+      .filter((link) => link.billingModulePaymentIntent?.status === "succeeded")
       .flatMap(
         (link) => link.billingModulePaymentIntent.paymentIntentsToInvoices,
       )

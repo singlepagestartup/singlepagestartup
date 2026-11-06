@@ -80,6 +80,14 @@ describe("durable subscription grant revocation", () => {
     mockEcommerceOrderUpdate.mockReset();
   });
 
+  it("skips a paid order with a paid invoice but an unconfirmed payment intent", async () => {
+    const { service, order } = lifecycle("paid", false, false);
+    order().ordersToBillingModulePaymentIntents[0].billingModulePaymentIntent.status = "processing";
+    await service.execute({});
+    expect(mockSubjectsToRolesCreate).not.toHaveBeenCalled();
+    expect(order().status).toBe("paid");
+  });
+
   function lifecycle(
     status: string,
     granted: boolean,
@@ -116,6 +124,7 @@ describe("durable subscription grant revocation", () => {
       ordersToBillingModulePaymentIntents: [
         {
           billingModulePaymentIntent: {
+            status: "succeeded",
             id: "payment",
             type: "one_off",
             paymentIntentsToCurrencies: [{ currency: { id: "currency" } }],
@@ -575,6 +584,7 @@ it("never renews internal Free and preserves all wallet balances on completion",
       ordersToBillingModulePaymentIntents: [
         {
           billingModulePaymentIntent: {
+            status: "succeeded",
             type: "one_off",
             paymentIntentsToCurrencies: [{ currency: { id: "currency" } }],
             paymentIntentsToInvoices: [
@@ -1041,6 +1051,7 @@ describe("Given: delivered subscription order without invoice context", () => {
           ordersToBillingModulePaymentIntents: [
             {
               billingModulePaymentIntent: {
+            status: "succeeded",
                 type: "one_off",
                 paymentIntentsToCurrencies: [
                   {
@@ -1136,6 +1147,7 @@ describe("Given: an expired Telegram Stars subscription order", () => {
         ordersToBillingModulePaymentIntents: [
           {
             billingModulePaymentIntent: {
+            status: "succeeded",
               type: "one_off",
               paymentIntentsToCurrencies: [
                 {
