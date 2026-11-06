@@ -1,0 +1,27 @@
+{
+  "id": "ecommerce.order.checkout-tokens-ai-chat",
+  "title": "checkout-tokens-ai-chat",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "AI Chat order view.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "ecommerce.order",
+    "pageName": "ecommerce",
+    "variantName": "checkout-tokens-ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "ecommerce",
+    "entityType": "model",
+    "entity": "order",
+    "variant": "checkout-tokens-ai-chat"
+  },
+  "contentSlots": []
+}

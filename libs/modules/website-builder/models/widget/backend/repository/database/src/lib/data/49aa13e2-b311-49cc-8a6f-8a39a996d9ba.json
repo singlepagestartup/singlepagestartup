@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "What you can offer customers",
+    "ru": "Что вы сможете предложить клиентам"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[]}",
+    "ru": "{\"type\":\"doc\",\"content\":[]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "49aa13e2-b311-49cc-8a6f-8a39a996d9ba",
+  "createdAt": "2026-10-26T00:12:04.370Z",
+  "updatedAt": "2026-10-27T14:58:57.892Z",
+  "variant": "content-rich",
+  "adminTitle": "Что вы сможете предложить клиентам",
+  "slug": "framework-reviewed-article-notification-possibilities"
+}

@@ -28,7 +28,7 @@ export class Handler {
       const data = await this.service.me({ token });
 
       return c.json({
-        data,
+        data: data ? (await this.service.authenticationMe({ subjectId: data.id })) ?? null : null,
       });
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);

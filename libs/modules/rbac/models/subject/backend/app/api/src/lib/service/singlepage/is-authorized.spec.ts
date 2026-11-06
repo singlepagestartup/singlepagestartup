@@ -35,7 +35,11 @@ function createPermissionService(props: {
   permission?: Record<string, unknown>;
   rootPermission?: Record<string, unknown>;
 }) {
-  const service = new PermissionService({} as any, { find: jest.fn() } as any);
+  const service = new PermissionService(
+    {} as any,
+    { find: jest.fn() } as any,
+    { find: jest.fn() } as any,
+  );
 
   service.find = jest.fn().mockResolvedValue([]);
   service.resolveByRoute = jest.fn().mockResolvedValue({
@@ -536,7 +540,7 @@ describe("Given: a request that carries a subject token", () => {
   it("When: logout invalidates the cached mark Then: the next request reads it and refuses the token", async () => {
     const issuedAt = Math.floor(Date.now() / 1000) - 60;
 
-    (verify as jest.Mock).mockResolvedValueOnce({
+    (verify as jest.Mock).mockResolvedValue({
       typ: "access",
       iat: issuedAt,
       subject: { id: "subject-logout" },

@@ -21,6 +21,7 @@ export interface IProps {
   options?: Partial<NextRequestOptions>;
   data: {
     provider: string;
+    email?: string;
     productId?: string;
     billingModule?: {
       currency: {

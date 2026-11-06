@@ -73,8 +73,8 @@ describe("Given: a token presented to the refresh route", () => {
       refresh: await signToken("refresh"),
     });
 
-    const access = await jwt.verify(result.jwt, "test-jwt-secret");
-    const refresh = await jwt.verify(result.refresh, "test-jwt-secret");
+    const access = await jwt.verify(result.jwt, "test-jwt-secret", "HS256");
+    const refresh = await jwt.verify(result.refresh, "test-jwt-secret", "HS256");
 
     expect(access).toMatchObject({ typ: "access" });
     expect(refresh).toMatchObject({ typ: "refresh" });
@@ -121,7 +121,7 @@ describe("Given: a token presented to the refresh route", () => {
     const result = await service.execute({ refresh: legacyToken });
 
     await expect(
-      jwt.verify(result.refresh, "test-jwt-secret"),
+      jwt.verify(result.refresh, "test-jwt-secret", "HS256"),
     ).resolves.toMatchObject({ typ: "refresh" });
   });
 

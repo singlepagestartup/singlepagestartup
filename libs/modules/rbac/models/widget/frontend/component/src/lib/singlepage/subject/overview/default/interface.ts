@@ -8,7 +8,10 @@ import {
 export const variant = "subject-overview-default" as const;
 
 export interface IComponentProps
-  extends IParentComponentProps<IModel, typeof variant> {}
+  extends IParentComponentProps<IModel, typeof variant> {
+  language?: string;
+  subjectSlug?: string;
+}
 
 export interface IComponentPropsExtended
   extends IParentComponentPropsExtended<
@@ -16,3 +19,9 @@ export interface IComponentPropsExtended
     typeof variant,
     IComponentProps
   > {}
+
+export interface IContentProps {
+  isServer: boolean;
+  language: string;
+  subjectSlug?: string;
+}

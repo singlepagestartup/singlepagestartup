@@ -1,3 +1,4 @@
+import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
 import { Component as AdminV2SidebarItem } from "./admin-v2/sidebar-item";
 import { Component as AdminV2Card } from "./admin-v2/card";
 import { Component as AdminV2Form } from "./admin-v2/form";
@@ -13,6 +14,7 @@ import { Component as AdminSelectInput } from "./admin/select-input";
 import { Component as AdminForm } from "./admin/form";
 import { Component as Default } from "./default";
 export const variants = {
+  hidden: Hidden,
   subscription: Subscription,
   "find-by-id": FindById,
   find: Find,

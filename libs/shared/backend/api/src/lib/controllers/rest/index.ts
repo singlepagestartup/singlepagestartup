@@ -76,6 +76,10 @@ export class Controller<DTO extends Record<string, unknown>>
     ]);
   }
 
+  describe() {
+    return this.service.describe?.();
+  }
+
   public async find(c: Context, next: any): Promise<Response> {
     const handler = new FindHandler<Context, DTO>(this.service);
     return handler.execute(c, next);

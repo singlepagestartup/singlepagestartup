@@ -10,7 +10,10 @@ import { Service as SubjectsToBillingModuleCurrenciesService } from "@sps/rbac/r
 import { inject, injectable } from "inversify";
 import { SubjectDI } from "../../../di";
 import { Service as IsAuthorizedService } from "../is-authorized";
-import { isOpenRouterBillingRoute } from "./open-router";
+import {
+  isOpenRouterBillingRoute,
+  OPEN_ROUTER_PRECHARGE_TOKENS,
+} from "./open-router";
 
 const cache = createMemoryCache({ ttlMs: 30_000, maxSize: 10_000 });
 
@@ -37,6 +40,7 @@ type TResolvedBillingContext = {
   permissionResolution: TPermissionResolution;
   permissionToBillingModuleCurrency: NonNullable<TPermissionResolution>["permissionsToBillingModuleCurrencies"][number];
   subjectToBillingModuleCurrency: ISubjectsToBillingModuleCurrencies;
+  balanceAmount: number;
 };
 
 @injectable()
@@ -73,6 +77,13 @@ export class Service {
 
   protected formatAmount(value: number): string {
     return Number(value.toFixed(6)).toString();
+  }
+
+  protected getPrechargeAmount(route: string, amount: string): number {
+    const configuredAmount = this.parseAmount(amount);
+    return isOpenRouterBillingRoute(route)
+      ? Math.max(OPEN_ROUTER_PRECHARGE_TOKENS, configuredAmount)
+      : configuredAmount;
   }
 
   /**
@@ -197,82 +208,82 @@ export class Service {
       );
     }
 
-    const matchingContext =
-      sameCurrenciesSubjectsToBillingModuleCurrencies.find(
-        (subjectToCurrency) => {
-          const permissionToBillingModuleCurrency =
-            permissionsToBillingModuleCurrencies.find(
-              (permissionToCurrency) =>
-                permissionToCurrency.billingModuleCurrencyId ===
-                subjectToCurrency.billingModuleCurrencyId,
-            );
+    for (const permissionToBillingModuleCurrency of permissionsToBillingModuleCurrencies) {
+      const balances = sameCurrenciesSubjectsToBillingModuleCurrencies
+        .filter(
+          (balance) =>
+            balance.billingModuleCurrencyId ===
+            permissionToBillingModuleCurrency.billingModuleCurrencyId,
+        )
+        .sort((left, right) => left.id.localeCompare(right.id));
+      if (!balances.length) continue;
 
-          if (!permissionToBillingModuleCurrency) {
-            return false;
-          }
-
-          if (props.skipBalanceCheck) {
-            return true;
-          }
-
-          if (isOpenRouterBillingRoute(props.executeProps.permission.route)) {
-            return this.parseAmount(subjectToCurrency.amount) >= 0;
-          }
-
-          return (
-            this.parseAmount(subjectToCurrency.amount) >=
-            this.parseAmount(permissionToBillingModuleCurrency.amount)
-          );
-        },
+      const balanceAmount = balances.reduce(
+        (sum, balance) => sum + Number(balance.amount),
+        0,
       );
-
-    if (!matchingContext) {
-      throw new Error(
-        "Validation error. You do not have access to this resource because your 'subjectsToBillingModuleCurrencies' do not have enough balance for that route.",
+      if (!Number.isFinite(balanceAmount)) {
+        throw new Error("Data integrity error. Invalid currency balance");
+      }
+      const prechargeAmount = this.getPrechargeAmount(
+        props.executeProps.permission.route,
+        permissionToBillingModuleCurrency.amount,
       );
+      if (props.skipBalanceCheck || balanceAmount >= prechargeAmount) {
+        return {
+          permissionResolution,
+          permissionToBillingModuleCurrency,
+          subjectToBillingModuleCurrency: balances[0],
+          balanceAmount,
+        };
+      }
     }
 
-    const permissionToBillingModuleCurrency =
-      permissionsToBillingModuleCurrencies.find(
-        (permissionToCurrency) =>
-          permissionToCurrency.billingModuleCurrencyId ===
-          matchingContext.billingModuleCurrencyId,
-      );
-
-    if (!permissionToBillingModuleCurrency) {
-      throw new Error(
-        "Validation error. Unexpected error occurred during billing process.",
-      );
-    }
-
-    return {
-      permissionResolution,
-      permissionToBillingModuleCurrency,
-      subjectToBillingModuleCurrency: matchingContext,
-    };
+    throw new Error(
+      "Validation error. You do not have access to this resource because your 'subjectsToBillingModuleCurrencies' do not have enough balance for that route.",
+    );
   }
 
   protected async applyBillingDelta(props: {
-    subjectToBillingModuleCurrency: ISubjectsToBillingModuleCurrencies;
-    deltaAmount: number;
+    executeProps: IExecuteProps;
+    exactAmount?: number;
   }) {
-    const currentAmount = this.parseAmount(
-      props.subjectToBillingModuleCurrency.amount,
-    );
-    const nextAmount = currentAmount - props.deltaAmount;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const billingContext = await this.resolveBillingContext({
+        executeProps: props.executeProps,
+        skipBalanceCheck: props.exactAmount !== undefined,
+      });
+      if (!billingContext) return null;
+      const prechargeAmount = this.getPrechargeAmount(
+        props.executeProps.permission.route,
+        billingContext.permissionToBillingModuleCurrency.amount,
+      );
+      const deltaAmount =
+        props.exactAmount === undefined
+          ? prechargeAmount
+          : props.exactAmount - prechargeAmount;
+      const balance = billingContext.subjectToBillingModuleCurrency;
+      if (deltaAmount !== 0) {
+        const updated =
+          await this.subjectsToBillingModuleCurrenciesService.updateAmountIfUnchanged(
+            {
+              id: balance.id,
+              expectedAmount: balance.amount,
+              amount: this.formatAmount(Number(balance.amount) - deltaAmount),
+            },
+          );
+        if (!updated) continue;
+      }
 
-    await this.subjectsToBillingModuleCurrenciesService.update({
-      id: props.subjectToBillingModuleCurrency.id,
-      data: {
-        ...props.subjectToBillingModuleCurrency,
-        amount: this.formatAmount(nextAmount),
-      },
-    });
-
-    return {
-      balanceBefore: currentAmount,
-      balanceAfter: nextAmount,
-    };
+      return {
+        billingContext,
+        prechargeAmount,
+        deltaAmount,
+        balanceBefore: billingContext.balanceAmount,
+        balanceAfter: billingContext.balanceAmount - deltaAmount,
+      };
+    }
+    throw new Error("Conflict error. Currency balance changed during billing");
   }
 
   async execute(props: IExecuteProps) {
@@ -284,26 +295,18 @@ export class Service {
       throw new Error("Configuration error. RBAC_SECRET_KEY is not defined");
     }
 
-    const billingContext = await this.resolveBillingContext({
+    const appliedPrecharge = await this.applyBillingDelta({
       executeProps: props,
-      skipBalanceCheck: false,
     });
 
-    if (!billingContext) {
+    if (!appliedPrecharge) {
       return {
         ok: true,
       };
     }
 
-    const prechargeAmount = this.parseAmount(
-      billingContext.permissionToBillingModuleCurrency.amount,
-    );
-
-    const appliedPrecharge = await this.applyBillingDelta({
-      subjectToBillingModuleCurrency:
-        billingContext.subjectToBillingModuleCurrency,
-      deltaAmount: prechargeAmount,
-    });
+    const { billingContext, prechargeAmount, balanceBefore, balanceAfter } =
+      appliedPrecharge;
 
     return {
       ok: true,
@@ -314,7 +317,8 @@ export class Service {
             .billingModuleCurrencyId,
         subjectToBillingModuleCurrencyId:
           billingContext.subjectToBillingModuleCurrency.id,
-        ...appliedPrecharge,
+        balanceBefore,
+        balanceAfter,
       },
     };
   }
@@ -328,38 +332,26 @@ export class Service {
       throw new Error("Configuration error. RBAC_SECRET_KEY is not defined");
     }
 
-    const billingContext = await this.resolveBillingContext({
+    const exactAmount = this.parseAmount(props.exactAmount);
+    const appliedDelta = await this.applyBillingDelta({
       executeProps: props,
-      skipBalanceCheck: true,
+      exactAmount,
     });
 
-    if (!billingContext) {
+    if (!appliedDelta) {
       return {
         ok: true,
         settlement: null,
       };
     }
 
-    const prechargeAmount = this.parseAmount(
-      billingContext.permissionToBillingModuleCurrency.amount,
-    );
-    const exactAmount = this.parseAmount(props.exactAmount);
-    const deltaAmount = exactAmount - prechargeAmount;
-    const appliedDelta =
-      deltaAmount === 0
-        ? {
-            balanceBefore: this.parseAmount(
-              billingContext.subjectToBillingModuleCurrency.amount,
-            ),
-            balanceAfter: this.parseAmount(
-              billingContext.subjectToBillingModuleCurrency.amount,
-            ),
-          }
-        : await this.applyBillingDelta({
-            subjectToBillingModuleCurrency:
-              billingContext.subjectToBillingModuleCurrency,
-            deltaAmount,
-          });
+    const {
+      billingContext,
+      prechargeAmount,
+      deltaAmount,
+      balanceBefore,
+      balanceAfter,
+    } = appliedDelta;
 
     return {
       ok: true,
@@ -372,7 +364,8 @@ export class Service {
             .billingModuleCurrencyId,
         subjectToBillingModuleCurrencyId:
           billingContext.subjectToBillingModuleCurrency.id,
-        ...appliedDelta,
+        balanceBefore,
+        balanceAfter,
       },
     };
   }

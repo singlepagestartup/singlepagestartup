@@ -1,0 +1,21 @@
+{
+  "componentName": "knowledge.source",
+  "pageName": "knowledge",
+  "variantName": "download-ai-chat",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "knowledge.source.download-ai-chat",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "knowledge/source/singlepage/download/ai-chat",
+    "sps.figma.component": "knowledge.source",
+    "sps.figma.variant": "download-ai-chat",
+    "sps.source.module": "knowledge",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "source",
+    "sps.source.variant": "download-ai-chat",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/knowledge/source/singlepage/download/ai-chat/Component.tsx",
+    "sps.code.story": "apps/studio/modules/knowledge/source/singlepage/download/ai-chat/Component.stories.tsx"
+  }
+}

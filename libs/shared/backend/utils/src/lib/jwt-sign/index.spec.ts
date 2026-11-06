@@ -26,7 +26,7 @@ describe("signJwt — one claim set for every RBAC subject token", () => {
       secret,
     );
 
-    const payload = await jwt.verify(token, secret);
+    const payload = await jwt.verify(token, secret, "HS256");
 
     expect(Object.keys(payload).sort()).toEqual(
       ["exp", "iat", "jti", "subject", "typ"].sort(),
@@ -56,8 +56,8 @@ describe("signJwt — one claim set for every RBAC subject token", () => {
       secret,
     );
 
-    const firstPayload = await jwt.verify(first, secret);
-    const secondPayload = await jwt.verify(second, secret);
+    const firstPayload = await jwt.verify(first, secret, "HS256");
+    const secondPayload = await jwt.verify(second, secret, "HS256");
 
     expect(firstPayload.typ).toBe("refresh");
     expect(secondPayload.typ).toBe("refresh");

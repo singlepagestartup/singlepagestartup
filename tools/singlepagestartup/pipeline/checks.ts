@@ -1,3 +1,7 @@
+import {
+  canonicalHeading,
+  canonicalMarkdownHeadings,
+} from "../../studio/workspace/headings";
 import { existsSync } from "node:fs";
 import { readdir, readFile, stat } from "node:fs/promises";
 import path from "node:path";
@@ -24,7 +28,7 @@ import {
 } from "../../studio/products/validate";
 import {
   parseDocument,
-  type IDocumentConfirmation,
+  hasMarkdownContent,
 } from "../../studio/workspace/document";
 import {
   loadWorkspace,
@@ -32,21 +36,15 @@ import {
   type IWorkspaceGraph,
   type WorkspaceLayer,
 } from "../../studio/workspace/loader";
-import type { IDocumentReview } from "../../studio/workspace/review";
-import { loadDocumentReviews } from "../../studio/workspace/review-loader";
 import {
   templateSections,
   type IPipelineCheck,
   type IPipelineDefinition,
-  type IPipelineLegacyShape,
   type PipelineArtifact,
 } from "./definition";
 
 export type CheckStatus = "pass" | "gap" | "skipped";
-export type GapClassification =
-  | "structural-gap"
-  | "approval-gap"
-  | "decision-gap";
+export type GapClassification = "structural-gap" | "decision-gap";
 
 export interface ICheckResult {
   id: string;
@@ -59,14 +57,6 @@ export interface ICheckResult {
   items?: string[];
 }
 
-export interface ILegacyShapeResult {
-  id: string;
-  procedure: string;
-  owning_stage: string;
-  detail: string;
-  items: string[];
-}
-
 export interface IPipelineDocument {
   kind: PipelineArtifact;
   resolved: string;
@@ -77,7 +67,6 @@ export interface IPipelineDocument {
   /** Body of the active layer's own source file, empty when the layer inherits everything. */
   ownBody: string;
   ownPath: string;
-  review?: IDocumentReview;
 }
 
 export interface IPipelineCursor {
@@ -85,7 +74,9 @@ export interface IPipelineCursor {
   active_stage?: string;
   status?: string;
   active_artifacts?: string[];
-  blockers?: string[];
+  active_section?: string;
+  active_product?: string;
+  progress?: Record<string, string>;
 }
 
 export interface IPipelineContext {
@@ -94,7 +85,6 @@ export interface IPipelineContext {
   layer: WorkspaceLayer;
   definition: IPipelineDefinition;
   graph: IWorkspaceGraph;
-  reviews: Map<string, IDocumentReview>;
   documents: Record<PipelineArtifact, IPipelineDocument>;
   catalog: IProductCatalog;
   catalogLayer: WorkspaceLayer;
@@ -103,15 +93,6 @@ export interface IPipelineContext {
 }
 
 const ENTRY_KINDS: Record<PipelineArtifact, string> = {
-  brief: "brief",
-  strategy: "strategy",
-  brand: "brand",
-  design: "design",
-  assets: "asset-index",
-  products: "products",
-};
-
-const REVIEW_IDS: Record<PipelineArtifact, string> = {
   brief: "brief",
   strategy: "strategy",
   brand: "brand",
@@ -144,7 +125,9 @@ function record(value: unknown): Record<string, unknown> {
 }
 
 function headings(body: string): string[] {
-  return [...body.matchAll(/^## (.+)$/gm)].map((match) => match[1].trim());
+  return [...body.matchAll(/^## (.+)$/gm)].map((match) =>
+    canonicalHeading(match[1]),
+  );
 }
 
 async function readOptional(file: string): Promise<string> {
@@ -191,7 +174,6 @@ export async function loadPipelineContext(options: {
     repositoryIdentity: options.repositoryIdentity,
     repositoryRoot,
   });
-  const reviews = await loadDocumentReviews(workspaceRoot, layer);
   const byKind = new Map<string, ILoadedWorkspaceEntry>(
     graph.loadedEntries.map((entry) => [entry.kind, entry]),
   );
@@ -212,7 +194,6 @@ export async function loadPipelineContext(options: {
       own: own.metadata,
       ownBody: own.body,
       ownPath: path.relative(workspaceRoot, file),
-      review: reviews.get(REVIEW_IDS[kind]),
     };
   }
   const productsEntry = byKind.get("products")!;
@@ -232,11 +213,19 @@ export async function loadPipelineContext(options: {
     layer,
     definition,
     graph,
-    reviews,
     documents,
     catalog,
     catalogLayer,
     cursor: {
+      active_section:
+        typeof cursor.active_section === "string"
+          ? cursor.active_section
+          : undefined,
+      active_product:
+        typeof cursor.active_product === "string"
+          ? cursor.active_product
+          : undefined,
+      progress: record(cursor.progress) as Record<string, string>,
       schema: typeof cursor.schema === "string" ? cursor.schema : undefined,
       active_stage:
         typeof cursor.active_stage === "string"
@@ -315,10 +304,9 @@ function compareSections(
 async function productFileSections(
   context: IPipelineContext,
   check: IPipelineCheck,
-  field: "product" | "research" | "analytics",
+  field: "product",
   label: string,
 ): Promise<ICheckResult> {
-  const required = templateSections(context.repositoryRoot, check.template!);
   const items: string[] = [];
   for (const product of context.catalog.products) {
     const source = product[field];
@@ -337,59 +325,20 @@ async function productFileSections(
       items.push(`${product.id}: ${source} is missing`);
       continue;
     }
-    const actual = headings(parseDocument(text).body);
-    for (const section of required)
-      if (!actual.includes(section))
-        items.push(`${product.id}: missing ${section}`);
-    for (const section of actual)
-      if (!required.includes(section))
-        items.push(`${product.id}: unexpected ${section}`);
+    if (!hasMarkdownContent(parseDocument(text).body))
+      items.push(`${product.id}: ${source} has no product description`);
   }
   if (!context.catalog.products.length)
     return result(check, "skipped", "the catalog has no products yet");
   return items.length
-    ? result(check, "gap", `${label} sections differ from the template`, {
+    ? result(check, "gap", `${label} documents need content corrections`, {
         items,
       })
     : result(
         check,
         "pass",
-        `${label} of ${context.catalog.products.length} product(s) use the template sections`,
+        `${label} of ${context.catalog.products.length} product(s) contains a description`,
       );
-}
-
-function confirmedInLayer(
-  context: IPipelineContext,
-  check: IPipelineCheck,
-): ICheckResult {
-  const document = context.documents[check.artifact];
-  const review = document.review;
-  if (!review)
-    return result(check, "gap", "no review record exists for this document");
-  const { state, layer, reason, sources, underlying } = review.confirmation;
-  if (state === "confirmed" && layer === context.layer)
-    return result(check, "pass", `confirmed in the ${layer} layer`);
-  const detail =
-    state === "confirmed"
-      ? `confirmed only in the ${layer} layer; the ${context.layer} project needs its own confirmation`
-      : `state is ${describeState(state, underlying)}${reason ? `: ${reason}` : ""}`;
-  return result(check, "gap", detail, {
-    classification: "approval-gap",
-    items: sources ?? [],
-  });
-}
-
-/**
- * Stale hides the document's own state, so a body that left its stamp behind
- * reads as an input problem. Name both.
- */
-function describeState(
-  state: IDocumentConfirmation["state"],
-  underlying: IDocumentConfirmation["underlying"],
-): string {
-  return underlying && underlying !== "unconfirmed"
-    ? `${state} over ${underlying}`
-    : state;
 }
 
 /**
@@ -474,50 +423,6 @@ function noChangeLog(
         "pass",
         `${check.artifact} states what is in force without a change log`,
       );
-}
-
-/**
- * A confirmation stamp covers the body it was recorded against. Once that body
- * changes the stamp stops meaning anything, whether or not upstream inputs
- * also moved; a document that carries no stamp has nothing to invalidate.
- */
-function stampCurrent(
-  context: IPipelineContext,
-  check: IPipelineCheck,
-): ICheckResult {
-  const review = context.documents[check.artifact].review;
-  if (!review)
-    return result(
-      check,
-      "skipped",
-      "no review record exists for this document",
-    );
-  const { state, underlying } = review.confirmation;
-  const own = state === "stale" ? underlying : state;
-  if (own !== "changed")
-    return result(
-      check,
-      "pass",
-      own === "unconfirmed" || own === undefined
-        ? "no confirmation stamp to invalidate"
-        : "the recorded confirmation covers the current body",
-    );
-  return result(
-    check,
-    "gap",
-    "the recorded confirmation no longer covers the current body; confirm the body as it stands or restore what was approved",
-    { classification: "approval-gap" },
-  );
-}
-
-function scopeProducts(context: IPipelineContext): string[] | undefined {
-  const scope = record(record(context.documents.brief.own.intake).scope);
-  if (scope.confirmed !== true || !Array.isArray(scope.products))
-    return undefined;
-  const products = scope.products.filter(
-    (item): item is string => typeof item === "string" && item.trim() !== "",
-  );
-  return products.length ? products : undefined;
 }
 
 async function generatedAssetsRegistered(
@@ -620,6 +525,7 @@ function registryIds(context: IPipelineContext): Set<string> {
 }
 
 function sectionBlock(body: string, heading: string, level: 2 | 3): string {
+  body = canonicalMarkdownHeadings(body);
   const marker = level === 2 ? "## " : "### ";
   const start = body.indexOf(`\n${marker}${heading}`);
   const from =
@@ -715,150 +621,14 @@ async function runCheck(
             `${check.artifact} frontmatter declares ${(check.keys ?? []).join(", ")}`,
           );
     }
-    case "brief-scope": {
-      const products = scopeProducts(context);
-      if (products)
-        return result(
-          check,
-          "pass",
-          `scope confirmed in ${document.ownPath} for ${products.join(", ")}`,
-        );
-      return result(
-        check,
-        "gap",
-        `${document.ownPath} has no confirmed intake.scope with products; an inherited scope never satisfies this gate`,
-        { classification: "approval-gap" },
-      );
-    }
-    case "confirmed":
-      return confirmedInLayer(context, check);
-    case "stamp-current":
-      return stampCurrent(context, check);
     case "no-change-log":
       return noChangeLog(context, check);
     case "framework-headings":
       return frameworkHeadings(context, check);
     case "documents-formatted":
       return documentsFormatted(context, check);
-    case "catalog-matches-brief": {
-      const products = scopeProducts(context);
-      if (!products)
-        return result(
-          check,
-          "skipped",
-          "no confirmed scope to compare with the catalog",
-        );
-      const catalogIds = context.catalog.products.map((product) => product.id);
-      const items = [
-        ...products
-          .filter((id) => !catalogIds.includes(id))
-          .map((id) => `confirmed product without catalog entry: ${id}`),
-        ...catalogIds
-          .filter((id) => !products.includes(id))
-          .map((id) => `catalog product outside the confirmed scope: ${id}`),
-      ];
-      return items.length
-        ? result(
-            check,
-            "gap",
-            "the catalog and the confirmed Brief scope disagree",
-            { items },
-          )
-        : result(
-            check,
-            "pass",
-            `catalog matches the ${products.length} confirmed product(s)`,
-          );
-    }
-    case "model-sections": {
-      const required = templateSections(
-        context.repositoryRoot,
-        check.template!,
-      );
-      const items: string[] = [];
-      for (const model of context.catalog.models) {
-        const text = await readOptional(
-          path.join(
-            context.workspaceRoot,
-            "products",
-            context.catalogLayer,
-            model.source,
-          ),
-        );
-        if (!text) {
-          items.push(`${model.id}: ${model.source} is missing`);
-          continue;
-        }
-        const actual = headings(parseDocument(text).body);
-        for (const section of required)
-          if (!actual.includes(section))
-            items.push(`${model.id}: missing ${section}`);
-        for (const section of actual)
-          if (!required.includes(section))
-            items.push(`${model.id}: unexpected ${section}`);
-      }
-      if (!context.catalog.models.length)
-        return result(
-          check,
-          "skipped",
-          "the catalog declares no model, which is the ordinary shape: a product owns its own economics",
-        );
-      return items.length
-        ? result(check, "gap", "model sections differ from the template", {
-            items,
-          })
-        : result(
-            check,
-            "pass",
-            `${context.catalog.models.length} model(s) use the template sections`,
-          );
-    }
     case "product-sections":
       return productFileSections(context, check, "product", "Product");
-    case "research-sections":
-      return productFileSections(context, check, "research", "Research");
-    case "research-finding-prefix": {
-      const items: string[] = [];
-      const seen = new Map<string, string>();
-      for (const product of context.catalog.products) {
-        const text = await readOptional(
-          path.join(
-            context.workspaceRoot,
-            "products",
-            context.catalogLayer,
-            product.research,
-          ),
-        );
-        const prefix = text
-          ? parseDocument(text).metadata.finding_prefix
-          : undefined;
-        if (typeof prefix !== "string" || !/^[A-Z][A-Z0-9]*$/.test(prefix)) {
-          items.push(
-            `${product.id}: finding_prefix must be uppercase letters and digits`,
-          );
-          continue;
-        }
-        if (seen.has(prefix))
-          items.push(
-            `${product.id}: finding_prefix ${prefix} is already used by ${seen.get(prefix)}`,
-          );
-        seen.set(prefix, product.id);
-      }
-      if (!context.catalog.products.length)
-        return result(check, "skipped", "the catalog has no products yet");
-      return items.length
-        ? result(
-            check,
-            "gap",
-            "research finding prefixes are missing or ambiguous",
-            { items },
-          )
-        : result(
-            check,
-            "pass",
-            "every product research declares a unique finding prefix",
-          );
-    }
     case "sales-v2":
     case "sales-readiness": {
       const items: string[] = [];
@@ -965,11 +735,10 @@ async function runCheck(
       const findings = await findUnownedBrandbook(
         context.workspaceRoot,
         context.layer,
-        context.documents.design.review?.confirmation,
       );
       return findings.length
         ? result(check, "gap", "the project does not own its brandbook", {
-            classification: "approval-gap",
+            classification: "structural-gap",
             items: findings.map(
               ({ requirement, detail }) => `${requirement}: ${detail}`,
             ),
@@ -1035,46 +804,6 @@ async function runCheck(
         );
       }
     }
-    case "analytics-declared": {
-      const required = templateSections(
-        context.repositoryRoot,
-        check.template!,
-      );
-      const items: string[] = [];
-      for (const product of context.catalog.products) {
-        if (!product.analytics) {
-          items.push(`${product.id}: no analytics source declared`);
-          continue;
-        }
-        const text = await readOptional(
-          path.join(
-            context.workspaceRoot,
-            "products",
-            context.catalogLayer,
-            product.analytics,
-          ),
-        );
-        if (!text) {
-          items.push(`${product.id}: ${product.analytics} is missing`);
-          continue;
-        }
-        const actual = headings(parseDocument(text).body);
-        for (const section of required)
-          if (!actual.includes(section))
-            items.push(`${product.id}: missing ${section}`);
-      }
-      if (!context.catalog.products.length)
-        return result(check, "skipped", "the catalog has no products yet");
-      return items.length
-        ? result(check, "gap", "analytics sources are missing or incomplete", {
-            items,
-          })
-        : result(
-            check,
-            "pass",
-            "every product declares a complete Analytics source",
-          );
-    }
   }
 }
 
@@ -1113,99 +842,4 @@ async function workspaceTextFiles(root: string): Promise<string[]> {
   }
   await walk(root);
   return files;
-}
-
-export async function detectLegacyShapes(
-  context: IPipelineContext,
-  shapes: IPipelineLegacyShape[],
-): Promise<ILegacyShapeResult[]> {
-  const found: ILegacyShapeResult[] = [];
-  for (const shape of shapes) {
-    const items: string[] = [];
-    switch (shape.detect) {
-      case "decision-profile":
-        for (const layer of ["singlepage", "startup"]) {
-          const file = path.join(
-            context.workspaceRoot,
-            "knowledge",
-            "decision-profile",
-            `${layer}.md`,
-          );
-          if (existsSync(file))
-            items.push(path.relative(context.workspaceRoot, file));
-        }
-        break;
-      case "standalone-business":
-        for (const layer of ["singlepage", "startup"]) {
-          const file = path.join(
-            context.workspaceRoot,
-            "business",
-            `${layer}.md`,
-          );
-          if (existsSync(file))
-            items.push(path.relative(context.workspaceRoot, file));
-        }
-        for (const entry of context.graph.visibleEntries)
-          if (entry.kind === "business") items.push(`index entry ${entry.id}`);
-        break;
-      case "catalog-v1":
-        for (const layer of ["singlepage", "startup"] as const) {
-          const text = await readOptional(
-            path.join(context.workspaceRoot, "products", layer, "catalog.yaml"),
-          );
-          if (
-            text &&
-            record(parse(text)).schema ===
-              "singlepagestartup.product-catalog.v1"
-          )
-            items.push(`products/${layer}/catalog.yaml`);
-        }
-        break;
-      case "sales-v1":
-        for (const product of context.catalog.products) {
-          const text = await readOptional(
-            path.join(
-              context.workspaceRoot,
-              "products",
-              context.catalogLayer,
-              product.sales,
-            ),
-          );
-          if (
-            text &&
-            record(parse(text)).schema === "singlepagestartup.sales-process.v1"
-          )
-            items.push(`${product.id}: ${product.sales}`);
-        }
-        break;
-      case "evidence-register-codes":
-        for (const file of await workspaceTextFiles(context.workspaceRoot)) {
-          const text = await readFile(file, "utf8");
-          if (/\b(?:ST|SP)-EV-\d+/.test(text))
-            items.push(path.relative(context.workspaceRoot, file));
-        }
-        break;
-      case "legacy-cursor-anchors":
-        for (const blocker of context.cursor.blockers ?? [])
-          if (
-            /#(?:decision-status|commercial-choice|first-experiment)\b/.test(
-              blocker,
-            )
-          )
-            items.push(`blocker ${blocker}`);
-        for (const artifact of context.cursor.active_artifacts ?? [])
-          if (["business", "decision-profile", "evidence"].includes(artifact))
-            items.push(`active artifact ${artifact}`);
-        break;
-    }
-    if (items.length)
-      found.push({
-        id: shape.id,
-        procedure: shape.procedure,
-        owning_stage: shape.owning_stage,
-        detail: `legacy shape detected; follow ${shape.procedure}`,
-        items,
-      });
-  }
-  return found;
 }

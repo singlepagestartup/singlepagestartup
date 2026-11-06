@@ -9,10 +9,42 @@
     portainer_url: "{{ PORTAINER_URL }}"
     telegram_service_bot_token: "{{ TELEGRAM_SERVICE_BOT_TOKEN }}"
   tasks:
+    # Keep API history on the Swarm node across task replacement. Respect an
+    # operator's explicit journald policy; fail before replacing the service
+    # if the host cannot store new events on disk.
+    - name: Enable disk storage for hosts using journald Storage=auto
+      ansible.builtin.file:
+        path: /var/log/journal
+        state: directory
+        owner: root
+        group: systemd-journal
+        mode: "2755"
+
+    - name: Flush the journal to persistent storage
+      ansible.builtin.command: journalctl --flush
+      changed_when: false
+
+    - name: Verify new entries are readable from the on-disk journal
+      ansible.builtin.shell: |
+        set -eu
+        marker=$(cat /proc/sys/kernel/random/uuid)
+        logger -t sps-journal-check -- "$marker"
+        journalctl --sync
+        journalctl --directory="/var/log/journal/$(cat /etc/machine-id)" -t sps-journal-check --since "1 minute ago" -o cat | grep -Fx "$marker"
+      register: journal_probe
+      retries: 3
+      delay: 1
+      until: journal_probe.rc == 0
+      changed_when: false
+
+    # The API image runs as uid 1000 and writes uploads into this directory.
     - name: Create api_data directory
       file:
         path: /home/code/api_data
         state: directory
+        owner: "1000"
+        group: "1000"
+        recurse: yes
 
     - name: Read iam.env and set AWS_ACCESS_KEY_ID
       shell: grep "^AWS_ACCESS_KEY_ID=" /home/code/iam.env | cut -d '=' -f2
@@ -35,7 +67,13 @@
       ansible.builtin.template:
         src: api.env.j2
         dest: /home/code/api.env
+        mode: "0600"
+      no_log: true
       vars:
+        BUG_SERVICE_PROJECT: "{{ lookup('ansible.builtin.env', 'BUG_SERVICE_PROJECT') }}"
+        BUG_SERVICE_TELEGRAM_CHAT_ID: "{{ lookup('ansible.builtin.env', 'BUG_SERVICE_TELEGRAM_CHAT_ID') }}"
+        BUG_SERVICE_TELEGRAM_BOT_TOKEN: "{{ lookup('ansible.builtin.env', 'BUG_SERVICE_TELEGRAM_BOT_TOKEN') }}"
+        BUG_SERVICE_REPORT_WINDOW_IN_SECONDS: "{{ lookup('ansible.builtin.env', 'BUG_SERVICE_REPORT_WINDOW_IN_SECONDS') }}"
         AWS_ACCESS_KEY_ID: "{{ aws_access_key_id.stdout }}"
         AWS_SECRET_ACCESS_KEY: "{{ aws_secret_access_key.stdout }}"
 
@@ -53,18 +91,37 @@
       register: cmd_api_service_id
 
     - name: Run set-portainer-webhook.js
-      shell:
-        cmd: node /home/code/set-portainer-webhook.js "{{ cmd_api_service_id.stdout_lines[0] }}" "{{ cmd_docker_hub_registry_id.stdout }}" "{{ portainer_url }}" "{{ portainer_username }}" "{{ portainer_password }}" "api_webhook"
+      no_log: true
+      ansible.builtin.command:
+        argv: [node, /home/code/set-portainer-webhook.js]
+        stdin: >-
+          {{ {
+            'service_id': cmd_api_service_id.stdout_lines[0],
+            'registry_id': cmd_docker_hub_registry_id.stdout,
+            'url': portainer_url,
+            'portainer_username': portainer_username,
+            'portainer_password': portainer_password,
+            'file_name': 'api_webhook'
+          } | to_json }}
       register: cmd_set_api_webhook
 
     # - debug:
     #     msg: "{{ cmd_set_api_webhook }}"
 
-    - name: Copy webhook info file
-      fetch:
+    - name: Read the webhook file for the controller
+      ansible.builtin.slurp:
         src: /home/code/api_webhook.json
-        dest: "./"
-        flat: yes
+      register: webhook_file
+      no_log: true
+
+    - name: Save a private webhook file on the controller
+      ansible.builtin.copy:
+        content: "{{ webhook_file.content | b64decode }}"
+        dest: "{{ playbook_dir }}/api_webhook.json"
+        mode: "0600"
+      delegate_to: localhost
+      become: false
+      no_log: true
 
     - name: Delete artifacts
       file:

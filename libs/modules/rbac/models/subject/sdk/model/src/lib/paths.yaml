@@ -1046,7 +1046,7 @@ paths:
       tags:
         - "rbac-subject"
       summary: Orders total
-      description: Get orders total grouped by currency
+      description: Get orders total grouped by currency. The HTTP response wraps the totals array in data and includes unpriced line diagnostics (ordersToProductsId, productId, reason) beside data. SDK total readers retain the data array.
       parameters:
         - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
       responses:
@@ -1055,30 +1055,53 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    billingModuleCurrency:
-                      $ref: "../../../../../../../../../libs/modules/billing/models/currency/sdk/model/src/lib/billing-currency.yaml"
-                    total:
-                      type: number
-                    orders:
-                      type: array
-                      items:
-                        allOf:
-                          - $ref: "../../../../../../../../../libs/modules/ecommerce/models/order/sdk/model/src/lib/ecommerce-order.yaml"
-                          - type: object
-                            properties:
-                              total:
-                                type: array
-                                items:
-                                  type: object
-                                  properties:
-                                    total:
-                                      type: number
-                                    billingModuleCurrency:
-                                      $ref: "../../../../../../../../../libs/modules/billing/models/currency/sdk/model/src/lib/billing-currency.yaml"
+                type: object
+                required:
+                  - data
+                  - unpriced
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        billingModuleCurrency:
+                          $ref: ../../../../../../../../../libs/modules/billing/models/currency/sdk/model/src/lib/billing-currency.yaml
+                        total:
+                          type: number
+                        orders:
+                          type: array
+                          items:
+                            allOf:
+                              - $ref: ../../../../../../../../../libs/modules/ecommerce/models/order/sdk/model/src/lib/ecommerce-order.yaml
+                              - type: object
+                                properties:
+                                  total:
+                                    type: array
+                                    items:
+                                      type: object
+                                      properties:
+                                        total:
+                                          type: number
+                                        billingModuleCurrency:
+                                          $ref: ../../../../../../../../../libs/modules/billing/models/currency/sdk/model/src/lib/billing-currency.yaml
+                  unpriced:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - ordersToProductsId
+                        - productId
+                        - reason
+                      properties:
+                        ordersToProductsId:
+                          type: string
+                          format: uuid
+                        productId:
+                          type: string
+                          format: uuid
+                        reason:
+                          type: string
 
   /rbac/subjects/{id}/ecommerce-module/orders/quantity:
     get:
@@ -1724,3 +1747,91 @@ paths:
             application/json:
               schema:
                 $ref: "../../../../../../../../../libs/modules/social/models/action/sdk/model/src/lib/social-action.yaml"
+
+  /rbac/subjects/{id}/ecommerce-module/orders/{orderId}/total:
+    get:
+      tags:
+        - rbac-subject
+      summary: Single owned order total
+      description: Return amounts and unpriced lines for one order after checking the current Subject and the Subject–Order association. Foreign and unknown orders are both refused with 403.
+      parameters: &a1
+        - $ref: ../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Totals
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - data
+                  - unpriced
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        billingModuleCurrency:
+                          $ref: ../../../../../../../../../libs/modules/billing/models/currency/sdk/model/src/lib/billing-currency.yaml
+                        total:
+                          type: number
+                        orders:
+                          type: array
+                          items:
+                            allOf:
+                              - $ref: ../../../../../../../../../libs/modules/ecommerce/models/order/sdk/model/src/lib/ecommerce-order.yaml
+                              - type: object
+                                properties:
+                                  total:
+                                    type: array
+                                    items:
+                                      type: object
+                                      properties:
+                                        total:
+                                          type: number
+                                        billingModuleCurrency:
+                                          $ref: ../../../../../../../../../libs/modules/billing/models/currency/sdk/model/src/lib/billing-currency.yaml
+                  unpriced:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - ordersToProductsId
+                        - productId
+                        - reason
+                      properties:
+                        ordersToProductsId:
+                          type: string
+                          format: uuid
+                        productId:
+                          type: string
+                          format: uuid
+                        reason:
+                          type: string
+  /rbac/subjects/{id}/ecommerce-module/orders/{orderId}/quantity:
+    get:
+      tags:
+        - rbac-subject
+      summary: Single owned order quantity
+      description: Return one order quantity after checking the current Subject and the Subject–Order association.
+      parameters: *a1
+      responses:
+        "200":
+          description: Quantity
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    type: integer
+                    format: int32

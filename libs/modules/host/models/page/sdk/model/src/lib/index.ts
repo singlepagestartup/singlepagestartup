@@ -1,3 +1,4 @@
+import type { ISelectSchema } from "@sps/host/models/page/backend/repository/database";
 export {
   type IInsertSchema,
   type ISelectSchema as IModel,
@@ -5,6 +6,7 @@ export {
   selectSchema,
 } from "@sps/host/models/page/backend/repository/database";
 import {
+  type IRouteParams,
   API_SERVICE_URL,
   NEXT_PUBLIC_API_SERVICE_URL,
   NextRequestOptions,
@@ -14,10 +16,24 @@ import {
 export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/host/pages";
-export const variants = ["default"];
+export const variants = ["hidden", "default", "noindex"];
 export const query = {};
 export const options = {
   next: {
     revalidate: REVALIDATE,
   },
 } as NextRequestOptions;
+
+/** Computed routing response; routeParams is not stored on the Page table. */
+export interface IResolvedPage extends ISelectSchema {
+  routeParams: IRouteParams;
+}
+
+/** A concrete public URL with its owning Page's presentation/indexing policy. */
+export interface IPageUrl {
+  url: string;
+  pageId: string;
+  variant: ISelectSchema["variant"];
+}
+
+export * from "./seo";

@@ -11,6 +11,7 @@ jest.mock(
   () => {
     return {
       OPEN_ROUTER_API_KEY: "test-open-router-api-key",
+      OPEN_ROUTER_JEV_DECISION_MODEL: "typesafe/jev-1.13",
     };
   },
   {
@@ -20,12 +21,255 @@ jest.mock(
 
 import { Service } from "./index";
 
+describe("OpenRouter model catalog cache", () => {
+  const originalFetch = global.fetch;
+  let service: Service;
+
+  beforeEach(() => {
+    jest.isolateModules(() => {
+      const { Service: IsolatedService } =
+        jest.requireActual<typeof import("./index")>("./index");
+      service = new IsolatedService();
+    });
+    jest.spyOn(console, "warn").mockImplementation(() => undefined);
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+    jest.restoreAllMocks();
+  });
+
+  it.each([
+    ["HTTP failure", 503, { error: { message: "Unavailable" } }],
+    ["empty catalog", 200, { data: [] }],
+    ["missing catalog", 200, { error: { message: "Invalid response" } }],
+    ["invalid model", 200, { data: [{ id: "" }] }],
+    ["null model", 200, { data: [null] }],
+  ])(
+    "does not cache a cold %s and recovers on the next call",
+    async (_, status, body) => {
+      const models = [{ id: "openai/test-model" }];
+      const fetchMock = jest
+        .fn()
+        .mockResolvedValueOnce(Response.json(body, { status }))
+        .mockResolvedValueOnce(Response.json({ data: models }));
+      global.fetch = fetchMock;
+
+      await expect(service.getModels()).rejects.toThrow();
+      await expect(service.getModels()).resolves.toEqual(models);
+      await expect(service.getModels()).resolves.toEqual(models);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(fetchMock.mock.calls[0][1].signal).toBeInstanceOf(AbortSignal);
+    },
+  );
+
+  it.each(["HTTP", "network", "JSON"])(
+    "keeps the last valid catalog after a %s failure without caching the failure",
+    async (failure) => {
+      const now = jest.spyOn(Date, "now").mockReturnValue(1_000);
+      const oldModels = [{ id: "openai/old-model" }];
+      const newModels = [{ id: "openai/new-model" }];
+      const fetchMock = jest
+        .fn()
+        .mockResolvedValueOnce(Response.json({ data: oldModels }));
+      if (failure === "HTTP") {
+        fetchMock.mockResolvedValueOnce(
+          Response.json({ error: { message: "Unavailable" } }, { status: 503 }),
+        );
+      } else if (failure === "network") {
+        fetchMock.mockRejectedValueOnce(new Error("Network unavailable"));
+      } else {
+        fetchMock.mockResolvedValueOnce(new Response("invalid JSON"));
+      }
+      fetchMock.mockResolvedValueOnce(Response.json({ data: newModels }));
+      global.fetch = fetchMock;
+
+      await expect(service.getModels()).resolves.toEqual(oldModels);
+      await expect(service.getModels()).resolves.toEqual(oldModels);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+
+      now.mockReturnValue(6 * 60 * 1_000);
+      await expect(service.getModels()).resolves.toEqual(oldModels);
+      await expect(service.getModels()).resolves.toEqual(newModels);
+      expect(fetchMock).toHaveBeenCalledTimes(3);
+    },
+  );
+
+  it("preserves a completed generation and reported billing when the catalog is unavailable", async () => {
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        Response.json({
+          choices: [{ message: { content: "Answer" } }],
+          usage: { prompt_tokens: 10, completion_tokens: 5, cost: 0.001 },
+        }),
+      )
+      .mockResolvedValueOnce(
+        Response.json({ error: { message: "Unavailable" } }, { status: 503 }),
+      );
+
+    await expect(
+      service.generate({
+        model: "openai/test-model",
+        context: [{ role: "user", content: "Question" }],
+      }),
+    ).resolves.toMatchObject({ text: "Answer", billing: { totalUsd: 0.001 } });
+  });
+});
+
 describe("OpenRouter completion, tool-calling, and billing contracts", () => {
   const originalFetch = global.fetch;
 
   afterEach(() => {
     global.fetch = originalFetch;
     jest.restoreAllMocks();
+  });
+
+  it("converts SVG image input to PNG while retaining image content in the request", async () => {
+    const service = new Service();
+    jest.spyOn(service, "getModels").mockResolvedValue([]);
+    const svg =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="10"><rect width="20" height="10" fill="violet"/></svg>';
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(svg, { headers: { "content-type": "image/svg+xml" } }),
+      )
+      .mockResolvedValueOnce({
+        json: async () => ({
+          choices: [{ message: { content: "Image understood" } }],
+        }),
+      }) as any;
+    await service.generate({
+      model: "test/vision",
+      context: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "image_url",
+              image_url: {
+                url: `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`,
+              },
+            },
+          ],
+        },
+      ],
+    });
+    const request = JSON.parse(
+      (global.fetch as jest.Mock).mock.calls[1][1].body,
+    );
+    expect(request.messages[0].content[0].image_url.url).toMatch(
+      /^data:image\/png;base64,/,
+    );
+    expect(
+      Buffer.from(
+        request.messages[0].content[0].image_url.url.split(",")[1],
+        "base64",
+      )
+        .subarray(1, 4)
+        .toString(),
+    ).toBe("PNG");
+  });
+
+  it("uses the OpenRouter Decisions endpoint and records its token usage and cost", async () => {
+    const service = new Service();
+    const getModels = jest.spyOn(service, "getModels");
+    global.fetch = jest.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        model: "typesafe/jev-1.13-20260917",
+        answers: { save: { type: "noul", noul: 0.95 } },
+        usage: { input_tokens: 100, output_tokens: 8, cost: 0.0000042 },
+      }),
+    })) as any;
+    const result = await service.decide({
+      state: { text: "Save this" },
+      questions: {
+        save: {
+          type: "noul",
+          instructions: "Save?",
+          criteria: { true: "Save", false: "Do not save" },
+        },
+      },
+    });
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://openrouter.ai/api/alpha/decisions",
+      expect.anything(),
+    );
+    expect(getModels).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      answers: { save: { noul: 0.95 } },
+      billing: {
+        requestModelId: "typesafe/jev-1.13",
+        responseModelId: "typesafe/jev-1.13-20260917",
+        totalUsd: 0.0000042,
+        usage: { prompt_tokens: 100, completion_tokens: 8, total_tokens: 108 },
+      },
+    });
+  });
+
+  it("rejects invalid Decisions answers while retaining reported billing", async () => {
+    const service = new Service();
+    global.fetch = jest.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        answers: {
+          action: {
+            type: "choice",
+            choice: "other-profile",
+            confidence: 1,
+            probabilities: { read: 1 },
+          },
+        },
+        usage: { input_tokens: 10, output_tokens: 2, cost: 0.000001 },
+      }),
+    })) as any;
+    const result = await service.decide({
+      state: {},
+      questions: {
+        action: {
+          type: "choice",
+          instructions: "Choose",
+          criteria: { read: "Read" },
+        },
+      },
+    });
+    expect(result).toMatchObject({
+      error: { message: expect.stringContaining("Invalid") },
+      billing: { totalUsd: 0.000001 },
+    });
+  });
+
+  it("sends the selected model without a routing plugin and records its cost", async () => {
+    const service = new Service();
+    jest.spyOn(service, "getModels").mockResolvedValue([
+      {
+        id: "test/answer",
+        pricing: { prompt: "0.01", completion: "0.01" },
+      } as any,
+    ]);
+    global.fetch = jest.fn(async () => ({
+      json: async () => ({
+        model: "test/answer",
+        choices: [{ message: { content: "Answer" } }],
+        usage: { prompt_tokens: 100, completion_tokens: 2, cost: 0.0002 },
+      }),
+    })) as any;
+    const result = await service.generate({
+      model: "test/answer",
+      context: [{ role: "user", content: "Question" }],
+    });
+    const request = JSON.parse(
+      (global.fetch as jest.Mock).mock.calls[0][1].body,
+    );
+    expect(request.plugins).toBeUndefined();
+    expect(request.model).toBe("test/answer");
+    expect(result.billing).toMatchObject({
+      responseModelId: "test/answer",
+      usageCostCredits: 0.0002,
+      totalUsd: 1.02,
+    });
   });
 
   /**
@@ -858,4 +1102,50 @@ describe("OpenRouter completion, tool-calling, and billing contracts", () => {
       },
     });
   });
+});
+
+it("keeps the thread session across decisions, generation and a retry", async () => {
+  const originalFetch = global.fetch;
+  const service = new Service({ sessionId: "thread-profile" });
+  jest.spyOn(service, "getModels").mockResolvedValue([]);
+  const fetchMock = jest
+    .fn()
+    .mockResolvedValueOnce({ json: async () => ({ answers: {} }) })
+    .mockResolvedValueOnce({
+      json: async () => ({ error: { message: "unsupported media" } }),
+    })
+    .mockResolvedValueOnce({
+      json: async () => ({ choices: [{ message: { content: "ok" } }] }),
+    });
+  global.fetch = fetchMock as any;
+  try {
+    await service.decide({ state: {}, questions: {} });
+    await service.generate({
+      model: "test/text",
+      context: [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "question" },
+            {
+              type: "image_url",
+              image_url: { url: "https://example.test/image.png" },
+            },
+          ],
+        },
+      ],
+    });
+    expect(fetchMock.mock.calls[0][1].headers["x-session-id"]).toBe(
+      "thread-profile",
+    );
+    expect(JSON.parse(fetchMock.mock.calls[1][1].body).session_id).toBe(
+      "thread-profile",
+    );
+    expect(JSON.parse(fetchMock.mock.calls[2][1].body).session_id).toBe(
+      "thread-profile",
+    );
+  } finally {
+    global.fetch = originalFetch;
+    jest.restoreAllMocks();
+  }
 });

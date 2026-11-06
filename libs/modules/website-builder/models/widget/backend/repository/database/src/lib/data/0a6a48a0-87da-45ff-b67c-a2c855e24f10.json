@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Profile skills",
+    "ru": "Навыки профиля"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[]}",
+    "ru": "{\"type\":\"doc\",\"content\":[]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "0a6a48a0-87da-45ff-b67c-a2c855e24f10",
+  "createdAt": "2026-10-26T00:11:58.053Z",
+  "updatedAt": "2026-10-27T14:58:46.534Z",
+  "variant": "content-rich",
+  "adminTitle": "Навыки профиля",
+  "slug": "framework-reviewed-article-social-profile-skills"
+}

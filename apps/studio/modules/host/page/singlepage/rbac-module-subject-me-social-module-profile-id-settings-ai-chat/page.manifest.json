@@ -1,0 +1,38 @@
+{
+  "id": "rbac-module-subject-me-social-module-profile-id-settings-ai-chat",
+  "title": "rbac-module-subject-me-social-module-profile-id-settings-ai-chat",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Concrete AI Chat Page: rbac-module-subject-me-social-module-profile-id-settings-ai-chat.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "host.page",
+    "pageName": "host",
+    "variantName": "rbac-module-subject-me-social-module-profile-id-settings-ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "blocks": [
+    {
+      "id": "host.layout.ai-chat-dashboard",
+      "path": "../../../layout/singlepage/ai-chat-dashboard"
+    },
+    {
+      "id": "rbac.subject.me-account",
+      "path": "../../../../rbac/subject/singlepage/me/account"
+    },
+    {
+      "id": "social.profile.select-ai-chat-project",
+      "path": "../../../../social/profile/singlepage/select/ai-chat/project"
+    },
+    {
+      "id": "rbac.widget.subject-me-social-module-profile-id-settings-ai-chat",
+      "path": "../../../../rbac/widget/singlepage/subject-me-social-module-profile-id-settings-ai-chat"
+    }
+  ]
+}

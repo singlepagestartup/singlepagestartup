@@ -17,7 +17,8 @@ Connects pages to layouts and defines their order.
 
 ## Variants
 
-- `default`: renders the related target for this link.
+- `default`: resolves the related Layout and forwards prepared `before`,
+  children and `after` slots supplied by Host Page. It receives no current URL.
 - `find`: data-fetch wrapper for querying relations.
 - `admin-select-input`: admin UI select input for linking relations.
 - `admin-table-row`: admin UI row for relation listings.

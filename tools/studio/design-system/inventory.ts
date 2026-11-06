@@ -1,4 +1,4 @@
-import { readdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, stat, writeFile } from "node:fs/promises";
 import * as path from "node:path";
 
 export interface ModuleVariantRecord {
@@ -14,6 +14,7 @@ export interface ModuleEntityRecord {
   entity: string;
   componentRoot: string;
   variants: ModuleVariantRecord[];
+  storyFiles?: string[];
 }
 
 export interface ModuleRecord {
@@ -43,6 +44,7 @@ export interface GeneratedModuleInventory {
     entities: number;
     variants: number;
     coveredVariants: number;
+    representedEntities?: number;
   };
   modules: ModuleRecord[];
 }
@@ -56,6 +58,80 @@ const OUTPUT_PATH = path.join(
   "modules.generated.json",
 );
 const SKIP_DIRS = new Set(["node_modules", ".git", ".nx", "dist"]);
+export const EXCLUDED_MODULES = new Set(["telegram"]);
+
+export function moduleDirectoryPaths(
+  inventory: GeneratedModuleInventory,
+): string[] {
+  return inventory.modules
+    .filter((moduleRecord) => !EXCLUDED_MODULES.has(moduleRecord.name))
+    .flatMap((moduleRecord) =>
+      moduleRecord.entities
+        .filter((entity) => entity.entityType === "model")
+        .flatMap((entity) =>
+          ["singlepage", "startup"].map((layer) =>
+            path.join(
+              inventory.studioRoot,
+              "modules",
+              entity.module,
+              entity.entity,
+              layer,
+            ),
+          ),
+        ),
+    );
+}
+
+export async function scaffoldModuleDirectories(
+  inventory: GeneratedModuleInventory,
+  repositoryRoot = ROOT,
+): Promise<string[]> {
+  const created: string[] = [];
+
+  for (const directory of moduleDirectoryPaths(inventory)) {
+    const absoluteDirectory = path.join(repositoryRoot, directory);
+    await mkdir(absoluteDirectory, { recursive: true });
+
+    if ((await readdir(absoluteDirectory)).length > 0) {
+      continue;
+    }
+
+    try {
+      await writeFile(path.join(absoluteDirectory, ".gitkeep"), "", {
+        flag: "wx",
+      });
+      created.push(toPosixPath(directory));
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "EEXIST") {
+        throw error;
+      }
+    }
+  }
+
+  return created;
+}
+
+export async function missingModuleDirectories(
+  inventory: GeneratedModuleInventory,
+  repositoryRoot = ROOT,
+): Promise<string[]> {
+  const missing: string[] = [];
+
+  for (const directory of moduleDirectoryPaths(inventory)) {
+    try {
+      if ((await stat(path.join(repositoryRoot, directory))).isDirectory()) {
+        continue;
+      }
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+        throw error;
+      }
+    }
+    missing.push(toPosixPath(directory));
+  }
+
+  return missing;
+}
 
 function toPosixPath(value: string): string {
   return value.split(path.sep).join("/");
@@ -72,7 +148,7 @@ async function pathExists(filePath: string): Promise<boolean> {
 
 async function walk(
   dir: string,
-  fileName: string,
+  fileName: string | RegExp,
   output: string[],
 ): Promise<void> {
   let entries: Awaited<ReturnType<typeof readdir>> = [];
@@ -95,7 +171,12 @@ async function walk(
       continue;
     }
 
-    if (entry.isFile() && entry.name === fileName) {
+    if (
+      entry.isFile() &&
+      (typeof fileName === "string"
+        ? entry.name === fileName
+        : fileName.test(entry.name))
+    ) {
       output.push(entryPath);
     }
   }
@@ -228,10 +309,38 @@ export async function collectModuleInventory(): Promise<GeneratedModuleInventory
   await walk(MODULES_ROOT, "variants.ts", variantFiles);
 
   const blockManifests = await readBlockManifests();
+  const pageManifestPaths: string[] = [];
+  await walk(
+    path.join(DESIGN_SYSTEM_ROOT, "modules", "host", "page"),
+    "page.manifest.json",
+    pageManifestPaths,
+  );
+  for (const manifestPath of pageManifestPaths.sort()) {
+    const json = JSON.parse(await readFile(manifestPath, "utf8")) as {
+      id?: unknown;
+      layer?: unknown;
+    };
+    if (
+      typeof json.id !== "string" ||
+      (json.layer !== "singlepage" && json.layer !== "startup")
+    )
+      continue;
+    blockManifests.push({
+      id: `host.page.${json.id}`,
+      layer: json.layer,
+      source: {
+        module: "host",
+        entityType: "model",
+        entity: "page",
+        variant: json.id,
+      },
+      manifestPath: toPosixPath(path.relative(ROOT, manifestPath)),
+    });
+  }
   const coverageBySource = new Map<string, string[]>();
 
   for (const block of blockManifests) {
-    const key = sourceKey(block.source);
+    const key = `${block.layer}:${sourceKey(block.source)}`;
     const existing = coverageBySource.get(key) ?? [];
     existing.push(block.id);
     coverageBySource.set(key, existing);
@@ -241,7 +350,11 @@ export async function collectModuleInventory(): Promise<GeneratedModuleInventory
 
   for (const filePath of variantFiles.sort()) {
     const parsed = parseEntityFromVariantsPath(filePath);
-    if (!parsed) {
+    if (
+      !parsed ||
+      parsed.entityType !== "model" ||
+      EXCLUDED_MODULES.has(parsed.module)
+    ) {
       continue;
     }
 
@@ -263,12 +376,12 @@ export async function collectModuleInventory(): Promise<GeneratedModuleInventory
     for (const variant of variants) {
       const coveredBy =
         coverageBySource.get(
-          sourceKey({
+          `${parsed.scope.split("/")[0]}:${sourceKey({
             module: parsed.module,
             entityType: parsed.entityType,
             entity: parsed.entity,
             variant,
-          }),
+          })}`,
         ) ?? [];
 
       entity.variants.push({
@@ -289,6 +402,15 @@ export async function collectModuleInventory(): Promise<GeneratedModuleInventory
       .join(":")
       .localeCompare([right.module, right.entityType, right.entity].join(":")),
   )) {
+    const stories: string[] = [];
+    await walk(
+      path.join(DESIGN_SYSTEM_ROOT, "modules", entity.module, entity.entity),
+      /\.stories\.(ts|tsx|mdx)$/,
+      stories,
+    );
+    entity.storyFiles = stories
+      .map((file) => toPosixPath(path.relative(ROOT, file)))
+      .sort();
     entity.variants.sort((left, right) =>
       [left.scope, left.variant]
         .join(":")
@@ -322,6 +444,9 @@ export async function collectModuleInventory(): Promise<GeneratedModuleInventory
       coveredVariants: variants.filter(
         (variant) => variant.coveredBy.length > 0,
       ).length,
+      representedEntities: entities.filter(
+        (entity) => entity.storyFiles?.length,
+      ).length,
     },
     modules,
   };
@@ -337,6 +462,7 @@ async function main(): Promise<void> {
     );
   }
 
+  const scaffoldedDirectories = await scaffoldModuleDirectories(inventory);
   const serializedInventory = `${JSON.stringify(inventory, null, 2)}\n`;
   let currentInventory: string | null = null;
 
@@ -361,6 +487,7 @@ async function main(): Promise<void> {
       `entities=${inventory.totals.entities}`,
       `variants=${inventory.totals.variants}`,
       `covered=${inventory.totals.coveredVariants}`,
+      `scaffolded=${scaffoldedDirectories.length}`,
     ].join(" "),
   );
 }

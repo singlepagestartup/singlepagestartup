@@ -1,0 +1,32 @@
+{
+  "id": "rbac.widget.subject-me-social-module-profile-id-chat-id-thread-create-ai-chat",
+  "title": "subject-me-social-module-profile-id-chat-id-thread-create-ai-chat",
+  "description": "RBAC Widget composition of Profile navigation, Chat and Thread creation with the Subject form action.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "subject-me-social-module-profile-id-chat-id-thread-create-ai-chat"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "rbac.widget",
+    "pageName": "rbac",
+    "variantName": "subject-me-social-module-profile-id-chat-id-thread-create-ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": [
+    "rbac",
+    "widget",
+    "subject-me-social-module-profile-id-chat-id-thread-create-ai-chat"
+  ]
+}

@@ -23,6 +23,23 @@ type INotificationAttachment = NonNullable<IModel["attachments"]>[number];
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  async sendVerificationCode(props: { email: string; code: string }) {
+    if (!AWS_SES_FROM_EMAIL)
+      throw new Error("Configuration error. Email delivery is not configured.");
+    if (!/^\d{6}$/.test(props.code))
+      throw new Error("Validation error. Invalid verification code");
+    const response = await new AWS().ses.sendEmail({
+      to: props.email,
+      from: AWS_SES_FROM_EMAIL,
+      subject: "Confirm your email change",
+      html: `<p>Your email verification code is <strong>${props.code}</strong>.</p><p>This code expires in 10 minutes. If you did not request an email change, ignore this message.</p>`,
+    });
+    if (!response.MessageId)
+      throw new Error(
+        "Internal error. The verification email could not be sent.",
+      );
+    return { sent: true };
+  }
   protected splitTelegramText(text: string, limit: number): string[] {
     if (!text) {
       return [""];

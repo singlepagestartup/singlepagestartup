@@ -1,3 +1,9 @@
+export * from "./sitemap";
+export * from "./seo";
+
+/** Named values resolved from a Page mask; missing keys remain undefined. */
+export type IRouteParams = Readonly<Record<string, string | undefined>>;
+
 /**
  * Shared, dependency-free route-matching primitive (issue #195 DX follow-up).
  *
@@ -145,7 +151,7 @@ export function composeRouteRules(
  * Builds the standard three-layer middleware matcher (issue #195 cleanup):
  * **constructor options → project `startup.ts` → framework `singlepage.ts`**.
  *
- * Every SPS path-gating middleware (`http-cache`, `is-authorized`, `observer`,
+ * Every SPS path-gating middleware (`is-authorized`, `observer`,
  * `revalidation`, `actions-logger`, `bill-route`) composed the identical
  * `new RouteMatcher(composeRouteRules([optionRoutes, startup, singlepage]))`
  * in its own `routes/index.ts`; this is the single shared definition each one
@@ -160,4 +166,44 @@ export function createLayeredRouteMatcher(
   return new RouteMatcher(
     composeRouteRules([optionRoutes, startupRoutes, singlepageRoutes]),
   );
+}
+
+/** Extract all named values from an already resolved Page mask. Values retain
+ * their encoded path representation; locale is removed by the Host entrypoint.
+ */
+export interface IExtractRouteParamsProps {
+  url: string;
+  mask: string;
+}
+
+export function extractRouteParams(
+  props: IExtractRouteParamsProps,
+): Record<string, string> {
+  const path = normalizeRoutePath(props.url).split("/").filter(Boolean);
+  const mask = normalizeRoutePath(props.mask).split("/").filter(Boolean);
+  const params: Record<string, string> = {};
+  if (path.length > mask.length)
+    throw new Error("Validation error. URL does not match Page mask");
+  mask.forEach((part, index) => {
+    const match = /^\[([^\[\]]+)\]$/.exec(part);
+    if (!match) {
+      if (part !== path[index])
+        throw new Error("Validation error. URL does not match Page mask");
+      return;
+    }
+    const key = match[1];
+    const value =
+      path[index] ?? (key.includes(":pagination:") ? "1" : undefined);
+    if (value === undefined)
+      throw new Error("Validation error. Missing URL segment");
+    if (Object.hasOwn(params, key))
+      throw new Error("Validation error. Duplicate Page segment");
+    Object.defineProperty(params, key, {
+      value,
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    });
+  });
+  return params;
 }

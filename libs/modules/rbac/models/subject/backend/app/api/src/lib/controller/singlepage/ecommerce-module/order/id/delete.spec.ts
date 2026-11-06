@@ -18,11 +18,7 @@ jest.mock("@sps/shared-utils", () => ({
 
 jest.mock("@sps/backend-utils", () => ({
   authorization: (...args: unknown[]) => authorizationMock(...args),
-  getHttpErrorType: (error: Error) => ({
-    status: 400,
-    message: error.message,
-    details: null,
-  }),
+  getHttpErrorType: jest.requireActual("@sps/backend-utils").getHttpErrorType,
   verifyJwt: jest.requireActual("@sps/backend-utils").verifyJwt,
 }));
 
@@ -55,6 +51,7 @@ function createContext(params: Record<string, string | undefined>) {
 
 function createService() {
   return {
+    ecommerceModuleOrderAssertAccess: jest.fn().mockResolvedValue(undefined),
     findById: jest.fn().mockResolvedValue({ id: "subject-1" }),
     ecommerceModule: {
       order: {
@@ -83,20 +80,16 @@ describe("Given: ecommerce order delete handler", () => {
     orderDeleteMock.mockResolvedValue({});
   });
 
-  it("When: auth token is missing Then: response is 401 with null data", async () => {
+  it("When: auth token is missing Then: rejects deletion with 401", async () => {
     authorizationMock.mockReturnValue(undefined);
 
     const handler = new Handler(createService());
     const context = createContext({ id: "subject-1", orderId: "order-1" });
 
-    await handler.execute(context, jest.fn());
-
-    expect(context.json).toHaveBeenCalledWith(
-      { data: null },
-      {
-        status: 401,
-      },
-    );
+    await expect(handler.execute(context, jest.fn())).rejects.toMatchObject({
+      status: 401,
+      message: "Authentication error. Token required",
+    });
     expect(orderDeleteMock).not.toHaveBeenCalled();
   });
 

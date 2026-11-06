@@ -1,3 +1,4 @@
+const { readFileSync } = require("node:fs");
 const { Octokit } = require("octokit");
 
 async function deleteSecret({
@@ -28,11 +29,11 @@ async function deleteSecret({
 
 (async () => {
   try {
-    var args = process.argv.slice(2);
-    const token = args[0];
-    const ownerWithRepository = args[1];
-    const secretName = args[2];
-    const secretScope = args[3];
+    const input = JSON.parse(readFileSync(0, "utf8"));
+    const token = input.GITHUB_TOKEN;
+    const ownerWithRepository = input.GITHUB_REPOSITORY;
+    const secretName = input.SECRET_NAME;
+    const secretScope = input.SECRET_SCOPE;
 
     await deleteSecret({
       token,
@@ -45,4 +46,7 @@ async function deleteSecret({
       throw err;
     }
   }
-})();
+})().catch((error) => {
+  console.error("GitHub request failed", error.status ?? "");
+  process.exitCode = 1;
+});

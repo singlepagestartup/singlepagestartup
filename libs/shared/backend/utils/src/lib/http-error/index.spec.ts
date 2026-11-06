@@ -124,6 +124,19 @@ describe("util — HTTP error classification", () => {
     });
   });
 
+  // ------------------- 413 PAYLOAD TOO LARGE ERROR -------------------
+  describe("413 - Payload Too Large error", () => {
+    test.each([
+      "Payload Too Large",
+      "Payload Too Large error. The upload limit is 52428800 bytes",
+      "payload too large",
+    ])("maps '%s' → 413 Payload Too Large error", (msg) => {
+      const result = util(new Error(msg));
+      expect(result.status).toBe(413);
+      expect(result.category).toBe("Payload Too Large error");
+    });
+  });
+
   // ------------------- 422 ZOD ISSUE PAYLOADS -------------------
   describe("422 - serialized zod issues", () => {
     function zodError(issues: unknown[]) {
@@ -413,10 +426,8 @@ describe("util — HTTP error classification", () => {
   describe("500 - Internal error", () => {
     test.each([
       "Internal Server Error",
-      "Configuration error.",
       "Environment error. rbac_secret_key not found",
       "RBAC_JWT_SECRET not set",
-      "Configuration error. RBAC_SECRET_KEY is not defined",
       "Internal server error",
       "Request not created",
       "JWT secret not provided",
@@ -430,6 +441,49 @@ describe("util — HTTP error classification", () => {
 
   // ------------------- ADVANCED & FALLBACK CASES -------------------
   describe("Advanced & Fallback cases", () => {
+    test.each([
+      ["Configuration error. Provider not found", 500, "Configuration error"],
+      ["Validation error. Invalid credentials", 400, "Validation error"],
+      [
+        "Permission error. Invalid token for this operation",
+        403,
+        "Permission error",
+      ],
+      ["[Conflict error] Receipt expired", 409, "Conflict error"],
+    ])("respects the declared category of %s", (message, status, category) => {
+      expect(util(new Error(String(message)))).toMatchObject({
+        status,
+        category,
+      });
+    });
+
+    test.each([403, 409, 413, 502])(
+      "keeps explicit HTTP %i across two SDK hops",
+      (status) => {
+        const message = "Delivery unavailable";
+        const first = util(Object.assign(new Error(message), { status }));
+        expect(first).toMatchObject({
+          status,
+          message,
+          category: (
+            {
+              403: "Permission error",
+              409: "Conflict error",
+              413: "Validation error",
+              502: "Internal error",
+            } as Record<number, string>
+          )[status],
+        });
+        expect(
+          util(new Error(JSON.stringify({ status, message }))),
+        ).toMatchObject({
+          status,
+          message,
+          category: first.category,
+        });
+      },
+    );
+
     test("detects category from prefix in message", () => {
       const error = new Error("[Validation error] Invalid input data");
       const result = util(error);

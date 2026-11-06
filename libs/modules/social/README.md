@@ -11,6 +11,7 @@ The Social module manages profiles, chats, messages, and related social interact
 - Stores reusable AI skills for transcript-to-content workflows.
 - Attaches files and widgets to social entities.
 - Links social content to ecommerce products.
+- Links profiles to Blog articles for profile-scoped article lists.
 
 ### Typical use cases:
 
@@ -24,11 +25,7 @@ The Social module manages profiles, chats, messages, and related social interact
 
 ## 4. Knowledge Chat Variant
 
-`social.chat.variant="knowledge"` is the explicit switch for profile-scoped Knowledge/RAG behavior. In this mode, agent profiles with `variant="artificial-intelligence"` and slugs like `chat-gpt-*` reply through the RBAC Knowledge reaction endpoint instead of the default OpenRouter flow.
-
-Users can send `/learn` in the existing chat UI to add the current message text and supported text/markdown attachments to the replying AI profile's Knowledge base. RBAC orchestrates the call to generic Knowledge learning and then creates the Social-owned `profiles-to-knowledge-module-documents` relation. Later Knowledge chat questions use only the document ids linked to the replying AI profile; Knowledge itself does not read Social profile or relation tables.
-
-`default` and `telegram` chat variants keep the existing non-RAG behavior.
+Both normal OpenRouter chats and `social.chat.variant="knowledge"` use Sources linked to the replying profile. `/learn` stores message text and all current attachments in one Source, reusing stored Files. RBAC creates `profiles-to-knowledge-module-sources` and origin-message relations. AI Chat enables this search by default. Other chats can request it with `@knowledge` or `useKnowledgeSearch`; natural-language Knowledge intent can also be detected by JEV. An empty Source scope never becomes global search. Knowledge does not read Social access tables.
 
 ## 2. Models
 
@@ -48,23 +45,25 @@ Users can send `/learn` in the existing chat UI to add the current message text 
 
 ## 3. Relations
 
-| Relation                                                                                                       | Purpose                           |
-| -------------------------------------------------------------------------------------------------------------- | --------------------------------- |
-| [attribute-keys-to-attributes](./relations/attribute-keys-to-attributes/README.md)                             | Link attribute keys to attributes |
-| [chats-to-actions](./relations/chats-to-actions/README.md)                                                     | Link chats to actions             |
-| [chats-to-messages](./relations/chats-to-messages/README.md)                                                   | Link chats to messages            |
-| [chats-to-threads](./relations/chats-to-threads/README.md)                                                     | Link chats to threads             |
-| [messages-to-file-storage-module-files](./relations/messages-to-file-storage-module-files/README.md)           | Attach files to messages          |
-| [profiles-to-actions](./relations/profiles-to-actions/README.md)                                               | Link profiles to actions          |
-| [profiles-to-attributes](./relations/profiles-to-attributes/README.md)                                         | Link profiles to attributes       |
-| [profiles-to-chats](./relations/profiles-to-chats/README.md)                                                   | Link profiles to chats            |
-| [profiles-to-ecommerce-module-products](./relations/profiles-to-ecommerce-module-products/README.md)           | Link profiles to products         |
-| [profiles-to-file-storage-module-files](./relations/profiles-to-file-storage-module-files/README.md)           | Attach files to profiles          |
-| [profiles-to-knowledge-module-documents](./relations/profiles-to-knowledge-module-documents/README.md)         | Link profiles to knowledge docs   |
-| [profiles-to-messages](./relations/profiles-to-messages/README.md)                                             | Link profiles to messages         |
-| [profiles-to-skills](./relations/profiles-to-skills/README.md)                                                 | Link profiles to available skills |
-| [profiles-to-website-builder-module-widgets](./relations/profiles-to-website-builder-module-widgets/README.md) | Attach widgets to profiles        |
-| [threads-to-ecommerce-module-products](./relations/threads-to-ecommerce-module-products/README.md)             | Link threads to products          |
-| [threads-to-messages](./relations/threads-to-messages/README.md)                                               | Link threads to messages          |
+| Relation                                                                                                       | Purpose                                                         |
+| -------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| [attribute-keys-to-attributes](./relations/attribute-keys-to-attributes/README.md)                             | Link attribute keys to attributes                               |
+| [chats-to-actions](./relations/chats-to-actions/README.md)                                                     | Link chats to actions                                           |
+| [chats-to-messages](./relations/chats-to-messages/README.md)                                                   | Link chats to messages                                          |
+| [chats-to-threads](./relations/chats-to-threads/README.md)                                                     | Link chats to threads                                           |
+| [messages-to-file-storage-module-files](./relations/messages-to-file-storage-module-files/README.md)           | Attach files to messages                                        |
+| [profiles-to-actions](./relations/profiles-to-actions/README.md)                                               | Link profiles to actions                                        |
+| [profiles-to-attributes](./relations/profiles-to-attributes/README.md)                                         | Link profiles to attributes                                     |
+| [profiles-to-chats](./relations/profiles-to-chats/README.md)                                                   | Link profiles to chats                                          |
+| [profiles-to-ecommerce-module-products](./relations/profiles-to-ecommerce-module-products/README.md)           | Link profiles to products                                       |
+| [profiles-to-blog-module-articles](./relations/profiles-to-blog-module-articles/README.md)                     | Link profiles to Blog articles                                  |
+| [profiles-to-file-storage-module-files](./relations/profiles-to-file-storage-module-files/README.md)           | Attach files to profiles                                        |
+| [profiles-to-knowledge-module-sources](./relations/profiles-to-knowledge-module-sources/README.md)             | Link profiles to Knowledge Sources                              |
+| [profiles-to-messages](./relations/profiles-to-messages/README.md)                                             | Link profiles to messages                                       |
+| [profiles-to-skills](./relations/profiles-to-skills/README.md)                                                 | Link profiles to available skills                               |
+| [profiles-to-website-builder-module-widgets](./relations/profiles-to-website-builder-module-widgets/README.md) | Attach widgets to profiles                                      |
+| [threads-to-ecommerce-module-products](./relations/threads-to-ecommerce-module-products/README.md)             | Link threads to products                                        |
+| [threads-to-messages](./relations/threads-to-messages/README.md)                                               | Link threads to messages                                        |
+| [widgets-to-website-builder-module-widgets](./relations/widgets-to-website-builder-module-widgets/README.md)   | Connect Widget operations to saved Website Builder presentation |
 
 ---

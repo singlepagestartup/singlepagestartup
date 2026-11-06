@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Choose a new password",
+    "ru": "Задайте новый пароль"
+  },
+  "subtitle": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Enter a new password for your account.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Введите новый пароль для своего аккаунта.\"}]}]}"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"heading\",\"attrs\":{\"level\":2},\"content\":[{\"type\":\"text\",\"text\":\"Return to your projects\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Sign in after changing your password to continue working.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"heading\",\"attrs\":{\"level\":2},\"content\":[{\"type\":\"text\",\"text\":\"Вернитесь к своим проектам\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"После смены пароля войдите в аккаунт и продолжите работу.\"}]}]}"
+  },
+  "anchor": null,
+  "className": null,
+  "id": "33a11318-6533-4d6c-b9e0-28d973fbf9c5",
+  "createdAt": "2026-10-17T21:43:19.446Z",
+  "updatedAt": "2026-10-27T14:58:54.598Z",
+  "variant": "content-ai-chat-reset-password",
+  "adminTitle": "AI Chat authentication content",
+  "slug": "ai-chat-3d36832c-cec5-4e31-bc36-778cb5dd37af-content"
+}

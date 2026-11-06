@@ -67,54 +67,33 @@ export class Service {
    * Route billing resolves the subject it charges through this as well.
    */
   async getSubjectId(authorization: string) {
-    const tokenCacheKey = `jwt:subject:${authorization}`;
-    let claims = cache.get<{ subjectId: string; issuedAt?: number }>(
-      tokenCacheKey,
-    );
-
-    if (!claims) {
-      const decoded = await verifyJwt(
-        authorization,
-        RBAC_JWT_SECRET as string,
-        {
-          type: "access",
-        },
-      );
-
-      if (!decoded.subject?.["id"]) {
-        throw new Error("Validation error. No subject provided in the token");
-      }
-
-      if (typeof decoded.subject["id"] !== "string") {
-        throw new Error("Validation error. Subject ID is not a string");
-      }
-
-      claims = {
-        subjectId: decoded.subject["id"],
-        issuedAt: decoded.iat,
-      };
-      cache.set(tokenCacheKey, claims);
+    const decoded = await verifyJwt(authorization, RBAC_JWT_SECRET as string, {
+      type: "access",
+    });
+    const subjectId = decoded.subject?.["id"];
+    if (typeof subjectId !== "string" || !subjectId) {
+      throw new Error("Validation error. No subject provided in the token");
     }
 
     const tokensValidAfter = await this.getSubjectTokensValidAfter(
-      claims.subjectId,
+      subjectId,
     );
 
     if (
       isRbacSubjectTokenRevoked({
         subject: { tokensValidAfter },
-        issuedAt: claims.issuedAt,
+        issuedAt: decoded.iat,
       })
     ) {
       throw new Error("Authentication error. Token revoked");
     }
 
-    return claims.subjectId;
+    return subjectId;
   }
 
   protected async getSubjectTokensValidAfter(subjectId: string) {
     const cacheKey = `subject:tokens-valid-after:${subjectId}`;
-    const cached = cache.get<{ tokensValidAfter: Date | null }>(cacheKey);
+    const cached = await cache.getAsync<{ tokensValidAfter: Date | null }>(cacheKey);
 
     if (cached) {
       return cached.tokensValidAfter;
@@ -131,7 +110,7 @@ export class Service {
 
   protected async getSubjectRoleIds(subjectId: string) {
     const cacheKey = `subjects-to-roles:subject:${subjectId}`;
-    const cachedRoleIds = cache.get<string[]>(cacheKey);
+    const cachedRoleIds = await cache.getAsync<string[]>(cacheKey);
 
     if (cachedRoleIds) {
       return cachedRoleIds;
@@ -263,7 +242,7 @@ export class Service {
       props.permission.route,
     ].join(":");
 
-    let permissionResolution = cache.get<
+    let permissionResolution = await cache.getAsync<
       Awaited<ReturnType<PermissionService["resolveByRoute"]>>
     >(permissionResolutionCacheKey);
 

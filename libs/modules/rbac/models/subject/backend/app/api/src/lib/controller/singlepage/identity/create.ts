@@ -36,6 +36,9 @@ export class Handler {
       });
 
       const uuid = c.req.param("uuid");
+      if (!uuid) {
+        throw new Error("Validation error. Invalid id");
+      }
 
       if (decoded?.["subject"]?.["id"] !== uuid) {
         throw new Error(
