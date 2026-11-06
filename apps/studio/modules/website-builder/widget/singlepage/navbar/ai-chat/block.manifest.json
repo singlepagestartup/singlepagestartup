@@ -1,0 +1,38 @@
+{
+  "id": "website-builder.widget.navbar-ai-chat",
+  "title": "navbar-ai-chat",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Navbar renders supplied navigation data and model slots. Host chooses page-specific Buttons Array records, labels, presentation and slot content.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "website-builder.widget",
+    "pageName": "website-builder",
+    "variantName": "navbar-ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "navbar-ai-chat"
+  },
+  "contentSlots": [
+    {
+      "name": "profileSelect",
+      "type": "component",
+      "description": "Profile Select view supplied by Host with menu navigation/focus callbacks."
+    },
+    {
+      "name": "subjectAccount",
+      "type": "component",
+      "description": "Subject Account view supplied by Host with menu navigation/focus callbacks."
+    }
+  ]
+}

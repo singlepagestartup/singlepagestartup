@@ -8,10 +8,26 @@
         path: /home/code/postgres_data
         state: directory
 
+    - name: Copy PostgreSQL application role script
+      copy:
+        src: ../../../apps/db/create_application_role.sh
+        dest: /home/code/create_application_role.sh
+        mode: "0755"
+
     - name: Copy docker-compose file
       ansible.builtin.template:
         src: docker-compose.postgres.yaml.j2
         dest: /home/code/docker-compose.postgres.yaml
+        owner: root
+        group: root
+        mode: "0600"
+      no_log: true
+      vars:
+        DATABASE_NAME: "{{ lookup('ansible.builtin.env', 'DATABASE_NAME') }}"
+        DATABASE_USERNAME: "{{ lookup('ansible.builtin.env', 'DATABASE_USERNAME') }}"
+        POSTGRES_PASSWORD: "{{ lookup('ansible.builtin.env', 'POSTGRES_PASSWORD') }}"
+        POSTGRES_USER: "{{ lookup('ansible.builtin.env', 'POSTGRES_USER') }}"
+        DATABASE_PASSWORD: "{{ lookup('ansible.builtin.env', 'DATABASE_PASSWORD') }}"
 
     - name: Run Postgres service
-      shell: docker stack deploy --compose-file=/home/code/docker-compose.postgres.yaml postgres
+      ansible.builtin.command: docker stack deploy --detach=false --compose-file=/home/code/docker-compose.postgres.yaml postgres

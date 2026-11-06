@@ -2,15 +2,17 @@
   "id": "17c22db6-6aaf-4d7d-902d-231546498b49",
   "className": "",
   "createdAt": "2025-01-24T23:47:55.627Z",
-  "updatedAt": "2025-11-15T09:32:28.617Z",
+  "updatedAt": "2026-10-23T20:26:09.915Z",
   "variant": "default",
   "adminTitle": "0SBpD22t72",
   "slug": "design",
   "title": {
-    "en": "Design"
+    "en": "Design",
+    "ru": "Дизайн"
   },
   "subtitle": {},
   "description": {
-    "en": null
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Landing pages and visual presentation for projects built on SPS.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Лендинги и визуальное оформление проектов на SPS.\"}]}]}"
   }
 }

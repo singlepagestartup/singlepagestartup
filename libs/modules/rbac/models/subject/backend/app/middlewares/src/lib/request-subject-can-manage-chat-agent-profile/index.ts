@@ -27,12 +27,12 @@ type IService = {
         props: unknown,
       ): Promise<Array<{ id?: string; profileId?: string; skillId?: string }>>;
     };
-    profilesToKnowledgeModuleDocuments: {
+    profilesToKnowledgeModuleSources: {
       find(props: unknown): Promise<
         Array<{
           id?: string;
           profileId?: string;
-          knowledgeModuleDocumentId?: string;
+          knowledgeModuleSourceId?: string;
         }>
       >;
     };
@@ -77,9 +77,7 @@ export class Middleware {
           "targetSocialModuleProfileId",
         );
         const socialModuleSkillId = c.req.param("socialModuleSkillId");
-        const knowledgeModuleDocumentId = c.req.param(
-          "knowledgeModuleDocumentId",
-        );
+        const knowledgeModuleSourceId = c.req.param("knowledgeModuleSourceId");
 
         await this.service.socialModuleChatLifecycleAssertSubjectOwnsChat({
           subjectId: id,
@@ -103,10 +101,10 @@ export class Middleware {
           });
         }
 
-        if (knowledgeModuleDocumentId) {
-          await this.assertTargetKnowledgeDocumentAccess({
+        if (knowledgeModuleSourceId) {
+          await this.assertTargetKnowledgeSourceAccess({
             targetSocialModuleProfileId,
-            knowledgeModuleDocumentId,
+            knowledgeModuleSourceId,
           });
         }
 
@@ -279,12 +277,12 @@ export class Middleware {
     }
   }
 
-  async assertTargetKnowledgeDocumentAccess(props: {
+  async assertTargetKnowledgeSourceAccess(props: {
     targetSocialModuleProfileId: string;
-    knowledgeModuleDocumentId: string;
+    knowledgeModuleSourceId: string;
   }) {
     const relations =
-      await this.service.socialModule.profilesToKnowledgeModuleDocuments.find({
+      await this.service.socialModule.profilesToKnowledgeModuleSources.find({
         params: {
           filters: {
             and: [
@@ -294,9 +292,9 @@ export class Middleware {
                 value: props.targetSocialModuleProfileId,
               },
               {
-                column: "knowledgeModuleDocumentId",
+                column: "knowledgeModuleSourceId",
                 method: "eq",
-                value: props.knowledgeModuleDocumentId,
+                value: props.knowledgeModuleSourceId,
               },
             ],
           },
@@ -306,7 +304,7 @@ export class Middleware {
 
     if (!relations?.length) {
       throw new Error(
-        "Authorization error. Requested Knowledge document is not linked to target profile",
+        "Authorization error. Requested Knowledge Source is not linked to target profile",
       );
     }
   }

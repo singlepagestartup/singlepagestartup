@@ -1,0 +1,121 @@
+{
+  "id": "d51dce76-6d8d-4986-be95-d6524b27fbe6",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.sl_ss_to_ke_me_sources": {
+      "name": "sl_ss_to_ke_me_sources",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "variant": {
+          "name": "variant",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'default'"
+        },
+        "order_index": {
+          "name": "order_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "class_name": {
+          "name": "class_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "skill_id": {
+          "name": "skill_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ke_me_se_id": {
+          "name": "ke_me_se_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "sl_ss_to_ke_me_sources_skill_id_sl_skill_id_fk": {
+          "name": "sl_ss_to_ke_me_sources_skill_id_sl_skill_id_fk",
+          "tableFrom": "sl_ss_to_ke_me_sources",
+          "tableTo": "sl_skill",
+          "columnsFrom": [
+            "skill_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "sl_ss_to_ke_me_sources_ke_me_se_id_sps_ke_source_id_fk": {
+          "name": "sl_ss_to_ke_me_sources_ke_me_se_id_sps_ke_source_id_fk",
+          "tableFrom": "sl_ss_to_ke_me_sources",
+          "tableTo": "sps_ke_source",
+          "columnsFrom": [
+            "ke_me_se_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "sl_skill_source_unique": {
+          "name": "sl_skill_source_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "skill_id",
+            "ke_me_se_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

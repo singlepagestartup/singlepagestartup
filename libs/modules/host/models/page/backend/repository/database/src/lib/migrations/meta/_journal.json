@@ -15,6 +15,34 @@
       "when": 1748909978008,
       "tag": "0001_aspiring_stephen_strange",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793200379607,
+      "tag": "0002_dusty_tarantula",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793398954593,
+      "tag": "0003_flaky_marvel_zombies",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793399130513,
+      "tag": "0004_military_mongu",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793405264070,
+      "tag": "0005_breezy_whirlwind",
+      "breakpoints": true
     }
   ]
 }

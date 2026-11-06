@@ -1,0 +1,14 @@
+{
+  "id": "d8e5d7cb-5207-4725-9edc-7fc5b03f2942",
+  "createdAt": "2026-10-24T01:06:08.034Z",
+  "updatedAt": "2026-10-24T01:06:08.034Z",
+  "variant": "default",
+  "className": "w-full",
+  "title": {
+    "en": "Actions",
+    "ru": "Действия"
+  },
+  "description": {},
+  "adminTitle": "Actions",
+  "slug": "framework-journey-guide-agent-actions"
+}

@@ -1,0 +1,27 @@
+{
+  "id": "rbac.permission.admin-v2-card",
+  "title": "rbac permission / admin-v2-card",
+  "description": "Local records for Studio component design.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "permission",
+    "variant": "admin-v2-card"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "rbac.permission",
+    "pageName": "rbac",
+    "variantName": "admin-v2-card",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

@@ -1,7 +1,11 @@
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
-import { IModel as IBillingModuleCurrency } from "@sps/billing/models/currency/sdk/model";
-import { api as billingModuleCurrencyApi } from "@sps/billing/models/currency/sdk/server";
-import { IModel as IOrderToProduct } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
+import { logger } from "@sps/backend-utils";
+import type {
+  IModel as IOrderToProduct,
+  IUnpricedOrderToProduct,
+  IOrderLineTotal,
+  IOrderLineTotals,
+} from "@sps/ecommerce/relations/orders-to-products/sdk/model";
 import { Service as ProductService } from "@sps/ecommerce/models/product/backend/app/api/src/lib/service";
 import { Service as AttributeService } from "@sps/ecommerce/models/attribute/backend/app/api/src/lib/service";
 import { Service as AttributeKeyService } from "@sps/ecommerce/models/attribute-key/backend/app/api/src/lib/service";
@@ -13,9 +17,13 @@ export type IExecuteProps = {
   id: string;
 };
 
+export type { IUnpricedOrderToProduct } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
+export interface IExecuteResult extends IOrderLineTotals {}
+
 type IConstructorProps = {
   findById: (props: { id: string }) => Promise<IOrderToProduct | null>;
   product: ProductService;
+  billingModule: ProductService["billingModule"];
   attribute: AttributeService;
   attributeKey: AttributeKeyService;
   productsToAttributes: ProductsToAttributesService;
@@ -23,9 +31,18 @@ type IConstructorProps = {
   attributesToBillingModuleCurrencies: AttributesToBillingModuleCurrenciesService;
 };
 
+/**
+ * Computes the total of a single order line.
+ *
+ * A line whose product carries no price in any billing currency yields no
+ * total and is reported instead of throwing: one such line, left behind by a
+ * failed add-to-cart or by incomplete catalog data, must not take the whole
+ * cart down with it.
+ */
 export class Service {
   findById: IConstructorProps["findById"];
   product: ProductService;
+  billingModule: ProductService["billingModule"];
   attribute: AttributeService;
   attributeKey: AttributeKeyService;
   productsToAttributes: ProductsToAttributesService;
@@ -35,6 +52,7 @@ export class Service {
   constructor(props: IConstructorProps) {
     this.findById = props.findById;
     this.product = props.product;
+    this.billingModule = props.billingModule;
     this.attribute = props.attribute;
     this.attributeKey = props.attributeKey;
     this.productsToAttributes = props.productsToAttributes;
@@ -43,7 +61,7 @@ export class Service {
       props.attributesToBillingModuleCurrencies;
   }
 
-  async execute(props: IExecuteProps) {
+  async execute(props: IExecuteProps): Promise<IExecuteResult> {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC_SECRET_KEY is not defined");
     }
@@ -74,19 +92,14 @@ export class Service {
       throw new Error("Price attribute key not found");
     }
 
-    const priceAttributeKey = priceAttributeKeys[0];
-
-    const result: {
-      total: number;
-      billingModuleCurrency: IBillingModuleCurrency;
-    }[] = [];
+    const totals: IOrderLineTotal[] = [];
 
     const product = await this.product.findById({
       id: entity.productId,
     });
 
     if (!product) {
-      throw new Error("Product not found");
+      return this.unpriced({ entity, reason: "Product not found" });
     }
 
     const productToAttributes = await this.productsToAttributes.find({
@@ -104,7 +117,10 @@ export class Service {
     });
 
     if (!productToAttributes?.length) {
-      throw new Error("Product does not have any attributes");
+      return this.unpriced({
+        entity,
+        reason: "Product does not have any attributes",
+      });
     }
 
     const productPriceAttributeKeysToAttributes =
@@ -121,8 +137,8 @@ export class Service {
               },
               {
                 column: "attributeKeyId",
-                method: "eq",
-                value: priceAttributeKey.id,
+                method: "inArray",
+                value: priceAttributeKeys.map((key) => key.id),
               },
             ],
           },
@@ -130,8 +146,13 @@ export class Service {
       });
 
     if (!productPriceAttributeKeysToAttributes?.length) {
-      throw new Error("Product does not have any price attributes");
+      return this.unpriced({
+        entity,
+        reason: "Product does not have any price attributes",
+      });
     }
+
+    let skippedPriceAttributes = 0;
 
     for (const productPriceAttributeKeyToAttribute of productPriceAttributeKeysToAttributes) {
       const priceAttribute = await this.attribute.findById({
@@ -139,7 +160,8 @@ export class Service {
       });
 
       if (!priceAttribute) {
-        throw new Error("Price attribute not found");
+        skippedPriceAttributes += 1;
+        continue;
       }
 
       const attributesToBillingModuleCurrencies =
@@ -158,28 +180,71 @@ export class Service {
         });
 
       if (!attributesToBillingModuleCurrencies?.length) {
-        throw new Error("Product does not have any target price attributes");
+        skippedPriceAttributes += 1;
+        continue;
       }
 
-      const billingModuleCurrency = await billingModuleCurrencyApi.findById({
+      const billingModuleCurrency = await this.billingModule.currency.findById({
         id: attributesToBillingModuleCurrencies[0].billingModuleCurrencyId,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
       });
 
       if (!billingModuleCurrency) {
-        throw new Error("Billing module currency not found");
+        skippedPriceAttributes += 1;
+        continue;
       }
 
-      result.push({
+      totals.push({
         total: entity.quantity * Number(priceAttribute.number),
         billingModuleCurrency,
       });
     }
 
-    return result;
+    if (!totals.length) {
+      return this.unpriced({
+        entity,
+        reason: "Product does not have any target price attributes",
+      });
+    }
+
+    if (skippedPriceAttributes) {
+      logger.warn(
+        "ecommerce/orders-to-products/get-total: skipped price attributes without a billing currency",
+        {
+          ordersToProductsId: entity.id,
+          productId: entity.productId,
+          skippedPriceAttributes,
+        },
+      );
+    }
+
+    return {
+      totals,
+      unpriced: [],
+    };
+  }
+
+  private unpriced(props: {
+    entity: IOrderToProduct;
+    reason: string;
+  }): IExecuteResult {
+    logger.warn(
+      "ecommerce/orders-to-products/get-total: order line has no price in an available currency",
+      {
+        ordersToProductsId: props.entity.id,
+        productId: props.entity.productId,
+        reason: props.reason,
+      },
+    );
+
+    return {
+      totals: [],
+      unpriced: [
+        {
+          ordersToProductsId: props.entity.id,
+          productId: props.entity.productId,
+          reason: props.reason,
+        },
+      ],
+    };
   }
 }

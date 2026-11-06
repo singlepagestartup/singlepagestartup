@@ -1,0 +1,23 @@
+{
+  "componentName": "host.layout",
+  "pageName": "host",
+  "variantName": "ai-chat-landing",
+  "nodeId": null,
+  "variantNodeId": null,
+  "syncStatus": "not-created",
+  "metadataFile": "figma.json",
+  "metadata": {
+    "singlepagestartup.studio.blockId": "host.layout.ai-chat-landing",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "host/layout/singlepage/ai-chat-landing",
+    "sps.figma.component": "host.layout",
+    "sps.figma.variant": "ai-chat-landing",
+    "sps.source.module": "host",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "layout",
+    "sps.source.variant": "ai-chat-landing",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/host/layout/singlepage/ai-chat-landing/Component.tsx",
+    "sps.code.story": "apps/studio/modules/host/layout/singlepage/ai-chat-landing/Component.stories.tsx"
+  }
+}

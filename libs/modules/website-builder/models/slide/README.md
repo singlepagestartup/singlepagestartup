@@ -20,7 +20,7 @@ Slides are items inside sliders, combining media, text, and CTAs.
 
 ## Variants
 
-- `default`: renders media, title, and attached buttons; links to `url` if set.
+- `default`: renders localized title, subtitle, rich description, ordered media and attached buttons; the title links to `url` if set. CTA links stay independent, avoiding nested anchors.
 - `find`: data-fetch wrapper for querying slides.
 - `admin-select-input`: admin UI select input for linking slides.
 - `admin-table-row`: admin UI row for slide listings.

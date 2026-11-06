@@ -1,0 +1,27 @@
+{
+  "id": "host.page.admin-v2-list",
+  "title": "Host page / admin-v2-list",
+  "description": "Local Studio projection of Host page using the existing SDK fields and links.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "host",
+    "entityType": "model",
+    "entity": "page",
+    "variant": "admin-v2-list"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "host.page",
+    "pageName": "host",
+    "variantName": "admin-v2-list",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

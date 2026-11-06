@@ -2,20 +2,20 @@
   "id": "39fd51d2-822a-4546-a1b3-9852c951d80a",
   "className": "",
   "createdAt": "2025-05-06T17:02:12.013Z",
-  "updatedAt": "2025-11-15T09:32:28.539Z",
+  "updatedAt": "2026-10-26T07:34:02.804Z",
   "variant": "default",
   "title": {
-    "en": "Category #2",
-    "ru": "Category #2"
+    "en": "Backend",
+    "ru": "Серверная часть"
   },
   "subtitle": {
-    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Category #2 Subtitle\"}]}]}",
-    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Category #2 Subtitle\"}]}]}"
+    "en": "{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"type\": \"text\", \"text\": \"Hono, owning services, middleware and resource access.\"}]}]}",
+    "ru": "{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"type\": \"text\", \"text\": \"Hono, owning services, middleware и доступ к данным.\"}]}]}"
   },
   "description": {
-    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Category #2 Description\"}]}]}",
-    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Category #2 Description\"}]}]}"
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Hono request handling, module ownership and server resource access in SinglePageStartup.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"API, обработка запросов и доступ к данным.\"}]}]}"
   },
-  "adminTitle": "Category #2",
-  "slug": "category-2"
+  "adminTitle": "Framework Blog / Backend",
+  "slug": "backend"
 }

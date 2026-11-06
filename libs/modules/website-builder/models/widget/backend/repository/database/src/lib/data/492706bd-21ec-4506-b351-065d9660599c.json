@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Work with Website Builder.",
+    "ru": "Работайте с Website Builder."
+  },
+  "subtitle": {
+    "en": "Experience",
+    "ru": "Интерфейс"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Editable copy, media, navigation and presentation sections with slots for domain content.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Редактируемый текст, медиа, навигация и секции со слотами для контента доменных модулей.\"}]}]}"
+  },
+  "anchor": "module-website-builder",
+  "className": "@5xl:grid-cols-2",
+  "id": "492706bd-21ec-4506-b351-065d9660599c",
+  "createdAt": "2026-10-24T01:05:55.512Z",
+  "updatedAt": "2026-10-24T01:05:55.512Z",
+  "variant": "content-definition-grid-page",
+  "adminTitle": "Work with Website Builder.",
+  "slug": "framework-journey-guide-website-builder-overview"
+}

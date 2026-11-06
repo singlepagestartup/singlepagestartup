@@ -53,14 +53,14 @@ export class Controller {
     }
 
     throw new HTTPException(400, {
-      message: "Telegram bot is not running",
+      message: "Configuration error. Telegram bot is not running",
     });
   }
 
   async run(c: Context): Promise<Response> {
     if (!this.telegramBot.instance) {
       throw new HTTPException(400, {
-        message: "Telegram bot is not running",
+        message: "Configuration error. Telegram bot is not running",
       });
     }
 
@@ -74,7 +74,7 @@ export class Controller {
   async stop(c: Context): Promise<Response> {
     if (!this.telegramBot.instance) {
       throw new HTTPException(400, {
-        message: "Telegram bot is not running",
+        message: "Configuration error. Telegram bot is not running",
       });
     }
 

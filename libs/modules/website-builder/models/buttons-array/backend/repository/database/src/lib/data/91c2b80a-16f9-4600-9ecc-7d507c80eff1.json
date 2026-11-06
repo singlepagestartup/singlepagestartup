@@ -1,0 +1,14 @@
+{
+  "id": "91c2b80a-16f9-4600-9ecc-7d507c80eff1",
+  "createdAt": "2026-10-24T01:06:19.304Z",
+  "updatedAt": "2026-10-24T01:06:19.304Z",
+  "variant": "default",
+  "className": "w-fit",
+  "title": {
+    "en": "Modules",
+    "ru": "Модули"
+  },
+  "description": {},
+  "adminTitle": "Modules",
+  "slug": "framework-journey-navbar-1"
+}

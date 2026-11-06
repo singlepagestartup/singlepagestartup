@@ -4,7 +4,7 @@
  * Given: the subject controller's route table mounted the way the module app mounts it.
  * When: the order checkout and the product checkout of a subject are requested with and without a credential.
  * Then: a request without a credential or with another subject's token is refused before the checkout
- * handler runs, and the subject's own token or the operator secret reaches the handler.
+ * handler runs, and only the subject's own token reaches the handler.
  */
 
 jest.mock("@sps/shared-utils", () => {
@@ -50,6 +50,7 @@ const productCheckout = {
 function createService() {
   return {
     findById: jest.fn().mockResolvedValue(null),
+    ecommerceProductCheckout: jest.fn(async () => { throw new Error("Not Found error. No product"); }),
   };
 }
 
@@ -135,7 +136,7 @@ describe("Given: the order checkout route of a subject", () => {
    * BDD Scenario
    * Given: a token issued to the subject in the path, as the browser cart sends it.
    * When: the subject requests its own order checkout.
-   * Then: the checkout handler runs for that subject.
+   * Then: the owner guard rejects the request before checkout.
    */
   it("When: the subject's own token is sent Then: the checkout handler runs for the subject", async () => {
     const service = createService();
@@ -154,9 +155,9 @@ describe("Given: the order checkout route of a subject", () => {
    * BDD Scenario
    * Given: the operator secret in `X-RBAC-SECRET-KEY` and no token.
    * When: an operator process requests the subject's order checkout.
-   * Then: the checkout handler runs for that subject.
+   * Then: the owner guard rejects the request before checkout.
    */
-  it("When: the operator secret is sent Then: the checkout handler runs for the subject", async () => {
+  it("When: only the operator secret is sent Then: the JWT owner guard refuses checkout", async () => {
     const service = createService();
 
     const response = await requestCheckout({
@@ -165,8 +166,9 @@ describe("Given: the order checkout route of a subject", () => {
       operatorSecret: "test-rbac-secret-key",
     });
 
-    expect(response.status).toBe(404);
-    expect(service.findById).toHaveBeenCalledWith({ id: subjectId });
+    expect(response.status).toBe(400);
+    expect(service.findById).not.toHaveBeenCalled();
+    expect(service.ecommerceProductCheckout).not.toHaveBeenCalled();
   });
 });
 
@@ -209,7 +211,7 @@ describe("Given: the product checkout route of a subject", () => {
    * BDD Scenario
    * Given: a token issued to the subject in the path, as the browser and the agent module send it.
    * When: the subject requests a product checkout for itself.
-   * Then: the checkout handler runs for that subject.
+   * Then: the owner guard rejects the request before checkout.
    */
   it("When: the subject's own token is sent Then: the checkout handler runs for the subject", async () => {
     const service = createService();
@@ -221,7 +223,7 @@ describe("Given: the product checkout route of a subject", () => {
     });
 
     expect(response.status).toBe(404);
-    expect(service.findById).toHaveBeenCalledWith({ id: subjectId });
+    expect(service.ecommerceProductCheckout).toHaveBeenCalledWith(expect.objectContaining({ id: subjectId }));
   });
 
   /**
@@ -229,9 +231,9 @@ describe("Given: the product checkout route of a subject", () => {
    * Given: the operator secret in `X-RBAC-SECRET-KEY` and no token, as subscription renewal and
    * Telegram free-subscription provisioning send it.
    * When: an operator process requests a product checkout for the subject.
-   * Then: the checkout handler runs for that subject.
+   * Then: the owner guard rejects the request before checkout.
    */
-  it("When: the operator secret is sent Then: the checkout handler runs for the subject", async () => {
+  it("When: only the operator secret is sent Then: the JWT owner guard refuses checkout", async () => {
     const service = createService();
 
     const response = await requestCheckout({
@@ -240,7 +242,8 @@ describe("Given: the product checkout route of a subject", () => {
       operatorSecret: "test-rbac-secret-key",
     });
 
-    expect(response.status).toBe(404);
-    expect(service.findById).toHaveBeenCalledWith({ id: subjectId });
+    expect(response.status).toBe(400);
+    expect(service.findById).not.toHaveBeenCalled();
+    expect(service.ecommerceProductCheckout).not.toHaveBeenCalled();
   });
 });

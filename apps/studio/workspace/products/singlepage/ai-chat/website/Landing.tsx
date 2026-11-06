@@ -1,230 +1,396 @@
-import type { ReactNode } from "react";
-import "../../../../styles/singlepage.css";
+import { AIChatPreview } from "./Preview";
 
-import sourceText from "./page.md?raw";
-import { parseAIChatWebsite } from "./content";
+const pageContent = {
+  hero: {
+    title: "Создавайте материалы на знаниях своего бизнеса",
+    paragraphs: [
+      "AI Chat · база знаний и ИИ-ассистент для бизнеса",
+      "Соберите сведения о продуктах, цены, заметки и опыт команды. Готовьте на их основе статьи, рекламные сообщения и технические задания. Сохранённые документы помогают продолжать работу без повторного объяснения бизнеса.",
+      "Начните с одной задачи. Результат можно редактировать, скачать и использовать в своих материалах.",
+    ],
+    items: [],
+    links: [
+      {
+        text: "Начать с моих материалов",
+        href: "/ai-chat/rbac/subjects/authentication/registration",
+      },
+      {
+        text: "Войти",
+        href: "/ai-chat/rbac/subjects/authentication/select-method",
+      },
+    ],
+  },
+  foundation: {
+    title: "Одна база знаний — разные задачи",
+    paragraphs: [
+      "Вы выбираете продукт, аудиторию и результат. Ассистент использует условия вашего бизнеса в каждом материале.",
+    ],
+    items: [
+      {
+        title: "Статьи и тексты",
+        text: "Описание услуги, опыт и вопросы клиентов → статья с понятными примерами и предложением этой услуги.",
+      },
+      {
+        title: "Рекламные сообщения",
+        text: "Один продукт, две аудитории → разные аргументы и идеи креативов с одинаковыми ценами и условиями.",
+      },
+      {
+        title: "Техническое задание",
+        text: "Задача бизнеса → действия пользователей, нужные функции и критерии готовности будущего сайта или сервиса.",
+      },
+    ],
+    links: [],
+  },
+  workflow: {
+    title: "Посмотрите работу на примере мастерской",
+    paragraphs: [
+      "Откройте исходные файлы гончарной мастерской, уточните аудиторию и сохраните описание занятия. Затем используйте его в новом разговоре: например, для приглашения на мастер-класс. Это вымышленный пример.",
+    ],
+    items: [
+      {
+        title: "Добавьте сведения",
+        text: "Заметки, прайс, документы, изображения или описание задачи в чате.",
+      },
+      {
+        title: "Выберите результат",
+        text: "Статья, рекламное сообщение, описание продукта или техническое задание.",
+      },
+      {
+        title: "Обсудите правки",
+        text: "Ассистент использует источники и уточняет условия. Вы редактируете содержание в документе.",
+      },
+      {
+        title: "Продолжайте с сохранёнными знаниями",
+        text: "Новая задача использует документы выбранного продукта. Результат можно экспортировать.",
+      },
+    ],
+    links: [],
+  },
+  publish: {
+    title: "Сохраните результат",
+    paragraphs: [
+      "Проверьте факты своего бизнеса, внесите правки и сохраните документ для следующих материалов.",
+    ],
+    items: [],
+    links: [],
+  },
+  continue: {
+    title: "Начните с материалов своего бизнеса",
+    paragraphs: [
+      "Добавьте сведения об одной услуге или продукте и выберите первую задачу: статью, рекламное сообщение или техническое задание.",
+    ],
+    items: [],
+    links: [],
+  },
+  footer: {
+    title: "SinglePageStartup",
+    paragraphs: [],
+    items: [],
+    links: [
+      {
+        text: "Начать с моих материалов",
+        href: "/ai-chat/rbac/subjects/authentication/registration",
+      },
+      {
+        text: "Войти",
+        href: "/ai-chat/rbac/subjects/authentication/select-method",
+      },
+    ],
+  },
+  terms: {
+    title: "Вопросы, стоимость и данные",
+    paragraphs: [
+      "При регистрации доступен текущий бесплатный лимит токенов. Дальнейшая работа оплачивается по использованию: стоимость ответа зависит от модели и объёма обработки.",
+    ],
+    items: [
+      {
+        title: "У меня уже есть сайт",
+        text: "Используйте AI Chat для статей, рекламы, писем и других материалов. Создавать новый сайт для этого не требуется.",
+      },
+      {
+        title: "Чем отличается от обычного чата",
+        text: "Знания организованы вокруг бизнеса и его продуктов: состав, аудитория, условия, исследования и материалы. Вы выбираете документы для конкретной задачи.",
+      },
+      {
+        title: "Как сохранить условия продукта",
+        text: "Ассистент опирается на исходные сведения. Цена, состав и ограничения сохраняются в документе продукта; вы проверяете их перед применением текста.",
+      },
+      {
+        title: "Можно ли скачать результат",
+        text: "Документы доступны для экспорта. Их можно передать сотруднику, подрядчику или использовать в другом инструменте.",
+      },
+      {
+        title: "Стоимость",
+        text: "0,13 ₽ за внутренний токен. При отправке списывается один токен, после ответа — остаток по расходам провайдера с округлением вверх. Минимум успешного запроса — один токен.",
+      },
+      {
+        title: "Пополнение и возвраты",
+        text: "100, 300, 500, 1 000 или 3 000 ₽ по одной цене токена. Токены не сгорают. При ошибке или отмене запроса все его списания возвращаются; денежный возврат покупки рассматривается индивидуально.",
+      },
+      {
+        title: "Баланс и поддержка",
+        text: "При балансе −2 000 токенов или ниже новые платные запросы доступны после пополнения выше порога. Обращения в поддержку обрабатываются в течение 24 часов; срок решения зависит от вопроса.",
+      },
+      {
+        title: "Обработка материалов",
+        text: "Сервис использует материалы для запрошенной работы и передаёт необходимые сведения ИИ-провайдеру. После удаления аккаунта активные данные удаляются; резервные копии хостинга могут храниться до шести месяцев.",
+      },
+    ],
+    links: [
+      {
+        text: "Купить токены",
+        href: "/ai-chat/rbac/subjects/tokens",
+      },
+      {
+        text: "Обработка и хранение материалов",
+        href: "/ai-chat/social/profiles/create#how-your-materials-are-processed-and-stored",
+      },
+      {
+        text: "Получить помощь",
+        href: "/ai-chat/help",
+      },
+    ],
+  },
+  demoFiles: {
+    title: "Ваши файлы",
+    paragraphs: [],
+    items: [
+      {
+        title: "Notes.md",
+        text: "Хочу проводить гончарные мастер-классы по выходным.",
+      },
+      {
+        title: "Plan.md",
+        text: "Сделать чашку вручную в небольшой группе.",
+      },
+      {
+        title: "References.jpg",
+        text: "Фотографии мастерской, глины и чашек ручной работы.",
+      },
+    ],
+    links: [],
+  },
+  demoDraft: {
+    title: "Гончарные мастер-классы",
+    paragraphs: [
+      "Гончарные мастер-классы по выходным: участники делают чашку вручную в небольшой группе. Для кого занятие — пока открытый вопрос.",
+      "Гончарные мастер-классы по выходным для аудитории: {audience}. Сделайте чашку вручную в небольшой группе.",
+    ],
+    items: [
+      {
+        title: "Клиент",
+        text: "Пока не определено, для кого занятие.",
+      },
+      {
+        title: "Предложение",
+        text: "Сделать чашку вручную в небольшой группе.",
+      },
+      {
+        title: "Не хватает",
+        text: "Для кого этот мастер-класс?",
+      },
+    ],
+    links: [],
+  },
+  demoDocuments: {
+    title: "Документы проекта",
+    paragraphs: [],
+    items: [
+      {
+        title: "Brief",
+        text: "Проводить гончарные мастер-классы по выходным в местной мастерской. Начать с небольшой группы, которая делает чашки вручную.",
+      },
+      {
+        title: "Strategy",
+        text: "Обратиться к людям, которые ищут практическое занятие на выходные. Аудиторию ещё нужно уточнить.",
+      },
+      {
+        title: "Brand",
+        text: "Говорить тепло и прямо. Показывать глину, инструменты и процесс без обещания результата.",
+      },
+      {
+        title: "Design",
+        text: "Использовать фотографии мастерской и материалов. Сделать сведения о занятиях ясными и читаемыми.",
+      },
+      {
+        title: "Products",
+        text: "Гончарные мастер-классы по выходным: участники делают чашку вручную в небольшой группе. Для кого занятие — пока открытый вопрос.",
+      },
+    ],
+    links: [],
+  },
+  demoConversation: {
+    title: "Чат проекта",
+    paragraphs: [],
+    items: [
+      {
+        title: "Добавить материалы",
+        text: "Могу работать с этими тремя файлами. Проверьте их для начала.",
+      },
+      {
+        title: "Проверить",
+        text: "План занятия понятен. Для кого он: взрослых новичков, людей с опытом или другой аудитории?",
+      },
+      {
+        title: "Редактировать вместе",
+        text: "Я добавил аудиторию, предложение и формат в Products.md. Проверьте черновик и исправьте то, что не подходит.",
+      },
+      {
+        title: "Продолжить работу",
+        text: "Откройте тему в рабочем пространстве и выберите документы для этого разговора.",
+      },
+    ],
+    links: [],
+  },
+  demoReadyDocument: {
+    title: "Products.md",
+    paragraphs: [],
+    items: [
+      {
+        title: "Клиент",
+        text: "{audience}",
+      },
+      {
+        title: "Предложение",
+        text: "Сделать чашку вручную.",
+      },
+      {
+        title: "Формат",
+        text: "Небольшая группа в местной мастерской.",
+      },
+    ],
+    links: [],
+  },
+  demoThreadPrompts: {
+    title: "Переписки документов",
+    paragraphs: [],
+    items: [
+      {
+        title: "Brief",
+        text: "У нас есть идея занятия в мастерской и три исходных файла. На чём сосредоточить первое занятие?",
+      },
+      {
+        title: "Strategy",
+        text: "К кому обратиться с этим занятием в первую очередь?",
+      },
+      {
+        title: "Brand",
+        text: "Как пригласить людей на занятие?",
+      },
+      {
+        title: "Design",
+        text: "Какой снимок мастерской поставить первым?",
+      },
+      {
+        title: "Products",
+        text: "План занятия понятен. Для кого он: взрослых новичков, людей с опытом или другой аудитории?",
+      },
+    ],
+    links: [],
+  },
+  demoThreadInputs: {
+    title: "Ваше следующее сообщение",
+    paragraphs: [],
+    items: [
+      {
+        title: "Brief",
+        text: "Пусть первое занятие будет посвящено изготовлению чашки.",
+      },
+      {
+        title: "Strategy",
+        text: "Ориентируйтесь на взрослых, впервые пробующих гончарное дело.",
+      },
+      {
+        title: "Brand",
+        text: "Используйте приглашение «Сделайте свою первую чашку».",
+      },
+      {
+        title: "Design",
+        text: "Начните с крупного плана рук, работающих с глиной.",
+      },
+      {
+        title: "Products",
+        text: "Ясно обозначьте формат небольшой группы.",
+      },
+    ],
+    links: [],
+  },
+  labels: {
+    "navigation-foundation": "Попробовать чат",
+    "navigation-workflow": "Как это работает",
+    "navigation-start": "Начать с моих материалов",
+    "skip-link": "Перейти к содержанию страницы",
+    "hero-photo-alt":
+      "Фотограф и клиент обсуждают снимки товаров и условия съёмки",
+    "final-title": "Перенесите свой проект в чат.",
+    "demo-project": "Гончарные мастер-классы",
+    "demo-chat": "Чат проекта",
+    "demo-files": "Ваши файлы",
+    "demo-sections": "Документы проекта",
+    "demo-progress": "Проверено разделов",
+    "demo-progress-note":
+      "Неотвеченные вопросы остаются видимыми. Проверяйте каждый раздел по готовности.",
+    "demo-check": "Проверить материалы",
+    "demo-answer": "Отправить ответ",
+    "demo-answer-label": "Для кого мастер-класс?",
+    "demo-answer-placeholder": "Взрослые, впервые пробующие гончарное дело.",
+    "demo-save": "Сохранить описание продукта",
+    "demo-edit-label": "Описание продукта",
+    "demo-continue": "Продолжить в чате",
+    "demo-message-label": "Сообщение",
+    "demo-message-placeholder": "Задайте вопрос о проекте…",
+    "demo-send": "Отправить сообщение",
+    "demo-reset": "Начать пример заново",
+    "demo-ready": "Готово к проверке",
+    "demo-needs-input": "Нужен ответ",
+    "demo-review": "Проверить черновик",
+    "demo-accepted": "Проверено",
+    "demo-add": "Добавить файлы",
+    "demo-upload-note":
+      "Интерактивный пример; изменения остаются на этой странице.",
+    "demo-you": "Вы",
+    "demo-agent": "AI Chat",
+    "demo-chat-saved": "Сохранённые документы готовы к следующему разговору.",
+    "demo-followup": "Подготовь приглашение на мастер-класс",
+    "demo-followup-reply":
+      "Сделайте чашку вручную на занятии в небольшой группе. Подробности предложения из документа: {draft}",
+    "demo-editor": "Редактировать документ",
+    "demo-save-section": "Сохранить и проверить раздел",
+    "demo-saved-section": "Раздел сохранён и проверен.",
+    "demo-attach": "Прикрепить файлы",
+    "demo-files-added": "Файлы добавлены в чат.",
+    "demo-review-materials": "Проверить материалы",
+    "demo-show-document": "Открыть документ",
+    "demo-count-unit": "проверено разделов",
+    "demo-refine": "Уточнить раздел",
+    "demo-answer-value": "Взрослые, впервые пробующие гончарное дело.",
+    "demo-materials-thread": "Проверка материалов",
+    "demo-document-threads": "Переписки документов",
+    "demo-document-thread": "Переписка документа",
+    "demo-workspace": "Рабочее пространство проекта",
+    "demo-new-topic": "Новая тема",
+    "demo-topic-hint":
+      "Проверьте документ и прикрепите сохранённую версию к новой теме.",
+    "demo-thread-intro":
+      "Обсудите файл с AI Chat и отредактируйте черновик здесь.",
+    "demo-thread-message": "Сообщение в переписке",
+    "demo-thread-reply":
+      "Я добавил заметку в {document}. Проверьте обновлённый черновик ниже.",
+    "demo-working-note": "Рабочая заметка",
+    "demo-open-workspace": "Открыть рабочее пространство проекта",
+    "demo-back-to-work": "Вернуться к работе",
+    "demo-workspace-intro": "Создайте тему и выберите документы для разговора.",
+    "demo-topic-title-label": "Название темы",
+    "demo-topic-title": "Подготовь приглашение на мастер-класс",
+    "demo-topic-documents": "Прикрепить сохранённые документы",
+    "demo-saved-version": "Сохранённая версия",
+    "demo-create-topic": "Создать тему",
+    "demo-topic-reply": "К теме прикреплены сохранённые документы:",
+    "demo-topic-message": "Что нужно ясно обозначить в приглашении?",
+    "demo-topic-message-label": "Сообщение в теме",
+  },
+};
 
-interface IAIChatLandingProps {
-  text?: string;
-}
-
-const display =
-  "[font-family:var(--workspace-brand-font-display)] font-semibold tracking-tight";
-const muted = "text-[var(--workspace-brand-muted)]";
-const focus =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#111111]";
-const logo =
-  "/workspace-assets/singlepage/generated/measured-space/singlepagestartup-primary-lockup.svg";
-
-function SectionHeading({ children }: { children: ReactNode }) {
-  return (
-    <h2 className={`max-w-4xl text-[40px] leading-[42px] ${display}`}>
-      {children}
-    </h2>
-  );
-}
-
-/** Customer-facing website composition driven entirely by page.md. */
-export default function AIChatLanding({ text }: IAIChatLandingProps = {}) {
-  const content = parseAIChatWebsite(text ?? sourceText);
-  return (
-    <div
-      data-workspace-projection="singlepage"
-      className="@container bg-[var(--workspace-brand-background)] text-[var(--workspace-brand-foreground)] [font-family:var(--workspace-brand-font-body)]"
-    >
-      <a
-        className={`sr-only focus:not-sr-only focus:block focus:px-6 focus:py-4 ${focus}`}
-        href="#ai-chat-main"
-      >
-        {content.labels["skip-link"]}
-      </a>
-      <header className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-6 border-b border-[var(--workspace-brand-line)] px-4 py-6 sm:px-6 lg:px-8">
-        <a
-          href="#ai-chat-main"
-          className={focus}
-          aria-label="SinglePageStartup"
-        >
-          <img
-            className="h-auto w-56 max-w-full"
-            src={logo}
-            alt="SinglePageStartup"
-          />
-        </a>
-        <nav aria-label="AI Chat" className="flex flex-wrap gap-5 text-sm">
-          <a
-            className={`underline-offset-4 hover:underline ${focus}`}
-            href="#project-page"
-          >
-            {content.labels["navigation-foundation"]}
-          </a>
-          <a
-            className={`underline-offset-4 hover:underline ${focus}`}
-            href="#workflow"
-          >
-            {content.labels["navigation-workflow"]}
-          </a>
-          <a
-            className={`underline-offset-4 hover:underline ${focus}`}
-            href="#publish"
-          >
-            {content.labels["navigation-publish"]}
-          </a>
-        </nav>
-      </header>
-
-      <main id="ai-chat-main" tabIndex={-1} className="outline-none">
-        <section className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 lg:px-8 @5xl:grid-cols-[1.05fr_0.95fr] @5xl:py-24">
-          <div>
-            <p className="inline-block rounded-md bg-[var(--workspace-brand-accent)] px-3 py-2 text-xs uppercase tracking-widest">
-              {content.hero.paragraphs[0]}
-            </p>
-            <h1
-              className={`mt-6 max-w-4xl text-[48px] leading-[48px] @4xl:text-[72px] @4xl:leading-[70px] ${display}`}
-            >
-              {content.hero.title}
-            </h1>
-            <p className={`mt-6 max-w-2xl text-lg leading-8 ${muted}`}>
-              {content.hero.paragraphs[1]}
-            </p>
-            <a
-              className={`mt-8 inline-flex min-h-12 items-center rounded-xl bg-[#111111] px-6 py-3 text-sm font-semibold text-white ${focus}`}
-              href={content.hero.links[0].href}
-            >
-              {content.hero.links[0].text}
-            </a>
-            {content.hero.links[1] ? (
-              <a
-                className={`ml-4 inline-flex min-h-12 items-center px-2 py-3 text-sm font-semibold underline underline-offset-4 ${focus}`}
-                href={content.hero.links[1].href}
-              >
-                {content.hero.links[1].text}
-              </a>
-            ) : null}
-            <p className={`mt-4 max-w-xl text-sm leading-6 ${muted}`}>
-              {content.hero.paragraphs[2]}
-            </p>
-          </div>
-          <div className="rounded-[32px] border border-[var(--workspace-brand-line)] bg-white p-4 shadow-xl sm:p-6">
-            <div className="flex items-center justify-between border-b border-[var(--workspace-brand-line)] pb-4 text-xs uppercase tracking-widest text-[var(--workspace-brand-muted)]">
-              <span>Project page</span>
-              <span className="rounded-full bg-[var(--workspace-brand-accent)] px-3 py-1 text-[#111111]">
-                Current
-              </span>
-            </div>
-            <div className="mt-6 space-y-3">
-              {content.foundation.items.map((item, index) => (
-                <article
-                  className="grid grid-cols-[42px_1fr] gap-4 rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-4"
-                  key={item.title}
-                >
-                  <span className="grid h-10 w-10 place-items-center rounded-full bg-white text-xs font-semibold">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-                  <div>
-                    <h2 className="text-base font-semibold">{item.title}</h2>
-                    <p className={`mt-1 text-sm leading-6 ${muted}`}>
-                      {item.text}
-                    </p>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section
-          id="project-page"
-          className="border-y border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)]"
-        >
-          <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-            <SectionHeading>{content.foundation.title}</SectionHeading>
-            <p className={`mt-5 max-w-2xl text-base leading-7 ${muted}`}>
-              {content.foundation.paragraphs[0]}
-            </p>
-          </div>
-        </section>
-
-        <section
-          id="workflow"
-          className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 @4xl:py-24"
-        >
-          <SectionHeading>{content.workflow.title}</SectionHeading>
-          <ol className="mt-10 grid gap-5 @3xl:grid-cols-2 @5xl:grid-cols-4">
-            {content.workflow.items.map((item, index) => (
-              <li className="border-t border-[#111111] pt-5" key={item.title}>
-                <span className={`text-xs ${muted}`}>
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <h3 className="mt-4 text-lg font-semibold">{item.title}</h3>
-                <p className={`mt-3 text-sm leading-6 ${muted}`}>{item.text}</p>
-              </li>
-            ))}
-          </ol>
-        </section>
-
-        <section
-          id="publish"
-          className="border-y border-[var(--workspace-brand-line)] bg-white"
-        >
-          <div className="mx-auto grid max-w-7xl gap-8 px-4 py-16 sm:px-6 lg:px-8 @4xl:grid-cols-2">
-            <SectionHeading>{content.publish.title}</SectionHeading>
-            <div>
-              <p className={`text-base leading-7 ${muted}`}>
-                {content.publish.paragraphs[0]}
-              </p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                {content.publish.links.map((link, index) => (
-                  <a
-                    className={`inline-flex rounded-full border border-[#111111] px-4 py-2 text-sm font-semibold transition-colors hover:bg-[#111111] hover:text-white ${focus} ${index === content.publish.links.length - 1 ? "bg-[#111111] text-white" : "bg-white text-[#111111]"}`}
-                    href={link.href}
-                    key={link.href}
-                  >
-                    {link.text}
-                  </a>
-                ))}
-              </div>
-              <p className={`mt-4 text-sm leading-6 ${muted}`}>
-                {content.publish.paragraphs[1]}
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-          <div className="rounded-[32px] bg-[#111111] p-8 text-white sm:p-12">
-            <SectionHeading>{content.continue.title}</SectionHeading>
-            <p className="mt-5 max-w-3xl text-base leading-7 text-white/70">
-              {content.continue.paragraphs[0]}
-            </p>
-            <div className="mt-7 flex flex-wrap gap-5">
-              {content.continue.links.map((link) => (
-                <a
-                  className="text-sm font-semibold text-white underline underline-offset-4"
-                  href={link.href}
-                  key={link.href}
-                >
-                  {link.text}
-                </a>
-              ))}
-            </div>
-          </div>
-        </section>
-      </main>
-
-      <footer className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-5 border-t border-[var(--workspace-brand-line)] px-4 py-8 sm:px-6 lg:px-8">
-        <p className="text-sm font-semibold">{content.footer.title}</p>
-        <nav className="flex flex-wrap gap-5 text-xs" aria-label="Footer">
-          {content.footer.links.map((link) => (
-            <a
-              className={`underline underline-offset-4 ${focus}`}
-              href={link.href}
-              key={link.text}
-            >
-              {link.text}
-            </a>
-          ))}
-        </nav>
-      </footer>
-    </div>
-  );
+export default function Landing() {
+  return <AIChatPreview initialHref="/ai-chat/" landingCopy={pageContent} />;
 }

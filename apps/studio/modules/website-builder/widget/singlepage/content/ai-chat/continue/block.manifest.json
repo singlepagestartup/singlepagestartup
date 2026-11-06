@@ -1,0 +1,27 @@
+{
+  "id": "website-builder.widget.content-ai-chat-continue",
+  "title": "content-ai-chat-continue",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Continue in AI Chat and access/materials details.",
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "content-ai-chat-continue"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "website-builder.widget",
+    "pageName": "website-builder",
+    "variantName": "content-ai-chat-continue",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

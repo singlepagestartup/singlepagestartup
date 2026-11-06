@@ -1,18 +1,20 @@
 import "reflect-metadata";
 import { Context } from "hono";
-import { HTTPException } from "hono/http-exception";
 import { injectable } from "inversify";
 import { HTTPResponseError } from "hono/types";
 import { IFilter } from "./interface";
 export { type IFilter } from "./interface";
-import { logger, sanitizeErrorMessage } from "@sps/backend-utils";
-import { Bot } from "grammy";
 import {
-  BUG_SERVICE_PROJECT,
-  BUG_SERVICE_TELEGRAM_BOT_TOKEN,
-  BUG_SERVICE_TELEGRAM_CHAT_ID,
-} from "@sps/shared-utils";
-import { decode } from "hono/jwt";
+  getHttpErrorType,
+  logger,
+  requestDiagnostics,
+  rbacSecretMatches,
+  readRbacSecret,
+  sanitizeErrorMessage,
+} from "@sps/backend-utils";
+import { API_ERROR_DETAILS } from "@sps/shared-utils";
+import { errorEvent } from "./diagnostics";
+import { reportToTelegram } from "./telegram";
 
 @injectable()
 export class Filter implements IFilter {
@@ -20,101 +22,54 @@ export class Filter implements IFilter {
     error: Error | HTTPResponseError,
     c: Context<any>,
   ): Promise<Response> {
-    const requestId = c.req.header("x-request-id") || "unknown";
+    const { requestId } = requestDiagnostics(c);
 
-    let errorMessages: string[] = [];
-    let stack = sanitizeErrorMessage(error.stack || "");
-    let status = error instanceof HTTPException ? error.status : 500;
-    let path = c.req.url;
-    let method = c.req.method;
-    let causes: { message: string; stack?: string }[] = [];
+    const { status, category, message: detail } = getHttpErrorType(error);
+    const message =
+      detail === category + "." || detail.startsWith(category + ". ")
+        ? detail
+        : `${category}. ${detail}`;
+    const event = await errorEvent(c, error, status, category);
+    logger.errorEvent(event);
+    reportToTelegram(event);
 
-    try {
-      const parsedError = JSON.parse(error.message);
-      if (parsedError.message) errorMessages.push(parsedError.message);
-      if (parsedError.status) status = parsedError.status;
-      if (parsedError.cause) {
-        causes = Array.isArray(parsedError.cause)
-          ? parsedError.cause.map((e) => ({
-              message: e.message,
-              stack: e.stack.replace(/\\n/g, "\n"),
-            }))
-          : [{ message: parsedError.cause, stack }];
-        errorMessages.push(...causes.map((e) => e.message));
+    const body = {
+      requestId,
+      path: event.route,
+      method: event.method,
+      status,
+      error: message,
+    };
+    if (API_ERROR_DETAILS !== "full" && !rbacSecretMatches(readRbacSecret(c))) {
+      if (status >= 500) {
+        body.error = category + ".";
       }
-    } catch {
-      // Not JSON
-      errorMessages.push(error.message);
+      return c.json(body, status);
     }
-
-    causes = causes.map((cause) => ({
-      message: sanitizeErrorMessage(cause.message),
-      stack: sanitizeErrorMessage(cause.stack || ""),
-    }));
-
-    const message = sanitizeErrorMessage(errorMessages.join(" | "));
-
-    causes.push({ message, stack });
-
-    logger.error(
-      `🚨 Exception [${requestId}] ${method} ${path}`,
-      JSON.stringify({ message, stack, status, causes }, null, 2),
-    );
-
-    if (
-      BUG_SERVICE_TELEGRAM_BOT_TOKEN &&
-      BUG_SERVICE_TELEGRAM_CHAT_ID &&
-      BUG_SERVICE_PROJECT &&
-      status >= 500
-    ) {
-      try {
-        const authorizationHeader = c.req.header("Authorization") || "";
-        let jwt = "";
-
-        if (authorizationHeader) {
-          jwt = decode(authorizationHeader.replace("Bearer ", "") || "").payload
-            ?.subject?.["id"];
-        }
-
-        const bot = new Bot(BUG_SERVICE_TELEGRAM_BOT_TOKEN);
-
-        let chatId = BUG_SERVICE_TELEGRAM_CHAT_ID;
-        const report = `<b>${BUG_SERVICE_PROJECT}</b>\n🚨 <i>${status} | ${method}${jwt ? " by " + jwt : ""}</i> <pre>${path}</pre>\nError: ${message}`;
-
-        try {
-          await bot.api.sendMessage(chatId, report, {
-            parse_mode: "HTML",
-          });
-        } catch (telegramError: any) {
-          // Handle chat migration to supergroup
-          if (
-            telegramError?.error_code === 400 &&
-            telegramError?.parameters?.migrate_to_chat_id
-          ) {
-            chatId = telegramError.parameters.migrate_to_chat_id.toString();
-            await bot.api.sendMessage(chatId, report, {
-              parse_mode: "HTML",
+    const stack = sanitizeErrorMessage(error.stack || "");
+    const causes: { message: string; stack?: string }[] = [];
+    try {
+      const downstream = JSON.parse(error.message);
+      if (Array.isArray(downstream?.cause)) {
+        for (const cause of downstream.cause) {
+          if (typeof cause?.message === "string") {
+            causes.push({
+              message: sanitizeErrorMessage(cause.message),
+              stack:
+                typeof cause.stack === "string"
+                  ? sanitizeErrorMessage(cause.stack.replace(/\\n/g, "\n"))
+                  : undefined,
             });
-          } else {
-            throw telegramError;
           }
         }
-      } catch (error) {
-        console.error("Failed to send error message to Telegram bot:", error);
+      } else if (typeof downstream?.cause === "string") {
+        causes.push({ message: sanitizeErrorMessage(downstream.cause) });
       }
+    } catch {
+      // Local exceptions carry plain text. SDK exceptions can carry downstream causes.
     }
+    causes.push({ message, stack });
 
-    return c.json(
-      {
-        requestId,
-        path,
-        method,
-        status,
-        error: message,
-        stack,
-        cause: causes,
-      },
-      status,
-    );
+    return c.json({ ...body, stack, cause: causes }, status);
   }
 }

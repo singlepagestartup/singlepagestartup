@@ -26,7 +26,7 @@ current thread using the tool mapping in `AGENTS.md`.
 ## Skills
 
 - Core: `core-next`, `core-00-create`, `core-10-research`, `core-20-plan`, `core-30-implement`
-- Utility: `github`, `github-status`, `validate-plan`, `create-handoff`, `resume-handoff`, `implement-plan`, `commit`, `describe-pr`, `post-commit-retro`, `adapt-upstream`
+- Utility: `github`, `github-status`, `review-pr`, `validate-plan`, `create-handoff`, `resume-handoff`, `implement-plan`, `commit`, `describe-pr`, `post-commit-retro`, `adapt-upstream`
 - Pre-development: `singlepagestartup`
 - Text quality: `unslop` (the required final pass for prose intended for people)
 - Legacy aliases: `ralph-research`, `ralph-plan`, `ralph-impl`, `oneshot`, `oneshot-plan` (hyphenated names only; they delegate to `core-*` semantics)
@@ -44,6 +44,20 @@ method, so their adapters load one canonical file rather than a second playbook.
 - Pre-development: `account-manager`, `business-analyst`,
   `market-researcher`, `strategist`, `communication-strategist`,
   `brand-designer`, `web-designer`
+
+## Local configuration
+
+Shared Codex defaults live in `config.toml.example`. Copy them into the ignored
+project-local configuration before using the profiles below:
+
+```bash
+cp .codex/config.toml.example .codex/config.toml
+```
+
+`npm run mcp:clients:generate -- --client codex` also initializes a missing config from that
+example and adds the current project's connection. Existing local settings
+remain intact. Keep active client configs out of Git; downstream projects must
+use their own repository and deployment endpoint.
 
 ## Run modes
 

@@ -1,4 +1,7 @@
-import { getHttpErrorType } from "@sps/backend-utils";
+import {
+  getHttpErrorType,
+  getPrivateAIChatSkillProfileId,
+} from "@sps/backend-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../../../../../service";
@@ -24,6 +27,14 @@ export class Handler {
       );
       const body = await parseRequestBody(c);
       const payload = normalizeSkillPayload(body);
+      const professionProfileId = getPrivateAIChatSkillProfileId(payload.slug);
+      if (
+        professionProfileId &&
+        professionProfileId !== targetSocialModuleProfileId
+      )
+        throw new Error(
+          "Authorization error. This document skill belongs to another profile.",
+        );
       const skillIds = await findProfileSkillIds({
         service: this.service,
         targetSocialModuleProfileId,

@@ -39,17 +39,10 @@ export class Handler {
       const token = authorization(c);
 
       if (!token) {
-        return c.json(
-          {
-            data: null,
-          },
-          {
-            status: 401,
-          },
-        );
+        throw new Error("Authentication error. Token required");
       }
 
-      const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
+      const decoded = await jwt.verify(token, RBAC_JWT_SECRET, "HS256");
 
       if (decoded?.["subject"]?.["id"] !== id) {
         throw new Error("Permission error. Only order owner can update order");
@@ -62,6 +55,11 @@ export class Handler {
       if (!entity) {
         throw new Error("Not Found error. No entity found");
       }
+
+      await this.service.ecommerceModuleOrderAssertAccess({
+        subjectId: id,
+        orderId,
+      });
 
       const order = await this.service.ecommerceModule.order.findById({
         id: orderId,
