@@ -140,6 +140,36 @@ by two branches, so the agreed upgrades can merge on their own and the broad
   metadata 200, `/mcp` without a token 401, internal token exchange 200, an SDK
   client lists 20 tools and `model-record-find` round-trips to the API.
 
+### Branch 2 verification (`claude/issue-309-audit-fix`)
+
+- Branch 1's lockfile is byte-identical to the input of the two
+  `npm audit fix` passes of Phase 3, so the lockfile, the host pins and the
+  host configuration come from that result (combined commit `b8693e1caa`).
+  `npm ci --no-audit --no-fund`: exit 0 in 39s. Installed: Nx 22.7.12,
+  wagmi 2.19.5, eslint 9.39.5, `@aws-sdk/client-s3` 3.1141.0, sharp 0.35.4.
+- `npm audit fix --dry-run` against the current registry: up to date.
+- Against branch 1 the lockfile adds 346 entries, removes 516 and changes 631;
+  949 packages change version, 41 of them direct dependencies (the Nx
+  toolchain, eslint and `@eslint/js`, `@aws-sdk/client-s3` and `-ses`,
+  `@tiptap/*`, wagmi and viem, react-router-dom, lodash, nanoid, js-cookie,
+  flatted, path-to-regexp, image-size, npm, sass, verdaccio and others), all
+  within their declared ranges.
+- Host pins: 94 of 95 equal the installed versions, `openai` keeps its older
+  pin; the host build keeps `semver` in alphabetical order (the first build
+  appended it, a rebuild sorts it).
+- `npm audit --omit=dev`: 1 critical, 7 high, 28 moderate, 0 low (36), from
+  3/33/46/6 on branch 1 and 4/34/47/6 at the base; all dependencies 1/27/49/0
+  (77).
+- `tsc --noEmit --incremental false`: `apps/api` 23 errors, all from the
+  baseline list; `apps/mcp`, `apps/telegram`, `apps/openapi` 0.
+  `npx nx show projects` succeeds on Nx 22.7.12.
+- Unit lanes over the same 28 projects: exit 0, 1139 tests pass (47s).
+- `NODE_OPTIONS=--max-old-space-size=12288 NX_DAEMON=false npm run host:build -- --skip-nx-cache`:
+  exit 0 in 5m11s; types valid, 8 static pages, middleware 34.3 kB.
+- API on port 4309: the same HTTP proof as branch 1 passes in full; an HS512
+  token answers 401 "Authentication error. Invalid token" without echoing the
+  token.
+
 ## Incident Log
 
 > Read this section FIRST before starting any implementation work.
@@ -239,4 +269,4 @@ by two branches, so the agreed upgrades can merge on their own and the broad
 
 ---
 
-**Last updated**: 2026-09-26T02:40:00Z
+**Last updated**: 2026-09-26T03:05:00Z
