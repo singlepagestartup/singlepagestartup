@@ -1342,6 +1342,46 @@ export class Service {
     }
   }
 
+  protected async getAdminNotificationSubjectIds(): Promise<string[]> {
+    const adminRoles = await this.role.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "slug",
+              method: "eq",
+              value: "admin",
+            },
+          ],
+        },
+      },
+    });
+
+    if (!adminRoles?.length) {
+      return [];
+    }
+
+    const subjectsToRoles = await this.subjectsToRoles.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "roleId",
+              method: "inArray",
+              value: adminRoles.map((adminRole) => adminRole.id),
+            },
+          ],
+        },
+      },
+    });
+
+    if (!subjectsToRoles?.length) {
+      return [];
+    }
+
+    return [...new Set(subjectsToRoles.map((item) => item.subjectId))];
+  }
+
   async notifyAdmin(props: {
     extendedEcommerceModuleOrder: IExtendedEcommerceModuleOrder;
     status: IEcommerceModuleOrder["status"];
@@ -1370,39 +1410,9 @@ export class Service {
         },
       });
 
-    const adminRoles = await this.role.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "slug",
-              method: "eq",
-              value: "admin",
-            },
-          ],
-        },
-      },
-    });
+    const subjectIds = await this.getAdminNotificationSubjectIds();
 
-    if (!adminRoles?.length) {
-      return;
-    }
-
-    const subjectsToRoles = await this.subjectsToRoles.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "roleId",
-              method: "inArray",
-              value: adminRoles.map((adminRole) => adminRole.id),
-            },
-          ],
-        },
-      },
-    });
-
-    if (!subjectsToRoles?.length) {
+    if (!subjectIds.length) {
       return;
     }
 
@@ -1413,7 +1423,7 @@ export class Service {
             {
               column: "subjectId",
               method: "inArray",
-              value: subjectsToRoles.map((item) => item.subjectId),
+              value: subjectIds,
             },
           ],
         },
@@ -1446,7 +1456,7 @@ export class Service {
 
     if (notificationModuleEcommerceNotificationTemplates?.length) {
       for (const notificationModuleEcommerceNotificationTemplate of notificationModuleEcommerceNotificationTemplates) {
-        for (const subjectToRole of subjectsToRoles) {
+        for (const subjectId of subjectIds) {
           const files: IFileStorageModuleFile[] = [];
 
           props.extendedEcommerceModuleOrder.ordersToFileStorageModuleFiles.forEach(
@@ -1482,7 +1492,7 @@ export class Service {
           }
 
           await api.notify({
-            id: subjectToRole.subjectId,
+            id: subjectId,
             data: {
               notification: {
                 topic: {
