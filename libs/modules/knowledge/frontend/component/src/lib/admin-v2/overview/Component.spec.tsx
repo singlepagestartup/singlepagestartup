@@ -26,16 +26,8 @@ jest.mock("./source/Component", () => ({
   Component: () => <div data-testid="knowledge-source" />,
 }));
 
-jest.mock("./document/Component", () => ({
-  Component: () => <div data-testid="knowledge-document" />,
-}));
-
 jest.mock("./chunk/Component", () => ({
   Component: () => <div data-testid="knowledge-chunk" />,
-}));
-
-jest.mock("./edit-suggestion/Component", () => ({
-  Component: () => <div data-testid="knowledge-edit-suggestion" />,
 }));
 
 describe("GIVEN: knowledge admin-v2 overview is mounted", () => {
@@ -79,26 +71,6 @@ describe("GIVEN: knowledge admin-v2 overview is mounted", () => {
   });
 
   /**
-   * BDD Scenario: renders document page for the document route.
-   *
-   * Given: the current route targets knowledge document.
-   * When: the overview component renders.
-   * Then: document content is visible and other pages stay hidden.
-   */
-  test("renders document content for the document route", () => {
-    act(() => {
-      root.render(
-        <Component isServer={false} url="/admin/knowledge/document" />,
-      );
-    });
-
-    expect(queryByTestId(container, "knowledge-document")).not.toBeNull();
-    expect(queryByTestId(container, "knowledge-search")).toBeNull();
-    expect(queryByTestId(container, "knowledge-source")).toBeNull();
-    expect(queryByTestId(container, "knowledge-chunk")).toBeNull();
-  });
-
-  /**
    * BDD Scenario: renders source page for the source route.
    *
    * Given: the current route targets knowledge source.
@@ -132,28 +104,6 @@ describe("GIVEN: knowledge admin-v2 overview is mounted", () => {
     expect(queryByTestId(container, "knowledge-search")).toBeNull();
     expect(queryByTestId(container, "knowledge-document")).toBeNull();
     expect(queryByTestId(container, "knowledge-source")).toBeNull();
-  });
-
-  /**
-   * BDD Scenario: renders edit suggestions for the edit suggestion route.
-   *
-   * Given: the current route targets knowledge edit suggestions.
-   * When: the overview component renders.
-   * Then: edit suggestion content is visible and other pages stay hidden.
-   */
-  test("renders edit suggestion content for the edit suggestion route", () => {
-    act(() => {
-      root.render(
-        <Component isServer={false} url="/admin/knowledge/edit-suggestion" />,
-      );
-    });
-
-    expect(
-      queryByTestId(container, "knowledge-edit-suggestion"),
-    ).not.toBeNull();
-    expect(queryByTestId(container, "knowledge-search")).toBeNull();
-    expect(queryByTestId(container, "knowledge-source")).toBeNull();
-    expect(queryByTestId(container, "knowledge-chunk")).toBeNull();
   });
 
   /**

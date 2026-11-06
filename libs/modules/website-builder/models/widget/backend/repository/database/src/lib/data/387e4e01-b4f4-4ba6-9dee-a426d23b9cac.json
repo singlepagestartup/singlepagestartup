@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "",
+    "ru": ""
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Add a course programme, service description, instructions and notes. The assistant can search this knowledge for answers, and you can expand it as your business develops.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"A model cannot answer questions about your course using information it has never received. Without saved knowledge, you would need to provide the programme again in each new conversation. The knowledge base stores materials and helps find relevant passages for the current question.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Добавьте программу курса, описание услуг, инструкции и заметки. Помощник сможет искать в этих знаниях сведения для ответа, а вы — дополнять их по мере развития бизнеса.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"На вопрос о вашем курсе модель не может опереться на сведения, которых ей не передали. Без сохранённых знаний программу пришлось бы снова передавать при каждом новом разговоре. База знаний сохраняет материалы и помогает находить нужные фрагменты для текущего вопроса.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "387e4e01-b4f4-4ba6-9dee-a426d23b9cac",
+  "createdAt": "2026-10-26T00:11:59.551Z",
+  "updatedAt": "2026-10-27T14:58:55.091Z",
+  "variant": "content-rich",
+  "adminTitle": "framework-reviewed-article-knowledge-introduction",
+  "slug": "framework-reviewed-article-knowledge-introduction"
+}

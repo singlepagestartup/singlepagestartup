@@ -1,4 +1,4 @@
-import type { IModel as IKnowledgeModuleDocument } from "@sps/knowledge/models/document/sdk/model";
+import type { IModel as IKnowledgeModuleSource } from "@sps/knowledge/models/source/sdk/model";
 import type { TRbacAiReactionReasoning } from "@sps/rbac/models/subject/sdk/model";
 import type { IModel as ISocialModuleSkill } from "@sps/social/models/skill/sdk/model";
 
@@ -22,8 +22,8 @@ export interface KnowledgeMentionOption {
   title: string;
 }
 
-export interface KnowledgeDocumentDraft {
-  description: string;
+export interface KnowledgeSourceDraft {
+  content: string;
   title: string;
 }
 
@@ -77,5 +77,5 @@ export interface OpenRouterChatModelGroup {
   models: OpenRouterChatModelOption[];
 }
 
-export type KnowledgeDocument = IKnowledgeModuleDocument;
+export type KnowledgeSource = IKnowledgeModuleSource;
 export type SocialSkill = ISocialModuleSkill;

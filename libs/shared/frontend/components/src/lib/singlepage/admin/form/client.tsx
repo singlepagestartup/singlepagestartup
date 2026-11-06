@@ -1,4 +1,5 @@
 "use client";
+
 import "client-only";
 
 import { factory } from "@sps/shared-frontend-client-api";

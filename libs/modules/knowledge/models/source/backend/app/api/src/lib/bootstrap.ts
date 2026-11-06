@@ -1,3 +1,4 @@
+import { createKnowledgeServices } from "@sps/knowledge/backend/app/api/src/lib/composition";
 import { Container, ContainerModule, interfaces } from "inversify";
 import {
   DI,
@@ -15,7 +16,9 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
   bind<App>(DI.IApp).to(App);
   bind<Controller>(DI.IController).to(Controller);
   bind<Repository>(DI.IRepository).to(Repository);
-  bind<Service>(DI.IService).to(Service);
+  bind<Service>(DI.IService).toDynamicValue(
+    () => createKnowledgeServices().source,
+  );
   bind<Configuration>(DI.IConfiguration).to(Configuration);
 });
 

@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "92532115-88da-4e44-af16-5809ca97a55a",
+  "createdAt": "2026-10-24T01:05:57.908Z",
+  "updatedAt": "2026-10-24T01:05:57.908Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Social",
+    "ru": "Social"
+  },
+  "subtitle": {
+    "en": "Experience",
+    "ru": "Интерфейс"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Profiles, authorship, chats, threads, messages and their associations.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Профили, авторство, чаты, ветки, сообщения и их связи.\"}]}]}"
+  },
+  "adminTitle": "Social",
+  "slug": "framework-journey-module-social"
+}

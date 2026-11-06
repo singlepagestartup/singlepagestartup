@@ -10,6 +10,8 @@ import { Component as ChildComponent } from "./Component";
 export function Component(props: IComponentProps) {
   return (
     <ParentComponent
+      module="<%= module_name %>"
+      name="<%= model_name %>"
       Component={ChildComponent}
       Provider={Provider}
       clientApi={clientApi}

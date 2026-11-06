@@ -1,3 +1,8 @@
+import { IComponentProps as IHiddenComponentProps } from "@sps/shared-frontend-components/singlepage/hidden/interface";
+import type { IComponentProps as IArticleOverviewLinked } from "./article-overview-linked/interface";
+import type { IComponentProps as IArticleFindGuides } from "./article-find-guides/interface";
+import type { IComponentProps as IArticleFindGrid } from "./article-find-grid/interface";
+import type { IComponentProps as IArticleFeedDefault } from "./article-feed-default/interface";
 import { IComponentProps as ICategoryOverviewDefaultComponentProps } from "./category/overview/default/interface";
 import { IComponentProps as ICategoryListDefaultComponentProps } from "./category/list/default/interface";
 import { IComponentProps as IArticleOverviewEcommerceModuleProductListCardDefaultComponentProps } from "./article/overview/ecommerce-module/product/list/default/interface";
@@ -18,6 +23,11 @@ import { IComponentProps as IArticleOverviewDefaultComponentProps } from "./arti
 import { IComponentProps as IArticleOverviewWithPrivateContentDefaultComponentProps } from "./article/overview/with-private-content-default/interface";
 
 export type IComponentProps =
+  | IHiddenComponentProps
+  | IArticleOverviewLinked
+  | IArticleFindGuides
+  | IArticleFindGrid
+  | IArticleFeedDefault
   | ICategoryOverviewDefaultComponentProps
   | ICategoryListDefaultComponentProps
   | IArticleOverviewEcommerceModuleProductListCardDefaultComponentProps

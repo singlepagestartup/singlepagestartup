@@ -147,7 +147,7 @@ describe("Given: a deployment that sets NODE_ENV=production", () => {
       requestId: "request-production-500",
       method: "GET",
       status: 500,
-      error: "Internal server error: database unavailable",
+      error: "Internal error. database unavailable",
     });
 
     const [line, record] = logError.mock.calls[0];
@@ -395,7 +395,7 @@ describe("Given: the bug chat is configured", () => {
 
     expect(sendMessage).toHaveBeenCalledWith(
       "bug-chat",
-      "<b>spec-project</b>\n🚨 <i>500 | GET</i> <pre>http://localhost/pages/abc</pre>\nError: Internal server error: database unavailable",
+      "<b>spec-project</b>\n🚨 <i>500 | GET</i> <pre>http://localhost/pages/abc</pre>\nError: Internal error. database unavailable",
       { parse_mode: "HTML" },
     );
   });

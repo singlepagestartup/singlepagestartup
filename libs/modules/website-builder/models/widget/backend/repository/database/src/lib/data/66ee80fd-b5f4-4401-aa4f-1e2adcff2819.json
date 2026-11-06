@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "From a use case to the first version",
+    "ru": "От сценария к первой версии"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Start with one action your user needs. Add other capabilities when they become necessary.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Начните с одного действия, которое нужно вашему пользователю. Остальные возможности можно добавить, когда появится необходимость.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "66ee80fd-b5f4-4401-aa4f-1e2adcff2819",
+  "createdAt": "2026-10-26T00:11:55.858Z",
+  "updatedAt": "2026-10-27T14:59:02.988Z",
+  "variant": "content-rich",
+  "adminTitle": "От сценария к первой версии",
+  "slug": "framework-reviewed-article-social-build"
+}

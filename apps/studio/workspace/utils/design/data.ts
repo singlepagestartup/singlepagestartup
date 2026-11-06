@@ -1,3 +1,5 @@
+import { designDocumentNotes } from "./document";
+import { canonicalHeading } from "../../../../../tools/studio/workspace/headings";
 import { parse } from "yaml";
 
 import {
@@ -52,7 +54,11 @@ function section(source: string, heading: string): string {
   const lines = source.split("\n");
   const start = lines.findIndex((line) => {
     const match = line.match(/^(#{2,4})\s+(.+?)\s*$/);
-    return match?.[2].toLocaleLowerCase() === heading.toLocaleLowerCase();
+    return (
+      match &&
+      canonicalHeading(match[2]).toLocaleLowerCase() ===
+        canonicalHeading(heading).toLocaleLowerCase()
+    );
   });
   if (start < 0) return "";
   const level = lines[start].match(/^(#+)/)?.[1].length ?? 2;
@@ -109,18 +115,18 @@ function sectionBlockquote(source: string, heading: string): string {
 
 function tableRows(source: string, heading?: string): string[][] {
   const target = heading ? section(source, heading) : source;
-  return target
-    .split("\n")
-    .filter((line) => line.trim().startsWith("|"))
-    .map((line) => line.split("|").slice(1, -1).map(clean))
+  const lines = target.split("\n");
+  const isSeparator = (line: string) =>
+    /^\s*\|(?:\s*:?-{3,}:?\s*\|)+\s*$/.test(line);
+  return lines
     .filter(
-      (cells) =>
-        cells.length > 1 &&
-        !cells.every((cell) => /^:?-{3,}:?$/.test(cell)) &&
-        !["role", "field", "example", "do", "family", "pattern"].includes(
-          cells[0].toLocaleLowerCase(),
-        ),
-    );
+      (line, index) =>
+        line.trim().startsWith("|") &&
+        !isSeparator(line) &&
+        !isSeparator(lines[index + 1] ?? ""),
+    )
+    .map((line) => line.split("|").slice(1, -1).map(clean))
+    .filter((cells) => cells.length > 1);
 }
 
 /** A section may hold several tables; the role table is its first one. */
@@ -453,6 +459,7 @@ export function projectDesignData(
 
   return {
     assets,
+    notes: designDocumentNotes(design),
     bodyType: bodyType.fontStack,
     bodyTypeLabel: bodyType.family,
     colorRoles: semanticColorRows.flatMap((cells) => {
@@ -472,6 +479,7 @@ export function projectDesignData(
       cells[0] && cells[1] ? [{ do: cells[0], dont: cells[1] }] : [],
     ),
     graphicRules: [
+      ...sectionBullets(design, "Общие правила дизайна"),
       ...sectionBullets(design, "Reusable graphic language"),
       ...sectionBullets(design, "Spacing, grid, shape, and hierarchy"),
       ...sectionBullets(design, "Icons, code, diagrams, imagery, and video"),

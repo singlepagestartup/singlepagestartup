@@ -12,6 +12,8 @@ export interface IComponentProps extends ISpsComponentBase {
   socialModuleProfile: ISocialModuleProfile;
   variant: typeof variant;
   className?: string;
+  includeSubjectProfiles?: boolean;
+  currentSocialModuleChatId?: string;
 }
 
 export interface IComponentPropsExtended extends IComponentProps {

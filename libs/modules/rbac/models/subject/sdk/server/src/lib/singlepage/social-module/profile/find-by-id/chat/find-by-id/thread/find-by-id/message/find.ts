@@ -5,7 +5,7 @@ import {
   transformResponseItem,
 } from "@sps/shared-utils";
 import QueryString from "qs";
-import { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
+import { IChatMessage as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
 
 export interface IProps {
   id: string;

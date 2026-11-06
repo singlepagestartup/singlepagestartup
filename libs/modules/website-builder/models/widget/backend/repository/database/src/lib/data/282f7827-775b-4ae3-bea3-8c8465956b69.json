@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Work with Ecommerce.",
+    "ru": "Работайте с Ecommerce."
+  },
+  "subtitle": {
+    "en": "Business",
+    "ru": "Бизнес"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Products, attributes, categories, carts and orders.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Товары, атрибуты, категории, корзины и заказы.\"}]}]}"
+  },
+  "anchor": "module-ecommerce",
+  "className": "@5xl:grid-cols-2",
+  "id": "282f7827-775b-4ae3-bea3-8c8465956b69",
+  "createdAt": "2026-10-24T01:06:03.083Z",
+  "updatedAt": "2026-10-24T01:06:03.083Z",
+  "variant": "content-definition-grid-page",
+  "adminTitle": "Work with Ecommerce.",
+  "slug": "framework-journey-guide-ecommerce-overview"
+}

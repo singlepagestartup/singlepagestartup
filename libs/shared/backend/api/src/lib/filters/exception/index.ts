@@ -1,13 +1,13 @@
 import "reflect-metadata";
 import { randomUUID } from "node:crypto";
 import { Context } from "hono";
-import { HTTPException } from "hono/http-exception";
 import { routePath } from "hono/route";
 import { injectable } from "inversify";
 import { HTTPResponseError } from "hono/types";
 import { IFilter } from "./interface";
 export { type IFilter } from "./interface";
 import {
+  getHttpErrorType,
   logger,
   rbacSecretMatches,
   readRbacSecret,
@@ -43,38 +43,35 @@ export class Filter implements IFilter {
   ): Promise<Response> {
     const requestId = c.req.header("x-request-id") || randomUUID();
 
-    let errorMessages: string[] = [];
-    let stack = sanitizeErrorMessage(error.stack || "");
-    let status = error instanceof HTTPException ? error.status : 500;
-    let path = c.req.url;
-    let method = c.req.method;
-    let causes: { message: string; stack?: string }[] = [];
-
+    const { status, category, message: detail } = getHttpErrorType(error);
+    const message =
+      detail === category + "." || detail.startsWith(category + ". ")
+        ? detail
+        : `${category}. ${detail}`;
+    const stack = sanitizeErrorMessage(error.stack || "");
+    const path = c.req.url;
+    const method = c.req.method;
+    const causes: { message: string; stack?: string }[] = [];
     try {
-      const parsedError = JSON.parse(error.message);
-      if (parsedError.message) errorMessages.push(parsedError.message);
-      if (parsedError.status) status = parsedError.status;
-      if (parsedError.cause) {
-        causes = Array.isArray(parsedError.cause)
-          ? parsedError.cause.map((e) => ({
-              message: e.message,
-              stack: e.stack.replace(/\\n/g, "\n"),
-            }))
-          : [{ message: parsedError.cause, stack }];
-        errorMessages.push(...causes.map((e) => e.message));
+      const downstream = JSON.parse(error.message);
+      if (Array.isArray(downstream?.cause)) {
+        for (const cause of downstream.cause) {
+          if (typeof cause?.message === "string") {
+            causes.push({
+              message: sanitizeErrorMessage(cause.message),
+              stack:
+                typeof cause.stack === "string"
+                  ? sanitizeErrorMessage(cause.stack.replace(/\\n/g, "\n"))
+                  : undefined,
+            });
+          }
+        }
+      } else if (typeof downstream?.cause === "string") {
+        causes.push({ message: sanitizeErrorMessage(downstream.cause) });
       }
     } catch {
-      // Not JSON
-      errorMessages.push(error.message);
+      // Local exceptions carry plain text. SDK exceptions can carry downstream causes.
     }
-
-    causes = causes.map((cause) => ({
-      message: sanitizeErrorMessage(cause.message),
-      stack: sanitizeErrorMessage(cause.stack || ""),
-    }));
-
-    const message = sanitizeErrorMessage(errorMessages.join(" | "));
-
     causes.push({ message, stack });
 
     logger.error(

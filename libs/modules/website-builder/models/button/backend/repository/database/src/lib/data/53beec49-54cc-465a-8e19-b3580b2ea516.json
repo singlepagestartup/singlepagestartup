@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Read Billing source guide",
+    "ru": "Документация Billing"
+  },
+  "subtitle": {},
+  "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/modules/billing/README.md",
+  "className": "w-fit",
+  "id": "53beec49-54cc-465a-8e19-b3580b2ea516",
+  "createdAt": "2026-10-24T01:06:05.153Z",
+  "updatedAt": "2026-10-24T01:06:05.153Z",
+  "variant": "primary",
+  "adminTitle": "Read Billing source guide",
+  "slug": "framework-journey-guide-billing-actions-1"
+}

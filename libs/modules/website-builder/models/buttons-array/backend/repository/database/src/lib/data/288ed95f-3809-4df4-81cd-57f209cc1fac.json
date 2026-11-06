@@ -1,0 +1,14 @@
+{
+  "id": "288ed95f-3809-4df4-81cd-57f209cc1fac",
+  "createdAt": "2026-10-24T01:06:19.014Z",
+  "updatedAt": "2026-10-24T01:06:19.014Z",
+  "variant": "default",
+  "className": "w-fit",
+  "title": {
+    "en": "Framework",
+    "ru": "Фреймворк"
+  },
+  "description": {},
+  "adminTitle": "Framework",
+  "slug": "framework-journey-navbar-0"
+}

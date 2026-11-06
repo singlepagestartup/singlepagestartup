@@ -1,0 +1,9 @@
+{
+  "id": "c8b7402d-7fc0-41ba-8a0e-baf4502f55fb",
+  "createdAt": "2026-10-23T20:18:01.731Z",
+  "updatedAt": "2026-10-23T20:18:01.731Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/rbac/widgets-to-ecommerce-module-widgets"
+}

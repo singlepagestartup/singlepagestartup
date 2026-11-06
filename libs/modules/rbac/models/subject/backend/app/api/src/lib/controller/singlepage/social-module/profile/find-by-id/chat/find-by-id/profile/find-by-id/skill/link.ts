@@ -1,4 +1,7 @@
-import { getHttpErrorType } from "@sps/backend-utils";
+import {
+  getHttpErrorType,
+  getPrivateAIChatSkillProfileId,
+} from "@sps/backend-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../../../../../service";
@@ -21,6 +24,14 @@ export class Handler {
       if (!skill?.id) {
         throw new Error("Not found error. Requested skill not found");
       }
+      const professionProfileId = getPrivateAIChatSkillProfileId(skill.slug);
+      if (
+        professionProfileId &&
+        professionProfileId !== targetSocialModuleProfileId
+      )
+        throw new Error(
+          "Authorization error. This document skill belongs to another profile.",
+        );
 
       const relations = await this.service.socialModule.profilesToSkills.find({
         params: {

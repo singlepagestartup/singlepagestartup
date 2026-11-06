@@ -1,0 +1,46 @@
+{
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "Reset AI Chat password — SinglePageStartup",
+        "ru": "Новый пароль AI Chat — SinglePageStartup"
+      },
+      "description": {
+        "en": "Set a new AI Chat account password using a recovery link.",
+        "ru": "Установка нового пароля аккаунта AI Chat по ссылке восстановления."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "Reset AI Chat password — SinglePageStartup",
+        "ru": "Новый пароль AI Chat — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "Reset AI Chat password — SinglePageStartup",
+        "ru": "Новый пароль AI Chat — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Set a new AI Chat account password using a recovery link.",
+        "ru": "Установка нового пароля аккаунта AI Chat по ссылке восстановления."
+      },
+      "opengraphDescription": {
+        "en": "Set a new AI Chat account password using a recovery link.",
+        "ru": "Установка нового пароля аккаунта AI Chat по ссылке восстановления."
+      }
+    }
+  },
+  "id": "cdd585f7-62a8-4344-96c6-f9b593d37f1c",
+  "title": "AI Chat — reset-password",
+  "url": "/ai-chat/reset-password",
+  "description": "Description",
+  "createdAt": "2026-10-11T02:04:41.034Z",
+  "updatedAt": "2026-10-30T22:25:09.416Z",
+  "variant": "noindex",
+  "className": "",
+  "language": "en",
+  "adminTitle": "varied aqua marsupial"
+}

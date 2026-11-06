@@ -1,0 +1,9 @@
+{
+  "id": "f7706cc6-f2e0-4d2e-9289-3d08033db07f",
+  "createdAt": "2026-10-13T19:52:58.600Z",
+  "updatedAt": "2026-10-13T19:52:58.600Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/rbac/subjects/02d4ba33-243d-428f-afc7-a0d4895db420/billing-module/balance"
+}

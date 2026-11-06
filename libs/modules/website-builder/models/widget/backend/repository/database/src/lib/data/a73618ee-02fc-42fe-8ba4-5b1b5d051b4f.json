@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Free",
+    "ru": "Бесплатно"
+  },
+  "subtitle": {
+    "en": "Framework price",
+    "ru": "Стоимость фреймворка"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Source code and documentation under MIT.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Use the framework for your own project. Coding-agent charges, infrastructure and hosted AI Chat are separate. Help and maintenance are provided as time permits.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Исходный код и документация доступны по MIT.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Используйте фреймворк для своего проекта. Coding agent, инфраструктура и AI-чат оплачиваются отдельно. Помощь и сопровождение предоставляются по мере возможности.\"}]}]}"
+  },
+  "anchor": "framework-questions",
+  "className": "",
+  "id": "a73618ee-02fc-42fe-8ba4-5b1b5d051b4f",
+  "createdAt": "2026-10-24T01:05:52.030Z",
+  "updatedAt": "2026-10-24T01:05:52.030Z",
+  "variant": "content-faq",
+  "adminTitle": "Free",
+  "slug": "framework-journey-faq"
+}

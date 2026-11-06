@@ -1,0 +1,21 @@
+{
+  "id": "7b999eb4-3f9f-4be9-b8e9-03a1e6cc5556",
+  "className": "",
+  "createdAt": "2026-10-26T00:12:55.569Z",
+  "updatedAt": "2026-10-27T15:00:28.722Z",
+  "variant": "article-overview-linked",
+  "adminTitle": "Личные кабинеты клиентов",
+  "slug": "framework-reviewed-linked-rbac",
+  "title": {
+    "en": "Customer accounts",
+    "ru": "Личные кабинеты клиентов"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "",
+    "ru": ""
+  }
+}

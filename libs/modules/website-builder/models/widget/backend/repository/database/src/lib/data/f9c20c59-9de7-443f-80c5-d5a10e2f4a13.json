@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Create article",
+    "ru": "Создать статью"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Share implementation notes and projects with the SPS community. Your article is published under your current social profile.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Делитесь устройством кода и своими проектами с сообществом SPS. Статья публикуется от вашего текущего социального профиля.\"}]}]}"
+  },
+  "anchor": null,
+  "className": null,
+  "id": "f9c20c59-9de7-443f-80c5-d5a10e2f4a13",
+  "createdAt": "2026-10-23T20:18:07.413Z",
+  "updatedAt": "2026-10-23T20:18:07.413Z",
+  "variant": "content-form",
+  "adminTitle": "Create article",
+  "slug": "framework-article-create-frame"
+}

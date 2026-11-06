@@ -1,0 +1,15 @@
+{
+  "className": null,
+  "title": {
+    "en": "Create article",
+    "ru": "Создать статью"
+  },
+  "subtitle": {},
+  "description": {},
+  "id": "b803fa6f-7b28-43f3-b6e1-45ebd894a584",
+  "createdAt": "2026-10-23T20:18:07.461Z",
+  "updatedAt": "2026-10-23T20:18:07.461Z",
+  "variant": "subject-me-blog-module-article-create",
+  "adminTitle": "Create article",
+  "slug": "framework-article-create-widget"
+}

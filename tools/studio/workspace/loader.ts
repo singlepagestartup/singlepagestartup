@@ -1,16 +1,9 @@
-import {
-  documentConfirmation,
-  parseDocument,
-  type IDocumentConfirmation,
-} from "./document";
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { parse } from "yaml";
 
 import { mergeWorkspaceContent, type WorkspaceMergeStrategy } from "./merge";
-import { loadDocumentReviews } from "./review-loader";
-import { reviewId } from "./review";
 import {
   resolveWorkspaceLayer,
   type WorkspaceLayer,
@@ -55,8 +48,6 @@ export interface IResolvedWorkspaceEntry extends IWorkspaceIndexEntry {
 
 export interface ILoadedWorkspaceEntry extends IResolvedWorkspaceEntry {
   content: string;
-  confirmation: IDocumentConfirmation;
-  reviewDependencies?: Record<string, string>;
 }
 
 export interface IWorkspaceGraph {
@@ -371,33 +362,14 @@ async function loadEntryContent(
         ? entry.overlayAbsolutePath
         : entry.baseAbsolutePath,
       content: merged.content,
-      confirmation: documentConfirmation(
-        merged.content,
-        merged.confirmationLayer ??
-          (merged.overlayContributes ? "startup" : "singlepage"),
-        entry.absolutePath.endsWith(".yaml") ? "yaml" : "markdown",
-      ),
       inherited: !merged.overlayContributes,
       resolution: merged.overlayContributes ? "merged" : "inherited",
     };
   }
   const content = await readFile(entry.absolutePath, "utf8");
-  const format = entry.absolutePath.endsWith(".yaml") ? "yaml" : "markdown";
-  const confirmationSource =
-    sourceBase &&
-    parseDocument(content, format).metadata.confirmation !== undefined
-      ? mergeWorkspaceContent({
-          base: await readFile(sourceBase.absolutePath, "utf8"),
-          overlay: content,
-          kind: entry.kind,
-          sourcePath: entry.absolutePath,
-          strategy: entry.strategy,
-        }).content
-      : content;
   return {
     ...entry,
     content,
-    confirmation: documentConfirmation(confirmationSource, entry.layer, format),
   };
 }
 
@@ -665,20 +637,6 @@ export async function loadWorkspace(
       );
     }),
   );
-
-  const reviews = await loadDocumentReviews(workspaceRoot, activeLayer);
-  for (const entry of loadedEntries) {
-    const review = reviews.get(reviewId(entry.extends ?? entry.id));
-    if (
-      !review ||
-      (projection === "source" &&
-        activeLayer === "startup" &&
-        !entry.content.trim())
-    )
-      continue;
-    entry.confirmation = review.confirmation;
-    entry.reviewDependencies = review.dependencies;
-  }
 
   return {
     activeLayer,

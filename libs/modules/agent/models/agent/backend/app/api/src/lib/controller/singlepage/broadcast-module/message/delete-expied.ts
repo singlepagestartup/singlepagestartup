@@ -3,7 +3,6 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../service";
 import { getHttpErrorType, logger } from "@sps/backend-utils";
-import { api as broadcastModuleMessageApi } from "@sps/broadcast/models/message/sdk/server";
 
 export class Handler {
   service: Service;
@@ -20,40 +19,7 @@ export class Handler {
 
       logger.info("Broadcast module message delete expired started");
 
-      try {
-        const expiredMessages = await this.service.broadcastModule.message.find(
-          {
-            params: {
-              filters: {
-                and: [
-                  {
-                    column: "expiresAt",
-                    method: "lt",
-                    value: new Date().toISOString(),
-                  },
-                ],
-              },
-            },
-          },
-        );
-
-        if (expiredMessages?.length) {
-          for (const message of expiredMessages) {
-            await broadcastModuleMessageApi.delete({
-              id: message.id,
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                },
-              },
-            });
-          }
-        }
-      } catch (error: any) {
-        // logger.error("Billing module payment intent check failed", {
-        //   error: error,
-        // });
-      }
+      await this.service.broadcastModule.message.deleteExpired();
 
       logger.info("Broadcast module message delete expired finished");
 

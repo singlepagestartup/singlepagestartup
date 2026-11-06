@@ -13,3 +13,4 @@ export const migrate = drizzleMigrate;
 export const drop = drizzleDrop;
 export const seed = drizzleSeed;
 export const schemaPath = drizzleSchemaPath;
+export { ConsistencyStore } from "./lib/consistency";

@@ -2,20 +2,20 @@
   "id": "46712882-0121-463f-a00f-81ec07ea6c74",
   "className": "",
   "createdAt": "2025-05-06T17:02:42.549Z",
-  "updatedAt": "2025-11-15T09:32:28.542Z",
+  "updatedAt": "2026-10-26T07:34:02.824Z",
   "variant": "default",
   "title": {
-    "en": "Category #3",
-    "ru": "Category #3"
+    "en": "DevOps",
+    "ru": "Запуск проекта"
   },
   "subtitle": {
-    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Category #3 Subtitle\"}]}]}",
-    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Category #3 Subtitle\"}]}]}"
+    "en": "{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"type\": \"text\", \"text\": \"Nx and Bun, Docker, migrations and safe releases.\"}]}]}",
+    "ru": "{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"type\": \"text\", \"text\": \"Nx и Bun, Docker, миграции и безопасный выпуск изменений.\"}]}]}"
   },
   "description": {
-    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Category #3 Description\"}]}]}",
-    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Category #3 Description\"}]}]}"
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Local infrastructure, generated migrations, Host builds and repeatable saved-content changes.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Локальное окружение, миграции и публикация изменений.\"}]}]}"
   },
-  "adminTitle": "Category #3",
-  "slug": "category-3"
+  "adminTitle": "Framework Blog / DevOps",
+  "slug": "devops"
 }
