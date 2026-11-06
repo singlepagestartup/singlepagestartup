@@ -63,11 +63,20 @@
           } | to_json }}
       register: cmd_set_llm_webhook
 
-    - name: Copy webhook info file
-      fetch:
+    - name: Read the webhook file for the controller
+      ansible.builtin.slurp:
         src: /home/code/llm_webhook.json
-        dest: "./"
-        flat: yes
+      register: webhook_file
+      no_log: true
+
+    - name: Save a private webhook file on the controller
+      ansible.builtin.copy:
+        content: "{{ webhook_file.content | b64decode }}"
+        dest: "{{ playbook_dir }}/llm_webhook.json"
+        mode: "0600"
+      delegate_to: localhost
+      become: false
+      no_log: true
 
     - name: Delete artifacts
       file:

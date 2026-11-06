@@ -157,21 +157,8 @@ admin_sql -c 'DROP FUNCTION public.server_file(text); DROP FUNCTION public.eleva
 app_sql -c 'ALTER TABLE old.entries ADD COLUMN migrated boolean'
 echo "Existing database: unsafe grants rejected before changes; retry, data, sequence, view and migration passed"
 
-# Only Swarm discovery is replaced. All SQL, pg_dump and pg_restore commands
-# run against the temporary databases, even on a host with a live Swarm.
+# Run the production backup command against this isolated container.
 source_db=$db
-dump_source() (
-  docker() {
-    if [[ "$1" = ps ]]; then
-      printf '%s\n' "$source_db"
-    else
-      command docker "$@"
-    fi
-  }
-  export source_db
-  export -f docker
-  DATABASE_BACKUP_DIRECTORY="$backup_dir" bash "$root/tools/deployer/server/create_db_dump.sh"
-)
 app_sql <<'SQL'
 CREATE FUNCTION old.verify_restore_role(input text) RETURNS boolean LANGUAGE plpgsql AS $$
 BEGIN
@@ -187,7 +174,7 @@ INSERT INTO old.embeddings VALUES ('[1,2]');
 SQL
 # Existing installations mount the bootstrap under the entrypoint path after upgrade.
 docker exec "$source_db" cp /tmp/role-bootstrap.sh /docker-entrypoint-initdb.d/create_application_role.sh
-dump_source
+DATABASE_BACKUP_DIRECTORY="$backup_dir" bash "$root/tools/deployer/server/create_db_dump.sh" "$source_db"
 archive=$(find "$backup_dir" -name '*.dump')
 [[ -s "$archive" ]]
 

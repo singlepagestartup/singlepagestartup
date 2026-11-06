@@ -210,10 +210,20 @@ before switching the API. The application remains the owner of its database:
 it can change or delete application data.
 
 The deployer passes database and RBAC credentials to Ansible through the
-controller process environment. GitHub and Portainer helpers read their input
+controller process environment. In a service script, `. ./ansible_vars.sh` loads
+`ansible_with_vars`. The call names the playbook and its variables; Ansible
+reads their values from the environment. GitHub and Portainer helpers read their input
 from stdin. Their arguments contain no credential values. Use a trusted
 controller account: root, Docker administrators and processes running as that
 account can still access deployment credentials.
+
+### Local database dump
+
+Run `./apps/db/dump.sh` from the repository root to back up this checkout's
+running Compose `db` service. It uses the application login and writes a custom
+PostgreSQL archive to `apps/db/db_backups/`. Set `DATABASE_BACKUP_DIRECTORY` to
+an absolute path to choose another directory. These private backups are excluded
+from Git and Docker builds. A Git commit does not start a backup.
 
 ### Nightly database dumps
 
@@ -796,6 +806,11 @@ service and endpoint from the existing Portainer webhook; no separate service
 ID map is required. A paused update, rollback, missing health check or timeout
 fails the job and keeps dependent services on their previous images. Check the
 gate with `node --test tools/deployer/portainer/wait-service.test.mjs`.
+
+The service deploy creates its Portainer webhook or retrieves the matching one
+if the service already has a hook. A login failure or a mismatched hook stops
+the play before publishing an update URL. The server and the deployer keep the
+token-bearing files readable only by their owner (mode `0600`).
 
 Release workflows still update each service through its Portainer webhook. A
 shared preparation job first pulls every unique release image through the

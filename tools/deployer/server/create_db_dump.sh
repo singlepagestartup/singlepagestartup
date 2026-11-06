@@ -19,12 +19,20 @@ if [[ ! "$RETENTION_DAYS" =~ ^[0-9]{1,9}$ ]]; then
     exit 1
 fi
 
-POSTGRES_CONTAINER_ID="$(
-    docker ps \
-        --filter label=com.docker.swarm.service.name=postgres_postgres \
-        --format '{{.ID}}' \
-    | head -n 1
-)"
+if [[ $# -gt 1 ]]; then
+    echo "Usage: create_db_dump.sh [POSTGRES_CONTAINER]" >&2
+    exit 2
+fi
+if [[ $# -eq 1 ]]; then
+    POSTGRES_CONTAINER_ID=$1
+else
+    POSTGRES_CONTAINER_ID="$(
+        docker ps \
+            --filter label=com.docker.swarm.service.name=postgres_postgres \
+            --format '{{.ID}}' \
+        | head -n 1
+    )"
+fi
 
 if [ -z "$POSTGRES_CONTAINER_ID" ]
 then
