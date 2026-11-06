@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Explore the modules",
+    "ru": "Изучить модули"
+  },
+  "subtitle": {},
+  "url": "/framework#framework-modules",
+  "className": "w-fit",
+  "id": "c878a541-7f77-4d72-ab42-6299684e7bc6",
+  "createdAt": "2026-10-24T01:05:45.571Z",
+  "updatedAt": "2026-10-24T01:05:45.571Z",
+  "variant": "secondary",
+  "adminTitle": "Explore the modules",
+  "slug": "framework-journey-hero-actions-1"
+}

@@ -3,7 +3,7 @@
  *
  * Given: update handler dependencies are mocked with deterministic order state.
  * When: subject updates cart order lines.
- * Then: owner checks are enforced and update API receives only the submitted order lines.
+ * Then: owner checks are enforced and update API receives submitted payload.
  */
 
 const authorizationMock = jest.fn();
@@ -51,8 +51,20 @@ function createContext(
 
 function createService() {
   return {
+    ecommerceModuleOrderSetCurrency: jest.fn().mockResolvedValue(undefined),
+    ecommerceModuleOrderAssertAccess: jest.fn().mockResolvedValue(undefined),
     findById: jest.fn().mockResolvedValue({ id: "subject-1" }),
     ecommerceModule: {
+      ordersToProducts: {
+        find: jest
+          .fn()
+          .mockResolvedValue([{ id: "otp-1", productId: "product-1" }]),
+      },
+      product: {
+        findById: jest
+          .fn()
+          .mockResolvedValue({ id: "product-1", slug: "paid-course" }),
+      },
       order: {
         findById: jest.fn().mockResolvedValue({
           id: "order-1",
@@ -111,84 +123,99 @@ describe("Given: ecommerce order update handler", () => {
       data: expect.objectContaining({ id: "subject-1" }),
     });
   });
-
-  /**
-   * BDD Scenario
-   *
-   * Given: the request data carries order fields beside the order lines.
-   * When: the subject submits the cart update.
-   * Then: the update API receives the order lines only.
-   */
-  it("When: data carries order fields beside the lines Then: only the lines reach the update API", async () => {
-    const handler = new Handler(createService());
+  it("ignores injected order state and line ownership fields", async () => {
+    const service = createService();
     const context = createContext(
       { id: "subject-1", orderId: "order-1" },
       {
         data: JSON.stringify({
-          ordersToProducts: [{ id: "otp-1", quantity: 3 }],
-          status: "approving",
-          type: "history",
-          comment: "set through the cart",
-        }),
-      },
-    );
-
-    await handler.execute(context, jest.fn());
-
-    expect(orderUpdateMock).toHaveBeenCalledTimes(1);
-    expect(orderUpdateMock.mock.calls[0][0].data).toEqual({
-      ordersToProducts: [{ id: "otp-1", quantity: 3 }],
-    });
-  });
-
-  /**
-   * BDD Scenario
-   *
-   * Given: an order line carries fields besides its id and quantity.
-   * When: the subject submits the cart update.
-   * Then: the update API receives each line as its id and quantity.
-   */
-  it("When: a line carries extra fields Then: the line reaches the update API as id and quantity", async () => {
-    const handler = new Handler(createService());
-    const context = createContext(
-      { id: "subject-1", orderId: "order-1" },
-      {
-        data: JSON.stringify({
+          status: "paid",
           ordersToProducts: [
-            { id: "otp-1", quantity: 2, orderId: "order-2", productId: "p-2" },
+            {
+              id: "otp-1",
+              quantity: 2,
+              orderId: "foreign",
+              productId: "other",
+            },
           ],
         }),
       },
     );
-
-    await handler.execute(context, jest.fn());
-
-    expect(orderUpdateMock.mock.calls[0][0].data).toEqual({
-      ordersToProducts: [{ id: "otp-1", quantity: 2 }],
+    await new Handler(service).execute(context, jest.fn());
+    expect(service.ecommerceModuleOrderAssertAccess).toHaveBeenCalledWith({
+      subjectId: "subject-1",
+      orderId: "order-1",
+      lineIds: ["otp-1"],
     });
+    expect(orderUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: { ordersToProducts: [{ id: "otp-1", quantity: 2 }] },
+      }),
+    );
   });
+});
 
-  /**
-   * BDD Scenario
-   *
-   * Given: the request data carries ordersToProducts that is not a list.
-   * When: the subject submits the cart update.
-   * Then: the update is rejected before the update API is called.
-   */
-  it("When: ordersToProducts is not a list Then: update is rejected", async () => {
-    const handler = new Handler(createService());
-    const context = createContext(
-      { id: "subject-1", orderId: "order-1" },
-      {
-        data: JSON.stringify({
-          ordersToProducts: { id: "otp-1", quantity: 3 },
-        }),
-      },
+describe("Cart currency requests", () => {
+  const currencyId = "11111111-1111-4111-8111-111111111111";
+  beforeEach(() => {
+    jest.clearAllMocks();
+    authorizationMock.mockReturnValue("token");
+    verifyMock.mockResolvedValue({ subject: { id: "subject-1" } });
+  });
+  it("accepts a currency-only update without requiring quantity changes", async () => {
+    const service = createService();
+    await new Handler(service).execute(
+      createContext(
+        { id: "subject-1", orderId: "order-1" },
+        {
+          data: JSON.stringify({
+            billingModule: { currency: { id: currencyId } },
+          }),
+        },
+      ),
+      jest.fn(),
     );
-
-    await expect(handler.execute(context, jest.fn())).rejects.toThrow(
-      "No ordersToProducts provided",
-    );
+    expect(service.ecommerceModuleOrderSetCurrency).toHaveBeenCalledWith({
+      subjectId: "subject-1",
+      orderId: "order-1",
+      currencyId,
+    });
+    expect(orderUpdateMock).not.toHaveBeenCalled();
+  });
+  it.each(["invalid", null])(
+    "rejects invalid currency %s before writes",
+    async (id) => {
+      const service = createService();
+      await expect(
+        new Handler(service).execute(
+          createContext(
+            { id: "subject-1", orderId: "order-1" },
+            { data: JSON.stringify({ billingModule: { currency: { id } } }) },
+          ),
+          jest.fn(),
+        ),
+      ).rejects.toThrow("valid billingModule.currency.id");
+      expect(service.ecommerceModuleOrderSetCurrency).not.toHaveBeenCalled();
+      expect(orderUpdateMock).not.toHaveBeenCalled();
+    },
+  );
+  it("rejects a combined currency/quantity payload before either operation", async () => {
+    const service = createService();
+    await expect(
+      new Handler(service).execute(
+        createContext(
+          { id: "subject-1", orderId: "order-1" },
+          {
+            data: JSON.stringify({
+              billingModule: { currency: { id: currencyId } },
+              ordersToProducts: [{ id: "line", quantity: 3 }],
+            }),
+          },
+        ),
+        jest.fn(),
+      ),
+    ).rejects.toThrow("separately from quantity");
+    expect(service.ecommerceModuleOrderSetCurrency).not.toHaveBeenCalled();
     expect(orderUpdateMock).not.toHaveBeenCalled();
   });
 });

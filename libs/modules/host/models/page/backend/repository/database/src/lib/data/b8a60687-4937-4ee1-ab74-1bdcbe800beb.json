@@ -1,0 +1,34 @@
+{
+  "metadata": {
+    "seo": {
+      "description": {
+        "en": "Agent definitions, task orchestration and conversation commands.",
+        "ru": "Описание агентов, управление задачами и команды обсуждений."
+      }
+    },
+    "seoDisplay": {
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Agent definitions, task orchestration and conversation commands.",
+        "ru": "Описание агентов, управление задачами и команды обсуждений."
+      },
+      "opengraphDescription": {
+        "en": "Agent definitions, task orchestration and conversation commands.",
+        "ru": "Описание агентов, управление задачами и команды обсуждений."
+      }
+    }
+  },
+  "id": "b8a60687-4937-4ee1-ab74-1bdcbe800beb",
+  "title": "Agent · Code Framework",
+  "url": "/framework/modules/agent",
+  "description": "Agent definitions, task orchestration and conversation commands.",
+  "createdAt": "2026-10-24T01:06:07.519Z",
+  "updatedAt": "2026-10-30T22:25:09.202Z",
+  "variant": "default",
+  "className": "",
+  "language": "en",
+  "adminTitle": "Agent · Code Framework"
+}

@@ -15,14 +15,19 @@ import {
   type IResult as IParentResult,
 } from "@sps/rbac/models/subject/sdk/server";
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
+import {
+  queryClient,
+  patchInListQueries,
+} from "@sps/shared-frontend-client-api";
 
 export type IProps = {
   reactQueryOptions?: Partial<UseMutationOptions<any, DefaultError, any>>;
 };
 
-export type IResult = { jwt: string; refresh: string };
+export type IResult = IParentResult["IIdentityUpdateResult"];
 
 export function action(props: IProps) {
+  const { onSuccess, ...reactQueryOptions } = props.reactQueryOptions ?? {};
   return useMutation<
     IParentResult["IIdentityUpdateResult"],
     DefaultError,
@@ -49,18 +54,30 @@ export function action(props: IProps) {
         throw error;
       }
     },
-    onSuccess(data) {
+    ...reactQueryOptions,
+    async onSuccess(...args) {
+      const [data, variables] = args;
+      patchInListQueries(
+        queryClient,
+        `${route}/${variables.id}/identities`,
+        data.id,
+        data,
+      );
+      patchInListQueries(queryClient, "/api/rbac/identities", data.id, data);
+      queryClient.setQueriesData(
+        { queryKey: [`/api/rbac/identities/${data.id}`] },
+        data,
+      );
       globalActionsStore.getState().addAction({
         type: "mutation",
         name: `${route}/:id/identities/:identityId`,
-        props: this,
+        props: variables,
         result: data,
         timestamp: Date.now(),
         requestId: createId(),
       });
 
-      return data;
+      await onSuccess?.(...args);
     },
-    ...props?.reactQueryOptions,
   });
 }

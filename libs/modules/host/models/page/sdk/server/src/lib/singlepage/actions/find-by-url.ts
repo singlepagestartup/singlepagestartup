@@ -1,6 +1,11 @@
-import { route, IModel, serverHost } from "@sps/host/models/page/sdk/model";
+import {
+  route,
+  IResolvedPage,
+  serverHost,
+} from "@sps/host/models/page/sdk/model";
 import {
   NextRequestOptions,
+  consistencyRequestOptions,
   responsePipe,
   transformResponseItem,
 } from "@sps/shared-utils";
@@ -11,6 +16,8 @@ interface Params {
   host?: string;
   url: string;
   catchErrors?: boolean;
+  /** Treat only an actual HTTP 404 as an absent page; other failures still throw. */
+  silentNotFound?: boolean;
   silentErrorStatuses?: number[];
   options?: Partial<NextRequestOptions>;
 }
@@ -19,6 +26,7 @@ export async function action({
   host = serverHost,
   url,
   catchErrors = false,
+  silentNotFound = false,
   silentErrorStatuses,
   options: requestOptions,
 }: Params) {
@@ -32,13 +40,14 @@ export async function action({
 
   const options: NextRequestOptions = {
     ...requestOptions,
+    cache: requestOptions?.cache,
     headers: {
       ...cacheControlOptions,
       ...requestOptions?.headers,
     },
     next: {
       ...requestOptions?.next,
-      tags: [route],
+      tags: [...new Set([route, ...(requestOptions?.next?.tags || [])])],
     },
   };
 
@@ -51,14 +60,19 @@ export async function action({
     },
   );
 
+  const requestUrl = `${host}${route}/find-by-url?${stringifiedQuery}`;
   const res = await fetch(
-    `${host}${route}/find-by-url?${stringifiedQuery}`,
-    options,
+    requestUrl,
+    await consistencyRequestOptions(requestUrl, options),
   );
 
-  const json = await responsePipe<{ data: IModel }>({
+  if (silentNotFound && res.status === 404) {
+    return undefined;
+  }
+
+  const json = await responsePipe<{ data: IResolvedPage }>({
     res,
-    catchErrors: catchErrors || productionBuild,
+    catchErrors,
     silentErrorStatuses,
   });
 
@@ -66,7 +80,7 @@ export async function action({
     return;
   }
 
-  const transformedData = transformResponseItem<IModel>(json);
+  const transformedData = transformResponseItem<IResolvedPage>(json);
 
   if (!transformedData?.id) {
     return;

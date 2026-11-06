@@ -1,0 +1,27 @@
+{
+  "id": "rbac.subject.me-authentication-ethereum-virtual-machine-default",
+  "title": "me-authentication-ethereum-virtual-machine-default",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Subject EVM wallet authentication preview.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "subject",
+    "variant": "me-authentication-ethereum-virtual-machine-default"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "rbac.subject",
+    "pageName": "rbac",
+    "variantName": "me-authentication-ethereum-virtual-machine-default",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

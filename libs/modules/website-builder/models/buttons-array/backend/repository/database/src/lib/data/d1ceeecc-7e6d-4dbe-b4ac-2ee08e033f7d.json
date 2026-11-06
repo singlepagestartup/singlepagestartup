@@ -1,0 +1,14 @@
+{
+  "id": "d1ceeecc-7e6d-4dbe-b4ac-2ee08e033f7d",
+  "createdAt": "2026-10-24T01:06:17.541Z",
+  "updatedAt": "2026-10-24T01:06:17.541Z",
+  "variant": "default",
+  "className": "w-full",
+  "title": {
+    "en": "Actions",
+    "ru": "Действия"
+  },
+  "description": {},
+  "adminTitle": "Actions",
+  "slug": "framework-journey-tokens-introduction-actions"
+}

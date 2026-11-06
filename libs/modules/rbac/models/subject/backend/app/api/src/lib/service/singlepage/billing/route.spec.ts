@@ -2,8 +2,9 @@
  * BDD Suite: OpenRouter route billing service behavior.
  *
  * Given: route billing precharges before the OpenRouter controller executes.
- * When: the service applies the issue-158 balance guard and later settles exact usage.
- * Then: the first request may go negative, later negative requests are blocked, and settlement reconciles the delta.
+ * When: the service reserves a token and later settles exact provider usage.
+ * Then: all balance rows count, concurrent requests cannot reuse the last token,
+ * and a depleted balance blocks subsequent generations.
  */
 
 jest.mock("@sps/shared-utils", () => {
@@ -37,17 +38,25 @@ import * as jwt from "hono/jwt";
 const mockedResolveByRoute = permissionApi.resolveByRoute as jest.Mock;
 const mockedJwtVerify = jwt.verify as jest.Mock;
 
-function createService(subjectCurrencyAmount: string) {
+function createService(subjectCurrencyAmount: string | string[]) {
+  const balances = (
+    Array.isArray(subjectCurrencyAmount)
+      ? subjectCurrencyAmount
+      : [subjectCurrencyAmount]
+  ).map((amount, index) => ({
+    id: `subject-currency-${index + 1}`,
+    subjectId: "subject-1",
+    billingModuleCurrencyId: "currency-1",
+    amount,
+  }));
   const subjectsToBillingModuleCurrenciesService = {
-    find: jest.fn().mockResolvedValue([
-      {
-        id: "subject-currency-1",
-        subjectId: "subject-1",
-        billingModuleCurrencyId: "currency-1",
-        amount: subjectCurrencyAmount,
-      },
-    ]),
-    update: jest.fn().mockResolvedValue(undefined),
+    find: jest.fn(async () => balances.map((balance) => ({ ...balance }))),
+    updateAmountIfUnchanged: jest.fn(async ({ id, expectedAmount, amount }) => {
+      const balance = balances.find((row) => row.id === id);
+      if (!balance || balance.amount !== expectedAmount) return undefined;
+      balance.amount = amount;
+      return { ...balance };
+    }),
   };
 
   const service = new Service(
@@ -58,6 +67,7 @@ function createService(subjectCurrencyAmount: string) {
   return {
     service,
     subjectsToBillingModuleCurrenciesService,
+    balance: () => balances.reduce((sum, row) => sum + Number(row.amount), 0),
   };
 }
 
@@ -97,13 +107,32 @@ describe("OpenRouter route billing service behavior", () => {
 
   /**
    * BDD Scenario
-   * Given: an OpenRouter request starts with zero balance and a one-token precharge.
+   * Given: an OpenRouter request starts with a depleted or fractional balance.
    * When: the billing middleware executes before the controller.
-   * Then: the request is allowed and the stored balance becomes negative.
+   * Then: no provider request is allowed and no debit is written.
    */
-  it("allows the first OpenRouter request to cross below zero", async () => {
+  it.each(["0", "-12", "0.5"])(
+    "rejects a %s token balance before generation",
+    async (amount) => {
+      const { service, subjectsToBillingModuleCurrenciesService } =
+        createService(amount);
+
+      await expect(
+        service.execute(
+          buildExecuteProps(
+            "/api/rbac/subjects/subject-1/social-module/profiles/profile-1/chats/chat-1/messages/message-1/react-by/openrouter",
+          ),
+        ),
+      ).rejects.toThrow("do not have enough balance for that route");
+      expect(
+        subjectsToBillingModuleCurrenciesService.updateAmountIfUnchanged,
+      ).not.toHaveBeenCalled();
+    },
+  );
+
+  it("reserves the last token without crossing below zero", async () => {
     const { service, subjectsToBillingModuleCurrenciesService } =
-      createService("0");
+      createService("1");
 
     const result = await service.execute(
       buildExecuteProps(
@@ -115,17 +144,16 @@ describe("OpenRouter route billing service behavior", () => {
       ok: true,
       precharge: {
         amount: 1,
-        balanceBefore: 0,
-        balanceAfter: -1,
+        balanceBefore: 1,
+        balanceAfter: 0,
       },
     });
     expect(
-      subjectsToBillingModuleCurrenciesService.update,
+      subjectsToBillingModuleCurrenciesService.updateAmountIfUnchanged,
     ).toHaveBeenCalledWith({
       id: "subject-currency-1",
-      data: expect.objectContaining({
-        amount: "-1",
-      }),
+      expectedAmount: "1",
+      amount: "0",
     });
   });
 
@@ -148,7 +176,7 @@ describe("OpenRouter route billing service behavior", () => {
     ).rejects.toThrow("do not have enough balance for that route");
 
     expect(
-      subjectsToBillingModuleCurrenciesService.update,
+      subjectsToBillingModuleCurrenciesService.updateAmountIfUnchanged,
     ).not.toHaveBeenCalled();
   });
 
@@ -178,12 +206,11 @@ describe("OpenRouter route billing service behavior", () => {
       },
     });
     expect(
-      refund.subjectsToBillingModuleCurrenciesService.update,
+      refund.subjectsToBillingModuleCurrenciesService.updateAmountIfUnchanged,
     ).toHaveBeenCalledWith({
       id: "subject-currency-1",
-      data: expect.objectContaining({
-        amount: "0",
-      }),
+      expectedAmount: "-1",
+      amount: "0",
     });
 
     const additionalDebit = createService("0");
@@ -205,12 +232,98 @@ describe("OpenRouter route billing service behavior", () => {
       },
     });
     expect(
-      additionalDebit.subjectsToBillingModuleCurrenciesService.update,
+      additionalDebit.subjectsToBillingModuleCurrenciesService
+        .updateAmountIfUnchanged,
     ).toHaveBeenCalledWith({
       id: "subject-currency-1",
-      data: expect.objectContaining({
-        amount: "-2",
+      expectedAmount: "0",
+      amount: "-2",
+    });
+  });
+
+  it.each([
+    ["0", "-27"],
+    ["3000", "-3027"],
+    ["0", "0"],
+  ])(
+    "blocks a depleted aggregate despite individual balance rows: %s and %s",
+    async (first, second) => {
+      const { service, subjectsToBillingModuleCurrenciesService } =
+        createService([first, second]);
+      await expect(
+        service.execute(
+          buildExecuteProps("/multi-balance/react-by/openrouter"),
+        ),
+      ).rejects.toThrow("do not have enough balance for that route");
+      expect(
+        subjectsToBillingModuleCurrenciesService.updateAmountIfUnchanged,
+      ).not.toHaveBeenCalled();
+    },
+  );
+
+  it("uses split credits and the same aggregate for precharge and settlement", async () => {
+    const { service, balance } = createService(["0.4", "3.6"]);
+    const props = buildExecuteProps("/split-credits/react-by/openrouter");
+    await expect(service.execute(props)).resolves.toMatchObject({
+      precharge: { balanceBefore: 4, balanceAfter: 3 },
+    });
+    await expect(
+      service.settle({ ...props, exactAmount: "3" }),
+    ).resolves.toMatchObject({
+      settlement: { balanceBefore: 3, balanceAfter: 1 },
+    });
+    expect(balance()).toBe(1);
+  });
+
+  it("allows only one of two concurrent requests to reserve the last token", async () => {
+    const { service, balance } = createService(["1", "0"]);
+    const props = buildExecuteProps("/last-token/react-by/openrouter");
+    const results = await Promise.allSettled([
+      service.execute(props),
+      service.execute(props),
+    ]);
+    expect(
+      results.filter((result) => result.status === "fulfilled"),
+    ).toHaveLength(1);
+    expect(
+      results.find((result) => result.status === "rejected"),
+    ).toMatchObject({
+      reason: expect.objectContaining({
+        message: expect.stringContaining("do not have enough balance"),
       }),
     });
+    expect(balance()).toBe(0);
+  });
+
+  it("blocks another generation after exact usage exceeds the reservation even with a zero row", async () => {
+    const { service } = createService(["1", "0"]);
+    const props = buildExecuteProps("/settled-overdraft/react-by/openrouter");
+    await service.execute(props);
+    await service.settle({ ...props, exactAmount: "13" });
+    await expect(service.execute(props)).rejects.toThrow(
+      "do not have enough balance",
+    );
+  });
+
+  it("keeps fixed-price billing guards for other routes", async () => {
+    const { service } = createService("0");
+    await expect(
+      service.execute(buildExecuteProps("/fixed-price-action")),
+    ).rejects.toThrow("do not have enough balance");
+  });
+
+  it("does not permit a zero configured OpenRouter precharge to bypass the minimum", async () => {
+    mockedResolveByRoute.mockResolvedValueOnce({
+      permission: { id: "zero-configured" },
+      permissionsToBillingModuleCurrencies: [
+        { billingModuleCurrencyId: "currency-1", amount: "0" },
+      ],
+    });
+    const { service } = createService("0");
+    await expect(
+      service.execute(
+        buildExecuteProps("/zero-configured/react-by/openrouter"),
+      ),
+    ).rejects.toThrow("do not have enough balance");
   });
 });

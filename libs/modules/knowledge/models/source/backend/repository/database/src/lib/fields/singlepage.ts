@@ -1,5 +1,4 @@
 import { randomWordsGenerator } from "@sps/shared-utils";
-import { sql } from "drizzle-orm";
 import * as pgCore from "drizzle-orm/pg-core";
 
 export const fields = {
@@ -18,16 +17,9 @@ export const fields = {
     .unique()
     .$defaultFn(() => randomWordsGenerator({ type: "slug" })),
   title: pgCore.text("title").notNull(),
-  type: pgCore.text("type").notNull().default("document"),
   content: pgCore.text("content").notNull().default(""),
   description: pgCore.text("description"),
-  originalPath: pgCore.text("original_path").notNull().unique(),
-  contentHash: pgCore.text("content_hash").notNull(),
-  status: pgCore.text("status").notNull().default("pending"),
+  contentHash: pgCore.text("content_hash").notNull().default(""),
+  indexedContentHash: pgCore.text("indexed_content_hash"),
   lastIndexedAt: pgCore.timestamp("last_indexed_at", { mode: "date" }),
-  metadata: pgCore
-    .jsonb("metadata")
-    .$type<Record<string, unknown>>()
-    .notNull()
-    .default(sql`'{}'::jsonb`),
 };

@@ -61,11 +61,18 @@ export function query<T>(props: IQueryProps<T>): () => Promise<T | undefined> {
         return res;
       });
     } catch (error: any) {
-      if (error.message.includes("Not Found error")) {
+      if (error.status === 404) {
         throw error;
       }
 
-      toast.error(error.message);
+      const networkError =
+        error instanceof TypeError && /fetch|network/i.test(error.message);
+      toast.error(networkError ? "Connection error" : error.message, {
+        id: `api-read:${props.host}${props.route}`,
+        ...(networkError
+          ? { description: "Couldn’t reach the server. Try again." }
+          : {}),
+      });
 
       throw error;
     }

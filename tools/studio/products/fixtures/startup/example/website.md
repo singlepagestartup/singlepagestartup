@@ -1,5 +1,4 @@
 ---
-confirmation: { confirmed: false }
 ---
 
 # Course website

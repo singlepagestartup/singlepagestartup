@@ -1,3 +1,24 @@
+import { Service as CrmFormService } from "@sps/crm/models/form/backend/app/api/src/lib/service";
+import { Service as CrmRequestService } from "@sps/crm/models/request/backend/app/api/src/lib/service";
+import { Service as CrmStepService } from "@sps/crm/models/step/backend/app/api/src/lib/service";
+import { Repository as CrmStepRepository } from "@sps/crm/models/step/backend/app/api/src/lib/repository";
+import { Configuration as CrmStepConfiguration } from "@sps/crm/models/step/backend/app/api/src/lib/configuration";
+import { Service as CrmInputService } from "@sps/crm/models/input/backend/app/api/src/lib/service";
+import { Repository as CrmInputRepository } from "@sps/crm/models/input/backend/app/api/src/lib/repository";
+import { Configuration as CrmInputConfiguration } from "@sps/crm/models/input/backend/app/api/src/lib/configuration";
+import { Service as CrmOptionService } from "@sps/crm/models/option/backend/app/api/src/lib/service";
+import { Repository as CrmOptionRepository } from "@sps/crm/models/option/backend/app/api/src/lib/repository";
+import { Configuration as CrmOptionConfiguration } from "@sps/crm/models/option/backend/app/api/src/lib/configuration";
+import { Service as CrmFormsToRequestsService } from "@sps/crm/relations/forms-to-requests/backend/app/api/src/lib/service";
+import { Service as CrmFormsToStepsService } from "@sps/crm/relations/forms-to-steps/backend/app/api/src/lib/service";
+import { Repository as CrmFormsToStepsRepository } from "@sps/crm/relations/forms-to-steps/backend/app/api/src/lib/repository";
+import { Configuration as CrmFormsToStepsConfiguration } from "@sps/crm/relations/forms-to-steps/backend/app/api/src/lib/configuration";
+import { Service as CrmStepsToInputsService } from "@sps/crm/relations/steps-to-inputs/backend/app/api/src/lib/service";
+import { Repository as CrmStepsToInputsRepository } from "@sps/crm/relations/steps-to-inputs/backend/app/api/src/lib/repository";
+import { Configuration as CrmStepsToInputsConfiguration } from "@sps/crm/relations/steps-to-inputs/backend/app/api/src/lib/configuration";
+import { Service as CrmInputsToOptionsService } from "@sps/crm/relations/inputs-to-options/backend/app/api/src/lib/service";
+import { Repository as CrmInputsToOptionsRepository } from "@sps/crm/relations/inputs-to-options/backend/app/api/src/lib/repository";
+import { Configuration as CrmInputsToOptionsConfiguration } from "@sps/crm/relations/inputs-to-options/backend/app/api/src/lib/configuration";
 import { Container, ContainerModule, interfaces } from "inversify";
 import {
   CRUDService,
@@ -10,8 +31,23 @@ import { Repository } from "./repository";
 import { Controller } from "./controller";
 import { Service } from "./service";
 import { App } from "./app";
+import { createService as createSocialProfileService } from "@sps/social/models/profile/backend/app/api/src/lib/bootstrap";
+import { app as blogArticleApp } from "@sps/blog/models/article/backend/app/api";
+import { app as blogCategoryApp } from "@sps/blog/models/category/backend/app/api";
+import { app as blogCategoriesToArticlesApp } from "@sps/blog/relations/categories-to-articles/backend/app/api";
+import { app as socialProfilesToArticlesApp } from "@sps/social/relations/profiles-to-blog-module-articles/backend/app/api";
+import { app as subjectsToArticlesApp } from "@sps/rbac/relations/subjects-to-blog-module-articles/backend/app/api";
+import { app as billingPaymentIntentApp } from "@sps/billing/models/payment-intent/backend/app/api";
+import { app as billingInvoiceApp } from "@sps/billing/models/invoice/backend/app/api";
+import { app as billingPaymentIntentsToCurrenciesApp } from "@sps/billing/relations/payment-intents-to-currencies/backend/app/api";
+import { app as billingPaymentIntentsToInvoicesApp } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api";
+import { app as ecommerceStoreApp } from "@sps/ecommerce/models/store/backend/app/api";
+import { app as ecommerceStoresToOrdersApp } from "@sps/ecommerce/relations/stores-to-orders/backend/app/api";
+import { app as ecommerceOrdersToCurrenciesApp } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/backend/app/api";
+import { app as ecommerceOrdersToPaymentIntentsApp } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api";
 import {
   SubjectDI,
+  type IBlogModule,
   type IBillingModule,
   type IBroadcastModule,
   type ICrmModule,
@@ -29,6 +65,10 @@ import { Repository as SubjectsToBillingModuleCurrenciesRepository } from "@sps/
 import { Configuration as SubjectsToBillingModuleCurrenciesConfiguration } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/app/api/src/lib/configuration";
 import { Service as BillRouteService } from "./service/singlepage/billing/route";
 import { Service as EcommerceOrderProceedService } from "./service/singlepage/ecommerce/order/proceed";
+import type {
+  ICheckout as IEcommerceProductCheckout,
+  IExecuteProps as IEcommerceProductCheckoutProps,
+} from "./service/singlepage/ecommerce/product/checkout";
 import { Service as IdentityService } from "@sps/rbac/models/identity/backend/app/api/src/lib/service";
 import { Repository as IdentityRepository } from "@sps/rbac/models/identity/backend/app/api/src/lib/repository";
 import { Configuration as IdentityConfiguration } from "@sps/rbac/models/identity/backend/app/api/src/lib/configuration";
@@ -56,8 +96,6 @@ import { Configuration as SubjectsToSocialModuleProfilesConfiguration } from "@s
 import { Service as SubjectsToEcommerceModuleOrdersService } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/service";
 import { Repository as SubjectsToEcommerceModuleOrdersRepository } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/repository";
 import { Configuration as SubjectsToEcommerceModuleOrdersConfiguration } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/configuration";
-import { Repository as SocialProfileRepository } from "@sps/social/models/profile/backend/app/api/src/lib/repository";
-import { Configuration as SocialProfileConfiguration } from "@sps/social/models/profile/backend/app/api/src/lib/configuration";
 import { Repository as SocialSkillRepository } from "@sps/social/models/skill/backend/app/api/src/lib/repository";
 import { Configuration as SocialSkillConfiguration } from "@sps/social/models/skill/backend/app/api/src/lib/configuration";
 import { Repository as SocialChatRepository } from "@sps/social/models/chat/backend/app/api/src/lib/repository";
@@ -76,8 +114,12 @@ import { Repository as SocialProfilesToChatsRepository } from "@sps/social/relat
 import { Configuration as SocialProfilesToChatsConfiguration } from "@sps/social/relations/profiles-to-chats/backend/app/api/src/lib/configuration";
 import { Repository as SocialProfilesToSkillsRepository } from "@sps/social/relations/profiles-to-skills/backend/app/api/src/lib/repository";
 import { Configuration as SocialProfilesToSkillsConfiguration } from "@sps/social/relations/profiles-to-skills/backend/app/api/src/lib/configuration";
-import { Repository as SocialProfilesToKnowledgeModuleDocumentsRepository } from "@sps/social/relations/profiles-to-knowledge-module-documents/backend/app/api/src/lib/repository";
-import { Configuration as SocialProfilesToKnowledgeModuleDocumentsConfiguration } from "@sps/social/relations/profiles-to-knowledge-module-documents/backend/app/api/src/lib/configuration";
+import { Repository as SocialProfilesToKnowledgeModuleSourcesRepository } from "@sps/social/relations/profiles-to-knowledge-module-sources/backend/app/api/src/lib/repository";
+import { Repository as SocialSkillsToKnowledgeModuleSourcesRepository } from "@sps/social/relations/skills-to-knowledge-module-sources/backend/app/api/src/lib/repository";
+import { Repository as SocialMessagesToKnowledgeModuleSourcesRepository } from "@sps/social/relations/messages-to-knowledge-module-sources/backend/app/api/src/lib/repository";
+import { Configuration as SocialProfilesToKnowledgeModuleSourcesConfiguration } from "@sps/social/relations/profiles-to-knowledge-module-sources/backend/app/api/src/lib/configuration";
+import { Configuration as SocialSkillsToKnowledgeModuleSourcesConfiguration } from "@sps/social/relations/skills-to-knowledge-module-sources/backend/app/api/src/lib/configuration";
+import { Configuration as SocialMessagesToKnowledgeModuleSourcesConfiguration } from "@sps/social/relations/messages-to-knowledge-module-sources/backend/app/api/src/lib/configuration";
 import { Repository as SocialProfilesToMessagesRepository } from "@sps/social/relations/profiles-to-messages/backend/app/api/src/lib/repository";
 import { Configuration as SocialProfilesToMessagesConfiguration } from "@sps/social/relations/profiles-to-messages/backend/app/api/src/lib/configuration";
 import { Repository as SocialProfilesToActionsRepository } from "@sps/social/relations/profiles-to-actions/backend/app/api/src/lib/repository";
@@ -98,8 +140,6 @@ import { Repository as SocialMessagesToFileStorageModuleFilesRepository } from "
 import { Configuration as SocialMessagesToFileStorageModuleFilesConfiguration } from "@sps/social/relations/messages-to-file-storage-module-files/backend/app/api/src/lib/configuration";
 import { Repository as SocialAttributeKeysToAttributesRepository } from "@sps/social/relations/attribute-keys-to-attributes/backend/app/api/src/lib/repository";
 import { Configuration as SocialAttributeKeysToAttributesConfiguration } from "@sps/social/relations/attribute-keys-to-attributes/backend/app/api/src/lib/configuration";
-import { Repository as EcommerceStoreRepository } from "@sps/ecommerce/models/store/backend/app/api/src/lib/repository";
-import { Configuration as EcommerceStoreConfiguration } from "@sps/ecommerce/models/store/backend/app/api/src/lib/configuration";
 import { Repository as EcommerceOrderRepository } from "@sps/ecommerce/models/order/backend/app/api/src/lib/repository";
 import { Configuration as EcommerceOrderConfiguration } from "@sps/ecommerce/models/order/backend/app/api/src/lib/configuration";
 import { Service as EcommerceOrderService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service";
@@ -113,15 +153,9 @@ import { Repository as EcommerceAttributeRepository } from "@sps/ecommerce/model
 import { Configuration as EcommerceAttributeConfiguration } from "@sps/ecommerce/models/attribute/backend/app/api/src/lib/configuration";
 import { Repository as EcommerceAttributeKeyRepository } from "@sps/ecommerce/models/attribute-key/backend/app/api/src/lib/repository";
 import { Configuration as EcommerceAttributeKeyConfiguration } from "@sps/ecommerce/models/attribute-key/backend/app/api/src/lib/configuration";
-import { Repository as EcommerceStoresToOrdersRepository } from "@sps/ecommerce/relations/stores-to-orders/backend/app/api/src/lib/repository";
-import { Configuration as EcommerceStoresToOrdersConfiguration } from "@sps/ecommerce/relations/stores-to-orders/backend/app/api/src/lib/configuration";
 import { Repository as EcommerceOrdersToProductsRepository } from "@sps/ecommerce/relations/orders-to-products/backend/app/api/src/lib/repository";
 import { Configuration as EcommerceOrdersToProductsConfiguration } from "@sps/ecommerce/relations/orders-to-products/backend/app/api/src/lib/configuration";
 import { Service as EcommerceOrdersToProductsService } from "@sps/ecommerce/relations/orders-to-products/backend/app/api/src/lib/service";
-import { Repository as EcommerceOrdersToBillingModuleCurrenciesRepository } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/backend/app/api/src/lib/repository";
-import { Configuration as EcommerceOrdersToBillingModuleCurrenciesConfiguration } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/backend/app/api/src/lib/configuration";
-import { Repository as EcommerceOrdersToBillingModulePaymentIntentsRepository } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api/src/lib/repository";
-import { Configuration as EcommerceOrdersToBillingModulePaymentIntentsConfiguration } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api/src/lib/configuration";
 import { Repository as EcommerceOrdersToFileStorageModuleFilesRepository } from "@sps/ecommerce/relations/orders-to-file-storage-module-files/backend/app/api/src/lib/repository";
 import { Configuration as EcommerceOrdersToFileStorageModuleFilesConfiguration } from "@sps/ecommerce/relations/orders-to-file-storage-module-files/backend/app/api/src/lib/configuration";
 import { Repository as EcommerceProductsToAttributesRepository } from "@sps/ecommerce/relations/products-to-attributes/backend/app/api/src/lib/repository";
@@ -150,6 +184,7 @@ import { Service as BillingPaymentIntentsToInvoicesService } from "@sps/billing/
 import { Repository as NotificationTopicRepository } from "@sps/notification/models/topic/backend/app/api/src/lib/repository";
 import { Configuration as NotificationTopicConfiguration } from "@sps/notification/models/topic/backend/app/api/src/lib/configuration";
 import { Repository as NotificationNotificationRepository } from "@sps/notification/models/notification/backend/app/api/src/lib/repository";
+import { Service as NotificationNotificationService } from "@sps/notification/models/notification/backend/app/api/src/lib/service";
 import { Configuration as NotificationNotificationConfiguration } from "@sps/notification/models/notification/backend/app/api/src/lib/configuration";
 import { Repository as NotificationTemplateRepository } from "@sps/notification/models/template/backend/app/api/src/lib/repository";
 import { Configuration as NotificationTemplateConfiguration } from "@sps/notification/models/template/backend/app/api/src/lib/configuration";
@@ -176,12 +211,20 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
   bind<Repository>(DI.IRepository).to(Repository);
   bind<Service>(DI.IService).to(Service);
   bind<Configuration>(DI.IConfiguration).to(Configuration);
+  bind<IBlogModule>(SubjectDI.IBlogModule).toConstantValue({
+    article: blogArticleApp.controller.service,
+    category: blogCategoryApp.controller.service,
+    categoriesToArticles: blogCategoriesToArticlesApp.controller.service,
+  });
+  bind(SubjectDI.ISubjectsToBlogModuleArticlesService).toConstantValue(
+    subjectsToArticlesApp.controller.service,
+  );
   bind<ISocialModule>(SubjectDI.ISocialModule)
     .toDynamicValue(() => {
       return {
-        profile: new CRUDService<any>(
-          new SocialProfileRepository(new SocialProfileConfiguration()),
-        ),
+        profile: createSocialProfileService(),
+        profilesToBlogModuleArticles:
+          socialProfilesToArticlesApp.controller.service,
         skill: new CRUDService<any>(
           new SocialSkillRepository(new SocialSkillConfiguration()),
         ),
@@ -215,9 +258,19 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
             new SocialProfilesToSkillsConfiguration(),
           ),
         ),
-        profilesToKnowledgeModuleDocuments: new CRUDService<any>(
-          new SocialProfilesToKnowledgeModuleDocumentsRepository(
-            new SocialProfilesToKnowledgeModuleDocumentsConfiguration(),
+        profilesToKnowledgeModuleSources: new CRUDService<any>(
+          new SocialProfilesToKnowledgeModuleSourcesRepository(
+            new SocialProfilesToKnowledgeModuleSourcesConfiguration(),
+          ),
+        ),
+        messagesToKnowledgeModuleSources: new CRUDService<any>(
+          new SocialMessagesToKnowledgeModuleSourcesRepository(
+            new SocialMessagesToKnowledgeModuleSourcesConfiguration(),
+          ),
+        ),
+        skillsToKnowledgeModuleSources: new CRUDService<any>(
+          new SocialSkillsToKnowledgeModuleSourcesRepository(
+            new SocialSkillsToKnowledgeModuleSourcesConfiguration(),
           ),
         ),
         profilesToMessages: new CRUDService<any>(
@@ -275,9 +328,7 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
     .inSingletonScope();
   bind<IEcommerceModule>(SubjectDI.IEcommerceModule)
     .toDynamicValue(() => {
-      const store = new CRUDService<any>(
-        new EcommerceStoreRepository(new EcommerceStoreConfiguration()),
-      );
+      const store = ecommerceStoreApp.controller.service;
       const attribute = new CRUDService<any>(
         new EcommerceAttributeRepository(new EcommerceAttributeConfiguration()),
       );
@@ -286,21 +337,11 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
           new EcommerceAttributeKeyConfiguration(),
         ),
       );
-      const storesToOrders = new CRUDService<any>(
-        new EcommerceStoresToOrdersRepository(
-          new EcommerceStoresToOrdersConfiguration(),
-        ),
-      );
-      const ordersToBillingModuleCurrencies = new CRUDService<any>(
-        new EcommerceOrdersToBillingModuleCurrenciesRepository(
-          new EcommerceOrdersToBillingModuleCurrenciesConfiguration(),
-        ),
-      );
-      const ordersToBillingModulePaymentIntents = new CRUDService<any>(
-        new EcommerceOrdersToBillingModulePaymentIntentsRepository(
-          new EcommerceOrdersToBillingModulePaymentIntentsConfiguration(),
-        ),
-      );
+      const storesToOrders = ecommerceStoresToOrdersApp.controller.service;
+      const ordersToBillingModuleCurrencies =
+        ecommerceOrdersToCurrenciesApp.controller.service;
+      const ordersToBillingModulePaymentIntents =
+        ecommerceOrdersToPaymentIntentsApp.controller.service;
       const ordersToFileStorageModuleFiles = new CRUDService<any>(
         new EcommerceOrdersToFileStorageModuleFilesRepository(
           new EcommerceOrdersToFileStorageModuleFilesConfiguration(),
@@ -451,24 +492,12 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
         currency: new CRUDService<any>(
           new BillingCurrencyRepository(new BillingCurrencyConfiguration()),
         ),
-        paymentIntent: new CRUDService<any>(
-          new BillingPaymentIntentRepository(
-            new BillingPaymentIntentConfiguration(),
-          ),
-        ),
-        paymentIntentsToCurrencies: new CRUDService<any>(
-          new BillingPaymentIntentsToCurrenciesRepository(
-            new BillingPaymentIntentsToCurrenciesConfiguration(),
-          ),
-        ),
-        invoice: new CRUDService<any>(
-          new BillingInvoiceRepository(new BillingInvoiceConfiguration()),
-        ),
-        paymentIntentsToInvoices: new CRUDService<any>(
-          new BillingPaymentIntentsToInvoicesRepository(
-            new BillingPaymentIntentsToInvoicesConfiguration(),
-          ),
-        ),
+        paymentIntent: billingPaymentIntentApp.controller.service,
+        paymentIntentsToCurrencies:
+          billingPaymentIntentsToCurrenciesApp.controller.service,
+        invoice: billingInvoiceApp.controller.service,
+        paymentIntentsToInvoices:
+          billingPaymentIntentsToInvoicesApp.controller.service,
       };
     })
     .inSingletonScope();
@@ -478,7 +507,7 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
         topic: new CRUDService<any>(
           new NotificationTopicRepository(new NotificationTopicConfiguration()),
         ),
-        notification: new CRUDService<any>(
+        notification: new NotificationNotificationService(
           new NotificationNotificationRepository(
             new NotificationNotificationConfiguration(),
           ),
@@ -504,24 +533,48 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
   bind<IFileStorageModule>(SubjectDI.IFileStorageModule)
     .toDynamicValue(() => {
       return {
-        file: new CRUDService<any>(
+        file: new FileStorageFileService(
           new FileStorageFileRepository(new FileStorageFileConfiguration()),
         ),
       };
     })
     .inSingletonScope();
   bind<ICrmModule>(SubjectDI.ICrmModule)
-    .toDynamicValue(() => {
+    .toDynamicValue((context) => {
+      const formsToRequests = new CrmFormsToRequestsService(
+        new CrmFormsToRequestsRepository(new CrmFormsToRequestsConfiguration()),
+      );
+      const request = new CrmRequestService(
+        new CrmRequestRepository(new CrmRequestConfiguration()),
+      );
+      request.configureSubmissions({ formsToRequests });
       return {
-        form: new CRUDService<any>(
+        request,
+        formsToRequests,
+        form: new CrmFormService(
           new CrmFormRepository(new CrmFormConfiguration()),
+          context.container.get<INotificationModule>(
+            SubjectDI.INotificationModule,
+          ),
         ),
-        request: new CRUDService<any>(
-          new CrmRequestRepository(new CrmRequestConfiguration()),
+        step: new CrmStepService(
+          new CrmStepRepository(new CrmStepConfiguration()),
         ),
-        formsToRequests: new CRUDService<any>(
-          new CrmFormsToRequestsRepository(
-            new CrmFormsToRequestsConfiguration(),
+        input: new CrmInputService(
+          new CrmInputRepository(new CrmInputConfiguration()),
+        ),
+        option: new CrmOptionService(
+          new CrmOptionRepository(new CrmOptionConfiguration()),
+        ),
+        formsToSteps: new CrmFormsToStepsService(
+          new CrmFormsToStepsRepository(new CrmFormsToStepsConfiguration()),
+        ),
+        stepsToInputs: new CrmStepsToInputsService(
+          new CrmStepsToInputsRepository(new CrmStepsToInputsConfiguration()),
+        ),
+        inputsToOptions: new CrmInputsToOptionsService(
+          new CrmInputsToOptionsRepository(
+            new CrmInputsToOptionsConfiguration(),
           ),
         ),
       };
@@ -551,13 +604,16 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
     .inSingletonScope();
   bind<PermissionService>(SubjectDI.IPermissionService)
     .toDynamicValue(
-      () =>
+      (context) =>
         new PermissionService(
           new PermissionRepository(new PermissionConfiguration()),
           new PermissionsToBillingModuleCurrenciesService(
             new PermissionsToBillingModuleCurrenciesRepository(
               new PermissionsToBillingModuleCurrenciesConfiguration(),
             ),
+          ),
+          context.container.get<RolesToPermissionsService>(
+            SubjectDI.IRolesToPermissionsService,
           ),
         ),
     )
@@ -647,6 +703,14 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
   bind<EcommerceOrderProceedService>(SubjectDI.IEcommerceOrderProceedService)
     .to(EcommerceOrderProceedService)
     .inSingletonScope();
+  bind<IEcommerceProductCheckout>(
+    SubjectDI.IEcommerceProductCheckout,
+  ).toFactory(
+    (context) => (props: IEcommerceProductCheckoutProps) =>
+      context.container
+        .get<Service>(DI.IService)
+        .ecommerceProductCheckout(props),
+  );
 });
 
 export async function bootstrap() {

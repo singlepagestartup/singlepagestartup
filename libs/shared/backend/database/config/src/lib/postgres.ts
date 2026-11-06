@@ -3,6 +3,10 @@ import { drizzle, PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { DATABASE_OPTIONS } from "@sps/shared-utils";
 import { logger } from "@sps/backend-utils";
 
+interface IApplicationLogin {
+  allowed: boolean;
+}
+
 let pgClient: ReturnType<typeof postgres> | null = null;
 const drizzleInstances = new Map<string, PostgresJsDatabase<any>>();
 let isShutdownHookSet = false;
@@ -20,6 +24,12 @@ const isMigration =
 export function getPostgresClient() {
   if (pgClient) {
     return pgClient;
+  }
+
+  if (!DATABASE_OPTIONS.user || !DATABASE_OPTIONS.password) {
+    throw new Error(
+      "Configuration error. Set DATABASE_USERNAME and DATABASE_PASSWORD for the application role.",
+    );
   }
 
   // Synchronously initialize client if not already done
@@ -61,6 +71,24 @@ export function getPostgresClient() {
   }
 
   return pgClient!;
+}
+
+/** Check the authenticated session before starting migrations or serving requests. */
+export async function assertApplicationDatabaseRole() {
+  const client = getPostgresClient();
+  const [login] = await client<IApplicationLogin[]>`
+    SELECT NOT (rolsuper OR rolcreatedb OR rolcreaterole OR rolreplication OR rolbypassrls)
+      AND NOT EXISTS (
+        SELECT FROM pg_catalog.pg_auth_members WHERE member = r.oid OR roleid = r.oid
+      ) AS allowed
+    FROM pg_catalog.pg_roles r WHERE rolname = session_user
+  `;
+
+  if (!login?.allowed) {
+    throw new Error(
+      "Configuration error. PostgreSQL requires a dedicated application login without elevated privileges or memberships. For an existing installation, follow the role migration in tools/deployer/README.md.",
+    );
+  }
 }
 
 export function getDrizzle(schema: any) {

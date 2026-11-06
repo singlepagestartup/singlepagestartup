@@ -29,7 +29,6 @@
         "index": 0
       }
     },
-
     "left_model_name": {
       "type": "string",
       "description": "Model name, for example: widget",
@@ -46,21 +45,48 @@
         "type": "list",
         "default": "website-builder",
         "items": [
-          { "value": "agent" },
-          { "value": "analytic" },
-          { "value": "billing" },
-          { "value": "blog" },
-          { "value": "broadcast" },
-          { "value": "crm" },
-          { "value": "ecommerce" },
-          { "value": "file-storage" },
-          { "value": "host" },
-          { "value": "notification" },
-          { "value": "rbac" },
-          { "value": "social" },
-          { "value": "startup" },
-          { "value": "telegram" },
-          { "value": "website-builder" }
+          {
+            "value": "agent"
+          },
+          {
+            "value": "analytic"
+          },
+          {
+            "value": "billing"
+          },
+          {
+            "value": "blog"
+          },
+          {
+            "value": "broadcast"
+          },
+          {
+            "value": "crm"
+          },
+          {
+            "value": "ecommerce"
+          },
+          {
+            "value": "file-storage"
+          },
+          {
+            "value": "host"
+          },
+          {
+            "value": "notification"
+          },
+          {
+            "value": "rbac"
+          },
+          {
+            "value": "social"
+          },
+          {
+            "value": "startup"
+          },
+          {
+            "value": "website-builder"
+          }
         ]
       }
     },
@@ -72,21 +98,48 @@
         "type": "list",
         "default": "website-builder",
         "items": [
-          { "value": "agent" },
-          { "value": "analytic" },
-          { "value": "billing" },
-          { "value": "blog" },
-          { "value": "broadcast" },
-          { "value": "crm" },
-          { "value": "ecommerce" },
-          { "value": "file-storage" },
-          { "value": "host" },
-          { "value": "notification" },
-          { "value": "rbac" },
-          { "value": "social" },
-          { "value": "startup" },
-          { "value": "telegram" },
-          { "value": "website-builder" }
+          {
+            "value": "agent"
+          },
+          {
+            "value": "analytic"
+          },
+          {
+            "value": "billing"
+          },
+          {
+            "value": "blog"
+          },
+          {
+            "value": "broadcast"
+          },
+          {
+            "value": "crm"
+          },
+          {
+            "value": "ecommerce"
+          },
+          {
+            "value": "file-storage"
+          },
+          {
+            "value": "host"
+          },
+          {
+            "value": "notification"
+          },
+          {
+            "value": "rbac"
+          },
+          {
+            "value": "social"
+          },
+          {
+            "value": "startup"
+          },
+          {
+            "value": "website-builder"
+          }
         ]
       }
     },
@@ -106,24 +159,59 @@
         "type": "list",
         "default": "website-builder",
         "items": [
-          { "value": "agent" },
-          { "value": "analytic" },
-          { "value": "billing" },
-          { "value": "blog" },
-          { "value": "broadcast" },
-          { "value": "crm" },
-          { "value": "ecommerce" },
-          { "value": "file-storage" },
-          { "value": "host" },
-          { "value": "notification" },
-          { "value": "rbac" },
-          { "value": "social" },
-          { "value": "startup" },
-          { "value": "telegram" },
-          { "value": "website-builder" }
+          {
+            "value": "agent"
+          },
+          {
+            "value": "analytic"
+          },
+          {
+            "value": "billing"
+          },
+          {
+            "value": "blog"
+          },
+          {
+            "value": "broadcast"
+          },
+          {
+            "value": "crm"
+          },
+          {
+            "value": "ecommerce"
+          },
+          {
+            "value": "file-storage"
+          },
+          {
+            "value": "host"
+          },
+          {
+            "value": "notification"
+          },
+          {
+            "value": "rbac"
+          },
+          {
+            "value": "social"
+          },
+          {
+            "value": "startup"
+          },
+          {
+            "value": "website-builder"
+          }
         ]
       }
     }
   },
-  "required": ["relation_name", "action", "module", "left_model_name", "right_model_name", "left_module_name", "right_module_name"]
+  "required": [
+    "relation_name",
+    "action",
+    "module",
+    "left_model_name",
+    "right_model_name",
+    "left_module_name",
+    "right_module_name"
+  ]
 }

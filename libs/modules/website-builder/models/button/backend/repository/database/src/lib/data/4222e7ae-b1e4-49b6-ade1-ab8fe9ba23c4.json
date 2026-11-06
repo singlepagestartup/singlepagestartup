@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "About the code",
+    "ru": "О коде проекта"
+  },
+  "subtitle": {},
+  "url": "/about",
+  "className": "w-fit",
+  "id": "4222e7ae-b1e4-49b6-ade1-ab8fe9ba23c4",
+  "createdAt": "2026-10-23T20:18:02.469Z",
+  "updatedAt": "2026-10-23T20:18:02.469Z",
+  "variant": "ghost",
+  "adminTitle": "About the code",
+  "slug": "framework-footer-framework-about"
+}

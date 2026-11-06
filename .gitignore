@@ -76,6 +76,9 @@ results
 node_modules
 .node_history
 
+# Next.js generated output, including temporary test builds
+.next*/
+
 ############################
 # NX
 ############################
@@ -112,6 +115,21 @@ blob-report/
 .claude/.env
 .agents/.env
 
+# Checkout-owned AI client connections; shared defaults live in *.example.
+/.codex/config.toml
+/.mcp.json
+/.cursor/mcp.json
+/.vscode/mcp.json
+/opencode.json
+/opencode.jsonc
+/.opencode/opencode.json
+/.opencode/opencode.jsonc
+/.kimi-code/mcp.json
+/.mimocode/mimocode.json
+/.mimocode/mimocode.jsonc
+/mimocode.json
+/mimocode.jsonc
+
 # Checkout-owned SinglePageStartup workspace selection
 apps/studio/workspace/utils/config.local.yaml
 
@@ -131,3 +149,7 @@ apps/studio/.storybook/.generated/
 
 # Claude Code worktrees
 .claude/worktrees/
+
+# Static Studio icon components share a name with the macOS Finder artifact.
+!apps/studio/modules/shared/icon/
+!apps/studio/modules/shared/icon/**

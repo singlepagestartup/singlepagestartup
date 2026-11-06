@@ -13,9 +13,9 @@ export const variant = "ecommerce-module-order-checkout-default" as const;
 export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
   language: string;
-  product: IEcommerceModuleProduct;
-  order: IEcommerceModuleOrder;
-  store?: IEcommerceModuleStore;
+  ecommerceModuleProduct: IEcommerceModuleProduct;
+  ecommerceModuleOrder: IEcommerceModuleOrder;
+  ecommerceModuleStore?: IEcommerceModuleStore;
 }
 
 export interface IComponentPropsExtended

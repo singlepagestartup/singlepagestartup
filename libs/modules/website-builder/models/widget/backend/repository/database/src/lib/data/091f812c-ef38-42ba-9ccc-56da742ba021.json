@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Follow the record",
+    "ru": "Проследите путь записи"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"In the standard Article variant, \"},{\"type\":\"text\",\"text\":\"index.tsx\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" binds the client and server SDKs, Provider, loading and view to the shared component. \"},{\"type\":\"text\",\"text\":\"Component.tsx\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" receives a loaded record and renders it. Another request inside the view would create a second loading lifecycle for the same article.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The variant name is defined in \"},{\"type\":\"text\",\"text\":\"interface.ts\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\", registered in \"},{\"type\":\"text\",\"text\":\"variants.ts\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" and included in the public props type. A JSX file alone is not enough: a saved record must be able to select the variant through the public entrypoint. The \"},{\"type\":\"text\",\"text\":\"startup\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" layer replaces the matching implementation in \"},{\"type\":\"text\",\"text\":\"singlepage\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" together with its contract.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"В стандартном варианте Article файл \"},{\"type\":\"text\",\"text\":\"index.tsx\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" связывает клиентский и серверный SDK, Provider, загрузку и представление с общим компонентом. \"},{\"type\":\"text\",\"text\":\"Component.tsx\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" получает готовую запись и выводит её. Повторный запрос внутри представления создаст ещё один цикл загрузки той же статьи.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Название варианта задаётся в \"},{\"type\":\"text\",\"text\":\"interface.ts\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\", регистрируется в \"},{\"type\":\"text\",\"text\":\"variants.ts\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" и входит в публичный тип параметров. Одного файла с JSX недостаточно: сохранённая запись должна выбирать вариант через публичный вход. Слой \"},{\"type\":\"text\",\"text\":\"startup\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" заменяет соответствующую реализацию \"},{\"type\":\"text\",\"text\":\"singlepage\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" вместе с её контрактом.\"}]}]}"
+  },
+  "anchor": "ru-section-nextjs-server-client-readers-and-widget-slots-1",
+  "className": "",
+  "id": "091f812c-ef38-42ba-9ccc-56da742ba021",
+  "createdAt": "2026-10-26T07:34:00.580Z",
+  "updatedAt": "2026-10-27T14:58:46.307Z",
+  "variant": "content-rich",
+  "adminTitle": "Проследите путь записи",
+  "slug": "ru-section-nextjs-server-client-readers-and-widget-slots-1"
+}

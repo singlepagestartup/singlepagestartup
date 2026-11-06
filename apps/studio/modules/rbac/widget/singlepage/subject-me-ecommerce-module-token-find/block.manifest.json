@@ -1,0 +1,24 @@
+{
+  "id": "rbac.widget.subject-me-ecommerce-module-token-find",
+  "title": "RBAC token catalogue",
+  "description": "The accepted token catalogue under RBAC purchase ownership. Studio controls remain local previews.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "subject-me-ecommerce-module-token-find"
+  },
+  "files": { "component": "Component.tsx", "story": "Component.stories.tsx" },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "rbac.widget",
+    "pageName": "rbac",
+    "variantName": "subject-me-ecommerce-module-token-find",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

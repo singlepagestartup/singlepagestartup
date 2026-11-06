@@ -1,0 +1,4 @@
+interface:
+  display_name: "Unslop · RU / EN"
+  short_description: "Редактура русского и английского текста"
+  default_prompt: "Примени $unslop: убери речевой мусор, объясни термины и выстрой текст, сохранив факты и смысл."

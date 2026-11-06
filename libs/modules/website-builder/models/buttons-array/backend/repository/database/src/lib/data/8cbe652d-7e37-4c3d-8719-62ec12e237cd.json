@@ -1,0 +1,17 @@
+{
+  "id": "8cbe652d-7e37-4c3d-8719-62ec12e237cd",
+  "createdAt": "2026-10-26T00:11:16.723Z",
+  "updatedAt": "2026-10-27T15:00:19.926Z",
+  "variant": "footer-column",
+  "className": "",
+  "title": {
+    "en": "Your project",
+    "ru": "Ваш проект"
+  },
+  "description": {
+    "en": "",
+    "ru": ""
+  },
+  "adminTitle": "Ваш проект",
+  "slug": "framework-reviewed-footer-1"
+}

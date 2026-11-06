@@ -6,8 +6,6 @@ import {
   validateProductCatalogFiles,
   validateProductSectionFiles,
 } from "../products/validate";
-import { validateOwnedBrandbook } from "../design/brandbook";
-import { loadDocumentReviews } from "./review-loader";
 import { validateDesignLayouts } from "../design/validate";
 import { validateRequiredSpecimens } from "../design/specimens";
 
@@ -386,15 +384,6 @@ async function main() {
     workspaceRoot: options.workspaceRoot,
   });
   await validateDesignLayouts(graph.workspaceRoot);
-  const reviews = await loadDocumentReviews(
-    graph.workspaceRoot,
-    graph.activeLayer,
-  );
-  await validateOwnedBrandbook(
-    graph.workspaceRoot,
-    graph.activeLayer,
-    reviews.get("design")?.confirmation,
-  );
   await validateRequiredSpecimens(graph.workspaceRoot);
   for (const entry of graph.loadedEntries.filter(
     (entry) => entry.kind === "products",

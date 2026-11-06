@@ -1,0 +1,34 @@
+{
+  "metadata": {
+    "seo": {
+      "description": {
+        "en": "Editable Sources, their attached Files and derived Chunks for scoped retrieval.",
+        "ru": "Редактируемые источники, прикреплённые файлы и производные фрагменты для поиска."
+      }
+    },
+    "seoDisplay": {
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Editable Sources, their attached Files and derived Chunks for scoped retrieval.",
+        "ru": "Редактируемые источники, прикреплённые файлы и производные фрагменты для поиска."
+      },
+      "opengraphDescription": {
+        "en": "Editable Sources, their attached Files and derived Chunks for scoped retrieval.",
+        "ru": "Редактируемые источники, прикреплённые файлы и производные фрагменты для поиска."
+      }
+    }
+  },
+  "id": "a82a7b84-e913-41af-9dc6-9602b6c29497",
+  "title": "Knowledge · Code Framework",
+  "url": "/framework/modules/knowledge",
+  "description": "Editable Sources, their attached Files and derived Chunks for scoped retrieval.",
+  "createdAt": "2026-10-24T01:06:06.019Z",
+  "updatedAt": "2026-10-30T22:25:07.700Z",
+  "variant": "default",
+  "className": "",
+  "language": "en",
+  "adminTitle": "Knowledge · Code Framework"
+}
