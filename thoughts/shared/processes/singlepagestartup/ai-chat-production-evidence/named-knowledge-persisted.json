@@ -1,0 +1,62 @@
+{
+  "source": {
+    "id": "1abc5c39-5a28-4496-862f-0f49e5241077",
+    "createdAt": "2026-10-12T01:24:30.827Z",
+    "updatedAt": "2026-10-12T01:24:55.218Z",
+    "className": null,
+    "variant": "default",
+    "adminTitle": "Named knowledge — upload verification",
+    "slug": "named-knowledge-upload-verification-mv4kkdzr-ppp03vs8",
+    "title": "Named knowledge — upload verification",
+    "content": "## Контекст пользователя\n<!-- knowledge:user -->\nFictional local test knowledge. Verify its name, attached file and document scope.\n<!-- /knowledge:user -->\n\n## Сведения из материалов\n### ai-chat-knowledge-verification.txt\nLocal UI verification material, fictional project.\nKnowledge uploads attach this file to the named Source, not to a chat message.\n\n\n## Общее описание\n### Общее описание знания\n\nВ пользовательском контексте знание обозначено как **«Fictional local test knowledge»**. Оно относится к вымышленному локальному проекту и предназначено для проверки пользовательского интерфейса.\n\nПредоставленный файл — **`ai-chat-knowledge-verification.txt`**. Согласно его содержимому, при загрузке в знание этот файл прикрепляется к именованному **Source**, а не к сообщению чата.\n\n**Область документа:** локальная проверка интерфейса и способ привязки загружаемого файла.\n\n**Неопределённости и противоречия:** явных разногласий или противоречий нет. Конкретное имя Source не указано; фактическое прикрепление файла материалами не подтверждено.",
+    "description": null,
+    "contentHash": "0cf0a5c8d3fad4d341a002f0573d41da2b033737157786afa43bdbf37c031617",
+    "indexedContentHash": "0cf0a5c8d3fad4d341a002f0573d41da2b033737157786afa43bdbf37c031617",
+    "lastIndexedAt": "2026-10-12T01:24:55.214Z"
+  },
+  "thread": {
+    "id": "d4ffce05-e931-4c7e-8ee0-5efcd2aa830a",
+    "createdAt": "2026-10-11T20:13:32.019Z",
+    "updatedAt": "2026-10-12T01:24:55.434Z",
+    "className": null,
+    "variant": "default",
+    "title": "Products.md",
+    "description": null,
+    "sourceSystemId": null,
+    "metadata": {
+      "aiChatDocument": {
+        "key": "products",
+        "profileId": "9a48b93b-625a-4e45-84aa-39500e5ac4d7",
+        "sourceIds": [
+          "1abc5c39-5a28-4496-862f-0f49e5241077"
+        ]
+      }
+    },
+    "adminTitle": "outside orange tarsier",
+    "slug": "remaining-coffee-newt-7729"
+  },
+  "files": [
+    {
+      "id": "cf943ae9-e7c6-4856-82a7-e4e296132492",
+      "createdAt": "2026-10-12T01:24:44.039Z",
+      "updatedAt": "2026-10-12T01:24:44.039Z",
+      "variant": "default",
+      "orderIndex": 0,
+      "className": null,
+      "sourceId": "1abc5c39-5a28-4496-862f-0f49e5241077",
+      "fileStorageModuleFileId": "d258fa75-61fc-48dc-a525-7ed4137438c0"
+    }
+  ],
+  "profileLinks": [
+    {
+      "id": "fb6001fe-027a-44f6-8f1a-32d344a8d655",
+      "createdAt": "2026-10-12T01:24:31.131Z",
+      "updatedAt": "2026-10-12T01:24:31.131Z",
+      "variant": "default",
+      "orderIndex": 0,
+      "className": null,
+      "profileId": "9a48b93b-625a-4e45-84aa-39500e5ac4d7",
+      "knowledgeModuleSourceId": "1abc5c39-5a28-4496-862f-0f49e5241077"
+    }
+  ]
+}

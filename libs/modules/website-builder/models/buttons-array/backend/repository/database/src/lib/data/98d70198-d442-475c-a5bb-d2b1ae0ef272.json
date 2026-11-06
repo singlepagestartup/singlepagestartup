@@ -1,0 +1,14 @@
+{
+  "id": "98d70198-d442-475c-a5bb-d2b1ae0ef272",
+  "createdAt": "2026-10-24T01:05:45.346Z",
+  "updatedAt": "2026-10-24T01:05:45.346Z",
+  "variant": "default",
+  "className": "w-full",
+  "title": {
+    "en": "Actions",
+    "ru": "Действия"
+  },
+  "description": {},
+  "adminTitle": "Actions",
+  "slug": "framework-journey-hero-actions"
+}

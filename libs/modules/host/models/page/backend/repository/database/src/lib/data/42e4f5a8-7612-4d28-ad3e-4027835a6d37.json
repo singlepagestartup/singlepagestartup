@@ -1,11 +1,45 @@
 {
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "Conversation thread — SinglePageStartup",
+        "ru": "Тема обсуждения — SinglePageStartup"
+      },
+      "description": {
+        "en": "Messages in the selected project conversation thread.",
+        "ru": "Сообщения выбранной темы в обсуждении проекта."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "Conversation thread — SinglePageStartup",
+        "ru": "Тема обсуждения — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "Conversation thread — SinglePageStartup",
+        "ru": "Тема обсуждения — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Messages in the selected project conversation thread.",
+        "ru": "Сообщения выбранной темы в обсуждении проекта."
+      },
+      "opengraphDescription": {
+        "en": "Messages in the selected project conversation thread.",
+        "ru": "Сообщения выбранной темы в обсуждении проекта."
+      }
+    }
+  },
   "id": "42e4f5a8-7612-4d28-ad3e-4027835a6d37",
   "title": "Social Chat Thread Overview",
   "url": "/social/chats/[social.chats.id]/threads/[social.threads.id]",
   "description": "Description",
   "createdAt": "2025-12-24T17:05:48.526Z",
-  "updatedAt": "2026-04-12T19:45:20.301Z",
-  "variant": "default",
+  "updatedAt": "2026-10-30T22:25:06.114Z",
+  "variant": "noindex",
   "className": "",
   "language": "en",
   "adminTitle": "living beige orca"

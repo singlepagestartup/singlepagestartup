@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "0fe8c0ef-0af8-49f6-abc1-c4bc204126e2",
+  "createdAt": "2026-10-26T00:11:26.750Z",
+  "updatedAt": "2026-10-27T14:59:24.505Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Before payment",
+    "ru": "До оплаты"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Workshop payment\\n\\nThe customer has not completed payment yet.\\n\\nPhotography workshop\\n\\nAmount: 2,900 RUB\\n\\nStatus: awaiting payment\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Оплата мастер-класса\\n\\nКлиент ещё не завершил платёж.\\n\\nМастер-класс по фотографии\\n\\nСумма: 2 900 ₽\\n\\nСтатус: ожидает оплаты\"}]}]}"
+  },
+  "adminTitle": "До оплаты",
+  "slug": "framework-reviewed-article-billing-example-feature-0"
+}

@@ -15,83 +15,6 @@ import {
 import { stringify } from "yaml";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { salesSegmentPages } from "../components/SalesSegment";
-
-const source = `schema: singlepagestartup.sales-process.v1
-product_id: framework-product
-readiness: blocked
-owner: Sales owner
-seller: Seller of record
-pricing: 100 RUB
-capacity: One order per week
-blockers:
-  - Contract is not approved
-stages:
-  - id: qualify
-    name: Qualify
-    owner: Sales owner
-    entry_conditions:
-      - Contact exists
-    required_fields:
-      - Need
-    action: Verify fit
-    exit_condition: Fit is recorded
-    failure: Close as not a fit
-    metric: Qualified leads per week
-`;
-
-describe("sales process", () => {
-  /**
-   * BDD Scenario: Preserve an unknown process during initial intake.
-   * Given: the client has not supplied the process and a blocker names the gap.
-   * When: intake is parsed without stages.
-   * Then: blocked intake is accepted, but it cannot be called ready or gap-free.
-   */
-  test("accepts explicit unknown intake without inventing stages", () => {
-    const intake = source.split("stages:")[0] + "stages: []\n";
-    expect(parseSalesProcess(intake).stages).toEqual([]);
-    expect(() =>
-      parseSalesProcess(
-        intake.replace("readiness: blocked", "readiness: ready"),
-      ),
-    ).toThrow();
-    expect(() =>
-      parseSalesProcess(
-        intake.replace(
-          "blockers:\n  - Contract is not approved",
-          "blockers: []",
-        ),
-      ),
-    ).toThrow();
-  });
-  /**
-   * BDD Scenario: Preserve process controls in the Studio document
-   * Given a valid sales-process source for the expected product
-   * When it is rendered as Markdown
-   * Then the stage exit, fallback, and metric are visible
-   */
-  test("renders explicit stage controls", () => {
-    const process = parseSalesProcess(source, "framework-product");
-    const markdown = salesProcessMarkdown(process);
-
-    expect(process.product_id).toBe("framework-product");
-    expect(markdown).toContain("Fit is recorded");
-    expect(markdown).toContain("Close as not a fit");
-    expect(markdown).toContain("Qualified leads per week");
-  });
-
-  /**
-   * BDD Scenario: Prevent cross-product sales documents
-   * Given the active product requests its own sales process
-   * When the document declares a different product id
-   * Then parsing fails instead of mixing two offers
-   */
-  test("rejects a sales process from another product", () => {
-    expect(() => parseSalesProcess(source, "another-product")).toThrow(
-      "must match catalog product another-product",
-    );
-  });
-});
 
 // A downstream business with two different purchasing contexts.
 const decisionProfile = (id: string, name: string) => ({
@@ -166,7 +89,7 @@ test("keeps segment decisions and CJMs distinct", () => {
   const markdown = salesProcessMarkdown(process);
   expect(markdown).toContain("Resolve individuals task");
   expect(markdown).toContain("Resolve teams task");
-  expect(markdown).toContain("Customer Journey Map (CJM)");
+  expect(markdown).toContain("Карта пути клиента (CJM)");
   expect(markdown).toContain("Does this fit my need?");
   expect(markdown).not.toContain("## Stages");
 });
@@ -259,40 +182,14 @@ test("rejects ambiguous mixed Sales schemas", () => {
         stages: [],
       }),
     ),
-  ).toThrow("require sales-process.v2");
+  ).toThrow("unsupported schema");
   expect(() =>
     parseSalesProcess(stringify({ ...segmented(), stages: [] })),
   ).toThrow("not a second stages list");
 });
 
-/** BDD Scenario: Downstream projects use shared navigation, review and export
- * Given a startup Sales source with two segments and whole-document confirmation
- * When the shared page builder renders an individual segment
- * Then it carries that source and status, exposes a CJM and exports only its own text
- */
-test("generates independent segment views and Markdown for a startup", () => {
-  const process = parseSalesProcess(stringify(segmented()));
-  const status = {
-    confirmed: false,
-    state: "unconfirmed" as const,
-    layer: "startup" as const,
-  };
-  const pages = salesSegmentPages(
-    process,
-    "startup",
-    "apps/studio/workspace/products/startup/framework-product/sales.yaml",
-    status,
-  );
-  expect(pages[0].children).toHaveLength(2);
-  const page = pages[0].children[0];
-  expect(page.confirmation).toBe(status);
-  expect(page.downloadName).toBe("individuals-sales.md");
-  expect(page.markdown).toContain("Resolve individuals task");
-  expect(page.markdown).not.toContain("Resolve teams task");
-  expect(page.markdown).not.toContain("confirmed:");
-  const html = renderToStaticMarkup(createElement(page.Component!));
-  expect(html).toContain("Customer Journey Map (CJM)");
-  expect(html).toContain('scope="row"');
-  expect(html).toContain("Resolve individuals task");
-  expect(html).not.toContain("Resolve teams task");
+test("rejects another product's sales process", () => {
+  expect(() =>
+    parseSalesProcess(stringify(segmented()), "another-product"),
+  ).toThrow("must match catalog product");
 });

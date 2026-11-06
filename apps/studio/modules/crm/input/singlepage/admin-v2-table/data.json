@@ -1,0 +1,169 @@
+{
+  "schema": {
+    "module": "crm",
+    "entity": "input",
+    "entityType": "model",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "type",
+        "label": "Type",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "isRequired",
+        "label": "Is Required",
+        "kind": "boolean",
+        "nullable": false,
+        "default": false
+      },
+      {
+        "key": "title",
+        "label": "Title",
+        "kind": "jsonb",
+        "nullable": true,
+        "default": {}
+      },
+      {
+        "key": "subtitle",
+        "label": "Subtitle",
+        "kind": "jsonb",
+        "nullable": true,
+        "default": {}
+      },
+      {
+        "key": "description",
+        "label": "Description",
+        "kind": "jsonb",
+        "nullable": true,
+        "default": {}
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "adminTitle",
+        "label": "Admin Title",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "slug",
+        "label": "Slug",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "placeholder",
+        "label": "Placeholder",
+        "kind": "jsonb",
+        "nullable": true,
+        "default": {}
+      },
+      {
+        "key": "label",
+        "label": "Label",
+        "kind": "jsonb",
+        "nullable": true,
+        "default": {}
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "97270f92-8a1c-4e2a-a79f-ddf187224c3c",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "type": "default",
+      "isRequired": false,
+      "title": {
+        "en": "input example 1"
+      },
+      "subtitle": {
+        "en": "input example 1"
+      },
+      "description": {
+        "en": "input example 1"
+      },
+      "className": null,
+      "adminTitle": "input example 1",
+      "slug": "input-example-1",
+      "placeholder": {},
+      "label": {}
+    },
+    {
+      "id": "66785cfd-1c2d-43fd-a3fc-d3be9d078ca7",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "type": "default",
+      "isRequired": false,
+      "title": {
+        "en": "input example 2"
+      },
+      "subtitle": {
+        "en": "input example 2"
+      },
+      "description": {
+        "en": "input example 2"
+      },
+      "className": null,
+      "adminTitle": "input example 2",
+      "slug": "input-example-2",
+      "placeholder": {},
+      "label": {}
+    },
+    {
+      "id": "da2cd9ca-8578-458a-a9a8-752a7a6c9e15",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "type": "default",
+      "isRequired": false,
+      "title": {
+        "en": "input example 3"
+      },
+      "subtitle": {
+        "en": "input example 3"
+      },
+      "description": {
+        "en": "input example 3"
+      },
+      "className": null,
+      "adminTitle": "input example 3",
+      "slug": "input-example-3",
+      "placeholder": {},
+      "label": {}
+    }
+  ]
+}

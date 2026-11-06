@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Explore module",
+    "ru": "Изучить модуль"
+  },
+  "subtitle": {},
+  "url": "/framework/modules/analytic",
+  "className": "w-fit",
+  "id": "eb922ed0-e02e-4484-b118-b27722c1df22",
+  "createdAt": "2026-10-24T01:06:13.387Z",
+  "updatedAt": "2026-10-24T01:06:13.387Z",
+  "variant": "secondary",
+  "adminTitle": "Explore module",
+  "slug": "framework-journey-module-analytic-actions-0"
+}

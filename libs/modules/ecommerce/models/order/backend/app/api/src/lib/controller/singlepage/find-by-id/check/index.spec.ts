@@ -7,6 +7,7 @@
  */
 
 const mockOrderUpdate = jest.fn();
+const mockOrderExpire = jest.fn();
 const mockPaymentIntentUpdate = jest.fn();
 
 jest.mock("@sps/shared-utils", () => ({
@@ -48,18 +49,21 @@ describe("Given: a delivering subscription with an hourly interval", () => {
   /**
    * BDD Scenario: the hourly subscription reaches its deadline.
    *
-   * Given: a delivering order was last updated more than one hour ago and has no newer invoice.
+   * Given: a delivering order has a fixed hourly deadline and a recent unrelated update.
    * When: the periodic order check processes it.
    * Then: it marks the order delivered for the renewal processor.
    */
-  it("Then: marks the order delivered after one hour", async () => {
+  it("Then: marks the order delivered at its fixed deadline", async () => {
     const order = {
       id: "order-1",
       status: "delivering",
-      updatedAt: "2026-07-22T08:59:59.999Z",
+      updatedAt: "2026-07-22T09:59:59.999Z",
+      subscriptionPeriodEndsAt: "2026-07-22T09:59:59.999Z",
+      subscriptionPeriodInvoiceId: "invoice-a",
     };
     const service = {
       findById: jest.fn().mockResolvedValue(order),
+      expireSubscriptionPeriod: mockOrderExpire,
       findByIdCheckoutAttributesByCurrency: jest.fn().mockResolvedValue({
         amount: 1,
         type: "subscription",
@@ -97,17 +101,10 @@ describe("Given: a delivering subscription with an hourly interval", () => {
 
     await new Handler(service as any).execute(context as any, undefined);
 
-    expect(mockOrderUpdate).toHaveBeenCalledWith({
+    expect(mockOrderExpire).toHaveBeenCalledWith({
       id: "order-1",
-      data: {
-        ...order,
-        status: "delivered",
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": "test-rbac-secret",
-        },
-      },
+      expectedInvoiceId: "invoice-a",
+      expectedEndsAt: "2026-07-22T09:59:59.999Z",
     });
   });
 });
@@ -140,6 +137,7 @@ describe("Given: a paying order is waiting for payment initialization", () => {
     const paymentIntents = props.paymentIntents ?? {};
     const service = {
       findById: jest.fn().mockResolvedValue(order),
+      expireSubscriptionPeriod: mockOrderExpire,
       findByIdCheckoutAttributesByCurrency: jest.fn(),
       ordersToBillingModuleCurrencies: {
         find: jest.fn().mockResolvedValue([]),
@@ -253,5 +251,77 @@ describe("Given: a paying order is waiting for payment initialization", () => {
         },
       },
     });
+  });
+});
+
+describe("fixed subscription deadline", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date("2026-10-23T10:00:00Z"));
+  });
+  afterEach(() => jest.useRealTimers());
+  async function check(input: any) {
+    const order = { subscriptionPeriodInvoiceId: "invoice-a", ...input };
+    const service = {
+      findById: jest.fn().mockResolvedValue(order),
+      expireSubscriptionPeriod: mockOrderExpire,
+      ordersToBillingModuleCurrencies: {
+        find: jest.fn().mockResolvedValue([]),
+      },
+      ordersToBillingModulePaymentIntents: {
+        find: jest.fn().mockResolvedValue([{ id: "open-renewal" }]),
+      },
+    };
+    await new Handler(service as any).execute(
+      { req: { param: () => order.id }, json: (data: unknown) => data } as any,
+      undefined,
+    );
+    return service;
+  }
+  it("expires exactly at endsAt despite a recent unrelated update or an OPEN renewal", async () => {
+    const order = {
+      id: "fixed",
+      status: "delivering",
+      type: "history",
+      updatedAt: new Date(),
+      subscriptionPeriodEndsAt: new Date(),
+    };
+    const service = await check(order);
+    expect(mockOrderExpire).toHaveBeenCalledWith({
+      id: "fixed",
+      expectedInvoiceId: "invoice-a",
+      expectedEndsAt: new Date().toISOString(),
+    });
+    expect(
+      service.ordersToBillingModulePaymentIntents.find,
+    ).not.toHaveBeenCalled();
+  });
+  it("retains requested cancellation until the original deadline", async () => {
+    await check({
+      id: "fixed",
+      status: "requested_cancelation",
+      subscriptionPeriodEndsAt: new Date(Date.now() + 1),
+    });
+    expect(mockOrderExpire).not.toHaveBeenCalled();
+    await check({
+      id: "fixed",
+      status: "requested_cancelation",
+      subscriptionPeriodEndsAt: new Date(),
+    });
+    expect(mockOrderExpire).toHaveBeenCalledWith({
+      id: "fixed",
+      expectedInvoiceId: "invoice-a",
+      expectedEndsAt: new Date().toISOString(),
+    });
+  });
+  it("leaves legacy rows for explicit verified freeze instead of deriving a new mutable clock", async () => {
+    await check({
+      id: "legacy",
+      status: "delivering",
+      updatedAt: "2020-01-01T00:00:00Z",
+      subscriptionPeriodEndsAt: null,
+    });
+    expect(mockOrderExpire).not.toHaveBeenCalled();
   });
 });

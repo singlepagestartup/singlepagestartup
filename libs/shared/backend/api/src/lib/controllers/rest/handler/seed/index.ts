@@ -4,6 +4,7 @@ import { Context } from "hono";
 import { Next } from "hono/types";
 import { inject, injectable } from "inversify";
 import { type IService } from "../../../../service";
+import { getHttpErrorType } from "@sps/backend-utils";
 import { DI } from "../../../../di/constants";
 
 @injectable()
@@ -24,11 +25,9 @@ export class Handler<
       return c.json({
         data: result,
       });
-    } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal Server Error",
-        cause: error,
-      });
+    } catch (error) {
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

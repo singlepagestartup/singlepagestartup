@@ -1,5 +1,4 @@
 import defaultTheme from "tailwindcss/defaultTheme";
-import colors from "tailwindcss/colors";
 import plugin from "tailwindcss/plugin";
 import { Config } from "tailwindcss";
 import typographyPlugin from "@tailwindcss/typography";
@@ -9,28 +8,38 @@ const shadcnPlugin = plugin(
   function ({ addBase }) {
     addBase({
       ":root": {
-        "--background": "0 0% 100%",
-        "--foreground": "222.2 47.4% 11.2%",
-        "--muted": "210 40% 96.1%",
-        "--muted-foreground": "215.4 16.3% 46.9%",
-        "--popover": "0 0% 100%",
-        "--popover-foreground": "222.2 47.4% 11.2%",
-        "--border": "214.3 31.8% 91.4%",
-        "--input": "214.3 31.8% 91.4%",
-        "--card": "0 0% 100%",
-        "--card-foreground": "222.2 47.4% 11.2%",
-        "--primary": "222.2 47.4% 11.2%",
-        "--primary-foreground": "210 40% 98%",
-        "--secondary": "210 40% 96.1%",
-        "--secondary-foreground": "222.2 47.4% 11.2%",
-        "--accent": "210 40% 96.1%",
-        "--accent-foreground": "222.2 47.4% 11.2%",
-        "--destructive": "0 100% 50%",
-        "--destructive-foreground": "210 40% 98%",
-        "--ring": "215 20.2% 65.1%",
+        "--background": "0.000000 0.000000% 100.000000%",
+        "--foreground": "203.333333 27.272727% 12.941176%",
+        "--muted": "210.000000 22.222222% 96.470588%",
+        "--muted-foreground": "202.857143 10.344828% 39.803922%",
+        "--popover": "0.000000 0.000000% 100.000000%",
+        "--popover-foreground": "203.333333 27.272727% 12.941176%",
+        "--border": "204.000000 16.666667% 88.235294%",
+        "--input": "204.000000 16.666667% 88.235294%",
+        "--card": "0.000000 0.000000% 100.000000%",
+        "--card-foreground": "203.333333 27.272727% 12.941176%",
+        "--primary": "80.281690 81.609195% 65.882353%",
+        "--primary-foreground": "203.333333 27.272727% 12.941176%",
+        "--secondary": "210.000000 22.222222% 96.470588%",
+        "--secondary-foreground": "203.333333 27.272727% 12.941176%",
+        "--accent": "210.000000 22.222222% 96.470588%",
+        "--accent-foreground": "203.333333 27.272727% 12.941176%",
+        "--destructive": "351.310345 67.441860% 42.156863%",
+        "--destructive-foreground": "0.000000 0.000000% 100.000000%",
+        "--ring": "203.333333 27.272727% 12.941176%",
+        "--default": "203.333333 27.272727% 12.941176%",
+        "--default-foreground": "0.000000 0.000000% 100.000000%",
+        "--default-muted-foreground": "204.000000 14.563107% 79.803922%",
+        "--destructive-surface": "351.428571 100.000000% 97.254902%",
+        "--destructive-border": "349.811321 54.639175% 80.980392%",
         "--radius": "0.5rem",
       },
       ".dark": {
+        "--default": "213 31% 91%",
+        "--default-foreground": "224 71% 4%",
+        "--default-muted-foreground": "215.4 16.3% 46.9%",
+        "--destructive-surface": "0 63% 12%",
+        "--destructive-border": "0 63% 31%",
         "--background": "224 71% 4%",
         "--foreground": "213 31% 91%",
         "--muted": "223 47% 11%",
@@ -80,16 +89,14 @@ const shadcnPlugin = plugin(
           ring: "hsl(var(--ring))",
           background: "hsl(var(--background))",
           foreground: "hsl(var(--foreground))",
+          default: {
+            DEFAULT: "hsl(var(--default))",
+            foreground: "hsl(var(--default-foreground))",
+            "muted-foreground": "hsl(var(--default-muted-foreground))",
+          },
           primary: {
             DEFAULT: "hsl(var(--primary))",
             foreground: "hsl(var(--primary-foreground))",
-            50: colors.indigo[50],
-            300: colors.indigo[300],
-            400: colors.indigo[400],
-            500: colors.indigo[500],
-            600: colors.indigo[600],
-            700: colors.indigo[700],
-            900: colors.indigo[900],
           },
           secondary: {
             DEFAULT: "hsl(var(--secondary))",
@@ -97,6 +104,8 @@ const shadcnPlugin = plugin(
           },
           destructive: {
             DEFAULT: "hsl(var(--destructive))",
+            surface: "hsl(var(--destructive-surface))",
+            border: "hsl(var(--destructive-border))",
             foreground: "hsl(var(--destructive-foreground))",
           },
           muted: {
@@ -128,7 +137,7 @@ const shadcnPlugin = plugin(
           width: "width",
         },
         fontFamily: {
-          sans: ["var(--font-sans)", ...defaultTheme.fontFamily.sans],
+          sans: ["var(--font-default)", ...defaultTheme.fontFamily.sans],
           default: ["var(--font-default)", ...defaultTheme.fontFamily.sans],
           primary: ["var(--font-primary)", ...defaultTheme.fontFamily.sans],
         },

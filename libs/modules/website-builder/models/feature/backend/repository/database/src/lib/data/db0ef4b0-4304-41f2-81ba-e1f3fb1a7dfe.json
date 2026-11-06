@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "db0ef4b0-4304-41f2-81ba-e1f3fb1a7dfe",
+  "createdAt": "2026-10-26T00:11:56.512Z",
+  "updatedAt": "2026-10-27T14:59:58.174Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Prepare the interface",
+    "ru": "Подготовьте интерфейс"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Use profiles, threads and messages. Connect only the materials, files or products you need.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Используйте профили, ветки и сообщения. Подключите только нужные материалы, файлы или продукты.\"}]}]}"
+  },
+  "adminTitle": "Подготовьте интерфейс",
+  "slug": "framework-reviewed-article-social-build-feature-2"
+}

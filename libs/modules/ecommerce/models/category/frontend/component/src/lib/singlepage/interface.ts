@@ -1,3 +1,5 @@
+import { IComponentProps as IHiddenComponentProps } from "@sps/shared-frontend-components/singlepage/hidden/interface";
+import type { IComponentProps as ILoading } from "./loading/interface";
 import { IComponentProps as IButtonDefaultComponentProps } from "./button-default/interface";
 import { IComponentProps as IFindComponentProps } from "./find/interface";
 import { IComponentProps as IAdminFormComponentProps } from "./admin/form/interface";
@@ -14,6 +16,8 @@ import { IComponentProps as IDefaultComponentProps } from "./default/interface";
 import { IComponentProps as IOverviewDefaultComponentProps } from "./overview-default/interface";
 
 export type IComponentProps =
+  | IHiddenComponentProps
+  | ILoading
   | IButtonDefaultComponentProps
   | IFindComponentProps
   | IAdminFormComponentProps

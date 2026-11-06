@@ -6,6 +6,7 @@ get_environment_type $2
 ./create_inventory.sh
 
 . ./get_env.sh
+. ./github/input.sh
 
 PROJECT_NAME=$(get_env "$BASH_SOURCE" "PROJECT_NAME")
 
@@ -49,10 +50,7 @@ then
     for i in "${BRANCHES[@]}"
     do
         BRANCH_NAME=$i
-        node ./github/github-node-api/create_branch.js \
-            $GITHUB_TOKEN \
-            $GITHUB_REPOSITORY \
-            $BRANCH_NAME
+        github_command create_branch BRANCH_NAME || exit 1
     done
         
     for i in "${SECRETS[@]}"
@@ -60,11 +58,7 @@ then
         SECRET_NAME="${i%% *}"
         SECRET_CONTENT="${i#* }"
 
-        node ./github/github-node-api/create_secret.js \
-            $GITHUB_TOKEN \
-            $GITHUB_REPOSITORY \
-            "${PREFIX}${SECRET_NAME}" \
-            $SECRET_CONTENT
+        SECRET_NAME="${PREFIX}${SECRET_NAME}" github_command create_secret SECRET_NAME SECRET_CONTENT || exit 1
     done
 else
     cd ./github/github-node-api && npm install && cd ../..
@@ -74,9 +68,6 @@ else
         SECRET_NAME="${i%% *}"
         SECRET_CONTENT="${i#* }"
 
-        node ./github/github-node-api/delete_secret.js \
-            $GITHUB_TOKEN \
-            $GITHUB_REPOSITORY \
-            "${PREFIX}${SECRET_NAME}"
+        SECRET_NAME="${PREFIX}${SECRET_NAME}" github_command delete_secret SECRET_NAME || exit 1
     done
 fi

@@ -11,6 +11,7 @@ const mockSocialModuleChatsToThreadsCreate = jest.fn();
 
 jest.mock("@sps/shared-utils", () => {
   return {
+    ...jest.requireActual("@sps/shared-utils"),
     RBAC_SECRET_KEY: "rbac-secret",
   };
 });

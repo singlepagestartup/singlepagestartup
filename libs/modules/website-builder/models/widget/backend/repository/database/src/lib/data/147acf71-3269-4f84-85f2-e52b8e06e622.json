@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Build the application that will run",
+    "ru": "Соберите приложение, которое будет работать"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The root commands \"},{\"type\":\"text\",\"text\":\"host:build\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" and \"},{\"type\":\"text\",\"text\":\"host:start\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" use the Host wrapper with the expected Node environment. Check the build against the local API and its saved records. Reading session cookies inside an ISR fallback can break the built route even if dev navigation worked.\"}]},{\"type\":\"codeBlock\",\"attrs\":{\"language\":\"sh\"},\"content\":[{\"type\":\"text\",\"text\":\"npm run host:build\\nnpm run host:start\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The public catalogue can remain server-rendered while the current user's RBAC Widget mounts its operation on the client. The \"},{\"type\":\"text\",\"text\":\"isServer: false\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" prop inside an arbitrary server tree does not create a client boundary by itself. Check the public entrypoint, reader props and rendered JSX slots.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Корневые команды \"},{\"type\":\"text\",\"text\":\"host:build\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" и \"},{\"type\":\"text\",\"text\":\"host:start\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" используют обёртку Host с ожидаемым окружением Node. Проверяйте сборку с локальным API и его сохранёнными записями. Чтение cookie сессии внутри ISR fallback может сломать собранный маршрут, даже если переход в dev работал.\"}]},{\"type\":\"codeBlock\",\"attrs\":{\"language\":\"sh\"},\"content\":[{\"type\":\"text\",\"text\":\"npm run host:build\\nnpm run host:start\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Публичный каталог может остаться серверным, а RBAC Widget текущего пользователя — монтировать свою операцию на клиенте. Параметр \"},{\"type\":\"text\",\"text\":\"isServer: false\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" внутри произвольного серверного дерева сам по себе не создаёт клиентскую границу. Проверьте публичный вход, параметры reader и готовые JSX-слоты.\"}]}]}"
+  },
+  "anchor": "ru-section-building-and-revalidating-sps-with-safe-content-cutovers-1",
+  "className": "",
+  "id": "147acf71-3269-4f84-85f2-e52b8e06e622",
+  "createdAt": "2026-10-26T07:34:01.255Z",
+  "updatedAt": "2026-10-27T14:58:48.655Z",
+  "variant": "content-rich",
+  "adminTitle": "Соберите приложение, которое будет работать",
+  "slug": "ru-section-building-and-revalidating-sps-with-safe-content-cutovers-1"
+}

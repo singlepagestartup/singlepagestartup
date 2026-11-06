@@ -115,7 +115,7 @@ export class Service {
     let subjectId: string | undefined = undefined;
 
     try {
-      const decoded = await jwt.verify(props.token, props.secret);
+      const decoded = await jwt.verify(props.token, props.secret, "HS256");
       const claimedId = decoded.subject?.["id"];
 
       if (typeof claimedId === "string" && claimedId) {

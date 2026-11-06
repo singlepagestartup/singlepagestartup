@@ -5,9 +5,11 @@ export const OPEN_ROUTER_INTERNAL_TOKEN_USD = 0.001;
 export const OPEN_ROUTER_PRECHARGE_TOKENS = 1;
 
 export type TOpenRouterBillingPurpose =
+  | "context_summary"
   | "classification"
   | "classification_repair"
   | "knowledge_rerank"
+  | "tool_selection"
   | "model_selection"
   | "model_selection_repair"
   | "generation"

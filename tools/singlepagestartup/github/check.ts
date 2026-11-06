@@ -1,8 +1,7 @@
 import {
-  documentConfirmation,
   parseDocument,
+  hasMarkdownContent,
 } from "../../studio/workspace/document";
-import { mergeMarkdown } from "../../studio/workspace/merge";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { parse } from "yaml";
@@ -266,7 +265,7 @@ function resolveRemoteRef(
   );
 }
 
-export function findApprovedStrategyBaseline(
+export function findStrategyBaseline(
   repositoryRoot: string,
   remoteRef: string,
   strategyPath: string,
@@ -288,29 +287,7 @@ export function findApprovedStrategyBaseline(
       ["cat-file", "-p", `${commit}:${strategyPath}`],
       true,
     );
-    const layer = strategyPath.endsWith("/startup.md")
-      ? "startup"
-      : "singlepage";
-    if (parseDocument(source).metadata.confirmation !== undefined) {
-      const base =
-        layer === "startup"
-          ? runGit(
-              repositoryRoot,
-              [
-                "cat-file",
-                "-p",
-                `${commit}:${strategyPath.replace(/startup\.md$/, "singlepage.md")}`,
-              ],
-              true,
-            )
-          : "";
-      const resolved =
-        layer === "startup" ? mergeMarkdown(base, source).content : source;
-      if (documentConfirmation(resolved, layer).confirmed) return commit;
-    } else if (/^\|\s*Status\s*\|\s*`?approved`?\s*\|\s*$/m.test(source)) {
-      // Published strategies predating document metadata retain their baseline.
-      return commit;
-    }
+    if (hasMarkdownContent(parseDocument(source).body)) return commit;
   }
   return null;
 }
@@ -398,7 +375,7 @@ export function checkGitHubChanges(
     options.remoteRef,
   );
   const headCommit = runGit(options.repositoryRoot, ["rev-parse", remoteRef]);
-  const baselineCommit = findApprovedStrategyBaseline(
+  const baselineCommit = findStrategyBaseline(
     options.repositoryRoot,
     remoteRef,
     config.strategy_path,

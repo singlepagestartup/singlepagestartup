@@ -2,13 +2,13 @@
   "id": "a8e1cca9-22f3-4579-a508-ab9ad848440a",
   "className": "",
   "createdAt": "2025-01-24T23:47:55.534Z",
-  "updatedAt": "2025-11-15T09:32:28.544Z",
-  "variant": "article-list-default",
+  "updatedAt": "2026-10-26T07:34:02.885Z",
+  "variant": "article-feed-default",
   "adminTitle": "Article List",
   "slug": "gbkmfgklb",
   "title": {
-    "en": "Articles",
-    "ru": "Статьи"
+    "en": "Latest articles",
+    "ru": "Все статьи"
   },
   "subtitle": {},
   "description": {}

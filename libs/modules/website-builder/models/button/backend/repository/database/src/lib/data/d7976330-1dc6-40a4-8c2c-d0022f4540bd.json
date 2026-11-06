@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Explore module",
+    "ru": "Изучить модуль"
+  },
+  "subtitle": {},
+  "url": "/framework/modules/file-storage",
+  "className": "w-fit",
+  "id": "d7976330-1dc6-40a4-8c2c-d0022f4540bd",
+  "createdAt": "2026-10-24T01:06:08.779Z",
+  "updatedAt": "2026-10-24T01:06:08.779Z",
+  "variant": "secondary",
+  "adminTitle": "Explore module",
+  "slug": "framework-journey-module-file-storage-actions-0"
+}

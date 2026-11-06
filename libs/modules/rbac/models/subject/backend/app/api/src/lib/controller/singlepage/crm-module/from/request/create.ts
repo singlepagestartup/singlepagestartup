@@ -1,223 +1,38 @@
-import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import * as jwt from "hono/jwt";
-import { authorization, getHttpErrorType } from "@sps/backend-utils";
-import { Service } from "../../../../../service";
-import { api as crmFormsToRequestsApi } from "@sps/crm/relations/forms-to-requests/sdk/server";
-import { api as crmRequestApi } from "@sps/crm/models/request/sdk/server";
-import { api } from "@sps/rbac/models/subject/sdk/server";
+import { getHttpErrorType } from "@sps/backend-utils";
+import { requestSubmissionSchema as crmRequestSubmissionSchema } from "@sps/crm/models/request/sdk/model";
+import type { Service } from "../../../../../service";
 
 export class Handler {
-  service: Service;
-
-  constructor(service: Service) {
-    this.service = service;
-  }
-
+  constructor(readonly service: Service) {}
   async execute(c: Context, next: any): Promise<Response> {
     try {
-      if (!RBAC_JWT_SECRET) {
-        throw new Error("Configuration error. RBAC_JWT_SECRET not set");
-      }
-
-      if (!RBAC_SECRET_KEY) {
-        throw new Error("Configuration error. RBAC_SECRET_KEY not set");
-      }
-
-      const id = c.req.param("id");
-
-      if (!id) {
-        throw new Error("Validation error. No 'id' provided");
-      }
-
+      const subjectId = c.req.param("id");
       const crmModuleFormId = c.req.param("crmModuleFormId");
-
-      if (!crmModuleFormId) {
-        throw new Error("Validation error. No 'crmModuleFormId' provided");
-      }
-
-      const token = authorization(c);
-
-      if (!token) {
-        return c.json(
-          {
-            data: null,
-          },
-          {
-            status: 401,
-          },
-        );
-      }
-
-      const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
-
+      if (!subjectId || !crmModuleFormId)
+        throw new Error("Validation error. Subject and CRM Form are required");
       const body = await c.req.parseBody();
-
-      if (typeof body["data"] !== "string") {
-        throw new Error("Validation error. Invalid body");
+      if (typeof body.data !== "string")
+        throw new Error("Validation error. Invalid CRM submission body");
+      let raw: unknown;
+      try {
+        raw = JSON.parse(body.data);
+      } catch {
+        throw new Error("Validation error. Invalid CRM submission JSON");
       }
-
-      const data = JSON.parse(body["data"]);
-
-      if (decoded?.["subject"]?.["id"] !== id) {
-        throw new Error("Validation error. Only order owner can update order");
-      }
-
-      const entity = await this.service.findById({
-        id,
-      });
-
-      if (!entity) {
-        throw new Error("Not Found error. No entity found");
-      }
-
-      const form = await this.service.crmModule.form.findById({
-        id: crmModuleFormId,
-      });
-
-      if (!form) {
-        throw new Error("Not Found error. No form found");
-      }
-
-      const request = await crmRequestApi.create({
-        data: {
-          payload: data,
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
-
-      if (!request) {
-        throw new Error("Internal error. Request not created");
-      }
-
-      await crmFormsToRequestsApi.create({
-        data: {
-          formId: form.id,
-          requestId: request.id,
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
-
-      const topics = await this.service.notificationModule.topic.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "slug",
-                method: "eq",
-                value: "information",
-              },
-            ],
-          },
-        },
-      });
-
-      if (!topics?.length) {
-        throw new Error("Not Found error. No topic found");
-      }
-
-      const notificationCrmRequestCreatedTemplates =
-        await this.service.notificationModule.template.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "variant",
-                  method: "ilike",
-                  value: "-crm-form-request-created-",
-                },
-              ],
-            },
-          },
-        });
-
-      if (notificationCrmRequestCreatedTemplates?.length) {
-        const adminRoles = await this.service.role.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "slug",
-                  method: "ilike",
-                  value: "admin",
-                },
-              ],
-            },
-          },
-        });
-
-        for (const notificationCrmRequestCreatedTemplate of notificationCrmRequestCreatedTemplates) {
-          if (notificationCrmRequestCreatedTemplate.variant.includes("admin")) {
-            if (adminRoles?.length) {
-              for (const adminRole of adminRoles) {
-                const subjectsToAdminRoles =
-                  await this.service.subjectsToRoles.find({
-                    params: {
-                      filters: {
-                        and: [
-                          {
-                            column: "roleId",
-                            method: "eq",
-                            value: adminRole.id,
-                          },
-                        ],
-                      },
-                    },
-                  });
-
-                if (subjectsToAdminRoles?.length) {
-                  for (const subjectToAdminRole of subjectsToAdminRoles) {
-                    await api.notify({
-                      id: subjectToAdminRole.subjectId,
-                      data: {
-                        notification: {
-                          topic: {
-                            slug: "information",
-                          },
-                          template: notificationCrmRequestCreatedTemplate,
-                          notification: {
-                            title: notificationCrmRequestCreatedTemplate.title,
-                            data: {
-                              crm: {
-                                form: { ...form, ...data },
-                              },
-                              rbac: {
-                                subject: entity,
-                              },
-                            },
-                          },
-                        },
-                      },
-                      options: {
-                        headers: {
-                          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                        },
-                      },
-                    });
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-
+      const parsed = crmRequestSubmissionSchema.safeParse(raw);
+      if (!parsed.success)
+        throw new Error("Validation error. Invalid CRM submission values");
+      const data = parsed.data;
       return c.json({
-        data: {
-          ...entity,
+        data: await this.service.crmModuleFormRequestCreate({
+          subjectId,
+          crmModuleFormId,
           data,
-        },
+        }),
       });
-    } catch (error: any) {
+    } catch (error) {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });
     }

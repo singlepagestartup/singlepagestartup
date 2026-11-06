@@ -1,3 +1,4 @@
+import { assertKnowledgeAttachmentBytes } from "@sps/backend-utils";
 import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -27,7 +28,9 @@ export async function readKnowledgeSourceFile(props: {
   rootPath: string;
   filePath: string;
 }): Promise<KnowledgeSourceInput> {
-  const content = await fs.readFile(props.filePath, "utf-8");
+  const bytes = await fs.readFile(props.filePath);
+  assertKnowledgeAttachmentBytes({ bytes, name: props.filePath });
+  const content = bytes.toString("utf8");
   return parseKnowledgeSourceFile({
     rootPath: props.rootPath,
     filePath: props.filePath,
@@ -44,25 +47,14 @@ export function parseKnowledgeSourceFile(props: {
   const filename = path.basename(props.filePath);
   const directoryName = path.basename(path.dirname(props.filePath));
   const title = extractTitle(props.content) || humanize(directoryName);
-  const type = inferSourceType(relativePath, filename);
   const timestamps = extractTimestamps(props.content);
   const normalizedContent = props.content.trim();
 
   return {
     title,
-    type,
     content: normalizedContent,
     description: filename.includes("description") ? normalizedContent : null,
-    originalPath: relativePath,
-    contentHash: hashContent(normalizedContent),
-    metadata: {
-      filename,
-      directoryName,
-      relativePath,
-      absolutePath: props.filePath,
-      hasTimestamps: timestamps.length > 0,
-      timestamps: timestamps.slice(0, 50),
-    },
+    slug: "file-" + hashContent(relativePath),
   };
 }
 

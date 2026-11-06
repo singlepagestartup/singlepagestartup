@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Work with Notification.",
+    "ru": "Работайте с Notification."
+  },
+  "subtitle": {
+    "en": "Foundation",
+    "ru": "Основа"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Delivery records, templates and notification topics.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Записи о доставке, шаблоны и темы уведомлений.\"}]}]}"
+  },
+  "anchor": "module-notification",
+  "className": "@5xl:grid-cols-2",
+  "id": "727f99d5-74ea-45ac-a09d-1628fb1474c6",
+  "createdAt": "2026-10-24T01:06:10.777Z",
+  "updatedAt": "2026-10-24T01:06:10.777Z",
+  "variant": "content-definition-grid-page",
+  "adminTitle": "Work with Notification.",
+  "slug": "framework-journey-guide-notification-overview"
+}

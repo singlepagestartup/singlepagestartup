@@ -1,4 +1,5 @@
 import {
+  existsSync,
   mkdirSync,
   readFileSync,
   readdirSync,
@@ -9,10 +10,12 @@ import path from "node:path";
 import {
   parseProductCatalog,
   productStoryId,
-  type ProductCatalogLayer,
+  productDocumentEntries,
+  productMaterialEntries,
+  productMaterialStoryGroups,
 } from "../../../apps/studio/workspace/utils/products/catalog";
 
-/** Each source owns its sidebar products. Resolved default remains a loader concern. */
+/** Source folders contain product components; each working document is a native story. */
 export function productStoryEntries(
   singlepageSource: string,
   startupSource: string,
@@ -22,13 +25,14 @@ export function productStoryEntries(
       layer === "singlepage" ? singlepageSource : startupSource,
       layer,
     );
-    return catalog.products.map(({ id, name }, index) => ({
-      id,
+    return catalog.products.map((product, index) => ({
+      ...product,
       layer,
-      storyId: productStoryId(layer, id),
-      title: `Workspace/40 Products/${layer}`,
-      name: `${String(index + 1).padStart(2, "0")} ${name}`,
-      exportName: `Product_${id.replaceAll("-", "_")}`,
+      storyId: productStoryId(layer, product.id),
+      title: `Workspace/10 Продукты/${layer}/${String(index + 1).padStart(2, "0")} ${product.name.replaceAll("/", " · ")}`,
+      documents: productDocumentEntries(product),
+      materials: productMaterialEntries(product),
+      materialGroups: productMaterialStoryGroups(product),
     }));
   });
 }
@@ -48,44 +52,93 @@ export function syncProductStories(workspace: string, outputDirectory: string) {
   };
   mkdirSync(outputDirectory, { recursive: true });
   const expected = new Set<string>();
-  for (const layer of ["singlepage", "startup"] as ProductCatalogLayer[]) {
-    const fileName = `${layer}.stories.tsx`;
+  const save = (fileName: string, text: string) => {
     expected.add(fileName);
-    const products = entries.filter((entry) => entry.layer === layer);
-    const stories = products.length
-      ? products
-          .map(
-            (entry) => `export const ${entry.exportName} = {
-  name: ${JSON.stringify(entry.name)},
-  tags: ["sps-product", "sps-source-${layer}"],
-  args: { productId: ${JSON.stringify(entry.id)} },
-};`,
-          )
-          .join("\n")
-      : `export const Empty = { name: "No products", tags: ["sps-empty", "sps-source-${layer}"] };`;
-    const source = `// Generated from the owning product catalog. Do not edit.
+    const file = path.join(outputDirectory, fileName);
+    if (!existsSync(file) || readFileSync(file, "utf8") !== text)
+      writeFileSync(file, text);
+  };
+  const header = `// Generated from the owning product catalog. Do not edit.
 import { ProductCatalog } from ${JSON.stringify(relativeImport("utils/components/ProductCatalog"))};
-import { productCatalogViews } from ${JSON.stringify(relativeImport("utils/products/source"))};
-export default {
-  id: "workspace-40-products-${layer}",
-  title: "Workspace/40 Products/${layer}",
+import { ProductMaterials } from ${JSON.stringify(relativeImport("utils/components/ProductMaterials"))};
+import { productCatalogViews } from ${JSON.stringify(relativeImport("utils/products/source"))};\n`;
+  for (const product of entries) {
+    const productArgs = `view: productCatalogViews.${product.layer}, productId: ${JSON.stringify(product.id)}`;
+    save(
+      `${product.layer}-${product.id}-10-products.stories.tsx`,
+      header +
+        `export default {
+  id: ${JSON.stringify(`workspace-10-products-${product.layer}-${product.id}`)},
+  title: ${JSON.stringify(product.title)},
+  component: ProductCatalog,
+  parameters: { controls: { disable: true }, layout: "fullscreen" },
+  args: { ${productArgs} },
+};
+${product.documents
+  .map(
+    (item, index) => `export const ${item.id.replaceAll("-", "_")} = {
+  name: ${JSON.stringify(`${String(index + 1).padStart(2, "0")} ${item.title}`)},
+  tags: ["sps-product-document", "sps-source-${product.layer}"],
+  args: { documentId: ${JSON.stringify(item.id)} },
+};`,
+  )
+  .join("\n")}
+`,
+    );
+    const baseId = `workspace-50-materials-${product.layer}-${product.id}`;
+    const productTitle = product.title.replace("10 Продукты", "50 Материалы");
+    for (const [index, group] of product.materialGroups.entries()) {
+      const groupTitle = `${String(index + 1).padStart(2, "0")} ${group.title.replaceAll("/", " · ")}`;
+      save(
+        `${product.layer}-${product.id}-50-materials-${group.id}.stories.tsx`,
+        header +
+          `export default {
+  id: ${JSON.stringify(`${baseId}-${group.id}`)},
+  title: ${JSON.stringify(`${productTitle}/${groupTitle}`)},
+  component: ProductMaterials,
+  parameters: { controls: { disable: true }, layout: "fullscreen" },
+  args: { ${productArgs} },
+};
+${group.items
+  .map(
+    (item, itemIndex) => `export const ${item.id.replaceAll("-", "_")} = {
+  name: ${JSON.stringify(group.items.length === 1 && group.id !== "articles" ? groupTitle : `${String(itemIndex + 1).padStart(2, "0")} ${item.title}`)},
+  tags: ["sps-product-material", "sps-source-${product.layer}"],
+  args: { materialId: ${JSON.stringify(item.id)} },
+};`,
+  )
+  .join("\n")}
+
+`,
+      );
+    }
+  }
+
+  // Empty source layers remain visible without borrowing another business's products.
+  for (const layer of ["singlepage", "startup"] as const) {
+    if (entries.some((product) => product.layer === layer)) continue;
+    for (const [area, label] of [
+      ["10-products", "10 Продукты"],
+      ["50-materials", "50 Материалы"],
+    ] as const) {
+      save(
+        `${layer}-${area}-empty.stories.tsx`,
+        header +
+          `export default {
+  id: "workspace-${area}-${layer}-empty",
+  title: "Workspace/${label}/${layer}/${area === "10-products" ? "Каталог продуктов" : "Материалы продуктов"}",
   component: ProductCatalog,
   parameters: { controls: { disable: true }, layout: "fullscreen" },
   args: { view: productCatalogViews.${layer} },
 };
-${stories}
-`;
-    const file = path.join(outputDirectory, fileName);
-    let previous: string | undefined;
-    try {
-      previous = readFileSync(file, "utf8");
-    } catch {
-      /* New derived source navigation. */
+export const Empty = { name: "${area === "10-products" ? "Продуктов пока нет" : "Материалов пока нет"}" };
+`,
+      );
     }
-    if (source !== previous) writeFileSync(file, source);
   }
-  for (const fileName of readdirSync(outputDirectory))
-    if (fileName.endsWith(".stories.tsx") && !expected.has(fileName))
-      unlinkSync(path.join(outputDirectory, fileName));
+  for (const name of readdirSync(outputDirectory)) {
+    if (name.endsWith(".stories.tsx") && !expected.has(name))
+      unlinkSync(path.join(outputDirectory, name));
+  }
   return entries;
 }

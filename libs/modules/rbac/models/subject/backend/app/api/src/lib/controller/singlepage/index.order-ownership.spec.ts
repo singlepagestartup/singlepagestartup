@@ -98,20 +98,12 @@ const subjectsToEcommerceModuleOrders = [
 
 function createService() {
   return {
-    subjectsToEcommerceModuleOrders: {
-      find: jest.fn(async (props: any) => {
-        const filters = props?.params?.filters?.and || [];
-
-        return subjectsToEcommerceModuleOrders.filter((relation) => {
-          return filters.every((filter: any) => {
-            return (
-              filter.method === "eq" &&
-              relation[filter.column as keyof typeof relation] === filter.value
-            );
-          });
-        });
-      }),
-    },
+    ecommerceModuleOrderAssertAccess: jest.fn(async ({ subjectId, orderId }) => {
+      if (!subjectsToEcommerceModuleOrders.some((relation) =>
+        relation.subjectId === subjectId && relation.ecommerceModuleOrderId === orderId)) {
+        throw new Error("Permission error. Order does not belong to subject");
+      }
+    }),
   };
 }
 
@@ -204,7 +196,7 @@ describe("Given: the per-order subject routes", () => {
         tokenSubjectId: "subject-owner",
       });
 
-      expect(response.status).toBe(401);
+      expect(response.status).toBe(403);
       expect(handler).not.toHaveBeenCalled();
     },
   );
@@ -228,7 +220,7 @@ describe("Given: the per-order subject routes", () => {
       expect(response.status).toBe(401);
       expect(handler).not.toHaveBeenCalled();
       expect(
-        service.subjectsToEcommerceModuleOrders.find,
+        service.ecommerceModuleOrderAssertAccess,
       ).not.toHaveBeenCalled();
     },
   );
@@ -261,7 +253,7 @@ describe("Given: the per-order subject routes", () => {
    * Then: the handler runs.
    */
   it.each(perOrderRoutes)(
-    "When: the operator secret names the subject's own order Then: $name runs the handler",
+    "When: the operator secret names the subject's own order Then: $name requires the owner's JWT",
     async (route) => {
       const { response, handler } = await request({
         route,
@@ -270,8 +262,8 @@ describe("Given: the per-order subject routes", () => {
         operatorSecret: "test-rbac-secret-key",
       });
 
-      expect(response.status).toBe(200);
-      expect(handler).toHaveBeenCalledTimes(1);
+      expect(response.status).toBe(400);
+      expect(handler).not.toHaveBeenCalled();
     },
   );
 
@@ -294,7 +286,7 @@ describe("Given: the per-order subject routes", () => {
       expect(response.status).toBe(200);
       expect(handler).toHaveBeenCalledTimes(1);
       expect(
-        service.subjectsToEcommerceModuleOrders.find,
+        service.ecommerceModuleOrderAssertAccess,
       ).not.toHaveBeenCalled();
     },
   );

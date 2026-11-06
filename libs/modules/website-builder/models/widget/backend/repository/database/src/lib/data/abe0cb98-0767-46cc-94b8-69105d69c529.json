@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Extend the use case",
+    "ru": "Дополните сценарий"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[]}",
+    "ru": "{\"type\":\"doc\",\"content\":[]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "abe0cb98-0767-46cc-94b8-69105d69c529",
+  "createdAt": "2026-10-26T00:11:48.180Z",
+  "updatedAt": "2026-10-27T14:59:12.822Z",
+  "variant": "content-rich",
+  "adminTitle": "Дополните сценарий",
+  "slug": "framework-reviewed-article-file-storage-connections"
+}

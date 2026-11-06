@@ -25,20 +25,12 @@ const subjectsToEcommerceModuleOrders = [
 
 function createService() {
   return {
-    subjectsToEcommerceModuleOrders: {
-      find: jest.fn(async (props: any) => {
-        const filters = props?.params?.filters?.and || [];
-
-        return subjectsToEcommerceModuleOrders.filter((relation) => {
-          return filters.every((filter: any) => {
-            return (
-              filter.method === "eq" &&
-              relation[filter.column as keyof typeof relation] === filter.value
-            );
-          });
-        });
-      }),
-    },
+    ecommerceModuleOrderAssertAccess: jest.fn(async ({ subjectId, orderId }) => {
+      if (!subjectsToEcommerceModuleOrders.some((relation) =>
+        relation.subjectId === subjectId && relation.ecommerceModuleOrderId === orderId)) {
+        throw new Error("Permission error. Order does not belong to subject");
+      }
+    }),
   };
 }
 
@@ -72,25 +64,7 @@ describe("Given: the ecommerce-module order ownership guard", () => {
 
     expect(response.status).toBe(200);
     expect(handler).toHaveBeenCalledTimes(1);
-    expect(service.subjectsToEcommerceModuleOrders.find).toHaveBeenCalledWith({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "subjectId",
-              method: "eq",
-              value: "subject-owner",
-            },
-            {
-              column: "ecommerceModuleOrderId",
-              method: "eq",
-              value: "order-owner",
-            },
-          ],
-        },
-        limit: 1,
-      },
-    });
+    expect(service.ecommerceModuleOrderAssertAccess).toHaveBeenCalledWith({ subjectId: "subject-owner", orderId: "order-owner" });
   });
 
   /**
@@ -107,7 +81,7 @@ describe("Given: the ecommerce-module order ownership guard", () => {
       "/subjects/subject-owner/ecommerce-module/orders/order-other",
     );
 
-    expect(response.status).toBe(401);
+    expect(response.status).toBe(403);
     expect(handler).not.toHaveBeenCalled();
   });
 
@@ -125,7 +99,7 @@ describe("Given: the ecommerce-module order ownership guard", () => {
       "/subjects/subject-owner/ecommerce-module/orders/order-without-relation",
     );
 
-    expect(response.status).toBe(401);
+    expect(response.status).toBe(403);
     expect(handler).not.toHaveBeenCalled();
   });
 
@@ -163,7 +137,7 @@ describe("Given: the ecommerce-module order ownership guard", () => {
       { headers: { "X-RBAC-SECRET-KEY": "operator-secret" } },
     );
 
-    expect(response.status).toBe(401);
+    expect(response.status).toBe(403);
     expect(handler).not.toHaveBeenCalled();
   });
 });

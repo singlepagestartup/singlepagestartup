@@ -1,11 +1,45 @@
 {
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "Sign out — SinglePageStartup",
+        "ru": "Выход из аккаунта — SinglePageStartup"
+      },
+      "description": {
+        "en": "End the current SinglePageStartup account session.",
+        "ru": "Завершение текущей сессии аккаунта SinglePageStartup."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "Sign out — SinglePageStartup",
+        "ru": "Выход из аккаунта — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "Sign out — SinglePageStartup",
+        "ru": "Выход из аккаунта — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "End the current SinglePageStartup account session.",
+        "ru": "Завершение текущей сессии аккаунта SinglePageStartup."
+      },
+      "opengraphDescription": {
+        "en": "End the current SinglePageStartup account session.",
+        "ru": "Завершение текущей сессии аккаунта SinglePageStartup."
+      }
+    }
+  },
   "id": "3918e0d6-0f3d-4391-82e8-57ab352a9f5b",
   "title": "RBAC | Logout",
   "url": "/rbac/subject/authentication/logout",
   "description": "Description",
   "createdAt": "2025-01-24T23:47:55.452Z",
-  "updatedAt": "2025-11-15T09:32:28.367Z",
-  "variant": "default",
+  "updatedAt": "2026-10-30T22:25:05.392Z",
+  "variant": "noindex",
   "className": null,
   "language": "en",
   "adminTitle": "bitter magenta turtle"

@@ -1,0 +1,26 @@
+{
+  "intro": {
+    "title": "Перенесите проект в чат.",
+    "paragraphs": [
+      "Создайте аккаунт, чтобы добавить заметки, файлы и изображения. Работайте с AI в переписке каждого документа, затем используйте сохранённые документы в новых обсуждениях проекта."
+    ]
+  },
+  "images": [
+    {
+      "src": "/module-assets/images/singlepage/generated/living-focus/singlepagestartup-photography-project-start-v1-square.png",
+      "alt": "Женщина работает над проектом с ноутбуком и блокнотом.",
+      "assetId": "singlepage-generated-living-focus-photography-project-start-v1-square"
+    },
+    {
+      "src": "/module-assets/images/singlepage/generated/living-focus/singlepagestartup-photography-project-progress-v1-square.png",
+      "alt": "Мужчина изучает набросок проекта рядом с ноутбуком.",
+      "assetId": "singlepage-generated-living-focus-photography-project-progress-v1-square"
+    }
+  ],
+  "aside": {
+    "title": "Перед добавлением файлов",
+    "paragraphs": [
+      "Прочитайте, [как обрабатываются и хранятся материалы](/ai-chat/social/profiles/create#how-your-materials-are-processed-and-stored), включая обработку внешними AI-сервисами и хранение резервных копий после удаления."
+    ]
+  }
+}
