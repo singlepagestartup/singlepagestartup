@@ -1,18 +1,23 @@
 "use client";
 
+import { useCallback } from "react";
+import { IComponentProps as IRelationTableProps } from "@sps/social/relations/profiles-to-blog-module-articles/frontend/component/src/lib/singlepage/admin-v2/table/interface";
+import { Component as ProfilesToBlogModuleArticles } from "@sps/social/relations/profiles-to-blog-module-articles/frontend/component";
+import { Component as BlogArticle } from "@sps/blog/models/article/frontend/component";
+
 import { Component as ParentComponent } from "@sps/social/models/profile/frontend/component";
 import { Component as ProfilesToActions } from "@sps/social/relations/profiles-to-actions/frontend/component";
 import { Component as ProfilesToAttributes } from "@sps/social/relations/profiles-to-attributes/frontend/component";
 import { Component as ProfilesToChats } from "@sps/social/relations/profiles-to-chats/frontend/component";
 import { Component as ProfilesToEcommerceModuleProducts } from "@sps/social/relations/profiles-to-ecommerce-module-products/frontend/component";
 import { Component as ProfilesToFileStorageModuleFiles } from "@sps/social/relations/profiles-to-file-storage-module-files/frontend/component";
-import { Component as ProfilesToKnowledgeModuleDocuments } from "@sps/social/relations/profiles-to-knowledge-module-documents/frontend/component";
+import { Component as ProfilesToKnowledgeModuleSources } from "@sps/social/relations/profiles-to-knowledge-module-sources/frontend/component";
 import { Component as ProfilesToMessages } from "@sps/social/relations/profiles-to-messages/frontend/component";
 import { Component as ProfilesToSkills } from "@sps/social/relations/profiles-to-skills/frontend/component";
 import { Component as ProfilesToWebsiteBuilderModuleWidgets } from "@sps/social/relations/profiles-to-website-builder-module-widgets/frontend/component";
 import { Component as EcommerceProduct } from "@sps/ecommerce/models/product/frontend/component";
 import { Component as FileStorageFile } from "@sps/file-storage/models/file/frontend/component";
-import { Component as KnowledgeDocument } from "@sps/knowledge/models/document/frontend/component";
+import { Component as KnowledgeSource } from "@sps/knowledge/models/source/frontend/component";
 import { Component as WebsiteBuilderWidget } from "@sps/website-builder/models/widget/frontend/component";
 import { IComponentProps } from "./interface";
 import { Component as Action } from "../../action";
@@ -23,22 +28,71 @@ import { Component as Profile } from "../";
 import { Component as Skill } from "../../skill";
 
 export function Component(props: IComponentProps) {
+  const renderProfileForm = useCallback<
+    NonNullable<IRelationTableProps["leftModelAdminForm"]>
+  >(
+    ({ data }) =>
+      data ? (
+        <Profile
+          isServer={false}
+          variant="admin-v2-form"
+          data={{ id: data.profileId } as any}
+        />
+      ) : null,
+    [],
+  );
+  const renderBlogArticleForm = useCallback<
+    NonNullable<IRelationTableProps["rightModelAdminForm"]>
+  >(
+    ({ data }) =>
+      data ? (
+        <BlogArticle
+          isServer={false}
+          variant="admin-v2-form"
+          data={{ id: data.blogModuleArticleId } as any}
+        />
+      ) : null,
+    [],
+  );
   return (
     <ParentComponent
       isServer={false}
       data={props.data}
       variant="admin-v2-form"
-      profilesToKnowledgeModuleDocuments={({ data }) => {
+      profilesToBlogModuleArticles={({ data }) => {
+        if (!data) {
+          return null;
+        }
+        return (
+          <ProfilesToBlogModuleArticles
+            isServer={false}
+            variant="admin-v2-table"
+            defaultProfileId={data.id}
+            leftModelAdminFormLabel="Profile"
+            rightModelAdminFormLabel="Article"
+            leftModelAdminForm={renderProfileForm}
+            rightModelAdminForm={renderBlogArticleForm}
+            apiProps={{
+              params: {
+                filters: {
+                  and: [{ column: "profileId", method: "eq", value: data.id }],
+                },
+              },
+            }}
+          />
+        );
+      }}
+      profilesToKnowledgeModuleSources={({ data }) => {
         if (!data) {
           return;
         }
 
         return (
-          <ProfilesToKnowledgeModuleDocuments
+          <ProfilesToKnowledgeModuleSources
             isServer={false}
             variant="admin-v2-table"
             leftModelAdminFormLabel="Profile"
-            rightModelAdminFormLabel="Document"
+            rightModelAdminFormLabel="Source"
             leftModelAdminForm={({ data }) => {
               if (!data) {
                 return;
@@ -58,10 +112,10 @@ export function Component(props: IComponentProps) {
               }
 
               return (
-                <KnowledgeDocument
+                <KnowledgeSource
                   isServer={false}
                   variant="admin-v2-form"
-                  data={{ id: data.knowledgeModuleDocumentId } as any}
+                  data={{ id: data.knowledgeModuleSourceId } as any}
                 />
               );
             }}

@@ -1,4 +1,5 @@
-import { serverHost, route, IModel } from "@sps/rbac/models/subject/sdk/model";
+import { serverHost, route } from "@sps/rbac/models/subject/sdk/model";
+import type { IModel as IIdentity } from "@sps/rbac/models/identity/sdk/model";
 import {
   NextRequestOptions,
   prepareFormDataToSend,
@@ -20,7 +21,7 @@ export interface IProps {
   data?: any;
 }
 
-export type IResult = IModel;
+export type IResult = IIdentity;
 
 export async function action(props: IProps): Promise<IResult> {
   const { id, params, data, options, host = serverHost } = props;

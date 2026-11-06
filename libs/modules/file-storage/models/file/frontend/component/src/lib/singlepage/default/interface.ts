@@ -1,4 +1,5 @@
 export { type IModel } from "@sps/file-storage/models/file/sdk/model";
+import type { ReactNode } from "react";
 import { IModel } from "@sps/file-storage/models/file/sdk/model";
 import {
   IComponentProps as IParentComponentProps,
@@ -19,3 +20,11 @@ export interface IComponentPropsExtended
     typeof variant,
     IComponentProps
   > {}
+
+export interface IClientComponentProps {
+  data: IModel;
+  language: string;
+  className?: string;
+  containerClassName?: string;
+  publicMedia: ReactNode;
+}

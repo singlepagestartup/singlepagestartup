@@ -1,0 +1,18 @@
+{
+  "className": null,
+  "id": "b8b6b538-5dc7-44a2-92d9-f3e264f97559",
+  "createdAt": "2026-10-23T20:18:06.380Z",
+  "updatedAt": "2026-10-23T20:18:06.380Z",
+  "variant": "card",
+  "title": {
+    "en": "Open the project",
+    "ru": "Откройте проект"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Clone the repository and open it in your editor or coding agent. Read AGENTS.md and the README for this checkout.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Клонируйте репозиторий и откройте его в редакторе или кодинг-агенте. Прочитайте AGENTS.md и README текущей версии.\"}]}]}"
+  },
+  "adminTitle": "Open the project",
+  "slug": "framework-about-start-feature-0"
+}

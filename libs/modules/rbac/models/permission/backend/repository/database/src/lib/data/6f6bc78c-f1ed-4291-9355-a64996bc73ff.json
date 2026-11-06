@@ -1,0 +1,9 @@
+{
+  "id": "6f6bc78c-f1ed-4291-9355-a64996bc73ff",
+  "createdAt": "2026-10-23T08:00:22.289Z",
+  "updatedAt": "2026-10-23T08:00:22.289Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/social/profiles-to-blog-module-articles"
+}

@@ -1,3 +1,4 @@
+import type { Service as BroadcastMessageService } from "@sps/broadcast/models/message/backend/app/api/src/lib/service";
 export interface IReadService {
   find: (props?: any) => Promise<any>;
   findById: (props: { id: string }) => Promise<any>;
@@ -66,7 +67,10 @@ export interface IFileStorageModule {
 
 export interface IBroadcastModule {
   channel: IReadService;
-  message: IReadService;
+  message: Pick<
+    BroadcastMessageService,
+    "find" | "findById" | "queue" | "deleteExpired" | "transientChannelMessages"
+  >;
   channelsToMessages: IReadService;
 }
 

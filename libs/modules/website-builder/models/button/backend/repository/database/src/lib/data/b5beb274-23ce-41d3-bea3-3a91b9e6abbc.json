@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "All modules",
+    "ru": "Все модули"
+  },
+  "subtitle": {},
+  "url": "/framework/modules",
+  "className": "w-fit",
+  "id": "b5beb274-23ce-41d3-bea3-3a91b9e6abbc",
+  "createdAt": "2026-10-24T01:06:14.218Z",
+  "updatedAt": "2026-10-24T01:06:14.218Z",
+  "variant": "secondary",
+  "adminTitle": "All modules",
+  "slug": "framework-journey-guide-analytic-actions-0"
+}

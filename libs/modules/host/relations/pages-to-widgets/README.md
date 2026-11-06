@@ -18,6 +18,7 @@ Connects pages to widgets and defines their order.
 ## Variants
 
 - `default`: renders the related target for this link.
+- `hidden`: retains the saved Page-to-Widget association while rendering nothing and issuing no target Widget read. Use it to retire a public section without deleting its operational records; backend authorization remains separate.
 - `find`: data-fetch wrapper for querying relations.
 - `admin-select-input`: admin UI select input for linking relations.
 - `admin-table-row`: admin UI row for relation listings.

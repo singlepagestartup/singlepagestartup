@@ -10,11 +10,16 @@ services:
     env_file:
       - ./{{ SERVICE_NAME }}.env
     command: "sh -c './start.sh api'"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "--show-error", "--output", "/dev/null", "--max-time", "3", "--header", "Cache-Control: no-store", "http://127.0.0.1:4000/api/rbac/subjects/authentication/me"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30m
+      retries: 6
     logging:
-      driver: "json-file"
+      driver: journald
       options:
-        max-size: "10m"
-        max-file: "3"
+        tag: "sps-api-{{ SERVICE_NAME }}"
     deploy:
       update_config:
         order: start-first
@@ -27,6 +32,12 @@ services:
         - traefik.http.routers.{{ SERVICE_NAME }}.entrypoints=websecure
         - traefik.http.routers.{{ SERVICE_NAME }}.tls=true
         - traefik.http.routers.{{ SERVICE_NAME }}.rule=Host(`{{ SERVICE_URL }}`)
+        # Security headers for this router, see "Traefik access log and
+        # security headers" in tools/deployer/README.md.
+        - traefik.http.routers.{{ SERVICE_NAME }}.middlewares={{ SERVICE_NAME }}-security-headers
+        - traefik.http.middlewares.{{ SERVICE_NAME }}-security-headers.headers.stsseconds=31536000
+        - traefik.http.middlewares.{{ SERVICE_NAME }}-security-headers.headers.contenttypenosniff=true
+        - traefik.http.middlewares.{{ SERVICE_NAME }}-security-headers.headers.referrerpolicy=strict-origin-when-cross-origin
         - traefik.swarm.network=traefik_overlay
 
 networks:

@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "12fbd437-3d35-4ad0-9928-2ebfc0f65a0c",
+  "createdAt": "2026-10-26T00:11:19.884Z",
+  "updatedAt": "2026-10-27T14:59:24.748Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Visitor",
+    "ru": "Посетитель"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"School catalogue\\n\\nGuests can explore the offer. Personal sections require sign-in.\\n\\nCourse programme: public\\n\\nLesson materials: after purchase\\n\\nAccount area: sign in\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Каталог школы\\n\\nГость может познакомиться с предложением. Для личных разделов нужен вход.\\n\\nПрограмма курса — открыта\\n\\nМатериалы уроков — после покупки\\n\\nЛичный кабинет — войдите\"}]}]}"
+  },
+  "adminTitle": "Посетитель",
+  "slug": "framework-reviewed-article-rbac-example-feature-0"
+}

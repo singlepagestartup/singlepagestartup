@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "",
+    "ru": ""
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Define the metrics you use to follow the business: enquiry counts, orders or another outcome. The module stores numeric values and lets you display them in the interface.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"An owner needs specific numbers to decide what to work on next, such as how many enquiries arrived and how many orders were placed. Metrics differ between projects, so first define what to count and where the data comes from.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Определите показатели, по которым следите за работой: количество заявок, заказов или другой результат. Модуль хранит числовые значения и позволяет показывать их в интерфейсе.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Чтобы решить, чем заняться дальше, владельцу нужны конкретные числа. Например, сколько заявок пришло и сколько заказов оформлено. У разных проектов показатели различаются, поэтому сначала нужно определить, что считать и откуда получать данные.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "cea7dd30-e2b8-46ee-b664-30a34fb1f82f",
+  "createdAt": "2026-10-26T00:12:13.536Z",
+  "updatedAt": "2026-10-27T14:59:16.552Z",
+  "variant": "content-rich",
+  "adminTitle": "framework-reviewed-article-analytic-introduction",
+  "slug": "framework-reviewed-article-analytic-introduction"
+}

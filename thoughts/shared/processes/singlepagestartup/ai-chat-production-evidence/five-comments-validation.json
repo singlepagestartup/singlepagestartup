@@ -1,0 +1,90 @@
+{
+  "status": "validated",
+  "environment": {
+    "api": "http://localhost:4000",
+    "host": "http://localhost:3000",
+    "storybook": "http://localhost:4321",
+    "mcp": "local stdio apps/mcp/index.ts"
+  },
+  "publicDemo": {
+    "permissionEvidence": "public-chat-permissions-mcp.json",
+    "anonymousHttp": {
+      "GET /api/social/chats": 200,
+      "GET /api/social/chats/1ac957b9-78e0-49c7-9e26-69d9c5c08aee": 200,
+      "GET /api/social/chats/7c3df3ec-f82d-429e-96e8-8ba7e8f16772": 403
+    },
+    "browserWorkflow": "Interactive walkthrough renders without permission errors."
+  },
+  "workingContext": {
+    "sourceMembership": "Current Thread metadata.aiChatDocument.sourceIds within the project Profile.",
+    "choices": [
+      "Whole document",
+      "Products",
+      "Bookings"
+    ],
+    "messagePrefix": "Working on knowledge: <Source title> (Source ID: <Source ID>) in <Thread title>.",
+    "wholeDocumentPrefix": "Working on the whole document: <Thread title>.",
+    "ordinaryThread": "No document target is shown or sent.",
+    "screenshots": [
+      "thread-knowledge-context.jpg",
+      "named-knowledge-upload.jpg"
+    ]
+  },
+  "namedKnowledge": {
+    "sourceId": "1abc5c39-5a28-4496-862f-0f49e5241077",
+    "profileId": "9a48b93b-625a-4e45-84aa-39500e5ac4d7",
+    "threadId": "d4ffce05-e931-4c7e-8ee0-5efcd2aa830a",
+    "fileId": "d258fa75-61fc-48dc-a525-7ed4137438c0",
+    "persistedEvidence": "named-knowledge-persisted.json",
+    "browserVerification": "Name and attached file persist after page reload; the Source appears in the working-context menu.",
+    "retryVerification": "Source creation and successful file uploads are not duplicated when Thread attachment is retried.",
+    "cacheVerification": "Upload response updates scoped Sources and Files, keeps unrelated profiles unchanged, and retains realtime revalidation."
+  },
+  "assistantSidebar": {
+    "openControls": [
+      "Assistant avatar",
+      "Assistant name"
+    ],
+    "data": "Selected message author Profile, its Skills, all its Knowledge Sources, and each Source’s Files.",
+    "knowledgeScope": "All Sources linked to the selected Profile, including Sources outside the current Thread.",
+    "blueKilnKnowledge": [
+      "Products",
+      "Bookings"
+    ],
+    "blueKilnSkillsCount": 0,
+    "blueKilnDescription": null,
+    "screenshots": [
+      "assistant-profile-panel.jpg",
+      "assistant-profile-knowledge-files.jpg",
+      "storybook-profile-knowledge.jpg"
+    ],
+    "storybookStory": "modules-social-models-profile-singlepage-agent-id-ai-chat--profile-knowledge",
+    "storybookSkillsCount": 1,
+    "storybookKnowledge": [
+      "Business brief",
+      "Products",
+      "Bookings"
+    ]
+  },
+  "checks": {
+    "jest": {
+      "suites": 6,
+      "tests": 14,
+      "failed": 0
+    },
+    "hostTypeScript": {
+      "exitCode": 0
+    },
+    "studioTypeScript": {
+      "exitCode": 0
+    },
+    "codePlacement": {
+      "exitCode": 0
+    },
+    "diffWhitespace": {
+      "exitCode": 0
+    },
+    "browserConsoleErrors": []
+  },
+  "architecture": "New record variants use shared default or subject-default parents. UI props are explicit at client boundaries, with JSX slots for composition."
+}

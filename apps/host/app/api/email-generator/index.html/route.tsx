@@ -64,7 +64,7 @@ export const GET = async (request: NextRequest) => {
 
     return NextResponse.json(
       {
-        error: "Not Found",
+        error: "Not Found error. Template unavailable",
       },
       { status: 404 },
     );

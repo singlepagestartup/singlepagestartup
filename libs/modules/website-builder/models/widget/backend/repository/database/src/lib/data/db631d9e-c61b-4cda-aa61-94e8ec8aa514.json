@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Work with Billing.",
+    "ru": "Работайте с Billing."
+  },
+  "subtitle": {
+    "en": "Business",
+    "ru": "Бизнес"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Currencies, payment intents, invoices and payment-provider state.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Валюты, платежные намерения, счета и состояние платежных провайдеров.\"}]}]}"
+  },
+  "anchor": "module-billing",
+  "className": "@5xl:grid-cols-2",
+  "id": "db631d9e-c61b-4cda-aa61-94e8ec8aa514",
+  "createdAt": "2026-10-24T01:06:04.607Z",
+  "updatedAt": "2026-10-24T01:06:04.607Z",
+  "variant": "content-definition-grid-page",
+  "adminTitle": "Work with Billing.",
+  "slug": "framework-journey-guide-billing-overview"
+}

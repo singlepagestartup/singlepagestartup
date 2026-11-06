@@ -1,0 +1,269 @@
+[
+  {
+    "profileId": "ca352177-18af-4e28-a67b-a92008f28776",
+    "chatId": "0eb10e80-8f4d-46d1-b21f-c2077924480c",
+    "documents": [
+      {
+        "id": "5146b737-34d7-4fd7-997a-6ecf70477ccd",
+        "title": "Brief.md",
+        "document": {
+          "key": "brief",
+          "profileId": "ca352177-18af-4e28-a67b-a92008f28776",
+          "sourceIds": []
+        }
+      },
+      {
+        "id": "d5e66556-fe24-4765-b136-fabd2f131f3f",
+        "title": "Strategy.md",
+        "document": {
+          "key": "strategy",
+          "profileId": "ca352177-18af-4e28-a67b-a92008f28776",
+          "sourceIds": []
+        }
+      },
+      {
+        "id": "15c97759-9a1f-4982-9005-4f92ee0db733",
+        "title": "Brand.md",
+        "document": {
+          "key": "brand",
+          "profileId": "ca352177-18af-4e28-a67b-a92008f28776",
+          "sourceIds": []
+        }
+      },
+      {
+        "id": "63f7d744-d127-434b-94f6-9c03f9f94baa",
+        "title": "Design.md",
+        "document": {
+          "key": "design",
+          "profileId": "ca352177-18af-4e28-a67b-a92008f28776",
+          "sourceIds": []
+        }
+      },
+      {
+        "id": "85d4789a-9680-47b9-b1e1-14a063702d7f",
+        "title": "Products.md",
+        "document": {
+          "key": "products",
+          "profileId": "ca352177-18af-4e28-a67b-a92008f28776",
+          "sourceIds": [
+            "07fbfa0c-1024-4dc0-aa3a-b5374e611ca9"
+          ]
+        }
+      }
+    ],
+    "idempotent": true
+  },
+  {
+    "profileId": "98f95262-957a-4388-b6d1-56f676bca793",
+    "chatId": "7c3df3ec-f82d-429e-96e8-8ba7e8f16772",
+    "documents": [
+      {
+        "id": "19adc91f-3088-44cc-ae7f-b8b363c7ca2e",
+        "title": "Brief.md",
+        "document": {
+          "key": "brief",
+          "profileId": "98f95262-957a-4388-b6d1-56f676bca793",
+          "sourceIds": []
+        }
+      },
+      {
+        "id": "4519c81b-a476-4d20-8116-c78c6cc2427f",
+        "title": "Strategy.md",
+        "document": {
+          "key": "strategy",
+          "profileId": "98f95262-957a-4388-b6d1-56f676bca793",
+          "sourceIds": []
+        }
+      },
+      {
+        "id": "894c6d49-b109-410e-b57b-e8952f4db02a",
+        "title": "Brand.md",
+        "document": {
+          "key": "brand",
+          "profileId": "98f95262-957a-4388-b6d1-56f676bca793",
+          "sourceIds": []
+        }
+      },
+      {
+        "id": "0b079a1f-2637-44eb-8ab8-28a211e48e91",
+        "title": "Design.md",
+        "document": {
+          "key": "design",
+          "profileId": "98f95262-957a-4388-b6d1-56f676bca793",
+          "sourceIds": []
+        }
+      },
+      {
+        "id": "49d7a40e-685e-4469-9298-7c015c7d9631",
+        "title": "Products.md",
+        "document": {
+          "key": "products",
+          "profileId": "98f95262-957a-4388-b6d1-56f676bca793",
+          "sourceIds": [
+            "7e0546c8-b6b9-48b9-815c-5e7f31d6ebf9",
+            "77520cd1-2458-490d-9e0d-d1380af41961"
+          ]
+        }
+      }
+    ],
+    "idempotent": true
+  },
+  {
+    "profileId": "7b2b64ad-b5b5-4ca0-a4b8-9d8d99ebabf9",
+    "chatId": "da138b6f-e02f-43d2-a193-5c815f54042e",
+    "documents": [
+      {
+        "id": "8702d09e-1190-4235-9781-74d693950511",
+        "title": "Brief.md",
+        "document": {
+          "key": "brief",
+          "profileId": "7b2b64ad-b5b5-4ca0-a4b8-9d8d99ebabf9",
+          "sourceIds": []
+        }
+      },
+      {
+        "id": "ff02d4d9-001c-4899-8e47-e45456ba2893",
+        "title": "Strategy.md",
+        "document": {
+          "key": "strategy",
+          "profileId": "7b2b64ad-b5b5-4ca0-a4b8-9d8d99ebabf9",
+          "sourceIds": []
+        }
+      },
+      {
+        "id": "19de82a6-fd46-4bd1-86d8-519846bd8559",
+        "title": "Brand.md",
+        "document": {
+          "key": "brand",
+          "profileId": "7b2b64ad-b5b5-4ca0-a4b8-9d8d99ebabf9",
+          "sourceIds": []
+        }
+      },
+      {
+        "id": "f86a5ea6-40dc-47ee-bf08-edaee7850dd4",
+        "title": "Design.md",
+        "document": {
+          "key": "design",
+          "profileId": "7b2b64ad-b5b5-4ca0-a4b8-9d8d99ebabf9",
+          "sourceIds": []
+        }
+      },
+      {
+        "id": "a2a617b3-e267-4d42-8091-3a7b08be6c15",
+        "title": "Products.md",
+        "document": {
+          "key": "products",
+          "profileId": "7b2b64ad-b5b5-4ca0-a4b8-9d8d99ebabf9",
+          "sourceIds": [
+            "479f6f43-eedb-4592-aa2c-a0e3e83fd27b"
+          ]
+        }
+      }
+    ],
+    "idempotent": true
+  },
+  {
+    "profileId": "1d612e7e-84c5-483a-a41a-3a9a09423134",
+    "chatId": "4da2dd28-0dce-4850-97de-a6c44cbf15f3",
+    "documents": [
+      {
+        "id": "b5f4542d-b701-4ee0-be5c-c7cc9a8bfda7",
+        "title": "Brief.md",
+        "document": {
+          "key": "brief",
+          "profileId": "1d612e7e-84c5-483a-a41a-3a9a09423134",
+          "sourceIds": []
+        }
+      },
+      {
+        "id": "df1f1f95-50f4-420a-9e97-73ff2ea2c2c5",
+        "title": "Strategy.md",
+        "document": {
+          "key": "strategy",
+          "profileId": "1d612e7e-84c5-483a-a41a-3a9a09423134",
+          "sourceIds": []
+        }
+      },
+      {
+        "id": "2498b4c2-9086-4375-80dc-9eb0d84dc55d",
+        "title": "Brand.md",
+        "document": {
+          "key": "brand",
+          "profileId": "1d612e7e-84c5-483a-a41a-3a9a09423134",
+          "sourceIds": []
+        }
+      },
+      {
+        "id": "f17b7850-b340-4b10-9599-5dbf475287e8",
+        "title": "Design.md",
+        "document": {
+          "key": "design",
+          "profileId": "1d612e7e-84c5-483a-a41a-3a9a09423134",
+          "sourceIds": []
+        }
+      },
+      {
+        "id": "933dc620-2543-4ac5-8ede-5c90458193d4",
+        "title": "Products.md",
+        "document": {
+          "key": "products",
+          "profileId": "1d612e7e-84c5-483a-a41a-3a9a09423134",
+          "sourceIds": []
+        }
+      }
+    ],
+    "idempotent": true
+  },
+  {
+    "profileId": "9a48b93b-625a-4e45-84aa-39500e5ac4d7",
+    "chatId": "eac14dca-04ba-4b7b-b20f-be43cc755b8e",
+    "documents": [
+      {
+        "id": "ad51952f-7cba-46a3-b3f7-b68524001ae5",
+        "title": "Brief.md",
+        "document": {
+          "key": "brief",
+          "profileId": "9a48b93b-625a-4e45-84aa-39500e5ac4d7",
+          "sourceIds": []
+        }
+      },
+      {
+        "id": "9ba3b84a-169f-49de-b645-b1d2c3b88031",
+        "title": "Strategy.md",
+        "document": {
+          "key": "strategy",
+          "profileId": "9a48b93b-625a-4e45-84aa-39500e5ac4d7",
+          "sourceIds": []
+        }
+      },
+      {
+        "id": "0857eb04-3ce1-43e9-8bc3-5e2ec1bcca97",
+        "title": "Brand.md",
+        "document": {
+          "key": "brand",
+          "profileId": "9a48b93b-625a-4e45-84aa-39500e5ac4d7",
+          "sourceIds": []
+        }
+      },
+      {
+        "id": "9eb1a67f-8b0e-422d-816c-8e758ae94235",
+        "title": "Design.md",
+        "document": {
+          "key": "design",
+          "profileId": "9a48b93b-625a-4e45-84aa-39500e5ac4d7",
+          "sourceIds": []
+        }
+      },
+      {
+        "id": "d4ffce05-e931-4c7e-8ee0-5efcd2aa830a",
+        "title": "Products.md",
+        "document": {
+          "key": "products",
+          "profileId": "9a48b93b-625a-4e45-84aa-39500e5ac4d7",
+          "sourceIds": []
+        }
+      }
+    ],
+    "idempotent": true
+  }
+]

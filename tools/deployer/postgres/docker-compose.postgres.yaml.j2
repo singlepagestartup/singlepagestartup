@@ -5,15 +5,16 @@ services:
     image: pgvector/pgvector:pg17
     volumes:
       - /home/code/postgres_data:/var/lib/postgresql/data
+      - /home/code/create_application_role.sh:/docker-entrypoint-initdb.d/create_application_role.sh:ro
     networks:
       - traefik_overlay
     environment:
-      POSTGRES_DB: {{ DATABASE_NAME }}
-      POSTGRES_USER: {{ DATABASE_USERNAME }}
-      POSTGRES_PASSWORD: {{ DATABASE_PASSWORD }}
+      POSTGRES_DB: {{ DATABASE_NAME | to_json }}
+      POSTGRES_USER: {{ POSTGRES_USER | to_json }}
+      POSTGRES_PASSWORD: {{ POSTGRES_PASSWORD | to_json }}
+      DATABASE_USERNAME: {{ DATABASE_USERNAME | to_json }}
+      DATABASE_PASSWORD: {{ DATABASE_PASSWORD | to_json }}
     deploy:
-      update_config:
-        order: start-first
       placement:
         constraints:
           - node.role == manager

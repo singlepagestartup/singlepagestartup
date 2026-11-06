@@ -2,16 +2,18 @@
 
 import { route, clientHost } from "@sps/rbac/models/subject/sdk/model";
 import { useQuery, UseQueryOptions } from "@tanstack/react-query";
-import { globalActionsStore } from "@sps/shared-frontend-client-store";
-import { createId } from "@paralleldrive/cuid2";
 import {
   api,
   type IProps as IParentProps,
   type IResult as IParentResult,
 } from "@sps/rbac/models/subject/sdk/server";
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
-import { queryClient, subscription } from "@sps/shared-frontend-client-api";
-import { STALE_TIME } from "@sps/shared-utils";
+import {
+  queryClient,
+  subscription,
+  consistencyQueryKey,
+} from "@sps/shared-frontend-client-api";
+import { STALE_TIME, deriveTopicsFromPath } from "@sps/shared-utils";
 import { useEffect } from "react";
 
 export type IProps =
@@ -25,10 +27,7 @@ export type IResult =
 
 export function action(props: IProps) {
   const queryKey = `${route}/${props.id}/social-module/profiles/${props.socialModuleProfileId}/chats/${props.socialModuleChatId}`;
-  const topics = [
-    `social.profiles.${props.socialModuleProfileId}`,
-    `social.chats.${props.socialModuleChatId}`,
-  ];
+  const topics = deriveTopicsFromPath(queryKey);
   // Merge caller meta last but never let it clobber topics (issue #195): a
   // project passing reactQueryOptions.meta must not silently drop the realtime
   // topic subscription.
@@ -41,7 +40,7 @@ export function action(props: IProps) {
   }, [queryKey]);
 
   return useQuery<IResult>({
-    queryKey: [queryKey],
+    queryKey: consistencyQueryKey(queryKey, props.params, clientHost),
     meta: {
       topics,
       ...(userMeta ?? {}),
@@ -57,18 +56,6 @@ export function action(props: IProps) {
       });
 
       return result;
-    },
-    select(data) {
-      globalActionsStore.getState().addAction({
-        type: "query",
-        name: `${route}/${props.id}/social-module/profiles/${props.socialModuleProfileId}/chats/${props.socialModuleChatId}`,
-        props: this,
-        result: data,
-        timestamp: Date.now(),
-        requestId: createId(),
-      });
-
-      return data;
     },
     staleTime: STALE_TIME,
     ...restReactQueryOptions,

@@ -5,7 +5,7 @@ import { FILE_STORAGE_FOLDER, FILE_STORAGE_PROVIDER } from "@sps/shared-utils";
 import { Provider } from "@sps/providers-file-storage";
 import { fileTypeFromBuffer } from "file-type";
 import { imageSize } from "image-size";
-import { getHttpErrorType } from "@sps/backend-utils";
+import { getHttpErrorType, parseSingleFileUpload } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -22,124 +22,77 @@ export class Handler {
         throw new Error("Validation error. Invalid id. Got: " + uuid);
       }
 
-      const body = await c.req.parseBody();
+      const body = await c.req.parseBody({ all: true });
 
-      if (!body) {
-        throw new Error("Validation error. Invalid body");
-      }
-
-      const parsedBody: {
-        data?: {
-          [key: string]: any;
-        };
-        files?: {
-          [key: string]: File;
-        };
-      } = {};
-
-      Object.keys(body).forEach((key) => {
-        if (body[key] instanceof File) {
-          const file = body[key] as File;
-
-          if (!parsedBody.files) {
-            parsedBody.files = {};
-          }
-
-          parsedBody.files = {
-            ...parsedBody.files,
-            [key]: file,
-          };
+      const { upload, metadata } = parseSingleFileUpload(body);
+      const data: any = metadata ?? {};
+      if (!upload) {
+        if (!metadata) {
+          throw new Error("Validation error. File metadata is required");
         }
-      });
-
-      if (body?.["data"]) {
-        if (typeof body["data"] === "string") {
-          parsedBody.data = JSON.parse(body["data"]);
-        }
-      }
-
-      if (!parsedBody.files) {
-        const entity = await this.service.create({
-          data: parsedBody.data,
-        });
-
-        return c.json(
-          {
-            data: entity,
-          },
-          201,
-        );
-      }
-
-      for (const [name, file] of Object.entries(parsedBody.files)) {
-        if (Array.isArray(file)) {
-          throw new Error("Validation error. Multiple files are not allowed");
-        }
-
-        if (typeof file === "string") {
-          throw new Error("Validation error. Invalid file type");
-        }
-
-        const fileStorage = new Provider({
-          type: FILE_STORAGE_PROVIDER,
-          folder: FILE_STORAGE_FOLDER,
-        });
-        const uploadedFileUrl = await fileStorage.uploadFile({
-          file: file,
-        });
-
-        const data: any = parsedBody.data ?? {};
-        data[name] = uploadedFileUrl;
-
-        const fileBuffer = await file.arrayBuffer();
-        let fileType = await fileTypeFromBuffer(Buffer.from(fileBuffer));
-
-        if (!fileType && file.name.toLowerCase().endsWith(".svg")) {
-          fileType = {
-            ext: "svg",
-            mime: "image/svg+xml",
-          };
-        }
-
-        const fileSize = file.size;
-        data["size"] = fileSize;
-
-        data["extension"] = fileType?.ext ?? "";
-        data["mimeType"] = file.type.startsWith("audio/")
-          ? file.type
-          : (fileType?.mime ?? "");
-
-        try {
-          const dimensions = imageSize(Buffer.from(fileBuffer));
-          const { width, height } = dimensions;
-          data["width"] = width;
-          data["height"] = height;
-        } catch (error: any) {
-          data["width"] = 0;
-          data["height"] = 0;
-        }
-
-        const previous = await this.service.findById({ id: uuid });
 
         const entity = await this.service.update({ id: uuid, data });
-
-        if (previous?.file) {
-          const fileName = previous.file.split("/").pop();
-
-          if (fileName) {
-            await fileStorage.deleteFile({ name: fileName });
-          }
-        }
-
-        return c.json(
-          {
-            data: entity,
-          },
-          201,
-        );
+        return c.json({ data: entity }, 200);
       }
 
-      throw new Error("Validation error. Invalid file");
+      const { name, file } = upload;
+
+      const fileStorage = new Provider({
+        type: FILE_STORAGE_PROVIDER,
+        folder: FILE_STORAGE_FOLDER,
+      });
+      const uploadedFileUrl = await fileStorage.uploadFile({
+        file,
+      });
+
+      data[name] = uploadedFileUrl;
+
+      const fileBuffer = await file.arrayBuffer();
+      let fileType = await fileTypeFromBuffer(Buffer.from(fileBuffer));
+
+      if (!fileType && file.name.toLowerCase().endsWith(".svg")) {
+        fileType = {
+          ext: "svg",
+          mime: "image/svg+xml",
+        };
+      }
+
+      const fileSize = file.size;
+      data["size"] = fileSize;
+
+      data["extension"] = fileType?.ext ?? "";
+      data["mimeType"] = file.type.startsWith("audio/")
+        ? file.type
+        : (fileType?.mime ?? "");
+
+      try {
+        const dimensions = imageSize(Buffer.from(fileBuffer));
+        const { width, height } = dimensions;
+        data["width"] = width;
+        data["height"] = height;
+      } catch (error: any) {
+        data["width"] = 0;
+        data["height"] = 0;
+      }
+
+      const previous = await this.service.findById({ id: uuid });
+
+      const entity = await this.service.update({ id: uuid, data });
+
+      if (previous?.file) {
+        const fileName = previous.file.split("/").pop();
+
+        if (fileName) {
+          await fileStorage.deleteFile({ name: fileName });
+        }
+      }
+
+      return c.json(
+        {
+          data: entity,
+        },
+        201,
+      );
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });

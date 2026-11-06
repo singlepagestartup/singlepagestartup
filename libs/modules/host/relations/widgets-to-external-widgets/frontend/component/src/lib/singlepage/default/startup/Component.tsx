@@ -1,8 +1,8 @@
-import { IComponentPropsExtended } from "../interface";
+import { IExternalWidgetProps } from "../interface";
 import { Component as StartupModuleWidget } from "@sps/startup/models/widget/frontend/component";
 import { Component as Widget } from "./widget";
 
-export function Component(props: IComponentPropsExtended) {
+export function Component(props: IExternalWidgetProps) {
   return (
     <StartupModuleWidget
       isServer={props.isServer}

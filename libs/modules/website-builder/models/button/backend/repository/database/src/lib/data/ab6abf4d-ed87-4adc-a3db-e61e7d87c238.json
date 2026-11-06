@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Read architecture articles",
+    "ru": "Статьи об архитектуре"
+  },
+  "subtitle": {},
+  "url": "/blog",
+  "className": "w-fit",
+  "id": "ab6abf4d-ed87-4adc-a3db-e61e7d87c238",
+  "createdAt": "2026-10-24T01:06:02.175Z",
+  "updatedAt": "2026-10-24T01:06:02.175Z",
+  "variant": "ghost",
+  "adminTitle": "Read architecture articles",
+  "slug": "framework-journey-guide-rbac-actions-2"
+}

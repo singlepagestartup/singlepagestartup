@@ -1,0 +1,21 @@
+{
+  "componentName": "social.profile",
+  "pageName": "social",
+  "variantName": "account-menu",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "social.profile.account-menu",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "social/profile/singlepage/account-menu",
+    "sps.figma.component": "social.profile",
+    "sps.figma.variant": "account-menu",
+    "sps.source.module": "social",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "profile",
+    "sps.source.variant": "account-menu",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/social/profile/singlepage/account-menu/Component.tsx",
+    "sps.code.story": "apps/studio/modules/social/profile/singlepage/account-menu/Component.stories.tsx"
+  }
+}

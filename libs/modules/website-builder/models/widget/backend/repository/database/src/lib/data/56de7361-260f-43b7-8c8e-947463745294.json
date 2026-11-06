@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "SinglePageStartup",
+    "ru": "SinglePageStartup"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"We help you create and develop websites, stores and web services on an open-source framework.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Помогаем создавать и развивать сайты, магазины и веб-сервисы на фреймворке с открытым исходным кодом.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "56de7361-260f-43b7-8c8e-947463745294",
+  "createdAt": "2026-10-26T00:11:14.108Z",
+  "updatedAt": "2026-10-27T14:59:00.641Z",
+  "variant": "footer-default",
+  "adminTitle": "SinglePageStartup",
+  "slug": "framework-reviewed-footer"
+}

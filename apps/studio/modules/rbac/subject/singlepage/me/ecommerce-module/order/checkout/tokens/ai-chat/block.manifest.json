@@ -1,0 +1,27 @@
+{
+  "id": "rbac.subject.me-ecommerce-module-order-checkout-tokens-ai-chat",
+  "title": "me-ecommerce-module-order-checkout-tokens-ai-chat",
+  "description": "Current Subject opens the Ecommerce token checkout.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "subject",
+    "variant": "me-ecommerce-module-order-checkout-tokens-ai-chat"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "rbac.subject",
+    "pageName": "rbac",
+    "variantName": "me-ecommerce-module-order-checkout-tokens-ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

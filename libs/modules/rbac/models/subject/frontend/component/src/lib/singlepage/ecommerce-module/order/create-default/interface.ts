@@ -13,8 +13,8 @@ export const variant = "ecommerce-module-order-create-default" as const;
 export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
   language: string;
-  product: IEcommerceModuleProduct;
-  store?: IEcommerceModuleStore;
+  ecommerceModuleProduct: IEcommerceModuleProduct;
+  ecommerceModuleStore?: IEcommerceModuleStore;
   billingModule?: {
     currency?: IBillingModuleCurrency;
   };

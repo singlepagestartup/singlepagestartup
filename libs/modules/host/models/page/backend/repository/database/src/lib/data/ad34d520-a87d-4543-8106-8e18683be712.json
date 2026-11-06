@@ -1,10 +1,18 @@
 {
+  "metadata": {
+    "seoDisplay": {
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      }
+    }
+  },
   "id": "ad34d520-a87d-4543-8106-8e18683be712",
   "title": "EC | Category | Overview",
   "url": "/ecommerce/categories/[ecommerce.categories.slug]",
   "description": "Description",
   "createdAt": "2025-01-24T23:47:55.471Z",
-  "updatedAt": "2025-11-15T09:32:28.378Z",
+  "updatedAt": "2026-10-30T22:25:08.871Z",
   "variant": "default",
   "className": null,
   "language": "en",

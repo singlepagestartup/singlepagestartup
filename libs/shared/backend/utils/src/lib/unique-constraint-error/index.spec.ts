@@ -89,6 +89,16 @@ describe("Given: a request loses a race against a unique index", () => {
     expect(isUniqueConstraintError(error)).toBe(true);
   });
 
+  it("distinguishes a stale worker receipt from a duplicate row", () => {
+    expect(
+      isUniqueConstraintError(
+        Object.assign(new Error("Conflict error. Receipt expired"), {
+          status: 409,
+        }),
+      ),
+    ).toBe(false);
+  });
+
   it("ignores unrelated failures", () => {
     expect(isUniqueConstraintError(new Error("fetch failed"))).toBe(false);
     expect(

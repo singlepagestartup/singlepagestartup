@@ -1,11 +1,45 @@
 {
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "Store — SinglePageStartup",
+        "ru": "Магазин — SinglePageStartup"
+      },
+      "description": {
+        "en": "Catalog and details of the selected SinglePageStartup store.",
+        "ru": "Каталог и описание выбранного магазина SinglePageStartup."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "Store — SinglePageStartup",
+        "ru": "Магазин — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "Store — SinglePageStartup",
+        "ru": "Магазин — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Catalog and details of the selected SinglePageStartup store.",
+        "ru": "Каталог и описание выбранного магазина SinglePageStartup."
+      },
+      "opengraphDescription": {
+        "en": "Catalog and details of the selected SinglePageStartup store.",
+        "ru": "Каталог и описание выбранного магазина SinglePageStartup."
+      }
+    }
+  },
   "id": "b9c4caa1-b110-487b-a62c-54af4d188687",
   "title": "EC | Store Overview",
   "url": "/ecommerce/stores/[ecommerce.stores.slug]",
   "description": "Description",
   "createdAt": "2025-05-08T21:26:10.759Z",
-  "updatedAt": "2025-11-15T09:32:28.391Z",
-  "variant": "default",
+  "updatedAt": "2026-10-30T22:25:09.322Z",
+  "variant": "noindex",
   "className": null,
   "language": "en",
   "adminTitle": "zesty harlequin bison"

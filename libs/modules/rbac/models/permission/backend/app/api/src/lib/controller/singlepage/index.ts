@@ -6,6 +6,7 @@ import { Service } from "../../service";
 import { Context } from "hono";
 import { Handler as FindByRoute } from "./find-by-route";
 import { Handler as ResolveByRoute } from "./resolve-by-route";
+import { Handler as PublicResourceIds } from "./public-resource-ids";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
@@ -16,6 +17,11 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     this.service = service;
 
     this.bindHttpRoutes([
+      {
+        method: "GET",
+        path: "/public-resource-ids",
+        handler: (c) => new PublicResourceIds(this.service).execute(c),
+      },
       {
         method: "GET",
         path: "/find-by-route",
