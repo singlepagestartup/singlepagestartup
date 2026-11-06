@@ -1911,6 +1911,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       );
     }
 
+    const messageFromSubjectJwt = await this.signRbacModuleSubjectJwt({
+      rbacModuleSubject: messageFromSubject,
+    });
+
     try {
       await rbacModuleSubjectApi.ecommerceModuleProductCheckout({
         id: messageFromSubject.id,
@@ -1921,6 +1925,11 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             currency: telegramStarBillingModuleCurrencies[0],
           },
           account: props.socialModuleChat.sourceSystemId,
+        },
+        options: {
+          headers: {
+            Authorization: "Bearer " + messageFromSubjectJwt,
+          },
         },
       });
     } catch (error) {
