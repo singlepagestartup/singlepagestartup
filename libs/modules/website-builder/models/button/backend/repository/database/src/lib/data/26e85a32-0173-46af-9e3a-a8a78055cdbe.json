@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Settings",
+    "ru": "Настройки"
+  },
+  "subtitle": {},
+  "url": "/ai-chat/settings",
+  "className": "",
+  "id": "26e85a32-0173-46af-9e3a-a8a78055cdbe",
+  "createdAt": "2026-10-27T08:40:56.222Z",
+  "updatedAt": "2026-10-27T15:00:07.541Z",
+  "variant": "navigation-inverse",
+  "adminTitle": "Настройки",
+  "slug": "ai-chat-editable-demo-settings-button-0"
+}

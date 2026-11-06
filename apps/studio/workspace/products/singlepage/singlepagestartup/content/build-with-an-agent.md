@@ -1,27 +1,22 @@
 ---
-confirmation:
-  confirmed: false
-review:
-  dependencies:
-    product.singlepagestartup.product: 1bd3022ba57bd99882728e561cec47013e32d16dc2a138e8598efd17184e70e6
 ---
 
-# Build with a coding agent
+# Разработка с AI-агентом
 
-Start with the business you want to create. Code Framework supplies the common foundation; you and your coding agent shape the product around your customers and business model.
+Начните с бизнеса, который хотите создать. Code Framework предоставляет общую основу; вы с агентом-разработчиком адаптируете продукт под клиентов и бизнес-модель.
 
-## Describe your product
+## Опишите продукт
 
-Tell the agent who the product is for, what problem it solves, what people receive, how they reach it and how the business earns money. Include the rules that distinguish your product.
+Расскажите агенту, для кого продукт, какую проблему он решает, что люди получают, как находят его и как бизнес зарабатывает. Укажите отличающие продукт правила.
 
-> I am creating [product] for [people]. They need [result]. The business earns money through [model]. Help me describe the product and customer journey using this project's workflow. After we agree on the business plan, use the framework's common functions to build the product and add [my business rules].
+> Я создаю [продукт] для [людей]. Им нужен [результат]. Бизнес зарабатывает через [модель]. Помоги описать продукт и путь клиента по процессу этого проекта. После согласования бизнес-плана используй общие функции фреймворка и добавь [мои бизнес-правила].
 
-## Shape the result
+## Уточняйте результат
 
-Explain changes through the behavior you want. For example: “My store has a minimum order of six units. Add that rule to the existing cart.” Review whether the product expresses your idea and serves the intended customer, then keep improving it with the agent.
+Объясняйте изменения через нужное поведение. Например: «В моём магазине минимальный заказ — шесть единиц. Добавь правило в существующую корзину». Проверяйте, соответствует ли продукт идее и потребностям выбранного клиента, затем продолжайте улучшать его с агентом.
 
-## Use the foundation again
+## Используйте основу снова
 
-Continue developing on the same foundation and use it for another product when it fits. Sharing an example, suggesting an improvement or contributing to the common code is optional.
+Продолжайте разработку на той же основе и применяйте её в следующем продукте, если она подходит. Делиться примером, предлагать улучшения или вносить вклад в общий код необязательно.
 
-[Get Code Framework](https://github.com/singlepagestartup/singlepagestartup). The source is free; coding-agent services, infrastructure and external services are separate expenses. Help is available as time permits.
+[Получить Code Framework](https://github.com/singlepagestartup/singlepagestartup). Исходный код бесплатен; агенты-разработчики, инфраструктура и внешние сервисы оплачиваются отдельно. Помощь предоставляется по возможности.

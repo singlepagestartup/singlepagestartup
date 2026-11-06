@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Start with a working local project",
+    "ru": "Начните с локального проекта"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Local setup uses Node.js, npm, Bun and Docker. The repository README contains the setup commands and requirements.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Для локального запуска нужны Node.js, npm, Bun и Docker. Команды установки и требования описаны в README репозитория.\"}]}]}"
+  },
+  "anchor": "start-locally",
+  "className": "[&_.grid]:xl:grid-cols-3",
+  "id": "3f9702cf-73a9-4416-8bdb-836894021c00",
+  "createdAt": "2026-10-23T20:18:06.332Z",
+  "updatedAt": "2026-10-23T20:18:06.332Z",
+  "variant": "content-feature-find-card",
+  "adminTitle": "Start with a working local project",
+  "slug": "framework-about-start"
+}

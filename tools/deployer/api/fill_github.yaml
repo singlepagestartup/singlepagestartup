@@ -43,8 +43,16 @@
 
     - name: Set secrets to GitHub
       no_log: true
-      shell:
-        cmd: "node ./create_secret.js {{ github_token }} {{ github_repository }} {{ item.secret_name }} {{ item.secret_content }} {{ item.secret_scope }}"
+      ansible.builtin.command:
+        argv: [node, ./create_secret.js]
+        stdin: >-
+          {{ {
+            'GITHUB_TOKEN': github_token,
+            'GITHUB_REPOSITORY': github_repository,
+            'SECRET_NAME': item.secret_name,
+            'SECRET_SCOPE': item.secret_scope,
+            'SECRET_CONTENT': item.secret_content
+          } | to_json }}
         chdir: "/home/code/github-node-api"
       loop:
         - {

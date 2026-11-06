@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Authors",
+    "ru": "Авторы"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Public articles and projects from the SPS community.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Публичные статьи и проекты сообщества SPS.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "sm:grid-cols-2 lg:grid-cols-3",
+  "id": "500d2e8d-650f-4d16-9e74-ed59166edcfe",
+  "createdAt": "2026-10-23T20:18:08.585Z",
+  "updatedAt": "2026-10-23T20:18:08.585Z",
+  "variant": "content-collection",
+  "adminTitle": "framework-authors-frame",
+  "slug": "framework-authors-frame"
+}

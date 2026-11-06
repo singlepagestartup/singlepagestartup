@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Read architecture articles",
+    "ru": "Статьи об архитектуре"
+  },
+  "subtitle": {},
+  "url": "/blog",
+  "className": "w-fit",
+  "id": "32cdacc1-a120-4332-b22c-5acfbedb4e6e",
+  "createdAt": "2026-10-24T01:06:05.268Z",
+  "updatedAt": "2026-10-24T01:06:05.268Z",
+  "variant": "ghost",
+  "adminTitle": "Read architecture articles",
+  "slug": "framework-journey-guide-billing-actions-2"
+}

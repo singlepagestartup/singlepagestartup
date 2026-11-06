@@ -1,0 +1,14 @@
+{
+  "id": "b6e6846a-dd82-4c8f-a884-192a4fcdeb4a",
+  "createdAt": "2026-10-24T01:06:14.868Z",
+  "updatedAt": "2026-10-24T01:06:14.868Z",
+  "variant": "default",
+  "className": "w-full",
+  "title": {
+    "en": "Actions",
+    "ru": "Действия"
+  },
+  "description": {},
+  "adminTitle": "Actions",
+  "slug": "framework-journey-module-startup-actions"
+}

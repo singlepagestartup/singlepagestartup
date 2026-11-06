@@ -1,74 +1,59 @@
----
-confirmation:
-  confirmed: false
----
+# Бриф
 
-# Brief
+<!-- Шаблон для Studio. Сохранить семь канонических H2.
+Заполнять утверждениями о проекте; удалить вопросы-подсказки из готового текста.
+Основания существенных утверждений показывать в соответствующем разделе.
+Внутренние ссылки вести на видимые истории Storybook, вложения — на файлы.
+Бриф содержит текущую модель бизнеса и цели. Подробные условия конкретного
+предложения принадлежат описанию и экономике продукта. Все существенные
+сведения видны на соответствующих страницах; полных скрытых копий нет. -->
 
-<!-- Self-contained current client intake, 500-800 body words when that is
-enough. This is a house format informed by concise briefing and lean planning,
-not a prescribed external standard. Use plain statements, useful numbers and
-specific requirements. Sources, partial scope confirmation and intake status
-belong in frontmatter; previous answers belong in Git. Do not render these
-instructions, duplicate quotations, change logs or a generic unknowns list.
-Never replace a core fact with a link to a later decision document. -->
+## Проект и продукты
 
-## Project and products
+Что за бизнес, кто принимает решения и какие продукты входят в работу? Указать рабочие названия, что уже продаётся, а что пока задумано. Для существующих описаний продуктов сохранить их ID; новым продуктам агент назначит ID при создании описаний продуктов. Указать регион обслуживания и язык клиентов; отличать их от желаемой географии расширения.
 
-<!-- Project, product names/IDs, current or intended availability, decision
-owner, and only boundaries/reference projects needed to understand the work. -->
+## Клиенты и ценность
 
-## Customers and value
+Для каждого продукта: кто пользуется, кто платит, в какой ситуации обращается и какой результат хочет получить. Разделить известные обращения клиентов и предположения владельца.
 
-<!-- For each product: user/payer where known, situation/problem, what it does,
-and why that matters. Separate present capability from intended benefit without
-repeating generic disclaimers. Preserve exact naming and binding requirements. -->
+## Конкуренты
 
-## Current state
+Какие компании и конкретные предложения владелец считает альтернативами? Указать названия, ссылки и причину сравнения. Если примеров нет, написать «Пока не определены». Это вход для продуктового исследования.
 
-<!-- What exists, works or has been tested; existing customers/results/assets
-where supplied or inspected. Attribute client statements and repository
-observations in source metadata. Internal testing is not external adoption;
-lack of external testimonials does not establish lack of internal testing. -->
+## Текущее состояние
 
-## Business and resources
+Действующий сайт, страницы услуг, статьи, курсы, кейсы и другие материалы — со ссылками. Какие реальные обращения, покупки и результаты уже известны? Какие данные можно предоставить: отчёты поиска, аналитика, CRM, интервью? Указать период и источник доступных наблюдений; отсутствие доступа отличать от отсутствия данных.
 
-<!-- How users arrive, receive and use the offer; price/unit, payer, revenue or
-funding, core work, people/partners, costs/capacity and relevant constraints.
-Include known meaningful numbers and units. State an unselected material term
-briefly in its row; never invent a forecast or force irrelevant budget fields.
-Later Product/model/Sales documents elaborate these facts and depend on Brief. -->
+## Бизнес и ресурсы
 
-## Goals and success
+Как клиент получает услугу или товар, сколько и за что платит по исходным условиям? Кто выполняет работу, какие есть ограничения по мощности, территории, срокам, ресурсам и расходам? Сохранить известные числа и единицы. Неизвестные значения обозначить без расчёта «по рынку».
 
-<!-- Operator's desired outcomes and priorities, useful success measures,
-observed baselines and any agreed targets/time horizon. Do not demote the
-operator's goals or substitute an agent-designed experiment for the purpose. -->
+## Цели и признаки успеха
 
-## Visual reference intake
+Какого бизнес-результата ждёт владелец? Указать приоритет, текущую измеренную базу, целевые значения и срок, если они заданы. Рост посещаемости связывать с нужными обращениями или продажами. Желаемый результат не записывать как прогноз агента.
 
-<!-- One table only: each row pairs the identity element or reference category
-with its description and the exact uploaded file links. Screenshots, UI
-fragments, illustrations, infographics and handout layouts belong to the
-category they illustrate. A folder path, prose summary or metadata-only ID list
-does not replace links to the exact files; use the Studio asset route where it
-applies. Do not add a separate uploaded-files section.
+## Визуальные референсы
 
-Mirror the five reference categories in frontmatter under `visual_references`,
-keyed `interface-and-website-appearance`, `typography`, `photography`,
-`illustration` and `marketing-creative`. Each key carries its stable asset IDs,
-source directories and a `status` of `missing`, `supplied-unreviewed`, `ready`
-or `out-of-scope`. The Account Manager role decides when a category reaches one
-of those states; do not restate the Design gate here. -->
+<!-- Сохранить текущие правила Account Manager и asset-index.yaml:
+точные файлы, права, статусы и пять категорий visual_references в metadata.
+В основном брифе оставить прямые ссылки на каждый переданный файл рядом с
+соответствующей категорией. При сокращении сохранять нужные пояснения на
+видимой странице и удалять повторы. Вложения остаются доступны по ссылкам. Ссылки и описания сами по себе не
+загружают изображения в контекст агента: для оценки референса открыть файл.
+Недостающие визуальные референсы не останавливают продуктовое исследование.
+Ключи visual_references: `interface-and-website-appearance`, `typography`,
+`photography`, `illustration`, `marketing-creative`.
+Статусы: `missing`, `supplied-unreviewed`, `ready`, `out-of-scope`.
+Статус описывает сведения этой категории и не блокирует этапы. -->
 
-| Element                          | Description and references |
-| -------------------------------- | -------------------------- |
-| Project name                     |                            |
-| Logo                             |                            |
-| Slogan                           |                            |
-| Accent color                     |                            |
-| Interface and website appearance |                            |
-| Typography                       |                            |
-| Photography                      |                            |
-| Illustration                     |                            |
-| Marketing creative               |                            |
+| Элемент                 | Описание и ссылки на конкретные файлы |
+| ----------------------- | ------------------------------------- |
+| Название проекта        |                                       |
+| Логотип                 |                                       |
+| Слоган                  |                                       |
+| Акцентный цвет          |                                       |
+| Интерфейс и вид сайта   |                                       |
+| Типографика             |                                       |
+| Фотографии              |                                       |
+| Иллюстрации             |                                       |
+| Маркетинговые материалы |                                       |

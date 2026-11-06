@@ -1,12 +1,14 @@
 "use client";
 
+import { memo, useCallback } from "react";
 import { IComponentPropsExtended } from "./interface";
 import { api } from "<%= sdk_client_import_path %>";
 import { Component as AdminForm } from "../form";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-v2/table-row/Component";
 
-export function Component(props: IComponentPropsExtended) {
-  const deleteEntity = api.delete();
+export const Component = memo(function Component(props: IComponentPropsExtended) {
+  const { mutate: deleteRecord } = api.delete();
+  const onDelete = useCallback(() => {if(props.data?.id) deleteRecord({id:props.data.id});},[deleteRecord,props.data?.id]);
 
   return (
     <ParentComponent
@@ -21,11 +23,7 @@ export function Component(props: IComponentPropsExtended) {
           />
         );
       }}
-      onDelete={() => {
-        if (props.data?.id) {
-          deleteEntity.mutate({ id: props.data.id });
-        }
-      }}
+      onDelete={onDelete}
     >
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 p-4 pt-6">
         <div className="flex flex-col gap-0.5 overflow-hidden">
@@ -39,4 +37,4 @@ export function Component(props: IComponentPropsExtended) {
       </div>
     </ParentComponent>
   );
-}
+});

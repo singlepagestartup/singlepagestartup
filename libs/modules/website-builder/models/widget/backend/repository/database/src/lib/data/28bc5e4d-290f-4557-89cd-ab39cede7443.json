@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Module structure",
+    "ru": "Устройство модуля"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Product, Category and Store describe the catalogue. Order and its linked items store order contents. Attribute and Attribute Key define properties. Purchase workflows involving the current user belong to RBAC.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Product, Category и Store описывают каталог. Order и связанные позиции хранят состав заказа. Attribute и Attribute Key задают характеристики. Сценарии покупки с учётом текущего пользователя находятся в RBAC.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "28bc5e4d-290f-4557-89cd-ab39cede7443",
+  "createdAt": "2026-10-26T00:11:24.782Z",
+  "updatedAt": "2026-10-27T14:58:53.047Z",
+  "variant": "content-rich",
+  "adminTitle": "Устройство модуля",
+  "slug": "framework-reviewed-article-ecommerce-technical"
+}

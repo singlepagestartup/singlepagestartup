@@ -9,11 +9,72 @@ import type { ITopicRule } from "./index";
  * in `./startup.ts` (evaluated BEFORE this layer, so a startup rule with
  * `stop: true` for the same route wins).
  *
- * These rules drive BOTH the revalidation WS broadcast and the http-cache
- * version bump (one shared resolver in `./index`), so the two realtime layers
- * stay in lockstep for every rule listed here.
+ * These rules map revalidation WebSocket broadcasts to their browser reader
+ * subscriptions through the shared resolver in `./index`.
  */
 export const topicRules: ITopicRule[] = [
+  {
+    routeTemplate: "/api/rbac/identities/[rbac.identities.id]/change-password",
+    topics: ["rbac.identities", "rbac.identities.[rbac.identities.id]"],
+    stop: true,
+  },
+  ...["find-by-url", "url-segment-value", "urls"].map(
+    (operation): ITopicRule => ({
+      routeTemplate: `/api/host/pages/${operation}`,
+      topics: ["host.pages"],
+      stop: true,
+    }),
+  ),
+  {
+    // Order totals are an aggregate over quantities, product price attributes
+    // and currencies. Browser subscribers observe those collections rather
+    // than the literal RPC name `total`.
+    routeTemplate: "/api/ecommerce/orders/[ecommerce.orders.id]/total",
+    topics: [
+      "ecommerce.orders",
+      "ecommerce.orders-to-products",
+      "ecommerce.products",
+      "ecommerce.products-to-attributes",
+      "ecommerce.attribute-keys",
+      "ecommerce.attribute-keys-to-attributes",
+      "ecommerce.attributes",
+      "ecommerce.attributes-to-billing-module-currencies",
+      "billing.currencies",
+    ],
+    stop: true,
+  },
+  {
+    routeTemplate: "/api/knowledge/sources-to-file-storage-module-files",
+    topics: [
+      "knowledge.sources-to-file-storage-module-files",
+      "knowledge.sources",
+      "knowledge.chunks",
+      "knowledge.sources-to-chunks",
+    ],
+    stop: true,
+  },
+  {
+    routeTemplate: "/api/knowledge/sources",
+    topics: [
+      "knowledge.sources",
+      "knowledge.sources-to-file-storage-module-files",
+      "knowledge.chunks",
+      "knowledge.sources-to-chunks",
+    ],
+    stop: true,
+  },
+  {
+    routeTemplate: "/api/file-storage/files",
+    topics: [
+      "file-storage.files",
+      "knowledge.sources-to-file-storage-module-files",
+      "knowledge.sources",
+      "knowledge.chunks",
+      "knowledge.sources-to-chunks",
+    ],
+    stop: true,
+  },
+
   {
     // Thread-scoped message mutations (the chat send path). Without this rule
     // the generic fallback broadcasts broad topics (social.chats.[id],
@@ -51,32 +112,42 @@ export const topicRules: ITopicRule[] = [
       "social.chats.[social.chats.id].messages",
       "social.actions",
       "social.chats.[social.chats.id].actions",
-      "social.profiles-to-knowledge-module-documents",
-      "knowledge.documents",
+      "social.profiles-to-knowledge-module-sources",
+      "knowledge.sources",
+      "knowledge.chunks",
+      "knowledge.sources-to-chunks",
+      "knowledge.sources-to-file-storage-module-files",
+      "social.messages-to-knowledge-module-sources",
       "rbac.subjects-to-billing-module-currencies",
     ],
     stop: true,
   },
   {
     // Profile Knowledge is a composite RBAC read over both the Social-owned
-    // profile-document relation and Knowledge documents. Canonical derivation
-    // sees only the trailing `documents` segment and therefore cannot identify
+    // profile-Source relation and Knowledge Sources. Canonical derivation
+    // sees only the trailing `sources` segment and therefore cannot identify
     // either collection that actually changes.
     routeTemplate:
-      "/api/rbac/subjects/[rbac.subjects.id]/social-module/profiles/[social.profiles.id]/chats/[social.chats.id]/profiles/[social.target-profiles.id]/knowledge/documents",
+      "/api/rbac/subjects/[rbac.subjects.id]/social-module/profiles/[social.profiles.id]/chats/[social.chats.id]/profiles/[social.target-profiles.id]/knowledge/sources",
     topics: [
-      "social.profiles-to-knowledge-module-documents",
-      "knowledge.documents",
+      "social.profiles-to-knowledge-module-sources",
+      "knowledge.sources",
+      "knowledge.chunks",
+      "knowledge.sources-to-chunks",
+      "knowledge.sources-to-file-storage-module-files",
     ],
     stop: true,
   },
   {
-    // Profile-scoped variant of the same composite Knowledge document read.
+    // Profile-scoped variant of the same composite Knowledge Source read.
     routeTemplate:
-      "/api/rbac/subjects/[rbac.subjects.id]/social-module/profiles/[social.profiles.id]/knowledge/documents",
+      "/api/rbac/subjects/[rbac.subjects.id]/social-module/profiles/[social.profiles.id]/knowledge/sources",
     topics: [
-      "social.profiles-to-knowledge-module-documents",
-      "knowledge.documents",
+      "social.profiles-to-knowledge-module-sources",
+      "knowledge.sources",
+      "knowledge.chunks",
+      "knowledge.sources-to-chunks",
+      "knowledge.sources-to-file-storage-module-files",
     ],
     stop: true,
   },

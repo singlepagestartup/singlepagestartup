@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "All modules",
+    "ru": "Все модули"
+  },
+  "subtitle": {},
+  "url": "/framework/modules",
+  "className": "w-fit",
+  "id": "deb97143-d184-4f1f-b6ce-0e80e883a297",
+  "createdAt": "2026-10-24T01:06:05.023Z",
+  "updatedAt": "2026-10-24T01:06:05.023Z",
+  "variant": "secondary",
+  "adminTitle": "All modules",
+  "slug": "framework-journey-guide-billing-actions-0"
+}

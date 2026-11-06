@@ -2,20 +2,20 @@
   "id": "7e7866cf-3e25-4fb4-845d-2827ca9b5805",
   "className": "",
   "createdAt": "2025-05-06T17:01:24.918Z",
-  "updatedAt": "2025-11-15T09:32:28.537Z",
+  "updatedAt": "2026-10-26T07:34:02.845Z",
   "variant": "default",
   "title": {
-    "en": "Category #1",
-    "ru": "Category #1"
+    "en": "Frontend",
+    "ru": "Интерфейсы"
   },
   "subtitle": {
-    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Category #1 Subtitle\"}]}]}",
-    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Category #1 Subtitle\"}]}]}"
+    "en": "{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"type\": \"text\", \"text\": \"Server and client boundaries, SDK readers, cache and realtime.\"}]}]}",
+    "ru": "{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"type\": \"text\", \"text\": \"Граница сервера и браузера, SDK, кэш и realtime.\"}]}]}"
   },
   "description": {
-    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Category #1 Description\"}]}]}",
-    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Category #1 Description\"}]}]}"
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Next.js composition, SDK readers, React Query and the client boundary in SinglePageStartup.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Next.js, компоненты страниц и обновление данных.\"}]}]}"
   },
-  "adminTitle": "Category #1",
-  "slug": "category-1"
+  "adminTitle": "Framework Blog / Frontend",
+  "slug": "frontend"
 }

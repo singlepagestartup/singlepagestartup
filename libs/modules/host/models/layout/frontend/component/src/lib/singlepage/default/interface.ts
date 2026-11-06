@@ -10,6 +10,8 @@ export const variant = "default" as const;
 export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
   language: string;
+  before?: React.ReactNode;
+  after?: React.ReactNode;
 }
 
 export interface IComponentPropsExtended

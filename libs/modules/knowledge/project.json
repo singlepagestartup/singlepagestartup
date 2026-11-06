@@ -45,7 +45,8 @@
             "command": "nx run @sps/knowledge:relations:repository-generate"
           }
         ]
-      }
+      },
+      "cache": false
     },
     "repository-migrate": {
       "executor": "nx:run-commands",
@@ -72,15 +73,10 @@
           },
           {
             "command": "nx run @sps/knowledge:models:chunk:repository-generate"
-          },
-          {
-            "command": "nx run @sps/knowledge:models:document:repository-generate"
-          },
-          {
-            "command": "nx run @sps/knowledge:models:edit-suggestion:repository-generate"
           }
         ]
-      }
+      },
+      "cache": false
     },
     "relations:repository-generate": {
       "executor": "nx:run-commands",
@@ -94,7 +90,8 @@
             "command": "nx run @sps/knowledge:relations:sources-to-chunks:repository-generate"
           }
         ]
-      }
+      },
+      "cache": false
     },
     "models:repository-migrate": {
       "executor": "nx:run-commands",
@@ -107,12 +104,6 @@
           },
           {
             "command": "nx run @sps/knowledge:models:chunk:repository-migrate"
-          },
-          {
-            "command": "nx run @sps/knowledge:models:document:repository-migrate"
-          },
-          {
-            "command": "nx run @sps/knowledge:models:edit-suggestion:repository-migrate"
           }
         ]
       }
@@ -143,9 +134,13 @@
           },
           {
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          },
+          {
+            "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
-      }
+      },
+      "cache": false
     },
     "models:source:repository-migrate": {
       "executor": "nx:run-commands",
@@ -172,9 +167,13 @@
           },
           {
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          },
+          {
+            "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
-      }
+      },
+      "cache": false
     },
     "models:chunk:repository-migrate": {
       "executor": "nx:run-commands",
@@ -201,9 +200,13 @@
           },
           {
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          },
+          {
+            "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
-      }
+      },
+      "cache": false
     },
     "relations:sources-to-file-storage-module-files:repository-migrate": {
       "executor": "nx:run-commands",
@@ -230,9 +233,13 @@
           },
           {
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          },
+          {
+            "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
-      }
+      },
+      "cache": false
     },
     "relations:sources-to-chunks:repository-migrate": {
       "executor": "nx:run-commands",
@@ -241,64 +248,6 @@
         "parallel": false,
         "envFile": "apps/api/.env",
         "cwd": "libs/modules/knowledge/relations/sources-to-chunks/backend/repository/database",
-        "commands": [
-          {
-            "command": "bun run ./src/lib/migrate.ts"
-          }
-        ]
-      }
-    },
-    "models:document:repository-generate": {
-      "executor": "nx:run-commands",
-      "options": {
-        "parallel": false,
-        "cwd": "libs/modules/knowledge/models/document/backend/repository/database",
-        "commands": [
-          {
-            "command": "drizzle-kit up --config=./src/lib/config.ts"
-          },
-          {
-            "command": "drizzle-kit generate --config=./src/lib/config.ts"
-          }
-        ]
-      }
-    },
-    "models:document:repository-migrate": {
-      "executor": "nx:run-commands",
-      "cache": false,
-      "options": {
-        "parallel": false,
-        "envFile": "apps/api/.env",
-        "cwd": "libs/modules/knowledge/models/document/backend/repository/database",
-        "commands": [
-          {
-            "command": "bun run ./src/lib/migrate.ts"
-          }
-        ]
-      }
-    },
-    "models:edit-suggestion:repository-generate": {
-      "executor": "nx:run-commands",
-      "options": {
-        "parallel": false,
-        "cwd": "libs/modules/knowledge/models/edit-suggestion/backend/repository/database",
-        "commands": [
-          {
-            "command": "drizzle-kit up --config=./src/lib/config.ts"
-          },
-          {
-            "command": "drizzle-kit generate --config=./src/lib/config.ts"
-          }
-        ]
-      }
-    },
-    "models:edit-suggestion:repository-migrate": {
-      "executor": "nx:run-commands",
-      "cache": false,
-      "options": {
-        "parallel": false,
-        "envFile": "apps/api/.env",
-        "cwd": "libs/modules/knowledge/models/edit-suggestion/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"

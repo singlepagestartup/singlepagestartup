@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "d8b75737-e753-4307-bad2-9b413a603c8d",
+  "createdAt": "2026-10-26T00:11:46.988Z",
+  "updatedAt": "2026-10-27T14:59:57.382Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "One file can be used more than once",
+    "ru": "Один файл можно использовать несколько раз"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Link a cover to a course and an article about it. Each use does not require a new copy.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Свяжите обложку с курсом и публикацией о нём. Для каждого использования не обязательно создавать новую копию.\"}]}]}"
+  },
+  "adminTitle": "Один файл можно использовать несколько раз",
+  "slug": "framework-reviewed-article-file-storage-introduction-feature-1"
+}

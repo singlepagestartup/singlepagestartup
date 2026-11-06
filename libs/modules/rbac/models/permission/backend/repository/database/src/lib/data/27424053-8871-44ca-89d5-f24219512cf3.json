@@ -1,0 +1,9 @@
+{
+  "id": "27424053-8871-44ca-89d5-f24219512cf3",
+  "createdAt": "2026-10-23T20:18:01.677Z",
+  "updatedAt": "2026-10-23T20:18:01.677Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/social/profiles/authors/[social.profiles.id]"
+}

@@ -29,7 +29,7 @@ type SourceReference = {
   id: string;
   text: string;
   sourceTitle: string | null;
-  sourceOriginalPath: string | null;
+  sourceId: string | null;
   similarity: number;
 };
 
@@ -261,7 +261,7 @@ export function ClientComponent() {
             disabled={isBusy}
             onClick={runSampleIndex}
             className="justify-start rounded-md"
-            title={`Index up to ${INDEX_LIMIT} knowledge documents`}
+            title={`Index up to ${INDEX_LIMIT} knowledge sources`}
           >
             {pendingAction === "index" ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -337,7 +337,7 @@ export function ClientComponent() {
                         {source.sourceTitle || "Untitled"}
                       </div>
                       <div className="truncate text-xs text-muted-foreground">
-                        {source.sourceOriginalPath || "unknown"}
+                        {source.sourceId || "unknown"}
                       </div>
                     </div>
                     <div className="shrink-0 rounded-md bg-muted px-2 py-1 text-xs">

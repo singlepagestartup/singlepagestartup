@@ -1,0 +1,2043 @@
+{
+  "schema": "sps.platform-example-input.v1",
+  "commercialConfirmation": {
+    "source": "User instructions in the ISSUE-376 conversation: Pro 29 USD or 1900 RUB per month with 5000 tokens; top-ups 100/300/500/1000/3000 RUB at 0.13 RUB per token. Pack precision policy is documented in ISSUE-376-commercial-review.md; existing token consumption rules remain unchanged.",
+    "proPeriod": "month",
+    "prices": [
+      {
+        "currency": "usd",
+        "amount": 29
+      },
+      {
+        "currency": "rub",
+        "amount": 1900
+      }
+    ],
+    "tokenRate": 0.13,
+    "packs": [
+      {
+        "price": 100,
+        "credits": 769.230769
+      },
+      {
+        "price": 300,
+        "credits": 2307.692307
+      },
+      {
+        "price": 500,
+        "credits": 3846.153846
+      },
+      {
+        "price": 1000,
+        "credits": 7692.307692
+      },
+      {
+        "price": 3000,
+        "credits": 23076.923076
+      }
+    ]
+  },
+  "targets": [
+    {
+      "key": "token-credit-topup-key",
+      "entity": "ecommerce.attribute-key",
+      "selector": {
+        "slug": "token-credit-topup"
+      },
+      "data": {
+        "slug": "token-credit-topup",
+        "variant": "default",
+        "adminTitle": "Token credit top-up",
+        "type": "topup",
+        "field": "number",
+        "title": {
+          "en": "Tokens",
+          "ru": "Токены"
+        }
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "framework-commercial-catalog",
+      "entity": "ecommerce.widget",
+      "selector": {
+        "slug": "framework-commercial-catalog"
+      },
+      "data": {
+        "slug": "framework-commercial-catalog",
+        "variant": "product-list-default",
+        "adminTitle": "AI Chat and development services",
+        "title": {
+          "en": "AI Chat and development services",
+          "ru": "AI-чат и разработка"
+        },
+        "description": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Monthly Pro, one-time Token top-ups and development on SPS.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Ежемесячная подписка Pro, разовые пополнения токенов и разработка на SPS.\"}]}]}"
+        }
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-pro-price-usd-month",
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "slug": "ai-chat-pro-price-usd-month"
+      },
+      "data": {
+        "slug": "ai-chat-pro-price-usd-month",
+        "variant": "default",
+        "adminTitle": "ai-chat-pro-price-usd-month",
+        "string": {},
+        "number": "29"
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-pro-price-usd-month-key",
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "attributeKeyId": "3b7980e7-cdef-4726-beaa-9db8ec0ebdb6",
+        "attributeId": {
+          "$ref": "ai-chat-pro-price-usd-month"
+        }
+      },
+      "data": {
+        "attributeKeyId": "3b7980e7-cdef-4726-beaa-9db8ec0ebdb6",
+        "attributeId": {
+          "$ref": "ai-chat-pro-price-usd-month"
+        },
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-pro-price-usd-month-currency",
+      "entity": "ecommerce.attributes-to-billing-module-currencies",
+      "selector": {
+        "attributeId": {
+          "$ref": "ai-chat-pro-price-usd-month"
+        },
+        "billingModuleCurrencyId": "1e20efba-ad34-4173-8c77-e7b282161652"
+      },
+      "data": {
+        "attributeId": {
+          "$ref": "ai-chat-pro-price-usd-month"
+        },
+        "billingModuleCurrencyId": "1e20efba-ad34-4173-8c77-e7b282161652",
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-pro-price-rub-month",
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "slug": "ai-chat-pro-price-rub-month"
+      },
+      "data": {
+        "slug": "ai-chat-pro-price-rub-month",
+        "variant": "default",
+        "adminTitle": "ai-chat-pro-price-rub-month",
+        "string": {},
+        "number": "1900"
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-pro-price-rub-month-key",
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "attributeKeyId": "3b7980e7-cdef-4726-beaa-9db8ec0ebdb6",
+        "attributeId": {
+          "$ref": "ai-chat-pro-price-rub-month"
+        }
+      },
+      "data": {
+        "attributeKeyId": "3b7980e7-cdef-4726-beaa-9db8ec0ebdb6",
+        "attributeId": {
+          "$ref": "ai-chat-pro-price-rub-month"
+        },
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-pro-price-rub-month-currency",
+      "entity": "ecommerce.attributes-to-billing-module-currencies",
+      "selector": {
+        "attributeId": {
+          "$ref": "ai-chat-pro-price-rub-month"
+        },
+        "billingModuleCurrencyId": "311da2ee-6ee0-466c-bfca-bd0ecff7b549"
+      },
+      "data": {
+        "attributeId": {
+          "$ref": "ai-chat-pro-price-rub-month"
+        },
+        "billingModuleCurrencyId": "311da2ee-6ee0-466c-bfca-bd0ecff7b549",
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-pro-interval-month",
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "slug": "ai-chat-pro-interval-month"
+      },
+      "data": {
+        "slug": "ai-chat-pro-interval-month",
+        "variant": "default",
+        "adminTitle": "ai-chat-pro-interval-month",
+        "string": {
+          "en": "month",
+          "ru": "месяц"
+        }
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-pro-interval-month-key",
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "attributeKeyId": "920f92df-e58b-4b64-b138-3bf105ebebaa",
+        "attributeId": {
+          "$ref": "ai-chat-pro-interval-month"
+        }
+      },
+      "data": {
+        "attributeKeyId": "920f92df-e58b-4b64-b138-3bf105ebebaa",
+        "attributeId": {
+          "$ref": "ai-chat-pro-interval-month"
+        },
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-pro-topup-5000",
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "slug": "ai-chat-pro-topup-5000"
+      },
+      "data": {
+        "slug": "ai-chat-pro-topup-5000",
+        "variant": "default",
+        "adminTitle": "ai-chat-pro-topup-5000",
+        "string": {},
+        "number": "5000"
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-pro-topup-5000-key",
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "01edc8c0-d9a4-41c8-b5c2-e017fe8cd217",
+        "attributeId": {
+          "$ref": "ai-chat-pro-topup-5000"
+        }
+      },
+      "data": {
+        "attributeKeyId": {
+          "$ref": "token-credit-topup-key"
+        },
+        "attributeId": {
+          "$ref": "ai-chat-pro-topup-5000"
+        },
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true,
+      "id": "01edc8c0-d9a4-41c8-b5c2-e017fe8cd217",
+      "switch": true
+    },
+    {
+      "key": "ai-chat-pro-topup-5000-currency",
+      "entity": "ecommerce.attributes-to-billing-module-currencies",
+      "selector": {
+        "attributeId": {
+          "$ref": "ai-chat-pro-topup-5000"
+        },
+        "billingModuleCurrencyId": "0c409156-5614-4fba-9c87-d32d1c256b5a"
+      },
+      "data": {
+        "attributeId": {
+          "$ref": "ai-chat-pro-topup-5000"
+        },
+        "billingModuleCurrencyId": "0c409156-5614-4fba-9c87-d32d1c256b5a",
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-100-rub",
+      "entity": "ecommerce.product",
+      "selector": {
+        "slug": "ai-chat-tokens-100-rub"
+      },
+      "data": {
+        "slug": "ai-chat-tokens-100-rub",
+        "variant": "default",
+        "type": "one_off",
+        "adminTitle": "AI Chat Token top-up 100 RUB",
+        "title": {
+          "en": "Token top-up · 100 RUB",
+          "ru": "Пополнение токенов · 100 ₽"
+        },
+        "shortDescription": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Add 769.230769 tokens to your AI Chat balance for 100 RUB. The rate is 0.13 RUB per token.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Пополните баланс AI-чата на 769,230769 токена за 100 ₽. Курс — 0,13 ₽ за токен.\"}]}]}"
+        },
+        "description": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"A one-time purchase adds 769.230769 tokens per pack to your existing balance. Tokens do not expire. This top-up does not include Pro subscription access. Price: 100 RUB at 0.13 RUB per token.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Разовая покупка добавляет 769,230769 токена за каждый пакет к текущему балансу. Токены не сгорают. Пополнение не включает доступ по подписке Pro. Цена — 100 ₽ по курсу 0,13 ₽ за токен.\"}]}]}"
+        }
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-100-rub-price",
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "slug": "ai-chat-tokens-100-rub-price"
+      },
+      "data": {
+        "slug": "ai-chat-tokens-100-rub-price",
+        "variant": "default",
+        "adminTitle": "ai-chat-tokens-100-rub-price",
+        "string": {},
+        "number": "100"
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-100-rub-price-key",
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "attributeKeyId": "3b7980e7-cdef-4726-beaa-9db8ec0ebdb6",
+        "attributeId": {
+          "$ref": "ai-chat-tokens-100-rub-price"
+        }
+      },
+      "data": {
+        "attributeKeyId": "3b7980e7-cdef-4726-beaa-9db8ec0ebdb6",
+        "attributeId": {
+          "$ref": "ai-chat-tokens-100-rub-price"
+        },
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-100-rub-price-currency",
+      "entity": "ecommerce.attributes-to-billing-module-currencies",
+      "selector": {
+        "attributeId": {
+          "$ref": "ai-chat-tokens-100-rub-price"
+        },
+        "billingModuleCurrencyId": "311da2ee-6ee0-466c-bfca-bd0ecff7b549"
+      },
+      "data": {
+        "attributeId": {
+          "$ref": "ai-chat-tokens-100-rub-price"
+        },
+        "billingModuleCurrencyId": "311da2ee-6ee0-466c-bfca-bd0ecff7b549",
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-100-rub-topup",
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "slug": "ai-chat-tokens-100-rub-topup"
+      },
+      "data": {
+        "slug": "ai-chat-tokens-100-rub-topup",
+        "variant": "default",
+        "adminTitle": "ai-chat-tokens-100-rub-topup",
+        "string": {},
+        "number": "769.230769"
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-100-rub-topup-key",
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "9be020bf-d960-4975-b185-bdb42406b793",
+        "attributeId": {
+          "$ref": "ai-chat-tokens-100-rub-topup"
+        }
+      },
+      "data": {
+        "attributeKeyId": {
+          "$ref": "token-credit-topup-key"
+        },
+        "attributeId": {
+          "$ref": "ai-chat-tokens-100-rub-topup"
+        },
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true,
+      "id": "9be020bf-d960-4975-b185-bdb42406b793",
+      "switch": true
+    },
+    {
+      "key": "ai-chat-tokens-100-rub-topup-currency",
+      "entity": "ecommerce.attributes-to-billing-module-currencies",
+      "selector": {
+        "attributeId": {
+          "$ref": "ai-chat-tokens-100-rub-topup"
+        },
+        "billingModuleCurrencyId": "0c409156-5614-4fba-9c87-d32d1c256b5a"
+      },
+      "data": {
+        "attributeId": {
+          "$ref": "ai-chat-tokens-100-rub-topup"
+        },
+        "billingModuleCurrencyId": "0c409156-5614-4fba-9c87-d32d1c256b5a",
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-100-rub-price-product",
+      "entity": "ecommerce.products-to-attributes",
+      "selector": {
+        "productId": {
+          "$ref": "ai-chat-tokens-100-rub"
+        },
+        "attributeId": {
+          "$ref": "ai-chat-tokens-100-rub-price"
+        }
+      },
+      "data": {
+        "productId": {
+          "$ref": "ai-chat-tokens-100-rub"
+        },
+        "attributeId": {
+          "$ref": "ai-chat-tokens-100-rub-price"
+        },
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-100-rub-topup-product",
+      "entity": "ecommerce.products-to-attributes",
+      "selector": {
+        "productId": {
+          "$ref": "ai-chat-tokens-100-rub"
+        },
+        "attributeId": {
+          "$ref": "ai-chat-tokens-100-rub-topup"
+        }
+      },
+      "data": {
+        "productId": {
+          "$ref": "ai-chat-tokens-100-rub"
+        },
+        "attributeId": {
+          "$ref": "ai-chat-tokens-100-rub-topup"
+        },
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-100-rub-store",
+      "entity": "ecommerce.stores-to-products",
+      "selector": {
+        "storeId": "92aefa1f-247b-49a9-b1b9-c8029cc840dc",
+        "productId": {
+          "$ref": "ai-chat-tokens-100-rub"
+        }
+      },
+      "data": {
+        "storeId": "92aefa1f-247b-49a9-b1b9-c8029cc840dc",
+        "productId": {
+          "$ref": "ai-chat-tokens-100-rub"
+        },
+        "variant": "default",
+        "orderIndex": 0,
+        "sku": "ai-chat-tokens-100-rub"
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-100-rub-catalog",
+      "entity": "ecommerce.widgets-to-products",
+      "selector": {
+        "widgetId": {
+          "$ref": "framework-commercial-catalog"
+        },
+        "productId": {
+          "$ref": "ai-chat-tokens-100-rub"
+        }
+      },
+      "data": {
+        "widgetId": {
+          "$ref": "framework-commercial-catalog"
+        },
+        "productId": {
+          "$ref": "ai-chat-tokens-100-rub"
+        },
+        "variant": "default",
+        "orderIndex": 1
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-300-rub",
+      "entity": "ecommerce.product",
+      "selector": {
+        "slug": "ai-chat-tokens-300-rub"
+      },
+      "data": {
+        "slug": "ai-chat-tokens-300-rub",
+        "variant": "default",
+        "type": "one_off",
+        "adminTitle": "AI Chat Token top-up 300 RUB",
+        "title": {
+          "en": "Token top-up · 300 RUB",
+          "ru": "Пополнение токенов · 300 ₽"
+        },
+        "shortDescription": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Add 2307.692307 tokens to your AI Chat balance for 300 RUB. The rate is 0.13 RUB per token.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Пополните баланс AI-чата на 2307,692307 токена за 300 ₽. Курс — 0,13 ₽ за токен.\"}]}]}"
+        },
+        "description": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"A one-time purchase adds 2307.692307 tokens per pack to your existing balance. Tokens do not expire. This top-up does not include Pro subscription access. Price: 300 RUB at 0.13 RUB per token.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Разовая покупка добавляет 2307,692307 токена за каждый пакет к текущему балансу. Токены не сгорают. Пополнение не включает доступ по подписке Pro. Цена — 300 ₽ по курсу 0,13 ₽ за токен.\"}]}]}"
+        }
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-300-rub-price",
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "slug": "ai-chat-tokens-300-rub-price"
+      },
+      "data": {
+        "slug": "ai-chat-tokens-300-rub-price",
+        "variant": "default",
+        "adminTitle": "ai-chat-tokens-300-rub-price",
+        "string": {},
+        "number": "300"
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-300-rub-price-key",
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "attributeKeyId": "3b7980e7-cdef-4726-beaa-9db8ec0ebdb6",
+        "attributeId": {
+          "$ref": "ai-chat-tokens-300-rub-price"
+        }
+      },
+      "data": {
+        "attributeKeyId": "3b7980e7-cdef-4726-beaa-9db8ec0ebdb6",
+        "attributeId": {
+          "$ref": "ai-chat-tokens-300-rub-price"
+        },
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-300-rub-price-currency",
+      "entity": "ecommerce.attributes-to-billing-module-currencies",
+      "selector": {
+        "attributeId": {
+          "$ref": "ai-chat-tokens-300-rub-price"
+        },
+        "billingModuleCurrencyId": "311da2ee-6ee0-466c-bfca-bd0ecff7b549"
+      },
+      "data": {
+        "attributeId": {
+          "$ref": "ai-chat-tokens-300-rub-price"
+        },
+        "billingModuleCurrencyId": "311da2ee-6ee0-466c-bfca-bd0ecff7b549",
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-300-rub-topup",
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "slug": "ai-chat-tokens-300-rub-topup"
+      },
+      "data": {
+        "slug": "ai-chat-tokens-300-rub-topup",
+        "variant": "default",
+        "adminTitle": "ai-chat-tokens-300-rub-topup",
+        "string": {},
+        "number": "2307.692307"
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-300-rub-topup-key",
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "f0a4c2d2-2858-4bad-a1b2-a0eff38c0ee5",
+        "attributeId": {
+          "$ref": "ai-chat-tokens-300-rub-topup"
+        }
+      },
+      "data": {
+        "attributeKeyId": {
+          "$ref": "token-credit-topup-key"
+        },
+        "attributeId": {
+          "$ref": "ai-chat-tokens-300-rub-topup"
+        },
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true,
+      "id": "f0a4c2d2-2858-4bad-a1b2-a0eff38c0ee5",
+      "switch": true
+    },
+    {
+      "key": "ai-chat-tokens-300-rub-topup-currency",
+      "entity": "ecommerce.attributes-to-billing-module-currencies",
+      "selector": {
+        "attributeId": {
+          "$ref": "ai-chat-tokens-300-rub-topup"
+        },
+        "billingModuleCurrencyId": "0c409156-5614-4fba-9c87-d32d1c256b5a"
+      },
+      "data": {
+        "attributeId": {
+          "$ref": "ai-chat-tokens-300-rub-topup"
+        },
+        "billingModuleCurrencyId": "0c409156-5614-4fba-9c87-d32d1c256b5a",
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-300-rub-price-product",
+      "entity": "ecommerce.products-to-attributes",
+      "selector": {
+        "productId": {
+          "$ref": "ai-chat-tokens-300-rub"
+        },
+        "attributeId": {
+          "$ref": "ai-chat-tokens-300-rub-price"
+        }
+      },
+      "data": {
+        "productId": {
+          "$ref": "ai-chat-tokens-300-rub"
+        },
+        "attributeId": {
+          "$ref": "ai-chat-tokens-300-rub-price"
+        },
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-300-rub-topup-product",
+      "entity": "ecommerce.products-to-attributes",
+      "selector": {
+        "productId": {
+          "$ref": "ai-chat-tokens-300-rub"
+        },
+        "attributeId": {
+          "$ref": "ai-chat-tokens-300-rub-topup"
+        }
+      },
+      "data": {
+        "productId": {
+          "$ref": "ai-chat-tokens-300-rub"
+        },
+        "attributeId": {
+          "$ref": "ai-chat-tokens-300-rub-topup"
+        },
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-300-rub-store",
+      "entity": "ecommerce.stores-to-products",
+      "selector": {
+        "storeId": "92aefa1f-247b-49a9-b1b9-c8029cc840dc",
+        "productId": {
+          "$ref": "ai-chat-tokens-300-rub"
+        }
+      },
+      "data": {
+        "storeId": "92aefa1f-247b-49a9-b1b9-c8029cc840dc",
+        "productId": {
+          "$ref": "ai-chat-tokens-300-rub"
+        },
+        "variant": "default",
+        "orderIndex": 0,
+        "sku": "ai-chat-tokens-300-rub"
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-300-rub-catalog",
+      "entity": "ecommerce.widgets-to-products",
+      "selector": {
+        "widgetId": {
+          "$ref": "framework-commercial-catalog"
+        },
+        "productId": {
+          "$ref": "ai-chat-tokens-300-rub"
+        }
+      },
+      "data": {
+        "widgetId": {
+          "$ref": "framework-commercial-catalog"
+        },
+        "productId": {
+          "$ref": "ai-chat-tokens-300-rub"
+        },
+        "variant": "default",
+        "orderIndex": 2
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-500-rub",
+      "entity": "ecommerce.product",
+      "selector": {
+        "slug": "ai-chat-tokens-500-rub"
+      },
+      "data": {
+        "slug": "ai-chat-tokens-500-rub",
+        "variant": "default",
+        "type": "one_off",
+        "adminTitle": "AI Chat Token top-up 500 RUB",
+        "title": {
+          "en": "Token top-up · 500 RUB",
+          "ru": "Пополнение токенов · 500 ₽"
+        },
+        "shortDescription": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Add 3846.153846 tokens to your AI Chat balance for 500 RUB. The rate is 0.13 RUB per token.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Пополните баланс AI-чата на 3846,153846 токена за 500 ₽. Курс — 0,13 ₽ за токен.\"}]}]}"
+        },
+        "description": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"A one-time purchase adds 3846.153846 tokens per pack to your existing balance. Tokens do not expire. This top-up does not include Pro subscription access. Price: 500 RUB at 0.13 RUB per token.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Разовая покупка добавляет 3846,153846 токена за каждый пакет к текущему балансу. Токены не сгорают. Пополнение не включает доступ по подписке Pro. Цена — 500 ₽ по курсу 0,13 ₽ за токен.\"}]}]}"
+        }
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-500-rub-price",
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "slug": "ai-chat-tokens-500-rub-price"
+      },
+      "data": {
+        "slug": "ai-chat-tokens-500-rub-price",
+        "variant": "default",
+        "adminTitle": "ai-chat-tokens-500-rub-price",
+        "string": {},
+        "number": "500"
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-500-rub-price-key",
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "attributeKeyId": "3b7980e7-cdef-4726-beaa-9db8ec0ebdb6",
+        "attributeId": {
+          "$ref": "ai-chat-tokens-500-rub-price"
+        }
+      },
+      "data": {
+        "attributeKeyId": "3b7980e7-cdef-4726-beaa-9db8ec0ebdb6",
+        "attributeId": {
+          "$ref": "ai-chat-tokens-500-rub-price"
+        },
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-500-rub-price-currency",
+      "entity": "ecommerce.attributes-to-billing-module-currencies",
+      "selector": {
+        "attributeId": {
+          "$ref": "ai-chat-tokens-500-rub-price"
+        },
+        "billingModuleCurrencyId": "311da2ee-6ee0-466c-bfca-bd0ecff7b549"
+      },
+      "data": {
+        "attributeId": {
+          "$ref": "ai-chat-tokens-500-rub-price"
+        },
+        "billingModuleCurrencyId": "311da2ee-6ee0-466c-bfca-bd0ecff7b549",
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-500-rub-topup",
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "slug": "ai-chat-tokens-500-rub-topup"
+      },
+      "data": {
+        "slug": "ai-chat-tokens-500-rub-topup",
+        "variant": "default",
+        "adminTitle": "ai-chat-tokens-500-rub-topup",
+        "string": {},
+        "number": "3846.153846"
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-500-rub-topup-key",
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "afa4d198-516b-40e6-87d6-50abbb53b517",
+        "attributeId": {
+          "$ref": "ai-chat-tokens-500-rub-topup"
+        }
+      },
+      "data": {
+        "attributeKeyId": {
+          "$ref": "token-credit-topup-key"
+        },
+        "attributeId": {
+          "$ref": "ai-chat-tokens-500-rub-topup"
+        },
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true,
+      "id": "afa4d198-516b-40e6-87d6-50abbb53b517",
+      "switch": true
+    },
+    {
+      "key": "ai-chat-tokens-500-rub-topup-currency",
+      "entity": "ecommerce.attributes-to-billing-module-currencies",
+      "selector": {
+        "attributeId": {
+          "$ref": "ai-chat-tokens-500-rub-topup"
+        },
+        "billingModuleCurrencyId": "0c409156-5614-4fba-9c87-d32d1c256b5a"
+      },
+      "data": {
+        "attributeId": {
+          "$ref": "ai-chat-tokens-500-rub-topup"
+        },
+        "billingModuleCurrencyId": "0c409156-5614-4fba-9c87-d32d1c256b5a",
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-500-rub-price-product",
+      "entity": "ecommerce.products-to-attributes",
+      "selector": {
+        "productId": {
+          "$ref": "ai-chat-tokens-500-rub"
+        },
+        "attributeId": {
+          "$ref": "ai-chat-tokens-500-rub-price"
+        }
+      },
+      "data": {
+        "productId": {
+          "$ref": "ai-chat-tokens-500-rub"
+        },
+        "attributeId": {
+          "$ref": "ai-chat-tokens-500-rub-price"
+        },
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-500-rub-topup-product",
+      "entity": "ecommerce.products-to-attributes",
+      "selector": {
+        "productId": {
+          "$ref": "ai-chat-tokens-500-rub"
+        },
+        "attributeId": {
+          "$ref": "ai-chat-tokens-500-rub-topup"
+        }
+      },
+      "data": {
+        "productId": {
+          "$ref": "ai-chat-tokens-500-rub"
+        },
+        "attributeId": {
+          "$ref": "ai-chat-tokens-500-rub-topup"
+        },
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-500-rub-store",
+      "entity": "ecommerce.stores-to-products",
+      "selector": {
+        "storeId": "92aefa1f-247b-49a9-b1b9-c8029cc840dc",
+        "productId": {
+          "$ref": "ai-chat-tokens-500-rub"
+        }
+      },
+      "data": {
+        "storeId": "92aefa1f-247b-49a9-b1b9-c8029cc840dc",
+        "productId": {
+          "$ref": "ai-chat-tokens-500-rub"
+        },
+        "variant": "default",
+        "orderIndex": 0,
+        "sku": "ai-chat-tokens-500-rub"
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-500-rub-catalog",
+      "entity": "ecommerce.widgets-to-products",
+      "selector": {
+        "widgetId": {
+          "$ref": "framework-commercial-catalog"
+        },
+        "productId": {
+          "$ref": "ai-chat-tokens-500-rub"
+        }
+      },
+      "data": {
+        "widgetId": {
+          "$ref": "framework-commercial-catalog"
+        },
+        "productId": {
+          "$ref": "ai-chat-tokens-500-rub"
+        },
+        "variant": "default",
+        "orderIndex": 3
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-1000-rub",
+      "entity": "ecommerce.product",
+      "selector": {
+        "slug": "ai-chat-tokens-1000-rub"
+      },
+      "data": {
+        "slug": "ai-chat-tokens-1000-rub",
+        "variant": "default",
+        "type": "one_off",
+        "adminTitle": "AI Chat Token top-up 1000 RUB",
+        "title": {
+          "en": "Token top-up · 1000 RUB",
+          "ru": "Пополнение токенов · 1000 ₽"
+        },
+        "shortDescription": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Add 7692.307692 tokens to your AI Chat balance for 1000 RUB. The rate is 0.13 RUB per token.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Пополните баланс AI-чата на 7692,307692 токена за 1000 ₽. Курс — 0,13 ₽ за токен.\"}]}]}"
+        },
+        "description": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"A one-time purchase adds 7692.307692 tokens per pack to your existing balance. Tokens do not expire. This top-up does not include Pro subscription access. Price: 1000 RUB at 0.13 RUB per token.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Разовая покупка добавляет 7692,307692 токена за каждый пакет к текущему балансу. Токены не сгорают. Пополнение не включает доступ по подписке Pro. Цена — 1000 ₽ по курсу 0,13 ₽ за токен.\"}]}]}"
+        }
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-1000-rub-price",
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "slug": "ai-chat-tokens-1000-rub-price"
+      },
+      "data": {
+        "slug": "ai-chat-tokens-1000-rub-price",
+        "variant": "default",
+        "adminTitle": "ai-chat-tokens-1000-rub-price",
+        "string": {},
+        "number": "1000"
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-1000-rub-price-key",
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "attributeKeyId": "3b7980e7-cdef-4726-beaa-9db8ec0ebdb6",
+        "attributeId": {
+          "$ref": "ai-chat-tokens-1000-rub-price"
+        }
+      },
+      "data": {
+        "attributeKeyId": "3b7980e7-cdef-4726-beaa-9db8ec0ebdb6",
+        "attributeId": {
+          "$ref": "ai-chat-tokens-1000-rub-price"
+        },
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-1000-rub-price-currency",
+      "entity": "ecommerce.attributes-to-billing-module-currencies",
+      "selector": {
+        "attributeId": {
+          "$ref": "ai-chat-tokens-1000-rub-price"
+        },
+        "billingModuleCurrencyId": "311da2ee-6ee0-466c-bfca-bd0ecff7b549"
+      },
+      "data": {
+        "attributeId": {
+          "$ref": "ai-chat-tokens-1000-rub-price"
+        },
+        "billingModuleCurrencyId": "311da2ee-6ee0-466c-bfca-bd0ecff7b549",
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-1000-rub-topup",
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "slug": "ai-chat-tokens-1000-rub-topup"
+      },
+      "data": {
+        "slug": "ai-chat-tokens-1000-rub-topup",
+        "variant": "default",
+        "adminTitle": "ai-chat-tokens-1000-rub-topup",
+        "string": {},
+        "number": "7692.307692"
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-1000-rub-topup-key",
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "e5feca52-91de-49dd-9b38-cb46050a6fe5",
+        "attributeId": {
+          "$ref": "ai-chat-tokens-1000-rub-topup"
+        }
+      },
+      "data": {
+        "attributeKeyId": {
+          "$ref": "token-credit-topup-key"
+        },
+        "attributeId": {
+          "$ref": "ai-chat-tokens-1000-rub-topup"
+        },
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true,
+      "id": "e5feca52-91de-49dd-9b38-cb46050a6fe5",
+      "switch": true
+    },
+    {
+      "key": "ai-chat-tokens-1000-rub-topup-currency",
+      "entity": "ecommerce.attributes-to-billing-module-currencies",
+      "selector": {
+        "attributeId": {
+          "$ref": "ai-chat-tokens-1000-rub-topup"
+        },
+        "billingModuleCurrencyId": "0c409156-5614-4fba-9c87-d32d1c256b5a"
+      },
+      "data": {
+        "attributeId": {
+          "$ref": "ai-chat-tokens-1000-rub-topup"
+        },
+        "billingModuleCurrencyId": "0c409156-5614-4fba-9c87-d32d1c256b5a",
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-1000-rub-price-product",
+      "entity": "ecommerce.products-to-attributes",
+      "selector": {
+        "productId": {
+          "$ref": "ai-chat-tokens-1000-rub"
+        },
+        "attributeId": {
+          "$ref": "ai-chat-tokens-1000-rub-price"
+        }
+      },
+      "data": {
+        "productId": {
+          "$ref": "ai-chat-tokens-1000-rub"
+        },
+        "attributeId": {
+          "$ref": "ai-chat-tokens-1000-rub-price"
+        },
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-1000-rub-topup-product",
+      "entity": "ecommerce.products-to-attributes",
+      "selector": {
+        "productId": {
+          "$ref": "ai-chat-tokens-1000-rub"
+        },
+        "attributeId": {
+          "$ref": "ai-chat-tokens-1000-rub-topup"
+        }
+      },
+      "data": {
+        "productId": {
+          "$ref": "ai-chat-tokens-1000-rub"
+        },
+        "attributeId": {
+          "$ref": "ai-chat-tokens-1000-rub-topup"
+        },
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-1000-rub-store",
+      "entity": "ecommerce.stores-to-products",
+      "selector": {
+        "storeId": "92aefa1f-247b-49a9-b1b9-c8029cc840dc",
+        "productId": {
+          "$ref": "ai-chat-tokens-1000-rub"
+        }
+      },
+      "data": {
+        "storeId": "92aefa1f-247b-49a9-b1b9-c8029cc840dc",
+        "productId": {
+          "$ref": "ai-chat-tokens-1000-rub"
+        },
+        "variant": "default",
+        "orderIndex": 0,
+        "sku": "ai-chat-tokens-1000-rub"
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-1000-rub-catalog",
+      "entity": "ecommerce.widgets-to-products",
+      "selector": {
+        "widgetId": {
+          "$ref": "framework-commercial-catalog"
+        },
+        "productId": {
+          "$ref": "ai-chat-tokens-1000-rub"
+        }
+      },
+      "data": {
+        "widgetId": {
+          "$ref": "framework-commercial-catalog"
+        },
+        "productId": {
+          "$ref": "ai-chat-tokens-1000-rub"
+        },
+        "variant": "default",
+        "orderIndex": 4
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-3000-rub",
+      "entity": "ecommerce.product",
+      "selector": {
+        "slug": "ai-chat-tokens-3000-rub"
+      },
+      "data": {
+        "slug": "ai-chat-tokens-3000-rub",
+        "variant": "default",
+        "type": "one_off",
+        "adminTitle": "AI Chat Token top-up 3000 RUB",
+        "title": {
+          "en": "Token top-up · 3000 RUB",
+          "ru": "Пополнение токенов · 3000 ₽"
+        },
+        "shortDescription": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Add 23076.923076 tokens to your AI Chat balance for 3000 RUB. The rate is 0.13 RUB per token.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Пополните баланс AI-чата на 23076,923076 токена за 3000 ₽. Курс — 0,13 ₽ за токен.\"}]}]}"
+        },
+        "description": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"A one-time purchase adds 23076.923076 tokens per pack to your existing balance. Tokens do not expire. This top-up does not include Pro subscription access. Price: 3000 RUB at 0.13 RUB per token.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Разовая покупка добавляет 23076,923076 токена за каждый пакет к текущему балансу. Токены не сгорают. Пополнение не включает доступ по подписке Pro. Цена — 3000 ₽ по курсу 0,13 ₽ за токен.\"}]}]}"
+        }
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-3000-rub-price",
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "slug": "ai-chat-tokens-3000-rub-price"
+      },
+      "data": {
+        "slug": "ai-chat-tokens-3000-rub-price",
+        "variant": "default",
+        "adminTitle": "ai-chat-tokens-3000-rub-price",
+        "string": {},
+        "number": "3000"
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-3000-rub-price-key",
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "attributeKeyId": "3b7980e7-cdef-4726-beaa-9db8ec0ebdb6",
+        "attributeId": {
+          "$ref": "ai-chat-tokens-3000-rub-price"
+        }
+      },
+      "data": {
+        "attributeKeyId": "3b7980e7-cdef-4726-beaa-9db8ec0ebdb6",
+        "attributeId": {
+          "$ref": "ai-chat-tokens-3000-rub-price"
+        },
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-3000-rub-price-currency",
+      "entity": "ecommerce.attributes-to-billing-module-currencies",
+      "selector": {
+        "attributeId": {
+          "$ref": "ai-chat-tokens-3000-rub-price"
+        },
+        "billingModuleCurrencyId": "311da2ee-6ee0-466c-bfca-bd0ecff7b549"
+      },
+      "data": {
+        "attributeId": {
+          "$ref": "ai-chat-tokens-3000-rub-price"
+        },
+        "billingModuleCurrencyId": "311da2ee-6ee0-466c-bfca-bd0ecff7b549",
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-3000-rub-topup",
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "slug": "ai-chat-tokens-3000-rub-topup"
+      },
+      "data": {
+        "slug": "ai-chat-tokens-3000-rub-topup",
+        "variant": "default",
+        "adminTitle": "ai-chat-tokens-3000-rub-topup",
+        "string": {},
+        "number": "23076.923076"
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-3000-rub-topup-key",
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "89c8d5e2-fc03-4ccd-b3c7-a26076b3637e",
+        "attributeId": {
+          "$ref": "ai-chat-tokens-3000-rub-topup"
+        }
+      },
+      "data": {
+        "attributeKeyId": {
+          "$ref": "token-credit-topup-key"
+        },
+        "attributeId": {
+          "$ref": "ai-chat-tokens-3000-rub-topup"
+        },
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true,
+      "id": "89c8d5e2-fc03-4ccd-b3c7-a26076b3637e",
+      "switch": true
+    },
+    {
+      "key": "ai-chat-tokens-3000-rub-topup-currency",
+      "entity": "ecommerce.attributes-to-billing-module-currencies",
+      "selector": {
+        "attributeId": {
+          "$ref": "ai-chat-tokens-3000-rub-topup"
+        },
+        "billingModuleCurrencyId": "0c409156-5614-4fba-9c87-d32d1c256b5a"
+      },
+      "data": {
+        "attributeId": {
+          "$ref": "ai-chat-tokens-3000-rub-topup"
+        },
+        "billingModuleCurrencyId": "0c409156-5614-4fba-9c87-d32d1c256b5a",
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-3000-rub-price-product",
+      "entity": "ecommerce.products-to-attributes",
+      "selector": {
+        "productId": {
+          "$ref": "ai-chat-tokens-3000-rub"
+        },
+        "attributeId": {
+          "$ref": "ai-chat-tokens-3000-rub-price"
+        }
+      },
+      "data": {
+        "productId": {
+          "$ref": "ai-chat-tokens-3000-rub"
+        },
+        "attributeId": {
+          "$ref": "ai-chat-tokens-3000-rub-price"
+        },
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-3000-rub-topup-product",
+      "entity": "ecommerce.products-to-attributes",
+      "selector": {
+        "productId": {
+          "$ref": "ai-chat-tokens-3000-rub"
+        },
+        "attributeId": {
+          "$ref": "ai-chat-tokens-3000-rub-topup"
+        }
+      },
+      "data": {
+        "productId": {
+          "$ref": "ai-chat-tokens-3000-rub"
+        },
+        "attributeId": {
+          "$ref": "ai-chat-tokens-3000-rub-topup"
+        },
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-3000-rub-store",
+      "entity": "ecommerce.stores-to-products",
+      "selector": {
+        "storeId": "92aefa1f-247b-49a9-b1b9-c8029cc840dc",
+        "productId": {
+          "$ref": "ai-chat-tokens-3000-rub"
+        }
+      },
+      "data": {
+        "storeId": "92aefa1f-247b-49a9-b1b9-c8029cc840dc",
+        "productId": {
+          "$ref": "ai-chat-tokens-3000-rub"
+        },
+        "variant": "default",
+        "orderIndex": 0,
+        "sku": "ai-chat-tokens-3000-rub"
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-tokens-3000-rub-catalog",
+      "entity": "ecommerce.widgets-to-products",
+      "selector": {
+        "widgetId": {
+          "$ref": "framework-commercial-catalog"
+        },
+        "productId": {
+          "$ref": "ai-chat-tokens-3000-rub"
+        }
+      },
+      "data": {
+        "widgetId": {
+          "$ref": "framework-commercial-catalog"
+        },
+        "productId": {
+          "$ref": "ai-chat-tokens-3000-rub"
+        },
+        "variant": "default",
+        "orderIndex": 5
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-pro-catalog",
+      "entity": "ecommerce.widgets-to-products",
+      "selector": {
+        "widgetId": {
+          "$ref": "framework-commercial-catalog"
+        },
+        "productId": "e939ed88-22ba-4630-86e4-9743ad94338c"
+      },
+      "data": {
+        "widgetId": {
+          "$ref": "framework-commercial-catalog"
+        },
+        "productId": "e939ed88-22ba-4630-86e4-9743ad94338c",
+        "variant": "default",
+        "orderIndex": 0
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "framework-landing-commercial-catalog",
+      "entity": "ecommerce.widgets-to-products",
+      "selector": {
+        "widgetId": {
+          "$ref": "framework-commercial-catalog"
+        },
+        "productId": "b0929dd6-b345-4574-976e-4c1cbb40e094"
+      },
+      "data": {
+        "widgetId": {
+          "$ref": "framework-commercial-catalog"
+        },
+        "productId": "b0929dd6-b345-4574-976e-4c1cbb40e094",
+        "variant": "default",
+        "orderIndex": 6
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "framework-startup-commercial-catalog",
+      "entity": "ecommerce.widgets-to-products",
+      "selector": {
+        "widgetId": {
+          "$ref": "framework-commercial-catalog"
+        },
+        "productId": "34da615d-433a-4e1a-b424-9dac843d98b3"
+      },
+      "data": {
+        "widgetId": {
+          "$ref": "framework-commercial-catalog"
+        },
+        "productId": "34da615d-433a-4e1a-b424-9dac843d98b3",
+        "variant": "default",
+        "orderIndex": 7
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
+      "key": "ai-chat-pro-price-usd-month-switch",
+      "entity": "ecommerce.products-to-attributes",
+      "selector": {
+        "id": "578a214d-3efa-4e87-8584-4f1a145ff30c",
+        "productId": "e939ed88-22ba-4630-86e4-9743ad94338c"
+      },
+      "data": {
+        "attributeId": {
+          "$ref": "ai-chat-pro-price-usd-month"
+        }
+      },
+      "requiresCommercialConfirmation": true,
+      "id": "578a214d-3efa-4e87-8584-4f1a145ff30c",
+      "switch": true
+    },
+    {
+      "key": "ai-chat-pro-interval-month-switch",
+      "entity": "ecommerce.products-to-attributes",
+      "selector": {
+        "id": "7f413699-39e9-465a-aef2-cd8db92f33d0",
+        "productId": "e939ed88-22ba-4630-86e4-9743ad94338c"
+      },
+      "data": {
+        "attributeId": {
+          "$ref": "ai-chat-pro-interval-month"
+        }
+      },
+      "requiresCommercialConfirmation": true,
+      "id": "7f413699-39e9-465a-aef2-cd8db92f33d0",
+      "switch": true
+    },
+    {
+      "key": "ai-chat-pro-price-rub-month-switch",
+      "entity": "ecommerce.products-to-attributes",
+      "selector": {
+        "id": "83f8e774-3e6a-47f9-a589-f566694736b4",
+        "productId": "e939ed88-22ba-4630-86e4-9743ad94338c"
+      },
+      "data": {
+        "attributeId": {
+          "$ref": "ai-chat-pro-price-rub-month"
+        }
+      },
+      "requiresCommercialConfirmation": true,
+      "id": "83f8e774-3e6a-47f9-a589-f566694736b4",
+      "switch": true
+    },
+    {
+      "key": "ai-chat-pro-topup-5000-switch",
+      "entity": "ecommerce.products-to-attributes",
+      "selector": {
+        "id": "92527157-52e8-4533-88f7-5b0d178e6876",
+        "productId": "e939ed88-22ba-4630-86e4-9743ad94338c"
+      },
+      "data": {
+        "attributeId": {
+          "$ref": "ai-chat-pro-topup-5000"
+        }
+      },
+      "requiresCommercialConfirmation": true,
+      "id": "92527157-52e8-4533-88f7-5b0d178e6876",
+      "switch": true
+    },
+    {
+      "key": "ai-chat-pro-copy-switch",
+      "entity": "ecommerce.product",
+      "selector": {
+        "id": "e939ed88-22ba-4630-86e4-9743ad94338c",
+        "slug": "pro",
+        "type": "subscription"
+      },
+      "data": {
+        "title": {
+          "en": "Pro",
+          "ru": "Pro"
+        },
+        "shortDescription": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"5000 tokens for each paid month. 29 USD or 1900 RUB per month.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"5000 токенов за каждый оплаченный месяц. 29 USD или 1900 ₽ в месяц.\"}]}]}"
+        },
+        "description": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Monthly Pro includes 5000 tokens for each accepted paid billing cycle and subscription access to closed content. Unused tokens remain in your balance. Choose 29 USD or 1900 RUB per month. Initial Free tokens and one-time top-ups stay in the same balance.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Ежемесячная подписка Pro даёт 5000 токенов за каждый подтверждённый оплаченный период и доступ к закрытому контенту по подписке. Неиспользованные токены остаются на балансе. Выберите оплату 29 USD или 1900 ₽ в месяц. Начальные бесплатные токены и разовые пополнения учитываются в том же балансе.\"}]}]}"
+        }
+      },
+      "requiresCommercialConfirmation": true,
+      "id": "e939ed88-22ba-4630-86e4-9743ad94338c",
+      "switch": true
+    },
+    {
+      "key": "framework-commercial-catalog-owner-switch",
+      "entity": "rbac.widgets-to-ecommerce-module-widgets",
+      "selector": {
+        "id": "f083ce78-7207-4e1b-a5ea-9eb5ee3ef791",
+        "widgetId": "49cd582a-5ab2-4916-9660-801bf9064df0"
+      },
+      "data": {
+        "ecommerceModuleWidgetId": {
+          "$ref": "framework-commercial-catalog"
+        }
+      },
+      "requiresCommercialConfirmation": true,
+      "id": "f083ce78-7207-4e1b-a5ea-9eb5ee3ef791",
+      "switch": true
+    }
+  ],
+  "protectedSelections": [
+    {
+      "entity": "ecommerce.order",
+      "selector": {}
+    },
+    {
+      "entity": "ecommerce.orders-to-products",
+      "selector": {}
+    },
+    {
+      "entity": "ecommerce.orders-to-billing-module-payment-intents",
+      "selector": {}
+    },
+    {
+      "entity": "ecommerce.stores-to-orders",
+      "selector": {}
+    },
+    {
+      "entity": "billing.payment-intent",
+      "selector": {}
+    },
+    {
+      "entity": "billing.invoice",
+      "selector": {}
+    },
+    {
+      "entity": "billing.payment-intents-to-invoices",
+      "selector": {}
+    },
+    {
+      "entity": "billing.payment-intents-to-currencies",
+      "selector": {}
+    },
+    {
+      "entity": "rbac.subjects-to-ecommerce-module-orders",
+      "selector": {}
+    },
+    {
+      "entity": "rbac.subjects-to-billing-module-payment-intents",
+      "selector": {}
+    },
+    {
+      "entity": "rbac.subjects-to-billing-module-currencies",
+      "selector": {}
+    },
+    {
+      "entity": "rbac.subjects-to-roles",
+      "selector": {}
+    },
+    {
+      "entity": "rbac.roles-to-ecommerce-module-products",
+      "selector": {}
+    },
+    {
+      "entity": "blog.articles-to-ecommerce-module-products",
+      "selector": {}
+    },
+    {
+      "entity": "blog.articles-to-website-builder-module-widgets",
+      "selector": {}
+    },
+    {
+      "entity": "ecommerce.store",
+      "selector": {
+        "id": "92aefa1f-247b-49a9-b1b9-c8029cc840dc"
+      }
+    },
+    {
+      "entity": "ecommerce.product",
+      "selector": {
+        "id": "2a167247-3770-4365-ad17-a2e916cf0659"
+      }
+    },
+    {
+      "entity": "ecommerce.product",
+      "selector": {
+        "id": "bb2473b0-9b2e-4dd2-9e38-46806bfde826"
+      }
+    },
+    {
+      "entity": "ecommerce.product",
+      "selector": {
+        "id": "e13709ae-58ea-416f-b6d5-d2802c9f5bce"
+      }
+    },
+    {
+      "entity": "website-builder.widget",
+      "selector": {
+        "id": "6580e777-393d-4255-94b9-58f3607ce465"
+      }
+    },
+    {
+      "entity": "ecommerce.products-to-attributes",
+      "selector": {
+        "productId": "2a167247-3770-4365-ad17-a2e916cf0659"
+      }
+    },
+    {
+      "entity": "ecommerce.products-to-attributes",
+      "selector": {
+        "productId": "bb2473b0-9b2e-4dd2-9e38-46806bfde826"
+      }
+    },
+    {
+      "entity": "ecommerce.products-to-attributes",
+      "selector": {
+        "productId": "e13709ae-58ea-416f-b6d5-d2802c9f5bce"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-file-storage-module-files",
+      "selector": {
+        "widgetId": "6580e777-393d-4255-94b9-58f3607ce465"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-buttons-arrays",
+      "selector": {
+        "widgetId": "6580e777-393d-4255-94b9-58f3607ce465"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "selector": {
+        "widgetId": "6580e777-393d-4255-94b9-58f3607ce465"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-sliders",
+      "selector": {
+        "widgetId": "6580e777-393d-4255-94b9-58f3607ce465"
+      }
+    },
+    {
+      "entity": "ecommerce.orders-to-billing-module-currencies",
+      "selector": {}
+    },
+    {
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "id": "01f52293-5bfe-4d09-b76a-0b3061c42c55"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "id": "08473c38-270c-4657-a0a6-9af67107f5a5"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "id": "0a93cd6c-a6d6-409c-9b2d-e5679c09ca25"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "id": "352e4ca5-c906-493e-9526-4259d1716f3b"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "id": "386e253f-640d-4e81-8341-d8f39db4123b"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "id": "5bc4ac3a-4cfb-4289-a0cd-6cc839a7c9ed"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "id": "5bfa4e33-38cb-4570-89ae-fa187888ff01"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "id": "61fc814f-d323-4e11-98d7-7bfd9d3e59b3"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "id": "680c3673-7fc5-4925-ac4b-4502a3c2bf27"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "id": "77b773f6-fa62-4e06-a482-eb05f8295b5a"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "id": "7937d1e7-e00a-4249-9d6c-6f100773e32c"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "id": "a839cfa3-1c13-4b93-aaa2-53334f4d701a"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "id": "bfe0e777-06b1-4268-b44c-45cb01541850"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "id": "c1d96e94-87fb-4edd-bd41-8dbe15bcecde"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "id": "e1fefd64-ea15-4f6e-9871-f24a7e942bd6"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute",
+      "selector": {
+        "id": "e9c39940-608c-45a6-897c-1d28c47c43dd"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-key",
+      "selector": {
+        "id": "3b7980e7-cdef-4726-beaa-9db8ec0ebdb6"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-key",
+      "selector": {
+        "id": "920f92df-e58b-4b64-b138-3bf105ebebaa"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-key",
+      "selector": {
+        "id": "e005389b-41c4-4efb-89a2-6d84a354cfed"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-key",
+      "selector": {
+        "id": "f11a4f3f-6fcc-43fb-bc30-6421ee5d92e9"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "10143938-464c-4502-833e-b0987be82262"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "17a70f01-b190-4f6e-81ec-481a98fc4a8d"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "224d6d95-c464-401d-b88a-78c22678ebee"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "23746508-fc8e-4911-aa7a-07e00406af15"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "32bac88c-2d16-4910-bb14-ebfa240e20f4"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "57f2f70e-7260-4363-8aa9-e3dc112f08f6"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "5f4a3a38-191e-4628-9b71-c76f0155c7ff"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "640bff85-5f9e-4f02-9139-2eb0baf46d48"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "746751b4-9ff6-4eae-a362-145468660296"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "8698cfbf-aa0c-4083-9630-c4fd32885e98"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "8db9e14a-dabc-431a-a0d2-3298410ca62d"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "97b3b38c-fcec-440c-b396-556c764b3619"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "b65170b4-d749-4635-8768-dda90f0a6f3f"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "c5b278ee-e473-477a-9519-a0d2b91ea5e8"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "c66f1de0-682e-43cf-9a45-d4bfd8336a8e"
+      }
+    },
+    {
+      "entity": "ecommerce.attribute-keys-to-attributes",
+      "selector": {
+        "id": "d87a9546-28c7-4181-9ef4-25510cf1307e"
+      }
+    },
+    {
+      "entity": "ecommerce.attributes-to-billing-module-currencies",
+      "selector": {
+        "id": "38a862d8-b64c-40aa-8453-184f3951b15c"
+      }
+    },
+    {
+      "entity": "ecommerce.attributes-to-billing-module-currencies",
+      "selector": {
+        "id": "44e0a5fc-f6a9-4daf-b571-eed7a5817f02"
+      }
+    },
+    {
+      "entity": "ecommerce.attributes-to-billing-module-currencies",
+      "selector": {
+        "id": "5e2b166b-0d6e-4b65-b31f-bdf84884049d"
+      }
+    },
+    {
+      "entity": "ecommerce.attributes-to-billing-module-currencies",
+      "selector": {
+        "id": "63a8b58b-8e25-4440-8d0d-ad0dde5c8122"
+      }
+    },
+    {
+      "entity": "ecommerce.attributes-to-billing-module-currencies",
+      "selector": {
+        "id": "6a859670-63d0-452f-b6c9-a5638a7f2ba3"
+      }
+    },
+    {
+      "entity": "ecommerce.attributes-to-billing-module-currencies",
+      "selector": {
+        "id": "794e54d3-b5d7-432b-95c9-487f0d56fb28"
+      }
+    },
+    {
+      "entity": "ecommerce.attributes-to-billing-module-currencies",
+      "selector": {
+        "id": "7fee7e01-2584-409d-bb23-01547d46db2c"
+      }
+    },
+    {
+      "entity": "ecommerce.attributes-to-billing-module-currencies",
+      "selector": {
+        "id": "9bb17099-0512-41f5-9a5e-966832090877"
+      }
+    },
+    {
+      "entity": "ecommerce.attributes-to-billing-module-currencies",
+      "selector": {
+        "id": "af67b273-9feb-4180-acb7-616edf0efa55"
+      }
+    },
+    {
+      "entity": "ecommerce.stores-to-products",
+      "selector": {
+        "id": "92a451ea-95f5-447d-9390-ae057acd40bc"
+      }
+    },
+    {
+      "entity": "ecommerce.stores-to-products",
+      "selector": {
+        "id": "9be0fc96-2def-47f8-9f87-61423ad46ead"
+      }
+    },
+    {
+      "entity": "billing.currency",
+      "selector": {
+        "id": "1e20efba-ad34-4173-8c77-e7b282161652"
+      }
+    },
+    {
+      "entity": "billing.currency",
+      "selector": {
+        "id": "311da2ee-6ee0-466c-bfca-bd0ecff7b549"
+      }
+    },
+    {
+      "entity": "billing.currency",
+      "selector": {
+        "id": "0c409156-5614-4fba-9c87-d32d1c256b5a"
+      }
+    },
+    {
+      "entity": "ecommerce.product",
+      "selector": {
+        "id": "34da615d-433a-4e1a-b424-9dac843d98b3"
+      }
+    },
+    {
+      "entity": "ecommerce.products-to-attributes",
+      "selector": {
+        "productId": "34da615d-433a-4e1a-b424-9dac843d98b3"
+      }
+    },
+    {
+      "entity": "ecommerce.product",
+      "selector": {
+        "id": "b0929dd6-b345-4574-976e-4c1cbb40e094"
+      }
+    },
+    {
+      "entity": "ecommerce.products-to-attributes",
+      "selector": {
+        "productId": "b0929dd6-b345-4574-976e-4c1cbb40e094"
+      }
+    },
+    {
+      "entity": "ecommerce.widget",
+      "selector": {
+        "id": "c96424b4-27a2-4a90-ab01-c3be638adb82"
+      }
+    },
+    {
+      "entity": "ecommerce.widgets-to-products",
+      "selector": {
+        "widgetId": "c96424b4-27a2-4a90-ab01-c3be638adb82"
+      }
+    }
+  ]
+}

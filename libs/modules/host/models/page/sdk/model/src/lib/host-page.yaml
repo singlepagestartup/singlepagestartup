@@ -1,3 +1,10 @@
 allOf:
   - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/model.yaml"
   - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/internationalisation.yaml"
+
+  - type: object
+    properties:
+      metadata:
+        type: object
+        additionalProperties: true
+        description: JSON values, including localized SEO copy referenced by Metadata masks.

@@ -1,0 +1,27 @@
+{
+  "id": "website-builder.buttons-array.navbar-ai-chat",
+  "title": "navbar-ai-chat",
+  "description": "Ordered navbar buttons resolved through Buttons Array-to-Button links.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "buttons-array",
+    "variant": "navbar-ai-chat"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "website-builder.buttons-array",
+    "pageName": "website-builder",
+    "variantName": "navbar-ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

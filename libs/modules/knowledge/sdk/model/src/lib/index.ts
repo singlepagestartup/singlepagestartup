@@ -49,9 +49,8 @@ export interface IKnowledgeSourceReference {
   id: string;
   text: string;
   chunkIndex: number;
+  sourceId: string | null;
   sourceTitle: string | null;
-  sourceOriginalPath: string | null;
-  sourceType: string | null;
   distance: number;
   similarity: number;
   metadata: Record<string, unknown>;
@@ -83,7 +82,7 @@ export interface IKnowledgeIndexResponse {
     dryRun: boolean;
     sources: {
       title: string;
-      originalPath: string;
+      sourceId: string;
       chunks: number;
       status: "indexed" | "skipped" | "dry_run";
     }[];

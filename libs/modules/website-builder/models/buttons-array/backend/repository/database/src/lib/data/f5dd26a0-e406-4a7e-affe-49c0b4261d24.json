@@ -1,0 +1,14 @@
+{
+  "id": "f5dd26a0-e406-4a7e-affe-49c0b4261d24",
+  "createdAt": "2026-10-24T01:06:04.964Z",
+  "updatedAt": "2026-10-24T01:06:04.964Z",
+  "variant": "default",
+  "className": "w-full",
+  "title": {
+    "en": "Actions",
+    "ru": "Действия"
+  },
+  "description": {},
+  "adminTitle": "Actions",
+  "slug": "framework-journey-guide-billing-actions"
+}

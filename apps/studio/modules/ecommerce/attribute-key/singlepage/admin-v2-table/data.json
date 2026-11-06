@@ -1,0 +1,128 @@
+{
+  "schema": {
+    "module": "ecommerce",
+    "entity": "attribute-key",
+    "entityType": "model",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "type",
+        "label": "Type",
+        "kind": "text",
+        "nullable": false,
+        "default": "feature"
+      },
+      {
+        "key": "field",
+        "label": "Field",
+        "kind": "text",
+        "nullable": false,
+        "default": "string"
+      },
+      {
+        "key": "adminTitle",
+        "label": "Admin Title",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "slug",
+        "label": "Slug",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "title",
+        "label": "Title",
+        "kind": "jsonb",
+        "nullable": true,
+        "default": {}
+      },
+      {
+        "key": "prefix",
+        "label": "Prefix",
+        "kind": "jsonb",
+        "nullable": true,
+        "default": {}
+      },
+      {
+        "key": "suffix",
+        "label": "Suffix",
+        "kind": "jsonb",
+        "nullable": true,
+        "default": {}
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "9d86c50c-7c5c-4654-acbc-d16bf40ea78f",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "type": "feature",
+      "field": "string",
+      "adminTitle": "attribute-key example 1",
+      "slug": "attribute-key-example-1",
+      "title": {
+        "en": "attribute-key example 1"
+      },
+      "prefix": {},
+      "suffix": {}
+    },
+    {
+      "id": "cc69632e-2ddc-4370-a7b1-0657d8750e27",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "type": "feature",
+      "field": "string",
+      "adminTitle": "attribute-key example 2",
+      "slug": "attribute-key-example-2",
+      "title": {
+        "en": "attribute-key example 2"
+      },
+      "prefix": {},
+      "suffix": {}
+    },
+    {
+      "id": "d350e015-5e41-4e10-a3c8-1ac065265971",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "type": "feature",
+      "field": "string",
+      "adminTitle": "attribute-key example 3",
+      "slug": "attribute-key-example-3",
+      "title": {
+        "en": "attribute-key example 3"
+      },
+      "prefix": {},
+      "suffix": {}
+    }
+  ]
+}

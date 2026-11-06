@@ -10,7 +10,7 @@ export type IMiddlewareGeneric = unknown;
  * missing credential from a wrong one, or either from a service that has no
  * credential configured.
  */
-const UNAUTHORIZED_MESSAGE = "Unauthorized";
+const UNAUTHORIZED_MESSAGE = "Authentication error. Unauthorized";
 
 /**
  * Guards a service control route that only an operator may call.

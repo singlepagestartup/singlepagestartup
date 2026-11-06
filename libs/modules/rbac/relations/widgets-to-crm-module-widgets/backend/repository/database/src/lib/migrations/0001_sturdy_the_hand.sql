@@ -1,0 +1,1 @@
+ALTER TABLE "rc_ws_to_cm_me_ws_l65" ADD CONSTRAINT "rc_ws_to_cm_me_ws_l65_wt_id_cm_me_wt_id_unique" UNIQUE("wt_id","cm_me_wt_id");

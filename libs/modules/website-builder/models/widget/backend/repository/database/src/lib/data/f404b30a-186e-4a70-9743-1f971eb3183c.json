@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "Generate migrations in the schema's owning package",
+    "ru": "Генерируйте миграцию у владельца схемы"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"A model's package owns its table. After changing the schema, run the appropriate \"},{\"type\":\"text\",\"text\":\"repository-generate\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" target. Drizzle compares the declared schema with previous snapshots; \"},{\"type\":\"text\",\"text\":\"the generator documentation\",\"marks\":[{\"type\":\"link\",\"attrs\":{\"href\":\"https://orm.drizzle.team/docs/drizzle-kit-generate\",\"target\":\"_blank\",\"rel\":\"noopener noreferrer\"}}]},{\"type\":\"text\",\"text\":\" describes this process.\"}]},{\"type\":\"codeBlock\",\"attrs\":{\"language\":\"sh\"},\"content\":[{\"type\":\"text\",\"text\":\"npm install\\n./up.sh\\nnpm run api:dev\\nnpm run host:dev\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"This example is for Order. Choose the target for the model or relation you are changing. \"},{\"type\":\"text\",\"text\":\"api:db:generate\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" is for intentionally regenerating migrations across all modules. Do not hand-write SQL, snapshots or the Drizzle journal. Check field names, nullability, defaults and history. A server-owned period field also needs application-level write rules.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Таблица модели принадлежит её пакету. После изменения схемы запускается соответствующий target \"},{\"type\":\"text\",\"text\":\"repository-generate\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\". Drizzle сравнивает объявленную схему с предыдущими снимками; \"},{\"type\":\"text\",\"text\":\"документация генератора\",\"marks\":[{\"type\":\"link\",\"attrs\":{\"href\":\"https://orm.drizzle.team/docs/drizzle-kit-generate\",\"target\":\"_blank\",\"rel\":\"noopener noreferrer\"}}]},{\"type\":\"text\",\"text\":\" описывает этот процесс.\"}]},{\"type\":\"codeBlock\",\"attrs\":{\"language\":\"sh\"},\"content\":[{\"type\":\"text\",\"text\":\"npm install\\n./up.sh\\nnpm run api:dev\\nnpm run host:dev\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Это пример для Order. Выберите target той модели или связи, которую меняете. \"},{\"type\":\"text\",\"text\":\"api:db:generate\",\"marks\":[{\"type\":\"code\"}]},{\"type\":\"text\",\"text\":\" нужен при намеренном обновлении миграций всех модулей. Не пишите SQL, snapshots и журнал Drizzle вручную. Проверьте название поля, nullable, defaults и историю. Поле периода, которое устанавливает сервер, дополнительно требует правил записи на уровне приложения.\"}]}]}"
+  },
+  "anchor": "ru-section-nx-bun-docker-and-generated-migrations-3",
+  "className": "",
+  "id": "f404b30a-186e-4a70-9743-1f971eb3183c",
+  "createdAt": "2026-10-26T07:34:00.077Z",
+  "updatedAt": "2026-10-27T14:59:19.930Z",
+  "variant": "content-rich",
+  "adminTitle": "Генерируйте миграцию у владельца схемы",
+  "slug": "ru-section-nx-bun-docker-and-generated-migrations-3"
+}

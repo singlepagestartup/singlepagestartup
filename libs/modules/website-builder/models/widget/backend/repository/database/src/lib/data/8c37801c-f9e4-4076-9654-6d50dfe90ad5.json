@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Build with an understanding of the code.",
+    "ru": "Разберитесь, как устроен ваш проект"
+  },
+  "subtitle": {
+    "en": "The Framework journal",
+    "ru": "Блог Code Framework"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Follow a saved page from Next.js to Hono, understand who owns its data, and make your next change with a clear place to start.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Статьи об интерфейсах, серверной части и запуске проекта. В каждой — примеры кода, объяснение решений и ссылки на исходники.\"}]}]}"
+  },
+  "anchor": "framework-journal",
+  "className": "",
+  "id": "8c37801c-f9e4-4076-9654-6d50dfe90ad5",
+  "createdAt": "2026-10-24T01:35:39.785Z",
+  "updatedAt": "2026-10-26T07:34:02.940Z",
+  "variant": "content-page-header",
+  "adminTitle": "Build with an understanding of the code.",
+  "slug": "framework-journal-introduction"
+}

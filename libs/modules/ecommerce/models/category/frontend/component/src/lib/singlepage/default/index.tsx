@@ -6,10 +6,12 @@ import { api as serverApi } from "@sps/ecommerce/models/category/sdk/server";
 import { IComponentProps } from "./interface";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/default";
 import { Component as ChildComponent } from "./Component";
+import { Component as Skeleton } from "../default/Skeleton";
 
 export function Component(props: IComponentProps) {
   return (
     <ParentComponent
+      Skeleton={<Skeleton />}
       Component={ChildComponent as any}
       Provider={Provider}
       clientApi={clientApi}

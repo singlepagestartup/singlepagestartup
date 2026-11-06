@@ -1,0 +1,21 @@
+{
+  "componentName": "notification.notification",
+  "pageName": "notification",
+  "variantName": "admin-v2-card",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "notification.notification.admin-v2-card",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "notification/notification/singlepage/admin-v2-card",
+    "sps.figma.component": "notification.notification",
+    "sps.figma.variant": "admin-v2-card",
+    "sps.source.module": "notification",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "notification",
+    "sps.source.variant": "admin-v2-card",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/notification/notification/singlepage/admin-v2-card/Component.tsx",
+    "sps.code.story": "apps/studio/modules/notification/notification/singlepage/admin-v2-card/Component.stories.tsx"
+  }
+}

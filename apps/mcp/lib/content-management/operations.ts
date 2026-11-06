@@ -228,9 +228,14 @@ function parseUpdateData(
   descriptor: IContentEntityDescriptor,
   data: Record<string, unknown>,
 ) {
-  const parsed = descriptor.insertSchema
-    .partial()
-    .safeParse(coerceJsonDateFields(descriptor, data));
+  const metadataSchema = descriptor.insertSchema.shape.metadata;
+  const updateSchema = descriptor.insertSchema.partial();
+  // This concurrency token is transport-only; never add it to stored fields.
+  const parsed = (
+    metadataSchema
+      ? updateSchema.extend({ _expectedMetadata: metadataSchema.optional() })
+      : updateSchema
+  ).safeParse(coerceJsonDateFields(descriptor, data));
 
   if (!parsed.success) {
     throw new Error(parsed.error.message);

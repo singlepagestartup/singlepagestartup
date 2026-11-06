@@ -1,0 +1,21 @@
+{
+  "id": "700ee0ea-fb87-42eb-a4f3-0f995edcdf75",
+  "className": "",
+  "createdAt": "2026-10-26T00:12:57.579Z",
+  "updatedAt": "2026-10-27T15:00:28.515Z",
+  "variant": "article-overview-linked",
+  "adminTitle": "Заявки и запись на услуги",
+  "slug": "framework-reviewed-linked-crm",
+  "title": {
+    "en": "Enquiries and service bookings",
+    "ru": "Заявки и запись на услуги"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "",
+    "ru": ""
+  }
+}
