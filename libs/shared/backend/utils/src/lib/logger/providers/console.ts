@@ -1,6 +1,11 @@
 import { ILogger } from "../interface";
+import { runtimeErrorRecord } from "../error-record";
 
 export class ConsoleLogger implements ILogger {
+  errorEvent(record: Record<string, unknown>) {
+    console.error(JSON.stringify(record));
+  }
+
   info(...args: any[]) {
     console.log("[INFO]", ...args);
   }
@@ -10,7 +15,7 @@ export class ConsoleLogger implements ILogger {
   }
 
   error(...args: any[]) {
-    console.error("[ERROR]", ...args);
+    this.errorEvent(runtimeErrorRecord(args));
   }
 
   debug(...args: any[]) {

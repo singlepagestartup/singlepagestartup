@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "0f9e2226-14dd-4c5b-88b3-5d633c6df079",
+  "createdAt": "2026-10-26T00:11:56.296Z",
+  "updatedAt": "2026-10-27T14:59:24.016Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Define access",
+    "ru": "Определите доступ"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Decide what guests see, which actions require sign-in and who can read a particular conversation.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Решите, что видно гостю, какие действия требуют входа и кто может читать конкретную переписку.\"}]}]}"
+  },
+  "adminTitle": "Определите доступ",
+  "slug": "framework-reviewed-article-social-build-feature-1"
+}

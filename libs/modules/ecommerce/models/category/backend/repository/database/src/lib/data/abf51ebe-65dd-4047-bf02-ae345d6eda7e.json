@@ -2,15 +2,17 @@
   "id": "abf51ebe-65dd-4047-bf02-ae345d6eda7e",
   "className": "",
   "createdAt": "2025-01-24T23:47:55.624Z",
-  "updatedAt": "2025-11-15T09:32:28.612Z",
+  "updatedAt": "2026-10-23T20:26:10.203Z",
   "variant": "default",
   "adminTitle": "wnhwsXLBPP",
   "slug": "web-development",
   "title": {
-    "en": "Web Development"
+    "en": "Development",
+    "ru": "Разработка"
   },
   "subtitle": {},
   "description": {
-    "en": null
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Startup projects and applications built on the SinglePageStartup framework.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Стартапы и приложения на базе фреймворка SinglePageStartup.\"}]}]}"
   }
 }

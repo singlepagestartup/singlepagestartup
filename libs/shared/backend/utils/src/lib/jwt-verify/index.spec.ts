@@ -110,6 +110,22 @@ describe("verifyJwt — token-free JWT verification failures", () => {
     });
   });
 
+  it("rejects a token signed with another algorithm without exposing it", async () => {
+    const token = await jwt.sign(
+      {
+        exp: Math.floor(Date.now() / 1000) + 600,
+        subject: { id: "subject-1" },
+      },
+      secret,
+      "HS384",
+    );
+
+    await expect(util(token, secret)).rejects.toThrow(
+      "Authentication error. Invalid token",
+    );
+    await expect(util(token, secret)).rejects.not.toThrow(token);
+  });
+
   /**
    * BDD Scenario
    * Given: a secret that the runtime cannot use as a key.

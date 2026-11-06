@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "",
+    "ru": ""
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Start with a cover and add a description, photos, programme and action button. Change text and images, choose suitable block variants and reuse them on other pages.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"A course, consultation and product need different content, but often use the same page elements: a heading, image, benefits and action. The module stores these elements separately so you can populate and combine them for a particular offer.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Начните с обложки, добавьте описание, фотографии, программу и кнопку действия. Меняйте тексты и изображения, выбирайте подходящие варианты блоков и используйте их на других страницах.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Для курса, консультации и товара нужно разное содержание, но часто одинаковые части страницы: заголовок, изображение, преимущества и действие. Модуль хранит эти части отдельно, чтобы их можно было наполнять и сочетать под конкретное предложение.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "116bdc58-1af4-4344-90a1-ae15de6e21cc",
+  "createdAt": "2026-10-26T00:11:35.279Z",
+  "updatedAt": "2026-10-27T14:58:47.908Z",
+  "variant": "content-rich",
+  "adminTitle": "framework-reviewed-article-website-builder-introduction",
+  "slug": "framework-reviewed-article-website-builder-introduction"
+}

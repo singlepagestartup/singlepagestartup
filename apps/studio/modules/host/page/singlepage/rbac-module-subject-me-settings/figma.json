@@ -1,0 +1,27 @@
+{
+  "componentName": "host.page",
+  "pageName": "host",
+  "nodeId": "716:300",
+  "variantNodeId": "983:1801",
+  "variantName": "rbac-module-subject-me-settings",
+  "metadata": {
+    "singlepagestartup.studio.blockId": "host.page.rbac-module-subject-me-settings",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "host/page/singlepage/rbac-module-subject-me-settings",
+    "sps.figma.component": "host.page",
+    "sps.figma.variant": "rbac-module-subject-me-settings",
+    "sps.source.module": "host",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "page",
+    "sps.source.variant": "rbac-module-subject-me-settings",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/host/page/singlepage/rbac-module-subject-me-settings/Component.tsx",
+    "sps.code.story": "apps/studio/modules/host/page/singlepage/rbac-module-subject-me-settings/Component.stories.tsx",
+    "sps.figma.nodeId": "716:300",
+    "sps.figma.variantNodeId": "983:1801",
+    "sps.figma.storybookReferenceNodeId": "983:1950",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "983:1950",
+  "storybookImageCount": 1
+}

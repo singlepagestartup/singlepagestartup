@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Source license",
+    "ru": "Лицензия на код"
+  },
+  "subtitle": {},
+  "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/LICENSE",
+  "className": "w-fit",
+  "id": "d7fca1f4-ae4f-4c71-a727-fc7533a6d0b0",
+  "createdAt": "2026-10-23T20:18:04.160Z",
+  "updatedAt": "2026-10-23T20:18:04.160Z",
+  "variant": "ghost",
+  "adminTitle": "Source license",
+  "slug": "framework-footer-license"
+}

@@ -27,19 +27,34 @@ get_available_port() {
     echo $START
 }
 
-add_env "CREATE_DUMP_ON_COMMIT" "true"
-
 REPO_NAME=$(basename -s .git `git config --get remote.origin.url`)
 
 add_env "COMPOSE_PROJECT_NAME" $REPO_NAME
 
 add_env "POSTGRES_DB" $REPO_NAME
 
-add_env "POSTGRES_USER" $REPO_NAME
+# The superuser the PostgreSQL image creates in an empty db_data. Only
+# create_application_role.sh and administration use it.
+add_env "POSTGRES_USER" "postgres"
 
 POSTGRES_PASSWORD=$(generate_secret 32) || exit 1
 
 add_env "POSTGRES_PASSWORD" $POSTGRES_PASSWORD
+
+# The role apps/api connects as. create_application_role.sh creates it without
+# superuser rights and makes it the owner of POSTGRES_DB.
+case "$REPO_NAME" in
+    postgres|pg_*)
+        add_env "DATABASE_USERNAME" "sps_$REPO_NAME"
+        ;;
+    *)
+        add_env "DATABASE_USERNAME" "$REPO_NAME"
+        ;;
+esac
+
+DATABASE_PASSWORD=$(generate_secret 32) || exit 1
+
+add_env "DATABASE_PASSWORD" $DATABASE_PASSWORD
 
 POSTGRES_PORT=$(get_available_port 5432)
 

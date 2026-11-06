@@ -45,3 +45,10 @@ describe("revalidation not-revalidating routes", () => {
     expect(extended.matches("/api/crm/internal-sync", "POST")).toBe(true);
   });
 });
+
+it("does not broadcast a read-only Page SEO preview as a mutation", () => {
+  const matcher = createNotRevalidatingRoutesMatcher();
+  expect(matcher.matches("/api/host/pages/seo-preview", "POST")).toBe(true);
+  expect(matcher.matches("/api/host/metadata", "POST")).toBe(false);
+  expect(matcher.matches("/api/host/pages/seo-preview", "PATCH")).toBe(false);
+});

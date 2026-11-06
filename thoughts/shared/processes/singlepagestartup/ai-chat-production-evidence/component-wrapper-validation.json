@@ -1,0 +1,47 @@
+{
+  "date": "2026-10-12",
+  "variantCount": 58,
+  "sharedParentVariants": 54,
+  "authenticationActionVariants": 4,
+  "additionalLocalModelReaders": 0,
+  "sharedReaderSourceChanges": 0,
+  "typecheck": {
+    "command": "tsc --project apps/host/tsconfig.json --noEmit --incremental false",
+    "exitCode": 0
+  },
+  "tests": {
+    "suites": 10,
+    "passed": 25,
+    "failed": 0
+  },
+  "browser": {
+    "routes": [
+      "/en/ai-chat/help",
+      "/en/ai-chat/settings",
+      "/en/ai-chat/social/profiles/:profileId/chats/:chatId/threads/:threadId",
+      "/en/ai-chat/social/profiles/:profileId/chats/:chatId/threads/create"
+    ],
+    "checks": [
+      "Support fields and topic select render",
+      "Account settings render",
+      "Project menu navigates to a project",
+      "Five document links render",
+      "Document list collapses",
+      "Document thread has Source editor",
+      "Ordinary thread has no Knowledge pane",
+      "New thread form renders"
+    ],
+    "consoleErrors": 0
+  },
+  "server": {
+    "command": "npm run host:dev",
+    "port": 3000,
+    "ready": true,
+    "browserVerifiedAfterStandardRestart": true
+  },
+  "databaseChanges": false,
+  "screenshots": [
+    "component-wrapper-help.jpg",
+    "component-wrapper-workspace.jpg"
+  ]
+}

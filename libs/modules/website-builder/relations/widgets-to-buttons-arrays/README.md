@@ -20,6 +20,7 @@ Attaches button arrays to widgets.
 - `default`: renders the related target model for this link.
 - `additional`: alternate slot, rendered like `default`.
 - `extra`: alternate slot, rendered like `default`.
+- `hidden`: retains the saved association while rendering nothing and issuing no target ButtonsArray read. Public navigation can retire one exact membership without deleting the array or filtering links by their labels; this is presentation state, not authorization.
 - `find`: data-fetch wrapper for querying relations.
 - `admin-select-input`: admin UI select input for linking relations.
 - `admin-table-row`: admin UI row for relation listings.

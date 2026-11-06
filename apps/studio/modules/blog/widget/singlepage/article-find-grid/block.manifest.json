@@ -1,0 +1,50 @@
+{
+  "$schema": "../../../../../block.schema.json",
+  "id": "blog.widget.article-find-grid",
+  "title": "article-find-grid",
+  "description": "Props-driven widget presentation for article-find-grid.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "blog",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "article-find-grid"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "eyebrow",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "articles",
+      "type": "list",
+      "required": true
+    },
+    {
+      "name": "actions",
+      "type": "richText",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "blog.widget",
+    "pageName": "blog",
+    "variantName": "article-find-grid",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["blog", "widget", "article-find-grid"]
+}

@@ -115,3 +115,15 @@ describe("Studio document downloads", () => {
     }
   });
 });
+
+test("exports the Workspace language instead of the Storybook shell language", async () => {
+  const dom = new JSDOM(
+    '<html lang="en"><body><div lang="ru"><article id="document"><h1>Паспорт продукта</h1></article></div></body></html>',
+  );
+  const result = await standaloneHtmlDownload(
+    dom.window.document.getElementById("document")!,
+    "Паспорт продукта",
+  );
+  expect(result).toContain('<html lang="ru">');
+  expect(result).toContain("<h1>Паспорт продукта</h1>");
+});

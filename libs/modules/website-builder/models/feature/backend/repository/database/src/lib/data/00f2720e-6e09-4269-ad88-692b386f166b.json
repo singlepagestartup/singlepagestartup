@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "00f2720e-6e09-4269-ad88-692b386f166b",
+  "createdAt": "2026-10-26T00:12:52.098Z",
+  "updatedAt": "2026-10-27T14:59:20.858Z",
+  "variant": "dropdown",
+  "title": {
+    "en": "How will the first version of my project be created?",
+    "ru": "Как появится первая версия проекта?"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The AI assistant will assemble pages from existing blocks and add your text and images. Connect GitHub to store the code and a hosting account to run the project. Start publishing through the same chat and get a link to the first version.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"ИИ-помощник соберёт страницы из готовых блоков и добавит ваши тексты и изображения. Подключите GitHub, где будет храниться код, и аккаунт на хостинге, где будет работать проект. Запустите публикацию через тот же чат и получите ссылку на первую версию.\"}]}]}"
+  },
+  "adminTitle": "Как появится первая версия проекта?",
+  "slug": "framework-reviewed-faq-2"
+}

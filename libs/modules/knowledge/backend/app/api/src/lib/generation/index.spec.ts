@@ -16,8 +16,6 @@ const contexts: KnowledgeSearchResult[] = [
     chunkIndex: 0,
     sourceId: "source-1",
     sourceTitle: "Documentation source",
-    sourceOriginalPath: "knowledge.md",
-    sourceType: "text",
     distance: 0.1,
     similarity: 0.9,
     retrievalRole: "seed",

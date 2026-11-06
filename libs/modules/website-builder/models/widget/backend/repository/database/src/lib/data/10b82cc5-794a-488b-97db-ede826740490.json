@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "",
+    "ru": ""
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"A project may need a separate launch page, seasonal offer or a block with specific terms. Startup stores the content of these sections and provides a place for their views.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Not all business information belongs to a product, article or enquiry. For example, a new school's intake description and first-cohort terms belong on its launch page. Dedicated project blocks hold this content.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"У проекта могут быть отдельная страница запуска, сезонное предложение или блок с особыми условиями. Модуль Startup хранит содержимое таких разделов и предоставляет место для их представлений.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Не вся информация о бизнесе относится к товару, статье или заявке. Например, описание набора в новую школу и условия первого потока нужны на странице запуска. Для такого содержимого есть отдельные блоки проекта.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "10b82cc5-794a-488b-97db-ede826740490",
+  "createdAt": "2026-10-26T00:12:16.679Z",
+  "updatedAt": "2026-10-27T14:58:47.673Z",
+  "variant": "content-rich",
+  "adminTitle": "framework-reviewed-article-startup-introduction",
+  "slug": "framework-reviewed-article-startup-introduction"
+}

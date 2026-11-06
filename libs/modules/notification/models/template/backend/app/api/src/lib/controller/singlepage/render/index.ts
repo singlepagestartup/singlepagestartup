@@ -13,11 +13,9 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       const uuid = c.req.param("uuid");
-
       if (!uuid) {
-        throw new Error("Validation error. No uuid provided");
+        throw new Error("Validation error. Invalid id. Got: " + uuid);
       }
-
       const body = await c.req.parseBody();
 
       const entity = await this.service.findById({
@@ -26,10 +24,6 @@ export class Handler {
 
       if (!entity) {
         throw new Error("Not Found error. Not found");
-      }
-
-      if (!uuid) {
-        throw new Error("Validation error. Invalid id. Got: " + uuid);
       }
 
       if (body["data"] && typeof body["data"] !== "string") {

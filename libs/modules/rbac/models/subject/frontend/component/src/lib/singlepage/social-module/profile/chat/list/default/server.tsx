@@ -9,6 +9,10 @@ export default async function Component(props: IComponentProps) {
   const data = await api.socialModuleProfileFindByIdChatFind({
     id: props.data.id,
     socialModuleProfileId: props.socialModuleProfile.id,
+    params: {
+      includeSubjectProfiles: props.includeSubjectProfiles,
+      includeParticipants: true,
+    },
     options: {
       headers: {
         "Cache-Control": "no-store",

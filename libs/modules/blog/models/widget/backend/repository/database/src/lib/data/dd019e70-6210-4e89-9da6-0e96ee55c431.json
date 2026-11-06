@@ -1,0 +1,21 @@
+{
+  "id": "dd019e70-6210-4e89-9da6-0e96ee55c431",
+  "className": "",
+  "createdAt": "2026-10-26T00:12:59.827Z",
+  "updatedAt": "2026-10-27T15:00:30.045Z",
+  "variant": "article-overview-linked",
+  "adminTitle": "Фотографии, видео и файлы",
+  "slug": "framework-reviewed-linked-file-storage",
+  "title": {
+    "en": "Photos, videos and files",
+    "ru": "Фотографии, видео и файлы"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "",
+    "ru": ""
+  }
+}

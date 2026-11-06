@@ -14,6 +14,7 @@ jest.mock("react", () => {
   return {
     ...actual,
     useEffect: jest.fn(),
+    useContext: jest.fn(() => null),
   };
 });
 

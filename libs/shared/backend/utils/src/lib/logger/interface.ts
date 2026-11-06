@@ -1,4 +1,5 @@
 export interface ILogger {
+  errorEvent: (record: Record<string, unknown>) => void;
   info: (...args: any[]) => void;
   warn: (...args: any[]) => void;
   error: (...args: any[]) => void;

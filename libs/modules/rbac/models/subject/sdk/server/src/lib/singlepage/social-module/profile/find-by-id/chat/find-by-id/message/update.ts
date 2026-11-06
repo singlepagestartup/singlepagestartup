@@ -25,7 +25,7 @@ export interface IProps {
   };
 }
 
-export type IResult = ISocialModuleMessage[];
+export type IResult = ISocialModuleMessage;
 
 export async function action(props: IProps): Promise<IResult> {
   const {

@@ -1,0 +1,34 @@
+{
+  "metadata": {
+    "seo": {
+      "description": {
+        "en": "Products, attributes, categories, carts and orders.",
+        "ru": "Продукты, атрибуты, категории, корзины и заказы."
+      }
+    },
+    "seoDisplay": {
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Products, attributes, categories, carts and orders.",
+        "ru": "Продукты, атрибуты, категории, корзины и заказы."
+      },
+      "opengraphDescription": {
+        "en": "Products, attributes, categories, carts and orders.",
+        "ru": "Продукты, атрибуты, категории, корзины и заказы."
+      }
+    }
+  },
+  "id": "8fe9d63e-8bbd-4be6-b3d4-d4178fb48c7f",
+  "title": "Ecommerce · Code Framework",
+  "url": "/framework/modules/ecommerce",
+  "description": "Products, attributes, categories, carts and orders.",
+  "createdAt": "2026-10-24T01:06:02.934Z",
+  "updatedAt": "2026-10-30T22:25:08.044Z",
+  "variant": "default",
+  "className": "",
+  "language": "en",
+  "adminTitle": "Ecommerce · Code Framework"
+}

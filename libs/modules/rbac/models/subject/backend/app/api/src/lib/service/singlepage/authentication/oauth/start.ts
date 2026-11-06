@@ -1,7 +1,6 @@
 import { IRepository } from "@sps/shared-backend-api";
 import {
   API_SERVICE_URL,
-  RBAC_JWT_ALGORITHM,
   RBAC_JWT_SECRET,
   RBAC_OAUTH_GOOGLE_CLIENT_ID,
   RBAC_OAUTH_GOOGLE_REDIRECT_URI,
@@ -132,11 +131,7 @@ export class Service {
     }
 
     try {
-      const decoded = await jwt.verify(
-        authorization,
-        RBAC_JWT_SECRET,
-        RBAC_JWT_ALGORITHM,
-      );
+      const decoded = await jwt.verify(authorization, RBAC_JWT_SECRET, "HS256");
       const subjectId = decoded?.subject?.["id"];
       if (typeof subjectId === "string") {
         return subjectId;

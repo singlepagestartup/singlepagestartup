@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "0d93b96a-e019-4d9c-bf40-564522616af0",
+  "createdAt": "2026-10-26T00:11:43.954Z",
+  "updatedAt": "2026-10-27T14:59:23.282Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Article",
+    "ru": "Статья"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"How to shoot by a window\\n\\nAn excerpt from learning materials.\\n\\nCategory: practice\\n\\nPlace the model sideways to the window\\n\\nCompare light and shadow on the face\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Как снимать у окна\\n\\nФрагмент учебного материала.\\n\\nКатегория: практика\\n\\nПоставьте модель боком к окну\\n\\nСравните свет и тень на лице\"}]}]}"
+  },
+  "adminTitle": "Статья",
+  "slug": "framework-reviewed-article-blog-example-feature-0"
+}

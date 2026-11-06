@@ -1,5 +1,4 @@
 import {
-  RBAC_JWT_ALGORITHM,
   RBAC_JWT_SECRET,
   RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
 } from "@sps/shared-utils";
@@ -41,11 +40,7 @@ export class Handler {
         type: "authentication",
       });
 
-      const decoded = await jwt.verify(
-        entity.jwt,
-        RBAC_JWT_SECRET,
-        RBAC_JWT_ALGORITHM,
-      );
+      const decoded = await jwt.verify(entity.jwt, RBAC_JWT_SECRET, "HS256");
 
       if (!decoded.exp) {
         throw new Error("Validation error. Invalid token issued");

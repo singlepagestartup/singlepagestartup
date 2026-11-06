@@ -18,6 +18,8 @@ const mockSubjectsToIdentitiesCreate = jest.fn();
 const originalFetch = global.fetch;
 
 jest.mock("@sps/shared-utils", () => ({
+  entityMetadataSchema:
+    jest.requireActual("@sps/shared-utils").entityMetadataSchema,
   RBAC_SECRET_KEY: "test-rbac-secret",
   TELEGRAM_SERVICE_BOT_TOKEN: "test-telegram-token",
 }));

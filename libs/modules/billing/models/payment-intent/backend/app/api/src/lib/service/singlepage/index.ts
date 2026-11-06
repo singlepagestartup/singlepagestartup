@@ -23,6 +23,7 @@ import {
   PAYSELECTION_INT_SITE_NAME,
   PAYSELECTION_INT_WEBHOOK_URL,
   NEXT_PUBLIC_HOST_SERVICE_URL,
+  ALLOWED_BILLING_SERVICE_PROVIDERS,
 } from "@sps/shared-utils";
 import { api as paymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
 import { api as paymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
@@ -59,6 +60,17 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   ) {
     super(repository);
     this.billingModule = billingModule;
+  }
+
+  /**
+   * Whether the provider is an entry of `ALLOWED_BILLING_SERVICE_PROVIDERS`.
+   * Payment creation and provider webhooks both refuse a provider this
+   * returns false for, so the list turns a provider on or off for both routes.
+   */
+  isProviderAllowed(props: { provider: string }) {
+    return ALLOWED_BILLING_SERVICE_PROVIDERS.split(",").includes(
+      props.provider,
+    );
   }
 
   async updatePaymentIntentStatus(props: { invoice: IInvoice }) {

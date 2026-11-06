@@ -95,6 +95,7 @@ import { Repository as FileStorageFileRepository } from "@sps/file-storage/model
 import { Configuration as FileStorageFileConfiguration } from "@sps/file-storage/models/file/backend/app/api/src/lib/configuration";
 import { Repository as BroadcastChannelRepository } from "@sps/broadcast/models/channel/backend/app/api/src/lib/repository";
 import { Configuration as BroadcastChannelConfiguration } from "@sps/broadcast/models/channel/backend/app/api/src/lib/configuration";
+import { Service as BroadcastMessageService } from "@sps/broadcast/models/message/backend/app/api/src/lib/service";
 import { Repository as BroadcastMessageRepository } from "@sps/broadcast/models/message/backend/app/api/src/lib/repository";
 import { Configuration as BroadcastMessageConfiguration } from "@sps/broadcast/models/message/backend/app/api/src/lib/configuration";
 import { Repository as BroadcastChannelsToMessagesRepository } from "@sps/broadcast/relations/channels-to-messages/backend/app/api/src/lib/repository";
@@ -310,7 +311,7 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
         channel: new CRUDService<any>(
           new BroadcastChannelRepository(new BroadcastChannelConfiguration()),
         ),
-        message: new CRUDService<any>(
+        message: new BroadcastMessageService(
           new BroadcastMessageRepository(new BroadcastMessageConfiguration()),
         ),
         channelsToMessages: new CRUDService<any>(

@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "e8972d31-45cc-4071-9b00-bb45153ecf79",
+  "createdAt": "2026-10-26T00:11:54.378Z",
+  "updatedAt": "2026-10-27T15:00:00.799Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Conversation window",
+    "ru": "Окно переписки"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Conversation and document side by side. On a narrow screen, switch between them. Try sending messages in the example above.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Переписка и документ рядом. На узком экране между ними можно переключаться; отправку сообщений можно попробовать выше.\"}]}]}"
+  },
+  "adminTitle": "Окно переписки",
+  "slug": "framework-reviewed-article-social-components-feature-3"
+}

@@ -1,0 +1,16 @@
+{
+  "id": "5ad5ee82-4b18-4891-804e-a0386db55006",
+  "createdAt": "2026-10-23T21:18:23.194Z",
+  "updatedAt": "2026-10-23T21:18:23.194Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "month",
+    "ru": "месяц"
+  },
+  "adminTitle": "ai-chat-pro-interval-month",
+  "slug": "ai-chat-pro-interval-month"
+}

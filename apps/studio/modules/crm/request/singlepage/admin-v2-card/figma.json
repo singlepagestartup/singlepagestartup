@@ -1,0 +1,21 @@
+{
+  "componentName": "crm.request",
+  "pageName": "crm",
+  "variantName": "admin-v2-card",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "crm.request.admin-v2-card",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "crm/request/singlepage/admin-v2-card",
+    "sps.figma.component": "crm.request",
+    "sps.figma.variant": "admin-v2-card",
+    "sps.source.module": "crm",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "request",
+    "sps.source.variant": "admin-v2-card",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/crm/request/singlepage/admin-v2-card/Component.tsx",
+    "sps.code.story": "apps/studio/modules/crm/request/singlepage/admin-v2-card/Component.stories.tsx"
+  }
+}

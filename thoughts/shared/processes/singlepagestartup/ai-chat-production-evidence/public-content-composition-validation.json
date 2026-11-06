@@ -1,0 +1,23 @@
+{
+  "landing": {
+    "demoVariant": "id-preview-ai-chat",
+    "hostRelationId": "3b13be5c-8219-4020-afac-d407bf72e6f3",
+    "rbacWidgetCount": 0,
+    "websiteVariant": "landing-ai-chat"
+  },
+  "help": {
+    "formCount": 1,
+    "hostRelationId": "62e6ca8b-f720-463b-8623-1c4d231886d7",
+    "rbacWidgetCount": 0,
+    "subjectVariant": "me-crm-module-form-support-ai-chat",
+    "websiteVariant": "content-ai-chat-help"
+  },
+  "landingDemoInteraction": "Check materials advances the local walkthrough to Review",
+  "consoleErrors": 0,
+  "hostTypeScript": "passed",
+  "tests": {
+    "suites": 1,
+    "passed": 2
+  },
+  "supportRequestSubmitted": false
+}
