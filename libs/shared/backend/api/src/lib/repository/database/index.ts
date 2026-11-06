@@ -1,7 +1,7 @@
 import { logger } from "@sps/backend-utils";
 import { getDrizzle } from "@sps/shared-backend-database-config";
 import * as methods from "drizzle-orm";
-import { PgTableWithColumns } from "drizzle-orm/pg-core";
+import { getTableConfig, PgTableWithColumns } from "drizzle-orm/pg-core";
 import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import fs from "fs/promises";
 import { inject, injectable } from "inversify";
@@ -16,7 +16,7 @@ import { DI } from "../../di/constants";
 import { queryBuilder } from "../../query-builder";
 import { type IFilter } from "../../query-builder/filters";
 import { FindServiceProps } from "../../services/interfaces";
-import { type IRepository } from "../interface";
+import { type IRepository, type IResourceDescription } from "../interface";
 import { consistencyContext, trackRepositoryRead } from "./context";
 
 function isDateSchema(value: unknown): boolean {
@@ -61,9 +61,51 @@ export class Database<T extends PgTableWithColumns<any>>
     this.configuration = config;
   }
 
+  describe(): IResourceDescription {
+    const columns = methods.getTableColumns(this.Table);
+    return {
+      table: methods.getTableUniqueName(this.Table),
+      columns: Object.keys(columns),
+      references: getTableConfig(this.Table).foreignKeys.flatMap((key) => {
+        const reference = key.reference();
+        const targetColumns = methods.getTableColumns(reference.foreignTable);
+        if (reference.columns.length !== 1) return [];
+        const column = Object.keys(columns).find(
+          (name) => columns[name] === reference.columns[0],
+        );
+        const targetColumn = Object.keys(targetColumns).find(
+          (name) => targetColumns[name] === reference.foreignColumns[0],
+        );
+        return column && targetColumn
+          ? [
+              {
+                column,
+                table: methods.getTableUniqueName(reference.foreignTable),
+                targetColumn,
+              },
+            ]
+          : [];
+      }),
+    };
+  }
+
+  protected async trackRead(
+    filters?: Parameters<typeof trackRepositoryRead>[2],
+  ) {
+    await trackRepositoryRead(this.Table, this.db, filters);
+  }
+
+  protected get readScope(): methods.SQL | undefined {
+    return undefined;
+  }
+
+  protected get writeScope(): methods.SQL | undefined {
+    return this.readScope;
+  }
+
   async find(props?: FindServiceProps): Promise<T["$inferSelect"][]> {
     try {
-      await trackRepositoryRead(this.Table, this.db, props?.params?.filters);
+      await this.trackRead(props?.params?.filters);
       const filters = queryBuilder.filters({
         table: this.Table as T,
         queryFunctions: methods,
@@ -72,7 +114,7 @@ export class Database<T extends PgTableWithColumns<any>>
 
       if (props?.params?.orderBy?.and && !props.params.orderBy.and?.[0]) {
         throw new Error(
-          "You need to pass an orderBy array with 'column' and 'method' for each item",
+          "Validation error. You need to pass an orderBy array with 'column' and 'method' for each item",
         );
       }
 
@@ -81,14 +123,14 @@ export class Database<T extends PgTableWithColumns<any>>
         !props?.params?.orderBy?.and.every((ob) => ob.column && ob.method)
       ) {
         throw new Error(
-          "You need to pass an orderBy array with 'column' and 'method' for each item",
+          "Validation error. You need to pass an orderBy array with 'column' and 'method' for each item",
         );
       }
 
       const order = (props?.params?.orderBy?.and || []).map(
         ({ column, method }) => {
           if (!["asc", "desc"].includes(method) || !this.Table[column])
-            throw new Error("Invalid orderBy");
+            throw new Error("Validation error. Invalid orderBy");
           return methods[method](this.Table[column]);
         },
       );
@@ -103,7 +145,7 @@ export class Database<T extends PgTableWithColumns<any>>
       const records = await this.db
         .select()
         .from(this.Table)
-        .where(filters ? methods.and(...filters) : undefined)
+        .where(methods.and(this.readScope, ...(filters || [])))
         .limit(Number(props?.params?.limit) as number)
         .offset(Number(props?.params?.offset) as number)
         .orderBy(...order)
@@ -128,7 +170,7 @@ export class Database<T extends PgTableWithColumns<any>>
 
   async count(props?: FindServiceProps): Promise<number> {
     try {
-      await trackRepositoryRead(this.Table, this.db, props?.params?.filters);
+      await this.trackRead(props?.params?.filters);
       const filters = queryBuilder.filters({
         table: this.Table as T,
         queryFunctions: methods,
@@ -138,7 +180,7 @@ export class Database<T extends PgTableWithColumns<any>>
       const [record] = await this.db
         .select({ count: methods.count() })
         .from(this.Table)
-        .where(filters ? methods.and(...filters) : undefined)
+        .where(methods.and(this.readScope, ...(filters || [])))
         .execute();
 
       return Number(record?.count ?? 0);
@@ -155,17 +197,21 @@ export class Database<T extends PgTableWithColumns<any>>
 
   async findByField(field: string, value: any): Promise<any> {
     try {
-      await trackRepositoryRead(this.Table, this.db, {
+      await this.trackRead({
         and: [{ column: field, method: "eq", value }],
       });
       if (!this.Table[field]) {
-        throw new Error(`Field ${field} does not exist on table ${this.Table}`);
+        throw new Error(
+          `Validation error. Field ${field} does not exist on table ${this.Table}`,
+        );
       }
 
       const records = await this.db
         .select()
         .from(this.Table)
-        .where(methods.eq(this.Table[field], value))
+        .where(
+          methods.and(this.readScope, methods.eq(this.Table[field], value)),
+        )
         .execute();
 
       const sanitizedRecords = records.map((record) => {
@@ -250,7 +296,9 @@ export class Database<T extends PgTableWithColumns<any>>
   async deleteFirstByField(field: string, value: any): Promise<any> {
     try {
       if (!this.Table[field]) {
-        throw new Error(`Field ${field} does not exist on table ${this.Table}`);
+        throw new Error(
+          `Validation error. Field ${field} does not exist on table ${this.Table}`,
+        );
       }
 
       const [record] = await this.findByField(field, value);
@@ -258,7 +306,12 @@ export class Database<T extends PgTableWithColumns<any>>
       if (record) {
         const [result] = await this.db
           .delete(this.Table)
-          .where(methods.eq(this.Table[field], record[field]))
+          .where(
+            methods.and(
+              this.writeScope,
+              methods.eq(this.Table[field], record[field]),
+            ),
+          )
           .returning()
           .execute();
 
@@ -282,19 +335,26 @@ export class Database<T extends PgTableWithColumns<any>>
   async updateFirstByField(field: string, value: any, data: any): Promise<any> {
     try {
       if (!this.Table[field]) {
-        throw new Error(`Field ${field} does not exist on table ${this.Table}`);
+        throw new Error(
+          `Validation error. Field ${field} does not exist on table ${this.Table}`,
+        );
       }
 
       const [record] = await this.findByField(field, value);
 
-      const plainData: T["$inferInsert"] = this.insertSchema.parse(
-        this.prepareWritableData(data),
-      );
+      const plainData: Partial<T["$inferInsert"]> = this.insertSchema
+        .partial()
+        .parse(this.prepareWritableData(data));
 
       const [result] = await this.db
         .update(this.Table)
         .set(plainData)
-        .where(methods.eq(this.Table[field], record[field]))
+        .where(
+          methods.and(
+            this.writeScope,
+            methods.eq(this.Table[field], record[field]),
+          ),
+        )
         .returning()
         .execute();
 
@@ -330,7 +390,9 @@ export class Database<T extends PgTableWithColumns<any>>
   ): Promise<any> {
     try {
       if (!this.Table[field]) {
-        throw new Error(`Field ${field} does not exist on table ${this.Table}`);
+        throw new Error(
+          `Validation error. Field ${field} does not exist on table ${this.Table}`,
+        );
       }
 
       const predicates = queryBuilder.filters({
@@ -348,6 +410,7 @@ export class Database<T extends PgTableWithColumns<any>>
         .set(plainData)
         .where(
           methods.and(
+            this.writeScope,
             methods.eq(this.Table[field], value),
             ...(predicates || []),
           ),

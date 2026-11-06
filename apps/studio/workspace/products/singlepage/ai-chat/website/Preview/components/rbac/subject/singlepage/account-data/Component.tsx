@@ -1,29 +1,21 @@
 "use client";
-import {
-  type ReactNode as ReactNode,
-  useContext as useContext,
-  createContext as createContext,
-  forwardRef as forwardRefControl,
-  type ButtonHTMLAttributes as ButtonControlProps,
-  useId,
-  useRef,
-  useState,
-} from "react";
-
+import { type ReactNode as ReactNode } from "react";
+import { useContext as useContext } from "react";
+import { createContext as createContext } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
 import Markdown from "markdown-to-jsx";
 import { Component as WebsiteBuilderModuleButton } from "../../../../website-builder/button/index";
-
-import IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
 import {
-  IWebsiteSection as IWebsiteSection,
-  type IAIChatServicePageContent,
-} from "../../../../website-builder/widget/singlepage/content/ai-chat/content";
-
+  forwardRef as forwardRefControl,
+  type ButtonHTMLAttributes as ButtonControlProps,
+} from "react";
+import IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
+import { IWebsiteSection as IWebsiteSection } from "../../../../website-builder/widget/singlepage/content/ai-chat/content";
+import { useId, useRef, useState } from "react";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import defaultCopy from "./content.json";
 import { useAIChatAccount } from "../account/Account";
-
+import type { IAIChatServicePageContent } from "../../../../website-builder/widget/singlepage/content/ai-chat/content";
 function MarkdownDocument({
   children,
   hideTitle = false,
@@ -297,7 +289,7 @@ function Icon({
   const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
@@ -346,7 +338,7 @@ export function Component({
                 ? sections.purchases
                 : {
                     title: "Покупки",
-                    paragraphs: ["Посмотрите историю покупок и чеки."],
+                    paragraphs: ["История покупок и чеки."],
                     items: [],
                     links: [],
                   }
@@ -356,7 +348,7 @@ export function Component({
             {showTokens && (
               <p className="mt-4 text-sm text-[color:var(--workspace-brand-muted)]">
                 {aiChatAccount.balance
-                  ? `${(aiChatAccount.balance.free + aiChatAccount.balance.purchased).toLocaleString("ru-RU")} доступных токенов`
+                  ? `${(aiChatAccount.balance.free + aiChatAccount.balance.purchased).toLocaleString("en-US")} токенов доступно`
                   : "Баланс недоступен"}
               </p>
             )}
@@ -463,8 +455,8 @@ export function Component({
               {deletionChecked && (
                 <div className="mt-4">
                   <Feedback>
-                    В примере запрос на удаление подтверждён. Данные аккаунта и
-                    проектов не удалялись.
+                    Удаление подтверждено в примере. Аккаунт и данные проекта не
+                    удалены.
                   </Feedback>
                 </div>
               )}

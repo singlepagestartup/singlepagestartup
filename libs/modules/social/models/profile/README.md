@@ -72,8 +72,64 @@ profile types unchanged.
 
 The caller needs RBAC access to the relation and linked Blog articles.
 
+## SEO metadata and publication
+
+`metadata` is a JSONB object, default `{}`. Its optional `seo` section contains
+localized `title`, `description` and `keywords`; other named JSON sections are
+preserved. Example:
+
+```json
+{ "seo": { "title": { "ru": "Заголовок" }, "keywords": { "ru": ["тема", "категория"] } }, "campaign": { "name": "spring" } }
+```
+
+Known SEO fields are validated; the full object is limited to 64 KiB and ten
+levels of nesting. Arbitrary JSON sections are public model data: do not store
+secrets here. Prices, permissions, relations and publication state retain their
+own fields. Host masks may read only the allowlisted SEO paths. A missing locale
+does not fall back to another language.
+
+Both admin forms provide localized fields and an advanced JSON editor. Updates
+send the entire preserved object plus `_expectedMetadata` containing the previous
+object. The API performs an atomic compare-and-update and returns 409 if another
+editor changed it. Reload before retrying. API/SDK/MCP callers should read the
+current object, merge their intended section and supply `_expectedMetadata`;
+updates without this guard retain the ordinary full-field replacement behavior.
+
+Profile variants select presentation components. Ordinary Profile CRUD uses
+the shared model contract and filters; Host Page variants own public URL
+availability and sitemap inclusion. Administrative access remains subject to RBAC.
+
 ## Public authors
 
-`authorFind`, `authorFindCount` and `authorFindById` use the named `/api/social/profiles/authors` routes. A default or Telegram Profile appears publicly after an explicit link to an existing Article or Product. Public URLs use the Profile UUID; the DTO omits private slugs, Subject/Identity identifiers, administrative fields and AI workspace configuration. Article and Product references contain only their public summary fields.
+`authorFind`, `authorFindCount` and `authorFindById` are separate service and
+SDK methods. The controller exposes them as `GET /api/social/profiles/authors`,
+`GET /api/social/profiles/authors/count` and `GET /api/social/profiles/authors/:id`,
+with matching HEAD routes.
 
-The `author-card-default`, `author-byline-default` and `author-overview-default` variants consume these DTOs. Already loaded results use props mode. Own-account and private Chat reads retain their Subject/Chat scope, including historical sender and actor avatar presentation. Generic Profile list/count/detail reads require an operator or a current explicit administrative Role binding. Public author reads bypass the legacy route-topic cache; the consistency cache records the owning Service dependencies.
+Profile inherits `find`, `count` and `findById` from CRUDService without overriding
+them. Standard list/detail reads return the Profile model and count returns the
+ordinary model count. Linked `articles` and `products` belong only to the Author
+detail DTO.
+
+Author discovery currently includes default or Telegram Profiles linked to an existing Article or Product. This discovery does not grant access to the ordinary Profile detail route. Public URLs use the Profile UUID; the DTO omits private slugs, Subject/Identity identifiers, administrative fields and AI workspace configuration. Article and Product references contain only their public summary fields.
+
+The `author-card-default` and `author-byline-default` variants consume Author
+DTOs. `author-overview-default` reads the ordinary Profile model through
+`findById` and the shared default reader. It loads attachments, Articles and
+Products through their relation components, filtered by that Profile ID.
+Already loaded results use props mode. Own-account and private Chat reads retain
+their Subject/Chat scope, including historical sender and actor avatar presentation.
+
+Standard Profile reads use the normal RBAC Permissions policy. A public exact
+`GET /api/social/profiles/<UUID>` Permission can open one Profile while the
+collection, count and other IDs remain protected. There is no second
+administrative Profile guard. CRUD returns the model through the shared
+`outputSchema` mechanism; the Profile configuration currently declares no
+additional output schema. A link to an Article or Product does not create this
+exact Permission. Profile publication consent and sitemap enumeration of exact
+public Permissions remain separate follow-up work.
+
+Author summaries expose only `metadata.seo` from the JSON field. Content,
+association and avatar variants retain their normal presentation meaning.
+Public author DTOs expose a selected image attachment and UUID-based references;
+CRUD responses keep the ordinary Profile shape.

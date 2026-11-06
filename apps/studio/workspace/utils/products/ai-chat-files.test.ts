@@ -34,5 +34,5 @@ test("retains original image bytes for preview without inventing an interpretati
 test("rejects oversized text before retaining any files", async () => {
   await expect(
     readProjectFiles([new File(["x".repeat(100001)], "Long.md")], "source"),
-  ).rejects.toThrow("shorter text file");
+  ).rejects.toThrow("текстовый файл меньшего размера");
 });

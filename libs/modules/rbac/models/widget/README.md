@@ -25,6 +25,12 @@ RBAC widgets provide reusable content blocks for access and account flows.
 - `subject-me-ecommerce-module-category-overview-default`: Category products and their Store-specific purchase actions, selected by `ecommerceModuleCategorySlug`.
 - `subject-me-ecommerce-module-store-overview-default`: Store products and purchase actions, selected by `ecommerceModuleStoreSlug`.
 
+Product overview composes its category and public seller slots through Subject
+variants `ecommerce-module-product-category-default` and
+`ecommerce-module-product-profile-default`, passing only the selected Product ID
+and locale. Public Product content stays server-rendered; the `me` cart and
+checkout actions initialize their session on the client.
+
 Each uses the public Widget reader and its own default
 widgets-to-website-builder-module-widgets association. The linked
 `content-ecommerce-default` Website Builder Widget owns the block layout and

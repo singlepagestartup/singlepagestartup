@@ -14,20 +14,20 @@ import {
 import { ProjectProvider } from "./components/social/profile/singlepage/scope/ai-chat/project/Profile";
 import { NavigationProvider } from "./components/host/layout/singlepage/ai-chat-landing/Navigation";
 import { aiChatAccount } from "./components/rbac/subject/singlepage/account/fixture";
-import {
-  aiChatSourceFixture,
-  aiChatWorkspaceFixture,
-} from "./components/social/profile/singlepage/scope/ai-chat/project/fixtures";
+import { aiChatWorkspaceFixture } from "./components/social/profile/singlepage/scope/ai-chat/project/fixtures";
 import {
   resolveAIChatRoute,
   aiChatProfileHref,
   aiChatServiceHrefs,
   type IAIChatRoute,
 } from "./components/host/layout/singlepage/ai-chat-landing/routes";
-import type { IAIChatServicePageContent } from "./components/website-builder/widget/singlepage/content/ai-chat/content";
+import type {
+  IAIChatServicePageContent,
+  IAIChatWebsiteContent,
+} from "./components/website-builder/widget/singlepage/content/ai-chat/content";
 export interface IAIChatPreviewProps {
-  embedded?: boolean;
   loginCopy?: IAIChatServicePageContent;
+  landingCopy?: IAIChatWebsiteContent;
   initialHref?: string;
   account?: IAIChatAccount;
   profiles?: Omit<IProfilesProviderProps, "children">;
@@ -66,11 +66,11 @@ function ProfilePage({ route }: { route: IAIChatRoute }) {
 function Pages({
   route,
   loginCopy,
-  embedded,
+  landingCopy,
 }: {
-  embedded?: boolean;
   route: IAIChatRoute | undefined;
   loginCopy?: IAIChatServicePageContent;
+  landingCopy?: IAIChatWebsiteContent;
 }) {
   const { projects } = useProfiles();
   if (!route) return <main role="status">Страница недоступна.</main>;
@@ -78,8 +78,10 @@ function Pages({
   const available = projects.some((profile) => profile.id === route.profileId);
   return (
     <>
-      {serviceVariant ===
-      "rbac-module-subject-me-authentication-select-method-ai-chat" ? (
+      {serviceVariant === "ai-chat" ? (
+        <HostModulePage variant="ai-chat" content={landingCopy} />
+      ) : serviceVariant ===
+        "rbac-module-subject-me-authentication-select-method-ai-chat" ? (
         <HostModulePage
           variant="rbac-module-subject-me-authentication-select-method-ai-chat"
           copy={loginCopy}
@@ -89,12 +91,7 @@ function Pages({
       )}
       {route.profileId && !available && <ProfilePage route={route} />}
       {projects.map((profile) => (
-        <ProjectProvider
-          key={profile.id}
-          profileId={profile.id}
-          initialSource={embedded ? aiChatSourceFixture().source : undefined}
-          initialFiles={embedded ? aiChatSourceFixture().files : undefined}
-        >
+        <ProjectProvider key={profile.id} profileId={profile.id}>
           {profile.id === route.profileId ? (
             <ProfilePage route={route} />
           ) : null}
@@ -105,7 +102,7 @@ function Pages({
 }
 export function AIChatPreview({
   loginCopy,
-  embedded = false,
+  landingCopy,
   initialHref = "/ai-chat/",
   account = aiChatAccount,
   profiles = aiChatWorkspaceFixture(),
@@ -158,12 +155,12 @@ export function AIChatPreview({
       }
     >
       <ProfilesProvider {...profiles}>
-        <NavigationProvider navigate={navigate} embedded={embedded}>
+        <NavigationProvider navigate={navigate}>
           <div onClick={followLink} data-preview-href={href}>
             <Pages
               route={resolveAIChatRoute(href)}
               loginCopy={loginCopy}
-              embedded={embedded}
+              landingCopy={landingCopy}
             />
           </div>
         </NavigationProvider>

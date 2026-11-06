@@ -56,7 +56,7 @@ export function parseProjectDocumentGuides(
     guides[id] = {
       title,
       body,
-      basis: body.split(/\n## Basis\n/)[1]?.trim(),
+      basis: body.split(/\n## (?:Basis|Основания)\n/)[1]?.trim(),
       sections,
     };
   }

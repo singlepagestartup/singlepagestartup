@@ -61,7 +61,7 @@ export function query<T>(
         return res;
       });
     } catch (error: any) {
-      if (error.message.includes("404 |")) {
+      if (error.status === 404) {
         throw error;
       }
 

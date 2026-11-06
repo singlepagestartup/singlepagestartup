@@ -1,3 +1,4 @@
+import { IComponentProps as IHiddenComponentProps } from "@sps/shared-frontend-components/singlepage/hidden/interface";
 import type { IComponentProps as IDemoHandoff } from "./demo-handoff/interface";
 import type { IComponentProps as IDemoDocument } from "./demo-document/interface";
 import type { IComponentProps as IDemoProject } from "./demo-project/interface";
@@ -33,6 +34,7 @@ import { IComponentProps as IAdminTableRowComponentProps } from "./admin/table-r
 import { IComponentProps as IDefaultComponentProps } from "./default/interface";
 
 export type IComponentProps =
+  | IHiddenComponentProps
   | IDemoHandoff
   | IDemoDocument
   | IDemoProject

@@ -7,16 +7,26 @@
  * Then: explicit rules win over canonical derivation, project rules win over
  *       defaults, and unmatched paths fall back to the shared deriver.
  */
+import { Middleware } from "./index";
+import { Hono } from "hono";
+import { websocketManager } from "@sps/backend-utils";
 
 jest.mock("@sps/backend-utils", () => {
   return {
+    requestHostRevalidation: jest.requireActual(
+      "../../../../shared/backend/utils/src/lib/host-revalidation",
+    ).requestHostRevalidation,
     websocketManager: {
       broadcastMessage: jest.fn(),
     },
   };
 });
 
-import { Middleware } from "./index";
+jest.mock("@sps/shared-utils", () => ({
+  ...jest.requireActual("@sps/shared-utils"),
+  HOST_SERVICE_REVALIDATION_SECRET: "fixture-revalidation-secret",
+  HOST_SERVICE_REVALIDATION_SECRET_HEADER: "X-HOST-REVALIDATION-SECRET",
+}));
 
 const SID = "303302a0-4eb7-4cef-af04-74d7e8e72442";
 const PID = "88862025-5c38-4ce8-bb4c-4c5c511b874c";
@@ -31,7 +41,7 @@ describe("Next tag batching", () => {
       .spyOn(globalThis, "fetch")
       .mockResolvedValue(new Response("{}", { status: 200 }));
     const tags = Array.from({ length: 279 }, (_, index) => `tag-${index}`);
-    await new Middleware().revalidateTags([...tags, tags[0]], true);
+    await new Middleware().revalidateTags([...tags, tags[0]]);
     expect(fetch).toHaveBeenCalledTimes(3);
     const batches = fetch.mock.calls.map(
       ([, options]) => JSON.parse(options!.body as string).tags,
@@ -43,20 +53,49 @@ describe("Next tag batching", () => {
     jest
       .spyOn(globalThis, "fetch")
       .mockResolvedValue(new Response("error", { status: 500 }));
-    await expect(
-      new Middleware().revalidateTags(["tag"], true),
-    ).rejects.toThrow("Next invalidation failed (500)");
+    await expect(new Middleware().revalidateTags(["tag"])).rejects.toThrow(
+      "Next invalidation failed (500)",
+    );
   });
-  it("supports older Hosts through serial GET invalidation when POST is unavailable", async () => {
-    const fetch = jest
-      .spyOn(globalThis, "fetch")
-      .mockResolvedValueOnce(new Response("", { status: 405 }))
-      .mockResolvedValue(new Response("{}", { status: 200 }));
-    await new Middleware().revalidateTags(["a", "b"], true);
+  it.each([401, 404, 405])(
+    "propagates HTTP %s without a second request",
+    async (status) => {
+      const fetch = jest
+        .spyOn(globalThis, "fetch")
+        .mockResolvedValue(new Response("", { status }));
+      await expect(new Middleware().revalidateTags(["a", "b"])).rejects.toThrow(
+        `Next invalidation failed (${status})`,
+      );
+      expect(fetch).toHaveBeenCalledTimes(1);
+      expect(fetch.mock.calls[0][1]).toMatchObject({
+        method: "POST",
+        headers: {
+          "X-HOST-REVALIDATION-SECRET": "fixture-revalidation-secret",
+        },
+      });
+    },
+  );
+});
+
+it("broadcasts a successful mutation without sending a second Host invalidation", async () => {
+  const fetch = jest.spyOn(globalThis, "fetch");
+  const app = new Hono();
+  app.use(new Middleware().init());
+  app.post("/api/example/items", (c) => c.json({ ok: true }));
+  try {
     expect(
-      fetch.mock.calls.map(([, options]) => options?.method ?? "GET"),
-    ).toEqual(["POST", "GET", "GET"]);
-  });
+      (await app.request("/api/example/items", { method: "POST" })).status,
+    ).toBe(200);
+    expect(websocketManager.broadcastMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        payload: "/api/example/items",
+        slug: "revalidation",
+      }),
+    );
+    expect(fetch).not.toHaveBeenCalled();
+  } finally {
+    fetch.mockRestore();
+  }
 });
 
 function intersects(a: string[], b: string[]): boolean {

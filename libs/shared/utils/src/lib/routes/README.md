@@ -62,7 +62,6 @@ callers pass extra rules through the middleware constructor.
 
 | Middleware       | Semantic                    | Matcher factory                      |
 | ---------------- | --------------------------- | ------------------------------------ |
-| `http-cache`     | bypass cache                | `createExcludedRoutesMatcher`        |
 | `is-authorized`  | allow without auth          | `createAllowedRoutesMatcher`         |
 | `actions-logger` | log this mutation           | `createLoggingRoutesMatcher`         |
 | `bill-route`     | require billing             | `createBillingRoutesMatcher`         |
@@ -87,7 +86,7 @@ evaluated first of all layers.
 
 ```ts
 // apps/api/app.ts
-new HTTPCacheMiddleware({
+consistencyRuntime.cache({
   excludedRoutes: [{ regexPath: /^\/api\/crm\/boards\/[0-9a-f-]+\/burndown$/i }],
 });
 new IsAuthorizedMiddleware({

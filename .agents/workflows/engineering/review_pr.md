@@ -28,6 +28,8 @@ is evidence of current practice, not automatic permission to repeat it.
 
 ## Dependency boundaries
 
+For backend changes, follow the loop and branching rules in `.agents/contracts/engineering/backend-code-style.md`.
+
 Read `.agents/contracts/engineering/module-dependencies.md` and check changed
 modules against its confirmed top-to-bottom order. For each cross-module import
 or reexport, determine the owning source and target modules, resolve aliases and

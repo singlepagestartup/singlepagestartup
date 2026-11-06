@@ -35,3 +35,61 @@ The File Storage module manages uploaded media and file metadata. It provides mo
 | [widgets-to-files](./relations/widgets-to-files/README.md) | Link widgets to files |
 
 ---
+
+## 4. Uploads and Delivery
+
+### One file per request
+
+`POST /api/file-storage/files` and `PATCH /api/file-storage/files/:uuid` take a
+multipart body with a `data` field holding JSON and one file under the field
+`file`. The stored URL is written to the record's `file` column. A request with
+more than one file answers `400 Validation error. Multiple files are not
+allowed` before storage. A text value alongside the file under the same field
+name is ignored. A metadata-only PATCH updates the existing File.
+
+### Size limit
+
+`FILE_STORAGE_MAX_UPLOAD_BYTES` (default `52428800`, 50 MiB) bounds the
+multipart body of those two routes and the body that
+`POST /api/file-storage/files/create-from-url` downloads. A larger upload
+answers `413 Payload Too Large error. The upload limit is <N> bytes` before it
+is buffered. Bun refuses request bodies above 128 MiB by itself, so a limit
+above that also needs `maxRequestBodySize` raised in `apps/api/server.ts`.
+
+### Delivery from the API origin
+
+With the `local` provider, files are written to
+`apps/api/public/<FILE_STORAGE_FOLDER>` and served by the API at
+`/public/<FILE_STORAGE_FOLDER>/<name>`. The API also serves original bytes at
+`/api/file-storage/files/:uuid/content`. Both routes send the following
+headers on GET and HEAD. The content route also sends `Cache-Control: private, no-store`.
+
+- `X-Content-Type-Options: nosniff` makes browsers respect the declared MIME
+  type for script and stylesheet requests.
+- `Content-Security-Policy: sandbox`: a file opened as a document, such as an
+  SVG or HTML file in a tab, gets an opaque origin with scripts, forms and
+  plugins disabled, so it cannot act as the API origin.
+
+Browsers apply `nosniff` only to script and style loads and a
+Content-Security-Policy only to documents and workers, so images, video, audio
+and CSS backgrounds that embed these files load as before. A PDF opened in a
+tab renders in Chrome and Firefox. Chromium shows a sandboxed PDF blank inside
+an `<iframe>`, `<embed>` or `<object>`, and Safari 17.6 was reported to show a
+directly opened sandboxed PDF as an empty page.
+
+### Storage providers in production
+
+`FILE_STORAGE_PROVIDER` selects where uploads are stored:
+
+| Provider          | Variables                                                                           | Files are served from                   |
+| ----------------- | ----------------------------------------------------------------------------------- | --------------------------------------- |
+| `local` (default) | `FILE_STORAGE_FOLDER`                                                               | the API origin, under `/public`         |
+| `aws-s3`          | `AWS_S3_BUCKET_NAME`, `AWS_REGION`, and AWS credentials such as `AWS_ACCESS_KEY_ID` | `https://<bucket>.s3.amazonaws.com/...` |
+| `vercel-blob`     | `BLOB_READ_WRITE_TOKEN`                                                             | the Vercel Blob store URL               |
+
+Production deployments should use `aws-s3` or `vercel-blob`. Uploaded files
+are then served from an origin that holds no session or data of the
+application, whatever the file contains. `local` suits development and
+deployments that accept uploaded files on the API origin with the headers
+above. `tools/deployer/README.md` describes how the Docker deployment selects
+the provider.

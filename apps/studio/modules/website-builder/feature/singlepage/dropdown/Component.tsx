@@ -59,7 +59,9 @@ export function FeatureDropdown(props?: IComponentProps) {
         >
           <p>{answer}</p>
           {props.example ? (
-            <p className="mt-3 rounded-lg bg-card/10 p-3">
+            <p
+              className={`mt-3 rounded-lg border border-l-4 border-l-primary p-3 ${props.tone === "dark" ? "border-default-foreground/15 bg-default/60 text-default-foreground" : "border-border bg-card text-card-foreground"}`}
+            >
               <span className="block text-[10px] font-semibold uppercase tracking-wider">
                 {props.exampleLabel}
               </span>
@@ -73,7 +75,7 @@ export function FeatureDropdown(props?: IComponentProps) {
     return (
       <details
         open={open}
-        className="group mb-3 rounded-2xl border border-border bg-card open:border-primary/50 open:bg-primary/10"
+        className="group mb-3 rounded-2xl border border-border bg-card open:border-primary open:bg-primary open:text-black"
         data-module="website-builder"
         data-model="feature"
         data-variant="dropdown"
@@ -81,7 +83,7 @@ export function FeatureDropdown(props?: IComponentProps) {
       >
         <summary className="flex min-h-[76px] cursor-pointer list-none items-center justify-between gap-4 rounded-2xl p-4 text-sm font-semibold leading-6 hover:bg-primary/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground [&::-webkit-details-marker]:hidden">
           <span>{question}</span>
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground group-open:bg-default group-open:text-primary">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground group-open:bg-white group-open:text-black">
             <SharedIcon
               variant="phosphor"
               name="plus"
@@ -96,7 +98,7 @@ export function FeatureDropdown(props?: IComponentProps) {
             />
           </span>
         </summary>
-        <div className="px-4 pb-5 text-sm leading-7 text-muted-foreground">
+        <div className="px-4 pb-5 text-sm leading-7 text-muted-foreground group-open:text-black">
           {answer}
         </div>
       </details>

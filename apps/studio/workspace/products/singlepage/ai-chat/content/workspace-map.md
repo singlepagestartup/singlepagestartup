@@ -1,83 +1,73 @@
 ---
-confirmation:
-  confirmed: true
-  by: operator
-  at: 2026-09-17
-  source: "Operator confirmed the revised Project model in chat: «Хорошо, это
-    подтверждаем»."
-  content_sha256: b84c426171d25131fd5395c37a6505370515e8c0a3648ff8fc0962b6d2f04633
-review:
-  dependencies:
-    product.ai-chat.product: 5212a0163b9d453689340ff925ed6d6d94d729e0c890e8e0d75209b6e6eb50bb
 ---
 
-# Project model
+# Модель проекта
 
-Brief.md, Strategy.md, Brand.md, Design.md and Products.md each have a working thread with their own conversation, draft and edits. Each product has its own sections. The user answers the agent's questions in the owning file's thread and reviews the wording before saving it. The general project workspace holds separate discussion topics with selected saved documents attached as their knowledge base. The documents can be freely exported.
+У Brief.md, Strategy.md, Brand.md, Design.md и Products.md есть собственные рабочие переписки, черновики и правки. Каждый продукт содержит свои разделы. Пользователь отвечает агенту в переписке нужного файла и проверяет формулировку перед сохранением. В общем рабочем пространстве есть отдельные темы с выбранными сохранёнными документами в качестве базы знаний. Документы можно свободно выгружать.
 
-The overview displays the owning texts without storing another editable copy. A product's offer and economics are edited in that Product; the project overview displays them.
+Обзор показывает исходные тексты без второй редактируемой копии. Предложение и экономика продукта редактируются в его описании; обзор проекта отображает их.
 
-## Project stages
+## Этапы проекта
 
-### Brief
+### Бриф
 
-Describe the project, current situation, products, supplied material, intended result, boundaries, constraints and decision authority. Unknown facts remain open.
+Опишите проект, текущую ситуацию, продукты, переданные материалы, ожидаемый результат, границы, ограничения и ответственного за решения. Неизвестные факты остаются открытыми.
 
-### Strategy
+### Продукты
 
-Describe priority audiences, product roles, positioning, customer paths, channels and measures of success. State how the project should work, rather than a history of decisions.
+У каждого продукта отдельное описание. Продукт открывает собственные разделы:
 
-### Brand
+| Раздел продукта              | Содержание                                                                                                 |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| **Продукт**                  | Клиент, проблема, предложение, ценность, альтернативы и условия.                                           |
+| **Операции и экономика**     | Выполнение, выручка, ресурсы, действия, партнёры, расходы и финансирование этого продукта.                 |
+| **Продажи**                  | Знакомство, оценка, покупка, получение, использование, поддержка и продолжение.                            |
+| **Продвижение**              | Текстовое описание публичной подачи, включая сайт, креативы и презентацию, где они нужны.                  |
+| **Аналитика и исследования** | Измерения, наблюдения, вопросы и доказательства для проверки предположений; исследования по необходимости. |
 
-Describe meaning, promise, supported claims, evidence, voice, objections and calls to action.
+Общие ресурсы имеют одинаковый идентификатор в использующих их продуктах; каждый продукт указывает свою долю. Представление экономики не создаёт промежуточную общую модель.
 
-### Design
+### Стратегия
 
-Write the intended visual direction, existing assets, interface principles and constraints. This first-release text does not generate a brand identity or build a landing page.
+Опишите приоритетные аудитории, роли продуктов, позиционирование, пути клиентов, каналы и критерии успеха. Фиксируйте устройство проекта, а не историю принятия решений.
 
-### Products
+### Бренд
 
-Keep separate descriptions for every product in scope. Each product opens its own sections:
+Опишите смысл, обещание, допустимые утверждения, доказательства, голос, возражения и призывы к действию.
 
-| Product section            | Contents                                                                                                                            |
-| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| **Product**                | Customer, problem, offer, value, alternatives and conditions.                                                                       |
-| **Operations & Economics** | Delivery, revenue, resources, activities, partners, costs and financing owned by that Product.                                      |
-| **Sales**                  | Discovery, evaluation, purchase, delivery, use, support and continued use.                                                          |
-| **Promotion**              | A written description of how this product will be presented publicly, with Website, Creative and Presentation texts where relevant. |
-| **Analytics & Research**   | Measures, observations, questions and evidence required for its assumptions, with research where needed.                            |
+### Дизайн
 
-Shared resources use the same resource identifier in the Products that consume them, with each Product stating its allocated share. The economics view introduces no intermediate shared model.
+Запишите визуальное направление, имеющиеся ресурсы, принципы интерфейса и ограничения. Текст первого выпуска не генерирует айдентику и не собирает лендинг.
 
-## Product development loop
+## Цикл разработки продукта
 
 ```mermaid
 flowchart LR
-    A[Brief: idea, goal and supplied facts] --> B[Draft Product descriptions]
-    B --> C[Each Product: operations and economics]
-    C --> D[Each Product: Sales]
-    D --> E[Shortcomings and critical assumptions]
-    E --> F[Analytics and research where needed]
-    F --> G[Correct and review the owning text]
-    G --> H[Accept, export and attach to a project topic]
+    A[Бриф: идея, цель и исходные факты] --> B[Черновики описаний продуктов]
+    B --> C[Операции и экономика каждого продукта]
+    C --> D[Продажи каждого продукта]
+    D --> E[Недочёты и критические предположения]
+    E --> F[Аналитика и необходимые исследования]
+    F --> G[Исправление и проверка исходного текста]
+    G --> H[Принятие, выгрузка и прикрепление к теме]
     G --> E
 ```
 
-The AI agent identifies shortcomings for the user to correct. Research records attributable evidence where it exists and questions where it does not. Acceptance records review of the text, not validation of the business.
+AI-агент находит недочёты для исправления пользователем. Исследование записывает доказательства с источниками, где они есть, и вопросы, где их нет. Принятие фиксирует проверку текста, а не жизнеспособность бизнеса.
 
-## Information states
+## Состояния сведений
 
-- **accepted:** the user reviewed this wording;
-- **proposal:** a draft awaiting the user's review;
-- **unknown:** the supplied material and user have not established the required fact;
-- **conflict:** supplied statements give incompatible answers.
+- **accepted — принято:** пользователь проверил формулировку;
+- **proposal — предложение:** черновик ожидает проверки;
+- **unknown — неизвестно:** материал и пользователь не установили нужный факт;
+- **conflict — противоречие:** исходные утверждения дают несовместимые ответы.
 
-These labels apply to the owning description. A proposed change returns to that text for review before replacing accepted wording.
+Метки относятся к исходному описанию. Предлагаемое изменение проходит проверку в этом тексте перед заменой принятой формулировки.
 
-## Continued work in chat
+## Продолжение работы в чате
 
-The user creates a topic in the general project workspace and chooses which saved, reviewed documents to attach. Each topic keeps its own conversation and uses those files to evaluate an idea, compare options or draft written content. Document changes return to the owning file's thread for review.
+Пользователь создаёт тему в общем рабочем пространстве и выбирает сохранённые проверенные документы. У темы своя переписка; файлы помогают оценить идею, сравнить варианты или подготовить текст. Изменение документа возвращается в переписку его файла для проверки.
 
-Topics can start with one reviewed file while other sections have open questions. A document's last reviewed version remains available as topic context while its new draft is being revised, and changes only after review and saving. The user may freely export and use the documents outside AI Chat. A missing fact remains open rather than being invented to complete an answer.
+Тема может начинаться с одного проверенного файла, пока в других разделах остаются вопросы. Последняя проверенная версия документа доступна как контекст темы во время редактирования нового черновика и меняется после проверки и сохранения. Документы можно свободно выгружать и использовать вне AI Chat. Недостающий факт остаётся вопросом; его не придумывают ради законченного ответа.
 
-Landing-page generation and paid server deployment are future capabilities outside this first release. The later page is intended to collect initial enquiries and test a hypothesis; those outcomes are not guaranteed.
+Генерация лендинга и платное развёртывание на сервере относятся к будущим возможностям вне первого выпуска. Цель будущей страницы — первые обращения и проверка гипотезы; эти результаты не гарантированы.

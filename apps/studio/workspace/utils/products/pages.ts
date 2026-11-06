@@ -1,11 +1,14 @@
+import { parser, RuleType, type MarkdownToJSX } from "markdown-to-jsx";
 import {
-  productStoryId,
+  materialStoryId,
+  materialNavigationTarget,
   type IProductSection,
   type ProductCatalogLayer,
 } from "./catalog";
 import type { IProductCatalogView } from "./source";
 import {
   resolveWorkspacePage,
+  flattenWorkspacePages,
   findWorkspacePage,
   type IWorkspacePageSources,
   type IWorkspacePageView,
@@ -32,6 +35,41 @@ export function resolveProductSections(
       resolveWorkspacePage(page, layer, sources, "products"),
     ),
   }));
+}
+
+function queryText(nodes: MarkdownToJSX.ASTNode[]): string {
+  return nodes
+    .map((node) => {
+      if ("text" in node) return node.text;
+      if ("children" in node && node.children) return queryText(node.children);
+      return "";
+    })
+    .join("")
+    .trim();
+}
+
+/** Read the article's query tables; IDs and measured counts stay in their source. */
+export function productPageSearchQueries(page: IProductPageView): string[] {
+  return [
+    ...new Set(
+      flattenWorkspacePages([page]).flatMap((source) => {
+        if (!source.markdown) return [];
+        return parser(source.markdown).flatMap((node) => {
+          if (node.type !== RuleType.table) return [];
+          const column = node.header.findIndex((cell) =>
+            ["запрос", "query", "search query"].includes(
+              queryText(cell).toLowerCase(),
+            ),
+          );
+          return column < 0
+            ? []
+            : node.cells
+                .map((row) => queryText(row[column] ?? []))
+                .filter(Boolean);
+        });
+      }),
+    ),
+  ];
 }
 
 export interface IProductPreviewLinkOptions {
@@ -88,25 +126,15 @@ export function resolveProductPreviewLink(
   url.pathname = url.pathname.replace(/iframe\.html$/, "");
   url.search = "";
   url.hash = "";
+  const target = materialNavigationTarget(
+    linked.product,
+    `${linked.section.id}-${linked.page.id}`,
+  );
   url.searchParams.set(
     "path",
-    `/story/${productStoryId(layer, linked.product.id)}`,
+    `/story/${materialStoryId(layer, linked.product.id, target.story, target.group)}`,
   );
-  url.searchParams.set("product", linked.product.id);
-  if (["website", "creative", "presentation"].includes(linked.section.id)) {
-    url.searchParams.set("section", "promotion");
-    url.searchParams.set("surface", linked.section.id);
-  } else if (["analytics", "research"].includes(linked.section.id)) {
-    url.searchParams.set("section", "analytics");
-    url.searchParams.set("surface", linked.section.id);
-  } else {
-    url.searchParams.set("section", linked.section.id);
-  }
   url.searchParams.set("page", linked.page.id);
-  url.searchParams.set(
-    "representation",
-    linked.page.representations?.preview ? "preview" : "text",
-  );
   url.searchParams.set(
     "navigationHref",
     destination.pathname + destination.search + destination.hash,

@@ -9,6 +9,7 @@ import * as jwt from "hono/jwt";
 import { authorization, getHttpErrorType } from "@sps/backend-utils";
 import { Service } from "../../../../../service";
 import { api as ecommerceOrderApi } from "@sps/ecommerce/models/order/sdk/server";
+import { z } from "zod";
 
 export class Handler {
   service: Service;
@@ -45,7 +46,7 @@ export class Handler {
         throw new Error("Validation error. No token");
       }
 
-      const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
+      const decoded = await jwt.verify(token, RBAC_JWT_SECRET, "HS256");
 
       if (decoded?.["subject"]?.["id"] !== id) {
         throw new Error("Validation error. Only order owner can update order");
@@ -58,6 +59,24 @@ export class Handler {
       }
 
       const data = JSON.parse(body["data"]);
+
+      if (data && Object.hasOwn(data, "billingModule")) {
+        const currency = z
+          .string()
+          .uuid()
+          .safeParse(data.billingModule?.currency?.id);
+        if (!currency.success || data.ordersToProducts !== undefined) {
+          throw new Error(
+            "Validation error. Send one valid billingModule.currency.id separately from quantity changes",
+          );
+        }
+        await this.service.ecommerceModuleOrderSetCurrency({
+          subjectId: id,
+          orderId,
+          currencyId: currency.data,
+        });
+        return c.json({ data: await this.service.findById({ id }) });
+      }
 
       if (
         !Array.isArray(data.ordersToProducts) ||

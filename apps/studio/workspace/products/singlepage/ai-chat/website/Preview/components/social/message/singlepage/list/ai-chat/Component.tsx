@@ -70,7 +70,7 @@ export function Component({
         role="log"
         aria-label="Сообщения"
         aria-live="polite"
-        className={`${className}`}
+        className={`${className} space-y-6 p-4 @[640px]:p-6`}
       >
         {messages.map((message) => (
           <MessageOverview

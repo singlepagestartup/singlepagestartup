@@ -4,16 +4,12 @@
   "items": [],
   "links": [
     {
-      "text": "Начать со своих материалов",
+      "text": "Начать с моих материалов",
       "href": "/ai-chat/rbac/subjects/authentication/registration"
     },
     {
       "text": "Войти",
       "href": "/ai-chat/rbac/subjects/authentication/select-method"
-    },
-    {
-      "text": "Code Framework",
-      "href": "/framework"
     }
   ]
 }

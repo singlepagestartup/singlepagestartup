@@ -1,63 +1,32 @@
+import { localizedHeading } from "../../../../../tools/studio/workspace/headings";
 import { createContext, useContext, type ReactNode } from "react";
-import type { IProjectDesignInterface } from "./ProjectDesign";
+import { DesignNotes, type IProjectDesignInterface } from "./ProjectDesign";
 
-const InterfaceGuidanceContext = createContext<IProjectDesignInterface | null>(
-  null,
-);
+const InterfaceGuidanceContext = createContext<
+  (IProjectDesignInterface & { iconRules?: string }) | null
+>(null);
 
 export interface IInterfaceGuidanceProviderProps {
   guidance: IProjectDesignInterface;
+  iconRules?: string;
   children: ReactNode;
 }
 
 export function InterfaceGuidanceProvider({
   guidance,
+  iconRules,
   children,
 }: IInterfaceGuidanceProviderProps) {
   return (
-    <InterfaceGuidanceContext.Provider value={guidance}>
+    <InterfaceGuidanceContext.Provider value={{ ...guidance, iconRules }}>
       {children}
     </InterfaceGuidanceContext.Provider>
   );
 }
 
-export function InterfaceRules() {
+export function IconRules() {
   const guidance = useContext(InterfaceGuidanceContext);
-  if (!guidance) return null;
-  return (
-    <section className="rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-5 sm:p-6 md:p-8">
-      <h3 className="text-base font-semibold">Interface rules</h3>
-      <p className="mt-2 text-sm leading-6 text-[var(--workspace-brand-muted)]">
-        {guidance.intro}
-      </p>
-      <details className="mt-4 border-t border-[var(--workspace-brand-line)] pt-4 text-sm leading-6">
-        <summary className="w-fit cursor-pointer rounded-md font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-focus)]">
-          Shape, spacing and interaction states
-        </summary>
-        <div className="mt-4 grid gap-6 md:grid-cols-2">
-          {[
-            {
-              title: "Surface, density, and shape",
-              rules: guidance.shapeRules,
-            },
-            {
-              title: "Controls, states, and actions",
-              rules: guidance.stateRules,
-            },
-          ].map(({ title, rules }) => (
-            <div key={title}>
-              <h4 className="font-semibold">{title}</h4>
-              <ul className="mt-2 list-disc space-y-2 pl-5 text-[var(--workspace-brand-muted)]">
-                {rules.map((rule) => (
-                  <li key={rule}>{rule}</li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-      </details>
-    </section>
-  );
+  return <DesignNotes markdown={guidance?.iconRules} section="icons" />;
 }
 
 export interface ISurfacePatternGuidanceProps {
@@ -77,7 +46,7 @@ export function SurfacePatternGuidance({
       className="mt-4 border-l-2 border-[var(--workspace-brand-accent)] pl-4 text-sm leading-6"
       data-pattern-guidance={title}
     >
-      <p className="font-semibold">{pattern.title}</p>
+      <p className="font-semibold">{localizedHeading(pattern.title)}</p>
       {context ? (
         <p className="mt-1 text-[var(--workspace-brand-muted)]">{context}</p>
       ) : null}
@@ -86,14 +55,14 @@ export function SurfacePatternGuidance({
       </p>
       <p className="mt-2 text-[var(--workspace-brand-muted)]">
         <span className="font-medium text-[var(--workspace-brand-foreground)]">
-          Avoid:{" "}
+          Избегать:{" "}
         </span>
         {pattern.avoid}
       </p>
       {pattern.references.length ? (
         <details className="mt-2 text-xs leading-5 text-[var(--workspace-brand-muted)]">
           <summary className="w-fit cursor-pointer rounded-md font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-focus)]">
-            Reference sources
+            Источники референсов
           </summary>
           <ul className="mt-2 space-y-1 break-words">
             {pattern.references.map((reference) => (

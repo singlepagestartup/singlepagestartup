@@ -1,10 +1,32 @@
 {
+  "metadata": {
+    "seo": {
+      "description": {
+        "en": "Metric records and widgets for presenting their values.",
+        "ru": "Записи показателей и виджеты для представления их значений."
+      }
+    },
+    "seoDisplay": {
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Metric records and widgets for presenting their values.",
+        "ru": "Записи показателей и виджеты для представления их значений."
+      },
+      "opengraphDescription": {
+        "en": "Metric records and widgets for presenting their values.",
+        "ru": "Записи показателей и виджеты для представления их значений."
+      }
+    }
+  },
   "id": "ad1af921-264d-4ef0-bc14-cee6f152ce3b",
   "title": "Analytic · Code Framework",
   "url": "/framework/modules/analytic",
   "description": "Metric records and widgets for presenting their values.",
   "createdAt": "2026-10-24T01:06:13.669Z",
-  "updatedAt": "2026-10-24T01:06:13.669Z",
+  "updatedAt": "2026-10-30T22:25:08.971Z",
   "variant": "default",
   "className": "",
   "language": "en",

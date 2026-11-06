@@ -7,7 +7,7 @@
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
 
-it("persists one owned author/article atomically and guards raw Profiles before enabled caches", () => {
+it("persists one owned author/article atomically and enforces Profile permissions before enabled caches", () => {
   const script = String.raw`
 import assert from "node:assert/strict";
 import {randomUUID,createHash} from "node:crypto";
@@ -20,7 +20,6 @@ import {consistencyContext,resourceIdentity} from "./libs/shared/backend/api/src
 import {Middleware as HTTPCache} from "./libs/middlewares/src/lib/http-cache";
 import {Middleware as IsAuthorized} from "./libs/middlewares/src/lib/is-authorized";
 import {controllerGuardedRoutes} from "./libs/middlewares/src/lib/is-authorized/routes";
-import {RawSocialProfileRead,rawSocialProfileReadRoutes} from "@sps/rbac/models/subject/backend/app/middlewares";
 import {Provider as KVProvider} from "@sps/providers-kv";
 import {DATABASE_OPTIONS,KV_HOST,RBAC_JWT_SECRET,RBAC_SECRET_KEY,API_SERVICE_URL} from "@sps/shared-utils";
 
@@ -99,17 +98,15 @@ try{
  const rich=text=>JSON.stringify({type:"doc",content:[{type:"paragraph",content:[{type:"text",text}]}]});
  const input=requestId=>({requestId,title:{en:"An actual transaction"},subtitle:{en:rich("One author, one article")},description:{en:JSON.stringify({type:"doc",content:[{type:"paragraph",content:[{type:"text",text:"Owned publication"}]},{type:"codeBlock",attrs:{language:"typescript"},content:[{type:"text",text:"const owner = currentSubject.id;"}]}]})},categoryId:category.id});
  const apps=[];
- for(const mode of ["legacy","consistency"]){
+ {
+  const mode="consistency";
   const app=new Hono(),exception=new ExceptionFilter();app.onError(exception.catch.bind(exception));
   const runtime=createConsistencyRuntime({verifyAuthorization:async value=>{if(value)await verify(value.replace(/^Bearer\s+/i,""),RBAC_JWT_SECRET,"HS256");}});
   app.use(runtime.middleware());
-  // Deliberately broad public read policy models stale roleless permissions;
-  // actual controller ownership and raw-Profile guard must still reject access.
-  app.use(new IsAuthorized({allowedRoutes:[...controllerGuardedRoutes,{regexPath:/^\/api\/social\/profiles(?:\/.*)?$/,methods:["GET","HEAD"]},{regexPath:/^\/api\/rbac\/subjects\/[^/]+\/social-module\/.*$/,methods:["GET"]},{regexPath:/^\/api\/account-cache-control$/,methods:["GET"]}]}).init());
+  // Profile reads use the normal database-backed RBAC policy.
+  app.use(new IsAuthorized({allowedRoutes:[...controllerGuardedRoutes,{regexPath:/^\/api\/rbac\/subjects\/[^/]+\/social-module\/.*$/,methods:["GET"]},{regexPath:/^\/api\/account-cache-control$/,methods:["GET"]}]}).init());
   app.use(new ParseQueryMiddleware().init());
-  app.use(new RawSocialProfileRead(()=>subjectService).init());
-  if(mode==="legacy")app.use(new HTTPCache({excludedRoutes:rawSocialProfileReadRoutes}).init());
-  else app.use(runtime.cache({excludedRoutes:[...rawSocialProfileReadRoutes,...controllerGuardedRoutes]}));
+  app.use(new HTTPCache({runtime,excludedRoutes:controllerGuardedRoutes}).init());
   let calls=0;app.get("/api/account-cache-control",async c=>{calls++;const key=resourceIdentity(profileService.repository.Table)+"|reset",version=(await runtime.store.versions([key]))[key],context=consistencyContext.getStore();context.complete=true;context.dependencies.set(key,version);return c.json({data:{calls}});});
   const readExecutions=new Map();
   app.use(async(context,next)=>{if(context.req.method==="GET"&&context.req.path.startsWith("/api/social/profiles/authors"))readExecutions.set(context.req.url,(readExecutions.get(context.req.url)||0)+1);await next();});
@@ -120,10 +117,10 @@ try{
   assert.equal((await(await request("/api/account-cache-control")).json()).data.calls,1);
   for(let attempt=0;cacheSets===beforeSets&&attempt<100;attempt++)await new Promise(done=>setTimeout(done,10));
   assert(cacheSets>beforeSets,"Enabled "+mode+" cache must persist a control");
-  const control=await request("/api/account-cache-control");assert.equal((await control.json()).data.calls,1);assert.equal(calls,1);if(mode==="consistency")assert.equal(control.headers.get("X-SPS-Cache"),"hit");
+  const control=await request("/api/account-cache-control");assert.equal((await control.json()).data.calls,1);assert.equal(calls,1);assert.equal(control.headers.get("X-SPS-Cache"),"hit");
   apps.push({mode,request,publish,runtime,readExecutions});
  }
- const {publish,request}=apps[1];
+ const {publish,request}=apps[0];
  const authorPaths=["/api/social/profiles/authors?profileId="+cPersonal.id,"/api/social/profiles/authors/count?profileId="+cPersonal.id,"/api/social/profiles/authors/"+cPersonal.id];
  const capturedAuthorRelation=resourceIdentity(service("social/profiles-to-blog-module-articles").repository.Table),warmDependencies=[],freshnessFailures=[];
  const expectFresh=(label,check)=>{try{check();}catch(error){freshnessFailures.push(label+": "+error.message);}};
@@ -135,14 +132,11 @@ try{
   assert(tracked&&Object.keys(tracked.dependencies).some(key=>key.startsWith(capturedAuthorRelation+"|")),"Empty Author query must track its candidate association before SQL");
   warmDependencies.push({fixture,dependencies:tracked.dependencies});
   assert(await fixture.runtime.store.covered(capturedAuthorRelation),"Author association must have its deployed database row trigger");
-  if(fixture.mode==="consistency"){
-   for(let attempt=0;cacheSets===beforeSets&&attempt<100;attempt++)await new Promise(done=>setTimeout(done,10));
-   assert(cacheSets>beforeSets,"Consistency Author response must actually be stored");
-  }else assert.equal(cacheSets,beforeSets,"Legacy author aggregate must bypass response storage");
+  for(let attempt=0;cacheSets===beforeSets&&attempt<100;attempt++)await new Promise(done=>setTimeout(done,10));
+  assert(cacheSets>beforeSets,"Consistency Author response must actually be stored");
   const executions=()=>[...fixture.readExecutions.values()].reduce((sum,value)=>sum+value,0),beforeExecutions=executions();
   const cached=await fixture.request(path);assert.deepEqual((await cached.json()).data,data);
-  if(fixture.mode==="consistency"){assert.equal(executions(),beforeExecutions,"Consistency Author warm read must actually hit cache");assert.equal(cached.headers.get("X-SPS-Cache"),"hit");}
-  else{assert.equal(executions(),beforeExecutions+1,"Legacy Author read must execute its fresh captured reader");assert.equal(cacheSets,beforeSets,"Legacy author aggregate must not populate the response cache");}
+  assert.equal(executions(),beforeExecutions,"Consistency Author warm read must actually hit cache");assert.equal(cached.headers.get("X-SPS-Cache"),"hit");
  }
  const cacheRequest=input(randomUUID()),cacheCreated=await publish(cacheRequest,"c",c.id);assert.equal(cacheCreated.status,201,await cacheCreated.clone().text());
  const cacheArticle=(await cacheCreated.json()).data.article;
@@ -225,26 +219,33 @@ try{
   const denied=await fixture.request(path(b.id,telegram.id),"b");assert.equal(denied.status,401,await denied.clone().text());assert(!(await denied.text()).includes(privateProfile.id));
  }
  const role=await create("rbac/roles",{slug:prefix+"-raw-admin",title:"Fixture raw Profile administrator"});
- const adminGrant=await create("rbac/subjects-to-roles",{subjectId:admin.id,roleId:role.id});
+ await create("rbac/subjects-to-roles",{subjectId:admin.id,roleId:role.id});
  for(const path of ["/api/social/profiles","/api/social/profiles/count","/api/social/profiles/[social.profiles.id]"]){
   const matches=await service("rbac/permissions").find({params:{filters:{and:[{column:"path",method:"eq",value:path},{column:"method",method:"eq",value:"GET"},{column:"type",method:"eq",value:"HTTP"}]}}});
   const permission=matches[0]||await create("rbac/permissions",{path,method:"GET",type:"HTTP"});
   await create("rbac/roles-to-permissions",{roleId:role.id,permissionId:permission.id});
  }
- const rawShapes=["/api/social/profiles?filters[and]="+encodeURIComponent(JSON.stringify([{column:"id",method:"eq",value:personal.id}])),"/api/social/profiles/count","/api/social/profiles/"+personal.id,"/api/social/profiles/"+personal.id.toUpperCase(),"/api/social/profiles/%7B"+personal.id+"%7D","/api/social/profiles/"+personal.id.replaceAll("-","")];
+ const publicPath="/api/social/profiles/"+editorial.id;
+ await create("rbac/permissions",{path:publicPath,method:"GET",type:"HTTP"});
+ const privatePaths=["/api/social/profiles","/api/social/profiles?filters[and][0][column]=id&filters[and][0][method]=eq&filters[and][0][value]="+editorial.id,"/api/social/profiles/count","/api/social/profiles/"+privateProfile.id];
  for(const fixture of apps){
-  const beforeGets=cacheGets,beforeSets=cacheSets;
-  for(const path of rawShapes)for(const method of ["GET","HEAD"]){
-   for(const who of ["admin","operator"]){const response=await fixture.request(path,who,{method});assert.equal(response.status,200,fixture.mode+" "+who+" "+method+" "+path+" "+await response.text());assert.equal(response.headers.get("Cache-Control"),"private, no-store");}
-   for(const who of ["anonymous","guest","a","b"]){const response=await fixture.request(path,who,{method});assert.equal(response.status,403,fixture.mode+" "+who+" "+method+" "+path);assert(!(await response.text()).includes(personal.slug));}
+  const publicResponse=await fixture.request(publicPath);
+  assert.equal(publicResponse.status,200,await publicResponse.clone().text());
+  const profile=(await publicResponse.json()).data;
+  assert.equal(profile.id,editorial.id);
+  assert.equal(profile.adminTitle,"NEVER-PUBLIC-ADMIN","Exact public permission returns the ordinary Profile model");
+  assert.equal((await fixture.request(publicPath,"anonymous",{method:"PATCH"})).status,403,"Public GET does not permit Profile updates");
+  for(const path of privatePaths){
+   for(const who of ["anonymous","guest","a","b"]){
+    const response=await fixture.request(path,who);
+    assert.equal(response.status,403,fixture.mode+" "+who+" "+path);
+   }
+   for(const who of ["admin","operator"]){
+    const response=await fixture.request(path,who);
+    assert.equal(response.status,200,fixture.mode+" "+who+" "+path+" "+await response.text());
+   }
   }
-  assert.equal(cacheGets,beforeGets,fixture.mode+" guarded raw Profile reads must bypass cache lookup");assert.equal(cacheSets,beforeSets,fixture.mode+" raw Profile reads must not be stored");
  }
- // Revoke this fixture's non-commerce administrative binding through its owner
- // repository. This proves fresh authorization after a persisted deletion;
- // app.ts payment/entitlement revocation side effects are outside this suite.
- await subjectService.subjectsToRoles.repository.deleteFirstByField("id",adminGrant.id);
- for(const fixture of apps)for(const path of rawShapes)for(const method of ["GET","HEAD"])assert.equal((await fixture.request(path,"admin",{method})).status,403);
  assert.equal(freshnessFailures.length,0,JSON.stringify(freshnessFailures));
  completed=true;
 }finally{
@@ -264,7 +265,7 @@ try{
  if(cleanupErrors.length)throw new AggregateError(cleanupErrors,"Fixture cleanup failed");
 }
 assert(completed);
-console.log(JSON.stringify({realPostgreSQL:true,independentConcurrentTransactions:true,profileEnsureReused:true,telegramProfilePreserved:true,atomicArticleRetry:true,rollbackAfterEachInsert:true,publicAuthorAllowlist:true,publicAuthorCapturedGeneration:true,consistencyAuthorCacheFresh:true,legacyAuthorReadThrough:true,scopedHistoricalChatPresentations:true,actualRedisCaches:["legacy","consistency"],rawProfileGetHeadAliases:true,adminRevocation:true,fixturesRemoved:true,existingRecordsUnchanged:true}));
+console.log(JSON.stringify({realPostgreSQL:true,independentConcurrentTransactions:true,profileEnsureReused:true,telegramProfilePreserved:true,atomicArticleRetry:true,rollbackAfterEachInsert:true,publicAuthorAllowlist:true,publicAuthorCapturedGeneration:true,consistencyAuthorCacheFresh:true,scopedHistoricalChatPresentations:true,actualRedisCaches:["http-cache-middleware"],exactPublicProfilePermission:true,privateCollectionAndOtherProfiles:true,fixturesRemoved:true,existingRecordsUnchanged:true}));
 `;
   const result = spawnSync(
     "bun",

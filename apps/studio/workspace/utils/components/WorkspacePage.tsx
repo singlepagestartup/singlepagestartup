@@ -1,17 +1,10 @@
-import { documentConfirmation } from "../../../../../tools/studio/workspace/document";
-import {
-  canNavigateWorkspacePage,
-  type IWorkspacePageView,
-  type WorkspaceLinkResolver,
-} from "../pages";
+import type { IWorkspacePageView } from "../pages";
 import { MarkdownDocument } from "./ArtifactBrowser";
-import { ConfirmationBadge } from "./DocumentStatus";
 import { PresentationPdfDownload } from "./PresentationPdfDownload";
 
 export function WorkspacePage({
   page,
   hideTitle = false,
-  hideConfirmation = false,
   resolveLink,
   navigationHref,
 }: {
@@ -19,43 +12,12 @@ export function WorkspacePage({
   hideTitle?: boolean;
   hideConfirmation?: boolean;
   navigationHref?: string;
-  resolveLink?: WorkspaceLinkResolver;
+  resolveLink?: (url: string) => string | { href: string; target: "_top" };
 }) {
   const Component = page.Component;
   if (Component) {
     const content = (
-      <div
-        className="overflow-x-auto"
-        onClick={(event) => {
-          if (event.defaultPrevented || !resolveLink) return;
-          const link = (event.target as Element).closest<HTMLAnchorElement>(
-            "a[href]",
-          );
-          if (
-            !link ||
-            !canNavigateWorkspacePage({
-              button: event.button,
-              metaKey: event.metaKey,
-              ctrlKey: event.ctrlKey,
-              shiftKey: event.shiftKey,
-              altKey: event.altKey,
-              target: link.getAttribute("target"),
-              download: link.hasAttribute("download"),
-            })
-          )
-            return;
-          const destination = new URL(link.href, window.location.href);
-          if (destination.origin !== window.location.origin) return;
-          const resolved = resolveLink(
-            destination.pathname + destination.search + destination.hash,
-          );
-          if (typeof resolved === "string" || resolved.target !== "_top")
-            return;
-          // Keep the original anchor's native activation and browser history.
-          link.href = resolved.href;
-          link.target = resolved.target;
-        }}
-      >
+      <div className="overflow-x-auto">
         <Component
           text={page.text}
           navigationHref={navigationHref}
@@ -73,15 +35,7 @@ export function WorkspacePage({
   }
   if (page.kind === "markdown")
     return (
-      <article className="space-y-5 p-6 md:p-10">
-        {!hideConfirmation && (
-          <ConfirmationBadge
-            confirmation={
-              page.confirmation ??
-              documentConfirmation(page.markdown ?? "", page.layer)
-            }
-          />
-        )}
+      <article className="space-y-5 p-6 md:p-10 md:pt-6">
         <MarkdownDocument
           baseUrl={page.url}
           hideTitle={hideTitle}
@@ -145,7 +99,7 @@ export function WorkspacePage({
         href={page.url}
         download
       >
-        {page.title} — Download file
+        {page.title} — Скачать файл
       </a>
     </div>
   );

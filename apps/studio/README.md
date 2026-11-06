@@ -25,6 +25,30 @@ Studio does not create a second content inventory.
 registry and points to those files. No repository-root `workspace/` directory
 is used.
 
+## Project preparation
+
+Use `npm run singlepagestartup -- --section semantics --product singlepagestartup`
+to select work. Available sections: brief, products, competitors, semantics,
+strategy, brand, design, materials. No arguments resume saved work. `--skip`
+records the section as skipped; `--complete` records it prepared; `--next`
+advances without changing its preparation status. Review history is separate.
+There are no approval gates or automatic returns after dependency edits.
+
+Studio shows Brief → Products → Strategy → Brand → Design → Materials. Research,
+competitor comparison and Semantics belong to each product. Materials opens the
+same product's existing public-page and creative sources. Existing story IDs
+and product IDs remain stable despite the changed display order.
+
+Article summaries read search phrases from query-table columns in the article's
+owned sources (`Запрос`, `Query`, `Search query`). The `semantic_cluster` ID stays
+in source metadata; the summary displays phrases from the same SEO source used
+by the material and its exports.
+
+Keep main review documents to approximately 600–1,000 words. Detailed intake,
+commercial terms, strategic rationale and design specifications are linked
+references. The query map separates candidates from measured demand; absent
+measurements remain unknown. See `.agents/workflows/pre-development.md`.
+
 ## Production Docker boundary
 
 The root [`.dockerignore`](../../.dockerignore) excludes the entire
@@ -104,19 +128,23 @@ entry. `studio:catalog` preserves authored contracts and requires an owning
 interface before assembling custom variants. Its generated table, card and list
 views use the same structure.
 
-Each model exports a provider-free `Skeleton` and `ISkeletonProps` from its
-public entry, with a `Loading` story. A public model preview shows one entity;
-its related images, fields, messages or other dependencies may repeat within it.
-Collection widgets compose a grid of those individual model skeletons and expose
-a `Loading` story beside the collection. Product, Article and Category loading
-previews use one card. Their Widget collections own grid loading. Explicit admin
-tables and forms retain their own layouts.
+The catalog refreshes schema fields, ordered record keys and the schema-owned
+`IRecord` while preserving authored record values, presentation data and view
+props. New fields receive fixture defaults; retired schema fields are removed.
+Custom fixture formats remain owned by their views. The shared `MetadataEditor`
+is a named UI helper, rather than an entity with a variant registry. Entity SEO
+stories use their public model entry and identify their own DOM roots.
 
-Source editors, Profile project frames, Chat/Thread conversations and the RBAC
-chat workspace retain their dedicated loading compositions. Loading previews
-need no API. When transferring a view to production, pass the rendered node
-through the existing template parameter: `Skeleton={<Skeleton ... />}`. Server
-Suspense and client pending reads use that node.
+The current tree has 63 model entries and 430 presentation variants, plus the
+shared Icon and Toast entries. Every model exports a provider-free `Skeleton` and
+`ISkeletonProps` from its public index, with a `Loading` story. The skeleton uses
+the selected variant to distinguish list/table, form and image layouts. Source
+editors, Profile project frames and Chat/Thread conversations have their own
+loading compositions and stories; the RBAC chat workspace retains its dedicated
+frame. Loading previews need no model data
+or API. When transferring a view to production, pass a rendered node through the
+existing template parameter: `Skeleton={<Skeleton ... />}`. Both server Suspense
+and client pending reads use that node.
 
 Static glyphs live in `modules/shared/icon`, independently of Website Builder
 Feature records. Use its public entry with `variant="phosphor"` and one of the
@@ -139,55 +167,11 @@ states within that variant. Bidirectional compositions use ReactNode slots:
 Host supplies an author's Article list; Blog Widget supplies the Article tags
 card. This keeps model entry imports acyclic.
 
-The catalog provides `admin-v2-table` and `admin-v2-card`. It generates the generic
-`list` projection only for Widgets. A Product, Article or Category model has a
-single-record public view; its public list belongs to its domain Widget. Dedicated
-admin variants retain their existing management operations. Tables expose `empty`;
-generic Widget lists expose `empty` and `count`, with Default, Empty and Many
-stories. Studio composes local models and fixtures without production SDKs,
-providers or an API.
-
-## Framework examples
-
-`Host/Page/Singlepage/framework` presents the current Russian acquisition page:
-product scenarios, fifteen modules, launch steps, project knowledge, module
-articles and questions. Its Page-owned `Sections.tsx` composes these blocks;
-`ProjectExample` supplies the four interactive product examples. Catalogue and
-guide Pages, Blog list/category/article Pages and the token Page use the same
-local Site frame and Storybook link resolver. `Blog/FeaturedCategories.tsx`
-renders the selected category cards; its links open their category Page.
-
-This transfer keeps presentation components and copy inside Host Page for review.
-It does not decompose the new blocks into domain models or Website Builder records.
-The owned Markdown and delivery assets were copied from the Workspace product;
-Modules imports neither Workspace components nor Workspace assets. Further edits
-in either presentation remain independent. Production `libs/modules` and runtime
-records are outside this transfer.
-
-Product cards accept multiple linked categories and attached images. The product
-catalog passes attributes, configuration, currencies and payment choices into
-those cards. Product details accept rich description content, category links and
-explicit gallery images; the purchase section reuses the card controls.
-
-Article cards accept formatted preview content and attached images. Article
-`detail` accepts an ordered rendered `widgets` slot. Blog Widget
-`article-overview-with-private-content-default` composes a public introduction,
-a public widget and Article `private-content-default`. Its stories cover guest,
-locked, expired, granted, checking and error states. The owning production Widget
-must resolve access and supply protected data only when allowed; these stories
-preview the presentation and do not enforce API access.
-
-The generic CRM Form `Framework`, Ecommerce category and Slider examples remain
-available in their own model stories. They are independent of the Framework
-acquisition page.
-
-The Website Builder Slide `default` shows one slide. Slider `default` exposes
-Arrows, Numbers and Dots stories through its `navigation` prop. Each mode shows
-one navigation pattern. Arrow controls sit on the slide, appear on hover or
-keyboard focus and stay visible on touch devices. Number and dot navigation sit
-below the slide. Slide position remains available to screen readers without a
-second visible counter. The Product gallery keeps thumbnails below the image
-and arrow controls on the image.
+The catalog provides `admin-v2-table`, `admin-v2-card` and `list`. Tables expose
+`empty`; lists expose `empty` and `count` through Storybook Controls. List stories
+include Default, Empty and Many (20 cards). Repeated cards use one local example.
+Custom model variants retain their own props and interactive states. Studio
+composes its own models and fixtures without production SDKs, providers or an API.
 
 Studio shares three exact UI-only public entries with production:
 `@sps/shared-frontend-client-utils/chat-scroll`,
@@ -444,11 +428,8 @@ Layout `ai-chat-landing` composes Website Builder `navbar-ai-chat-landing` and
 the same `brand-ai-chat` Logotype as the service screens. Try the chat is a Button
 record displayed through Buttons Array. Page places `content-ai-chat-hero`, `content-ai-chat-try`
 and `content-ai-chat-continue` inside the Layout, and supplies Social Chat as the `children`
-of `content-ai-chat-try`. Each Widget has its own generated content fixture. The
-landing demonstration composes the public RBAC chat workspace with local Account,
-Profile, Source and File providers in its Page-owned `LandingDemo.tsx`. It shares
-the project screen's controls and responsive document view. The retired Social
-walkthrough remains an independent model example.
+of `content-ai-chat-try`. Each Widget has its own generated content fixture. The Social
+preview reads the Widget-owned `singlepage/content/ai-chat/website.json` fixture.
 Workspace website documents pass overrides to their own prototype.
 
 Layout `ai-chat-dashboard` owns its themed container, Website Builder navbar and footer.
@@ -542,27 +523,6 @@ Workspace’s AI Chat website prototype lives in
 fixtures and state are editable Workspace files. It uses Workspace tokens and
 assets; changes to Module variants do not replace this snapshot.
 
-## Ecommerce product card
-
-`Modules/Ecommerce/Product/Singlepage/card` contains a local purchase prototype.
-The default service card supports expandable attributes, configurable options,
-USD/EUR/RUB prices, quantity, cart feedback and inline quick checkout with
-currency-specific payment methods, email and an optional note. Prices are fixture
-values; currency selection does not use exchange rates. Checkout produces an order
-preview without creating an order or taking a payment.
-
-Stories cover quick checkout, twelve attributes, a subscription, a physical
-product, unavailable products, missing payment methods, cart errors and a catalog.
-The Icons story displays the shared Phosphor glyphs used by the card.
-
-The server-compatible `Component.tsx` passes explicit presentation props to
-`ClientComponent.tsx`, which owns local selection and form state. `onAddToCart`
-receives product ID, quantity, currency ID and selected option IDs. `onCheckout`
-also receives payment provider ID, email and comment. When porting this design to
-Framework, the owning domain Widget supplies SDK data and mutations through these
-inputs and callbacks. Existing catalog callers that pass only `priceLabel` retain
-the detail-link footer; structured `prices` enable the purchase controls.
-
 ## Host model previews
 
 `Modules/Host/Page/Singlepage/composition` displays local Page, Layout,
@@ -590,14 +550,16 @@ prepare its Studio folders. `studio:validate` reports missing layer directories.
 
 ## Workspace presentation
 
-Storybook discovers `apps/studio/workspace/utils/stories/*.stories.tsx`. Every agreed
-living-artifact section exposes three read-only projections: `default` is the
-resolved result, `singlepage` is the framework source, and `startup` is the
-project override alone. Each shared document has a readable folder such as
-`apps/studio/workspace/brand/`, containing `singlepage.md`,
-and `startup.md`. Its story in `workspace/utils/stories/` imports both sources
-directly. Studio aggregates them in memory, shows their repository paths as
-provenance, and never creates a second artifact set. Assets use
+Storybook читает `apps/studio/workspace/utils/stories/*.stories.tsx`.
+В разделах Workspace источники разделены на `singlepage` и `startup`.
+В `startup` общий документ показывает только собственный текст клиента;
+пункт «С учётом наследования» показывает результат `default`, собранный в памяти.
+Пустые источники и каталоги startup остаются видимыми. Старые адреса доступны
+через скрытые stories для совместимости с закладками.
+Общие документы сохраняются в `apps/studio/workspace/<artifact>/{singlepage,startup}.md`.
+Загрузчики в `workspace/utils/` используют эти файлы и общий механизм наследования;
+stories выбирают нужное представление. Копия результата на диск не записывается.
+Assets use
 `singlepage.yaml` and `startup.yaml`. Project facts, questions, constraints, and
 sources stay in the documents that own them. AI methods and completion rules
 live in `.agents/`; workspace has no separate decision checklist or approval
@@ -605,19 +567,16 @@ summary. Final documents merge sections and assets merge by ID. Shared professio
 together under `.agents/roles/`; artifact templates live under
 `.agents/templates/` and are referenced by the workspace indexes.
 
-Each layer also owns `apps/studio/workspace/utils/pre-development/<layer>.yaml`. This
-file is not business content and is not shown in Storybook: it is the minimal
-agent cursor for `00-business`, `10-strategy`, `20-brand`, `30-design`, or
-`40-products`.
-Every new workflow task reconciles it against the indexed artifacts before
-continuing, so Markdown/YAML remains authoritative if an earlier task ended
-between writes.
+Each layer owns `apps/studio/workspace/utils/pre-development/<layer>.yaml`.
+Its v2 state records the selected section, product and preparation progress.
+Selection and explicit next/skip/completion actions control this state;
+diagnostics and review fingerprints never move it backward.
 
 Storybook exposes owner-review documents under numbered `Workspace/**` stages.
 Engineering research, plans, and implementation notes stay exclusively in
 `thoughts/shared/**` and are not included in Studio inventory or navigation.
 
-`Workspace/30 Design/default` renders the effective Design document and assets
+`Workspace/40 Дизайн/startup/С учётом наследования` renders the effective Design document and assets
 through the selected `workspace/design/<layer>/layout.yaml`. The base lists
 reusable overview, logo, color, typography, interface, photography, and
 illustration blocks; projects may reorder or omit them, add
@@ -631,16 +590,16 @@ the legacy field schema. Startup inspection remains empty until startup has
 meaningful data or its own layout. Layout and component changes require visual
 review; document confirmation does not automatically approve extra sources.
 
-`Workspace/00 Client Request` contains Brief; initial Product, model and Sales
+`Workspace/00 Brief` contains Brief; initial Product, model and Sales
 sources are prepared next under Products.
 
-`Workspace/40 Products` displays every client-confirmed product. Each product
+`Workspace/10 Products` displays every client-confirmed product. Each product
 links a model and owns Product, Sales, Research, Website, Marketing Creative,
 and Presentation outputs; product `sections` can extend these tabs or add
 further tabs with nested Markdown, HTML, JSX/TSX, image, and media pages. Shared
 loaders and tests live in `workspace/utils/products/`; page files and supporting
 materials stay inside their product's layer folder. React decks retain PDF
-export. The catalog schema and examples are in `workspace/README.md`; the
+export. The catalog schema and examples are in `.agents/references/studio-artifacts.md`; the
 atomic catalog rule is in `.agents/contracts/inheritance.md`. The exporter
 renders the selected default product's Presentation from the same story.
 Current generated identity assets registered below the workspace asset tree
@@ -660,23 +619,6 @@ a downstream project writes only its overrides to the sibling `startup` files.
 `apps/studio/workspace/utils/index/<layer>.yaml` remains a structural registry,
 not a content store; the resolution rules are in
 `.agents/contracts/inheritance.md`.
-
-## Document confirmation
-
-Primary review sources carry `confirmation` metadata and `review.dependencies`
-snapshots as defined in
-[the shared confirmation contract](../../.agents/contracts/document-confirmation.md).
-The header shows the resolved state (`unconfirmed`, `confirmed`, `changed` or
-`stale`), the document's purpose and how to use it, and hides the metadata and
-the duplicate body H1. The agent loader, the browser and the review helper share
-`tools/studio/workspace/document.ts`, the merge contract and the review
-resolver, which adds product-local dependencies from the selected catalog.
-
-Read the current effective fingerprint without recording consent:
-
-```bash
-bun tools/studio/workspace/document-review.ts --file apps/studio/workspace/products/startup/models/example/model.md
-```
 
 ## Figma metadata
 
@@ -700,11 +642,10 @@ requires an explicitly available Figma capability and target.
   implementation, testing, analytics, deployment, and the bridge into them are
   outside issue 222.
 
-Presentation content is owned by the selected product's `presentation_data` YAML
-source and passed as `{ content }` to its React entry point. Shared components
-provide layout/export; they do not extract Strategy or other document copy.
-Document dependencies are semantic review relationships: `stale` requests an
-impact review without automatically replacing any dependent text.
+Presentation content and layout live together in the selected product's React
+entry point. Shared components provide the slide frame and PNG/PDF export.
+Edit the published wording in that React source. Markdown documents describe
+the material's audience, purpose and requirements.
 
 User menus use Subject `me-account` and Social Profile `account-menu` on every
 header. `showTokens` adds the AI Chat balance and Buy tokens action. Name, avatar,
@@ -761,22 +702,3 @@ header, and Thread `download-ai-chat` exports its supplied Knowledge Sources.
 Thread render variants `id/ai-chat` and `id/ai-chat-settings` occupy sibling
 folders. Message render variants `list` and `list-ai-chat` also occupy sibling
 folders; a render variant does not contain another render variant.
-
-Framework Landing in Modules uses six Website Builder Widgets and two Blog Widgets.
-Host Page selects the Russian copy from its `page.md`, record IDs, artwork and
-Storybook destinations; it does not render section layouts or article cards.
-
-- Website Builder Widget: `content-hero` (editorial), `content-showcase`,
-  `content-steps` (full), `content-project-context`, `content-cta` (primary),
-  `content-faq` (plain).
-- Website Builder Feature: `selectable` for each scenario, `preview-scroll`
-  for its screenshot, `step` for each launch step, `dropdown` for document
-  explanations and FAQ entries, `copy-request` for the optional setup prompt.
-- Blog Widget: `article-find-grid`; Blog Article: `card` with `module` or `guide`
-  layout. The two collections receive independent records and destinations.
-
-Product examples share one screenshot renderer. Their images are static local
-captures in `runtime/assets/images/singlepage/generated/framework-example-previews`.
-The phone viewport supports pointer and keyboard scrolling; pictured forms and
-buttons do not perform actions. Selecting a scenario starts its preview at the top.
-These props-driven Studio records have no API reads or production relations.

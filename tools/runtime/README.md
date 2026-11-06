@@ -16,15 +16,18 @@ Neither command implements behavior by editing repository data snapshots.
 
 `npm run api:dev` starts the API and `npm run host:dev` starts Next.js with
 Turbopack. Run cold compilation and other project checks sequentially on a
-memory-constrained machine. `SPS_HOST_TURBOPACK_MEMORY_MB` supplies Next's target
-native bundler memory limit in MiB; it must be a positive integer. The Node heap
-has its separate `NODE_OPTIONS=--max-old-space-size=...` limit. The bundler target
-is not a hard limit on total process or system memory.
+memory-constrained machine. Next.js 16.4 uses automatic Turbopack memory eviction
+after filesystem-cache snapshots and under system memory pressure. The retired
+`SPS_HOST_TURBOPACK_MEMORY_MB` setting has no effect on this version.
 
-For example, `SPS_HOST_TURBOPACK_MEMORY_MB=1024 NODE_OPTIONS=--max-old-space-size=1536 npm run host:dev`
-sets a 1 GiB bundler target and a 1.5 GiB Node heap. An unset bundler variable
-preserves the Next.js default. A dev-server Ready message still requires a
-successful page request before runtime acceptance.
+`NODE_OPTIONS=--max-old-space-size=...` limits the Node heap; it does not cap
+Turbopack's native allocations or the combined memory of the dev processes.
+Measure the process tree through a cold page request, repeated navigation and
+idle time. A dev-server Ready message alone does not verify page compilation.
+
+Production keeps the existing Webpack build through `npm run host:build`.
+The Host Nx build target explicitly sets `webpack: true`; development uses
+Turbopack.
 
 ## AI Chat Widget links
 
@@ -412,3 +415,72 @@ Resume the same manifest after an unknown response. Repeat apply and a fresh
 prepare require zero writes. Rollback restores only changed existing records;
 additive records and retained security configuration remain. Keep the original
 manifest and deploy matching application code when restoring old variants.
+
+## Page SEO publication
+
+`page-seo.ts` fills existing Host Pages through their owning SDKs. An explicit
+`sps.page-seo-input.v2` input defines each URL, editable Metadata fields
+and a cover asset key. Every saved Page must have a definition; extra definitions
+allow the same input to cover installations with different optional templates.
+Static Metadata uses literals or masks into a Page JSON language map; dynamic
+Metadata uses the content model’s localized JSON fields. An optional `page` object changes only that Page's title/description.
+
+Assets name WebP files relative to the input, their SHA-256 and alt text. The
+command verifies bytes before mutation, uploads Files with a stable content-based
+slug, links Metadata→File and then Page→Metadata with explicit ordering. Cover
+lookups filter by the exact slug and read at most two rows, independently of the
+size of the File library. Existing editorial Metadata and relations remain
+available. A matching selected Metadata
+is reused; unchanged repeat publication creates no records. Private Pages retain
+their indexing/access policy. No permissions, content entities or seed snapshots
+are changed.
+
+Verification reads File IDs from the selected Metadata's cover relations and
+the expected assets in batches of 100. It includes competing covers to validate
+selection order without enumerating unrelated uploads.
+
+```sh
+API_SERVICE_URL=http://localhost:4000 bun --env-file=apps/api/.env --tsconfig-override tsconfig.base.json tools/runtime/page-seo.ts prepare /absolute/input.json /private/tmp/page-seo-local.json
+API_SERVICE_URL=http://localhost:4000 bun --env-file=apps/api/.env --tsconfig-override tsconfig.base.json tools/runtime/page-seo.ts apply /private/tmp/page-seo-local.json
+API_SERVICE_URL=http://localhost:4000 bun --env-file=apps/api/.env --tsconfig-override tsconfig.base.json tools/runtime/page-seo.ts verify /private/tmp/page-seo-local.json
+```
+
+Remote use requires HTTPS and `--allow-api-origin` equal to `API_SERVICE_URL`.
+Prepare records originals in a mode-0600 manifest. Keep this private manifest
+outside Git. Apply persists each create before and after the request; resume the
+same manifest after interruption. An unknown Metadata/link create is recovered
+only when exactly one new matching record exists; otherwise the command stops
+for inspection. Avoid concurrent CMS edits during publication. Rollback restores
+changed Page fields and removes only its new Page links after checking for edits;
+additive Metadata and Files remain stored. Deploy first, then prepare/apply/verify
+against the target database so startup seeding is included in the inventory.
+
+## Page language consolidation
+
+`page-languages.ts` repairs the earlier language-specific copies without changing
+content snapshots. It runs against a loopback API on the target host with the
+existing operator credentials. Prepare records all original Pages, Metadata and
+associations in a new private manifest. Apply retains the oldest Page ID, moves
+translated literal SEO fields into its JSON and replaces those Metadata fields
+with square masks. Dynamic masks remain unchanged. Layout/Widget links must be
+equivalent; conflicts and edits after preparation stop the operation. Metadata
+and File records are retained. Repeating apply on the same manifest does no work.
+
+For installations with URL/language duplicates, deploy the additive code and run
+these stages with CMS writers stopped:
+
+```sh
+NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run @sps/host:models:page:repository-migrate --through=3
+bun --env-file=apps/api/.env --tsconfig-override tsconfig.base.json tools/runtime/page-languages.ts prepare /private/tmp/page-languages-before.json
+bun --env-file=apps/api/.env --tsconfig-override tsconfig.base.json tools/runtime/page-languages.ts apply /private/tmp/page-languages-before.json
+NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run @sps/host:models:page:repository-migrate
+```
+
+The `--through` option runs an inclusive prefix of generated migrations through
+Drizzle's journal. It does not rewrite SQL or journal files or roll back already
+applied migrations. Here index 3 adds the JSON column; index 4 restores unique
+URL after data consolidation. A fresh empty database can run all migrations.
+Keep the manifest outside Git. Before reopening writers, verify one Page per
+URL, both locales' HTML/SEO, default-language routing, masks, covers, sitemap,
+hidden/noindex, and both admin editors. The retained language column is legacy
+storage and does not select Page records or create language query parameters.

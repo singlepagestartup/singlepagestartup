@@ -118,7 +118,7 @@ export class Service {
     });
     if (!thread)
       throw new Error(
-        "Document proposal changed during this request. Review the latest proposal.",
+        "Conflict error. Document proposal changed during this request. Review the latest proposal.",
       );
     context.thread = thread;
     context.document = getAIChatDocument(thread.metadata)!;
@@ -161,11 +161,11 @@ export class Service {
           context.proposal.confirmationMessageId
         )
           throw new Error(
-            "Document confirmation is being applied. Retry confirmation before proposing another edit.",
+            "Conflict error. Document confirmation is being applied. Retry confirmation before proposing another edit.",
           );
         if (context.targetSourceId === undefined)
           throw new Error(
-            "Select one Knowledge section before proposing a change to this document.",
+            "Validation error. Select one Knowledge section before proposing a change to this document.",
           );
         if (
           typeof args["title"] !== "string" ||
@@ -173,7 +173,9 @@ export class Service {
           typeof args["userContext"] !== "string" ||
           !args["userContext"].trim()
         )
-          throw new Error("Proposal title and userContext are required.");
+          throw new Error(
+            "Validation error. Proposal title and userContext are required.",
+          );
         let expectedContentHash: string | null = null;
         if (context.targetSourceId) {
           const [source] = await this.knowledge.listSources({
@@ -181,7 +183,7 @@ export class Service {
           });
           if (!source || args["expectedContentHash"] !== source.contentHash)
             throw new Error(
-              "Source changed or was not read. Read all existing notes again before proposing an edit.",
+              "Conflict error. Source changed or was not read. Read all existing notes again before proposing an edit.",
             );
           expectedContentHash = source.contentHash;
         }
@@ -651,7 +653,7 @@ export class Service {
       document.key !== context.document.key
     )
       throw new Error(
-        "Document changed during confirmation. Read the current document before retrying.",
+        "Conflict error. Document changed during confirmation. Read the current document before retrying.",
       );
     if (document.sourceIds.includes(sourceId)) {
       context.thread = current;
@@ -688,7 +690,7 @@ export class Service {
         return;
       }
       throw new Error(
-        "Document Source links changed during this request. Retry with the current document.",
+        "Conflict error. Document Source links changed during this request. Retry with the current document.",
       );
     }
     context.thread = thread;

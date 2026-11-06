@@ -1,3 +1,4 @@
+import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
 import { Component as ArticleOverviewLinked } from "./article-overview-linked";
 import { Component as ArticleFindGuides } from "./article-find-guides";
 import { Component as ArticleFindGrid } from "./article-find-grid";
@@ -22,6 +23,7 @@ import { Component as ArticleOverviewDefault } from "./article/overview/default"
 import { Component as ArticleOverviewWithPrivateContentDefault } from "./article/overview/with-private-content-default";
 
 export const variants = {
+  hidden: Hidden,
   "article-overview-linked": ArticleOverviewLinked,
   "article-find-guides": ArticleFindGuides,
   "article-find-grid": ArticleFindGrid,

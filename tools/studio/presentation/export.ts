@@ -11,7 +11,7 @@ import os from "node:os";
 import path from "node:path";
 import { resolvePresentationOutputTarget } from "./output";
 
-const STORY_ID = "workspace-40-products--default";
+import { presentationStoryTarget } from "./source";
 const WIDTH = 1600;
 const HEIGHT = 900;
 
@@ -285,6 +285,11 @@ async function main() {
     presentationId: option("--id"),
     repositoryRoot,
   });
+  const story = presentationStoryTarget(
+    path.join(repositoryRoot, "apps/studio/workspace"),
+    target.layer,
+    option("--id"),
+  );
   const buildRoot = path.join(repositoryRoot, "dist/studio/storybook");
   if (!process.argv.includes("--skip-build")) {
     run(["npm", "run", "studio:storybook:build"], repositoryRoot);
@@ -309,9 +314,8 @@ async function main() {
   const server = startStaticServer(buildRoot);
   const chrome = await launchChrome(repositoryRoot);
   try {
-    // The output stem is not a catalog ID: without --id the story renders the
-    // catalog's default product, so only an explicit ID is passed through.
-    const baseUrl = `http://127.0.0.1:${server.port}/iframe.html?id=${STORY_ID}&viewMode=story&document=presentation&product=${encodeURIComponent(option("--id") ?? "")}`;
+    // The selected source story owns the deck; output files belong to the repository layer.
+    const baseUrl = `http://127.0.0.1:${server.port}/iframe.html?id=${story.storyId}&viewMode=story&document=presentation&product=${encodeURIComponent(story.productId)}`;
     await chrome.client.send("Page.enable");
     await chrome.client.send("Runtime.enable");
     await chrome.client.send("Emulation.setDeviceMetricsOverride", {
@@ -419,8 +423,8 @@ async function main() {
         presentationId: target.presentationId,
         repositoryIdentity: target.repositoryIdentity ?? null,
         slideSize: { height: HEIGHT, width: WIDTH },
-        source: "apps/studio/workspace/utils/stories/products.stories.tsx",
-        storyId: STORY_ID,
+        source: story.source,
+        storyId: story.storyId,
       },
       null,
       2,

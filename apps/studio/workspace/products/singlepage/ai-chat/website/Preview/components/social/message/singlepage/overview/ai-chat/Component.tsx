@@ -15,7 +15,7 @@ function WebsiteBuilderModuleFeature({
   const geometry = Glyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       width={size}
@@ -30,6 +30,7 @@ function WebsiteBuilderModuleFeature({
   );
 }
 
+import type IconGlyphs from "../../../../../website-builder/feature/singlepage/icon/icons.json";
 import { memo } from "react";
 import {
   type IProjectMessage,
@@ -39,7 +40,7 @@ import { Component as FileStorageModuleFile } from "../../../../../file-storage/
 import { type IProjectAgent } from "../../../../profile/singlepage/agent/overview/ai-chat/resolver";
 import { Component as SocialModuleProfile } from "../../../../profile/index";
 function Icon(props: {
-  name: keyof typeof Glyphs;
+  name: keyof typeof IconGlyphs;
   size?: 20 | 24;
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
@@ -119,41 +120,37 @@ export const Component = memo(function Component({
     <article
       data-ds-block="social.message.id-ai-chat"
       data-id={message.id}
-      className={`flex min-w-0 gap-3 p-5 ${message.role === "user" ? "bg-muted/50" : "bg-card"}`}
+      className={`flex min-w-0 gap-3 ${message.role === "user" ? "ml-6" : ""}`}
       data-module="social"
       data-model="message"
       data-variant={variant}
     >
-      {message.role === "user" ? (
-        <span
-          aria-hidden="true"
-          className="grid size-8 shrink-0 place-items-center rounded-lg bg-muted"
-        >
-          <Icon name="user" className="size-4" />
-        </span>
-      ) : replyingAgent ? (
-        <SocialModuleProfile
-          variant="agent-avatar-ai-chat"
-          agent={replyingAgent}
-          onSelect={onSelect}
-        />
-      ) : (
-        <span
-          aria-hidden="true"
-          className="grid size-8 shrink-0 place-items-center rounded-lg bg-muted text-foreground"
-        >
-          <Icon name="robot" className="size-4" />
-        </span>
-      )}
-      <div className="min-w-0 flex-1">
+      {message.role === "assistant" &&
+        (replyingAgent ? (
+          <SocialModuleProfile
+            variant="agent-avatar-ai-chat"
+            agent={replyingAgent}
+            onSelect={onSelect}
+          />
+        ) : (
+          <span
+            aria-hidden="true"
+            className="grid size-8 shrink-0 place-items-center rounded-lg bg-muted text-foreground"
+          >
+            <Icon name="robot" className="size-4" />
+          </span>
+        ))}
+      <div
+        className={`min-w-0 flex-1 ${message.role === "user" ? "rounded-2xl bg-muted p-4" : ""}`}
+      >
         <p className={`text-xs font-semibold ${kit.muted}`}>
           {message.role === "user"
-            ? "Вы"
-            : (replyingAgent?.name ?? "ИИ-помощник")}
+            ? "You"
+            : (replyingAgent?.name ?? "AI-ассистент")}
         </p>
         {message.workingOn && (
           <p className="mt-2 text-xs leading-5 text-muted-foreground">
-            Рабочий контекст {message.workingOn.documentName} ·{" "}
+            Работа над {message.workingOn.documentName} ·{" "}
             {message.workingOn.sections.length
               ? message.workingOn.sections.join(" · ")
               : "Весь документ"}
@@ -167,7 +164,8 @@ export const Component = memo(function Component({
         {Boolean(message.files?.length) && (
           <div className="mt-3 min-w-0">
             <p className="mb-2 text-xs text-muted-foreground">
-              Вложений: {message.files!.length}
+              {message.files!.length}{" "}
+              {message.files!.length === 1 ? "attachment" : "attachments"}
             </p>
             <ul
               aria-label="Вложения сообщения"
@@ -188,7 +186,7 @@ export const Component = memo(function Component({
         {Boolean(message.filesUsed?.length) && (
           <details className={`mt-3 text-xs ${kit.muted}`}>
             <summary className={`min-h-8 cursor-pointer ${kit.focus}`}>
-              Использованные файлы · {message.filesUsed!.length}
+              Использованы файлы · {message.filesUsed!.length}
             </summary>
             <div className="mt-2 grid gap-2 @[640px]:grid-cols-2">
               {message.filesUsed!.map((file) => (
@@ -212,7 +210,7 @@ export const Component = memo(function Component({
           <div className="mt-3">
             <MessageContext
               documents={message.context}
-              label="Использованные знания"
+              label="Использованный контекст"
             />
           </div>
         )}

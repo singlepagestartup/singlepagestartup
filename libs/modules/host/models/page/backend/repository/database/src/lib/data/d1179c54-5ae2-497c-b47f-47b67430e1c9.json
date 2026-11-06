@@ -1,10 +1,44 @@
 {
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "Code Framework modules — SinglePageStartup",
+        "ru": "Модули Code Framework — SinglePageStartup"
+      },
+      "description": {
+        "en": "Explore the fifteen SinglePageStartup modules, their responsibilities, models, relations and examples.",
+        "ru": "Обзор пятнадцати модулей SinglePageStartup: назначение, модели, связи и примеры использования."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "Code Framework modules — SinglePageStartup",
+        "ru": "Модули Code Framework — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "Code Framework modules — SinglePageStartup",
+        "ru": "Модули Code Framework — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Explore the fifteen SinglePageStartup modules, their responsibilities, models, relations and examples.",
+        "ru": "Обзор пятнадцати модулей SinglePageStartup: назначение, модели, связи и примеры использования."
+      },
+      "opengraphDescription": {
+        "en": "Explore the fifteen SinglePageStartup modules, their responsibilities, models, relations and examples.",
+        "ru": "Обзор пятнадцати модулей SinglePageStartup: назначение, модели, связи и примеры использования."
+      }
+    }
+  },
   "id": "d1179c54-5ae2-497c-b47f-47b67430e1c9",
   "title": "Code Framework modules",
   "url": "/framework/modules",
   "description": "Responsibilities and guides for the fifteen SinglePageStartup modules.",
   "createdAt": "2026-10-24T01:05:53.163Z",
-  "updatedAt": "2026-10-24T01:05:53.163Z",
+  "updatedAt": "2026-10-30T22:25:06.467Z",
   "variant": "default",
   "className": "",
   "language": "en",

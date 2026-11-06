@@ -12,7 +12,7 @@ export async function readProjectFiles(
         file.type.startsWith("text/");
       if (plain && file.size > 100000)
         throw new Error(
-          `${file.name} is too long for a document draft. Add a shorter text file.`,
+          `${file.name} слишком велик для черновика. Добавьте текстовый файл меньшего размера.`,
         );
       return {
         file,

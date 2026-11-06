@@ -7,6 +7,8 @@ export interface IComponentProps {
   subtitle: string;
   description: string;
   children?: ReactNode;
+  attachments?: { id: string; title: string }[];
+  attachmentsLabel?: string;
   appearance?: "default" | "prominent";
 }
 

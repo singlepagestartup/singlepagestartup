@@ -604,13 +604,16 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
     .inSingletonScope();
   bind<PermissionService>(SubjectDI.IPermissionService)
     .toDynamicValue(
-      () =>
+      (context) =>
         new PermissionService(
           new PermissionRepository(new PermissionConfiguration()),
           new PermissionsToBillingModuleCurrenciesService(
             new PermissionsToBillingModuleCurrenciesRepository(
               new PermissionsToBillingModuleCurrenciesConfiguration(),
             ),
+          ),
+          context.container.get<RolesToPermissionsService>(
+            SubjectDI.IRolesToPermissionsService,
           ),
         ),
     )

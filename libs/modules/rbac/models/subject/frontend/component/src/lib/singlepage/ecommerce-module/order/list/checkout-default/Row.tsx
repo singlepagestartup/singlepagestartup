@@ -4,11 +4,102 @@ import { useQueryClient } from "@tanstack/react-query";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import { route } from "@sps/rbac/models/subject/sdk/model";
 import { INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG } from "@sps/shared-utils";
-import { Icon } from "@sps/ui-adapter";
+import { Icon, Select } from "@sps/ui-adapter";
 import { Component as EcommerceModuleProduct } from "@sps/ecommerce/models/product/frontend/component";
 import { Component as EcommerceModuleOrder } from "@sps/ecommerce/models/order/frontend/component";
 import { Component as DeleteDefault } from "../../delete-default";
-import type { IRowProps, IQuantityProps } from "./interface";
+import type { IRowProps, IQuantityProps, ICurrencyProps } from "./interface";
+
+function Currency(props: ICurrencyProps) {
+  const update = api.ecommerceModuleOrderUpdate({});
+  const queries = useQueryClient();
+  const [error, setError] = useState("");
+  const details = props.ecommerceModuleOrder.cartDetails;
+  const available = details?.availableCurrencyIds ?? [];
+  const options = [
+    ...new Map(
+      details?.totals
+        .filter((total) => available.includes(total.billingModuleCurrency.id))
+        .map((total) => [
+          total.billingModuleCurrency.id,
+          total.billingModuleCurrency,
+        ]),
+    ).values(),
+  ];
+  const selectedId = details?.billingModuleCurrencyId;
+  const selected =
+    selectedId && available.includes(selectedId) ? selectedId : "";
+  const change = useCallback(
+    async (currencyId: string) => {
+      if (!currencyId || update.isPending) return;
+      setError("");
+      try {
+        await update.mutateAsync({
+          id: props.subject.id,
+          orderId: props.ecommerceModuleOrder.id,
+          data: { billingModule: { currency: { id: currencyId } } },
+        });
+        await queries.invalidateQueries({
+          queryKey: [`${route}/${props.subject.id}/ecommerce-module/orders`],
+        });
+      } catch {
+        setError(
+          props.language === "ru"
+            ? "Не удалось изменить валюту. Попробуйте ещё раз."
+            : "Could not change the currency. Please retry.",
+        );
+      }
+    },
+    [
+      update.mutateAsync,
+      update.isPending,
+      queries,
+      props.subject.id,
+      props.ecommerceModuleOrder.id,
+      props.language,
+    ],
+  );
+  const amount = details?.totals
+    .filter((total) => total.billingModuleCurrency.id === selected)
+    .reduce((sum, total) => sum + total.total, 0);
+  const currency = options.find((item) => item.id === selected);
+  const id = `order-currency-${props.ecommerceModuleOrder.id}`;
+  return (
+    <div className="space-y-2">
+      <label htmlFor={id} className="block text-sm font-medium">
+        {props.language === "ru" ? "Валюта оплаты" : "Payment currency"}
+      </label>
+      <Select
+        ui="shadcn"
+        id={id}
+        value={selected}
+        onValueChange={change}
+        disabled={update.isPending || !options.length}
+        placeholder={
+          props.language === "ru" ? "Выберите валюту" : "Choose a currency"
+        }
+        options={options.map((item) => ({
+          value: item.id,
+          label: `${item.title} (${item.symbol})`,
+        }))}
+        className="min-w-48 rounded-xl"
+      />
+      {currency && (
+        <p className="text-sm font-semibold">
+          {new Intl.NumberFormat(props.language === "ru" ? "ru-RU" : "en-US", {
+            maximumFractionDigits: 2,
+          }).format(amount ?? 0)}{" "}
+          {currency.symbol}
+        </p>
+      )}
+      {error && (
+        <p role="alert" className="text-sm text-destructive">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
 
 function Quantity(props: IQuantityProps) {
   const update = api.ecommerceModuleOrderUpdate({});
@@ -124,19 +215,11 @@ export const Component = memo(function Row(props: IRowProps) {
         />
       </div>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="space-y-1">
-          {props.ecommerceModuleOrder.cartDetails?.totals.map((total) => (
-            <p
-              key={total.billingModuleCurrency.id}
-              className="text-sm font-semibold"
-            >
-              {new Intl.NumberFormat("ru-RU", {
-                maximumFractionDigits: 2,
-              }).format(total.total)}{" "}
-              {total.billingModuleCurrency.symbol}
-            </p>
-          ))}
-        </div>
+        <Currency
+          subject={props.subject}
+          ecommerceModuleOrder={props.ecommerceModuleOrder}
+          language={props.language}
+        />
         <DeleteDefault
           isServer={false}
           variant="ecommerce-module-order-delete-default"

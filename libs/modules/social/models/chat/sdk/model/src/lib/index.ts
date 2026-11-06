@@ -15,6 +15,7 @@ export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/social/chats";
 export const variants = [
+  "hidden",
   "id-ai-chat",
   "id-preview-ai-chat",
   "default",

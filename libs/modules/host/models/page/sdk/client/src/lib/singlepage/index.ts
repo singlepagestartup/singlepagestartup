@@ -1,4 +1,8 @@
 "use client";
+import type {
+  IPageSeoResult,
+  ISeoPreviewProps,
+} from "@sps/host/models/page/sdk/model";
 
 import {
   type IResolvedPage,
@@ -30,27 +34,23 @@ import { PHASE_PRODUCTION_BUILD } from "next/constants";
 
 export interface IFindByUrlProps {
   url: string;
-  params?: {
-    [key: string]: any;
-  };
   options?: NextRequestOptions;
 }
 
 export interface IUrlSegmentValueProps {
   url: string;
   segment: string;
-  params?: {
-    [key: string]: any;
-  };
   options?: NextRequestOptions;
 }
 
 export type IProps = {
+  ISeoPreviewProps: ISeoPreviewProps;
   IUrlSegmentValueProps: IUrlSegmentValueProps;
   IFindByUrlProps: IFindByUrlProps;
 };
 
 export type IResult = {
+  ISeoPreviewProps: IPageSeoResult;
   IUrlSegmentValueProps: string | null;
   IFindByUrlProps: IResolvedPage;
 };
@@ -65,7 +65,9 @@ export const api = {
   }),
   findByUrl: (props: IFindByUrlProps) => {
     const stringifiedQuery = QueryString.stringify(
-      { ...props.params, url: props.url },
+      {
+        url: props.url,
+      },
       { encodeValuesOnly: true },
     );
     const queryKey = `${route}/find-by-url?${stringifiedQuery}`;
@@ -129,7 +131,10 @@ export const api = {
     const { url, segment } = props;
 
     const stringifiedQuery = QueryString.stringify(
-      { ...props?.params, url, segment },
+      {
+        url,
+        segment,
+      },
       {
         encodeValuesOnly: true,
       },
@@ -190,4 +195,23 @@ export const api = {
       staleTime: STALE_TIME,
     });
   },
+  previewSeo: (props: ISeoPreviewProps) =>
+    useQuery<IPageSeoResult>({
+      queryKey: ["host.pages.seo-preview", props],
+      enabled: false,
+      gcTime: 0,
+      retry: false,
+      queryFn: async () => {
+        const response = await fetch(`${clientHost}${route}/seo-preview`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(props),
+          cache: "no-store",
+        });
+        const result = await responsePipe<{ data: IPageSeoResult }>({
+          res: response,
+        });
+        return transformResponseItem<IPageSeoResult>(result);
+      },
+    }),
 };

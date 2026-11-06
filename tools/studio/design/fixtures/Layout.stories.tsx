@@ -11,7 +11,6 @@ import {
   resolveDesignLayoutView,
   type IDesignTemplateProps,
 } from "../../../../apps/studio/workspace/utils/design/layout";
-import { documentConfirmation } from "../../workspace/document";
 import layoutSource from "./startup/layout.yaml?raw";
 
 const components = import.meta.glob<{ default?: ComponentType }>(
@@ -51,7 +50,6 @@ const meta = {
   args: {
     layout: local,
     data: resolvedProjectDesignData(designWorkspaces),
-    confirmation: documentConfirmation("# Design", "startup"),
   },
 } satisfies Meta<typeof DesignRenderer>;
 export default meta;

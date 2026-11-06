@@ -25,7 +25,7 @@ The Social module manages profiles, chats, messages, and related social interact
 
 ## 4. Knowledge Chat Variant
 
-Both normal OpenRouter chats and `social.chat.variant="knowledge"` use Sources linked to the replying profile. `/learn` stores message text and all current attachments in one Source, reusing stored Files. RBAC creates `profiles-to-knowledge-module-sources` and origin-message relations. Normal messages search this knowledge only with an explicit `@knowledge` mention; an empty Source scope never becomes global search. Knowledge does not read Social access tables.
+Both normal OpenRouter chats and `social.chat.variant="knowledge"` use Sources linked to the replying profile. `/learn` stores message text and all current attachments in one Source, reusing stored Files. RBAC creates `profiles-to-knowledge-module-sources` and origin-message relations. AI Chat enables this search by default. Other chats can request it with `@knowledge` or `useKnowledgeSearch`; natural-language Knowledge intent can also be detected by JEV. An empty Source scope never becomes global search. Knowledge does not read Social access tables.
 
 ## 2. Models
 

@@ -6,6 +6,7 @@ get_environment_type $2
 ./create_inventory.sh
 
 . ./get_env.sh
+. ./ansible_vars.sh
 
 DOMAIN=$(get_env "$BASH_SOURCE" "DOMAIN")
 
@@ -82,7 +83,8 @@ configure_mcp_clients() {
     ../mcp/setup-project-mcp.sh "$1" \
         --env-file "$PWD/.env" \
         --remote-url "https://$SERVICE_URL/mcp" \
-        --environment "${ENVIRONMENT_TYPE:-production}"
+        --environment "${ENVIRONMENT_TYPE:-production}" \
+        --output-dir "${MCP_CLIENT_CONFIG_OUTPUT_DIR:-$PWD/../../.artifacts/mcp-client-configs}"
 }
 
 if [ "$1" != "down" ]
@@ -91,44 +93,21 @@ then
 
     ./domain.sh present $SERVICE_URL $SERVICE_A && \
     ./pull_docker_image.sh "$DOCKER_HUB_URL/$DOCKER_HUB_SERVICE_REPOSITORY" "$ENVIRONMENT_TYPE" && \
-    ansible-playbook \
-        ./mcp/create_mcp.yaml \
-        -e "SERVICE_NAME=$SERVICE_NAME \
-            PORTAINER_URL=$PORTAINER_URL \
-            PORTAINER_USERNAME=$PORTAINER_USERNAME \
-            PORTAINER_PASSWORD=$PORTAINER_PASSWORD \
-            DOCKER_HUB_URL=$DOCKER_HUB_URL \
-            DOCKER_HUB_SERVICE_REPOSITORY=$DOCKER_HUB_SERVICE_REPOSITORY \
-            API_SERVICE_URL=$API_SERVICE_URL \
-            RBAC_JWT_SECRET=$RBAC_JWT_SECRET \
-            RBAC_SECRET_KEY=$RBAC_SECRET_KEY \
-            REDIS_PASSWORD=$REDIS_PASSWORD \
-            REDIS_PORT=$REDIS_PORT \
-            MCP_SERVICE_ALLOW_RBAC_SECRET_FALLBACK=$MCP_SERVICE_ALLOW_RBAC_SECRET_FALLBACK \
-            MCP_SERVICE_ALLOWED_ORIGINS=$MCP_SERVICE_ALLOWED_ORIGINS \
-            MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET=$MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET \
-            MCP_SERVICE_OAUTH_JWT_SECRET=$MCP_SERVICE_OAUTH_JWT_SECRET \
-            MCP_SERVICE_OAUTH_AUTH_CODE_TTL_SECONDS=$MCP_SERVICE_OAUTH_AUTH_CODE_TTL_SECONDS \
-            MCP_SERVICE_OAUTH_ACCESS_TOKEN_TTL_SECONDS=$MCP_SERVICE_OAUTH_ACCESS_TOKEN_TTL_SECONDS \
-            MCP_SERVICE_OAUTH_REFRESH_TOKEN_TTL_SECONDS=$MCP_SERVICE_OAUTH_REFRESH_TOKEN_TTL_SECONDS \
-            SERVICE_URL=$SERVICE_URL \
-            ENVIRONMENT_TYPE=$ENVIRONMENT_TYPE" && \
-    ansible-playbook \
-        ./mcp/fill_github.yaml \
-        -e "GITHUB_TOKEN=$GITHUB_TOKEN \
-            GITHUB_REPOSITORY=$GITHUB_REPOSITORY \
-            PORTAINER_URL=$PORTAINER_URL \
-            SERVICE_URL=$SERVICE_URL \
-            ENVIRONMENT_TYPE=$ENVIRONMENT_TYPE" && \
+    ansible_with_vars ./mcp/create_mcp.yaml \
+        SERVICE_NAME PORTAINER_URL PORTAINER_USERNAME PORTAINER_PASSWORD DOCKER_HUB_URL \
+        DOCKER_HUB_SERVICE_REPOSITORY API_SERVICE_URL RBAC_JWT_SECRET RBAC_SECRET_KEY \
+        REDIS_PASSWORD REDIS_PORT MCP_SERVICE_ALLOW_RBAC_SECRET_FALLBACK \
+        MCP_SERVICE_ALLOWED_ORIGINS MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET \
+        MCP_SERVICE_OAUTH_JWT_SECRET MCP_SERVICE_OAUTH_AUTH_CODE_TTL_SECONDS \
+        MCP_SERVICE_OAUTH_ACCESS_TOKEN_TTL_SECONDS \
+        MCP_SERVICE_OAUTH_REFRESH_TOKEN_TTL_SECONDS SERVICE_URL ENVIRONMENT_TYPE && \
+    ansible_with_vars ./mcp/fill_github.yaml \
+        GITHUB_TOKEN GITHUB_REPOSITORY PORTAINER_URL SERVICE_URL ENVIRONMENT_TYPE && \
     configure_mcp_clients --write-clients
 else
-    ansible-playbook \
-        ./mcp/clear_github.yaml \
-        -e "GITHUB_TOKEN=$GITHUB_TOKEN \
-            GITHUB_REPOSITORY=$GITHUB_REPOSITORY \
-            ENVIRONMENT_TYPE=$ENVIRONMENT_TYPE" && \
-    ansible-playbook \
-        ./mcp/delete_mcp.yaml \
-        -e "SERVICE_NAME=$SERVICE_NAME" && \
+    ansible_with_vars ./mcp/clear_github.yaml \
+        GITHUB_TOKEN GITHUB_REPOSITORY ENVIRONMENT_TYPE && \
+    ansible_with_vars ./mcp/delete_mcp.yaml \
+        SERVICE_NAME && \
     ./domain.sh down $SERVICE_URL $SERVICE_A
 fi

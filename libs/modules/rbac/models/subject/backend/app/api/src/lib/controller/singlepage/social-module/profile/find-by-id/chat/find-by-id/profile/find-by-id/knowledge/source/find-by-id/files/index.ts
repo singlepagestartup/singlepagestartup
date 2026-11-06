@@ -17,7 +17,8 @@ export class Handler {
   async execute(c: Context): Promise<Response> {
     try {
       const sourceId = c.req.param("knowledgeModuleSourceId");
-      if (!sourceId) throw new Error("Knowledge Source is required.");
+      if (!sourceId)
+        throw new Error("Validation error. Knowledge Source is required.");
       const knowledge = new KnowledgeService();
       const source = knowledge.source;
       if (c.req.method === "GET")
@@ -30,11 +31,15 @@ export class Handler {
         expectedContentHash !== null &&
         typeof expectedContentHash !== "string"
       )
-        throw new Error("Expected Source content hash must be a string.");
+        throw new Error(
+          "Validation error. Expected Source content hash must be a string.",
+        );
       const current = await source.sourceFiles(sourceId);
       for (const id of [removeFileId, replaceFileId]) {
         if (id && !current.some((item) => item.file.id === id))
-          throw new Error("File is not attached to this Source.");
+          throw new Error(
+            "Validation error. File is not attached to this Source.",
+          );
       }
       const uploadedIds: string[] = [];
       const uploads = body
@@ -55,12 +60,12 @@ export class Handler {
       }
       if (removeFileId && (replaceFileId || uploads.length))
         throw new Error(
-          "Remove a file separately from an upload or replacement.",
+          "Validation error. Remove a file separately from an upload or replacement.",
         );
       if (replaceFileId && !uploads.length)
-        throw new Error("Select a replacement file.");
+        throw new Error("Validation error. Select a replacement file.");
       if (!uploads.length && !removeFileId && body.get("reanalyze") !== "true")
-        throw new Error("Select files to attach.");
+        throw new Error("Validation error. Select files to attach.");
       for (const file of uploads) {
         const saved = await fileStorageFileApi.create({
           data: {

@@ -1,18 +1,25 @@
-import { Provider } from "@sps/social/models/profile/sdk/client";
-import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/reader";
+import {
+  Provider,
+  api as clientApi,
+} from "@sps/social/models/profile/sdk/client";
+import { api as serverApi } from "@sps/social/models/profile/sdk/server";
+import type { IModel } from "@sps/social/models/profile/sdk/model";
+import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/default";
 import type { IComponentProps } from "./interface";
 import { Component as ChildComponent } from "./Component";
 import { Skeleton } from "./Skeleton";
-import Client from "./client";
-import Server from "./server";
 export function Component(props: IComponentProps) {
-  if (props.dataSource === "props" && props.data)
-    return <ChildComponent {...props} data={props.data} />;
+  const id = props.data?.id || props.profileId;
+  if (!id) return null;
   return (
     <ParentComponent
-      Component={props.isServer ? Server : Client}
+      {...props}
+      data={props.data ?? ({ id } as IModel)}
+      Skeleton={props.skeleton ?? <Skeleton />}
+      Component={ChildComponent}
       Provider={Provider}
-      componentProps={{ ...props, skeleton: props.skeleton ?? <Skeleton /> }}
+      clientApi={clientApi}
+      serverApi={serverApi}
     />
   );
 }

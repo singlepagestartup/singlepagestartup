@@ -1,4 +1,5 @@
 import type { Service as EcommerceOrderService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service";
+import type { ICartDetails } from "@sps/ecommerce/models/order/sdk/model";
 import type { Service as CrmRequestService } from "@sps/crm/models/request/backend/app/api/src/lib/service";
 import type { Service as SocialProfileService } from "@sps/social/models/profile/backend/app/api/src/lib/service";
 export interface IReadService {
@@ -37,9 +38,7 @@ export interface IEcommerceOrderReadService
       | "revokeSubscription"
       | "update"
     > {
-  findByIdCartDetails: (props: {
-    id: string;
-  }) => Promise<import("@sps/ecommerce/models/order/sdk/model").ICartDetails>;
+  findByIdCartDetails: (props: { id: string }) => Promise<ICartDetails>;
   findByIdTotal: (props: { id: string }) => Promise<any>;
   findByIdQuantity: (props: { id: string }) => Promise<any>;
   findByIdCheckoutAttributes: (props: {
@@ -98,7 +97,7 @@ export interface IEcommerceModule {
   attributeKey: IReadService;
   storesToOrders: ICreateService;
   ordersToProducts: IEcommerceOrdersToProductsService;
-  ordersToBillingModuleCurrencies: ICreateService;
+  ordersToBillingModuleCurrencies: ICreateDeleteService & IUpdateService;
   ordersToBillingModulePaymentIntents: ICreateService;
   ordersToFileStorageModuleFiles: IReadService;
   productsToAttributes: IReadService;

@@ -1,3 +1,4 @@
+import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
 import { Component as PurchaseAiChat } from "./purchase-ai-chat";
 import { Component as OrdersToProductsQuantityDefault } from "./orders-to-products/quantity/default";
 import { Component as Find } from "./find";
@@ -18,6 +19,7 @@ import { Component as CartDefault } from "./cart-default";
 import { Component as FormFieldDefault } from "./form-field-default";
 
 export const variants = {
+  hidden: Hidden,
   "purchase-ai-chat": PurchaseAiChat,
   "orders-to-products-quantity-default": OrdersToProductsQuantityDefault,
   find: Find,

@@ -1,3 +1,4 @@
+import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
 import { Component as Card } from "./card";
 import { Component as PrivateContentDefault } from "./private-content-default";
 import { Component as Loading } from "./loading";
@@ -17,6 +18,7 @@ import { Component as OverviewDefault } from "./overview-default";
 import { Component as OverviewWithPrivateContentDefault } from "./overview-with-private-content-default";
 
 export const variants = {
+  hidden: Hidden,
   card: Card,
   "private-content-default": PrivateContentDefault,
   loading: Loading,

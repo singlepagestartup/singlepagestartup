@@ -124,6 +124,16 @@ export default function CodeFrameworkLanding({
           title={content.modules.title}
           description={content.modules.paragraphs[1]}
           cardLayout="module"
+          actions={
+            <PreviewLink
+              href={content.modules.links[0].href}
+              resolveLink={resolveLink}
+              className={kit.secondary}
+            >
+              {content.modules.links[0].text}
+              <Icon name="arrow-right" size={20} />
+            </PreviewLink>
+          }
           articles={content.modules.items.map((item, index) => ({
             id: landingModuleIds[index],
             slug: landingModuleIds[index],
@@ -167,6 +177,12 @@ export default function CodeFrameworkLanding({
               subtitle={String(index + 1).padStart(2, "0")}
               title={item.title}
               description={item.text}
+              attachments={
+                index === 1
+                  ? documents.map(({ id, title }) => ({ id, title }))
+                  : undefined
+              }
+              attachmentsLabel="Документы проекта"
             >
               {index === 0 ? (
                 <PreviewLink
@@ -177,23 +193,7 @@ export default function CodeFrameworkLanding({
                   {label["journey-register"]}
                   <Icon name="arrow-right" size={20} />
                 </PreviewLink>
-              ) : index === 1 ? (
-                <div className="space-y-2">
-                  {documents.map((document) => (
-                    <WebsiteBuilderModuleFeature
-                      key={document.id}
-                      variant="dropdown"
-                      appearance="document"
-                      tone="dark"
-                      open={false}
-                      question={document.title}
-                      answer={document.description}
-                      example={document.example}
-                      exampleLabel={label["document-example"]}
-                    />
-                  ))}
-                </div>
-              ) : (
+              ) : index === 1 ? null : (
                 repository(true)
               )}
             </WebsiteBuilderModuleFeature>

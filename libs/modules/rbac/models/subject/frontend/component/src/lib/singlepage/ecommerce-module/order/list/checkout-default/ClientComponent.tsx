@@ -12,6 +12,8 @@ import type { ICartDetails } from "@sps/ecommerce/models/order/sdk/model";
 import { Component as Row } from "./Row";
 import { useState } from "react";
 import Link from "next/link";
+import { useIsFetching, useIsMutating } from "@tanstack/react-query";
+import { route } from "@sps/rbac/models/subject/sdk/model";
 
 const providers = [
   "stripe",
@@ -22,34 +24,86 @@ const providers = [
   "paykeeper",
 ] as const;
 
-const formSchema = z.object({
-  provider: z
-    .string()
-    .refine(
-      (value) =>
-        value === "stripe" ||
-        value === "0xprocessing" ||
-        value === "payselection" ||
-        value === "cloudpayments" ||
-        value === "dummy" ||
-        value === "paykeeper",
-      "Invalid provider",
-    ),
-  email: z.string().email(),
-  ecommerceModule: z.object({
-    orders: z.array(
-      z.object({
-        id: z.string(),
-      }),
-    ),
-  }),
-});
-
 export function Component(props: IComponentPropsExtended) {
+  const text =
+    props.language === "ru"
+      ? {
+          invalidProvider: "Выберите способ оплаты.",
+          invalidEmail: "Введите корректный email для чека.",
+          noOrders: "В корзине нет заказов для оформления.",
+          paymentLinkError:
+            "Не удалось получить ссылку на оплату. Попробуйте ещё раз.",
+          checkoutError: "Не удалось оформить заказ. Попробуйте ещё раз.",
+          invalidForm: "Проверьте email для чека и данные заказа.",
+          emptyCart: "В корзине пока нет товаров.",
+          total: "Итого",
+          unpriced:
+            "У некоторых товаров нет цены. Удалите их из корзины перед оплатой.",
+          invalidCurrency: "Выберите валюту оплаты для каждого заказа.",
+          provider: "Способ оплаты",
+          providerPlaceholder: "Выберите способ оплаты",
+          email: "Email для чека",
+          checkout: "Перейти к оплате",
+          checkingOut: "Оформляем…",
+        }
+      : {
+          invalidProvider: "Choose a payment method.",
+          invalidEmail: "Enter a valid email address for your receipt.",
+          noOrders: "There are no orders to check out.",
+          paymentLinkError: "Could not get a payment link. Please try again.",
+          checkoutError: "Could not place your order. Please try again.",
+          invalidForm: "Check your receipt email and order details.",
+          emptyCart: "Your cart is empty.",
+          total: "Total",
+          unpriced:
+            "Some products have no price. Remove them from your cart before paying.",
+          invalidCurrency: "Choose a payment currency for each order.",
+          provider: "Payment method",
+          providerPlaceholder: "Choose a payment method",
+          email: "Receipt email",
+          checkout: "Proceed to payment",
+          checkingOut: "Processing…",
+        };
+  const formSchema = z.object({
+    provider: z
+      .string()
+      .refine(
+        (value) =>
+          value === "stripe" ||
+          value === "0xprocessing" ||
+          value === "payselection" ||
+          value === "cloudpayments" ||
+          value === "dummy" ||
+          value === "paykeeper",
+        text.invalidProvider,
+      ),
+    email: z.string().trim().email(text.invalidEmail),
+    ecommerceModule: z.object({
+      orders: z
+        .array(
+          z.object({
+            id: z.string(),
+          }),
+        )
+        .min(1, text.noOrders),
+    }),
+  });
+
   const [paymentUrls, setPaymentUrls] = useState<string[]>([]);
   const [error, setError] = useState("");
 
   const ecommerceModuleOrderCheckout = api.ecommerceModuleOrderCheckout({});
+  const updatingCart =
+    useIsMutating({
+      mutationKey: [`${route}/:id/ecommerce-module/orders/:orderId`],
+      predicate: (mutation) =>
+        (mutation.state.variables as { id?: unknown } | undefined)?.id ===
+        props.data.id,
+    }) > 0;
+  const refreshingCart =
+    useIsFetching({
+      queryKey: [`${route}/${props.data.id}/ecommerce-module/orders`],
+    }) > 0;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -75,7 +129,7 @@ export function Component(props: IComponentPropsExtended) {
           (invoice) => invoice.paymentUrl,
         );
         if (!paymentUrls.length || paymentUrls.some((url) => !url)) {
-          setError("Не удалось получить ссылку на оплату. Попробуйте ещё раз.");
+          setError(text.paymentLinkError);
           return;
         }
         if (paymentUrls.length > 1) {
@@ -84,9 +138,11 @@ export function Component(props: IComponentPropsExtended) {
           window.location.href = paymentUrls[0];
         }
       })
-      .catch(() =>
+      .catch((cause: unknown) =>
         setError(
-          "Не удалось оформить заказ. Проверьте данные и попробуйте ещё раз.",
+          cause instanceof Error && cause.message
+            ? `${text.checkoutError} ${cause.message}`
+            : text.checkoutError,
         ),
       );
   }
@@ -111,13 +167,31 @@ export function Component(props: IComponentPropsExtended) {
             if (!orders.length)
               return (
                 <p className="px-6 py-12 text-sm text-muted-foreground">
-                  В корзине пока нет товаров.
+                  {text.emptyCart}
                 </p>
               );
             // Combine server-calculated amounts from the same authorized snapshot as the rows.
+            const hasUnpriced = orders.some(
+              (order) => order.cartDetails?.unpriced?.length,
+            );
+            const hasInvalidCurrency = orders.some(
+              (order) =>
+                !order.cartDetails?.billingModuleCurrencyId ||
+                !order.cartDetails.availableCurrencyIds?.includes(
+                  order.cartDetails.billingModuleCurrencyId,
+                ),
+            );
             const totals = new Map<string, ICartDetails["totals"][number]>();
             for (const order of orders) {
               for (const total of order.cartDetails?.totals ?? []) {
+                if (
+                  total.billingModuleCurrency.id !==
+                    order.cartDetails?.billingModuleCurrencyId ||
+                  !order.cartDetails.availableCurrencyIds?.includes(
+                    total.billingModuleCurrency.id,
+                  )
+                )
+                  continue;
                 const previous = totals.get(total.billingModuleCurrency.id);
                 totals.set(total.billingModuleCurrency.id, {
                   ...total,
@@ -141,26 +215,39 @@ export function Component(props: IComponentPropsExtended) {
                 </ul>
                 <div className="shrink-0 space-y-3 border-t border-border px-6 py-5">
                   <h3 className="text-sm font-medium text-muted-foreground">
-                    Итого
+                    {text.total}
                   </h3>
                   {[...totals.values()].map((total) => (
                     <p
                       key={total.billingModuleCurrency.id}
                       className="text-2xl font-semibold"
                     >
-                      {new Intl.NumberFormat("ru-RU", {
-                        maximumFractionDigits: 2,
-                      }).format(total.total)}{" "}
+                      {new Intl.NumberFormat(
+                        props.language === "ru" ? "ru-RU" : "en-US",
+                        {
+                          maximumFractionDigits: 2,
+                        },
+                      ).format(total.total)}{" "}
                       {total.billingModuleCurrency.symbol}
                     </p>
                   ))}
+                  {hasUnpriced && (
+                    <p role="alert" className="text-sm text-destructive">
+                      {text.unpriced}
+                    </p>
+                  )}
+                  {!hasUnpriced && hasInvalidCurrency && (
+                    <p role="alert" className="text-sm text-destructive">
+                      {text.invalidCurrency}
+                    </p>
+                  )}
                   <FormField
                     ui="shadcn"
                     type="select"
                     name="provider"
                     form={form}
-                    label="Способ оплаты"
-                    placeholder="Выберите способ оплаты"
+                    label={text.provider}
+                    placeholder={text.providerPlaceholder}
                     options={providers.map((provider) => [provider, provider])}
                   />
                   <FormField
@@ -168,7 +255,7 @@ export function Component(props: IComponentPropsExtended) {
                     type="text"
                     name="email"
                     form={form}
-                    label="Email для чека"
+                    label={text.email}
                     placeholder="name@example.com"
                   />
                   {error && (
@@ -187,7 +274,7 @@ export function Component(props: IComponentPropsExtended) {
                             asChild={true}
                           >
                             <Link href={paymentUrl} target="_blank">
-                              Перейти к оплате
+                              {text.checkout}
                             </Link>
                           </Button>
                         );
@@ -195,14 +282,22 @@ export function Component(props: IComponentPropsExtended) {
                     </div>
                   ) : (
                     <Button
-                      onClick={form.handleSubmit(onSubmit)}
+                      onClick={form.handleSubmit(onSubmit, () =>
+                        setError(text.invalidForm),
+                      )}
                       variant="primary"
                       className="flex min-h-11 w-full shrink-0 rounded-xl"
-                      disabled={ecommerceModuleOrderCheckout.isPending}
+                      disabled={
+                        ecommerceModuleOrderCheckout.isPending ||
+                        hasUnpriced ||
+                        hasInvalidCurrency ||
+                        updatingCart ||
+                        refreshingCart
+                      }
                     >
                       {ecommerceModuleOrderCheckout.isPending
-                        ? "Оформляем…"
-                        : "Перейти к оплате"}
+                        ? text.checkingOut
+                        : text.checkout}
                     </Button>
                   )}
                 </div>

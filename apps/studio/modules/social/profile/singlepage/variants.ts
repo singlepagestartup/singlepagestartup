@@ -1,3 +1,4 @@
+import { Component as SeoEditor } from "./seo-editor";
 import { Component as AuthorOverviewDefault } from "./author-overview-default";
 import { Component as AuthorBylineDefault } from "./author-byline-default";
 import { Component as AuthorCardDefault } from "./author-card-default";
@@ -25,6 +26,7 @@ import { Component as SettingsAiChatProject } from "./settings/ai-chat/project/i
 import { Component as SidebarAiChatProject } from "./sidebar/ai-chat/project/index";
 
 export const variants = {
+  "seo-editor": SeoEditor,
   "author-overview-default": AuthorOverviewDefault,
   "author-byline-default": AuthorBylineDefault,
   "author-card-default": AuthorCardDefault,

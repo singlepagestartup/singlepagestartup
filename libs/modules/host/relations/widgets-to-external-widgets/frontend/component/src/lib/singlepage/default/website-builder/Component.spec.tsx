@@ -185,7 +185,8 @@ it("shows the sign-in control for an anonymous default Subject without reading a
   const html = renderToStaticMarkup(
     <Component {...props} url="/ai-chat/projects" />,
   );
-  expect(html).toContain("Войти");
+  expect(html).toContain("Sign in");
+  expect(html).toContain("/en/ai-chat/sign-in");
   expect(html).not.toContain("Projects unavailable");
   expect(subjectCalls.mock.calls.map(([call]) => call.variant)).toEqual([
     "me-navigation-controls-ai-chat",

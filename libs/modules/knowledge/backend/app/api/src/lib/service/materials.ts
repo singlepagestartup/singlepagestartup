@@ -56,7 +56,7 @@ export class MaterialService {
       return saved;
     }
     throw new Error(
-      "Knowledge material changed repeatedly during analysis. Retry with the current files and context.",
+      "Conflict error. Knowledge material changed repeatedly during analysis. Retry with the current files and context.",
     );
   }
 

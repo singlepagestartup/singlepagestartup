@@ -2,6 +2,7 @@ export {
   Middleware as RequestSubjectIdOwner,
   type IMiddlewareGeneric as IRequestSubjectIdOwnerMiddlewareGeneric,
 } from "./lib/request-subject-is-owner";
+export { Middleware as RequestAuthenticatedAdmin } from "./lib/request-authenticated-admin";
 export { Middleware as RequestSubjectReadAccess } from "./lib/request-subject-read-access";
 export {
   Middleware as RequestSubjectOwnsIdentity,
@@ -29,13 +30,4 @@ export {
   type IMiddlewareGeneric as IRequestSubjectOwnsEcommerceModuleOrderMiddlewareGeneric,
 } from "./lib/request-subject-owns-ecommerce-module-order";
 
-export {
-  Middleware as ProtectedBlogContent,
-  protectedContentRoutes,
-} from "./lib/protected-blog-content";
-
 export { Middleware as RequestOperatorSecret } from "./lib/request-operator-secret";
-export {
-  Middleware as RawSocialProfileRead,
-  rawSocialProfileReadRoutes,
-} from "./lib/raw-social-profile-read";

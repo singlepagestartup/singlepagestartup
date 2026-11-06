@@ -1,30 +1,24 @@
 ---
-confirmation:
-  confirmed: false
-review:
-  dependencies:
-    product.ai-chat.page.website.landing-page-workspace: 26b91ce1c62dbbc3e377d4136d74726b49bacd63aa2ff4c17d9294cda8e25d0e
-    product.ai-chat.website: db31acbb2f6bff59d196207b3f6245f4fc7674dbe685f71a18c890fef7e2d2cf
 ---
 
-# Future server deployment
+# Будущее развёртывание на сервере
 
-Server deployment is outside the first release. The current offer is written project and product descriptions, review and correction, export and continued chat.
+Развёртывание на сервере не входит в первый выпуск. Текущее предложение — текстовые описания проекта и продуктов, проверка, исправления, выгрузка и продолжение общения.
 
-Deployment will become a paid offer after evaluation and improvement of the project-description workflow. Its price and availability are not set.
+Платное развёртывание появится после оценки и улучшения процесса описания проектов. Цена и доступность не определены.
 
-## Intended future repository connection
+## Будущее подключение репозитория
 
-The future flow will request GitHub authorization for the single project repository the service creates in the user's account. It will write the reviewed landing-page project and Code Framework foundation to that repository.
+Процесс запросит авторизацию GitHub для одного репозитория проекта, который сервис создаст в аккаунте пользователя. Туда будут записаны проверенный проект лендинга и основа Code Framework.
 
-## Intended future server connection
+## Будущее подключение сервера
 
-The user will connect a server or a supported provider such as Beget or Timeweb using the required deployment key. A domain the user already owns can be attached through that provider; AI Chat does not sell or register domains.
+Пользователь подключит сервер или поддерживаемого провайдера, например Beget или Timeweb, с необходимым ключом развёртывания. Имеющийся домен можно привязать через провайдера; AI Chat не продаёт и не регистрирует домены.
 
-## Intended future deployment and recovery
+## Будущая публикация и восстановление
 
-GitHub Actions will handle first deployment and later approved updates to the same repository and server. The future view will identify repository creation, server connection, deployment configuration, deployment completion and the public address as separate steps.
+GitHub Actions выполнит первое развёртывание и последующие согласованные обновления в том же репозитории и на том же сервере. Экран должен отдельно показывать создание репозитория, подключение сервера, настройку развёртывания, завершение и публичный адрес.
 
-If a connection or deployment step fails, preserve the repository and last working deployment, identify the failed step and allow retry without rebuilding the page. These are requirements for the later capability, not available first-release actions.
+При ошибке подключения или развёртывания сохраняйте репозиторий и последнюю рабочую публикацию, указывайте неудавшийся шаг и разрешайте повторить его без пересборки страницы. Это требования к будущей возможности, а не действия первого выпуска.
 
-[Return to my project texts](/ai-chat/social/profiles/example)
+[Вернуться к текстам проекта](/ai-chat/social/profiles/example)

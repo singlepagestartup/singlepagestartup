@@ -148,22 +148,22 @@ test("route IDs select profiles from the supplied examples", () => {
   expect(ownHtml).not.toContain("Project profile unavailable");
 });
 
-test("landing demo uses the project workspace controls without duplicated site navigation", () => {
+test("project workspace preserves editing controls and renders site navigation once", () => {
   const html = renderToStaticMarkup(
-    <AIChatPreview embedded initialHref="/ai-chat/social/profiles/pottery" />,
+    <AIChatPreview initialHref="/ai-chat/social/profiles/pottery" />,
   );
   expect(html).toContain(
     'data-ds-block="social.profile.overview-ai-chat-project"',
   );
-  expect(html).toContain('aria-label="Рабочий контекст"');
+  expect(html).toContain('aria-label="Беседы проекта"');
   expect(html).toContain('aria-label="Сообщение"');
-  expect(html).toContain("Продукты.md");
-  expect(html).toContain("Мастерская керамики");
-  expect(html).not.toContain(
-    'data-ds-block="website-builder.widget.navbar-ai-chat"',
-  );
-  expect(html).not.toContain(
-    'data-ds-block="website-builder.widget.footer-ai-chat"',
-  );
+  expect(html).toContain('aria-label="Products.md editor"');
+  expect(html).toContain('data-profile-id="pottery"');
+  expect(
+    html.match(/data-ds-block="website-builder.widget.navbar-ai-chat"/g),
+  ).toHaveLength(1);
+  expect(
+    html.match(/data-ds-block="website-builder.widget.footer-ai-chat"/g),
+  ).toHaveLength(1);
   expect(html).not.toContain("Restart walkthrough");
 });

@@ -21,6 +21,9 @@ The RBAC module defines authentication subjects, identities, roles, permissions,
 
 ### Authorization layering:
 
+- Session and refresh JWTs use HS256. Hono verification calls specify this
+  algorithm explicitly; the shared `verifyJwt` helper also sanitizes credential
+  failures, including algorithm mismatches.
 - `subject/backend/app/api/src/lib/service/singlepage/is-authorized.ts` is only the global permission resolver.
 - The resolver receives the startup-exported Permission,
   roles-to-permissions, and subjects-to-roles services through Subject DI. It

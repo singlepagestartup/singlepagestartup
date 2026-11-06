@@ -47,6 +47,7 @@ jest.mock("@sps/website-builder/models/feature/frontend/component", () => ({
   Component: () => null,
 }));
 jest.mock("@sps/shared-utils", () => ({
+  ...jest.requireActual("@sps/shared-utils"),
   NEXT_PUBLIC_API_SERVICE_URL: "http://localhost:4000",
 }));
 import { Component } from "../../index";

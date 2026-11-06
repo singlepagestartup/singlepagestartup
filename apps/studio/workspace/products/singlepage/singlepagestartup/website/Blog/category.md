@@ -1,5 +1,4 @@
 ---
-confirmation: { confirmed: false }
 defaultCategory: "frontend"
 backLabel: "All articles"
 eyebrow: "Read by subject"

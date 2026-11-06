@@ -9,12 +9,11 @@ import { Component as RbacModuleSubject } from "../Preview/components/rbac/subje
 import { Component as HostModuleLayout } from "../Preview/components/host/layout/index";
 import { AccountProvider } from "../Preview/components/rbac/subject/singlepage/account/Account";
 import {
-  parseProPage,
+  pageContent,
   proCurrencyFromHref,
   type IProPageContent,
   type ProCurrency,
 } from "./content";
-import sourceText from "./page.md?raw";
 import "../../../../../styles/singlepage.css";
 
 interface IProLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
@@ -277,7 +276,7 @@ export default function Pro({
       >
         <ProReview
           key={navigationHref ?? "pro"}
-          content={parseProPage(text ?? sourceText)}
+          content={pageContent}
           initialCurrency={proCurrencyFromHref(navigationHref)}
           resolveLink={resolveLink}
         />

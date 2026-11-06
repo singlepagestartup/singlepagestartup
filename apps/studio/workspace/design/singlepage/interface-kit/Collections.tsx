@@ -54,7 +54,7 @@ export function CollectionToolbar({
     <div className="mb-6 grid gap-3 rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-3">
       <div
         role="group"
-        aria-label="Filter by category"
+        aria-label="Фильтр по категории"
         className="flex flex-wrap gap-1 rounded-xl bg-[var(--workspace-brand-background)] p-1"
       >
         {categories.map((item) => (
@@ -99,14 +99,14 @@ export function CollectionPagination({
   const pages = Math.max(1, Math.ceil(total / pageSize));
   return (
     <nav
-      aria-label="Collection pages"
+      aria-label="Страницы коллекции"
       className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-[var(--workspace-brand-line)] pt-5"
     >
       <p className={`text-sm ${kit.muted}`} aria-live="polite">
         {total
           ? `${(page - 1) * pageSize + 1}–${Math.min(page * pageSize, total)} of ${total}`
-          : "0 results"}{" "}
-        · Page {page} of {pages}
+          : "Нет результатов"}{" "}
+        · Страница {page} из {pages}
       </p>
       <div className="flex gap-2">
         <Button
@@ -115,14 +115,14 @@ export function CollectionPagination({
           onClick={() => onPageChange(page - 1)}
         >
           <Icon name="caret-left" />
-          Previous
+          Назад
         </Button>
         <Button
           variant="secondary"
           disabled={page >= pages}
           onClick={() => onPageChange(page + 1)}
         >
-          Next
+          Далее
           <Icon name="caret-right" />
         </Button>
       </div>

@@ -59,7 +59,7 @@ export function Component({ profileId }: IProfilePageProps) {
           >
             <PanelHeader
               title="Настройки проекта"
-              label="Project"
+              label="Проект"
               navigation={navigation}
             />
             <SocialModuleProfile

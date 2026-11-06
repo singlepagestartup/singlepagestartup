@@ -23,7 +23,9 @@ export function Component<M, V>(
   },
 ) {
   if (props.dataSource === "props") {
-    return props.children?.({ data: props.data });
+    return props.children?.({
+      data: props.data,
+    });
   }
 
   const Comp: any = props.isServer ? Server : Client;

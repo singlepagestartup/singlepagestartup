@@ -2941,7 +2941,8 @@ export class Handler {
         const [source] = await this.knowledgeService.listSources({
           sourceIds: [id],
         });
-        if (!source) throw new Error("Knowledge Source was not found.");
+        if (!source)
+          throw new Error("Not Found error. Knowledge Source was not found.");
         return source;
       };
       if (props.knowledgeFileScope) {

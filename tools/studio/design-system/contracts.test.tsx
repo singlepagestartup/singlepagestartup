@@ -75,10 +75,13 @@ test("every variant owns its public literal contract and the layer registers it"
             declaration.name.getText(source) === "variant" &&
             declaration.initializer
           ) {
-            const value = ts.isAsExpression(declaration.initializer)
-              ? declaration.initializer.expression
-              : declaration.initializer;
-            if (ts.isStringLiteral(value)) literal = value.text;
+            let initializer = declaration.initializer;
+            while (
+              ts.isAsExpression(initializer) ||
+              ts.isParenthesizedExpression(initializer)
+            )
+              initializer = initializer.expression;
+            if (ts.isStringLiteral(initializer)) literal = initializer.text;
           }
     expect(literal, contract).toBeTruthy();
     const variantRoot = file.match(/^(.*\/(?:singlepage|startup))\//)![1];

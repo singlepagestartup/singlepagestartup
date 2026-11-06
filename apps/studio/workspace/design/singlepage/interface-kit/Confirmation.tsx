@@ -53,7 +53,7 @@ export function ConfirmationDialog({
             <div className="mt-6 flex flex-wrap justify-end gap-2">
               <AlertDialog.Cancel asChild>
                 <Button ref={cancel} variant="secondary">
-                  Cancel
+                  Отмена
                 </Button>
               </AlertDialog.Cancel>
               <AlertDialog.Action asChild>

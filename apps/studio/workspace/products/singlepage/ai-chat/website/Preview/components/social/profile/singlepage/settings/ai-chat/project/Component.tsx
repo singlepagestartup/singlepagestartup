@@ -1,17 +1,14 @@
 "use client";
+import { type InputHTMLAttributes as InputHTMLAttributes } from "react";
+import { useId as useId } from "react";
+import { type ReactNode as ReactNode } from "react";
+import { Component as WebsiteBuilderModuleButton } from "../../../../../../website-builder/button/index";
 import {
-  type InputHTMLAttributes as InputHTMLAttributes,
-  useId as useId,
-  type ReactNode as ReactNode,
   forwardRef as forwardRefControl,
   type ButtonHTMLAttributes as ButtonControlProps,
-  useState,
 } from "react";
-
-import { Component as WebsiteBuilderModuleButton } from "../../../../../../website-builder/button/index";
-
 import IconGlyphs from "../../../../../../website-builder/feature/singlepage/icon/icons.json";
-
+import { useState } from "react";
 import { useProfiles } from "../../../scope/ai-chat/project/Profiles";
 import { Component as KnowledgeModuleSource } from "../../../../../../knowledge/source/index";
 interface IFeedbackProps {
@@ -103,7 +100,7 @@ function Icon({
   const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
@@ -129,7 +126,7 @@ export function Component({ profileId }: IProfileSettingsProps) {
   const profile = projects.find((record) => record.id === profileId);
   const [name, setName] = useState(profile?.name ?? "");
   const [saved, setSaved] = useState(false);
-  if (!profile) return <p role="status">Проект недоступен.</p>;
+  if (!profile) return <p role="status">Профиль проекта недоступен.</p>;
   return (
     <div
       data-ds-block="social.profile.settings-ai-chat-project"
@@ -166,7 +163,7 @@ export function Component({ profileId }: IProfileSettingsProps) {
       <div className="border-t border-[color:var(--workspace-brand-line)] pt-5">
         <KnowledgeModuleSource
           variant="download-ai-chat"
-          label="Скачать Продукты.md"
+          label="Выгрузить Products.md"
         />
       </div>
     </div>

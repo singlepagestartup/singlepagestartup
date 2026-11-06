@@ -1,4 +1,20 @@
 import {
+  Service as CreateCartOrder,
+  type IExecuteProps as ICreateCartOrderProps,
+} from "./ecommerce/order/create";
+import {
+  Service as FindOpenCartOrderWithProduct,
+  type IExecuteProps as IFindOpenCartOrderWithProductProps,
+} from "./ecommerce/order/find-open-cart-order-with-product";
+import {
+  Service as SetOrderCurrency,
+  type IExecuteProps as ISetOrderCurrencyProps,
+} from "./ecommerce/order/set-currency";
+import {
+  Service as ResolveOrderCurrency,
+  type IExecuteProps as IResolveOrderCurrencyProps,
+} from "./ecommerce/order/resolve-currency";
+import {
   Service as FreezeSubscriptionPeriod,
   type IExecuteProps as IFreezeSubscriptionPeriodProps,
 } from "./ecommerce/order/freeze-subscription-period";
@@ -19,6 +35,7 @@ import { inject, injectable } from "inversify";
 import { CRUDService, DI } from "@sps/shared-backend-api";
 import { Repository } from "../../repository";
 import { verify } from "hono/jwt";
+import { requestHostRevalidation } from "@sps/backend-utils";
 import { RBAC_JWT_SECRET } from "@sps/shared-utils";
 import {
   Service as AiContextService,
@@ -36,6 +53,7 @@ import {
   type IConstructorProps as IFreeSubscriptionDependencies,
 } from "./billing/free-subscription";
 import { Service as BlogArticleCreate } from "./blog/article/create";
+import { Service as RoleRevocation } from "./ecommerce/order/role-revocation";
 import type { IArticleCreateInput } from "@sps/rbac/models/subject/sdk/model/src/lib/blog-article-create";
 import type { Service as SubjectsToBlogModuleArticlesService } from "@sps/rbac/relations/subjects-to-blog-module-articles/backend/app/api/src/lib/service";
 import { Table } from "@sps/rbac/models/subject/backend/repository/database";
@@ -264,6 +282,39 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     this.subjectsToBlogModuleArticles = subjectsToBlogModuleArticles;
   }
 
+  configureRoleRevocation() {
+    const revocation = new RoleRevocation(this);
+    this.subjectsToRoles.configureRevocation(revocation);
+    return revocation;
+  }
+
+  async ecommerceModuleOrderCreate(props: ICreateCartOrderProps) {
+    return new CreateCartOrder({
+      repository: this.repository,
+      service: this,
+    }).execute(props);
+  }
+
+  async ecommerceModuleFindOpenCartOrderWithProduct(
+    props: IFindOpenCartOrderWithProductProps,
+  ): Promise<string | null> {
+    return new FindOpenCartOrderWithProduct({
+      ecommerceModule: this.ecommerceModule,
+      subjectsToEcommerceModuleOrders: this.subjectsToEcommerceModuleOrders,
+    }).execute(props);
+  }
+
+  async ecommerceModuleResolveOrderCurrency(props: IResolveOrderCurrencyProps) {
+    return new ResolveOrderCurrency({
+      ecommerceModule: this.ecommerceModule,
+      billingModule: this.billingModule,
+    }).execute(props);
+  }
+
+  async ecommerceModuleOrderSetCurrency(props: ISetOrderCurrencyProps) {
+    return new SetOrderCurrency({ service: this }).execute(props);
+  }
+
   async ecommerceModuleOrderAssertAccess(props: IEcommerceOrderAccessProps) {
     return new EcommerceOrderAccess({
       subjectsToOrders: this.subjectsToEcommerceModuleOrders,
@@ -384,7 +435,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       if (updated) return updated;
     }
     throw new Error(
-      "Thread preferences changed concurrently. Retry with the current thread.",
+      "Conflict error. Thread preferences changed concurrently. Retry with the current thread.",
     );
   }
 
@@ -461,6 +512,34 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return new BlogArticleCreate(this).execute(props);
   }
 
+  async revalidateHostCache() {
+    await requestHostRevalidation({ path: "/", type: "layout" });
+  }
+
+  async isAdmin(subjectId: string) {
+    const [adminRole] =
+      (await this.role.find({
+        params: {
+          filters: { and: [{ column: "slug", method: "eq", value: "admin" }] },
+          limit: 1,
+        },
+      })) ?? [];
+    if (!adminRole) return false;
+
+    const links = await this.subjectsToRoles.find({
+      params: {
+        filters: {
+          and: [
+            { column: "subjectId", method: "eq", value: subjectId },
+            { column: "roleId", method: "eq", value: adminRole.id },
+          ],
+        },
+        limit: 1,
+      },
+    });
+    return Boolean(links?.length);
+  }
+
   async authenticationMe(props: { subjectId: string }) {
     return new AuthenticationMe(this).execute(props);
   }
@@ -470,7 +549,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   ): Promise<T> {
     if (!RBAC_JWT_SECRET)
       throw new Error("Configuration error. RBAC_JWT_SECRET not set");
-    const decoded = await verify(result.jwt, RBAC_JWT_SECRET);
+    const decoded = await verify(result.jwt, RBAC_JWT_SECRET, "HS256");
     const subjectId = decoded.subject?.["id"];
     if (typeof subjectId !== "string")
       throw new Error(

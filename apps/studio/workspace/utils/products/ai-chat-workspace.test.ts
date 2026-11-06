@@ -1,4 +1,8 @@
 import {
+  canonicalHeading,
+  localizedHeading,
+} from "../../../../../tools/studio/workspace/headings";
+import {
   documentAgent,
   resolveThreadAgent,
   snapshotAgent,
@@ -71,7 +75,7 @@ describe("AI Chat project workflow", () => {
       ...project.documents[0],
       values: { "Project and products": markdown },
     };
-    const expected = `## Project and products\n\n${markdown}`;
+    const expected = `## Проект и продукты\n\n${markdown}`;
     expect(projectDocumentText(document)).toContain(expected);
     expect(documentAgentContext(project, document)[0].text).toBe(expected);
     expect(
@@ -108,26 +112,39 @@ describe("AI Chat project workflow", () => {
       "Notes.md:\nMake cups by hand.",
     );
     expect(projectDocumentText(project.documents[0])).toContain(
-      "Studio.jpg: attached material; interpretation needs review.",
+      "Studio.jpg: прикреплённый материал; интерпретация требует проверки.",
     );
     expect(project.documents[1].values).toEqual({});
     expect(definitions.product.sections.map((item) => item.title)).toEqual([
-      "Product identity",
-      "Customer Segments",
-      "Problem and desired progress",
-      "Competitors",
-      "Value Propositions",
-      "Offer and usage",
-      "Revenue Streams",
-      "Key Activities",
-      "Key Resources",
-      "Key Partnerships",
-      "Cost Structure",
-      "Assumptions and decision rules",
-      "Business goals and metrics",
+      "Что это за продукт",
+      "Кому подходит",
+      "Что входит",
+      "Как пользоваться",
+      "Стоимость и условия",
+      "Развитие продукта",
+      "Аудитория",
+      "Конкуренты",
+      "Семантика",
+      "Экономика",
       "Sales",
       "Promotion",
-      "Analytics & Research",
+    ]);
+    // Saved field keys remain stable; readers see Russian section names.
+    expect(
+      definitions.product.sections.map((item) => localizedHeading(item.title)),
+    ).toEqual([
+      "Что это за продукт",
+      "Кому подходит",
+      "Что входит",
+      "Как пользоваться",
+      "Стоимость и условия",
+      "Развитие продукта",
+      "Аудитория",
+      "Конкуренты",
+      "Семантика",
+      "Экономика",
+      "Продажи",
+      "Материалы",
     ]);
   });
 
@@ -379,8 +396,8 @@ describe("AI Chat document guidance", () => {
       expect(published.sections as Record<string, string>).toEqual(
         guide.sections,
       );
-      const headings = [...template.matchAll(/^## (.+)$/gm)].map(
-        (match) => match[1],
+      const headings = [...template.matchAll(/^## (.+)$/gm)].map((match) =>
+        canonicalHeading(match[1]),
       );
       if (id === "products") {
         expect(
@@ -393,11 +410,12 @@ describe("AI Chat document guidance", () => {
             .map((section) => section.title),
         ).toEqual(headings);
       }
-      expect(guide.body).toMatch(/\[.+?\]\(https:\/\//);
+      // SPS defines its own document structure. The methodological basis can
+      // explain that structure without claiming an external author prescribed it.
+      expect(guide.basis?.trim()).toBeTruthy();
       for (const body of Object.values(guide.sections)) {
-        expect(body).toContain("## Why this section exists");
-        expect(body).toContain("## What to record");
-        expect(body).toContain("## Review boundary");
+        expect(body).toContain("## Что записать");
+        expect(body.split("## Что записать")[1]?.trim()).toBeTruthy();
       }
     }
   });
@@ -430,7 +448,7 @@ describe("AI Chat document guidance", () => {
     ).toBeUndefined();
     const brief = projectWithDrafts().documents[0];
     expect(brief.values["Current state"]).toStartWith(
-      "Supplied intake (needs review):",
+      "Исходные сведения (нужна проверка):",
     );
     expect(brief.values["Customers and value"]).toBeUndefined();
     expect(brief.assets?.[0].section).toBe("Visual reference intake");
@@ -597,13 +615,8 @@ describe("AI Chat agent profiles", () => {
       expect(adaptation).toContain(`source_sha256: ${agent.sourceSha256}`);
       expect(adaptation).toContain(`source: ${agent.source}`);
       expect(adaptation).toContain(`description: ${agent.description}`);
-      for (const section of [
-        "Mission and boundary",
-        "Method",
-        "Thresholds and red flags",
-        "Handoff",
-      ])
-        expect(agent.role).toContain(`## ${section}`);
+      expect(agent.role).toStartWith(`# ${agent.name}`);
+      expect(agent.role).toContain("## Ответственность агента");
       expect(agent.role).not.toMatch(
         /\.agents\/|tools\/studio\/|<layer>|40-products|10-strategy|00-business|SOURCES\.md|Request\.md/,
       );
@@ -616,19 +629,28 @@ describe("AI Chat agent profiles", () => {
     expect(definitions.brief.title).toBe("Brief");
     expect(definitions).not.toHaveProperty("request");
     for (const section of definitions.brief.sections)
-      expect(documentAgent("brief").role).toContain(section.title);
+      expect(documentAgent("brief").role.toLowerCase()).toContain(
+        (section.title === "Goals and success"
+          ? "цели и признаки успеха"
+          : localizedHeading(section.title)
+        ).toLowerCase(),
+      );
     for (const section of definitions.strategy.sections)
-      expect(documentAgent("strategy").role).toContain(section.title);
-    expect(documentAgent("strategy").role).toContain("in Products");
-    expect(documentAgent("design").name).toBe("Brand Designer");
+      expect(documentAgent("strategy").role.toLowerCase()).toContain(
+        localizedHeading(section.title).toLowerCase(),
+      );
+    expect(documentAgent("strategy").role).toContain("продукт");
+    expect(documentAgent("design").name).toBe("Бренд-дизайнер");
     expect(documentAgent("design").role).toContain(
-      "Design.md → Outputs and provenance → Files",
+      "Design.md → соответствующий визуальный раздел",
     );
     expect(documentAgent("design").role).toContain(
-      "inputs and outputs to the owning section as Files",
+      "Входы и результаты используют один список «Файлы»",
     );
-    expect(documentAgent("products").role).toContain("Products.md inventory");
-    expect(documentAgent("products").role).toContain("Revenue Streams");
+    expect(documentAgent("products").role).toContain("Products.md");
+    expect(documentAgent("products").role).toContain("описание");
+    expect(documentAgent("products").role.toLowerCase()).toContain("экономика");
+    expect(documentAgent("products").role).toContain("называет основание");
     expect(documentAgent("products").role).not.toMatch(
       /frontmatter|segments: \[\]|v2 segment workspace/,
     );
@@ -721,7 +743,7 @@ describe("AI Chat agent profiles", () => {
     )!;
     expect(draft.status).toBe("draft");
     expect(draft.text).toBe(
-      "## Audiences and product roles\n\nAdults trying pottery for the first time.",
+      "## Аудитории и роли продуктов\n\nAdults trying pottery for the first time.",
     );
     expect(draft.text).not.toContain("Unknown");
     expect(draft.text).not.toContain("Measurement and priorities");
@@ -755,7 +777,7 @@ describe("AI Chat agent profiles", () => {
     expect(multiple.documents[0].values).toEqual(document.values);
     expect(multiple.documents[0].proposal).toBeUndefined();
     expect(answer.context?.[0].name).toBe("Brief.md");
-    expect(answer.context?.[0].text).toContain("## Current state");
+    expect(answer.context?.[0].text).toContain("## Текущее состояние");
     selection.push("Project and products");
     document.values["Project and products"] = "Changed after the answer";
     document.assets![0].file.name = "Changed.jpg";

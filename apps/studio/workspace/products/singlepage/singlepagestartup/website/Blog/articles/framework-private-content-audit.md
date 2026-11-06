@@ -1,5 +1,4 @@
 ---
-confirmation: { confirmed: false }
 slug: "framework-private-content-audit"
 createdAt: "2026-10-23"
 category: "backend"

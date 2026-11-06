@@ -129,6 +129,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       ordersToProducts: this.ordersToProducts,
       product: this.product,
       total: (input) => this.findByIdTotal(input),
+      ordersToCurrencies: this.ordersToBillingModuleCurrencies,
     }).execute(props);
   }
 

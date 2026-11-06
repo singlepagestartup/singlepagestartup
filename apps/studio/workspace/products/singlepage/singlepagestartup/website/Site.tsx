@@ -6,10 +6,9 @@ import {
 } from "../../../../design/singlepage/interface-kit/primitives";
 import {
   websiteAssets,
-  parseCodeFrameworkWebsite,
+  websiteContent,
   type ICodeFrameworkWebsiteContent,
 } from "./content";
-import siteText from "./page.md?raw";
 import "../../../../styles/singlepage.css";
 
 export const siteStyles = {
@@ -62,10 +61,10 @@ export function SiteShell({
   lang,
   content: suppliedContent,
 }: ISiteShellProps) {
-  const content = suppliedContent ?? parseCodeFrameworkWebsite(siteText);
+  const content = suppliedContent ?? websiteContent;
   const labels = content.labels;
   const repositoryHref =
-    content.handoff.links.find(({ href }) =>
+    content.hero.links.find(({ href }) =>
       href.startsWith("https://github.com/"),
     )?.href ?? "https://github.com/singlepagestartup/singlepagestartup";
   const groups = [

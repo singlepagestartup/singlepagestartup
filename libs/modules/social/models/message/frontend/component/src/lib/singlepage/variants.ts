@@ -1,3 +1,4 @@
+import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
 import { Component as ListAiChat } from "./list-ai-chat";
 import { Component as AdminV2SidebarItem } from "./admin-v2/sidebar-item";
 import { Component as AdminV2Card } from "./admin-v2/card";
@@ -12,6 +13,7 @@ import { Component as AdminTableRow } from "./admin/table-row";
 import { Component as Default } from "./default";
 import { Component as Find } from "./find";
 export const variants = {
+  hidden: Hidden,
   "list-ai-chat": ListAiChat,
   "admin-select-input": AdminSelectInput,
   "admin-table": AdminTable,

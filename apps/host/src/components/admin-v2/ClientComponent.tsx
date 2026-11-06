@@ -3,10 +3,11 @@
 import { Component as RbacRole } from "@sps/rbac/models/role/frontend/component";
 import { Component as RbacSubject } from "@sps/rbac/models/subject/frontend/component";
 import { Component as RbacSubjectsToRoles } from "@sps/rbac/relations/subjects-to-roles/frontend/component";
-import { PropsWithChildren } from "react";
 import { Component as Access } from "../admin/access";
+import { Component as AdminContent } from "./Component";
+import type { IClientComponentProps } from "./interface";
 
-export function Component(props: PropsWithChildren) {
+export function Component(props: IClientComponentProps) {
   return (
     <RbacSubject isServer={false} variant="authentication-me-default">
       {({ data: me, authenticated }) => {
@@ -62,7 +63,14 @@ export function Component(props: PropsWithChildren) {
                         return null;
                       }
 
-                      return props.children;
+                      return (
+                        <AdminContent
+                          isServer={false}
+                          url={props.url}
+                          language={props.language}
+                          className={props.className}
+                        />
+                      );
                     }}
                   </RbacRole>
                 );

@@ -1,59 +1,47 @@
-# Save at products/<layer>/catalog.yaml; keep both layer catalogs from the outset.
-# All catalog paths (documents, data, and React entry points) use products/<layer>/.
+# Каталог слоя; все пути разрешаются внутри products/<layer>/.
 schema: singlepagestartup.product-catalog.v2
-models: []
 products: []
-# Keep every client-confirmed product, including drafts and products outside the current experiment. Every product belongs to exactly one layer and
-# keeps Research, Sales, Product, Analytics, and its promotional materials together.
-# Optional sections augment core tabs or add tabs; nested pages may use any
-# supported working format. Shared utilities live in utils/products/, while
-# product pages, components, and supporting files stay in their layer folder.
-# Legacy content and website_component fields remain supported.
-# If startup contains at least one product, the complete startup catalog
-# replaces the complete singlepage catalog in default; products never merge by
-# ID across layers.
+# Пример записи. Добавлять только существующие документы и макеты.
+# Поле id содержит уникальный человекочитаемый slug продукта в kebab-case.
+# - id: product-slug
+#   name: Название продукта
+#   summary: Краткое описание.
+#   product: product-slug/product.md
+#   audience: product-slug/audience.md
+#   competitors: product-slug/competitors.md
+#   semantics: product-slug/semantics.md
+#   economics: product-slug/economics.md
+#   sales: product-slug/sales.yaml
+#   website: product-slug/website.md
+#   marketing_creative: product-slug/marketing-creative.md
+#   presentation: product-slug/presentation/Presentation.tsx
+#   sections:
+#     - id: website
+#       title: Сайт
+#       pages:
+#         - id: landing
+#           title: Посадочная страница
+#           source: product-slug/website/Landing.tsx
+#     - id: articles
+#       title: Статьи
+#       pages:
+#         - id: topic
+#           title: Название статьи
+#           source: product-slug/articles/topic/brief.md
+#           children:
+#             - id: topic-seo
+#               title: SEO
+#               source: product-slug/articles/topic/seo.md
+#             - id: topic-article
+#               title: Статья
+#               source: product-slug/articles/topic/article.md
+#             - id: topic-video
+#               title: Видео
+#               source: product-slug/articles/topic/video.md
 #
-# products:
-#   - id: replace-with-kebab-case-id
-#     name: Replace with product name
-#     summary: Replace with one-sentence product summary.
-#     research: replace-with-id/research.md
-#     sales: replace-with-id/sales.yaml
-#     product: replace-with-id/product.md
-#     analytics: replace-with-id/analytics.md
-#     # Materials below are optional until their stage; declared files must exist.
-#     website: replace-with-id/website.md
-#     marketing_creative: replace-with-id/marketing-creative.md
-#     presentation: replace-with-id/presentation/ProjectPresentation.tsx
-#     presentation_data: replace-with-id/presentation/data.yaml
-#     # Optional product-local rendered review surfaces:
-#     # website_component: replace-with-id/website/Website.tsx
-#     # content: replace-with-id/content/Content.tsx
-#     # Optional nested pages; source paths are relative to the selected layer.
-#     # sections:
-#     #   - id: website # core ID adds pages beside its existing Overview
-#     #     title: Website
-#     #     pages:
-#     #       - id: landing
-#     #         title: Landing page
-#     #         source: replace-with-id/website/index.html
-#     #   - id: content # optional delivered product materials
-#     #     title: Product Content
-#     #     pages:
-#     #       - id: course
-#     #         title: Course
-#     #         children:
-#     #           - id: lesson
-#     #             title: Introduction
-#     #             source: replace-with-id/content/course/lesson.md
-#     #           - id: deck
-#     #             title: Lesson slides
-#     #             source: replace-with-id/content/course/Deck.tsx
-#     #             export: pdf
-
-# Every product owns its economic sections in product.md. Shared resources appear
-# in each Product with its share and allocation basis; do not create a shared
-# economics document. Empty startup inherits the complete singlepage catalog.
-# The parser accepts optional models and product.model fields for legacy catalogs
-# only. A declared legacy pointer must resolve within the same catalog and layer.
-# Never create Business/Portfolio or a mandatory duplicate canvas overview.
+# В 10 Продукты документы открываются отдельными историями.
+# В 50 Материалы продукт — папка, сайт/презентация/реклама — отдельные истории,
+# каждая статья — одна история со всеми дочерними блоками.
+# Startup с хотя бы одним продуктом заменяет каталог singlepage целиком.
+# Пустой startup наследует каталог для сводного вида. Продукты слоёв не смешиваются.
+# Текущий контракт: .agents/references/studio-artifacts.md.

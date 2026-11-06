@@ -5,6 +5,13 @@
     "entityType": "model",
     "fields": [
       {
+        "key": "metadata",
+        "label": "Metadata",
+        "kind": "jsonb",
+        "nullable": false,
+        "default": {}
+      },
+      {
         "key": "id",
         "label": "Id",
         "kind": "uuid",
@@ -79,6 +86,7 @@
   },
   "records": [
     {
+      "metadata": {},
       "id": "f92ecd7e-d9d3-48b7-a587-0ef4af63432c",
       "createdAt": "2026-01-01T00:00:00.000Z",
       "updatedAt": "2026-01-01T00:00:00.000Z",
@@ -98,6 +106,7 @@
       "slug": "profile-example-1"
     },
     {
+      "metadata": {},
       "id": "c21d0d98-ab91-4af1-a9c9-f18bba93586a",
       "createdAt": "2026-01-01T00:00:00.000Z",
       "updatedAt": "2026-01-01T00:00:00.000Z",
@@ -117,6 +126,7 @@
       "slug": "profile-example-2"
     },
     {
+      "metadata": {},
       "id": "e4392e12-240c-4c14-aef5-9fe634eb958f",
       "createdAt": "2026-01-01T00:00:00.000Z",
       "updatedAt": "2026-01-01T00:00:00.000Z",

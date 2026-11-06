@@ -24,14 +24,8 @@ Links blog articles to ecommerce products for cross-promotions and embedded prod
 - `admin-table`: admin table listing relations.
 - `admin-table-row`: admin row showing relation fields.
 
-## Subscription requirement
+## Subscription presentation
 
-`variant="subscription"` supplies an explicit required subscription Product for
-an Article's private Website Builder roots. A suitable current owned order,
-complete fresh Product Roles, confirmed server-owned period and valid current
-status establish access. A roleless route permission does not establish this
-resource access. Multiple requirement Products are alternatives; private
-shared descendants require access to every associated private root.
-
-`default` continues to represent a related public Product without inferring
-subscription requirements.
+The subscription variant presents a linked subscription Product. It does not
+establish an API access policy for the Article or its Widget descendants.
+The current article example checks access in its RBAC frontend composition.

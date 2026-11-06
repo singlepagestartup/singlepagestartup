@@ -7,9 +7,6 @@ export default function LandingPageWorkspace({
   text?: string;
 } = {}) {
   return (
-    <WorkspaceDocument
-      eyebrow="Future landing page"
-      text={text ?? sourceText}
-    />
+    <WorkspaceDocument eyebrow="Будущая посадочная" text={text ?? sourceText} />
   );
 }

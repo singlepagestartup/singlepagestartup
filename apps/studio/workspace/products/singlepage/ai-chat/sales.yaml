@@ -1,687 +1,297 @@
 schema: singlepagestartup.sales-process.v2
 product_id: ai-chat
 readiness: ready
-owner: The SinglePageStartup project creator currently owns every sales and
-  service stage.
-seller: The SinglePageStartup project creator operates AI Chat. Payments are
-  accepted in Russia through an online cash register. The operator configures the
-  payment-accepting party's legal name, payment details and receipt flow in the
-  product's own interface, so they are not a pre-development decision here.
-pricing: The AI Chat Product records token purchases in Revenue Streams. The
-  billable unit is the provider tokens a request consumes,
-  with generation the larger share. The customer does not pick the model. The
-  router selects one per request from the models the product offers, and because
-  their prices differ by about an order of magnitude the balance is charged on
-  what the turn cost in money, not on the provider tokens it used. One internal
-  token is USD 0.001 of provider cost; one token is charged when the input is sent
-  to the model and the balance is settled once the answer returns and its actual
-  cost is known. Tokens are sold in roubles at a thirty per cent margin over
-  provider cost, converted at a fixed 100 roubles per dollar, so a token costs the
-  customer 0.13 roubles and no successful request costs less than that. If an AI
-  request fails or is cancelled, all deductions for that request are returned to
-  the token balance, including the initial token and any settlement. Its net
-  charge is zero even if the provider incurred a cost. Purchased tokens do not
-  expire, purchases are normally final, and a cash refund for a top-up purchase
-  is a case-by-case decision rather than a published entitlement. Top-ups are
-  sold in five packages
-  of 100, 300, 500, 1,000 and 3,000 roubles at the same token price, so a larger
-  package carries no extra discount. The balance may become negative. At minus
-  2,000 internal tokens or below, equivalent to USD 2 of provider-cost debt,
-  further paid AI requests are restricted until a top-up raises the balance above
-  that threshold. This does not cap the final cost of an already submitted request.
-  Registration grants 3000 internal tokens once; Free is the default allowance,
-  not a public product to purchase. Monthly Pro grants 5000 internal tokens for
-  29 USD or 1900 roubles per month. Pro and top-ups retain the same existing
-  request deductions and full token returns for failed or cancelled requests.
-capacity: One project owner runs the service and processes support requests
-  within 24 hours. Continuous live support and higher service levels have not
-  been defined.
+owner: Все этапы продаж и обслуживания сейчас ведёт создатель SinglePageStartup.
+seller: AI Chat обслуживает создатель SinglePageStartup. Платежи принимаются в России через онлайн-кассу.
+  Юридическое имя получателя, реквизиты и выдачу чеков оператор настраивает в интерфейсе продукта; здесь это
+  не решение предпроектного этапа.
+pricing: "Покупки токенов описаны в источниках выручки продукта AI Chat. Расход провайдера зависит от
+  использованных запросом токенов; большая доля приходится на генерацию. Клиент не выбирает модель:
+  маршрутизатор выбирает её для каждого запроса из доступных моделей продукта. Их цены различаются примерно на
+  порядок, поэтому баланс списывается по денежной стоимости запроса, а не по числу токенов провайдера. Один
+  внутренний токен соответствует USD 0.001 расходов провайдера. При отправке ввода модели списывается один
+  токен; после получения ответа баланс пересчитывается по фактической стоимости. Токены продаются в рублях с
+  наценкой 30% к расходу провайдера при фиксированном курсе 100 рублей за доллар: цена для клиента — 0,13
+  рубля за токен, минимум успешного запроса — 0,13 рубля. При ошибке или отмене возвращаются все списания
+  запроса, включая начальный токен и перерасчёт. Итоговая плата — ноль, даже если провайдер понёс расходы.
+  Купленные токены не сгорают. Покупки обычно окончательны; денежный возврат пополнения решается индивидуально
+  и не заявлен как общее право. Пять пакетов: 100, 300, 500, 1 000 и 3 000 рублей с одинаковой ценой токена,
+  без скидки за больший пакет. Баланс может стать отрицательным. При −2 000 внутренних токенов или ниже, что
+  соответствует USD 2 долга по расходам провайдера, новые платные AI-запросы ограничиваются до пополнения выше
+  этого порога. Порог не ограничивает итоговую стоимость уже отправленного запроса."
+capacity: Сервис ведёт один владелец проекта; обращения в поддержку обрабатываются в течение 24 часов.
+  Непрерывная поддержка в реальном времени и более высокий уровень сервиса не определены.
 blockers: []
 segments:
   - id: business-users
-    name: Early-stage project owners
-    audience:
-      People with a business idea or an early-stage project who have notes,
-      documents, images, decisions or partial answers. They need to organize
-      this material into written project and product descriptions, correct
-      their gaps and continue working from the saved context. The first-stage
-      offer delivers text documents. Landing-page assembly, block editing and
-      paid server deployment belong to subsequent development; they are not
-      available steps in this first-stage customer journey.
-    roles:
-      The same person is normally the user, beneficiary and decision-maker, and
-      may also buy and pay for tokens. For organizational customers, the buyer,
-      payer and purchasing authority are customer-specific.
+    name: Владельцы проектов на ранней стадии
+    audience: Предприниматели и маркетологи, которым нужны согласованные знания о бизнесе и материалы на их
+      основе. Первая задача может быть статьёй, рекламным креативом, описанием продукта или техническим
+      заданием.
+    roles: Обычно один человек — пользователь, выгодополучатель и принимающий решение; он же может покупать и
+      оплачивать токены. В организациях покупатель, плательщик и полномочия определяются для каждого клиента.
     needs:
-      - Upload existing notes, documents, images and decisions without first
-        deciding where every item belongs.
-      - Review shortened written Brief, Strategy, Brand and Design documents,
-        with separate Products.
-      - Keep the full section structure for each product, including its Product
-        description, Operations & Economics, Sales, Promotion, Analytics and
-        research or evidence where needed.
-      - Describe intended public presentation in Promotion through written
-        Website, Creative and Presentation descriptions where relevant, without
-        requiring a built site or produced media.
-      - Discuss and edit each generated file in its own working thread, keeping
-        its conversation and draft together.
-      - See what is missing, proposed or contradictory and correct it through
-        ordinary conversation.
-      - Create project discussion topics and attach selected saved documents
-        without explaining their contents again.
-      - Export the resulting structure and freely use it outside the service.
-      - Give a coding agent reviewed business material and use Code Framework
-        when the next task is a landing page or software product.
-      - Add detail without creating copies that must be updated by hand.
+      - Загрузить заметки, документы, изображения и решения, заранее не распределяя каждое по разделам.
+      - Проверить краткие письменные бриф, стратегию, бренд и дизайн, а также отдельные продукты.
+      - "Сохранить документы каждого продукта: описание, аудиторию, конкурентов, семантику, экономику и
+        продажи, со ссылками на источники и исследования."
+      - Подготовить содержание сайта, рекламы и презентации, когда они нужны продукту. Готовый сайт и
+        медиаматериалы в первый этап не входят.
+      - Обсуждать и редактировать каждый файл в своём чате, сохраняя разговор рядом с черновиком.
+      - Видеть пробелы, предложения и противоречия и исправлять их в обычном разговоре.
+      - Создавать темы проекта и прикреплять выбранные документы без повторного объяснения их содержания.
+      - Экспортировать структуру и свободно использовать её вне сервиса.
+      - Добавлять детали без копий, которые придётся обновлять вручную.
     motivations:
-      - Turn scattered project material into a usable model.
-      - Spend less time sorting information and repeating context.
-      - Have a continuing counterpart that helps develop ideas and points out
-        weaknesses.
-      - Keep control over the project facts, corrections, accepted documents
-        and their use outside the service.
-      - Pay for continued use only when the product has proved useful.
-    purchase_trigger: The balance reaches the negative limit and further
-      requests are restricted, or the person chooses to top up earlier. The
-      person chooses a clearly priced top-up or monthly Pro to continue the
-      saved setup, document work, discussion or material creation.
+      - Собрать описание бизнеса из материалов, которые уже есть.
+      - Использовать сохранённые сведения в новых разговорах, не объясняя проект заново.
+      - Иметь постоянного собеседника, который помогает развивать идеи и замечает слабые места.
+      - Контролировать факты, правки, принятые документы и их использование вне сервиса.
+      - Платить за продолжение, когда польза продукта уже понятна.
+    purchase_trigger: Баланс достигает отрицательного лимита и новые запросы ограничиваются либо человек пополняет
+      его раньше. Он выбирает пакет с понятной ценой, чтобы продолжить сохранённую настройку, работу с
+      документами, обсуждение или создание материала.
     decision_criteria:
-      - Existing materials and guided answers become coherent written project
-        descriptions and separate product documents in ordinary language.
-      - The first session is structured for about one focused hour, without
-        forcing completion or inventing missing answers.
-      - Every product keeps its full section structure; missing decisions and
-        evidence remain visible rather than appearing complete.
-      - The user can see where information was placed, correct it and approve
-        the result.
-      - Each file keeps its own discussion and edits when the user switches threads.
-      - Selected saved documents supply context for separate project topics.
-      - A reviewed document stays usable while its next draft is being revised;
-        unfinished sections do not prevent work with the reviewed material.
-      - Later discussions test ideas and point out weaknesses instead of
-        automatically agreeing with them.
-      - Unknowns block only the decisions that require them.
-      - The terms for continued use, data processing and support are clear.
-    value_proposition:
-      Upload the project files, images and notes already available,
-      then review shortened written Brief, Strategy, Brand and Design
-      documents and a complete set of sections for each separate product.
-      AI Chat identifies gaps and contradictions for the person to correct in
-      each file's working thread. The person can attach selected saved documents
-      to new project topics, export the documents and freely use them outside
-      the service. The owner's
-      first-stage goal is to learn how useful this project-description flow is
-      and improve it before selling later deployment services.
+      - Материалы и ответы превращаются в связные описания проекта и отдельные документы продуктов на понятном
+        языке.
+      - Первая сессия рассчитана примерно на один сосредоточенный час без принудительного завершения и
+        вымышленных ответов.
+      - У каждого продукта сохраняется полная структура; недостающие решения и доказательства остаются
+        видимыми.
+      - Видно, куда помещена информация; её можно исправить и принять.
+      - При переключении чатов каждый файл сохраняет своё обсуждение и правки.
+      - Выбранные документы дают контекст отдельным темам проекта.
+      - Проверенный документ остаётся доступен во время правки следующего черновика; незавершённые разделы не
+        мешают использовать проверенное.
+      - Агент разбирает предположения и объясняет, какие факты поддерживают идею, а какие ей противоречат.
+      - Неизвестное мешает только тем решениям, для которых оно необходимо.
+      - Понятны условия продолжения, обработки данных и поддержки.
+    value_proposition: "Соберите знания о бизнесе в одном проекте: продукты, аудитория, предложение, стратегия и
+      язык бренда. Используйте этот контекст для статей, рекламы, презентаций и технического задания."
     objections:
-      - concern:
-          I have notes and documents, but I do not know which project section
-          each item belongs in.
-        response:
-          Supply the material as it exists or answer guided questions; AI Chat
-          proposes the structure and returns it for correction and approval.
-        evidence:
-          Show material from different sources placed in project sections, with
-          missing information marked for review.
-      - concern: I will have to repeat the same background in every request.
-        response:
-          Attach the saved documents relevant to a project topic. AI Chat uses
-          that context and asks for information missing from the current task.
-        evidence:
-          Demonstrate a separate topic with selected reviewed documents attached,
-          and show the document behind the answer.
-      - concern: Does the first-stage offer build or publish a landing page?
-        response:
-          The first-stage offer delivers written project and product documents.
-          Landing-page assembly, the block editor and paid server deployment
-          belong to later development. Future deployment prices and
-          availability are undecided and do not affect the current text offer.
-        evidence:
-          Show the written deliverables and the first-stage boundary. Any future
-          publication example must be labeled as a future requirement, not an
-          available action or an observed result. Show the separate current
-          route by exporting useful reviewed documents and briefing a coding agent to
-          build on free Code Framework.
-      - concern: A short description may hide missing business decisions.
-        response:
-          Shortened project documents preserve their structure, and every
-          product keeps its own full section structure. Unknown decisions,
-          contradictions and missing evidence stay visible for correction.
-        evidence: Show two separate products with their own customer and offer,
-          Operations & Economics, Sales, written Promotion, Analytics and
-          applicable evidence, including a question that remains open.
-      - concern: The chat may simply agree with every idea.
-        response:
-          AI Chat can examine assumptions, expose contradictions, compare
-          alternatives and explain its criticism using the accepted project
-          context.
-        evidence:
-          Demonstrate one idea discussion where the result identifies a weak
-          assumption and offers an attributable alternative.
-      - concern: A general assistant or separate documents may already be enough.
-        response:
-          Compare AI Chat with those alternatives using the same request and
-          intended result.
-        evidence: Use the documented competitor comparison and a like-for-like
-          demonstration. Do not claim superiority without results.
+      - concern: У меня есть заметки и документы, но я не знаю, к какому разделу относится каждый материал.
+        response: Передайте материалы как есть или ответьте на вопросы; AI Chat предложит структуру для исправления и
+          принятия.
+        evidence: Показать распределение разных источников по разделам с отмеченными пробелами.
+      - concern: Придётся повторять предысторию в каждом запросе.
+        response: Прикрепите документы, нужные теме. AI Chat использует их контекст и спросит то, чего не хватает
+          текущей задаче.
+        evidence: Показать отдельную тему с выбранными проверенными документами и документ, на котором основан ответ.
+      - concern: Первый этап создаёт или публикует посадочную страницу?
+        response: Первый этап даёт письменные документы проекта и продуктов. Сборка страницы, редактор блоков и
+          платное развёртывание появятся позже. Их цены и доступность не определены и не меняют текущее
+          текстовое предложение.
+        evidence: Показать документы и границы первого этапа. Будущий пример публикации обозначать как требование к
+          следующему этапу, а не доступное действие или наблюдаемый результат.
+      - concern: Короткое описание может скрыть недостающие бизнес-решения.
+        response: Краткие документы сохраняют структуру, а каждый продукт — полный набор разделов. Неизвестные
+          решения, противоречия и недостающие доказательства остаются видимыми.
+        evidence: "Показать документы двух продуктов: предложение, аудиторию, конкурентов, семантику, экономику и
+          продажи. Продемонстрировать ссылки на источники и открытый вопрос."
+      - concern: Чат может просто соглашаться с каждой идеей.
+        response: AI Chat может проверять предположения, выявлять противоречия, сравнивать альтернативы и объяснять
+          критику с опорой на принятый контекст проекта.
+        evidence: Показать обсуждение идеи, выявляющее слабое предположение и альтернативу с указанным основанием.
+      - concern: Обычного ассистента или отдельных документов уже может хватить.
+        response: Сравнить AI Chat с альтернативами на одинаковом запросе и ожидаемом результате.
+        evidence: Использовать документированное сравнение конкурентов и сопоставимую демонстрацию. Не заявлять
+          превосходство без результатов.
     acquisition:
       - id: demonstration
-        channel: Full demonstration and short vertical extracts
-        context:
-          The person has an idea, notes or partial decisions that have not yet
-          become a coherent project.
-        message:
-          Send your notes, photographs and files in chat. Check what needs more
-          work, edit each file with the agent in its own thread and attach the
-          saved documents to new project topics.
-        cta: See how AI Chat works
-        destination: AI Chat landing page or matching full explanation
+        channel: Полная демонстрация и короткие вертикальные фрагменты
+        context: У человека есть идея, заметки или частичные решения, которые ещё не стали связным проектом.
+        message: Отправьте заметки, фотографии и файлы в чат. Проверьте пробелы, редактируйте каждый файл с агентом в
+          его чате и прикрепляйте сохранённые документы к новым темам.
+        cta: Посмотреть, как работает AI Chat
+        destination: Посадочная страница AI Chat или подходящее полное объяснение
       - id: search
-        channel: Search-oriented explanations
-        context: The person is searching for help with a business brief, project
-          strategy, positioning or product description.
-        message: Resolve the current decision and save the result in the project model.
-        cta: Start with this task
-        destination: An explanation of the task with a link to New project
+        channel: Объяснения под поисковые запросы
+        context: Человек ищет помощь с бизнес-брифом, стратегией, позиционированием или описанием продукта.
+        message: Обсудите вопрос с агентом и сохраните ответ в документе проекта.
+        cta: Начать с этой задачи
+        destination: Объяснение задачи со ссылкой на создание проекта
       - id: community
-        channel: Contextual community answers
-        context:
-          A founder or maker asks a concrete business or product question in a
-          relevant community.
-        message:
-          Give a useful answer first, then link a matching example when the
-          community permits it.
-        cta: Explore the example
-        destination: Matching explanation or AI Chat page
+        channel: Ответы по контексту в сообществах
+        context: Основатель или создатель задаёт конкретный вопрос о бизнесе или продукте в подходящем сообществе.
+        message: Сначала дать полезный ответ, затем сослаться на соответствующий пример, если правила сообщества это
+          разрешают.
+        cta: Посмотреть пример
+        destination: Подходящее объяснение или страница AI Chat
     journey:
       - id: discover
-        name: See the project chat at work
-        customer_goal:
-          Find a practical way to turn available project material into
-          something useful for further work.
-        customer_action:
-          Watch, read or encounter an example and decide whether it fits
-          the current situation.
-        customer_question:
-          Can this help me organize my project without another long
-          planning exercise?
-        experience:
-          A short view shows uploaded files, the agent's questions, a file's
-          discussion and editor, its review status and a new topic using attached
-          saved documents.
-        touchpoint: Demonstration, search result, short extract or community answer
-        owner:
-          The project owner prepares and presents every example; the visitor
-          chooses whether to continue.
+        name: Увидеть чат проекта в работе
+        customer_goal: Найти способ собрать описание проекта из имеющихся материалов.
+        customer_action: Посмотреть или прочитать пример и решить, подходит ли он ситуации.
+        customer_question: Сможет ли ассистент использовать условия моего бизнеса в нужном мне материале?
+        experience: Короткий обзор показывает загруженные файлы, вопросы агента, обсуждение и редактор файла,
+          состояние проверки и новую тему с прикреплёнными документами.
+        touchpoint: Демонстрация, результат поиска, короткий фрагмент или ответ в сообществе
+        owner: Владелец проекта готовит и показывает примеры; посетитель решает, продолжать ли.
         entry_conditions:
-          - The person has a current project, business idea or decision that
-            feels scattered.
+          - У человека есть текущий проект, идея или решение с разрозненными данными.
         required_fields:
-          - No personal information is required for discovery.
-        action: >-
-          Show the customer flow in chat: upload materials, check gaps identified
-          by the agent, discuss and edit each file in its own thread, then attach
-          selected reviewed documents to a new project topic. Keep
-          the first explanation short enough to understand within fifteen
-          seconds; comprehension has not been measured.
-        exit_condition:
-          The visitor chooses to start a project, seeks more information,
-          defers or leaves.
-        failure:
-          The example does not fit; the person can use another approach or return
-          for a later project.
-        metric: Relevant visits and people choosing to begin a project.
+          - Для знакомства личная информация не требуется.
+        action: Показать загрузку, пробелы, найденные агентом, обсуждение и правку каждого файла, затем выбранные
+          проверенные документы в новой теме. Первое объяснение должно укладываться примерно в 15 секунд;
+          понимание ещё не измерялось.
+        exit_condition: Посетитель начинает проект, ищет подробности, откладывает или уходит.
+        failure: "Пример не подходит: можно выбрать другой подход или вернуться с будущим проектом."
+        metric: Релевантные посещения и пользователи, решившие начать проект.
       - id: access
-        name: Enter the workspace
-        customer_goal: Understand the access conditions and begin safely.
-        customer_action: Review the offer, register with email and password, and log in.
-        customer_question: What can I do here, and what happens to the information I provide?
-        experience:
-          A direct email-and-password registration or sign-in path followed by
-          the project chat, where the person can add material. Social login is
-          not offered.
-        touchpoint: Registration and sign-in pages
-        owner:
-          The user registers and logs in; the project owner operates access and the
-          offer.
+        name: Войти в рабочее пространство
+        customer_goal: Понять условия доступа и начать работу.
+        customer_action: Изучить предложение, зарегистрироваться по электронной почте и паролю и войти.
+        customer_question: Что здесь можно делать и что произойдёт с переданной информацией?
+        experience: Прямая регистрация или вход по почте и паролю, затем чат проекта для добавления материалов. Вход
+          через соцсети не предлагается.
+        touchpoint: Страницы регистрации и входа
+        owner: Пользователь регистрируется и входит; владелец обслуживает доступ и предложение.
         entry_conditions:
-          - The person wants to use the hosted workspace.
+          - Человек хочет использовать облачное рабочее пространство.
         required_fields:
-          - Email address and password.
-        action: Register or authenticate the account, show the token balance and
-          one-time registration allowance, and open the project chat for material
-          upload. Do not present Free as a product to buy or a daily reset.
-        exit_condition: The person accepts the conditions and enters, requests
-          clarification or declines.
-        failure:
-          If the terms are unsuitable, the person can request clarification,
-          return later or choose another service. Support requests are
-          processed within 24 hours.
-        metric:
-          Registrations, successful logins, access failures and voluntarily
-          reported reasons for declining.
+          - Электронная почта и пароль.
+        action: Зарегистрировать или авторизовать аккаунт, показать баланс токенов и открыть чат для загрузки.
+        exit_condition: Человек принимает условия и входит, запрашивает пояснение или отказывается.
+        failure: Если условия не подходят, можно запросить пояснение, вернуться позже или выбрать другой сервис.
+          Поддержка обрабатывает обращения в течение 24 часов.
+        metric: Регистрации, успешные входы, ошибки доступа и добровольно сообщённые причины отказа.
       - id: describe
-        name: Upload and check project materials
-        customer_goal:
-          Turn available files, images and partial knowledge into one
-          written project description and a separate description of each product.
-        customer_action:
-          Enter a project name, upload files, photographs, notes and explanatory
-          text on the material screen, then follow the analysis and review
-          shortened Brief, Strategy, Brand and Design documents and each
-          product's full section structure with the agent in their owning threads.
-        customer_question: What do I need to decide now, and what can remain unknown?
-        experience:
-          Project creation, material upload and analysis have separate screens
-          before the document chats. Uploaded files remain visible beside
-          the working documents. Each
-          generated file has its own discussion and editor. The agent points out
-          missing information and contradictions. Section
-          indicators show how much information is present and what needs more
-          work or review. The user does not need to learn the document structure
-          before uploading, and the token balance remains visible.
-        touchpoint: Project name, material upload, analysis and document chats
-        owner:
-          The user supplies and approves project facts; the project owner operates
-          intake and document work in the chat.
+        name: Загрузить и проверить материалы проекта
+        customer_goal: Превратить файлы, изображения и частичные знания в письменное описание проекта и каждого продукта.
+        customer_action: "Передать заметки, документы и изображения о бизнесе. Выбрать первую задачу: описание
+          продукта, статья, реклама или техническое задание. Уточнить сведения в диалоге и сохранить их в
+          документах проекта."
+        customer_question: Что нужно решить сейчас, а что может оставаться неизвестным?
+        experience: Создание проекта, загрузка и анализ — отдельные экраны до чатов документов. Загруженные файлы
+          видны рядом с рабочими документами. У каждого файла свои обсуждение и редактор. Агент указывает
+          пробелы и противоречия; индикаторы показывают наличие данных и потребность в доработке или проверке.
+          До загрузки не нужно изучать структуру; баланс токенов остаётся виден.
+        touchpoint: Название проекта, загрузка, анализ и чаты документов
+        owner: Пользователь предоставляет и принимает факты; владелец обеспечивает сбор данных и работу с документами.
         entry_conditions:
-          - The user has access and a project or business idea to develop.
+          - У пользователя есть доступ и проект или идея для развития.
         required_fields:
-          - Available files, images or facts for the current task and an
-            explicit unknown where the user cannot answer.
-        action: >-
-          Create the named project, receive its uploaded material, show analysis
-          progress and place supplied information in shortened
-          written Brief, Strategy, Brand and Design documents. Ask one material
-          question at a time and keep each statement's source visible. Open each
-          generated file as an independent thread for discussion and editing.
-          Give every
-          product its own full
-          section structure: Product, Operations & Economics, Sales, Promotion,
-          Analytics and research or evidence where needed. Promotion describes
-          the intended public presentation in words, including Website,
-          Creative and Presentation text where relevant. Mark missing decisions,
-          contradictions and evidence without inventing answers. Show which
-          sections have content and which need more information or review;
-          these indicators do not validate the business or its demand.
-        exit_condition:
-          Written project documents and separate product drafts are available in
-          their own threads for review, or the person saves incomplete work with
-          its gaps.
-        failure:
-          If the balance reaches the negative limit, the person can top up,
-          pause or return later without losing the current task. If information
-          is missing, record the unknown with the affected decision and continue
-          with the rest or return later.
-        metric:
-          Projects described, draft documents produced, per-product section
-          coverage, questions, unknowns, contradictions and abandonment points.
+          - Имеющиеся файлы, изображения или факты для задачи; явное указание неизвестного, когда ответа нет.
+        action: Создать именованный проект, принять материалы, показать ход анализа и распределить сведения по кратким
+          письменным брифу, стратегии, бренду и дизайну. Задавать по одному существенному вопросу, сохранять
+          источник утверждения. Открыть каждый файл отдельным чатом. Для каждого продукта — описание,
+          аудитория, конкуренты, семантика, экономика и продажи со ссылками на исследования. При необходимости
+          подготовить тексты сайта, рекламы и презентации. Отмечать пробелы и противоречия без выдуманных
+          ответов. Индикаторы отражают содержание и проверку, а не доказанный спрос или жизнеспособность
+          бизнеса.
+        exit_condition: Документы проекта и черновики продуктов доступны в своих чатах для проверки либо неполная
+          работа сохранена с пробелами.
+        failure: При отрицательном лимите можно пополнить баланс, остановиться или вернуться без потери задачи.
+          Недостающий ответ связать с затронутым решением и продолжить остальное либо вернуться позже.
+        metric: Описанные проекты, черновики, покрытие разделов продуктов, вопросы, неизвестное, противоречия и места
+          ухода.
       - id: purchase
-        name: Choose hosted AI credits and return to work
-        customer_goal:
-          Continue the current task without losing uploaded material or
-          completed work.
-        customer_action:
-          Open the token page, compare one-off top-ups with monthly Pro, review
-          the full price and credit amount, pay and return to the interrupted task.
-        customer_question:
-          What am I buying, what will it cost and where will I return
-          after payment?
-        experience:
-          The current balance, credit amount, full price and purchase terms
-          are visible before payment. Monthly Pro shows its monthly period and
-          currency choice; top-ups retain their fixed rouble amounts and token
-          rate. After successful payment, the person returns to the saved task.
-        touchpoint: Token balance and purchase page
-        owner:
-          The user chooses and pays for a package; the project owner operates
-          payment acceptance and the Russian online receipt flow.
+        name: Пополнить токены и вернуться к работе
+        customer_goal: Продолжить задачу без потери материалов и сделанной работы.
+        customer_action: Открыть токены, сравнить пакеты, выбрать, оплатить и вернуться к прерванной задаче.
+        customer_question: Что я покупаю, сколько это стоит и куда вернусь после оплаты?
+        experience: До оплаты видны баланс, состав пакета, полная цена и условия. После успешной оплаты — возвращение
+          к сохранённой задаче.
+        touchpoint: Баланс токенов и страница покупки
+        owner: Пользователь выбирает и оплачивает пакет; владелец обеспечивает приём оплаты и российские онлайн-чеки.
         entry_conditions:
-          - The balance reaches the negative limit and further requests are
-            restricted, or the user chooses to top up earlier.
+          - Баланс достиг отрицательного лимита либо пользователь пополняет его раньше.
         required_fields:
-          - Selected top-up or monthly Pro, currency and payment details required
-            by the configured payment flow.
-        action:
-          Preserve the current work, show the configured top-ups, monthly Pro
-          and their terms, accept payment, credit tokens and return to the
-          interrupted task. A token purchase does not buy access to MIT code.
-        exit_condition:
-          Tokens are credited and the user resumes work, chooses another
-          offer, defers purchase or leaves.
-        failure:
-          If the person declines or cannot complete the purchase, they can
-          choose another package, seek help, defer or return without buying.
-        metric: Purchase-page entries, successful purchases, failures, package
-          selection, Pro starts or continuation, return to task and repeat purchases.
+          - Выбранный пакет и платёжные данные, требуемые настроенным способом оплаты.
+        action: Сохранить работу, показать пакеты и условия, принять оплату, начислить токены и вернуть к задаче.
+        exit_condition: Токены начислены и работа продолжается; пользователь выбирает другой пакет, откладывает или уходит.
+        failure: При отказе или неудаче можно выбрать другой пакет, обратиться за помощью, отложить или вернуться без
+          покупки.
+        metric: Открытия оплаты, успешные и неудачные покупки, выбор пакета, возвращение к задаче и повторные покупки.
       - id: review
-        name: Correct, accept and export the documents
-        customer_goal:
-          Check that the written documents describe the project and every
-          product accurately and make missing decisions clear.
-        customer_action:
-          Open a project or product file's thread, discuss the gaps with the
-          agent and review the proposed text in its editor. Edit it, explicitly
-          save and review the useful result, switch to another file or export
-          the text.
-        customer_question:
-          Does this explain how my business should work, what is
-          missing and what I should do next?
-        experience:
-          Each file retains its conversation, draft and reviewed version when
-          the person switches threads. Section indicators distinguish available
-          content from missing information and pending review. The latest
-          reviewed version remains available while a new draft is edited. Each
-          product retains its own sections and open questions.
-        touchpoint: Independent document threads with their conversation and editor
-        owner: The user accepts or corrects the descriptions; the project owner
-          operates document delivery and learns from the corrections.
+        name: Исправить, принять и экспортировать документы
+        customer_goal: Проверить факты в документах проекта и продуктов, уточнить открытые вопросы.
+        customer_action: Открыть чат файла, обсудить пробелы, проверить текст в редакторе, исправить, явно сохранить и
+          проверить результат, перейти к другому файлу или экспортировать.
+        customer_question: Объясняет ли это работу моего бизнеса, пробелы и дальнейшие действия?
+        experience: При переключении каждый файл сохраняет разговор, черновик и проверенную версию. Индикаторы
+          различают имеющийся текст, недостающие данные и ожидающую проверку. Последняя проверенная версия
+          доступна при правке нового черновика. Продукты сохраняют свои разделы и вопросы.
+        touchpoint: Отдельные чаты документов с обсуждением и редактором
+        owner: Пользователь принимает или исправляет описание; владелец обеспечивает результат и изучает исправления.
         entry_conditions:
-          - Draft Brief, Strategy, Brand and written Design documents and
-            separate product drafts are available for review.
+          - Доступны черновики брифа, стратегии, бренда, письменного дизайна и отдельных продуктов.
         required_fields:
-          - Written project descriptions, each product's own section coverage,
-            visible assumptions, unknowns, evidence gaps and user corrections.
-        action: Work through the agent's identified shortcomings in the affected
-          file's thread. Put proposed changes in its editor for the user to
-          correct, save and review; an agent-filled draft is not acceptance.
-          Update that file's content and review indicators and preserve its
-          latest reviewed version until the new draft is reviewed. Keep
-          unanswered questions visible. Make reviewed documents available for
-          export and attachment to new project topics without requiring every
-          file to be finished. The person may freely use the exported results
-          outside the service.
-        exit_condition:
-          The user accepts useful text, corrects a section, exports the
-          documents, opens a project topic with selected saved files or saves
-          open questions for later.
-        failure:
-          Preserve accepted parts, expose the contradiction and request only the
-          necessary clarification.
-        metric: Documents accepted or revised, correction cycles, per-product
-          completeness, unresolved gaps, contradictions, useful-result feedback,
-          exports and repeated-input problems.
+          - Письменные описания, разделы каждого продукта, видимые предположения, неизвестное, пробелы
+            доказательств и исправления пользователя.
+        action: Разобрать недостатки в чате затронутого файла. Предложить правки в редакторе для исправления,
+          сохранения и проверки пользователем; заполненный агентом черновик не считается принятым. Обновлять
+          содержание и индикаторы файла, сохранять последнюю проверенную версию до проверки нового черновика.
+          Оставлять вопросы видимыми. Разрешать экспорт и прикрепление проверенных документов без завершения
+          всех файлов. Экспортированные результаты можно свободно использовать вне сервиса.
+        exit_condition: Пользователь принимает текст, исправляет раздел, экспортирует, открывает тему с файлами либо
+          оставляет вопросы на потом.
+        failure: Сохранить принятые части, показать противоречие и запросить только необходимое уточнение.
+        metric: Принятые и исправленные документы, циклы правок, полнота продуктов, пробелы, противоречия, отзывы о
+          пользе, экспорт и повторный ввод.
       - id: continue
-        name: Develop and challenge ideas
-        customer_goal:
-          Think through another idea or complete a project task without
-          explaining the project again.
-        customer_action:
-          Create or reopen a project topic, choose the saved documents to attach
-          and discuss an idea, request criticism, compare alternatives or request
-          a material. Return to the owning file's thread to add a product or
-          update an accepted decision.
-        customer_question:
-          Can I use what we already agreed, test this idea and change
-          only what matters now?
-        experience:
-          Each project topic keeps its own conversation and selected document
-          attachments. The agent uses those reviewed files as context, explains
-          whether they support or question the idea and asks for information
-          missing from the current task. Document editing remains in the file's
-          own thread, with the topic still available when the person returns.
-        touchpoint: General project workspace with separate topics and attached saved files
-        owner:
-          The user directs continued work; the project owner maintains access and
-          the saved project context.
+        name: Развивать и проверять идеи
+        customer_goal: Обдумать новую идею или выполнить задачу без повторного объяснения проекта.
+        customer_action: Выбрать документы продукта и подготовить следующую статью, рекламный материал, презентацию
+          или техническое задание. Поправки в цене, аудитории и условиях сохраняются в соответствующих
+          документах проекта.
+        customer_question: Могу ли я использовать согласованное, проверить идею и поменять только нужное?
+        experience: Тема сохраняет своё обсуждение и выбранные документы. Агент использует их проверенные версии,
+          объясняет поддержку или противоречие идее и спрашивает недостающее. Документ редактируется в
+          собственном чате; тема остаётся доступна.
+        touchpoint: Общее пространство проекта с отдельными темами и сохранёнными файлами
+        owner: Пользователь направляет работу; владелец сохраняет доступ и контекст.
         entry_conditions:
-          - The user has at least one saved reviewed document and another
-            decision or material to work on; other files may remain unfinished.
+          - Есть хотя бы один сохранённый проверенный документ и новая задача; другие файлы могут быть не
+            завершены.
         required_fields:
-          - The topic, next request, selected saved documents, relevant change
-            and applicable access terms.
-        action: Create or reopen the topic with its selected saved documents as
-          context. Keep the topic's conversation separate from other topics and
-          document threads. Route proposed document changes to the owning file's
-          thread for editing and user review; use its last reviewed version until
-          the replacement is reviewed. Keep content and review status visible.
-          Charge one token when the input
-          is sent to the model.
-          Settle a successful request once the answer returns and its actual
-          cost is known. Return all request deductions for a failed or cancelled
-          request, leaving a net charge of zero. Keep the task saved so the
-          person can continue when ready. Allow continued use within the
-          negative-balance limit and open token purchase when that limit is
-          reached.
-        exit_condition:
-          The requested task is completed, the user buys more tokens,
-          pauses or chooses to leave.
-        failure:
-          If the need ends or the product does not fit, the person can pause,
-          leave, return later or use another approach.
-        metric:
-          Useful later results, idea discussions rated useful, criticism acted on,
-          return use, repeat purchases, repeated-input problems and reasons for
-          stopping.
-      - id: framework-handoff
-        name: Turn reviewed material into a development brief
-        customer_goal: Build a landing page or product from the business context already prepared.
-        customer_action:
-          Export useful reviewed documents, identify the page's desired action
-          or product behavior, and open the Code Framework explanation and the
-          relevant module or Blog guide before briefing a coding agent.
-        customer_question: How does my business description become something an agent can build?
-        experience:
-          The next step names the material to carry forward and the free code
-          foundation to use. Buying tokens supports hosted preparation; the
-          repository and local setup remain accessible without a purchase.
-        touchpoint: Reviewed documents, export, contextual Code Framework link and local setup guide.
-        owner: The user reviews the brief and directs the coding agent; the project owner supplies the foundation and guidance.
-        entry_conditions:
-          - The person wants a landing page or software product and has useful reviewed business material.
-        required_fields:
-          - Audience, offer, intended action, applicable business rules and remaining unknowns.
-          - Useful reviewed project and product documents selected by the user for export.
-        action:
-          Connect the exported context to a concrete coding-agent request and
-          explain the relevant Code Framework responsibilities. Retain the
-          distinction between this manual development route and future hosted
-          automatic page assembly and deployment.
-        exit_condition:
-          The user briefs the agent, returns to a document question, continues
-          in AI Chat or postpones development.
-        failure:
-          If development is premature or another foundation fits better, keep
-          working with the documents, choose another approach or defer.
-        metric: Contextual Framework visits, exports used for a brief and voluntarily reported independent adaptations.
+          - Тема, следующий запрос, выбранные документы, существенное изменение и применимые условия доступа.
+        action: Открыть тему с выбранным контекстом. Держать её обсуждение отдельно. Предложения правок направлять в
+          чат файла для редактирования и проверки пользователем; до проверки замены использовать последнюю
+          проверенную версию. Показывать содержание и состояние проверки. При отправке ввода списать один
+          токен; после успешного ответа пересчитать по фактической стоимости. При ошибке или отмене вернуть
+          все списания до нулевой итоговой платы. Сохранять задачу, разрешать работу в пределах отрицательного
+          лимита и предлагать покупку при его достижении.
+        exit_condition: Задача выполнена, пользователь покупает токены, делает паузу или уходит.
+        failure: "Потребность закончилась или продукт не подходит: можно остановиться, уйти, вернуться позже или
+          выбрать другой подход."
+        metric: Выполненные задачи, исправленные после обсуждения решения, возвращения в чат, повторные покупки,
+          повторный ввод сведений и причины остановки.
       - id: manage
-        name: Manage the account and project
-        customer_goal:
-          Change account or project settings and understand the current
-          service state.
-        customer_action:
-          Change the password or view purchases in account Settings. Select a
-          project in chat to rename it or manage its documents. Brief account
-          deletion from account Settings.
-        customer_question:
-          Where can I change my account, project, payments or saved
-          documents?
-        experience:
-          Account Settings contains password, billing and account-data actions.
-          Each project has its own settings inside its chat.
-        touchpoint: Account Settings and selected-project settings inside chat
-        owner: The user chooses each change; the project owner operates the
-          corresponding service action.
+        name: Управлять аккаунтом и проектом
+        customer_goal: Изменить настройки и понять состояние сервиса.
+        customer_action: Изменить пароль или посмотреть покупки в настройках аккаунта. Выбрать проект в чате для
+          переименования и управления документами. Запросить удаление аккаунта из настроек.
+        customer_question: Где изменить аккаунт, проект, платежи или сохранённые документы?
+        experience: Настройки аккаунта содержат пароль, покупки и действия с данными. У каждого проекта свои настройки
+          в чате.
+        touchpoint: Настройки аккаунта и выбранного проекта в чате
+        owner: Пользователь выбирает изменение; владелец обеспечивает действие сервиса.
         entry_conditions:
-          - The user is authenticated.
+          - Пользователь авторизован.
         required_fields:
-          - Only the information required by the selected settings action.
-        action:
-          Show account-wide controls in Settings and project controls in the
-          selected project chat. Apply only the action the user selects.
-        exit_condition: The selected setting is saved, the user returns to work,
-          requests help or leaves the account.
-        failure:
-          If the available account or project actions do not meet the person's
-          needs, they can seek help, defer the change or request account exit.
-        metric:
-          Settings actions, incomplete changes, deletion requests and support
-          transitions.
+          - Только сведения, необходимые выбранному действию.
+        action: Показать общие настройки аккаунта и отдельные настройки проекта в его чате. Выполнять только выбранное
+          действие.
+        exit_condition: Настройка сохранена, пользователь возвращается, запрашивает помощь или выходит из аккаунта.
+        failure: Если действий не хватает, можно обратиться за помощью, отложить изменение или запросить выход из
+          сервиса.
+        metric: Действия в настройках, незавершённые изменения, запросы удаления и переходы в поддержку.
       - id: support
-        name: Seek help
-        customer_goal:
-          Resolve a question about the product or its terms and decide how
-          to continue.
-        customer_action: Describe the question, desired result and relevant project context.
-        customer_question: Where can I get help, and what response can I expect?
-        experience: A clear support route with requests processed within 24 hours.
-        touchpoint: Selected help route
-        owner: The user describes the need; the project owner is the sole person
-          responsible for processing it.
+        name: Получить помощь
+        customer_goal: Разрешить вопрос о продукте или условиях и решить, как продолжать.
+        customer_action: Описать вопрос, желаемый результат и контекст проекта.
+        customer_question: Где получить помощь и какого ответа ждать?
+        experience: Понятный способ обращения; обработка в течение 24 часов.
+        touchpoint: Выбранный канал помощи
+        owner: Пользователь описывает потребность; единственный ответственный за обработку — владелец проекта.
         entry_conditions:
-          - Access, supplied materials, written project and product sections,
-            corrections, context-aware chat, export or purchasing needs
-            clarification.
+          - Нужно пояснение о доступе, материалах, документах, правках, контекстном чате, экспорте или покупке.
         required_fields:
-          - The question, desired outcome and relevant context.
-        action:
-          Process the request within 24 hours and answer within the limits of the
-          current service.
-        exit_condition:
-          The user gains direction, accepts an outcome, receives a next
-          step or leaves the question open.
-        failure:
-          If the current service cannot resolve the issue, explain the limit and
-          offer a next step, another source, a pause or account exit.
-        metric:
-          Common requests, time to first response, useful answers, unresolved
-          requests and unmet expectations.
-    future_journey:
-      - id: landing-preview
-        name: "FUTURE: Prepare the landing-page sandbox"
-        availability: future-only
-        measurement: disabled-for-first-stage
-        customer_goal:
-          In a later offer, see how the reviewed documents could become a
-          landing page. This is outside first-stage delivery and activation.
-        customer_action:
-          Future only, after this offer becomes available, review and revise
-          generated Text and Layout or defer further work.
-        customer_question: What could a future landing-page offer include?
-        experience:
-          A future sandbox would assemble SinglePageStartup blocks, save page
-          edits with the project and show a private preview. No block editor or
-          sandbox is offered in the first stage.
-        touchpoint: Future landing-page sandbox, unavailable in the first stage
-        owner:
-          The user would review the page; the project owner would operate the
-          later offer after evaluating and improving project-description use.
-        entry_conditions:
-          - The first-stage description flow has been evaluated and improved.
-          - The later landing-page offer is available on its own stated terms.
-        required_fields:
-          - Reviewed audience, offer, intended action and page content.
-        action:
-          Future requirement, outside the current journey, assemble the page
-          from available blocks, save edits with the project and render its
-          private preview. Future prices and availability are undecided.
-        exit_condition:
-          In the future offer, the page is saved, revised, deferred or considered
-          for later paid deployment; none is a first-stage completion condition.
-        failure:
-          The person could defer the later offer, use the exported documents
-          elsewhere or choose another page-building approach.
-        metric:
-          Disabled for the first stage. Future sandbox creation, revisions,
-          saved previews and consideration of deployment require a separate
-          measurement scope when that offer becomes available.
-      - id: framework
-        name: "FUTURE: Deploy and maintain the site"
-        availability: future-only
-        measurement: disabled-for-first-stage
-        customer_goal:
-          In a later paid offer, publish a reviewed page on the person's server.
-          Publication is outside current acquisition, activation and completion.
-        customer_action:
-          Future only, after reviewing that offer's availability and commercial
-          terms, authorize its project repository and connect a server.
-        customer_question: What would the later deployment offer cost and require?
-        experience:
-          Future technical requirements cover GitHub authorization, creation
-          of a project repository, server connection and automatic deployment.
-          No token purchase is required by that technical branch; this does not
-          establish a free deployment offer. Its price and availability are unknown.
-        touchpoint: Future deployment flow, unavailable in the first stage
-        owner:
-          The user would control the repository and server account; the project
-          owner would operate the later paid offer on its own commercial terms.
-        entry_conditions:
-          - The description workflow has been evaluated and improved.
-          - A later deployment offer is available with defined commercial terms.
-          - The page is reviewed for publication and the user wants that offer.
-        required_fields:
-          - GitHub authorization limited to the project repository.
-          - Repository name and confirmed creation destination.
-          - Beget or Timeweb deployment destination and the required deployment key.
-          - The customer's own domain when domain attachment is requested.
-        action:
-          Future requirements cover creating the repository, connecting the
-          customer's server, configuring GitHub Actions for initial and later
-          deployment and attaching an existing domain through the provider API.
-          The service does not sell or register the domain. These requirements
-          are not an available first-stage deployment action.
-        exit_condition:
-          In the future offer, the page is published, returned for changes,
-          deferred or declined; publication does not complete the first-stage offer.
-        failure:
-          The person could decline the later commercial terms, defer deployment
-          or choose another provider or deployment approach.
-        metric: Disabled for the first stage. Future repository and server
-          connections, deployments, public addresses and updates require their
-          own measurement scope; none indicates current description-flow success.
-sources:
-  framework-preparation-journey:
-    type: client-claim
-    resolution: operator-fact
-    date: "2026-10-24"
-    source: Brief intake.framework_preparation_journey; current operator goal-objective.md.
-    scope: Reviewed business and product material becomes a coding-agent brief
-      for a landing page or product on free Code Framework. The route does not
-      make hosted automatic generation or deployment available.
-  allowance-and-pro:
-    type: client-claim
-    resolution: operator-fact
-    date: "2026-10-24"
-    source: Brief sources.ai_chat_allowance_and_pro and explicit operator pricing replies.
-    scope: Free 3000 internal tokens once on registration; Pro 5000 per month
-      for 29 USD or 1900 roubles per month; existing top-up and deduction terms
-      remain unchanged.
-  chat-workflow:
-    type: constraint
-    date: "2026-10-06"
-    source: brief/singlepage.md, sources.ai_chat_landing_presentation; the
-      intended customer process uses chat for material upload and agent review.
-      Each generated file has its own discussion and editing thread. General
-      project topics attach selected saved reviewed documents as context, with
-      each document's reviewed version available while a new draft is revised.
-      The landing walkthrough prefills an editable audience answer; Send answer
-      opens and enriches Products.md, then the user clicks the enabled Save and
-      review action. This prepared demonstration is not a claim that missing
-      customer facts can be invented. Content and review indicators show
-      remaining work; their calculation is not specified and they are not proof
-      of business quality or implemented capability.
-  first-stage-boundary:
-    type: constraint
-    date: "2026-10-06"
-    source: brief/singlepage.md, sources.ai_chat_launch_stage and
-      sources.future_deployment_commercial_terms; scoped operator direction
-      for written project and product descriptions before later deployment sales.
-  customer-decision-profile:
-    type: assumption
-    resolution: professional-choice
-    source: The motivations, objections and intended journey are a proposed
-      process based on Product and the Brief; they are not interview findings
-      or observed customer behavior.
-confirmation:
-  confirmed: true
-  by: operator
-  at: "2026-09-18"
-  source:
-    "Operator re-confirmed the AI Chat Sales process on 2026-09-18 after the
-    coordinator checked the seller, pricing and capacity statements against the
-    confirmed Brief and found no correction needed: «Да, оба». The 2026-09-17
-    approval it replaces was stamped against a body the commit hooks then
-    reformatted."
-  content_sha256: 9ce83a549912024d0916ae119c2f6ddb55502ed0d727983f60dfc89e63b60400
-review:
-  dependencies:
-    product.ai-chat.product: 49726d69fab8cad21164c4df5e568d4e6e1a2abb60d7d2fa3dee1f2bfebe7c70
+          - Вопрос, нужный результат и относящийся к нему контекст.
+        action: Обработать обращение в течение 24 часов и ответить в пределах текущего сервиса.
+        exit_condition: Пользователь получил направление, принял результат, узнал следующий шаг или оставил вопрос открытым.
+        failure: Если сервис не решает вопрос, объяснить ограничение и предложить шаг, другой источник, паузу или
+          выход из сервиса.
+        metric: Повторяющиеся запросы, время первого ответа, полезные ответы, нерешённые вопросы и неоправданные
+          ожидания.

@@ -6,9 +6,9 @@ import {
 } from "./state";
 import definitions from "./definitions.json";
 export function aiChatProjectFixture(): IProjectProfile {
-  const project = createProjectProfile("pottery", "Мастерская керамики");
+  const project = createProjectProfile("pottery", "Гончарные мастер-классы");
   project.notes =
-    "Мастер-классы по выходным для взрослых, которые впервые пробуют керамику. Участники небольшой группы лепят чашку вручную.";
+    "Мастер-классы по выходным для взрослых, впервые пробующих гончарное дело. Небольшая группа лепит чашку вручную.";
   return {
     ...prepareProjectDocuments(
       project,
@@ -21,7 +21,7 @@ export function aiChatProjectFixture(): IProjectProfile {
 export function aiChatWorkspaceFixture() {
   const project = {
     id: "pottery",
-    name: "Мастерская керамики",
+    name: "Гончарные мастер-классы",
     variant: "scope-ai-chat-project" as const,
   };
   return {
@@ -35,13 +35,13 @@ export function aiChatProjectSourceFixture(): IProjectProfile {
   const files = [
     {
       id: "workshop-notes",
-      name: "Заметки о мастерской.txt",
-      text: "На каждом мастер-классе в выходные — шесть мест.",
+      name: "Заметки мастер-класса.txt",
+      text: "Шесть мест на каждом мастер-классе выходного дня.",
     },
     {
       id: "audience-notes",
       name: "Заметки об аудитории.txt",
-      text: "Взрослые, которые впервые пробуют керамику.",
+      text: "Взрослые, впервые пробующие гончарное дело.",
     },
   ].map((file) => ({
     ...file,
@@ -58,7 +58,7 @@ export function aiChatProjectSourceFixture(): IProjectProfile {
     document,
   );
   project.documents[0].values[section] =
-    "## Контекст пользователя\n<!-- knowledge:user -->\nPottery workshops\n<!-- /knowledge:user -->\n\n## Сведения из материалов\nSix places per weekend workshop.\n\n## Общее описание\nSmall-group workshops for first-time potters.";
+    "## Контекст пользователя\n<!-- knowledge:user -->\nГончарные мастер-классы\n<!-- /knowledge:user -->\n\n## Сведения из материалов\nШесть мест на каждом мастер-классе выходного дня.\n\n## Общее описание\nМастер-классы в небольших группах для начинающих.";
   return project;
 }
 
@@ -67,21 +67,21 @@ export function aiChatSourceFixture() {
     id: "pottery:products:products",
     slug: "pottery:products:products",
     variant: "overview-ai-chat",
-    title: "Продукты",
-    content: "Мастер-классы по керамике для начинающих по выходным.",
+    title: "Products",
+    content: "Мастер-классы выходного дня для начинающих гончаров.",
     description:
-      "Опишите продукты, их клиентов, предложение и текущую доступность.",
+      "Опишите продукты, их клиентов, ценность и текущую доступность.",
   };
   const files = [
     {
       id: "workshop-notes",
-      name: "Заметки о мастерской.txt",
-      text: "На каждом мастер-классе в выходные — шесть мест.",
+      name: "Заметки мастер-класса.txt",
+      text: "Шесть мест на каждом мастер-классе выходного дня.",
     },
     {
       id: "audience-notes",
       name: "Заметки об аудитории.txt",
-      text: "Взрослые, которые впервые пробуют керамику.",
+      text: "Взрослые, впервые пробующие гончарное дело.",
     },
   ].map((file) => ({
     ...file,

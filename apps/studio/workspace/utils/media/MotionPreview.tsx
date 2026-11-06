@@ -58,7 +58,7 @@ export function MotionPreview({
       });
       if (!support.canRender)
         throw new Error(
-          "MP4 export is unavailable in this browser. Use a current Chrome or Edge with WebCodecs support. " +
+          "Экспорт MP4 недоступен в этом браузере. Используйте актуальный Chrome или Edge с поддержкой WebCodecs. " +
             support.issues.map((issue) => issue.message).join(" "),
         );
       if (controller.signal.aborted) return;
@@ -88,7 +88,7 @@ export function MotionPreview({
         setError(
           cause instanceof Error
             ? cause.message
-            : "Could not render the video.",
+            : "Не удалось подготовить видео.",
         );
     } finally {
       if (abort.current === controller) {
@@ -114,7 +114,7 @@ export function MotionPreview({
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-5 py-3 text-sm text-slate-600">
         <span>
           {composition.width} × {composition.height} ·{" "}
-          {(composition.durationInFrames / composition.fps).toFixed(1)} s ·{" "}
+          {(composition.durationInFrames / composition.fps).toFixed(1)} с ·{" "}
           {composition.fps} fps
         </span>
         <div className="flex items-center gap-3">
@@ -124,7 +124,7 @@ export function MotionPreview({
               onClick={() => abort.current?.abort()}
               className="rounded-lg border border-slate-300 px-4 py-2"
             >
-              Cancel
+              Отмена
             </button>
           )}
           <button
@@ -133,7 +133,7 @@ export function MotionPreview({
             disabled={progress !== null}
             className="rounded-lg bg-slate-950 px-4 py-2 font-semibold text-white focus-visible:outline-2 focus-visible:outline-teal-600 disabled:opacity-50"
           >
-            {progress !== null ? `Rendering ${progress}%` : "Download MP4"}
+            {progress !== null ? `Подготовка ${progress}%` : "Скачать MP4"}
           </button>
           {url && (
             <a
@@ -141,7 +141,7 @@ export function MotionPreview({
               download={fileName.replace(/(?:\.mp4)?$/, ".mp4")}
               className="underline"
             >
-              Download again
+              Скачать снова
             </a>
           )}
         </div>

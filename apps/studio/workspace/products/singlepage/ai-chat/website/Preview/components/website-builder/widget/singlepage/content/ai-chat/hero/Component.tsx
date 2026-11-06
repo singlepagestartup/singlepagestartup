@@ -48,8 +48,8 @@ export function Component({ content = defaultContent }: IAIChatHeroProps = {}) {
         </div>
         <figure className="flex items-center justify-center @3xl:p-5 @3xl:pl-0">
           <img
-            src="/workspace-assets/singlepage/generated/living-focus/singlepagestartup-photography-solo-founder-v1-square.png"
-            data-asset-id="singlepage-generated-living-focus-photography-solo-founder-v1-square"
+            src="/workspace-assets/singlepage/generated/editorial-v1/photographer-square.png"
+            data-asset-id="singlepage-editorial-photographer-square"
             alt={content.labels["hero-photo-alt"]}
             width={1254}
             height={1254}

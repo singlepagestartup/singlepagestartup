@@ -1,10 +1,44 @@
 {
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "About SinglePageStartup",
+        "ru": "О SinglePageStartup"
+      },
+      "description": {
+        "en": "Explore SinglePageStartup: an open Code Framework for development and AI Chat for working with project materials.",
+        "ru": "Как устроен SinglePageStartup: открытый Code Framework для разработки и AI Chat для работы с материалами проекта."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "About SinglePageStartup",
+        "ru": "О SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "About SinglePageStartup",
+        "ru": "О SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Explore SinglePageStartup: an open Code Framework for development and AI Chat for working with project materials.",
+        "ru": "Как устроен SinglePageStartup: открытый Code Framework для разработки и AI Chat для работы с материалами проекта."
+      },
+      "opengraphDescription": {
+        "en": "Explore SinglePageStartup: an open Code Framework for development and AI Chat for working with project materials.",
+        "ru": "Как устроен SinglePageStartup: открытый Code Framework для разработки и AI Chat для работы с материалами проекта."
+      }
+    }
+  },
   "id": "99ffcce1-adf1-44c0-878a-19902b9151ff",
   "title": "About",
   "url": "/about",
   "description": "Description",
   "createdAt": "2025-01-24T23:47:55.476Z",
-  "updatedAt": "2025-11-15T09:32:28.389Z",
+  "updatedAt": "2026-10-30T22:25:05.124Z",
   "variant": "default",
   "className": null,
   "language": "en",

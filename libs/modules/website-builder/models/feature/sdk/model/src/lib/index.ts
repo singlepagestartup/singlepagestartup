@@ -15,6 +15,7 @@ export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/website-builder/features";
 export const variants = [
+  "hidden",
   "demo-handoff",
   "demo-document",
   "demo-project",

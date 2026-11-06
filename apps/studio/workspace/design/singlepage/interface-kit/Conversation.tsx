@@ -1,65 +1,11 @@
-import {
-  useCallback,
-  useEffect,
-  useId,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { Button, Checkbox, Icon, kit, Specimen } from "./primitives";
-import {
-  DraftAttachments,
-  FileCard,
-  FileDropZone,
-  type FileDropPosition,
-  type ILocalFile,
-} from "./Files";
-import { reorderFile } from "./Files/utils";
+import { FileRow, type ILocalFile } from "./Files";
 
 type ReplyState = "idle" | "streaming" | "stopped" | "error" | "complete";
 
-interface IMessageBubbleProps {
-  direction: "incoming" | "outgoing";
-  children: ReactNode;
-  busy?: boolean;
-}
-
-function MessageBubble({ direction, children, busy }: IMessageBubbleProps) {
-  const outgoing = direction === "outgoing";
-  return (
-    <article
-      aria-label={outgoing ? "Your message" : "Assistant message"}
-      aria-busy={busy}
-      data-message-direction={direction}
-      className={`relative w-fit min-w-0 max-w-full rounded-2xl p-4 md:max-w-[85%] ${outgoing ? "ml-auto rounded-br-none bg-[var(--workspace-brand-accent)]/20" : "mr-auto rounded-bl-none bg-[var(--workspace-brand-background)]"}`}
-    >
-      <span
-        aria-hidden="true"
-        data-message-tail={direction}
-        className={`pointer-events-none absolute bottom-0 size-0 border-t-8 border-t-transparent ${outgoing ? "-right-2 border-l-8 border-l-[var(--workspace-brand-accent)]/20" : "-left-2 border-r-8 border-r-[var(--workspace-brand-background)]"}`}
-      />
-      {children}
-    </article>
-  );
-}
-
 export default function Conversation() {
-  const [exampleFile] = useState<ILocalFile>(() => {
-    const file = new File(
-      [
-        "# Project notes\n\n## Offer\nA workshop for people launching their first AI product.\n\n## Audience\nIndependent founders and small teams.\n\n## Open questions\n- Which idea should the first version focus on?\n- What should visitors be able to do on the site?\n",
-      ],
-      "project-notes.md",
-      { type: "text/markdown", lastModified: 0 },
-    );
-    return {
-      id: "example-project-notes",
-      name: file.name,
-      size: file.size,
-      type: file.type,
-      localFile: file,
-    };
-  });
+  const [helpful, setHelpful] = useState(false);
   const [draft, setDraft] = useState("");
   const [question, setQuestion] = useState("");
   const [attachments, setAttachments] = useState<ILocalFile[]>([]);
@@ -73,46 +19,10 @@ export default function Conversation() {
   const helpId = useId();
   const input = useRef<HTMLTextAreaElement>(null);
   const fileInput = useRef<HTMLInputElement>(null);
-  const addAttachments = useCallback((files: File[]) => {
-    const accepted: ILocalFile[] = [];
-    const rejected: string[] = [];
-    for (const file of files) {
-      if (file.size > 10 * 1024 * 1024) {
-        rejected.push(`${file.name}: the demo limit is 10 MB per file.`);
-      } else {
-        accepted.push({
-          id: `${file.name}:${file.size}:${file.lastModified}`,
-          name: file.name,
-          size: file.size,
-          type: file.type,
-          localFile: file,
-        });
-      }
-    }
-    setAttachmentErrors(rejected);
-    setAttachments((current) => {
-      const known = new Set(current.map((file) => file.id));
-      return [
-        ...current,
-        ...accepted.filter((file) => {
-          if (known.has(file.id)) return false;
-          known.add(file.id);
-          return true;
-        }),
-      ];
-    });
-    input.current?.focus();
-  }, []);
+  const attachmentsHelpId = useId();
   const removeAttachment = useCallback((id: string) => {
     setAttachments((current) => current.filter((file) => file.id !== id));
   }, []);
-
-  const reorderAttachment = useCallback(
-    (id: string, targetId: string, position: FileDropPosition) => {
-      setAttachments((current) => reorderFile(current, id, targetId, position));
-    },
-    [],
-  );
 
   useEffect(() => {
     if (replyState !== "streaming") return;
@@ -132,7 +42,7 @@ export default function Conversation() {
     setAttachmentErrors([]);
     setDraft("");
     setReply(
-      "This is a simulated reply. Start by grouping the materials you already have: project notes, customer questions and existing offers. Then choose one open question to review together.",
+      "Это пример ответа. Сгруппируйте имеющиеся материалы: заметки проекта, вопросы клиентов и предложения. Затем выберите один открытый вопрос для совместной проверки.",
     );
     setVisibleCharacters(0);
     setReplyState(simulateFailure ? "error" : "streaming");
@@ -149,259 +59,295 @@ export default function Conversation() {
     <div className="grid gap-6">
       <Specimen
         id="message"
-        title="Messages"
-        description="Your messages appear on the right, replies on the left. Select an attachment to preview it."
-        states={["Outgoing", "Incoming", "File attached", "File preview open"]}
-        usage="Outgoing messages sit on the right without a visible author label. Replies sit on the left with an assistant name. Each bubble has a tail on its sender's side. Attached files open in the same preview used by the composer. The example file contains fictional project notes."
-        recipe="w-fit min-w-0 max-w-[85%] rounded-2xl p-4; outgoing: ml-auto rounded-br-none; incoming: mr-auto rounded-bl-none; attachment cards open FilePreview"
+        title="Сообщения"
+        description="В переписке различимы роль, содержание и вспомогательные материалы."
+        states={["User", "Assistant", "Источник прикреплён", "Оценка выбрана"]}
+        usage="Ограничивайте ширину текста, показывайте роли и названия источников. Это примеры сообщений, не настоящий ответ модели."
+        recipe="max-w-2xl rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-5 text-base leading-relaxed"
       >
-        <div className="grid min-w-0 gap-5 px-2">
-          <MessageBubble direction="outgoing">
-            <p className="whitespace-pre-wrap break-words text-sm leading-6">
-              I have project notes and customer questions. Where should I start?
+        <div className="grid gap-5">
+          <div className="ml-auto max-w-2xl rounded-2xl bg-[var(--workspace-brand-background)] p-5">
+            <p className={`mb-2 text-xs font-semibold ${kit.muted}`}>
+              Вы · пример
             </p>
-            <ul
-              aria-label="Example message attachments"
-              className="mt-3 flex min-w-0 max-w-full gap-2 overflow-x-auto pb-1"
-            >
-              <FileCard file={exampleFile} />
-            </ul>
-          </MessageBubble>
-          <MessageBubble direction="incoming">
+            <p className="text-base leading-relaxed">
+              У меня есть заметки проекта и вопросы клиентов. С чего начать?
+            </p>
+            <span className="mt-3 inline-flex max-w-full items-center gap-2 rounded-lg border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] px-3 py-2 text-xs">
+              <Icon name="file-text" />
+              <span className="break-all">project-notes.md · пример</span>
+            </span>
+          </div>
+          <div className="max-w-2xl rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-5">
             <div className="mb-3 flex items-center gap-2">
               <span className="rounded-lg bg-[var(--workspace-brand-accent)] p-1 text-[var(--workspace-brand-on-accent)]">
                 <Icon name="chat-circle" />
               </span>
-              <p className="text-xs font-semibold">Assistant</p>
+              <p className="text-xs font-semibold">Ассистент · пример</p>
             </div>
-            <p className="whitespace-pre-wrap break-words text-sm leading-6">
-              Group the materials by what they explain: the offer, the people it
-              serves, and the questions that still need an answer.
+            <p className="text-base leading-relaxed">
+              Сгруппируйте материалы по тому, что они объясняют: предложение,
+              аудиторию и вопросы без ответа.
             </p>
             <p className={`mt-3 text-sm ${kit.muted}`}>
-              Based on project-notes.md.
+              Источник: project-notes.md. Это пример ссылки.
             </p>
-          </MessageBubble>
+            <Button
+              variant="plain"
+              className="mt-3"
+              aria-pressed={helpful}
+              onClick={() => setHelpful((value) => !value)}
+            >
+              <Icon name="check" />
+              {helpful ? "Отмечено полезным" : "Отметить полезным"}
+            </Button>
+          </div>
         </div>
       </Specimen>
 
       <Specimen
         id="composer"
-        title="Message composer"
-        description="Compose a message and attach local files. This preview uses the RBAC chat layout with a simulated reply."
+        title="Поле сообщения"
+        description="Напишите сообщение, прикрепите локальные файлы, затем посмотрите, остановите или повторите пример ответа."
         states={[
-          "Empty",
-          "Ready",
-          "Files attached",
-          "Files dragged from desktop",
-          "File drop target active",
-          "Attachment removed",
-          "Attachments reordered",
-          "Scrollable attachment list",
-          "File preview open",
-          "File too large",
-          "Files-only message",
+          "Пусто",
+          "Готово",
+          "Файлы прикреплены",
+          "Вложение удалено",
+          "Файл слишком большой",
+          "Сообщение только с файлами",
           "Streaming",
-          "Stopped",
-          "Failed",
+          "Остановлено",
+          "Ошибка",
           "Retrying",
           "Complete",
         ]}
-        usage="Attach files with the paperclip or drop them from your desktop anywhere in this chat. Drop multiple files at once; existing attachments remain in place and duplicates are skipped. Drag attached cards to reorder; a green line marks the insertion point. Additional rows scroll vertically after three files. Send with Command+Enter or Ctrl+Enter; Enter adds a new line. Send files with or without text; their order is retained in the message. Each file may be up to 10 MB; text previews are limited to 2 MB. Messages and files stay in this local preview until it reloads. Stop and Retry control the simulated reply."
-        recipe="rounded-2xl border p-3; attachments above the h-32 textarea; paperclip and Send in one toolbar; three attachment cards per row with bounded scrolling"
+        usage="Прикрепляйте несколько файлов, убирайте выбранное, отправляйте с текстом или без. До 10 МБ на файл. Пример показывает только имя, тип и размер; содержимое остаётся на устройстве. Черновик доступен при ответе. Во время ответа есть остановка, после прерывания или сбоя — повтор. Модель и сервер не подключены."
+        recipe={`${kit.field} min-h-28 resize-y / ${kit.card} / ${kit.button}; вложения: общий FileRow, выбор до отправки и сохранение в отправленном сообщении`}
       >
-        <FileDropZone onFiles={addAttachments}>
-          {question || sentAttachments.length ? (
-            <div className="mb-5 grid min-w-0 gap-4 px-2">
-              <MessageBubble direction="outgoing">
-                {question ? (
-                  <p className="whitespace-pre-wrap break-words text-sm leading-6">
-                    {question}
-                  </p>
-                ) : null}
-                {sentAttachments.length ? (
-                  <ul
-                    aria-label="Sent message attachments"
-                    className="mt-3 flex min-w-0 gap-2 overflow-x-auto pb-2"
-                  >
-                    {sentAttachments.map((file) => (
-                      <FileCard key={file.id} file={file} />
-                    ))}
-                  </ul>
-                ) : null}
-              </MessageBubble>
-              <MessageBubble
-                direction="incoming"
-                busy={replyState === "streaming"}
-              >
-                <div className="mb-3 flex items-center gap-2">
-                  <span className="rounded-lg bg-[var(--workspace-brand-accent)] p-1 text-[var(--workspace-brand-on-accent)]">
-                    <Icon name="chat-circle" />
-                  </span>
-                  <p className="text-xs font-semibold">Assistant</p>
-                </div>
-                {replyState === "error" ? (
-                  <div className="rounded-xl border border-[var(--workspace-brand-danger-line)] bg-[var(--workspace-brand-danger-surface)] p-4 text-sm text-[var(--workspace-brand-danger)]">
-                    <p className="font-semibold">Sample reply interrupted</p>
-                    <p className="mt-2">
-                      The failure control is on. Retry runs the sample response
-                      locally.
-                    </p>
-                  </div>
-                ) : (
-                  <p className="min-h-6 whitespace-pre-wrap break-words text-sm leading-6">
-                    {reply.slice(0, visibleCharacters) ||
-                      (replyState === "stopped"
-                        ? "Reply stopped before any text appeared."
-                        : "Preparing the sample reply…")}
-                    {replyState === "streaming" ? (
-                      <span
-                        className="ml-1 inline-block h-4 w-1 bg-[var(--workspace-brand-primary)] motion-safe:animate-pulse"
-                        aria-hidden="true"
-                      />
-                    ) : null}
-                  </p>
-                )}
-                {replyState === "stopped" || replyState === "error" ? (
-                  <Button variant="secondary" className="mt-4" onClick={retry}>
-                    Retry sample reply
-                  </Button>
-                ) : null}
-              </MessageBubble>
-            </div>
-          ) : null}
-          <p
-            role="status"
-            aria-live="polite"
-            className={`sr-only ${kit.muted}`}
-          >
-            {replyState === "streaming"
-              ? "Streaming a simulated reply…"
-              : replyState === "stopped"
-                ? "Reply stopped. You can retry or send another message."
-                : replyState === "error"
-                  ? "Simulated failure. Retry is available."
-                  : replyState === "complete"
-                    ? "Sample reply complete."
-                    : "Ready for a demo message."}
+        <div className="mb-5 flex items-start gap-3 rounded-xl bg-[var(--workspace-brand-background)] p-4 text-sm">
+          <Icon name="question" />
+          <p>
+            Локальный пример. Сообщения и ответы остаются здесь и исчезают при
+            перезагрузке.
           </p>
-          <form
-            className="min-w-0 border-t border-[var(--workspace-brand-line)] py-4 sm:px-4"
-            onSubmit={(event) => {
-              event.preventDefault();
-              send();
-            }}
-          >
-            <div className="min-w-0 rounded-2xl border border-[var(--workspace-brand-line)] p-3 focus-within:border-[var(--workspace-brand-foreground)]">
-              {attachments.length > 0 && (
-                <>
-                  <p className={`mb-2 text-xs ${kit.muted}`}>
-                    {attachments.length}{" "}
-                    {attachments.length === 1 ? "file" : "files"} · Drag to
-                    reorder
+        </div>
+        {question || sentAttachments.length ? (
+          <div className="mb-5 grid gap-4">
+            <div className="ml-auto w-fit max-w-2xl rounded-2xl bg-[var(--workspace-brand-background)] p-4">
+              <p className={`mb-2 text-xs font-semibold ${kit.muted}`}>
+                Ваше сообщение в примере
+              </p>
+              {question ? (
+                <p className="whitespace-pre-wrap break-words text-base leading-relaxed">
+                  {question}
+                </p>
+              ) : null}
+              {sentAttachments.length ? (
+                <ul
+                  aria-label="Вложения отправленного сообщения"
+                  className="mt-3 grid gap-2"
+                >
+                  {sentAttachments.map((file) => (
+                    <FileRow key={file.id} file={file} />
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+            <div
+              className={`${kit.card} max-w-2xl`}
+              aria-busy={replyState === "streaming"}
+            >
+              <p className="mb-3 text-xs font-semibold">Пример ассистента</p>
+              {replyState === "error" ? (
+                <div className="rounded-xl border border-[var(--workspace-brand-danger-line)] bg-[var(--workspace-brand-danger-surface)] p-4 text-sm text-[var(--workspace-brand-danger)]">
+                  <p className="font-semibold">Пример ответа прерван</p>
+                  <p className="mt-2">
+                    Включён режим ошибки. Повтор запускает ответ локально.
                   </p>
-                  <DraftAttachments
-                    files={attachments}
-                    onRemove={removeAttachment}
-                    onReorder={reorderAttachment}
-                  />
-                </>
+                </div>
+              ) : (
+                <p className="min-h-6 whitespace-pre-wrap break-words text-base leading-relaxed">
+                  {reply.slice(0, visibleCharacters) ||
+                    (replyState === "stopped"
+                      ? "Ответ остановлен до появления текста."
+                      : "Подготовка примера ответа…")}
+                  {replyState === "streaming" ? (
+                    <span
+                      className="ml-1 inline-block h-4 w-1 bg-[var(--workspace-brand-primary)] motion-safe:animate-pulse"
+                      aria-hidden="true"
+                    />
+                  ) : null}
+                </p>
               )}
-              <textarea
-                ref={input}
-                id={fieldId}
-                aria-label="Message"
-                className="h-32 min-h-24 max-h-[min(50dvh,480px)] w-full min-w-0 resize-y bg-transparent text-sm leading-6 outline-none"
-                value={draft}
-                aria-describedby={helpId}
-                placeholder="What do you want to work on?"
-                onChange={(event) => setDraft(event.target.value)}
-                onKeyDown={(event) => {
-                  if (
-                    event.key === "Enter" &&
-                    (event.metaKey || event.ctrlKey) &&
-                    !event.nativeEvent.isComposing
-                  ) {
-                    event.preventDefault();
-                    if (!event.repeat) send();
+              {replyState === "stopped" || replyState === "error" ? (
+                <Button variant="secondary" className="mt-4" onClick={retry}>
+                  Повторить пример ответа
+                </Button>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
+        <p
+          role="status"
+          aria-live="polite"
+          className={`mb-3 min-h-5 text-sm ${kit.muted}`}
+        >
+          {replyState === "streaming"
+            ? "Показывается пример потокового ответа…"
+            : replyState === "stopped"
+              ? "Ответ остановлен. Можно повторить или отправить другое сообщение."
+              : replyState === "error"
+                ? "Пример ошибки. Доступен повтор."
+                : replyState === "complete"
+                  ? "Пример ответа завершён."
+                  : "Можно отправить сообщение в примере."}
+        </p>
+        <form
+          className="grid gap-3"
+          onSubmit={(event) => {
+            event.preventDefault();
+            send();
+          }}
+        >
+          <label htmlFor={fieldId} className={kit.label}>
+            Ваше сообщение
+          </label>
+          <textarea
+            ref={input}
+            id={fieldId}
+            className={`${kit.field} min-h-28 resize-y`}
+            maxLength={2000}
+            value={draft}
+            aria-describedby={helpId}
+            placeholder="Спросите о своём проекте…"
+            onChange={(event) => setDraft(event.target.value)}
+            onKeyDown={(event) => {
+              if (
+                event.key === "Enter" &&
+                !event.shiftKey &&
+                !event.nativeEvent.isComposing
+              ) {
+                event.preventDefault();
+                send();
+              }
+            }}
+          />
+          <div className="grid gap-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <input
+                ref={fileInput}
+                type="file"
+                multiple
+                className="hidden"
+                aria-label="Прикрепить файлы к сообщению примера"
+                onChange={(event) => {
+                  const accepted: ILocalFile[] = [];
+                  const rejected: string[] = [];
+                  for (const file of Array.from(event.target.files ?? [])) {
+                    if (file.size > 10 * 1024 * 1024) {
+                      rejected.push(
+                        `${file.name}: в примере допустимы файлы до 10 МБ.`,
+                      );
+                    } else {
+                      accepted.push({
+                        id: `${file.name}:${file.size}:${file.lastModified}`,
+                        name: file.name,
+                        size: file.size,
+                        type: file.type,
+                      });
+                    }
                   }
+                  setAttachmentErrors(rejected);
+                  setAttachments((current) => {
+                    const known = new Set(current.map((file) => file.id));
+                    return [
+                      ...current,
+                      ...accepted.filter((file) => {
+                        if (known.has(file.id)) return false;
+                        known.add(file.id);
+                        return true;
+                      }),
+                    ];
+                  });
+                  event.target.value = "";
                 }}
               />
-              <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                <input
-                  ref={fileInput}
-                  type="file"
-                  multiple
-                  className="sr-only"
-                  aria-label="Attach files to message"
-                  onChange={(event) => {
-                    addAttachments(Array.from(event.currentTarget.files ?? []));
-                    event.target.value = "";
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={() => fileInput.current?.click()}
-                  className={`inline-flex min-h-10 items-center gap-2 rounded-lg text-xs font-semibold ${kit.muted} hover:text-[var(--workspace-brand-foreground)] ${kit.focus}`}
-                >
-                  <Icon name="paperclip" className="size-4" />
-                  Attach files
-                </button>
-                {replyState === "streaming" ? (
-                  <Button
-                    variant="secondary"
-                    className="min-h-10 rounded-xl px-4 text-sm"
-                    onClick={() => {
-                      setReplyState("stopped");
-                      input.current?.focus();
-                    }}
-                  >
-                    Stop reply
-                  </Button>
-                ) : (
-                  <Button
-                    type="submit"
-                    title="Send (⌘ Enter / Ctrl Enter)"
-                    aria-keyshortcuts="Meta+Enter Control+Enter"
-                    className="min-h-10 rounded-xl px-4 text-sm"
-                    disabled={!draft.trim() && !attachments.length}
-                  >
-                    <Icon name="paper-plane-tilt" className="size-4" />
-                    Send
-                  </Button>
-                )}
-              </div>
-              <p id={helpId} className={`mt-2 text-xs ${kit.muted}`}>
-                ⌘ Enter / Ctrl Enter to send. Enter adds a new line.
+              <Button
+                variant="secondary"
+                onClick={() => fileInput.current?.click()}
+                aria-describedby={attachmentsHelpId}
+              >
+                <Icon name="plus" />
+                Прикрепить файлы
+              </Button>
+              <p id={attachmentsHelpId} className={`text-xs ${kit.muted}`}>
+                До 10 МБ на файл · только локальный просмотр
               </p>
             </div>
-            {attachmentErrors.length > 0 && (
+            {attachmentErrors.length ? (
               <div
                 role="alert"
-                className="mt-2 text-sm text-[var(--workspace-brand-danger)]"
+                className="rounded-xl border border-[var(--workspace-brand-danger-line)] bg-[var(--workspace-brand-danger-surface)] p-3 text-sm text-[var(--workspace-brand-danger)]"
               >
                 {attachmentErrors.map((error) => (
                   <p key={error}>{error}</p>
                 ))}
               </div>
+            ) : null}
+            {attachments.length ? (
+              <ul aria-label="Файлы черновика" className="grid gap-2">
+                {attachments.map((file) => (
+                  <FileRow
+                    key={file.id}
+                    file={file}
+                    onRemove={removeAttachment}
+                  />
+                ))}
+              </ul>
+            ) : null}
+            <p role="status" className={`text-xs ${kit.muted}`}>
+              {attachments.length
+                ? `${attachments.length} — файлов в черновике.`
+                : "Файлы не прикреплены."}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p id={helpId} className={`text-xs ${kit.muted}`}>
+              Enter — отправить · Shift+Enter — новая строка · {draft.length}
+              /2000
+            </p>
+            {replyState === "streaming" ? (
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setReplyState("stopped");
+                  input.current?.focus();
+                }}
+              >
+                Остановить ответ
+              </Button>
+            ) : (
+              <Button
+                type="submit"
+                disabled={!draft.trim() && !attachments.length}
+              >
+                <Icon name="arrow-right" />
+                Отправить сообщение примера
+              </Button>
             )}
-          </form>
-        </FileDropZone>
-        <details className={`mt-4 text-xs ${kit.muted}`}>
-          <summary
-            className={`w-fit cursor-pointer rounded-lg py-2 ${kit.focus}`}
+          </div>
+          <label
+            className={`mt-2 flex min-h-11 cursor-pointer items-center gap-3 text-sm ${kit.muted}`}
           >
-            Simulation controls
-          </summary>
-          <label className="mt-2 flex min-h-11 cursor-pointer items-center gap-3 text-sm">
             <Checkbox
               checked={simulateFailure}
               disabled={replyState === "streaming"}
               onChange={(event) => setSimulateFailure(event.target.checked)}
             />
-            Simulate a failed reply on the next send
+            Сымитировать ошибку следующего ответа
           </label>
-        </details>
+        </form>
       </Specimen>
     </div>
   );

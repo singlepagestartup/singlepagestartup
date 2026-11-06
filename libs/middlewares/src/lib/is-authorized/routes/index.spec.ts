@@ -139,6 +139,14 @@ describe("is-authorized allowed routes", () => {
     expect(matcher.matches("/api/http-cache/clear", "GET")).toBe(false);
   });
 
+  it("allows anonymous POST only on the exact cron route", () => {
+    expect(matcher.matches("/api/agent/agents/cron", "POST")).toBe(true);
+    expect(matcher.matches("/api/agent/agents/cron", "GET")).toBe(false);
+    expect(matcher.matches("/api/agent/agents/cron/extra", "POST")).toBe(false);
+    expect(matcher.matches("/api/agent/agents", "POST")).toBe(false);
+    expect(matcher.matches("/api/agent/agents/dummy", "POST")).toBe(false);
+  });
+
   /**
    * BDD Scenario: Project/option extensions are honored.
    */
@@ -154,4 +162,17 @@ describe("is-authorized allowed routes", () => {
       false,
     );
   });
+});
+
+it("opens only the public Page SEO read operations", () => {
+  const matcher = createAllowedRoutesMatcher();
+  expect(matcher.matches("/api/host/pages/seo", "GET")).toBe(true);
+  expect(matcher.matches("/api/host/pages/seo-preview", "POST")).toBe(true);
+  expect(matcher.matches("/api/host/pages/seo-preview", "PATCH")).toBe(false);
+  expect(matcher.matches("/api/host/pages/seo-preview/export", "POST")).toBe(
+    false,
+  );
+  expect(matcher.matches("/api/host/metadata", "POST")).toBe(false);
+  expect(matcher.matches("/api/host/metadata/seo", "GET")).toBe(false);
+  expect(matcher.matches("/api/host/metadata/preview", "POST")).toBe(false);
 });

@@ -1,5 +1,4 @@
 import type { ComponentType } from "react";
-import type { IDocumentConfirmation } from "../../../../tools/studio/workspace/document";
 export type WorkspacePageLayer = "singlepage" | "startup";
 export type WorkspaceLinkResolver = (
   url: string,
@@ -12,11 +11,9 @@ export interface IWorkspacePageProps {
 }
 
 export interface IWorkspacePageView {
-  confirmation?: IDocumentConfirmation;
   id: string;
   title: string;
   route?: string;
-  representations?: { text: IWorkspacePageView; preview?: IWorkspacePageView };
   text?: string;
   kind:
     | "group"
@@ -56,17 +53,8 @@ export interface IWorkspacePage {
   title: string;
   source?: string;
   route?: string;
-  representations?: { text: string; preview?: string };
   children: IWorkspacePage[];
   export?: "pdf";
-}
-
-export type WorkspacePageRepresentation = "text" | "preview";
-
-export interface IWorkspacePageSelection {
-  selected?: string;
-  representation: WorkspacePageRepresentation;
-  navigationHref?: string;
 }
 
 export interface IWorkspacePageActivation {
@@ -137,7 +125,7 @@ export function findWorkspacePage(
             ? Boolean(targetParts[index])
             : part === targetParts[index],
         );
-      const sourceUrl = page.representations?.text.url ?? page.url;
+      const sourceUrl = page.url;
       return (
         routeMatches ||
         (sourceUrl &&
@@ -145,37 +133,6 @@ export function findWorkspacePage(
       );
     })
   );
-}
-
-/** URL state may select only a declared page and one of its representations. */
-export function requestedWorkspacePage(
-  pages: readonly IWorkspacePageView[],
-  { overview = false, search = "", baseHref = "http://workspace.local/" } = {},
-): IWorkspacePageSelection {
-  const all = flattenWorkspacePages(pages);
-  const first = all.find(({ kind }) => kind !== "group");
-  const params = new URLSearchParams(search);
-  const page = all.find(
-    ({ id, kind }) => id === params.get("page") && kind !== "group",
-  );
-  const fallback = overview ? "overview" : first?.id;
-  if (!page) return { selected: fallback, representation: "text" };
-  const destination = params.get("navigationHref");
-  const navigationHref =
-    destination?.startsWith("/") &&
-    !destination.startsWith("//") &&
-    findWorkspacePage(pages, destination, baseHref)?.id === page.id
-      ? destination
-      : undefined;
-  return {
-    selected: page.id,
-    representation:
-      params.get("representation") === "preview" &&
-      page.representations?.preview
-        ? "preview"
-        : "text",
-    navigationHref,
-  };
 }
 
 /** Resolve a declared page inside one selected source layer, with no fallback. */
@@ -196,21 +153,6 @@ export function resolveWorkspacePage(
     ),
     export: page.export,
   };
-  if (page.representations) {
-    const representation = (source: string) =>
-      resolveWorkspacePage(
-        { ...page, source, representations: undefined, children: [] },
-        layer,
-        sources,
-        root,
-      );
-    const text = representation(page.representations.text);
-    const preview = page.representations.preview
-      ? representation(page.representations.preview)
-      : undefined;
-    if (preview) preview.text = text.markdown;
-    return { ...result, kind: text.kind, representations: { text, preview } };
-  }
   if (!page.source) return result;
   const key = `${layer}/${page.source}`;
   const extension = page.source.split(".").pop()?.toLowerCase();

@@ -15,7 +15,7 @@ function WebsiteBuilderModuleFeature({
   const geometry = Glyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       width={size}
@@ -30,7 +30,6 @@ function WebsiteBuilderModuleFeature({
   );
 }
 import { Component as FileStorageModuleFile } from "../../../../../../file-storage/file";
-import { useSource } from "../../../../../../knowledge/source/singlepage/overview/document/ai-chat/Source";
 import { useThread } from "../../../../../../social/thread/singlepage/overview/ai-chat/Thread";
 import { useFiles } from "../../../../../../file-storage/file/singlepage/list/attachments/ai-chat/Files";
 import {
@@ -60,11 +59,8 @@ export function Component({
   initialError = "",
 }: IComponentVariantProps = {}) {
   const { account } = useStudioAccount();
-  const { source } = useSource();
   const {
     thread,
-    workingOn,
-    setWorkingOn,
     draft: value,
     setDraft: onChange,
     send: onSend,
@@ -125,7 +121,7 @@ export function Component({
         setError(
           cause instanceof Error
             ? cause.message
-            : "Не удалось прикрепить файлы. Попробуйте ещё раз.",
+            : "Не удалось прикрепить файлы. Попробуйте снова.",
         );
     } finally {
       if (mounted.current) setReading(false);
@@ -154,31 +150,12 @@ export function Component({
       <label htmlFor={id} className="sr-only">
         Сообщение
       </label>
-      <label className="mb-3 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-        Рабочий контекст
-        <span className="relative min-w-0">
-          <select
-            aria-label="Рабочий контекст"
-            value={workingOn}
-            onChange={(event) =>
-              setWorkingOn(event.target.value as "whole" | "source")
-            }
-            className="min-h-9 max-w-full appearance-none rounded-lg border border-border bg-card py-2 pl-3 pr-9 text-xs font-semibold text-foreground"
-          >
-            <option value="whole">Весь документ</option>
-            <option value="source">{source.title}</option>
-          </select>
-          <WebsiteBuilderModuleFeature
-            name="caret-down"
-            className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2"
-          />
-        </span>
-      </label>
       <div className="rounded-2xl border border-border p-3 focus-within:border-foreground">
         {files.length > 0 && (
           <>
             <p className="mb-2 text-xs text-muted-foreground">
-              Файлов: {files.length} · Перетащите, чтобы изменить порядок
+              {files.length} {files.length === 1 ? "file" : "files"} ·
+              Перетащите для смены порядка
             </p>
             <ul
               aria-label="Вложения сообщения"
@@ -217,7 +194,7 @@ export function Component({
               if (!event.repeat) event.currentTarget.form?.requestSubmit();
             }
           }}
-          placeholder="Обсудите документ или попросите внести изменения."
+          placeholder="Обсудите знание или попросите изменить его."
           className="h-32 min-h-24 max-h-[min(50dvh,480px)] w-full min-w-0 resize-y bg-transparent text-sm leading-6 outline-none"
         />
         <input
@@ -246,7 +223,7 @@ export function Component({
               name="paperclip"
               className="size-4"
             />
-            {reading ? "Добавляем файлы…" : "Прикрепить файлы"}
+            {reading ? "Добавление файлов…" : "Прикрепить файлы"}
           </button>
           <button
             type="submit"
@@ -260,7 +237,7 @@ export function Component({
               name="paper-plane-tilt"
               className="size-4"
             />
-            {sending ? "Отправляем…" : "Отправить"}
+            {sending ? "Sending…" : "Send"}
           </button>
         </div>
         <p className="mt-2 text-xs text-muted-foreground">

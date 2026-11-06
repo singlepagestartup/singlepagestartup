@@ -1,19 +1,15 @@
 "use client";
+import { type ImgHTMLAttributes as ImgHTMLAttributes } from "react";
+import { twMerge as twMerge } from "tailwind-merge";
+import { type InputHTMLAttributes as InputHTMLAttributes } from "react";
+import { useId as useId } from "react";
+import { Component as WebsiteBuilderModuleButton } from "../../../../../../website-builder/button/index";
 import {
-  type ImgHTMLAttributes as ImgHTMLAttributes,
-  type InputHTMLAttributes as InputHTMLAttributes,
-  useId as useId,
   forwardRef as forwardRefControl,
   type ButtonHTMLAttributes as ButtonControlProps,
-  useState,
-  type FormEvent,
 } from "react";
-import { twMerge as twMerge } from "tailwind-merge";
-
-import { Component as WebsiteBuilderModuleButton } from "../../../../../../website-builder/button/index";
-
 import IconGlyphs from "../../../../../../website-builder/feature/singlepage/icon/icons.json";
-
+import { useState, type FormEvent } from "react";
 interface ITextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
   hint?: string;
@@ -93,7 +89,7 @@ function Icon({
   const geometry = IconGlyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  if (!geometry) throw new Error("Нет иконки Phosphor:" + name);
   return (
     <svg
       className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
@@ -127,18 +123,18 @@ export function Component({ onCreate, onCancel }: IProfileCreateProps) {
         <section className="flex flex-col justify-center p-6 @[640px]:p-10">
           <span className="mb-5 h-1 w-10 rounded-full bg-[color:var(--workspace-brand-accent)]" />
           <h1 className="text-3xl font-semibold leading-tight">
-            Начните с названия
+            Начните с названия.
           </h1>
           <p className={`mt-4 text-sm leading-6 ${kit.muted}`}>
-            Создайте проект и начните работу в обсуждении продуктов. Добавляйте
-            знания и файлы по мере работы.
+            Создайте проект и начните работу в переписке Продуктов. Добавляйте
+            знания и файлы по необходимости.
           </p>
           <form onSubmit={submit} className="mt-8 grid gap-4">
             <TextField
               label="Название проекта"
               value={name}
               onChange={(event) => setName(event.target.value)}
-              placeholder="Над чем вы работаете?"
+              placeholder="Над чем работаете?"
               required
               autoComplete="off"
               maxLength={100}
@@ -149,7 +145,7 @@ export function Component({ onCreate, onCancel }: IProfileCreateProps) {
             </Button>
             {onCancel && (
               <Button variant="plain" onClick={onCancel}>
-                К моему проекту
+                Вернуться к проекту
               </Button>
             )}
           </form>
@@ -161,9 +157,10 @@ export function Component({ onCreate, onCancel }: IProfileCreateProps) {
             className="h-full min-h-96 w-full rounded-none object-cover"
           />
           <div className="absolute inset-x-5 bottom-5 rounded-xl bg-[color:var(--workspace-brand-foreground)] p-5 text-white">
-            <p className="font-semibold">Ваши файлы и ваш проект</p>
+            <p className="font-semibold">Ваши файлы. Ваш проект.</p>
             <p className="mt-2 text-sm leading-6 text-white/70">
-              Опишите продукты, приложите файлы и обсудите проект с помощником.
+              Опишите продукты, прикрепите полезные файлы и работайте с
+              продуктовым ассистентом в одной беседе.
             </p>
           </div>
         </div>
