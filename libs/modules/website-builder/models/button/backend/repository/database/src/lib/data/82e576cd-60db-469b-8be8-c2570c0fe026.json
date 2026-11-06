@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Buy tokens",
+    "ru": "Купить токены"
+  },
+  "subtitle": {},
+  "url": "/ecommerce",
+  "className": "",
+  "id": "82e576cd-60db-469b-8be8-c2570c0fe026",
+  "createdAt": "2026-10-27T08:40:59.553Z",
+  "updatedAt": "2026-10-27T15:00:12.745Z",
+  "variant": "footer-link",
+  "adminTitle": "Купить токены",
+  "slug": "ai-chat-editable-terms-button-0"
+}

@@ -1,13 +1,12 @@
 /**
  * BDD Suite: GitHub pre-development reconciliation
  * Given a repository with a committed strategy and relevance rules
- * When the GitHub preflight examines commits after the approved baseline
+ * When the GitHub preflight examines commits after the first published strategy
  * Then it reports only unreconciled commits that can affect living artifacts
  */
 
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { createHash } from "node:crypto";
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -57,7 +56,7 @@ reconciliations: []
 }
 
 function createRepository(
-  strategyStatus,
+  contentState,
   repositoryIdentity = "singlepagestartup/singlepagestartup",
 ) {
   const repositoryRoot = mkdtempSync(
@@ -96,16 +95,11 @@ repository_layers:
   write(
     repositoryRoot,
     `apps/studio/workspace/strategy/${layer}.md`,
-    `# Strategy
-
-## Decision status
-
-| Field | Current value |
-| --- | --- |
-| Status | \`${strategyStatus}\` |
-`,
+    contentState === "empty"
+      ? "# Strategy\n"
+      : "# Strategy\n\n## Choice\n\nOne bounded experiment.\n",
   );
-  const baseline = commit(repositoryRoot, `${strategyStatus} strategy`);
+  const baseline = commit(repositoryRoot, `${contentState} strategy`);
   return { repositoryRoot, baseline, layer, repositoryIdentity };
 }
 
@@ -129,77 +123,45 @@ function check(repositoryRoot, expectedLayer) {
 }
 
 describe("GitHub pre-development reconciliation", () => {
-  /**
-   * BDD Scenario: Use document-owned approval instead of an obsolete prose row
-   * Given a strategy body still contains a legacy approved row
-   * When metadata says false or its content fingerprint is stale
-   * Then only a later valid user confirmation establishes the baseline
-   */
-  test("requires valid confirmation when strategy metadata is present", () => {
-    const { repositoryRoot } = createRepository("proposed");
+  test("uses the first published content without approval metadata", () => {
+    const { repositoryRoot } = createRepository("empty");
     const strategyPath = "apps/studio/workspace/strategy/singlepage.md";
-    const body =
-      "# Strategy\n\n| Status | approved |\n\n## Choice\n\nOne bounded experiment.\n";
-    write(
-      repositoryRoot,
-      strategyPath,
-      `---\nconfirmation: { confirmed: false }\n---\n\n${body}`,
-    );
-    commit(repositoryRoot, "unconfirmed strategy with a legacy row");
-    assert.equal(check(repositoryRoot).baseline_commit, null);
-    const stamp = (hash) =>
-      `---\nconfirmation:\n  confirmed: true\n  by: operator\n  at: \"2026-09-11\"\n  content_sha256: ${hash}\n---\n\n${body}`;
-    write(repositoryRoot, strategyPath, stamp("stale-fingerprint"));
-    commit(repositoryRoot, "edit a previously reviewed body");
     assert.equal(check(repositoryRoot).baseline_commit, null);
     write(
       repositoryRoot,
       strategyPath,
-      stamp(createHash("sha256").update(body.trim()).digest("hex")),
+      "# Strategy\n\nA concrete market choice.\n",
     );
-    const approved = commit(repositoryRoot, "confirm the current strategy");
-    assert.equal(check(repositoryRoot).baseline_commit, approved);
+    const baseline = commit(repositoryRoot, "publish strategy");
+    assert.equal(check(repositoryRoot).baseline_commit, baseline);
+    write(
+      repositoryRoot,
+      strategyPath,
+      "# Strategy\n\nA refined market choice.\n",
+    );
+    commit(repositoryRoot, "refine strategy");
+    assert.equal(check(repositoryRoot).baseline_commit, baseline);
   });
 
-  /**
-   * BDD Scenario: Confirm the inherited strategy for a downstream project
-   * Given the startup strategy initially contains no own confirmation
-   * When the operator explicitly adopts the complete singlepage strategy
-   * Then the metadata-only startup commit establishes its own baseline
-   */
-  test("evaluates startup adoption against its base at the same commit", () => {
+  test("uses the downstream project's own first published strategy", () => {
     const { repositoryRoot } = createRepository(
-      "proposed",
+      "empty",
       "example/client-product",
     );
-    const body = "# Strategy\n\n## Choice\n\nOne bounded experiment.\n";
-    const hash = createHash("sha256").update(body.trim()).digest("hex");
-    const metadata = `---\nconfirmation:\n  confirmed: true\n  by: operator\n  at: \"2026-09-11\"\n  content_sha256: ${hash}\n---\n`;
     write(
       repositoryRoot,
       "apps/studio/workspace/strategy/singlepage.md",
-      `${metadata}\n${body}`,
+      "# Strategy\n\nFramework direction.\n",
     );
-    write(repositoryRoot, "apps/studio/workspace/strategy/startup.md", "");
-    commit(repositoryRoot, "inherit a framework strategy");
+    commit(repositoryRoot, "publish framework strategy");
     assert.equal(check(repositoryRoot).baseline_commit, null);
     write(
       repositoryRoot,
       "apps/studio/workspace/strategy/startup.md",
-      metadata,
+      "# Strategy\n\nClient market choice.\n",
     );
-    const adoption = commit(
-      repositoryRoot,
-      "confirm the inherited strategy for startup",
-    );
-    assert.equal(check(repositoryRoot).baseline_commit, adoption);
-    write(
-      repositoryRoot,
-      "apps/studio/workspace/strategy/singlepage.md",
-      `${metadata}\n${body.replace("One bounded", "Another")}`,
-    );
-    commit(repositoryRoot, "change base after the historical approval");
-    assert.equal(check(repositoryRoot).baseline_commit, adoption);
+    const baseline = commit(repositoryRoot, "publish client strategy");
+    assert.equal(check(repositoryRoot).baseline_commit, baseline);
   });
 
   /**
@@ -209,7 +171,7 @@ describe("GitHub pre-development reconciliation", () => {
    * Then it selects singlepage for the framework and startup for the downstream project
    */
   test("routes framework and downstream repositories to different layers", () => {
-    const framework = createRepository("approved");
+    const framework = createRepository("published");
     const frameworkResult = check(framework.repositoryRoot);
     assert.equal(frameworkResult.layer, "singlepage");
     assert.equal(frameworkResult.layer_source, "repository-map");
@@ -218,7 +180,7 @@ describe("GitHub pre-development reconciliation", () => {
       "singlepagestartup/singlepagestartup",
     );
 
-    const downstream = createRepository("approved", "example/client-product");
+    const downstream = createRepository("published", "example/client-product");
     const downstreamResult = check(downstream.repositoryRoot);
     assert.equal(downstreamResult.layer, "startup");
     assert.equal(downstreamResult.layer_source, "default");
@@ -260,7 +222,7 @@ describe("GitHub pre-development reconciliation", () => {
    * Then it stops before a commit can be routed into the inherited framework sources
    */
   test("rejects affected artifacts outside the resolved layer", () => {
-    const downstream = createRepository("approved", "example/client-product");
+    const downstream = createRepository("published", "example/client-product");
     const configPath = path.join(
       downstream.repositoryRoot,
       "apps/studio/workspace/utils/pre-development/github/startup.yaml",
@@ -279,28 +241,28 @@ describe("GitHub pre-development reconciliation", () => {
 
   /**
    * BDD Scenario: Reconcile the GitHub lifecycle deterministically
-   * Given proposed, approved, and post-approval repository snapshots
+   * Given proposed, published, and later repository snapshots
    * When the preflight checks their remote commit ranges
    * Then it waits for a baseline, reports clean state, and routes each relevant commit once
    */
   test("handles baseline, relevant-change, and reconciliation states", () => {
-    const proposed = createRepository("proposed");
+    const proposed = createRepository("empty");
     const waiting = check(proposed.repositoryRoot);
     assert.equal(waiting.status, "waiting-for-baseline");
     assert.equal(waiting.baseline_commit, null);
 
-    const approved = createRepository("approved");
-    const clean = check(approved.repositoryRoot);
+    const published = createRepository("published");
+    const clean = check(published.repositoryRoot);
     assert.equal(clean.status, "clean");
-    assert.equal(clean.baseline_commit, approved.baseline);
+    assert.equal(clean.baseline_commit, published.baseline);
     assert.deepEqual(clean.pending, []);
 
-    write(approved.repositoryRoot, "LICENSE", "MIT License\n");
+    write(published.repositoryRoot, "LICENSE", "MIT License\n");
     const licenseCommit = commit(
-      approved.repositoryRoot,
+      published.repositoryRoot,
       "publish MIT license",
     );
-    const detected = check(approved.repositoryRoot);
+    const detected = check(published.repositoryRoot);
     assert.equal(detected.status, "changes-detected");
     assert.equal(detected.pending[0].commit, licenseCommit);
     assert.deepEqual(detected.pending[0].matched_rules, ["license"]);
@@ -310,7 +272,7 @@ describe("GitHub pre-development reconciliation", () => {
     );
 
     const configPath = path.join(
-      approved.repositoryRoot,
+      published.repositoryRoot,
       "apps/studio/workspace/utils/pre-development/github/singlepage.yaml",
     );
     const config = readFileSync(configPath, "utf8").replace(
@@ -323,12 +285,12 @@ describe("GitHub pre-development reconciliation", () => {
     );
     writeFileSync(configPath, config);
 
-    const reconciled = check(approved.repositoryRoot);
+    const reconciled = check(published.repositoryRoot);
     assert.equal(reconciled.status, "clean");
     assert.deepEqual(reconciled.pending, []);
 
-    commit(approved.repositoryRoot, "record GitHub reconciliation");
-    const afterLedgerCommit = check(approved.repositoryRoot);
+    commit(published.repositoryRoot, "record GitHub reconciliation");
+    const afterLedgerCommit = check(published.repositoryRoot);
     assert.equal(afterLedgerCommit.status, "clean");
     assert.deepEqual(afterLedgerCommit.pending, []);
   });

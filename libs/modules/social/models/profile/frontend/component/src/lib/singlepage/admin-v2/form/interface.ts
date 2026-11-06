@@ -17,7 +17,7 @@ export type IComponentProps = IParentComponentProps<IModel, typeof variant> & {
   profilesToFileStorageModuleFiles?: (
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;
-  profilesToKnowledgeModuleDocuments?: (
+  profilesToKnowledgeModuleSources?: (
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;
   profilesToSkills?: (

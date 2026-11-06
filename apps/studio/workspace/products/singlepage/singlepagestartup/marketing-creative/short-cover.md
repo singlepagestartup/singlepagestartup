@@ -1,15 +1,10 @@
 ---
-confirmation:
-  confirmed: false
-review:
-  dependencies:
-    product.singlepagestartup.creative: 7b7e31314b3006e86852a9f7ed84b48948b0036aac28107cfb16a4338e0b286e
 ---
 
-# Describe the change. Check the result.
+# Минимальный заказ — шесть единиц.
 
 Code Framework
 
-> See the full build
+> 3 кружки + 3 тарелки — можно
 
-![Editorial photograph of a person moving through their work.](/workspace-assets/singlepage/generated/living-focus/singlepagestartup-photography-work-in-motion-square.png)
+![Иллюстративная фотография человека в движении во время работы.](/workspace-assets/singlepage/generated/living-focus/singlepagestartup-photography-work-in-motion-square.png)

@@ -29,13 +29,18 @@ Each module contains:
 - TailwindCSS only, no ad-hoc CSS.
 - Design includes a dedicated Icons block naming its library or custom drawing method and showing the glyphs. Generate photographic and illustrative masters with unconstrained aspect ratios, then prepare square delivery images by expanding the canvas with an image-editing tool; preserve the originals. Follow `.agents/templates/design.md` and `.agents/roles/brand-designer.md`.
 - Always use SDK providers for data access from `libs/modules/<module>/models/<model|relation>/sdk/<client|server>`.
+- Before implementing or reviewing frontend variants, read `.agents/contracts/engineering/frontend-components.md` for required file roles, layer registration, shared or specialized client/server readers, explicit UI props and JSX slots, and query-cache/store/realtime ownership.
 - Use relation components with `variant="find"` and filter via `apiProps.params.filters.and`.
+- Keep principal/data/form/mutation logic in the owning domain Widget and layout/copy/imagery in Website Builder Widget variants. Connect exact instances through default relations and rendered JSX slots; relations must not switch on business screens or inject their presentation. See the Functional Widgets and presentation Widgets section of the frontend contract.
+- Read named URL values through Page variant="url-segment-values" render callbacks in Host leaf compositions. Keep the complete map inside the reader callback and pass only explicit IDs or slugs directly to domain components; do not thread routeParams through Page, Widget and relation props. Keep session operations and business variant registries in their owning modules.
 - Backend only hosted in `apps/api/app.ts`.
+- For backend changes, follow the loop and branching rules in `.agents/contracts/engineering/backend-code-style.md`.
 - Backend route middleware must live in the module's `backend/app/middlewares/src/lib/*` folder and be exported from that middleware package; controllers should only compose route definitions, middleware instances, and handlers.
 - Put a new file where its kind already lives, not beside whatever calls it: a constant belongs with the shared constants, a pure predicate in a utils package, a service beside the other services. List the target directory first and check the siblings are the same kind of thing. Do not add a layer, a top-level directory, or a shared package to make a change fit; where nothing fits, say so and agree the exception before writing it. See `.agents/contracts/engineering/code-placement.md`.
 - When one file is no longer enough for a thing, move it into a folder named after it and make it that folder's `index.ts`. Never leave a file beside a folder of the same name — importers of `./thing` resolve to either, so the thing ends up living in two places under one name.
 - Do not edit repository data snapshots under `libs/modules/<module>/<relations|models>/<name>/backend/repository/database/src/lib/data/*` to implement behavior or UI fixes; change runtime code, configuration, migrations, or explicit data-management flows instead.
 - When changing a Drizzle table schema or fields, run the appropriate `repository-generate` target instead of hand-writing migration SQL or `migrations/meta/*` journal/snapshot files. For example, use `npx nx run @sps/<module>:models:<model>:repository-generate` or the matching relation target; use `npx nx run api:db:generate` only when intentionally regenerating all repository migrations.
+- Model/relation `repository-generate` targets run uncached and automatically regenerate Consistency Capture after Drizzle, including Startup models and `fields/startup.ts` changes. Preserve that final step in custom targets; commit the generated migrations and capture catalog together. Apply migrations with `npx nx run api:db:migrate`, then run `npx nx run @sps/providers-db:consistency-check`. Never hand-edit capture SQL or `capture.json`; see `libs/providers/db/README.md`.
 
 If anything is unclear, read the relevant README files instead of guessing.
 
@@ -43,7 +48,7 @@ Before storing, publishing, or returning prose intended for a person, make the
 final editorial pass defined in `.agents/contracts/editorial-pass.md`. Every provider applies that
 one contract, with `.agents/references/unslop-patterns.md` beside it while
 editing. Run it after facts, evidence, links, identifiers, required
-structure, and approval state are correct. It applies in the requested language
+structure, and task scope are correct. It applies in the requested language
 and must preserve meaning, uncertainty, terminology, formatting, and voice.
 
 ## Environment & Requirements
@@ -85,16 +90,20 @@ shared executable backend for GitHub Project automation, not a process copy.
 Use `singlepagestartup` (Codex), `/singlepagestartup` (Claude), or a
 plain-language request to start, continue, inspect, or change a project before
 engineering. The canonical process is `.agents/workflows/pre-development.md`.
-Its stage machine, `00-business`, `10-strategy`, `20-brand`, `30-design` and
-`40-products` with owners, active artifacts, executable checks and
-manual-review criteria, is `.agents/pipeline/pre-development.yaml`, executed by
-`npm run singlepagestartup:pipeline:check`. Every invocation runs the GitHub
-preflight, reads the layer-local cursor
-`apps/studio/workspace/utils/pre-development/<layer>.yaml`, runs the check and
-repairs its gaps before stage work. Layers, projections and write ownership are
+The suggested sequence is Brief → Products, competitors and semantics → Strategy
+→ Brand → Design → Materials. Pass `--section` and, for product work, `--product`
+to `npm run singlepagestartup -- ...`; no arguments resume the saved section.
+`--skip`, `--complete` and `--next` move forward explicitly. Document review
+runs on request. Navigation records the selected section independently of
+structural diagnostics. The layer-local v2 state records navigation and preparation
+progress; `npm run singlepagestartup:pipeline:check` is read-only diagnosis.
+GitHub reconciliation is optional and never a prerequisite for local work.
+Layers, projections and write ownership are
 defined in `.agents/contracts/inheritance.md`; claims, unknowns and assets in
-`.agents/contracts/evidence.md`; approval and review state in
-`.agents/contracts/document-confirmation.md`. The seven pre-development
+`.agents/contracts/evidence.md`; on-request document review in
+`.agents/contracts/document-confirmation.md`. Agents own research and concrete
+results under `.agents/contracts/research-ownership.md`; ask the owner only for
+unavailable facts, decisions or access. The seven pre-development
 professions are executable custom agents discovered from `.codex/agents/*.toml`
 and `.claude/agents/*.md`; every adapter loads its canonical role from
 `.agents/roles/`, which holds responsibility and method in one file. All
@@ -118,14 +127,28 @@ checks automatically and do not depend on an adaptation checkpoint or agent
 availability. There are no migration hooks on merge/rewrite. Keep Git sync and
 adaptation outcomes separate; a pending adaptation does not make a merge fail.
 
+## Code Review Rules
+
+For pull request and local diff reviews, read and apply
+`.agents/workflows/engineering/review_pr.md` before reporting findings. This is
+the shared guidance for the `review-pr` skill and built-in Code Review: module
+dependency direction, API and cache consistency across affected readers, and
+evidence-based findings with the architecture decision left to the developer.
+Read `.agents/contracts/engineering/module-dependencies.md` for the confirmed
+module order. A lower module must not import a higher module, including through
+types, SDKs, schemas, frontend composition or reexports. Review changed modules
+against that order; changes to the order or exceptions require operator confirmation.
+
 ## Code Review Checklist
 
 - Enforce TypeScript interface-first style, PascalCase components, and consistent export order.
-- Confirm frontend changes obey the Tailwind/shadcn preset rules, variant structure, and SDK-based data fetching.
+- Confirm frontend changes obey the Tailwind/shadcn preset rules, required variant file roles, matching registration and props union in the owning layer, and SDK-based data fetching. Specialized local `client.tsx`/`server.tsx` readers follow the same component contract.
+- Confirm domain Widget logic and Website Builder presentation remain separate, with exact instance links and default relation renderers; specialized relations require association-specific behavior.
 - Confirm backend changes preserve the layered architecture (repository/service/controller) and never bypass shared utilities (logging, caching, RBAC, revalidation).
 - Confirm every new file sits with its own kind: constants with constants, pure helpers in a utils package, services beside services; and that no new layer, top-level directory, or shared package was introduced to fit the change.
 - Ensure schema changes were followed by the Drizzle generation command; do not manually create migration SQL, snapshots, or `_journal.json` entries.
 - List rows are memoized (`React.memo`) with stable id-based keys; handlers passed to rows are wrapped in `useCallback`.
 - Pending state is scoped per item (`<action>ingId: string | null`), never a shared boolean broadcast to every row.
 - Form `watch` subscriptions live in the lowest component that needs them; child components must use `useWatch({ control })` — `form.watch(name)` rerenders the `useForm` host component.
+- Keep API results in the shared React Query cache and realtime events in `globalActionsStore`. Its `sessionStorage` snapshot is for debugging and is not restored as entity data or persistent UI state.
 - Mutations patch the React Query cache via the shared helpers (`@sps/shared-frontend-client-api` — factory mutations do this automatically; hand-written SDKs follow the documented contract in `libs/shared/frontend/client/api/README.md`) and never replace WebSocket invalidation as the consistency fallback.

@@ -16,6 +16,8 @@ import { DI } from "../../di/constants";
 import { Database } from ".";
 import { IRepository } from "../interface";
 import fs from "fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { z } from "zod";
 
@@ -205,6 +207,77 @@ describe("Database", () => {
     });
   });
 
+  describe("updateFirstByField", () => {
+    function createUpdateRepository(requiredForeignKey = false) {
+      const record = {
+        id: "row-1",
+        variant: "card",
+        title: { en: "Original", ru: "Исходное название" },
+        metadata: { seo: { keywords: { ru: ["статья"] } } },
+        ownerId: "owner-1",
+      };
+      const configuration = new Configuration({
+        repository: {
+          ...baseConfiguration,
+          Table: ConsumeTestTable,
+          insertSchema: z.object({
+            variant: z.string().optional(),
+            title: z.record(z.string()).default({}),
+            metadata: z.record(z.unknown()).default({}),
+            ownerId: requiredForeignKey ? z.string() : z.string().optional(),
+            updatedAt: z.date().optional(),
+          }),
+          selectSchema: z.object({}).passthrough(),
+        },
+      });
+      const repository = new Database(configuration);
+      jest.spyOn(repository, "findByField").mockResolvedValue([record]);
+      const set = jest.fn();
+      const execute = jest.fn(async () => [
+        { ...record, ...set.mock.calls[0][0] },
+      ]);
+      const returning = jest.fn(() => ({ execute }));
+      const where = jest.fn(() => ({ returning }));
+      set.mockReturnValue({ where });
+      repository.db = { update: jest.fn(() => ({ set })) } as any;
+      return { repository, record, set, execute };
+    }
+
+    it("changes publication state without applying insert defaults to omitted fields", async () => {
+      const { repository, record, set } = createUpdateRepository();
+      const saved = await repository.updateFirstByField("id", record.id, {
+        variant: "hidden",
+      });
+
+      expect(saved).toEqual({
+        ...record,
+        variant: "hidden",
+        updatedAt: expect.any(Date),
+      });
+      expect(set).toHaveBeenCalledWith({
+        variant: "hidden",
+        updatedAt: expect.any(Date),
+      });
+    });
+
+    it("does not require an unchanged relation key in a partial update", async () => {
+      const { repository, record } = createUpdateRepository(true);
+      await expect(
+        repository.updateFirstByField("id", record.id, { variant: "hidden" }),
+      ).resolves.toMatchObject({
+        ownerId: record.ownerId,
+        title: record.title,
+      });
+    });
+
+    it("allows an explicit empty localized field without clearing neighboring JSON", async () => {
+      const { repository, record } = createUpdateRepository();
+      await expect(
+        repository.updateFirstByField("id", record.id, { title: {} }),
+      ).resolves.toMatchObject({ title: {}, metadata: record.metadata });
+    });
+  });
+
   describe("consumeFirstByField", () => {
     function createConsumeRepository() {
       const configuration = new Configuration({
@@ -344,6 +417,34 @@ describe("Database", () => {
   });
 
   describe("dump", () => {
+    it("writes a new module's first snapshot when its data directory does not exist", async () => {
+      const root = await fs.mkdtemp(join(tmpdir(), "sps-dump-"));
+      try {
+        const directory = join(root, "new-module", "data");
+        const configuration = new Configuration({
+          repository: {
+            ...baseConfiguration,
+            dump: { ...baseConfiguration.dump, directory },
+          },
+        });
+        const container = new Container();
+        container
+          .bind<IConfiguration>(DI.IConfiguration)
+          .toConstantValue(configuration);
+        container.bind<IRepository>(DI.IRepository).to(Database);
+        const repository = container.get<IRepository>(DI.IRepository);
+        repository.find = jest.fn().mockResolvedValue([{ id: "new-record" }]);
+        await repository.dump();
+        expect(
+          JSON.parse(
+            await fs.readFile(join(directory, "new-record.json"), "utf8"),
+          ),
+        ).toEqual({ id: "new-record" });
+      } finally {
+        await fs.rm(root, { recursive: true, force: true });
+      }
+    });
+
     it("should create files in config.repository.directory", async () => {
       const configuration = new Configuration({
         repository: baseConfiguration,
@@ -357,6 +458,7 @@ describe("Database", () => {
       const repository = container.get<IRepository>(DI.IRepository);
 
       const spys = [
+        jest.spyOn(fs, "mkdir").mockResolvedValueOnce(undefined),
         jest.spyOn(fs, "readdir").mockResolvedValueOnce(["1.json"] as any),
         jest.spyOn(fs, "unlink").mockResolvedValueOnce(undefined as any),
         jest.spyOn(fs, "writeFile").mockResolvedValueOnce(undefined as any),
@@ -403,6 +505,7 @@ describe("Database", () => {
       const repository = container.get<IRepository>(DI.IRepository);
 
       const spys = [
+        jest.spyOn(fs, "mkdir").mockResolvedValueOnce(undefined),
         jest.spyOn(fs, "readdir").mockResolvedValueOnce(["1.json"] as any),
         jest.spyOn(fs, "unlink").mockResolvedValueOnce(undefined as any),
         jest.spyOn(fs, "writeFile").mockResolvedValueOnce(undefined as any),
@@ -417,6 +520,7 @@ describe("Database", () => {
       const dumpResult = await repository.dump();
 
       expect(fs.unlink).not.toHaveBeenCalled();
+      expect(fs.mkdir).not.toHaveBeenCalled();
       expect(fs.writeFile).not.toHaveBeenCalled();
       expect(dumpResult).toEqual({
         dumps: [],

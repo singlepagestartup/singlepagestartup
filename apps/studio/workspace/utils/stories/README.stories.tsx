@@ -17,7 +17,8 @@ function WorkspaceReadme() {
 }
 
 const meta = {
-  title: "Workspace/README",
+  id: "workspace-readme",
+  title: "Workspace/Инструкция",
   component: WorkspaceReadme,
   parameters: {
     controls: { disable: true },
@@ -29,4 +30,4 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Overview: Story = { name: "How it works" };
+export const Overview: Story = { name: "Как это работает" };

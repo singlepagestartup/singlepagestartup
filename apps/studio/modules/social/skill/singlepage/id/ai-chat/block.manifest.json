@@ -1,0 +1,27 @@
+{
+  "id": "social.skill.id-ai-chat",
+  "title": "id-ai-chat",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "One professional specialization Skill linked to an AI Chat Profile; Business Analyst example from Studio.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "social.skill",
+    "pageName": "social",
+    "variantName": "id-ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "skill",
+    "variant": "id-ai-chat"
+  },
+  "contentSlots": []
+}

@@ -6,6 +6,7 @@ get_environment_type $2
 ./create_inventory.sh
 
 . ./get_env.sh
+. ./ansible_vars.sh
 
 REDIS_PASSWORD=$(get_env "$BASH_SOURCE" "REDIS_PASSWORD")
 REDIS_PORT=$(get_env_or_default "$BASH_SOURCE" "REDIS_PORT" "6379")
@@ -21,22 +22,13 @@ then
         exit 1
     fi
 
-    ansible-playbook \
-        ./redis/create_redis.yaml \
-         -e "REDIS_PORT=$REDIS_PORT \
-            REDIS_PASSWORD=$REDIS_PASSWORD \
-            ENVIRONMENT_TYPE=$ENVIRONMENT_TYPE" &&\
-    ansible-playbook \
-        ./redis/fill_github.yaml \
-        -e "GITHUB_TOKEN=$GITHUB_TOKEN \
-            GITHUB_REPOSITORY=$GITHUB_REPOSITORY \
-            ENVIRONMENT_TYPE=$ENVIRONMENT_TYPE"
+    ansible_with_vars ./redis/create_redis.yaml \
+        REDIS_PORT REDIS_PASSWORD ENVIRONMENT_TYPE &&\
+    ansible_with_vars ./redis/fill_github.yaml \
+        GITHUB_TOKEN GITHUB_REPOSITORY ENVIRONMENT_TYPE
 else
     ansible-playbook \
         ./redis/delete_redis.yaml && \
-    ansible-playbook \
-        ./redis/clear_github.yaml \
-        -e "GITHUB_TOKEN=$GITHUB_TOKEN \
-            GITHUB_REPOSITORY=$GITHUB_REPOSITORY \
-            ENVIRONMENT_TYPE=$ENVIRONMENT_TYPE"
+    ansible_with_vars ./redis/clear_github.yaml \
+        GITHUB_TOKEN GITHUB_REPOSITORY ENVIRONMENT_TYPE
 fi

@@ -27,6 +27,7 @@ export interface IRecordField<T> {
   label: string;
   value: (record: T) => string;
   displayValue?: (record: T) => string;
+  renderValue?: (record: T) => ReactNode;
 }
 export interface IRecordAction<T> {
   label: string;
@@ -69,7 +70,8 @@ function RecordRowComponent<T extends { id: string }>({
             <dd
               className={`mt-1 [overflow-wrap:anywhere] text-sm ${field.key === "adminTitle" || field.key === "title" ? "font-semibold" : ""}`}
             >
-              {(field.displayValue?.(record) ?? field.value(record)) || "—"}
+              {field.renderValue?.(record) ??
+                ((field.displayValue?.(record) ?? field.value(record)) || "—")}
             </dd>
           </div>
         ))}
@@ -238,7 +240,7 @@ export function RecordEditor({
                       onClick={() => onOpenChange(false)}
                     >
                       <Icon name="arrow-left" />
-                      Back
+                      Назад
                     </Button>
                   )}
                   <Dialog.Title className="text-2xl font-semibold">
@@ -252,7 +254,7 @@ export function RecordEditor({
                   <Button
                     variant="secondary"
                     className="w-11 px-0"
-                    aria-label="Close record editor"
+                    aria-label="Закрыть редактор записи"
                   >
                     <Icon name="x" />
                   </Button>
@@ -284,8 +286,8 @@ export function Records<T extends { id: string }>({
   createLabel,
   onCreate,
   onRemove,
-  removalLabel = "Delete",
-  removalDescription = "Remove the selected records from this local preview?",
+  removalLabel = "Удалить",
+  removalDescription = "Удалить выбранные записи из локального примера?",
   children,
   emptyState,
   embedded = false,
@@ -351,7 +353,7 @@ export function Records<T extends { id: string }>({
             {title}
           </h2>
           <p className={`mt-2 text-sm ${kit.muted}`}>
-            Local preview · changes reset on reload.
+            Локальный пример · изменения сбрасываются при перезагрузке.
           </p>
         </div>
         {onCreate && createLabel && (
@@ -368,7 +370,7 @@ export function Records<T extends { id: string }>({
         )}
       >
         <label className="grid gap-2">
-          <span className={kit.label}>Search records</span>
+          <span className={kit.label}>Поиск записей</span>
           <span className="relative">
             <Icon
               name="magnifying-glass"
@@ -388,7 +390,7 @@ export function Records<T extends { id: string }>({
         </label>
         <div className="grid gap-2">
           <label className={kit.label} htmlFor={`${id}-field`}>
-            Search field
+            Поле поиска
           </label>
           <Select
             id={`${id}-field`}
@@ -415,7 +417,7 @@ export function Records<T extends { id: string }>({
                     visible.some((record) => selectedIds.includes(record.id)) &&
                     !visible.every((record) => selectedIds.includes(record.id));
               }}
-              aria-label="Select page"
+              aria-label="Выбрать страницу"
               checked={visible.every((record) =>
                 selectedIds.includes(record.id),
               )}
@@ -434,14 +436,14 @@ export function Records<T extends { id: string }>({
                 )
               }
             />
-            Select page
+            Выбрать страницу
           </label>
           <Button
             variant="danger"
             disabled={!selectedIds.length}
             onClick={() => setRemoving(selectedIds)}
           >
-            {removalLabel} selected
+            {removalLabel} выбрано
             {selectedIds.length ? ` (${selectedIds.length})` : ""}
           </Button>
         </div>
@@ -464,7 +466,7 @@ export function Records<T extends { id: string }>({
           emptyState
         ) : !visible.length ? (
           <div className="p-8 text-center">
-            <p className="font-semibold">No matching records</p>
+            <p className="font-semibold">Записи не найдены</p>
             {query && (
               <Button
                 variant="secondary"
@@ -474,7 +476,7 @@ export function Records<T extends { id: string }>({
                   reset();
                 }}
               >
-                Clear search
+                Очистить поиск
               </Button>
             )}
           </div>
@@ -483,7 +485,7 @@ export function Records<T extends { id: string }>({
       <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-[var(--workspace-brand-line)] p-5 sm:p-6">
         <div className="flex flex-wrap items-center gap-3">
           <label htmlFor={`${id}-limit`} className={`text-sm ${kit.muted}`}>
-            Rows per page
+            Строк на странице
           </label>
           <Select
             id={`${id}-limit`}
@@ -500,7 +502,7 @@ export function Records<T extends { id: string }>({
           />
           <p className={`text-sm ${kit.muted}`} aria-live="polite">
             {filtered.length} {filtered.length === 1 ? "record" : "records"} ·
-            Page {activePage} of {pages}
+            Страница {activePage} из {pages}
           </p>
         </div>
         <div className="flex gap-2">
@@ -512,7 +514,7 @@ export function Records<T extends { id: string }>({
               setSelected([]);
             }}
           >
-            Previous
+            Назад
           </Button>
           <Button
             variant="secondary"
@@ -522,7 +524,7 @@ export function Records<T extends { id: string }>({
               setSelected([]);
             }}
           >
-            Next
+            Далее
           </Button>
         </div>
       </footer>

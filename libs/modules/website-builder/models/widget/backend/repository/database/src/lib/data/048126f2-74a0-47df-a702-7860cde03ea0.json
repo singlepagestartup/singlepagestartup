@@ -1,0 +1,16 @@
+{
+  "title": {
+    "en": "Chats",
+    "ru": "Chats"
+  },
+  "subtitle": {},
+  "description": {},
+  "anchor": null,
+  "className": "border-r border-secondary",
+  "id": "048126f2-74a0-47df-a702-7860cde03ea0",
+  "createdAt": "2026-10-20T09:28:48.048Z",
+  "updatedAt": "2026-10-20T09:28:48.048Z",
+  "variant": "content-social-chat-default",
+  "adminTitle": "intellectual red gull",
+  "slug": "social-chat-b761b119-932f-4393-b986-b949bf159888"
+}

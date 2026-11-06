@@ -1,0 +1,27 @@
+{
+  "id": "file-storage.file.list-item-pending-ai-chat",
+  "title": "list-item-pending-ai-chat",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "File awaiting message submission.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "file-storage.file",
+    "pageName": "file-storage",
+    "variantName": "list-item-pending-ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "file-storage",
+    "entityType": "model",
+    "entity": "file",
+    "variant": "list-item-pending-ai-chat"
+  },
+  "contentSlots": []
+}

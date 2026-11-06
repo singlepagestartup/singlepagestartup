@@ -10,13 +10,7 @@ import {
 const ROOT = process.cwd();
 const DESIGN_SYSTEM_ROOT = path.join(ROOT, "apps", "studio");
 const MODULES_ROOT = path.join(DESIGN_SYSTEM_ROOT, "modules");
-const PAGES_ROOT = path.join(
-  DESIGN_SYSTEM_ROOT,
-  "modules",
-  "host",
-  "models",
-  "page",
-);
+const PAGES_ROOT = path.join(DESIGN_SYSTEM_ROOT, "modules", "host", "page");
 const SKIP_DIRS = new Set(["node_modules", ".git", ".nx"]);
 const VALID_FIGMA_SYNC_STATUSES = new Set([
   "not-created",
@@ -495,15 +489,12 @@ async function validateBlocks(failures: ValidationFailure[]): Promise<void> {
           json.source.entityType === "relation") &&
         typeof json.source.entity === "string"
       ) {
-        const collection =
-          json.source.entityType === "model" ? "models" : "relations";
         const relativeManifestDir = toPosixPath(
           path.relative(DESIGN_SYSTEM_ROOT, path.dirname(manifestPath)),
         );
         const expectedPrefix = [
           "modules",
           json.source.module,
-          collection,
           json.source.entity,
           json.layer === "startup" ? "startup" : "singlepage",
           "",

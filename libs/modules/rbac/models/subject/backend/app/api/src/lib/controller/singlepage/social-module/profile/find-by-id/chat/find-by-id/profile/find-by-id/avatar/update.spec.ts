@@ -29,6 +29,7 @@ jest.mock("@sps/shared-utils", () => ({
 }));
 
 import { Handler } from "./update";
+import { Service as AvatarService } from "../../../../../../../../../../service/singlepage/social-module/profile/avatar";
 
 function createContext(formData: FormData) {
   return {
@@ -43,13 +44,16 @@ function createContext(formData: FormData) {
 }
 
 function createService(defaultFiles: Array<Record<string, unknown>> = []) {
-  return {
+  const service = {
     fileStorageModule: {
       file: {
         find: jest.fn().mockResolvedValue(defaultFiles),
       },
     },
-  } as any;
+    socialModuleProfileAvatarUpdate: (props: any) =>
+      new AvatarService(service).execute(props),
+  };
+  return service as any;
 }
 
 describe("AI profile avatar update", () => {

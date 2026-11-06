@@ -10,6 +10,9 @@ import { ReactNode } from "react";
 export const variant = "admin-v2-form" as const;
 
 export type IComponentProps = IParentComponentProps<IModel, typeof variant> & {
+  widgetsToWebsiteBuilderModuleWidgets?: (
+    props: ISpsComponentBase & { data?: IModel },
+  ) => ReactNode;
   widgetsToArticles?: (
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;

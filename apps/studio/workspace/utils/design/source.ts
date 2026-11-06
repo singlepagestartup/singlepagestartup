@@ -35,7 +35,11 @@ export const designWorkspaces = {
 };
 
 const components = import.meta.glob<{ default?: ComponentType }>(
-  "../../design/{singlepage,startup}/**/*.{tsx,jsx}",
+  [
+    "../../design/{singlepage,startup}/**/*.{tsx,jsx}",
+    "!../../design/**/*.{test,spec,stories}.{tsx,jsx}",
+    "!../../design/**/__tests__/**",
+  ],
   { eager: true },
 );
 const markdown = import.meta.glob<string>(

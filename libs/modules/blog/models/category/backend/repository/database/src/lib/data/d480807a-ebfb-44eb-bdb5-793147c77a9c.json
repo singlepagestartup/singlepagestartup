@@ -1,0 +1,21 @@
+{
+  "id": "d480807a-ebfb-44eb-bdb5-793147c77a9c",
+  "className": "",
+  "createdAt": "2026-10-26T00:11:18.520Z",
+  "updatedAt": "2026-10-27T15:00:26.325Z",
+  "variant": "default",
+  "title": {
+    "en": "Framework modules",
+    "ru": "Модули фреймворка"
+  },
+  "subtitle": {
+    "en": "Features for your project",
+    "ru": "Функции для вашего проекта"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Choose features for a website, store or web service and see which business tasks they handle.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Выберите функции для сайта, магазина или веб-сервиса и посмотрите, какие задачи бизнеса они решают.\"}]}]}"
+  },
+  "adminTitle": "Модули фреймворка",
+  "slug": "framework-reviewed-modules-category"
+}

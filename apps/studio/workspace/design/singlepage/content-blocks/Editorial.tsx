@@ -1,3 +1,4 @@
+import { SurfacePatternGuidance } from "../../../utils/components/InterfaceGuidance";
 import { useState } from "react";
 import {
   Button,
@@ -11,9 +12,9 @@ export default function Editorial() {
   return (
     <div className="grid gap-4">
       <p className="text-sm leading-6 text-[var(--workspace-brand-muted)]">
-        Composition previews combine the Interface kit with project content.
-        Actions below demonstrate the component; product routes and workflows
-        are supplied by the consuming project.
+        Композиции объединяют набор интерфейса с содержимым проекта. Действия
+        ниже показывают компонент; маршруты и процессы предоставляет
+        использующий проект.
       </p>
       <p role="status" className="text-sm text-[var(--workspace-brand-muted)]">
         {notice}
@@ -24,45 +25,47 @@ export default function Editorial() {
         data-composes="surfaces actions icons"
       >
         <h3 className="text-base leading-[26px] font-semibold">
-          Editorial entry
+          Вводная композиция
         </h3>
         <p className="mt-2 text-xs text-[var(--workspace-brand-muted)]">
-          Composed from: surfaces · actions · icons
+          Состав: поверхности · действия · иконки
         </p>
+        <SurfacePatternGuidance title="Editorial entry" />
         <p className="mt-2 max-w-3xl text-sm leading-[22px] text-[var(--workspace-brand-muted)]">
-          A candid photograph and a graphite statement share the composition.
-          Large proportional type carries the message; one lime action follows
-          it.
+          Естественная фотография и графитовое утверждение делят композицию.
+          Крупный пропорциональный шрифт передаёт мысль, одно лаймовое действие
+          продолжает её.
         </p>
         <div className="mt-6 grid overflow-hidden rounded-2xl md:grid-cols-2">
           <div className="relative aspect-square min-w-0 md:aspect-auto">
             <SquareImage
               src="/workspace-assets/singlepage/generated/living-focus/singlepagestartup-photography-business-conversation-square.png"
-              alt="Two people discussing their business."
+              alt="Два человека обсуждают свой бизнес."
               loading="lazy"
               className="absolute inset-0 h-full w-full aspect-auto object-cover"
             />
           </div>
           <div className="flex flex-col justify-center bg-[var(--workspace-brand-primary)] p-6 text-[var(--workspace-brand-on-primary)] sm:p-8">
             <p className="text-sm font-medium text-[var(--workspace-brand-muted-on-primary)]">
-              Start with what you know
+              Начните с известного
             </p>
             <h4 className="mt-4 text-3xl leading-tight font-semibold md:text-4xl">
-              Your materials.
-              <br />A clearer direction.
+              Ваши материалы.
+              <br />
+              Понятное направление.
             </h4>
             <p className="mt-5 text-sm leading-[22px] text-[var(--workspace-brand-muted-on-primary)]">
-              Bring your notes, documents and images together. Shape them into
-              an editable project model.
+              Соберите заметки, документы и изображения в редактируемое описание
+              проекта.
             </p>
             <div className="mt-7">
               <Button
                 variant="primary"
                 onClick={() =>
-                  setNotice("Composition preview: action selected.")
+                  setNotice("Пример композиции: действие выбрано.")
                 }
               >
-                Organize my materials
+                Организовать материалы
                 <Icon name="arrow-right" />
               </Button>
             </div>
@@ -70,24 +73,24 @@ export default function Editorial() {
         </div>
         <details className="mt-6 border-t border-[var(--workspace-brand-line)] pt-4">
           <summary className="w-fit cursor-pointer rounded-md text-xs font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
-            Composition and layout recipe
+            Композиция и классы раскладки
           </summary>
           <dl className="mt-6 grid gap-4 border-t border-[var(--workspace-brand-line)] pt-5 text-xs leading-5">
             <div>
-              <dt className="font-semibold">Composition</dt>
+              <dt className="font-semibold">Композиция</dt>
               <dd className="mt-1 break-words text-[var(--workspace-brand-muted)]">
                 mt-6 grid overflow-hidden rounded-2xl md:grid-cols-2
               </dd>
             </div>
             <div>
-              <dt className="font-semibold">Statement panel</dt>
+              <dt className="font-semibold">Панель утверждения</dt>
               <dd className="mt-1 break-words text-[var(--workspace-brand-muted)]">
                 flex flex-col justify-center bg-[var(--workspace-brand-primary)]
                 p-6 text-[var(--workspace-brand-on-primary)] sm:p-8
               </dd>
             </div>
             <div>
-              <dt className="font-semibold">Photograph frame</dt>
+              <dt className="font-semibold">Рамка фотографии</dt>
               <dd className="mt-1 break-words text-[var(--workspace-brand-muted)]">
                 Frame: relative aspect-square md:aspect-auto. Image: absolute
                 inset-0 h-full w-full aspect-auto object-cover
@@ -102,14 +105,14 @@ export default function Editorial() {
         data-composes="surfaces structured-list"
       >
         <h3 className="text-base leading-[26px] font-semibold">
-          Numbered steps
+          Нумерованные шаги
         </h3>
         <p className="mt-2 text-xs text-[var(--workspace-brand-muted)]">
-          Composed from: surfaces · structured-list
+          Состав: поверхности · структурированный список
         </p>
         <p className="mt-2 max-w-3xl text-sm leading-[22px] text-[var(--workspace-brand-muted)]">
-          Small, ordered numbers guide the sequence. Each step uses one clear
-          title and a short explanation.
+          Небольшие номера задают порядок. У шага ясный заголовок и короткое
+          пояснение.
         </p>
         <ol className="mt-6 grid list-none gap-4 p-0 md:grid-cols-3">
           <li className="rounded-2xl bg-[var(--workspace-brand-background)] p-5 sm:p-6">
@@ -120,10 +123,10 @@ export default function Editorial() {
               01
             </span>
             <h4 className="mt-5 text-base font-semibold">
-              Bring your material
+              Принесите материалы
             </h4>
             <p className="mt-2 text-sm leading-[22px] text-[var(--workspace-brand-muted)]">
-              Upload files or write what you already know.
+              Загрузите файлы или запишите известное.
             </p>
           </li>
           <li className="rounded-2xl bg-[var(--workspace-brand-background)] p-5 sm:p-6">
@@ -133,9 +136,10 @@ export default function Editorial() {
             >
               02
             </span>
-            <h4 className="mt-5 text-base font-semibold">Review the model</h4>
+            <h4 className="mt-5 text-base font-semibold">Проверьте описание</h4>
             <p className="mt-2 text-sm leading-[22px] text-[var(--workspace-brand-muted)]">
-              Accept useful structure, correct a fact or leave a question open.
+              Примите полезную структуру, исправьте факт или оставьте вопрос
+              открытым.
             </p>
           </li>
           <li className="rounded-2xl bg-[var(--workspace-brand-background)] p-5 sm:p-6">
@@ -145,32 +149,32 @@ export default function Editorial() {
             >
               03
             </span>
-            <h4 className="mt-5 text-base font-semibold">Keep working</h4>
+            <h4 className="mt-5 text-base font-semibold">Продолжайте работу</h4>
             <p className="mt-2 text-sm leading-[22px] text-[var(--workspace-brand-muted)]">
-              Discuss ideas, prepare materials and explore a landing-page
-              preview.
+              Обсуждайте идеи, готовьте материалы и изучайте предпросмотр
+              посадочной.
             </p>
           </li>
         </ol>
         <details className="mt-6 border-t border-[var(--workspace-brand-line)] pt-4">
           <summary className="w-fit cursor-pointer rounded-md text-xs font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
-            Composition and layout recipe
+            Композиция и классы раскладки
           </summary>
           <dl className="mt-6 grid gap-4 border-t border-[var(--workspace-brand-line)] pt-5 text-xs leading-5">
             <div>
-              <dt className="font-semibold">Ordered grid</dt>
+              <dt className="font-semibold">Упорядоченная сетка</dt>
               <dd className="mt-1 break-words text-[var(--workspace-brand-muted)]">
                 mt-6 grid list-none gap-4 p-0 md:grid-cols-3
               </dd>
             </div>
             <div>
-              <dt className="font-semibold">Step</dt>
+              <dt className="font-semibold">Шаг</dt>
               <dd className="mt-1 break-words text-[var(--workspace-brand-muted)]">
                 rounded-2xl bg-[var(--workspace-brand-background)] p-5 sm:p-6
               </dd>
             </div>
             <div>
-              <dt className="font-semibold">Step number</dt>
+              <dt className="font-semibold">Номер шага</dt>
               <dd className="mt-1 break-words text-[var(--workspace-brand-muted)]">
                 grid h-10 w-10 place-items-center rounded-xl
                 bg-[var(--workspace-brand-surface)] text-sm font-semibold
@@ -185,44 +189,43 @@ export default function Editorial() {
         data-composes="surfaces actions icons"
       >
         <h3 className="text-base leading-[26px] font-semibold">
-          Illustration and text
+          Иллюстрация и текст
         </h3>
         <p className="mt-2 text-xs text-[var(--workspace-brand-muted)]">
-          Composed from: surfaces · actions · icons
+          Состав: поверхности · действия · иконки
         </p>
         <p className="mt-2 max-w-3xl text-sm leading-[22px] text-[var(--workspace-brand-muted)]">
-          The illustration uses a white source background. The nearby heading
-          names the relationship it explains.
+          Исходный фон иллюстрации белый. Соседний заголовок называет
+          объясняемую связь.
         </p>
         <div className="mt-6 grid items-center gap-6 md:grid-cols-2 md:gap-10">
           <SquareImage
             src="/workspace-assets/singlepage/generated/living-focus/singlepagestartup-illustration-module-hierarchy-cool-square.png"
-            alt="Reusable modules connected to a shared software foundation."
+            alt="Готовые модули соединены с общей программной основой."
             loading="lazy"
             className="block h-auto w-full rounded-2xl"
           />
           <div>
             <p className="text-sm font-medium text-[var(--workspace-brand-muted)]">
-              Reusable foundation
+              Готовая основа
             </p>
             <h4 className="mt-3 text-3xl leading-tight font-semibold">
-              Shared parts.
+              Общие части.
               <br />
-              Your own product.
+              Свой продукт.
             </h4>
             <p className="mt-5 text-sm leading-[22px] text-[var(--workspace-brand-muted)]">
-              Reuse common functions and develop the rules your business needs.
-              This illustration explains the idea; it does not document an
-              implementation.
+              Используйте общие функции и развивайте правила своего бизнеса.
+              Иллюстрация объясняет идею, а не фиксирует реализацию.
             </p>
             <div className="mt-6">
               <Button
                 variant="secondary"
                 onClick={() =>
-                  setNotice("Composition preview: action selected.")
+                  setNotice("Пример композиции: действие выбрано.")
                 }
               >
-                Explore the framework
+                Изучить фреймворк
                 <Icon name="arrow-right" />
               </Button>
             </div>
@@ -230,17 +233,17 @@ export default function Editorial() {
         </div>
         <details className="mt-6 border-t border-[var(--workspace-brand-line)] pt-4">
           <summary className="w-fit cursor-pointer rounded-md text-xs font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
-            Composition and layout recipe
+            Композиция и классы раскладки
           </summary>
           <dl className="mt-6 grid gap-4 border-t border-[var(--workspace-brand-line)] pt-5 text-xs leading-5">
             <div>
-              <dt className="font-semibold">Composition</dt>
+              <dt className="font-semibold">Композиция</dt>
               <dd className="mt-1 break-words text-[var(--workspace-brand-muted)]">
                 mt-6 grid items-center gap-6 md:grid-cols-2 md:gap-10
               </dd>
             </div>
             <div>
-              <dt className="font-semibold">Illustration</dt>
+              <dt className="font-semibold">Иллюстрация</dt>
               <dd className="mt-1 break-words text-[var(--workspace-brand-muted)]">
                 block h-auto w-full rounded-2xl
               </dd>

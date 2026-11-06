@@ -70,6 +70,20 @@ describe("required Design specimens", () => {
    * When the workspace is validated
    * Then nothing is reported
    */
+  test("unfinished comments cannot supply missing specimen declarations", async () => {
+    const root = await workspace({
+      "design/singlepage.md": design(darkColumn),
+      "design/singlepage/layout.yaml": layout,
+      "design/singlepage/kit.html": `${kit(everySpecimen.filter((id) => id !== "actions"))}\n<!-- <article data-specimen="actions">Hidden</article>`,
+    });
+    const missing = await findMissingSpecimens(root);
+    expect(
+      missing.some(
+        (item) => item.requirement === "Design declares a `actions` specimen",
+      ),
+    ).toBe(true);
+  });
+
   test("accepts a layout that renders every required specimen", async () => {
     const root = await workspace({
       "design/singlepage.md": design(darkColumn),

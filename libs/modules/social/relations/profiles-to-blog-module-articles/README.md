@@ -34,11 +34,12 @@ maps both foreign keys to the corresponding profile and article seed records.
 
 - `find`: queries relation rows through the SDK provider.
 - `default`: queries the linked article and renders its existing `default` card.
+- `author-default`: queries the exact linked Profile and renders its public `byline` variant with the loaded record. This reverse presentation belongs to the Profile–Article association; Blog receives the rendered author through a JSX slot.
 - `admin-form`, `admin-select-input`, `admin-table`, `admin-table-row`.
 - `admin-v2-form`, `admin-v2-select-input`, `admin-v2-table`, `admin-v2-table-row`.
 
-Both admin generations expose the relation from profile and article forms.
-Tables filter by the current parent. Forms and tables accept optional
+Both admin generations expose the relation from Social profile forms.
+Tables filter by the current profile. Blog article forms do not depend on Social. Forms and tables accept optional
 `defaultProfileId` and `defaultBlogModuleArticleId` for create mode; persisted
 relation values take precedence when editing. Admin-v2 rows also open editors
 for the linked profile and article.

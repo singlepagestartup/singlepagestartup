@@ -22,13 +22,19 @@ export function Component<M, V>(
     serverApi: ReturnType<typeof serverFactory<M>>;
   },
 ) {
+  if (props.dataSource === "props") {
+    return props.children?.({
+      data: props.data,
+    });
+  }
+
   const Comp: any = props.isServer ? Server : Client;
   const api = props.isServer ? props.serverApi : props.clientApi;
   const Provider = props.Provider;
 
   return (
     <ErrorBoundary>
-      <Suspense fallback={props.Skeleton ?? <Skeleton />}>
+      <Suspense fallback={props.Skeleton ?? props.skeleton ?? <Skeleton />}>
         <Provider>
           <Comp {...props} api={api} />
         </Provider>

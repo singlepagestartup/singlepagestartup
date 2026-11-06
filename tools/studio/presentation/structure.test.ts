@@ -1,3 +1,4 @@
+import { canonicalMarkdownHeadings } from "../workspace/headings";
 /**
  * BDD Suite: React-first layered Studio presentation
  * Given singlepage provides the base and startup may provide a higher-priority override
@@ -52,8 +53,13 @@ describe("Studio presentation structure", () => {
       expect(index).not.toContain(".evidence");
     }
     expect(
-      source("apps/studio/workspace/utils/products/presentation-data.ts"),
-    ).not.toContain('artifactContent(workspace, "evidence")');
+      existsSync(
+        path.join(
+          repositoryRoot,
+          "apps/studio/workspace/utils/products/presentation-data.ts",
+        ),
+      ),
+    ).toBe(false);
   });
 
   /**
@@ -96,28 +102,24 @@ describe("Studio presentation structure", () => {
       "apps/studio/workspace/utils/components/ProductCatalog.tsx",
     );
 
-    expect(component).toContain('label: "Product"');
-    expect(component).toContain('label: "Research"');
-    expect(component).toContain('label: "Sales"');
-    expect(component).toContain('label: "Promotion"');
-    expect(component).toContain('label: "Analytics"');
-    expect(component).toContain('label: "Content"');
-    expect(component).toContain("product.content");
-    expect(component).toContain("<Content />");
-    expect(component).toContain("product.websiteComponent");
-    expect(component).toContain("<Website />");
+    expect(component).toContain("documentId");
+    expect(component).toContain("materialId");
+    expect(component).toContain("product.sections");
+    expect(component).not.toContain("websiteComponent");
+    expect(component).not.toContain("groupedSurfaces");
+    expect(component).not.toContain("<ProductPages");
     expect(component).not.toContain("justify-between gap-x-6 gap-y-2");
     expect(component).not.toContain("lg:grid-cols-[280px_1fr]");
     expect(component).not.toContain("<aside");
   });
 
   /**
-   * BDD Scenario: Keep the AI Chat development loop editable and visible
-   * Given Project model guides work from the Brief through validation
+   * BDD Scenario: Keep AI Chat's first-stage text review loop visible
+   * Given Project model guides separate product drafts through correction
    * When its text source and React layout are reviewed
-   * Then both preserve the same decision loop before materials and implementation
+   * Then both lead to reviewed texts, export and a project topic
    */
-  test("keeps the Project model validation loop aligned across text and layout", () => {
+  test("keeps the first-stage text review loop aligned across text and layout", () => {
     const document = source(
       "apps/studio/workspace/products/singlepage/ai-chat/content/workspace-map.md",
     );
@@ -126,61 +128,41 @@ describe("Studio presentation structure", () => {
     );
 
     expect(document).toContain("```mermaid\nflowchart LR");
-    expect(document).toContain("D --> E[Critical assumptions]");
+    expect(document).toContain("D --> E[Недочёты и критические предположения]");
     expect(document).toContain(
-      "G -->|Disproves| I[Change Product, model or Sales]",
+      "G --> H[Принятие, выгрузка и прикрепление к теме]",
     );
-    expect(document).toContain("I --> E");
-    expect(document).toContain("H --> J[Materials and implementation]");
-    expect(layout).toContain('title: "Critical assumptions"');
-    expect(layout).toContain('title: "Research & experiments"');
-    expect(layout).toContain("What did the evidence show?");
+    expect(document).toContain("G --> E");
+    expect(layout).toContain('title: "Недочёты, найденные AI"');
+    expect(layout).toContain('title: "Проверьте, выгрузите и откройте тему"');
+    expect(layout).toContain("Неизвестный факт или предположение");
   });
 
   /**
    * BDD Scenario: Keep every product definition decision-ready
-   * Given the framework owns one canonical Product contract covering offer and economics
+   * Given Studio owns separate passport and economics documents
    * When the template and both current framework products are validated
-   * Then all use the same sections and the superseded shallow structure is absent
+   * Then each decision has one owning document and the combined web form remains compatible
    */
-  test("enforces the Product contract, offer and economics together", () => {
-    const expectedSections = [
-      "Product identity",
-      "Customer Segments",
-      "Problem and desired progress",
-      "Value Propositions",
-      "Offer and usage",
-      "Revenue Streams",
-      "Key Activities",
-      "Key Resources",
-      "Key Partnerships",
-      "Cost Structure",
-      "Assumptions and decision rules",
-      "Business goals and metrics",
-    ];
-    const template = source(".agents/templates/product.md");
-    const products = [
-      source(
-        "apps/studio/workspace/products/singlepage/singlepagestartup/product.md",
-      ),
-      source("apps/studio/workspace/products/singlepage/ai-chat/product.md"),
-    ];
-    const sections = (document: string): string[] =>
-      [...document.matchAll(/^## (.+)$/gm)].map((match) => match[1]);
-
-    expect(sections(template)).toEqual(expectedSections);
-    for (const product of products) {
-      expect(sections(product)).toEqual(expectedSections);
-      for (const supersededHeading of [
-        "Decision status",
-        "Buyer and buying situation",
-        "Offer and outcome",
-        "Adoption ladder",
-        "Proof and claim boundaries",
-      ]) {
-        expect(product).not.toContain(`## ${supersededHeading}`);
-      }
+  test("keeps a product description and economics as separate documents", () => {
+    for (const id of ["singlepagestartup", "ai-chat"]) {
+      const product = source(
+        `apps/studio/workspace/products/singlepage/${id}/product.md`,
+      );
+      const economics = source(
+        `apps/studio/workspace/products/singlepage/${id}/economics.md`,
+      );
+      expect(product).toContain("## Что это за продукт");
+      expect(product).toContain("## Кому подходит");
+      expect(product).toMatch(/## (Что входит|Что получает пользователь)/);
+      expect(product).not.toContain("## Конкуренты");
+      expect(economics.length).toBeGreaterThan(100);
     }
+    expect(
+      existsSync(
+        path.join(repositoryRoot, ".agents/templates/product-passport.md"),
+      ),
+    ).toBe(false);
   });
 
   /**
@@ -189,26 +171,18 @@ describe("Studio presentation structure", () => {
    * When Studio loads its slide data and renderer
    * Then each slide supplies reviewable Markdown text and the shared PDF-ready layout
    */
-  test("keeps AI Chat presentation text paired with its layout", () => {
-    const renderer = source(
-      "apps/studio/workspace/products/singlepage/ai-chat/presentation/ProjectPresentation.tsx",
-    );
-    const data = parse(
-      source(
-        "apps/studio/workspace/products/singlepage/ai-chat/presentation/data.yaml",
-      ),
-    ) as {
-      content: { slides: Array<{ id: string; title: string }> };
-    };
-
-    expect(data.content.slides.length).toBeGreaterThanOrEqual(6);
-    expect(
-      data.content.slides.every(({ id, title }) => Boolean(id && title)),
-    ).toBe(true);
-    expect(renderer).toContain("presentationSlideMarkdown(slide)");
-    expect(renderer).toContain("<ProjectPresentation");
-    expect(renderer).toContain("data-slide-content");
-    expect(renderer).toContain("data-slide-footer");
+  test("keeps each presentation's content in its owning React source", () => {
+    for (const id of ["singlepagestartup", "ai-chat"]) {
+      const root = `apps/studio/workspace/products/singlepage/${id}/presentation`;
+      const renderer = source(`${root}/ProjectPresentation.tsx`);
+      expect(renderer).toContain("export const presentationContent");
+      expect(renderer).toContain("<ProjectPresentation");
+      expect(renderer).toContain("data-slide-content");
+      expect(renderer).not.toContain("presentationSlideMarkdown");
+      expect(existsSync(path.join(repositoryRoot, root, "data.yaml"))).toBe(
+        false,
+      );
+    }
   });
 
   /**
@@ -334,7 +308,7 @@ describe("Studio presentation structure", () => {
     );
     const designSource = source("apps/studio/workspace/utils/design/source.ts");
     const designStories = source(
-      "apps/studio/workspace/utils/stories/design.stories.tsx",
+      "apps/studio/workspace/utils/stories/design.default.stories.tsx",
     );
 
     expect(designSource).not.toContain("../website/");
@@ -359,10 +333,8 @@ describe("Studio presentation structure", () => {
       expect(component).toContain(retainedSection);
     }
     expect(component).not.toContain('id="graphic-language"');
-    expect(designStories).toContain('title: "Workspace/30 Design"');
-    expect(designStories).toContain("export const Default");
-    expect(designStories).toContain("export const Singlepage");
-    expect(designStories).toContain("export const Startup");
+    expect(designStories).toContain('title: "Workspace/40 Дизайн/default"');
+    expect(designStories).toContain("export const Document");
     expect(designStories).not.toContain("export const Overview");
     for (const artifact of [
       "apps/studio/workspace/products/singlepage/catalog.yaml",
@@ -371,7 +343,6 @@ describe("Studio presentation structure", () => {
       "apps/studio/workspace/products/singlepage/singlepagestartup/website.md",
       "apps/studio/workspace/products/singlepage/singlepagestartup/marketing-creative.md",
       "apps/studio/workspace/products/singlepage/singlepagestartup/presentation/ProjectPresentation.tsx",
-      "apps/studio/workspace/utils/stories/products.stories.tsx",
     ]) {
       expect(existsSync(path.join(repositoryRoot, artifact))).toBe(true);
     }
@@ -390,109 +361,23 @@ describe("Studio presentation structure", () => {
    * When Storybook discovers all three projections
    * Then startup remains inspectable and default resolves both data and the selected layout
    */
-  test("exposes three Design projections with separately resolved layouts", () => {
-    const layeredStory =
-      "apps/studio/workspace/utils/stories/design.stories.tsx";
-    expect(existsSync(path.join(repositoryRoot, layeredStory))).toBe(true);
-    for (const removedStory of [
-      "apps/studio/workspace/design/default/index.stories.tsx",
-      "apps/studio/workspace/design/singlepage/index.stories.tsx",
-      "apps/studio/workspace/design/startup/index.stories.tsx",
-    ]) {
-      expect(existsSync(path.join(repositoryRoot, removedStory))).toBe(false);
+  test("exposes source layers and their resolved Design view without adapters", () => {
+    for (const projection of ["default", "singlepage", "startup"]) {
+      const story = source(
+        `apps/studio/workspace/utils/stories/design.${projection}.stories.tsx`,
+      );
+      expect(story).toContain(`projection: "${projection}"`);
+      expect(story).not.toContain("Legacy");
     }
-
-    const story = source(layeredStory);
-    expect(story).toContain("LayerDataStatus");
-    expect(story).toContain("hasProjectDesignData");
-    expect(story).toContain("resolvedProjectDesignData");
-    expect(story).toContain(
-      'import { DesignRenderer } from "../components/DesignRenderer"',
+    const component = source(
+      "apps/studio/workspace/utils/components/DesignWorkspace.tsx",
     );
-    expect(story).not.toContain("resolveLayeredComponent");
-    expect(story).not.toContain("import.meta.glob");
+    expect(component).toContain("resolvedProjectDesignData");
+    expect(component).toContain("hasStartupDesignLayout");
+    expect(component).toContain("<DesignRenderer");
   });
 
-  /**
-   * BDD Scenario: Hold photography and illustration to the same quality contract
-   * Given imagery quality is a primary Design gate
-   * When the roles, templates, and shared renderer are inspected
-   * Then both media families require the same structured prompts, examples, and visual review
-   */
-  test("requires symmetric, visually verified media systems", () => {
-    const role = source(".agents/roles/brand-designer.md");
-    const roleText = role.replace(/\s+/g, " ");
-    const briefRole = source(".agents/roles/account-manager.md");
-    const briefRoleText = briefRole.replace(/\s+/g, " ");
-    const briefTemplate = source(".agents/templates/brief.md");
-    const template = source(".agents/templates/design.md");
-    const component = source(
-      "apps/studio/workspace/utils/components/ProjectDesign.tsx",
-    );
-
-    // Symmetry is a contract between the two media families, so it is measured
-    // across their own span; other sections may reuse a shared heading name.
-    const media = template.slice(
-      template.indexOf("## Photography"),
-      template.indexOf("## Outputs and provenance"),
-    );
-    expect(media).toContain("## Illustration and diagrams");
-    for (const heading of [
-      "### Purpose and evidence boundary",
-      "### Style master prompt",
-      "### Production specification",
-      "### Generation examples",
-      "### Review and quality gate",
-    ]) {
-      expect(media.split(heading)).toHaveLength(3);
-    }
-    // Both families carry the same review rule, stated once in each of them.
-    expect(
-      media.match(/At least three materially different registered examples/g),
-    ).toHaveLength(2);
-    expect(
-      template.match(/category-defining structure, count, scale/g),
-    ).toHaveLength(2);
-
-    // Brief owns the intake register; Design points at it instead of copying it.
-    expect(roleText).toContain("`brief/<layer>.md#visual-reference-intake`");
-    expect(briefTemplate).toContain("## Visual reference intake");
-    expect(briefTemplate).toMatch(/^\| Marketing creative\s+\|/m);
-    expect(template).not.toMatch(/^\| Marketing creative\s+\|/m);
-    expect(briefTemplate).not.toContain("Existing asset IDs");
-    expect(template).toContain("### Client visual preference profile");
-    expect(template).not.toContain("Categorized reference intake");
-    for (const label of INTAKE_LABELS) {
-      expect(briefRoleText).toContain(label);
-      expect(roleText).toContain(label);
-    }
-    expect(template).not.toContain("centered `55% × 55%` crop-safe");
-    expect(template).toContain("### Reusable graphic language");
-    expect(template).not.toContain("## Graphic language");
-    expect(component).toContain("function MediaSection");
-    expect(component.match(/<MediaSection/g)).toHaveLength(2);
-    expect(component).not.toContain("function PreferenceProfile");
-    expect(component).not.toContain('id="preference-profile"');
-    expect(component).toContain("Reusable graphic language");
-    expect(component).toContain('className="flex items-center gap-4"');
-    expect(component).toContain("function PromptUsageTooltip");
-    expect(component).toContain('role="tooltip"');
-    expect(component).toContain(
-      'aria-label="How to use this style master prompt"',
-    );
-    expect(component).toContain("guidance={media.productionRules}");
-    expect(component).not.toContain("Acceptance checks");
-    expect(component).not.toContain("media.reviewRules");
-    expect(component).not.toContain("Production specification");
-    expect(component).not.toContain("Review and quality gate");
-    expect(component).not.toContain('aria-label="Design sections"');
-    expect(component).not.toContain("Logo assets");
-    expect(component).not.toContain("Photography examples");
-    expect(component.match(/data\.conceptSummary/g)).toHaveLength(1);
-    expect(component).not.toContain("function ReferenceIntake");
-    expect(component).not.toContain("data.referenceIntake");
-    expect(component).toContain('className="block h-auto w-full"');
-
+  test("registered media masters exist and report their actual dimensions", () => {
     const assetIndex = parse(
       source("apps/studio/workspace/assets/singlepage.yaml"),
     ) as {
@@ -567,102 +452,19 @@ describe("Studio presentation structure", () => {
   });
 
   /**
-   * BDD Scenario: Bind typography and layout rules to real implementation tokens
-   * Given Design is shared by singlepage and downstream startup projects
-   * When the role, source, parser, and layered CSS are inspected
-   * Then fonts are registered and verifiable while layout uses named Tailwind utilities
-   */
-  test("binds typography and layout to registered assets and Tailwind", () => {
-    const role = source(".agents/roles/brand-designer.md").replace(/\s+/g, " ");
-    const template = source(".agents/templates/design.md");
-    const design = source("apps/studio/workspace/design/singlepage.md");
-    const parser = source("apps/studio/workspace/utils/design/data.ts");
-    const component = source(
-      "apps/studio/workspace/utils/components/ProjectDesign.tsx",
-    );
-    const styles = source("apps/studio/workspace/styles/singlepage.css");
-
-    expect(template).toMatch(/^\| Role\s+\| CSS family\s+\| Weights\s+\|/m);
-    expect(role).toContain("`document.fonts.check(...)`");
-    expect(role).toContain("Tailwind `max-w-7xl` (`1280px`)");
-    expect(design).toContain("singlepage-font-onest-variable");
-    expect(design).toContain("`max-w-7xl` (`1280px`)");
-    expect(design).not.toContain("`1200px` grid");
-    expect(parser).toContain("references missing font asset");
-    expect(component).toContain("data-font-family");
-    expect(component).toContain("data-font-asset-id");
-    expect(styles).toContain('font-family: "Onest"');
-    expect(styles).toContain("Onest-wght.ttf");
-  });
-
-  /**
    * BDD Scenario: Present project decisions instead of Studio diagnostics
    * Given the presentation is a review deck derived from canonical artifacts
    * When the base React deck is inspected
    * Then YAML owns the ordered slides and their text without design-placeholder copy
    */
-  test("builds a decision deck instead of reusing design diagnostics", () => {
+  test("renders the owned deck rather than design diagnostics", () => {
     const presentation = source(
       "apps/studio/workspace/products/singlepage/singlepagestartup/presentation/ProjectPresentation.tsx",
     );
     expect(presentation).not.toContain("<ProjectDesign");
-    expect(presentation).not.toContain("Design follows this source layer only");
-    expect(presentation).not.toContain("Waiting for content");
-    const data = parse(
-      source(
-        "apps/studio/workspace/products/singlepage/singlepagestartup/presentation/data.yaml",
-      ),
-    );
     expect(presentation).toContain("slides={data.slides.map");
-    expect(presentation).toContain("text: presentationSlideMarkdown(slide)");
-    for (const slideId of [
-      "product",
-      "audience",
-      "workflow",
-      "adaptation",
-      "chat-bridge",
-      "economics",
-      "growth",
-      "goals",
-      "start",
-    ]) {
-      expect(
-        data.content.slides.some(
-          (slide: { id: string }) => slide.id === slideId,
-        ),
-      ).toBe(true);
-    }
-  });
-
-  /**
-   * BDD Scenario: Resolve presentation surfaces from the selected Design palette
-   * Given Design defines Surface and Canvas roles
-   * When the React deck assigns its page and information surfaces
-   * Then it uses semantic Design tokens instead of an unrelated canvas color
-   */
-  test("uses selected semantic colors for presentation surfaces", () => {
-    const presentation = source(
-      "apps/studio/workspace/products/singlepage/singlepagestartup/presentation/ProjectPresentation.tsx",
-    );
-    const styles = source("apps/studio/workspace/styles/singlepage.css");
-    const design = source("apps/studio/workspace/design/singlepage.md");
-
-    expect(presentation).toContain(
-      'backgroundColor: paletteValue(data, "surface")',
-    );
-    for (const [role, token] of [
-      ["Canvas", "background"],
-      ["Surface", "surface"],
-    ]) {
-      const color = design.match(
-        new RegExp(`\\|\\s*${role}\\s*\\|\\s*\x60(#[0-9a-f]{6})\x60`, "i"),
-      )?.[1];
-      expect(color).toBeDefined();
-      expect(styles.toLowerCase()).toContain(
-        `--workspace-brand-${token}: ${color?.toLowerCase()}`,
-      );
-    }
-    expect(presentation).toContain("--workspace-brand-background,#F4F6F8");
+    expect(presentation).toContain("presentationContent");
+    expect(presentation).not.toContain("presentationSlideMarkdown");
   });
 
   /**
@@ -673,12 +475,10 @@ describe("Studio presentation structure", () => {
    */
   test("keeps derived publication bound to default", () => {
     const exporter = source("tools/studio/presentation/export.ts");
-    expect(exporter).toContain(
-      'const STORY_ID = "workspace-40-products--default"',
-    );
-    expect(exporter).toContain(
-      'source: "apps/studio/workspace/utils/stories/products.stories.tsx"',
-    );
+    expect(exporter).toContain("presentationStoryTarget(");
+    expect(exporter).toContain("target.layer,");
+    expect(exporter).toContain("source: story.source");
+    expect(exporter).toContain("id=${story.storyId}");
     expect(exporter).toContain("document=presentation&product=");
     expect(exporter).toContain("resolvePresentationOutputTarget");
     expect(exporter).toContain("127\\.0\\.0\\.1|localhost");

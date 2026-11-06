@@ -1,0 +1,36 @@
+export { type IModel } from "@sps/knowledge/models/source/sdk/model";
+import { IModel } from "@sps/knowledge/models/source/sdk/model";
+import { ISpsComponentBase } from "@sps/ui-adapter";
+
+export const variant = "chat-sidebar-detail" as const;
+
+export interface IKnowledgeSourceDraft {
+  content: string;
+  title: string;
+}
+
+export interface IClientComponentProps
+  extends Pick<ISpsComponentBase, "className" | "isServer"> {
+  data: IModel;
+  language: string;
+  draft: IKnowledgeSourceDraft;
+  isDirty?: boolean;
+  isDeleting?: boolean;
+  isReindexing?: boolean;
+  isSaving?: boolean;
+  mode?: "create" | "edit";
+  needsReindex?: boolean;
+  onDraftChange: (draft: IKnowledgeSourceDraft) => void;
+  onUnlink?: (source: IModel) => Promise<void> | void;
+  onDelete?: (document: IModel) => Promise<void> | void;
+  onReindex: (document: IModel) => Promise<void> | void;
+  onSave: (document: IModel) => void;
+}
+
+export interface IComponentProps
+  extends ISpsComponentBase,
+    IClientComponentProps {
+  variant: typeof variant;
+}
+
+export interface IComponentPropsExtended extends IComponentProps {}

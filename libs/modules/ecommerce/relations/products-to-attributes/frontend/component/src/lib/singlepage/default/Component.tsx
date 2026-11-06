@@ -29,14 +29,15 @@ export function Component(props: IComponentPropsExtended) {
         }}
       >
         {({ data }) => {
-          return data?.map((entity, index) => {
+          return data?.map((entity) => {
             return (
               <Attribute
-                key={index}
+                key={entity.id}
                 isServer={props.isServer}
                 variant="default"
                 data={entity}
                 field={props.attributeField}
+                maximumFractionDigits={props.maximumFractionDigits}
                 language={props.language}
               />
             );

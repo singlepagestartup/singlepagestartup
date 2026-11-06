@@ -17,7 +17,8 @@ Options define selectable values for select-type inputs, optionally with file-ba
 
 ## Variants
 
-- `default`: renders option title with optional attached file preview.
+- `default`: renders the selected language's title, falling back to English
+  when that translation is missing or empty, with an optional attached file preview.
 - `find`: data-fetch wrapper for querying options.
 - `admin-form`: admin create/edit form for option fields.
 - `admin-select-input`: admin select input for choosing an option.

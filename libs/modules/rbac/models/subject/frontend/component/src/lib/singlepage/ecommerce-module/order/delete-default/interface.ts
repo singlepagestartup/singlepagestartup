@@ -12,8 +12,8 @@ export const variant = "ecommerce-module-order-delete-default" as const;
 export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
   language: string;
-  order: IEcommerceModuleOrder;
-  store?: IEcommerceModuleStore;
+  ecommerceModuleOrder: IEcommerceModuleOrder;
+  ecommerceModuleStore?: IEcommerceModuleStore;
 }
 
 export interface IComponentPropsExtended

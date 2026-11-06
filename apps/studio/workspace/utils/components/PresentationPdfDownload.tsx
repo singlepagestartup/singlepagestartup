@@ -5,7 +5,7 @@ import { ArrowDown as Download } from "./ModuleIcons";
 import {
   useElementPdfDownload,
   type ICreatePdfFromElementsOptions,
-} from "@sps/shared-frontend-client-pdf";
+} from "../media/pdf/index";
 
 interface IPresentationPdfDownloadProps {
   children: ReactNode;
@@ -35,7 +35,7 @@ function pdfOptions(
   const elements = presentationPdfElements(container);
   const first = elements[0];
   if (!first) {
-    throw new Error("This presentation has no pages to export.");
+    throw new Error("В презентации нет страниц для выгрузки.");
   }
   const sourceWidthPx = first.offsetWidth;
   const sourceHeightPx = first.offsetHeight;
@@ -46,7 +46,7 @@ function pdfOptions(
         element.offsetHeight !== sourceHeightPx,
     )
   ) {
-    throw new Error("Presentation pages must use one size.");
+    throw new Error("Страницы презентации должны быть одного размера.");
   }
   return {
     elements,
@@ -58,7 +58,7 @@ function pdfOptions(
       pdfWidthPt: sourceWidthPx * pointsPerCssPixel,
       pdfHeightPt: sourceHeightPx * pointsPerCssPixel,
     },
-    metadata: { title, subject: "Product presentation", creator: "SPS Studio" },
+    metadata: { title, subject: "Презентация продукта", creator: "SPS Studio" },
   };
 }
 
@@ -81,14 +81,14 @@ export function PresentationPdfDownload({
   }, [children, fileName, title, reset]);
 
   return (
-    <section data-pdf-export-state={status} aria-label="Presentation export">
+    <section data-pdf-export-state={status} aria-label="Экспорт презентации">
       <div className="flex flex-col gap-4 border-b border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] px-5 py-5 sm:flex-row sm:items-center sm:justify-between md:px-8">
         <div>
           <h2 className="text-base font-semibold text-[var(--workspace-brand-foreground)]">
-            Presentation PDF
+            Презентация PDF
           </h2>
           <p className="mt-1 text-sm text-[var(--workspace-brand-muted)]">
-            Prepare the current slides when you need a download.
+            Подготовьте текущие слайды, когда понадобится скачивание.
           </p>
         </div>
         {url ? (
@@ -98,7 +98,7 @@ export function PresentationPdfDownload({
             download={fileName}
           >
             <Download aria-hidden="true" size={20} />
-            Download PDF
+            Скачать PDF
           </a>
         ) : (
           <button
@@ -109,10 +109,10 @@ export function PresentationPdfDownload({
           >
             <Download aria-hidden="true" size={20} />
             {status === "loading"
-              ? "Preparing PDF…"
+              ? "Подготовка PDF…"
               : status === "error"
-                ? "Retry PDF"
-                : "Prepare PDF"}
+                ? "Повторить подготовку PDF"
+                : "Подготовить PDF"}
           </button>
         )}
       </div>
@@ -121,7 +121,7 @@ export function PresentationPdfDownload({
           role="alert"
           className="bg-red-50 px-5 py-4 text-sm text-red-800 md:px-8"
         >
-          Could not prepare the PDF: {error.message}
+          Не удалось подготовить PDF: {error.message}
         </p>
       ) : null}
       <div ref={container}>{children}</div>

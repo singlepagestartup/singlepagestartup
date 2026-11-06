@@ -1,4 +1,6 @@
+import { DesignNotes } from "../../utils/components/ProjectDesign";
 import type { IDesignTemplateProps } from "../../utils/design/layout";
+import { InterfaceGuidanceProvider } from "../../utils/components/InterfaceGuidance";
 
 export default function LivingFocus({ data, children }: IDesignTemplateProps) {
   if (!data) return null;
@@ -32,7 +34,7 @@ export default function LivingFocus({ data, children }: IDesignTemplateProps) {
             {photograph?.previewUrl ? (
               <img
                 src={photograph.previewUrl}
-                alt="Business partners exchanging an idea in daylight."
+                alt="Партнёры по бизнесу обмениваются идеями при дневном свете."
                 className="block aspect-square w-full object-cover"
               />
             ) : null}
@@ -57,40 +59,18 @@ export default function LivingFocus({ data, children }: IDesignTemplateProps) {
           </div>
         </div>
         <div className="mx-auto max-w-7xl px-5 py-12 md:px-10 md:py-16">
-          <h3 className="text-2xl font-semibold leading-7 tracking-tight">
-            Reusable graphic language
-          </h3>
-          <ul className="mt-8 grid gap-6 md:grid-cols-2">
-            {data.graphicRules.map((rule) => (
-              <li
-                key={rule}
-                className="border-t border-[var(--workspace-brand-line)] pt-4 text-sm leading-[22px] text-[var(--workspace-brand-muted)]"
-              >
-                {rule}
-              </li>
-            ))}
-          </ul>
-          <div className="mt-10 grid gap-4 md:grid-cols-2">
-            <div className="rounded-2xl bg-[var(--workspace-brand-surface)] p-6">
-              <h3 className="text-base font-semibold">Do</h3>
-              <ul className="mt-4 grid gap-3 text-sm leading-[22px] text-[var(--workspace-brand-muted)]">
-                {data.doDont.map((rule) => (
-                  <li key={rule.do}>{rule.do}</li>
-                ))}
-              </ul>
-            </div>
-            <div className="rounded-2xl border border-[var(--workspace-brand-line)] p-6">
-              <h3 className="text-base font-semibold">Do not</h3>
-              <ul className="mt-4 grid gap-3 text-sm leading-[22px] text-[var(--workspace-brand-muted)]">
-                {data.doDont.map((rule) => (
-                  <li key={rule.dont}>{rule.dont}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
+          <h2 className="text-3xl font-semibold leading-tight tracking-tight md:text-4xl">
+            Общие правила дизайна
+          </h2>
+          <DesignNotes markdown={data.notes?.overview} section="overview" />
         </div>
       </section>
-      {children}
+      <InterfaceGuidanceProvider
+        guidance={data.interface}
+        iconRules={data.notes?.icons}
+      >
+        {children}
+      </InterfaceGuidanceProvider>
     </main>
   );
 }

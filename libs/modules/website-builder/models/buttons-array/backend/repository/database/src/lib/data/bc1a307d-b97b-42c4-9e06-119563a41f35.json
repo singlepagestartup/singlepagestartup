@@ -1,0 +1,14 @@
+{
+  "id": "bc1a307d-b97b-42c4-9e06-119563a41f35",
+  "createdAt": "2026-10-24T01:06:04.116Z",
+  "updatedAt": "2026-10-24T01:06:04.116Z",
+  "variant": "default",
+  "className": "w-full",
+  "title": {
+    "en": "Actions",
+    "ru": "Действия"
+  },
+  "description": {},
+  "adminTitle": "Actions",
+  "slug": "framework-journey-module-billing-actions"
+}

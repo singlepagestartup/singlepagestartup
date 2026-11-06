@@ -39,7 +39,7 @@ export default function AnimatedCover({ text }: ICreativeTextProps = {}) {
   return (
     <MotionPreview
       composition={composition}
-      title="Animated walkthrough cover"
+      title="Анимированная обложка демонстрации"
       fileName="code-framework-animated-cover"
     />
   );

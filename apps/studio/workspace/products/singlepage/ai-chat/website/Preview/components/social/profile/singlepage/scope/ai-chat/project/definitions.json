@@ -1,0 +1,198 @@
+{
+  "brief": {
+    "id": "brief",
+    "title": "Brief",
+    "sections": [
+      {
+        "title": "Project and products",
+        "prompt": "What is this project, which products belong to it, and what is outside its scope? Keep exact names, IDs, owners and current or intended availability."
+      },
+      {
+        "title": "Customers and value",
+        "prompt": "Who uses, buys or benefits from the offer? Describe their situation, problem and the value currently delivered or intended."
+      },
+      {
+        "title": "Current state",
+        "prompt": "What exists or has been observed? Attribute supplied statements, tested work, results and assets; distinguish them from intentions."
+      },
+      {
+        "title": "Business and resources",
+        "prompt": "What is known about channels, delivery, prices, revenue, funding, people, partners, costs and capacity? State units, sources and constraints."
+      },
+      {
+        "title": "Goals and success",
+        "prompt": "What does the owner want to achieve, with which priorities, baseline, target and time horizon where supplied?"
+      },
+      {
+        "title": "Visual reference intake",
+        "prompt": "Record identity and references for interface and website, typography, photography, illustration and marketing creative. Attach exact files and record preferences, rights and review state."
+      }
+    ]
+  },
+  "strategy": {
+    "id": "strategy",
+    "title": "Strategy",
+    "sections": [
+      {
+        "title": "Strategic direction",
+        "prompt": "Describe the intended marketing system, positioning and durable trade-offs that fulfill the reviewed Brief."
+      },
+      {
+        "title": "Audiences and product roles",
+        "prompt": "Which audiences and situations matter, what value does each confirmed product deliver, and what behavior should it support?"
+      },
+      {
+        "title": "Growth system",
+        "prompt": "How do prioritized channels work together? Give each a role, audience, content or value, destination and growth mechanism."
+      },
+      {
+        "title": "Customer journey",
+        "prompt": "Describe discovery, useful value, purchase or adoption, continued use and recommendations from the customer's perspective."
+      },
+      {
+        "title": "Measurement and priorities",
+        "prompt": "Connect outcomes to observable signals and management decisions. State resource priorities and risks that could change the direction."
+      }
+    ]
+  },
+  "brand": {
+    "id": "brand",
+    "title": "Brand",
+    "sections": [
+      {
+        "title": "Brand identity",
+        "prompt": "What are the exact public brand and product names, their relationship, naming rules and optional slogan?"
+      },
+      {
+        "title": "Intended perception",
+        "prompt": "What should the audience understand, trust and remember? Describe character, difference and impressions to avoid."
+      },
+      {
+        "title": "Meaning and message hierarchy",
+        "prompt": "Connect the audience's situation to the promise, supporting proof, objections and next action."
+      },
+      {
+        "title": "Voice and language",
+        "prompt": "Define terminology, tone, sentence and evidence rules, with examples of suitable and unsuitable wording."
+      },
+      {
+        "title": "Consistency rules",
+        "prompt": "Which naming, promise, evidence, commercial and support rules must hold across products and channels?"
+      }
+    ]
+  },
+  "design": {
+    "id": "design",
+    "title": "Design",
+    "sections": [
+      {
+        "title": "Design intent",
+        "prompt": "Describe the reviewed visual preferences, brand character, reusable graphic language and do/do-not rules. Keep all five taste categories distinct."
+      },
+      {
+        "title": "Identity application",
+        "prompt": "Describe how the approved name and identity assets appear in lockups and different contexts. Attach real sources."
+      },
+      {
+        "title": "Visual system",
+        "prompt": "Define semantic colors, typography, weights, languages, licenses, fallbacks and their usage."
+      },
+      {
+        "title": "Iconography",
+        "prompt": "Name the library, version, source and license, or the custom drawing method. Specify the family, states, labels and actual glyph examples."
+      },
+      {
+        "title": "Interface and product surfaces",
+        "prompt": "Define reusable layout, components, interaction states, accessibility and responsive principles. Product-specific pages belong to that product."
+      },
+      {
+        "title": "Photography",
+        "prompt": "Define purpose, evidence limits, style prompt, production specification, example assets and the review gate. Preserve masters and prepare square deliveries separately."
+      },
+      {
+        "title": "Illustration and diagrams",
+        "prompt": "Define purpose, evidence limits, style prompt, production specification, example assets and the review gate for illustrations and diagrams."
+      },
+      {
+        "title": "Outputs and provenance",
+        "prompt": "Identify actual supplied and generated assets, originals and deliveries, prompts, tools, rights, review and permitted use."
+      }
+    ]
+  },
+  "products": {
+    "id": "products",
+    "title": "Products",
+    "sections": [
+      {
+        "title": "Products",
+        "prompt": "List every confirmed product with a stable ID, name, summary and its own document. Retain drafts and products outside the current priority."
+      }
+    ]
+  },
+  "product": {
+    "id": "product",
+    "title": "Product document",
+    "sections": [
+      {
+        "title": "Product identity",
+        "prompt": "State the brand, product name, category, lifecycle, owner and boundary."
+      },
+      {
+        "title": "Customer Segments",
+        "prompt": "Distinguish user, buyer, payer, beneficiary and decision-maker. Give segments stable IDs, qualifying situations, triggers and exclusions."
+      },
+      {
+        "title": "Problem and desired progress",
+        "prompt": "Describe the customer's circumstance, desired progress, functional, social and emotional forces, pains and gains."
+      },
+      {
+        "title": "Value Propositions",
+        "prompt": "Compare actual alternatives, differentiated capabilities and the customer value they enable. Link the offer to jobs, pains and gains."
+      },
+      {
+        "title": "Offer and usage",
+        "prompt": "Define access or deliverable unit, included and excluded scope, experience, support, rights and dependencies."
+      },
+      {
+        "title": "Revenue Streams",
+        "prompt": "For each segment state payer, unit, price or pricing rule, currency, cadence, payment timing and conditions. For a free offer record the intended non-cash exchange separately from money revenue."
+      },
+      {
+        "title": "Key Activities",
+        "prompt": "Which work creates and delivers the value, and who owns it? Reference the Sales process without duplicating it."
+      },
+      {
+        "title": "Key Resources",
+        "prompt": "Identify people, infrastructure, finance and intellectual resources, owners, availability and constraints. Record this product's share and allocation basis for shared resources."
+      },
+      {
+        "title": "Key Partnerships",
+        "prompt": "Which suppliers and partners contribute, what do they do, and which dependencies or agreements have evidence?"
+      },
+      {
+        "title": "Cost Structure",
+        "prompt": "Describe fixed and variable costs, amount, currency, period and calculation basis. Separate cash from founder time and state shared allocations. Include Funding: capital or subsidy provider, conditions and limits, separately from customer revenue."
+      },
+      {
+        "title": "Assumptions and decision rules",
+        "prompt": "Give material assumptions stable IDs, sources and states, with signals and consequences for the affected decisions. Link the Research that tests them."
+      },
+      {
+        "title": "Business goals and metrics",
+        "prompt": "Connect acquisition, customer value, adoption, revenue and continued use to relevant business signals and management decisions. Give numerical targets a basis."
+      },
+      {
+        "title": "Sales",
+        "prompt": "Describe the complete customer process for each segment: discovery, evaluation, purchase or adoption, delivery, use, help and continued use. Reference the Product's money terms."
+      },
+      {
+        "title": "Promotion",
+        "prompt": "Describe this product's Website, Marketing Creative and Presentation where relevant, applying the reviewed Strategy, Brand and Design."
+      },
+      {
+        "title": "Analytics & Research",
+        "prompt": "Keep measured results, source and time window separate from research findings and hypotheses. Link findings to this Product's assumptions."
+      }
+    ]
+  }
+}

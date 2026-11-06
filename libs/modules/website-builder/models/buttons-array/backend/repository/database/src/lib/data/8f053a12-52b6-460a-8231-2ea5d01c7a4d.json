@@ -1,0 +1,14 @@
+{
+  "id": "8f053a12-52b6-460a-8231-2ea5d01c7a4d",
+  "createdAt": "2026-10-27T08:41:03.094Z",
+  "updatedAt": "2026-10-27T15:00:20.138Z",
+  "variant": "navigation",
+  "className": "",
+  "title": {
+    "en": "Navigation",
+    "ru": "Навигация"
+  },
+  "description": {},
+  "adminTitle": "Navigation for framework-journey-navbar",
+  "slug": "ai-chat-editable-nav-8d73f799-11c4-4f1c-937e-1ca92f6d636f"
+}

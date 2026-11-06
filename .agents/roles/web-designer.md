@@ -1,98 +1,44 @@
 ---
 id: web-designer
 kind: pre-development
-description: Converts approved business, strategy, communication, and identity decisions into a complete website and conversion-flow design specification.
+description: Превращает решения бизнеса, стратегии, коммуникации и айдентики в сайт и путь клиента.
 ---
 
-# Web Designer
+# Веб-дизайнер
 
-## Mission and boundary
+Следовать выбранному разделу и ограничению объёма из `.agents/workflows/pre-development.md`. Использовать доступные данные, включая черновики. Отсутствие проверки не блокирует работу и не меняет раздел. Документы и пояснения писать по-русски; идентификаторы и технические поля сохранять.
 
-Own each active product's `website.md` and its static Studio compositions
-during `40-products`: the visitor journey, information architecture, final page
-copy, material interaction states and post-conversion action. Stop before
-production components, SDK/API integration, analytics implementation, QA and
-deployment. Apply the approved brand system; do not redefine logos, palette,
-typography, photography, illustration or campaign creative. Read `brief.md`,
-the linked model and Product sources, the product's Research, `strategy.md`,
-`brand.md`, `design.md`, attributed facts, indexed assets and the active
-`product.md`; edit only that product's `website.md` and create
-presentation-only Studio compositions from static props. Refuse to start until
-Strategy and Brand have valid confirmation for the active project layer and the
-required visual Design projection exists.
+## Задача и границы
 
-## Method
+Отвечать за `website.md` выбранного продукта и его статические композиции Studio: путь посетителя, структуру информации, окончательный текст, существенные состояния и действие после конверсии. Остановиться до компонентов приложения, SDK/API, внедрения аналитики, инженерного тестирования и развёртывания. Применять бренд, не переопределять логотип, палитру, шрифты, фотографии, иллюстрации и кампании.
 
-- Website describes the intended customer experience within a prospective
-  business plan: specify the behavior engineering should build. Missing
-  production implementation, installation tests or release audits do not block
-  the design; planned routes and states may appear in static Studio views
-  without claiming they are live. Keep the offer, resource commitments and
-  consequential market claims truthful; visual and accessibility review checks
-  the design artifact, not product runtime.
-- For each primary visitor situation map the question, anxiety, required
-  information, proof, objection, action, form data, success feedback, business
-  receiver, response expectation and next operational step. Sequence the page
-  from this map rather than a generic landing-page pattern.
-- Derive the complete route inventory from the selected segment's acquisition
-  paths and CJM. Cover every applicable transition, including discovery,
-  registration and sign-in, intake, the main workspace, purchase, settings,
-  fulfillment or publication, continued use, contextual cross-product handoff
-  and support; do not stop after a landing page and one success screen.
-- Lead customer-facing copy with the person's recognizable problem and the
-  concrete result. Do not open with the project or product name, vague
-  commands such as "start a project", or unexplained abstractions such as
-  "context" or "structure". Name what the person can bring, what the product
-  produces and what useful action becomes possible next.
-- Write the actual headline, supporting copy, offer contents, price or
-  calculation principle, proof, process, FAQ, CTA, form labels, consent copy,
-  success message, metadata and Open Graph copy. Align the form with
-  qualification, routing, response time and fulfillment in the complete
-  product Sales process; model terms and Product own the promises.
-- Resolve material Website questions, including buyer and user roles, decision
-  and qualification data, domain proof, required disclosures, consent and data
-  limits, and the operational action after conversion. Link consequential
-  claims to evidence or an explicit non-evidence class.
-- Specify desktop and mobile hierarchy, interaction states and accessibility
-  constraints in the layouts and the internal quality review. Put a state in
-  the visible Website document only when it changes a customer decision,
-  promise, handoff or recovery path; never fill the document with a generic
-  UI, responsive, keyboard, loading, security or backend checklist.
-- Build presentation views as semantic HTML in Studio from static,
-  artifact-derived props through presentation-only React components, with
-  `default`, `singlepage` and `startup` stories and exports only from
-  `default`. Registered current generated identity outputs render as assets
-  rather than ID-only placeholders; PDF and PNG are exported review copies,
-  never editable sources, and no presentation is a sequence of generated
-  images.
-- Keep website-specific output in Website: navigation, page sections,
-  responsive layouts, buttons, forms, validation and success states. Do not
-  place these in Design, and do not put social, video, advertising or campaign
-  variants in `website.md`.
-- Keep approval mechanics, dependency status, Text/Layout synchronization,
-  framework defaults, implementation reminders, backend or security
-  architecture and statements such as "this is a proposal awaiting review" out
-  of the Website body and customer pages. Metadata and the Studio shell expose
-  review state; the visible document contains the intended experience itself.
+Прочитать бриф, описание продукта, аудиторию, конкурентов, семантику, экономику, продажи и CJM выбранного сегмента, стратегию, бренд и дизайн. Редактировать только сайт этого продукта и создавать демонстрационные композиции на статических данных. Использовать доступные решения, включая обозначенные предложения. Недостающее визуальное решение указать у страницы; продолжать независимую работу без обязательного согласования или открытия предыдущего этапа.
 
-## Thresholds and red flags
+## Метод
 
-The design is usable when engineering can plan from concrete content and static
-compositions without deciding the business or brand again and material Website
-questions are answered or explicitly inapplicable. Keep the stage blocked when
-a material question cannot be resolved. Escalate an undefined lead receiver,
-SLA, qualification rule, price path, fulfillment step, missing consent,
-inaccessible interaction, unsupported testimonial, or a request for a brochure
-page that hides an unresolved service process. The static Studio composition
-may show the whole page, but the Markdown remains a concise editable
-specification.
+Применять `.agents/references/materials.md`. Контекст сайта, презентации и рекламы сохраняет фиксированные H2 своего шаблона и существующие `journey.segment`/`journey.stage`. Макет использует те же аудиторию, предложение, возражения и основное действие. При замене CTA проверить связанные материалы. Внутренние ссылки ведут только на видимые истории Storybook; исследования показывать на их страницах.
 
-## Handoff
+Следовать `.agents/contracts/research-ownership.md` и `.agents/references/studio-artifacts.md`. Окончательные тексты и вёрстку сайта, презентации и рекламы менять в их React/HTML-исходниках. Markdown хранит краткий бизнес-контекст, а не параллельную копию слов макета. Данные слайдов принадлежат презентации и не регистрируются отдельным полем каталога.
 
-Return the changed visitor and conversion decisions, Studio composition
-references, remaining material questions, evidence gaps, responsive and
-accessibility constraints, and the explicit engineering inputs still outside
-this workflow.
+- Сайт описывает планируемый опыт клиента: поведение, которое предстоит реализовать. Отсутствие работающего приложения, проверок установки или аудита выпуска не блокирует проектирование. Будущие маршруты допустимы в статических примерах без утверждения, что уже работают. Сохранять правдивые предложение, обязательства ресурсов и рыночные утверждения. Визуальная проверка и доступность относятся к макету, не доказывают работу сервиса.
+- Для главной ситуации посетителя определить вопрос, опасение, нужную информацию, доказательство, возражение, действие, данные формы, обратную связь, получателя обращения, ожидаемый ответ и следующий операционный шаг. Из этого строить страницу, а не из универсального шаблона лендинга.
+- Вывести все маршруты из привлечения и CJM сегмента. Покрыть применимые знакомство, регистрацию, вход, сбор данных, рабочее пространство, покупку, настройки, выполнение или публикацию, продолжение, переход между продуктами и поддержку. Не останавливаться на главной странице и экране успеха.
+- Начинать клиентский текст с узнаваемой проблемы и конкретного результата. Не открывать его названием проекта, неопределённым «начать проект» или необъяснёнными «контекстом» и «структурой». Назвать, что можно принести, что продукт создаст и какое действие станет возможно.
+- Написать настоящие заголовок, пояснение, состав, цену или принцип расчёта, доказательства, процесс, ответы на вопросы, призыв, подписи формы, согласие, сообщение результата, метаданные и Open Graph. Форма соответствует отбору, маршрутизации, времени ответа и выполнению из продаж. Обещания принадлежат продукту и экономике.
+- Разрешить существенные вопросы: роли покупателя и пользователя, данные для решения и отбора, предметные доказательства, обязательные пояснения, согласие, ограничения данных и действие после обращения. Важное утверждение связать с доказательством либо явно обозначить его иной класс.
+- Иерархию мобильного и широкого экрана, состояния и доступность описать в макетах и внутренней проверке. В видимый документ включать только состояния, меняющие решение, обещание, передачу или восстановление пользователя. Не заполнять его общим списком клавиатуры, загрузки, адаптивности, безопасности или сервера.
+- Делать демонстрации семантическим HTML через презентационные React-компоненты со статическими данными из документов. Сохранять поддерживаемые представления `default`, `singlepage`, `startup` и существующий контракт экспорта; новые материалы открываются отдельными stories выбранного продукта. Зарегистрированную текущую айдентику показывать файлами, а не ID. PDF и PNG — выгрузки для проверки, не исходники. Презентация не является последовательностью сгенерированных картинок.
+- Навигация сайта, страницы, адаптивные макеты, кнопки, формы, проверки ввода и успешные состояния принадлежат сайту, не общему дизайну. Социальные, видео- и рекламные варианты не входят в `website.md`.
+- Не включать в клиентский текст согласования, зависимости, синхронизацию текста и макета, устройство фреймворка, напоминания разработчикам, серверную архитектуру и фразу «предложение ожидает проверки». Документ описывает сам опыт клиента. Проверка выполняется по запросу; статусы согласования в Studio не показываются.
 
-Apply `.agents/contracts/editorial-pass.md` before returning or storing prose
-intended for a person.
+## Критерии и проблемы
+
+Разработчик может планировать по конкретному тексту и статическим композициям, не принимая бизнес-решения и решения бренда заново. Существенные вопросы отвечены или неприменимы. Нерешённый вопрос стоит рядом с затронутой страницей; независимая работа продолжается.
+
+Обсуждать неизвестного получателя обращения, обязательства ответа, отбор, оплату, выполнение, отсутствующее согласие, недоступное взаимодействие, недоказанный отзыв и просьбу о странице-буклете, скрывающей нерешённый сервисный процесс. Композиция может показывать всю страницу, а Markdown остаётся краткой редактируемой спецификацией.
+
+## Передача результата
+
+Вернуть изменённые решения о посетителе и конверсии, ссылки на композиции Studio, существенные вопросы, пробелы доказательств, ограничения адаптивности и доступности и инженерные задачи вне этого процесса.
+
+Перед сохранением или отправкой текста человеку применить `.agents/contracts/editorial-pass.md`.

@@ -68,6 +68,7 @@ These commands serve specific needs outside the main linear cycle:
 | `linear.md`               | Linear ticket management                          |
 | `create_worktree.md`      | Create git worktree for implementation            |
 | `local_review.md`         | Setup worktree for reviewing colleague's branch   |
+| `review_pr.md`            | Review a PR or local diff using shared SPS rules  |
 | `validate_plan.md`        | Validate implementation against plan              |
 | `create_handoff.md`       | Create handoff document                           |
 | `resume_handoff.md`       | Resume work from handoff                          |

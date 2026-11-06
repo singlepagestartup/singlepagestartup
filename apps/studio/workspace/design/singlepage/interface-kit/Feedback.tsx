@@ -38,10 +38,10 @@ export default function Feedback() {
     <div className="grid gap-6">
       <Specimen
         id="alerts"
-        title="Alerts"
-        description="Inline information stays beside the decision it explains."
-        states={["Informational", "Success", "Dismissed"]}
-        usage="Use a persistent inline alert when context matters before an action. Do not rely on color alone."
+        title="Сообщения"
+        description="Пояснение находится рядом с решением, к которому относится."
+        states={["Informational", "Готово", "Dismissed"]}
+        usage="Если контекст нужен до действия, оставьте постоянное сообщение в странице. Не полагайтесь только на цвет."
         recipe={`rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] p-4 text-sm ${kit.focus}`}
       >
         <div className="grid gap-3">
@@ -49,15 +49,17 @@ export default function Feedback() {
             <div className="flex items-start gap-3 rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] p-4 text-sm">
               <Icon name="question" />
               <div className="min-w-0 flex-1">
-                <p className="font-semibold">Your files stay on this device</p>
+                <p className="font-semibold">
+                  Файлы остаются на этом устройстве
+                </p>
                 <p className={`mt-1 ${kit.muted}`}>
-                  This component demo does not send files to a server.
+                  Пример компонента не отправляет файлы на сервер.
                 </p>
               </div>
               <Button
                 variant="plain"
                 className="min-h-11 shrink-0 px-3"
-                aria-label="Dismiss file information"
+                aria-label="Скрыть сведения о файлах"
                 onClick={() => setAlertVisible(false)}
               >
                 <Icon name="x" />
@@ -65,7 +67,7 @@ export default function Feedback() {
             </div>
           ) : (
             <Button variant="secondary" onClick={() => setAlertVisible(true)}>
-              Show information again
+              Показать сведения снова
             </Button>
           )}
           <div className="flex items-start gap-3 rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-4 text-sm">
@@ -73,9 +75,9 @@ export default function Feedback() {
               <Icon name="check" />
             </span>
             <div>
-              <p className="font-semibold">Ready to review</p>
+              <p className="font-semibold">Можно проверять</p>
               <p className={`mt-1 ${kit.muted}`}>
-                A success message names the completed action.
+                Сообщение об успехе называет завершённое действие.
               </p>
             </div>
           </div>
@@ -84,22 +86,22 @@ export default function Feedback() {
 
       <Specimen
         id="toast"
-        title="Toast"
-        description="A temporary acknowledgement can offer an immediate undo."
+        title="Всплывающее уведомление"
+        description="Краткое подтверждение может предложить немедленную отмену."
         states={["Hidden", "Visible", "Undone", "Dismissed"]}
-        usage="Keep important information in the page too. This local demo dismisses the toast after eight seconds and pauses while hovered or focused. Undo is also available beside its trigger."
+        usage="Важные сведения сохраняются и на странице. Пример скрывает уведомление через восемь секунд и приостанавливает таймер при наведении или фокусе. Отмена доступна и рядом с кнопкой запуска."
         recipe={`${kit.card} flex flex-wrap items-center gap-3 shadow-sm`}
       >
         <div className="flex flex-wrap items-center gap-3">
           <Button onClick={() => setToast("saved")}>
-            Simulate saving a draft
+            Сымитировать сохранение черновика
           </Button>
           <Button
             variant="secondary"
             disabled={toast !== "saved"}
             onClick={() => setToast("undone")}
           >
-            Undo demo save
+            Отменить сохранение примера
           </Button>
         </div>
         <div className="mt-4 min-h-20" aria-live="polite" aria-atomic="true">
@@ -118,18 +120,18 @@ export default function Feedback() {
               <Icon name="check" />
               <p className="min-w-0 flex-1 text-sm font-medium">
                 {toast === "saved"
-                  ? "Demo draft saved in this preview."
-                  : "Demo save undone."}
+                  ? "Черновик сохранён внутри примера."
+                  : "Сохранение примера отменено."}
               </p>
               {toast === "saved" ? (
                 <Button variant="plain" onClick={() => setToast("undone")}>
-                  Undo
+                  Отменить
                 </Button>
               ) : null}
               <Button
                 variant="plain"
                 className="px-3"
-                aria-label="Dismiss notification"
+                aria-label="Закрыть уведомление"
                 onClick={() => {
                   setToast(null);
                   setToastHovered(false);
@@ -141,7 +143,7 @@ export default function Feedback() {
             </div>
           ) : (
             <p className={`text-sm ${kit.muted}`}>
-              No notification. Nothing is saved outside this preview.
+              Нет уведомления. За пределами примера ничего не сохранено.
             </p>
           )}
         </div>
@@ -149,10 +151,10 @@ export default function Feedback() {
 
       <Specimen
         id="loading"
-        title="Loading and skeleton"
-        description="A local timer demonstrates progress while the content layout stays stable."
-        states={["Idle", "Loading", "Complete", "Reduced motion"]}
-        usage="Use a skeleton for unknown content and progress only when the amount completed is known."
+        title="Загрузка и каркас"
+        description="Локальный таймер показывает прогресс, сохраняя раскладку содержимого."
+        states={["Idle", "Загрузка", "Complete", "Уменьшение движения"]}
+        usage="Для неизвестного содержимого используйте каркас; измеримый прогресс — только при известном выполненном объёме."
         recipe="h-2 overflow-hidden rounded-full bg-[var(--workspace-brand-line)] / animate-pulse motion-reduce:animate-none"
       >
         <div className="grid gap-4 sm:grid-cols-2">
@@ -172,25 +174,25 @@ export default function Feedback() {
               ) : (
                 <Icon name="arrow-right" />
               )}
-              {loading ? "Simulating…" : "Run loading demo"}
+              {loading ? "Simulating…" : "Запустить пример загрузки"}
             </Button>
             <progress
               className="h-2 w-full overflow-hidden rounded-full [&::-moz-progress-bar]:bg-[var(--workspace-brand-primary)] [&::-webkit-progress-bar]:bg-[var(--workspace-brand-line)] [&::-webkit-progress-value]:bg-[var(--workspace-brand-primary)]"
-              aria-label="Demo progress"
+              aria-label="Прогресс примера"
               max={100}
               value={progress}
             />
             <p role="status" className={`text-sm ${kit.muted}`}>
               {loading
-                ? `${progress}% · local simulation`
+                ? `${progress}% · локальный пример`
                 : progress === 100
-                  ? "Demo complete."
-                  : "Ready to simulate."}
+                  ? "Пример завершён."
+                  : "Можно запустить пример."}
             </p>
           </div>
           <div
             className={`${kit.card} space-y-4`}
-            aria-label="Skeleton example"
+            aria-label="Пример каркаса"
             aria-busy={loading}
           >
             <div
@@ -206,25 +208,27 @@ export default function Feedback() {
               <div className="h-3 w-full rounded-full bg-[var(--workspace-brand-background)]" />
               <div className="h-3 w-4/5 rounded-full bg-[var(--workspace-brand-background)]" />
             </div>
-            <p className={`text-xs ${kit.muted}`}>Content skeleton preview</p>
+            <p className={`text-xs ${kit.muted}`}>
+              Предпросмотр каркаса содержимого
+            </p>
           </div>
         </div>
       </Specimen>
 
       <Specimen
         id="empty-error"
-        title="Empty and error states"
-        description="Explain what happened and offer the next useful action."
-        states={["Empty", "Failed", "Retrying", "Recovered"]}
-        usage="An empty collection needs an invitation. A failed request needs an explanation and retry, without discarding existing work."
+        title="Пустые состояния и ошибки"
+        description="Объясните событие и предложите следующее полезное действие."
+        states={["Пусто", "Ошибка", "Retrying", "Recovered"]}
+        usage="Пустой коллекции нужно приглашение. Ошибке запроса — объяснение и повтор с сохранением работы."
         recipe={`${kit.card} grid justify-items-center gap-3 py-8 text-center; error: border-[var(--workspace-brand-danger-line)] bg-[var(--workspace-brand-danger-surface)] text-[var(--workspace-brand-danger)]`}
       >
         <div className="mb-4 flex flex-wrap gap-3">
           <Button variant="secondary" onClick={() => setEmptyState("empty")}>
-            Show empty
+            Показать пустое состояние
           </Button>
           <Button variant="secondary" onClick={() => setEmptyState("error")}>
-            Simulate an error
+            Сымитировать ошибку
           </Button>
         </div>
         <div
@@ -243,18 +247,18 @@ export default function Feedback() {
           />
           <p className="font-semibold">
             {emptyState === "empty"
-              ? "No files in this demo"
+              ? "В примере нет файлов"
               : emptyState === "error"
-                ? "The example could not load"
-                : "Trying the example again…"}
+                ? "Пример не загрузился"
+                : "Повторная загрузка примера…"}
           </p>
           <p
             role="status"
             className={`max-w-md text-sm ${emptyState === "empty" ? kit.muted : "text-[var(--workspace-brand-danger)]"}`}
           >
             {emptyState === "empty"
-              ? "Add a local file in the File upload example below."
-              : "This is a simulated failure. Your local files have not changed."}
+              ? "Добавьте локальный файл в примере загрузки ниже."
+              : "Это имитация ошибки. Локальные файлы не изменились."}
           </p>
           {emptyState !== "empty" ? (
             <Button
@@ -263,7 +267,7 @@ export default function Feedback() {
               disabled={emptyState === "retrying"}
               onClick={() => setEmptyState("retrying")}
             >
-              {emptyState === "retrying" ? "Retrying…" : "Retry demo"}
+              {emptyState === "retrying" ? "Retrying…" : "Повторить пример"}
             </Button>
           ) : null}
         </div>

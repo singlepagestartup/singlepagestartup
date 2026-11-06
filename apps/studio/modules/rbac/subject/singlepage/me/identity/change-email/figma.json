@@ -1,0 +1,23 @@
+{
+  "componentName": "rbac.subject",
+  "pageName": "rbac",
+  "variantName": "me-identity-change-email",
+  "nodeId": null,
+  "variantNodeId": null,
+  "syncStatus": "not-created",
+  "metadataFile": "figma.json",
+  "metadata": {
+    "singlepagestartup.studio.blockId": "rbac.subject.me-identity-change-email",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "rbac/subject/singlepage/me/identity/change-email",
+    "sps.figma.component": "rbac.subject",
+    "sps.figma.variant": "me-identity-change-email",
+    "sps.source.module": "rbac",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "subject",
+    "sps.source.variant": "me-identity-change-email",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/rbac/subject/singlepage/me/identity/change-email/Component.tsx",
+    "sps.code.story": "apps/studio/modules/rbac/subject/singlepage/me/identity/change-email/Component.stories.tsx"
+  }
+}

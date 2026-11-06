@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Explore module",
+    "ru": "Изучить модуль"
+  },
+  "subtitle": {},
+  "url": "/framework/modules/rbac",
+  "className": "w-fit",
+  "id": "17359621-4c59-4c07-a687-e57ee56bb119",
+  "createdAt": "2026-10-24T01:05:47.386Z",
+  "updatedAt": "2026-10-24T01:05:47.386Z",
+  "variant": "secondary",
+  "adminTitle": "Explore module",
+  "slug": "framework-journey-module-group-0-actions-0"
+}

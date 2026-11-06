@@ -18,3 +18,13 @@ export {
   getAdminBasePath,
   useAdminBasePath,
 } from "./admin-route";
+
+export { getLocalizedHref } from "./localized-href";
+export {
+  getFilePreviewKind,
+  getFilePreviewUrl,
+  type FilePreviewKind,
+} from "./file-preview";
+
+export { useChatScroll, type IChatScrollProps } from "./chat-scroll";
+export { getRichTextPlainText, getRichTextMarkdown } from "./rich-text";

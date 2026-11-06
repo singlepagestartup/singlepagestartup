@@ -1,3 +1,4 @@
+import { IComponentProps as IHiddenComponentProps } from "@sps/shared-frontend-components/singlepage/hidden/interface";
 import { IComponentProps as IAdminV2SidebarItemComponentProps } from "./admin-v2/sidebar-item/interface";
 import { IComponentProps as IAdminV2CardComponentProps } from "./admin-v2/card/interface";
 import { IComponentProps as IAdminV2FormComponentProps } from "./admin-v2/form/interface";
@@ -10,8 +11,12 @@ import { IComponentProps as IAdminTableComponentProps } from "./admin/table/inte
 import { IComponentProps as IAdminSelectInputComponentProps } from "./admin/select-input/interface";
 import { IComponentProps as IAdminFormComponentProps } from "./admin/form/interface";
 import { IComponentProps as IDefaultComponentProps } from "./default/interface";
+import { IComponentProps as IAttachmentAiChatComponentProps } from "./attachment-ai-chat/interface";
+
+import type { IComponentProps as IAuthenticatedContentComponentProps } from "./authenticated-content/interface";
 
 export type IComponentProps =
+  | IHiddenComponentProps
   | IFindComponentProps
   | IAdminTableRowComponentProps
   | IAdminTableComponentProps
@@ -23,4 +28,6 @@ export type IComponentProps =
   | IAdminV2SelectInputComponentProps
   | IAdminV2TableComponentProps
   | IAdminV2TableRowComponentProps
-  | IDefaultComponentProps;
+  | IDefaultComponentProps
+  | IAttachmentAiChatComponentProps
+  | IAuthenticatedContentComponentProps;
