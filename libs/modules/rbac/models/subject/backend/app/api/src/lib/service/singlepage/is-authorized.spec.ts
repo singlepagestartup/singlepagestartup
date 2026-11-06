@@ -531,3 +531,38 @@ describe("Given: the framework permission seed", () => {
     warn.mockRestore();
   });
 });
+
+describe("roleless Chat access", () => {
+  const chat = "/api/social/chats/11111111-1111-4111-8111-111111111111";
+  const otherChat = "/api/social/chats/22222222-2222-4222-8222-222222222222";
+  it.each([
+    ["/api/social/chats", "/api/social/chats", false],
+    [chat, chat, true],
+    [otherChat, "/api/social/chats/[social.chats.id]", false],
+    [
+      "/api/social/profiles-to-file-storage-module-files",
+      "/api/social/profiles-to-file-storage-module-files",
+      false,
+    ],
+  ] as const)(
+    "checks the resolved grant before authorizing %s",
+    async (route, permissionPath, allowed) => {
+      const service = new Service(
+        createPermissionService({
+          permission: { id: "roleless", path: permissionPath },
+        }) as any,
+        { find: jest.fn().mockResolvedValue([]) } as any,
+        { find: jest.fn() } as any,
+      );
+      const check = service.execute({
+        permission: { route, method: "GET", type: "HTTP" },
+        authorization: {},
+      });
+      if (allowed) {
+        await expect(check).resolves.toEqual({ ok: true });
+      } else {
+        await expect(check).rejects.toThrow("Permission error.");
+      }
+    },
+  );
+});

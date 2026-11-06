@@ -14,36 +14,6 @@ import { act } from "react";
 import { createRoot, Root } from "react-dom/client";
 import { Component } from "./Component";
 
-let profileFiles: any[] = [];
-let files: any[] = [];
-let profileRelationApiProps: any;
-let fileApiProps: any;
-
-jest.mock(
-  "@sps/social/relations/profiles-to-file-storage-module-files/frontend/component",
-  () => ({
-    Component: (props: {
-      apiProps: unknown;
-      children: (props: { data: any[] }) => React.ReactNode;
-    }) => {
-      profileRelationApiProps = props.apiProps;
-
-      return <>{props.children({ data: profileFiles })}</>;
-    },
-  }),
-);
-
-jest.mock("@sps/file-storage/models/file/frontend/component", () => ({
-  Component: (props: {
-    apiProps: unknown;
-    children: (props: { data: any[] }) => React.ReactNode;
-  }) => {
-    fileApiProps = props.apiProps;
-
-    return <>{props.children({ data: files })}</>;
-  },
-}));
-
 jest.mock("next/image", () => ({
   __esModule: true,
   default: (props: {
@@ -75,11 +45,6 @@ describe("GIVEN: social profile chat avatar", () => {
   });
 
   beforeEach(() => {
-    profileFiles = [];
-    files = [];
-    profileRelationApiProps = undefined;
-    fileApiProps = undefined;
-
     container = document.createElement("div");
     document.body.appendChild(container);
     root = createRoot(container);
@@ -100,13 +65,7 @@ describe("GIVEN: social profile chat avatar", () => {
    * Then: it queries the latest relation and renders the linked image.
    */
   test("When: profile has a linked image Then: latest relation image is rendered", () => {
-    profileFiles = [
-      {
-        id: "profile-file-1",
-        fileStorageModuleFileId: "file-1",
-      },
-    ];
-    files = [
+    const files = [
       {
         id: "file-1",
         file: "/avatars/maxim.png",
@@ -118,6 +77,7 @@ describe("GIVEN: social profile chat avatar", () => {
     act(() => {
       root.render(
         <Component
+          file={files[0] as any}
           className="h-10 w-10"
           isServer={false}
           variant="chat-profile-avatar"
@@ -138,36 +98,6 @@ describe("GIVEN: social profile chat avatar", () => {
       "[data-testid='profile-avatar-image']",
     ) as HTMLImageElement | null;
 
-    expect(profileRelationApiProps.params.filters.and).toEqual([
-      {
-        column: "profileId",
-        method: "eq",
-        value: "profile-1",
-      },
-    ]);
-    expect(profileRelationApiProps.params.orderBy.and).toEqual([
-      {
-        column: "orderIndex",
-        method: "desc",
-      },
-      {
-        column: "updatedAt",
-        method: "desc",
-      },
-      {
-        column: "createdAt",
-        method: "desc",
-      },
-    ]);
-    expect(profileRelationApiProps.params.limit).toBe(1);
-    expect(fileApiProps.params.filters.and).toEqual([
-      {
-        column: "id",
-        method: "eq",
-        value: "file-1",
-      },
-    ]);
-    expect(fileApiProps.params.limit).toBe(1);
     expect(image?.getAttribute("alt")).toBe("AI Maksim Ivanov");
     expect(image?.getAttribute("src")).toContain("/public/avatars/maxim.png");
   });
@@ -180,13 +110,7 @@ describe("GIVEN: social profile chat avatar", () => {
    * Then: it renders the profile title initial.
    */
   test("When: profile has no usable image Then: title initial is rendered", () => {
-    profileFiles = [
-      {
-        id: "profile-file-1",
-        fileStorageModuleFileId: "file-1",
-      },
-    ];
-    files = [
+    const files = [
       {
         id: "file-1",
         file: "/documents/profile.pdf",

@@ -1,5 +1,13 @@
+import { UUID_PATH_SUFFIX_REGEX } from "../constants";
+
 export * from "./sitemap";
 export * from "./seo";
+
+/** A stored permission for exactly one UUID below the given resource. */
+export function isExactResourceGrant(resource: string, path: string): boolean {
+  const suffix = UUID_PATH_SUFFIX_REGEX.exec(path);
+  return suffix?.index === resource.length && path === resource + suffix[0];
+}
 
 /** Named values resolved from a Page mask; missing keys remain undefined. */
 export type IRouteParams = Readonly<Record<string, string | undefined>>;

@@ -1,5 +1,5 @@
 import type { FindServiceProps } from "@sps/shared-backend-api";
-import { UUID_PATH_SUFFIX_REGEX } from "@sps/shared-utils";
+import { isExactResourceGrant } from "@sps/shared-utils";
 import {
   publicResourceIdsSchema,
   type IPublicResourceIdsParams,
@@ -11,7 +11,11 @@ interface IRead<T> {
 }
 export interface IDependencies {
   permission: IRead<IModel> & {
-    isSensitiveRoute(route: string, method: string): Promise<boolean>;
+    isSensitiveRoute(
+      route: string,
+      method: string,
+      permissionPath?: string,
+    ): Promise<boolean>;
   };
   rolesToPermissions: IRead<{ permissionId: string }>;
 }
@@ -22,11 +26,14 @@ export class Service {
 
   async execute(props: IPublicResourceIdsParams): Promise<string[]> {
     const parsed = publicResourceIdsSchema.safeParse(props);
-    if (!parsed.success)
+    if (!parsed.success) {
       throw new Error("Validation error. Invalid API resource path");
+    }
     const { resource } = parsed.data;
     const ids = new Set<string>();
-    for (let offset = 0; ; offset += 100) {
+    let offset = 0;
+    let morePermissions = true;
+    while (morePermissions) {
       const permissions = await this.dependencies.permission.find({
         params: {
           filters: {
@@ -41,16 +48,14 @@ export class Service {
           offset,
         },
       });
-      const exact = permissions.filter((permission) => {
-        const match = UUID_PATH_SUFFIX_REGEX.exec(permission.path);
-        return (
-          match?.index === resource.length &&
-          match[0] === permission.path.slice(resource.length)
-        );
-      });
+      const exact = permissions.filter((permission) =>
+        isExactResourceGrant(resource, permission.path),
+      );
       const bound = new Set<string>();
       if (exact.length) {
-        for (let linkOffset = 0; ; linkOffset += 100) {
+        let linkOffset = 0;
+        let moreBindings = true;
+        while (moreBindings) {
           const bindings = await this.dependencies.rolesToPermissions.find({
             params: {
               filters: {
@@ -67,8 +72,11 @@ export class Service {
               offset: linkOffset,
             },
           });
-          for (const binding of bindings) bound.add(binding.permissionId);
-          if (bindings.length < 100) break;
+          for (const binding of bindings) {
+            bound.add(binding.permissionId);
+          }
+          moreBindings = bindings.length === 100;
+          linkOffset += bindings.length;
         }
       }
       for (const permission of exact) {
@@ -77,11 +85,14 @@ export class Service {
           !(await this.dependencies.permission.isSensitiveRoute(
             permission.path,
             "GET",
+            permission.path,
           ))
-        )
+        ) {
           ids.add(permission.path.slice(resource.length + 1));
+        }
       }
-      if (permissions.length < 100) break;
+      morePermissions = permissions.length === 100;
+      offset += permissions.length;
     }
     return [...ids].sort();
   }

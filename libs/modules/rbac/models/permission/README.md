@@ -72,3 +72,18 @@ masks without importing authorization rules or embedding resource names.
 Permission Service now receives RolesToPermissions Service through
 `PermissionDI.IRolesToPermissionsService`. Owned factories must provide this
 third constructor dependency; ordinary CRUD methods retain their contracts.
+
+### Social reads without a role
+
+The public site reads widget composition, links crediting profiles on Blog articles,
+and the `/api/social/profiles/authors` projection. The author projection returns
+the selected image for a publishable author. Chat participants use avatars
+supplied by their Subject-scoped chat reads. The raw profile-to-file relation
+list, its count and its detail routes require an assigned role.
+
+An empty role list on the raw Chat collection or count grants no access.
+Publishing one demo chat requires a GET permission whose path names that exact
+Chat UUID. A template does not publish the other chats. Host route enumeration
+can discover exact public grants through the Permission SDK. Private chat
+membership is checked on the Subject routes. Administrators and operator
+requests use their existing access paths.
