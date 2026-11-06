@@ -86,7 +86,7 @@ export async function assertApplicationDatabaseRole() {
 
   if (!login?.allowed) {
     throw new Error(
-      "Configuration error. PostgreSQL requires a dedicated application login without elevated privileges or memberships.",
+      "Configuration error. PostgreSQL requires a dedicated application login without elevated privileges or memberships. For an existing installation, follow the role migration in tools/deployer/README.md.",
     );
   }
 }

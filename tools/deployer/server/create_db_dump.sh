@@ -4,7 +4,7 @@
 # Root's crontab runs it every night (server/set_cron_jobs.yaml).
 #
 # pg_dump runs inside the postgres_postgres container as the application login over
-# loopback TCP, so the client matches the server version. The archive includes
+# TCP, so the client matches the server version. The archive includes
 # identity records. The directory is 0700 and each dump 0600. The job publishes
 # the archive and prunes old dumps only after pg_dump succeeds. Retention is
 # DATABASE_BACKUP_RETENTION_DAYS days (default 14; 0 keeps every dump).
@@ -57,8 +57,8 @@ trap 'rm -f "$PARTIAL_DUMP_PATH"' EXIT
 if ! docker exec "$POSTGRES_CONTAINER_ID" \
     sh -ec '
         /docker-entrypoint-initdb.d/create_application_role.sh --check-login >&2
-        export PGDATABASE="$POSTGRES_DB" PGPASSWORD="$DATABASE_PASSWORD"
-        exec pg_dump --host=127.0.0.1 --username="$DATABASE_USERNAME" --no-password \
+        export PGDATABASE="$POSTGRES_DB" PGPASSWORD="$DATABASE_PASSWORD" PGREQUIREAUTH=scram-sha-256,md5
+        exec pg_dump --host="$(hostname)" --username="$DATABASE_USERNAME" --no-password \
             --format=custom --no-acl --exclude-extension=vector
     ' \
     > "$PARTIAL_DUMP_PATH"

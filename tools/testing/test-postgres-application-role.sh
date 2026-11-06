@@ -19,7 +19,8 @@ trap 'echo "PostgreSQL integration check failed at line $LINENO" >&2' ERR
 
 start_database() {
   local target="$1"
-  db=$(docker run -d --network none --tmpfs /var/lib/postgresql/data:rw,size=384m \
+  db=$(docker run -d --network none --hostname pg-fixture --add-host pg-fixture:127.0.0.1 \
+    -e POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256 --tmpfs /var/lib/postgresql/data:rw,size=384m \
     --mount "type=bind,source=$bootstrap,target=$target,readonly" \
     -e POSTGRES_DB=project -e POSTGRES_USER=project_admin -e POSTGRES_PASSWORD="$admin_password" \
     -e DATABASE_USERNAME=project_api -e DATABASE_PASSWORD="$app_password" pgvector/pgvector:pg17)
@@ -76,6 +77,11 @@ expect_rejected_upgrade() {
 
 start_database /docker-entrypoint-initdb.d/create_application_role.sh
 verify_role
+if docker exec -e DATABASE_PASSWORD=wrong-fixture-password "$db" /docker-entrypoint-initdb.d/create_application_role.sh --check-login >"$backup_dir/wrong-password.log" 2>&1; then
+  echo "Application login check accepted a wrong password" >&2
+  exit 1
+fi
+grep -q 'password authentication failed' "$backup_dir/wrong-password.log"
 echo "Fresh database: image bootstrap, application login, vector and privilege denials passed"
 
 start_database /tmp/role-bootstrap.sh

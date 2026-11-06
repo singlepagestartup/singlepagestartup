@@ -9,8 +9,9 @@ fi
 
 docker exec "$1" /docker-entrypoint-initdb.d/create_application_role.sh --check-login
 ready=$(docker exec -i "$1" sh -ec '
+    export PGREQUIREAUTH=scram-sha-256,md5
     export PGDATABASE="$POSTGRES_DB" PGPASSWORD="$DATABASE_PASSWORD"
-    exec psql -XqAt --no-password -h 127.0.0.1 -U "$DATABASE_USERNAME" -v ON_ERROR_STOP=1
+    exec psql -XqAt --no-password -h "$(hostname)" -U "$DATABASE_USERNAME" -v ON_ERROR_STOP=1
 ' <<'SQL'
 SET search_path = pg_catalog;
 -- Implicit array types and operator families belong to extension objects.
@@ -41,7 +42,8 @@ if [[ "$ready" != t ]]; then
 fi
 
 docker exec -i "$1" sh -ec '
+    export PGREQUIREAUTH=scram-sha-256,md5
     export PGDATABASE="$POSTGRES_DB" PGPASSWORD="$DATABASE_PASSWORD" PGUSER="$DATABASE_USERNAME"
-    exec pg_restore --dbname="host=127.0.0.1" --no-password --format=custom \
+    exec pg_restore --dbname="host=$(hostname)" --no-password --format=custom \
         --no-owner --no-acl --exit-on-error --single-transaction
 '

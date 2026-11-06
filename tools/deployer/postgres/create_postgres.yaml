@@ -30,4 +30,4 @@
         DATABASE_PASSWORD: "{{ lookup('ansible.builtin.env', 'DATABASE_PASSWORD') }}"
 
     - name: Run Postgres service
-      shell: docker stack deploy --compose-file=/home/code/docker-compose.postgres.yaml postgres
+      ansible.builtin.command: docker stack deploy --detach=false --compose-file=/home/code/docker-compose.postgres.yaml postgres

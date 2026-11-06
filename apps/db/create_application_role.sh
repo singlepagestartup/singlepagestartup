@@ -4,7 +4,8 @@
 #
 # The PostgreSQL image runs this file from /docker-entrypoint-initdb.d once,
 # when it initializes an empty data directory. A database that is already
-# initialized is moved by running the same file inside the running container:
+# initialized is moved by running ./postgres.sh migrate-role from tools/deployer.
+# The deployer runs this file inside the updated PostgreSQL container:
 #
 #   docker exec <container> /docker-entrypoint-initdb.d/create_application_role.sh
 #
@@ -134,12 +135,12 @@ SELECT EXISTS (
 \gset
 \if :ordinary_owner
 \else
-  DO $$ BEGIN RAISE EXCEPTION 'Backup requires the dedicated application login that owns this database.'; END $$;
+  DO $$ BEGIN RAISE EXCEPTION 'Expected the dedicated application login that owns this database.'; END $$;
 \endif
 EOSQL
     protected_object_checks
-  } | PGPASSWORD="$DATABASE_PASSWORD" PGDATABASE="$database" psql -Xq --no-password \
-        -h 127.0.0.1 -U "$application_role" -v ON_ERROR_STOP=1 -v application_role="$application_role"
+  } | PGREQUIREAUTH=scram-sha-256,md5 PGPASSWORD="$DATABASE_PASSWORD" PGDATABASE="$database" \
+        psql -Xq --no-password -h "$(hostname)" -U "$application_role" -v ON_ERROR_STOP=1 -v application_role="$application_role"
   exit $?
 fi
 

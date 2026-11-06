@@ -190,15 +190,17 @@ describe("a successful dump", () => {
    * BDD Scenario: The dump comes from the database container
    * Given a running postgres_postgres container
    * When the nightly job runs
-   * Then pg_dump runs inside that container, so no password or host port is
-   *      involved
+   * Then pg_dump connects from inside that container using the application
+   *      login and requires password authentication
    */
   test("runs pg_dump inside the running postgres container", () => {
     const result = runDump({ backupDirectory: createBackupDirectory() });
 
     expect(result.status).toBe(0);
     expect(
-      result.calls.some((call) => call.includes("pg_dump --host=127.0.0.1")),
+      result.calls.some((call) =>
+        call.includes('pg_dump --host="$(hostname)"'),
+      ),
     ).toBe(true);
   });
 
