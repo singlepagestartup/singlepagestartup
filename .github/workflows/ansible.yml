@@ -75,6 +75,7 @@ jobs:
           SPS_DEPLOY_DATABASE_PASSWORD: ${{ secrets.PREVIEW_DATABASE_PASSWORD }}
           SPS_DEPLOY_POSTGRES_USER: ${{ secrets.PREVIEW_POSTGRES_USER }}
           SPS_DEPLOY_POSTGRES_PASSWORD: ${{ secrets.PREVIEW_POSTGRES_PASSWORD }}
+          SPS_DEPLOY_DATABASE_BACKUP_RETENTION_DAYS: ${{ secrets.PREVIEW_DATABASE_BACKUP_RETENTION_DAYS }}
           SPS_DEPLOY_REDIS_PASSWORD: ${{ secrets.PREVIEW_REDIS_PASSWORD }}
           SPS_DEPLOY_HOST_SERVICE_NAME: ${{ secrets.PREVIEW_HOST_SERVICE_NAME }}
           SPS_DEPLOY_HOST_SERVICE_SUBDOMAIN: ${{ secrets.PREVIEW_HOST_SERVICE_SUBDOMAIN }}
@@ -195,6 +196,7 @@ jobs:
           SPS_DEPLOY_DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
           SPS_DEPLOY_POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           SPS_DEPLOY_POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          SPS_DEPLOY_DATABASE_BACKUP_RETENTION_DAYS: ${{ secrets.DATABASE_BACKUP_RETENTION_DAYS }}
           SPS_DEPLOY_REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
           SPS_DEPLOY_HOST_SERVICE_NAME: ${{ secrets.HOST_SERVICE_NAME }}
           SPS_DEPLOY_HOST_SERVICE_SUBDOMAIN: ${{ secrets.HOST_SERVICE_SUBDOMAIN }}
@@ -287,7 +289,6 @@ jobs:
             "./$(echo "$BRANCH_NAME" | cut -d'-' -f2).sh"
       - name: Run service script
         env:
-          DATABASE_BACKUP_RETENTION_DAYS: ${{ secrets[contains(env.BRANCH_NAME, '-preview') && 'PREVIEW_DATABASE_BACKUP_RETENTION_DAYS' || 'DATABASE_BACKUP_RETENTION_DAYS'] }}
           MCP_CLIENT_CONFIG_OUTPUT_DIR: ${{ runner.temp }}/mcp-client-configs
           SCRIPT_FILE_NAME: ${{ steps.set-script-file-name.outputs.SCRIPT_FILE_NAME }}
         run: |

@@ -10,7 +10,7 @@ import {
 import os from "node:os";
 import path from "node:path";
 
-const deployer = path.resolve("tools/deployer");
+const deployer = path.resolve(import.meta.dir, "../deployer");
 const scratch = mkdtempSync(path.join(os.tmpdir(), "sps-deploy-input-"));
 const marker = "test 'quotes' = \`not a command\` $()";
 const env = {
@@ -29,7 +29,7 @@ test("Ansible gets DB and RBAC values from its environment, never argv", () => {
     "bash",
     [
       "-c",
-      `source "$1/ansible_vars.sh"
+      `source ./ansible_vars.sh
      ansible-playbook() {
        [[ "$*" != *"$SECRET_CONTENT"* && "$*" == *DATABASE_PASSWORD* ]] || return 1
        bash -c '[[ "$DATABASE_PASSWORD" = "$SECRET_CONTENT" && "$RBAC_SECRET_KEY" = "$SECRET_CONTENT" ]]'
@@ -37,10 +37,8 @@ test("Ansible gets DB and RBAC values from its environment, never argv", () => {
      DATABASE_PASSWORD="$SECRET_CONTENT"
      RBAC_SECRET_KEY="$SECRET_CONTENT"
      ansible_with_vars ./api/create_api.yaml DATABASE_PASSWORD RBAC_SECRET_KEY`,
-      "bash",
-      deployer,
     ],
-    { env },
+    { cwd: deployer, env },
   );
   expect(result.status).toBe(0);
 });
@@ -51,13 +49,11 @@ test("the GitHub secret writer gets the original token and content on stdin", ()
     "bash",
     [
       "-c",
-      `source "$1/github/input.sh"
+      `source ./github/input.sh
      node() { [[ "$#" = 1 && "$*" != *"$SECRET_CONTENT"* ]] && cat > "$INPUT_FILE"; }
      github_command create_secret SECRET_NAME SECRET_CONTENT`,
-      "bash",
-      deployer,
     ],
-    { env: { ...env, INPUT_FILE: file } },
+    { cwd: deployer, env: { ...env, INPUT_FILE: file } },
   );
   expect(result.status).toBe(0);
   expect(JSON.parse(readFileSync(file, "utf8"))).toEqual({
