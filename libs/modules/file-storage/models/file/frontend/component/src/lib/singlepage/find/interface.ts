@@ -8,6 +8,7 @@ export const variant = "find" as const;
 
 export interface IComponentProps extends ISpsComponentBase {
   variant: typeof variant;
+  keepDataWhileFetching?: boolean;
   set?: Dispatch<SetStateAction<IModel[] | undefined>>;
   children?: ({ data }: { data: IModel[] | undefined }) => any;
   apiProps?: {

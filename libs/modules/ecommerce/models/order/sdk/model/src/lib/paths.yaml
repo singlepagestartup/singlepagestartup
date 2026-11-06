@@ -199,7 +199,7 @@ paths:
       tags:
         - "ecommerce-order"
       summary: Order totals
-      description: Retrieve totals for an order
+      description: Retrieve totals for an order. The HTTP response wraps the totals array in data and includes unpriced line diagnostics (ordersToProductsId, productId, reason) beside data. SDK total readers retain the data array.
       parameters:
         - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
       responses:
@@ -208,17 +208,40 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    total:
-                      type: number
-                    billingModuleCurrency:
-                      $ref: "../../../../../../../../../libs/modules/billing/models/currency/sdk/model/src/lib/billing-currency.yaml"
-                  required:
-                    - total
-                    - billingModuleCurrency
+                type: object
+                required:
+                  - data
+                  - unpriced
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        total:
+                          type: number
+                        billingModuleCurrency:
+                          $ref: ../../../../../../../../../libs/modules/billing/models/currency/sdk/model/src/lib/billing-currency.yaml
+                      required:
+                        - total
+                        - billingModuleCurrency
+                  unpriced:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - ordersToProductsId
+                        - productId
+                        - reason
+                      properties:
+                        ordersToProductsId:
+                          type: string
+                          format: uuid
+                        productId:
+                          type: string
+                          format: uuid
+                        reason:
+                          type: string
 
   /ecommerce/orders/{id}/quantity:
     get:
@@ -261,7 +284,7 @@ paths:
                 data:
                   type: string
                   description: JSON string
-                  example: '{}'
+                  example: "{}"
               required:
                 - data
       responses:
@@ -290,7 +313,7 @@ paths:
                 data:
                   type: string
                   description: JSON string
-                  example: '{}'
+                  example: "{}"
               required:
                 - data
       responses:

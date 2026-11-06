@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Connect the capability to its presentation.",
+    "ru": "Свяжите функцию с её представлением."
+  },
+  "subtitle": {
+    "en": "A real composition",
+    "ru": "Пример композиции"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"For a token purchase, RBAC owns the current account and authorized actions. Ecommerce owns the product and order; Billing owns the payment records. The domain Widget passes rendered content into its exact linked Website Builder Widget. Host assembles the saved instances into a page.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"При покупке токенов RBAC отвечает за текущий аккаунт и разрешённые действия. Ecommerce — за товар и заказ, Billing — за платёжные записи. Доменный Widget передаёт готовый контент в связанный с ним экземпляр Website Builder Widget. Host собирает сохранённые экземпляры в страницу.\"}]}]}"
+  },
+  "anchor": "module-composition",
+  "className": "",
+  "id": "84dfcdcb-1bef-4527-bd9e-3c74b8362264",
+  "createdAt": "2026-10-24T01:06:16.640Z",
+  "updatedAt": "2026-10-24T01:06:16.640Z",
+  "variant": "content-feature-split",
+  "adminTitle": "Connect the capability to its presentation.",
+  "slug": "framework-journey-modules-composition"
+}

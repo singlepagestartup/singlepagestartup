@@ -15,6 +15,13 @@
       "when": 1772748082206,
       "tag": "0001_thankful_lady_mastermind",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793914446301,
+      "tag": "0002_broad_night_thrasher",
+      "breakpoints": true
     }
   ]
 }

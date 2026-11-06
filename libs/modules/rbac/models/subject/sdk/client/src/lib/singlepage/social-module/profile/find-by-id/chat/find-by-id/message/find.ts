@@ -10,7 +10,11 @@ import {
   type IResult as IParentResult,
 } from "@sps/rbac/models/subject/sdk/server";
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
-import { queryClient, subscription } from "@sps/shared-frontend-client-api";
+import {
+  queryClient,
+  subscription,
+  consistencyQueryKey,
+} from "@sps/shared-frontend-client-api";
 import { STALE_TIME } from "@sps/shared-utils";
 import { useEffect } from "react";
 
@@ -41,10 +45,10 @@ export function action(props: IProps) {
   }, [queryKey]);
 
   return useQuery<IResult>({
-    queryKey: [queryKey],
+    queryKey: consistencyQueryKey(queryKey, props.params, clientHost),
     meta: {
-      topics,
       ...(userMeta ?? {}),
+      topics,
     },
     queryFn: async () => {
       const result =

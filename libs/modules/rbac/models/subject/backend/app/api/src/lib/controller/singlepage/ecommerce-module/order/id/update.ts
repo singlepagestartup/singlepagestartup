@@ -1,11 +1,16 @@
-import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds } from "@sps/shared-utils";
+import {
+  INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
+  RBAC_JWT_SECRET,
+  RBAC_SECRET_KEY,
+} from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import * as jwt from "hono/jwt";
 import { authorization, getHttpErrorType } from "@sps/backend-utils";
 import { Service } from "../../../../../service";
 import { api as ecommerceOrderApi } from "@sps/ecommerce/models/order/sdk/server";
-import { quantityBounds } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
+import { z } from "zod";
 
 export class Handler {
   service: Service;
@@ -42,7 +47,7 @@ export class Handler {
         throw new Error("Validation error. No token");
       }
 
-      const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
+      const decoded = await jwt.verify(token, RBAC_JWT_SECRET, "HS256");
 
       if (decoded?.["subject"]?.["id"] !== id) {
         throw new Error("Validation error. Only order owner can update order");
@@ -56,8 +61,34 @@ export class Handler {
 
       const data = JSON.parse(body["data"]);
 
-      if (!data.ordersToProducts) {
+      if (data && Object.hasOwn(data, "billingModule")) {
+        const currency = z
+          .string()
+          .uuid()
+          .safeParse(data.billingModule?.currency?.id);
+        if (!currency.success || data.ordersToProducts !== undefined) {
+          throw new Error(
+            "Validation error. Send one valid billingModule.currency.id separately from quantity changes",
+          );
+        }
+        await this.service.ecommerceModuleOrderSetCurrency({
+          subjectId: id,
+          orderId,
+          currencyId: currency.data,
+        });
+        return c.json({ data: await this.service.findById({ id }) });
+      }
+
+      if (!Array.isArray(data.ordersToProducts) || !data.ordersToProducts.length) {
         throw new Error("Validation error. No ordersToProducts provided");
+      }
+      for (const line of data.ordersToProducts) {
+        if (!line || typeof line.id !== "string") {
+          throw new Error("Validation error. Each order line needs an id");
+        }
+        if (!Number.isSafeInteger(line.quantity) || line.quantity < quantityBounds.min || line.quantity > quantityBounds.max) {
+          throw new Error(`Validation error. ordersToProducts[].quantity must be a whole number between ${quantityBounds.min} and ${quantityBounds.max}`);
+        }
       }
 
       const entity = await this.service.findById({
@@ -67,6 +98,12 @@ export class Handler {
       if (!entity) {
         throw new Error("Not Found error. No entity found");
       }
+
+      await this.service.ecommerceModuleOrderAssertAccess({
+        subjectId: id,
+        orderId,
+        lineIds: data.ordersToProducts.map((line: { id: string }) => line.id),
+      });
 
       const order = await this.service.ecommerceModule.order.findById({
         id: orderId,
@@ -80,24 +117,33 @@ export class Handler {
         throw new Error("Not Found error. Order is not in 'new' status");
       }
 
-      if (
-        !Array.isArray(data.ordersToProducts) ||
-        !data.ordersToProducts.every((orderToProduct: { quantity: number }) => {
-          return (
-            Number.isInteger(orderToProduct?.quantity) &&
-            orderToProduct.quantity >= quantityBounds.min &&
-            orderToProduct.quantity <= quantityBounds.max
+      const lines = await this.service.ecommerceModule.ordersToProducts.find({
+        params: {
+          filters: {
+            and: [{ column: "orderId", method: "eq", value: orderId }],
+          },
+        },
+      });
+      for (const line of lines) {
+        const product = await this.service.ecommerceModule.product.findById({
+          id: line.productId,
+        });
+        if (product?.slug === INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG)
+          throw new Error(
+            "Permission error. Initial Free cannot be changed through a cart",
           );
-        })
-      ) {
-        throw new Error(
-          `Validation error. ordersToProducts[].quantity must be a whole number from ${quantityBounds.min} to ${quantityBounds.max}`,
-        );
       }
 
       await ecommerceOrderApi.update({
         id: orderId,
-        data,
+        data: {
+          ordersToProducts: data.ordersToProducts.map(
+            (line: { id: string; quantity: number }) => ({
+              id: line.id,
+              quantity: line.quantity,
+            }),
+          ),
+        },
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,

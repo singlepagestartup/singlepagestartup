@@ -1,0 +1,21 @@
+{
+  "id": "9f3fa270-83e6-48f1-9af3-8fd39574ec5a",
+  "className": "",
+  "createdAt": "2026-10-26T00:13:03.373Z",
+  "updatedAt": "2026-10-27T15:00:29.377Z",
+  "variant": "article-overview-linked",
+  "adminTitle": "Показатели бизнеса",
+  "slug": "framework-reviewed-linked-analytic",
+  "title": {
+    "en": "Business metrics",
+    "ru": "Показатели бизнеса"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "",
+    "ru": ""
+  }
+}

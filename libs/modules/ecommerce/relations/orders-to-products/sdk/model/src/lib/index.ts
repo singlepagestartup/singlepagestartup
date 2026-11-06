@@ -1,3 +1,19 @@
+import type { IModel as IBillingModuleCurrency } from "@sps/billing/models/currency/sdk/model";
+
+export interface IUnpricedOrderToProduct {
+  ordersToProductsId: string;
+  productId: string;
+  reason: string;
+}
+export interface IOrderLineTotal {
+  total: number;
+  billingModuleCurrency: IBillingModuleCurrency;
+}
+export interface IOrderLineTotals {
+  totals: IOrderLineTotal[];
+  unpriced: IUnpricedOrderToProduct[];
+}
+
 export {
   type ISelectSchema as IModel,
   type IInsertSchema,
@@ -21,7 +37,7 @@ export const variants = ["default", "hidden"] as const;
  * no stock or limit field, so the maximum is a framework constant; a project
  * that sells in larger quantities raises it here.
  */
-export const quantityBounds = { min: 1, max: 1000 } as const;
+export { ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds } from "@sps/shared-utils";
 export const query = {};
 export const options = {
   next: {

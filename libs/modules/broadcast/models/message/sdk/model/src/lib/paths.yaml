@@ -124,3 +124,54 @@ paths:
             application/json:
               schema:
                 $ref: "broadcast-message.yaml"
+
+  /broadcast/messages/delivery:
+    post:
+      tags: ["broadcast-message"]
+      summary: Publish, reserve or acknowledge a durable delivery
+      parameters:
+        - in: header
+          name: X-RBAC-SECRET-KEY
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [channelId, operation]
+              properties:
+                channelId: { type: string, format: uuid }
+                operation:
+                  {
+                    type: string,
+                    enum:
+                      [
+                        publish,
+                        reserve,
+                        start,
+                        renew,
+                        acknowledge,
+                        release,
+                        removeCompleted,
+                      ],
+                  }
+                key: { type: string, maxLength: 250 }
+                payload: { type: string }
+                announce: { type: boolean, default: false }
+                receipt: { type: string, format: uuid }
+                leaseSeconds: { type: integer, minimum: 1, maximum: 86400 }
+                before: { type: string, format: date-time }
+                limit: { type: integer, minimum: 1, maximum: 1000 }
+            example:
+              {
+                operation: reserve,
+                channelId: "0514a3d8-e1a0-406d-9b7f-705761b91046",
+                leaseSeconds: 60,
+              }
+      responses:
+        "200": { description: Command result in the data property }
+        "400": { description: Invalid command or arguments }
+        "403": { description: Missing operator credential }
+        "409": { description: Expired receipt or invalid delivery state }

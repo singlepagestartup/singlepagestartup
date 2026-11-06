@@ -1,0 +1,104 @@
+{
+  "$schema": "../../../../../block.schema.json",
+  "id": "ecommerce.product.card",
+  "title": "Ecommerce Product / Card",
+  "description": "Product card with expandable attributes, configuration, currency and quantity selection, cart feedback and inline checkout preview.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "ecommerce",
+    "entityType": "model",
+    "entity": "product",
+    "variant": "card"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "slug",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "image",
+      "type": "image",
+      "required": true
+    },
+    {
+      "name": "badge",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "category",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "priceLabel",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "subtitle",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "shortDescription",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "techStack",
+      "type": "list",
+      "required": false
+    },
+    {
+      "name": "attributes",
+      "type": "list",
+      "required": false
+    },
+    {
+      "name": "options",
+      "type": "list",
+      "required": false
+    },
+    {
+      "name": "prices",
+      "type": "list",
+      "required": false
+    },
+    {
+      "name": "paymentMethods",
+      "type": "list",
+      "required": false
+    },
+    {
+      "name": "priceNote",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "available",
+      "type": "boolean",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "ecommerce.product",
+    "pageName": "ecommerce",
+    "variantName": "card",
+    "nodeId": "795:10",
+    "variantNodeId": "982:183",
+    "syncStatus": "needs-update",
+    "metadataFile": "figma.json"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "id": "b2e3b960-16ff-496f-a73d-aaefd7db2445",
+  "createdAt": "2026-10-27T08:41:00.835Z",
+  "updatedAt": "2026-10-27T08:41:00.835Z",
+  "variant": "navigation-inline",
+  "className": "",
+  "title": {
+    "en": "footer",
+    "ru": "footer"
+  },
+  "description": {},
+  "adminTitle": "AI Chat: footer",
+  "slug": "ai-chat-editable-footer-actions"
+}

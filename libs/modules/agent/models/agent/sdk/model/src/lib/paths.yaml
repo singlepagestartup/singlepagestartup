@@ -161,33 +161,14 @@ paths:
     post:
       tags:
         - "agent-agent"
-      summary: Run cron
-      description: Execute agent cron tasks
-      requestBody:
-        required: false
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                data:
-                  type: string
-                  description: JSON string
-                  example: "{}"
+      summary: Check the agent schedule
+      description: >-
+        Anyone can request a tick. The scheduler chooses due agents and available
+        worker slots. Repeated requests in the same minute are coalesced.
+      security: []
       responses:
-        "200":
-          description: Cron execution result
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: "agent-agent.yaml"
-                required:
-                  - data
+        "204":
+          description: Tick processed or coalesced. The response has no body.
 
   /agent/agents/dummy:
     post:

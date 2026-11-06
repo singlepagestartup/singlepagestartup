@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Help",
+    "ru": "Помощь"
+  },
+  "subtitle": {},
+  "url": "/ai-chat/help",
+  "className": "w-fit",
+  "id": "254010d3-7b44-49ca-8047-0265efd8fe38",
+  "createdAt": "2026-10-24T01:06:21.755Z",
+  "updatedAt": "2026-10-24T01:06:21.755Z",
+  "variant": "ghost",
+  "adminTitle": "Help",
+  "slug": "framework-journey-footer-group-1-2"
+}

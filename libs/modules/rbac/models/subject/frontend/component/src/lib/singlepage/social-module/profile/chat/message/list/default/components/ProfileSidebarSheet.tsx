@@ -22,7 +22,7 @@ export function ProfileSidebarSheet(props: ProfileSidebarSheetProps) {
         <SheetHeader className="sr-only">
           <SheetTitle>Profile details</SheetTitle>
           <SheetDescription>
-            Profile description, linked skills, and knowledge documents.
+            Profile description, linked skills, and knowledge sources.
           </SheetDescription>
         </SheetHeader>
         {props.children}

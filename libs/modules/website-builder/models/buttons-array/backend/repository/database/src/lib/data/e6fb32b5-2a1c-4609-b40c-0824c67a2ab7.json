@@ -1,0 +1,14 @@
+{
+  "id": "e6fb32b5-2a1c-4609-b40c-0824c67a2ab7",
+  "createdAt": "2026-10-24T01:05:57.344Z",
+  "updatedAt": "2026-10-24T01:05:57.344Z",
+  "variant": "default",
+  "className": "w-full",
+  "title": {
+    "en": "Actions",
+    "ru": "Действия"
+  },
+  "description": {},
+  "adminTitle": "Actions",
+  "slug": "framework-journey-guide-blog-actions"
+}

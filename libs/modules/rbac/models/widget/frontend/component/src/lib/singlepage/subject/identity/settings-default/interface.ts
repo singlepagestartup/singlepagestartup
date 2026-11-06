@@ -8,7 +8,9 @@ import {
 export const variant = "subject-identity-settings-default" as const;
 
 export interface IComponentProps
-  extends IParentComponentProps<IModel, typeof variant> {}
+  extends IParentComponentProps<IModel, typeof variant> {
+  language?: string;
+}
 
 export interface IComponentPropsExtended
   extends IParentComponentPropsExtended<
@@ -16,3 +18,8 @@ export interface IComponentPropsExtended
     typeof variant,
     IComponentProps
   > {}
+
+export interface IContentProps {
+  isServer: boolean;
+  language: string;
+}

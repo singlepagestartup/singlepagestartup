@@ -1,9 +1,11 @@
+import { Handler as Content } from "./content";
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import { DI, RESTController } from "@sps/shared-backend-api";
 import { Table } from "@sps/file-storage/models/file/backend/repository/database";
 import { Context } from "hono";
 import { Service } from "../../service";
+import { RequestBodyFitsUploadLimit } from "../../../../../middlewares";
 import { Handler as Create } from "./create";
 import { Handler as CreateFromUrl } from "./create-from-url";
 import { Handler as Delete } from "./delete";
@@ -18,6 +20,16 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     super(service);
     this.service = service;
     this.bindHttpRoutes([
+      {
+        method: "GET",
+        path: "/:uuid/content",
+        handler: (c) => new Content(this.service).execute(c),
+      },
+      {
+        method: "HEAD",
+        path: "/:uuid/content",
+        handler: (c) => new Content(this.service).execute(c),
+      },
       {
         method: "GET",
         path: "/",
@@ -37,6 +49,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "POST",
         path: "/",
         handler: this.create,
+        middlewares: [new RequestBodyFitsUploadLimit().init()],
       },
       {
         method: "POST",
@@ -52,6 +65,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "PATCH",
         path: "/:uuid",
         handler: this.update,
+        middlewares: [new RequestBodyFitsUploadLimit().init()],
       },
       {
         method: "DELETE",

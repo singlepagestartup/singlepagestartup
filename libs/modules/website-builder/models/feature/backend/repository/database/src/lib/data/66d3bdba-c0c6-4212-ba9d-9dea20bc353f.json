@@ -1,0 +1,18 @@
+{
+  "className": null,
+  "id": "66d3bdba-c0c6-4212-ba9d-9dea20bc353f",
+  "createdAt": "2026-10-23T20:18:05.072Z",
+  "updatedAt": "2026-10-23T20:18:05.072Z",
+  "variant": "card",
+  "title": {
+    "en": "Accounts and access",
+    "ru": "Аккаунты и доступ"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Registration and account operations share the same Subject ownership rules.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Регистрация и операции аккаунта используют общие правила владения ресурсами.\"}]}]}"
+  },
+  "adminTitle": "Accounts and access",
+  "slug": "framework-about-foundation-feature-0"
+}

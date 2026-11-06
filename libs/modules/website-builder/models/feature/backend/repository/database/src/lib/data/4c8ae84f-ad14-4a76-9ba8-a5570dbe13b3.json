@@ -1,0 +1,18 @@
+{
+  "className": "",
+  "id": "4c8ae84f-ad14-4a76-9ba8-a5570dbe13b3",
+  "createdAt": "2026-10-24T01:05:50.800Z",
+  "updatedAt": "2026-10-24T01:05:50.800Z",
+  "variant": "copy-request",
+  "title": {
+    "en": "An example request for your coding agent",
+    "ru": "Пример задачи для coding agent"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Use my attached, reviewed business and product documents to plan a first landing page with SinglePageStartup Code Framework. Inspect the repository, help me run it locally and explain which existing modules fit the task. Keep unanswered business facts visible. Preserve the account, order and payment flows while adapting the page, then show me what to review.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Используй приложенные проверенные документы о бизнесе и продукте, чтобы спланировать первую посадочную страницу на SinglePageStartup Code Framework. Изучи репозиторий, помоги запустить проект локально и объясни, какие модули подходят для задачи. Сохрани открытые вопросы о бизнесе. При адаптации страницы сохрани сценарии аккаунта, заказов и платежей, затем покажи, что нужно проверить.\"}]}]}"
+  },
+  "adminTitle": "An example request for your coding agent",
+  "slug": "framework-journey-setup-request"
+}
