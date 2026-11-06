@@ -43,3 +43,8 @@ export {
   Middleware as ConsistencyMiddleware,
   type IMiddlewareOptions as IConsistencyMiddlewareOptions,
 } from "./consistency";
+export {
+  Middleware as OperatorSecretAttemptsMiddleware,
+  type IMiddlewareGeneric as IOperatorSecretAttemptsMiddlewareGeneric,
+  type IMiddlewareOptions as IOperatorSecretAttemptsMiddlewareOptions,
+} from "./operator-secret-attempts";

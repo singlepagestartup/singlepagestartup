@@ -13,6 +13,7 @@ import {
   ActionLoggerMiddleware,
   BillRouteMiddleware,
   controllerGuardedRoutes,
+  OperatorSecretAttemptsMiddleware,
 } from "@sps/middlewares";
 import { MIDDLEWARE_HTTP_CACHE } from "@sps/shared-utils";
 import { getFileContentHeaders } from "@sps/backend-utils";
@@ -144,6 +145,7 @@ app.use(new RequestIdMiddleware().init());
 app.use(consistencyMiddleware.init());
 consistencyMiddleware.registerRoutes(app);
 app.options("*", (c) => c.body(null, 204));
+app.use(new OperatorSecretAttemptsMiddleware().init());
 app.use(new ObserverMiddleware().init());
 app.use(revalidationMiddleware.init());
 app.use(new ActionLoggerMiddleware().init());

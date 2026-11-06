@@ -48,3 +48,10 @@ export {
   runWithRequestDiagnostics,
   currentRequestDiagnostics,
 } from "./request-diagnostics";
+export { isPrivateNetworkAddress, readClientAddress } from "./client-address";
+export {
+  assertWithinRateLimit,
+  createRateLimiter,
+  type IRateLimiter,
+  type IRateLimitStoreProvider,
+} from "./rate-limit";

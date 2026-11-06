@@ -31,3 +31,9 @@ export {
 } from "./lib/request-subject-owns-ecommerce-module-order";
 
 export { Middleware as RequestOperatorSecret } from "./lib/request-operator-secret";
+export {
+  Middleware as RequestRateLimit,
+  type IMiddlewareGeneric as IRequestRateLimitMiddlewareGeneric,
+  type IMiddlewareOptions as IRequestRateLimitMiddlewareOptions,
+  type IMiddlewareRule as IRequestRateLimitMiddlewareRule,
+} from "./lib/request-rate-limit";

@@ -51,3 +51,40 @@ export const RBAC_OAUTH_EXCHANGE_LIFETIME_IN_SECONDS =
  */
 export const RBAC_OAUTH_EXCHANGE_CODE_IN_QUERY =
   process.env["RBAC_OAUTH_EXCHANGE_CODE_IN_QUERY"] === "true";
+
+/**
+ * Attempt budgets for the authentication routes and for requests that carry a
+ * wrong operator secret (issue #310). A budget covers one fixed window of
+ * `RBAC_RATE_LIMIT_WINDOW_IN_SECONDS` and is counted in the KV store, so every
+ * API process spends the same budget. A caller over a budget is answered 429
+ * with `Retry-After` until its window ends.
+ *
+ * - `RBAC_RATE_LIMIT_ENABLED=false` turns counting and refusals off, for load
+ *   tests. Wrong operator secrets are logged either way.
+ * - `RBAC_RATE_LIMIT_TRUSTED_PROXIES` is the number of reverse proxies in front
+ *   of the API that append to `X-Forwarded-For`. The deployer runs one
+ *   (Traefik); `0` means clients connect to the API directly. An address from a
+ *   private network is never counted, so behind the swarm routing mesh, which
+ *   hands the API one ingress address for every visitor, only the account
+ *   budgets apply.
+ * - Credential routes (login, registration, wallet login, forgot-password,
+ *   reset-password) each count per client address; login also counts per
+ *   `login` and forgot-password per `email`.
+ * - Session routes (`init`, `refresh`) count per client address.
+ */
+export const RBAC_RATE_LIMIT_ENABLED =
+  process.env["RBAC_RATE_LIMIT_ENABLED"] !== "false";
+export const RBAC_RATE_LIMIT_WINDOW_IN_SECONDS =
+  Number(process.env["RBAC_RATE_LIMIT_WINDOW_IN_SECONDS"]) || 60;
+export const RBAC_RATE_LIMIT_TRUSTED_PROXIES = Number(
+  process.env["RBAC_RATE_LIMIT_TRUSTED_PROXIES"] || "1",
+);
+export const RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ADDRESS =
+  Number(process.env["RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ADDRESS"]) || 20;
+export const RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ACCOUNT =
+  Number(process.env["RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ACCOUNT"]) || 10;
+export const RBAC_RATE_LIMIT_SESSION_ATTEMPTS_PER_ADDRESS =
+  Number(process.env["RBAC_RATE_LIMIT_SESSION_ATTEMPTS_PER_ADDRESS"]) || 60;
+export const RBAC_RATE_LIMIT_OPERATOR_SECRET_FAILURES_PER_ADDRESS =
+  Number(process.env["RBAC_RATE_LIMIT_OPERATOR_SECRET_FAILURES_PER_ADDRESS"]) ||
+  10;
