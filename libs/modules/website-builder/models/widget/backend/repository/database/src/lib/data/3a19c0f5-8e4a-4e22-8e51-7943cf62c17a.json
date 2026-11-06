@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "What does your project need?",
+    "ru": "Что нужно вашему проекту?"
+  },
+  "subtitle": {
+    "en": "Features for your business",
+    "ru": "Функции для вашего бизнеса"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Choose a module to see which tasks it handles, how it works in a product and what you can add later.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Выберите модуль и посмотрите, какие задачи он решает, как работает в продукте и что можно добавить позже.\"}]}]}"
+  },
+  "anchor": "cf-modules",
+  "className": "",
+  "id": "3a19c0f5-8e4a-4e22-8e51-7943cf62c17a",
+  "createdAt": "2026-10-26T00:13:04.681Z",
+  "updatedAt": "2026-10-27T14:58:55.836Z",
+  "variant": "content-collection",
+  "adminTitle": "Что нужно вашему проекту?",
+  "slug": "framework-reviewed-catalogue-frame"
+}

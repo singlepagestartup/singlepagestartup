@@ -1,0 +1,24 @@
+{
+  "componentName": "ecommerce.widget",
+  "pageName": "ecommerce",
+  "variantName": "token-find",
+  "nodeId": null,
+  "variantNodeId": null,
+  "syncStatus": "not-created",
+  "metadataFile": "figma.json",
+  "metadata": {
+    "singlepagestartup.studio.blockId": "ecommerce.widget.token-find",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "ecommerce/widget/singlepage/token-find",
+    "sps.source.module": "ecommerce",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "token-find",
+    "sps.code.component": "apps/studio/modules/ecommerce/widget/singlepage/token-find/Component.tsx",
+    "sps.code.story": "apps/studio/modules/ecommerce/widget/singlepage/token-find/Component.stories.tsx",
+    "sps.figma.component": "ecommerce.widget",
+    "sps.figma.variant": "token-find",
+    "sps.contractVersion": "0.1.0"
+  },
+  "imports": ["ecommerce.product.card"]
+}

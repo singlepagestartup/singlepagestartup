@@ -1,0 +1,19 @@
+{
+  "id": "8a2f425b-5674-4dbb-974d-1c5bb1c4a89e",
+  "createdAt": "2026-10-23T21:18:22.807Z",
+  "updatedAt": "2026-10-23T21:18:22.807Z",
+  "variant": "product-list-default",
+  "className": null,
+  "anchor": null,
+  "adminTitle": "AI Chat and development services",
+  "slug": "framework-commercial-catalog",
+  "title": {
+    "en": "AI Chat and development services",
+    "ru": "AI-чат и разработка"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Monthly Pro, one-time Token top-ups and development on SPS.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Ежемесячная подписка Pro, разовые пополнения токенов и разработка на SPS.\"}]}]}"
+  }
+}

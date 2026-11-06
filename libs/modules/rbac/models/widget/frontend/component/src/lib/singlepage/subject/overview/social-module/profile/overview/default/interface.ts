@@ -10,6 +10,7 @@ export const variant =
 
 export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
+  subjectSlug?: string;
   language: string;
 }
 
@@ -19,3 +20,9 @@ export interface IComponentPropsExtended
     typeof variant,
     IComponentProps
   > {}
+
+export interface IContentProps {
+  isServer: boolean;
+  language: string;
+  subjectSlug?: string;
+}

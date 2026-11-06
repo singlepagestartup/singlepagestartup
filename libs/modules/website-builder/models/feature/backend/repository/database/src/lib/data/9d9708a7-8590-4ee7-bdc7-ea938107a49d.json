@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "9d9708a7-8590-4ee7-bdc7-ea938107a49d",
+  "createdAt": "2026-10-26T00:12:14.293Z",
+  "updatedAt": "2026-10-27T14:59:47.328Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "This week",
+    "ru": "Эта неделя"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"School metrics\\n\\nIllustrative values for the selected period.\\n\\nEnquiries: 24\\n\\nOrders: 8\\n\\nNew articles: 3\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Показатели школы\\n\\nИллюстративные значения за выбранный период.\\n\\nЗаявки: 24\\n\\nЗаказы: 8\\n\\nНовые статьи: 3\"}]}]}"
+  },
+  "adminTitle": "Эта неделя",
+  "slug": "framework-reviewed-article-analytic-example-feature-0"
+}

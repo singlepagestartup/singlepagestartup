@@ -1,7 +1,8 @@
 import "./env";
 import { serve, type ServerWebSocket } from "bun";
 import { createBunWebSocket } from "hono/bun";
-import { app } from "./app";
+import { app, startConsistency } from "./app";
+import { assertApplicationDatabaseRole } from "@sps/shared-backend-database-config";
 import {
   API_SECRET_STRENGTH,
   API_SERVICE_PORT,
@@ -37,6 +38,8 @@ if (fatalSecretFindings.length > 0) {
   }
 }
 
+await assertApplicationDatabaseRole();
+await startConsistency();
 const { websocket } = createBunWebSocket<ServerWebSocket>();
 
 serve({

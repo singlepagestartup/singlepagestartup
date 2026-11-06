@@ -1,0 +1,40 @@
+{
+  "$schema": "../../../../../block.schema.json",
+  "id": "website-builder.widget.content-steps",
+  "title": "content-steps",
+  "description": "An ordered process with supplied Feature steps and an optional rendered copyable request.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "content-steps"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "children",
+      "type": "richText",
+      "required": false
+    },
+    {
+      "name": "prompt",
+      "type": "richText",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "website-builder.widget",
+    "pageName": "website-builder",
+    "variantName": "content-steps",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["website-builder", "widget", "content-steps"]
+}

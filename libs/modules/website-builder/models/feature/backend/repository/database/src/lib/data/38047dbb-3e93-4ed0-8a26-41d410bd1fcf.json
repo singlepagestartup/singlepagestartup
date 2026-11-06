@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "38047dbb-3e93-4ed0-8a26-41d410bd1fcf",
+  "createdAt": "2026-10-26T00:11:55.072Z",
+  "updatedAt": "2026-10-27T14:59:31.825Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "File Storage",
+    "ru": "File Storage"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Avatars and attachments. Social links files to profiles or messages.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Аватары и вложения. Social связывает файл с профилем или сообщением.\"}]}]}"
+  },
+  "adminTitle": "File Storage",
+  "slug": "framework-reviewed-article-social-connections-feature-1"
+}

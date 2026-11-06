@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "41da2c7a-c82f-452a-b9b8-2187c9e7c43c",
+  "createdAt": "2026-10-27T08:40:56.484Z",
+  "updatedAt": "2026-10-27T14:59:33.363Z",
+  "variant": "demo-document",
+  "title": {
+    "en": "Brief.md",
+    "ru": "Бриф.md"
+  },
+  "subtitle": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The brief covers the studio, its customers and the website's purpose. Add business competitors: names, links and why you compare yourself with them. If you do not know any yet, say so.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"В брифе собраны сведения о мастерской, её клиентах и задаче сайта. Добавьте конкурентов бизнеса: названия, ссылки и почему вы сравниваете себя с ними. Если пока не знаете, так и напишите.\"}]}]}"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"heading\",\"attrs\":{\"level\":1},\"content\":[{\"type\":\"text\",\"text\":\"Pottery studio\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"We run weekend workshops for adults trying pottery for the first time. Each class has six places.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Visitors learn about the studio, choose a class and submit an enquiry on the website.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"## Competitors\\nNot known yet. Add studios we consider competitors, links and reasons for comparison. Include examples of their advertising or publications if available.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"heading\",\"attrs\":{\"level\":1},\"content\":[{\"type\":\"text\",\"text\":\"Мастерская керамики\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Проводим мастер-классы по выходным для взрослых, которые впервые пробуют керамику. На каждом занятии — шесть мест.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"На сайте посетитель знакомится с мастерской, выбирает занятие и оставляет заявку.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"## Конкуренты\\nПока не знаю. Нужно указать мастерские, которые считаем конкурентами, ссылки на них и причины сравнения. Если есть примеры их рекламы или публикаций, добавим их сюда.\"}]}]}"
+  },
+  "adminTitle": "AI Chat: demo-brief",
+  "slug": "ai-chat-editable-demo-brief"
+}

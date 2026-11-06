@@ -1,5 +1,5 @@
 export { type IModel } from "@sps/host/models/page/sdk/model";
-import { IModel } from "@sps/host/models/page/sdk/model";
+import { IResolvedPage as IModel } from "@sps/host/models/page/sdk/model";
 import { ISpsComponentBase } from "@sps/ui-adapter";
 import { Dispatch, ReactNode, SetStateAction } from "react";
 

@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "A request for your project",
+    "ru": "Запрос для вашего проекта"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"I want a summary of new school enquiries every morning. Configure data retrieval, message contents and scheduled delivery to the owner.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Хочу каждое утро получать сводку новых заявок школы. Нужно настроить получение данных, состав сообщения и доставку владельцу по расписанию.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "ee4e9b29-b022-4d8f-a9f5-48ca1a412e54",
+  "createdAt": "2026-10-26T00:12:09.365Z",
+  "updatedAt": "2026-10-27T14:59:19.015Z",
+  "variant": "content-rich",
+  "adminTitle": "Запрос для вашего проекта",
+  "slug": "framework-reviewed-article-agent-task"
+}

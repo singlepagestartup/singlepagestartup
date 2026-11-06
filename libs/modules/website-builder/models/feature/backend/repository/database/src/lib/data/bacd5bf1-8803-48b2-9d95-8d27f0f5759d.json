@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "bacd5bf1-8803-48b2-9d95-8d27f0f5759d",
+  "createdAt": "2026-10-24T01:06:10.135Z",
+  "updatedAt": "2026-10-24T01:06:10.135Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Notification",
+    "ru": "Notification"
+  },
+  "subtitle": {
+    "en": "Foundation",
+    "ru": "Основа"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Delivery records, templates and notification topics.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Записи о доставке, шаблоны и темы уведомлений.\"}]}]}"
+  },
+  "adminTitle": "Notification",
+  "slug": "framework-journey-module-notification"
+}

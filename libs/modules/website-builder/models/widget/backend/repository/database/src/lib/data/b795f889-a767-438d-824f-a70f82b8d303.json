@@ -1,0 +1,16 @@
+{
+  "title": {
+    "en": "Authors",
+    "ru": "Авторы"
+  },
+  "subtitle": {},
+  "description": {},
+  "anchor": null,
+  "className": null,
+  "id": "b795f889-a767-438d-824f-a70f82b8d303",
+  "createdAt": "2026-10-30T10:15:41.188Z",
+  "updatedAt": "2026-10-30T10:15:41.188Z",
+  "variant": "content-page-header",
+  "adminTitle": "Authors",
+  "slug": "seo-page-header-authors"
+}

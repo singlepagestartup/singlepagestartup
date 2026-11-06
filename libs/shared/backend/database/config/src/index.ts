@@ -1,4 +1,5 @@
 export {
+  assertApplicationDatabaseRole,
   getDrizzle,
   getPostgresClient,
   resetPostgresClient,

@@ -1,0 +1,16 @@
+{
+  "id": "08473c38-270c-4657-a0a6-9af67107f5a5",
+  "createdAt": "2026-10-12T23:25:37.731Z",
+  "updatedAt": "2026-10-12T23:25:37.731Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "day",
+    "ru": "день"
+  },
+  "adminTitle": "Free subscription | Daily",
+  "slug": "ai-chat-free-subscription-day"
+}

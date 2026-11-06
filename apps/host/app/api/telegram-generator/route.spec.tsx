@@ -144,6 +144,8 @@ describe("telegram generator route", () => {
     );
 
     expect(response.status).toBe(404);
-    expect(await response.json()).toEqual({ error: "Not Found" });
+    expect(await response.json()).toEqual({
+      error: "Not Found error. Template unavailable",
+    });
   });
 });

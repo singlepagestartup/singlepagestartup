@@ -102,7 +102,7 @@ describe("Given: Telegram personal AI agent provisioning", () => {
       profilesToChats: {
         find: jest.fn().mockResolvedValue([]),
       },
-      profilesToKnowledgeModuleDocuments: {
+      profilesToKnowledgeModuleSources: {
         create: jest.fn(),
       },
     } as any;
@@ -188,7 +188,7 @@ describe("Given: Telegram personal AI agent provisioning", () => {
       },
     });
     expect(
-      socialModule.profilesToKnowledgeModuleDocuments.create,
+      socialModule.profilesToKnowledgeModuleSources.create,
     ).not.toHaveBeenCalled();
     expect(mockEnsureKnowledgeAccess).toHaveBeenCalledWith({
       ownerRbacSubjectId: "owner-subject-1",

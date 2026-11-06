@@ -5,33 +5,32 @@ import {
   type WorkspaceLayer,
 } from "../../studio/workspace/repository-layer";
 import {
-  detectLegacyShapes,
   loadPipelineContext,
   runStageChecks,
   type ICheckResult,
-  type ILegacyShapeResult,
   type IPipelineCursor,
 } from "./checks";
 import { loadPipelineDefinition } from "./definition";
+import { selectSection, type Section, type Progress } from "./selection";
 
-export const PIPELINE_REPORT_SCHEMA = "singlepagestartup.pipeline-check.v1";
+export const PIPELINE_REPORT_SCHEMA = "singlepagestartup.pipeline-check.v2";
 
 export interface IPipelineStageReport {
   id: string;
   title: string;
   owners: string[];
   active_artifacts: string[];
-  /** Own checks pass and every earlier stage is complete. */
+  /** Diagnostic result for this stage alone; never controls navigation. */
   complete: boolean;
-  /** Set when the stage's own checks pass but an earlier stage is incomplete. */
-  blocked_by?: string;
   checks: ICheckResult[];
   manual_review: string[];
 }
 
 export interface IPipelineComputedCursor {
   active_stage: string;
-  status: "in_progress" | "blocked" | "complete";
+  active_section: Section;
+  active_product?: string;
+  status: Progress;
   active_artifacts: string[];
 }
 
@@ -49,38 +48,14 @@ export interface IPipelineReport {
     consistent: boolean;
   };
   stages: IPipelineStageReport[];
-  legacy_shapes: ILegacyShapeResult[];
   summary: {
     checks: number;
     passed: number;
     gaps: number;
     skipped: number;
     structural: number;
-    approval: number;
     decision: number;
-    legacy: number;
   };
-}
-
-/**
- * An unmigrated shape is not a footnote: until it is migrated the documents
- * the stage reads are the wrong shape, so the stage cannot be complete.
- */
-function legacyGaps(
-  shapes: ILegacyShapeResult[],
-  stageId: string,
-): ICheckResult[] {
-  return shapes
-    .filter((shape) => shape.owning_stage === stageId)
-    .map((shape) => ({
-      id: `legacy.${shape.id}`,
-      check: "legacy-shape",
-      artifact: "workspace" as const,
-      status: "gap" as const,
-      classification: "structural-gap" as const,
-      detail: shape.detail,
-      items: shape.items,
-    }));
 }
 
 export interface IRunPipelineCheckOptions {
@@ -88,6 +63,8 @@ export interface IRunPipelineCheckOptions {
   expectedLayer?: WorkspaceLayer;
   repositoryIdentity?: string;
   enforce?: boolean;
+  section?: string;
+  product?: string;
 }
 
 /** Evaluate every stage against the resolved workspace; nothing is written. */
@@ -113,50 +90,39 @@ export async function runPipelineCheck(
     repositoryIdentity: options.repositoryIdentity,
   });
 
-  const legacyShapes = await detectLegacyShapes(
-    context,
-    definition.legacy_shapes,
-  );
-
   const stages: IPipelineStageReport[] = [];
-  let firstIncompleteId: string | undefined;
   for (const stage of definition.stages) {
-    const checks = [
-      ...(await runStageChecks(context, stage.checks)),
-      ...legacyGaps(legacyShapes, stage.id),
-    ];
+    const checks = [...(await runStageChecks(context, stage.checks))];
     const ownChecksPass = checks.every((check) => check.status !== "gap");
-    const complete = ownChecksPass && !firstIncompleteId;
-    if (!complete && !firstIncompleteId) firstIncompleteId = stage.id;
+    const complete = ownChecksPass;
     stages.push({
       id: stage.id,
       title: stage.title,
       owners: stage.owners,
       active_artifacts: stage.active_artifacts,
       complete,
-      ...(ownChecksPass && !complete ? { blocked_by: firstIncompleteId } : {}),
       checks,
       manual_review: stage.manual_review,
     });
   }
-  const firstIncomplete = stages.find((stage) => !stage.complete);
-  const computed: IPipelineComputedCursor = firstIncomplete
-    ? {
-        active_stage: firstIncomplete.id,
-        status: firstIncomplete.checks.some(
-          (check) =>
-            check.status === "gap" && check.classification === "structural-gap",
-        )
-          ? "in_progress"
-          : "blocked",
-        active_artifacts: firstIncomplete.active_artifacts,
-      }
-    : {
-        active_stage:
-          stages[stages.length - 1]?.id ?? definition.cursor.stages.at(-1)!,
-        status: "complete",
-        active_artifacts: [],
-      };
+  const selection = selectSection(
+    context.cursor as Record<string, unknown>,
+    context.catalogLayer === context.layer
+      ? context.catalog.products.map(({ id }) => id)
+      : [],
+    { section: options.section, product: options.product },
+  );
+  const computed: IPipelineComputedCursor = {
+    active_stage: selection.active_stage,
+    active_section: selection.active_section,
+    ...(selection.active_product
+      ? { active_product: selection.active_product }
+      : {}),
+    status: selection.status,
+    active_artifacts:
+      stages.find((stage) => stage.id === selection.active_stage)
+        ?.active_artifacts ?? [],
+  };
 
   const allChecks = stages.flatMap((stage) => stage.checks);
   const gaps = allChecks.filter((check) => check.status === "gap");
@@ -168,16 +134,13 @@ export async function runPipelineCheck(
     structural: gaps.filter(
       (check) => check.classification === "structural-gap",
     ).length,
-    approval: gaps.filter((check) => check.classification === "approval-gap")
-      .length,
     decision: gaps.filter((check) => check.classification === "decision-gap")
       .length,
-    legacy: legacyShapes.length,
   };
 
   return {
     schema: PIPELINE_REPORT_SCHEMA,
-    status: gaps.length || legacyShapes.length ? "gaps" : "clean",
+    status: gaps.length ? "gaps" : "clean",
     mode: options.enforce ? "enforce" : "report",
     layer: resolved.layer,
     layer_source: resolved.source,
@@ -189,7 +152,6 @@ export async function runPipelineCheck(
       consistent: context.cursor.active_stage === computed.active_stage,
     },
     stages,
-    legacy_shapes: legacyShapes,
     summary,
   };
 }
@@ -206,7 +168,7 @@ export function formatPipelineReport(report: IPipelineReport): string {
   for (const stage of report.stages) {
     const gaps = stage.checks.filter((check) => check.status === "gap");
     lines.push(
-      `${stage.id} ${stage.complete ? "complete" : "incomplete"}: ${stage.checks.length} checks, ${gaps.length} gap(s)${stage.blocked_by ? `, own checks pass but ${stage.blocked_by} is incomplete` : ""}`,
+      `${stage.id} ${stage.complete ? "complete" : "incomplete"}: ${stage.checks.length} checks, ${gaps.length} advisory gap(s)`,
     );
     for (const check of gaps) {
       lines.push(`  - ${check.id} [${check.classification}] ${check.detail}`);
@@ -217,13 +179,6 @@ export function formatPipelineReport(report: IPipelineReport): string {
     ))
       lines.push(`  ~ ${check.id} skipped: ${check.detail}`);
   }
-  if (report.legacy_shapes.length) {
-    lines.push("Legacy shapes:");
-    for (const shape of report.legacy_shapes) {
-      lines.push(`  - ${shape.id}: ${shape.detail}`);
-      for (const item of shape.items) lines.push(`      ${item}`);
-    }
-  } else lines.push("Legacy shapes: none");
   const active = report.stages.find(
     (stage) => stage.id === report.cursor.computed.active_stage,
   );
@@ -232,7 +187,7 @@ export function formatPipelineReport(report: IPipelineReport): string {
     for (const item of active.manual_review) lines.push(`  - ${item}`);
   }
   lines.push(
-    `Summary: ${report.summary.passed} passed, ${report.summary.gaps} gaps (${report.summary.structural} structural, ${report.summary.approval} approval, ${report.summary.decision} decision), ${report.summary.skipped} skipped, ${report.summary.legacy} legacy shape(s)`,
+    `Summary: ${report.summary.passed} passed, ${report.summary.gaps} gaps (${report.summary.structural} structural, ${report.summary.decision} decision), ${report.summary.skipped} skipped`,
   );
   return lines.join("\n");
 }
@@ -250,6 +205,8 @@ if (import.meta.main) {
     }
     const report = await runPipelineCheck({
       enforce: process.argv.includes("--enforce"),
+      section: option("--section"),
+      product: option("--product"),
       expectedLayer: layer as WorkspaceLayer | undefined,
       repositoryIdentity: option("--repository"),
       repositoryRoot: option("--repository-root"),

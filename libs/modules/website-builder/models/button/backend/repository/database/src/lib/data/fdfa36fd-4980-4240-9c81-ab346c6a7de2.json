@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Frontend articles",
+    "ru": "Статьи о Frontend"
+  },
+  "subtitle": {},
+  "url": "/blog/categories/frontend",
+  "className": "w-fit",
+  "id": "fdfa36fd-4980-4240-9c81-ab346c6a7de2",
+  "createdAt": "2026-10-24T01:06:22.107Z",
+  "updatedAt": "2026-10-24T01:06:22.107Z",
+  "variant": "ghost",
+  "adminTitle": "Frontend articles",
+  "slug": "framework-journey-footer-group-2-1"
+}

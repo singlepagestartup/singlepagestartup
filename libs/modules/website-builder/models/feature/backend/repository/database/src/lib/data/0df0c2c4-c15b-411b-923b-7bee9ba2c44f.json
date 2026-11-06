@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "0df0c2c4-c15b-411b-923b-7bee9ba2c44f",
+  "createdAt": "2026-10-26T00:11:48.852Z",
+  "updatedAt": "2026-10-27T14:59:23.536Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "knowledge",
+    "ru": "knowledge"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Give documents to the assistant for analysis and search.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Передайте документы помощнику для анализа и поиска.\"}]}]}"
+  },
+  "adminTitle": "knowledge",
+  "slug": "framework-reviewed-article-file-storage-connections-feature-2"
+}

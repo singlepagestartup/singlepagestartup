@@ -1,6 +1,4 @@
 ---
-confirmation:
-  confirmed: false
 ---
 
 # Lesson introduction

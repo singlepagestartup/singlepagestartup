@@ -22,7 +22,7 @@ export function Component(props: IComponentPropsExtended) {
       size="sm"
       asChild={true}
       className={cn(
-        "w-fill flex items-center",
+        "inline-flex min-h-8 w-fit items-center rounded-full px-3 text-xs",
         props.data.className,
         props.className,
       )}

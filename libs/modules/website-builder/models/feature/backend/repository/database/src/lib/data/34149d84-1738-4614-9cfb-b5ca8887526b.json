@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "34149d84-1738-4614-9cfb-b5ca8887526b",
+  "createdAt": "2026-10-26T00:12:08.722Z",
+  "updatedAt": "2026-10-27T14:59:31.334Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "notification",
+    "ru": "notification"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Deliver task results to the recipient.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Доставляйте результат задачи получателю.\"}]}]}"
+  },
+  "adminTitle": "notification",
+  "slug": "framework-reviewed-article-agent-connections-feature-1"
+}

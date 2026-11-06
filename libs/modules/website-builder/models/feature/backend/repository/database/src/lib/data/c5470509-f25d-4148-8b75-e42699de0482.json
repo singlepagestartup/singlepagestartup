@@ -1,0 +1,18 @@
+{
+  "className": null,
+  "id": "c5470509-f25d-4148-8b75-e42699de0482",
+  "createdAt": "2026-10-23T20:18:05.836Z",
+  "updatedAt": "2026-10-23T20:18:05.836Z",
+  "variant": "card",
+  "title": {
+    "en": "Hono API layers",
+    "ru": "Слои API на Hono"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Controllers assemble routes and middleware; services own operations; repositories read and write data.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Контроллеры собирают роуты и middleware, сервисы выполняют операции, repository читают и записывают данные.\"}]}]}"
+  },
+  "adminTitle": "Hono API layers",
+  "slug": "framework-about-architecture-feature-2"
+}

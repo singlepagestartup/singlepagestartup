@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "What you can offer customers",
+    "ru": "Что вы сможете предложить клиентам"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[]}",
+    "ru": "{\"type\":\"doc\",\"content\":[]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "d1f0eebe-1e79-4df2-ba83-f8d40b417cd0",
+  "createdAt": "2026-10-26T00:11:47.962Z",
+  "updatedAt": "2026-10-27T14:59:17.313Z",
+  "variant": "content-rich",
+  "adminTitle": "Что вы сможете предложить клиентам",
+  "slug": "framework-reviewed-article-file-storage-possibilities"
+}

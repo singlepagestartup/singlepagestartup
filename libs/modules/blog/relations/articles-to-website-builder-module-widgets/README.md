@@ -23,3 +23,10 @@ Links articles to website-builder widgets for embedding content blocks within ar
 - `admin-select-input`: admin select input for choosing a relation.
 - `admin-table`: admin table listing relations.
 - `admin-table-row`: admin row showing relation fields.
+
+## Client access example
+
+The private variant renders the related Widget through its ordinary reader.
+The RBAC Subject article composition checks the client's permission before
+mounting these relation readers and shows the subscription view when denied.
+The variant does not classify descendants or restrict their API/file delivery.

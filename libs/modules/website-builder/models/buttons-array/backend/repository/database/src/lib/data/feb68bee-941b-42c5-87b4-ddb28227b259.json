@@ -1,0 +1,14 @@
+{
+  "id": "feb68bee-941b-42c5-87b4-ddb28227b259",
+  "createdAt": "2026-10-24T01:06:20.655Z",
+  "updatedAt": "2026-10-24T01:06:20.655Z",
+  "variant": "footer-column",
+  "className": "",
+  "title": {
+    "en": "Build",
+    "ru": "Разработка"
+  },
+  "description": {},
+  "adminTitle": "Build",
+  "slug": "framework-journey-footer-group-0"
+}

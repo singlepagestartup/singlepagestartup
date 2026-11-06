@@ -1,10 +1,9 @@
 /**
- * BDD Suite: RBAC ecommerce order proceed bounded query contract and fulfilment.
+ * BDD Suite: RBAC ecommerce order proceed bounded query contract.
  *
  * Given: the RBAC ecommerce order proceed service has mocked module services.
- * When: scoped and unscoped proceed checks are executed and orders reach fulfilment.
- * Then: candidate order and relation queries stay bounded and preserve subject scope,
- * and products are granted only for orders whose payment is confirmed.
+ * When: scoped and unscoped proceed checks are executed.
+ * Then: candidate order and relation queries stay bounded and preserve subject scope.
  */
 
 const mockSubjectsToRolesCreate = jest.fn();
@@ -17,6 +16,7 @@ const mockSubjectNotify = jest.fn();
 const mockLoggerError = jest.fn();
 
 jest.mock("@sps/shared-utils", () => ({
+  ...jest.requireActual("@sps/shared-utils"),
   RBAC_SECRET_KEY: "test-rbac-secret",
 }));
 
@@ -53,8 +53,9 @@ jest.mock("@sps/ecommerce/models/order/sdk/server", () => ({
 
 jest.mock("@sps/rbac/models/subject/sdk/server", () => ({
   api: {
-    ecommerceModuleProductCheckout: (...args: unknown[]) =>
-      mockSubjectProductCheckout(...args),
+    ecommerceModuleProductCheckout: () => {
+      throw new Error("Unexpected Subject loopback HTTP");
+    },
     notify: (...args: unknown[]) => mockSubjectNotify(...args),
   },
 }));
@@ -64,6 +65,547 @@ import {
   ECOMMERCE_ORDER_PROCEED_STATUSES,
   Service,
 } from "./proceed";
+import { Service as PeriodService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service/singlepage/subscription-period";
+
+describe("durable subscription grant revocation", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date("2026-10-23T10:00:00Z"));
+  });
+  afterEach(() => {
+    jest.useRealTimers();
+    mockSubjectsToRolesCreate.mockReset();
+    mockSubjectsToRolesDelete.mockReset();
+    mockEcommerceOrderUpdate.mockReset();
+  });
+
+  it("skips a paid order with a paid invoice but an unconfirmed payment intent", async () => {
+    const { service, order } = lifecycle("paid", false, false);
+    order().ordersToBillingModulePaymentIntents[0].billingModulePaymentIntent.status = "processing";
+    await service.execute({});
+    expect(mockSubjectsToRolesCreate).not.toHaveBeenCalled();
+    expect(order().status).toBe("paid");
+  });
+
+  function lifecycle(
+    status: string,
+    granted: boolean,
+    activated = true,
+    renewalStatus = "paid",
+  ) {
+    let grants: any[] = granted
+      ? [{ id: "grant", roleId: "subscriber", subjectId: "subject" }]
+      : [];
+    let order: any = {
+      id: "subscription",
+      type: "history",
+      status,
+      updatedAt: new Date("2026-10-22T10:00:00Z"),
+      subscriptionPeriodStartsAt: activated
+        ? new Date("2026-10-22T10:00:00Z")
+        : null,
+      subscriptionPeriodEndsAt: activated
+        ? new Date("2026-10-23T10:00:00Z")
+        : null,
+      subscriptionPeriodInvoiceId: activated ? "invoice-a" : null,
+      checkoutAttributesByCurrency: {
+        amount: 0,
+        type: "subscription",
+        interval: "day",
+      },
+      ordersToFileStorageModuleFiles: [],
+      ordersToProducts: [
+        {
+          productId: "product",
+          product: { id: "product", productsToAttributes: [] },
+        },
+      ],
+      ordersToBillingModulePaymentIntents: [
+        {
+          billingModulePaymentIntent: {
+            status: "succeeded",
+            id: "payment",
+            type: "one_off",
+            paymentIntentsToCurrencies: [{ currency: { id: "currency" } }],
+            paymentIntentsToInvoices: [
+              {
+                invoice: {
+                  id: "invoice-a",
+                  status: "paid",
+                  provider: "dummy",
+                  amount: 0,
+                  createdAt: new Date("2026-10-21T00:00:00Z"),
+                },
+              },
+              {
+                invoice: {
+                  id: "invoice-b",
+                  status: renewalStatus,
+                  provider: "dummy",
+                  amount: 0,
+                  createdAt: new Date("2026-10-23T00:00:00Z"),
+                },
+              },
+            ],
+          },
+        },
+      ],
+    };
+    const { service } = createService();
+    service.subjectsToEcommerceModuleOrders.find = jest
+      .fn()
+      .mockResolvedValue([
+        { subjectId: "subject", ecommerceModuleOrderId: "subscription" },
+      ]);
+    service.subjectsToRoles.find = jest.fn(async () => grants);
+    service.rolesToEcommerceModuleProducts.find = jest
+      .fn()
+      .mockResolvedValue([
+        { roleId: "subscriber", ecommerceModuleProductId: "product" },
+      ]);
+    service.ecommerceModule.order.find = jest.fn(async () => [order]);
+    service.ecommerceModule.order.findByIdExtended = jest.fn(async () => order);
+    const period = new PeriodService({
+      findByIdExtended: async () => order,
+      findById: async () => order,
+      writeSubscriptionPeriod: async ({
+        before,
+        startsAt,
+        endsAt,
+        invoiceId,
+        status,
+      }) => {
+        if (
+          before.subscriptionPeriodInvoiceId !==
+          order.subscriptionPeriodInvoiceId
+        )
+          return undefined;
+        order = {
+          ...order,
+          subscriptionPeriodStartsAt: startsAt,
+          subscriptionPeriodEndsAt: endsAt,
+          subscriptionPeriodInvoiceId: invoiceId,
+          status,
+        };
+        return order;
+      },
+    });
+    const accept = jest.fn((props) => period.execute(props));
+    service.ecommerceModule.order.acceptSubscriptionPeriod = accept;
+    service.ecommerceModule.order.assertSubscriptionPayment = (props) =>
+      period.assertPayment(props);
+    mockSubjectsToRolesCreate.mockImplementation(async ({ data }) => {
+      grants = [...grants, { id: "new-grant", ...data }];
+    });
+    mockSubjectsToRolesDelete.mockImplementation(async ({ id }) => {
+      grants = grants.filter((grant) => grant.id !== id);
+    });
+    mockEcommerceOrderUpdate.mockImplementation(async ({ data }) => {
+      order = { ...order, ...data };
+      return order;
+    });
+    jest.spyOn(service, "collectTopupCurrencies").mockResolvedValue([]);
+    jest.spyOn(service, "notifyAdmin").mockResolvedValue(undefined);
+    jest.spyOn(service, "notifyOrderOwner").mockResolvedValue(undefined);
+    return { service, accept, order: () => order, grants: () => grants };
+  }
+
+  it.each(["delivering", "requested_cancelation", "paid", "delivered"])(
+    "does not regrant or reactivate revoked %s orders even with a new paid invoice",
+    async (status) => {
+      const { service, accept, order, grants } = lifecycle(status, false);
+      await service.execute({ subjectId: "subject" });
+      expect(mockSubjectsToRolesCreate).not.toHaveBeenCalled();
+      expect(mockSubjectProductCheckout).not.toHaveBeenCalled();
+      expect(accept).not.toHaveBeenCalled();
+      expect(grants()).toEqual([]);
+      expect(order().subscriptionPeriodInvoiceId).toBe("invoice-a");
+      expect(order().subscriptionPeriodEndsAt).toEqual(
+        new Date("2026-10-23T10:00:00Z"),
+      );
+    },
+  );
+
+  it("does not repair legacy delivering rows without a role or accepted period", async () => {
+    const { service, accept, order } = lifecycle("delivering", false, false);
+    await service.execute({ subjectId: "subject" });
+    expect(mockSubjectsToRolesCreate).not.toHaveBeenCalled();
+    expect(accept).not.toHaveBeenCalled();
+    expect(order().subscriptionPeriodInvoiceId).toBeNull();
+  });
+
+  it("leaves OPEN renewal unchanged and accepts later confirmed payment with a complete interval", async () => {
+    const open = lifecycle("delivering", true, true, "open");
+    await open.service.execute({ subjectId: "subject" });
+    expect(open.order().subscriptionPeriodInvoiceId).toBe("invoice-a");
+    const paid = lifecycle("delivering", true);
+    await paid.service.execute({ subjectId: "subject" });
+    expect(paid.order().subscriptionPeriodInvoiceId).toBe("invoice-b");
+    expect(paid.order().subscriptionPeriodEndsAt).toEqual(
+      new Date("2026-10-24T10:00:00Z"),
+    );
+    expect(mockSubjectsToRolesCreate).not.toHaveBeenCalled();
+  });
+
+  it("allows a new explicit purchase to issue its first role and activate its first period", async () => {
+    const { service, order, grants } = lifecycle("paid", false, false);
+    await service.execute({ subjectId: "subject" });
+    expect(mockSubjectsToRolesCreate).toHaveBeenCalledTimes(1);
+    expect(grants()).toHaveLength(1);
+    expect(order().status).toBe("delivering");
+    expect(order().subscriptionPeriodInvoiceId).toBe("invoice-b");
+    expect(order().subscriptionPeriodEndsAt).toEqual(
+      new Date("2026-10-24T10:00:00Z"),
+    );
+  });
+
+  it("uses the real topup collector before activating this subscription", async () => {
+    const { service, order } = lifecycle("paid", false, false);
+    (service.collectTopupCurrencies as jest.Mock).mockRestore();
+    order().ordersToProducts[0].product.productsToAttributes = [
+      {
+        attribute: {
+          number: "7",
+          attributeKeysToAttribute: [{ attributeKey: { type: "topup" } }],
+          attributesToBillingModuleCurrencies: [
+            {
+              billingModuleCurrencyId: "credits",
+              billingModuleCurrency: { id: "credits" },
+            },
+          ],
+        },
+      },
+    ];
+    service.ecommerceModule.order.find = jest.fn(async (props: any) => {
+      const filters = props.params.filters.and;
+      return filters.every(
+        (filter: any) =>
+          filter.column !== "status" ||
+          (filter.method === "inArray"
+            ? filter.value.includes(order().status)
+            : filter.value === order().status),
+      )
+        ? [order()]
+        : [];
+    });
+    await service.execute({ subjectId: "subject" });
+    expect(mockSubjectsToBillingModuleCurrenciesCreate).toHaveBeenCalledWith({
+      data: {
+        subjectId: "subject",
+        billingModuleCurrencyId: "credits",
+        amount: "7",
+      },
+    });
+    expect(order().status).toBe("delivering");
+  });
+
+  it("does not issue the initial Role before a paid invoice has been verified", async () => {
+    const { service, order, grants } = lifecycle("paid", false, false);
+    for (const link of order().ordersToBillingModulePaymentIntents)
+      for (const relation of link.billingModulePaymentIntent
+        .paymentIntentsToInvoices)
+        relation.invoice.status = "open";
+    await service.execute({ subjectId: "subject" });
+    expect(mockSubjectsToRolesCreate).not.toHaveBeenCalled();
+    expect(grants()).toEqual([]);
+    expect(order().subscriptionPeriodInvoiceId).toBeNull();
+    expect(service.collectTopupCurrencies).not.toHaveBeenCalled();
+  });
+
+  it("uses the fresh Order instead of stale paid candidate data when a grant has been revoked", async () => {
+    const { service, order } = lifecycle("delivering", false);
+    (service.ecommerceModule.order.find as jest.Mock).mockResolvedValue([
+      { ...order(), status: "paid", subscriptionPeriodInvoiceId: null },
+    ]);
+    await service.execute({ subjectId: "subject" });
+    expect(mockSubjectsToRolesCreate).not.toHaveBeenCalled();
+    expect(order().subscriptionPeriodInvoiceId).toBe("invoice-a");
+  });
+
+  it("reactivates a naturally expired recurring Order after late confirmed renewal with a full interval", async () => {
+    const { service, order, grants } = lifecycle(
+      "delivered",
+      true,
+      true,
+      "open",
+    );
+    order().ordersToBillingModulePaymentIntents[0].billingModulePaymentIntent.type =
+      "subscription";
+    await service.execute({ subjectId: "subject" });
+    expect(order().status).toBe("expired");
+    expect(grants()).toHaveLength(0);
+    expect(order().subscriptionRevokedAt).toBeUndefined();
+    jest.setSystemTime(new Date("2026-10-23T13:00:00Z"));
+    order().ordersToBillingModulePaymentIntents[0].billingModulePaymentIntent.paymentIntentsToInvoices[1].invoice.status =
+      "paid";
+    await service.execute({ subjectId: "subject" });
+    expect(order().status).toBe("delivering");
+    expect(grants()).toHaveLength(1);
+    expect(order().subscriptionPeriodStartsAt).toEqual(
+      new Date("2026-10-23T13:00:00Z"),
+    );
+    expect(order().subscriptionPeriodEndsAt).toEqual(
+      new Date("2026-10-24T13:00:00Z"),
+    );
+  });
+
+  it("completes a non-subscription delivery through the trusted fulfillment grant removal", async () => {
+    const { service, order } = lifecycle("delivered", true, true, "open");
+    order().checkoutAttributesByCurrency.type = "one_off";
+    order().subscriptionPeriodInvoiceId = null;
+    order().subscriptionPeriodStartsAt = null;
+    order().subscriptionPeriodEndsAt = null;
+    await service.execute({ subjectId: "subject" });
+    expect(mockSubjectsToRolesDelete).toHaveBeenCalledWith({
+      id: "grant",
+      subjectId: "subject",
+      orderId: "subscription",
+    });
+    expect(order().status).toBe("completed");
+    expect(mockSubjectProductCheckout).not.toHaveBeenCalled();
+  });
+
+  it.each(["expired", "paid", "delivering"])(
+    "never revives explicitly revoked %s Orders even after a Role is recreated",
+    async (status) => {
+      const { service, order, accept } = lifecycle(status, true);
+      order().subscriptionRevokedAt = new Date("2026-10-23T09:00:00Z");
+      await service.execute({ subjectId: "subject" });
+      expect(accept).not.toHaveBeenCalled();
+      expect(order().subscriptionPeriodInvoiceId).toBe("invoice-a");
+      expect(mockSubjectsToRolesCreate).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(["active", "expired", "unowned", "missing-role", "revoked"])(
+    "preserves a shared grant only for another owned active valid subscription: %s",
+    async (kind) => {
+      const { service, order } = lifecycle("delivered", true, true, "open");
+      const currentLink = {
+        subjectId: "subject",
+        ecommerceModuleOrderId: "subscription",
+      };
+      service.subjectsToEcommerceModuleOrders.find = jest
+        .fn()
+        .mockResolvedValue([
+          currentLink,
+          {
+            subjectId: kind === "unowned" ? "other" : "subject",
+            ecommerceModuleOrderId: "other-order",
+          },
+        ] as any);
+      const other = {
+        ...order(),
+        id: "other-order",
+        status: "delivering",
+        subscriptionPeriodStartsAt: new Date("2026-10-23T00:00:00Z"),
+        subscriptionPeriodEndsAt: new Date(
+          kind === "expired" ? "2026-10-23T01:00:00Z" : "2026-10-24T00:00:00Z",
+        ),
+        subscriptionRevokedAt:
+          kind === "revoked" ? new Date("2026-10-23T09:00:00Z") : null,
+      };
+      service.ecommerceModule.order.find = jest.fn(async (props: any) =>
+        props.params.filters.and.some(
+          (filter: any) =>
+            filter.column === "status" && filter.value.length === 2,
+        )
+          ? [other]
+          : [order()],
+      );
+      service.ecommerceModule.ordersToProducts = {
+        find: jest
+          .fn()
+          .mockResolvedValue([
+            { orderId: "other-order", productId: "other-product" },
+          ]),
+      } as any;
+      service.rolesToEcommerceModuleProducts.find = jest.fn(
+        async (props: any) =>
+          props.params.filters.and[0].value.includes("other-product")
+            ? [
+                {
+                  roleId: "subscriber",
+                  ecommerceModuleProductId: "other-product",
+                },
+                ...(kind === "missing-role"
+                  ? [
+                      {
+                        roleId: "revoked",
+                        ecommerceModuleProductId: "other-product",
+                      },
+                    ]
+                  : []),
+              ]
+            : [{ roleId: "subscriber", ecommerceModuleProductId: "product" }],
+      ) as any;
+      await service.execute({ subjectId: "subject" });
+      if (kind === "active")
+        expect(mockSubjectsToRolesDelete).not.toHaveBeenCalled();
+      else
+        expect(mockSubjectsToRolesDelete).toHaveBeenCalledWith(
+          expect.objectContaining({ id: "grant" }),
+        );
+      expect(mockSubjectsToRolesCreate).not.toHaveBeenCalled();
+    },
+  );
+
+  it("cancels one exact Order without globally revoking an expired Order sharing its Role", async () => {
+    const cancel = lifecycle("canceling", true);
+    const revoke = jest.fn(async () => {
+      cancel.order().subscriptionRevokedAt = new Date();
+      return cancel.order();
+    });
+    cancel.service.ecommerceModule.order.revokeSubscription = revoke;
+    const genericDelete = jest.spyOn(cancel.service.subjectsToRoles, "delete");
+    await cancel.service.execute({ subjectId: "subject" });
+    expect(revoke).toHaveBeenCalledWith({ id: "subscription" });
+    expect(genericDelete).not.toHaveBeenCalled();
+    expect(mockSubjectsToRolesDelete).toHaveBeenCalledWith({
+      id: "grant",
+      subjectId: "subject",
+      orderId: "subscription",
+    });
+    expect(cancel.order().status).toBe("canceled");
+    const previouslyExpired = lifecycle("expired", false);
+    await previouslyExpired.service.execute({ subjectId: "subject" });
+    expect(previouslyExpired.order().subscriptionRevokedAt).toBeUndefined();
+    expect(previouslyExpired.order().status).toBe("delivering");
+    expect(previouslyExpired.order().subscriptionPeriodInvoiceId).toBe(
+      "invoice-b",
+    );
+  });
+  it("credits a newly accepted paid Pro cycle once and retains existing purchased tokens", async () => {
+    const { service, order } = lifecycle("delivering", true);
+    (service.collectTopupCurrencies as jest.Mock).mockResolvedValue([
+      {
+        billingModuleCurrencyId: "tokens",
+        billingModuleCurrency: { id: "tokens", slug: "token" },
+        amount: "5000",
+      },
+    ]);
+    let amount = "1200";
+    service.subjectsToBillingModuleCurrencies.find = jest.fn(
+      async () =>
+        [{ id: "wallet", billingModuleCurrencyId: "tokens", amount }] as any,
+    );
+    const credit = jest.fn(async (props) => {
+      expect(props.expectedAmount).toBe(amount);
+      amount = props.amount;
+      return { id: "wallet", amount };
+    });
+    service.subjectsToBillingModuleCurrencies.updateAmountIfUnchanged = credit;
+    await service.execute({ subjectId: "subject" });
+    expect(order().subscriptionPeriodInvoiceId).toBe("invoice-b");
+    expect(amount).toBe("6200");
+    await service.execute({ subjectId: "subject" });
+    expect(amount).toBe("6200");
+    expect(credit).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not apply referral bonuses to the exact initial 3000 Free grant", async () => {
+    const { service, order } = lifecycle("paid", false, false);
+    order().ordersToProducts[0].product.slug = "free-subscription";
+    service.subjectsToIdentities.find = jest.fn(
+      async () => [{ subjectId: "subject" }] as any,
+    );
+    service.ecommerceModule.ordersToProducts = {
+      find: jest.fn(async () => [
+        { orderId: "subscription", productId: "product" },
+      ]),
+    } as any;
+    (service.collectTopupCurrencies as jest.Mock).mockResolvedValue([
+      {
+        billingModuleCurrencyId: "tokens",
+        billingModuleCurrency: { id: "tokens", slug: "token" },
+        amount: "3000",
+      },
+    ]);
+    service.subjectsToSocialModuleProfiles.find = jest.fn(
+      async () => [{ socialModuleProfileId: "invited" }] as any,
+    );
+    await service.execute({ subjectId: "subject" });
+    expect(service.socialModule.attribute.find).not.toHaveBeenCalled();
+    expect(mockSubjectsToBillingModuleCurrenciesCreate).toHaveBeenCalledWith({
+      data: {
+        subjectId: "subject",
+        billingModuleCurrencyId: "tokens",
+        amount: "3000",
+      },
+    });
+  });
+
+  it("does not clear any Currency balance while canceling a Pro Order", async () => {
+    const { service, order } = lifecycle("canceling", true);
+    service.ecommerceModule.order.revokeSubscription = jest.fn(async () => {
+      order().subscriptionRevokedAt = new Date();
+      return order();
+    });
+    service.subjectsToBillingModuleCurrencies.find = jest.fn(
+      async () =>
+        [
+          { id: "tokens", amount: "9000" },
+          { id: "usd", amount: "25" },
+        ] as any,
+    );
+    await service.execute({ subjectId: "subject" });
+    expect(order().status).toBe("canceled");
+    expect(
+      service.subjectsToBillingModuleCurrencies.find,
+    ).not.toHaveBeenCalled();
+    expect(mockSubjectsToBillingModuleCurrenciesUpdate).not.toHaveBeenCalled();
+  });
+});
+
+it("never renews internal Free and preserves all wallet balances on completion", async () => {
+  jest.clearAllMocks();
+  const { service } = createService();
+  (
+    service.subjectsToBillingModuleCurrencies.find as jest.Mock
+  ).mockResolvedValue([
+    { id: "token-balance", variant: "default", amount: "11" },
+  ]);
+  jest
+    .spyOn(service as any, "freshLifecycleProps")
+    .mockImplementation(async (props: any) => props);
+  await service.delivered({
+    order: { id: "free-order", status: "delivered" } as any,
+    extendedOrder: {
+      id: "free-order",
+      checkoutAttributesByCurrency: {
+        amount: 0,
+        type: "subscription",
+        interval: "day",
+      },
+      ordersToProducts: [
+        { productId: "free-product", product: { slug: "free-subscription" } },
+      ],
+      ordersToBillingModulePaymentIntents: [
+        {
+          billingModulePaymentIntent: {
+            status: "succeeded",
+            type: "one_off",
+            paymentIntentsToCurrencies: [{ currency: { id: "currency" } }],
+            paymentIntentsToInvoices: [
+              { invoice: { provider: "dummy", amount: 0 } },
+            ],
+          },
+        },
+      ],
+    } as any,
+    subjectToEcommerceModuleOrder: {
+      subjectId: "user",
+      ecommerceModuleOrderId: "free-order",
+    },
+    existingRolesIds: [],
+    productsRolesIds: [],
+    subjectsToRoles: [],
+  });
+  expect(mockSubjectProductCheckout).not.toHaveBeenCalled();
+  expect(mockSubjectsToBillingModuleCurrenciesUpdate).not.toHaveBeenCalled();
+  expect(service.subjectsToBillingModuleCurrencies.find).not.toHaveBeenCalled();
+});
 
 function createService(props?: {
   candidateOrders?: any[];
@@ -71,8 +613,6 @@ function createService(props?: {
   socialModuleChats?: any[];
   socialModuleProfilesToChats?: any[];
   subjectsToSocialModuleProfiles?: any[];
-  extendedOrder?: any;
-  productRoleIds?: string[];
 }) {
   const ecommerceModuleOrderFind = jest
     .fn()
@@ -89,7 +629,13 @@ function createService(props?: {
   subjectsToEcommerceModuleOrdersFind.mockResolvedValue([]);
 
   const service = new Service(
-    {} as any,
+    {
+      lockOrderDelivery: async () => undefined,
+      withOrderDelivery: async (
+        _scope: unknown,
+        operation: () => Promise<unknown>,
+      ) => operation(),
+    } as any,
     {
       attribute: { find: jest.fn().mockResolvedValue([]) },
       chat: {
@@ -104,7 +650,9 @@ function createService(props?: {
     {
       order: {
         find: ecommerceModuleOrderFind,
-        findByIdExtended: jest.fn().mockResolvedValue(props?.extendedOrder),
+        findByIdExtended: jest.fn(),
+        lockForLifecycle: async () => undefined,
+        update: (...args: unknown[]) => mockEcommerceOrderUpdate(...args),
       },
     } as any,
     {
@@ -112,18 +660,29 @@ function createService(props?: {
     } as any,
     { find: jest.fn().mockResolvedValue([]) } as any,
     { find: jest.fn().mockResolvedValue([]) } as any,
-    {
-      find: jest
-        .fn()
-        .mockResolvedValue(
-          (props?.productRoleIds ?? []).map((roleId) => ({ roleId })),
-        ),
-    } as any,
+    { find: jest.fn().mockResolvedValue([]) } as any,
     { find: subjectsToEcommerceModuleOrdersFind } as any,
-    { find: jest.fn().mockResolvedValue([]) } as any,
+    {
+      find: jest.fn().mockResolvedValue([]),
+      create: (...args: unknown[]) => mockSubjectsToRolesCreate(...args),
+      delete: (...args: unknown[]) => mockSubjectsToRolesDelete(...args),
+      deleteForOrderFulfillment: (...args: unknown[]) =>
+        mockSubjectsToRolesDelete(...args),
+    } as any,
     { find: subjectsToSocialModuleProfilesFind } as any,
+    {
+      find: jest.fn().mockResolvedValue([]),
+      updateAmountIfUnchanged: jest.fn(async (props) => ({
+        id: props.id,
+        amount: props.amount,
+      })),
+      create: (...args: unknown[]) =>
+        mockSubjectsToBillingModuleCurrenciesCreate(...args),
+      update: (...args: unknown[]) =>
+        mockSubjectsToBillingModuleCurrenciesUpdate(...args),
+    } as any,
     { find: jest.fn().mockResolvedValue([]) } as any,
-    { find: jest.fn().mockResolvedValue([]) } as any,
+    mockSubjectProductCheckout,
   );
 
   return {
@@ -161,7 +720,7 @@ describe("Given: unscoped RBAC ecommerce order proceed execution", () => {
             {
               column: "status",
               method: "inArray",
-              value: ECOMMERCE_ORDER_PROCEED_STATUSES,
+              value: ["paid", "delivered", "canceling"],
             },
           ],
         },
@@ -323,6 +882,9 @@ describe("Given: scoped RBAC ecommerce order proceed execution", () => {
             },
           ],
         },
+        limit: ECOMMERCE_ORDER_PROCEED_BATCH_LIMIT,
+        offset: 0,
+        orderBy: { and: [{ column: "id", method: "asc" }] },
       },
     });
     expect(ecommerceModuleOrderFind).not.toHaveBeenCalled();
@@ -378,6 +940,84 @@ describe("Given: scoped RBAC ecommerce order proceed execution", () => {
   });
 });
 
+describe("bounded fair order scheduling", () => {
+  it.each([false, true])(
+    "processes a fresh paid purchase behind more than 100 expired orders, scoped=%s",
+    async (scoped) => {
+      const dataset: any[] = Array.from({ length: 151 }, (_, index) => ({
+        id: `order-${String(index).padStart(4, "0")}`,
+        status: index === 150 ? "paid" : "expired",
+        updatedAt: new Date(2026, 0, 1, 0, index),
+        ordersToProducts: [],
+      }));
+      const links = dataset.map((order) => ({
+        id: `link-${order.id}`,
+        subjectId: "subject",
+        ecommerceModuleOrderId: order.id,
+      }));
+      const { service } = createService();
+      const find = jest.fn(async (props: any) => {
+        const filters = props.params.filters.and;
+        return dataset
+          .filter((order) =>
+            filters.every((filter: any) =>
+              filter.column === "status"
+                ? filter.value.includes(order.status)
+                : filter.column === "id" && filter.method === "inArray"
+                  ? filter.value.includes(order.id)
+                  : filter.column === "id" && filter.method === "gt"
+                    ? order.id > filter.value
+                    : true,
+            ),
+          )
+          .sort((a, b) => a.id.localeCompare(b.id))
+          .slice(0, props.params.limit);
+      });
+      service.ecommerceModule.order.find = find;
+      service.ecommerceModule.order.findByIdExtended = jest.fn(async ({ id }) =>
+        dataset.find((order) => order.id === id),
+      );
+      service.subjectsToEcommerceModuleOrders.find = jest.fn(
+        async (props: any) => {
+          const selected = props.params.filters.and.find(
+            (filter: any) => filter.column === "ecommerceModuleOrderId",
+          );
+          return selected
+            ? links.filter((link) =>
+                selected.value.includes(link.ecommerceModuleOrderId),
+              )
+            : links.slice(
+                props.params.offset,
+                props.params.offset + props.params.limit,
+              );
+        },
+      ) as any;
+      const paid = jest
+        .spyOn(service, "fromPaidStatus")
+        .mockResolvedValue(undefined);
+      await service.execute(scoped ? { subjectId: "subject" } : {});
+      expect(paid).toHaveBeenCalledWith(
+        expect.objectContaining({
+          order: expect.objectContaining({ id: "order-0150", status: "paid" }),
+        }),
+      );
+      expect(paid.mock.calls.length).toBe(ECOMMERCE_ORDER_PROCEED_BATCH_LIMIT);
+      paid.mockClear();
+      await service.execute(scoped ? { subjectId: "subject" } : {});
+      expect(
+        paid.mock.calls.some(([props]) => props.order.id === "order-0149"),
+      ).toBe(true);
+      expect(paid.mock.calls.length).toBeLessThanOrEqual(
+        ECOMMERCE_ORDER_PROCEED_BATCH_LIMIT,
+      );
+      if (scoped)
+        expect(find.mock.calls[0][0].params.filters.and[0].value).toHaveLength(
+          151,
+        );
+    },
+  );
+});
+
 describe("Given: delivered subscription order without invoice context", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -392,6 +1032,9 @@ describe("Given: delivered subscription order without invoice context", () => {
    */
   it("Then: completes the order without creating a follow-up subscription checkout", async () => {
     const { service } = createService();
+    jest
+      .spyOn(service as any, "freshLifecycleProps")
+      .mockImplementation(async (props: any) => props);
 
     await expect(
       service.delivered({
@@ -408,6 +1051,7 @@ describe("Given: delivered subscription order without invoice context", () => {
           ordersToBillingModulePaymentIntents: [
             {
               billingModulePaymentIntent: {
+            status: "succeeded",
                 type: "one_off",
                 paymentIntentsToCurrencies: [
                   {
@@ -423,6 +1067,7 @@ describe("Given: delivered subscription order without invoice context", () => {
           ordersToProducts: [
             {
               productId: "product-1",
+              product: { id: "product-1", slug: "paid-subscription" },
             },
           ],
           ordersToFileStorageModuleFiles: [],
@@ -484,6 +1129,9 @@ describe("Given: an expired Telegram Stars subscription order", () => {
       ],
     });
 
+    jest
+      .spyOn(service as any, "freshLifecycleProps")
+      .mockImplementation(async (props: any) => props);
     await service.delivered({
       order: {
         id: "order-1",
@@ -499,6 +1147,7 @@ describe("Given: an expired Telegram Stars subscription order", () => {
         ordersToBillingModulePaymentIntents: [
           {
             billingModulePaymentIntent: {
+            status: "succeeded",
               type: "one_off",
               paymentIntentsToCurrencies: [
                 {
@@ -522,6 +1171,7 @@ describe("Given: an expired Telegram Stars subscription order", () => {
         ordersToProducts: [
           {
             productId: "product-1",
+            product: { id: "product-1", slug: "paid-subscription" },
           },
         ],
         ordersToFileStorageModuleFiles: [],
@@ -560,369 +1210,94 @@ describe("Given: an expired Telegram Stars subscription order", () => {
   });
 });
 
-function createPaymentIntent(props: {
-  status: string;
-  invoiceStatuses: string[];
-  amount?: number;
-  provider?: string;
-}) {
-  return {
-    billingModulePaymentIntent: {
-      id: `intent-${props.status}-${props.invoiceStatuses.join("-")}`,
-      status: props.status,
-      amount: props.amount ?? 1000,
-      type: "one_off",
-      paymentIntentsToCurrencies: [],
-      paymentIntentsToInvoices: props.invoiceStatuses.map((status, index) => {
-        return {
-          invoice: {
-            id: `invoice-${index}`,
-            status,
-            amount: props.amount ?? 1000,
-            provider: props.provider ?? "stripe",
-          },
-        };
-      }),
-    },
-  };
-}
-
-function createExtendedOrder(props: {
-  id: string;
-  status: string;
-  ordersToBillingModulePaymentIntents: any[];
-}) {
-  return {
-    id: props.id,
-    status: props.status,
-    checkoutAttributesByCurrency: {
-      type: "subscription",
-      interval: "month",
-    },
-    ordersToProducts: [
-      {
-        productId: "product-pro",
-        product: {
-          id: "product-pro",
-          productsToAttributes: [
-            {
-              attribute: {
-                number: "300",
-                attributeKeysToAttribute: [
-                  {
-                    attributeKey: {
-                      type: "topup",
-                    },
-                  },
-                ],
-                attributesToBillingModuleCurrencies: [
-                  {
-                    billingModuleCurrencyId: "currency-token",
-                    billingModuleCurrency: {
-                      id: "currency-token",
-                    },
-                  },
-                ],
-              },
-            },
-          ],
-        },
-      },
-    ],
-    ordersToBillingModulePaymentIntents:
-      props.ordersToBillingModulePaymentIntents,
-  };
-}
-
-function createPaidOrderProps(ordersToBillingModulePaymentIntents: any[]) {
-  return {
-    order: {
-      id: "order-paid",
-      status: "paid",
-    } as any,
-    extendedOrder: createExtendedOrder({
-      id: "order-paid",
-      status: "paid",
-      ordersToBillingModulePaymentIntents,
-    }) as any,
-    subjectToEcommerceModuleOrder: {
-      subjectId: "subject-1",
-      ecommerceModuleOrderId: "order-paid",
-    },
-    existingRolesIds: [],
-    productsRolesIds: ["role-pro"],
-  };
-}
-
-function expectNothingGranted() {
-  expect(mockSubjectsToRolesCreate).not.toHaveBeenCalled();
-  expect(mockSubjectsToBillingModuleCurrenciesCreate).not.toHaveBeenCalled();
-  expect(mockSubjectsToBillingModuleCurrenciesUpdate).not.toHaveBeenCalled();
-  expect(mockEcommerceOrderUpdate).not.toHaveBeenCalled();
-}
-
-describe("Given: a paid order reaching fulfilment", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  /**
-   * BDD Scenario: a paid order with both payment records is fulfilled.
-   *
-   * Given: the order has a succeeded payment intent carrying a paid invoice.
-   * When: fulfilment processes the paid order.
-   * Then: the product role is granted, the top-up is credited and the order moves on.
-   */
-  it("Then: grants the product role and top-up and advances the order", async () => {
-    const { service } = createService();
-
-    await service.fromPaidStatus(
-      createPaidOrderProps([
-        createPaymentIntent({ status: "succeeded", invoiceStatuses: ["paid"] }),
-      ]),
-    );
-
-    expect(mockSubjectsToRolesCreate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: {
-          subjectId: "subject-1",
-          roleId: "role-pro",
-        },
-      }),
-    );
-    expect(mockSubjectsToBillingModuleCurrenciesCreate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          subjectId: "subject-1",
-          billingModuleCurrencyId: "currency-token",
-          amount: "300",
-        }),
-      }),
-    );
-    expect(mockEcommerceOrderUpdate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        id: "order-paid",
-        data: expect.objectContaining({
-          status: "delivering",
-        }),
-      }),
-    );
-    expect(mockLoggerError).not.toHaveBeenCalled();
-  });
-
-  /**
-   * BDD Scenario: a paid order without both payment records is not fulfilled.
-   *
-   * Given: the order lacks a succeeded payment intent carrying a paid invoice.
-   * When: fulfilment processes the paid order.
-   * Then: nothing is granted, the order keeps its status, and the order is reported.
-   */
-  it.each([
-    [
-      "a succeeded payment intent without a paid invoice",
-      [createPaymentIntent({ status: "succeeded", invoiceStatuses: ["open"] })],
-    ],
-    [
-      "a paid invoice on a payment intent that did not succeed",
-      [
-        createPaymentIntent({
-          status: "requires_payment_method",
-          invoiceStatuses: ["paid"],
-        }),
-      ],
-    ],
-    ["no payment intent", []],
-  ])(
-    "When: the order has %s Then: grants nothing and reports the order",
-    async (_, ordersToBillingModulePaymentIntents) => {
-      const { service } = createService();
-
-      await service.fromPaidStatus(
-        createPaidOrderProps(ordersToBillingModulePaymentIntents),
-      );
-
-      expectNothingGranted();
-      expect(mockLoggerError).toHaveBeenCalledTimes(1);
-      expect(mockLoggerError).toHaveBeenCalledWith(
-        expect.stringContaining("without a confirmed payment"),
+describe("quantity-aware additive token collection", () => {
+  const topup = (number: string, currencyId = "token") => ({
+    attribute: {
+      number,
+      attributeKeysToAttribute: [{ attributeKey: { type: "topup" } }],
+      attributesToBillingModuleCurrencies: [
         {
-          orderId: "order-paid",
-          orderStatus: "paid",
-          subjectId: "subject-1",
+          billingModuleCurrencyId: currencyId,
+          billingModuleCurrency: { id: currencyId, slug: currencyId },
         },
-      );
+      ],
     },
-  );
-
-  /**
-   * BDD Scenario: an unconfirmed paid order is reported once.
-   *
-   * Given: a paid order without payment records.
-   * When: fulfilment processes it on two consecutive runs.
-   * Then: nothing is granted on either run and the order is reported once.
-   */
-  it("When: the recurring check meets the order again Then: reports it only once", async () => {
+  });
+  it("multiplies each pack by its paid quantity and sums by Currency", async () => {
     const { service } = createService();
-
-    await service.fromPaidStatus(createPaidOrderProps([]));
-    await service.fromPaidStatus(createPaidOrderProps([]));
-
-    expectNothingGranted();
-    expect(mockLoggerError).toHaveBeenCalledTimes(1);
-  });
-
-  /**
-   * BDD Scenario: every payment path leaves records fulfilment accepts.
-   *
-   * Given: the payment records a payment path leaves on the order.
-   * When: fulfilment processes the paid order.
-   * Then: the product role is granted.
-   */
-  it.each([
-    [
-      "a provider purchase",
-      [createPaymentIntent({ status: "succeeded", invoiceStatuses: ["paid"] })],
-    ],
-    [
-      "a Telegram Stars payment",
-      [
-        createPaymentIntent({
-          status: "succeeded",
-          invoiceStatuses: ["paid"],
-          amount: 1,
-          provider: "telegram-star",
-        }),
-      ],
-    ],
-    [
-      "a dummy provider payment in development",
-      [
-        createPaymentIntent({
-          status: "succeeded",
-          invoiceStatuses: ["paid"],
-          provider: "dummy",
-        }),
-      ],
-    ],
-    [
-      "a zero-amount free subscription",
-      [
-        createPaymentIntent({
-          status: "succeeded",
-          invoiceStatuses: ["paid"],
-          amount: 0,
-          provider: "telegram-star",
-        }),
-      ],
-    ],
-    [
-      "a subscription whose next invoice is still open",
-      [
-        createPaymentIntent({
-          status: "succeeded",
-          invoiceStatuses: ["paid", "open"],
-        }),
-      ],
-    ],
-    [
-      "a failed attempt followed by a successful payment",
-      [
-        createPaymentIntent({ status: "failed", invoiceStatuses: ["void"] }),
-        createPaymentIntent({ status: "succeeded", invoiceStatuses: ["paid"] }),
-      ],
-    ],
-  ])(
-    "When: the records come from %s Then: grants the product role",
-    async (_, ordersToBillingModulePaymentIntents) => {
-      const { service } = createService();
-
-      await service.fromPaidStatus(
-        createPaidOrderProps(ordersToBillingModulePaymentIntents),
-      );
-
-      expect(mockSubjectsToRolesCreate).toHaveBeenCalledTimes(1);
-      expect(mockLoggerError).not.toHaveBeenCalled();
-    },
-  );
-});
-
-describe("Given: a delivering order reaching fulfilment", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  function createDeliveringService(ordersToBillingModulePaymentIntents: any[]) {
-    const subjectToEcommerceModuleOrder = {
-      subjectId: "subject-1",
-      ecommerceModuleOrderId: "order-delivering",
-    };
-
-    return createService({
-      candidateOrders: [
-        {
-          id: "order-delivering",
-          status: "delivering",
-        },
-      ],
-      relationFindResults: [
-        [subjectToEcommerceModuleOrder],
-        [subjectToEcommerceModuleOrder],
-      ],
-      extendedOrder: createExtendedOrder({
-        id: "order-delivering",
-        status: "delivering",
-        ordersToBillingModulePaymentIntents,
-      }),
-      productRoleIds: ["role-pro"],
+    const result = await service.collectTopupCurrencies({
+      extendedOrder: {
+        ordersToProducts: [
+          { quantity: 2, product: { productsToAttributes: [topup("100")] } },
+          { quantity: 3, product: { productsToAttributes: [topup("50")] } },
+        ],
+      } as any,
+      subjectToEcommerceModuleOrder: { subjectId: "subject" } as any,
     });
-  }
-
-  /**
-   * BDD Scenario: a delivering order with both payment records keeps its product role.
-   *
-   * Given: a delivering order with a succeeded payment intent carrying a paid invoice, and a subject without the product role.
-   * When: the subject's orders are processed.
-   * Then: the product role is granted.
-   */
-  it("When: the payment is confirmed Then: grants the missing product role", async () => {
-    const { service } = createDeliveringService([
-      createPaymentIntent({ status: "succeeded", invoiceStatuses: ["paid"] }),
-    ]);
-
-    await service.execute({ subjectId: "subject-1" });
-
-    expect(mockSubjectsToRolesCreate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: {
-          subjectId: "subject-1",
-          roleId: "role-pro",
-        },
-      }),
-    );
-    expect(mockLoggerError).not.toHaveBeenCalled();
-  });
-
-  /**
-   * BDD Scenario: a delivering order without payment records grants nothing.
-   *
-   * Given: a delivering order without payment records, and a subject without the product role.
-   * When: the subject's orders are processed.
-   * Then: no role is granted and the order is reported with its status.
-   */
-  it("When: the payment is not confirmed Then: grants nothing and reports the order", async () => {
-    const { service } = createDeliveringService([]);
-
-    await service.execute({ subjectId: "subject-1" });
-
-    expect(mockSubjectsToRolesCreate).not.toHaveBeenCalled();
-    expect(mockLoggerError).toHaveBeenCalledTimes(1);
-    expect(mockLoggerError).toHaveBeenCalledWith(
-      expect.stringContaining("without a confirmed payment"),
+    expect(result).toEqual([
       {
-        orderId: "order-delivering",
-        orderStatus: "delivering",
-        subjectId: "subject-1",
+        billingModuleCurrencyId: "token",
+        billingModuleCurrency: { id: "token", slug: "token" },
+        amount: "350",
       },
-    );
+    ]);
   });
+  it("does not suppress a newly paid Pro Order because the same Product is already delivering", async () => {
+    const { service, subjectsToEcommerceModuleOrdersFind } = createService();
+    subjectsToEcommerceModuleOrdersFind.mockResolvedValue([
+      { subjectId: "subject", ecommerceModuleOrderId: "old-delivering-pro" },
+    ]);
+    const result = await service.collectTopupCurrencies({
+      extendedOrder: {
+        ordersToProducts: [
+          {
+            productId: "pro",
+            quantity: 1,
+            product: { id: "pro", productsToAttributes: [topup("5000")] },
+          },
+        ],
+      } as any,
+      subjectToEcommerceModuleOrder: {
+        subjectId: "subject",
+        ecommerceModuleOrderId: "new-paid-pro",
+      } as any,
+    });
+    expect(result[0].amount).toBe("5000");
+    expect(subjectsToEcommerceModuleOrdersFind).not.toHaveBeenCalled();
+  });
+  it.each([0, -1, 1.5, Infinity])(
+    "rejects invalid paid quantity %s",
+    async (quantity) => {
+      const { service } = createService();
+      await expect(
+        service.collectTopupCurrencies({
+          extendedOrder: {
+            ordersToProducts: [
+              { quantity, product: { productsToAttributes: [topup("100")] } },
+            ],
+          } as any,
+          subjectToEcommerceModuleOrder: {} as any,
+        }),
+      ).rejects.toThrow("positive integer");
+    },
+  );
+  it.each(["", "-1", "NaN", "Infinity"])(
+    "rejects invalid credit amount %s",
+    async (amount) => {
+      const { service } = createService();
+      await expect(
+        service.collectTopupCurrencies({
+          extendedOrder: {
+            ordersToProducts: [
+              {
+                quantity: 1,
+                product: { productsToAttributes: [topup(amount)] },
+              },
+            ],
+          } as any,
+          subjectToEcommerceModuleOrder: {} as any,
+        }),
+      ).rejects.toThrow("finite and positive");
+    },
+  );
 });

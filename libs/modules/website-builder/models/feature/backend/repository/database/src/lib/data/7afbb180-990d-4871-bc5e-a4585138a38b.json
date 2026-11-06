@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "7afbb180-990d-4871-bc5e-a4585138a38b",
+  "createdAt": "2026-10-26T00:11:52.632Z",
+  "updatedAt": "2026-10-27T14:59:41.381Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Attribute",
+    "ru": "Attribute"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"A typed profile value: text, number, date or boolean. For example, an expert's area of work.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Типизированное значение профиля: строка, число, дата или логический признак. Например, направление работы эксперта.\"}]}]}"
+  },
+  "adminTitle": "Attribute",
+  "slug": "framework-reviewed-article-social-models-feature-1"
+}
