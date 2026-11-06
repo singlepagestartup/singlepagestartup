@@ -158,6 +158,11 @@ import {
   type IResult as IEcommerceModuleOrderListResult,
 } from "./ecommerce-module/order/list";
 import {
+  action as ecommerceModuleOrderOrdersToProducts,
+  type IProps as IEcommerceModuleOrderOrdersToProductsProps,
+  type IResult as IEcommerceModuleOrderOrdersToProductsResult,
+} from "./ecommerce-module/order/orders-to-products";
+import {
   action as ecommerceModuleOrderQuantity,
   type IProps as IEcommerceModuleOrderQuantityProps,
   type IResult as IEcommerceModuleOrderQuantityResult,
@@ -472,6 +477,7 @@ export type IProps = {
   IEcommerceModuleOrderTotalProps: IEcommerceModuleOrderTotalProps;
   IEcommerceModuleOrderQuantityProps: IEcommerceModuleOrderQuantityProps;
   IEcommerceModuleOrderListProps: IEcommerceModuleOrderListProps;
+  IEcommerceModuleOrderOrdersToProductsProps: IEcommerceModuleOrderOrdersToProductsProps;
 
   ICrmModuleFromRequestCreateProps: ICrmModuleFromRequestCreateProps;
 
@@ -561,6 +567,7 @@ export type IResult = {
   IEcommerceModuleOrderTotalResult: IEcommerceModuleOrderTotalResult;
   IEcommerceModuleOrderQuantityResult: IEcommerceModuleOrderQuantityResult;
   IEcommerceModuleOrderListResult: IEcommerceModuleOrderListResult;
+  IEcommerceModuleOrderOrdersToProductsResult: IEcommerceModuleOrderOrdersToProductsResult;
 
   ICrmModuleFromRequestCreateResult: ICrmModuleFromRequestCreateResult;
 
@@ -652,6 +659,7 @@ export const api = {
   ecommerceModuleOrderTotal,
   ecommerceModuleOrderQuantity,
   ecommerceModuleOrderList,
+  ecommerceModuleOrderOrdersToProducts,
 
   crmModuleFromRequestCreate,
 

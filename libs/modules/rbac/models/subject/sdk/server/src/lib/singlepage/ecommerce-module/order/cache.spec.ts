@@ -9,6 +9,7 @@
 import { action as list } from "./list";
 import { action as quantity } from "./quantity";
 import { action as total } from "./total";
+import { action as ordersToProducts } from "./orders-to-products";
 
 describe("subject cart aggregate cache policy", () => {
   const originalFetch = global.fetch;
@@ -31,10 +32,10 @@ describe("subject cart aggregate cache policy", () => {
    * BDD Scenario: every cart aggregate bypasses stale HTTP data.
    *
    * Given: a caller supplies its own request headers and a cache preference.
-   * When: list, quantity, and total are fetched.
+   * When: list, quantity, total, and order lines are fetched.
    * Then: caller headers are preserved while no-store remains enforced.
    */
-  it("forces no-store for list, quantity, and total requests", async () => {
+  it("forces no-store for list, quantity, total, and order line requests", async () => {
     const props = {
       id: "subject-id",
       host: "http://api.test",
@@ -49,8 +50,9 @@ describe("subject cart aggregate cache policy", () => {
     await list(props);
     await quantity(props);
     await total(props);
+    await ordersToProducts(props);
 
-    expect(global.fetch).toHaveBeenCalledTimes(3);
+    expect(global.fetch).toHaveBeenCalledTimes(4);
 
     for (const [, options] of (global.fetch as jest.Mock).mock.calls) {
       expect(options).toMatchObject({

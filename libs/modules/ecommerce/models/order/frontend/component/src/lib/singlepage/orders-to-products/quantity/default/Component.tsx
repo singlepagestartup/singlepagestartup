@@ -11,44 +11,20 @@ export function Component(props: IComponentPropsExtended) {
       data-variant={props.variant}
       className={cn("w-full flex flex-col", props.className)}
     >
-      <OrdersToProducts
-        isServer={false}
-        variant="find"
-        apiProps={{
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "orderId",
-                  method: "eq",
-                  value: props.data.id,
-                },
-              ],
-            },
-          },
-        }}
-      >
-        {({ data: ordersToProducts }) => {
-          // return ordersToProducts?.reduce(
-          //   (acc, entity) => acc + entity.quantity,
-          //   0,
-          // );
-          return ordersToProducts?.map((entity, index) => {
-            return (
-              <OrdersToProducts
-                key={index}
-                isServer={false}
-                variant="amount"
-                data={entity}
-              >
-                {({ data }) => {
-                  return <p>{data}</p>;
-                }}
-              </OrdersToProducts>
-            );
-          });
-        }}
-      </OrdersToProducts>
+      {props.ordersToProducts.map((entity) => {
+        return (
+          <OrdersToProducts
+            key={entity.id}
+            isServer={false}
+            variant="amount"
+            data={entity}
+          >
+            {({ data }) => {
+              return <p>{data}</p>;
+            }}
+          </OrdersToProducts>
+        );
+      })}
     </div>
   );
 }

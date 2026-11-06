@@ -79,11 +79,8 @@ does not change the period.
 ## Variants
 
 - `default`: order card wrapper with header and child content.
-- `cart-default`: cart layout showing products, quantities, and totals.
-- `orders-to-products-quantity-default`: renders quantities from order-product relations.
-- `purchase-ai-chat`: purchase history row. The shared record reader loads the
-  Order; local `client.tsx`/`server.tsx` readers load SDK totals and pass typed
-  results to the view. A failed total read leaves the Order visible.
+- `cart-default`: cart layout showing the products, quantities, and totals of the order lines it is handed (`ordersToProducts`).
+- `orders-to-products-quantity-default`: renders the amount of each order line it is handed (`ordersToProducts`).
 - `form-field-default`: writes order data into a form field.
 - `create`: client action to create a cart/order.
 - `delete`: client action to delete an order.

@@ -19,8 +19,8 @@ Links orders to products, including quantity information.
 ## Variants
 
 - `default`: renders the related product using its frontend variant.
-- `amount`: placeholder variant for order-product amount views.
-- `form-field-default`: writes relation data into a form field.
+- `amount`: amount of the order line it is handed, computed from catalog prices.
+- `form-field-default`: writes a field of the order line it is handed into a form field.
 - `id-total-default`: fetches total amounts for this relation id.
 - `find`: data-fetch wrapper for querying relations.
 - `admin-form`: admin create/edit form for relation fields and IDs.

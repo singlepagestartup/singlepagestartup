@@ -61,6 +61,7 @@ import { Handler as EcommerceModuleOrderIdDelete } from "./ecommerce-module/orde
 import { Handler as EcommerceModuleOrderList } from "./ecommerce-module/order/list";
 import { Handler as EcommerceModuleOrderTotal } from "./ecommerce-module/order/total";
 import { Handler as EcommerceModuleOrderQuantity } from "./ecommerce-module/order/quantity";
+import { Handler as EcommerceModuleOrderOrdersToProducts } from "./ecommerce-module/order/orders-to-products";
 import { Handler as EcommerceModuleOrderIdTotal } from "./ecommerce-module/order/id/total";
 import { Handler as EcommerceModuleOrderIdQuantity } from "./ecommerce-module/order/id/quantity";
 import { Handler as EcommerceModuleProductIdCheckout } from "./ecommerce-module/product/id/checkout";
@@ -402,6 +403,12 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         path: "/:id/ecommerce-module/orders/total",
         handler: this.ecommerceModuleOrderTotal,
         middlewares: [new RequestSubjectIdOwner().init({ requireJwt: true })],
+      },
+      {
+        method: "GET",
+        path: "/:id/ecommerce-module/orders/orders-to-products",
+        handler: this.ecommerceModuleOrderOrdersToProducts,
+        middlewares: [new RequestSubjectIdOwner().init()],
       },
       {
         method: "GET",
@@ -1011,6 +1018,16 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
 
   async ecommerceModuleOrderTotal(c: Context, next: any): Promise<Response> {
     return new EcommerceModuleOrderTotal(this.service).execute(c, next);
+  }
+
+  async ecommerceModuleOrderOrdersToProducts(
+    c: Context,
+    next: any,
+  ): Promise<Response> {
+    return new EcommerceModuleOrderOrdersToProducts(this.service).execute(
+      c,
+      next,
+    );
   }
 
   async ecommerceModuleOrderIdQuantity(
