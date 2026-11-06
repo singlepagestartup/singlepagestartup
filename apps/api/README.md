@@ -63,6 +63,15 @@ request ID. The local journal keeps the underlying incident independently.
 See the [server incident runbook](../../tools/deployer/README.md#finding-an-api-error)
 for storage, retention, SSH commands and access policy.
 
+The server itself reads:
+
+- `API_MAX_REQUEST_BODY_BYTES` - optional, defaults to `134217728` (128 MiB,
+  the limit Bun applies without the option). A request whose `Content-Length`
+  is larger is answered `413` before any route runs, and a body without a
+  declared length is answered `413` once a route reads past the limit. Uploads
+  pass through this server, so keep the value at least as large as the largest
+  upload the deployment accepts.
+
 ## Guidelines
 
 - `apps/api/app.ts` is the **only** host: mount every module backend app via `app.route("/api/<module>", moduleApp.hono)`; modules must not expose their own servers.
