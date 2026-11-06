@@ -1,8 +1,8 @@
-import { IComponentPropsExtended } from "../interface";
+import { IExternalWidgetProps } from "../interface";
 import { Component as CrmModuleWidget } from "@sps/crm/models/widget/frontend/component";
 import { Component as Widget } from "./widget";
 
-export function Component(props: IComponentPropsExtended) {
+export function Component(props: IExternalWidgetProps) {
   return (
     <CrmModuleWidget
       isServer={props.isServer}

@@ -1,0 +1,22 @@
+{
+  "id": "ba3e6118-44d4-46e1-bf2d-5fac5e2a18ff",
+  "createdAt": "2026-10-15T13:47:45.193Z",
+  "updatedAt": "2026-10-15T13:47:45.193Z",
+  "variant": "select-option-default",
+  "type": "option",
+  "isRequired": true,
+  "title": {
+    "en": "Topic"
+  },
+  "subtitle": {},
+  "description": {},
+  "className": null,
+  "adminTitle": "Topic",
+  "slug": "ai-chat-support-3d00218e-2511-4526-8cc0-f8913faf4c0f-topic",
+  "placeholder": {
+    "en": "Select a topic"
+  },
+  "label": {
+    "en": "Topic"
+  }
+}

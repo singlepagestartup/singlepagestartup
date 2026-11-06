@@ -92,7 +92,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       });
 
       if (identities?.length) {
-        throw new Error("Not Found error. Identity already exists");
+        throw new Error("Conflict error. Identity already exists");
       }
 
       /**
@@ -234,15 +234,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       );
     }
 
-    const identity = await api.findById({
-      id: props.id,
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          "Cache-Control": "no-store",
-        },
-      },
-    });
+    const identity = await this.findById({ id: props.id });
 
     if (!identity) {
       throw new Error("Not Found error. Identity not found");
@@ -261,19 +253,17 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       throw new Error("Validation error. Invalid credentials");
     }
 
-    const updatedIdentity = await api.update({
+    const updatedIdentity = await this.update({
       id: identity.id,
       data: {
         ...identity,
         password: await bcrypt.hash(props.data.newPassword, identity.salt),
       },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-      },
     });
 
+    if (!updatedIdentity) {
+      throw new Error("Not Found error. Identity not found");
+    }
     return updatedIdentity;
   }
 }

@@ -1,0 +1,22 @@
+{
+  "id": "f165713a-0d6b-4944-be61-f5f6d6c9bb53",
+  "createdAt": "2026-10-15T13:47:45.464Z",
+  "updatedAt": "2026-10-15T13:47:45.464Z",
+  "variant": "textarea-default",
+  "type": "string",
+  "isRequired": true,
+  "title": {
+    "en": "What result do you need?"
+  },
+  "subtitle": {},
+  "description": {},
+  "className": null,
+  "adminTitle": "What result do you need?",
+  "slug": "ai-chat-support-3d00218e-2511-4526-8cc0-f8913faf4c0f-result",
+  "placeholder": {
+    "en": "Tell us what you want to continue or correct."
+  },
+  "label": {
+    "en": "What result do you need?"
+  }
+}

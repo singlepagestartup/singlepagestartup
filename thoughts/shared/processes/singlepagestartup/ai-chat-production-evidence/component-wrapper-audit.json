@@ -1,0 +1,571 @@
+{
+  "variants": 58,
+  "counts": {
+    "record": 31,
+    "form": 1,
+    "authentication": 4,
+    "subject-record": 21,
+    "collection": 1
+  },
+  "sharedReadersUnchanged": true,
+  "failures": [],
+  "records": [
+    {
+      "module": "crm",
+      "model": "form",
+      "variant": "support-ai-chat",
+      "path": "libs/modules/crm/models/form/frontend/component/src/lib/singlepage/support-ai-chat",
+      "reader": "record",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "ecommerce",
+      "model": "order",
+      "variant": "purchase-ai-chat",
+      "path": "libs/modules/ecommerce/models/order/frontend/component/src/lib/singlepage/purchase-ai-chat",
+      "reader": "record",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "knowledge",
+      "model": "source",
+      "variant": "form-ai-chat",
+      "path": "libs/modules/knowledge/models/source/frontend/component/src/lib/singlepage/form-ai-chat",
+      "reader": "form",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "knowledge",
+      "model": "source",
+      "variant": "id-ai-chat",
+      "path": "libs/modules/knowledge/models/source/frontend/component/src/lib/singlepage/id-ai-chat",
+      "reader": "record",
+      "valid": true,
+      "clientBinding": "shared parent reader"
+    },
+    {
+      "module": "rbac",
+      "model": "subject",
+      "variant": "me-authentication-email-and-password-authentication-form-ai-chat",
+      "path": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/authentication/email-and-password/authentication-form-ai-chat",
+      "reader": "authentication",
+      "valid": true
+    },
+    {
+      "module": "rbac",
+      "model": "subject",
+      "variant": "me-authentication-email-and-password-forgot-password-form-ai-chat",
+      "path": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/authentication/email-and-password/forgot-password-form-ai-chat",
+      "reader": "authentication",
+      "valid": true
+    },
+    {
+      "module": "rbac",
+      "model": "subject",
+      "variant": "me-authentication-email-and-password-registration-form-ai-chat",
+      "path": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/authentication/email-and-password/registration-form-ai-chat",
+      "reader": "authentication",
+      "valid": true
+    },
+    {
+      "module": "rbac",
+      "model": "subject",
+      "variant": "me-authentication-email-and-password-reset-password-form-ai-chat",
+      "path": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/authentication/email-and-password/reset-password-form-ai-chat",
+      "reader": "authentication",
+      "valid": true
+    },
+    {
+      "module": "rbac",
+      "model": "subject",
+      "variant": "me-account-ai-chat",
+      "path": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me-account-ai-chat",
+      "reader": "subject-record",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "rbac",
+      "model": "subject",
+      "variant": "me-crm-module-form-support-ai-chat",
+      "path": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me-crm-module-form-support-ai-chat",
+      "reader": "subject-record",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "rbac",
+      "model": "subject",
+      "variant": "me-ecommerce-module-order-list-ai-chat",
+      "path": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me-ecommerce-module-order-list-ai-chat",
+      "reader": "subject-record",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "rbac",
+      "model": "subject",
+      "variant": "me-identity-id-settings-ai-chat",
+      "path": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me-identity-id-settings-ai-chat",
+      "reader": "subject-record",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "rbac",
+      "model": "subject",
+      "variant": "me-identity-list-settings-ai-chat",
+      "path": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me-identity-list-settings-ai-chat",
+      "reader": "subject-record",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "rbac",
+      "model": "subject",
+      "variant": "me-profile-settings-ai-chat",
+      "path": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me-profile-settings-ai-chat",
+      "reader": "subject-record",
+      "valid": true,
+      "clientBinding": "shared parent reader"
+    },
+    {
+      "module": "rbac",
+      "model": "subject",
+      "variant": "me-social-module-profile-create-ai-chat",
+      "path": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me-social-module-profile-create-ai-chat",
+      "reader": "subject-record",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "rbac",
+      "model": "subject",
+      "variant": "me-social-module-profile-id-avatar-update-ai-chat",
+      "path": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me-social-module-profile-id-avatar-update-ai-chat",
+      "reader": "subject-record",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "rbac",
+      "model": "subject",
+      "variant": "me-social-module-profile-id-chat-id-thread-create-ai-chat",
+      "path": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me-social-module-profile-id-chat-id-thread-create-ai-chat",
+      "reader": "subject-record",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "rbac",
+      "model": "subject",
+      "variant": "me-social-module-profile-id-chat-id-thread-id-ai-chat",
+      "path": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me-social-module-profile-id-chat-id-thread-id-ai-chat",
+      "reader": "subject-record",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "rbac",
+      "model": "subject",
+      "variant": "me-social-module-profile-id-chat-id-thread-id-download-ai-chat",
+      "path": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me-social-module-profile-id-chat-id-thread-id-download-ai-chat",
+      "reader": "subject-record",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "rbac",
+      "model": "subject",
+      "variant": "me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-id-update-ai-chat",
+      "path": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-id-update-ai-chat",
+      "reader": "subject-record",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "rbac",
+      "model": "subject",
+      "variant": "me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-list-document-ai-chat",
+      "path": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-list-document-ai-chat",
+      "reader": "subject-record",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "rbac",
+      "model": "subject",
+      "variant": "me-social-module-profile-id-chat-id-thread-id-message-create-ai-chat",
+      "path": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me-social-module-profile-id-chat-id-thread-id-message-create-ai-chat",
+      "reader": "subject-record",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "rbac",
+      "model": "subject",
+      "variant": "me-social-module-profile-id-chat-id-thread-id-message-list-ai-chat",
+      "path": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me-social-module-profile-id-chat-id-thread-id-message-list-ai-chat",
+      "reader": "subject-record",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "rbac",
+      "model": "subject",
+      "variant": "me-social-module-profile-id-navigation-ai-chat",
+      "path": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me-social-module-profile-id-navigation-ai-chat",
+      "reader": "subject-record",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "rbac",
+      "model": "subject",
+      "variant": "me-social-module-profile-id-settings-ai-chat",
+      "path": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me-social-module-profile-id-settings-ai-chat",
+      "reader": "subject-record",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "rbac",
+      "model": "subject",
+      "variant": "me-social-module-profile-id-update-ai-chat",
+      "path": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me-social-module-profile-id-update-ai-chat",
+      "reader": "subject-record",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "rbac",
+      "model": "subject",
+      "variant": "me-social-module-profile-list-ai-chat",
+      "path": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me-social-module-profile-list-ai-chat",
+      "reader": "subject-record",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "rbac",
+      "model": "subject",
+      "variant": "me-social-module-profile-list-settings-ai-chat",
+      "path": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me-social-module-profile-list-settings-ai-chat",
+      "reader": "subject-record",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "rbac",
+      "model": "subject",
+      "variant": "me-social-module-profile-select-ai-chat",
+      "path": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me-social-module-profile-select-ai-chat",
+      "reader": "subject-record",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "rbac",
+      "model": "widget",
+      "variant": "subject-me-authentication-forgot-password-ai-chat",
+      "path": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/subject-me-authentication-forgot-password-ai-chat",
+      "reader": "record",
+      "valid": true,
+      "clientBinding": "shared parent reader"
+    },
+    {
+      "module": "rbac",
+      "model": "widget",
+      "variant": "subject-me-authentication-registration-ai-chat",
+      "path": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/subject-me-authentication-registration-ai-chat",
+      "reader": "record",
+      "valid": true,
+      "clientBinding": "shared parent reader"
+    },
+    {
+      "module": "rbac",
+      "model": "widget",
+      "variant": "subject-me-authentication-reset-password-ai-chat",
+      "path": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/subject-me-authentication-reset-password-ai-chat",
+      "reader": "record",
+      "valid": true,
+      "clientBinding": "shared parent reader"
+    },
+    {
+      "module": "rbac",
+      "model": "widget",
+      "variant": "subject-me-authentication-select-method-ai-chat",
+      "path": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/subject-me-authentication-select-method-ai-chat",
+      "reader": "record",
+      "valid": true,
+      "clientBinding": "shared parent reader"
+    },
+    {
+      "module": "rbac",
+      "model": "widget",
+      "variant": "subject-me-profile-settings",
+      "path": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/subject-me-profile-settings",
+      "reader": "record",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "rbac",
+      "model": "widget",
+      "variant": "subject-me-social-module-profile-create-ai-chat",
+      "path": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/subject-me-social-module-profile-create-ai-chat",
+      "reader": "record",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "rbac",
+      "model": "widget",
+      "variant": "subject-me-social-module-profile-id-chat-id-thread-create-ai-chat",
+      "path": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/subject-me-social-module-profile-id-chat-id-thread-create-ai-chat",
+      "reader": "record",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "rbac",
+      "model": "widget",
+      "variant": "subject-me-social-module-profile-id-chat-id-thread-id-ai-chat",
+      "path": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/subject-me-social-module-profile-id-chat-id-thread-id-ai-chat",
+      "reader": "record",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "rbac",
+      "model": "widget",
+      "variant": "subject-me-social-module-profile-id-settings-ai-chat",
+      "path": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/subject-me-social-module-profile-id-settings-ai-chat",
+      "reader": "record",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "social",
+      "model": "chat",
+      "variant": "id-ai-chat",
+      "path": "libs/modules/social/models/chat/frontend/component/src/lib/singlepage/id-ai-chat",
+      "reader": "record",
+      "valid": true,
+      "clientBinding": "shared parent reader"
+    },
+    {
+      "module": "social",
+      "model": "chat",
+      "variant": "id-preview-ai-chat",
+      "path": "libs/modules/social/models/chat/frontend/component/src/lib/singlepage/id-preview-ai-chat",
+      "reader": "record",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "social",
+      "model": "message",
+      "variant": "list-ai-chat",
+      "path": "libs/modules/social/models/message/frontend/component/src/lib/singlepage/list-ai-chat",
+      "reader": "collection",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "social",
+      "model": "profile",
+      "variant": "id-ai-chat-project",
+      "path": "libs/modules/social/models/profile/frontend/component/src/lib/singlepage/id-ai-chat-project",
+      "reader": "record",
+      "valid": true,
+      "clientBinding": "shared parent reader"
+    },
+    {
+      "module": "social",
+      "model": "profile",
+      "variant": "id-settings-ai-chat",
+      "path": "libs/modules/social/models/profile/frontend/component/src/lib/singlepage/id-settings-ai-chat",
+      "reader": "record",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "social",
+      "model": "profile",
+      "variant": "select-ai-chat-project",
+      "path": "libs/modules/social/models/profile/frontend/component/src/lib/singlepage/select-ai-chat-project",
+      "reader": "record",
+      "valid": true,
+      "emptyState": "EmptyProjectSelect: no model record, no SDK lookup",
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "social",
+      "model": "profile",
+      "variant": "select-item-ai-chat-project",
+      "path": "libs/modules/social/models/profile/frontend/component/src/lib/singlepage/select-item-ai-chat-project",
+      "reader": "record",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "social",
+      "model": "profile",
+      "variant": "sidebar-ai-chat-project",
+      "path": "libs/modules/social/models/profile/frontend/component/src/lib/singlepage/sidebar-ai-chat-project",
+      "reader": "record",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "social",
+      "model": "profile",
+      "variant": "thread-list-sidebar-ai-chat",
+      "path": "libs/modules/social/models/profile/frontend/component/src/lib/singlepage/thread-list-sidebar-ai-chat",
+      "reader": "record",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "social",
+      "model": "thread",
+      "variant": "download-ai-chat",
+      "path": "libs/modules/social/models/thread/frontend/component/src/lib/singlepage/download-ai-chat",
+      "reader": "record",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "social",
+      "model": "thread",
+      "variant": "id-ai-chat",
+      "path": "libs/modules/social/models/thread/frontend/component/src/lib/singlepage/id-ai-chat",
+      "reader": "record",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "social",
+      "model": "thread",
+      "variant": "list-item-sidebar-ai-chat",
+      "path": "libs/modules/social/models/thread/frontend/component/src/lib/singlepage/list-item-sidebar-ai-chat",
+      "reader": "record",
+      "valid": true,
+      "clientBinding": "shared parent reader",
+      "interactiveView": "ClientComponent.tsx"
+    },
+    {
+      "module": "website-builder",
+      "model": "logotype",
+      "variant": "brand-ai-chat",
+      "path": "libs/modules/website-builder/models/logotype/frontend/component/src/lib/singlepage/brand-ai-chat",
+      "reader": "record",
+      "valid": true,
+      "clientBinding": "shared parent reader"
+    },
+    {
+      "module": "website-builder",
+      "model": "widget",
+      "variant": "content-ai-chat-authentication",
+      "path": "libs/modules/website-builder/models/widget/frontend/component/src/lib/singlepage/content-ai-chat-authentication",
+      "reader": "record",
+      "valid": true,
+      "clientBinding": "shared parent reader"
+    },
+    {
+      "module": "website-builder",
+      "model": "widget",
+      "variant": "content-ai-chat-help",
+      "path": "libs/modules/website-builder/models/widget/frontend/component/src/lib/singlepage/content-ai-chat-help",
+      "reader": "record",
+      "valid": true,
+      "clientBinding": "shared parent reader"
+    },
+    {
+      "module": "website-builder",
+      "model": "widget",
+      "variant": "content-ai-chat-materials-processing",
+      "path": "libs/modules/website-builder/models/widget/frontend/component/src/lib/singlepage/content-ai-chat-materials-processing",
+      "reader": "record",
+      "valid": true,
+      "clientBinding": "shared parent reader"
+    },
+    {
+      "module": "website-builder",
+      "model": "widget",
+      "variant": "content-ai-chat-profile-create",
+      "path": "libs/modules/website-builder/models/widget/frontend/component/src/lib/singlepage/content-ai-chat-profile-create",
+      "reader": "record",
+      "valid": true,
+      "clientBinding": "shared parent reader"
+    },
+    {
+      "module": "website-builder",
+      "model": "widget",
+      "variant": "footer-ai-chat",
+      "path": "libs/modules/website-builder/models/widget/frontend/component/src/lib/singlepage/footer-ai-chat",
+      "reader": "record",
+      "valid": true,
+      "clientBinding": "shared parent reader"
+    },
+    {
+      "module": "website-builder",
+      "model": "widget",
+      "variant": "landing-ai-chat",
+      "path": "libs/modules/website-builder/models/widget/frontend/component/src/lib/singlepage/landing-ai-chat",
+      "reader": "record",
+      "valid": true,
+      "clientBinding": "shared parent reader"
+    },
+    {
+      "module": "website-builder",
+      "model": "widget",
+      "variant": "navbar-ai-chat",
+      "path": "libs/modules/website-builder/models/widget/frontend/component/src/lib/singlepage/navbar-ai-chat",
+      "reader": "record",
+      "valid": true,
+      "clientBinding": "shared parent reader"
+    }
+  ]
+}

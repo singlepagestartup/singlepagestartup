@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "ccfada69-093a-44b5-a944-e9ccfd1c3bf2",
+  "createdAt": "2026-10-26T00:11:43.096Z",
+  "updatedAt": "2026-10-27T14:59:55.341Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Readers find the topic they need",
+    "ru": "Читатель находит нужную тему"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Group articles into categories such as preparation, practice and reviews. Readers can move from one publication to related materials.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Соберите статьи в категории: например, подготовка, практика и разборы. Можно перейти от одной публикации к другим материалам по теме.\"}]}]}"
+  },
+  "adminTitle": "Читатель находит нужную тему",
+  "slug": "framework-reviewed-article-blog-introduction-feature-0"
+}

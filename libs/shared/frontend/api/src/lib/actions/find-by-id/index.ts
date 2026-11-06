@@ -1,5 +1,6 @@
 import {
   NextRequestOptions,
+  consistencyRequestOptions,
   responsePipe,
   transformResponseItem,
 } from "@sps/shared-utils";
@@ -47,7 +48,10 @@ export async function action<T>(props: IProps): Promise<IResult<T>> {
 
   const res = await fetch(
     `${host}${route}/${id}?${stringifiedQuery}`,
-    requestOptions,
+    await consistencyRequestOptions(
+      `${host}${route}/${id}?${stringifiedQuery}`,
+      requestOptions,
+    ),
   );
 
   const json = await responsePipe<{ data: IResult<T> }>({

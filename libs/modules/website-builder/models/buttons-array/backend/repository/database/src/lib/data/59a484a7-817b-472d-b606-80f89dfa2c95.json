@@ -1,0 +1,14 @@
+{
+  "id": "59a484a7-817b-472d-b606-80f89dfa2c95",
+  "createdAt": "2026-10-27T08:40:56.138Z",
+  "updatedAt": "2026-10-27T08:40:56.138Z",
+  "variant": "navigation-inline",
+  "className": "",
+  "title": {
+    "en": "demo-settings",
+    "ru": "demo-settings"
+  },
+  "description": {},
+  "adminTitle": "AI Chat: demo-settings",
+  "slug": "ai-chat-editable-demo-settings-actions"
+}

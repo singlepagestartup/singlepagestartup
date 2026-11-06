@@ -1,3 +1,4 @@
+const { readFileSync } = require("node:fs");
 const { Octokit } = require("octokit");
 const sodium = require("libsodium-wrappers");
 
@@ -44,41 +45,29 @@ async function createSecret({
     sodium.base64_variants.ORIGINAL,
   );
 
-  try {
-    const secret = await octokit.request(
-      "PUT /repos/{owner}/{repo}/{secretScope}/secrets/{secret_name}",
-      {
-        owner,
-        repo,
-        secret_name: secretName,
-        key_id: publicKeyId,
-        encrypted_value: encryptedValue,
-        secretScope,
-      },
-    );
+  const secret = await octokit.request(
+    "PUT /repos/{owner}/{repo}/{secretScope}/secrets/{secret_name}",
+    {
+      owner,
+      repo,
+      secret_name: secretName,
+      key_id: publicKeyId,
+      encrypted_value: encryptedValue,
+      secretScope,
+    },
+  );
 
-    console.log(`Successfully created/updated secret: ${secretName}`);
-    return secret;
-  } catch (error) {
-    console.error(
-      `Failed to create/update secret ${secretName}:`,
-      error.message,
-    );
-    if (error.response) {
-      console.error("Response status:", error.response.status);
-      console.error("Response data:", error.response.data);
-    }
-    throw error;
-  }
+  console.log(`Successfully created/updated secret: ${secretName}`);
+  return secret;
 }
 
 (async () => {
-  var args = process.argv.slice(2);
-  const token = args[0];
-  const ownerWithRepository = args[1];
-  const secretName = args[2];
-  const secretContent = args[3];
-  const secretScope = args[4];
+  const input = JSON.parse(readFileSync(0, "utf8"));
+  const token = input.GITHUB_TOKEN;
+  const ownerWithRepository = input.GITHUB_REPOSITORY;
+  const secretName = input.SECRET_NAME;
+  const secretContent = input.SECRET_CONTENT;
+  const secretScope = input.SECRET_SCOPE;
 
   // Initialize sodium library
   await sodium.ready;
@@ -90,4 +79,7 @@ async function createSecret({
     secretContent,
     secretScope,
   });
-})();
+})().catch((error) => {
+  console.error("GitHub request failed", error.status ?? "");
+  process.exitCode = 1;
+});

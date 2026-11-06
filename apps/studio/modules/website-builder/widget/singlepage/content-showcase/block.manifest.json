@@ -1,0 +1,50 @@
+{
+  "$schema": "../../../../../block.schema.json",
+  "id": "website-builder.widget.content-showcase",
+  "title": "content-showcase",
+  "description": "Props-driven widget presentation for content-showcase.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "content-showcase"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "eyebrow",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "items",
+      "type": "list",
+      "required": true
+    }
+  ],
+  "figma": {
+    "componentName": "website-builder.widget",
+    "pageName": "website-builder",
+    "variantName": "content-showcase",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["website-builder", "widget", "content-showcase"]
+}

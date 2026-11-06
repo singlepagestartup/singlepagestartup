@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "2e59f8f2-4a9d-483f-a038-9f87d414f45b",
+  "createdAt": "2026-10-26T00:11:56.687Z",
+  "updatedAt": "2026-10-27T14:59:29.841Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Check the entire journey",
+    "ru": "Проверьте путь целиком"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Open a profile, start a conversation and return to its history. Check access from another account and the mobile display.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Откройте профиль, начните разговор, вернитесь к истории. Проверьте доступ из другого аккаунта и отображение на телефоне.\"}]}]}"
+  },
+  "adminTitle": "Проверьте путь целиком",
+  "slug": "framework-reviewed-article-social-build-feature-3"
+}

@@ -26,6 +26,8 @@ export class Handler {
         );
       }
 
+      await this.service.messages.requireOrdinaryMessage(messageId);
+
       const channelsToMessages = await this.service.channelsToMessages.find({
         params: {
           filters: {

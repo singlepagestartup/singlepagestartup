@@ -1,4 +1,5 @@
 "use client";
+
 import "client-only";
 
 import { IComponentProps } from "./interface";
@@ -9,7 +10,9 @@ import { globalActionsStore } from "@sps/shared-frontend-client-store";
 export default function Client(props: IComponentProps) {
   const processedActions = new Set<string>();
 
-  const { data, isFetching, isLoading, refetch } = api.find(props.apiProps);
+  const { data, isFetching, isLoading, refetch } = api.find(
+    props.apiProps || {},
+  );
 
   useEffect(() => {
     if (props.set && typeof props.set === "function") {

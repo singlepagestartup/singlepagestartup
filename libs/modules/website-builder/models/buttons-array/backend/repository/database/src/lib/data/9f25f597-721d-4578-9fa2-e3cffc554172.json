@@ -1,0 +1,17 @@
+{
+  "id": "9f25f597-721d-4578-9fa2-e3cffc554172",
+  "createdAt": "2026-10-26T00:11:21.726Z",
+  "updatedAt": "2026-10-26T00:11:21.726Z",
+  "variant": "default",
+  "className": "",
+  "title": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "",
+    "ru": ""
+  },
+  "adminTitle": "framework-reviewed-article-rbac-task-actions",
+  "slug": "framework-reviewed-article-rbac-task-actions"
+}

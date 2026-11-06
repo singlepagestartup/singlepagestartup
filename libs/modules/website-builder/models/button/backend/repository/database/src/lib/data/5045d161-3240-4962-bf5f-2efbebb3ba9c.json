@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Read Startup source guide",
+    "ru": "Документация Startup"
+  },
+  "subtitle": {},
+  "url": "https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/modules/startup/README.md",
+  "className": "w-fit",
+  "id": "5045d161-3240-4962-bf5f-2efbebb3ba9c",
+  "createdAt": "2026-10-24T01:06:15.912Z",
+  "updatedAt": "2026-10-24T01:06:15.912Z",
+  "variant": "primary",
+  "adminTitle": "Read Startup source guide",
+  "slug": "framework-journey-guide-startup-actions-1"
+}

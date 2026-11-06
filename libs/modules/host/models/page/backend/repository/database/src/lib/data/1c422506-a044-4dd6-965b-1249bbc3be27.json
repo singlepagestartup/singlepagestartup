@@ -1,0 +1,34 @@
+{
+  "metadata": {
+    "seo": {
+      "description": {
+        "en": "Channels and messages for realtime or queued delivery.",
+        "ru": "Каналы и сообщения для доставки в реальном времени или через очередь."
+      }
+    },
+    "seoDisplay": {
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Channels and messages for realtime or queued delivery.",
+        "ru": "Каналы и сообщения для доставки в реальном времени или через очередь."
+      },
+      "opengraphDescription": {
+        "en": "Channels and messages for realtime or queued delivery.",
+        "ru": "Каналы и сообщения для доставки в реальном времени или через очередь."
+      }
+    }
+  },
+  "id": "1c422506-a044-4dd6-965b-1249bbc3be27",
+  "title": "Broadcast · Code Framework",
+  "url": "/framework/modules/broadcast",
+  "description": "Channels and messages for realtime or queued delivery.",
+  "createdAt": "2026-10-24T01:06:12.136Z",
+  "updatedAt": "2026-10-30T22:25:04.589Z",
+  "variant": "default",
+  "className": "",
+  "language": "en",
+  "adminTitle": "Broadcast · Code Framework"
+}

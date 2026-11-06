@@ -1,3 +1,4 @@
+import { IComponentProps as IHiddenComponentProps } from "@sps/shared-frontend-components/singlepage/hidden/interface";
 import { IComponentProps as IFindComponentProps } from "./find/interface";
 import { IComponentProps as IAdminTableRowComponentProps } from "./admin/table-row/interface";
 import { IComponentProps as IAdminTableComponentProps } from "./admin/table/interface";
@@ -10,6 +11,7 @@ import { IComponentProps as IAdminV2FormComponentProps } from "./admin-v2/form/i
 import { IComponentProps as IDefaultComponentProps } from "./default/interface";
 
 export type IComponentProps =
+  | IHiddenComponentProps
   | IFindComponentProps
   | IAdminTableRowComponentProps
   | IAdminTableComponentProps

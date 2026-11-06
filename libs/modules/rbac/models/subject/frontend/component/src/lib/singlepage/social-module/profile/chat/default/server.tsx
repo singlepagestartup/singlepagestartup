@@ -10,6 +10,7 @@ export default async function Component(props: IComponentProps) {
     id: props.data.id,
     socialModuleProfileId: props.socialModuleProfile.id,
     socialModuleChatId: props.socialModuleChatId,
+    params: { includeParticipants: true },
     options: {
       headers: {
         "Cache-Control": "no-store",

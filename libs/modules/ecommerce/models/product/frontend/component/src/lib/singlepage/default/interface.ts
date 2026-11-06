@@ -22,3 +22,10 @@ export interface IComponentPropsExtended
     typeof variant,
     IComponentProps
   > {}
+
+export interface IProductAttributesProps {
+  showAll?: boolean;
+  isServer: boolean;
+  data: IModel;
+  language: string;
+}

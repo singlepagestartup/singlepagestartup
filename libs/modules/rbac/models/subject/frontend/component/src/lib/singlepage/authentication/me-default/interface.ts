@@ -8,8 +8,16 @@ export const variant = "authentication-me-default" as const;
 
 export interface IComponentProps extends ISpsComponentBase {
   variant: typeof variant;
+  fallback?: import("react").ReactNode;
+  unauthenticatedRedirectHref?: string;
   set?: Dispatch<SetStateAction<IModel | undefined>>;
-  children?: ({ data }: { data: IModel | undefined }) => any;
+  children?: ({
+    data,
+    authenticated,
+  }: {
+    data: IModel | undefined;
+    authenticated: boolean;
+  }) => any;
   apiProps?: {
     params?: {
       [key: string]: any;

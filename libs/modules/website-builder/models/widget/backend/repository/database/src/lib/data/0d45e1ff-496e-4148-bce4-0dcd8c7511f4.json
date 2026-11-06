@@ -1,0 +1,22 @@
+{
+  "title": {
+    "en": "Module structure",
+    "ru": "Устройство модуля"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Subject stores the account; Identity stores sign-in information; Role and Permission store assigned capabilities. Checks for a particular purchase or another person's conversation belong to the respective module. Hiding a button does not replace a server check.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Subject хранит учётную запись; Identity — данные для входа; Role и Permission — назначенные возможности. Проверки конкретной покупки или чужой переписки выполняются в соответствующем модуле. Скрытая кнопка не заменяет проверку на сервере.\"}]}]}"
+  },
+  "anchor": null,
+  "className": "",
+  "id": "0d45e1ff-496e-4148-bce4-0dcd8c7511f4",
+  "createdAt": "2026-10-26T00:11:21.396Z",
+  "updatedAt": "2026-10-27T14:58:47.024Z",
+  "variant": "content-rich",
+  "adminTitle": "Устройство модуля",
+  "slug": "framework-reviewed-article-rbac-technical"
+}

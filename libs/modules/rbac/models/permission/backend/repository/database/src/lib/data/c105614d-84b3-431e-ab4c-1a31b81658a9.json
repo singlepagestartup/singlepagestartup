@@ -1,0 +1,9 @@
+{
+  "id": "c105614d-84b3-431e-ab4c-1a31b81658a9",
+  "createdAt": "2026-10-12T23:25:52.843Z",
+  "updatedAt": "2026-10-12T23:25:52.843Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/rbac/subjects/4b78e87a-02e8-4e89-a225-b756063c49c3/identities"
+}

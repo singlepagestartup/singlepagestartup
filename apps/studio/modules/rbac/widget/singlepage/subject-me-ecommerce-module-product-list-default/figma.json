@@ -1,0 +1,21 @@
+{
+  "componentName": "rbac.widget",
+  "pageName": "rbac",
+  "variantName": "subject-me-ecommerce-module-product-list-default",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "rbac.widget.subject-me-ecommerce-module-product-list-default",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "rbac/widget/singlepage/subject-me-ecommerce-module-product-list-default",
+    "sps.figma.component": "rbac.widget",
+    "sps.figma.variant": "subject-me-ecommerce-module-product-list-default",
+    "sps.source.module": "rbac",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "subject-me-ecommerce-module-product-list-default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/rbac/widget/singlepage/subject-me-ecommerce-module-product-list-default/Component.tsx",
+    "sps.code.story": "apps/studio/modules/rbac/widget/singlepage/subject-me-ecommerce-module-product-list-default/Component.stories.tsx"
+  }
+}

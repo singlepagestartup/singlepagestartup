@@ -6,8 +6,6 @@ seller: Course provider
 pricing: "Fixture price: 40 units per learner."
 capacity: Two scheduled sessions.
 blockers: []
-confirmation:
-  confirmed: false
 segments:
   - id: learners
     name: Individual learners

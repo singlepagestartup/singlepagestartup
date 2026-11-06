@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "5e240f89-80bb-4764-915d-2e7fb09db58d",
+  "createdAt": "2026-10-24T01:06:07.070Z",
+  "updatedAt": "2026-10-24T01:06:07.070Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Agent",
+    "ru": "Agent"
+  },
+  "subtitle": {
+    "en": "Business",
+    "ru": "Бизнес"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Agent definitions, task orchestration and conversation commands.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Определения агентов, оркестрация задач и команды беседы.\"}]}]}"
+  },
+  "adminTitle": "Agent",
+  "slug": "framework-journey-module-agent"
+}

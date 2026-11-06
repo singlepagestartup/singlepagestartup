@@ -6,6 +6,7 @@ get_environment_type $2
 ./create_inventory.sh
 
 . ./get_env.sh
+. ./ansible_vars.sh
 
 DOMAIN=$(get_env "$BASH_SOURCE" "DOMAIN")
 
@@ -30,25 +31,13 @@ fi
 if [ "$1" != "down" ]
 then
     ./domain.sh present $SERVICE_URL $SERVICE_A && \
-    ansible-playbook \
-        ./portainer/create_portainer.yaml \
-        -e "SERVICE_URL=$SERVICE_URL \
-            ENVIRONMENT_TYPE=$ENVIRONMENT_TYPE" && \
-    ansible-playbook \
-        ./portainer/create_portainer_user.yaml \
-        -e "PORTAINER_USERNAME=$PORTAINER_USERNAME \
-            PORTAINER_PASSWORD=$PORTAINER_PASSWORD \
-            SERVICE_URL=$SERVICE_URL \
-            ENVIRONMENT_TYPE=$ENVIRONMENT_TYPE" && \
-    ansible-playbook \
-        ./portainer/add_docker_hub_registry.yaml \
-        -e "PORTAINER_USERNAME=$PORTAINER_USERNAME \
-            PORTAINER_PASSWORD=$PORTAINER_PASSWORD \
-            DOCKER_HUB_PASSWORD=$DOCKER_HUB_PASSWORD \
-            DOCKER_HUB_URL=$DOCKER_HUB_URL \
-            DOCKER_HUB_LOGIN_USERNAME=$DOCKER_HUB_LOGIN_USERNAME \
-            SERVICE_URL=$SERVICE_URL \
-            ENVIRONMENT_TYPE=$ENVIRONMENT_TYPE"
+    ansible_with_vars ./portainer/create_portainer.yaml \
+        SERVICE_URL ENVIRONMENT_TYPE && \
+    ansible_with_vars ./portainer/create_portainer_user.yaml \
+        PORTAINER_USERNAME PORTAINER_PASSWORD SERVICE_URL ENVIRONMENT_TYPE && \
+    ansible_with_vars ./portainer/add_docker_hub_registry.yaml \
+        PORTAINER_USERNAME PORTAINER_PASSWORD DOCKER_HUB_PASSWORD DOCKER_HUB_URL \
+        DOCKER_HUB_LOGIN_USERNAME SERVICE_URL ENVIRONMENT_TYPE
 else
     ansible-playbook \
         ./portainer/delete_portainer.yaml && \

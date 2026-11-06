@@ -1,27 +1,35 @@
 "use client";
+import { memo, useCallback } from "react";
 
 import { IComponentPropsExtended } from "./interface";
 import { api } from "@sps/host/models/metadata/sdk/client";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-v2/table-row/Component";
 
-export function Component(props: IComponentPropsExtended) {
+export const Component = memo(function Component(
+  props: IComponentPropsExtended,
+) {
   const deleteEntity = api.delete();
+  const onDelete = useCallback(() => {
+    if (props.data?.id) deleteEntity.mutate({ id: props.data.id });
+  }, [props.data?.id, deleteEntity.mutate]);
 
   return (
     <ParentComponent
       {...props}
       module="host"
       name="metadata"
-      onDelete={() => {
-        if (props.data?.id) {
-          deleteEntity.mutate({ id: props.data.id });
-        }
-      }}
+      onDelete={onDelete}
     >
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
         <div className="flex flex-col gap-0.5 overflow-hidden">
           <p className="text-xs text-muted-foreground">ID</p>
           <p className="truncate font-mono text-xs">{props.data.id}</p>
+        </div>
+        <div className="flex flex-col gap-0.5 overflow-hidden">
+          <p className="text-xs text-muted-foreground">Title</p>
+          <p className="truncate" title={props.data.title}>
+            {props.data.title}
+          </p>
         </div>
         <div className="flex flex-col gap-0.5 overflow-hidden">
           <p className="text-xs text-muted-foreground">Variant</p>
@@ -30,4 +38,4 @@ export function Component(props: IComponentPropsExtended) {
       </div>
     </ParentComponent>
   );
-}
+});

@@ -1,0 +1,21 @@
+{
+  "className": "",
+  "id": "c046315a-d516-4a19-b7fd-69febf8c60ae",
+  "createdAt": "2026-10-26T00:11:40.277Z",
+  "updatedAt": "2026-10-27T14:59:54.550Z",
+  "variant": "definition-card",
+  "title": {
+    "en": "Course",
+    "ru": "Курс"
+  },
+  "subtitle": {
+    "en": "",
+    "ru": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Photography basics\\n\\nA page for a particular offer.\\n\\nAddress: /courses/photo\\n\\nProgramme and participation terms\\n\\nCourse card and booking\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Основы фотографии\\n\\nСтраница конкретного предложения.\\n\\nАдрес: /courses/photo\\n\\nПрограмма и условия участия\\n\\nКарточка курса и запись\"}]}]}"
+  },
+  "adminTitle": "Курс",
+  "slug": "framework-reviewed-article-host-example-feature-1"
+}
