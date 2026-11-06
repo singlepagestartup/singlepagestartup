@@ -7,6 +7,8 @@
  * OpenRouter is asked, and the owner receives the catalog.
  */
 
+import { OPEN_ROUTER_ASSISTANT_MODEL } from "@sps/shared-utils";
+
 const mockOpenRouterGetModels = jest.fn();
 const mockSubjectsToSocialModuleProfilesFind = jest.fn();
 const mockSocialModuleProfileFindById = jest.fn();
@@ -86,7 +88,7 @@ describe("Given: the OpenRouter model catalog route of a chat", () => {
     jest.clearAllMocks();
     mockOpenRouterGetModels.mockResolvedValue([
       {
-        id: "openai/gpt-basic",
+        id: OPEN_ROUTER_ASSISTANT_MODEL.id,
         name: "GPT Basic",
         description: "",
         architecture: {
@@ -155,7 +157,7 @@ describe("Given: the OpenRouter model catalog route of a chat", () => {
     expect(response.status).toBe(200);
     expect(mockOpenRouterGetModels).toHaveBeenCalledTimes(1);
     expect(body.data.groups[0].models).toEqual([
-      expect.objectContaining({ id: "openai/gpt-basic" }),
+      expect.objectContaining({ id: OPEN_ROUTER_ASSISTANT_MODEL.id }),
     ]);
   });
 });

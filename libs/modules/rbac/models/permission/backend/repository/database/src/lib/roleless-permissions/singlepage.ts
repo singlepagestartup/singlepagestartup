@@ -10,6 +10,24 @@
  * Entries are `METHOD path`, exactly as the permission row stores them.
  */
 export const rolelessPermissions: string[] = [
+  // Widget composition, public author DTOs and editorial article credits.
+  "GET /api/blog/categories-to-website-builder-module-widgets",
+  "GET /api/blog/widgets-to-categories",
+  "GET /api/blog/widgets-to-website-builder-module-widgets",
+  "GET /api/ecommerce/widgets-to-categories",
+  "GET /api/rbac/widgets-to-crm-module-widgets",
+  "GET /api/rbac/widgets-to-crm-module-widgets/[rbac.widgets-to-crm-module-widgets.id]",
+  "GET /api/rbac/widgets-to-ecommerce-module-widgets",
+  "GET /api/rbac/widgets-to-website-builder-module-widgets",
+  "GET /api/rbac/widgets-to-website-builder-module-widgets/[rbac.widgets-to-website-builder-module-widgets.id]",
+  "GET /api/social/widgets-to-website-builder-module-widgets",
+  "GET /api/social/profiles/authors",
+  "GET /api/social/profiles/authors/[social.profiles.id]",
+  "GET /api/social/profiles/authors/count",
+  "GET /api/social/profiles-to-blog-module-articles",
+  // Historical seed entries. The sensitive route policy blocks raw reads even with an empty role list.
+  "GET /api/social/chats",
+  "GET /api/social/profiles-to-file-storage-module-files",
   // Content the host renders for anonymous visitors: the blog, the ecommerce
   // catalog, CRM forms, currencies, social profiles with their links, widgets,
   // and the host, website-builder and file-storage reads the is-authorized

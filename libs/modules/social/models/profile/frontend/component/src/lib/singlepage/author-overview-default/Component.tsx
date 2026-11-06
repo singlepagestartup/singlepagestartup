@@ -8,7 +8,7 @@ import type {
 } from "./interface";
 import { Component as ProfilesToBlogModuleArticles } from "@sps/social/relations/profiles-to-blog-module-articles/frontend/component";
 import { Component as ProfilesToEcommerceModuleProducts } from "@sps/social/relations/profiles-to-ecommerce-module-products/frontend/component";
-import { Component as ProfilesToFileStorageModuleFiles } from "@sps/social/relations/profiles-to-file-storage-module-files/frontend/component";
+import { Component as ProfileAvatar } from "../chat-profile-avatar";
 
 export function Component(props: IComponentPropsExtended) {
   const ru = props.language === "ru";
@@ -43,40 +43,14 @@ export function Component(props: IComponentPropsExtended) {
               .slice(0, 2)
               .map((part) => part[0])
               .join("")}
-            <ProfilesToFileStorageModuleFiles
+            <ProfileAvatar
               isServer={props.isServer}
-              variant="find"
-              skeleton={null}
-              apiProps={{
-                params: {
-                  filters: {
-                    and: [
-                      {
-                        column: "profileId",
-                        method: "eq",
-                        value: props.data.id,
-                      },
-                    ],
-                  },
-                  orderBy: { and: [{ column: "orderIndex", method: "asc" }] },
-                  limit: 1,
-                },
-              }}
-            >
-              {({ data }) =>
-                data?.map((link) => (
-                  <ProfilesToFileStorageModuleFiles
-                    key={link.id}
-                    isServer={props.isServer}
-                    variant="default"
-                    dataSource="props"
-                    data={link}
-                    language={props.language}
-                    className="absolute inset-0 [&_[data-model=file]]:size-full [&_img]:size-full [&_img]:object-cover"
-                  />
-                ))
-              }
-            </ProfilesToFileStorageModuleFiles>
+              variant="chat-profile-avatar"
+              data={props.data}
+              language={props.language}
+              className="absolute inset-0 size-full"
+              fallback={<></>}
+            />
           </span>
           <div className="min-w-0">
             <h1 className="break-words text-2xl font-semibold tracking-tight sm:text-3xl">

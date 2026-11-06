@@ -18,37 +18,19 @@ jest.mock("@sps/social/models/profile/frontend/component", () => ({
   BylineSkeleton: () => <div data-variant="byline-loading" />,
   Component: (props: any) => {
     mockReads(props);
-    return props.variant === "find" ? (
-      props.children({ data: [mockProfile] })
-    ) : (
-      <span data-testid="profile-view" data-source={props.dataSource}>
-        {props.data.title[props.language]}:{props.size}:
-        {String(Boolean(props.inverse))}
+    return (
+      <span data-testid="profile-view">
+        {props.profileId}:{props.size}:{String(Boolean(props.inverse))}
       </span>
     );
   },
 }));
-jest.mock(
-  "@sps/social/relations/profiles-to-file-storage-module-files/frontend/component",
-  () => ({
-    Component: (props: any) => {
-      mockReads(props);
-      return props.variant === "find" ? (
-        props.children({
-          data: [
-            {
-              id: "avatar-link",
-              profileId: mockProfile.id,
-              fileStorageModuleFileId: "avatar-file",
-            },
-          ],
-        })
-      ) : (
-        <img src="/stored-avatar.png" alt="Stored avatar" />
-      );
-    },
-  }),
-);
+jest.mock("../chat-profile-avatar", () => ({
+  Component: (props: any) => {
+    mockReads(props);
+    return <img src="/stored-avatar.png" alt="Stored avatar" />;
+  },
+}));
 beforeEach(() => jest.clearAllMocks());
 afterEach(() => jest.restoreAllMocks());
 it.each([true, false])(
@@ -72,13 +54,8 @@ it.each([true, false])(
     expect(screen.getByText("Stored role")).toBeVisible();
     const query = mockReads.mock.calls[0][0];
     expect(query.isServer).toBe(isServer);
-    expect(query.apiProps.params.filters.and).toEqual([
-      { column: "profileId", method: "eq", value: "profile-a" },
-    ]);
-    expect(query.apiProps.params.orderBy.and).toEqual([
-      { column: "orderIndex", method: "asc" },
-    ]);
-    expect(query.apiProps.params.limit).toBe(1);
+    expect(query.variant).toBe("chat-profile-avatar");
+    expect(query.data.id).toBe("profile-a");
     expect(screen.getByText("Редакция SPS")).toHaveClass(
       "text-default-foreground",
     );
@@ -130,7 +107,7 @@ it.each([
   },
 );
 it.each([true, false])(
-  "author association loads only its actual linked Profile and uses props mode for the byline in runtime %s",
+  "author association passes only the linked profile ID to the public author byline in runtime %s",
   (isServer) => {
     render(
       <AuthorRelation
@@ -147,16 +124,13 @@ it.each([true, false])(
         size="xs"
       />,
     );
-    expect(mockReads.mock.calls[0][0].apiProps.params.filters.and).toEqual([
-      { column: "id", method: "eq", value: "profile-a" },
-    ]);
-    expect(mockReads.mock.calls[0][0].isServer).toBe(isServer);
-    expect(screen.getByTestId("profile-view")).toHaveAttribute(
-      "data-source",
-      "props",
-    );
+    expect(mockReads.mock.calls[0][0]).toMatchObject({
+      variant: "author-byline-default",
+      profileId: "profile-a",
+      isServer,
+    });
     expect(screen.getByTestId("profile-view")).toHaveTextContent(
-      "Редакция SPS:xs:false",
+      "profile-a:xs:false",
     );
   },
 );

@@ -1,4 +1,8 @@
-import { RBAC_JWT_SECRET, createMemoryCache } from "@sps/shared-utils";
+import {
+  RBAC_JWT_SECRET,
+  createMemoryCache,
+  isExactResourceGrant,
+} from "@sps/shared-utils";
 import { Service as PermissionService } from "@sps/rbac/models/permission/backend/app/api/src/lib/service";
 import { rolelessPermissions } from "@sps/rbac/models/permission/backend/repository/database";
 import { Service as RolesToPermissionsService } from "@sps/rbac/relations/roles-to-permissions/backend/app/api/src/lib/service";
@@ -109,6 +113,13 @@ export class Service {
 
     return permissions
       .filter((permission) => !permissionIdsWithRole.has(permission.id))
+      .filter(
+        (permission) =>
+          !(
+            permission.method === "GET" &&
+            isExactResourceGrant("/api/social/chats", permission.path)
+          ),
+      )
       .map((permission) => `${permission.method} ${permission.path}`)
       .filter((permission) => !listedRolelessPermissions.has(permission))
       .sort();
@@ -257,6 +268,7 @@ export class Service {
         authorized = !(await this.permissionService.isSensitiveRoute(
           props.permission.route,
           props.permission.method,
+          permission.path,
         ));
       }
 

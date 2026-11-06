@@ -7,8 +7,8 @@ const mockRead = jest.fn((_props: any) => ({
   data: undefined,
   isLoading: true,
 }));
-jest.mock("client-only", () => ({}), { virtual: true });
-jest.mock("server-only", () => ({}), { virtual: true });
+jest.mock("client-only", () => ({}));
+jest.mock("server-only", () => ({}));
 jest.mock("@paralleldrive/cuid2", () => ({ createId: () => "byline-test" }));
 jest.mock("@sps/social/models/profile/sdk/client", () => ({
   Provider: ({ children }: any) => <>{children}</>,

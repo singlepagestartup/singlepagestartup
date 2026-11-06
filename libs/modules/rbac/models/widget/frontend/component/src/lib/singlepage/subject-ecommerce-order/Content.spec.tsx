@@ -63,10 +63,7 @@ function renderWidget() {
   return render(
     <Component
       isServer={false}
-      variant="subject-ecommerce-order"
       language="en"
-      url="/orders"
-      data={{ id: "widget-1" } as any}
     />,
   );
 }
