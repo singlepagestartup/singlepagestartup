@@ -2,7 +2,6 @@ import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
 import {
   IRouteRule,
-  NEXT_PUBLIC_HOST_SERVICE_URL,
   RBAC_PRIVILEGED_CONTEXT_KEY,
   RBAC_SECRET_KEY,
   RouteMatcher,
@@ -46,16 +45,6 @@ export class Middleware {
       const authorization =
         c.req.header("Authorization")?.replace("Bearer ", "") ||
         getCookie(c, "rbac.subject.jwt");
-
-      const origin = c.req.header("Host");
-      const allowedOrigins = new Set([
-        "http://localhost:3000",
-        NEXT_PUBLIC_HOST_SERVICE_URL,
-      ]);
-
-      if (origin && allowedOrigins.has(origin)) {
-        c.res.headers["Access-Control-Allow-Origin"] = origin;
-      }
 
       if (secretKey && secretKey === RBAC_SECRET_KEY) {
         /**

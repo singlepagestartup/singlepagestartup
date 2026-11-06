@@ -48,3 +48,4 @@ export {
   runWithRequestDiagnostics,
   currentRequestDiagnostics,
 } from "./request-diagnostics";
+export { resolveCorsOrigin } from "./cors-origin";

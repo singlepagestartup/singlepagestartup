@@ -15,7 +15,7 @@ import {
   controllerGuardedRoutes,
 } from "@sps/middlewares";
 import { MIDDLEWARE_HTTP_CACHE } from "@sps/shared-utils";
-import { getFileContentHeaders } from "@sps/backend-utils";
+import { getFileContentHeaders, resolveCorsOrigin } from "@sps/backend-utils";
 import { app as agentApp } from "@sps/agent/backend/app/api";
 import { app as analyticApp } from "@sps/analytic/backend/app/api";
 import { app as hostApp } from "@sps/host/backend/app/api";
@@ -63,13 +63,7 @@ const httpCacheMiddleware = new HTTPCacheMiddleware({
 
 app.use(
   cors({
-    origin: (origin) => {
-      if (!origin) {
-        return null;
-      }
-
-      return origin;
-    },
+    origin: resolveCorsOrigin,
     allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowHeaders: [
       "X-CSRF-Token",

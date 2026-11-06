@@ -26,3 +26,14 @@ export const API_ERROR_DETAILS: "full" | "brief" =
     ["development", "test"].includes(process.env["NODE_ENV"] ?? ""))
     ? "full"
     : "brief";
+
+/**
+ * Browser origins the API, Telegram and OpenAPI apps accept for credentialed
+ * cross-origin requests: a comma-separated list such as
+ * `https://example.com,https://admin.example.com`, each entry written the way
+ * a browser sends `Origin` (scheme, host and port, no path). Empty, the
+ * default, echoes every origin, which local development and tunnels rely on.
+ * Read by `resolveCorsOrigin` in `@sps/backend-utils`.
+ */
+export const API_CORS_ALLOWED_ORIGINS =
+  process.env["API_CORS_ALLOWED_ORIGINS"] || "";
