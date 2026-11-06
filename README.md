@@ -72,6 +72,8 @@ Complete OAuth login in the chosen client after generation; see [project client 
 for OpenCode V1/V2 formats and login commands. The following CLI commands are
 also available for manual registration.
 
+Connector tokens carry the OAuth scope `mcp:content`, which reads, creates and updates content. Deleting needs `mcp:content:delete`: the authorization page first names the connecting application, its client id and the address it returns to, and offers "Also allow deleting records" when the client asks for the delete scope. Without that approval, the `*-delete-apply` tools answer a permission error. Codex asks for it with `--scopes "mcp:content mcp:content:delete"`. The scope list and the connector limits are in `apps/mcp/README.md`.
+
 For Codex Desktop/CLI, register the remote MCP explicitly:
 
 ```bash
@@ -238,7 +240,7 @@ For MCP Inspector, use `Streamable HTTP` with the same URL and put auth under `C
 
 For a remote server, run the MCP HTTP process on the application server behind HTTPS and make the API service URL reachable from that process. Production connector auth is OAuth/Bearer by default.
 
-Do not store JWTs or `RBAC_SECRET_KEY` in repository files. Static `X-RBAC-SECRET-KEY` is a local/private debugging fallback only when `MCP_SERVICE_ALLOW_RBAC_SECRET_FALLBACK=true`.
+Do not store JWTs or `RBAC_SECRET_KEY` in repository files. Static `X-RBAC-SECRET-KEY` is a local/private debugging fallback only when `MCP_SERVICE_ALLOW_RBAC_SECRET_FALLBACK=true`. The deployed MCP environment never contains `RBAC_SECRET_KEY`; a server that enables the fallback gets the secret added to its MCP env by hand, and without it the fallback refuses every header.
 
 The legacy Inspector command starts the MCP server through stdio:
 
