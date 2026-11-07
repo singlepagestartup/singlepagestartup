@@ -4,6 +4,7 @@ import { createBunWebSocket } from "hono/bun";
 import { app, startConsistency } from "./app";
 import { assertApplicationDatabaseRole } from "@sps/shared-backend-database-config";
 import {
+  API_MAX_REQUEST_BODY_BYTES,
   API_SECRET_STRENGTH,
   API_SERVICE_PORT,
   assessSecrets,
@@ -47,4 +48,5 @@ serve({
   port: API_SERVICE_PORT,
   websocket,
   idleTimeout: 0,
+  maxRequestBodySize: API_MAX_REQUEST_BODY_BYTES,
 });

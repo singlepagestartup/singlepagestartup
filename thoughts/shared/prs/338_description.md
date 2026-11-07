@@ -27,6 +27,30 @@ With this change a registration expires unless it is used, redirect targets must
 - Docs: `README.md`, `AI_GUIDE.md` section 6, `apps/mcp/README.md` (scopes and consent, limits, deployment), `apps/mcp/USAGE.md` (delete needs the scope), `tools/deployer/README.md` (MCP and Telegram strength knobs, rotation table).
 - Specs: `oauth.spec.ts` (TTL, redirect rule, consent, cancel, approved scope, error page, 413), `operations.spec.ts` (scope enforcement), `content-management.spec.ts` (scope wiring), and new `request-body.spec.ts`, `session-store.spec.ts`, `auth-context.spec.ts`; `secret-strength/index.spec.ts` covers the service lists.
 
+## Review after updating from main (2026-11-08)
+
+The branch includes main at `3cb105c225`, including #334 request bounds and #335
+outbound URL protection. The merge conflict in `.github/workflows/ansible.yml`
+was resolved by retaining both sets of API/outbound and MCP settings in preview
+and production. No setting was dropped.
+
+Current checks: 94 MCP tests, 45 Telegram tests, 123 shared-utils tests, MCP
+TypeScript, shell syntax and workflow YAML validation pass. An isolated MCP
+HTTP process also starts with strong synthetic secrets and an in-memory store:
+metadata, registration, redirect refusal, the OAuth body limit and rejection of
+unauthenticated MCP calls pass. The process and its registrations were removed.
+
+**Review blocker:** `apps/mcp/lib/auth-context.ts` checks the initial request
+origin but leaves automatic redirects enabled. A loopback test using two origins
+and a synthetic operator credential confirmed that an API redirect forwards
+`X-RBAC-SECRET-KEY` to the second origin. This requires an API redirect; it is not
+proof of an attacker-controlled redirect in this project. Before merge, credential
+forwarding must also constrain redirects, with a regression test for that case.
+The normal unit suites currently mock fetch and do not cover this behavior.
+
+The previous verification below records the original implementation review;
+it does not replace the current checks or clear this blocker.
+
 ## Verification
 
 - [x] `npx nx run mcp:jest:test` — 12 suites, 91 tests (before: 9 suites, 54 tests).
@@ -54,7 +78,7 @@ With this change a registration expires unless it is used, redirect targets must
 - The session idle default is 24 hours so a client left idle overnight keeps its session; the maximum count bounds memory (about 143 KiB of heap per session, measured).
 - The template `tools/deployer/mcp/mcp.env.j2` already rendered `RBAC_SECRET_KEY` only when the fallback flag was `'true'`; the unconditional hand-over was in `mcp.sh`. Enabling the fallback on a server now needs the secret added to the MCP env by hand.
 - The internal exchange keeps the delete scope because the profile agent deletes through the tools' preview and confirmation flow; limiting the agent is a separate product decision.
-- Found during the proof and left unchanged: the local `sps-lite-redis-1` container runs with the password in `apps/redis/.env`, which differs from `KV_PASSWORD` in `apps/api/.env`, and `apps/mcp/.env` holds older secrets than `apps/api/.env`.
+- The original proof used process variables to compensate for local API/MCP credential drift. Compare the current deployment settings before running a full OAuth login against the API; the current isolated smoke check uses synthetic credentials.
 - The branch carries the research, plan, process and progress records under `thoughts/shared/`.
 
 ## Downstream migration

@@ -79,3 +79,20 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - `apps/mcp/http.ts` starts a server on import, so logic that needs a spec has to live in `apps/mcp/lib`.
 - In zsh, quote URLs that carry `?` in shell loops; an unquoted one is a glob and the command never runs.
 - The session store refreshes a session when it is looked up, before the body is read, so an HTTP proof of least-recently-used eviction has to control which session each request touches.
+
+## Main synchronization and review — 2026-11-08
+
+- Integrated main `3cb105c225` after #335. The only textual conflict was in
+  `.github/workflows/ansible.yml`; preserve all four MCP settings and the
+  API request/outbound settings in both preview and production mappings.
+- Current checks: MCP 94, Telegram 45, shared-utils 123; MCP TypeScript and
+  workflow YAML/shell syntax pass. An isolated actual MCP HTTP process with
+  synthetic secrets verifies discovery, registration, forbidden redirect URIs,
+  oversized OAuth bodies and unauthenticated request rejection.
+- Review blocker: auth-context checks only the initial fetch origin. Two
+  temporary loopback servers and a synthetic operator header reproduce that
+  a 302 from the configured API forwards X-RBAC-SECRET-KEY to another origin.
+  This is conditional on an API redirect; no attacker-controlled API redirect
+  was established. The current fetch mocks do not exercise redirects.
+  Constrain credential-bearing redirects before merging this PR.
+- No production configuration, credentials or data were changed.

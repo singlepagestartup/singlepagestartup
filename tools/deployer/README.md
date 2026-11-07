@@ -338,7 +338,7 @@ secrets end every session, so plan the window.
 | `DATABASE_PASSWORD`                          | update the deployer and GitHub values, pause writers and run `./postgres.sh migrate-role` as in the procedure below, then deploy the API and restore its replica count             | the API cannot open new connections between the script and its redeploy                                                                              |
 | `REDIS_PASSWORD`                             | follow the coordinated procedure above: update the secret, deploy Redis, API and MCP as one rollout, then force-update `api_api` and `mcp_mcp`                                     | cache and KV unavailable for the window                                                                                                              |
 | `RBAC_JWT_SECRET`                            | rotate in `tools/deployer/.env` and in the GitHub secrets, then deploy API, Telegram and MCP together                                                                              | every access and refresh token is invalidated. It also rotates the MCP OAuth signing key, because the MCP template falls back to this value          |
-| `RBAC_SECRET_KEY`                            | rotate in `tools/deployer/.env` and in the GitHub secrets, then deploy API and Telegram                                                                                       | this is the full authorization bypass. The middleware also accepts it from an `rbac.secret-key` cookie, so any browser that received it holds a copy |
+| `RBAC_SECRET_KEY`                            | rotate in `tools/deployer/.env` and in the GitHub secrets, then deploy API and Telegram                                                                                            | this is the full authorization bypass. The middleware also accepts it from an `rbac.secret-key` cookie, so any browser that received it holds a copy |
 | `MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET` | rotate and deploy API and MCP together                                                                                                                                             | the API-to-MCP exchange fails until both sides match                                                                                                 |
 | `HOST_SERVICE_REVALIDATION_SECRET`           | rotate in `tools/deployer/.env` and in the GitHub secrets, then deploy API and host together                                                                                       | the Host rejects invalidation until both sides match and the outbox retries pending batches                                                          |
 | `RBAC_COOKIE_SESSION_SECRET`                 | rotate for hygiene                                                                                                                                                                 | no runtime effect: nothing reads it today                                                                                                            |
@@ -757,9 +757,8 @@ FILE_STORAGE_MAX_UPLOAD_BYTES=52428800
 `github_deployer.sh` syncs the value to `FILE_STORAGE_MAX_UPLOAD_BYTES` for
 production and `PREVIEW_FILE_STORAGE_MAX_UPLOAD_BYTES` for preview. The
 Ansible workflow reads the corresponding secret and `api.sh` writes the
-limit into the server API environment. Bun refuses request bodies
-above 128 MiB, so a larger value also needs `maxRequestBodySize` raised in
-`apps/api/server.ts`.
+limit into the server API environment. Set `API_MAX_REQUEST_BODY_BYTES`
+(128 MiB by default) above the largest upload, allowing for multipart overhead.
 
 ## Let's Encrypt certificates
 
