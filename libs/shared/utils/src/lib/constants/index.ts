@@ -73,3 +73,9 @@ export * from "./agent";
 
 export const HOST_SERVICE_REVALIDATION_SECRET_HEADER =
   "X-HOST-REVALIDATION-SECRET";
+/**
+ * Algorithm of the RBAC subject JWT. `sign()` from `hono/jwt` issues every
+ * token with its default, HS256; `verify()` requires the expected algorithm
+ * and rejects a token whose header names another one.
+ */
+export const RBAC_JWT_ALGORITHM = "HS256";

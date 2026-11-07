@@ -37,6 +37,10 @@ export class Handler {
         throw new Error("Validation error. Invalid provider");
       }
 
+      if (!provider) {
+        throw new Error("Validation error. No provider provided");
+      }
+
       if (typeof body["data"] !== "string") {
         throw new Error("Validation error. Invalid data");
       }

@@ -12,7 +12,7 @@
     "@grammyjs/conversations": "1.2.0",
     "@grammyjs/types": "3.19.0",
     "@hookform/resolvers": "3.10.0",
-    "@modelcontextprotocol/sdk": "1.18.1",
+    "@modelcontextprotocol/sdk": "1.26.0",
     "@next/bundle-analyzer": "16.4.3",
     "@next/third-parties": "16.4.3",
     "@paralleldrive/cuid2": "2.2.2",
@@ -104,7 +104,7 @@
     "uuid": "9.0.1",
     "viem": "2.23.10",
     "wagmi": "2.14.13",
-    "zod": "3.24.2",
+    "zod": "3.25.76",
     "zustand": "5.0.3"
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"

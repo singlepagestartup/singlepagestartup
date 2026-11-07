@@ -1,0 +1,37 @@
+# Weekly version updates. Security updates are enabled in the repository
+# settings and keep opening one pull request per vulnerable dependency: the
+# group below applies to version updates only.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directories:
+      - "/"
+      - "/apps/host"
+    schedule:
+      interval: "weekly"
+    groups:
+      npm-minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
+  - package-ecosystem: "pip"
+    directory: "/apps/llm"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "docker"
+    directories:
+      - "/"
+      - "/.devcontainer"
+      - "/apps/db"
+      - "/apps/llm"
+      - "/apps/redis"
+      - "/tools/deployer/icp"
+    schedule:
+      interval: "weekly"

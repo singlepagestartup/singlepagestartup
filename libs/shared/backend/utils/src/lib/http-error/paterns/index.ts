@@ -18,6 +18,7 @@ export const httpErrorPatterns: ErrorPatternEntry[] = [
       /signature mismatched/i,
       /invalid signature/i,
       /jwt malformed/i,
+      /jwt algorithm mismatch/i,
     ],
   },
   {

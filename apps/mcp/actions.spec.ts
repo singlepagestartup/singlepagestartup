@@ -74,7 +74,7 @@ describe("MCP project guidance delivery", () => {
         uri: PROJECT_GUIDE_RESOURCE_URI,
       });
       const projectGuidePayload = JSON.parse(
-        projectGuideResource.contents[0].text as string,
+        (projectGuideResource.contents[0] as { text: string }).text,
       );
 
       expect(projectGuidePayload.data).toEqual(

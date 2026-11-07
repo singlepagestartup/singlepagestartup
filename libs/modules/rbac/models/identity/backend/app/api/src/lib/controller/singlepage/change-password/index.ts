@@ -26,6 +26,10 @@ export class Handler {
         throw new Error("Validation error. Invalid id");
       }
 
+      if (!uuid) {
+        throw new Error("Validation error. No uuid provided");
+      }
+
       const entity = await this.service.changePassword({
         id: uuid,
         data,
