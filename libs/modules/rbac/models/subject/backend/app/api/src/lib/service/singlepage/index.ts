@@ -57,7 +57,11 @@ import { Service as RoleRevocation } from "./ecommerce/order/role-revocation";
 import type { IArticleCreateInput } from "@sps/rbac/models/subject/sdk/model/src/lib/blog-article-create";
 import type { Service as SubjectsToBlogModuleArticlesService } from "@sps/rbac/relations/subjects-to-blog-module-articles/backend/app/api/src/lib/service";
 import { Table } from "@sps/rbac/models/subject/backend/repository/database";
-import { Service as Logout } from "./logout";
+import {
+  Service as Logout,
+  IExecuteProps as ILogoutExecuteProps,
+} from "./logout";
+import { Service as Me, IExecuteProps as IMeExecuteProps } from "./me";
 import {
   Service as Refresh,
   IExecuteProps as IRefreshExecuteProps,
@@ -439,8 +443,19 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     );
   }
 
-  async logout(): Promise<any> {
-    return new Logout(this.repository).execute();
+  async logout(props: ILogoutExecuteProps) {
+    return new Logout({
+      me: (meProps) => this.me(meProps),
+      update: ({ id, data }) => this.update({ id, data }),
+      invalidateSubjectRevocationCache: (subjectId) =>
+        this.isAuthorizedService.invalidateSubjectRevocationCache(subjectId),
+    }).execute(props);
+  }
+
+  async me(props: IMeExecuteProps) {
+    return new Me({
+      findById: ({ id }) => this.findById({ id }),
+    }).execute(props);
   }
 
   async recordActivity(props: IRecordActivityExecuteProps) {
@@ -451,7 +466,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
   async init(props: IInitExecuteProps) {
     return new Init({
-      findById: ({ id }) => this.findById({ id }),
+      me: (meProps) => this.me(meProps),
       recordActivity: (recordActivityProps) =>
         this.recordActivity(recordActivityProps),
     }).execute(props);

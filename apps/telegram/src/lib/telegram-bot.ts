@@ -30,8 +30,7 @@ import { IModel as IBillingModuleInvoice } from "@sps/billing/models/invoice/sdk
 import { api as billingModulePaymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
 import { api as ecommerceModuleOrdersToBillingModulePaymentIntentsApi } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/server";
 import { api as ecommerceModuleOrderApi } from "@sps/ecommerce/models/order/sdk/server";
-import { blobifyFiles } from "@sps/backend-utils";
-import * as jwt from "hono/jwt";
+import { blobifyFiles, signJwt } from "@sps/backend-utils";
 import {
   extractTelegramAudioMessageData,
   extractTelegramVoiceMessageData,
@@ -431,11 +430,11 @@ export class TelegarmBot {
       );
     }
 
-    return jwt.sign(
+    return signJwt(
       {
-        exp: Math.floor(Date.now() / 1000) + RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
-        iat: Math.floor(Date.now() / 1000),
-        subject: props.rbacModuleSubject,
+        subjectId: props.rbacModuleSubject.id,
+        type: "access",
+        lifetimeInSeconds: RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
       },
       RBAC_JWT_SECRET,
     );
@@ -921,13 +920,11 @@ export class TelegarmBot {
 
           console.log("🚀 ~ init ~ rbacModuleSubject:", rbacModuleSubject);
 
-          const jwtToken = await jwt.sign(
+          const jwtToken = await signJwt(
             {
-              exp:
-                Math.floor(Date.now() / 1000) +
-                RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
-              iat: Math.floor(Date.now() / 1000),
-              subject: rbacModuleSubject,
+              subjectId: rbacModuleSubject.id,
+              type: "access",
+              lifetimeInSeconds: RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
             },
             RBAC_JWT_SECRET,
           );

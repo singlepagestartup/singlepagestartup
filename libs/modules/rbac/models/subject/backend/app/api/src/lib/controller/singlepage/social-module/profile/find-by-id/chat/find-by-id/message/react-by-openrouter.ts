@@ -35,6 +35,7 @@ import {
   parseRbacAiReactionRequestMetadata,
 } from "@sps/rbac/models/subject/sdk/model";
 import {
+  signJwt,
   blobifyFiles,
   assertKnowledgeAttachmentBytes,
   getHttpErrorType,
@@ -76,7 +77,6 @@ import { Service as ProfileSkills } from "@sps/rbac/models/subject/backend/app/a
 import { KnowledgeSearchResult } from "@sps/knowledge/backend/app/api/src/lib/types";
 
 import { fingerprintAiContextMessage } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/social-module/profile/ai/context/utils";
-import * as jwt from "hono/jwt";
 import { createHash } from "node:crypto";
 import { basename, extname } from "node:path";
 
@@ -1051,12 +1051,11 @@ export class Handler {
         replyBySocialModuleProfile.id,
       );
 
-      const replyByRbacSubjectAuthenticationJwt = await jwt.sign(
+      const replyByRbacSubjectAuthenticationJwt = await signJwt(
         {
-          exp:
-            Math.floor(Date.now() / 1000) + RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
-          iat: Math.floor(Date.now() / 1000),
-          subject: replyByRbacSubject,
+          subjectId: replyByRbacSubject.id,
+          type: "access",
+          lifetimeInSeconds: RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
         },
         RBAC_JWT_SECRET,
       );

@@ -39,8 +39,7 @@ import {
   IModel as IFileStorageModuleFile,
 } from "@sps/file-storage/models/file/sdk/model";
 import { api as notificationNotificationApi } from "@sps/notification/models/notification/sdk/server";
-import * as jwt from "hono/jwt";
-import { blobifyFiles, logger } from "@sps/backend-utils";
+import { blobifyFiles, logger, signJwt } from "@sps/backend-utils";
 import {
   AgentDI,
   type IBillingModule,
@@ -565,11 +564,11 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       return;
     }
 
-    const jwtToken = await jwt.sign(
+    const jwtToken = await signJwt(
       {
-        exp: Math.floor(Date.now() / 1000) + RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
-        iat: Math.floor(Date.now() / 1000),
-        subject: rbacModuleSubject,
+        subjectId: rbacModuleSubject.id,
+        type: "access",
+        lifetimeInSeconds: RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
       },
       RBAC_JWT_SECRET,
     );
@@ -751,11 +750,11 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       );
     }
 
-    return jwt.sign(
+    return signJwt(
       {
-        exp: Math.floor(Date.now() / 1000) + RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
-        iat: Math.floor(Date.now() / 1000),
-        subject: props.rbacModuleSubject,
+        subjectId: props.rbacModuleSubject.id,
+        type: "access",
+        lifetimeInSeconds: RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
       },
       RBAC_JWT_SECRET,
     );
@@ -2436,12 +2435,11 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         throw new Error("Configuration error. 'RBAC_JWT_SECRET' not setted.");
       }
 
-      const messageFromRbacModuleSubjectJwt = await jwt.sign(
+      const messageFromRbacModuleSubjectJwt = await signJwt(
         {
-          exp:
-            Math.floor(Date.now() / 1000) + RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
-          iat: Math.floor(Date.now() / 1000),
-          subject: messageFromRbacModuleSubject,
+          subjectId: messageFromRbacModuleSubject.id,
+          type: "access",
+          lifetimeInSeconds: RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
         },
         RBAC_JWT_SECRET,
       );
