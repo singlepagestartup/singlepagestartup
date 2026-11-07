@@ -4,10 +4,9 @@
  * Given: a URL from a request or from stored data, with DNS answers and the
  *        network stubbed.
  * When: the URL is checked or fetched.
- * Then: only http and https URLs without credentials pass, and only when their
- *       origin is a service or listed origin or their host resolves to public
- *       addresses only; every redirect hop is checked again, and the exchange
- *       is bounded in time and size.
+ * Then: only http and https URLs without credentials pass. Destinations must
+ *       resolve publicly or have an explicit internal-access exception;
+ *       every redirect is checked, and the exchange is bounded in time/size.
  */
 
 const mockDefaultSettings = {
@@ -20,6 +19,13 @@ const mockDefaultSettings = {
   OUTBOUND_URL_MAX_RESPONSE_BYTES: 1024,
 };
 const mockSettings = { ...mockDefaultSettings };
+
+jest.mock("./transport", () => ({
+  requestOutboundUrl: jest.fn(async (target, init, signal) => ({
+    response: await fetch(target.url, { ...init, signal }),
+    close: async () => undefined,
+  })),
+}));
 
 jest.mock("@sps/shared-utils", () => ({
   get API_SERVICE_URL() {
@@ -50,6 +56,7 @@ jest.mock("node:dns/promises", () => ({
 }));
 
 import { lookup } from "node:dns/promises";
+import { requestOutboundUrl } from "./transport";
 import {
   assertOutboundUrl,
   fetchOutboundUrl,
@@ -62,6 +69,7 @@ const NON_PUBLIC_MESSAGE =
 
 const mockLookup = lookup as unknown as jest.Mock;
 const originalFetch = globalThis.fetch;
+
 let mockFetch: jest.Mock;
 
 function resolvesTo(...addresses: string[]) {
@@ -361,7 +369,9 @@ describe("Given: a URL on one of the deployment's own origins", () => {
   ])("accepts a URL under %s", async (_setting, url) => {
     resolvesTo("10.0.1.7");
 
-    const target = await assertOutboundUrl(url);
+    const target = await assertOutboundUrl(url, undefined, {
+      allowServiceOrigins: true,
+    });
 
     expect(target.url.href).toBe(url);
     expect(target.address).toBeUndefined();
@@ -380,6 +390,8 @@ describe("Given: a URL on one of the deployment's own origins", () => {
 
     const target = await assertOutboundUrl(
       "http://localhost:4000/api/ecommerce/orders/1/check",
+      undefined,
+      { allowServiceOrigins: true },
     );
 
     expect(target.address).toBeUndefined();
@@ -443,10 +455,11 @@ describe("Given: fetchOutboundUrl requests a URL that passed the check", () => {
 
     await expect(response.text()).resolves.toBe("image-bytes");
     expect(requestAt(0).url).toBe(
-      `http://${PUBLIC_ADDRESS}:8080/cat.png?size=large`,
+      "http://images.example.com:8080/cat.png?size=large",
     );
-    expect(headersAt(0).get("host")).toBe("images.example.com:8080");
-    expect(requestAt(0).init.redirect).toBe("manual");
+    expect((requestOutboundUrl as jest.Mock).mock.calls.at(-1)[0].address).toBe(
+      PUBLIC_ADDRESS,
+    );
   });
 
   /**
@@ -454,17 +467,18 @@ describe("Given: fetchOutboundUrl requests a URL that passed the check", () => {
    *
    * Given: an https URL whose host resolves to a public address.
    * When: the URL is fetched.
-   * Then: the request keeps the host name, so certificate verification
-   *       applies to it.
+   * Then: the connection uses that IP while TLS checks the original name.
    */
-  it("sends HTTPS by name", async () => {
+  it("pins HTTPS while preserving TLS hostname verification", async () => {
     resolvesTo(PUBLIC_ADDRESS);
     mockFetch.mockResolvedValue(new Response("image-bytes"));
 
     await fetchOutboundUrl("https://images.example.com/cat.png");
 
     expect(requestAt(0).url).toBe("https://images.example.com/cat.png");
-    expect(headersAt(0).get("host")).toBeNull();
+    expect((requestOutboundUrl as jest.Mock).mock.calls.at(-1)[0].address).toBe(
+      PUBLIC_ADDRESS,
+    );
   });
 
   /**
@@ -491,14 +505,17 @@ describe("Given: fetchOutboundUrl requests a URL that passed the check", () => {
   it("sends a request to an allowed origin by name", async () => {
     mockFetch.mockResolvedValue(new Response("png"));
 
-    await fetchOutboundUrl("http://host:3000/api/image-generator/image.png", {
-      headers: { "X-RBAC-SECRET-KEY": "operator-secret" },
-    });
+    await fetchOutboundUrl(
+      "http://host:3000/api/image-generator/image.png",
+      {
+        headers: { "X-RBAC-SECRET-KEY": "operator-secret" },
+      },
+      { allowServiceOrigins: true },
+    );
 
     expect(requestAt(0).url).toBe(
       "http://host:3000/api/image-generator/image.png",
     );
-    expect(headersAt(0).get("host")).toBeNull();
     expect(headersAt(0).get("x-rbac-secret-key")).toBe("operator-secret");
   });
 });
@@ -578,8 +595,7 @@ describe("Given: the checked URL answers with a redirect", () => {
 
     await fetchOutboundUrl("http://images.example.com/cat");
 
-    expect(requestAt(1).url).toBe(`http://${PUBLIC_ADDRESS}/images/cat.png`);
-    expect(headersAt(1).get("host")).toBe("images.example.com");
+    expect(requestAt(1).url).toBe("http://images.example.com/images/cat.png");
   });
 
   /**
@@ -634,8 +650,7 @@ describe("Given: the checked URL answers with a redirect", () => {
    * Given: a request with the operator secret, an Authorization header, a
    *        cookie and a tracing header, redirected to another origin.
    * When: the redirect is followed.
-   * Then: the three credential headers are dropped and the tracing header is
-   *       kept.
+   * Then: the custom headers, including tracing headers, are dropped.
    */
   it("drops credential headers on a redirect to another origin", async () => {
     resolvesTo(PUBLIC_ADDRESS);
@@ -655,7 +670,7 @@ describe("Given: the checked URL answers with a redirect", () => {
     expect(headersAt(1).get("x-rbac-secret-key")).toBeNull();
     expect(headersAt(1).get("authorization")).toBeNull();
     expect(headersAt(1).get("cookie")).toBeNull();
-    expect(headersAt(1).get("x-request-id")).toBe("trace-1");
+    expect(headersAt(1).get("x-request-id")).toBeNull();
   });
 
   /**
@@ -671,9 +686,13 @@ describe("Given: the checked URL answers with a redirect", () => {
       .mockResolvedValueOnce(redirectTo("/api/ecommerce/orders/1/check/"))
       .mockResolvedValueOnce(new Response("{}"));
 
-    await fetchOutboundUrl("http://api:4000/api/ecommerce/orders/1/check", {
-      headers: { "X-RBAC-SECRET-KEY": "operator-secret" },
-    });
+    await fetchOutboundUrl(
+      "http://api:4000/api/ecommerce/orders/1/check",
+      {
+        headers: { "X-RBAC-SECRET-KEY": "operator-secret" },
+      },
+      { allowServiceOrigins: true },
+    );
 
     expect(headersAt(1).get("x-rbac-secret-key")).toBe("operator-secret");
   });
@@ -863,4 +882,163 @@ describe("Given: the target does not answer in time", () => {
       "Validation error. Outbound URL did not answer within 20 ms",
     );
   });
+});
+
+describe("Given: a caller controls the download URL and redirect destination", () => {
+  it.each([
+    "http://[64:ff9b::7f00:1]/",
+    "http://[64:ff9b:1::a00:1]/",
+    "http://[::127.0.0.1]/",
+    "http://[2002:7f00:1::]/",
+    "http://[2001::1]/",
+    "http://[3fff::1]/",
+    "http://192.0.0.8/",
+    "http://192.0.2.1/",
+    "http://198.18.0.1/",
+    "http://198.51.100.1/",
+    "http://203.0.113.1/",
+    "http://2130706433/",
+    "http://0x7f000001/",
+    "http://0177.0.0.1/",
+  ])(
+    "refuses special ranges and alternative loopback spelling: %s",
+    async (url) => {
+      await expect(fetchOutboundUrl(url)).rejects.toThrow(NON_PUBLIC_MESSAGE);
+      expect(mockFetch).not.toHaveBeenCalled();
+    },
+  );
+
+  it("does not implicitly trust API and Host origins for a user download", async () => {
+    resolvesTo("10.0.0.8");
+    await expect(fetchOutboundUrl("http://api:4000/private")).rejects.toThrow(
+      NON_PUBLIC_MESSAGE,
+    );
+    await expect(fetchOutboundUrl("http://host:3000/private")).rejects.toThrow(
+      NON_PUBLIC_MESSAGE,
+    );
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  it("allows exactly the generated image URL, without trusting its redirect", async () => {
+    resolvesTo("10.0.0.8");
+    mockFetch.mockResolvedValueOnce(redirectTo("/private"));
+    const url = "http://host:3000/api/image-generator/image.png?data=fixture";
+    await expect(
+      fetchOutboundUrl(url, {}, { allowedUrl: url }),
+    ).rejects.toThrow(NON_PUBLIC_MESSAGE);
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("drops arbitrary credentials and referrer on a cross-origin GET redirect", async () => {
+    resolvesTo(PUBLIC_ADDRESS);
+    mockFetch
+      .mockResolvedValueOnce(redirectTo("https://other.example.net/file"))
+      .mockResolvedValueOnce(new Response("bytes"));
+    await fetchOutboundUrl("https://files.example.net/file", {
+      headers: {
+        "X-MCP-Internal-Token-Exchange-Secret": "test-secret",
+        "X-Api-Key": "key",
+        Referer: "https://secret.example.net/?token=value",
+      },
+      referrer: "https://secret.example.net/?token=value",
+    });
+    expect(headersAt(1).get("x-mcp-internal-token-exchange-secret")).toBeNull();
+    expect(headersAt(1).get("x-api-key")).toBeNull();
+    expect(headersAt(1).get("referer")).toBeNull();
+    expect(requestAt(1).init.referrer).toBeUndefined();
+  });
+
+  it.each([307, 308])(
+    "never forwards a POST body to another origin on %s",
+    async (status) => {
+      resolvesTo(PUBLIC_ADDRESS);
+      mockFetch.mockResolvedValueOnce(
+        redirectTo("https://other.example.net/hook", status),
+      );
+      await expect(
+        fetchOutboundUrl("https://hooks.example.net/hook", {
+          method: "POST",
+          body: "secret",
+        }),
+      ).rejects.toThrow(
+        "cannot forward a request body or mutation to another origin",
+      );
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it("refuses an HTTPS downgrade even for a public destination", async () => {
+    resolvesTo(PUBLIC_ADDRESS);
+    mockFetch.mockResolvedValueOnce(
+      redirectTo("http://files.example.net/file"),
+    );
+    await expect(
+      fetchOutboundUrl("https://files.example.net/file"),
+    ).rejects.toThrow("cannot redirect HTTPS to HTTP");
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("Given: DNS or response reading stalls", () => {
+  it("expires during DNS and never starts a request after a late answer", async () => {
+    mockSettings.OUTBOUND_URL_TIMEOUT_MS = 20;
+    let finishLookup: (value: unknown) => void = () => undefined;
+    mockLookup.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finishLookup = resolve;
+        }),
+    );
+    await expect(
+      fetchOutboundUrl("https://slow.example.net/file"),
+    ).rejects.toThrow("within 20 ms");
+    finishLookup([{ address: PUBLIC_ADDRESS, family: 4 }]);
+    await Promise.resolve();
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  it("honors cancellation before DNS starts", async () => {
+    const controller = new AbortController();
+    controller.abort(new Error("caller cancelled"));
+    await expect(
+      fetchOutboundUrl("https://slow.example.net/file", {
+        signal: controller.signal,
+      }),
+    ).rejects.toThrow("caller cancelled");
+    expect(mockLookup).not.toHaveBeenCalled();
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  it("honors cancellation while DNS is still pending", async () => {
+    const controller = new AbortController();
+    mockLookup.mockImplementation(() => new Promise(() => undefined));
+    const pending = fetchOutboundUrl("https://slow.example.net/file", {
+      signal: controller.signal,
+    });
+    controller.abort(new Error("caller cancelled"));
+    await expect(pending).rejects.toThrow("caller cancelled");
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  it("expires and cancels a body that stops producing chunks", async () => {
+    mockSettings.OUTBOUND_URL_TIMEOUT_MS = 20;
+    resolvesTo(PUBLIC_ADDRESS);
+    const cancel = jest.fn();
+    mockFetch.mockResolvedValue(new Response(new ReadableStream({ cancel })));
+    await expect(
+      fetchOutboundUrl("https://slow.example.net/file"),
+    ).rejects.toThrow("within 20 ms");
+    expect(cancel).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([Infinity, -1, 1.5, NaN])(
+    "rejects an unsafe response size setting %s",
+    async (maxResponseBytes) => {
+      await expect(
+        fetchOutboundUrl("https://example.net/file", {}, { maxResponseBytes }),
+      ).rejects.toThrow("Configuration error");
+      expect(mockLookup).not.toHaveBeenCalled();
+      expect(mockFetch).not.toHaveBeenCalled();
+    },
+  );
 });

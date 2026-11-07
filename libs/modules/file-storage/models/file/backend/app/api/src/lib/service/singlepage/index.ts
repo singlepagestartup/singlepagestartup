@@ -1,6 +1,7 @@
 import "reflect-metadata";
 import { injectable } from "inversify";
 import { CRUDService } from "@sps/shared-backend-api";
+import { fetchOutboundUrl } from "@sps/backend-utils";
 import { Table } from "@sps/file-storage/models/file/backend/repository/database";
 import path from "path";
 import { FILE_STORAGE_FOLDER, FILE_STORAGE_PROVIDER } from "@sps/shared-utils";
@@ -23,41 +24,17 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       throw new Error("Stored file has no location.");
     }
     if (/^https?:\/\//i.test(file.file)) {
-      const response = await fetch(file.file, {
-        signal: AbortSignal.timeout(options.timeoutMs ?? 30000),
-      });
+      const response = await fetchOutboundUrl(
+        file.file,
+        { signal: AbortSignal.timeout(options.timeoutMs ?? 30000) },
+        { maxResponseBytes: maxBytes, limitName: "stored file" },
+      );
+
       if (!response.ok) {
         throw new Error(`Stored file could not be read: ${response.status}`);
       }
-      if (Number(response.headers.get("content-length")) > maxBytes) {
-        await response.body?.cancel();
-        throw new Error(
-          "Validation error. Stored file exceeds the byte-read limit.",
-        );
-      }
-      if (!response.body) {
-        return Buffer.alloc(0);
-      }
-      const reader = response.body.getReader();
-      const chunks: Buffer[] = [];
-      let size = 0;
-      try {
-        let part = await reader.read();
-        while (!part.done) {
-          size += part.value.byteLength;
-          if (size > maxBytes) {
-            throw new Error(
-              "Validation error. Stored file exceeds the byte-read limit.",
-            );
-          }
-          chunks.push(Buffer.from(part.value));
-          part = await reader.read();
-        }
-      } finally {
-        await reader.cancel();
-        reader.releaseLock();
-      }
-      return Buffer.concat(chunks, size);
+
+      return Buffer.from(await response.arrayBuffer());
     }
     const relative = path.normalize(file.file.replace(/^\/+/, ""));
     if (relative.startsWith("..")) {

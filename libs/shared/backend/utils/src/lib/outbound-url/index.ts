@@ -1,5 +1,6 @@
 import { lookup } from "node:dns/promises";
 import { isIP } from "node:net";
+import { requestOutboundUrl } from "./transport";
 import {
   API_SERVICE_URL,
   HOST_SERVICE_URL,
@@ -19,7 +20,14 @@ export interface IOutboundUrlTarget {
   address?: string;
 }
 
-export interface IFetchOutboundUrlOptions {
+export interface IOutboundUrlPolicy {
+  /** Only trusted observer configuration may use all deployment service origins. */
+  allowServiceOrigins?: boolean;
+  /** One server-constructed URL, such as the host image generator. */
+  allowedUrl?: string;
+}
+
+export interface IFetchOutboundUrlOptions extends IOutboundUrlPolicy {
   /**
    * Largest body read, in bytes. Defaults to `OUTBOUND_URL_MAX_RESPONSE_BYTES`;
    * a caller whose download has a limit of its own, such as the file-storage
@@ -41,10 +49,9 @@ const ALLOWED_PROTOCOLS = ["http:", "https:"];
 /**
  * Ranges a checked host must not resolve to, as network and prefix length.
  *
- * They are matched on the address bytes rather than with `BlockList` from
- * `node:net`, whose `check` matches nothing in the Bun release the API runs
- * (1.2.5). An IPv4 address is compared in its IPv4-mapped IPv6 form, so
- * `::ffff:127.0.0.1` meets the same rule as `127.0.0.1`.
+ * Compare address bytes so behavior does not depend on the runtime's BlockList
+ * implementation. An IPv4 address is compared in its IPv4-mapped IPv6 form,
+ * so `::ffff:127.0.0.1` meets the same rule as `127.0.0.1`.
  */
 const NON_PUBLIC_RANGES: [string, number][] = [
   ["0.0.0.0", 8], // this network, including the unspecified address
@@ -53,7 +60,17 @@ const NON_PUBLIC_RANGES: [string, number][] = [
   ["127.0.0.0", 8], // loopback
   ["169.254.0.0", 16], // link-local, including the metadata address
   ["172.16.0.0", 12], // private
+  ["192.0.0.0", 24], // protocol assignments
+  ["192.0.2.0", 24], // documentation
+  ["192.88.99.0", 24], // deprecated relay
   ["192.168.0.0", 16], // private
+  ["198.18.0.0", 15], // benchmarking
+  ["198.51.100.0", 24], // documentation
+  ["203.0.113.0", 24], // documentation
+  ["2001::", 23], // special uses, including Teredo
+  ["2001:db8::", 32], // documentation
+  ["2002::", 16], // 6to4 can embed private IPv4 destinations
+  ["3fff::", 20], // documentation
   ["224.0.0.0", 4], // multicast
   ["240.0.0.0", 4], // reserved, including broadcast
   ["::", 128], // unspecified
@@ -74,32 +91,14 @@ const BODY_HEADERS = [
   "content-type",
 ];
 
-/** Headers that must not follow a redirect to another origin. */
-const CREDENTIAL_HEADERS = [
-  "authorization",
-  "cookie",
-  "proxy-authorization",
-  "x-rbac-secret-key",
-];
-
 /**
- * Throws a `Validation error` unless the API may fetch `value` on behalf of a
- * caller (issue #307). `base` resolves a relative redirect location against the
- * URL that answered with it.
- *
- * The API container shares networks with the database, the cache and the other
- * services, and Bun's `fetch` also reads `file:` URLs from disk and signs `s3:`
- * URLs with the process credentials. A URL from a request or from stored data
- * therefore passes only as `http` or `https` without credentials, and only when
- * its origin is one of the API and host service URLs or is listed in
- * `OUTBOUND_URL_ALLOWED_ORIGINS`, or when its host resolves to public addresses
- * only. A host that does not resolve gets the same message as one that resolves
- * to a private address, so the answer does not reveal which internal names
- * exist.
+ * Validates one destination. Only fetchOutboundUrl also binds the connection
+ * to that address; checking here and then calling ordinary fetch is unsafe.
  */
 export async function assertOutboundUrl(
   value: string | URL,
   base?: URL,
+  policy: IOutboundUrlPolicy = {},
 ): Promise<IOutboundUrlTarget> {
   let url: URL;
 
@@ -119,7 +118,10 @@ export async function assertOutboundUrl(
     );
   }
 
-  if (getAllowedOrigins().includes(url.origin)) {
+  if (
+    url.href === policy.allowedUrl ||
+    getAllowedOrigins(policy).includes(url.origin)
+  ) {
     return { url };
   }
 
@@ -144,16 +146,9 @@ export async function assertOutboundUrl(
 }
 
 /**
- * `fetch` for a URL the API received from a caller or from stored data.
- *
- * Every hop passes `assertOutboundUrl` before a connection is opened, and
- * redirects are followed here rather than by `fetch` so that each location is
- * checked too. A 303, and a 301 or 302 answering a POST, continue as a GET
- * without the body, as `fetch` itself does; a hop to another origin drops the
- * credential headers. The returned response holds the body already read, so
- * the size limit applies before the caller sees any of it: a body above
- * `options.maxResponseBytes` is refused with the `Payload Too Large error`
- * category, which answers 413.
+ * Downloads an untrusted HTTP(S) URL. Each hop is
+ * validated, public addresses are pinned, and TLS still verifies the original
+ * hostname. The deadline covers DNS, redirects and the bounded decoded body.
  */
 export async function fetchOutboundUrl(
   value: string | URL,
@@ -165,74 +160,156 @@ export async function fetchOutboundUrl(
       options.maxResponseBytes ?? OUTBOUND_URL_MAX_RESPONSE_BYTES,
     limitName: options.limitName ?? "response",
   };
-  const deadline = AbortSignal.timeout(OUTBOUND_URL_TIMEOUT_MS);
+
+  if (
+    !Number.isSafeInteger(limit.maxResponseBytes) ||
+    limit.maxResponseBytes <= 0
+  ) {
+    throw new Error(
+      "Configuration error. Invalid outbound response size limit",
+    );
+  }
+
+  if (
+    !Number.isSafeInteger(OUTBOUND_URL_TIMEOUT_MS) ||
+    OUTBOUND_URL_TIMEOUT_MS <= 0 ||
+    OUTBOUND_URL_TIMEOUT_MS > 2147483647
+  ) {
+    throw new Error("Configuration error. Invalid outbound request timeout");
+  }
+
+  const deadline = new AbortController();
+  const timer = setTimeout(() => deadline.abort(), OUTBOUND_URL_TIMEOUT_MS);
   const signal = init.signal
-    ? AbortSignal.any([init.signal, deadline])
-    : deadline;
+    ? AbortSignal.any([init.signal, deadline.signal])
+    : deadline.signal;
 
   let request: RequestInit & { headers: Headers } = {
-    ...init,
+    method: init.method,
+    body: init.body,
     headers: new Headers(init.headers),
   };
   let location: string | URL = value;
   let previous: URL | undefined;
+  let redirects = 0;
 
   try {
-    for (let redirects = 0; ; redirects++) {
-      const target = await assertOutboundUrl(location, previous);
+    while (redirects <= OUTBOUND_URL_MAX_REDIRECTS) {
+      signal.throwIfAborted();
+      const target = await withAbort(
+        assertOutboundUrl(location, previous, options),
+        signal,
+      );
+      signal.throwIfAborted();
 
       if (previous && previous.origin !== target.url.origin) {
-        CREDENTIAL_HEADERS.forEach((name) => request.headers.delete(name));
+        const method = (request.method ?? "GET").toUpperCase();
+
+        if (!["GET", "HEAD"].includes(method) || request.body != null) {
+          throw new Error(
+            "Validation error. Outbound URL cannot forward a request body or mutation to another origin",
+          );
+        }
+
+        // Arbitrary header names can contain credentials. Forward none of them.
+        request.headers = new Headers();
       }
 
-      const connection = getConnection(target, request.headers);
-      const response = await fetch(connection.url, {
-        ...request,
-        headers: connection.headers,
-        redirect: "manual",
-        signal,
-      });
-      const next = response.headers.get("location");
-
-      if (!REDIRECT_STATUSES.includes(response.status) || !next) {
-        return await readBody(response, limit);
-      }
-
-      await response.body?.cancel();
-
-      if (redirects === OUTBOUND_URL_MAX_REDIRECTS) {
+      if (previous?.protocol === "https:" && target.url.protocol === "http:") {
         throw new Error(
-          `Validation error. Outbound URL redirected more than ${OUTBOUND_URL_MAX_REDIRECTS} times`,
+          "Validation error. Outbound URL cannot redirect HTTPS to HTTP",
         );
       }
 
-      request = getRedirectedRequest(request, response.status);
-      location = next;
-      previous = target.url;
+      const { response, close } = await requestOutboundUrl(
+        target,
+        request,
+        signal,
+      );
+
+      try {
+        const next = response.headers.get("location");
+
+        if (!REDIRECT_STATUSES.includes(response.status) || !next) {
+          return await readBody(response, limit, signal);
+        }
+
+        await withAbort(response.body?.cancel() ?? Promise.resolve(), signal);
+
+        if (redirects === OUTBOUND_URL_MAX_REDIRECTS) {
+          throw new Error(
+            `Validation error. Outbound URL redirected more than ${OUTBOUND_URL_MAX_REDIRECTS} times`,
+          );
+        }
+
+        request = getRedirectedRequest(request, response.status);
+        location = next;
+        previous = target.url;
+        redirects += 1;
+      } finally {
+        await close();
+      }
     }
+
+    throw new Error("Validation error. Outbound URL redirect limit exceeded");
   } catch (error) {
-    if (deadline.aborted) {
+    if (deadline.signal.aborted) {
       throw new Error(
         `Validation error. Outbound URL did not answer within ${OUTBOUND_URL_TIMEOUT_MS} ms`,
       );
     }
 
     throw error;
+  } finally {
+    clearTimeout(timer);
+    deadline.abort();
   }
 }
 
-function getAllowedOrigins(): string[] {
-  return [
-    API_SERVICE_URL,
-    NEXT_PUBLIC_API_SERVICE_URL,
-    HOST_SERVICE_URL,
-    NEXT_PUBLIC_HOST_SERVICE_URL,
-    ...OUTBOUND_URL_ALLOWED_ORIGINS.split(","),
-  ].flatMap((value) => {
+/** DNS lookup itself cannot be cancelled; a late answer must never start IO. */
+function withAbort<T>(operation: Promise<T>, signal: AbortSignal): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const onAbort = () => {
+      signal.removeEventListener("abort", onAbort);
+      reject(signal.reason);
+    };
+    signal.addEventListener("abort", onAbort, { once: true });
+
+    if (signal.aborted) {
+      onAbort();
+    }
+
+    operation.then(resolve, reject).finally(() => {
+      signal.removeEventListener("abort", onAbort);
+    });
+  });
+}
+
+function getAllowedOrigins(policy: IOutboundUrlPolicy): string[] {
+  const values = OUTBOUND_URL_ALLOWED_ORIGINS.split(",");
+
+  if (policy.allowServiceOrigins) {
+    values.push(
+      API_SERVICE_URL,
+      NEXT_PUBLIC_API_SERVICE_URL,
+      HOST_SERVICE_URL,
+      NEXT_PUBLIC_HOST_SERVICE_URL,
+    );
+  }
+
+  return values.flatMap((value) => {
     try {
       const url = new URL(value.trim());
 
-      return ALLOWED_PROTOCOLS.includes(url.protocol) ? [url.origin] : [];
+      if (
+        ALLOWED_PROTOCOLS.includes(url.protocol) &&
+        !url.username &&
+        !url.password
+      ) {
+        return [url.origin];
+      }
+
+      return [];
     } catch {
       return [];
     }
@@ -240,15 +317,22 @@ function getAllowedOrigins(): string[] {
 }
 
 function isPublicAddress(address: string): boolean {
-  // A zone index ("fe80::1%eth0") names an interface and is not part of the
-  // address.
-  const [host] = address.split("%");
-
-  if (!isIP(host)) {
+  if (!isIP(address) || address.includes("%")) {
     return false;
   }
 
-  const bytes = toBytes(host);
+  const bytes = toBytes(address);
+  const isMappedIpv4 = hasPrefix(bytes, toBytes("::ffff:0.0.0.0"), 96);
+
+  // Only global-unicast IPv6, or mapped IPv4 checked below. This also refuses
+  // IPv4-compatible, NAT64 and local-use translation prefixes.
+  if (
+    isIP(address) === 6 &&
+    !isMappedIpv4 &&
+    !hasPrefix(bytes, toBytes("2000::"), 3)
+  ) {
+    return false;
+  }
 
   return !NON_PUBLIC_RANGES.some(([network, prefix]) =>
     hasPrefix(
@@ -314,30 +398,6 @@ function hasPrefix(
   return true;
 }
 
-/**
- * A plain-HTTP request goes to the address that passed the check, with the
- * original host in the `Host` header, because `fetch` would otherwise resolve
- * the name again and could receive another answer. HTTPS keeps the name:
- * certificate verification refuses a server that answers for another address.
- */
-function getConnection(
-  target: IOutboundUrlTarget,
-  headers: Headers,
-): { url: URL; headers: Headers } {
-  if (!target.address || target.url.protocol !== "http:") {
-    return { url: target.url, headers };
-  }
-
-  const url = new URL(target.url);
-  url.hostname =
-    isIP(target.address) === 6 ? `[${target.address}]` : target.address;
-
-  const connectionHeaders = new Headers(headers);
-  connectionHeaders.set("host", target.url.host);
-
-  return { url, headers: connectionHeaders };
-}
-
 function getRedirectedRequest(
   request: RequestInit & { headers: Headers },
   status: number,
@@ -365,44 +425,80 @@ function getRedirectedRequest(
  */
 async function readBody(
   response: Response,
-  limit: Required<IFetchOutboundUrlOptions>,
+  limit: { maxResponseBytes: number; limitName: string },
+  signal: AbortSignal,
 ): Promise<Response> {
   const tooLargeMessage = `Payload Too Large error. The ${limit.limitName} limit is ${limit.maxResponseBytes} bytes`;
 
   if (Number(response.headers.get("content-length")) > limit.maxResponseBytes) {
-    await response.body?.cancel();
-
+    void response.body?.cancel().catch(() => undefined);
     throw new Error(tooLargeMessage);
+  }
+
+  const headers = new Headers(response.headers);
+  let body: ReadableStream<Uint8Array> | null = response.body;
+  const encoding = headers.get("content-encoding")?.trim().toLowerCase();
+
+  if (body && encoding && encoding !== "identity") {
+    if (!["gzip", "deflate", "br"].includes(encoding)) {
+      void body.cancel().catch(() => undefined);
+      throw new Error(
+        "Validation error. Unsupported outbound response encoding",
+      );
+    }
+
+    let compressedBytes = 0;
+    const format = encoding === "br" ? "brotli" : encoding;
+    body = body
+      .pipeThrough(
+        new TransformStream<Uint8Array, BufferSource>({
+          transform(chunk, controller) {
+            compressedBytes += chunk.byteLength;
+
+            if (compressedBytes > limit.maxResponseBytes) {
+              throw new Error(tooLargeMessage);
+            }
+
+            controller.enqueue(new Uint8Array(chunk));
+          },
+        }),
+      )
+      .pipeThrough(new DecompressionStream(format as CompressionFormat));
+    headers.delete("content-encoding");
   }
 
   const chunks: Uint8Array[] = [];
   let size = 0;
 
-  if (response.body) {
-    const reader = response.body.getReader();
+  if (body) {
+    const reader = body.getReader();
 
-    for (;;) {
-      const { done, value } = await reader.read();
+    try {
+      let chunk = await withAbort(reader.read(), signal);
 
-      if (done) {
-        break;
+      while (!chunk.done) {
+        size += chunk.value.byteLength;
+
+        if (size > limit.maxResponseBytes) {
+          throw new Error(tooLargeMessage);
+        }
+
+        chunks.push(chunk.value);
+        chunk = await withAbort(reader.read(), signal);
       }
-
-      size += value.byteLength;
-
-      if (size > limit.maxResponseBytes) {
-        await reader.cancel();
-
-        throw new Error(tooLargeMessage);
-      }
-
-      chunks.push(value);
+    } catch (error) {
+      void reader.cancel().catch(() => undefined);
+      throw error;
+    } finally {
+      reader.releaseLock();
     }
   }
+
+  headers.set("content-length", String(size));
 
   return new Response(size ? Buffer.concat(chunks) : null, {
     status: response.status,
     statusText: response.statusText,
-    headers: response.headers,
+    headers,
   });
 }

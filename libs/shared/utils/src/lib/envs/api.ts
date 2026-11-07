@@ -43,10 +43,11 @@ export const API_MAX_REQUEST_BODY_BYTES =
  * Bounds for requests the API sends to a URL that a caller supplied or stored
  * (issue #307): `create-from-url` downloads and observer pipeline steps.
  *
- * Such a URL may point at the API and host service URLs, or at an origin listed
- * in `OUTBOUND_URL_ALLOWED_ORIGINS` (comma-separated, for example
- * `http://crm:8080`); any other host must resolve to public addresses only.
- * `OUTBOUND_URL_TIMEOUT_MS` covers the whole exchange, redirects and body
+ * User downloads require public addresses, except for the exact image-generator
+ * URL constructed by File Storage. Trusted observer steps may also use service
+ * origins. `OUTBOUND_URL_ALLOWED_ORIGINS` grants both callers additional origins
+ * (comma-separated, for example `http://crm:8080`); keep it empty unless needed.
+ * `OUTBOUND_URL_TIMEOUT_MS` covers the whole exchange, DNS, redirects and body
  * included, and `OUTBOUND_URL_MAX_RESPONSE_BYTES` is the largest body read when
  * the caller sets no limit of its own.
  */

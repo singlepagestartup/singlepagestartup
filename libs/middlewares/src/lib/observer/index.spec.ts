@@ -14,6 +14,16 @@ const mockChannelMessageFind = jest.fn();
 const mockMessageDelete = jest.fn();
 const mockLoggerError = jest.fn();
 
+jest.mock(
+  "../../../../shared/backend/utils/src/lib/outbound-url/transport",
+  () => ({
+    requestOutboundUrl: jest.fn(async (target, init, signal) => ({
+      response: await fetch(target.url, { ...init, signal }),
+      close: async () => undefined,
+    })),
+  }),
+);
+
 jest.mock("@sps/shared-utils", () => ({
   ...jest.requireActual("@sps/shared-utils"),
   RBAC_SECRET_KEY: "operator-secret",
@@ -57,6 +67,7 @@ import { Middleware } from "./index";
 
 const mockLookup = lookup as unknown as jest.Mock;
 const originalFetch = globalThis.fetch;
+
 let mockFetch: jest.Mock;
 
 function createMessage(pipeUrl: string) {

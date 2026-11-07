@@ -12,6 +12,16 @@
 
 const mockUploadFile = jest.fn();
 
+jest.mock(
+  "../../../../../../../../../../../../shared/backend/utils/src/lib/outbound-url/transport",
+  () => ({
+    requestOutboundUrl: jest.fn(async (target, init, signal) => ({
+      response: await fetch(target.url, { ...init, signal }),
+      close: async () => undefined,
+    })),
+  }),
+);
+
 jest.mock("@sps/shared-utils", () => ({
   ...jest.requireActual("@sps/shared-utils"),
   API_SERVICE_URL: "http://api:4000",
@@ -50,6 +60,7 @@ const PUBLIC_ADDRESS = "93.184.215.14";
 
 const mockLookup = lookup as unknown as jest.Mock;
 const originalFetch = globalThis.fetch;
+
 let mockFetch: jest.Mock;
 
 function createService() {
@@ -64,6 +75,7 @@ function createService() {
 function createContext(data: Record<string, unknown>) {
   return {
     req: {
+      raw: new Request("http://fixture/import"),
       parseBody: jest.fn().mockResolvedValue({ data: JSON.stringify(data) }),
     },
     json: jest.fn((body: unknown, status: number) => ({ body, status })),
@@ -188,5 +200,56 @@ describe("Given: a caller submits a URL that the API may download", () => {
     expect(String(mockFetch.mock.calls[0][0])).toBe(url);
     expect(mockLookup).not.toHaveBeenCalled();
     expect(mockUploadFile.mock.calls[0][0].file.name).toBe("image.png");
+  });
+});
+
+describe("Given: a rejected download must not create a File", () => {
+  it.each(["http://api:4000/api/private", "http://host:3000/api/private"])(
+    "refuses an unrelated internal endpoint: %s",
+    async (url) => {
+      mockLookup.mockResolvedValue([{ address: "10.0.0.5", family: 4 }]);
+      const { service, result } = await submit(url);
+      await expect(result).rejects.toMatchObject({ status: 400 });
+      expect(mockUploadFile).not.toHaveBeenCalled();
+      expect(service.create).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([404, 401, 500])(
+    "does not store a remote error page (%s)",
+    async (status) => {
+      mockLookup.mockResolvedValue([{ address: PUBLIC_ADDRESS, family: 4 }]);
+      mockFetch.mockResolvedValue(new Response("remote error", { status }));
+      const { service, result } = await submit(
+        "https://files.example.net/error.txt",
+      );
+      await expect(result).rejects.toMatchObject({ status: 400 });
+      expect(mockUploadFile).not.toHaveBeenCalled();
+      expect(service.create).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([null, 2, {}, ["https://example.com/file"]])(
+    "rejects a non-string URL (%s)",
+    async (url) => {
+      const service = createService();
+      await expect(
+        new Handler(service as any).execute(
+          createContext({ url }) as any,
+          jest.fn(),
+        ),
+      ).rejects.toMatchObject({ status: 400 });
+      expect(mockFetch).not.toHaveBeenCalled();
+      expect(mockUploadFile).not.toHaveBeenCalled();
+    },
+  );
+
+  it("rejects malformed JSON as a validation error", async () => {
+    const context = createContext({});
+    context.req.parseBody.mockResolvedValue({ data: "{" });
+    await expect(
+      new Handler(createService() as any).execute(context as any, jest.fn()),
+    ).rejects.toMatchObject({ status: 400 });
+    expect(mockFetch).not.toHaveBeenCalled();
   });
 });

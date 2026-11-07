@@ -14,6 +14,16 @@ let mockMaxUploadBytes = 4096;
 const mockUploadFile = jest.fn();
 const mockDeleteFile = jest.fn();
 
+jest.mock(
+  "../../../../../../../../../../../shared/backend/utils/src/lib/outbound-url/transport",
+  () => ({
+    requestOutboundUrl: jest.fn(async (target, init, signal) => ({
+      response: await fetch(target.url, { ...init, signal }),
+      close: async () => undefined,
+    })),
+  }),
+);
+
 jest.mock("@sps/shared-utils", () => {
   return {
     ...jest.requireActual("@sps/shared-utils"),

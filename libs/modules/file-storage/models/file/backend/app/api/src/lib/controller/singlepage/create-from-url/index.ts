@@ -5,6 +5,7 @@ import {
   FILE_STORAGE_FOLDER,
   FILE_STORAGE_MAX_UPLOAD_BYTES,
   FILE_STORAGE_PROVIDER,
+  HOST_SERVICE_URL,
 } from "@sps/shared-utils";
 import { Provider } from "@sps/providers-file-storage";
 import { fileTypeFromBuffer } from "file-type";
@@ -30,21 +31,58 @@ export class Handler {
         throw new Error("Validation error. Invalid data");
       }
 
-      const data = JSON.parse(body["data"]);
+      let data: Record<string, unknown>;
 
-      if (!data.url) {
+      try {
+        data = JSON.parse(body["data"]);
+      } catch {
+        throw new Error("Validation error. Invalid data");
+      }
+
+      if (
+        !data ||
+        typeof data !== "object" ||
+        typeof data.url !== "string" ||
+        !data.url
+      ) {
         throw new Error("Validation error. Invalid url");
       }
 
-      const response = await fetchOutboundUrl(data.url, {}, {
-        maxResponseBytes: FILE_STORAGE_MAX_UPLOAD_BYTES,
-        limitName: "upload",
-      });
+      let url: URL;
+
+      try {
+        url = new URL(data.url);
+      } catch {
+        throw new Error("Validation error. Invalid url");
+      }
+
+      // The generate action uses this one internal endpoint. A caller's URL
+      // must not grant access to other API or Host routes on the same origin.
+      const imageGeneratorUrl = new URL(
+        "/api/image-generator/image.png",
+        HOST_SERVICE_URL,
+      );
+      imageGeneratorUrl.search = url.search;
+
+      const response = await fetchOutboundUrl(
+        url,
+        { signal: c.req.raw.signal },
+        {
+          maxResponseBytes: FILE_STORAGE_MAX_UPLOAD_BYTES,
+          limitName: "upload",
+          allowedUrl: imageGeneratorUrl.href,
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          "Validation error. Download URL did not return a successful response",
+        );
+      }
+
       const blob = await response.blob();
-      const fullFileName = data.url.split("?")[0].split("/").pop();
-      const fileName = fullFileName.split(".")[0];
-      const extension = fullFileName.split(".").pop();
-      const file = new File([blob], `${fileName}.${extension}`);
+      const fileName = url.pathname.split("/").pop() || "download";
+      const file = new File([blob], fileName);
 
       const fileStorage = new Provider({
         type: FILE_STORAGE_PROVIDER,
