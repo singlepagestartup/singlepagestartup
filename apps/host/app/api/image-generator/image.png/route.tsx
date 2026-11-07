@@ -6,6 +6,8 @@ import { Component as ChildComponent } from "./component";
 import pako from "pako";
 import fs from "fs/promises";
 import path from "path";
+import { fileTypeFromBuffer } from "file-type";
+import { api as fileStorageFileApi } from "@sps/file-storage/models/file/sdk/server";
 
 const fontsURLs: {
   [key in "Default" | "Primary"]: {
@@ -336,7 +338,7 @@ export const GET = async (request: NextRequest) => {
       ? Number(parsedParams["height"])
       : 512;
 
-    let data = {};
+    let data: Record<string, any> = {};
 
     if (typeof parsedParams.data === "string") {
       const decodedBuffer = Buffer.from(parsedParams.data, "base64");
@@ -346,6 +348,75 @@ export const GET = async (request: NextRequest) => {
       const inflatedData = pako.inflate(uint8Array, { to: "string" });
 
       data = JSON.parse(inflatedData);
+    }
+
+    let backgroundImage: string | undefined;
+
+    if (
+      parsedParams.variant ===
+        "generate-template-ecommerce-order-receipt-default" ||
+      parsedParams.variant ===
+        "generate-template-ecommerce-product-attachment-default"
+    ) {
+      const templateId = data.fileStorage?.file?.id;
+
+      if (
+        typeof templateId !== "string" ||
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          templateId,
+        )
+      ) {
+        throw new Error("Invalid image template identifier");
+      }
+
+      // Resolve the saved template through its public SDK. Never fetch a URL
+      // from the render payload or add operator credentials to this public route.
+      const template = await fileStorageFileApi.findById({
+        id: templateId,
+        options: { cache: "no-store", signal: AbortSignal.timeout(10000) },
+      });
+
+      if (
+        !template ||
+        template.variant !== parsedParams.variant ||
+        (template.size !== null && template.size > 5 * 1024 * 1024)
+      ) {
+        throw new Error("Image template is unavailable or too large");
+      }
+
+      const blob = await fileStorageFileApi.content({
+        id: template.id,
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (blob.size > 5 * 1024 * 1024) {
+        throw new Error("Image template is too large");
+      }
+
+      const bytes = Buffer.from(await blob.arrayBuffer());
+      const type = await fileTypeFromBuffer(bytes);
+
+      if (
+        !type ||
+        ![
+          "image/png",
+          "image/jpeg",
+          "image/webp",
+          "image/gif",
+          "image/avif",
+        ].includes(type.mime)
+      ) {
+        throw new Error("Image template must contain a raster image");
+      }
+
+      backgroundImage = `data:${type.mime};base64,${bytes.toString("base64")}`;
+    } else if (
+      parsedParams.variant === "generate-template-opengraph-image-default"
+    ) {
+      const bytes = await fs.readFile(
+        path.join(process.cwd(), "public/images/favicon.svg"),
+      );
+      backgroundImage = `data:image/svg+xml;base64,${bytes.toString("base64")}`;
     }
 
     const fonts: {
@@ -397,7 +468,11 @@ export const GET = async (request: NextRequest) => {
     // ImageResponse sets the image content type itself; nosniff keeps a
     // rasterised body from being re-interpreted as a document.
     return new ImageResponse(
-      createElement(Component, { ...parsedParams, data } as any),
+      createElement(Component, {
+        ...parsedParams,
+        data,
+        backgroundImage,
+      } as any),
       {
         width,
         height,
