@@ -71,6 +71,8 @@ export function installMcpFetchAuthForwarding() {
       return originalFetch(input, init);
     }
 
+    // API SDK calls target their final route. Never forward credentials or a
+    // login/refresh body through a redirect, including a same-origin redirect.
     const context = getMcpRequestAuthContext();
     const request = input instanceof Request ? input : undefined;
     const headers = mergeHeaders(
@@ -83,6 +85,7 @@ export function installMcpFetchAuthForwarding() {
         new Request(input, {
           ...init,
           headers,
+          redirect: "error",
         }),
       );
     }
@@ -90,6 +93,7 @@ export function installMcpFetchAuthForwarding() {
     return originalFetch(input, {
       ...init,
       headers,
+      redirect: "error",
     });
   };
 }

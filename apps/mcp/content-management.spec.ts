@@ -1,8 +1,9 @@
+import { runWithMcpRequestAuthContext } from "./lib/auth-context";
 /**
  * BDD Suite: MCP compact content-management registration
  * Given the MCP server boots its compact content-management module
  * When resources and tools are registered
- * Then AI chat clients discover project guidance and compact module/model/relation tools, and each tool call carries the connection's scopes
+ * Then AI chat clients discover project guidance and compact module/model/relation tools, and each tool call carries the subject credentials
  */
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -253,12 +254,12 @@ describe("MCP content-management registration", () => {
   });
 
   /**
-   * BDD Scenario: Tools pass the connection's scopes to operations
+   * BDD Scenario: Tools pass the subject credentials to operations
    * Given an HTTP request whose MCP token carries only mcp:content
    * When the model delete-apply tool runs
-   * Then the operation receives the forwarded credentials and exactly those scopes
+   * Then the operation receives the subject JWT without a separate delete scope
    */
-  it("passes the connection's granted scopes to delete apply", async () => {
+  it("passes the subject JWT to delete apply without an MCP permission layer", async () => {
     const applyDelete = jest
       .spyOn(contentOperations, "applyDeleteContentModelRecord")
       .mockResolvedValue({ id: "widget-1" });
@@ -279,17 +280,20 @@ describe("MCP content-management registration", () => {
       ([name]) => name === "model-record-delete-apply",
     );
 
-    await deleteToolCall[2](args, {
-      authInfo: {
-        token: "mcp-access-token",
-        clientId: "mcp_client_1",
-        scopes: ["mcp:content"],
-      },
-    });
+    await runWithMcpRequestAuthContext(
+      { authorization: "Bearer subject-jwt" },
+      () =>
+        deleteToolCall[2](args, {
+          authInfo: {
+            token: "mcp-access-token",
+            clientId: "mcp_client_1",
+            scopes: ["mcp:content"],
+          },
+        }),
+    );
 
     expect(applyDelete).toHaveBeenCalledWith(args, {
-      authHeaders: { Authorization: "Bearer mcp-access-token" },
-      scopes: ["mcp:content"],
+      authHeaders: { Authorization: "Bearer subject-jwt" },
     });
   });
 

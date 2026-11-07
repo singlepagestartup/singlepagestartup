@@ -72,7 +72,7 @@ Complete OAuth login in the chosen client after generation; see [project client 
 for OpenCode V1/V2 formats and login commands. The following CLI commands are
 also available for manual registration.
 
-Connector tokens carry the OAuth scope `mcp:content`, which reads, creates and updates content. Deleting needs `mcp:content:delete`: the authorization page first names the connecting application, its client id and the address it returns to, and offers "Also allow deleting records" when the client asks for the delete scope. Without that approval, the `*-delete-apply` tools answer a permission error. Codex asks for it with `--scopes "mcp:content mcp:content:delete"`. The scope list and the connector limits are in `apps/mcp/README.md`.
+Connector tokens carry the single OAuth scope `mcp:content`. Every operation, including deletion, uses the connected subject's API permissions. The authorization page names the connecting application and its callback address before sign-in. MCP uses the shared RBAC token lifetimes and refreshes the subject's session through the RBAC SDK. See [MCP authorization and limits](apps/mcp/README.md#oauth-scopes-and-consent).
 
 For Codex Desktop/CLI, register the remote MCP explicitly:
 

@@ -245,8 +245,7 @@ async function getRequestAuth(req: IncomingMessage): Promise<
     }
   | { ok: false; message: string }
 > {
-  // OAuth scopes limit what a connector may ask for. The auth-disabled mode and
-  // the operator secret below have no connector to limit.
+  // OAuth identifies the connection; API RBAC owns operation permissions.
   if (process.env["MCP_SERVICE_AUTH_REQUIRED"] === "false") {
     return {
       ok: true,

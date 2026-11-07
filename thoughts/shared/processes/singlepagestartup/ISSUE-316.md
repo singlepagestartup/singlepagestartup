@@ -96,3 +96,34 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
   was established. The current fetch mocks do not exercise redirects.
   Constrain credential-bearing redirects before merging this PR.
 - No production configuration, credentials or data were changed.
+
+## RBAC alignment and redirect fix — 2026-11-08
+
+The operator requested one permission model: MCP must use the subject's API
+permissions, including deletion. Removed the proposed delete scope and its
+operation checks. The consent page still identifies the connecting application;
+delete previews and confirmation tokens remain.
+
+MCP now imports the shared RBAC access and refresh lifetime settings. The
+actual expiry of each signed RBAC JWT also caps the corresponding MCP token.
+Login and refresh use the subject SDK; refresh renews the underlying RBAC pair
+instead of reusing an expired access JWT. Old connector refresh records require
+reauthentication. Redis GETDEL prevents concurrent reuse of codes and refresh
+tokens. API/MCP templates and both Actions environments pass the shared values.
+
+The redirect blocker above is fixed: the API fetch wrapper forces redirect
+rejection for URL and Request inputs, including password/refresh POST bodies.
+A runtime check uses an actual MCP process, isolated Redis and a loopback RBAC
+fixture. It verifies access expiry, successful renewal, single-use exchanges,
+Redis TTLs and blocked redirects 301/302/303/307/308. No request reaches the
+redirect destination. This validates the MCP/SDK boundary with signed synthetic
+JWTs, not the API's authorization implementation or a production account.
+
+MCP unit tests: 100 passed. Deployment credential/workflow tests: 4 passed.
+The change in Telegram remains only the shared startup secret-strength check;
+it does not participate in OAuth. Documentation now reflects these decisions
+and supersedes the earlier separate-delete-scope and independent-TTL plan.
+
+Follow-up cleanup: #386 tracks removal of migration-only secret checks and
+temporary report modes after the owner confirms all project upgrades and secret
+rotations. It links the existing cleanup issues #216 and #226.

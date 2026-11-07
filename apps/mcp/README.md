@@ -428,22 +428,53 @@ The `/mcp` suffix variants are intentionally supported for clients that resolve 
 
 ## OAuth Scopes and Consent
 
-| Scope                | Allows                                                                                                                         |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `mcp:content`        | every tool except the two delete-apply tools: guides, schemas, finds, counts, creates, updates, delete previews, page previews |
-| `mcp:content:delete` | `model-record-delete-apply` and `relation-record-delete-apply`                                                                 |
+MCP advertises one OAuth scope, `mcp:content`, for connecting to the project.
+Every API operation uses the authenticated subject's RBAC permissions,
+including deleting records. There is no separate MCP delete permission. The
+delete tools still require their preview and confirmation token.
 
-Every token carries `mcp:content`; unknown requested scopes are ignored. The authorization page runs in two steps. The consent step shows the application name, the client id and the address the code returns to; when the authorization request includes `mcp:content:delete`, it also offers "Also allow deleting records", and the token carries the delete scope only when the user ticks it. Cancel returns `error=access_denied` to the client. The sign-in step then takes the SinglePageStartup email and password. The pages refuse to render inside a frame.
+The authorization page first shows the application name, client id and callback
+address. Continue opens the SinglePageStartup sign-in form; Cancel returns
+`error=access_denied` and the state to the registered callback. Both pages
+refuse to render inside a frame.
 
-A client that did not get the delete scope receives a permission error from the delete-apply tools. Reconnect it and tick the delete choice. Codex requests scopes explicitly:
+Dynamic registration accepts an `https` callback or an `http` callback on
+`localhost`, `127.0.0.1` or `[::1]`, without a fragment, credentials, whitespace
+or non-ASCII characters. Authorization and code exchange match it exactly.
 
-```bash
-codex mcp login "${REPO_NAME}-production" --scopes "mcp:content mcp:content:delete"
-```
+### Token lifetimes and refresh
 
-Tokens from the internal rbac.subject exchange, the `X-RBAC-SECRET-KEY` fallback and `MCP_SERVICE_AUTH_REQUIRED=false` carry both scopes. Stdio requests carry no OAuth token and are not limited by scopes. In every case `apps/api` still decides what the `rbac.subject` may do.
+API and MCP use the same RBAC settings:
 
-Dynamic client registration accepts a redirect URI only when it is an `https` URL or an `http` URL on `localhost`, `127.0.0.1` or `[::1]`, without a fragment, credentials, whitespace or non-ASCII characters. Authorization and the code exchange match it exactly. A registered client expires after `MCP_SERVICE_OAUTH_CLIENT_TTL_SECONDS` (30 days by default); every token issue extends the expiry to at least the refresh-token lifetime, so a client in use keeps its registration.
+| Setting                                      | Default | Use in MCP                                                      |
+| -------------------------------------------- | ------- | --------------------------------------------------------------- |
+| `RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS`         | `3600`  | Maximum access-token lifetime                                   |
+| `RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS` | `86400` | Maximum refresh-token lifetime and client-registration lifetime |
+
+MCP tokens cannot outlive the corresponding signed RBAC JWT. MCP stores the
+RBAC refresh token on the server. When a connector refreshes its MCP token,
+MCP calls `rbacSubjectApi.authenticationRefresh` to obtain a new RBAC pair,
+then issues a new MCP pair mapped to the same subject. A failed RBAC refresh
+requires signing in again. Each successful token issue renews the client
+registration for the shared refresh window.
+
+Authorization codes and MCP refresh tokens are consumed atomically, including
+across processes using Redis. Concurrent exchanges of one token cannot both
+succeed. `MCP_SERVICE_OAUTH_AUTH_CODE_TTL_SECONDS` still controls the separate,
+short-lived authorization code (300 seconds by default).
+
+After upgrading from the previous implementation, reconnect existing OAuth
+clients: their stored refresh records do not contain an RBAC refresh token.
+Replace custom `MCP_SERVICE_OAUTH_ACCESS_TOKEN_TTL_SECONDS`,
+`MCP_SERVICE_OAUTH_REFRESH_TOKEN_TTL_SECONDS` and
+`MCP_SERVICE_OAUTH_CLIENT_TTL_SECONDS` settings with the shared RBAC settings
+above, with matching values in API and MCP.
+
+SDK requests to `API_SERVICE_URL` reject redirects, even when a caller requests
+`redirect: "follow"`. This prevents an API redirect from forwarding a subject
+JWT, operator header, password or refresh token. Configure the final API URL;
+redirecting aliases will fail. Credentials are automatically added only to the
+configured API origin.
 
 ## Limits
 
@@ -473,8 +504,8 @@ containing a separate `subject`, `subjectId`, `subject_id`, `rbacSubjectId`, or
 A successful exchange returns an access-only bearer with:
 
 - client id `internal-rbac-subject`;
-- scopes `mcp:content mcp:content:delete`, so the profile agent keeps the tools' preview and confirmation delete flow;
-- a fixed five-minute lifetime;
+- scope `mcp:content`, with every operation checked by API RBAC;
+- a lifetime capped by `RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS` and the remaining lifetime of the supplied subject JWT;
 - no refresh token.
 
 Configure the same dedicated `MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET` in `apps.api`
@@ -505,9 +536,8 @@ MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET=
 MCP_SERVICE_URL=http://mcp:3001/mcp
 MCP_SERVICE_OAUTH_JWT_SECRET=
 MCP_SERVICE_OAUTH_AUTH_CODE_TTL_SECONDS=300
-MCP_SERVICE_OAUTH_ACCESS_TOKEN_TTL_SECONDS=3600
-MCP_SERVICE_OAUTH_REFRESH_TOKEN_TTL_SECONDS=2592000
-MCP_SERVICE_OAUTH_CLIENT_TTL_SECONDS=2592000
+RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS=3600
+RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS=86400
 MCP_SERVICE_HTTP_MAX_BODY_BYTES=4194304
 MCP_SERVICE_HTTP_SESSION_IDLE_TTL_SECONDS=86400
 MCP_SERVICE_HTTP_MAX_SESSIONS=500
@@ -526,3 +556,16 @@ cd tools/deployer
 ```
 
 The full deployer runs MCP after `api` and before `telegram`/`host`.
+
+## Runtime authentication check
+
+`tools/dev/mcp-auth.test.ts` starts an actual MCP HTTP process and loopback RBAC
+fixture with signed test JWTs. Supply a dedicated Redis instance; the test
+creates expiring `mcp:oauth:*` keys. It exercises SDK login and refresh, access
+expiry, concurrent refresh consumption, Redis TTLs, and redirects 301, 302,
+303, 307 and 308. It does not use a real user's account or test the API's RBAC
+implementation.
+
+```bash
+MCP_TEST_REDIS_PORT=<isolated-redis-port> bun test --no-env-file --timeout 30000 tools/dev/mcp-auth.test.ts
+```

@@ -14,7 +14,11 @@ import {
 describe("MCP outbound credential forwarding", () => {
   const originalFetch = globalThis.fetch;
   const originalOperatorSecret = process.env["RBAC_SECRET_KEY"];
-  const sent: Array<{ url: string; headers: Headers }> = [];
+  const sent: Array<{
+    url: string;
+    headers: Headers;
+    redirect?: RequestRedirect;
+  }> = [];
   const apiUrl = `${API_SERVICE_URL}/api/blog/articles`;
   const otherUrl = "https://files.example.com/cover.webp";
 
@@ -23,7 +27,12 @@ describe("MCP outbound credential forwarding", () => {
       input: RequestInfo | URL,
       init?: RequestInit,
     ) => {
-      sent.push({ url: String(input), headers: new Headers(init?.headers) });
+      const request = input instanceof Request ? input : undefined;
+      sent.push({
+        url: request?.url ?? String(input),
+        headers: new Headers(init?.headers ?? request?.headers),
+        redirect: init?.redirect ?? request?.redirect,
+      });
 
       return new Response("{}");
     }) as typeof fetch;
@@ -32,7 +41,11 @@ describe("MCP outbound credential forwarding", () => {
 
   afterAll(() => {
     globalThis.fetch = originalFetch;
-    process.env["RBAC_SECRET_KEY"] = originalOperatorSecret;
+    if (originalOperatorSecret === undefined) {
+      delete process.env["RBAC_SECRET_KEY"];
+    } else {
+      process.env["RBAC_SECRET_KEY"] = originalOperatorSecret;
+    }
   });
 
   beforeEach(() => {
@@ -54,6 +67,7 @@ describe("MCP outbound credential forwarding", () => {
     );
 
     expect(sent[0].headers.get("authorization")).toBe("Bearer subject-jwt");
+    expect(sent[0].redirect).toBe("error");
   });
 
   /**
@@ -69,6 +83,27 @@ describe("MCP outbound credential forwarding", () => {
     expect(sent[0].headers.get("x-rbac-secret-key")).toBe(
       "local-operator-secret",
     );
+  });
+
+  it("refuses caller-enabled redirects for Request objects with explicit credentials", async () => {
+    await fetch(
+      new Request(apiUrl, {
+        headers: { Authorization: "Bearer explicit-jwt" },
+        redirect: "follow",
+      }),
+      { redirect: "follow" },
+    );
+    expect(sent[0].redirect).toBe("error");
+    expect(sent[0].headers.get("authorization")).toBe("Bearer explicit-jwt");
+  });
+
+  it("does not add operator credentials to login and refresh requests", async () => {
+    await runWithMcpRequestAuthContext({}, () =>
+      fetch(apiUrl, { method: "POST", body: "credentials" }),
+    );
+    expect(sent[0].headers.has("x-rbac-secret-key")).toBe(false);
+    expect(sent[0].headers.has("authorization")).toBe(false);
+    expect(sent[0].redirect).toBe("error");
   });
 
   /**

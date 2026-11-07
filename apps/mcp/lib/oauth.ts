@@ -7,25 +7,19 @@ import {
 import type { IncomingMessage, ServerResponse } from "node:http";
 import Redis from "ioredis";
 import jwt, { type JwtPayload } from "jsonwebtoken";
+import { MCP_CONTENT_SCOPE, MCP_SCOPES } from "./auth";
 import {
-  MCP_CONTENT_DELETE_SCOPE,
-  MCP_CONTENT_SCOPE,
-  MCP_SCOPES,
-} from "./auth";
+  RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
+  RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS,
+} from "@sps/shared-utils";
+import { api as rbacSubjectApi } from "@sps/rbac/models/subject/sdk/server";
+import { runWithMcpRequestAuthContext } from "./auth-context";
 import { readRequestBody, RequestBodyTooLargeError } from "./request-body";
 
 const DEFAULT_AUTH_CODE_TTL_SECONDS = 5 * 60;
-const DEFAULT_ACCESS_TOKEN_TTL_SECONDS = 60 * 60;
-const DEFAULT_REFRESH_TOKEN_TTL_SECONDS = 30 * 24 * 60 * 60;
-const DEFAULT_CLIENT_TTL_SECONDS = 30 * 24 * 60 * 60;
 const OAUTH_BODY_LIMIT_BYTES = 64 * 1024;
 const LOOPBACK_REDIRECT_HOSTS = ["localhost", "127.0.0.1", "[::1]"];
-const SCOPE_DESCRIPTIONS: Record<string, string> = {
-  [MCP_CONTENT_SCOPE]: "Read, create and update content",
-  [MCP_CONTENT_DELETE_SCOPE]: "Delete records",
-};
 export const INTERNAL_RBAC_SUBJECT_CLIENT_ID = "internal-rbac-subject";
-const INTERNAL_RBAC_SUBJECT_ACCESS_TOKEN_TTL_SECONDS = 5 * 60;
 export const INTERNAL_RBAC_SUBJECT_TOKEN_EXCHANGE_PATH =
   "/internal/rbac-subject-token-exchange";
 const PROTECTED_RESOURCE_METADATA_PATH =
@@ -51,6 +45,7 @@ type IOAuthCode = {
   scope: string;
   rbacSubjectId: string;
   rbacSubjectAuthenticationJwt: string;
+  rbacSubjectRefreshJwt: string;
   createdAt: number;
 };
 
@@ -69,6 +64,7 @@ type IRefreshTokenRecord = {
   rbacSubjectId: string;
   scope: string;
   rbacSubjectAuthenticationJwt: string;
+  rbacSubjectRefreshJwt: string;
   createdAt: number;
 };
 
@@ -120,7 +116,7 @@ interface IOAuthStore {
   saveClient(client: IOAuthClient, ttlSeconds: number): Promise<void>;
   getCode(code: string): Promise<IOAuthCode | undefined>;
   saveCode(code: IOAuthCode, ttlSeconds: number): Promise<void>;
-  deleteCode(code: string): Promise<void>;
+  takeCode(code: string): Promise<IOAuthCode | undefined>;
   getAccessToken(jti: string): Promise<IAccessTokenRecord | undefined>;
   saveAccessToken(
     record: IAccessTokenRecord,
@@ -132,6 +128,7 @@ interface IOAuthStore {
     record: IRefreshTokenRecord,
     ttlSeconds: number,
   ): Promise<void>;
+  takeRefreshToken(token: string): Promise<IRefreshTokenRecord | undefined>;
   deleteRefreshToken(token: string): Promise<void>;
 }
 
@@ -166,8 +163,10 @@ class MemoryOAuthStore implements IOAuthStore {
     this.codes.set(code.code, withTtl(code, ttlSeconds));
   }
 
-  async deleteCode(code: string) {
+  async takeCode(code: string) {
+    const record = getUnexpired(this.codes, code);
     this.codes.delete(code);
+    return record;
   }
 
   async getAccessToken(jti: string) {
@@ -188,6 +187,12 @@ class MemoryOAuthStore implements IOAuthStore {
 
   async saveRefreshToken(record: IRefreshTokenRecord, ttlSeconds: number) {
     this.refreshTokens.set(record.token, withTtl(record, ttlSeconds));
+  }
+
+  async takeRefreshToken(token: string) {
+    const record = getUnexpired(this.refreshTokens, token);
+    this.refreshTokens.delete(token);
+    return record;
   }
 
   async deleteRefreshToken(token: string) {
@@ -224,8 +229,14 @@ class RedisOAuthStore implements IOAuthStore {
     );
   }
 
-  async deleteCode(code: string) {
-    await this.redis.del(key("code", code));
+  async takeCode(code: string) {
+    const value = await this.redis.getdel(key("code", code));
+
+    if (!value) {
+      return undefined;
+    }
+
+    return JSON.parse(value) as IOAuthCode;
   }
 
   async getAccessToken(jti: string) {
@@ -256,6 +267,16 @@ class RedisOAuthStore implements IOAuthStore {
       "EX",
       ttlSeconds,
     );
+  }
+
+  async takeRefreshToken(token: string) {
+    const value = await this.redis.getdel(key("refresh", token));
+
+    if (!value) {
+      return undefined;
+    }
+
+    return JSON.parse(value) as IRefreshTokenRecord;
   }
 
   async deleteRefreshToken(token: string) {
@@ -443,15 +464,14 @@ export async function exchangeRbacSubjectAuthenticationJwtForMcpToken(props: {
     );
   }
 
-  // The API's profile agent follows the tools' own preview and confirmation
-  // rules, deletes included, and the API still decides what the subject may do.
+  // The API still authorizes every operation for this subject.
   const scope = MCP_SCOPES.join(" ");
   const issued = await issueAccessToken({
     clientId: INTERNAL_RBAC_SUBJECT_CLIENT_ID,
     rbacSubjectId,
     scope,
     rbacSubjectAuthenticationJwt,
-    ttlSeconds: INTERNAL_RBAC_SUBJECT_ACCESS_TOKEN_TTL_SECONDS,
+    ttlSeconds: getAccessTokenTtlSeconds(),
   });
 
   return {
@@ -648,7 +668,6 @@ async function handleAuthorize(
   if (params["email"] === undefined) {
     return renderAuthorizeSignIn(res, {
       ...request,
-      scope: getApprovedScope(request.scope, params["allow_delete"] === "true"),
     });
   }
 
@@ -657,7 +676,7 @@ async function handleAuthorize(
       String(params["email"] || ""),
       String(params["password"] || ""),
     );
-    const rbacSubjectId = getRbacSubjectIdFromAuthenticationJwt(
+    const rbacSubjectId = getVerifiedRbacSubjectIdFromAuthenticationJwt(
       credentials.rbacSubjectAuthenticationJwt,
     );
     const code = randomSecret();
@@ -673,6 +692,7 @@ async function handleAuthorize(
         scope: request.scope,
         rbacSubjectId,
         rbacSubjectAuthenticationJwt: credentials.rbacSubjectAuthenticationJwt,
+        rbacSubjectRefreshJwt: credentials.rbacSubjectRefreshJwt,
         createdAt: nowSeconds(),
       },
       getAuthCodeTtlSeconds(),
@@ -739,8 +759,6 @@ async function exchangeAuthorizationCode(
     return sendJson(res, 400, { error: "invalid_grant" });
   }
 
-  await getOAuthStore().deleteCode(code);
-
   const client = await getOAuthStore().getClient(storedCode.clientId);
 
   if (
@@ -757,12 +775,23 @@ async function exchangeAuthorizationCode(
     return sendJson(res, 400, { error: "invalid_grant" });
   }
 
-  return issueTokenResponse(res, {
-    client,
-    rbacSubjectId: storedCode.rbacSubjectId,
-    scope: storedCode.scope,
-    rbacSubjectAuthenticationJwt: storedCode.rbacSubjectAuthenticationJwt,
-  });
+  const claimed = await getOAuthStore().takeCode(code);
+
+  if (!claimed) {
+    return sendJson(res, 400, { error: "invalid_grant" });
+  }
+
+  try {
+    return await issueTokenResponse(res, {
+      client,
+      rbacSubjectId: claimed.rbacSubjectId,
+      scope: MCP_CONTENT_SCOPE,
+      rbacSubjectAuthenticationJwt: claimed.rbacSubjectAuthenticationJwt,
+      rbacSubjectRefreshJwt: claimed.rbacSubjectRefreshJwt,
+    });
+  } catch {
+    return sendJson(res, 400, { error: "invalid_grant" });
+  }
 }
 
 async function exchangeRefreshToken(
@@ -784,14 +813,31 @@ async function exchangeRefreshToken(
     return sendJson(res, 400, { error: "invalid_client" });
   }
 
-  await getOAuthStore().deleteRefreshToken(refreshToken);
+  // Claim the connector refresh token once, including across MCP processes.
+  const claimed = await getOAuthStore().takeRefreshToken(refreshToken);
 
-  return issueTokenResponse(res, {
-    client,
-    rbacSubjectId: record.rbacSubjectId,
-    scope: record.scope,
-    rbacSubjectAuthenticationJwt: record.rbacSubjectAuthenticationJwt,
-  });
+  if (!claimed) {
+    return sendJson(res, 400, { error: "invalid_grant" });
+  }
+
+  try {
+    const credentials = await runWithMcpRequestAuthContext({}, () =>
+      rbacSubjectApi.authenticationRefresh({
+        data: { refresh: claimed.rbacSubjectRefreshJwt },
+        options: { redirect: "error", signal: AbortSignal.timeout(10000) },
+      }),
+    );
+
+    return await issueTokenResponse(res, {
+      client,
+      rbacSubjectId: claimed.rbacSubjectId,
+      scope: MCP_CONTENT_SCOPE,
+      rbacSubjectAuthenticationJwt: credentials.jwt,
+      rbacSubjectRefreshJwt: credentials.refresh,
+    });
+  } catch {
+    return sendJson(res, 400, { error: "invalid_grant" });
+  }
 }
 
 async function issueTokenResponse(
@@ -801,10 +847,15 @@ async function issueTokenResponse(
     rbacSubjectId: string;
     scope: string;
     rbacSubjectAuthenticationJwt: string;
+    rbacSubjectRefreshJwt: string;
   },
 ) {
   const accessTokenTtl = getAccessTokenTtlSeconds();
-  const refreshTokenTtl = getRefreshTokenTtlSeconds();
+  const refreshTokenTtl = getRbacTokenRemainingSeconds(
+    props.rbacSubjectRefreshJwt,
+    props.rbacSubjectId,
+    getRefreshTokenTtlSeconds(),
+  );
   const issued = await issueAccessToken({
     clientId: props.client.clientId,
     rbacSubjectId: props.rbacSubjectId,
@@ -821,16 +872,13 @@ async function issueTokenResponse(
       rbacSubjectId: props.rbacSubjectId,
       scope: props.scope,
       rbacSubjectAuthenticationJwt: props.rbacSubjectAuthenticationJwt,
+      rbacSubjectRefreshJwt: props.rbacSubjectRefreshJwt,
       createdAt: nowSeconds(),
     },
     refreshTokenTtl,
   );
-  // Every token issue extends the registration, never below the lifetime of
-  // the refresh token just issued, so a client in use outlives its tokens.
-  await getOAuthStore().saveClient(
-    props.client,
-    Math.max(getClientTtlSeconds(), refreshTokenTtl),
-  );
+  // Keep registration alive for the shared RBAC refresh window.
+  await getOAuthStore().saveClient(props.client, getClientTtlSeconds());
 
   return sendJson(res, 200, {
     access_token: issued.accessToken,
@@ -842,7 +890,13 @@ async function issueTokenResponse(
 }
 
 async function issueAccessToken(props: IAccessTokenIssueProps) {
-  const expiresAt = nowSeconds() + props.ttlSeconds;
+  const issuedAt = nowSeconds();
+  const lifetime = getRbacTokenRemainingSeconds(
+    props.rbacSubjectAuthenticationJwt,
+    props.rbacSubjectId,
+    props.ttlSeconds,
+  );
+  const expiresAt = issuedAt + lifetime;
   const jti = randomUUID();
   const accessToken = jwt.sign(
     {
@@ -850,12 +904,13 @@ async function issueAccessToken(props: IAccessTokenIssueProps) {
       aud: getMcpPublicUrl(),
       iss: getMcpPublicBaseUrl(),
       scope: props.scope,
+      iat: issuedAt,
       client_id: props.clientId,
       jti,
     },
     getMcpJwtSecret(),
     {
-      expiresIn: props.ttlSeconds,
+      expiresIn: lifetime,
     },
   );
 
@@ -868,12 +923,12 @@ async function issueAccessToken(props: IAccessTokenIssueProps) {
       rbacSubjectAuthenticationJwt: props.rbacSubjectAuthenticationJwt,
       expiresAt,
     },
-    props.ttlSeconds,
+    lifetime,
   );
 
   return {
     accessToken,
-    expiresIn: props.ttlSeconds,
+    expiresIn: lifetime,
   };
 }
 
@@ -886,7 +941,7 @@ async function validateAuthorizeParams(
   const codeChallenge = String(params["code_challenge"] || "");
   const codeChallengeMethod = String(params["code_challenge_method"] || "");
   const resource = optionalString(params["resource"]);
-  const scope = normalizeScope(optionalString(params["scope"]));
+  const scope = MCP_CONTENT_SCOPE;
   const state = optionalString(params["state"]);
 
   if (responseType !== "code") {
@@ -956,79 +1011,21 @@ function isAllowedRedirectUri(value: unknown): value is string {
   );
 }
 
-/**
- * Keeps the requested scopes this server knows, in the order it lists them, and
- * always grants mcp:content. RFC 6749 3.3 lets a server ignore unknown values.
- */
-function normalizeScope(scope?: string) {
-  const requested = (scope || "").split(" ");
-
-  return MCP_SCOPES.filter(
-    (item) => item === MCP_CONTENT_SCOPE || requested.includes(item),
-  ).join(" ");
-}
-
-function getApprovedScope(scope: string, allowDelete: boolean) {
-  return scope
-    .split(" ")
-    .filter((item) => allowDelete || item !== MCP_CONTENT_DELETE_SCOPE)
-    .join(" ");
-}
-
 async function authenticateRbacSubject(email: string, password: string) {
   if (!email || !password) {
     throw new Error("Email and password are required");
   }
 
-  const formData = new FormData();
-  formData.set(
-    "data",
-    JSON.stringify({
-      login: email,
-      password,
+  const credentials = await runWithMcpRequestAuthContext({}, () =>
+    rbacSubjectApi.authenticationEmailAndPasswordAuthentication({
+      data: { login: email, password },
+      options: { redirect: "error", signal: AbortSignal.timeout(10000) },
     }),
   );
 
-  const apiUrl = (
-    process.env["API_SERVICE_URL"] || "http://127.0.0.1:4000"
-  ).replace(/\/$/, "");
-  const response = await fetch(
-    `${apiUrl}/api/rbac/subjects/authentication/email-and-password/authentication`,
-    {
-      method: "POST",
-      body: formData,
-    },
-  ).catch((error) => {
-    throw new Error(
-      `Unable to reach SinglePageStartup API at ${apiUrl}. Is npm run api:dev running? ${getErrorMessage(error)}`,
-    );
-  });
-  const payload = (await response.json().catch(() => ({}))) as Record<
-    string,
-    unknown
-  >;
-
-  if (!response.ok) {
-    throw new Error(
-      getPayloadError(payload) ||
-        `RBAC subject authentication failed with status ${response.status}`,
-    );
-  }
-
-  const data = isRecord(payload["data"])
-    ? payload["data"]
-    : (payload as Record<string, unknown>);
-  const rbacSubjectAuthenticationJwt =
-    typeof data["jwt"] === "string" ? data["jwt"] : undefined;
-
-  if (!rbacSubjectAuthenticationJwt) {
-    throw new Error(
-      "RBAC subject authentication response does not include jwt",
-    );
-  }
-
   return {
-    rbacSubjectAuthenticationJwt,
+    rbacSubjectAuthenticationJwt: credentials.jwt,
+    rbacSubjectRefreshJwt: credentials.refresh,
   };
 }
 
@@ -1036,10 +1033,6 @@ function renderAuthorizeConsent(
   res: ServerResponse,
   request: IAuthorizeRequest,
 ) {
-  const requestsDelete = request.scope
-    .split(" ")
-    .includes(MCP_CONTENT_DELETE_SCOPE);
-
   return sendAuthorizePage(
     res,
     200,
@@ -1055,15 +1048,7 @@ function renderAuthorizeConsent(
       </dl>
       <form method="post" action="/oauth/authorize">
         ${renderAuthorizeFields(request)}
-        <p>It will be able to:</p>
-        <ul>
-          <li>${escapeHtml(SCOPE_DESCRIPTIONS[MCP_CONTENT_SCOPE])}</li>
-        </ul>
-        ${
-          requestsDelete
-            ? `<label class="choice"><input type="checkbox" name="allow_delete" value="true" /> Also allow deleting records (${escapeHtml(MCP_CONTENT_DELETE_SCOPE)})</label>`
-            : ""
-        }
+        <p>This application can perform the operations your account is allowed to perform in the project, including deleting records when your role permits it.</p>
         <div class="actions">
           <button type="submit" name="consent" value="approve">Continue</button>
           <button type="submit" name="consent" value="deny" class="secondary">Cancel</button>
@@ -1077,16 +1062,11 @@ function renderAuthorizeSignIn(
   request: IAuthorizeRequest,
   error?: string,
 ) {
-  const access = request.scope
-    .split(" ")
-    .map((scope) => SCOPE_DESCRIPTIONS[scope])
-    .join("; ");
-
   return sendAuthorizePage(
     res,
     200,
     `<h1>Sign in to approve</h1>
-      <p>Sign in with your SinglePageStartup account to connect ${escapeHtml(request.client.clientName || request.client.clientId)}. Access: ${escapeHtml(access)}.</p>
+      <p>Sign in with your SinglePageStartup account to connect ${escapeHtml(request.client.clientName || request.client.clientId)}. Your project permissions apply to every operation.</p>
       ${error ? `<p class="error">${escapeHtml(error)}</p>` : ""}
       <form method="post" action="/oauth/authorize">
         ${renderAuthorizeFields(request)}
@@ -1151,8 +1131,6 @@ function sendAuthorizePage(
       dt { font-weight: 600; margin-top: 10px; }
       dd { margin: 4px 0 0; overflow-wrap: anywhere; }
       ul { color: #475569; }
-      .choice { display: flex; gap: 8px; align-items: flex-start; font-weight: 400; }
-      .choice input { width: auto; margin-top: 3px; }
       .actions { display: flex; gap: 10px; }
       .error { margin: 0 0 16px; color: #b91c1c; }
       p { color: #475569; }
@@ -1234,37 +1212,37 @@ function verifyJwt(accessToken: string) {
   return payload;
 }
 
-function getRbacSubjectIdFromAuthenticationJwt(
-  rbacSubjectAuthenticationJwt: string,
+function getRbacTokenRemainingSeconds(
+  token: string,
+  subjectId: string,
+  maximum: number,
 ) {
   const secret = process.env["RBAC_JWT_SECRET"];
 
   if (!secret) {
-    return "rbac-subject";
+    throw new Error("Configuration error. RBAC_JWT_SECRET is required");
   }
 
-  const payload = jwt.verify(rbacSubjectAuthenticationJwt, secret);
-
-  if (!isJwtPayload(payload)) {
-    return "rbac-subject";
-  }
-
-  if (typeof payload.sub === "string") {
-    return payload.sub;
-  }
+  const payload = jwt.verify(token, secret, { algorithms: ["HS256"] });
 
   if (
-    isRecord(payload["subject"]) &&
-    typeof payload["subject"]["id"] === "string"
+    !isJwtPayload(payload) ||
+    !isRecord(payload["subject"]) ||
+    payload["subject"]["id"] !== subjectId ||
+    !Number.isSafeInteger(payload.exp) ||
+    !Number.isSafeInteger(maximum) ||
+    maximum <= 0
   ) {
-    return payload["subject"]["id"];
+    throw new Error("Authentication error. Invalid RBAC session");
   }
 
-  if (typeof payload["id"] === "string") {
-    return payload["id"];
+  const remaining = Math.min((payload.exp as number) - nowSeconds(), maximum);
+
+  if (remaining <= 0) {
+    throw new Error("Authentication error. RBAC session has expired");
   }
 
-  return "rbac-subject";
+  return remaining;
 }
 
 function getVerifiedRbacSubjectIdFromAuthenticationJwt(
@@ -1399,24 +1377,15 @@ function getAuthCodeTtlSeconds() {
 }
 
 function getAccessTokenTtlSeconds() {
-  return getEnvNumber(
-    "MCP_SERVICE_OAUTH_ACCESS_TOKEN_TTL_SECONDS",
-    DEFAULT_ACCESS_TOKEN_TTL_SECONDS,
-  );
+  return RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS;
 }
 
 function getRefreshTokenTtlSeconds() {
-  return getEnvNumber(
-    "MCP_SERVICE_OAUTH_REFRESH_TOKEN_TTL_SECONDS",
-    DEFAULT_REFRESH_TOKEN_TTL_SECONDS,
-  );
+  return RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS;
 }
 
 function getClientTtlSeconds() {
-  return getEnvNumber(
-    "MCP_SERVICE_OAUTH_CLIENT_TTL_SECONDS",
-    DEFAULT_CLIENT_TTL_SECONDS,
-  );
+  return getRefreshTokenTtlSeconds();
 }
 
 function getEnvNumber(name: string, fallback: number) {
@@ -1485,18 +1454,6 @@ function escapeHtml(value: string) {
 
 function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : String(error);
-}
-
-function getPayloadError(payload: Record<string, unknown>) {
-  if (typeof payload["message"] === "string") {
-    return payload["message"];
-  }
-
-  if (typeof payload["error"] === "string") {
-    return payload["error"];
-  }
-
-  return undefined;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

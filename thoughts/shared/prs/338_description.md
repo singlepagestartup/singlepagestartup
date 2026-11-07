@@ -2,108 +2,47 @@ Closes #316.
 
 ## Summary
 
-The MCP OAuth server kept every registered client forever and accepted any string as a redirect target. Every token carried the one scope `mcp:content`, and no tool checked it, so any connector a user authorized could delete. The HTTP session map and both request-body readers had no bound. The fetch patch attached the caller's credentials, or the local operator secret, to requests for any origin. `tools/deployer/mcp.sh` passed `RBAC_SECRET_KEY` to Ansible on every run and `apps/mcp/create_env.sh` copied it into the local MCP env. Neither MCP nor Telegram ran the boot-time secret check the API runs.
+MCP registered OAuth clients indefinitely, accepted unsafe callback URLs, kept unbounded HTTP sessions and request bodies, and could forward credentials outside the API. Refreshing an MCP token also reused the original RBAC access JWT, so the renewed connection stopped working after that JWT expired.
 
-With this change a registration expires unless it is used, redirect targets must be `https` or loopback `http`, deleting needs a scope that the user approves on a new consent step, bodies and sessions are bounded, credentials reach the API origin only, the MCP environment no longer carries the operator secret, and MCP and Telegram refuse to start on a legacy RBAC secret. Existing connectors keep reading and writing without reconnecting; the documented Claude Code, Claude Desktop and Claude.ai, Codex, Inspector and browser-test flows keep their callbacks and form fields.
+This PR validates callback URLs, limits bodies and sessions, expires registrations, and rejects API redirects. OAuth login and refresh use the subject SDK. MCP uses the same RBAC lifetimes and permissions as direct API requests, including deletion. It adds no separate delete permission.
 
 ## Changes
 
-- `apps/mcp/lib/oauth.ts`
-  - Registered clients expire after `MCP_SERVICE_OAUTH_CLIENT_TTL_SECONDS` (30 days) in the memory and Redis stores. Every token issue saves the client again with the larger of that TTL and the refresh-token TTL, so a client in use outlives its refresh token.
-  - One redirect predicate, used at registration and at authorize: the value must parse with `new URL()`, carry no fragment, credentials, whitespace or non-ASCII character, and be `https` or `http` on `localhost`, `127.0.0.1` or `[::1]`. Matching stays exact at authorize and token time. Malformed registration JSON answers 400 `invalid_client_metadata`.
-  - Both metadata documents advertise `mcp:content` and `mcp:content:delete`. A requested scope is reduced to known values with `mcp:content` always present. The internal rbac.subject exchange issues both scopes, so the API's profile agent keeps the tools' preview and confirmation delete flow.
-  - `/oauth/authorize` runs in two steps. `GET` validates the request and shows a consent step with the application name, client id and redirect URI, the access requested, and "Also allow deleting records" when the delete scope was requested. Continue leads to the unchanged email and password form carrying the approved scope; Cancel redirects with `error=access_denied` and the state. An invalid request shows an error page without a form. The pages send `X-Frame-Options: DENY`, `Content-Security-Policy: frame-ancestors 'none'` and `Cache-Control: no-store`.
-  - OAuth bodies are read with a 64 KiB limit and answer 413. `handleOAuthRequest` now awaits its handlers, so their errors reach its error mapping instead of the generic 500 in `http.ts`.
-- `apps/mcp/lib/auth.ts`, `apps/mcp/lib/content-management/auth.ts` — the scope constants, re-exported into content-management the way `getMcpAuthHeaders` already is.
-- `apps/mcp/lib/content-management/operations.ts` — `IContentOperationOptions.scopes`; `requireOperation` maps `find`, `count`, `get`, `create` and `update` to `mcp:content` and `delete` to `mcp:content:delete`, and throws a `Permission error` when the granted scopes lack it. Stdio calls carry no OAuth scopes and are not limited.
-- `apps/mcp/content-management.ts` — API-backed tools pass `extra.authInfo?.scopes` with the forwarded credentials.
-- `apps/mcp/lib/request-body.ts` (new) — reads a body up to a limit; a declared or streamed length above it rejects with `RequestBodyTooLargeError` and the rest is drained without being kept.
-- `apps/mcp/lib/session-store.ts` (new) — sessions in least-recently-used order; idle sessions close on lookup, on insert and on a one-minute sweep, and at the maximum the least recently used session closes. A closed session answers 404, as after a restart.
-- `apps/mcp/http.ts` — the boot-time secret check (`MCP_SECRET_STRENGTH=report` to start anyway), the session store with `MCP_SERVICE_HTTP_SESSION_IDLE_TTL_SECONDS` (86400) and `MCP_SERVICE_HTTP_MAX_SESSIONS` (500), `/mcp` bodies limited by `MCP_SERVICE_HTTP_MAX_BODY_BYTES` (4194304, room for base64 uploads) with a JSON-RPC 413, and both scopes for the operator-secret fallback and `MCP_SERVICE_AUTH_REQUIRED=false`.
-- `apps/mcp/lib/auth-context.ts` — the fetch patch forwards credentials and the local operator secret only to the `API_SERVICE_URL` origin; other requests go out as their caller built them.
-- `libs/shared/utils/src/lib/secret-strength/index.ts` — `assessSecrets` takes the names to check (the API's default is unchanged), `MCP_CHECKED_SECRET_NAMES`, `TELEGRAM_CHECKED_SECRET_NAMES`, and `assessConfiguredSecrets`, which judges only values that are set. The fatal rule is the API's: a legacy `RBAC_SECRET_KEY` or `RBAC_JWT_SECRET`.
-- `libs/shared/utils/src/lib/envs/telegram.ts`, `apps/telegram/server.ts` — `TELEGRAM_SECRET_STRENGTH` and the Telegram boot check.
-- Deployer: `tools/deployer/mcp/mcp.env.j2`, `mcp.sh` and `apps/mcp/create_env.sh` drop `RBAC_SECRET_KEY`; the four new settings are plumbed like the OAuth TTLs through `mcp.env.j2`, `mcp.sh`, `.env.example`, `github_deployer.sh` and `.github/workflows/ansible.yml`.
-- Docs: `README.md`, `AI_GUIDE.md` section 6, `apps/mcp/README.md` (scopes and consent, limits, deployment), `apps/mcp/USAGE.md` (delete needs the scope), `tools/deployer/README.md` (MCP and Telegram strength knobs, rotation table).
-- Specs: `oauth.spec.ts` (TTL, redirect rule, consent, cancel, approved scope, error page, 413), `operations.spec.ts` (scope enforcement), `content-management.spec.ts` (scope wiring), and new `request-body.spec.ts`, `session-store.spec.ts`, `auth-context.spec.ts`; `secret-strength/index.spec.ts` covers the service lists.
-
-## Review after updating from main (2026-11-08)
-
-The branch includes main at `3cb105c225`, including #334 request bounds and #335
-outbound URL protection. The merge conflict in `.github/workflows/ansible.yml`
-was resolved by retaining both sets of API/outbound and MCP settings in preview
-and production. No setting was dropped.
-
-Current checks: 94 MCP tests, 45 Telegram tests, 123 shared-utils tests, MCP
-TypeScript, shell syntax and workflow YAML validation pass. An isolated MCP
-HTTP process also starts with strong synthetic secrets and an in-memory store:
-metadata, registration, redirect refusal, the OAuth body limit and rejection of
-unauthenticated MCP calls pass. The process and its registrations were removed.
-
-**Review blocker:** `apps/mcp/lib/auth-context.ts` checks the initial request
-origin but leaves automatic redirects enabled. A loopback test using two origins
-and a synthetic operator credential confirmed that an API redirect forwards
-`X-RBAC-SECRET-KEY` to the second origin. This requires an API redirect; it is not
-proof of an attacker-controlled redirect in this project. Before merge, credential
-forwarding must also constrain redirects, with a regression test for that case.
-The normal unit suites currently mock fetch and do not cover this behavior.
-
-The previous verification below records the original implementation review;
-it does not replace the current checks or clear this blocker.
+- OAuth registration accepts HTTPS callbacks and HTTP callbacks on localhost or loopback addresses. Credentials, fragments, whitespace and non-ASCII characters are rejected; authorize and token exchange require an exact callback match.
+- The consent page names the application, client id and callback before sign-in. It explains that the subject's existing permissions apply. The single `mcp:content` scope identifies the connection; API RBAC authorizes each operation. Existing delete previews and confirmation tokens remain.
+- Access and refresh lifetimes come from `RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS` and `RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS`, capped by the actual expiry of the corresponding signed RBAC JWT. Client registrations use the shared refresh lifetime and renew when tokens are issued.
+- MCP stores the subject's refresh JWT on the server. Refresh calls the RBAC SDK, checks the returned subject, and issues a new MCP pair mapped to the renewed RBAC session. A failed refresh requires signing in again. Codes and refresh tokens are consumed atomically with Redis `GETDEL` or the memory-store equivalent.
+- The fetch wrapper adds credentials only for the configured API origin and forces `redirect: "error"` for API requests, including login and refresh bodies. This closes the reviewed redirect leak for both operator headers and subject credentials. Configure the final API URL, without a redirecting alias.
+- OAuth bodies are limited to 64 KiB; `/mcp` bodies default to 4 MiB. HTTP sessions expire after 24 idle hours by default, with a maximum of 500 sessions and oldest-session eviction.
+- The MCP deployment no longer copies `RBAC_SECRET_KEY` into its environment. API and MCP receive the same RBAC lifetime settings through local setup, the deployer and both GitHub Actions environments.
+- MCP and Telegram run the existing shared secret-strength check on startup. Legacy predictable RBAC authorization secrets stop startup; the service-specific `report` setting permits a temporary warning-only mode. The Telegram change adds this check only; it is independent of MCP OAuth.
 
 ## Verification
 
-- [x] `npx nx run mcp:jest:test` — 12 suites, 91 tests (before: 9 suites, 54 tests).
-- [x] `npx nx run-many --target=jest:test --projects=telegram,@sps/shared-utils` — 5 suites and 45 tests; 12 suites and 77 tests.
-- [x] `npx nx run-many --target=eslint:lint --projects=mcp,telegram,@sps/shared-utils` — no findings.
-- [x] `npx tsc --noEmit -p apps/mcp/tsconfig.json`, `-p apps/telegram/tsconfig.json`, `-p libs/shared/utils/tsconfig.json` — no errors.
-- [x] `node tools/agents/code-placement.mjs` — no same-name file and folder pairs.
-- [x] Mutation checks: with the redirect predicate reduced to "parses", the delete-scope check disabled, the client TTL extension removed, or the fetch origin check removed, the matching specs fail.
-- [x] HTTP proof, API on 4316 and MCP on 3316 with the Redis store, a throwaway subject, the fallback flag on and `RBAC_SECRET_KEY` empty: metadata lists both scopes; a loopback registration answers 201 and its Redis key carries a 30-day TTL; `javascript:`, fragment, public `http` and credential redirects answer 400; a 70 KiB registration answers 413; the consent page names the client and the callback and has no password field; approval without the delete choice yields a `mcp:content` token, with it `mcp:content mcp:content:delete`; Cancel returns `access_denied`; `model-record-find` succeeds and `model-record-delete-apply` is refused for scope with the first token and reaches the API with the second; a 5 MiB `/mcp` body answers 413; `X-RBAC-SECRET-KEY` without a bearer answers 401; with three sessions allowed, opening a fourth leaves the least recently used one answering 404. Tokens were revoked and the client key, subject, identity and link deleted afterwards.
-- [x] Boot checks at runtime: MCP with a legacy `RBAC_JWT_SECRET` and Telegram with a legacy `RBAC_SECRET_KEY` exit 1; with `MCP_SECRET_STRENGTH=report` or `TELEGRAM_SECRET_STRENGTH=report` they start.
-- [x] `tools/deployer/mcp/mcp.env.j2` rendered with Ansible's Jinja: no `RBAC_SECRET_KEY` with the fallback on and the secret passed; empty settings fall back to their defaults.
+Main `3cb105c225` is integrated. The only textual merge conflict was in `.github/workflows/ansible.yml`; both preview and production retain the API/outbound and MCP settings.
 
-## How to verify it
-
-1. Start the API, then `npm run mcp:http`.
-2. `curl http://127.0.0.1:3001/.well-known/oauth-protected-resource/mcp` lists `mcp:content` and `mcp:content:delete`.
-3. `POST /oauth/register` with `{"redirect_uris":["javascript:alert(1)"]}` answers 400 `invalid_redirect_uri`; with `["http://127.0.0.1:53316/callback"]` it answers 201.
-4. Open `http://127.0.0.1:3001/authentication/oauth` and start: the consent step names the client and `…/authentication/oauth`; Continue, sign in, and the page receives a token. Through that connection `model-record-find` works and `model-record-delete-apply` answers a permission error.
-5. Log in with Codex (`codex mcp login <name> --scopes "mcp:content mcp:content:delete"`) or Inspector, tick "Also allow deleting records", and the same delete passes the scope check; the API still decides for the subject.
+- [x] `npx jest --config apps/mcp/jest.config.ts --runInBand`: 100 tests in 13 suites.
+- [x] `npx tsc --noEmit --project apps/mcp/tsconfig.json`; ESLint on changed TypeScript files; `bash -n` on changed shell scripts; `git diff --check`. API/MCP Jinja templates render matching lifetime defaults and overrides.
+- [x] `bun test --no-env-file tools/dev/deploy-credentials.test.ts`: 4 tests, including the correspondence between declared Actions environment values and the generated `.env`.
+- [x] `MCP_TEST_REDIS_PORT=<isolated-port> bun test --no-env-file --timeout 30000 tools/dev/mcp-auth.test.ts`: 2 tests. Runtime authentication check: actual Bun MCP HTTP process, isolated Redis, real SDK calls to a loopback RBAC fixture with signed test JWTs. Verifies expired access rejection, renewed access, single-use code and refresh exchange, Redis TTLs and no operator header on login/refresh.
+- [x] Redirect runtime check in the same test file: HTTP 301, 302, 303, 307 and 308; the receiving server gets no request, including POST bodies with synthetic credentials.
+- [x] Telegram 45 tests and shared-utils 123 tests passed during the main synchronization; this follow-up does not change their runtime code.
 
 ## Notes
 
-- Private-use redirect schemes (RFC 8252 7.1, for example `cursor://`) are refused. None of the documented clients uses one; a deployment that needs one needs a follow-up allow-list.
-- Deleting is not stepped up at the HTTP level (`insufficient_scope`); the delete-apply tools answer a permission error that tells the user to reconnect and approve deleting.
-- The session idle default is 24 hours so a client left idle overnight keeps its session; the maximum count bounds memory (about 143 KiB of heap per session, measured).
-- The template `tools/deployer/mcp/mcp.env.j2` already rendered `RBAC_SECRET_KEY` only when the fallback flag was `'true'`; the unconditional hand-over was in `mcp.sh`. Enabling the fallback on a server now needs the secret added to the MCP env by hand.
-- The internal exchange keeps the delete scope because the profile agent deletes through the tools' preview and confirmation flow; limiting the agent is a separate product decision.
-- The original proof used process variables to compensate for local API/MCP credential drift. Compare the current deployment settings before running a full OAuth login against the API; the current isolated smoke check uses synthetic credentials.
-- The branch carries the research, plan, process and progress records under `thoughts/shared/`.
+Removal of migration-only secret checks and temporary `report` modes is tracked in #386. Cleanup starts after the owner confirms that all maintained projects have upgraded and old secrets have been rotated.
+
+The runtime fixture tests MCP's use of the RBAC contract. It does not establish end-to-end authorization against a production account or independently audit the RBAC implementation. No production data or configuration was changed.
 
 ## Downstream migration
 
-Adaptation is required where a project deploys MCP or Telegram, connects OAuth clients to MCP, or overrides the MCP OAuth, HTTP or content-management code.
+Applies to projects deploying MCP or Telegram, overriding their startup/authentication code, or connecting OAuth clients to MCP.
 
-**Applies to:** projects that deploy `apps/mcp` or `apps/telegram`, connect MCP clients over OAuth, override `apps/mcp` oauth, http, content-management or operations code, enable `MCP_SERVICE_ALLOW_RBAC_SECRET_FALLBACK` on a server, or upload files larger than 4 MiB through MCP.
+1. Use the same `RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS` and `RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS` in API and MCP (defaults: 3600 and 86400 seconds). Remove custom `MCP_SERVICE_OAUTH_ACCESS_TOKEN_TTL_SECONDS`, `MCP_SERVICE_OAUTH_REFRESH_TOKEN_TTL_SECONDS` and `MCP_SERVICE_OAUTH_CLIENT_TTL_SECONDS` settings. The authorization-code TTL remains separate.
+2. Reconnect existing OAuth clients once: older stored refresh records have no RBAC refresh JWT. No additional delete approval is needed; retain the subject's API permissions and tool confirmation flow in overrides.
+3. Configure `API_SERVICE_URL` with the final origin and route base. Redirects from API SDK requests now fail.
+4. Use HTTPS or loopback HTTP callback URLs. Private-use URI schemes need a separate explicit allow-list if a downstream connector requires them.
+5. Rotate legacy `RBAC_SECRET_KEY` or `RBAC_JWT_SECRET` before deploying. For the rotation window, `MCP_SECRET_STRENGTH=report` and `TELEGRAM_SECRET_STRENGTH=report` permit startup with warnings; see `tools/deployer/README.md`.
+6. Private operator-fallback deployments must provide `RBAC_SECRET_KEY` explicitly; the deployer no longer copies it. Adjust the documented body and session limits if required.
 
-**New environment variables:**
-
-| Variable                                    | Default             | Meaning                                                                                                   |
-| ------------------------------------------- | ------------------- | --------------------------------------------------------------------------------------------------------- |
-| `MCP_SERVICE_OAUTH_CLIENT_TTL_SECONDS`      | `2592000` (30 days) | Lifetime of a registered OAuth client; each token issue extends it to at least the refresh-token lifetime |
-| `MCP_SERVICE_HTTP_MAX_BODY_BYTES`           | `4194304` (4 MiB)   | Largest `/mcp` request body                                                                               |
-| `MCP_SERVICE_HTTP_SESSION_IDLE_TTL_SECONDS` | `86400` (24 hours)  | Idle time after which a Streamable HTTP session closes                                                    |
-| `MCP_SERVICE_HTTP_MAX_SESSIONS`             | `500`               | Live sessions; the least recently used closes to admit a new one                                          |
-| `MCP_SECRET_STRENGTH`                       | `enforce`           | `report` starts MCP on a legacy RBAC secret                                                               |
-| `TELEGRAM_SECRET_STRENGTH`                  | `enforce`           | `report` starts Telegram on a legacy RBAC secret                                                          |
-
-**Actions:**
-
-- Reconnect every OAuth connector that has to delete and tick "Also allow deleting records" on the consent step; for Codex run `codex mcp login <server-name> --scopes "mcp:content mcp:content:delete"`. Existing tokens keep read and write.
-- Where the MCP fallback is enabled on a server, add `RBAC_SECRET_KEY` to that MCP service env by hand; the deployer no longer renders it.
-- Before redeploying MCP and Telegram, rotate a legacy `RBAC_SECRET_KEY` or `RBAC_JWT_SECRET` as `tools/deployer/README.md` describes, or set `MCP_SECRET_STRENGTH=report` and `TELEGRAM_SECRET_STRENGTH=report` for the rotation window.
-- Re-register MCP clients whose redirect URI is not `https` or loopback `http`, raise `MCP_SERVICE_HTTP_MAX_BODY_BYTES` if base64 uploads through MCP exceed 4 MiB, and optionally set an expiry on existing Redis keys `mcp:oauth:client:*` that have none (they get one at their next token issue).
-- In overrides of `apps/mcp/content-management.ts` or `lib/content-management/operations.ts`, pass `extra.authInfo?.scopes` into the operation options and keep `requireOperation`'s scope check; in overrides of `lib/oauth.ts`, keep the consent step, the redirect rule and the body limit.
-
-**Verify:** `npx nx run mcp:jest:test` passes; `GET /.well-known/oauth-protected-resource/mcp` lists both scopes; registering a `javascript:` redirect URI answers 400; a token without the delete scope gets a permission error from `model-record-delete-apply`; MCP and Telegram boot logs name only secrets that are set.
+Verify with `npx nx run mcp:jest:test`. For the runtime check, provide a dedicated Redis port and run `MCP_TEST_REDIS_PORT=<port> bun test --no-env-file --timeout 30000 tools/dev/mcp-auth.test.ts`. Then connect a test subject to the deployed MCP, check its normal API permissions and refresh after access expiry.

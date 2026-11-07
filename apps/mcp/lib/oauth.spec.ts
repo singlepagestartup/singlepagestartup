@@ -3,7 +3,7 @@
  *
  * Given a remote MCP public URL configuration and the in-memory OAuth store
  * When clients register, users consent and sign in, and tokens are exchanged
- * Then registrations expire, redirect targets are limited, deleting needs an approved scope, and oversized bodies are refused
+ * Then registrations expire, redirect targets are limited, operations use the subject RBAC permissions, and oversized bodies are refused
  */
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { Readable } from "node:stream";
@@ -21,6 +21,18 @@ import {
 } from "./oauth";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 
+jest.mock("@sps/shared-utils", () => ({
+  ...jest.requireActual("@sps/shared-utils"),
+  get RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS() {
+    return Number(process.env.RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS || 3600);
+  },
+  get RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS() {
+    return Number(
+      process.env.RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS || 86400,
+    );
+  },
+}));
+
 const oauthEnv = {
   MCP_SERVICE_PUBLIC_BASE_URL: "https://mcp.example.com",
   MCP_SERVICE_PUBLIC_URL: "https://mcp.example.com/mcp",
@@ -29,6 +41,8 @@ const oauthEnv = {
   MCP_SERVICE_OAUTH_STORE: "memory",
   RBAC_JWT_SECRET: "rbac-jwt-secret",
   KV_PROVIDER: "memory",
+  RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS: "3600",
+  RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS: "86400",
 };
 
 describe("MCP OAuth helpers", () => {
@@ -50,14 +64,14 @@ describe("MCP OAuth helpers", () => {
    *
    * Given MCP_SERVICE_PUBLIC_URL points to the remote streamable HTTP endpoint
    * When protected resource metadata is generated
-   * Then it advertises the MCP resource, authorization server, and both content scopes
+   * Then it advertises the MCP resource, authorization server, and the connection scope
    */
   it("exposes protected resource metadata for the MCP endpoint", () => {
     expect(getProtectedResourceMetadata()).toEqual({
       resource: "https://mcp.example.com/mcp",
       authorization_servers: ["https://mcp.example.com"],
       bearer_methods_supported: ["header"],
-      scopes_supported: ["mcp:content", "mcp:content:delete"],
+      scopes_supported: ["mcp:content"],
       resource_name: "SinglePageStartup MCP",
     });
   });
@@ -78,7 +92,7 @@ describe("MCP OAuth helpers", () => {
       revocation_endpoint: "https://mcp.example.com/oauth/revoke",
       grant_types_supported: ["authorization_code", "refresh_token"],
       code_challenge_methods_supported: ["S256"],
-      scopes_supported: ["mcp:content", "mcp:content:delete"],
+      scopes_supported: ["mcp:content"],
     });
   });
 
@@ -151,9 +165,9 @@ describe("MCP OAuth helpers", () => {
    *
    * Given a valid RBAC subject authentication JWT for an rbac.subject and the internal service secret
    * When the JWT is exchanged for an MCP token
-   * Then the access-only token lasts five minutes, resolves to that rbac.subject, and keeps the profile agent's delete access
+   * Then the access-only token is bounded by the RBAC JWT lifetime, resolves to that rbac.subject, and keeps the profile agent's delete access
    */
-  it("issues a five-minute access-only MCP token for the verified rbac.subject", async () => {
+  it("issues an access-only MCP token with the shared RBAC lifetime", async () => {
     const rbacSubjectAuthenticationJwt =
       createRbacSubjectAuthenticationJwt("rbac-subject-1");
     const before = Math.floor(Date.now() / 1000);
@@ -171,23 +185,41 @@ describe("MCP OAuth helpers", () => {
 
     expect(response).toMatchObject({
       token_type: "Bearer",
-      expires_in: 300,
-      scope: "mcp:content mcp:content:delete",
+      expires_in: 3600,
+      scope: "mcp:content",
     });
     expect(response).not.toHaveProperty("refresh_token");
     expect(verified).toMatchObject({
       clientId: "internal-rbac-subject",
-      scopes: ["mcp:content", "mcp:content:delete"],
+      scopes: ["mcp:content"],
       rbacSubjectId: "rbac-subject-1",
       rbacSubjectAuthenticationJwt,
     });
-    expect(verified.expiresAt).toBeGreaterThanOrEqual(before + 300);
-    expect(verified.expiresAt).toBeLessThanOrEqual(before + 301);
+    expect(verified.expiresAt).toBeGreaterThanOrEqual(before + 3600);
+    expect(verified.expiresAt).toBeLessThanOrEqual(before + 3601);
     expect(accessPayload).toMatchObject({
       sub: "rbac-subject-1",
       client_id: "internal-rbac-subject",
-      scope: "mcp:content mcp:content:delete",
+      scope: "mcp:content",
     });
+  });
+
+  it("caps MCP access at the actual remaining lifetime of the subject JWT", async () => {
+    const subjectToken = jwt.sign(
+      { subject: { id: "rbac-subject-1" } },
+      "rbac-jwt-secret",
+      { expiresIn: 15 },
+    );
+    const response = await exchangeRbacSubjectAuthenticationJwtForMcpToken({
+      providedSecret: "internal-exchange-secret",
+      body: { subject_token: subjectToken },
+    });
+
+    expect(response.expires_in).toBeGreaterThan(0);
+    expect(response.expires_in).toBeLessThanOrEqual(15);
+    expect(
+      (jwt.decode(response.access_token) as JwtPayload).exp,
+    ).toBeLessThanOrEqual((jwt.decode(subjectToken) as JwtPayload).exp!);
   });
 
   /**
@@ -405,12 +437,12 @@ describe("MCP OAuth authorization flow", () => {
   /**
    * BDD Scenario: An unused registration expires
    *
-   * Given MCP_SERVICE_OAUTH_CLIENT_TTL_SECONDS is one minute
+   * Given RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS is one minute
    * When nobody uses the registered client for longer than that
    * Then authorization no longer finds the client
    */
   it("expires a registered client that is never used", async () => {
-    process.env["MCP_SERVICE_OAUTH_CLIENT_TTL_SECONDS"] = "60";
+    process.env["RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS"] = "60";
     const now = Date.now();
     const clock = jest.spyOn(Date, "now").mockReturnValue(now);
     const client = await createClient([clientRedirectUri]);
@@ -425,38 +457,107 @@ describe("MCP OAuth authorization flow", () => {
     expect(page.body).toContain("Invalid client or redirect_uri");
   });
 
-  /**
-   * BDD Scenario: A registration in use outlives its first TTL
-   *
-   * Given a client TTL of one minute and a refresh-token lifetime of two minutes
-   * When the client obtains tokens and refreshes them after ninety seconds
-   * Then the refresh succeeds because obtaining tokens extended the registration
-   */
-  it("keeps a client that obtains tokens past its first TTL", async () => {
-    process.env["MCP_SERVICE_OAUTH_CLIENT_TTL_SECONDS"] = "60";
-    process.env["MCP_SERVICE_OAUTH_REFRESH_TOKEN_TTL_SECONDS"] = "120";
+  it("renews the RBAC session and extends the client registration while in use", async () => {
+    process.env.RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS = "30";
+    process.env.RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS = "120";
     const now = Date.now();
     const clock = jest.spyOn(Date, "now").mockReturnValue(now);
     const client = await createClient([clientRedirectUri]);
     const code = await obtainCode(client.client_id, { scope: "mcp:content" });
     const token = await exchangeCode(client.client_id, code, clientRedirectUri);
-
-    expect(token.status).toBe(200);
+    const original = JSON.parse(token.body);
+    expect(original.expires_in).toBe(30);
+    const initial = await verifyMcpAccessToken(original.access_token);
 
     clock.mockReturnValue(now + 90 * 1000);
+    await expect(verifyMcpAccessToken(original.access_token)).rejects.toThrow();
+    const response = await refreshToken(
+      client.client_id,
+      original.refresh_token,
+    );
+    expect(response.status).toBe(200);
+    const renewed = JSON.parse(response.body);
+    const verified = await verifyMcpAccessToken(renewed.access_token);
+    expect(verified.rbacSubjectId).toBe(initial.rbacSubjectId);
+    expect(verified.rbacSubjectAuthenticationJwt).not.toBe(
+      initial.rbacSubjectAuthenticationJwt,
+    );
+    expect(renewed.refresh_token).not.toBe(original.refresh_token);
+    expect(renewed.expires_in).toBe(30);
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      expect.stringContaining("/authentication/refresh"),
+      expect.objectContaining({ redirect: "error" }),
+    );
+    expect(
+      (await refreshToken(client.client_id, original.refresh_token)).status,
+    ).toBe(400);
+    clock.mockReturnValue(now + 150 * 1000);
+    expect((await authorizePage(client.client_id)).status).toBe(200);
+  });
 
-    const refreshed = await sendOAuthRequest({
-      method: "POST",
-      path: "/oauth/token",
-      body: new URLSearchParams({
-        grant_type: "refresh_token",
-        refresh_token: JSON.parse(token.body).refresh_token,
-        client_id: client.client_id,
-      }).toString(),
-    });
+  it("rejects refreshing after the RBAC refresh lifetime", async () => {
+    process.env.RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS = "60";
+    const now = Date.now();
+    const clock = jest.spyOn(Date, "now").mockReturnValue(now);
+    const client = await createClient([clientRedirectUri]);
+    const code = await obtainCode(client.client_id, { scope: "mcp:content" });
+    const token = JSON.parse(
+      (await exchangeCode(client.client_id, code, clientRedirectUri)).body,
+    );
+    clock.mockReturnValue(now + 61 * 1000);
+    const calls = (globalThis.fetch as jest.Mock).mock.calls.length;
+    expect(
+      (await refreshToken(client.client_id, token.refresh_token)).status,
+    ).toBe(400);
+    expect((globalThis.fetch as jest.Mock).mock.calls.length).toBe(calls);
+  });
 
-    expect(refreshed.status).toBe(200);
-    expect(JSON.parse(refreshed.body)).toMatchObject({ scope: "mcp:content" });
+  it("accepts an OAuth refresh token only once across concurrent requests", async () => {
+    const client = await createClient([clientRedirectUri]);
+    const code = await obtainCode(client.client_id, { scope: "mcp:content" });
+    const token = JSON.parse(
+      (await exchangeCode(client.client_id, code, clientRedirectUri)).body,
+    );
+    const responses = await Promise.all([
+      refreshToken(client.client_id, token.refresh_token),
+      refreshToken(client.client_id, token.refresh_token),
+    ]);
+    expect(responses.map((item) => item.status).sort()).toEqual([200, 400]);
+  });
+
+  it("preserves RBAC refresh rejection without issuing another token", async () => {
+    const client = await createClient([clientRedirectUri]);
+    const code = await obtainCode(client.client_id, { scope: "mcp:content" });
+    const token = JSON.parse(
+      (await exchangeCode(client.client_id, code, clientRedirectUri)).body,
+    );
+    (globalThis.fetch as jest.Mock).mockResolvedValue(
+      new Response(
+        JSON.stringify({ message: "Authentication error. Revoked" }),
+        { status: 401 },
+      ),
+    );
+    const response = await refreshToken(client.client_id, token.refresh_token);
+    expect(response.status).toBe(400);
+    expect(JSON.parse(response.body)).toEqual({ error: "invalid_grant" });
+  });
+
+  it("rejects a renewed RBAC session for a different subject", async () => {
+    const client = await createClient([clientRedirectUri]);
+    const code = await obtainCode(client.client_id, { scope: "mcp:content" });
+    const token = JSON.parse(
+      (await exchangeCode(client.client_id, code, clientRedirectUri)).body,
+    );
+    (globalThis.fetch as jest.Mock).mockImplementation(
+      async () =>
+        new Response(
+          JSON.stringify({ data: createRbacCredentials("another-subject") }),
+          { status: 200 },
+        ),
+    );
+    expect(
+      (await refreshToken(client.client_id, token.refresh_token)).status,
+    ).toBe(400);
   });
 
   /**
@@ -484,24 +585,11 @@ describe("MCP OAuth authorization flow", () => {
     expect(page.body).not.toContain('name="password"');
   });
 
-  /**
-   * BDD Scenario: Deleting is offered only on request
-   *
-   * Given a registered client
-   * When it asks for mcp:content alone, and then for the delete scope as well
-   * Then the consent step shows the delete choice only in the second case
-   */
-  it("offers deleting only when the client asks for it", async () => {
+  it("describes the subject permissions without a separate delete choice", async () => {
     const client = await createClient([clientRedirectUri]);
-    const contentPage = await authorizePage(client.client_id, {
-      scope: "mcp:content",
-    });
-    const deletePage = await authorizePage(client.client_id, {
-      scope: "mcp:content mcp:content:delete",
-    });
-
-    expect(contentPage.body).not.toContain('name="allow_delete"');
-    expect(deletePage.body).toContain('name="allow_delete"');
+    const page = await authorizePage(client.client_id);
+    expect(page.body).not.toContain('name="allow_delete"');
+    expect(page.body).toContain("your role permits it");
   });
 
   /**
@@ -525,38 +613,23 @@ describe("MCP OAuth authorization flow", () => {
     expect(location.searchParams.has("code")).toBe(false);
   });
 
-  /**
-   * BDD Scenario: The token carries the scope the user approved
-   *
-   * Given a client that asks for an unknown scope, mcp:content and the delete scope
-   * When the user approves with the delete choice left unticked, or ticked
-   * Then the token carries mcp:content alone, or both content scopes
-   */
-  it.each([
-    ["left unticked", undefined, "mcp:content"],
-    ["ticked", "true", "mcp:content mcp:content:delete"],
-  ])(
-    "issues the approved scope when deleting is %s",
-    async (_label, allowDelete, expectedScope) => {
-      const client = await createClient([clientRedirectUri]);
-      const code = await obtainCode(client.client_id, {
-        scope: "openid mcp:content mcp:content:delete",
-        allowDelete,
-      });
-      const token = await exchangeCode(
-        client.client_id,
-        code,
-        clientRedirectUri,
-      );
-      const body = JSON.parse(token.body);
-
-      expect(token.status).toBe(200);
-      expect(body.scope).toBe(expectedScope);
-      expect((await verifyMcpAccessToken(body.access_token)).scopes).toEqual(
-        expectedScope.split(" "),
-      );
-    },
-  );
+  it("issues one connection scope regardless of unknown requested scopes", async () => {
+    const client = await createClient([clientRedirectUri]);
+    const code = await obtainCode(client.client_id, {
+      scope: "openid mcp:content unknown",
+    });
+    const response = await exchangeCode(
+      client.client_id,
+      code,
+      clientRedirectUri,
+    );
+    expect(response.status).toBe(200);
+    const body = JSON.parse(response.body);
+    expect(body.scope).toBe("mcp:content");
+    expect((await verifyMcpAccessToken(body.access_token)).scopes).toEqual([
+      "mcp:content",
+    ]);
+  });
 
   /**
    * BDD Scenario: An unknown client gets no form
@@ -695,15 +768,11 @@ function submitAuthorize(
  * Walks the consent and sign-in steps as a browser does: the sign-in step is
  * submitted with the scope the consent step wrote into it.
  */
-async function obtainCode(
-  clientId: string,
-  props: { scope: string; allowDelete?: string },
-) {
+async function obtainCode(clientId: string, props: { scope: string }) {
   const signIn = await submitAuthorize(
     clientId,
     {
       consent: "approve",
-      ...(props.allowDelete ? { allow_delete: props.allowDelete } : {}),
     },
     { scope: props.scope },
   );
@@ -711,14 +780,15 @@ async function obtainCode(
 
   expect(signIn.body).toContain('name="password"');
 
-  jest.spyOn(globalThis, "fetch").mockResolvedValue(
-    new Response(
-      JSON.stringify({
-        data: { jwt: createRbacSubjectAuthenticationJwt("rbac-subject-5") },
-      }),
-      { status: 200 },
-    ),
-  );
+  jest
+    .spyOn(globalThis, "fetch")
+    .mockImplementation(
+      async () =>
+        new Response(
+          JSON.stringify({ data: createRbacCredentials("rbac-subject-5") }),
+          { status: 200 },
+        ),
+    );
 
   const redirect = await submitAuthorize(
     clientId,
@@ -751,7 +821,10 @@ function exchangeCode(clientId: string, code: string, redirectUri: string) {
   });
 }
 
-function createRbacSubjectAuthenticationJwt(subjectId: string, expiresIn = 60) {
+function createRbacSubjectAuthenticationJwt(
+  subjectId: string,
+  expiresIn = Number(process.env.RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS || 3600),
+) {
   return jwt.sign(
     {
       subject: {
@@ -761,4 +834,26 @@ function createRbacSubjectAuthenticationJwt(subjectId: string, expiresIn = 60) {
     process.env["RBAC_JWT_SECRET"] as string,
     { expiresIn },
   );
+}
+
+function createRbacCredentials(subjectId: string) {
+  return {
+    jwt: createRbacSubjectAuthenticationJwt(subjectId),
+    refresh: createRbacSubjectAuthenticationJwt(
+      subjectId,
+      Number(process.env.RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS || 86400),
+    ),
+  };
+}
+
+function refreshToken(clientId: string, token: string) {
+  return sendOAuthRequest({
+    method: "POST",
+    path: "/oauth/token",
+    body: new URLSearchParams({
+      grant_type: "refresh_token",
+      client_id: clientId,
+      refresh_token: token,
+    }).toString(),
+  });
 }

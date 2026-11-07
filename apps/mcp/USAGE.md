@@ -199,10 +199,10 @@ Use `model-record-delete-preview` / `relation-record-delete-preview` and pass
 the exact returned token to the matching `*-delete-apply` tool with
 `confirm: true`.
 
-On an OAuth connection the apply step needs the `mcp:content:delete` scope. A
-permission error from `*-delete-apply` means the connection was not granted
-it: nothing was deleted, and the user has to reconnect the client and allow
-deleting on the consent step.
+On an OAuth connection, the API checks the connected subject's RBAC permission
+for deletion, as it does for a direct API request. MCP adds no separate delete
+permission. A permission error requires checking the subject's roles and
+grants in RBAC; reconnecting the client does not grant additional access.
 
 ### Localized Page Field Update
 

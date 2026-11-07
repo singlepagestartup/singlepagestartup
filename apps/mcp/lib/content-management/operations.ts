@@ -30,11 +30,7 @@ import {
   ILocalizedFieldUpdateInput,
   LocalizedFieldUpdateInputSchema,
 } from "./schemas";
-import {
-  getMcpSdkOptions,
-  MCP_CONTENT_DELETE_SCOPE,
-  MCP_CONTENT_SCOPE,
-} from "./auth";
+import { getMcpSdkOptions } from "./auth";
 import { buildLocalizedFieldPatch } from "./localized-field";
 import {
   requireContentModelDescriptor,
@@ -49,7 +45,6 @@ import {
 } from "./file-storage";
 import {
   IContentEntityDescriptor,
-  IContentOperation,
   IContentQueryParams,
   IDeletePreview,
 } from "./types";
@@ -57,17 +52,7 @@ import {
 export interface IContentOperationOptions {
   registry?: IContentEntityDescriptor[];
   authHeaders?: Record<string, string>;
-  scopes?: string[];
 }
-
-const contentOperationScopes: Record<IContentOperation, string> = {
-  find: MCP_CONTENT_SCOPE,
-  count: MCP_CONTENT_SCOPE,
-  get: MCP_CONTENT_SCOPE,
-  create: MCP_CONTENT_SCOPE,
-  update: MCP_CONTENT_SCOPE,
-  delete: MCP_CONTENT_DELETE_SCOPE,
-};
 
 export function createDeleteConfirmationToken(props: {
   descriptor: IContentEntityDescriptor;
@@ -121,22 +106,11 @@ function buildCountParams(input: { filters?: IContentFindInput["filters"] }) {
 
 function requireOperation(
   descriptor: IContentEntityDescriptor,
-  operation: IContentOperation,
-  options?: IContentOperationOptions,
+  operation: string,
 ) {
-  if (!descriptor.operations.includes(operation)) {
+  if (!descriptor.operations.includes(operation as any)) {
     throw new Error(
       `Validation error. ${descriptor.key} does not support ${operation}`,
-    );
-  }
-
-  const scope = contentOperationScopes[operation];
-
-  // An HTTP request carries the scopes of its OAuth token. A stdio request
-  // carries none and runs with the credentials of the local process.
-  if (options?.scopes && !options.scopes.includes(scope)) {
-    throw new Error(
-      `Permission error. ${operation} on ${descriptor.key} requires the ${scope} scope, which this MCP connection was not granted. Reconnect the MCP client and approve that access.`,
     );
   }
 }
@@ -340,7 +314,7 @@ export async function findContentRecords(
     parsed.data.entity,
     options?.registry,
   );
-  requireOperation(descriptor, "find", options);
+  requireOperation(descriptor, "find");
 
   return await descriptor.api.find({
     params: buildFindParams(parsed.data),
@@ -365,7 +339,7 @@ export async function countContentRecords(
     parsed.data.entity,
     options?.registry,
   );
-  requireOperation(descriptor, "count", options);
+  requireOperation(descriptor, "count");
 
   return await descriptor.api.count({
     params: buildCountParams(parsed.data),
@@ -387,7 +361,7 @@ export async function getContentRecordById(
     parsed.data.entity,
     options?.registry,
   );
-  requireOperation(descriptor, "get", options);
+  requireOperation(descriptor, "get");
 
   const record = await descriptor.api.findById({
     id: parsed.data.id,
@@ -908,7 +882,7 @@ export async function createContentRecord(
     parsed.data.entity,
     options?.registry,
   );
-  requireOperation(descriptor, "create", options);
+  requireOperation(descriptor, "create");
 
   if (isFileStorageFileDescriptor(descriptor)) {
     const fileStorageRecord = await createFileStorageFileRecord({
@@ -952,7 +926,7 @@ export async function updateContentRecord(
     parsed.data.entity,
     options?.registry,
   );
-  requireOperation(descriptor, "update", options);
+  requireOperation(descriptor, "update");
 
   const data = parseUpdateData(descriptor, parsed.data.data);
 
@@ -1030,7 +1004,7 @@ export async function applyDeleteContentRecord(
     );
   }
 
-  requireOperation(descriptor, "delete", options);
+  requireOperation(descriptor, "delete");
 
   return await descriptor.api.delete({
     id: parsed.data.id,
@@ -1052,7 +1026,7 @@ export async function updateLocalizedContentField(
     parsed.data.entity,
     options?.registry,
   );
-  requireOperation(descriptor, "update", options);
+  requireOperation(descriptor, "update");
 
   const current = await getContentRecordById(parsed.data, options);
   const data = buildLocalizedFieldPatch({

@@ -738,13 +738,16 @@ describe("MCP content-management generic operations", () => {
   });
 
   /**
-   * BDD Scenario: Delete needs the delete scope
-   * Given an HTTP connection whose token carries only mcp:content
+   * BDD Scenario: API RBAC refuses a delete
+   * Given the API refuses deleting for the current subject
    * When delete-apply runs with the exact preview token
-   * Then the operation is refused before the SDK delete runs
+   * Then the same permission error reaches the MCP caller
    */
-  it("refuses delete apply for a connection without the delete scope", async () => {
+  it("preserves the API permission error when the subject cannot delete", async () => {
     const api = createApi([{ id: "widget-1", adminTitle: "Articles" }]);
+    api.delete.mockRejectedValue(
+      new Error("Permission error. Deleting is forbidden"),
+    );
     const registry = [createDescriptor(api)];
 
     await expect(
@@ -756,21 +759,22 @@ describe("MCP content-management generic operations", () => {
           confirm: true,
           confirmationToken: "model:blog:widget:widget-1",
         },
-        { registry, authHeaders, scopes: ["mcp:content"] },
+        { registry, authHeaders },
       ),
-    ).rejects.toThrow(
-      "Permission error. delete on blog.widget requires the mcp:content:delete scope",
-    );
-    expect(api.delete).not.toHaveBeenCalled();
+    ).rejects.toThrow("Permission error. Deleting is forbidden");
+    expect(api.delete).toHaveBeenCalledWith({
+      id: "widget-1",
+      options: { headers: authHeaders },
+    });
   });
 
   /**
-   * BDD Scenario: An approved delete scope deletes
-   * Given an HTTP connection whose token carries both content scopes
+   * BDD Scenario: API RBAC permits a delete
+   * Given the API permits deleting for the current subject
    * When delete-apply runs with the exact preview token
    * Then the SDK delete runs for the selected record
    */
-  it("applies delete for a connection with the delete scope", async () => {
+  it("applies delete with the current subject credentials", async () => {
     const api = createApi([{ id: "widget-1", adminTitle: "Articles" }]);
     const registry = [createDescriptor(api)];
 
@@ -786,7 +790,6 @@ describe("MCP content-management generic operations", () => {
         {
           registry,
           authHeaders,
-          scopes: ["mcp:content", "mcp:content:delete"],
         },
       ),
     ).resolves.toEqual({ id: "widget-1", deleted: true });
@@ -794,15 +797,15 @@ describe("MCP content-management generic operations", () => {
   });
 
   /**
-   * BDD Scenario: mcp:content keeps reading, writing and previewing deletes
-   * Given an HTTP connection whose token carries only mcp:content
+   * BDD Scenario: RBAC permissions apply to all content operations
+   * Given an authenticated connection
    * When it finds, updates and previews a delete
    * Then each operation reaches the SDK as before
    */
-  it("keeps reads, writes and delete previews for mcp:content", async () => {
+  it("forwards subject credentials for reads, writes and delete previews", async () => {
     const api = createApi([{ id: "widget-1", adminTitle: "Articles" }]);
     const registry = [createDescriptor(api)];
-    const options = { registry, authHeaders, scopes: ["mcp:content"] };
+    const options = { registry, authHeaders };
 
     await expect(
       findContentModelRecords({ module: "blog", model: "widget" }, options),
