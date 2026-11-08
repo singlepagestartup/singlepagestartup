@@ -738,6 +738,101 @@ describe("MCP content-management generic operations", () => {
   });
 
   /**
+   * BDD Scenario: API RBAC refuses a delete
+   * Given the API refuses deleting for the current subject
+   * When delete-apply runs with the exact preview token
+   * Then the same permission error reaches the MCP caller
+   */
+  it("preserves the API permission error when the subject cannot delete", async () => {
+    const api = createApi([{ id: "widget-1", adminTitle: "Articles" }]);
+    api.delete.mockRejectedValue(
+      new Error("Permission error. Deleting is forbidden"),
+    );
+    const registry = [createDescriptor(api)];
+
+    await expect(
+      applyDeleteContentModelRecord(
+        {
+          module: "blog",
+          model: "widget",
+          id: "widget-1",
+          confirm: true,
+          confirmationToken: "model:blog:widget:widget-1",
+        },
+        { registry, authHeaders },
+      ),
+    ).rejects.toThrow("Permission error. Deleting is forbidden");
+    expect(api.delete).toHaveBeenCalledWith({
+      id: "widget-1",
+      options: { headers: authHeaders },
+    });
+  });
+
+  /**
+   * BDD Scenario: API RBAC permits a delete
+   * Given the API permits deleting for the current subject
+   * When delete-apply runs with the exact preview token
+   * Then the SDK delete runs for the selected record
+   */
+  it("applies delete with the current subject credentials", async () => {
+    const api = createApi([{ id: "widget-1", adminTitle: "Articles" }]);
+    const registry = [createDescriptor(api)];
+
+    await expect(
+      applyDeleteContentModelRecord(
+        {
+          module: "blog",
+          model: "widget",
+          id: "widget-1",
+          confirm: true,
+          confirmationToken: "model:blog:widget:widget-1",
+        },
+        {
+          registry,
+          authHeaders,
+        },
+      ),
+    ).resolves.toEqual({ id: "widget-1", deleted: true });
+    expect(api.delete).toHaveBeenCalledTimes(1);
+  });
+
+  /**
+   * BDD Scenario: RBAC permissions apply to all content operations
+   * Given an authenticated connection
+   * When it finds, updates and previews a delete
+   * Then each operation reaches the SDK as before
+   */
+  it("forwards subject credentials for reads, writes and delete previews", async () => {
+    const api = createApi([{ id: "widget-1", adminTitle: "Articles" }]);
+    const registry = [createDescriptor(api)];
+    const options = { registry, authHeaders };
+
+    await expect(
+      findContentModelRecords({ module: "blog", model: "widget" }, options),
+    ).resolves.toHaveLength(1);
+    await expect(
+      updateContentModelRecord(
+        {
+          module: "blog",
+          model: "widget",
+          id: "widget-1",
+          dryRun: false,
+          data: { adminTitle: "Renamed" },
+        },
+        options,
+      ),
+    ).resolves.toEqual({ id: "widget-1", adminTitle: "Renamed" });
+    await expect(
+      previewDeleteContentModelRecord(
+        { module: "blog", model: "widget", id: "widget-1" },
+        options,
+      ),
+    ).resolves.toMatchObject({
+      confirmationToken: "model:blog:widget:widget-1",
+    });
+  });
+
+  /**
    * BDD Scenario: Delete preview includes known relation context
    * Given a blog widget is linked through host external widget relations
    * When Codex previews deleting the blog widget

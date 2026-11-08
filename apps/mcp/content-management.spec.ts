@@ -1,8 +1,9 @@
+import { runWithMcpRequestAuthContext } from "./lib/auth-context";
 /**
  * BDD Suite: MCP compact content-management registration
  * Given the MCP server boots its compact content-management module
  * When resources and tools are registered
- * Then AI chat clients discover project guidance and compact module/model/relation tools
+ * Then AI chat clients discover project guidance and compact module/model/relation tools, and each tool call carries the subject credentials
  */
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -15,8 +16,13 @@ import {
   CONTENT_OPERATIONS_GUIDE_RESOURCE_URI,
   PROJECT_GUIDE_RESOURCE_URI,
 } from "./lib/guidance";
+import * as contentOperations from "./lib/content-management/operations";
 
 describe("MCP content-management registration", () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   /**
    * BDD Scenario: Project and content guidance resources are registered
    * Given the content-management module is loaded
@@ -245,6 +251,84 @@ describe("MCP content-management registration", () => {
         },
       }),
     );
+  });
+
+  it("declares read and mutation effects for every discoverable tool", () => {
+    const mcp = {
+      registerTool: jest.fn(),
+    } as unknown as McpServer;
+    const mutations = new Set([
+      "model-record-create",
+      "model-record-update",
+      "model-record-delete-apply",
+      "relation-record-create",
+      "relation-record-update",
+      "relation-record-delete-apply",
+    ]);
+
+    registerTools(mcp);
+    const calls = (mcp.registerTool as jest.Mock).mock.calls;
+    expect(calls).toHaveLength(20);
+
+    for (const [name, config] of calls) {
+      if (mutations.has(name)) {
+        expect(config.annotations).toEqual({
+          readOnlyHint: false,
+          destructiveHint: true,
+          openWorldHint: true,
+        });
+      } else {
+        expect(config.annotations).toEqual({
+          readOnlyHint: true,
+          destructiveHint: false,
+          openWorldHint: false,
+        });
+      }
+    }
+  });
+
+  /**
+   * BDD Scenario: Tools pass the subject credentials to operations
+   * Given an HTTP request whose MCP token carries only mcp:content
+   * When the model delete-apply tool runs
+   * Then the operation receives the subject JWT without a separate delete scope
+   */
+  it("passes the subject JWT to delete apply without an MCP permission layer", async () => {
+    const applyDelete = jest
+      .spyOn(contentOperations, "applyDeleteContentModelRecord")
+      .mockResolvedValue({ id: "widget-1" });
+    const mcp = {
+      registerTool: jest.fn(),
+    } as unknown as McpServer;
+    const args = {
+      module: "blog",
+      model: "widget",
+      id: "widget-1",
+      confirm: true,
+      confirmationToken: "model:blog:widget:widget-1",
+    };
+
+    registerTools(mcp);
+
+    const deleteToolCall = (mcp.registerTool as jest.Mock).mock.calls.find(
+      ([name]) => name === "model-record-delete-apply",
+    );
+
+    await runWithMcpRequestAuthContext(
+      { authorization: "Bearer subject-jwt" },
+      () =>
+        deleteToolCall[2](args, {
+          authInfo: {
+            token: "mcp-access-token",
+            clientId: "mcp_client_1",
+            scopes: ["mcp:content"],
+          },
+        }),
+    );
+
+    expect(applyDelete).toHaveBeenCalledWith(args, {
+      authHeaders: { Authorization: "Bearer subject-jwt" },
+    });
   });
 
   /**

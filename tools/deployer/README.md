@@ -175,6 +175,32 @@ docker service update --force api_api
 docker service update --force mcp_mcp
 ```
 
+Redis contains OAuth registrations as well as cache entries. Use
+`REDIS_MAXMEMORY_POLICY=volatile-lru` in `tools/deployer/.env` (or
+`apps/redis/.env` locally). Existing files may still contain `allkeys-lru`, which
+can delete a connected application's registration when Redis reaches its memory
+limit. Actions accepts `REDIS_MAXMEMORY` and `REDIS_MAXMEMORY_POLICY` secrets
+(with the `PREVIEW_` prefix for preview); empty values use `256mb` and
+`volatile-lru`. Deploy the Redis stack after changing the value, then verify inside the
+protected `redis-cli` session:
+
+```text
+CONFIG GET maxmemory-policy
+CONFIG GET dir
+INFO persistence
+```
+
+Expect `volatile-lru`, `/data`, and no persistence errors. Keep `redis_data`
+when updating Redis. The default RDB snapshot preserves state on a graceful
+stop; an abrupt host failure can lose changes since the last snapshot. For AOF,
+follow [Redis's live conversion instructions](https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/#how-i-can-switch-to-aof-if-im-currently-using-dumprdb-snapshots)
+before changing startup configuration on an existing instance.
+`volatile-lru` preserves keys without TTL, including completed OAuth registrations;
+it can evict expiring tokens and require users to sign in again. Monitor Redis
+memory: if persistent data alone reaches the limit, writes fail until capacity
+is added or unused records are deliberately removed. Never run `FLUSHDB` or
+`FLUSHALL` as an application cache reset.
+
 ### PostgreSQL roles
 
 The PostgreSQL stack holds two roles:
@@ -303,6 +329,13 @@ The API deployment uses `API_ERROR_DETAILS=brief`. The client can give the
 operator its request ID to locate the incident in the private server journal.
 See [Finding an API error](#finding-an-api-error).
 
+The Telegram and MCP services run the same check when they start. They stop on
+a legacy `RBAC_SECRET_KEY` or `RBAC_JWT_SECRET` and report a short or legacy
+value of their other secrets. A secret a service does not hold is not a finding:
+each refuses the operation that needs it. `TELEGRAM_SECRET_STRENGTH=report` and
+`MCP_SECRET_STRENGTH=report` start them anyway, with the same consequence as
+`API_SECRET_STRENGTH=report`.
+
 ### Rotating the secrets of a deployment that already bootstrapped
 
 Until this change, the bootstrap scripts derived every generated credential from
@@ -331,13 +364,13 @@ secrets end every session, so plan the window.
 | `DATABASE_PASSWORD`                          | update the deployer and GitHub values, pause writers and run `./postgres.sh migrate-role` as in the procedure below, then deploy the API and restore its replica count             | the API cannot open new connections between the script and its redeploy                                                                              |
 | `REDIS_PASSWORD`                             | follow the coordinated procedure above: update the secret, deploy Redis, API and MCP as one rollout, then force-update `api_api` and `mcp_mcp`                                     | cache and KV unavailable for the window                                                                                                              |
 | `RBAC_JWT_SECRET`                            | rotate in `tools/deployer/.env` and in the GitHub secrets, then deploy API, Telegram and MCP together                                                                              | every access and refresh token is invalidated. It also rotates the MCP OAuth signing key, because the MCP template falls back to this value          |
-| `RBAC_SECRET_KEY`                            | rotate in `tools/deployer/.env` and in the GitHub secrets, then deploy API, Telegram and MCP                                                                                       | this is the full authorization bypass. The middleware also accepts it from an `rbac.secret-key` cookie, so any browser that received it holds a copy |
+| `RBAC_SECRET_KEY`                            | rotate in `tools/deployer/.env` and in the GitHub secrets, then deploy API and Telegram                                                                                            | this is the full authorization bypass. The middleware also accepts it from an `rbac.secret-key` cookie, so any browser that received it holds a copy |
 | `MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET` | rotate and deploy API and MCP together                                                                                                                                             | the API-to-MCP exchange fails until both sides match                                                                                                 |
 | `HOST_SERVICE_REVALIDATION_SECRET`           | rotate in `tools/deployer/.env` and in the GitHub secrets, then deploy API and host together                                                                                       | the Host rejects invalidation until both sides match and the outbox retries pending batches                                                          |
 | `RBAC_COOKIE_SESSION_SECRET`                 | rotate for hygiene                                                                                                                                                                 | no runtime effect: nothing reads it today                                                                                                            |
 | Administrator identity password              | change it through the API or the admin UI, then update `apps/api/.env` and `.agents/.env`                                                                                          | editing `.env` alone does not change the stored bcrypt hash; that value is only the bootstrap input                                                  |
 
-Four copies survive a rotation unless they are handled as well:
+Five copies survive a rotation unless they are handled as well:
 
 - **Docker images.** `.dockerignore` keeps env files, key material and
   `tools/deployer` out of the build context. An image built from a
@@ -349,6 +382,9 @@ Four copies survive a rotation unless they are handled as well:
 - **`tools/deployer/.env`** on the operator's own machine.
 - **The server crontab.** Run `./api.sh up` to replace an older entry that
   contains credentials with the credential-free trigger.
+- **An MCP service env** where `MCP_SERVICE_ALLOW_RBAC_SECRET_FALLBACK` was
+  enabled and `RBAC_SECRET_KEY` added by hand. The deployer does not render the
+  secret into the MCP env, so no other MCP copy exists.
 
 Afterwards, treat the window before the rotation as one in which the old
 `RBAC_SECRET_KEY` could have been guessed. Review the action log for requests
