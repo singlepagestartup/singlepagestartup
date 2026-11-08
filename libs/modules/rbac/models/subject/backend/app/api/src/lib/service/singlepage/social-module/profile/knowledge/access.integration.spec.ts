@@ -165,6 +165,7 @@ describe("Given: a clean subject and profile-specific Knowledge grant", () => {
         services.permission,
         services.rolesToPermissions,
         services.subjectsToRoles,
+        services.subjectRepository,
       );
       const ownerToken = await sign(
         {

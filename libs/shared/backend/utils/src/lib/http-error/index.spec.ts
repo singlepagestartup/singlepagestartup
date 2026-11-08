@@ -41,6 +41,10 @@ describe("util — HTTP error classification", () => {
       "Validation error. Unknown column 'absent'",
       "Validation error. 'filters.and' must be an array",
       "Validation error. Json key is longer than 64 characters",
+      "Validation error. Unknown orderBy method 'sql'",
+      "Validation error. OrderBy column must be an identifier",
+      "Validation error. 'orderBy.and' must be an array",
+      "Validation error. You need to pass an orderBy array with 'column' and 'method' for each item",
     ])("maps '%s' → 400 Validation error", (msg) => {
       const result = util(new Error(msg));
       expect(result.status).toBe(400);
