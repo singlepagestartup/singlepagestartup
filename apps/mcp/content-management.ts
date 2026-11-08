@@ -155,6 +155,11 @@ export function registerTools(mcp: McpServer) {
       title: "Read SinglePageStartup project guide",
       description:
         "Read this first for every SinglePageStartup task. Returns project architecture, MCP boundaries, content composition, task routing, documentation order, and non-negotiable rules.",
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        openWorldHint: false,
+      },
       inputSchema: {},
     },
     async () => okResponse("project-guide", SPS_PROJECT_GUIDE),
@@ -166,6 +171,11 @@ export function registerTools(mcp: McpServer) {
       title: "Read SinglePageStartup content operations guide",
       description:
         "Read this before every SinglePageStartup create, update, or delete. Returns the required same-connector mutation protocol, ambiguity handling, verification statuses, operation flows, and anti-patterns.",
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        openWorldHint: false,
+      },
       inputSchema: {},
     },
     async () =>
@@ -178,6 +188,11 @@ export function registerTools(mcp: McpServer) {
       title: "List SinglePageStartup modules",
       description:
         "After reading project-guide, list modules with nested models and relations available through compact SinglePageStartup MCP tools.",
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        openWorldHint: false,
+      },
       inputSchema: {},
     },
     withAuth(async () => okResponse("module-list", describeContentEntities())),
@@ -189,6 +204,11 @@ export function registerTools(mcp: McpServer) {
       title: "Describe SinglePageStartup model schema",
       description:
         "Return fields, required fields, localized fields, variants, examples, and supported operations for one model.",
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        openWorldHint: false,
+      },
       inputSchema: ContentModelSelectorSchema.shape,
     },
     withAuth(async (args) =>
@@ -202,6 +222,11 @@ export function registerTools(mcp: McpServer) {
       title: "Describe SinglePageStartup relation schema",
       description:
         "Return fields, relation fields, variants, examples, and supported operations for one relation.",
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        openWorldHint: false,
+      },
       inputSchema: ContentRelationSelectorSchema.shape,
     },
     withAuth(async (args) =>
@@ -214,6 +239,11 @@ export function registerTools(mcp: McpServer) {
     {
       title: "Count SinglePageStartup model records",
       description: "Count records for one model with optional filters.",
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        openWorldHint: false,
+      },
       inputSchema: ContentModelCountInputSchema.shape,
     },
     withAuth(async (args, extra) => {
@@ -232,6 +262,11 @@ export function registerTools(mcp: McpServer) {
       title: "Find SinglePageStartup model records",
       description:
         "Find records for one model with filters, order, limit, and offset.",
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        openWorldHint: false,
+      },
       inputSchema: ContentModelFindInputSchema.shape,
     },
     withAuth(async (args, extra) => {
@@ -249,6 +284,11 @@ export function registerTools(mcp: McpServer) {
     {
       title: "Get SinglePageStartup model record",
       description: "Get one model record by id.",
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        openWorldHint: false,
+      },
       inputSchema: ContentModelGetByIdInputSchema.shape,
     },
     withAuth(async (args, extra) => {
@@ -266,6 +306,11 @@ export function registerTools(mcp: McpServer) {
     {
       title: "Create SinglePageStartup model record",
       description: `Create one model record. dryRun defaults to true; set dryRun to false to write.${MUTATION_SAFETY_DESCRIPTION}`,
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: true,
+        openWorldHint: true,
+      },
       inputSchema: ContentModelCreateInputSchema.shape,
     },
     withAuth(async (args, extra) => {
@@ -283,6 +328,11 @@ export function registerTools(mcp: McpServer) {
     {
       title: "Update SinglePageStartup model record",
       description: `Update one model record. dryRun defaults to true; set dryRun to false to write.${MUTATION_SAFETY_DESCRIPTION}`,
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: true,
+        openWorldHint: true,
+      },
       inputSchema: ContentModelUpdateInputSchema.shape,
     },
     withAuth(async (args, extra) => {
@@ -301,6 +351,11 @@ export function registerTools(mcp: McpServer) {
       title: "Preview SinglePageStartup model delete",
       description:
         "Read a model record and return the confirmation token required by model-record-delete-apply.",
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        openWorldHint: false,
+      },
       inputSchema: ContentModelDeletePreviewInputSchema.shape,
     },
     withAuth(async (args, extra) => {
@@ -318,6 +373,11 @@ export function registerTools(mcp: McpServer) {
     {
       title: "Apply SinglePageStartup model delete",
       description: `Delete a model record only after model-record-delete-preview returned a matching confirmation token.${DELETE_SAFETY_DESCRIPTION}`,
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: true,
+        openWorldHint: true,
+      },
       inputSchema: ContentModelDeleteApplyInputSchema.shape,
     },
     withAuth(async (args, extra) => {
@@ -335,6 +395,11 @@ export function registerTools(mcp: McpServer) {
     {
       title: "Count SinglePageStartup relation records",
       description: "Count records for one relation with optional filters.",
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        openWorldHint: false,
+      },
       inputSchema: ContentRelationCountInputSchema.shape,
     },
     withAuth(async (args, extra) => {
@@ -353,6 +418,11 @@ export function registerTools(mcp: McpServer) {
       title: "Find SinglePageStartup relation records",
       description:
         "Find records for one relation with filters, order, limit, and offset.",
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        openWorldHint: false,
+      },
       inputSchema: ContentRelationFindInputSchema.shape,
     },
     withAuth(async (args, extra) => {
@@ -370,6 +440,11 @@ export function registerTools(mcp: McpServer) {
     {
       title: "Get SinglePageStartup relation record",
       description: "Get one relation record by id.",
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        openWorldHint: false,
+      },
       inputSchema: ContentRelationGetByIdInputSchema.shape,
     },
     withAuth(async (args, extra) => {
@@ -387,6 +462,11 @@ export function registerTools(mcp: McpServer) {
     {
       title: "Create SinglePageStartup relation record",
       description: `Create one relation record. dryRun defaults to true; set dryRun to false to write.${MUTATION_SAFETY_DESCRIPTION}`,
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: true,
+        openWorldHint: true,
+      },
       inputSchema: ContentRelationCreateInputSchema.shape,
     },
     withAuth(async (args, extra) => {
@@ -404,6 +484,11 @@ export function registerTools(mcp: McpServer) {
     {
       title: "Update SinglePageStartup relation record",
       description: `Update one relation record. dryRun defaults to true; set dryRun to false to write.${MUTATION_SAFETY_DESCRIPTION}`,
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: true,
+        openWorldHint: true,
+      },
       inputSchema: ContentRelationUpdateInputSchema.shape,
     },
     withAuth(async (args, extra) => {
@@ -422,6 +507,11 @@ export function registerTools(mcp: McpServer) {
       title: "Preview SinglePageStartup relation delete",
       description:
         "Read a relation record and return the confirmation token required by relation-record-delete-apply.",
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        openWorldHint: false,
+      },
       inputSchema: ContentRelationDeletePreviewInputSchema.shape,
     },
     withAuth(async (args, extra) => {
@@ -439,6 +529,11 @@ export function registerTools(mcp: McpServer) {
     {
       title: "Apply SinglePageStartup relation delete",
       description: `Delete a relation record only after relation-record-delete-preview returned a matching confirmation token.${DELETE_SAFETY_DESCRIPTION}`,
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: true,
+        openWorldHint: true,
+      },
       inputSchema: ContentRelationDeleteApplyInputSchema.shape,
     },
     withAuth(async (args, extra) => {
@@ -457,6 +552,11 @@ export function registerTools(mcp: McpServer) {
       title: "Preview SinglePageStartup page content graph",
       description:
         "Resolve a page URL through page widgets, host widgets and external widget relations. Include one level of widgets-to-website-builder-module-widgets content links when available. Read-only; other relations use relation-record tools.",
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        openWorldHint: false,
+      },
       inputSchema: HostGraphPreviewInputSchema.shape,
     },
     withAuth(async (args, extra) => {

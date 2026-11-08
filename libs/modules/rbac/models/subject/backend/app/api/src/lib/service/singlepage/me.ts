@@ -37,7 +37,7 @@ export class Service {
     const subjectId = decoded.subject?.["id"];
 
     if (typeof subjectId !== "string" || !subjectId) {
-      throw new Error("Validation error. No subject provided in the token");
+      throw new Error("Authentication error. No subject provided in the token");
     }
 
     const subject = await this.findById({ id: subjectId });

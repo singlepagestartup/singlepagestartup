@@ -7,13 +7,21 @@ import {
 import type { IncomingMessage, ServerResponse } from "node:http";
 import Redis from "ioredis";
 import jwt, { type JwtPayload } from "jsonwebtoken";
+import { MCP_CONTENT_SCOPE, MCP_SCOPES } from "./auth";
+import {
+  RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
+  RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS,
+} from "@sps/shared-utils";
+import { api as rbacSubjectApi } from "@sps/rbac/models/subject/sdk/server";
+import { runWithMcpRequestAuthContext } from "./auth-context";
+import { readRequestBody, RequestBodyTooLargeError } from "./request-body";
 
 const DEFAULT_AUTH_CODE_TTL_SECONDS = 5 * 60;
-const DEFAULT_ACCESS_TOKEN_TTL_SECONDS = 60 * 60;
-const DEFAULT_REFRESH_TOKEN_TTL_SECONDS = 30 * 24 * 60 * 60;
-const DEFAULT_SCOPE = "mcp:content";
+const PENDING_CLIENT_TTL_SECONDS = 24 * 60 * 60;
+const MAX_PENDING_CLIENTS = 1000;
+const OAUTH_BODY_LIMIT_BYTES = 64 * 1024;
+const LOOPBACK_REDIRECT_HOSTS = ["localhost", "127.0.0.1", "[::1]"];
 export const INTERNAL_RBAC_SUBJECT_CLIENT_ID = "internal-rbac-subject";
-const INTERNAL_RBAC_SUBJECT_ACCESS_TOKEN_TTL_SECONDS = 5 * 60;
 export const INTERNAL_RBAC_SUBJECT_TOKEN_EXCHANGE_PATH =
   "/internal/rbac-subject-token-exchange";
 const PROTECTED_RESOURCE_METADATA_PATH =
@@ -39,6 +47,7 @@ type IOAuthCode = {
   scope: string;
   rbacSubjectId: string;
   rbacSubjectAuthenticationJwt: string;
+  rbacSubjectRefreshJwt: string;
   createdAt: number;
 };
 
@@ -57,6 +66,7 @@ type IRefreshTokenRecord = {
   rbacSubjectId: string;
   scope: string;
   rbacSubjectAuthenticationJwt: string;
+  rbacSubjectRefreshJwt: string;
   createdAt: number;
 };
 
@@ -84,6 +94,15 @@ type IAccessTokenIssueProps = {
   ttlSeconds: number;
 };
 
+type IAuthorizeRequest = {
+  client: IOAuthClient;
+  redirectUri: string;
+  codeChallenge: string;
+  resource?: string;
+  scope: string;
+  state?: string;
+};
+
 class InternalTokenExchangeError extends Error {
   constructor(
     readonly status: number,
@@ -96,10 +115,11 @@ class InternalTokenExchangeError extends Error {
 
 interface IOAuthStore {
   getClient(clientId: string): Promise<IOAuthClient | undefined>;
+  registerClient(client: IOAuthClient): Promise<boolean>;
   saveClient(client: IOAuthClient): Promise<void>;
   getCode(code: string): Promise<IOAuthCode | undefined>;
   saveCode(code: IOAuthCode, ttlSeconds: number): Promise<void>;
-  deleteCode(code: string): Promise<void>;
+  takeCode(code: string): Promise<IOAuthCode | undefined>;
   getAccessToken(jti: string): Promise<IAccessTokenRecord | undefined>;
   saveAccessToken(
     record: IAccessTokenRecord,
@@ -111,11 +131,15 @@ interface IOAuthStore {
     record: IRefreshTokenRecord,
     ttlSeconds: number,
   ): Promise<void>;
+  takeRefreshToken(token: string): Promise<IRefreshTokenRecord | undefined>;
   deleteRefreshToken(token: string): Promise<void>;
 }
 
 class MemoryOAuthStore implements IOAuthStore {
-  private clients = new Map<string, IOAuthClient>();
+  private clients = new Map<
+    string,
+    { value: IOAuthClient; expiresAt: number }
+  >();
   private codes = new Map<string, { value: IOAuthCode; expiresAt: number }>();
   private accessTokens = new Map<
     string,
@@ -127,11 +151,33 @@ class MemoryOAuthStore implements IOAuthStore {
   >();
 
   async getClient(clientId: string) {
-    return this.clients.get(clientId);
+    return getUnexpired(this.clients, clientId);
+  }
+
+  async registerClient(client: IOAuthClient) {
+    let pendingClients = 0;
+
+    for (const [id, entry] of this.clients) {
+      if (entry.expiresAt <= Date.now()) {
+        this.clients.delete(id);
+      } else if (Number.isFinite(entry.expiresAt)) {
+        pendingClients += 1;
+      }
+    }
+
+    if (pendingClients >= MAX_PENDING_CLIENTS) {
+      return false;
+    }
+
+    this.clients.set(
+      client.clientId,
+      withTtl(client, PENDING_CLIENT_TTL_SECONDS),
+    );
+    return true;
   }
 
   async saveClient(client: IOAuthClient) {
-    this.clients.set(client.clientId, client);
+    this.clients.set(client.clientId, { value: client, expiresAt: Infinity });
   }
 
   async getCode(code: string) {
@@ -142,8 +188,10 @@ class MemoryOAuthStore implements IOAuthStore {
     this.codes.set(code.code, withTtl(code, ttlSeconds));
   }
 
-  async deleteCode(code: string) {
+  async takeCode(code: string) {
+    const record = getUnexpired(this.codes, code);
     this.codes.delete(code);
+    return record;
   }
 
   async getAccessToken(jti: string) {
@@ -166,6 +214,12 @@ class MemoryOAuthStore implements IOAuthStore {
     this.refreshTokens.set(record.token, withTtl(record, ttlSeconds));
   }
 
+  async takeRefreshToken(token: string) {
+    const record = getUnexpired(this.refreshTokens, token);
+    this.refreshTokens.delete(token);
+    return record;
+  }
+
   async deleteRefreshToken(token: string) {
     this.refreshTokens.delete(token);
   }
@@ -178,11 +232,44 @@ class RedisOAuthStore implements IOAuthStore {
     return getJson<IOAuthClient>(this.redis, key("client", clientId));
   }
 
-  async saveClient(client: IOAuthClient) {
-    await this.redis.set(
+  async registerClient(client: IOAuthClient) {
+    // Reserve a pending slot and write the record atomically across MCP processes.
+    const registered = await this.redis.eval(
+      `
+        local now = tonumber(redis.call('TIME')[1])
+        local ttl = tonumber(ARGV[3])
+        redis.call('ZREMRANGEBYSCORE', KEYS[1], '-inf', now)
+        if redis.call('ZCARD', KEYS[1]) >= tonumber(ARGV[4]) then
+          return 0
+        end
+        redis.call('SET', KEYS[2], ARGV[2], 'EX', ttl)
+        redis.call('ZADD', KEYS[1], now + ttl, ARGV[1])
+        return 1
+      `,
+      2,
+      key("clients", "pending"),
       key("client", client.clientId),
+      client.clientId,
       JSON.stringify(client),
+      PENDING_CLIENT_TTL_SECONDS,
+      MAX_PENDING_CLIENTS,
     );
+
+    return registered === 1;
+  }
+
+  async saveClient(client: IOAuthClient) {
+    const results = await this.redis
+      .multi()
+      .set(key("client", client.clientId), JSON.stringify(client))
+      .zrem(key("clients", "pending"), client.clientId)
+      .exec();
+
+    for (const [error] of results ?? []) {
+      if (error) {
+        throw error;
+      }
+    }
   }
 
   async getCode(code: string) {
@@ -198,8 +285,14 @@ class RedisOAuthStore implements IOAuthStore {
     );
   }
 
-  async deleteCode(code: string) {
-    await this.redis.del(key("code", code));
+  async takeCode(code: string) {
+    const value = await this.redis.getdel(key("code", code));
+
+    if (!value) {
+      return undefined;
+    }
+
+    return JSON.parse(value) as IOAuthCode;
   }
 
   async getAccessToken(jti: string) {
@@ -230,6 +323,16 @@ class RedisOAuthStore implements IOAuthStore {
       "EX",
       ttlSeconds,
     );
+  }
+
+  async takeRefreshToken(token: string) {
+    const value = await this.redis.getdel(key("refresh", token));
+
+    if (!value) {
+      return undefined;
+    }
+
+    return JSON.parse(value) as IRefreshTokenRecord;
   }
 
   async deleteRefreshToken(token: string) {
@@ -266,7 +369,7 @@ export function getAuthorizationServerMetadata() {
     grant_types_supported: ["authorization_code", "refresh_token"],
     code_challenge_methods_supported: ["S256"],
     token_endpoint_auth_methods_supported: ["none", "client_secret_post"],
-    scopes_supported: [DEFAULT_SCOPE],
+    scopes_supported: [...MCP_SCOPES],
   };
 }
 
@@ -277,7 +380,7 @@ export function getProtectedResourceMetadata() {
     resource,
     authorization_servers: [getMcpPublicBaseUrl()],
     bearer_methods_supported: ["header"],
-    scopes_supported: [DEFAULT_SCOPE],
+    scopes_supported: [...MCP_SCOPES],
     resource_name: "SinglePageStartup MCP",
   };
 }
@@ -297,23 +400,30 @@ export async function handleOAuthRequest(
     }
 
     if (url.pathname === "/oauth/register") {
-      return handleRegister(req, res);
+      return await handleRegister(req, res);
     }
 
     if (url.pathname === "/oauth/authorize") {
-      return handleAuthorize(req, res, url);
+      return await handleAuthorize(req, res, url);
     }
 
     if (url.pathname === "/oauth/token") {
-      return handleToken(req, res);
+      return await handleToken(req, res);
     }
 
     if (url.pathname === "/oauth/revoke") {
-      return handleRevoke(req, res);
+      return await handleRevoke(req, res);
     }
 
     sendJson(res, 404, { error: "not_found" });
   } catch (error) {
+    if (error instanceof RequestBodyTooLargeError) {
+      return sendJson(res, 413, {
+        error: "invalid_request",
+        error_description: error.message,
+      });
+    }
+
     sendJson(res, 500, {
       error: "server_error",
       error_description: getErrorMessage(error),
@@ -365,6 +475,13 @@ export async function handleInternalRbacSubjectTokenExchange(
       });
     }
 
+    if (error instanceof RequestBodyTooLargeError) {
+      return sendJson(res, 413, {
+        error: "invalid_request",
+        error_description: error.message,
+      });
+    }
+
     return sendJson(res, 500, { error: "server_error" });
   }
 }
@@ -403,19 +520,21 @@ export async function exchangeRbacSubjectAuthenticationJwtForMcpToken(props: {
     );
   }
 
+  // The API still authorizes every operation for this subject.
+  const scope = MCP_SCOPES.join(" ");
   const issued = await issueAccessToken({
     clientId: INTERNAL_RBAC_SUBJECT_CLIENT_ID,
     rbacSubjectId,
-    scope: DEFAULT_SCOPE,
+    scope,
     rbacSubjectAuthenticationJwt,
-    ttlSeconds: INTERNAL_RBAC_SUBJECT_ACCESS_TOKEN_TTL_SECONDS,
+    ttlSeconds: getAccessTokenTtlSeconds(),
   });
 
   return {
     access_token: issued.accessToken,
     token_type: "Bearer",
     expires_in: issued.expiresIn,
-    scope: DEFAULT_SCOPE,
+    scope,
   };
 }
 
@@ -501,15 +620,38 @@ async function handleRegister(req: IncomingMessage, res: ServerResponse) {
     return sendJson(res, 405, { error: "method_not_allowed" });
   }
 
-  const body = await readJsonBody(req);
-  const redirectUris = Array.isArray(body["redirect_uris"])
-    ? body["redirect_uris"].filter((uri) => typeof uri === "string")
-    : [];
+  let body: Record<string, unknown>;
+
+  try {
+    body = await readJsonBody(req);
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      return sendJson(res, 400, {
+        error: "invalid_client_metadata",
+        error_description: "Request body must be valid JSON",
+      });
+    }
+
+    throw error;
+  }
+
+  const redirectUris: unknown[] =
+    isRecord(body) && Array.isArray(body["redirect_uris"])
+      ? body["redirect_uris"]
+      : [];
 
   if (!redirectUris.length) {
     return sendJson(res, 400, {
       error: "invalid_redirect_uri",
       error_description: "redirect_uris must include at least one URI",
+    });
+  }
+
+  if (!redirectUris.every(isAllowedRedirectUri)) {
+    return sendJson(res, 400, {
+      error: "invalid_redirect_uri",
+      error_description:
+        "Each redirect URI must be an https URL, or an http URL on localhost, 127.0.0.1 or [::1], without a fragment or credentials",
     });
   }
 
@@ -530,7 +672,16 @@ async function handleRegister(req: IncomingMessage, res: ServerResponse) {
     createdAt: nowSeconds(),
   };
 
-  await getOAuthStore().saveClient(client);
+  const registered = await getOAuthStore().registerClient(client);
+
+  if (!registered) {
+    res.setHeader("Retry-After", "60");
+    return sendJson(res, 429, {
+      error: "temporarily_unavailable",
+      error_description:
+        "Too many pending client registrations. Try again later.",
+    });
+  }
 
   return sendJson(res, 201, {
     client_id: client.clientId,
@@ -540,33 +691,57 @@ async function handleRegister(req: IncomingMessage, res: ServerResponse) {
     token_endpoint_auth_method: tokenEndpointAuthMethod,
     grant_types: ["authorization_code", "refresh_token"],
     response_types: ["code"],
-    scope: DEFAULT_SCOPE,
+    scope: MCP_CONTENT_SCOPE,
   });
 }
 
+/**
+ * Authorization runs in two steps. The consent step names the client and the
+ * address the code returns to; the sign-in step then takes the SinglePageStartup
+ * credentials. The subject's API permissions apply to every operation.
+ */
 async function handleAuthorize(
   req: IncomingMessage,
   res: ServerResponse,
   url: URL,
 ) {
-  if (req.method === "GET") {
-    return renderAuthorizePage(res, Object.fromEntries(url.searchParams));
-  }
-
-  if (req.method !== "POST") {
+  if (req.method !== "GET" && req.method !== "POST") {
     return sendJson(res, 405, { error: "method_not_allowed" });
   }
 
-  const body = await readFormBody(req);
-  const params = Object.fromEntries(body);
+  const params =
+    req.method === "GET"
+      ? Object.fromEntries(url.searchParams)
+      : Object.fromEntries(await readFormBody(req));
+  const consent = params["consent"];
+  let request: IAuthorizeRequest;
 
   try {
-    const request = await validateAuthorizeParams(params);
+    request = await validateAuthorizeParams(params);
+  } catch (error) {
+    return renderAuthorizeError(res, getErrorMessage(error));
+  }
+
+  if (req.method === "GET" || (consent !== "approve" && consent !== "deny")) {
+    return renderAuthorizeConsent(res, request);
+  }
+
+  if (consent === "deny") {
+    return redirectToClient(res, request, { error: "access_denied" });
+  }
+
+  if (params["email"] === undefined) {
+    return renderAuthorizeSignIn(res, {
+      ...request,
+    });
+  }
+
+  try {
     const credentials = await authenticateRbacSubject(
       String(params["email"] || ""),
       String(params["password"] || ""),
     );
-    const rbacSubjectId = getRbacSubjectIdFromAuthenticationJwt(
+    const rbacSubjectId = getVerifiedRbacSubjectIdFromAuthenticationJwt(
       credentials.rbacSubjectAuthenticationJwt,
     );
     const code = randomSecret();
@@ -582,23 +757,15 @@ async function handleAuthorize(
         scope: request.scope,
         rbacSubjectId,
         rbacSubjectAuthenticationJwt: credentials.rbacSubjectAuthenticationJwt,
+        rbacSubjectRefreshJwt: credentials.rbacSubjectRefreshJwt,
         createdAt: nowSeconds(),
       },
       getAuthCodeTtlSeconds(),
     );
 
-    const redirectUrl = new URL(request.redirectUri);
-    redirectUrl.searchParams.set("code", code);
-
-    if (request.state) {
-      redirectUrl.searchParams.set("state", request.state);
-    }
-
-    res.statusCode = 302;
-    res.setHeader("Location", redirectUrl.toString());
-    res.end();
+    return redirectToClient(res, request, { code });
   } catch (error) {
-    return renderAuthorizePage(res, params, getErrorMessage(error));
+    return renderAuthorizeSignIn(res, request, getErrorMessage(error));
   }
 }
 
@@ -657,14 +824,14 @@ async function exchangeAuthorizationCode(
     return sendJson(res, 400, { error: "invalid_grant" });
   }
 
-  await getOAuthStore().deleteCode(code);
-
   const client = await getOAuthStore().getClient(storedCode.clientId);
 
   if (
     !client ||
     client.clientId !== clientId ||
-    client.redirectUris.includes(redirectUri) === false ||
+    !client.redirectUris.some((registered) =>
+      matchesRedirectUri(registered, redirectUri),
+    ) ||
     redirectUri !== storedCode.redirectUri ||
     !clientSecretIsValid(client, clientSecret)
   ) {
@@ -675,12 +842,23 @@ async function exchangeAuthorizationCode(
     return sendJson(res, 400, { error: "invalid_grant" });
   }
 
-  return issueTokenResponse(res, {
-    clientId,
-    rbacSubjectId: storedCode.rbacSubjectId,
-    scope: storedCode.scope,
-    rbacSubjectAuthenticationJwt: storedCode.rbacSubjectAuthenticationJwt,
-  });
+  const claimed = await getOAuthStore().takeCode(code);
+
+  if (!claimed) {
+    return sendJson(res, 400, { error: "invalid_grant" });
+  }
+
+  try {
+    return await issueTokenResponse(res, {
+      client,
+      rbacSubjectId: claimed.rbacSubjectId,
+      scope: MCP_CONTENT_SCOPE,
+      rbacSubjectAuthenticationJwt: claimed.rbacSubjectAuthenticationJwt,
+      rbacSubjectRefreshJwt: claimed.rbacSubjectRefreshJwt,
+    });
+  } catch {
+    return sendJson(res, 400, { error: "invalid_grant" });
+  }
 }
 
 async function exchangeRefreshToken(
@@ -702,29 +880,54 @@ async function exchangeRefreshToken(
     return sendJson(res, 400, { error: "invalid_client" });
   }
 
-  await getOAuthStore().deleteRefreshToken(refreshToken);
+  // Claim the connector refresh token once, including across MCP processes.
+  const claimed = await getOAuthStore().takeRefreshToken(refreshToken);
 
-  return issueTokenResponse(res, {
-    clientId: record.clientId,
-    rbacSubjectId: record.rbacSubjectId,
-    scope: record.scope,
-    rbacSubjectAuthenticationJwt: record.rbacSubjectAuthenticationJwt,
-  });
+  if (!claimed) {
+    return sendJson(res, 400, { error: "invalid_grant" });
+  }
+
+  try {
+    const credentials = await runWithMcpRequestAuthContext({}, () =>
+      rbacSubjectApi.authenticationRefresh({
+        data: { refresh: claimed.rbacSubjectRefreshJwt },
+        options: { redirect: "error", signal: AbortSignal.timeout(10000) },
+      }),
+    );
+
+    return await issueTokenResponse(res, {
+      client,
+      rbacSubjectId: claimed.rbacSubjectId,
+      scope: MCP_CONTENT_SCOPE,
+      rbacSubjectAuthenticationJwt: credentials.jwt,
+      rbacSubjectRefreshJwt: credentials.refresh,
+    });
+  } catch {
+    return sendJson(res, 400, { error: "invalid_grant" });
+  }
 }
 
 async function issueTokenResponse(
   res: ServerResponse,
   props: {
-    clientId: string;
+    client: IOAuthClient;
     rbacSubjectId: string;
     scope: string;
     rbacSubjectAuthenticationJwt: string;
+    rbacSubjectRefreshJwt: string;
   },
 ) {
   const accessTokenTtl = getAccessTokenTtlSeconds();
-  const refreshTokenTtl = getRefreshTokenTtlSeconds();
+  const refreshTokenTtl = getRbacTokenRemainingSeconds(
+    props.rbacSubjectRefreshJwt,
+    props.rbacSubjectId,
+    getRefreshTokenTtlSeconds(),
+  );
   const issued = await issueAccessToken({
-    ...props,
+    clientId: props.client.clientId,
+    rbacSubjectId: props.rbacSubjectId,
+    scope: props.scope,
+    rbacSubjectAuthenticationJwt: props.rbacSubjectAuthenticationJwt,
     ttlSeconds: accessTokenTtl,
   });
   const refreshToken = randomSecret();
@@ -732,14 +935,17 @@ async function issueTokenResponse(
   await getOAuthStore().saveRefreshToken(
     {
       token: refreshToken,
-      clientId: props.clientId,
+      clientId: props.client.clientId,
       rbacSubjectId: props.rbacSubjectId,
       scope: props.scope,
       rbacSubjectAuthenticationJwt: props.rbacSubjectAuthenticationJwt,
+      rbacSubjectRefreshJwt: props.rbacSubjectRefreshJwt,
       createdAt: nowSeconds(),
     },
     refreshTokenTtl,
   );
+  // Client identity outlives user sessions so a connector can sign in again.
+  await getOAuthStore().saveClient(props.client);
 
   return sendJson(res, 200, {
     access_token: issued.accessToken,
@@ -751,7 +957,13 @@ async function issueTokenResponse(
 }
 
 async function issueAccessToken(props: IAccessTokenIssueProps) {
-  const expiresAt = nowSeconds() + props.ttlSeconds;
+  const issuedAt = nowSeconds();
+  const lifetime = getRbacTokenRemainingSeconds(
+    props.rbacSubjectAuthenticationJwt,
+    props.rbacSubjectId,
+    props.ttlSeconds,
+  );
+  const expiresAt = issuedAt + lifetime;
   const jti = randomUUID();
   const accessToken = jwt.sign(
     {
@@ -759,12 +971,13 @@ async function issueAccessToken(props: IAccessTokenIssueProps) {
       aud: getMcpPublicUrl(),
       iss: getMcpPublicBaseUrl(),
       scope: props.scope,
+      iat: issuedAt,
       client_id: props.clientId,
       jti,
     },
     getMcpJwtSecret(),
     {
-      expiresIn: props.ttlSeconds,
+      expiresIn: lifetime,
     },
   );
 
@@ -777,23 +990,25 @@ async function issueAccessToken(props: IAccessTokenIssueProps) {
       rbacSubjectAuthenticationJwt: props.rbacSubjectAuthenticationJwt,
       expiresAt,
     },
-    props.ttlSeconds,
+    lifetime,
   );
 
   return {
     accessToken,
-    expiresIn: props.ttlSeconds,
+    expiresIn: lifetime,
   };
 }
 
-async function validateAuthorizeParams(params: Record<string, string>) {
+async function validateAuthorizeParams(
+  params: Record<string, string>,
+): Promise<IAuthorizeRequest> {
   const clientId = String(params["client_id"] || "");
   const redirectUri = String(params["redirect_uri"] || "");
   const responseType = String(params["response_type"] || "");
   const codeChallenge = String(params["code_challenge"] || "");
   const codeChallengeMethod = String(params["code_challenge_method"] || "");
   const resource = optionalString(params["resource"]);
-  const scope = optionalString(params["scope"]) || DEFAULT_SCOPE;
+  const scope = MCP_CONTENT_SCOPE;
   const state = optionalString(params["state"]);
 
   if (responseType !== "code") {
@@ -810,7 +1025,13 @@ async function validateAuthorizeParams(params: Record<string, string>) {
 
   const client = await getOAuthStore().getClient(clientId);
 
-  if (!client || !client.redirectUris.includes(redirectUri)) {
+  if (
+    !client ||
+    !client.redirectUris.some((registered) =>
+      matchesRedirectUri(registered, redirectUri),
+    ) ||
+    !isAllowedRedirectUri(redirectUri)
+  ) {
     throw new Error("Invalid client or redirect_uri");
   }
 
@@ -824,70 +1045,163 @@ async function validateAuthorizeParams(params: Record<string, string>) {
   };
 }
 
+/**
+ * A redirect target is an https URL, or an http URL on a loopback host for a
+ * client that listens on the user's own machine (RFC 8252 7.3). A fragment,
+ * credentials, whitespace or a non-ASCII character is refused.
+ */
+function isAllowedRedirectUri(value: unknown): value is string {
+  if (
+    typeof value !== "string" ||
+    !/^[\x21-\x7e]+$/.test(value) ||
+    value.includes("#")
+  ) {
+    return false;
+  }
+
+  let url: URL;
+
+  try {
+    url = new URL(value);
+  } catch {
+    return false;
+  }
+
+  if (url.username || url.password) {
+    return false;
+  }
+
+  if (url.protocol === "https:") {
+    return true;
+  }
+
+  return (
+    url.protocol === "http:" && LOOPBACK_REDIRECT_HOSTS.includes(url.hostname)
+  );
+}
+
+function matchesRedirectUri(registered: string, requested: string) {
+  if (!isAllowedRedirectUri(requested)) {
+    return false;
+  }
+
+  if (registered === requested) {
+    return true;
+  }
+
+  // RFC 8252 permits a native client's loopback port to change between logins.
+  // Strip only that literal port; keep the host, path and query byte-for-byte.
+  const loopbackPort =
+    /^(http:\/\/(?:localhost|127\.0\.0\.1|\[::1\])):\d+(?=\/|\?|$)/i;
+  return (
+    registered.replace(loopbackPort, "$1") ===
+    requested.replace(loopbackPort, "$1")
+  );
+}
+
 async function authenticateRbacSubject(email: string, password: string) {
   if (!email || !password) {
     throw new Error("Email and password are required");
   }
 
-  const formData = new FormData();
-  formData.set(
-    "data",
-    JSON.stringify({
-      login: email,
-      password,
+  const credentials = await runWithMcpRequestAuthContext({}, () =>
+    rbacSubjectApi.authenticationEmailAndPasswordAuthentication({
+      data: { login: email, password },
+      options: { redirect: "error", signal: AbortSignal.timeout(10000) },
     }),
   );
 
-  const apiUrl = (
-    process.env["API_SERVICE_URL"] || "http://127.0.0.1:4000"
-  ).replace(/\/$/, "");
-  const response = await fetch(
-    `${apiUrl}/api/rbac/subjects/authentication/email-and-password/authentication`,
-    {
-      method: "POST",
-      body: formData,
-    },
-  ).catch((error) => {
-    throw new Error(
-      `Unable to reach SinglePageStartup API at ${apiUrl}. Is npm run api:dev running? ${getErrorMessage(error)}`,
-    );
-  });
-  const payload = (await response.json().catch(() => ({}))) as Record<
-    string,
-    unknown
-  >;
-
-  if (!response.ok) {
-    throw new Error(
-      getPayloadError(payload) ||
-        `RBAC subject authentication failed with status ${response.status}`,
-    );
-  }
-
-  const data = isRecord(payload["data"])
-    ? payload["data"]
-    : (payload as Record<string, unknown>);
-  const rbacSubjectAuthenticationJwt =
-    typeof data["jwt"] === "string" ? data["jwt"] : undefined;
-
-  if (!rbacSubjectAuthenticationJwt) {
-    throw new Error(
-      "RBAC subject authentication response does not include jwt",
-    );
-  }
-
   return {
-    rbacSubjectAuthenticationJwt,
+    rbacSubjectAuthenticationJwt: credentials.jwt,
+    rbacSubjectRefreshJwt: credentials.refresh,
   };
 }
 
-function renderAuthorizePage(
+function renderAuthorizeConsent(
   res: ServerResponse,
-  params: Record<string, string>,
+  request: IAuthorizeRequest,
+) {
+  return sendAuthorizePage(
+    res,
+    200,
+    `<h1>Connect SinglePageStartup</h1>
+      <p>An application asks to use SinglePageStartup MCP with your account. Continue only if you started this connection and recognize the address below.</p>
+      <dl>
+        <dt>Application</dt>
+        <dd>${escapeHtml(request.client.clientName || "Unnamed application")}</dd>
+        <dt>Client ID</dt>
+        <dd><code>${escapeHtml(request.client.clientId)}</code></dd>
+        <dt>Returns to</dt>
+        <dd><code>${escapeHtml(request.redirectUri)}</code></dd>
+      </dl>
+      <form method="post" action="/oauth/authorize">
+        ${renderAuthorizeFields(request)}
+        <p>This application can perform the operations your account is allowed to perform in the project, including deleting records when your role permits it.</p>
+        <div class="actions">
+          <button type="submit" name="consent" value="approve">Continue</button>
+          <button type="submit" name="consent" value="deny" class="secondary">Cancel</button>
+        </div>
+      </form>`,
+  );
+}
+
+function renderAuthorizeSignIn(
+  res: ServerResponse,
+  request: IAuthorizeRequest,
   error?: string,
 ) {
-  res.statusCode = 200;
+  return sendAuthorizePage(
+    res,
+    200,
+    `<h1>Sign in to approve</h1>
+      <p>Sign in with your SinglePageStartup account to connect ${escapeHtml(request.client.clientName || request.client.clientId)}. Your project permissions apply to every operation.</p>
+      ${error ? `<p class="error">${escapeHtml(error)}</p>` : ""}
+      <form method="post" action="/oauth/authorize">
+        ${renderAuthorizeFields(request)}
+        ${hidden("consent", "approve")}
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" autocomplete="email" required />
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required />
+        <button type="submit">Authorize</button>
+      </form>`,
+  );
+}
+
+function renderAuthorizeError(res: ServerResponse, error: string) {
+  return sendAuthorizePage(
+    res,
+    400,
+    `<h1>Connect SinglePageStartup</h1>
+      <p class="error">${escapeHtml(error)}</p>
+      <p>Start the connection again from your MCP client.</p>`,
+  );
+}
+
+function renderAuthorizeFields(request: IAuthorizeRequest) {
+  return [
+    hidden("response_type", "code"),
+    hidden("client_id", request.client.clientId),
+    hidden("redirect_uri", request.redirectUri),
+    hidden("scope", request.scope),
+    hidden("state", request.state),
+    hidden("code_challenge", request.codeChallenge),
+    hidden("code_challenge_method", "S256"),
+    hidden("resource", request.resource),
+  ].join("\n        ");
+}
+
+function sendAuthorizePage(
+  res: ServerResponse,
+  status: number,
+  content: string,
+) {
+  res.statusCode = status;
   res.setHeader("Content-Type", "text/html; charset=utf-8");
+  res.setHeader("Cache-Control", "no-store");
+  // A consent page inside another site's frame could be clicked through.
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("Content-Security-Policy", "frame-ancestors 'none'");
   res.end(`<!doctype html>
 <html lang="en">
   <head>
@@ -900,33 +1214,42 @@ function renderAuthorizePage(
       label { display: block; font-size: 14px; font-weight: 600; margin: 16px 0 6px; }
       input { width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font: inherit; }
       button { margin-top: 20px; width: 100%; padding: 10px 12px; border: 0; border-radius: 6px; background: #0f172a; color: white; font: inherit; font-weight: 600; }
+      button.secondary { background: #e2e8f0; color: #0f172a; }
+      dl { font-size: 14px; }
+      dt { font-weight: 600; margin-top: 10px; }
+      dd { margin: 4px 0 0; overflow-wrap: anywhere; }
+      ul { color: #475569; }
+      .actions { display: flex; gap: 10px; }
       .error { margin: 0 0 16px; color: #b91c1c; }
       p { color: #475569; }
     </style>
   </head>
   <body>
     <main>
-      <h1>Connect SinglePageStartup</h1>
-      <p>Sign in with your SinglePageStartup account to authorize this MCP connector.</p>
-      ${error ? `<p class="error">${escapeHtml(error)}</p>` : ""}
-      <form method="post" action="/oauth/authorize">
-        ${hidden("response_type", params["response_type"])}
-        ${hidden("client_id", params["client_id"])}
-        ${hidden("redirect_uri", params["redirect_uri"])}
-        ${hidden("scope", params["scope"] || DEFAULT_SCOPE)}
-        ${hidden("state", params["state"])}
-        ${hidden("code_challenge", params["code_challenge"])}
-        ${hidden("code_challenge_method", params["code_challenge_method"])}
-        ${hidden("resource", params["resource"])}
-        <label for="email">Email</label>
-        <input id="email" name="email" type="email" autocomplete="email" required />
-        <label for="password">Password</label>
-        <input id="password" name="password" type="password" autocomplete="current-password" required />
-        <button type="submit">Authorize</button>
-      </form>
+      ${content}
     </main>
   </body>
 </html>`);
+}
+
+function redirectToClient(
+  res: ServerResponse,
+  request: IAuthorizeRequest,
+  params: Record<string, string>,
+) {
+  const redirectUrl = new URL(request.redirectUri);
+
+  for (const [name, value] of Object.entries(params)) {
+    redirectUrl.searchParams.set(name, value);
+  }
+
+  if (request.state) {
+    redirectUrl.searchParams.set("state", request.state);
+  }
+
+  res.statusCode = 302;
+  res.setHeader("Location", redirectUrl.toString());
+  res.end();
 }
 
 function getOAuthStore() {
@@ -977,37 +1300,37 @@ function verifyJwt(accessToken: string) {
   return payload;
 }
 
-function getRbacSubjectIdFromAuthenticationJwt(
-  rbacSubjectAuthenticationJwt: string,
+function getRbacTokenRemainingSeconds(
+  token: string,
+  subjectId: string,
+  maximum: number,
 ) {
   const secret = process.env["RBAC_JWT_SECRET"];
 
   if (!secret) {
-    return "rbac-subject";
+    throw new Error("Configuration error. RBAC_JWT_SECRET is required");
   }
 
-  const payload = jwt.verify(rbacSubjectAuthenticationJwt, secret);
-
-  if (!isJwtPayload(payload)) {
-    return "rbac-subject";
-  }
-
-  if (typeof payload.sub === "string") {
-    return payload.sub;
-  }
+  const payload = jwt.verify(token, secret, { algorithms: ["HS256"] });
 
   if (
-    isRecord(payload["subject"]) &&
-    typeof payload["subject"]["id"] === "string"
+    !isJwtPayload(payload) ||
+    !isRecord(payload["subject"]) ||
+    payload["subject"]["id"] !== subjectId ||
+    !Number.isSafeInteger(payload.exp) ||
+    !Number.isSafeInteger(maximum) ||
+    maximum <= 0
   ) {
-    return payload["subject"]["id"];
+    throw new Error("Authentication error. Invalid RBAC session");
   }
 
-  if (typeof payload["id"] === "string") {
-    return payload["id"];
+  const remaining = Math.min((payload.exp as number) - nowSeconds(), maximum);
+
+  if (remaining <= 0) {
+    throw new Error("Authentication error. RBAC session has expired");
   }
 
-  return "rbac-subject";
+  return remaining;
 }
 
 function getVerifiedRbacSubjectIdFromAuthenticationJwt(
@@ -1142,17 +1465,11 @@ function getAuthCodeTtlSeconds() {
 }
 
 function getAccessTokenTtlSeconds() {
-  return getEnvNumber(
-    "MCP_SERVICE_OAUTH_ACCESS_TOKEN_TTL_SECONDS",
-    DEFAULT_ACCESS_TOKEN_TTL_SECONDS,
-  );
+  return RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS;
 }
 
 function getRefreshTokenTtlSeconds() {
-  return getEnvNumber(
-    "MCP_SERVICE_OAUTH_REFRESH_TOKEN_TTL_SECONDS",
-    DEFAULT_REFRESH_TOKEN_TTL_SECONDS,
-  );
+  return RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS;
 }
 
 function getEnvNumber(name: string, fallback: number) {
@@ -1162,7 +1479,7 @@ function getEnvNumber(name: string, fallback: number) {
 }
 
 async function readJsonBody(req: IncomingMessage) {
-  const raw = await readBody(req);
+  const raw = await readRequestBody(req, OAUTH_BODY_LIMIT_BYTES);
 
   if (!raw) {
     return {};
@@ -1178,19 +1495,9 @@ function getHeader(req: IncomingMessage, name: string) {
 }
 
 async function readFormBody(req: IncomingMessage) {
-  const raw = await readBody(req);
+  const raw = await readRequestBody(req, OAUTH_BODY_LIMIT_BYTES);
 
   return new URLSearchParams(raw);
-}
-
-async function readBody(req: IncomingMessage) {
-  const chunks: Buffer[] = [];
-
-  for await (const chunk of req) {
-    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-  }
-
-  return Buffer.concat(chunks).toString("utf8");
 }
 
 function sendJson(res: ServerResponse, status: number, body: unknown) {
@@ -1231,18 +1538,6 @@ function escapeHtml(value: string) {
 
 function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : String(error);
-}
-
-function getPayloadError(payload: Record<string, unknown>) {
-  if (typeof payload["message"] === "string") {
-    return payload["message"];
-  }
-
-  if (typeof payload["error"] === "string") {
-    return payload["error"];
-  }
-
-  return undefined;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

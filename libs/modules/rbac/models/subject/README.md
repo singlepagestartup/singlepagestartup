@@ -276,6 +276,11 @@ copied into a token; `me` reads it from the database.
 
 ### Logout and revocation
 
+The direct `GET /rbac/subjects/:id` owner read resolves the caller through
+`me` before applying ownership or role permissions. It rejects refresh tokens,
+revoked access tokens and tokens for deleted subjects, including requests
+forwarded by MCP. Operator reads retain their separate secret-key check.
+
 `logout` writes `tokensValidAfter` for the subject of the presented access
 token. Every token of that subject signed in or before that second is refused
 from then on with 401 `Authentication error. Token revoked`, on every device:
