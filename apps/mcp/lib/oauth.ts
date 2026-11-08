@@ -17,6 +17,8 @@ import { runWithMcpRequestAuthContext } from "./auth-context";
 import { readRequestBody, RequestBodyTooLargeError } from "./request-body";
 
 const DEFAULT_AUTH_CODE_TTL_SECONDS = 5 * 60;
+const PENDING_CLIENT_TTL_SECONDS = 24 * 60 * 60;
+const MAX_PENDING_CLIENTS = 1000;
 const OAUTH_BODY_LIMIT_BYTES = 64 * 1024;
 const LOOPBACK_REDIRECT_HOSTS = ["localhost", "127.0.0.1", "[::1]"];
 export const INTERNAL_RBAC_SUBJECT_CLIENT_ID = "internal-rbac-subject";
@@ -113,7 +115,8 @@ class InternalTokenExchangeError extends Error {
 
 interface IOAuthStore {
   getClient(clientId: string): Promise<IOAuthClient | undefined>;
-  saveClient(client: IOAuthClient, ttlSeconds: number): Promise<void>;
+  registerClient(client: IOAuthClient): Promise<boolean>;
+  saveClient(client: IOAuthClient): Promise<void>;
   getCode(code: string): Promise<IOAuthCode | undefined>;
   saveCode(code: IOAuthCode, ttlSeconds: number): Promise<void>;
   takeCode(code: string): Promise<IOAuthCode | undefined>;
@@ -151,8 +154,30 @@ class MemoryOAuthStore implements IOAuthStore {
     return getUnexpired(this.clients, clientId);
   }
 
-  async saveClient(client: IOAuthClient, ttlSeconds: number) {
-    this.clients.set(client.clientId, withTtl(client, ttlSeconds));
+  async registerClient(client: IOAuthClient) {
+    let pendingClients = 0;
+
+    for (const [id, entry] of this.clients) {
+      if (entry.expiresAt <= Date.now()) {
+        this.clients.delete(id);
+      } else if (Number.isFinite(entry.expiresAt)) {
+        pendingClients += 1;
+      }
+    }
+
+    if (pendingClients >= MAX_PENDING_CLIENTS) {
+      return false;
+    }
+
+    this.clients.set(
+      client.clientId,
+      withTtl(client, PENDING_CLIENT_TTL_SECONDS),
+    );
+    return true;
+  }
+
+  async saveClient(client: IOAuthClient) {
+    this.clients.set(client.clientId, { value: client, expiresAt: Infinity });
   }
 
   async getCode(code: string) {
@@ -207,13 +232,44 @@ class RedisOAuthStore implements IOAuthStore {
     return getJson<IOAuthClient>(this.redis, key("client", clientId));
   }
 
-  async saveClient(client: IOAuthClient, ttlSeconds: number) {
-    await this.redis.set(
+  async registerClient(client: IOAuthClient) {
+    // Reserve a pending slot and write the record atomically across MCP processes.
+    const registered = await this.redis.eval(
+      `
+        local now = tonumber(redis.call('TIME')[1])
+        local ttl = tonumber(ARGV[3])
+        redis.call('ZREMRANGEBYSCORE', KEYS[1], '-inf', now)
+        if redis.call('ZCARD', KEYS[1]) >= tonumber(ARGV[4]) then
+          return 0
+        end
+        redis.call('SET', KEYS[2], ARGV[2], 'EX', ttl)
+        redis.call('ZADD', KEYS[1], now + ttl, ARGV[1])
+        return 1
+      `,
+      2,
+      key("clients", "pending"),
       key("client", client.clientId),
+      client.clientId,
       JSON.stringify(client),
-      "EX",
-      ttlSeconds,
+      PENDING_CLIENT_TTL_SECONDS,
+      MAX_PENDING_CLIENTS,
     );
+
+    return registered === 1;
+  }
+
+  async saveClient(client: IOAuthClient) {
+    const results = await this.redis
+      .multi()
+      .set(key("client", client.clientId), JSON.stringify(client))
+      .zrem(key("clients", "pending"), client.clientId)
+      .exec();
+
+    for (const [error] of results ?? []) {
+      if (error) {
+        throw error;
+      }
+    }
   }
 
   async getCode(code: string) {
@@ -616,7 +672,16 @@ async function handleRegister(req: IncomingMessage, res: ServerResponse) {
     createdAt: nowSeconds(),
   };
 
-  await getOAuthStore().saveClient(client, getClientTtlSeconds());
+  const registered = await getOAuthStore().registerClient(client);
+
+  if (!registered) {
+    res.setHeader("Retry-After", "60");
+    return sendJson(res, 429, {
+      error: "temporarily_unavailable",
+      error_description:
+        "Too many pending client registrations. Try again later.",
+    });
+  }
 
   return sendJson(res, 201, {
     client_id: client.clientId,
@@ -632,8 +697,8 @@ async function handleRegister(req: IncomingMessage, res: ServerResponse) {
 
 /**
  * Authorization runs in two steps. The consent step names the client and the
- * address the code returns to, and lets the user allow deleting when the client
- * asked for it; the sign-in step then takes the SinglePageStartup credentials.
+ * address the code returns to; the sign-in step then takes the SinglePageStartup
+ * credentials. The subject's API permissions apply to every operation.
  */
 async function handleAuthorize(
   req: IncomingMessage,
@@ -764,7 +829,9 @@ async function exchangeAuthorizationCode(
   if (
     !client ||
     client.clientId !== clientId ||
-    client.redirectUris.includes(redirectUri) === false ||
+    !client.redirectUris.some((registered) =>
+      matchesRedirectUri(registered, redirectUri),
+    ) ||
     redirectUri !== storedCode.redirectUri ||
     !clientSecretIsValid(client, clientSecret)
   ) {
@@ -877,8 +944,8 @@ async function issueTokenResponse(
     },
     refreshTokenTtl,
   );
-  // Keep registration alive for the shared RBAC refresh window.
-  await getOAuthStore().saveClient(props.client, getClientTtlSeconds());
+  // Client identity outlives user sessions so a connector can sign in again.
+  await getOAuthStore().saveClient(props.client);
 
   return sendJson(res, 200, {
     access_token: issued.accessToken,
@@ -960,7 +1027,9 @@ async function validateAuthorizeParams(
 
   if (
     !client ||
-    !client.redirectUris.includes(redirectUri) ||
+    !client.redirectUris.some((registered) =>
+      matchesRedirectUri(registered, redirectUri),
+    ) ||
     !isAllowedRedirectUri(redirectUri)
   ) {
     throw new Error("Invalid client or redirect_uri");
@@ -1008,6 +1077,25 @@ function isAllowedRedirectUri(value: unknown): value is string {
 
   return (
     url.protocol === "http:" && LOOPBACK_REDIRECT_HOSTS.includes(url.hostname)
+  );
+}
+
+function matchesRedirectUri(registered: string, requested: string) {
+  if (!isAllowedRedirectUri(requested)) {
+    return false;
+  }
+
+  if (registered === requested) {
+    return true;
+  }
+
+  // RFC 8252 permits a native client's loopback port to change between logins.
+  // Strip only that literal port; keep the host, path and query byte-for-byte.
+  const loopbackPort =
+    /^(http:\/\/(?:localhost|127\.0\.0\.1|\[::1\])):\d+(?=\/|\?|$)/i;
+  return (
+    registered.replace(loopbackPort, "$1") ===
+    requested.replace(loopbackPort, "$1")
   );
 }
 
@@ -1382,10 +1470,6 @@ function getAccessTokenTtlSeconds() {
 
 function getRefreshTokenTtlSeconds() {
   return RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS;
-}
-
-function getClientTtlSeconds() {
-  return getRefreshTokenTtlSeconds();
 }
 
 function getEnvNumber(name: string, fallback: number) {

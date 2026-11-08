@@ -11,6 +11,8 @@ import { once } from "node:events";
 import { resolve } from "node:path";
 import jwt from "jsonwebtoken";
 import Redis from "ioredis";
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 
 const redisPort = Number(process.env.MCP_TEST_REDIS_PORT);
 
@@ -87,41 +89,46 @@ const port = probe.port!;
 probe.stop(true);
 const base = `http://127.0.0.1:${port}`;
 const redis = new Redis({ host: "127.0.0.1", port: redisPort });
-const child = spawn(process.execPath, ["--no-env-file", "http.ts"], {
-  cwd: resolve("apps/mcp"),
-  env: {
-    ...process.env,
-    NODE_ENV: "production",
-    API_SERVICE_URL: rbac.url.origin,
-    MCP_SERVICE_PUBLIC_BASE_URL: base,
-    MCP_SERVICE_PUBLIC_URL: `${base}/mcp`,
-    MCP_SERVICE_HTTP_HOST: "127.0.0.1",
-    MCP_SERVICE_HTTP_PORT: String(port),
-    MCP_SERVICE_AUTH_REQUIRED: "true",
-    MCP_SERVICE_ALLOW_RBAC_SECRET_FALLBACK: "false",
-    MCP_SERVICE_OAUTH_STORE: "redis",
-    KV_PROVIDER: "redis",
-    KV_HOST: "127.0.0.1",
-    KV_PORT: String(redisPort),
-    KV_PASSWORD: "",
-    RBAC_JWT_SECRET: secret,
-    RBAC_SECRET_KEY: secret,
-    MCP_SERVICE_OAUTH_JWT_SECRET: secret,
-    MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET: secret,
-    RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS: "3",
-    RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS: "20",
-  },
-  stdio: ["ignore", "pipe", "pipe"],
-});
-let childLog = "";
-child.stdout.on("data", (chunk) => {
-  childLog += String(chunk);
-});
-child.stderr.on("data", (chunk) => {
-  childLog += String(chunk);
-});
+function startMcp() {
+  const mcpProcess = spawn(process.execPath, ["--no-env-file", "http.ts"], {
+    cwd: resolve("apps/mcp"),
+    env: {
+      ...process.env,
+      NODE_ENV: "production",
+      API_SERVICE_URL: rbac.url.origin,
+      MCP_SERVICE_PUBLIC_BASE_URL: base,
+      MCP_SERVICE_PUBLIC_URL: `${base}/mcp`,
+      MCP_SERVICE_HTTP_HOST: "127.0.0.1",
+      MCP_SERVICE_HTTP_PORT: String(port),
+      MCP_SERVICE_AUTH_REQUIRED: "true",
+      MCP_SERVICE_ALLOW_RBAC_SECRET_FALLBACK: "false",
+      MCP_SERVICE_OAUTH_STORE: "redis",
+      KV_PROVIDER: "redis",
+      KV_HOST: "127.0.0.1",
+      KV_PORT: String(redisPort),
+      KV_PASSWORD: "",
+      RBAC_JWT_SECRET: secret,
+      RBAC_SECRET_KEY: secret,
+      MCP_SERVICE_OAUTH_JWT_SECRET: secret,
+      MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET: secret,
+      RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS: "3",
+      RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS: "20",
+    },
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  mcpProcess.stdout.on("data", (chunk) => {
+    childLog += String(chunk);
+  });
+  mcpProcess.stderr.on("data", (chunk) => {
+    childLog += String(chunk);
+  });
+  return mcpProcess;
+}
 
-beforeAll(async () => {
+let childLog = "";
+let child = startMcp();
+
+async function waitForMcp() {
   const deadline = Date.now() + 15000;
   let ready = false;
 
@@ -139,15 +146,20 @@ beforeAll(async () => {
   }
 
   expect(ready).toBe(true);
-});
+}
 
-afterAll(async () => {
+async function stopMcp() {
   if (child.exitCode === null && child.signalCode === null) {
     const exited = once(child, "exit");
     child.kill("SIGTERM");
     await exited;
   }
+}
 
+beforeAll(waitForMcp);
+
+afterAll(async () => {
+  await stopMcp();
   redis.disconnect();
   rbac.stop(true);
   sink.stop(true);
@@ -160,15 +172,28 @@ async function tokenRequest(fields: Record<string, string>) {
   });
 }
 
-async function signIn() {
-  const callback = "http://127.0.0.1:53316/callback";
-  const clientResponse = await fetch(`${base}/oauth/register`, {
+async function registerClient(callback: string) {
+  const response = await fetch(`${base}/oauth/register`, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ redirect_uris: [callback] }),
   });
-  expect(clientResponse.status).toBe(201);
-  const { client_id: clientId } = await clientResponse.json();
+  expect(response.status).toBe(201);
+  const { client_id: clientId } = await response.json();
+  const ttl = await redis.ttl(`mcp:oauth:client:${clientId}`);
+  expect(ttl).toBeGreaterThan(86000);
+  expect(ttl).toBeLessThanOrEqual(86400);
+  return clientId as string;
+}
+
+interface ISignInOptions {
+  clientId?: string;
+  callback?: string;
+}
+
+async function signIn(options: ISignInOptions = {}) {
+  const callback = options.callback ?? "http://127.0.0.1:53316/callback";
+  const clientId = options.clientId ?? (await registerClient(callback));
   const verifier = randomBytes(32).toString("base64url");
   const challenge = new Bun.CryptoHasher("sha256")
     .update(verifier)
@@ -248,9 +273,7 @@ test("MCP renews expired access through RBAC, rotates once in Redis and keeps RB
   expect(
     await redis.ttl(`mcp:oauth:refresh:${tokens.refresh_token}`),
   ).toBeLessThanOrEqual(20);
-  expect(await redis.ttl(`mcp:oauth:client:${clientId}`)).toBeLessThanOrEqual(
-    20,
-  );
+  expect(await redis.ttl(`mcp:oauth:client:${clientId}`)).toBe(-1);
   const oldRefresh = JSON.parse(
     (await redis.get(`mcp:oauth:refresh:${tokens.refresh_token}`))!,
   );
@@ -284,6 +307,102 @@ test("MCP renews expired access through RBAC, rotates once in Redis and keeps RB
   expect(savedRenewed.rbacSubjectAuthenticationJwt).not.toBe(
     saved.rbacSubjectAuthenticationJwt,
   );
+});
+
+test("a connector signs in again with its existing client after session expiry and MCP restart", async () => {
+  const callback = "http://localhost:41001/callback?source=cli";
+  const { clientId, tokens } = await signIn({ callback });
+  const expireAt = Number(
+    (jwt.decode(tokens.access_token) as jwt.JwtPayload).exp,
+  );
+  expect(expireAt).toBeGreaterThan(0);
+  await Bun.sleep(20500);
+  expect((await initialize(tokens.access_token)).status).toBe(401);
+  const expiredRefresh = await tokenRequest({
+    grant_type: "refresh_token",
+    client_id: clientId,
+    refresh_token: tokens.refresh_token,
+  });
+  expect(expiredRefresh.status).toBe(400);
+  expect(await expiredRefresh.json()).toMatchObject({ error: "invalid_grant" });
+  expect(await redis.ttl(`mcp:oauth:client:${clientId}`)).toBe(-1);
+  await stopMcp();
+  child = startMcp();
+  await waitForMcp();
+  const renewed = await signIn({
+    clientId,
+    callback: "http://localhost:41002/callback?source=cli",
+  });
+  expect(renewed.clientId).toBe(clientId);
+  expect((await initialize(renewed.tokens.access_token)).status).toBe(200);
+});
+
+test("hosted callbacks and the SDK discover annotated tools and execute reads", async () => {
+  for (const callback of [
+    "https://chatgpt.com/connector_platform_oauth_redirect",
+    "https://chatgpt.com/connector/oauth/test-callback",
+    "https://claude.ai/api/mcp/auth_callback",
+  ]) {
+    const { tokens } = await signIn({ callback });
+    const client = new Client({ name: "compatibility-check", version: "1" });
+    const transport = new StreamableHTTPClientTransport(
+      new URL(`${base}/mcp`),
+      {
+        requestInit: {
+          headers: { Authorization: `Bearer ${tokens.access_token}` },
+        },
+      },
+    );
+    try {
+      await client.connect(transport);
+      const { tools } = await client.listTools();
+      expect(tools).toHaveLength(20);
+      for (const tool of tools) {
+        expect(typeof tool.annotations?.readOnlyHint).toBe("boolean");
+        expect(typeof tool.annotations?.destructiveHint).toBe("boolean");
+        expect(typeof tool.annotations?.openWorldHint).toBe("boolean");
+      }
+      const guide = await client.callTool({
+        name: "project-guide",
+        arguments: {},
+      });
+      expect(guide.isError).not.toBe(true);
+      const modules = await client.callTool({
+        name: "module-list",
+        arguments: {},
+      });
+      expect(modules.isError).not.toBe(true);
+    } finally {
+      await client.close();
+    }
+  }
+});
+
+test("concurrent public registration stays bounded and completed login releases capacity", async () => {
+  const callback = "http://127.0.0.1/callback";
+  const clientId = await registerClient(callback);
+  const existing = await redis.zcard("mcp:oauth:clients:pending");
+  const responses = await Promise.all(
+    Array.from({ length: 1010 - existing }, () =>
+      fetch(`${base}/oauth/register`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ redirect_uris: [callback] }),
+      }),
+    ),
+  );
+  expect(responses.filter((response) => response.status === 201)).toHaveLength(
+    1000 - existing,
+  );
+  expect(responses.filter((response) => response.status === 429)).toHaveLength(
+    10,
+  );
+  expect(await redis.zcard("mcp:oauth:clients:pending")).toBe(1000);
+  expect(await redis.ttl("mcp:oauth:clients:pending")).toBe(-1);
+  await signIn({ clientId, callback: "http://127.0.0.1:42001/callback" });
+  expect(await redis.zcard("mcp:oauth:clients:pending")).toBe(999);
+  await registerClient(callback);
+  expect(await redis.zcard("mcp:oauth:clients:pending")).toBe(1000);
 });
 
 test("API redirects receive no forwarded credentials or request body", async () => {

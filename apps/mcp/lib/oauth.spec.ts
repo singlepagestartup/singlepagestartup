@@ -3,7 +3,7 @@
  *
  * Given a remote MCP public URL configuration and the in-memory OAuth store
  * When clients register, users consent and sign in, and tokens are exchanged
- * Then registrations expire, redirect targets are limited, operations use the subject RBAC permissions, and oversized bodies are refused
+ * Then completed registrations survive token expiry, pending registrations are bounded, redirect targets are limited, operations use the subject RBAC permissions, and oversized bodies are refused
  */
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { Readable } from "node:stream";
@@ -434,30 +434,118 @@ describe("MCP OAuth authorization flow", () => {
     expect(JSON.parse(token.body)).toMatchObject({ error: "invalid_client" });
   });
 
-  /**
-   * BDD Scenario: An unused registration expires
-   *
-   * Given RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS is one minute
-   * When nobody uses the registered client for longer than that
-   * Then authorization no longer finds the client
-   */
-  it("expires a registered client that is never used", async () => {
-    process.env["RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS"] = "60";
+  it("expires only pending registrations independently of the RBAC refresh lifetime", async () => {
+    process.env.RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS = "60";
     const now = Date.now();
     const clock = jest.spyOn(Date, "now").mockReturnValue(now);
     const client = await createClient([clientRedirectUri]);
 
+    clock.mockReturnValue(now + 61 * 1000);
     expect((await authorizePage(client.client_id)).status).toBe(200);
 
-    clock.mockReturnValue(now + 61 * 1000);
-
-    const page = await authorizePage(client.client_id);
-
-    expect(page.status).toBe(400);
-    expect(page.body).toContain("Invalid client or redirect_uri");
+    clock.mockReturnValue(now + 86401 * 1000);
+    expect((await authorizePage(client.client_id)).status).toBe(400);
   });
 
-  it("renews the RBAC session and extends the client registration while in use", async () => {
+  it("signs in again with the same client after both user tokens expire", async () => {
+    process.env.RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS = "30";
+    process.env.RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS = "60";
+    const now = Date.now();
+    const clock = jest.spyOn(Date, "now").mockReturnValue(now);
+    const client = await createClient([clientRedirectUri]);
+    const code = await obtainCode(client.client_id, { scope: "mcp:content" });
+    const original = JSON.parse(
+      (await exchangeCode(client.client_id, code, clientRedirectUri)).body,
+    );
+
+    clock.mockReturnValue(now + 86401 * 1000);
+    await expect(verifyMcpAccessToken(original.access_token)).rejects.toThrow();
+    const expiredRefresh = await refreshToken(
+      client.client_id,
+      original.refresh_token,
+    );
+    expect(JSON.parse(expiredRefresh.body).error).toBe("invalid_grant");
+    expect((await authorizePage(client.client_id)).status).toBe(200);
+
+    const nextCode = await obtainCode(client.client_id, {
+      scope: "mcp:content",
+    });
+    const next = await exchangeCode(
+      client.client_id,
+      nextCode,
+      clientRedirectUri,
+    );
+    expect(next.status).toBe(200);
+    expect(
+      (await verifyMcpAccessToken(JSON.parse(next.body).access_token)).clientId,
+    ).toBe(client.client_id);
+  });
+
+  it.each(["localhost", "127.0.0.1", "[::1]"])(
+    "allows changing only the HTTP loopback port on %s",
+    async (hostname) => {
+      const registered = `http://${hostname}/callback?source=cli`;
+      const callback = `http://${hostname}:42139/callback?source=cli`;
+      const client = await createClient([registered]);
+      expect(
+        (await authorizePage(client.client_id, { redirectUri: callback }))
+          .status,
+      ).toBe(200);
+      const code = await obtainCode(client.client_id, {
+        scope: "mcp:content",
+        redirectUri: callback,
+      });
+
+      // Even a permitted loopback port must match the specific authorization code.
+      const mismatch = await exchangeCode(client.client_id, code, registered);
+      expect(mismatch.status).toBe(400);
+      expect(
+        (await exchangeCode(client.client_id, code, callback)).status,
+      ).toBe(200);
+    },
+  );
+
+  it.each([
+    [
+      "http://127.0.0.1:41000/callback?a=1",
+      "http://localhost:42000/callback?a=1",
+    ],
+    ["http://localhost:41000/callback?a=1", "http://localhost:42000/other?a=1"],
+    [
+      "http://localhost:41000/callback?a=1",
+      "http://localhost:42000/callback?a=2",
+    ],
+    [
+      "http://localhost:41000/callback",
+      "http://localhost.evil.example:42000/callback",
+    ],
+    ["http://localhost:41000/callback", "http://user@localhost:42000/callback"],
+    [
+      "http://localhost:41000/callback",
+      "http://localhost:42000/callback#fragment",
+    ],
+    ["http://localhost:41000/callback", "https://localhost:42000/callback"],
+    [
+      "http://localhost:41000/callback",
+      "http://localhost:42000/other/../callback",
+    ],
+    [
+      "https://client.example:41000/callback",
+      "https://client.example:42000/callback",
+    ],
+    ["https://localhost:41000/callback", "https://localhost:42000/callback"],
+  ])(
+    "rejects callback changes beyond a loopback port: %s -> %s",
+    async (registered, requested) => {
+      const client = await createClient([registered]);
+      expect(
+        (await authorizePage(client.client_id, { redirectUri: requested }))
+          .status,
+      ).toBe(400);
+    },
+  );
+
+  it("renews the RBAC session while keeping the client identity", async () => {
     process.env.RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS = "30";
     process.env.RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS = "120";
     const now = Date.now();
@@ -663,6 +751,72 @@ describe("MCP OAuth authorization flow", () => {
       error: "invalid_request",
     });
   });
+  it("keeps a confidential connector's secret valid for sign-in and refresh", async () => {
+    const registration = await registerClient([clientRedirectUri], {
+      token_endpoint_auth_method: "client_secret_post",
+    });
+    const client = JSON.parse(registration.body);
+    expect(client.client_secret).toBeTruthy();
+    const code = await obtainCode(client.client_id, { scope: "mcp:content" });
+    const fields = {
+      grant_type: "authorization_code",
+      client_id: client.client_id,
+      client_secret: "wrong-secret",
+      redirect_uri: clientRedirectUri,
+      code,
+      code_verifier: codeVerifier,
+    };
+    const invalid = await sendOAuthRequest({
+      method: "POST",
+      path: "/oauth/token",
+      body: new URLSearchParams(fields).toString(),
+    });
+    expect(JSON.parse(invalid.body)).toMatchObject({ error: "invalid_client" });
+    fields.client_secret = client.client_secret;
+    const exchange = await sendOAuthRequest({
+      method: "POST",
+      path: "/oauth/token",
+      body: new URLSearchParams(fields).toString(),
+    });
+    expect(exchange.status).toBe(200);
+    const renewed = await sendOAuthRequest({
+      method: "POST",
+      path: "/oauth/token",
+      body: new URLSearchParams({
+        grant_type: "refresh_token",
+        client_id: client.client_id,
+        client_secret: client.client_secret,
+        refresh_token: JSON.parse(exchange.body).refresh_token,
+      }).toString(),
+    });
+    expect(renewed.status).toBe(200);
+    expect(
+      await verifyMcpAccessToken(JSON.parse(renewed.body).access_token),
+    ).toMatchObject({
+      clientId: client.client_id,
+    });
+  });
+
+  it("bounds pending registrations and releases capacity after sign-in or expiry", async () => {
+    const now = Date.now() + 365 * 86400 * 1000;
+    const clock = jest.spyOn(Date, "now").mockReturnValue(now);
+    const first = await createClient([clientRedirectUri]);
+    for (let count = 1; count < 1000; count += 1) {
+      expect((await registerClient([clientRedirectUri])).status).toBe(201);
+    }
+    expect((await registerClient([clientRedirectUri])).status).toBe(429);
+
+    const code = await obtainCode(first.client_id, { scope: "mcp:content" });
+    expect(
+      (await exchangeCode(first.client_id, code, clientRedirectUri)).status,
+    ).toBe(200);
+    expect((await registerClient([clientRedirectUri])).status).toBe(201);
+    expect((await registerClient([clientRedirectUri])).status).toBe(429);
+
+    clock.mockReturnValue(now + 86401 * 1000);
+    expect((await registerClient([clientRedirectUri])).status).toBe(201);
+    expect((await authorizePage(first.client_id)).status).toBe(200);
+  });
 });
 
 async function sendOAuthRequest(props: {
@@ -768,13 +922,16 @@ function submitAuthorize(
  * Walks the consent and sign-in steps as a browser does: the sign-in step is
  * submitted with the scope the consent step wrote into it.
  */
-async function obtainCode(clientId: string, props: { scope: string }) {
+async function obtainCode(
+  clientId: string,
+  props: { scope: string; redirectUri?: string },
+) {
   const signIn = await submitAuthorize(
     clientId,
     {
       consent: "approve",
     },
-    { scope: props.scope },
+    props,
   );
   const approvedScope = signIn.body.match(/name="scope" value="([^"]*)"/)?.[1];
 
@@ -797,7 +954,7 @@ async function obtainCode(clientId: string, props: { scope: string }) {
       email: "subject@example.com",
       password: "subject-password",
     },
-    { scope: approvedScope },
+    { ...props, scope: approvedScope },
   );
 
   expect(redirect.status).toBe(302);

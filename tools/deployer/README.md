@@ -175,6 +175,32 @@ docker service update --force api_api
 docker service update --force mcp_mcp
 ```
 
+Redis contains OAuth registrations as well as cache entries. Use
+`REDIS_MAXMEMORY_POLICY=volatile-lru` in `tools/deployer/.env` (or
+`apps/redis/.env` locally). Existing files may still contain `allkeys-lru`, which
+can delete a connected application's registration when Redis reaches its memory
+limit. Actions accepts `REDIS_MAXMEMORY` and `REDIS_MAXMEMORY_POLICY` secrets
+(with the `PREVIEW_` prefix for preview); empty values use `256mb` and
+`volatile-lru`. Deploy the Redis stack after changing the value, then verify inside the
+protected `redis-cli` session:
+
+```text
+CONFIG GET maxmemory-policy
+CONFIG GET dir
+INFO persistence
+```
+
+Expect `volatile-lru`, `/data`, and no persistence errors. Keep `redis_data`
+when updating Redis. The default RDB snapshot preserves state on a graceful
+stop; an abrupt host failure can lose changes since the last snapshot. For AOF,
+follow [Redis's live conversion instructions](https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/#how-i-can-switch-to-aof-if-im-currently-using-dumprdb-snapshots)
+before changing startup configuration on an existing instance.
+`volatile-lru` preserves keys without TTL, including completed OAuth registrations;
+it can evict expiring tokens and require users to sign in again. Monitor Redis
+memory: if persistent data alone reaches the limit, writes fail until capacity
+is added or unused records are deliberately removed. Never run `FLUSHDB` or
+`FLUSHALL` as an application cache reset.
+
 ### PostgreSQL roles
 
 The PostgreSQL stack holds two roles:

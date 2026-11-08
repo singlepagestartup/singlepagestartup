@@ -253,6 +253,40 @@ describe("MCP content-management registration", () => {
     );
   });
 
+  it("declares read and mutation effects for every discoverable tool", () => {
+    const mcp = {
+      registerTool: jest.fn(),
+    } as unknown as McpServer;
+    const mutations = new Set([
+      "model-record-create",
+      "model-record-update",
+      "model-record-delete-apply",
+      "relation-record-create",
+      "relation-record-update",
+      "relation-record-delete-apply",
+    ]);
+
+    registerTools(mcp);
+    const calls = (mcp.registerTool as jest.Mock).mock.calls;
+    expect(calls).toHaveLength(20);
+
+    for (const [name, config] of calls) {
+      if (mutations.has(name)) {
+        expect(config.annotations).toEqual({
+          readOnlyHint: false,
+          destructiveHint: true,
+          openWorldHint: true,
+        });
+      } else {
+        expect(config.annotations).toEqual({
+          readOnlyHint: true,
+          destructiveHint: false,
+          openWorldHint: false,
+        });
+      }
+    }
+  });
+
   /**
    * BDD Scenario: Tools pass the subject credentials to operations
    * Given an HTTP request whose MCP token carries only mcp:content
