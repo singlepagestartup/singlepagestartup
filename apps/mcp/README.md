@@ -125,6 +125,8 @@ To test the OAuth/Bearer flow locally without console commands, start `npm run m
 http://127.0.0.1:3001/authentication/oauth
 ```
 
+Opening `http://127.0.0.1:3001/` redirects to this page. `/mcp` remains the authenticated protocol endpoint for MCP clients.
+
 The page registers a local OAuth client, generates PKCE, redirects to the MCP consent and sign-in steps, exchanges the authorization code for an MCP access token, and can run an MCP `initialize` smoke test with `Authorization: Bearer ...`.
 
 For MCP Inspector with Streamable HTTP OAuth:

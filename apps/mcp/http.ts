@@ -97,6 +97,14 @@ const server = createServer(async (req, res) => {
       return sendOptions(res);
     }
 
+    if (
+      url.pathname === "/" &&
+      (req.method === "GET" || req.method === "HEAD")
+    ) {
+      res.writeHead(302, { Location: "/authentication/oauth" });
+      return res.end();
+    }
+
     if (url.pathname === "/authentication/oauth") {
       return sendHtml(res, 200, getOAuthAuthenticationPage());
     }

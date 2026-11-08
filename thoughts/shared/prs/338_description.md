@@ -8,6 +8,7 @@ This PR validates callback URLs, limits bodies and sessions, expires registratio
 
 ## Changes
 
+- Opening the MCP server root in a browser redirects to `/authentication/oauth`; `/mcp` remains the authenticated protocol endpoint.
 - OAuth registration accepts HTTPS callbacks and HTTP callbacks on localhost or loopback addresses. Credentials, fragments, whitespace and non-ASCII characters are rejected; authorize and token exchange require an exact callback match.
 - The consent page names the application, client id and callback before sign-in. It explains that the subject's existing permissions apply. The single `mcp:content` scope identifies the connection; API RBAC authorizes each operation. Existing delete previews and confirmation tokens remain.
 - Access and refresh lifetimes come from `RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS` and `RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS`, capped by the actual expiry of the corresponding signed RBAC JWT. Client registrations use the shared refresh lifetime and renew when tokens are issued.
@@ -27,6 +28,7 @@ Main `3cb105c225` is integrated. The only textual merge conflict was in `.github
 - [x] `MCP_TEST_REDIS_PORT=<isolated-port> bun test --no-env-file --timeout 30000 tools/dev/mcp-auth.test.ts`: 2 tests. Runtime authentication check: actual Bun MCP HTTP process, isolated Redis, real SDK calls to a loopback RBAC fixture with signed test JWTs. Verifies expired access rejection, renewed access, single-use code and refresh exchange, Redis TTLs and no operator header on login/refresh.
 - [x] Redirect runtime check in the same test file: HTTP 301, 302, 303, 307 and 308; the receiving server gets no request, including POST bodies with synthetic credentials.
 - [x] Telegram 45 tests and shared-utils 123 tests passed during the main synchronization; this follow-up does not change their runtime code.
+- [x] Live MCP: `GET /` and `HEAD /` return 302 to `/authentication/oauth`; the login page returns 200, `POST /` stays 404 and unauthenticated `/mcp` stays 401. Browser navigation from the root reaches the login page.
 
 ## Notes
 
