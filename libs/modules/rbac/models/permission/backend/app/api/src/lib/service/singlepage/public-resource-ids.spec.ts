@@ -47,10 +47,18 @@ it("paginates permission candidates and every role binding before publishing an 
     )
     .mockResolvedValueOnce([{ permissionId: "public" }] as any);
   expect(await service.execute({ resource: "/api/custom/items" })).toEqual([]);
-  expect(dependencies.permission.find.mock.calls[1][0].params.offset).toBe(100);
-  expect(
-    dependencies.rolesToPermissions.find.mock.calls[1][0].params.offset,
-  ).toBe(100);
+  expect(dependencies.permission.find).toHaveBeenNthCalledWith(
+    2,
+    expect.objectContaining({
+      params: expect.objectContaining({ offset: 100 }),
+    }),
+  );
+  expect(dependencies.rolesToPermissions.find).toHaveBeenNthCalledWith(
+    2,
+    expect.objectContaining({
+      params: expect.objectContaining({ offset: 100 }),
+    }),
+  );
 });
 it.each([
   "https://example.test/api/items",

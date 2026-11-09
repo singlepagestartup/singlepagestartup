@@ -42,14 +42,15 @@ interface ITestServices {
 }
 
 function createTestServices(): ITestServices {
-  const permission = new PermissionService(
-    new PermissionRepository(new PermissionConfiguration()),
-    { find: async () => [] } as any,
-  );
-  const role = new RoleService(new RoleRepository(new RoleConfiguration()));
   const rolesToPermissions = new RolesToPermissionsService(
     new RolesToPermissionsRepository(new RolesToPermissionsConfiguration()),
   );
+  const permission = new PermissionService(
+    new PermissionRepository(new PermissionConfiguration()),
+    { find: async () => [] } as any,
+    rolesToPermissions,
+  );
+  const role = new RoleService(new RoleRepository(new RoleConfiguration()));
   const subjectsToRoles = new SubjectsToRolesService(
     new SubjectsToRolesRepository(new SubjectsToRolesConfiguration()),
   );

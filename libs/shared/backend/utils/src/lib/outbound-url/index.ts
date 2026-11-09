@@ -126,9 +126,12 @@ export async function assertOutboundUrl(
   }
 
   const hostname = url.hostname.replace(/^\[(.*)\]$/, "$1");
-  const addresses = isIP(hostname)
-    ? [{ address: hostname, family: isIP(hostname) }]
-    : await lookup(hostname, { all: true }).catch(() => []);
+  let addresses;
+  if (isIP(hostname)) {
+    addresses = [{ address: hostname, family: isIP(hostname) }];
+  } else {
+    addresses = await lookup(hostname, { all: true }).catch(() => []);
+  }
 
   if (
     !addresses.length ||

@@ -36,11 +36,9 @@ export class Repository extends DatabaseRepository<typeof Table> {
     value: unknown,
     data: Record<string, unknown>,
   ) {
-    return super.updateFirstByField(
-      field,
-      value,
-      await this.immutableData(field, value, data),
-    );
+    const immutableData = await this.immutableData(field, value, data);
+
+    return super.updateFirstByField(field, value, immutableData);
   }
 
   override async consumeFirstByField(
@@ -49,11 +47,8 @@ export class Repository extends DatabaseRepository<typeof Table> {
     data: Record<string, unknown>,
     predicate?: Parameters<IRepository["consumeFirstByField"]>[3],
   ) {
-    return super.consumeFirstByField(
-      field,
-      value,
-      await this.immutableData(field, value, data),
-      predicate,
-    );
+    const immutableData = await this.immutableData(field, value, data);
+
+    return super.consumeFirstByField(field, value, immutableData, predicate);
   }
 }

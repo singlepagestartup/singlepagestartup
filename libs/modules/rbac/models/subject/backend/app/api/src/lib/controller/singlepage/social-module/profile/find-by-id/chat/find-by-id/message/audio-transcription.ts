@@ -666,7 +666,9 @@ export class AudioTranscriptionService {
           ? responseType
           : transcriptionFile.type;
 
-      return new File([await response.arrayBuffer()], transcriptionFile.name, {
+      const audioBytes = await response.arrayBuffer();
+
+      return new File([audioBytes], transcriptionFile.name, {
         type,
       });
     }

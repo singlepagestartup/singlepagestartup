@@ -2098,21 +2098,27 @@ export class TelegarmBot {
     const commandTopicTitle = this.getTelegramCommandTopicTitle({
       description: sanitizedDescription,
     });
-    const targetSocialModuleThread =
-      commandTopicTitle && !this.getTelegramMessageThreadId({ ctx: props.ctx })
-        ? await rbacModuleSubjectApi.socialModuleChatFindByIdThreadCreate({
-            id: rbacModuleSubject.id,
-            socialModuleChatId: socialModuleChat.id,
-            data: {
-              title: commandTopicTitle,
+    let targetSocialModuleThread;
+    if (
+      commandTopicTitle &&
+      !this.getTelegramMessageThreadId({ ctx: props.ctx })
+    ) {
+      targetSocialModuleThread =
+        await rbacModuleSubjectApi.socialModuleChatFindByIdThreadCreate({
+          id: rbacModuleSubject.id,
+          socialModuleChatId: socialModuleChat.id,
+          data: {
+            title: commandTopicTitle,
+          },
+          options: {
+            headers: {
+              Authorization: "Bearer " + jwtToken,
             },
-            options: {
-              headers: {
-                Authorization: "Bearer " + jwtToken,
-              },
-            },
-          })
-        : socialModuleThread;
+          },
+        });
+    } else {
+      targetSocialModuleThread = socialModuleThread;
+    }
 
     return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
       {

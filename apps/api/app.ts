@@ -146,7 +146,9 @@ app.on(["GET", "HEAD"], "/public/*", async (c) => {
       });
     }
 
-    return new Response(await file.arrayBuffer(), {
+    const buffer = await file.arrayBuffer();
+
+    return new Response(buffer, {
       headers,
     });
   }

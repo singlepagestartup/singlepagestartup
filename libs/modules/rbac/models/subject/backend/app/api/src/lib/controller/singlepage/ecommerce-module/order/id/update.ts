@@ -76,7 +76,9 @@ export class Handler {
           orderId,
           currencyId: currency.data,
         });
-        return c.json({ data: await this.service.findById({ id }) });
+        const subject = await this.service.findById({ id });
+
+        return c.json({ data: subject });
       }
 
       if (

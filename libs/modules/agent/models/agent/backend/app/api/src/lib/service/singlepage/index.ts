@@ -579,14 +579,24 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             description: props.socialModuleMessage.description,
           })
         : undefined;
-    const telegramConversationKey =
+    let telegramConversationKey;
+    if (
       props.socialModuleChat.variant === "telegram" &&
       this.telegramConversationRuntime
-        ? await this.resolveTelegramConversationKey(props)
-        : undefined;
-    const activeTelegramConversation = telegramConversationKey
-      ? await this.telegramConversationRuntime.get(telegramConversationKey)
-      : undefined;
+    ) {
+      telegramConversationKey =
+        await this.resolveTelegramConversationKey(props);
+    } else {
+      telegramConversationKey = undefined;
+    }
+    let activeTelegramConversation;
+    if (telegramConversationKey) {
+      activeTelegramConversation = await this.telegramConversationRuntime.get(
+        telegramConversationKey,
+      );
+    } else {
+      activeTelegramConversation = undefined;
+    }
 
     if (props.shouldReplySocialModuleProfile.slug === "telegram-bot") {
       if ("socialModuleMessage" in props) {
@@ -906,11 +916,14 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         },
       });
     const relation = relations?.[0];
-    let file = relation?.fileStorageModuleFileId
-      ? await this.fileStorageModule.file.findById({
-          id: relation.fileStorageModuleFileId,
-        })
-      : undefined;
+    let file;
+    if (relation?.fileStorageModuleFileId) {
+      file = await this.fileStorageModule.file.findById({
+        id: relation.fileStorageModuleFileId,
+      });
+    } else {
+      file = undefined;
+    }
     let isDefault =
       file?.variant === defaultSocialModulePersonalAssistantVariant;
 

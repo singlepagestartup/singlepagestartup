@@ -253,7 +253,7 @@ export class Database<T extends PgTableWithColumns<any>>
     }
   }
 
-  async insert(data: any): Promise<T["$inferInsert"]> {
+  async insert(data: any): Promise<T["$inferSelect"]> {
     try {
       const shape = this.insertSchema.shape;
 
@@ -450,7 +450,7 @@ export class Database<T extends PgTableWithColumns<any>>
     orderBy?: NonNullable<FindServiceProps["params"]>["orderBy"],
   ): methods.SQL[] {
     if (!orderBy?.and) {
-      const order = [];
+      const order: methods.SQL[] = [];
       if ("orderIndex" in this.Table) {
         order.push(methods.asc(this.Table.orderIndex));
       }
@@ -487,7 +487,10 @@ export class Database<T extends PgTableWithColumns<any>>
       return methods[method](tableColumn);
     });
 
-    if ("id" in this.Table && !orderBy.and.some(({ column }) => column === "id")) {
+    if (
+      "id" in this.Table &&
+      !orderBy.and.some(({ column }) => column === "id")
+    ) {
       order.push(methods.asc(this.Table.id));
     }
     return order;

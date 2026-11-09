@@ -75,9 +75,7 @@ export class Service {
       throw new Error("Validation error. No subject provided in the token");
     }
 
-    const tokensValidAfter = await this.getSubjectTokensValidAfter(
-      subjectId,
-    );
+    const tokensValidAfter = await this.getSubjectTokensValidAfter(subjectId);
 
     if (
       isRbacSubjectTokenRevoked({
@@ -93,7 +91,9 @@ export class Service {
 
   protected async getSubjectTokensValidAfter(subjectId: string) {
     const cacheKey = `subject:tokens-valid-after:${subjectId}`;
-    const cached = await cache.getAsync<{ tokensValidAfter: Date | null }>(cacheKey);
+    const cached = await cache.getAsync<{ tokensValidAfter: Date | null }>(
+      cacheKey,
+    );
 
     if (cached) {
       return cached.tokensValidAfter;

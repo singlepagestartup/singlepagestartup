@@ -62,10 +62,12 @@ export class Service {
         "Cache-Control": "no-store",
       },
     };
-    const currentSubject =
-      props.type === "registration" && props.subjectId
-        ? await api.findById({ id: props.subjectId, options })
-        : undefined;
+    let currentSubject;
+    if (props.type === "registration" && props.subjectId) {
+      currentSubject = await api.findById({ id: props.subjectId, options });
+    } else {
+      currentSubject = undefined;
+    }
     if (props.type === "registration" && props.subjectId) {
       if (!currentSubject || currentSubject.variant !== "default")
         throw new Error(

@@ -126,9 +126,9 @@ export class RoutingService {
         ![401, 403].includes(Number(error.status))
       )
         throw error;
-      return (await this.exactPublicRecords(name)).filter(
-        (record) => String(record[column]) === value,
-      );
+      const records = await this.exactPublicRecords(name);
+
+      return records.filter((record) => String(record[column]) === value);
     }
   }
 

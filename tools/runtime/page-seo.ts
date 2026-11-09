@@ -617,12 +617,14 @@ async function cli(argv = process.argv.slice(2)) {
         manifest.apiOrigin !== origin.origin
       )
         throw Error("Manifest origin/schema mismatch");
-      const result =
-        mode === "apply"
-          ? await applyPageSeo(manifest, api, persist, readFile)
-          : mode === "verify"
-            ? await verifyPageSeo(manifest, api)
-            : await rollbackPageSeo(manifest, api, persist);
+      let result;
+      if (mode === "apply") {
+        result = await applyPageSeo(manifest, api, persist, readFile);
+      } else if (mode === "verify") {
+        result = await verifyPageSeo(manifest, api);
+      } else {
+        result = await rollbackPageSeo(manifest, api, persist);
+      }
       console.log(JSON.stringify({ mode, result }));
     }
   } finally {

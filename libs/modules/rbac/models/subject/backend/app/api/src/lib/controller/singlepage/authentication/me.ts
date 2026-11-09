@@ -25,10 +25,19 @@ export class Handler {
         );
       }
 
-      const data = await this.service.me({ token });
+      const subject = await this.service.me({ token });
+
+      if (!subject) {
+        return c.json({ data: null });
+      }
+
+      const authenticatedSubject = await this.service.authenticationMe({
+        subjectId: subject.id,
+      });
+      const data = authenticatedSubject ?? null;
 
       return c.json({
-        data: data ? (await this.service.authenticationMe({ subjectId: data.id })) ?? null : null,
+        data,
       });
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);

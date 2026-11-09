@@ -301,9 +301,12 @@ export class Repository extends DatabaseRepository<typeof Table> {
         ),
       )
       .returning({ messageId: ChannelMessage.messageId });
-    return Boolean(
-      await this.updateDeliveryPayload(completed.getSQL(), payload),
+    const updatedDelivery = await this.updateDeliveryPayload(
+      completed.getSQL(),
+      payload,
     );
+
+    return Boolean(updatedDelivery);
   }
 
   async releaseDelivery(owner: IDeliveryOwner) {
@@ -318,7 +321,9 @@ export class Repository extends DatabaseRepository<typeof Table> {
       })
       .where(this.activeOwner(owner))
       .returning({ messageId: ChannelMessage.messageId });
-    return Boolean(await this.updateDeliveryPayload(released.getSQL()));
+    const updatedDelivery = await this.updateDeliveryPayload(released.getSQL());
+
+    return Boolean(updatedDelivery);
   }
 
   async removeCompleted(channelId: string, before: Date, limit: number) {

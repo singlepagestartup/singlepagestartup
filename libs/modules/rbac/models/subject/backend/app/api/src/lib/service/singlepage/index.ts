@@ -419,9 +419,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
 
     for (let attempt = 0; attempt < 2; attempt++) {
-      const current = attempt
-        ? await this.socialModule.thread.findById({ id: thread.id })
-        : thread;
+      let current;
+      if (attempt) {
+        current = await this.socialModule.thread.findById({ id: thread.id });
+      } else {
+        current = thread;
+      }
       const metadata = setRbacAiThreadModelPreference({
         metadata: current.metadata,
         modelId: props.modelId,
@@ -444,12 +447,15 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   async logout(props: ILogoutExecuteProps) {
-    return new Logout({
+    const logout = new Logout({
       me: (meProps) => this.me(meProps),
       update: ({ id, data }) => this.update({ id, data }),
       invalidateSubjectRevocationCache: (subjectId) =>
         this.isAuthorizedService.invalidateSubjectRevocationCache(subjectId),
-    }).execute(props);
+    });
+    const result = await logout.execute(props);
+
+    return result;
   }
 
   async me(props: IMeExecuteProps) {
@@ -483,19 +489,25 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   async authenticationLoginAndPassowrd(
     props: IAuthenticationEmailAndPasswordExecuteProps,
   ) {
-    return this.completeUserAuthentication(
-      await new AuthenticationEmailAndPassword(this.repository).execute(props),
-    );
+    const authentication = await new AuthenticationEmailAndPassword(
+      this.repository,
+    ).execute(props);
+
+    const result = await this.completeUserAuthentication(authentication);
+
+    return result;
   }
 
   async authenticationEthereumVirtualMachine(
     props: IAuthenticationEthereumVirtualMachineExecuteProps,
   ) {
-    return this.completeUserAuthentication(
-      await new AuthenticationEthereumVirtualMachine(this.repository).execute(
-        props,
-      ),
-    );
+    const authentication = await new AuthenticationEthereumVirtualMachine(
+      this.repository,
+    ).execute(props);
+
+    const result = await this.completeUserAuthentication(authentication);
+
+    return result;
   }
 
   async authenticationOAuthStart(props: IAuthenticationOAuthStartExecuteProps) {
@@ -511,9 +523,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   async authenticationOAuthExchange(
     props: IAuthenticationOAuthExchangeExecuteProps,
   ) {
-    return this.completeUserAuthentication(
-      await new AuthenticationOAuthExchange(this.repository).execute(props),
-    );
+    const authentication = await new AuthenticationOAuthExchange(
+      this.repository,
+    ).execute(props);
+
+    const result = await this.completeUserAuthentication(authentication);
+
+    return result;
   }
 
   async socialModuleProfileOwnershipEnsure(props: { subjectId: string }) {

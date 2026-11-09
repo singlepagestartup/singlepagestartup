@@ -38,9 +38,11 @@ export class Service {
   }
 
   async execute(props: IExecuteProps): Promise<IResult> {
-    const subject = props.token
-      ? await this.me({ token: props.token }).catch(() => null)
-      : null;
+    let subject: IModel | null = null;
+
+    if (props.token) {
+      subject = await this.me({ token: props.token }).catch(() => null);
+    }
 
     if (!subject) {
       return { subject: null };

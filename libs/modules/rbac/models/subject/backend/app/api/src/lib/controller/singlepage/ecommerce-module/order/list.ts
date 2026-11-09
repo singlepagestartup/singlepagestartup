@@ -158,17 +158,18 @@ export class Handler {
           const receiptIds = (links || []).map(
             (link) => link.fileStorageModuleFileId,
           );
-          const files = receiptIds.length
-            ? await this.service.fileStorageModule.file.find({
-                params: {
-                  filters: {
-                    and: [
-                      { column: "id", method: "inArray", value: receiptIds },
-                    ],
-                  },
+          let files;
+          if (receiptIds.length) {
+            files = await this.service.fileStorageModule.file.find({
+              params: {
+                filters: {
+                  and: [{ column: "id", method: "inArray", value: receiptIds }],
                 },
-              })
-            : [];
+              },
+            });
+          } else {
+            files = [];
+          }
           const receipts = receiptIds.flatMap((id) => {
             const file = files?.find((file) => file.id === id);
             return file ? [file] : [];

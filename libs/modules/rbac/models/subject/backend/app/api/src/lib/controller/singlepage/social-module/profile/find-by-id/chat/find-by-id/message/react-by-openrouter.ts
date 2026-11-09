@@ -758,19 +758,27 @@ export class Handler {
         this.service.socialModule,
         this.knowledgeService,
       );
-      const documentContext = isAIChat
-        ? await documentService.load({
-            profileId: replyBySocialModuleProfile.id,
-            threadId: socialModuleThreadId,
-            message: socialModuleMessage,
-          })
-        : null;
-      const documentSkill = documentContext
-        ? await new ProfileSkills(this.service.socialModule).forDocument(
-            replyBySocialModuleProfile.id,
-            documentContext.document.key,
-          )
-        : undefined;
+      let documentContext;
+      if (isAIChat) {
+        documentContext = await documentService.load({
+          profileId: replyBySocialModuleProfile.id,
+          threadId: socialModuleThreadId,
+          message: socialModuleMessage,
+        });
+      } else {
+        documentContext = null;
+      }
+      let documentSkill;
+      if (documentContext) {
+        documentSkill = await new ProfileSkills(
+          this.service.socialModule,
+        ).forDocument(
+          replyBySocialModuleProfile.id,
+          documentContext.document.key,
+        );
+      } else {
+        documentSkill = undefined;
+      }
       const requestedSkillIds = documentSkill
         ? [documentSkill.id]
         : aiReactionRequest.skillIds;
@@ -1096,18 +1104,21 @@ export class Handler {
       const contextSourceIds = await this.findKnowledgeSourceIdsForProfile(
         replyBySocialModuleProfile.id,
       );
-      const contextSourceRefs = contextSourceIds.length
-        ? (
-            await this.knowledgeService.listSources({
-              sourceIds: contextSourceIds,
-            })
-          )
-            .map((source) => ({
-              id: source.id,
-              contentHash: source.contentHash,
-            }))
-            .sort((a, b) => a.id.localeCompare(b.id))
-        : [];
+      let contextSourceRefs;
+      if (contextSourceIds.length) {
+        contextSourceRefs = (
+          await this.knowledgeService.listSources({
+            sourceIds: contextSourceIds,
+          })
+        )
+          .map((source) => ({
+            id: source.id,
+            contentHash: source.contentHash,
+          }))
+          .sort((a, b) => a.id.localeCompare(b.id));
+      } else {
+        contextSourceRefs = [];
+      }
 
       const statusMessage =
         await api.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
@@ -1179,13 +1190,16 @@ export class Handler {
             }
           : {}),
       });
-      const documentResolution = documentContext
-        ? await documentService.resolve(
-            documentContext,
-            jevRoute.documentProposalAction || "none",
-            socialModuleMessage.id,
-          )
-        : null;
+      let documentResolution;
+      if (documentContext) {
+        documentResolution = await documentService.resolve(
+          documentContext,
+          jevRoute.documentProposalAction || "none",
+          socialModuleMessage.id,
+        );
+      } else {
+        documentResolution = null;
+      }
       const knowledgeImportContext =
         !documentContext && jevRoute.knowledgeAction === "create"
           ? context.map((message, index) =>
@@ -2289,19 +2303,22 @@ export class Handler {
                 mentionedSkillSlugs.includes(skill.slug.toLowerCase()))),
         )
       : linkedSkills;
-    const promptSkills = props.documentSkill
-      ? [props.documentSkill]
-      : (
-          await this.findPromptSkillsForProfile({
-            socialModuleProfileId: props.replyProfile.id,
-            skillIds: props.requestedSkillIds,
-            skillSlugs: mentionedSkillSlugs,
-          })
-        ).filter(
-          (skill) =>
-            !props.isAIChat ||
-            availableSkills.some((available) => available.id === skill.id),
-        );
+    let promptSkills;
+    if (props.documentSkill) {
+      promptSkills = [props.documentSkill];
+    } else {
+      promptSkills = (
+        await this.findPromptSkillsForProfile({
+          socialModuleProfileId: props.replyProfile.id,
+          skillIds: props.requestedSkillIds,
+          skillSlugs: mentionedSkillSlugs,
+        })
+      ).filter(
+        (skill) =>
+          !props.isAIChat ||
+          availableSkills.some((available) => available.id === skill.id),
+      );
+    }
     const requestedSkillIds = Array.from(
       new Set([
         ...props.requestedSkillIds,
@@ -2323,21 +2340,27 @@ export class Handler {
       props.requestedKnowledgeSearch ||
       props.knowledgeAction === "read" ||
       props.knowledgeAction === "update";
-    const knowledgeSourceIds =
-      useKnowledgeSearch || props.knowledgeAction === "auto"
-        ? await this.findKnowledgeSourceIdsForProfile(props.replyProfile.id)
-        : [];
+    let knowledgeSourceIds;
+    if (useKnowledgeSearch || props.knowledgeAction === "auto") {
+      knowledgeSourceIds = await this.findKnowledgeSourceIdsForProfile(
+        props.replyProfile.id,
+      );
+    } else {
+      knowledgeSourceIds = [];
+    }
     const searchSourceIds = useKnowledgeSearch ? knowledgeSourceIds : [];
-    const candidateSources =
-      useKnowledgeSearch && query && searchSourceIds.length > 0
-        ? await this.knowledgeService.search({
-            query,
-            ...(props.sessionId && { sessionId: props.sessionId }),
-            topK: KNOWLEDGE_INITIAL_TOP_K,
-            neighborWindow: KNOWLEDGE_NEIGHBOR_WINDOW,
-            sourceIds: searchSourceIds,
-          })
-        : [];
+    let candidateSources;
+    if (useKnowledgeSearch && query && searchSourceIds.length > 0) {
+      candidateSources = await this.knowledgeService.search({
+        query,
+        ...(props.sessionId && { sessionId: props.sessionId }),
+        topK: KNOWLEDGE_INITIAL_TOP_K,
+        neighborWindow: KNOWLEDGE_NEIGHBOR_WINDOW,
+        sourceIds: searchSourceIds,
+      });
+    } else {
+      candidateSources = [];
+    }
     const knowledgeRerankResult = await this.rerankKnowledgeSources({
       billingLedger: props.billingLedger,
       candidateSources,
