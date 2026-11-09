@@ -1,3 +1,4 @@
+import { app as notificationNotificationApp } from "@sps/notification/models/notification/backend/app/api";
 import { app as broadcastMessageApp } from "@sps/broadcast/models/message/backend/app/api";
 import type { Service as BroadcastMessageService } from "@sps/broadcast/models/message/backend/app/api/src/lib/service";
 import { Service as SecurityNotifications } from "./service/singlepage/security-notifications";
@@ -186,9 +187,7 @@ import { Configuration as BillingPaymentIntentsToInvoicesConfiguration } from "@
 import { Service as BillingPaymentIntentsToInvoicesService } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/service";
 import { Repository as NotificationTopicRepository } from "@sps/notification/models/topic/backend/app/api/src/lib/repository";
 import { Configuration as NotificationTopicConfiguration } from "@sps/notification/models/topic/backend/app/api/src/lib/configuration";
-import { Repository as NotificationNotificationRepository } from "@sps/notification/models/notification/backend/app/api/src/lib/repository";
 import { Service as NotificationNotificationService } from "@sps/notification/models/notification/backend/app/api/src/lib/service";
-import { Configuration as NotificationNotificationConfiguration } from "@sps/notification/models/notification/backend/app/api/src/lib/configuration";
 import { Repository as NotificationTemplateRepository } from "@sps/notification/models/template/backend/app/api/src/lib/repository";
 import { Configuration as NotificationTemplateConfiguration } from "@sps/notification/models/template/backend/app/api/src/lib/configuration";
 import { Repository as NotificationTopicsToNotificationsRepository } from "@sps/notification/relations/topics-to-notifications/backend/app/api/src/lib/repository";
@@ -510,11 +509,8 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
         topic: new CRUDService<any>(
           new NotificationTopicRepository(new NotificationTopicConfiguration()),
         ),
-        notification: new NotificationNotificationService(
-          new NotificationNotificationRepository(
-            new NotificationNotificationConfiguration(),
-          ),
-        ),
+        notification: notificationNotificationApp.controller
+          .service as NotificationNotificationService,
         template: new CRUDService<any>(
           new NotificationTemplateRepository(
             new NotificationTemplateConfiguration(),

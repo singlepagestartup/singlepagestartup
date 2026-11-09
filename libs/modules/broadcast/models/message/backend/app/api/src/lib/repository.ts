@@ -91,6 +91,25 @@ export class Repository extends DatabaseRepository<typeof Table> {
   async publishDelivery(input: IEnqueueMessage) {
     try {
       return await this.db.transaction(async (tx) => {
+        // Serialize publication with reservation before inserting a payload.
+        // Duplicate inserts otherwise hold a new message's capture locks while
+        // waiting for the relation that a running consumer is checkpointing.
+        await tx.execute(
+          sql`select pg_advisory_xact_lock(hashtext('sps.broadcast.delivery'), hashtext(${input.channelId}))`,
+        );
+        const existing = await tx
+          .select({ id: ChannelMessage.id })
+          .from(ChannelMessage)
+          .where(
+            and(
+              eq(ChannelMessage.channelId, input.channelId),
+              eq(ChannelMessage.deliveryKey, input.key),
+            ),
+          )
+          .limit(1);
+        if (existing.length) {
+          return false;
+        }
         const [message] = await tx
           .insert(Table)
           .values({ payload: input.payload, expiresAt: null })
@@ -310,6 +329,16 @@ export class Repository extends DatabaseRepository<typeof Table> {
     return Boolean(updatedDelivery);
   }
 
+  async checkpointDelivery(owner: IDeliveryOwner, payload: string) {
+    const active = this.db
+      .update(ChannelMessage)
+      .set({ updatedAt: sql`clock_timestamp()` })
+      .where(and(this.activeOwner(owner), isNotNull(ChannelMessage.startedAt)))
+      .returning({ messageId: ChannelMessage.messageId });
+    const updated = await this.updateDeliveryPayload(active.getSQL(), payload);
+    return Boolean(updated);
+  }
+
   async releaseDelivery(owner: IDeliveryOwner) {
     const released = this.db
       .update(ChannelMessage)
@@ -354,6 +383,34 @@ export class Repository extends DatabaseRepository<typeof Table> {
       .where(this.activeOwner(owner))
       .limit(1);
     return rows.length > 0;
+  }
+
+  async removeExpiredDeliveries(
+    channelId: string,
+    before: Date,
+    limit: number,
+  ) {
+    const expired = this.db
+      .select({ id: ChannelMessage.messageId })
+      .from(ChannelMessage)
+      .where(
+        and(
+          eq(ChannelMessage.channelId, channelId),
+          isNotNull(ChannelMessage.deliveryKey),
+          lte(ChannelMessage.createdAt, before),
+          or(
+            isNull(ChannelMessage.leaseUntil),
+            lte(ChannelMessage.leaseUntil, sql`clock_timestamp()`),
+          ),
+        ),
+      )
+      .orderBy(asc(ChannelMessage.createdAt), asc(ChannelMessage.messageId))
+      .limit(limit)
+      .for("update", { skipLocked: true });
+    return this.db
+      .delete(Table)
+      .where(inArray(Table.id, expired))
+      .returning({ id: Table.id });
   }
 
   // Out-of-band channel deletions cascade their relations. The scheduled sweep

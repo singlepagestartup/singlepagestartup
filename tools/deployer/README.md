@@ -1018,3 +1018,28 @@ retry delay; bounded commands and a short retry pause prevent an unbounded queue
 A new environment setting must be passed through both production and preview
 sections of `.github/workflows/ansible.yml`, `api.sh`, and `api/api.env.j2`.
 The four API budgets and proxy CIDRs follow that complete path.
+
+## Shared outgoing notification limits
+
+API and Telegram services share Redis admission for outbound notifications.
+The rate settings and retry behavior are documented in
+[Notification delivery](../../libs/modules/notification/models/notification/README.md#delivery-retries-and-provider-limits).
+Use the same Redis instance and Telegram settings on every replica. Deployment
+now passes `REDIS_PASSWORD` and `REDIS_PORT` into the Telegram environment too.
+For an existing local checkout, copy the API's `KV_PROVIDER`, `KV_HOST`, `KV_PORT`,
+`KV_USERNAME` and `KV_PASSWORD` values into `apps/telegram/.env` without committing
+secrets. New checkouts receive them through `apps/telegram/create_env.sh`.
+
+Before deploying this change, add `ses:GetSendQuota` on resource `*` to an existing
+SES IAM identity; `aws/ses_policy.j2` includes it for installations managed by the
+deployer. Existing deployments that skip IAM provisioning need this permission
+updated separately. Missing quota permission stops SES delivery rather than
+assuming an unlimited account. `NOTIFICATION_SES_MESSAGES_PER_SECOND=0` reads
+the account's rate; a positive value sets a lower application cap.
+
+Enable the existing Agent action `notification-module-topics-send-all` with an
+appropriate cron interval for durable retries. No seed or new schedule is created
+automatically. `notification.delivery.deferred` logs contain Notification ID,
+failure count and next attempt time, without recipient addresses or message text.
+Use the Notification admin list for `new`/`sent`/`error` status. These settings
+have not been applied to production by this code change.

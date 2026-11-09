@@ -1,4 +1,8 @@
 export { util as authorization } from "./authorization";
+export {
+  DeliveryRateLimit,
+  DeliveryDeferredError,
+} from "./delivery-rate-limit";
 export { estimateAiContextTokens } from "./ai-context-tokens";
 export {
   assertKnowledgeAttachmentBytes,

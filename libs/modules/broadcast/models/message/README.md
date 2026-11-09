@@ -63,3 +63,10 @@ indexed batches of 100. Completed deliveries keep their keys until the owner
 removes them. The cron scheduler retains its keys to calculate the next run.
 
 Run `npx nx run api:db:migrate` before starting workers that use the queue.
+
+Delivery consumers can call `queue.checkpoint(owner, payload)` to save progress
+while retaining a live lease. The receipt and lease are checked in the same SQL
+statement as the payload update, so an expired worker cannot overwrite its
+successor. `queue.removeExpired(channelId, before, limit)` removes old jobs in
+that channel only when no lease is active; consumers choose their retention
+period. Notification uses it for the same expiration period as its records.

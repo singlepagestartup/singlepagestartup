@@ -62,6 +62,13 @@ async function createHarness(props: IHarnessProps = {}) {
     };
   });
 
+  jest.doMock("@sps/shared-third-parties/telegram", () => ({
+    ...jest.requireActual("@sps/shared-third-parties/telegram"),
+    TelegramBot: function (...args: unknown[]) {
+      return new (jest.requireMock("grammy").Bot)(...args);
+    },
+  }));
+
   jest.doMock("@sps/shared-utils", () => {
     return {
       ...jest.requireActual("@sps/shared-utils"),
@@ -129,6 +136,7 @@ afterEach(() => {
   setEnv("NODE_ENV", originalEnv.NODE_ENV);
   setEnv("API_ERROR_DETAILS", originalEnv.API_ERROR_DETAILS);
   jest.dontMock("grammy");
+  jest.dontMock("@sps/shared-third-parties/telegram");
   jest.dontMock("@sps/shared-utils");
   jest.restoreAllMocks();
 });

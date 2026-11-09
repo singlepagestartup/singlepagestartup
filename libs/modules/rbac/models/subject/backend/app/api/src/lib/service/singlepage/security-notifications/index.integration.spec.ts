@@ -1,3 +1,4 @@
+import type { IModel as ITemplate } from "@sps/notification/models/template/sdk/model";
 import { randomUUID } from "node:crypto";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -44,6 +45,9 @@ jest.mock("grammy", () => ({
 }));
 jest.mock("@sps/shared-third-parties", () => ({
   ...jest.requireActual("@sps/shared-third-parties"),
+  TelegramBot: function (...args: unknown[]) {
+    return new (jest.requireMock("grammy").Bot)(...args);
+  },
   AWS: jest.fn().mockImplementation(() => ({
     ses: {
       sendEmail: (...args: unknown[]) => mockTransport("email", ...args),
@@ -68,7 +72,10 @@ describe("Security summaries and password limits with real storage", () => {
   const notificationRepository = new NotificationRepository(
     new NotificationConfiguration(),
   );
-  const notification = new NotificationService(notificationRepository);
+  const notification = new NotificationService(notificationRepository, {
+    channel: channelRepository as any,
+    message: messages,
+  });
   const topicId = randomUUID();
   const telegramTemplateId = randomUUID();
   const emailTemplateId = randomUUID();
@@ -299,12 +306,15 @@ describe("Security summaries and password limits with real storage", () => {
           topic: { find: async () => [{ id: topicId }] },
           template: {
             find: async () => {
-              const templates = [];
+              const templates: ITemplate[] = [];
               for (const [id, method] of [
                 [telegramTemplateId, "telegram"],
                 [emailTemplateId, "email"],
               ] as const) {
                 const template = await templateService.findById({ id });
+                if (!template) {
+                  throw new Error("Missing test template fixture");
+                }
                 templates.push({
                   ...template,
                   slug: securityNotificationTemplateSlugs[method],

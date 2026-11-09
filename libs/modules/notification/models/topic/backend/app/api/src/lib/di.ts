@@ -4,7 +4,7 @@ export interface IReadService {
 }
 
 export interface INotificationModule {
-  notification: IReadService;
+  notification: IReadService & { sendPending: () => Promise<void> };
   topicsToNotifications: IReadService;
 }
 

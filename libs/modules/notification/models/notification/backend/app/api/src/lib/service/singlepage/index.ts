@@ -1,3 +1,5 @@
+import { NotificationDI, type IBroadcastModule } from "../../di";
+import { Service as Delivery, type IDeliveryProgress } from "./delivery";
 import { Repository } from "../../repository";
 import {
   Service as BoundedDelivery,
@@ -6,10 +8,10 @@ import {
 import "reflect-metadata";
 import { readFile } from "node:fs/promises";
 import { join, normalize } from "node:path";
-import { injectable } from "inversify";
-import { CRUDService } from "@sps/shared-backend-api";
+import { inject, injectable } from "inversify";
+import { CRUDService, DI } from "@sps/shared-backend-api";
 import { Table } from "@sps/notification/models/notification/backend/repository/database";
-import { AWS } from "@sps/shared-third-parties";
+import { AWS, TelegramBot } from "@sps/shared-third-parties";
 import {
   AWS_SES_FROM_EMAIL,
   NOTIFICATION_MODULE_NOTIFICATION_EXPIRATION_TIMEOUT,
@@ -19,9 +21,9 @@ import {
 import { api as notificationsToTemplatesApi } from "@sps/notification/relations/notifications-to-templates/sdk/server";
 import { api as templateApi } from "@sps/notification/models/template/sdk/server";
 import { IModel as ITemplate } from "@sps/notification/models/template/sdk/model";
-import { Bot, InputFile } from "grammy";
+import { InputFile } from "grammy";
 import { InlineKeyboardButton } from "@grammyjs/types";
-import { telegramMarkdownFormatter } from "@sps/backend-utils";
+import { telegramMarkdownFormatter, logger } from "@sps/backend-utils";
 import { IModel } from "@sps/notification/models/notification/sdk/model";
 
 type INotificationAttachment = NonNullable<IModel["attachments"]>[number];
@@ -29,25 +31,36 @@ type INotificationAttachment = NonNullable<IModel["attachments"]>[number];
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   declare repository: Repository;
+  constructor(
+    @inject(DI.IRepository) repository: Repository,
+    @inject(NotificationDI.IBroadcastModule)
+    private readonly broadcast: IBroadcastModule,
+  ) {
+    super(repository);
+  }
+
   async sendBounded(props: ISendBoundedNotification) {
     return new BoundedDelivery(this).execute(props);
   }
 
   async sendVerificationCode(props: { email: string; code: string }) {
-    if (!AWS_SES_FROM_EMAIL)
+    if (!AWS_SES_FROM_EMAIL) {
       throw new Error("Configuration error. Email delivery is not configured.");
-    if (!/^\d{6}$/.test(props.code))
+    }
+    if (!/^\d{6}$/.test(props.code)) {
       throw new Error("Validation error. Invalid verification code");
+    }
     const response = await new AWS().ses.sendEmail({
       to: props.email,
       from: AWS_SES_FROM_EMAIL,
       subject: "Confirm your email change",
       html: `<p>Your email verification code is <strong>${props.code}</strong>.</p><p>This code expires in 10 minutes. If you did not request an email change, ignore this message.</p>`,
     });
-    if (!response.MessageId)
+    if (!response.MessageId) {
       throw new Error(
         "Internal error. The verification email could not be sent.",
       );
+    }
     return { sent: true };
   }
   protected splitTelegramText(text: string, limit: number): string[] {
@@ -227,7 +240,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       : props.text;
     const inlineKeyboard = this.normalizeInlineKeyboard(props.interaction);
 
-    const bot = new Bot(TELEGRAM_SERVICE_BOT_TOKEN);
+    const bot = new TelegramBot(TELEGRAM_SERVICE_BOT_TOKEN);
 
     try {
       const normalizedMessageId =
@@ -489,7 +502,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       return;
     }
 
-    const bot = new Bot(TELEGRAM_SERVICE_BOT_TOKEN as string);
+    const bot = new TelegramBot(TELEGRAM_SERVICE_BOT_TOKEN as string);
     const normalizedMessageId =
       typeof props.sourceSystemId === "string"
         ? parseInt(props.sourceSystemId, 10)
@@ -600,7 +613,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     let bytes: Uint8Array | undefined;
 
     try {
-      const response = await fetch(props.attachment.url);
+      const response = await fetch(props.attachment.url, {
+        signal: AbortSignal.timeout(10000),
+      });
       if (response.ok) {
         const arrayBuffer = await response.arrayBuffer();
         if (arrayBuffer.byteLength) {
@@ -700,6 +715,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     template: ITemplate;
     dropMessageThreadId?: boolean;
     timeoutMs?: number;
+    delivery?: IDeliveryProgress;
   }): Promise<IModel> {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. Secret key not found");
@@ -720,10 +736,18 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     const attachments = entity.attachments || [];
 
     const validAttachments: typeof attachments = [];
+    const preparationSignal = AbortSignal.timeout(props.timeoutMs ?? 25000);
 
     for (const attachment of attachments) {
+      preparationSignal.throwIfAborted();
       try {
-        const response = await fetch(attachment.url, { method: "HEAD" });
+        const response = await fetch(attachment.url, {
+          method: "HEAD",
+          signal: AbortSignal.any([
+            preparationSignal,
+            AbortSignal.timeout(10000),
+          ]),
+        });
         if (response.ok) {
           validAttachments.push(attachment);
         }
@@ -732,6 +756,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       }
     }
 
+    preparationSignal.throwIfAborted();
     let sourceSystemId: string | undefined;
 
     if (props.method === "email") {
@@ -745,9 +770,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           data: entity.data,
           options: {
             redirect: "error",
-            signal: props.timeoutMs
-              ? AbortSignal.timeout(props.timeoutMs)
-              : undefined,
+            signal: AbortSignal.timeout(props.timeoutMs ?? 15000),
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
             },
@@ -758,22 +781,37 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           throw new Error("Internal error. Template not rendered");
         }
 
+        await props.delivery?.verifyContent(
+          JSON.stringify([
+            entity.reciever,
+            entity.title,
+            props.template.title,
+            renderResult,
+            validAttachments,
+          ]),
+        );
         const aws = new AWS();
 
-        const response = await aws.ses.sendEmail({
-          to: entity.reciever,
-          subject:
-            entity.title ||
-            props.template.title ||
-            "Notification from Single Page Startup",
-          html: renderResult,
-          from: AWS_SES_FROM_EMAIL,
-          filePaths: validAttachments.map((attachment) => attachment.url),
-          signal: props.timeoutMs
-            ? AbortSignal.timeout(props.timeoutMs)
-            : undefined,
-        });
+        const from = AWS_SES_FROM_EMAIL;
+        const sendEmail = () =>
+          aws.ses.sendEmail({
+            to: entity.reciever,
+            subject:
+              entity.title ||
+              props.template.title ||
+              "Notification from Single Page Startup",
+            html: renderResult,
+            from,
+            filePaths: validAttachments.map((attachment) => attachment.url),
+            signal: AbortSignal.timeout(props.timeoutMs ?? 15000),
+          });
 
+        let response;
+        if (props.delivery) {
+          response = await props.delivery.email(sendEmail);
+        } else {
+          response = await sendEmail();
+        }
         if (response.MessageId) {
           sourceSystemId = String(response.MessageId);
         }
@@ -789,9 +827,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           data: entity.data,
           options: {
             redirect: "error",
-            signal: props.timeoutMs
-              ? AbortSignal.timeout(props.timeoutMs)
-              : undefined,
+            signal: AbortSignal.timeout(props.timeoutMs ?? 15000),
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
             },
@@ -799,6 +835,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         });
 
         if (renderResult) {
+          await props.delivery?.verifyContent(
+            JSON.stringify([entity.reciever, renderResult, validAttachments]),
+          );
           const parsedRenderResult = JSON.parse(renderResult);
 
           if (props.dropMessageThreadId) {
@@ -810,13 +849,16 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             }
           }
 
-          let clientOptions;
-          if (props.timeoutMs) {
-            clientOptions = {
-              client: { timeoutSeconds: props.timeoutMs / 1000 },
-            };
+          const clientOptions = {
+            client: { timeoutSeconds: (props.timeoutMs ?? 30000) / 1000 },
+          };
+          const bot = new TelegramBot(
+            TELEGRAM_SERVICE_BOT_TOKEN,
+            clientOptions,
+          );
+          if (props.delivery) {
+            bot.api.config.use(props.delivery.telegram);
           }
-          const bot = new Bot(TELEGRAM_SERVICE_BOT_TOKEN, clientOptions);
 
           if (validAttachments?.length) {
             const captionOptions = parsedRenderResult.props[1] || {};
@@ -1108,6 +1150,63 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   async send(params: { id: string }): Promise<IModel | null> {
+    const notification = await this.findById(params);
+    if (!notification || notification.status !== "new") {
+      return notification;
+    }
+    if (this.isExpired(notification)) {
+      await this.deleteBestEffort(params);
+      return null;
+    }
+    if (new Date(notification.sendAfter ?? 0).getTime() > Date.now()) {
+      return notification;
+    }
+    return new Delivery(this, this.broadcast).execute(params.id);
+  }
+
+  async sendPending() {
+    const deadline = Date.now() + 25000;
+    const notifications = await this.find({
+      params: {
+        limit: 100,
+        orderBy: { and: [{ column: "sendAfter", method: "asc" }] },
+        filters: {
+          and: [
+            { column: "status", method: "eq", value: "new" },
+            {
+              column: "sendAfter",
+              method: "lte",
+              value: new Date().toISOString(),
+            },
+          ],
+        },
+      },
+    });
+    for (const notification of notifications) {
+      if (Date.now() >= deadline) {
+        break;
+      }
+      // Security summaries retain their own coalescing/fallback schedule.
+      if (notification.variant.startsWith("bounded-")) {
+        continue;
+      }
+      try {
+        await this.send({ id: notification.id });
+      } catch {
+        logger.warn({
+          event: "notification.delivery.dispatch-failed",
+          notificationId: notification.id,
+        });
+      }
+    }
+    await this.deleteExpired();
+    await new Delivery(this, this.broadcast).cleanup();
+  }
+
+  async sendNow(
+    params: { id: string },
+    delivery?: IDeliveryProgress,
+  ): Promise<IModel | null> {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. Secret key not found");
     }
@@ -1152,6 +1251,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         },
       },
       options: {
+        signal: AbortSignal.timeout(10000),
         headers: {
           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
           "Cache-Control": "no-store",
@@ -1178,6 +1278,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         },
       },
       options: {
+        signal: AbortSignal.timeout(10000),
         headers: {
           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
         },
@@ -1208,6 +1309,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           provider: "Amazon SES",
           id: params.id,
           template,
+          delivery,
         });
       } else if (type === "telegram") {
         try {
@@ -1216,6 +1318,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             provider: "Telegram",
             id: params.id,
             template,
+            delivery,
           });
         } catch (error) {
           if (this.isTelegramBlockedRecipientError(error)) {
@@ -1228,6 +1331,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
               provider: "Telegram",
               id: params.id,
               template,
+              delivery,
               dropMessageThreadId: true,
             });
           }
