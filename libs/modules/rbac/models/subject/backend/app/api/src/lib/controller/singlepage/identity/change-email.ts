@@ -34,12 +34,14 @@ export class Handler {
           throw new Error(
             "Validation error. Invalid email verification request",
           );
+        const result = await service.request({
+          subjectId,
+          identityId,
+          data: parsed.data,
+        });
+
         return c.json({
-          data: await service.request({
-            subjectId,
-            identityId,
-            data: parsed.data,
-          }),
+          data: result,
         });
       }
       const parsed = z

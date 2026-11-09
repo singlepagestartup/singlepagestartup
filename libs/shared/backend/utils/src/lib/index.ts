@@ -10,12 +10,14 @@ export { util as websocketManager } from "./websocket-manager";
 export { util as getHttpErrorType } from "./http-error";
 export { util as sanitizeErrorMessage } from "./http-error/sanitize";
 export { util as verifyJwt } from "./jwt-verify";
+export { util as signJwt, type TJwtType } from "./jwt-sign";
 export { util as isUniqueConstraintError } from "./unique-constraint-error";
 export { getFileContentHeaders } from "./file-content-headers";
 export { parseSingleFileUpload } from "./single-file-upload";
 export { util as blobifyFiles } from "./blobify-files";
 export { util as telegramMarkdownFormatter } from "./telegram-markdown-formatter";
 export { rbacSecretMatches, readRbacSecret } from "./rbac-secret";
+export { assertOutboundUrl, fetchOutboundUrl } from "./outbound-url";
 export {
   normalizeLocalizedField,
   localizedFieldHasValue,

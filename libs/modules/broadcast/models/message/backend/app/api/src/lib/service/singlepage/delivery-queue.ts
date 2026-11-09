@@ -119,8 +119,13 @@ export class DeliveryQueue {
 
   async removeCompleted(channelId: string, before: Date, limit: number) {
     this.positiveInteger(limit);
-    return (await this.repository.removeCompleted(channelId, before, limit))
-      .length;
+    const removedMessages = await this.repository.removeCompleted(
+      channelId,
+      before,
+      limit,
+    );
+
+    return removedMessages.length;
   }
 
   owns(owner: IDeliveryOwner) {

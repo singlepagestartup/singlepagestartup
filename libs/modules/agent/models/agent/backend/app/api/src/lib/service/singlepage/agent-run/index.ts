@@ -246,7 +246,9 @@ export class AgentRun {
     runId: string;
   }): Promise<boolean> {
     const owner = await this.owner(props.slug, props.runId);
-    return !(await this.queue.owns(owner));
+    const ownsDelivery = await this.queue.owns(owner);
+
+    return !ownsDelivery;
   }
 
   async dispatch(props: IAgentRunClaim): Promise<IAgentRunDispatch> {

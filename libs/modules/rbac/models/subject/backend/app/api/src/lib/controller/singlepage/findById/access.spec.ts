@@ -1,5 +1,9 @@
 import { Hono } from "hono";
 import { sign } from "hono/jwt";
+import type { IModel } from "@sps/rbac/models/subject/sdk/model";
+import { Service as Me } from "../../../service/singlepage/me";
+import { Middleware as IsAuthorizedMiddleware } from "../../../../../../../../../../../../middlewares/src/lib/is-authorized";
+import { Controller } from "..";
 
 const globalAuthorization = jest.fn();
 jest.mock("nanoid", () => ({ nanoid: () => "subject-read-request" }));
@@ -16,15 +20,31 @@ jest.mock("@sps/shared-utils", () => ({
   RBAC_SECRET_KEY: "subject-read-operator-secret",
 }));
 
-import { Middleware as IsAuthorizedMiddleware } from "../../../../../../../../../../../../middlewares/src/lib/is-authorized";
-import { Controller } from "..";
-
 const ownerId = "12e8b826-d129-411b-a117-21db4c8a194c";
 const otherId = "24e8b826-d129-411b-a117-21db4c8a194c";
 const jwtSecret = "subject-read-test-secret";
 
-function fixture() {
+interface IFixtureProps {
+  tokensValidAfter?: Date | null;
+  exists?: boolean;
+}
+
+function fixture(props: IFixtureProps = {}) {
+  const me = new Me({
+    findById: async ({ id }) => {
+      if (props.exists === false) {
+        return null;
+      }
+
+      return {
+        id,
+        variant: "default",
+        tokensValidAfter: props.tokensValidAfter ?? null,
+      } as IModel;
+    },
+  });
   const service = {
+    me: jest.fn((props: { token: string }) => me.execute(props)),
     findById: jest.fn(async ({ id }: { id: string }) => ({
       id,
       variant: "default",
@@ -55,6 +75,8 @@ async function token(props: Record<string, unknown> = {}) {
   return sign(
     {
       subject: { id: ownerId },
+      typ: "access",
+      iat: Math.floor(Date.now() / 1000) - 1,
       exp: Math.floor(Date.now() / 1000) + 60,
       ...props,
     },
@@ -72,7 +94,7 @@ it.each(["header", "cookie"])(
   async (transport) => {
     const { app, service } = fixture();
     const jwt = await token();
-    const headers =
+    const headers: Record<string, string> =
       transport === "header"
         ? { Authorization: `Bearer ${jwt}` }
         : { Cookie: `rbac.subject.jwt=${jwt}` };
@@ -126,14 +148,18 @@ it.each(["missing", "forged", "expired", "no-subject", "wrong-secret"])(
   async (scenario) => {
     const { app, service } = fixture();
     const headers: Record<string, string> = {};
-    if (scenario === "forged")
+    if (scenario === "forged") {
       headers.Authorization = `Bearer ${await sign({ subject: { id: ownerId } }, "another-secret")}`;
-    if (scenario === "expired")
+    }
+    if (scenario === "expired") {
       headers.Authorization = `Bearer ${await token({ exp: Math.floor(Date.now() / 1000) - 60 })}`;
-    if (scenario === "no-subject")
+    }
+    if (scenario === "no-subject") {
       headers.Authorization = `Bearer ${await token({ subject: {} })}`;
-    if (scenario === "wrong-secret")
+    }
+    if (scenario === "wrong-secret") {
       headers["X-RBAC-SECRET-KEY"] = "wrong-secret";
+    }
     const response = await app.request(`/api/rbac/subjects/${ownerId}`, {
       headers,
     });
@@ -143,6 +169,65 @@ it.each(["missing", "forged", "expired", "no-subject", "wrong-secret"])(
     expect(service.isAuthorized).not.toHaveBeenCalled();
   },
 );
+
+it.each(["header", "cookie"])(
+  "rejects a refresh token in a %s before reading its own Subject",
+  async (transport) => {
+    const { app, service } = fixture();
+    const refresh = await token({ typ: "refresh" });
+    const headers: Record<string, string> =
+      transport === "header"
+        ? { Authorization: `Bearer ${refresh}` }
+        : { Cookie: `rbac.subject.jwt=${refresh}` };
+
+    const response = await app.request(`/api/rbac/subjects/${ownerId}`, {
+      headers,
+    });
+
+    expect(response.status).toBe(401);
+    expect(service.findById).not.toHaveBeenCalled();
+    expect(service.isAuthorized).not.toHaveBeenCalled();
+  },
+);
+
+it.each(["header", "cookie"])(
+  "rejects a previously accepted %s token after its Subject is revoked",
+  async (transport) => {
+    const state: IFixtureProps = { tokensValidAfter: null };
+    const { app, service } = fixture(state);
+    const access = await token();
+    const headers: Record<string, string> =
+      transport === "header"
+        ? { Authorization: `Bearer ${access}` }
+        : { Cookie: `rbac.subject.jwt=${access}` };
+    const first = await app.request(`/api/rbac/subjects/${ownerId}`, {
+      headers,
+    });
+    expect(first.status).toBe(200);
+
+    state.tokensValidAfter = new Date();
+    service.findById.mockClear();
+    const revoked = await app.request(`/api/rbac/subjects/${ownerId}`, {
+      headers,
+    });
+
+    expect(revoked.status).toBe(401);
+    expect(await revoked.text()).toContain("Token revoked");
+    expect(service.findById).not.toHaveBeenCalled();
+    expect(service.isAuthorized).not.toHaveBeenCalled();
+  },
+);
+
+it("rejects an access token whose Subject no longer exists", async () => {
+  const { app, service } = fixture({ exists: false });
+  const response = await app.request(`/api/rbac/subjects/${ownerId}`, {
+    headers: { Authorization: `Bearer ${await token()}` },
+  });
+
+  expect(response.status).toBe(401);
+  expect(service.findById).not.toHaveBeenCalled();
+  expect(service.isAuthorized).not.toHaveBeenCalled();
+});
 
 it("preserves operator reads without a session JWT", async () => {
   const { app, service } = fixture();

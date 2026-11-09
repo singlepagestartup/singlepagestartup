@@ -206,9 +206,13 @@ it.each(["step", "input", "option", "missing", "type", "duplicate"])(
 
 it("ignores client labels and uses only the linked Option's stored metadata", async () => {
   const { service, props, repository } = fixture();
+  const selectedInput = props.data.steps[0].inputs[1];
+  if (!("option" in selectedInput)) {
+    throw new Error("Test setup error. Expected an option input.");
+  }
   (props.data as any).steps[0].inputs[0].title = { en: "FORGED LABEL" };
   (props.data as any).steps[0].inputs[1].option = {
-    id: props.data.steps[0].inputs[1].option,
+    id: selectedInput.option,
     title: { en: "FORGED OPTION" },
   };
   await service.execute(props);

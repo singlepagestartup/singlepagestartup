@@ -94,11 +94,14 @@ export class Middleware {
               windowInSeconds: this.windowInSeconds,
             }
           : undefined;
-      const attempts = window
-        ? matches
-          ? await this.rateLimiter.read(window)
-          : await this.rateLimiter.count(window)
-        : undefined;
+      let attempts;
+      if (window) {
+        if (matches) {
+          attempts = await this.rateLimiter.read(window);
+        } else {
+          attempts = await this.rateLimiter.count(window);
+        }
+      }
 
       if (!matches) {
         const counted = attempts

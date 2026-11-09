@@ -134,6 +134,7 @@ it.each([
     <QueryClientProvider client={queryClient}>
       <CookiesProvider cookies={new Cookies({})}>
         <Component
+          isServer={false}
           language="ru"
           variant="authentication-email-and-password-form-ai-chat"
           mode={mode}
@@ -184,7 +185,7 @@ it.each([
         <CookiesProvider cookies={new Cookies({})}>
           <Client isServer={false} variant="authentication-me-default">
             {({ data, authenticated }) =>
-              authenticated ? (
+              authenticated && data ? (
                 <SubjectClient
                   isServer={false}
                   variant="default"
@@ -199,7 +200,7 @@ it.each([
           </Client>
           <Client isServer={false} variant="authentication-me-default">
             {({ data, authenticated }) =>
-              authenticated ? (
+              authenticated && data ? (
                 <SubjectClient
                   isServer={false}
                   variant="default"
@@ -211,6 +212,7 @@ it.each([
             }
           </Client>
           <Component
+            isServer={false}
             language="en"
             variant="authentication-email-and-password-form-ai-chat"
             mode={mode}

@@ -664,9 +664,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return Promise.all(
       props.attachments.map(async (attachment, index) => {
         const mimeType = this.getMimeType(attachment.url);
-        const media = props.uploadFiles
-          ? await this.createTelegramAttachmentInputFile({ attachment })
-          : attachment.url;
+        let media;
+        if (props.uploadFiles) {
+          media = await this.createTelegramAttachmentInputFile({ attachment });
+        } else {
+          media = attachment.url;
+        }
 
         return {
           type: mimeType.startsWith("image/") ? "photo" : "document",
@@ -823,11 +826,14 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
               const attachment = validAttachments[0];
               const mimeType = this.getMimeType(attachment.url);
               const sendAttachment = async (uploadFile: boolean) => {
-                const media = uploadFile
-                  ? await this.createTelegramAttachmentInputFile({
-                      attachment,
-                    })
-                  : attachment.url;
+                let media;
+                if (uploadFile) {
+                  media = await this.createTelegramAttachmentInputFile({
+                    attachment,
+                  });
+                } else {
+                  media = attachment.url;
+                }
                 const includeReplyMarkup =
                   !captionChunks.length && normalizedReplyMarkup;
                 const options = {

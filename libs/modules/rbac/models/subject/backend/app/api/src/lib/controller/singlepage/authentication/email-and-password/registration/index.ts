@@ -27,9 +27,12 @@ export class Handler {
 
       const data = JSON.parse(body["data"]);
       const token = authorization(c);
-      const session = token
-        ? await jwt.verify(token, RBAC_JWT_SECRET, "HS256")
-        : undefined;
+      let session;
+      if (token) {
+        session = await jwt.verify(token, RBAC_JWT_SECRET, "HS256");
+      } else {
+        session = undefined;
+      }
       const subjectId = session?.subject?.["id"];
 
       const entity = await this.service.authenticationLoginAndPassowrd({

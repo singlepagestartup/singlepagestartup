@@ -215,12 +215,15 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       method: props.permission.method,
       type: props.permission.type,
     });
-    const templatePermissions = exactPermission
-      ? []
-      : await this.getTemplatePermissions({
-          method: props.permission.method,
-          type: props.permission.type,
-        });
+    let templatePermissions;
+    if (exactPermission) {
+      templatePermissions = [];
+    } else {
+      templatePermissions = await this.getTemplatePermissions({
+        method: props.permission.method,
+        type: props.permission.type,
+      });
+    }
     const templatePermission = exactPermission
       ? undefined
       : this.findTemplatePermissionByRoute({
@@ -229,14 +232,16 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           method: props.permission.method,
           type: props.permission.type,
         });
-    const methodWildcardPermission =
-      exactPermission || templatePermission
-        ? undefined
-        : await this.findExactPermission({
-            path: "*",
-            method: props.permission.method,
-            type: props.permission.type,
-          });
+    let methodWildcardPermission;
+    if (exactPermission || templatePermission) {
+      methodWildcardPermission = undefined;
+    } else {
+      methodWildcardPermission = await this.findExactPermission({
+        path: "*",
+        method: props.permission.method,
+        type: props.permission.type,
+      });
+    }
     const permission =
       exactPermission || templatePermission || methodWildcardPermission;
     const rootPermission = await this.findExactPermission({
@@ -245,10 +250,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       type: props.permission.type,
     });
 
-    const permissionsToBillingModuleCurrencies =
-      props.includeBillingRequirements && permission?.id
-        ? await this.getPermissionBillingRequirements(permission.id)
-        : [];
+    let permissionsToBillingModuleCurrencies;
+    if (props.includeBillingRequirements && permission?.id) {
+      permissionsToBillingModuleCurrencies =
+        await this.getPermissionBillingRequirements(permission.id);
+    } else {
+      permissionsToBillingModuleCurrencies = [];
+    }
 
     return {
       permission,

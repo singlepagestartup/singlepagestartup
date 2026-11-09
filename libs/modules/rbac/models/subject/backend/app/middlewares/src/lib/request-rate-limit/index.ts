@@ -115,30 +115,28 @@ export class Middleware {
         !isPrivateNetworkAddress(address) &&
         rule.attemptsPerAddress > 0
       ) {
-        assertWithinRateLimit(
-          c,
-          await this.rateLimiter.count({
-            prefix: `${COUNTER_PREFIX}:${rule.name}:address`,
-            key: address,
-            limit: rule.attemptsPerAddress,
-            windowInSeconds: this.windowInSeconds,
-          }),
-        );
+        const attempts = await this.rateLimiter.count({
+          prefix: `${COUNTER_PREFIX}:${rule.name}:address`,
+          key: address,
+          limit: rule.attemptsPerAddress,
+          windowInSeconds: this.windowInSeconds,
+        });
+
+        assertWithinRateLimit(c, attempts);
       }
 
       if (rule.accountField && rule.attemptsPerAccount) {
         const account = await readAccount(c, rule.accountField);
 
         if (account) {
-          assertWithinRateLimit(
-            c,
-            await this.rateLimiter.count({
-              prefix: `${COUNTER_PREFIX}:${rule.name}:account`,
-              key: account,
-              limit: rule.attemptsPerAccount,
-              windowInSeconds: this.windowInSeconds,
-            }),
-          );
+          const attempts = await this.rateLimiter.count({
+            prefix: `${COUNTER_PREFIX}:${rule.name}:account`,
+            key: account,
+            limit: rule.attemptsPerAccount,
+            windowInSeconds: this.windowInSeconds,
+          });
+
+          assertWithinRateLimit(c, attempts);
         }
       }
 
