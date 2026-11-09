@@ -85,7 +85,7 @@ export async function errorEvent(
       ids[name] = value;
     }
   }
-  return {
+  const event = {
     event: "api.error",
     occurredAt: new Date().toISOString(),
     requestId: context.requestId,
@@ -98,7 +98,11 @@ export async function errorEvent(
     category,
     reason: failureReason(error.message),
     elapsedMs: Math.round(performance.now() - context.startedAt),
-    ...(await actor(c)),
+  };
+  const actorDetails = await actor(c);
+  return {
+    ...event,
+    ...actorDetails,
     ids,
     operation: context.operation,
     locations: failureLocations(error),

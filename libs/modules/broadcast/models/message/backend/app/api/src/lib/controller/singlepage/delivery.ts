@@ -23,36 +23,51 @@ export class Handler {
       const input = command.data;
       const queue = this.service.queue;
       switch (input.operation) {
-        case "publish":
-          return c.json({ data: { created: await queue.publish(input) } });
-        case "reserve":
+        case "publish": {
+          const created = await queue.publish(input);
+
+          return c.json({ data: { created } });
+        }
+        case "reserve": {
+          const delivery = await queue.reserve({ ...input, concurrency: 1 });
+
           return c.json({
-            data: await queue.reserve({ ...input, concurrency: 1 }),
+            data: delivery,
           });
-        case "removeCompleted":
+        }
+        case "removeCompleted": {
+          const removed = await queue.removeCompleted(
+            input.channelId,
+            new Date(input.before),
+            input.limit,
+          );
+
           return c.json({
             data: {
-              removed: await queue.removeCompleted(
-                input.channelId,
-                new Date(input.before),
-                input.limit,
-              ),
+              removed,
             },
           });
-        case "start":
-          return this.receiptResponse(c, await queue.start(input));
-        case "renew":
-          return this.receiptResponse(
-            c,
-            await queue.renew(input, input.leaseSeconds),
-          );
-        case "acknowledge":
-          return this.receiptResponse(
-            c,
-            await queue.acknowledge(input, input.payload),
-          );
-        case "release":
-          return this.receiptResponse(c, await queue.release(input));
+        }
+        case "start": {
+          const accepted = await queue.start(input);
+
+          return this.receiptResponse(c, accepted);
+        }
+        case "renew": {
+          const accepted = await queue.renew(input, input.leaseSeconds);
+
+          return this.receiptResponse(c, accepted);
+        }
+        case "acknowledge": {
+          const accepted = await queue.acknowledge(input, input.payload);
+
+          return this.receiptResponse(c, accepted);
+        }
+        case "release": {
+          const accepted = await queue.release(input);
+
+          return this.receiptResponse(c, accepted);
+        }
       }
     } catch (error) {
       const { status, message, details } = getHttpErrorType(error);

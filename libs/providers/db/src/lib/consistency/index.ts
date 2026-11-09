@@ -124,8 +124,10 @@ export class ConsistencyStore {
     if (refs.length > 100)
       throw new Error("Too many consistency subscriptions");
     if (!refs.length) return [];
-    return (await this
-      .sql`SELECT ref,auth,dependencies,expires_at FROM sps_consistency.query WHERE ref=ANY(${this.sql.array(refs)}::text[]) AND auth=${auth} AND expires_at>now()`) as unknown as IRegisteredConsistencyQuery[];
+    const queries = await this
+      .sql`SELECT ref,auth,dependencies,expires_at FROM sps_consistency.query WHERE ref=ANY(${this.sql.array(refs)}::text[]) AND auth=${auth} AND expires_at>now()`;
+
+    return queries as unknown as IRegisteredConsistencyQuery[];
   }
 
   async changed(refs: string[], auth: string) {
@@ -224,7 +226,9 @@ export class ConsistencyStore {
       (SELECT count(*)::int FROM sps_consistency.query) AS retained_refs,
       (SELECT count(*)::int FROM sps_consistency.delivery) AS deliveries,
       (SELECT count(*)::int FROM sps_consistency.generation) AS generations`;
-    return { ...(await this.status()), ...counts };
+    const status = await this.status();
+
+    return { ...status, ...counts };
   }
 
   /** Call after restoring capture and before reopening traffic after maintenance. */

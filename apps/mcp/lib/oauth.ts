@@ -709,10 +709,12 @@ async function handleAuthorize(
     return sendJson(res, 405, { error: "method_not_allowed" });
   }
 
-  const params =
-    req.method === "GET"
-      ? Object.fromEntries(url.searchParams)
-      : Object.fromEntries(await readFormBody(req));
+  let params;
+  if (req.method === "GET") {
+    params = Object.fromEntries(url.searchParams);
+  } else {
+    params = Object.fromEntries(await readFormBody(req));
+  }
   const consent = params["consent"];
   let request: IAuthorizeRequest;
 

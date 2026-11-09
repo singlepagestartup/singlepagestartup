@@ -477,14 +477,24 @@ describe("durable subscription grant revocation", () => {
       },
     ]);
     let amount = "1200";
-    service.subjectsToBillingModuleCurrencies.find = jest.fn(
-      async () =>
-        [{ id: "wallet", billingModuleCurrencyId: "tokens", amount }] as any,
-    );
+    const wallet = {
+      id: "wallet",
+      subjectId: "subject",
+      billingModuleCurrencyId: "tokens",
+      amount,
+      createdAt: new Date("2026-01-01"),
+      updatedAt: new Date("2026-01-01"),
+      variant: "default",
+      className: null,
+      orderIndex: 0,
+    };
+    service.subjectsToBillingModuleCurrencies.find = jest.fn(async () => [
+      { ...wallet, amount },
+    ]);
     const credit = jest.fn(async (props) => {
       expect(props.expectedAmount).toBe(amount);
       amount = props.amount;
-      return { id: "wallet", amount };
+      return { ...wallet, amount };
     });
     service.subjectsToBillingModuleCurrencies.updateAmountIfUnchanged = credit;
     await service.execute({ subjectId: "subject" });

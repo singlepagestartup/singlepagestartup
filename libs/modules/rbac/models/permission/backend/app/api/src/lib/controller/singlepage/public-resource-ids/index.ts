@@ -7,10 +7,12 @@ export class Handler {
   constructor(private readonly service: Service) {}
   async execute(c: Context): Promise<Response> {
     try {
+      const resourceIds = await this.service.publicResourceIds({
+        resource: c.req.query("resource")!,
+      });
+
       return c.json({
-        data: await this.service.publicResourceIds({
-          resource: c.req.query("resource")!,
-        }),
+        data: resourceIds,
       });
     } catch (error) {
       const { status, message, details } = getHttpErrorType(error);

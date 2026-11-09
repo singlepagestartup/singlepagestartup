@@ -34,7 +34,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         throw new Error(`Stored file could not be read: ${response.status}`);
       }
 
-      return Buffer.from(await response.arrayBuffer());
+      const buffer = await response.arrayBuffer();
+
+      return Buffer.from(buffer);
     }
     const relative = path.normalize(file.file.replace(/^\/+/, ""));
     if (relative.startsWith("..")) {

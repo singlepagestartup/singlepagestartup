@@ -211,9 +211,11 @@ export function registerTools(mcp: McpServer) {
       },
       inputSchema: ContentModelSelectorSchema.shape,
     },
-    withAuth(async (args) =>
-      okResponse("model-schema", await describeContentModel(args)),
-    ),
+    withAuth(async (args) => {
+      const schema = await describeContentModel(args);
+
+      return okResponse("model-schema", schema);
+    }),
   );
 
   mcp.registerTool(
@@ -229,9 +231,11 @@ export function registerTools(mcp: McpServer) {
       },
       inputSchema: ContentRelationSelectorSchema.shape,
     },
-    withAuth(async (args) =>
-      okResponse("relation-schema", await describeContentRelation(args)),
-    ),
+    withAuth(async (args) => {
+      const schema = await describeContentRelation(args);
+
+      return okResponse("relation-schema", schema);
+    }),
   );
 
   mcp.registerTool(
@@ -249,10 +253,9 @@ export function registerTools(mcp: McpServer) {
     withAuth(async (args, extra) => {
       const authHeaders = getMcpAuthHeaders(extra);
 
-      return okResponse(
-        "model-record-count",
-        await countContentModelRecords(args, { authHeaders }),
-      );
+      const count = await countContentModelRecords(args, { authHeaders });
+
+      return okResponse("model-record-count", count);
     }),
   );
 
@@ -272,10 +275,9 @@ export function registerTools(mcp: McpServer) {
     withAuth(async (args, extra) => {
       const authHeaders = getMcpAuthHeaders(extra);
 
-      return okResponse(
-        "model-record-find",
-        await findContentModelRecords(args, { authHeaders }),
-      );
+      const records = await findContentModelRecords(args, { authHeaders });
+
+      return okResponse("model-record-find", records);
     }),
   );
 
@@ -294,10 +296,9 @@ export function registerTools(mcp: McpServer) {
     withAuth(async (args, extra) => {
       const authHeaders = getMcpAuthHeaders(extra);
 
-      return okResponse(
-        "model-record-get",
-        await getContentModelRecordById(args, { authHeaders }),
-      );
+      const record = await getContentModelRecordById(args, { authHeaders });
+
+      return okResponse("model-record-get", record);
     }),
   );
 
@@ -316,10 +317,9 @@ export function registerTools(mcp: McpServer) {
     withAuth(async (args, extra) => {
       const authHeaders = getMcpAuthHeaders(extra);
 
-      return okResponse(
-        "model-record-create",
-        await createContentModelRecord(args, { authHeaders }),
-      );
+      const record = await createContentModelRecord(args, { authHeaders });
+
+      return okResponse("model-record-create", record);
     }),
   );
 
@@ -338,10 +338,9 @@ export function registerTools(mcp: McpServer) {
     withAuth(async (args, extra) => {
       const authHeaders = getMcpAuthHeaders(extra);
 
-      return okResponse(
-        "model-record-update",
-        await updateContentModelRecord(args, { authHeaders }),
-      );
+      const record = await updateContentModelRecord(args, { authHeaders });
+
+      return okResponse("model-record-update", record);
     }),
   );
 
@@ -361,10 +360,11 @@ export function registerTools(mcp: McpServer) {
     withAuth(async (args, extra) => {
       const authHeaders = getMcpAuthHeaders(extra);
 
-      return okResponse(
-        "model-record-delete-preview",
-        await previewDeleteContentModelRecord(args, { authHeaders }),
-      );
+      const preview = await previewDeleteContentModelRecord(args, {
+        authHeaders,
+      });
+
+      return okResponse("model-record-delete-preview", preview);
     }),
   );
 
@@ -383,10 +383,11 @@ export function registerTools(mcp: McpServer) {
     withAuth(async (args, extra) => {
       const authHeaders = getMcpAuthHeaders(extra);
 
-      return okResponse(
-        "model-record-delete-apply",
-        await applyDeleteContentModelRecord(args, { authHeaders }),
-      );
+      const deletion = await applyDeleteContentModelRecord(args, {
+        authHeaders,
+      });
+
+      return okResponse("model-record-delete-apply", deletion);
     }),
   );
 
@@ -405,10 +406,9 @@ export function registerTools(mcp: McpServer) {
     withAuth(async (args, extra) => {
       const authHeaders = getMcpAuthHeaders(extra);
 
-      return okResponse(
-        "relation-record-count",
-        await countContentRelationRecords(args, { authHeaders }),
-      );
+      const count = await countContentRelationRecords(args, { authHeaders });
+
+      return okResponse("relation-record-count", count);
     }),
   );
 
@@ -428,10 +428,9 @@ export function registerTools(mcp: McpServer) {
     withAuth(async (args, extra) => {
       const authHeaders = getMcpAuthHeaders(extra);
 
-      return okResponse(
-        "relation-record-find",
-        await findContentRelationRecords(args, { authHeaders }),
-      );
+      const records = await findContentRelationRecords(args, { authHeaders });
+
+      return okResponse("relation-record-find", records);
     }),
   );
 
@@ -450,10 +449,9 @@ export function registerTools(mcp: McpServer) {
     withAuth(async (args, extra) => {
       const authHeaders = getMcpAuthHeaders(extra);
 
-      return okResponse(
-        "relation-record-get",
-        await getContentRelationRecordById(args, { authHeaders }),
-      );
+      const record = await getContentRelationRecordById(args, { authHeaders });
+
+      return okResponse("relation-record-get", record);
     }),
   );
 
@@ -472,10 +470,9 @@ export function registerTools(mcp: McpServer) {
     withAuth(async (args, extra) => {
       const authHeaders = getMcpAuthHeaders(extra);
 
-      return okResponse(
-        "relation-record-create",
-        await createContentRelationRecord(args, { authHeaders }),
-      );
+      const record = await createContentRelationRecord(args, { authHeaders });
+
+      return okResponse("relation-record-create", record);
     }),
   );
 
@@ -494,10 +491,9 @@ export function registerTools(mcp: McpServer) {
     withAuth(async (args, extra) => {
       const authHeaders = getMcpAuthHeaders(extra);
 
-      return okResponse(
-        "relation-record-update",
-        await updateContentRelationRecord(args, { authHeaders }),
-      );
+      const record = await updateContentRelationRecord(args, { authHeaders });
+
+      return okResponse("relation-record-update", record);
     }),
   );
 
@@ -517,10 +513,11 @@ export function registerTools(mcp: McpServer) {
     withAuth(async (args, extra) => {
       const authHeaders = getMcpAuthHeaders(extra);
 
-      return okResponse(
-        "relation-record-delete-preview",
-        await previewDeleteContentRelationRecord(args, { authHeaders }),
-      );
+      const preview = await previewDeleteContentRelationRecord(args, {
+        authHeaders,
+      });
+
+      return okResponse("relation-record-delete-preview", preview);
     }),
   );
 
@@ -539,10 +536,11 @@ export function registerTools(mcp: McpServer) {
     withAuth(async (args, extra) => {
       const authHeaders = getMcpAuthHeaders(extra);
 
-      return okResponse(
-        "relation-record-delete-apply",
-        await applyDeleteContentRelationRecord(args, { authHeaders }),
-      );
+      const deletion = await applyDeleteContentRelationRecord(args, {
+        authHeaders,
+      });
+
+      return okResponse("relation-record-delete-apply", deletion);
     }),
   );
 
@@ -562,10 +560,9 @@ export function registerTools(mcp: McpServer) {
     withAuth(async (args, extra) => {
       const authHeaders = getMcpAuthHeaders(extra);
 
-      return okResponse(
-        "page-preview",
-        await resolveHostGraph(args, { authHeaders }),
-      );
+      const preview = await resolveHostGraph(args, { authHeaders });
+
+      return okResponse("page-preview", preview);
     }),
   );
 }

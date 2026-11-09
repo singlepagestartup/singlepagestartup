@@ -151,21 +151,24 @@ export class Service {
         filters: { and: [{ column: "slug", method: "eq", value: "admin" }] },
       },
     });
-    const links = roles.length
-      ? await this.service.subjectsToRoles.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "roleId",
-                  method: "inArray",
-                  value: roles.map((role) => role.id),
-                },
-              ],
-            },
+    let links;
+    if (roles.length) {
+      links = await this.service.subjectsToRoles.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "roleId",
+                method: "inArray",
+                value: roles.map((role) => role.id),
+              },
+            ],
           },
-        })
-      : [];
+        },
+      });
+    } else {
+      links = [];
+    }
     const subjects = [...new Set(links.map((link) => link.subjectId))];
     if (!subjects.length)
       throw new Error(
@@ -195,9 +198,12 @@ export class Service {
     const inputIds = [
       ...new Set<string>(inputsLinks.map((link: any) => link.inputId)),
     ];
-    const inputs = inputIds.length
-      ? await crm.input.find(filter("id", inputIds, "inArray"))
-      : [];
+    let inputs;
+    if (inputIds.length) {
+      inputs = await crm.input.find(filter("id", inputIds, "inArray"));
+    } else {
+      inputs = [];
+    }
     const posted = new Map<string, Map<string, ICrmRequestInput>>();
     for (const step of submission.steps) {
       if (!stepIds.includes(step.id) || posted.has(step.id))

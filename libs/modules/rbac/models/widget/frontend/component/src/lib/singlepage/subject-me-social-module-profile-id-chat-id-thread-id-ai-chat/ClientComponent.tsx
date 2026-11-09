@@ -101,8 +101,8 @@ export function Component(props: IClientComponentProps) {
                         apiProps={{
                           reactQueryOptions: {
                             initialData: project.chat,
-                            queryFn: async () =>
-                              (
+                            queryFn: async () => {
+                              const projects =
                                 await subjectApi.socialModuleProfileProjects({
                                   id: data.id,
                                   host: clientHost,
@@ -111,9 +111,12 @@ export function Component(props: IClientComponentProps) {
                                       "Cache-Control": "no-store",
                                     }),
                                   },
-                                })
-                              ).find((item) => item.chat.id === project.chat.id)
-                                ?.chat,
+                                });
+
+                              return projects.find(
+                                (item) => item.chat.id === project.chat.id,
+                              )?.chat;
+                            },
                           },
                         }}
                       >

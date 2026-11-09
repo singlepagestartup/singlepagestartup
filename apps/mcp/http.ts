@@ -133,8 +133,12 @@ const server = createServer(async (req, res) => {
 
     const sessionId = getHeader(req, "mcp-session-id");
     const existingTransport = sessionId ? sessions.get(sessionId) : undefined;
-    const parsedBody =
-      req.method === "POST" ? await readJsonBody(req, res) : undefined;
+    let parsedBody;
+    if (req.method === "POST") {
+      parsedBody = await readJsonBody(req, res);
+    } else {
+      parsedBody = undefined;
+    }
 
     if (req.method === "POST" && parsedBody === undefined) {
       return;
@@ -151,11 +155,14 @@ const server = createServer(async (req, res) => {
       });
     }
 
-    const transport =
-      existingTransport ||
-      (req.method === "POST" && isInitializeRequest(parsedBody)
-        ? await createHttpSession()
-        : undefined);
+    let transport = existingTransport;
+    if (
+      !transport &&
+      req.method === "POST" &&
+      isInitializeRequest(parsedBody)
+    ) {
+      transport = await createHttpSession();
+    }
 
     if (!transport) {
       return sendJson(res, 400, {

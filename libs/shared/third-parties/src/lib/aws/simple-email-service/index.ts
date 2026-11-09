@@ -47,11 +47,14 @@ export class Service {
       )
     ) {
       for (const filePath of props.filePaths) {
-        const fileContent = filePath.startsWith("http")
-          ? await fetch(filePath)
-              .then((res) => res.arrayBuffer())
-              .then((buffer) => Buffer.from(buffer))
-          : fs.readFileSync(path.join(root, "public", filePath));
+        let fileContent;
+        if (filePath.startsWith("http")) {
+          fileContent = await fetch(filePath)
+            .then((res) => res.arrayBuffer())
+            .then((buffer) => Buffer.from(buffer));
+        } else {
+          fileContent = fs.readFileSync(path.join(root, "public", filePath));
+        }
 
         const fileName = path.basename(filePath);
 
