@@ -138,16 +138,24 @@ export class Provider implements IProvider {
   }): Promise<number> {
     const hashedKey = await this.hashKey({ key: props.key });
     const redisKey = `${props.prefix}:${hashedKey}`;
-    const value = await this.client.incr(redisKey);
-
-    // Issue #233: refresh the expiry on EVERY increment, not only when the
-    // counter is created. Refreshing the TTL lets a frequently updated counter
-    // expire once its writes stop.
-    if (props.options?.ttl) {
-      await this.client.expire(redisKey, props.options.ttl);
+    if (!props.options?.ttl) {
+      return this.client.incr(redisKey);
     }
 
-    return value;
+    const result = await this.client
+      .multi()
+      .incr(redisKey)
+      .expire(redisKey, props.options.ttl)
+      .exec();
+    if (!result) {
+      throw new Error("KV counter transaction aborted");
+    }
+    for (const [error] of result) {
+      if (error) {
+        throw error;
+      }
+    }
+    return Number(result[0][1]);
   }
 
   async set(props: {

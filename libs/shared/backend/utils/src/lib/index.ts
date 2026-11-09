@@ -50,10 +50,16 @@ export {
   runWithRequestDiagnostics,
   currentRequestDiagnostics,
 } from "./request-diagnostics";
-export { isPrivateNetworkAddress, readClientAddress } from "./client-address";
+export {
+  isPrivateNetworkAddress,
+  readClientAddress,
+  createClientAddressReader,
+  clientAddressRateLimitKey,
+} from "./client-address";
 export {
   assertWithinRateLimit,
   createRateLimiter,
+  RateLimitError,
   type IRateLimiter,
   type IRateLimitStoreProvider,
 } from "./rate-limit";

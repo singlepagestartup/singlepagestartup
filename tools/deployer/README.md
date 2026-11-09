@@ -944,3 +944,59 @@ default is 30 days; set it to `0` to disable pruning.
 Existing installations must run `tools/deployer/host.sh up` once after this
 change so the host service is recreated with the persistent volume. Subsequent
 image releases preserve and update the volume automatically.
+
+## API admission and proxy addresses
+
+All API replicas must share the same KV store and `API_RATE_LIMIT_*` settings.
+The defaults allow a Subject 100 requests per 10 seconds and 600 per minute;
+an IP gets 500 and 3000. The values are initial budgets to tune against normal
+traffic, not a claim about the server's capacity. Limits do not replace CDN/WAF
+protection against distributed floods, network saturation, or per-operation
+resource bounds. The Next.js Host is a separate entry point.
+
+The deployer publishes Traefik ports 80/443 in host mode, preserving the peer IP.
+It uses `stop-first` updates because two tasks on the same node cannot bind those
+ports simultaneously; updating Traefik on a single node causes a brief interruption.
+Deploy Traefik as well as API when adopting this PR. An API-only image update does
+not change an existing Swarm ingress publication.
+
+Before rendering `api.env`, Ansible reads `traefik_overlay` and trusts its actual
+subnets. With `USE_CLOUDFLARE_SSL=true`, both API and Traefik also trust the
+[Cloudflare proxy ranges](https://www.cloudflare.com/ips/) recorded in their
+templates. Review both copies when Cloudflare changes the published ranges.
+The API port must remain internal to the overlay. Other containers on that
+network are trusted infrastructure and must not be accessible to untrusted code.
+
+`RBAC_RATE_LIMIT_TRUSTED_PROXY_CIDRS` overrides the API trust list for a custom
+proxy topology. List only the actual proxy subnets, never `0.0.0.0/0` or `::/0`.
+Configure Traefik's `forwardedHeaders.trustedIPs` separately if another upstream
+proxy replaces Cloudflare. Local API startup has an empty list by default and
+uses the socket address. A missing or malformed forwarding entry cannot remove
+the address budget; a wrong topology may instead group visitors into one budget.
+
+The first exceeded counter in a window emits `rate_limit.exceeded`, including
+`scope`, `subjectId` or IP prefix, route pattern, method, `requestId` and retry
+delay. The IP marker identifies a network, not necessarily a person. JWTs,
+passwords, email addresses, query strings and request bodies are absent. Repeated
+429 responses do not generate error diagnostics or Telegram messages. The first
+wrong operator credential is logged once per window. Keep `LOG_LEVEL=warn` or
+more verbose to retain these warnings; production uses the existing Pino/journald
+logging setup and retention policy.
+
+Use the service tag from [Finding an API error](#finding-an-api-error):
+
+```bash
+sudo journalctl -t "$tag" --since '1 hour ago' --no-pager -o cat |
+  jq -Rc 'fromjson? | objects | select(.event == "rate_limit.exceeded")'
+```
+
+To locate a particular Subject, add `and .subjectId == $id` to the predicate
+and pass `--arg id "$subject_id"` to jq. HTTP 429 carries `Retry-After`; clients
+should wait that long rather than retry immediately. The temporary marker is a
+Redis counter with TTL under `rate-limit:*`. It disappears automatically and
+never changes the account's status. A KV outage returns HTTP 503 with a one-second
+retry delay; bounded commands and a short retry pause prevent an unbounded queue.
+
+A new environment setting must be passed through both production and preview
+sections of `.github/workflows/ansible.yml`, `api.sh`, and `api/api.env.j2`.
+The four API budgets and proxy CIDRs follow that complete path.

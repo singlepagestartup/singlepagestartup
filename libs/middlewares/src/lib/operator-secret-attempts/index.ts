@@ -5,16 +5,16 @@ import {
   KV_PROVIDER,
   RBAC_RATE_LIMIT_ENABLED,
   RBAC_RATE_LIMIT_OPERATOR_SECRET_FAILURES_PER_ADDRESS,
-  RBAC_RATE_LIMIT_TRUSTED_PROXIES,
+  RBAC_RATE_LIMIT_TRUSTED_PROXY_CIDRS,
   RBAC_RATE_LIMIT_WINDOW_IN_SECONDS,
 } from "@sps/shared-utils";
 import {
   assertWithinRateLimit,
   createRateLimiter,
-  isPrivateNetworkAddress,
+  clientAddressRateLimitKey,
   logger,
   rbacSecretMatches,
-  readClientAddress,
+  createClientAddressReader,
   readRbacSecret,
   type IRateLimiter,
   type IRateLimitStoreProvider,
@@ -30,7 +30,7 @@ export interface IMiddlewareOptions {
   storeProvider?: IRateLimitStoreProvider;
   enabled?: boolean;
   windowInSeconds?: number;
-  trustedProxies?: number;
+  trustedProxyCidrs?: string[];
   failuresPerAddress?: number;
 }
 
@@ -40,24 +40,17 @@ const COUNTER_PREFIX = "rate-limit:operator-secret:address";
  * Counts requests that present an operator secret which does not match
  * (issue #310).
  *
- * Each such request writes one warning with its method, path, client address
- * and request id, never the presented value, and spends one attempt of its
- * address's budget; within the budget it continues to the usual
- * authorization. Once an address is over its budget, every request from it
- * that presents an operator secret, the right one included, is answered 429
- * until the window ends, so a caller guessing the secret cannot tell from the
- * answer that a guess was right. A right secret only reads the counter.
- *
- * A request without a secret is not touched. A private network address is
- * logged but never counted: the API's own calls and the services on the
- * internal network use it, and so does the swarm ingress that stands in for
- * every browser behind the routing mesh.
+ * The first mismatch in a window is logged without its value. Wrong guesses
+ * spend an address budget. Once exhausted, even a matching secret is refused
+ * until the window ends, preventing confirmation of a successful guess.
+ * Private addresses are counted too; only a request without a secret skips
+ * this guard. The global visitor limiter separately exempts verified operators.
  */
 export class Middleware {
   private readonly rateLimiter: IRateLimiter;
   private readonly enabled: boolean;
   private readonly windowInSeconds: number;
-  private readonly trustedProxies: number;
+  private readonly readAddress: ReturnType<typeof createClientAddressReader>;
   private readonly failuresPerAddress: number;
 
   constructor(options: IMiddlewareOptions = {}) {
@@ -68,8 +61,9 @@ export class Middleware {
     this.enabled = options.enabled ?? RBAC_RATE_LIMIT_ENABLED;
     this.windowInSeconds =
       options.windowInSeconds ?? RBAC_RATE_LIMIT_WINDOW_IN_SECONDS;
-    this.trustedProxies =
-      options.trustedProxies ?? RBAC_RATE_LIMIT_TRUSTED_PROXIES;
+    this.readAddress = createClientAddressReader(
+      options.trustedProxyCidrs ?? RBAC_RATE_LIMIT_TRUSTED_PROXY_CIDRS,
+    );
     this.failuresPerAddress =
       options.failuresPerAddress ??
       RBAC_RATE_LIMIT_OPERATOR_SECRET_FAILURES_PER_ADDRESS;
@@ -84,12 +78,12 @@ export class Middleware {
       }
 
       const matches = rbacSecretMatches(secret);
-      const address = readClientAddress(c, this.trustedProxies);
+      const address = this.readAddress(c) ?? "unknown";
       const window =
-        this.enabled && address && !isPrivateNetworkAddress(address)
+        this.enabled && address
           ? {
               prefix: COUNTER_PREFIX,
-              key: address,
+              key: clientAddressRateLimitKey(address),
               limit: this.failuresPerAddress,
               windowInSeconds: this.windowInSeconds,
             }
@@ -103,7 +97,7 @@ export class Middleware {
         }
       }
 
-      if (!matches) {
+      if (!matches && attempts?.attempts === 1) {
         const counted = attempts
           ? `, attempt ${attempts.attempts} of ${this.failuresPerAddress} in this window`
           : "";
@@ -113,7 +107,7 @@ export class Middleware {
         );
       }
 
-      assertWithinRateLimit(c, attempts);
+      assertWithinRateLimit(c, attempts, { scope: "operator-secret", address });
 
       return next();
     });

@@ -218,63 +218,76 @@ Ecommerce readers retain their own authorization requirements.
 
 ## Rate limits
 
-The authentication routes count attempts in the KV store and answer a caller
-over its budget with 429 `Too many requests. Try again later` and a
-`Retry-After` header holding the seconds left in the window. A budget covers one
-window of `RBAC_RATE_LIMIT_WINDOW_IN_SECONDS` (default `60`), and every API
-process spends the same budget.
+`ApiRateLimitMiddleware` runs before body parsing, observers, permission queries,
+HTTP caching and public file reads. It applies to all API routes, including
+public routes and the WebSocket handshake. CORS preflight ends before admission;
+WebSocket frames and the Next.js Host are outside this middleware.
 
-| Route                                                                                                                         | Counted per             | Budget (default)                                                                                                   |
-| ----------------------------------------------------------------------------------------------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `POST .../email-and-password/authentication`                                                                                  | client address, `login` | `RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ADDRESS` (`20`), `RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ACCOUNT` (`10`) |
-| `POST .../email-and-password/forgot-password`                                                                                 | client address, `email` | the same two                                                                                                       |
-| `POST .../email-and-password/registration`, `POST .../email-and-password/reset-password`, `POST .../ethereum-virtual-machine` | client address          | `RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ADDRESS` (`20`)                                                           |
-| `GET .../init`, `POST .../refresh`                                                                                            | client address          | `RBAC_RATE_LIMIT_SESSION_ATTEMPTS_PER_ADDRESS` (`60`)                                                              |
+Every visitor spends an IP budget. A valid access JWT also spends a Subject
+budget. RBAC resolves the Subject and checks token type, expiry and logout
+revocation using its existing service. Changing devices, refreshing a JWT or
+changing social profiles does not create a new Subject budget. An invalid token
+cannot assign another Subject's ID to a counter. Conflicting header and cookie
+credentials are refused. Requests bearing the verified operator secret are
+exempt from the general visitor budgets, so nested server SDK calls do not
+exhaust one budget for the entire application. The separate wrong-secret guard
+still applies.
 
-Each route keeps its own counters. The subject controller declares a route's
-budget with `RequestRateLimit` from `backend/app/middlewares`; a project adds a
-budget to its own route the same way.
+| Budget              | Default | Environment variable                |
+| ------------------- | ------- | ----------------------------------- |
+| IP, 10 seconds      | 500     | `API_RATE_LIMIT_BURST_PER_ADDRESS`  |
+| IP, minute          | 3000    | `API_RATE_LIMIT_MINUTE_PER_ADDRESS` |
+| Subject, 10 seconds | 100     | `API_RATE_LIMIT_BURST_PER_SUBJECT`  |
+| Subject, minute     | 600     | `API_RATE_LIMIT_MINUTE_PER_SUBJECT` |
 
-Every API request whose `X-RBAC-SECRET-KEY` header or `rbac.secret-key` cookie
-does not match `RBAC_SECRET_KEY` writes one warning, `Operator secret mismatch`
-with the method, path, client address and request id but never the value, and
-counts against its client address
-(`RBAC_RATE_LIMIT_OPERATOR_SECRET_FAILURES_PER_ADDRESS`, default `10`). Within
-the budget the request continues to the usual authorization. Over it, every
-request from that address that presents a secret, the right one included, is
-answered 429 until the window ends. `OperatorSecretAttemptsMiddleware` in
-`libs/middlewares` runs this for every request.
+These are starting values, not measured server capacity or a definition of an
+attack. Tune them against ordinary page loads, polling and expensive operations.
+The higher IP allowance accommodates several users behind one network address.
+A fixed window can admit two budgets around its boundary; the independent minute
+window also counts requests rejected by the short window. This mechanism limits
+request admission, not the execution time or concurrency of work already admitted.
+High-cost routes may need tighter domain limits and bounded execution queues.
 
-The client address is the `X-Forwarded-For` entry that
-`RBAC_RATE_LIMIT_TRUSTED_PROXIES` (default `1`) hops left of the connection
-address, counting the proxies that append to the header; `0` uses the
-connection address. An address in a private network (loopback, RFC 1918,
-link-local, `100.64.0.0/10`, IPv6 unique-local and link-local) is never
-counted: it is a proxy, a container gateway, another service or a developer
-machine. Account budgets still apply to it. What a deployment gives:
+Counters live in the configured KV store under `rate-limit:*`, shared by all API
+replicas. Counter increments and TTL updates run in one Redis transaction. No
+ban is written to a Subject or social profile. HTTP 429 includes `Retry-After`
+and `Cache-Control: no-store`; access resumes when the exhausted window ends.
+IPv4-mapped addresses are normalized and IPv6 clients share a /64 budget.
+Unknown peer information uses a common budget instead of bypassing the guard.
 
-- Deployer default, with Traefik published through the swarm routing mesh and
-  Cloudflare proxying the records: every browser request reaches the API from
-  the swarm ingress address, so address budgets do not apply; account budgets,
-  the uniform answers below and the secret log do.
-- Traefik published with `mode: host` and no proxy in front of it: `1`.
-- Cloudflare in front of a Traefik published with `mode: host` that lists
-  Cloudflare's address ranges in `forwardedHeaders.trustedIPs`: `2`. Without
-  those ranges the API sees Cloudflare's edge addresses, and every visitor
-  behind one edge shares a budget.
+The global guard returns HTTP 503 if KV is unavailable. Commands have a bounded
+deadline; after a failure each process waits at least one second before retrying
+KV. Requests are refused during that interval, with no retry queue. The explicit
+`RBAC_RATE_LIMIT_ENABLED=false` switch disables limits for controlled tests.
+The lower-level route limiter remains configurable for standalone use; the
+application's global guard enforces availability of the shared store first.
 
-`RBAC_RATE_LIMIT_ENABLED=false` turns counting and refusals off, for example
-for a load test; wrong operator secrets are logged either way. A KV store that
-fails or does not answer within `KV_COMMAND_TIMEOUT_MS` lets requests through
-and is reported at most once a minute.
+Authentication retains stricter, independent windows of
+`RBAC_RATE_LIMIT_WINDOW_IN_SECONDS` (default 60):
 
-Sign-in answers 401 `Authentication error. Invalid credentials` for an unknown
-address, an identity without a salt and a wrong password, after one bcrypt
-round in each case. Forgot-password answers 201 `{ data: { ok: true } }` for
-every address and stores a reset code only when exactly one identity linked to
-a subject holds it. Registration answers `Identity already exists` for an
-address that already has a password identity; confirming the address before
-registration is issue #280.
+| Routes under `/api/rbac/subjects/authentication`      | Counter                 | Default |
+| ----------------------------------------------------- | ----------------------- | ------- |
+| `POST /email-and-password/authentication`             | IP and normalized login | 20 / 10 |
+| `POST /email-and-password/forgot-password`            | IP and normalized email | 20 / 10 |
+| Registration, reset password, Ethereum authentication | IP                      | 20      |
+| Init and refresh                                      | IP                      | 60      |
+| Wrong operator secret on any protected route          | IP                      | 10      |
+
+Settings are `RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ADDRESS`,
+`RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ACCOUNT`,
+`RBAC_RATE_LIMIT_SESSION_ATTEMPTS_PER_ADDRESS` and
+`RBAC_RATE_LIMIT_OPERATOR_SECRET_FAILURES_PER_ADDRESS`. Each route has its own
+counters. Private and loopback addresses are counted too. Login gives the same
+401 for an unknown account and a wrong password. Forgot-password returns
+201 `{ data: { ok: true } }` for every address. Registration still reports an
+existing identity; address confirmation is tracked in #280.
+
+`RBAC_RATE_LIMIT_TRUSTED_PROXY_CIDRS` is a comma-separated list of proxy networks.
+Direct API development trusts none. The reader starts with Bun's socket peer,
+walks `X-Forwarded-For` from right to left, and stops at the first untrusted IP.
+It never trusts an arbitrary client's header or skips private addresses. See
+[API admission and proxy addresses](../../../../../tools/deployer/README.md#api-admission-and-proxy-addresses)
+for deployment and log queries.
 
 ## Anonymous Session Lifecycle
 

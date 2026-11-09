@@ -43,16 +43,16 @@ export class Provider implements IProvider {
 
     const hasedKey = await this.hashKey({ key: props.key });
     const cacheKey = `${props.prefix}${hasedKey}`;
-    const value = await this.client.incr(cacheKey);
-
-    // Issue #233: same contract as the Redis provider — a supplied TTL is
-    // refreshed on every increment, so a counter that keeps being bumped
-    // still expires once its path goes idle.
-    if (props.options?.ttl) {
-      await this.client.expire(cacheKey, props.options.ttl);
+    if (!props.options?.ttl) {
+      return this.client.incr(cacheKey);
     }
 
-    return value;
+    const result = await this.client
+      .multi()
+      .incr(cacheKey)
+      .expire(cacheKey, props.options.ttl)
+      .exec();
+    return Number(result[0]);
   }
 
   async set(props: {

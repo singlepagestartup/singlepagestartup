@@ -4,14 +4,14 @@ import { Provider as StoreProvider } from "@sps/providers-kv";
 import {
   KV_PROVIDER,
   RBAC_RATE_LIMIT_ENABLED,
-  RBAC_RATE_LIMIT_TRUSTED_PROXIES,
+  RBAC_RATE_LIMIT_TRUSTED_PROXY_CIDRS,
   RBAC_RATE_LIMIT_WINDOW_IN_SECONDS,
 } from "@sps/shared-utils";
 import {
   assertWithinRateLimit,
   createRateLimiter,
-  isPrivateNetworkAddress,
-  readClientAddress,
+  clientAddressRateLimitKey,
+  createClientAddressReader,
   type IRateLimiter,
   type IRateLimitStoreProvider,
 } from "@sps/backend-utils";
@@ -27,7 +27,7 @@ export interface IMiddlewareOptions {
   storeProvider?: IRateLimitStoreProvider;
   enabled?: boolean;
   windowInSeconds?: number;
-  trustedProxies?: number;
+  trustedProxyCidrs?: string[];
 }
 
 /**
@@ -79,16 +79,14 @@ async function readAccount(
  * account, one from that account. A request over either budget is answered 429
  * with `Retry-After` until its window ends.
  *
- * A private network address is not counted. It belongs to a proxy, the swarm
- * ingress, another service or a developer machine, and counting it would put
- * every client behind it into one budget. A KV store that fails lets the
- * request through.
+ * Private addresses share the same rules. The global API admission guard
+ * handles store outages before this route-specific guard is reached.
  */
 export class Middleware {
   private readonly rateLimiter: IRateLimiter;
   private readonly enabled: boolean;
   private readonly windowInSeconds: number;
-  private readonly trustedProxies: number;
+  private readonly readAddress: ReturnType<typeof createClientAddressReader>;
 
   constructor(options: IMiddlewareOptions = {}) {
     this.rateLimiter = createRateLimiter({
@@ -98,8 +96,9 @@ export class Middleware {
     this.enabled = options.enabled ?? RBAC_RATE_LIMIT_ENABLED;
     this.windowInSeconds =
       options.windowInSeconds ?? RBAC_RATE_LIMIT_WINDOW_IN_SECONDS;
-    this.trustedProxies =
-      options.trustedProxies ?? RBAC_RATE_LIMIT_TRUSTED_PROXIES;
+    this.readAddress = createClientAddressReader(
+      options.trustedProxyCidrs ?? RBAC_RATE_LIMIT_TRUSTED_PROXY_CIDRS,
+    );
   }
 
   init(rule: IMiddlewareRule): MiddlewareHandler<any, any, {}> {
@@ -108,21 +107,20 @@ export class Middleware {
         return next();
       }
 
-      const address = readClientAddress(c, this.trustedProxies);
+      const address = this.readAddress(c) ?? "unknown";
 
-      if (
-        address &&
-        !isPrivateNetworkAddress(address) &&
-        rule.attemptsPerAddress > 0
-      ) {
+      if (address && rule.attemptsPerAddress > 0) {
         const attempts = await this.rateLimiter.count({
           prefix: `${COUNTER_PREFIX}:${rule.name}:address`,
-          key: address,
+          key: clientAddressRateLimitKey(address),
           limit: rule.attemptsPerAddress,
           windowInSeconds: this.windowInSeconds,
         });
 
-        assertWithinRateLimit(c, attempts);
+        assertWithinRateLimit(c, attempts, {
+          scope: `authentication:${rule.name}:address`,
+          address,
+        });
       }
 
       if (rule.accountField && rule.attemptsPerAccount) {
@@ -136,7 +134,10 @@ export class Middleware {
             windowInSeconds: this.windowInSeconds,
           });
 
-          assertWithinRateLimit(c, attempts);
+          assertWithinRateLimit(c, attempts, {
+            scope: `authentication:${rule.name}:account`,
+            address,
+          });
         }
       }
 

@@ -1,7 +1,9 @@
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
+import { routePath } from "hono/route";
 import { KV_COMMAND_TIMEOUT_MS } from "@sps/shared-utils";
 import { util as logger } from "../logger";
+import { requestDiagnostics } from "../request-diagnostics";
 
 /**
  * The part of the KV provider a limiter uses. `@sps/providers-kv` depends on
@@ -31,6 +33,7 @@ export interface IRateLimiterOptions {
   logIntervalMs?: number;
   logger?: IRateLimiterLogger;
   now?: () => number;
+  failureMode?: "open" | "closed";
 }
 
 export interface IRateLimitWindow {
@@ -46,6 +49,7 @@ export interface IRateLimitWindow {
 export interface IRateLimitAttempts {
   attempts: number;
   limited: boolean;
+  firstExceeded?: boolean;
   retryAfterInSeconds: number;
 }
 
@@ -62,7 +66,16 @@ export interface IRateLimiter {
  */
 export const DEFAULT_RATE_LIMITER_LOG_INTERVAL_MS = 60_000;
 
-const RATE_LIMITED_MESSAGE = "Too many requests. Try again later";
+/** Expected admission refusal: the limiter logs transitions, not every refusal. */
+export class RateLimitError extends HTTPException {
+  constructor(status: 429 | 503) {
+    const message =
+      status === 429
+        ? "Too many requests. Try again later"
+        : "Request admission unavailable. Try again later";
+    super(status, { message });
+  }
+}
 
 /**
  * Fixed-window attempt counters in the KV store (issue #310).
@@ -70,13 +83,13 @@ const RATE_LIMITED_MESSAGE = "Too many requests. Try again later";
  * A window is `windowInSeconds` long and every counter lives under its own key
  * per window, written with `incr` and a TTL of one window, the same primitive
  * as the HTTP cache version counters. Every API process therefore spends one
- * shared budget, and a counter disappears once its window is over.
+ * shared budget. Expiry is refreshed on writes; an old window's key disappears
+ * within one window after its last request.
  *
- * A limit is a protection, not a dependency: when the store rejects a call or
- * does not answer within `timeoutMs` (the KV command timeout by default), the
- * limiter reports nothing and the caller lets the request through. The first
- * failure in a log interval is reported at warn level, and the first answer
- * after a failure reports recovery.
+ * Store calls have a deadline. Callers choose whether an outage admits requests
+ * (standalone route guards) or returns 503 (global API admission). Closed mode
+ * pauses store attempts for one second after a failure. Failure logs are
+ * throttled; the first successful response reports recovery.
  */
 export function createRateLimiter(options: IRateLimiterOptions): IRateLimiter {
   const timeoutMs = options.timeoutMs ?? KV_COMMAND_TIMEOUT_MS;
@@ -88,6 +101,7 @@ export function createRateLimiter(options: IRateLimiterOptions): IRateLimiter {
   let lastReportedAt: number | undefined;
   let suppressedFailures = 0;
   let isDegraded = false;
+  let retryStoreAt = 0;
 
   function reportFailure(error: unknown): void {
     const timestamp = now();
@@ -110,8 +124,9 @@ export function createRateLimiter(options: IRateLimiterOptions): IRateLimiter {
     lastReportedAt = timestamp;
     suppressedFailures = 0;
 
+    const action = options.failureMode === "closed" ? "refused" : "let through";
     log.warn(
-      `Rate limit store unavailable, requests are let through: ${reason}${suppressed}`,
+      `Rate limit store unavailable, requests are ${action}: ${reason}${suppressed}`,
     );
   }
 
@@ -121,6 +136,7 @@ export function createRateLimiter(options: IRateLimiterOptions): IRateLimiter {
     }
 
     isDegraded = false;
+    retryStoreAt = 0;
     lastReportedAt = undefined;
     suppressedFailures = 0;
 
@@ -167,8 +183,20 @@ export function createRateLimiter(options: IRateLimiterOptions): IRateLimiter {
     };
   }
 
+  function handleFailure(error: unknown): undefined {
+    reportFailure(error);
+    if (options.failureMode === "closed") {
+      retryStoreAt = now() + 1000;
+      throw new RateLimitError(503);
+    }
+    return undefined;
+  }
+
   return {
     async count(window) {
+      if (options.failureMode === "closed" && now() < retryStoreAt) {
+        throw new RateLimitError(503);
+      }
       const at = now();
       const located = locate(window, at);
 
@@ -186,12 +214,11 @@ export function createRateLimiter(options: IRateLimiterOptions): IRateLimiter {
         return {
           attempts,
           limited: attempts > window.limit,
+          firstExceeded: attempts === window.limit + 1,
           retryAfterInSeconds: located.retryAfterInSeconds,
         };
       } catch (error) {
-        reportFailure(error);
-
-        return undefined;
+        return handleFailure(error);
       }
     },
 
@@ -216,9 +243,7 @@ export function createRateLimiter(options: IRateLimiterOptions): IRateLimiter {
           retryAfterInSeconds: located.retryAfterInSeconds,
         };
       } catch (error) {
-        reportFailure(error);
-
-        return undefined;
+        return handleFailure(error);
       }
     },
   };
@@ -233,6 +258,7 @@ export function createRateLimiter(options: IRateLimiterOptions): IRateLimiter {
 export function assertWithinRateLimit(
   c: Context,
   attempts?: IRateLimitAttempts,
+  details?: { scope: string; subjectId?: string; address?: string },
 ): void {
   if (!attempts?.limited) {
     return;
@@ -240,5 +266,16 @@ export function assertWithinRateLimit(
 
   c.header("Retry-After", String(attempts.retryAfterInSeconds));
 
-  throw new HTTPException(429, { message: RATE_LIMITED_MESSAGE });
+  c.header("Cache-Control", "no-store");
+  if (attempts.firstExceeded) {
+    logger.warn({
+      event: "rate_limit.exceeded",
+      ...details,
+      requestId: requestDiagnostics(c).requestId,
+      method: c.req.method,
+      route: routePath(c, -1) || "<unmatched>",
+      retryAfterInSeconds: attempts.retryAfterInSeconds,
+    });
+  }
+  throw new RateLimitError(429);
 }

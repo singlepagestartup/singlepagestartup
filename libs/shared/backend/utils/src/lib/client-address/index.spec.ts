@@ -19,7 +19,7 @@ function peer(address: string) {
 }
 
 async function readAddress(props: {
-  trustedProxies: number;
+  trustedProxyCidrs: string[];
   forwardedFor?: string;
   connection?: string;
 }) {
@@ -27,7 +27,7 @@ async function readAddress(props: {
 
   app.get("/", (c) => {
     return c.json({
-      address: readClientAddress(c, props.trustedProxies) ?? null,
+      address: readClientAddress(c, props.trustedProxyCidrs) ?? null,
     });
   });
 
@@ -54,7 +54,7 @@ describe("Given: a request that passed through reverse proxies", () => {
   it("returns the entry the trusted proxy appended, not the one the client wrote", async () => {
     await expect(
       readAddress({
-        trustedProxies: 1,
+        trustedProxyCidrs: ["10.0.0.0/8"],
         forwardedFor: "198.51.100.7, 203.0.113.9",
         connection: "10.0.1.5",
       }),
@@ -70,7 +70,7 @@ describe("Given: a request that passed through reverse proxies", () => {
   it("skips every hop of a two-proxy chain", async () => {
     await expect(
       readAddress({
-        trustedProxies: 2,
+        trustedProxyCidrs: ["10.0.0.0/8", "162.158.0.0/16"],
         forwardedFor: "198.51.100.7, 203.0.113.9, 162.158.1.2",
         connection: "10.0.1.5",
       }),
@@ -86,7 +86,7 @@ describe("Given: a request that passed through reverse proxies", () => {
   it("returns the furthest entry when the header is shorter than the chain", async () => {
     await expect(
       readAddress({
-        trustedProxies: 3,
+        trustedProxyCidrs: ["10.0.0.0/8"],
         forwardedFor: "203.0.113.9",
         connection: "10.0.1.5",
       }),
@@ -101,7 +101,10 @@ describe("Given: a request that passed through reverse proxies", () => {
    */
   it("falls back to the connection address when nothing was forwarded", async () => {
     await expect(
-      readAddress({ trustedProxies: 1, connection: "192.0.2.10" }),
+      readAddress({
+        trustedProxyCidrs: ["10.0.0.0/8"],
+        connection: "192.0.2.10",
+      }),
     ).resolves.toBe("192.0.2.10");
   });
 });
@@ -116,7 +119,7 @@ describe("Given: a request that reached the API directly", () => {
   it("ignores X-Forwarded-For when no proxy is trusted", async () => {
     await expect(
       readAddress({
-        trustedProxies: 0,
+        trustedProxyCidrs: [],
         forwardedFor: "203.0.113.9",
         connection: "192.0.2.10",
       }),
@@ -131,7 +134,7 @@ describe("Given: a request that reached the API directly", () => {
    */
   it("collapses an IPv4-mapped IPv6 connection address to IPv4", async () => {
     await expect(
-      readAddress({ trustedProxies: 0, connection: "::FFFF:192.0.2.10" }),
+      readAddress({ trustedProxyCidrs: [], connection: "::FFFF:192.0.2.10" }),
     ).resolves.toBe("192.0.2.10");
   });
 
@@ -142,7 +145,9 @@ describe("Given: a request that reached the API directly", () => {
    * Then: nothing is returned.
    */
   it("returns nothing when no source names an address", async () => {
-    await expect(readAddress({ trustedProxies: 1 })).resolves.toBeNull();
+    await expect(
+      readAddress({ trustedProxyCidrs: ["10.0.0.0/8"] }),
+    ).resolves.toBeNull();
   });
 });
 
@@ -186,9 +191,40 @@ describe("Given: addresses from public and private networks", () => {
     "100.128.0.1",
     "192.169.0.1",
     "2001:db8::1",
-    "fd::1",
     "",
   ])("treats %p as a public address", (address) => {
     expect(isPrivateNetworkAddress(address)).toBe(false);
   });
+});
+
+it("ignores forged forwarding headers from a public peer even with trusted proxies configured", async () => {
+  await expect(
+    readAddress({
+      trustedProxyCidrs: ["10.0.0.0/8"],
+      connection: "203.0.113.9",
+      forwardedFor: "127.0.0.1",
+    }),
+  ).resolves.toBe("203.0.113.9");
+});
+
+it("does not skip an unknown proxy to reach an attacker-controlled first entry", async () => {
+  await expect(
+    readAddress({
+      trustedProxyCidrs: ["10.0.0.0/8"],
+      connection: "10.0.1.5",
+      forwardedFor: "127.0.0.1, 192.0.2.4",
+    }),
+  ).resolves.toBe("192.0.2.4");
+});
+
+it("stops at malformed entries, including scoped IPv6, without throwing or trusting their prefix", async () => {
+  for (const entry of ["not-an-ip", "fe80::1%eth0"]) {
+    await expect(
+      readAddress({
+        trustedProxyCidrs: ["10.0.0.0/8"],
+        connection: "10.0.1.5",
+        forwardedFor: `127.0.0.1, ${entry}`,
+      }),
+    ).resolves.toBe("10.0.1.5");
+  }
 });

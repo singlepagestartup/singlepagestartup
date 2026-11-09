@@ -9,7 +9,7 @@
  * Then: requests within a budget reach the handler, the first request over a
  *       budget is answered 429 with Retry-After before the handler runs, a new
  *       window admits requests again, an account budget holds across
- *       addresses and letter case, a private address is never counted, and a
+ *       addresses and letter case, private addresses are counted, and a
  *       disabled limiter or a failing store refuses nothing.
  */
 
@@ -59,7 +59,7 @@ function createRoute(props: {
       storeProvider: props.storeProvider,
       enabled: props.enabled ?? true,
       windowInSeconds: 60,
-      trustedProxies: 1,
+      trustedProxyCidrs: ["10.0.1.5/32"],
     }).init(props.rule),
     handler,
   );
@@ -78,11 +78,15 @@ function signIn(app: Hono, props: { address?: string; login?: string }) {
     }),
   );
 
-  return app.request("/login", {
-    method: "POST",
-    body: form,
-    headers: props.address ? { "X-Forwarded-For": props.address } : {},
-  });
+  return app.request(
+    "/login",
+    {
+      method: "POST",
+      body: form,
+      headers: props.address ? { "X-Forwarded-For": props.address } : {},
+    },
+    { requestIP: () => ({ address: "10.0.1.5" }) },
+  );
 }
 
 const ADDRESS_RULE: IMiddlewareRule = {
@@ -186,18 +190,19 @@ describe("Given: a route with a per-address budget", () => {
    * Given: requests forwarded from a private network address, such as the
    *        swarm ingress that stands in for every visitor.
    * When: that address sends more requests than the budget.
-   * Then: every request reaches the handler and no address counter is written.
+   * Then: requests above the address budget are refused.
    */
-  it("never counts a private network address", async () => {
+  it("counts private network addresses too", async () => {
     const { storeProvider } = createStore();
     const { app, handler } = createRoute({ rule: ADDRESS_RULE, storeProvider });
 
     for (let attempt = 0; attempt < 5; attempt++) {
-      expect((await signIn(app, { address: "10.0.0.2" })).status).toBe(201);
+      const response = await signIn(app, { address: "10.0.0.2" });
+      expect(response.status).toBe(attempt < 3 ? 201 : 429);
     }
 
-    expect(handler).toHaveBeenCalledTimes(5);
-    expect(storeProvider.incr).not.toHaveBeenCalled();
+    expect(handler).toHaveBeenCalledTimes(3);
+    expect(storeProvider.incr).toHaveBeenCalledTimes(5);
   });
 });
 

@@ -18,6 +18,7 @@ import {
   BillRouteMiddleware,
   controllerGuardedRoutes,
   OperatorSecretAttemptsMiddleware,
+  ApiRateLimitMiddleware,
 } from "@sps/middlewares";
 import { MIDDLEWARE_HTTP_CACHE } from "@sps/shared-utils";
 import { getFileContentHeaders } from "@sps/backend-utils";
@@ -89,9 +90,16 @@ app.use(
       "X-SPS-Query-Tag",
     ],
     credentials: true,
-    exposeHeaders: ["x-sps-consistency"],
+    exposeHeaders: ["x-sps-consistency", "Retry-After"],
     maxAge: 86400,
   }),
+);
+
+app.use(new RequestIdMiddleware().init());
+app.use(
+  new ApiRateLimitMiddleware({
+    resolveSubjectId: (token) => rbacApp.resolveSubjectId(token),
+  }).init(),
 );
 
 /**
@@ -157,7 +165,6 @@ app.on(["GET", "HEAD"], "/public/*", async (c) => {
   return c.notFound();
 });
 
-app.use(new RequestIdMiddleware().init());
 app.use(consistencyMiddleware.init());
 consistencyMiddleware.registerRoutes(app);
 app.options("*", (c) => c.body(null, 204));

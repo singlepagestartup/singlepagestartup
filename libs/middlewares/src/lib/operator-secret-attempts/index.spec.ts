@@ -9,8 +9,8 @@
  * Then: a wrong secret is logged without its value and counted, a request
  *       within the budget continues, an address over the budget is answered
  *       429 with Retry-After even for the right secret, the right secret from
- *       another address passes without spending an attempt, a private address
- *       is logged and never counted, and a disabled limiter only logs.
+ *       another address passes without spending an attempt, private addresses
+ *       are counted, and a disabled limiter does not count or log.
  */
 
 const mockConfiguredSecret = "3f1c8a0d5e7b2946af13c0d8e5b7a2946f1c8a0d";
@@ -83,7 +83,7 @@ function createApi(props: {
       storeProvider: props.storeProvider,
       enabled: props.enabled ?? true,
       windowInSeconds: 60,
-      trustedProxies: 1,
+      trustedProxyCidrs: ["10.0.1.5/32"],
       failuresPerAddress: 2,
     }).init(),
   );
@@ -106,7 +106,11 @@ function request(
     headers["Cookie"] = `rbac.secret-key=${props.cookie}`;
   }
 
-  return app.request("/api/rbac/permissions", { headers });
+  return app.request(
+    "/api/rbac/permissions",
+    { headers },
+    { requestIP: () => ({ address: "10.0.1.5" }) },
+  );
 }
 
 describe("Given: requests that present an operator secret", () => {
@@ -258,7 +262,7 @@ describe("Given: requests that present an operator secret", () => {
     });
 
     expect(refused.status).toBe(429);
-    expect(mockWarn).toHaveBeenCalledTimes(3);
+    expect(mockWarn).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -271,9 +275,9 @@ describe("Given: wrong secrets the middleware logs but does not count", () => {
    * BDD Scenario
    * Given: wrong secrets forwarded from a private network address.
    * When: more arrive than the budget allows.
-   * Then: each is logged, none is counted and none is refused.
+   * Then: the address is counted and refused without logging every attempt.
    */
-  it("logs a private network address without counting or refusing it", async () => {
+  it("counts and refuses private addresses without logging every attempt", async () => {
     const { storeProvider } = createStore();
     const { app, handler } = createApi({ storeProvider });
 
@@ -283,12 +287,12 @@ describe("Given: wrong secrets the middleware logs but does not count", () => {
         secret: WRONG_SECRET,
       });
 
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(attempt < 2 ? 200 : 429);
     }
 
-    expect(handler).toHaveBeenCalledTimes(4);
-    expect(storeProvider.incr).not.toHaveBeenCalled();
-    expect(mockWarn).toHaveBeenCalledTimes(4);
+    expect(handler).toHaveBeenCalledTimes(2);
+    expect(storeProvider.incr).toHaveBeenCalledTimes(4);
+    expect(mockWarn).toHaveBeenCalledTimes(1);
     expect(String(mockWarn.mock.calls[0][0])).toContain("10.0.0.2");
   });
 
@@ -296,9 +300,9 @@ describe("Given: wrong secrets the middleware logs but does not count", () => {
    * BDD Scenario
    * Given: the limiter is turned off, as for a load test.
    * When: an address presents more wrong secrets than the budget.
-   * Then: none is refused or counted, and each is still logged.
+   * Then: none is refused, counted or logged.
    */
-  it("only logs when disabled", async () => {
+  it("does not count or log when disabled", async () => {
     const { storeProvider } = createStore();
     const { app, handler } = createApi({ storeProvider, enabled: false });
 
@@ -313,6 +317,6 @@ describe("Given: wrong secrets the middleware logs but does not count", () => {
 
     expect(handler).toHaveBeenCalledTimes(4);
     expect(storeProvider.incr).not.toHaveBeenCalled();
-    expect(mockWarn).toHaveBeenCalledTimes(4);
+    expect(mockWarn).not.toHaveBeenCalled();
   });
 });

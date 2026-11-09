@@ -1,85 +1,101 @@
 import { Context } from "hono";
+import { BlockList, isIP } from "node:net";
 
-/**
- * What the Bun server tells about the peer of a request. Bun passes its server
- * to `app.fetch` as Hono's `env` (`apps/api/server.ts`); a request that did not
- * come through that server, such as a test request, has no peer information.
- */
 interface IPeerAwareServer {
   requestIP: (request: Request) => { address: string } | null;
 }
 
-const IPV4_MAPPED_IPV6_PREFIX = "::ffff:";
 const IPV4_PATTERN = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
 
 function normalizeAddress(address?: string | null): string | undefined {
-  const normalized = address?.trim().toLowerCase();
-
-  if (!normalized) {
+  const value = address?.trim().toLowerCase();
+  if (!value || value.includes("%") || !isIP(value)) {
     return undefined;
   }
-
-  // A dual-stack socket reports an IPv4 peer as `::ffff:a.b.c.d`; the same
-  // client must count as one address whichever form it arrives in.
-  if (
-    normalized.startsWith(IPV4_MAPPED_IPV6_PREFIX) &&
-    IPV4_PATTERN.test(normalized.slice(IPV4_MAPPED_IPV6_PREFIX.length))
-  ) {
-    return normalized.slice(IPV4_MAPPED_IPV6_PREFIX.length);
+  if (isIP(value) === 4) {
+    return value;
   }
-
-  return normalized;
+  const canonical = new URL(`http://[${value}]`).hostname.slice(1, -1);
+  const mapped = canonical.match(/^::ffff:([a-f0-9]+):([a-f0-9]+)$/);
+  if (mapped) {
+    const high = parseInt(mapped[1], 16);
+    const low = parseInt(mapped[2], 16);
+    return [high >>> 8, high & 255, low >>> 8, low & 255].join(".");
+  }
+  return canonical;
 }
 
-function readConnectionAddress(c: Context): string | undefined {
-  const server = c.env as Partial<IPeerAwareServer> | undefined;
-
-  if (typeof server?.requestIP !== "function") {
-    return undefined;
+/** IPv6 privacy addresses share a /64 budget instead of 2^64 independent keys. */
+export function clientAddressRateLimitKey(address: string): string {
+  if (isIP(address) !== 6) {
+    return address;
   }
-
-  try {
-    return normalizeAddress(server.requestIP(c.req.raw)?.address);
-  } catch {
-    return undefined;
-  }
+  const [head, tail = ""] = address.split("::");
+  const left = head.split(":").filter(Boolean);
+  const right = tail.split(":").filter(Boolean);
+  const groups = [
+    ...left,
+    ...Array(8 - left.length - right.length).fill("0"),
+    ...right,
+  ];
+  return (
+    groups
+      .slice(0, 4)
+      .map((group) => parseInt(group, 16).toString(16))
+      .join(":") + "::/64"
+  );
 }
 
-/**
- * The address of the client that sent a request, as far as the proxies in
- * front of the API vouch for it.
- *
- * Every proxy appends the address it received the request from to
- * `X-Forwarded-For`, so only the entries the trusted proxies appended can be
- * believed; anything left of them was written by the client and can be
- * anything. Walking from the connection address leftwards, the first
- * `trustedProxies` hops are the proxies themselves and the next one is the
- * client. With no proxy (`0`) the connection address is the client; when the
- * header holds fewer entries than there are proxies, the furthest entry is
- * returned.
- */
+/** Trust each proxy's network, walking right-to-left until the first untrusted IP. */
+export function createClientAddressReader(trustedProxyCidrs: string[] = []) {
+  const trusted = new BlockList();
+  for (const cidr of trustedProxyCidrs) {
+    const [address, prefix] = cidr.split("/");
+    const version = isIP(address);
+    if (!version || prefix === undefined || !/^\d+$/.test(prefix)) {
+      throw new Error("Configuration error. Invalid trusted proxy CIDR");
+    }
+    const type = version === 4 ? "ipv4" : "ipv6";
+    trusted.addSubnet(address, Number(prefix), type);
+  }
+
+  return (c: Context): string | undefined => {
+    const server = c.env as Partial<IPeerAwareServer> | undefined;
+    if (typeof server?.requestIP !== "function") {
+      return undefined;
+    }
+    let address = normalizeAddress(server.requestIP(c.req.raw)?.address);
+    if (!address) {
+      return undefined;
+    }
+    const forwarded = (c.req.header("X-Forwarded-For") || "").split(",");
+    for (const entry of forwarded.reverse()) {
+      const type = isIP(address) === 4 ? "ipv4" : "ipv6";
+      if (!trusted.check(address, type)) {
+        break;
+      }
+      const next = normalizeAddress(entry);
+      if (!next) {
+        break;
+      }
+      address = next;
+    }
+    return address;
+  };
+}
+
 export function readClientAddress(
   c: Context,
-  trustedProxies: number,
-): string | undefined {
-  const hops =
-    Number.isInteger(trustedProxies) && trustedProxies > 0 ? trustedProxies : 0;
-  const forwarded = (c.req.header("X-Forwarded-For") || "")
-    .split(",")
-    .map((entry) => normalizeAddress(entry))
-    .filter((entry): entry is string => Boolean(entry));
-  const chain = [readConnectionAddress(c), ...forwarded.reverse()];
-
-  return chain[Math.min(hops, chain.length - 1)];
+  trustedProxyCidrs: string[] = [],
+) {
+  const read = createClientAddressReader(trustedProxyCidrs);
+  return read(c);
 }
 
 /**
  * Whether an address belongs to a network no public client connects from:
  * IPv4 loopback, RFC 1918, link-local and the RFC 6598 shared address space,
- * and IPv6 loopback, unique-local and link-local. Such an address is a proxy,
- * a container network gateway (the swarm routing mesh hands every published
- * connection one ingress address), another service or a developer machine, so
- * it does not tell one client from another.
+ * and IPv6 loopback, unique-local and link-local. This classifies an address; it does not exempt it from rate limits.
  */
 export function isPrivateNetworkAddress(address: string): boolean {
   const normalized = normalizeAddress(address);
