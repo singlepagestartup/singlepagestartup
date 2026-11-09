@@ -1,3 +1,6 @@
+import { app as broadcastMessageApp } from "@sps/broadcast/models/message/backend/app/api";
+import type { Service as BroadcastMessageService } from "@sps/broadcast/models/message/backend/app/api/src/lib/service";
+import { Service as SecurityNotifications } from "./service/singlepage/security-notifications";
 import { Service as CrmFormService } from "@sps/crm/models/form/backend/app/api/src/lib/service";
 import { Service as CrmRequestService } from "@sps/crm/models/request/backend/app/api/src/lib/service";
 import { Service as CrmStepService } from "@sps/crm/models/step/backend/app/api/src/lib/service";
@@ -580,9 +583,14 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
       };
     })
     .inSingletonScope();
+  bind<SecurityNotifications>(SubjectDI.ISecurityNotificationsService)
+    .to(SecurityNotifications)
+    .inSingletonScope();
   bind<IBroadcastModule>(SubjectDI.IBroadcastModule)
     .toDynamicValue(() => {
       return {
+        message: broadcastMessageApp.controller
+          .service as BroadcastMessageService,
         channel: new CRUDService<any>(
           new BroadcastChannelRepository(new BroadcastChannelConfiguration()),
         ),

@@ -63,3 +63,14 @@ export {
   type IRateLimiter,
   type IRateLimitStoreProvider,
 } from "./rate-limit";
+export {
+  AuthenticationAttempts,
+  type IAttemptReservation,
+} from "./authentication-attempts";
+export {
+  SecurityEvents,
+  type ISecuritySummary,
+  type ISecurityEventKind,
+} from "./security-events";
+
+export { type IAtomicStore } from "./kv-operation";

@@ -122,6 +122,21 @@ export class Provider implements IProvider {
     //
   }
 
+  async eval(props: {
+    prefix: string;
+    key: string;
+    script: string;
+    args: string[];
+  }) {
+    const hashedKey = await this.hashKey({ key: props.key });
+    return this.client.eval(
+      props.script,
+      1,
+      `${props.prefix}:${hashedKey}`,
+      ...props.args,
+    );
+  }
+
   async hashKey(props: { key: string }): Promise<string> {
     return hash.sha256(props.key);
   }

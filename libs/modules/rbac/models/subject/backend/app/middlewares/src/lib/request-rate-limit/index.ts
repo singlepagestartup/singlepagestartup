@@ -10,6 +10,7 @@ import {
 import {
   assertWithinRateLimit,
   createRateLimiter,
+  SecurityEvents,
   clientAddressRateLimitKey,
   createClientAddressReader,
   type IRateLimiter,
@@ -84,14 +85,17 @@ async function readAccount(
  */
 export class Middleware {
   private readonly rateLimiter: IRateLimiter;
+  private readonly events?: SecurityEvents;
   private readonly enabled: boolean;
   private readonly windowInSeconds: number;
   private readonly readAddress: ReturnType<typeof createClientAddressReader>;
 
   constructor(options: IMiddlewareOptions = {}) {
+    const storeProvider =
+      options.storeProvider ?? new StoreProvider({ type: KV_PROVIDER });
+    this.events = SecurityEvents.fromStore(storeProvider);
     this.rateLimiter = createRateLimiter({
-      storeProvider:
-        options.storeProvider ?? new StoreProvider({ type: KV_PROVIDER }),
+      storeProvider,
     });
     this.enabled = options.enabled ?? RBAC_RATE_LIMIT_ENABLED;
     this.windowInSeconds =
@@ -117,6 +121,9 @@ export class Middleware {
           windowInSeconds: this.windowInSeconds,
         });
 
+        if (attempts?.firstExceeded) {
+          await this.events?.record("auth-limited");
+        }
         assertWithinRateLimit(c, attempts, {
           scope: `authentication:${rule.name}:address`,
           address,
@@ -134,6 +141,9 @@ export class Middleware {
             windowInSeconds: this.windowInSeconds,
           });
 
+          if (attempts?.firstExceeded) {
+            await this.events?.record("auth-limited");
+          }
           assertWithinRateLimit(c, attempts, {
             scope: `authentication:${rule.name}:account`,
             address,

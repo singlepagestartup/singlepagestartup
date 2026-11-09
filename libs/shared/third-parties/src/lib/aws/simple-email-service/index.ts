@@ -33,6 +33,7 @@ export class Service {
     html: string;
     from: string;
     filePaths?: string[];
+    signal?: AbortSignal;
   }) {
     const root = process.cwd();
 
@@ -96,7 +97,9 @@ export class Service {
         },
       });
 
-      const result = await this.client.send(command);
+      const result = await this.client.send(command, {
+        abortSignal: props.signal,
+      });
 
       return result;
     } catch (error: any) {

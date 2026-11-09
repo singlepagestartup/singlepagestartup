@@ -18,6 +18,7 @@ import {
   clientAddressRateLimitKey,
   createClientAddressReader,
   createRateLimiter,
+  SecurityEvents,
   getHttpErrorType,
   rbacSecretMatches,
   readRbacSecret,
@@ -39,15 +40,18 @@ export interface IMiddlewareOptions {
 /** Admission runs before bodies, observers, permission lookups and HTTP caches. */
 export class Middleware {
   private readonly rateLimiter: IRateLimiter;
+  private readonly events?: SecurityEvents;
   private readonly readAddress: ReturnType<typeof createClientAddressReader>;
   private readonly enabled: boolean;
   private readonly addressLimits: { burst: number; minute: number };
   private readonly subjectLimits: { burst: number; minute: number };
 
   constructor(private readonly options: IMiddlewareOptions) {
+    const storeProvider =
+      options.storeProvider ?? new StoreProvider({ type: KV_PROVIDER });
+    this.events = SecurityEvents.fromStore(storeProvider);
     this.rateLimiter = createRateLimiter({
-      storeProvider:
-        options.storeProvider ?? new StoreProvider({ type: KV_PROVIDER }),
+      storeProvider,
       failureMode: "closed",
     });
     this.readAddress = createClientAddressReader(
@@ -102,6 +106,9 @@ export class Middleware {
       address: scope === "address" ? key : undefined,
     };
     // A minute refusal gives the caller the longer, actionable retry delay.
+    if (minute?.firstExceeded || burst?.firstExceeded) {
+      await this.events?.record("api-limited");
+    }
     assertWithinRateLimit(c, minute, details);
     assertWithinRateLimit(c, burst, details);
   }

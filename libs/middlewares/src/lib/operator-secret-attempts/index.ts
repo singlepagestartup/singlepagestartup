@@ -11,6 +11,7 @@ import {
 import {
   assertWithinRateLimit,
   createRateLimiter,
+  SecurityEvents,
   clientAddressRateLimitKey,
   logger,
   rbacSecretMatches,
@@ -48,15 +49,18 @@ const COUNTER_PREFIX = "rate-limit:operator-secret:address";
  */
 export class Middleware {
   private readonly rateLimiter: IRateLimiter;
+  private readonly events?: SecurityEvents;
   private readonly enabled: boolean;
   private readonly windowInSeconds: number;
   private readonly readAddress: ReturnType<typeof createClientAddressReader>;
   private readonly failuresPerAddress: number;
 
   constructor(options: IMiddlewareOptions = {}) {
+    const storeProvider =
+      options.storeProvider ?? new StoreProvider({ type: KV_PROVIDER });
+    this.events = SecurityEvents.fromStore(storeProvider);
     this.rateLimiter = createRateLimiter({
-      storeProvider:
-        options.storeProvider ?? new StoreProvider({ type: KV_PROVIDER }),
+      storeProvider,
     });
     this.enabled = options.enabled ?? RBAC_RATE_LIMIT_ENABLED;
     this.windowInSeconds =
@@ -98,6 +102,7 @@ export class Middleware {
       }
 
       if (!matches && attempts?.attempts === 1) {
+        await this.events?.record("operator-mismatch");
         const counted = attempts
           ? `, attempt ${attempts.attempts} of ${this.failuresPerAddress} in this window`
           : "";
@@ -107,6 +112,9 @@ export class Middleware {
         );
       }
 
+      if (attempts?.firstExceeded) {
+        await this.events?.record("operator-limited");
+      }
       assertWithinRateLimit(c, attempts, { scope: "operator-secret", address });
 
       return next();

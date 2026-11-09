@@ -23,6 +23,7 @@ import {
 import {
   RequestProfileSubjectIdOwner,
   RequestRateLimit,
+  RequestPasswordAttempts,
   RequestSocialModuleThreadBelongsToChat,
   RequestSubjectCanManageChatAgentProfile,
   RequestSubjectIdOwner,
@@ -309,9 +310,8 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
           new RequestRateLimit().init({
             name: "email-and-password-authentication",
             attemptsPerAddress: RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ADDRESS,
-            attemptsPerAccount: RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ACCOUNT,
-            accountField: "login",
           }),
+          new RequestPasswordAttempts().init(),
         ],
       },
       {
@@ -339,6 +339,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       {
         method: "POST",
         path: "/check",
+        middlewares: [new RequestOperatorSecret().init()],
         handler: this.check,
       },
       {

@@ -159,8 +159,9 @@ export class Repository extends DatabaseRepository<typeof Table> {
       return [];
     }
     return this.db
-      .select(deliveryState)
+      .select({ ...deliveryState, payload: Table.payload })
       .from(ChannelMessage)
+      .innerJoin(Table, eq(Table.id, ChannelMessage.messageId))
       .where(
         and(
           eq(ChannelMessage.channelId, channelId),

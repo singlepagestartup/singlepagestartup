@@ -1,3 +1,5 @@
+import type { Service as BroadcastMessageService } from "@sps/broadcast/models/message/backend/app/api/src/lib/service";
+import type { Service as NotificationService } from "@sps/notification/models/notification/backend/app/api/src/lib/service";
 import type { Service as EcommerceOrderService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service";
 import type { ICartDetails } from "@sps/ecommerce/models/order/sdk/model";
 import type { Service as CrmRequestService } from "@sps/crm/models/request/backend/app/api/src/lib/service";
@@ -120,14 +122,13 @@ export interface IBlogModule {
   categoriesToArticles: ICreateService;
 }
 
+export interface INotificationService
+  extends IReadService,
+    Pick<NotificationService, "sendSecuritySummary" | "sendVerificationCode"> {}
+
 export interface INotificationModule {
   topic: IReadService;
-  notification: IReadService & {
-    sendVerificationCode: (props: {
-      email: string;
-      code: string;
-    }) => Promise<{ sent: boolean }>;
-  };
+  notification: INotificationService;
   template: IReadService;
   topicsToNotifications: IReadService;
   notificationsToTemplates: IReadService;
@@ -152,10 +153,14 @@ export interface ICrmModule {
 }
 
 export interface IBroadcastModule {
-  channel: IReadService;
+  channel: ICreateService;
+  message: Pick<BroadcastMessageService, "queue">;
 }
 
 export const SubjectDI = {
+  ISecurityNotificationsService: Symbol.for(
+    "rbac.subject.security-notifications.service",
+  ),
   IBlogModule: Symbol.for("rbac.subject.blog.module"),
   ISubjectsToBlogModuleArticlesService: Symbol.for(
     "rbac.subject.subjects-to-blog-module-articles.service",

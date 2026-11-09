@@ -1,4 +1,11 @@
 export interface IProvider {
+  /** Executes an atomic operation against one namespaced, hashed key. */
+  eval: (props: {
+    prefix: string;
+    key: string;
+    script: string;
+    args: string[];
+  }) => Promise<unknown>;
   connect: () => Promise<void>;
   hashKey: (props: { prefix: string; key: string }) => Promise<string>;
   get: (props: { prefix: string; key: string }) => Promise<string | null>;

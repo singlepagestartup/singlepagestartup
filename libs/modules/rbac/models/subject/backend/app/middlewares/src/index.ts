@@ -37,3 +37,4 @@ export {
   type IMiddlewareOptions as IRequestRateLimitMiddlewareOptions,
   type IMiddlewareRule as IRequestRateLimitMiddlewareRule,
 } from "./lib/request-rate-limit";
+export { Middleware as RequestPasswordAttempts } from "./lib/request-password-attempts";

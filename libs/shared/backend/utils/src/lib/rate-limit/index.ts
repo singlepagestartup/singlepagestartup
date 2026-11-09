@@ -1,3 +1,4 @@
+import type { IAtomicStore } from "../kv-operation";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { routePath } from "hono/route";
@@ -9,7 +10,7 @@ import { requestDiagnostics } from "../request-diagnostics";
  * The part of the KV provider a limiter uses. `@sps/providers-kv` depends on
  * this package for its logger, so the provider is handed in, not imported.
  */
-export interface IRateLimitStoreProvider {
+export interface IRateLimitStoreProvider extends Partial<IAtomicStore> {
   incr: (props: {
     prefix: string;
     key: string;

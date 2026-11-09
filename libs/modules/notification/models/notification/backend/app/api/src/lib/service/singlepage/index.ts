@@ -1,3 +1,8 @@
+import { Repository } from "../../repository";
+import {
+  Service as SecuritySummary,
+  type ISendSecuritySummary,
+} from "./security-summary";
 import "reflect-metadata";
 import { readFile } from "node:fs/promises";
 import { join, normalize } from "node:path";
@@ -23,6 +28,11 @@ type INotificationAttachment = NonNullable<IModel["attachments"]>[number];
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  declare repository: Repository;
+  async sendSecuritySummary(props: ISendSecuritySummary) {
+    return new SecuritySummary(this.repository).execute(props);
+  }
+
   async sendVerificationCode(props: { email: string; code: string }) {
     if (!AWS_SES_FROM_EMAIL)
       throw new Error("Configuration error. Email delivery is not configured.");
