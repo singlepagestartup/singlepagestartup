@@ -75,10 +75,10 @@ export const RBAC_RATE_LIMIT_OPERATOR_SECRET_FAILURES_PER_ADDRESS =
 
 /** Short bursts and sustained traffic have independent fixed-window budgets. */
 export const API_RATE_LIMIT_BURST_PER_ADDRESS =
-  Number(process.env["API_RATE_LIMIT_BURST_PER_ADDRESS"]) || 500;
+  Number(process.env["API_RATE_LIMIT_BURST_PER_ADDRESS"]) || 100_000;
 export const API_RATE_LIMIT_MINUTE_PER_ADDRESS =
-  Number(process.env["API_RATE_LIMIT_MINUTE_PER_ADDRESS"]) || 3000;
+  Number(process.env["API_RATE_LIMIT_MINUTE_PER_ADDRESS"]) || 600_000;
 export const API_RATE_LIMIT_BURST_PER_SUBJECT =
-  Number(process.env["API_RATE_LIMIT_BURST_PER_SUBJECT"]) || 100;
+  Number(process.env["API_RATE_LIMIT_BURST_PER_SUBJECT"]) || 20_000;
 export const API_RATE_LIMIT_MINUTE_PER_SUBJECT =
-  Number(process.env["API_RATE_LIMIT_MINUTE_PER_SUBJECT"]) || 600;
+  Number(process.env["API_RATE_LIMIT_MINUTE_PER_SUBJECT"]) || 120_000;

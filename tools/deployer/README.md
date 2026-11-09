@@ -948,11 +948,29 @@ image releases preserve and update the volume automatically.
 ## API admission and proxy addresses
 
 All API replicas must share the same KV store and `API_RATE_LIMIT_*` settings.
-The defaults allow a Subject 100 requests per 10 seconds and 600 per minute;
-an IP gets 500 and 3000. The values are initial budgets to tune against normal
-traffic, not a claim about the server's capacity. Limits do not replace CDN/WAF
-protection against distributed floods, network saturation, or per-operation
-resource bounds. The Next.js Host is a separate entry point.
+The defaults allow a Subject 20000 requests per 10 seconds and 120000 per minute;
+an IP gets 100000 and 600000. These budgets leave room for pages assembled from
+many widgets, including several users behind one IP. The values are initial
+budgets to tune against normal traffic, not a claim about the server's capacity.
+Limits do not replace CDN/WAF protection against distributed floods, network
+saturation, or per-operation resource bounds. The Next.js Host is a separate
+entry point.
+
+Set the four values in `tools/deployer/.env` before deploying API:
+
+```dotenv
+API_RATE_LIMIT_BURST_PER_SUBJECT=20000
+API_RATE_LIMIT_MINUTE_PER_SUBJECT=120000
+API_RATE_LIMIT_BURST_PER_ADDRESS=100000
+API_RATE_LIMIT_MINUTE_PER_ADDRESS=600000
+```
+
+For local API startup, put overrides in `apps/api/.env` and restart API.
+For GitHub Actions deployment, use repository secrets with these names for
+production and the `PREVIEW_` prefix for preview. Both workflows pass the values
+through the deployer into the API container. Empty settings use the defaults;
+existing explicit overrides remain in effect. Authentication route budgets
+are separate and are not raised by these variables.
 
 The deployer publishes Traefik ports 80/443 in host mode, preserving the peer IP.
 It uses `stop-first` updates because two tasks on the same node cannot bind those

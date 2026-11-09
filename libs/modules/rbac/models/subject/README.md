@@ -235,14 +235,19 @@ still applies.
 
 | Budget              | Default | Environment variable                |
 | ------------------- | ------- | ----------------------------------- |
-| IP, 10 seconds      | 500     | `API_RATE_LIMIT_BURST_PER_ADDRESS`  |
-| IP, minute          | 3000    | `API_RATE_LIMIT_MINUTE_PER_ADDRESS` |
-| Subject, 10 seconds | 100     | `API_RATE_LIMIT_BURST_PER_SUBJECT`  |
-| Subject, minute     | 600     | `API_RATE_LIMIT_MINUTE_PER_SUBJECT` |
+| IP, 10 seconds      | 100000  | `API_RATE_LIMIT_BURST_PER_ADDRESS`  |
+| IP, minute          | 600000  | `API_RATE_LIMIT_MINUTE_PER_ADDRESS` |
+| Subject, 10 seconds | 20000   | `API_RATE_LIMIT_BURST_PER_SUBJECT`  |
+| Subject, minute     | 120000  | `API_RATE_LIMIT_MINUTE_PER_SUBJECT` |
 
-These are starting values, not measured server capacity or a definition of an
+These defaults leave room for pages assembled from many widgets and related
+models. The minute budgets allow six full short-window budgets; the IP budgets
+are five times the Subject budgets to accommodate shared network addresses.
+They are starting values, not measured server capacity or a definition of an
 attack. Tune them against ordinary page loads, polling and expensive operations.
-The higher IP allowance accommodates several users behind one network address.
+Set overrides in `apps/api/.env` locally or `tools/deployer/.env` for deployment,
+then restart or redeploy API. Empty settings use the defaults. Authentication
+routes retain their separate, lower budgets against credential guessing.
 A fixed window can admit two budgets around its boundary; the independent minute
 window also counts requests rejected by the short window. This mechanism limits
 request admission, not the execution time or concurrency of work already admitted.
