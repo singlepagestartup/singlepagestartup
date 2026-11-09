@@ -551,4 +551,30 @@ describe("notification send service", () => {
 
     fetchSpy.mockRestore();
   });
+  it("does not mark an unconfirmed provider delivery as sent", async () => {
+    const notification = createNotification({
+      reciever: "12345",
+      status: "sending",
+    });
+    const service = Object.assign(Object.create(Service.prototype), {
+      findById: jest.fn().mockResolvedValue(notification),
+      update: jest.fn(),
+    }) as Service;
+    (templateApi.render as jest.Mock).mockResolvedValue(
+      JSON.stringify({
+        method: "sendMessage",
+        props: ["Text", { parse_mode: "HTML" }],
+      }),
+    );
+    mockTelegramSendMessage.mockResolvedValue({});
+    await expect(
+      service.provider({
+        id: notification.id,
+        method: "telegram",
+        provider: "Telegram",
+        template: { id: "template-id", variant: "content-telegram" } as any,
+      }),
+    ).rejects.toThrow("not accepted");
+    expect(service.update).not.toHaveBeenCalled();
+  });
 });

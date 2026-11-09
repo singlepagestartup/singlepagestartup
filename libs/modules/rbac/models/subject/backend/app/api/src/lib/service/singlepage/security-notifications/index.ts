@@ -7,6 +7,10 @@ import {
   SECURITY_NOTIFICATION_FAILURE_THRESHOLD,
   TELEGRAM_SERVICE_BOT_TOKEN,
   AWS_SES_FROM_EMAIL,
+  BUG_SERVICE_PROJECT,
+  securityEventKinds,
+  securityNotificationTopicSlug,
+  securityNotificationTemplateSlugs,
 } from "@sps/shared-utils";
 import {
   SecurityEvents,
@@ -19,6 +23,13 @@ import {
   type IBroadcastModule,
   type INotificationModule,
 } from "../../../di";
+
+import type { IModel as INotificationTemplate } from "@sps/notification/models/template/sdk/model";
+
+interface INotificationConfiguration {
+  topicId: string;
+  templates: Partial<Record<"email" | "telegram", INotificationTemplate>>;
+}
 
 interface IDelivery {
   start: number;
@@ -81,6 +92,11 @@ export class Service {
     const start = Math.floor(Date.now() / 1000 / window) * window - window;
     const summary = await this.events.read(start);
     if (!summary || !this.shouldNotify(summary)) {
+      return;
+    }
+    const configuration = await this.configuration();
+    if (!configuration) {
+      logger.warn({ event: "security.summary.configuration-missing" });
       return;
     }
     const channel = await this.channel();
@@ -153,7 +169,7 @@ export class Service {
           if (!(await queue.renew(job, 600))) {
             return;
           }
-          const result = await this.send(recipient, summary);
+          const result = await this.send(recipient, summary, configuration);
           delivered = delivered && result;
         }
         delivery.complete = delivered;
@@ -309,22 +325,95 @@ export class Service {
     return recipients;
   }
 
-  private async send(recipient: IRecipient, summary: ISecuritySummary) {
+  private async configuration(): Promise<INotificationConfiguration | null> {
+    const topics = await this.notifications.topic.find({
+      params: {
+        limit: 1,
+        filters: {
+          and: [
+            {
+              column: "slug",
+              method: "eq",
+              value: securityNotificationTopicSlug,
+            },
+          ],
+        },
+      },
+    });
+    if (!topics?.length) {
+      return null;
+    }
+    const templates = await this.notifications.template.find({
+      params: {
+        limit: 2,
+        filters: {
+          and: [
+            {
+              column: "slug",
+              method: "inArray",
+              value: Object.values(securityNotificationTemplateSlugs),
+            },
+          ],
+        },
+      },
+    });
+    const configuration: INotificationConfiguration = {
+      topicId: topics[0].id,
+      templates: {},
+    };
+    for (const method of ["telegram", "email"] as const) {
+      const template = templates?.find((item: INotificationTemplate) => {
+        return (
+          item.slug === securityNotificationTemplateSlugs[method] &&
+          item.variant === `content-${method}` &&
+          Boolean(item.content?.trim()) &&
+          Boolean(item.title?.trim())
+        );
+      });
+      if (template) {
+        configuration.templates[method] = template;
+      }
+    }
+    if (!Object.keys(configuration.templates).length) {
+      return null;
+    }
+    return configuration;
+  }
+
+  private async send(
+    recipient: IRecipient,
+    summary: ISecuritySummary,
+    configuration: INotificationConfiguration,
+  ) {
     const incidentId = `security:${summary.start}`;
-    // Both transports share one notification ID, so an earlier successful
-    // fallback also prevents a subsequent Telegram retry.
-    const channels = ["telegram", "email"] as const;
-    for (const method of channels) {
+    const counts: Record<string, number> = {};
+    for (const kind of securityEventKinds) {
+      counts[kind] = summary.counts[kind] ?? 0;
+    }
+    const data = {
+      incidentId,
+      project: BUG_SERVICE_PROJECT || "SPS",
+      start: new Date(summary.start * 1000).toISOString(),
+      end: new Date(summary.end * 1000).toISOString(),
+      counts,
+    };
+    // Both transports share one notification ID and retry budget. Only
+    // channels explicitly configured by the administrator are attempted.
+    for (const method of ["telegram", "email"] as const) {
       const receiver = recipient[method];
-      if (!receiver) {
+      const template = configuration.templates[method];
+      if (!receiver || !template) {
         continue;
       }
-      const result = await this.notifications.notification.sendSecuritySummary({
-        incidentId,
-        subjectId: recipient.subjectId,
+      const result = await this.notifications.notification.sendBounded({
+        key: incidentId,
+        recipientKey: recipient.subjectId,
         method,
         receiver,
-        summary,
+        topicId: configuration.topicId,
+        template,
+        data,
+        expiresAt: (summary.end + 3600) * 1000,
       });
       if (result.status === "sent") {
         return true;

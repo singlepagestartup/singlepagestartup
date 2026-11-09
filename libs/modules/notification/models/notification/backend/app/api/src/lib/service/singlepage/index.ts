@@ -1,8 +1,8 @@
 import { Repository } from "../../repository";
 import {
-  Service as SecuritySummary,
-  type ISendSecuritySummary,
-} from "./security-summary";
+  Service as BoundedDelivery,
+  type ISendBoundedNotification,
+} from "./bounded-delivery";
 import "reflect-metadata";
 import { readFile } from "node:fs/promises";
 import { join, normalize } from "node:path";
@@ -29,8 +29,8 @@ type INotificationAttachment = NonNullable<IModel["attachments"]>[number];
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   declare repository: Repository;
-  async sendSecuritySummary(props: ISendSecuritySummary) {
-    return new SecuritySummary(this.repository).execute(props);
+  async sendBounded(props: ISendBoundedNotification) {
+    return new BoundedDelivery(this).execute(props);
   }
 
   async sendVerificationCode(props: { email: string; code: string }) {
@@ -699,6 +699,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     id: string;
     template: ITemplate;
     dropMessageThreadId?: boolean;
+    timeoutMs?: number;
   }): Promise<IModel> {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. Secret key not found");
@@ -743,6 +744,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           id: props.template.id,
           data: entity.data,
           options: {
+            redirect: "error",
+            signal: props.timeoutMs
+              ? AbortSignal.timeout(props.timeoutMs)
+              : undefined,
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
             },
@@ -764,6 +769,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           html: renderResult,
           from: AWS_SES_FROM_EMAIL,
           filePaths: validAttachments.map((attachment) => attachment.url),
+          signal: props.timeoutMs
+            ? AbortSignal.timeout(props.timeoutMs)
+            : undefined,
         });
 
         if (response.MessageId) {
@@ -780,6 +788,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           id: props.template.id,
           data: entity.data,
           options: {
+            redirect: "error",
+            signal: props.timeoutMs
+              ? AbortSignal.timeout(props.timeoutMs)
+              : undefined,
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
             },
@@ -798,7 +810,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             }
           }
 
-          const bot = new Bot(TELEGRAM_SERVICE_BOT_TOKEN);
+          let clientOptions;
+          if (props.timeoutMs) {
+            clientOptions = {
+              client: { timeoutSeconds: props.timeoutMs / 1000 },
+            };
+          }
+          const bot = new Bot(TELEGRAM_SERVICE_BOT_TOKEN, clientOptions);
 
           if (validAttachments?.length) {
             const captionOptions = parsedRenderResult.props[1] || {};
@@ -1046,11 +1064,17 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       }
     }
 
+    if (!sourceSystemId) {
+      throw new Error(
+        "Internal error. Notification was not accepted by the delivery provider",
+      );
+    }
+
     const updatedNotification = await this.update({
       id: entity.id,
       data: {
         ...entity,
-        sourceSystemId: sourceSystemId || null,
+        sourceSystemId,
         status: "sent",
       },
     });

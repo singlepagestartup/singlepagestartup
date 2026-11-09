@@ -7,3 +7,9 @@ export const securityEventKinds = [
   "operator-limited",
   "api-limited",
 ] as const;
+
+export const securityNotificationTopicSlug = "security";
+export const securityNotificationTemplateSlugs = {
+  telegram: "security-summary-telegram",
+  email: "security-summary-email",
+} as const;

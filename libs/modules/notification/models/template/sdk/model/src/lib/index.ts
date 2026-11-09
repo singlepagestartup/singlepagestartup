@@ -17,6 +17,8 @@ export const route = "/api/notification/templates";
 export const variants = [
   "hidden",
   "default",
+  "content-email",
+  "content-telegram",
   "generate-email-ecommerce-order-status-changed-default",
   "generate-telegram-ecommerce-order-status-changed-default",
   "generate-telegram-ecommerce-order-status-changed-admin",

@@ -1,5 +1,5 @@
 {
-  "fingerprint": "46bd7d1b02fe7d4d530de224b270b6282ad531b9a677ee7f0fe25e82df69525f",
+  "fingerprint": "13f9385c3ab3056d6e77ec6201cd1ef3e6bf345de1df0485615c7c22a45a84d1",
   "resources": [
     {
       "resource": "public.bg_as_to_ee_me_ps_bd9",
@@ -1791,6 +1791,7 @@
         "updatedAt": "updated_at",
         "variant": "variant",
         "title": "title",
+        "content": "content",
         "adminTitle": "admin_title",
         "slug": "slug"
       }
@@ -2045,7 +2046,8 @@
         "createdAt": "created_at",
         "updatedAt": "updated_at",
         "variant": "variant",
-        "slug": "slug"
+        "slug": "slug",
+        "tokensValidAfter": "tokens_valid_after"
       }
     },
     {

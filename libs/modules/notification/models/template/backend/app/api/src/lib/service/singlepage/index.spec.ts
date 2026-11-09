@@ -104,4 +104,35 @@ describe("template render service", () => {
       service.render({ id: "template-id", type: "telegram", payload: {} }),
     ).resolves.toBeNull();
   });
+  it("renders saved content without calling Host and uses current data", async () => {
+    const fetch = jest.spyOn(global, "fetch");
+    const service = createService({
+      findById: jest.fn().mockResolvedValue(
+        createTemplate({
+          variant: "content-email",
+          content: "{{project}}: {{counts.failed}}",
+        }),
+      ),
+    });
+    const content = await service.render({
+      id: "template-id",
+      type: "email",
+      payload: { project: "<project>", counts: { failed: 7 } },
+    });
+    expect(content).toBe("<p>&lt;project&gt;: 7</p>");
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("rejects a mismatched delivery channel for a saved template", async () => {
+    const service = createService({
+      findById: jest
+        .fn()
+        .mockResolvedValue(
+          createTemplate({ variant: "content-email", content: "Text" }),
+        ),
+    });
+    await expect(
+      service.render({ id: "template-id", type: "telegram" }),
+    ).rejects.toThrow("does not match delivery channel");
+  });
 });

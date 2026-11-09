@@ -15,7 +15,14 @@ import { Repository as ChannelRepository } from "@sps/broadcast/models/channel/b
 import { Configuration as ChannelConfiguration } from "@sps/broadcast/models/channel/backend/app/api/src/lib/configuration";
 import { Repository as NotificationRepository } from "@sps/notification/models/notification/backend/app/api/src/lib/repository";
 import { Configuration as NotificationConfiguration } from "@sps/notification/models/notification/backend/app/api/src/lib/configuration";
-import { Service as NotificationService } from "@sps/notification/models/notification/backend/app/api/src/lib/service/singlepage/security-summary";
+import { Service as NotificationService } from "@sps/notification/models/notification/backend/app/api/src/lib/service/singlepage";
+import { Service as TemplateService } from "@sps/notification/models/template/backend/app/api/src/lib/service/singlepage";
+import { Repository as TemplateRepository } from "@sps/notification/models/template/backend/app/api/src/lib/repository";
+import { Configuration as TemplateConfiguration } from "@sps/notification/models/template/backend/app/api/src/lib/configuration";
+import { api as templateApi } from "@sps/notification/models/template/sdk/server";
+import { api as topicsToNotificationsApi } from "@sps/notification/relations/topics-to-notifications/sdk/server";
+import { api as notificationsToTemplatesApi } from "@sps/notification/relations/notifications-to-templates/sdk/server";
+import { securityNotificationTemplateSlugs } from "@sps/shared-utils";
 import { Middleware } from "@sps/rbac/models/subject/backend/app/middlewares/src/lib/request-password-attempts";
 import { Service } from ".";
 
@@ -24,6 +31,24 @@ jest.mock("@sps/shared-utils", () => ({
   AWS_SES_FROM_EMAIL: "sender@example.invalid",
   TELEGRAM_SERVICE_BOT_TOKEN: "test-only-never-sent",
   SECURITY_NOTIFICATIONS_ENABLED: true,
+}));
+
+const mockTransport = jest.fn();
+jest.mock("grammy", () => ({
+  Bot: jest.fn().mockImplementation(() => ({
+    api: {
+      sendMessage: (...args: unknown[]) => mockTransport("telegram", ...args),
+    },
+  })),
+  InputFile: jest.fn(),
+}));
+jest.mock("@sps/shared-third-parties", () => ({
+  ...jest.requireActual("@sps/shared-third-parties"),
+  AWS: jest.fn().mockImplementation(() => ({
+    ses: {
+      sendEmail: (...args: unknown[]) => mockTransport("email", ...args),
+    },
+  })),
 }));
 
 // Explicit integration run only, against local PostgreSQL and Redis. All
@@ -44,14 +69,19 @@ describe("Security summaries and password limits with real storage", () => {
     new NotificationConfiguration(),
   );
   const notification = new NotificationService(notificationRepository);
-  const deliver = jest
-    .spyOn(notification as any, "deliver")
-    .mockImplementation(async (...args: any[]) => {
-      if (args[0] === "telegram") {
-        throw new Error("simulated blocked Telegram");
-      }
-      return "test-email-accepted";
-    });
+  const topicId = randomUUID();
+  const telegramTemplateId = randomUUID();
+  const emailTemplateId = randomUUID();
+  const templateRepository = new TemplateRepository(
+    new TemplateConfiguration(),
+  );
+  const templateService = new TemplateService(templateRepository);
+  const deliver = mockTransport.mockImplementation(async (method) => {
+    if (method === "telegram") {
+      throw new Error("simulated blocked Telegram");
+    }
+    return { MessageId: "test-email-accepted" };
+  });
   const store: IAtomicStore = {
     async eval(props) {
       const key = `${prefix}${props.prefix}:${await redis.hashKey({ key: props.key })}`;
@@ -64,6 +94,58 @@ describe("Security summaries and password limits with real storage", () => {
     if (redis.client.status !== "ready") {
       await new Promise<void>((resolve) => redis.client.once("ready", resolve));
     }
+    await sql`insert into sps_nn_topic(id, slug, title, admin_title) values (${topicId}, ${topicId}, 'Test security', 'Test security')`;
+    for (const [id, method] of [
+      [telegramTemplateId, "telegram"],
+      [emailTemplateId, "email"],
+    ]) {
+      await sql`insert into sps_nn_template(id, slug, title, admin_title, variant, content) values (${id}, ${id}, 'Configured title', 'Test', ${"content-" + method}, 'Configured {{project}}: {{counts.password-failed}}')`;
+    }
+    jest.spyOn(templateApi, "render").mockImplementation(async (props) => {
+      const type = props.id === emailTemplateId ? "email" : "telegram";
+      return templateService.render({
+        id: props.id,
+        type,
+        payload: props.data,
+      });
+    });
+    jest
+      .spyOn(topicsToNotificationsApi, "find")
+      .mockImplementation(async (props: any) => {
+        const id = props.params.filters.and.find(
+          (filter: any) => filter.column === "notificationId",
+        ).value;
+        const rows =
+          await sql`select id from sps_nn_ts_to_ns_v8d where nn_id=${id} and tc_id=${topicId}`;
+        return rows as any;
+      });
+    jest
+      .spyOn(topicsToNotificationsApi, "create")
+      .mockImplementation(async (props: any) => {
+        const [row] =
+          await sql`insert into sps_nn_ts_to_ns_v8d(nn_id, tc_id) values(${props.data.notificationId}, ${props.data.topicId}) returning id`;
+        return row as any;
+      });
+    jest
+      .spyOn(notificationsToTemplatesApi, "find")
+      .mockImplementation(async (props: any) => {
+        const id = props.params.filters.and.find(
+          (filter: any) => filter.column === "notificationId",
+        ).value;
+        const templateId = props.params.filters.and.find(
+          (filter: any) => filter.column === "templateId",
+        ).value;
+        const rows =
+          await sql`select id from sps_nn_ns_to_ts_g3c where nn_id=${id} and te_id=${templateId}`;
+        return rows as any;
+      });
+    jest
+      .spyOn(notificationsToTemplatesApi, "create")
+      .mockImplementation(async (props: any) => {
+        const [row] =
+          await sql`insert into sps_nn_ns_to_ts_g3c(nn_id, te_id) values(${props.data.notificationId}, ${props.data.templateId}) returning id`;
+        return row as any;
+      });
     await sql`insert into sps_bt_channel(id,slug,title,admin_title) values(${channelId},${channelId},${channelId},${channelId})`;
   });
   afterAll(async () => {
@@ -71,6 +153,8 @@ describe("Security summaries and password limits with real storage", () => {
     for (const id of savedNotifications) {
       await notificationRepository.deleteFirstByField("id", id);
     }
+    await sql`delete from sps_nn_template where id in (${telegramTemplateId}, ${emailTemplateId})`;
+    await sql`delete from sps_nn_topic where id=${topicId}`;
     await channelRepository.deleteFirstByField("id", channelId);
     if (redisKeys.size) {
       await redis.client.del(...redisKeys);
@@ -199,8 +283,8 @@ describe("Security summaries and password limits with real storage", () => {
       ]),
     };
     const links = { find: jest.fn(async () => [{ identityId: "identity" }]) };
-    const sendSecuritySummary = jest.fn(async (props) => {
-      const result = await notification.execute(props);
+    const sendBounded = jest.fn(async (props) => {
+      const result = await notification.sendBounded(props);
       savedNotifications.add(result.id);
       return result;
     });
@@ -210,7 +294,26 @@ describe("Security summaries and password limits with real storage", () => {
         assignments as any,
         links as any,
         identities as any,
-        { notification: { sendSecuritySummary } } as any,
+        {
+          notification: { sendBounded },
+          topic: { find: async () => [{ id: topicId }] },
+          template: {
+            find: async () => {
+              const templates = [];
+              for (const [id, method] of [
+                [telegramTemplateId, "telegram"],
+                [emailTemplateId, "email"],
+              ] as const) {
+                const template = await templateService.findById({ id });
+                templates.push({
+                  ...template,
+                  slug: securityNotificationTemplateSlugs[method],
+                });
+              }
+              return templates;
+            },
+          },
+        } as any,
         {
           channel: { find: async () => [{ id: channelId }] },
           message: messages,
@@ -238,16 +341,27 @@ describe("Security summaries and password limits with real storage", () => {
     for (const id of savedNotifications) {
       const saved = await notification.findById({ id });
       expect(saved?.status).toBe("sent");
-      expect(saved?.variant).toBe("security-summary-email");
+      expect(saved?.variant).toBe("bounded-email");
       expect(saved?.data?.attempts).toBe(2);
     }
+    const emailCall = deliver.mock.calls.find((call) => call[0] === "email");
+    expect(emailCall?.[1].html).toContain("Configured");
+    expect(emailCall?.[1].subject).toBe("Configured title");
+    for (const id of savedNotifications) {
+      expect(
+        await sql`select id from sps_nn_ts_to_ns_v8d where nn_id=${id}`,
+      ).toHaveLength(1);
+      expect(
+        await sql`select id from sps_nn_ns_to_ts_g3c where nn_id=${id}`,
+      ).toHaveLength(2);
+    }
     // Even if a later attempt starts with Telegram, successful fallback is final.
-    await sendSecuritySummary({
-      incidentId: `security:${start}`,
-      subjectId,
+    await sendBounded({
+      ...sendBounded.mock.calls[0][0],
+      key: `security:${start}`,
+      recipientKey: subjectId,
       method: "telegram",
       receiver: "12345",
-      summary,
     });
     expect(deliver).toHaveBeenCalledTimes(2);
 

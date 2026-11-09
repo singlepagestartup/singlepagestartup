@@ -28,6 +28,7 @@ export function Component(props: IComponentPropsExtended) {
     defaultValues: {
       variant: props.data?.variant || "default",
       title: props.data?.title || "",
+      content: props.data?.content || "",
       slug: props.data?.slug || randomWordsGenerator({ type: "slug" }),
     },
   });
@@ -79,6 +80,14 @@ export function Component(props: IComponentPropsExtended) {
           form={form}
           placeholder="Select variant"
           options={variants.map((variant) => [variant, variant])}
+        />
+
+        <FormField
+          ui="shadcn"
+          type="textarea"
+          label="Notification content (content-email / content-telegram)"
+          name="content"
+          form={form}
         />
 
         {props.notificationsToTemplates

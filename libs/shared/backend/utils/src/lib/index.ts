@@ -74,3 +74,4 @@ export {
 } from "./security-events";
 
 export { type IAtomicStore } from "./kv-operation";
+export { renderNotificationTemplate } from "./notification-template";

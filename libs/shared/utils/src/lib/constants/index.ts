@@ -82,4 +82,8 @@ export const HOST_SERVICE_REVALIDATION_SECRET_HEADER =
  */
 export const RBAC_REVOKED_SUBJECT_CONTEXT_KEY = "rbac.revoked-subject";
 
-export { securityEventKinds } from "./security";
+export {
+  securityEventKinds,
+  securityNotificationTopicSlug,
+  securityNotificationTemplateSlugs,
+} from "./security";

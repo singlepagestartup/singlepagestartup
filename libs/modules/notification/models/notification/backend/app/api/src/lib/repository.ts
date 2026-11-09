@@ -7,7 +7,7 @@ import { Table } from "@sps/notification/models/notification/backend/repository/
 export class Repository extends DatabaseRepository<typeof Table> {
   // Internal delivery uses a stable UUID for idempotency. Public CRUD creation
   // continues to generate IDs and cannot choose another notification's key.
-  async createSecuritySummary(data: typeof Table.$inferInsert) {
+  async createDelivery(data: typeof Table.$inferInsert) {
     const [created] = await this.db
       .insert(Table)
       .values(data)

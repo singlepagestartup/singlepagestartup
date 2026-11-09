@@ -349,6 +349,29 @@ email are used when Telegram is absent or fails. Admin contacts must be maintain
 by the installation owner; the legacy email identity does not itself prove email
 ownership. Delivery credentials remain the existing Notification configuration.
 
+Security summaries require a Notification Topic with slug `security` and at
+least one populated Template:
+
+| Channel  | Template slug               | Variant            |
+| -------- | --------------------------- | ------------------ |
+| Telegram | `security-summary-telegram` | `content-telegram` |
+| Email    | `security-summary-email`    | `content-email`    |
+
+Set Title and content in Admin v2 → Notification → Template. The Settings page
+(`/ru/admin/settings` or `/en/admin/settings`) provides the exact records, an
+example body and links to their forms. Nothing is created automatically. Missing
+Topic or usable templates skips delivery with
+`security.summary.configuration-missing`; rate limiting and server logs remain
+active. Removing a channel's template disables that channel. The delivery job
+does not fall back to a hardcoded message.
+
+Template data contains `project`, `incidentId`, `start` and `end` (UTC ISO
+timestamps), and `counts` for `password-failed`, `password-limited`,
+`password-recovered`, `auth-limited`, `operator-mismatch`, `operator-limited`,
+`api-limited`. Absent counters are zero. Passwords, tokens, attempted logins and
+raw IP addresses are excluded. Each notification links to its Topic and attempted
+Templates using the ordinary Notification relations and the shared provider.
+
 One private Broadcast message, `security-summary` in `security-notifications`,
 coordinates all replicas. Each summary has at most three worker attempts and each
 recipient at most three transport calls, including fallback. Calls have a
@@ -356,6 +379,12 @@ five-second timeout. Notification records have a stable internal UUID per period
 and Subject; an already sent record prevents another delivery through either
 channel. The public CRUD path still generates its own IDs. Private queue payloads
 are excluded from ordinary Broadcast reads.
+
+The generic internal `Notification.sendBounded` operation owns the shared retry
+budget and calls the regular `provider`/Template renderer. Its caller must hold
+the Broadcast lease. Records use `sending`, `error` or `sent`, never `new`, so
+Topic `send-all` cannot bypass the bounded retry policy. Both the email and
+Telegram templates are restricted to one rendered message per attempt.
 
 The next period replaces an undelivered old summary. A prolonged outage does not
 create an increasing queue or replay old periods on recovery; summaries are

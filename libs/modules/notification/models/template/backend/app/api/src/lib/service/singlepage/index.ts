@@ -8,6 +8,7 @@ import {
 } from "@sps/shared-utils";
 import QueryString from "qs";
 import pako from "pako";
+import { renderNotificationTemplate } from "@sps/backend-utils";
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
@@ -31,6 +32,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
 
     const response = await fetch(params.url, {
+      redirect: "error",
       headers: {
         "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
       },
@@ -59,6 +61,22 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
     if (!template) {
       throw new Error("Not Found error. Template not found");
+    }
+
+    if (
+      template.variant === "content-email" ||
+      template.variant === "content-telegram"
+    ) {
+      if (template.variant !== `content-${params.type}`) {
+        throw new Error(
+          "Validation error. Template does not match delivery channel",
+        );
+      }
+      return renderNotificationTemplate({
+        content: template.content ?? "",
+        payload: params.payload,
+        type: params.type,
+      });
     }
 
     let queryData: undefined | string;

@@ -35,6 +35,13 @@ export class Service {
     filePaths?: string[];
     signal?: AbortSignal;
   }) {
+    for (const value of [props.to, props.from, props.subject]) {
+      if (/[\r\n\0]/.test(value)) {
+        throw new Error(
+          "Validation error. Email headers cannot contain line breaks or null characters",
+        );
+      }
+    }
     const root = process.cwd();
 
     const boundary = "BOUNDARY_" + Date.now().toString();

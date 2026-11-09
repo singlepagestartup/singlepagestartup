@@ -35,6 +35,7 @@ export function Component(props: IComponentPropsExtended) {
     defaultValues: {
       variant: props.data?.variant || "default",
       title: props.data?.title || "",
+      content: props.data?.content || "",
       slug: props.data?.slug || randomWordsGenerator({ type: "slug" }),
     },
   });
@@ -156,6 +157,22 @@ export function Component(props: IComponentPropsExtended) {
               placeholder="Select variant"
               options={variants.map((variant) => [variant, variant])}
             />
+            <FormField
+              ui="shadcn"
+              type="textarea"
+              label={
+                props.language === "ru"
+                  ? "Текст уведомления"
+                  : "Notification content"
+              }
+              name="content"
+              form={form}
+            />
+            <p className="text-sm text-muted-foreground">
+              {props.language === "ru"
+                ? "Для content-email и content-telegram: обычный текст и переменные {{project}}, {{start}}, {{end}}, {{counts.password-failed}}. Переменные зависят от данных уведомления. HTML и код не выполняются. Для остальных вариантов содержимое задаёт компонент проекта."
+                : "For content-email and content-telegram: plain text and variables such as {{project}}, {{start}}, {{end}}, {{counts.password-failed}}. Variables depend on notification data. HTML and code are not executed. Other variants use the project's rendering component."}
+            </p>
           </div>
         </TabsContent>
 
