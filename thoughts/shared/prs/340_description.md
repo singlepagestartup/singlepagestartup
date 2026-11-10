@@ -15,13 +15,17 @@ Users are identified through RBAC's verified access token and Subject revocation
 - Replace hop-count trust with explicit `RBAC_RATE_LIMIT_TRUSTED_PROXY_CIDRS`. Start with the socket peer and stop at the first untrusted IP. Count private addresses; normalize mapped IPv4 and group IPv6 addresses by /64. Verified operator calls remain exempt from general visitor budgets; the wrong-secret guard remains independent.
 - Publish Traefik ports in host mode so Swarm ingress does not hide client addresses. Ansible reads the actual Traefik overlay subnets for API trust. When Cloudflare is enabled, API and Traefik trust its documented proxy ranges. Pass every setting through preview/production Actions, the deployer and API environment template.
 - Aggregate security counts in Redis and deliver administrator summaries every 15 minutes through the existing Agent → Subject `/check` → private Broadcast → Notification flow. Current admin roles and linked contacts determine recipients; Telegram is preferred, with SES email fallback. One recurring private task, three attempts per period/recipient, five-second transport deadlines and deterministic Notification IDs prevent an outage from creating an unbounded retry queue. Old periods are replaced; summaries are best-effort and logs retain diagnostic events. No passwords, submitted logins, tokens or IPs enter the summary.
-- Require Topic `security` and saved `security-summary-email` / `security-summary-telegram` templates for security delivery. The common Notification provider renders database content, records ordinary Topic/Template relations and retains the bounded retry budget. Missing setup skips delivery without disabling limits or server logs. There is no hardcoded fallback message.
+- Require Topic `security` and saved `security-summary-email` / `security-summary-telegram` templates for security delivery. Topic owns bounded orchestration and its notification links; Template stores content, Host renders appearance, and Notification handles delivery. Missing setup skips delivery without disabling limits or server logs. There is no hardcoded fallback message.
 - Add editable plain-text Template content with safe scalar substitutions and strict size limits; reject email header injection before provider calls. Existing component-rendered templates remain in use.
 - Expand Admin v2 Settings with cache clearing and ru/en setup cards for security summaries, administrator contacts, CRM submissions, order notifications and Agent schedules. Include copyable starter content and links to the existing create/edit forms. No records are seeded automatically.
 - Apply shared outbound provider limits beyond security: Telegram sends/edits/deletes, Telegram service replies, server alerts and all SES email (including verification). Default Telegram pacing is 25 messages/sec/bot, 1100 ms/private chat and 3100 ms/group; album items count individually. Redis shares admission and Telegram `retry_after` across replicas. SES reads account quotas, uses a shared regional allowance and disables hidden SDK send retries. ENV overrides pass through production/preview deployment.
 - Run ordinary Notification delivery through private Broadcast leases, retaining confirmed part receipts for resume after throttling. Limit active jobs to ten and ordinary failures to three; rate deferrals preserve the failure budget and advance `sendAfter`. The existing Agent notification action dispatches bounded batches, including notifications without Topic links, and cleans expired inactive jobs. Security retains its coalescing/fallback schedule under the same transport limits. No new table or cron endpoint is introduced.
 - Add atomic Broadcast progress checkpoints, reject stale owners and serialize duplicate publication before inserting payloads to avoid a PostgreSQL deadlock during concurrent delivery. Partial notifications cannot resume with changed content. External acceptance immediately before a connection/process failure can still duplicate a message; provider sends are not atomic with PostgreSQL.
 - Document limits, proxy configuration, Redis failure behavior and server log queries in the Subject and deployer READMEs. The Template content column and regenerated Consistency Capture require database migrations.
+- Render email and Telegram through authenticated Host POST endpoints using `IRenderRequest` and the server-only `RBAC_SECRET_KEY`. Stored content remains plain text; Host components control presentation. Image generation retains its GET contract.
+- Move CRM submission/link transactions to Form, public-resource discovery to Role, and durable Broadcast delivery/cleanup to Channel. Use effective services through DI. Relation-to-message reads use shared repository readers through services, retaining visibility and consistency snapshots. Fix the Studio `Files.tsx` / `Files/` collision.
+- Separate explicit GitHub Secrets and Variables lists across scripts, service playbooks and production/preview workflows. Synchronize configured values without synthesized defaults; remove old same-name Secrets only after successful Variable writes. Credentials and Portainer capability URLs remain Secrets.
+- Provision production and development S3 independently through `AWS_S3_BUCKET_NAME` and `AWS_S3_DEV_BUCKET_NAME`. Missing names skip S3 while retaining IAM/SES. Existing IAM users receive policy updates without key rotation; disabling provisioning leaves buckets intact. Download IAM credential files privately with mode `0600` and suppress their contents from logs.
 
 ## Verification
 
@@ -43,8 +47,10 @@ Users are identified through RBAC's verified access token and Subject revocation
 - [x] Actual local API HTTP route: created a Notification without a template, called `send`, and inspected the persisted Broadcast job with one failed attempt and a deferred Notification. No external send was possible. Both test records were deleted afterward.
 - [x] Notification and RBAC TypeScript, scoped ESLint, module dependency checks and Bash syntax. API/Telegram environment templates render with defaults and overrides; production/preview mapping and SES IAM policy checked.
 - [ ] Telegram's standalone TypeScript configuration retains eight pre-existing diagnostics (Bun/web type mismatches and a middleware argument). A compiler run with original source overlays confirms the same diagnostics before this change; Telegram runtime tests pass.
-- [ ] The repository placement checker still reports the pre-existing Studio `Files.tsx` / `Files/` collision outside this change.
-- [ ] Production rollout of the new Traefik publication and trust configuration has not been performed in this task.
+- [x] Ownership/rendering follow-up: focused unit and real PostgreSQL/Redis integration tests cover CRM rollback/concurrency, queue ownership/visibility, notification delivery and security summaries. Live API checks cover publication/reservation races, public feeds, acknowledgements and Role discovery. Affected backend/Host TypeScript, lint and dependency checks pass. Studio: 18 tests, TypeScript and layout checks pass; the file/directory collision is resolved.
+- [x] Broadcast service-reader follow-up: three unit suites / ten tests and two real PostgreSQL suites / five tests, plus a running API smoke check. Affected type, lint, dependency and consistency checks passed.
+- [x] Deployment configuration: 23 regression tests passed with cloud calls mocked and real Ansible conditions/templates/file writes. The final credential-copy change passed four AWS configuration tests, including fresh/repeated exports and permission repair. Bash/Ansible syntax, formatting and diff checks passed.
+- [x] Fresh production provisioning completed with the current deployer and the configured application image `0.0.332`: AWS IAM/S3, TLS/DNS, Traefik, Portainer, PostgreSQL, Redis, LLM, API, MCP, Telegram and Host. API migrations/seed completed and health passed; Host pages opened in the browser; MCP discovery/authentication challenge passed; Telegram synchronized commands/webhook; LLM generated a 768-dimensional embedding; API UID 1000 wrote to the upload volume. Updated credential-copy tasks also ran against the server and produced mode `0600` files.
 
 ## Notes
 
@@ -53,6 +59,8 @@ The defaults are starting budgets, not measured server capacity or a universal D
 Traefik uses `stop-first` updates with host-published ports. On a single node, its update causes a brief interruption. An API-only image update does not change an existing Traefik deployment.
 
 Authentication account budgets can temporarily affect the owner when others repeatedly target their login. Registration still reveals an existing identity; confirmation is tracked in #280. This PR does not implement reset-mail delivery.
+
+Production provisioning validates the deployer against image `0.0.332`; it does not establish that every final application change in this PR was built into that image. Application changes were checked locally as described above. Publish a new image from the merged code when rolling out those changes. External notification delivery tests used mocked transports; real customer email/payment flows were not exercised. Local macOS DNS still failed to resolve the new MCP hostname during the last check; public resolvers and HTTPS checks against the configured server succeeded.
 
 ## Downstream migration
 
@@ -66,15 +74,32 @@ Authentication account budgets can temporarily affect the owner when others repe
 
 - Apply `npx nx run api:db:migrate` and `npx nx run @sps/providers-db:consistency-check` before starting the updated API. Template gains nullable `content`; existing rows are unchanged. Preserve this field in project-owned schemas/forms and regenerate their migrations normally.
 - To enable summaries, create Topic slug `security`, then Template slug `security-summary-email` with variant `content-email` and/or `security-summary-telegram` with variant `content-telegram`. Set Title and editable content using Admin v2 Settings instructions; keep administrator contacts, server provider credentials and the existing Subject-check schedule configured. Do not seed these automatically in child projects.
-- Replace any project-owned calls to unpublished `sendSecuritySummary` with the shared `sendBounded` flow and its Topic/Template contract, retaining the Broadcast lease across delivery. Verify missing setup skips sending, editing a template changes the next render, failed Telegram falls back to configured email, and no period/recipient exceeds three attempts.
+- Replace project-owned `sendSecuritySummary` or `Notification.sendBounded` calls with `Topic.sendBounded` and bind the effective Topic service, retaining the Broadcast lease and shared retry budget. Verify missing setup skips sending, editing a template changes the next render, failed Telegram falls back to configured email, and no period/recipient exceeds three attempts.
 
 ### Outgoing notification rollout
 
 Existing installations need `ses:GetSendQuota` permission and the same Redis
 configuration in API and Telegram. Configure `notification-module-topics-send-all`
 for scheduled retries. Projects overriding Notification service construction must
-provide the Broadcast dependency or reuse the effective bootstrapped service;
+provide the effective Broadcast Channel dependency or reuse the bootstrapped service;
 custom Telegram clients must install the shared transport/transformer. Direct
 verification sends and Telegram replies/edits can return a deferred error after
 the bounded wait; callers must not add an unbounded retry loop. Details are in
 `libs/modules/notification/models/notification/README.md` and `tools/deployer/README.md`.
+
+### Rendering and model ownership
+
+- Deploy API and Host together. Pass the existing `RBAC_SECRET_KEY` privately to Host; never use a `NEXT_PUBLIC_` setting. Custom email/Telegram renderer callers must use POST, `IRenderRequest` and `X-RBAC-SECRET-KEY`; remove GET callers. Image-generator GET callers remain valid. Use `interpolateNotificationTemplate` for plain-text substitution and registered Host variants for appearance.
+- Move custom `Request.submit/configureSubmissions` composition to Form and its DI. Keep request creation and `FormsToRequests` linkage in the same transaction through the effective Request service.
+- Move `publicResourceIds` callers/types from Permission SDK to Role SDK and use `GET /api/rbac/roles/public-resource-ids`. Preserve authenticated discovery and anonymous reads of individual public resources.
+- Move durable delivery consumers, SDK methods and types from Broadcast Message to Channel, using `POST /api/broadcast/channels/delivery`. Read announced payloads through Channel feeds or the `ChannelsToMessages` message reader. Ordinary Message CRUD excludes durable jobs. Adapt owned constructors to the current DI dependencies and shared payload repository; replace removed repository `findWithMessage/isDurable` calls with service APIs, preserving visibility and snapshot metadata.
+- Update owned Studio source references from `interface-kit/Files.tsx` to `interface-kit/Files/Component.tsx`; `./Files` imports resolve to the existing folder index.
+- Verify transactional rollback, duplicate submissions, lease ownership, hidden-message exclusion, bounded retries, authenticated Host rendering, public-resource routing and Studio previews.
+
+### Deployment configuration
+
+- Pause automatic deployments while updating workflows and configuration together. Keep a private deployment `.env` and grant the deployment token both Variables write and Secrets write. Follow `tools/deployer/README.md` to synchronize production and preview through `github.sh up`; do not run old Secrets-only workflows afterward.
+- Put generated public API/Host/Telegram/MCP URLs in same-name Actions Variables before image builds. Credentials, authenticated URLs and Portainer webhooks remain Secrets. Empty ordinary settings preserve remote overrides; remove an override explicitly to inherit defaults.
+- Set each S3 provisioning name only where needed, preserving exact existing names. Missing names disable provisioning and clear its old GitHub settings without deleting buckets. Explicit teardown refuses non-empty buckets. Verify SES-only setup makes no S3 calls and enabling a bucket reuses IAM keys.
+- Restrict existing controller files `tools/deployer/aws/iam.env` and `tools/deployer/aws/dev.iam.env` to mode `0600`. Preserve private copying and `no_log` in owned export tasks; retain existing IAM identities/keys.
+- Run configuration fixtures and a verify-only image build before resuming automatic releases. Check generated values without printing credentials and verify normal UI traffic, provider settings and fresh/repeated deployment behavior.
