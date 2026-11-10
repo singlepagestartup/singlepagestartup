@@ -199,6 +199,9 @@ it.each([
   "updates mounted account and project readers after %s with %s without a reload",
   async (mode, issuedJwt, search, destination) => {
     mockSearch = search;
+    mockPathname =
+      "/en/rbac/subject/authentication/email-and-password" +
+      (mode === "registration" ? "/registration" : "");
     mockIssuedJwt = issuedJwt;
     render(
       <QueryClientProvider client={queryClient}>
@@ -236,6 +239,7 @@ it.each([
             language="en"
             variant="authentication-email-and-password-form-default"
             mode={mode}
+            successHref="/ai-chat/projects"
           />
         </CookiesProvider>
       </QueryClientProvider>,

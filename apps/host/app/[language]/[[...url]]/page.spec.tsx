@@ -15,6 +15,11 @@ import Page, {
 jest.mock("@sps/host/models/page/sdk/server", () => ({
   api: { resolvePageSeo: jest.fn(), find: jest.fn() },
 }));
+jest.mock("@sps/website-builder/models/widget/frontend/component", () => ({
+  Component: ({ variant, children }: any) => (
+    <main data-variant={variant}>{children}</main>
+  ),
+}));
 jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
   Component: ({ mode, language }: any) => (
     <form aria-label={mode} lang={language} />
@@ -86,9 +91,9 @@ it.each([
       "en",
       ("rbac/subject/authentication/email-and-password" + suffix).split("/"),
     );
-    expect(renderToStaticMarkup(await Page(route))).toContain(
-      `aria-label="${action}"`,
-    );
+    const html = renderToStaticMarkup(await Page(route));
+    expect(html).toContain('data-variant="authentication-page-default"');
+    expect(html).toContain(`aria-label="${action}"`);
     expect(await generateMetadata(route)).toEqual({
       robots: { index: false, follow: false },
     });

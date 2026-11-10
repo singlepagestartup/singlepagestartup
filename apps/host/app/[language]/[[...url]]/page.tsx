@@ -1,3 +1,4 @@
+import { Component as WebsiteBuilderWidget } from "@sps/website-builder/models/widget/frontend/component";
 import { cache } from "react";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import { RBAC_EMAIL_PASSWORD_PATHS } from "@sps/shared-utils";
@@ -65,14 +66,19 @@ export default async function Page({ params }: IPageProps) {
     return (
       <>
         <Admin isServer={true} />
-        <main className="mx-auto flex min-h-svh w-full max-w-md flex-col justify-center p-6">
+        <WebsiteBuilderWidget
+          isServer={true}
+          variant="authentication-page-default"
+          language={language}
+          action={action}
+        >
           <Subject
             isServer={true}
             variant="authentication-email-and-password-form-default"
             mode={action}
             language={language}
           />
-        </main>
+        </WebsiteBuilderWidget>
       </>
     );
   }

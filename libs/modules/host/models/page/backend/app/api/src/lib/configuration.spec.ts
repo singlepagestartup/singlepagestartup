@@ -54,3 +54,34 @@ it.each(["en", "ru", undefined])(
     expect(rows.find((r) => r.id === originalOther.id)).toEqual(originalOther);
   },
 );
+
+describe("the Studio sign-in snapshot", () => {
+  const canonicalUrl = "/rbac/subject/authentication/email-and-password";
+  const studio = {
+    id: "studio",
+    url: "/ai-chat/sign-in",
+    adminTitle: "Studio login",
+  };
+  const owned = { id: "owned", url: canonicalUrl };
+  const input = {
+    snapshot: studio,
+    seeds: [],
+    existing: [],
+    snapshots: [studio],
+  };
+
+  it("uses the canonical URL on a new installation and on a repeat seed", () => {
+    const prepare = new Configuration().repository.seed.prepareSnapshot!;
+    const expected = { ...studio, url: canonicalUrl };
+    expect(prepare(input)).toEqual(expected);
+    expect(
+      prepare({ ...input, existing: [{ ...expected, id: "local" }] }),
+    ).toEqual(expected);
+  });
+
+  it("respects a project's existing page and a canonical page in its own seed", () => {
+    const prepare = new Configuration().repository.seed.prepareSnapshot!;
+    expect(prepare({ ...input, existing: [owned] })).toEqual(studio);
+    expect(prepare({ ...input, snapshots: [studio, owned] })).toEqual(studio);
+  });
+});

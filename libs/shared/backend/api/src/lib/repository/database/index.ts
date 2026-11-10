@@ -608,7 +608,18 @@ export class Database<T extends PgTableWithColumns<any>>
 
     const insertedEntities: ISeedResult["seeds"] = [];
 
-    for (const dumpEntity of dumpEntities) {
+    const prepareSnapshot = this.configuration.repository.seed.prepareSnapshot;
+    for (const snapshot of dumpEntities) {
+      let dumpEntity = snapshot;
+      if (prepareSnapshot) {
+        dumpEntity = prepareSnapshot({
+          snapshot,
+          seeds: props?.seeds || [],
+          existing: dbEntities,
+          snapshots: dumpEntities,
+        }) as T["$inferSelect"];
+      }
+
       const transformers = this.configuration.repository.seed.transformers;
 
       let transformedEntity: T["$inferInsert"] = { ...dumpEntity };

@@ -39,9 +39,12 @@ export function Component(props: IComponentProps) {
     userStories.subjectAuthentication.redirect.allowedReturnPaths?.find(
       (path) => path === returnTo,
     );
+  const formPath = getLocalizedHref(pathname, RBAC_EMAIL_PASSWORD_PATHS[mode]);
+  const embeddedSuccessHref =
+    pathname === formPath ? undefined : props.successHref;
   const successHref =
     requestedReturnPath ||
-    props.successHref ||
+    embeddedSuccessHref ||
     userStories.subjectAuthentication.redirect.success;
   function formHref(action: IEmailPasswordAction) {
     const path = getLocalizedHref(pathname, RBAC_EMAIL_PASSWORD_PATHS[action]);

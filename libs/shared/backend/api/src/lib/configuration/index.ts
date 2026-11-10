@@ -73,6 +73,13 @@ export interface IRepositoryConfiguration {
     module: string;
     name: string;
     type: "model" | "relation";
+    /** Normalize an older snapshot before resolving its identity and foreign keys. */
+    prepareSnapshot?: (context: {
+      snapshot: Record<string, unknown>;
+      seeds: ISeedResult[];
+      existing: Record<string, unknown>[];
+      snapshots: Record<string, unknown>[];
+    }) => Record<string, unknown>;
     transformers?: ITransform[];
     filters?: IFilter[];
   };

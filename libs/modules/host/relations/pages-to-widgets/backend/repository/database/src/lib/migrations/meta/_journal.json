@@ -8,6 +8,13 @@
       "when": 1737754272291,
       "tag": "0000_supreme_kulan_gath",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794348993317,
+      "tag": "0001_restore_authentication_page_layouts",
+      "breakpoints": true
     }
   ]
 }
