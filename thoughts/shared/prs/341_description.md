@@ -15,13 +15,14 @@ Framework rules now match complete paths and explicit methods. API, Telegram and
 - Pass the CORS setting through local deployment and Actions, using **Variables** for production and preview. Preserve main's rate limits, notifications, upload limits, refresh-token and outbound URL settings.
 - Remove the ineffective header-property assignment from authorization middleware.
 - Restore the missing `"use server"` directive in the Broadcast relation reader. This inherited main defect prevented the Host page from compiling in Turbopack.
-- Test CORS on warmed consistency-cache responses and authorization before cache reuse. No cache implementation or database schema changes are needed.
+- Test CORS on warmed consistency-cache responses and authorization before cache reuse. No response-cache implementation or database schema changes are needed.
+- Refuse reuse of an authorization decision after its JWT expires. Two independent processes reproduced the stale 200 response and now return 401; role removal is also observed before the cache lifetime expires.
 
 ## Verification
 
 Rechecked on the merged code:
 
-- [x] Middleware Jest suite: 16 suites, 91 tests, including 17 route-rule tests.
+- [x] Middleware Jest suite: 16 suites, 92 tests, including 17 route-rule tests and a regression test for JWT expiry inside the decision-cache lifetime.
 - [x] CORS helper: 19 tests. Consistency-cache suite: 10 tests.
 - [x] `node --test tools/deployer/github/configuration.test.mjs`: 12 tests.
 - [x] Real Ansible template rendering for API and Telegram with the origin list unset, empty and configured.
@@ -37,6 +38,8 @@ Rechecked on the merged code:
 
 With the setting absent or blank, ordinary HTTP(S) origins remain allowed for compatibility. Production must supply an explicit list to restrict browser readers. CORS does not authenticate callers, prevent every cross-origin write, or restrict server-to-server requests.
 
+Authentication entry points retain exact public rules so reaching login, registration, session initialization and refresh does not require permission rows on a fresh installation. The proposed in-process RBAC invocation is measured in a prototype and has not replaced the production HTTP path. Architecture, PostgreSQL latency measurements and two-process checks are recorded in `thoughts/shared/research/singlepagestartup/2026-11-10-rbac-authorization-latency.md`.
+
 Leaving the framework allow-list sends a request through existing RBAC rules; it does not make every route private. Permission rows without roles remain public under the current RBAC contract. This PR does not change those records.
 
 Local Redis testing used an isolated temporary container because the existing local dump uses RDB format 14, which the installed Redis 7.4 image cannot read. The original dump was preserved. This is a local infrastructure limitation, not a schema migration in this PR.
@@ -48,4 +51,5 @@ Local Redis testing used an isolated temporary container because the existing lo
 - For browser-origin restrictions, set `API_CORS_ALLOWED_ORIGINS=https://app.example.com,https://admin.example.com` in deployer configuration. Include every browser frontend as `scheme://host[:port]`, without paths. Opaque sandbox origins cannot be enabled.
 - Owned GitHub workflows and synchronization scripts must use Variables `API_CORS_ALLOWED_ORIGINS` and `PREVIEW_API_CORS_ALLOWED_ORIGINS`, then pass the list to API and Telegram. Keep credentials in Secrets. Owned Hono entry points should use the shared resolver.
 - Owned copies of the Broadcast relation server reader need the server directive as in the framework.
+- Owned authorization middleware must reject cached decisions after token expiry. Clients should refresh or handle 401 once the access token expires; the decision cache must not extend its lifetime.
 - Verify allowed and unlisted browser origins, anonymous and authenticated RBAC reads, login/refresh/logout, and the Host page with the response cache enabled. Current main authorizes before cache lookup; no legacy GET cache-reset fallback is introduced.
