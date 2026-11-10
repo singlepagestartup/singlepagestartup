@@ -1,4 +1,5 @@
 import "reflect-metadata";
+import type { IExecuteProps as ISettlementProps } from "./settlement";
 import { injectable } from "inversify";
 import { Table } from "@sps/billing/models/payment-intent/backend/repository/database";
 import {
@@ -52,16 +53,15 @@ export type IServiceProceedProps =
         "x-content-hmac": string;
         "content-hmac": string;
       };
-      callback: ({
-        invoice,
-      }: {
-        invoice: IInvoice;
-      }) => Promise<{ ok: boolean }>;
     };
+
+interface IConstructorProps {
+  settle: (props: ISettlementProps) => Promise<IInvoice>;
+}
 
 @injectable()
 export class Service {
-  constructor() {}
+  constructor(private readonly dependencies: IConstructorProps) {}
 
   async proceed(props: IServiceProceedProps) {
     if (!RBAC_SECRET_KEY) {
@@ -237,25 +237,16 @@ export class Service {
       }
 
       if (props.data.Status === "Completed") {
-        invoice = await invoiceApi.update({
-          id: invoice.id,
-          data: {
-            ...invoice,
-            amount: parseInt(props.data.PaymentAmount),
-            status: "paid",
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-          },
+        if (props.data.OperationType !== "Payment")
+          throw new Error(
+            "Validation error. Only incoming payments can settle an invoice",
+          );
+        await this.dependencies.settle({
+          invoiceId: invoice.id,
+          provider: "cloudpayments",
+          providerId: invoice.providerId,
+          amount: Number(props.data.Amount),
         });
-
-        if (!invoice) {
-          throw new Error("Not Found error. Invoice not found");
-        }
-
-        await props.callback({ invoice });
       }
 
       return { code: 0 };

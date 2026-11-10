@@ -10,9 +10,6 @@ import {
   readRbacSecret,
 } from "@sps/backend-utils";
 import { IModel as Invoice } from "@sps/billing/models/invoice/sdk/model";
-import { IModel as PaymentIntent } from "@sps/billing/models/payment-intent/sdk/model";
-import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
-import { api as paymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
 
 export class Handler {
   service: Service;
@@ -48,12 +45,18 @@ export class Handler {
         rawBody = await c.req.text();
       }
 
-      logger.debug("🚀 ~ providerWebhook ~ headers:", headers);
-      logger.debug("🚀 ~ providerWebhook ~ c.req.text:", rawBody);
+      if (provider !== "paykeeper") {
+        logger.debug("🚀 ~ providerWebhook ~ headers:", headers);
+        logger.debug("🚀 ~ providerWebhook ~ c.req.text:", rawBody);
+      }
 
       let data;
       if (contentType?.includes("application/json")) {
-        data = rawBody ? JSON.parse(rawBody) : {};
+        try {
+          data = rawBody ? JSON.parse(rawBody) : {};
+        } catch {
+          throw new Error("Validation error. Invalid JSON webhook payload");
+        }
       } else if (contentType?.includes("multipart/form-data")) {
         const body = await c.req.parseBody();
 
@@ -71,29 +74,38 @@ export class Handler {
         data = Object.fromEntries(params.entries());
       }
 
-      if (data?.data?.id) {
-        let invoice: Invoice | undefined;
+      if (provider === "paykeeper") {
+        const result = await this.service.paykeeper({
+          data,
+          action: "webhook",
+          headers,
+          rawBody,
+        });
+        if (
+          !result ||
+          !("acknowledgment" in result) ||
+          typeof result.acknowledgment !== "string"
+        )
+          throw new Error("Internal error. Missing PayKeeper acknowledgment");
+        c.header("Cache-Control", "no-store");
+        c.header("X-Robots-Tag", "noindex");
+        return c.text(result.acknowledgment, 200);
+      }
+
+      if (provider === "dummy" && data?.data?.id) {
+        let invoice: Invoice | undefined | null;
 
         try {
           invoice = await this.service.billingModule.invoice.findById({
             id: data.data.id,
           });
 
-          if (invoice?.amount === 0) {
-            invoice = await invoiceApi.update({
-              id: invoice.id,
-              data: {
-                ...invoice,
-                status: "paid",
-              },
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                },
-              },
+          if (invoice?.provider === "dummy" && invoice.amount === 0) {
+            invoice = await this.service.settlePayment({
+              invoiceId: invoice.id,
+              provider: "dummy",
+              amount: 0,
             });
-
-            await this.service.updatePaymentIntentStatus({ invoice });
 
             return c.json(
               {
@@ -144,7 +156,6 @@ export class Handler {
               "x-content-hmac": headers["x-content-hmac"],
               "content-hmac": headers["content-hmac"],
             },
-            callback: this.service.updatePaymentIntentStatus,
           });
         }
       } else if (provider === "tiptoppay") {
@@ -157,7 +168,6 @@ export class Handler {
               "x-content-hmac": headers["x-content-hmac"],
               "content-hmac": headers["content-hmac"],
             },
-            callback: this.service.updatePaymentIntentStatus,
           });
         }
       } else if (provider === "dummy") {
@@ -168,14 +178,6 @@ export class Handler {
         result = await this.service.dummy({
           data: data["data"],
           action: "webhook",
-        });
-      } else if (provider === "paykeeper") {
-        result = await this.service.paykeeper({
-          data,
-          action: "webhook",
-          headers,
-          rawBody,
-          callback: this.service.updatePaymentIntentStatus,
         });
       } else if (provider === "telegram-star") {
         // Compared through the shared primitive rather than inline. A plain
@@ -191,7 +193,6 @@ export class Handler {
         result = await this.service.telegramStar({
           data,
           action: "webhook",
-          callback: this.service.updatePaymentIntentStatus,
         });
       }
 

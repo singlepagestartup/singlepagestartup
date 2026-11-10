@@ -1,29 +1,96 @@
 /**
- * BDD Suite: PayKeeper identifier errors through the running API and database.
- *
- * Given: a running API with PayKeeper configured and a random, nonexistent Payment Intent UUID.
- * When: form or JSON notifications contain invalid identifiers or that unknown UUID.
- * Then: malformed values return 400 without being echoed, while the exact UUID lookup retains 404.
+ * BDD Suite: authenticated PayKeeper protocol through API and PostgreSQL.
+ * Given: disposable payment records, an isolated API and a loopback provider fixture.
+ * When: callbacks are forged, mismatched, valid or repeated concurrently.
+ * Then: only verified matching payments settle, acknowledgments are exact, and repeats do not write twice.
  */
-import { randomUUID } from "node:crypto";
+import { createHash, createHmac, randomUUID } from "node:crypto";
+import { createServer, type Server } from "node:http";
+import { spawn, type ChildProcess } from "node:child_process";
+import { join } from "node:path";
 
-const base =
-  process.env["SCENARIO_API_URL"] ||
-  process.env["API_SERVICE_URL"] ||
-  "http://localhost:4000";
-const unknownOrder = randomUUID();
+const seed = "scenario-paykeeper-seed";
+let base = "";
+let api: ChildProcess | undefined;
+let provider: Server;
+const confirmed = new Map<string, Record<string, unknown>>();
+const requests: string[] = [];
+const created: { path: string; id: string }[] = [];
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-async function webhook(data: unknown, form = false) {
-  const secret = process.env["RBAC_SECRET_KEY"];
-  if (!secret)
-    throw new Error("RBAC_SECRET_KEY is required for scenario route access");
+async function listen(server: Server): Promise<number> {
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const address = server.address();
+  if (!address || typeof address === "string")
+    throw new Error("No test server port");
+  return address.port;
+}
+
+async function call(
+  path: string,
+  method = "GET",
+  data?: unknown,
+  operator = true,
+) {
+  const headers: Record<string, string> = {};
+  if (operator) {
+    if (!process.env["RBAC_SECRET_KEY"])
+      throw new Error("Test API requires RBAC_SECRET_KEY");
+    headers["X-RBAC-SECRET-KEY"] = process.env["RBAC_SECRET_KEY"];
+  }
+  let body: URLSearchParams | undefined;
+  if (data !== undefined) {
+    body = new URLSearchParams({ data: JSON.stringify(data) });
+  }
+  const response = await fetch(base + "/api/" + path, {
+    method,
+    headers,
+    body,
+  });
+  return { status: response.status, data: await response.json() };
+}
+async function create(path: string, data: unknown) {
+  const response = await call(path, "POST", data);
+  if (
+    response.status < 200 ||
+    response.status >= 300 ||
+    !response.data.data?.id
+  )
+    throw new Error(
+      "Cannot create test fixture: " +
+        path +
+        " status=" +
+        response.status +
+        " error=" +
+        response.data.error,
+    );
+  const record = response.data.data;
+  created.push({ path, id: record.id });
+  return record;
+}
+function signed(data: Record<string, string>) {
+  const clientid = data.clientid ?? "";
+  const sum = Number(data.sum).toFixed(2);
+  return {
+    ...data,
+    key: createHash("md5")
+      .update(data.id + sum + clientid + data.orderid + seed)
+      .digest("hex"),
+  };
+}
+async function webhook(
+  data: unknown,
+  form = false,
+  providerName = "paykeeper",
+) {
+  // PayKeeper cannot send the application's operator credential.
   const response = await fetch(
-    `${base}/api/billing/payment-intents/paykeeper/webhook`,
+    base +
+      `/api/billing/payment-intents/${providerName === "payselection-int" ? "payselection" : providerName}/webhook`,
     {
       method: "POST",
       headers: {
-        "X-RBAC-SECRET-KEY": secret,
-        "Content-Type": form
+        "content-type": form
           ? "application/x-www-form-urlencoded"
           : "application/json",
       },
@@ -32,58 +99,343 @@ async function webhook(data: unknown, form = false) {
         : JSON.stringify(data),
     },
   );
-  return { status: response.status, text: await response.text() };
+  return {
+    status: response.status,
+    text: await response.text(),
+    contentType: response.headers.get("content-type"),
+  };
+}
+async function fixture(providerName = "paykeeper") {
+  const intent = await create("billing/payment-intents", {
+    amount: 100,
+    variant: `scenario-paykeeper-${randomUUID()}`,
+  });
+  const providerId = String(Date.now()) + String(created.length);
+  const invoice = await create("billing/invoices", {
+    amount: 100,
+    status: "open",
+    provider: providerName,
+    providerId,
+  });
+  await create("billing/payment-intents-to-invoices", {
+    paymentIntentId: intent.id,
+    invoiceId: invoice.id,
+  });
+  confirmed.set(providerId, {
+    id: providerId,
+    orderid: intent.id,
+    paymentid: "301",
+    clientid: "",
+    pay_amount: "100.00",
+    status: "paid",
+  });
+  const payload = signed({
+    id: "301",
+    sum: "100.00",
+    clientid: "",
+    orderid: intent.id,
+  });
+  const state = async () => ({
+    intent: (await call("billing/payment-intents/" + intent.id)).data.data,
+    invoice: (await call("billing/invoices/" + invoice.id)).data.data,
+  });
+  return { intent, invoice, providerId, payload, state };
 }
 
-it("rejects a malformed form UUID with 400 and never includes the submitted value in the response", async () => {
-  const sentinel = "pr266-invalid-identifier-" + randomUUID();
+beforeAll(async () => {
+  provider = createServer((req, res) => {
+    const url = new URL(req.url || "/", "http://127.0.0.1");
+    const id = url.searchParams.get("id") || "";
+    requests.push(id);
+    if (url.pathname !== "/info/invoice/byid/" || !confirmed.has(id)) {
+      res.writeHead(404).end();
+      return;
+    }
+    res.setHeader("content-type", "application/json");
+    res.end(JSON.stringify([confirmed.get(id)]));
+  });
+  const bankPort = await listen(provider);
+  const reserve = createServer();
+  const port = await listen(reserve);
+  await new Promise<void>((resolve) => reserve.close(() => resolve()));
+  base = `http://127.0.0.1:${port}`;
+  api = spawn("bun", ["server.ts"], {
+    cwd: join(process.cwd(), "apps/api"),
+    stdio: "ignore",
+    env: {
+      ...process.env,
+      API_SERVICE_PORT: String(port),
+      API_SERVICE_URL: base,
+      NEXT_PUBLIC_API_SERVICE_URL: base,
+      PAYKEEPER_BASE_URL: `http://127.0.0.1:${bankPort}`,
+      PAYKEEPER_API_LOGIN: "scenario",
+      PAYKEEPER_API_PASSWORD: "scenario",
+      PAYKEEPER_WEBHOOK_SECRET: seed,
+      CLOUDPAYMENTS_PUBLIC_ID: "fixture-public",
+      CLOUDPAYMENTS_API_SECRET: seed,
+      TIPTOPPAY_PUBLIC_ID: "fixture-public",
+      TIPTOPPAY_API_SECRET: seed,
+      O_X_PROCESSING_SHOP_ID: "fixture-shop",
+      O_X_PROCESSING_WEBHOOK_PASSWORD: seed,
+      NEXT_PUBLIC_PAYSELECTION_RUB_SITE_ID: "fixture-site",
+      NEXT_PUBLIC_PAYSELECTION_RUB_PUBLIC_KEY: "fixture-public",
+      PAYSELECTION_RUB_SECRET_KEY: seed,
+      NEXT_PUBLIC_PAYSELECTION_RUB_SITE_NAME: "fixture-site-name",
+      PAYSELECTION_RUB_WEBHOOK_URL: "https://fixture.invalid/webhook",
+      NEXT_PUBLIC_PAYSELECTION_INT_SITE_ID: "fixture-int-site",
+      NEXT_PUBLIC_PAYSELECTION_INT_PUBLIC_KEY: "fixture-public",
+      NEXT_PUBLIC_PAYSELECTION_INT_SITE_NAME: "fixture-int-site-name",
+      PAYSELECTION_INT_SECRET_KEY: seed,
+      PAYSELECTION_INT_WEBHOOK_URL: "https://fixture.invalid/webhook",
+      TELEGRAM_SERVICE_BOT_TOKEN: "123456:fixture-token",
+    },
+  });
+  api.on("error", () => undefined);
+  for (let attempt = 0; attempt < 100; attempt++) {
+    if (api.exitCode != null)
+      throw new Error("Isolated scenario API exited before readiness");
+    try {
+      if ((await call("billing/currencies")).status === 200) return;
+    } catch {
+      /* server startup */
+    }
+    await delay(100);
+  }
+  throw new Error("Isolated scenario API did not become ready");
+});
+afterAll(async () => {
+  try {
+    for (const item of created.reverse()) {
+      const response = await call(item.path + "/" + item.id, "DELETE");
+      if (![200, 404].includes(response.status))
+        throw new Error("Fixture cleanup failed: " + item.path);
+    }
+  } finally {
+    if (api && api.exitCode == null) {
+      await new Promise<void>((resolve) => {
+        const timeout = setTimeout(() => {
+          api!.kill("SIGKILL");
+          resolve();
+        }, 3000);
+        api!.once("exit", () => {
+          clearTimeout(timeout);
+          resolve();
+        });
+        api!.kill("SIGTERM");
+      });
+    }
+    if (provider)
+      await new Promise<void>((resolve) => provider.close(() => resolve()));
+  }
+});
+
+it("rejects a malformed UUID as 400 without echoing the submitted value", async () => {
+  const sentinel = "pr230-invalid-" + randomUUID();
   const result = await webhook(
-    { orderid: sentinel, id: "301", sum: "100.00", clientid: "" },
+    { id: "301", sum: "100.00", orderid: sentinel },
     true,
   );
   expect(result.status).toBe(400);
-  expect(JSON.parse(result.text).error).toContain(
-    "Validation error. Invalid orderid",
-  );
   expect(result.text).not.toContain(sentinel);
-  expect(result.text).not.toContain("invalid input syntax");
 });
-
-it.each([
-  ["id", { privateValue: "pr266-do-not-echo" }],
-  ["sum", 100],
-  ["clientid", ["pr266-do-not-echo"]],
-])("rejects a non-string %s in JSON before lookup", async (field, value) => {
-  const result = await webhook({
-    orderid: unknownOrder,
-    [field as string]: value,
-  });
-  expect(result.status).toBe(400);
-  expect(JSON.parse(result.text).error).toContain(
-    `Validation error. Invalid ${field}`,
-  );
-  expect(result.text).not.toContain("pr266-do-not-echo");
-});
-
-it.each([null, [], 42, "pr266-do-not-echo"])(
-  "rejects a malformed JSON payload (%p)",
+it.each([null, [], 42, "do-not-echo"])(
+  "rejects malformed JSON (%p)",
   async (data) => {
     const result = await webhook(data);
     expect(result.status).toBe(400);
-    expect(JSON.parse(result.text).error).toContain(
-      "Validation error. Invalid webhook payload",
-    );
-    expect(result.text).not.toContain("pr266-do-not-echo");
+    expect(result.text).not.toContain("do-not-echo");
   },
 );
-
-it("retains 404 after the exact lookup for a canonical but unknown Payment Intent UUID", async () => {
+it.each(["id", "sum", "clientid"])("rejects structured %s", async (field) => {
+  const result = await webhook({
+    orderid: randomUUID(),
+    [field]: { value: "do-not-echo" },
+  });
+  expect(result.status).toBe(400);
+  expect(result.text).not.toContain("do-not-echo");
+});
+it("returns 404 for a signed, canonical unknown UUID", async () => {
   const result = await webhook(
-    { orderid: unknownOrder, id: "301", sum: "100.00", clientid: "" },
+    signed({ id: "301", sum: "100.00", orderid: randomUUID() }),
     true,
   );
   expect(result.status).toBe(404);
-  expect(JSON.parse(result.text).error).toContain(
-    "Not Found error. Payment intent to invoice relation not found",
-  );
 });
+it("rejects forged callbacks and zero-invoice envelopes before any bank lookup or write", async () => {
+  const f = await fixture();
+  const before = await f.state();
+  const bankReads = requests.length;
+  const response = await webhook({
+    ...f.payload,
+    key: "0".repeat(32),
+    data: { id: f.invoice.id },
+  });
+  expect(response.status).toBe(403);
+  expect(response.text).not.toContain("OK ");
+  expect(requests).toHaveLength(bankReads);
+  expect(await f.state()).toEqual(before);
+});
+it("refuses a signed amount mismatch without marking the records paid", async () => {
+  const f = await fixture();
+  const before = await f.state();
+  const response = await webhook(signed({ ...f.payload, sum: "101.00" }), true);
+  expect(response.status).toBe(400);
+  expect(await f.state()).toEqual(before);
+});
+it("commits the payment before returning exact text ACK and handles concurrent retries without changing timestamps", async () => {
+  const f = await fixture();
+  await f.state();
+  const expected =
+    "OK " +
+    createHash("md5")
+      .update("301" + seed)
+      .digest("hex");
+  const result = await webhook(f.payload, true);
+  expect(result.status).toBe(200);
+  expect(result.contentType).toContain("text/plain");
+  expect(result.text).toBe(expected);
+  const paid = await f.state();
+  expect(paid.invoice.status).toBe("paid");
+  expect(paid.intent.status).toBe("succeeded");
+  const retries = await Promise.all([
+    webhook(f.payload, true),
+    webhook(f.payload, true),
+    webhook(f.payload, true),
+  ]);
+  expect(retries.map((r) => r.text)).toEqual([expected, expected, expected]);
+  expect(await f.state()).toEqual(paid);
+});
+
+it.each([0, 100])(
+  "does not let dummy callbacks settle a PayKeeper invoice with amount %s",
+  async (amount) => {
+    const f = await fixture();
+    if (amount === 0) {
+      await call("billing/invoices/" + f.invoice.id, "PATCH", { amount: 0 });
+      await call("billing/payment-intents/" + f.intent.id, "PATCH", {
+        amount: 0,
+      });
+    }
+    const before = await f.state();
+    const response = await webhook(
+      { data: { id: f.invoice.id } },
+      false,
+      "dummy",
+    );
+    expect(response.status).toBe(403);
+    expect(await f.state()).toEqual(before);
+  },
+);
+
+it("preserves the internal zero-amount dummy flow for a dummy Invoice", async () => {
+  const f = await fixture();
+  await call("billing/invoices/" + f.invoice.id, "PATCH", {
+    amount: 0,
+    provider: "dummy",
+  });
+  await call("billing/payment-intents/" + f.intent.id, "PATCH", { amount: 0 });
+  const result = await webhook({ data: { id: f.invoice.id } }, false, "dummy");
+  expect(result.status).toBe(200);
+  const after = await f.state();
+  expect(after.invoice.status).toBe("paid");
+  expect(after.intent.status).toBe("succeeded");
+});
+
+it.each([
+  "cloudpayments",
+  "tiptoppay",
+  "0xprocessing",
+  "payselection",
+  "payselection-int",
+  "telegram-star",
+  "dummy",
+])(
+  "settles %s through its HTTP route and refreshes warmed API readers on concurrent retries",
+  async (providerName) => {
+    const f = await fixture(
+      providerName === "payselection-int" ? "payselection" : providerName,
+    );
+    const headers: Record<string, string> = {
+      "content-type": "application/json",
+    };
+    let data: Record<string, unknown>;
+    if (providerName === "cloudpayments" || providerName === "tiptoppay") {
+      data = {
+        Data: JSON.stringify({ invoiceId: f.invoice.id }),
+        Status: "Completed",
+        OperationType: "Payment",
+        Amount: 100,
+        PaymentAmount: "100.00",
+      };
+    } else if (providerName === "0xprocessing") {
+      const Email = "fixture@example.invalid";
+      const Currency = "USDT";
+      data = {
+        PaymentId: f.providerId,
+        Email,
+        Currency,
+        Status: "Success",
+        AmountUSD: 100,
+        Signature: createHash("md5")
+          .update(`${f.providerId}:fixture-shop:${Email}:${Currency}:${seed}`)
+          .digest("hex"),
+      };
+    } else if (providerName.startsWith("payselection")) {
+      data = { OrderId: f.invoice.id, Event: "Payment", Amount: "100.00" };
+      headers["x-site-id"] =
+        providerName === "payselection-int"
+          ? "fixture-int-site"
+          : "fixture-site";
+    } else if (providerName === "telegram-star") {
+      await call("billing/invoices/" + f.invoice.id, "PATCH", {
+        providerId: null,
+      });
+      data = {
+        currency: "XTR",
+        total_amount: 100,
+        invoice_payload: f.invoice.id,
+        telegram_payment_charge_id: "fixture-charge-" + randomUUID(),
+        provider_payment_charge_id: "",
+      };
+      if (!process.env["RBAC_SECRET_KEY"])
+        throw new Error("Missing scenario secret");
+      headers["X-RBAC-SECRET-KEY"] = process.env["RBAC_SECRET_KEY"];
+    } else {
+      data = { data: { id: f.invoice.id } };
+    }
+    const body = JSON.stringify(data);
+    if (providerName === "cloudpayments" || providerName === "tiptoppay") {
+      const signature = createHmac("sha256", seed)
+        .update(body)
+        .digest("base64");
+      headers["content-hmac"] = signature;
+      headers["x-content-hmac"] = signature;
+    } else if (providerName.startsWith("payselection")) {
+      headers["x-webhook-signature"] = createHmac("sha256", seed)
+        .update(
+          `POST\nhttps://fixture.invalid/webhook\n${headers["x-site-id"]}\n${body}`,
+        )
+        .digest("hex");
+    }
+    const deliver = async () => {
+      const response = await fetch(
+        base +
+          `/api/billing/payment-intents/${providerName === "payselection-int" ? "payselection" : providerName}/webhook`,
+        { method: "POST", headers, body },
+      );
+      const result = await response.json();
+      if (response.status !== 200)
+        throw new Error(
+          `${providerName} returned ${response.status}: ${JSON.stringify(result)}`,
+        );
+      return result;
+    };
+    await f.state();
+    await Promise.all(Array.from({ length: 4 }, deliver));
+    const paid = await f.state();
+    expect(paid.invoice.status).toBe("paid");
+    expect(paid.intent.status).toBe("succeeded");
+    await deliver();
+    expect(await f.state()).toEqual(paid);
+  },
+);

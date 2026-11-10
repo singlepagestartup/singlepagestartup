@@ -1,4 +1,5 @@
 import "reflect-metadata";
+import type { IExecuteProps as ISettlementProps } from "./settlement";
 import { injectable } from "inversify";
 import { Table } from "@sps/billing/models/payment-intent/backend/repository/database";
 import { RBAC_SECRET_KEY, TELEGRAM_SERVICE_BOT_TOKEN } from "@sps/shared-utils";
@@ -26,16 +27,15 @@ export type IServiceProceedProps =
         telegram_payment_charge_id: string;
         provider_payment_charge_id: string;
       };
-      callback: ({
-        invoice,
-      }: {
-        invoice: IInvoice;
-      }) => Promise<{ ok: boolean }>;
     };
+
+interface IConstructorProps {
+  settle: (props: ISettlementProps) => Promise<IInvoice>;
+}
 
 @injectable()
 export class Service {
-  constructor() {}
+  constructor(private readonly dependencies: IConstructorProps) {}
 
   async proceed(props: IServiceProceedProps) {
     if (!RBAC_SECRET_KEY) {
@@ -121,39 +121,12 @@ export class Service {
         data: props.data,
       });
 
-      if (invoice.status === "paid") {
-        if (
-          invoice.providerId &&
-          invoice.providerId !== props.data.telegram_payment_charge_id
-        ) {
-          throw new Error(
-            "Validation error. Invoice is already paid by another Telegram charge",
-          );
-        }
-
-        return { code: 0 };
-      }
-
-      const updatedInvoice = await invoiceApi.update({
-        id: invoice.id,
-        data: {
-          ...invoice,
-          providerId: props.data.telegram_payment_charge_id,
-          amount: props.data.total_amount,
-          status: "paid",
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
+      await this.dependencies.settle({
+        invoiceId: invoice.id,
+        provider: "telegram-star",
+        amount: props.data.total_amount,
+        settledProviderId: props.data.telegram_payment_charge_id,
       });
-
-      if (!updatedInvoice) {
-        throw new Error("Not Found error. Invoice not found");
-      }
-
-      await props.callback({ invoice: updatedInvoice });
 
       return { code: 0 };
     }

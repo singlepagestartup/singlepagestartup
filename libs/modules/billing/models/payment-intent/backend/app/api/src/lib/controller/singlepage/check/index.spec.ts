@@ -9,8 +9,8 @@
 const mockPaymentIntentUpdate = jest.fn();
 
 jest.mock("@sps/shared-utils", () => ({
-  CLOUDPAYMENTS_API_SECRET: "",
-  CLOUDPAYMENTS_PUBLIC_ID: "",
+  CLOUDPAYMENTS_API_SECRET: "fixture-secret",
+  CLOUDPAYMENTS_PUBLIC_ID: "fixture-public",
   RBAC_SECRET_KEY: "test-rbac-secret",
 }));
 
@@ -61,6 +61,7 @@ describe("Given: a payment intent has no invoice relation yet", () => {
     };
     const service = {
       findById: jest.fn().mockResolvedValue(paymentIntent),
+      failUninitializedPaymentIntent: mockPaymentIntentUpdate,
       billingModule: {
         paymentIntentsToInvoices: {
           find: jest.fn().mockResolvedValue([]),
@@ -133,14 +134,85 @@ describe("Given: a payment intent has no invoice relation yet", () => {
     ).resolves.toEqual({
       data: failedPaymentIntent,
     });
-    expect(mockPaymentIntentUpdate).toHaveBeenCalledWith({
-      id: paymentIntent.id,
-      data: failedPaymentIntent,
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": "test-rbac-secret",
-        },
-      },
-    });
+    expect(mockPaymentIntentUpdate).toHaveBeenCalledWith(
+      paymentIntent.id,
+      new Date(Date.now() - PAYMENT_INTENT_INITIALIZATION_GRACE_PERIOD_MS),
+    );
   });
+});
+
+describe("CloudPayments reconciliation", () => {
+  afterEach(() => jest.restoreAllMocks());
+
+  it.each(["Completed", "Declined", "Authorized"])(
+    "only settles a completed incoming transaction (%s)",
+    async (status) => {
+      const entity = {
+        id: "intent-1",
+        status: "requires_payment_method",
+        amount: 100,
+      };
+      const invoice = {
+        id: "invoice-1",
+        provider: "cloudpayments",
+        providerId: "456",
+        amount: 100,
+        status: "open",
+        createdAt: new Date(Date.now() - 2 * 86400000),
+      };
+      const service = {
+        findById: jest.fn(async () => entity),
+        settlePayment: jest.fn(async () => {
+          entity.status = "succeeded";
+          return invoice;
+        }),
+        expireInvoice: jest.fn(),
+        billingModule: {
+          paymentIntentsToInvoices: {
+            find: jest.fn().mockResolvedValue([{ invoiceId: invoice.id }]),
+          },
+          invoice: { find: jest.fn().mockResolvedValue([invoice]) },
+        },
+      };
+      jest.spyOn(globalThis, "fetch").mockResolvedValue({
+        json: async () => ({
+          Model: [
+            {
+              JsonData: JSON.stringify({ invoiceId: invoice.id }),
+              Status: status,
+              Type: 0,
+              Refunded: false,
+              Amount: 100,
+            },
+          ],
+        }),
+      } as any);
+      const context = {
+        req: {
+          param: () => entity.id,
+          parseBody: async () => ({ data: "{}" }),
+        },
+        json: (value: unknown) => value,
+      };
+      const result = await new Handler(service as any).execute(
+        context as any,
+        undefined,
+      );
+      if (status === "Completed") {
+        expect(service.settlePayment).toHaveBeenCalledWith({
+          invoiceId: invoice.id,
+          provider: "cloudpayments",
+          providerId: "456",
+          amount: 100,
+        });
+        expect(service.expireInvoice).not.toHaveBeenCalled();
+        expect(result).toEqual({
+          data: expect.objectContaining({ status: "succeeded" }),
+        });
+      } else {
+        expect(service.settlePayment).not.toHaveBeenCalled();
+        expect(service.expireInvoice).toHaveBeenCalled();
+      }
+    },
+  );
 });
