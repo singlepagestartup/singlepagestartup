@@ -1,6 +1,6 @@
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { deliveryCommand } from "@sps/broadcast/models/message/sdk/model";
+import { deliveryCommand } from "@sps/broadcast/models/channel/sdk/model";
 import { getHttpErrorType, rbacSecretMatches } from "@sps/backend-utils";
 import type { Service } from "../../service";
 

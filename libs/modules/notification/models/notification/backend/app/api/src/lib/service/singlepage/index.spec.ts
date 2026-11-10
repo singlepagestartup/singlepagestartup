@@ -584,4 +584,42 @@ describe("notification send service", () => {
     ).rejects.toThrow("not accepted");
     expect(service.update).not.toHaveBeenCalled();
   });
+  it.each([
+    {
+      method: "sendMessage",
+      props: ["x".repeat(4001), { parse_mode: "HTML" }],
+    },
+    { method: "sendPhoto", props: ["https://example.invalid/image.png"] },
+    { method: "sendMessage", props: ["", { parse_mode: "HTML" }] },
+  ])(
+    "keeps custom bounded templates to one physical text message",
+    async (rendered) => {
+      const notification = createNotification({
+        reciever: "12345",
+        status: "sending",
+      });
+      const service = Object.assign(Object.create(Service.prototype), {
+        findById: jest.fn().mockResolvedValue(notification),
+        update: jest.fn(),
+      }) as Service;
+      (templateApi.render as jest.Mock).mockResolvedValue(
+        JSON.stringify(rendered),
+      );
+      await expect(
+        service.provider({
+          id: notification.id,
+          method: "telegram",
+          provider: "Telegram",
+          template: {
+            id: "template-id",
+            variant: "project-security-telegram",
+          } as any,
+          singleMessage: true,
+        }),
+      ).rejects.toThrow("Bounded delivery requires one text message");
+      expect(mockTelegramSendMessage).not.toHaveBeenCalled();
+      expect(mockTelegramSendDocument).not.toHaveBeenCalled();
+      expect(service.update).not.toHaveBeenCalled();
+    },
+  );
 });

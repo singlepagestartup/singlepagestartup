@@ -2,11 +2,11 @@ import { randomUUID } from "node:crypto";
 import type {
   IEnqueueMessage,
   IDeliveryOwner,
-  Repository,
-} from "../../repository";
+  DeliveryRepository,
+} from "../../../repository/delivery";
 
 export type IDeliveryState = Awaited<
-  ReturnType<Repository["deliveryStates"]>
+  ReturnType<DeliveryRepository["deliveryStates"]>
 >[number];
 export interface ISelection {
   key: string;
@@ -25,7 +25,7 @@ interface IReserve {
 }
 
 export class DeliveryQueue {
-  constructor(private readonly repository: Repository) {}
+  constructor(private readonly repository: DeliveryRepository) {}
 
   async publish(message: IEnqueueMessage) {
     if (!message.key.trim()) {

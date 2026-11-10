@@ -29,6 +29,7 @@ describe("security summary configuration", () => {
         {
           slug: securityNotificationTemplateSlugs.email,
           variant: "content-email",
+          title: "Security",
           content: "",
         },
       ],
@@ -49,9 +50,8 @@ describe("security summary configuration", () => {
         {} as any,
         {} as any,
         {
-          topic: { find: async () => [{ id: "topic" }] },
+          topic: { find: async () => [{ id: "topic" }], sendBounded },
           template: { find: async () => templates },
-          notification: { sendBounded },
         } as any,
         { channel: { find: findChannel } } as any,
       );
@@ -84,5 +84,35 @@ describe("security summary configuration", () => {
     );
     await worker.execute();
     expect(findTemplates).not.toHaveBeenCalled();
+  });
+  it("selects project Host components without requiring saved content", async () => {
+    const templates = [
+      {
+        slug: securityNotificationTemplateSlugs.email,
+        variant: "project-security-email",
+        title: "Security",
+        content: null,
+      },
+      {
+        slug: securityNotificationTemplateSlugs.telegram,
+        variant: "project-security-telegram",
+        title: "Security",
+        content: null,
+      },
+    ];
+    const worker = new Service(
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {
+        topic: { find: async () => [{ id: "topic" }] },
+        template: { find: async () => templates },
+      } as any,
+      {} as any,
+    );
+    const configuration = await (worker as any).configuration();
+    expect(configuration.templates.email).toBe(templates[0]);
+    expect(configuration.templates.telegram).toBe(templates[1]);
   });
 });

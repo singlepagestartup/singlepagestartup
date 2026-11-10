@@ -14,6 +14,7 @@ import {
 } from "@sps/shared-utils";
 import {
   SecurityEvents,
+  getNotificationTemplateChannel,
   logger,
   type ISecuritySummary,
 } from "@sps/backend-utils";
@@ -24,7 +25,10 @@ import {
   type INotificationModule,
 } from "../../../di";
 
-import type { IModel as INotificationTemplate } from "@sps/notification/models/template/sdk/model";
+import {
+  renderRequestSchema,
+  type IModel as INotificationTemplate,
+} from "@sps/notification/models/template/sdk/model";
 
 interface INotificationConfiguration {
   topicId: string;
@@ -100,7 +104,7 @@ export class Service {
       return;
     }
     const channel = await this.channel();
-    const queue = this.broadcast.message.queue;
+    const queue = this.broadcast.channel.queue;
     const key = "security-summary";
     const existing = await queue.states(channel.id, [key]);
     if (!existing.length) {
@@ -363,10 +367,17 @@ export class Service {
     };
     for (const method of ["telegram", "email"] as const) {
       const template = templates?.find((item: INotificationTemplate) => {
+        const rendering = renderRequestSchema.safeParse({
+          variant: item.variant,
+          template: {
+            title: item.title ?? null,
+            content: item.content ?? null,
+          },
+        });
         return (
+          rendering.success &&
           item.slug === securityNotificationTemplateSlugs[method] &&
-          item.variant === `content-${method}` &&
-          Boolean(item.content?.trim()) &&
+          getNotificationTemplateChannel(item.variant) === method &&
           Boolean(item.title?.trim())
         );
       });
@@ -405,7 +416,7 @@ export class Service {
       if (!receiver || !template) {
         continue;
       }
-      const result = await this.notifications.notification.sendBounded({
+      const result = await this.notifications.topic.sendBounded({
         key: incidentId,
         recipientKey: recipient.subjectId,
         method,

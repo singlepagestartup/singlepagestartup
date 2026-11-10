@@ -1,6 +1,5 @@
 import { Container, ContainerModule, interfaces } from "inversify";
 import {
-  CRUDService,
   DI,
   ExceptionFilter,
   type IExceptionFilter,
@@ -13,8 +12,6 @@ import { App } from "./app";
 import { TopicDI, type INotificationModule } from "./di";
 import type { Service as NotificationService } from "@sps/notification/models/notification/backend/app/api/src/lib/service";
 import { app as notificationApp } from "@sps/notification/models/notification/backend/app/api";
-import { Repository as NotificationTopicsToNotificationsRepository } from "@sps/notification/relations/topics-to-notifications/backend/app/api/src/lib/repository";
-import { Configuration as NotificationTopicsToNotificationsConfiguration } from "@sps/notification/relations/topics-to-notifications/backend/app/api/src/lib/configuration";
 
 const bindings = new ContainerModule((bind: interfaces.Bind) => {
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
@@ -27,11 +24,6 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
     .toDynamicValue(() => {
       return {
         notification: notificationApp.controller.service as NotificationService,
-        topicsToNotifications: new CRUDService<any>(
-          new NotificationTopicsToNotificationsRepository(
-            new NotificationTopicsToNotificationsConfiguration(),
-          ),
-        ),
       };
     })
     .inSingletonScope();

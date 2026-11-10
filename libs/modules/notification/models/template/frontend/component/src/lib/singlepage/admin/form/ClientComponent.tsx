@@ -85,7 +85,7 @@ export function Component(props: IComponentPropsExtended) {
         <FormField
           ui="shadcn"
           type="textarea"
-          label="Notification content (content-email / content-telegram)"
+          label="Notification content"
           name="content"
           form={form}
         />

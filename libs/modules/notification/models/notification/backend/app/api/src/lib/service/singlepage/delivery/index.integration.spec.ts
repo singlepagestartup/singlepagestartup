@@ -1,10 +1,10 @@
+import { DeliveryRepository } from "@sps/broadcast/models/channel/backend/app/api/src/lib/repository/delivery";
+import { DeliveryQueue } from "@sps/broadcast/models/channel/backend/app/api/src/lib/service/singlepage/delivery-queue";
 import { randomUUID, createHash } from "node:crypto";
 import { getPostgresClient } from "@sps/shared-backend-database-config";
 import { CRUDService } from "@sps/shared-backend-api";
 import { DeliveryDeferredError } from "@sps/backend-utils";
-import { Repository as MessageRepository } from "@sps/broadcast/models/message/backend/app/api/src/lib/repository";
 import { Configuration as MessageConfiguration } from "@sps/broadcast/models/message/backend/app/api/src/lib/configuration";
-import { Service as MessageService } from "@sps/broadcast/models/message/backend/app/api/src/lib/service";
 import { Repository as ChannelRepository } from "@sps/broadcast/models/channel/backend/app/api/src/lib/repository";
 import { Configuration as ChannelConfiguration } from "@sps/broadcast/models/channel/backend/app/api/src/lib/configuration";
 import { Repository } from "../../../repository";
@@ -41,21 +41,20 @@ describe("Notification delivery on Broadcast", () => {
   const rateKey = `telegram:${createHash("sha256").update(mockBotId).digest("hex")}`;
   const channelId = randomUUID();
   const channelRepository = new ChannelRepository(new ChannelConfiguration());
-  const message = new MessageService(
-    new MessageRepository(new MessageConfiguration()),
+  const queue = new DeliveryQueue(
+    new DeliveryRepository(new MessageConfiguration()),
   );
   const repository = new Repository(new Configuration());
   const notifications = new NotificationService(repository, {
-    channel: new CRUDService(channelRepository) as any,
-    message,
+    channel: Object.assign(new CRUDService(channelRepository), { queue }),
   });
   const channel = {
+    queue,
     find: jest.fn(async () => [{ id: channelId }]),
     create: jest.fn(),
   };
   const ids: string[] = [];
-  const worker = () =>
-    new Service(notifications, { channel: channel as any, message });
+  const worker = () => new Service(notifications, { channel: channel as any });
   beforeAll(async () => {
     const client = (redis.client as any).client;
     if (client.status !== "ready") {
@@ -89,7 +88,7 @@ describe("Notification delivery on Broadcast", () => {
     return id;
   }
   async function ready(id: string) {
-    const [state] = await message.queue.states(channelId, [id]);
+    const [state] = await queue.states(channelId, [id]);
     const progress = JSON.parse(state.payload);
     progress.nextAt = 0;
     await sql`update sps_bt_message set payload=${JSON.stringify(progress)} where id in (select me_id from sps_bt_cs_to_ms_34z where cl_id=${channelId} and delivery_key=${id})`;
@@ -135,7 +134,7 @@ describe("Notification delivery on Broadcast", () => {
     );
     expect(attempt).toHaveBeenCalledTimes(1);
     expect(transport).toHaveBeenCalledTimes(2);
-    const [state] = await message.queue.states(channelId, [id]);
+    const [state] = await queue.states(channelId, [id]);
     expect(state.payload).not.toContain("must not be stored");
     expect(JSON.parse(state.payload).failures).toBe(0);
     await worker().execute(id);
@@ -191,7 +190,7 @@ describe("Notification delivery on Broadcast", () => {
     expect(resumed?.status).toBe("sent");
     expect(calls).toBe(4);
     expect(resumed?.sourceSystemId).toBe("4");
-    const [state] = await message.queue.states(channelId, [id]);
+    const [state] = await queue.states(channelId, [id]);
     const progress = JSON.parse(state.payload);
     expect(progress.failures).toBe(0);
     expect(Object.keys(progress.parts)).toHaveLength(3);
@@ -276,14 +275,14 @@ describe("Notification delivery on Broadcast", () => {
     const expired = randomUUID();
     const active = randomUUID();
     for (const key of [expired, active]) {
-      await message.queue.publish({
+      await queue.publish({
         channelId,
         key,
         payload: "{}",
         announce: false,
       });
     }
-    await message.queue.reserve({
+    await queue.reserve({
       channelId,
       concurrency: 10,
       leaseSeconds: 120,
@@ -294,21 +293,21 @@ describe("Notification delivery on Broadcast", () => {
     });
     await sql`update sps_bt_cs_to_ms_34z set created_at=clock_timestamp()-interval '3 days' where cl_id=${channelId} and delivery_key in (${expired}, ${active})`;
     await worker().cleanup();
-    expect(await message.queue.states(channelId, [expired])).toHaveLength(0);
-    expect(await message.queue.states(channelId, [active])).toHaveLength(1);
+    expect(await queue.states(channelId, [expired])).toHaveLength(0);
+    expect(await queue.states(channelId, [active])).toHaveLength(1);
     // Release this fixture so the next test can reserve its single job.
     await sql`update sps_bt_cs_to_ms_34z set finished_at=clock_timestamp(),lease_until=null where cl_id=${channelId} and delivery_key=${active}`;
   });
 
   it("does not let an expired lease overwrite another consumer checkpoint", async () => {
     const id = randomUUID();
-    await message.queue.publish({
+    await queue.publish({
       channelId,
       key: id,
       payload: "{}",
       announce: false,
     });
-    const jobs = await message.queue.reserve({
+    const jobs = await queue.reserve({
       channelId,
       concurrency: 1,
       leaseSeconds: 120,
@@ -318,11 +317,11 @@ describe("Notification delivery on Broadcast", () => {
       },
     });
     const job = jobs[0];
-    expect(await message.queue.start(job)).toBe(true);
-    expect(await message.queue.checkpoint(job, '{"part":1}')).toBe(true);
+    expect(await queue.start(job)).toBe(true);
+    expect(await queue.checkpoint(job, '{"part":1}')).toBe(true);
     await sql`update sps_bt_cs_to_ms_34z set lease_until=clock_timestamp()-interval '1 second' where me_id=${job.id}`;
-    expect(await message.queue.checkpoint(job, '{"part":2}')).toBe(false);
-    const [state] = await message.queue.states(channelId, [id]);
+    expect(await queue.checkpoint(job, '{"part":2}')).toBe(false);
+    const [state] = await queue.states(channelId, [id]);
     expect(state.payload).toBe('{"part":1}');
   });
 });

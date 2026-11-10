@@ -1,3 +1,9 @@
+import { Repository as MessageRepository } from "@sps/broadcast/models/message/backend/app/api/src/lib/repository";
+import { Service as TopicService } from "@sps/notification/models/topic/backend/app/api/src/lib/service";
+import { Repository as TopicRepository } from "@sps/notification/models/topic/backend/app/api/src/lib/repository";
+import { Configuration as TopicConfiguration } from "@sps/notification/models/topic/backend/app/api/src/lib/configuration";
+import { DeliveryRepository } from "@sps/broadcast/models/channel/backend/app/api/src/lib/repository/delivery";
+import { DeliveryQueue } from "@sps/broadcast/models/channel/backend/app/api/src/lib/service/singlepage/delivery-queue";
 import type { IModel as ITemplate } from "@sps/notification/models/template/sdk/model";
 import { randomUUID } from "node:crypto";
 import { Hono } from "hono";
@@ -9,9 +15,7 @@ import {
   type IAtomicStore,
 } from "@sps/backend-utils";
 import { getPostgresClient } from "@sps/shared-backend-database-config";
-import { Repository as MessageRepository } from "@sps/broadcast/models/message/backend/app/api/src/lib/repository";
 import { Configuration as MessageConfiguration } from "@sps/broadcast/models/message/backend/app/api/src/lib/configuration";
-import { Service as MessageService } from "@sps/broadcast/models/message/backend/app/api/src/lib/service/singlepage";
 import { Repository as ChannelRepository } from "@sps/broadcast/models/channel/backend/app/api/src/lib/repository";
 import { Configuration as ChannelConfiguration } from "@sps/broadcast/models/channel/backend/app/api/src/lib/configuration";
 import { Repository as NotificationRepository } from "@sps/notification/models/notification/backend/app/api/src/lib/repository";
@@ -57,6 +61,8 @@ jest.mock("@sps/shared-third-parties", () => ({
 
 // Explicit integration run only, against local PostgreSQL and Redis. All
 // notification transports are replaced; no messages leave this test process.
+// Host HTTP is stubbed below so this suite needs only PostgreSQL and Redis.
+// Host route suites and the live API → Host smoke check cover presentation.
 describe("Security summaries and password limits with real storage", () => {
   const sql = getPostgresClient();
   const redis = new RedisProvider();
@@ -66,16 +72,19 @@ describe("Security summaries and password limits with real storage", () => {
   const subjectId = randomUUID();
   const savedNotifications = new Set<string>();
   const channelRepository = new ChannelRepository(new ChannelConfiguration());
-  const messages = new MessageService(
-    new MessageRepository(new MessageConfiguration()),
+  const queue = new DeliveryQueue(
+    new DeliveryRepository(new MessageConfiguration()),
   );
   const notificationRepository = new NotificationRepository(
     new NotificationConfiguration(),
   );
   const notification = new NotificationService(notificationRepository, {
-    channel: channelRepository as any,
-    message: messages,
+    channel: { queue } as any,
   });
+  const topic = new TopicService(
+    new TopicRepository(new TopicConfiguration()),
+    { notification } as any,
+  );
   const topicId = randomUUID();
   const telegramTemplateId = randomUUID();
   const emailTemplateId = randomUUID();
@@ -108,6 +117,21 @@ describe("Security summaries and password limits with real storage", () => {
     ]) {
       await sql`insert into sps_nn_template(id, slug, title, admin_title, variant, content) values (${id}, ${id}, 'Configured title', 'Test', ${"content-" + method}, 'Configured {{project}}: {{counts.password-failed}}')`;
     }
+    jest
+      .spyOn(templateService as any, "fetchRenderedTemplate")
+      .mockImplementation(async (...args: unknown[]) => {
+        const { body, url } = args[0] as {
+          body: { template: { content: string } };
+          url: string;
+        };
+        if (url.endsWith("/api/telegram-generator")) {
+          return JSON.stringify({
+            method: "sendMessage",
+            props: [body.template.content, { parse_mode: "HTML" }],
+          });
+        }
+        return "<html><body>" + body.template.content + "</body></html>";
+      });
     jest.spyOn(templateApi, "render").mockImplementation(async (props) => {
       const type = props.id === emailTemplateId ? "email" : "telegram";
       return templateService.render({
@@ -291,7 +315,7 @@ describe("Security summaries and password limits with real storage", () => {
     };
     const links = { find: jest.fn(async () => [{ identityId: "identity" }]) };
     const sendBounded = jest.fn(async (props) => {
-      const result = await notification.sendBounded(props);
+      const result = await topic.sendBounded(props);
       savedNotifications.add(result.id);
       return result;
     });
@@ -302,8 +326,7 @@ describe("Security summaries and password limits with real storage", () => {
         links as any,
         identities as any,
         {
-          notification: { sendBounded },
-          topic: { find: async () => [{ id: topicId }] },
+          topic: { find: async () => [{ id: topicId }], sendBounded },
           template: {
             find: async () => {
               const templates: ITemplate[] = [];
@@ -325,8 +348,7 @@ describe("Security summaries and password limits with real storage", () => {
           },
         } as any,
         {
-          channel: { find: async () => [{ id: channelId }] },
-          message: messages,
+          channel: { find: async () => [{ id: channelId }], queue },
         } as any,
       );
     await Promise.all(
@@ -340,14 +362,17 @@ describe("Security summaries and password limits with real storage", () => {
     ]);
     await createWorker().execute();
     expect(deliver).toHaveBeenCalledTimes(2);
-    const [state] = await messages.queue.states(channelId, [
-      "security-summary",
-    ]);
+    const [state] = await queue.states(channelId, ["security-summary"]);
     expect(JSON.parse(state.payload).complete).toBe(true);
     const rows =
       await sql`select me_id from sps_bt_cs_to_ms_34z where cl_id=${channelId}`;
     expect(rows).toHaveLength(1);
-    expect(await messages.findById({ id: rows[0].me_id })).toBeFalsy();
+    expect(
+      await new MessageRepository(new MessageConfiguration()).findFirstByField(
+        "id",
+        rows[0].me_id,
+      ),
+    ).toBeFalsy();
     for (const id of savedNotifications) {
       const saved = await notification.findById({ id });
       expect(saved?.status).toBe("sent");
@@ -388,9 +413,7 @@ describe("Security summaries and password limits with real storage", () => {
       await createWorker().execute();
     }
     expect(deliver.mock.calls.length - notificationCallsBefore).toBe(3);
-    const [failed] = await messages.queue.states(channelId, [
-      "security-summary",
-    ]);
+    const [failed] = await queue.states(channelId, ["security-summary"]);
     expect(JSON.parse(failed.payload).attempts).toBe(3);
     expect(JSON.parse(failed.payload).complete).toBe(false);
     expect(
@@ -405,12 +428,10 @@ describe("Security summaries and password limits with real storage", () => {
     assignments.find.mockResolvedValue([]);
     await createWorker().execute();
     expect(deliver.mock.calls.length - notificationCallsBefore).toBe(3);
-    const [newest] = await messages.queue.states(channelId, [
-      "security-summary",
-    ]);
+    const [newest] = await queue.states(channelId, ["security-summary"]);
     clock.mockReturnValue(nextTime);
     await createWorker().execute();
-    const [afterDelayedWorker] = await messages.queue.states(channelId, [
+    const [afterDelayedWorker] = await queue.states(channelId, [
       "security-summary",
     ]);
     expect(afterDelayedWorker.payload).toBe(newest.payload);

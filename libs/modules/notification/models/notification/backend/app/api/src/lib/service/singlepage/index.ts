@@ -1,10 +1,6 @@
 import { NotificationDI, type IBroadcastModule } from "../../di";
 import { Service as Delivery, type IDeliveryProgress } from "./delivery";
 import { Repository } from "../../repository";
-import {
-  Service as BoundedDelivery,
-  type ISendBoundedNotification,
-} from "./bounded-delivery";
 import "reflect-metadata";
 import { readFile } from "node:fs/promises";
 import { join, normalize } from "node:path";
@@ -23,7 +19,11 @@ import { api as templateApi } from "@sps/notification/models/template/sdk/server
 import { IModel as ITemplate } from "@sps/notification/models/template/sdk/model";
 import { InputFile } from "grammy";
 import { InlineKeyboardButton } from "@grammyjs/types";
-import { telegramMarkdownFormatter, logger } from "@sps/backend-utils";
+import {
+  telegramMarkdownFormatter,
+  logger,
+  getNotificationTemplateChannel,
+} from "@sps/backend-utils";
 import { IModel } from "@sps/notification/models/notification/sdk/model";
 
 type INotificationAttachment = NonNullable<IModel["attachments"]>[number];
@@ -39,8 +39,21 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     super(repository);
   }
 
-  async sendBounded(props: ISendBoundedNotification) {
-    return new BoundedDelivery(this).execute(props);
+  async updateDelivery(props: {
+    id: string;
+    data: Parameters<Repository["updateFirstByField"]>[2];
+  }) {
+    const notification = await this.repository.updateFirstByField(
+      "id",
+      props.id,
+      props.data,
+    );
+    return notification;
+  }
+
+  async createDelivery(data: Parameters<Repository["createDelivery"]>[0]) {
+    const notification = await this.repository.createDelivery(data);
+    return notification;
   }
 
   async sendVerificationCode(props: { email: string; code: string }) {
@@ -373,18 +386,14 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       throw new Error("Not Found error. Template not found");
     }
 
-    const method = templates[0].variant.includes("email")
-      ? "email"
-      : templates[0].variant.includes("telegram")
-        ? "telegram"
-        : undefined;
+    const method = getNotificationTemplateChannel(templates[0].variant);
 
     if (method !== "telegram") {
       return entity;
     }
 
-    const template = templates.find((item) =>
-      item.variant.includes("telegram"),
+    const template = templates.find(
+      (item) => getNotificationTemplateChannel(item.variant) === "telegram",
     );
 
     if (!template) {
@@ -486,11 +495,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       throw new Error("Not Found error. Template not found");
     }
 
-    const method = templates[0].variant.includes("email")
-      ? "email"
-      : templates[0].variant.includes("telegram")
-        ? "telegram"
-        : undefined;
+    const method = getNotificationTemplateChannel(templates[0].variant);
 
     if (!TELEGRAM_SERVICE_BOT_TOKEN && method === "telegram") {
       throw new Error(
@@ -715,6 +720,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     template: ITemplate;
     dropMessageThreadId?: boolean;
     timeoutMs?: number;
+    singleMessage?: boolean;
     delivery?: IDeliveryProgress;
   }): Promise<IModel> {
     if (!RBAC_SECRET_KEY) {
@@ -839,6 +845,21 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             JSON.stringify([entity.reciever, renderResult, validAttachments]),
           );
           const parsedRenderResult = JSON.parse(renderResult);
+
+          if (props.singleMessage) {
+            const text = parsedRenderResult.props?.[0];
+            if (
+              validAttachments.length ||
+              parsedRenderResult.method !== "sendMessage" ||
+              typeof text !== "string" ||
+              !text.trim() ||
+              text.length > 4000
+            ) {
+              throw new Error(
+                "Validation error. Bounded delivery requires one text message (1–4000 characters)",
+              );
+            }
+          }
 
           if (props.dropMessageThreadId) {
             const renderedOptions = parsedRenderResult.props?.[1];
@@ -1290,11 +1311,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
 
     for (const template of templates) {
-      const type = template.variant.includes("email")
-        ? "email"
-        : template.variant.includes("telegram")
-          ? "telegram"
-          : undefined;
+      const type = getNotificationTemplateChannel(template.variant);
 
       if (!type) {
         throw new Error(

@@ -11,18 +11,14 @@ import { Service } from "./service";
 import { App } from "./app";
 
 import type { Service as BroadcastChannelService } from "@sps/broadcast/models/channel/backend/app/api/src/lib/service";
-import type { Service as BroadcastMessageService } from "@sps/broadcast/models/message/backend/app/api/src/lib/service";
 import { NotificationDI, type IBroadcastModule } from "./di";
 import { app as broadcastChannelApp } from "@sps/broadcast/models/channel/backend/app/api";
-import { app as broadcastMessageApp } from "@sps/broadcast/models/message/backend/app/api";
 
 const bindings = new ContainerModule((bind: interfaces.Bind) => {
   bind<IBroadcastModule>(NotificationDI.IBroadcastModule)
     .toDynamicValue(() => ({
       channel: broadcastChannelApp.controller
         .service as BroadcastChannelService,
-      message: broadcastMessageApp.controller
-        .service as BroadcastMessageService,
     }))
     .inSingletonScope();
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);

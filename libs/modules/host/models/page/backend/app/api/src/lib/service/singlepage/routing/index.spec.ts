@@ -1,5 +1,5 @@
-import { api as permissionApi } from "@sps/rbac/models/permission/sdk/server";
-jest.mock("@sps/rbac/models/permission/sdk/server", () => ({
+import { api as roleApi } from "@sps/rbac/models/role/sdk/server";
+jest.mock("@sps/rbac/models/role/sdk/server", () => ({
   api: { publicResourceIds: jest.fn() },
 }));
 import { RoutingService } from "./index";
@@ -104,7 +104,7 @@ it("enumerates exact public records when their collection is protected", async (
   const routing = new RoutingService(sources);
   jest.spyOn(routing, "all").mockRejectedValue({ status: 403 });
   jest
-    .mocked(permissionApi.publicResourceIds)
+    .mocked(roleApi.publicResourceIds)
     .mockResolvedValue(["public", "denied", "missing"]);
   const read = jest
     .spyOn(routing, "findById")
@@ -116,15 +116,16 @@ it("enumerates exact public records when their collection is protected", async (
   expect(await routing.enumerate("custom.items", "slug")).toEqual([
     { id: "public", slug: "visible" },
   ]);
-  expect(permissionApi.publicResourceIds).toHaveBeenCalledWith({
+  expect(roleApi.publicResourceIds).toHaveBeenCalledWith({
     params: { resource: "/api/custom/items" },
+    options: expect.objectContaining({ redirect: "error" }),
   });
   expect(read).toHaveBeenCalledTimes(3);
 });
 it("uses the same exact public records to resolve non-ID URL fields", async () => {
   const routing = new RoutingService(sources);
   jest.spyOn(routing, "find").mockRejectedValue({ status: 403 });
-  jest.mocked(permissionApi.publicResourceIds).mockResolvedValue(["public"]);
+  jest.mocked(roleApi.publicResourceIds).mockResolvedValue(["public"]);
   jest
     .spyOn(routing, "findById")
     .mockResolvedValue({ id: "public", slug: "visible" });

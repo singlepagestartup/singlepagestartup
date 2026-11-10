@@ -80,7 +80,7 @@ can resume a due notification. Dispatch also removes expired notifications and
 up to 100 inactive delivery jobs older than the Notification expiration period
 (default two days). No new cron route or database model is required.
 
-`sendBounded` retains the security summary's stable recipient ID, channel fallback
+Topic’s `sendBounded` retains the security summary's stable recipient ID, channel fallback
 and three-attempt budget under its existing Broadcast lease. It uses the same
 provider rate limits. The security scheduler still coalesces old summary periods.
 Verification emails and immediate Telegram edits/replies have bounded waits and

@@ -36,21 +36,9 @@ respective startup files.
 - `admin-table`: admin table listing permissions.
 - `admin-table-row`: admin row showing permission fields.
 
-## Exact public resource discovery
+## Public resource discovery
 
-`GET /api/rbac/permissions/public-resource-ids?resource=/api/<module>/<collection>`
-and the server SDK `publicResourceIds({ params: { resource } })` return UUIDs
-from exact HTTP GET Permissions without Role bindings. The owning Permission
-Service applies its effective `isSensitiveRoute` policy. Bracket templates,
-collection/count paths, nested operations and permissions for other resources
-do not supply IDs. Both Permission rows and Role bindings are read in batches.
-
-This operation discovers explicit grants; it does not create permissions or
-make a private collection public. Consumers still read each candidate through
-its anonymous resource API, so deleted records and additional access guards
-remain effective. Host Page uses it to expand private collections in saved URL
-masks without importing authorization rules or embedding resource names.
-
-Permission Service now receives RolesToPermissions Service through
-`PermissionDI.IRolesToPermissionsService`. Owned factories must provide this
-third constructor dependency; ordinary CRUD methods retain their contracts.
+[Role](../role/README.md#exact-public-resource-discovery) owns discovery across
+Permissions and RolesToPermissions. Permission supplies route resolution and
+its effective `isSensitiveRoute` policy; it does not import incoming role links.
+Its constructor takes its repository and PermissionsToBillingModuleCurrencies.

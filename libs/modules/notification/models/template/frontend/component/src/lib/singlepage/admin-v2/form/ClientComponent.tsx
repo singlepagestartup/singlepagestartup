@@ -170,8 +170,8 @@ export function Component(props: IComponentPropsExtended) {
             />
             <p className="text-sm text-muted-foreground">
               {props.language === "ru"
-                ? "Для content-email и content-telegram: обычный текст и переменные {{project}}, {{start}}, {{end}}, {{counts.password-failed}}. Переменные зависят от данных уведомления. HTML и код не выполняются. Для остальных вариантов содержимое задаёт компонент проекта."
-                : "For content-email and content-telegram: plain text and variables such as {{project}}, {{start}}, {{end}}, {{counts.password-failed}}. Variables depend on notification data. HTML and code are not executed. Other variants use the project's rendering component."}
+                ? "Текст с переменными, например {{project}} или {{counts.password-failed}}. Доступные переменные зависят от уведомления. Host-компонент выбранного варианта задаёт оформление. Для content-email и content-telegram текст обязателен; собственный компонент может использовать данные уведомления напрямую."
+                : "Text with variables such as {{project}} or {{counts.password-failed}}. Available variables depend on the notification. The selected Host component controls presentation. Content is required for content-email and content-telegram; a custom component can use notification data directly."}
             </p>
           </div>
         </TabsContent>

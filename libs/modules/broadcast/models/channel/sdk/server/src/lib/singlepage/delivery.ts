@@ -3,7 +3,7 @@ import {
   route,
   type IDeliveryCommand,
   type IDeliveryResult,
-} from "@sps/broadcast/models/message/sdk/model";
+} from "@sps/broadcast/models/channel/sdk/model";
 import { responsePipe } from "@sps/shared-utils";
 
 export interface IProps<T extends IDeliveryCommand> {

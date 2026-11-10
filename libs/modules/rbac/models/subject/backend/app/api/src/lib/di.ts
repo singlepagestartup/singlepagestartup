@@ -1,7 +1,9 @@
-import type { Service as BroadcastMessageService } from "@sps/broadcast/models/message/backend/app/api/src/lib/service";
+import type { Service as BroadcastChannelService } from "@sps/broadcast/models/channel/backend/app/api/src/lib/service";
+import type { Service as NotificationTopicService } from "@sps/notification/models/topic/backend/app/api/src/lib/service";
 import type { Service as NotificationService } from "@sps/notification/models/notification/backend/app/api/src/lib/service";
 import type { Service as EcommerceOrderService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service";
 import type { ICartDetails } from "@sps/ecommerce/models/order/sdk/model";
+import type { Service as CrmFormService } from "@sps/crm/models/form/backend/app/api/src/lib/service";
 import type { Service as CrmRequestService } from "@sps/crm/models/request/backend/app/api/src/lib/service";
 import type { Service as SocialProfileService } from "@sps/social/models/profile/backend/app/api/src/lib/service";
 export interface IReadService {
@@ -124,10 +126,10 @@ export interface IBlogModule {
 
 export interface INotificationService
   extends IReadService,
-    Pick<NotificationService, "sendBounded" | "sendVerificationCode"> {}
+    Pick<NotificationService, "sendVerificationCode"> {}
 
 export interface INotificationModule {
-  topic: IReadService;
+  topic: IReadService & Pick<NotificationTopicService, "sendBounded">;
   notification: INotificationService;
   template: IReadService;
   topicsToNotifications: IReadService;
@@ -141,7 +143,7 @@ export interface IFileStorageModule {
 }
 
 export interface ICrmModule {
-  form: IReadService;
+  form: IReadService & Pick<CrmFormService, "submit">;
   request: CrmRequestService;
   formsToRequests: IReadService;
   step: IReadService;
@@ -153,8 +155,7 @@ export interface ICrmModule {
 }
 
 export interface IBroadcastModule {
-  channel: ICreateService;
-  message: Pick<BroadcastMessageService, "queue">;
+  channel: ICreateService & Pick<BroadcastChannelService, "queue">;
 }
 
 export const SubjectDI = {

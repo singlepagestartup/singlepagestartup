@@ -6,9 +6,14 @@ import {
   NEXT_PUBLIC_HOST_SERVICE_URL,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
-import QueryString from "qs";
-import pako from "pako";
-import { renderNotificationTemplate } from "@sps/backend-utils";
+import {
+  getNotificationTemplateChannel,
+  interpolateNotificationTemplate,
+} from "@sps/backend-utils";
+import {
+  IRenderRequest,
+  renderRequestSchema,
+} from "@sps/notification/models/template/sdk/model";
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
@@ -26,15 +31,20 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
   protected async fetchRenderedTemplate(params: {
     url: string;
+    body: IRenderRequest;
   }): Promise<string | null> {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. Secret key not found");
     }
 
     const response = await fetch(params.url, {
+      method: "POST",
+      body: JSON.stringify(params.body),
+      signal: AbortSignal.timeout(10000),
       redirect: "error",
       headers: {
         "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        "Content-Type": "application/json",
       },
     });
     const data = await response.text();
@@ -63,55 +73,34 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       throw new Error("Not Found error. Template not found");
     }
 
-    if (
-      template.variant === "content-email" ||
-      template.variant === "content-telegram"
-    ) {
-      if (template.variant !== `content-${params.type}`) {
-        throw new Error(
-          "Validation error. Template does not match delivery channel",
-        );
-      }
-      return renderNotificationTemplate({
-        content: template.content ?? "",
+    const channel = getNotificationTemplateChannel(template.variant);
+    if (channel !== params.type) {
+      throw new Error(
+        "Validation error. Template does not match delivery channel",
+      );
+    }
+
+    let content: string | null = null;
+    if (template.content?.trim()) {
+      content = interpolateNotificationTemplate({
+        content: template.content,
         payload: params.payload,
-        type: params.type,
       });
     }
 
-    let queryData: undefined | string;
-
-    if (params?.payload) {
-      const deflatedData = pako.deflate(JSON.stringify(params.payload));
-
-      const stringifiedData = Buffer.from(deflatedData).toString("base64");
-
-      queryData = stringifiedData;
+    const body = renderRequestSchema.parse({
+      variant: template.variant,
+      data: params.payload,
+      template: { title: template.title ?? null, content },
+    });
+    let path = "/api/email-generator/index.html";
+    if (channel === "telegram") {
+      path = "/api/telegram-generator";
     }
-
-    const query = QueryString.stringify(
-      {
-        variant: template.variant,
-        data: queryData,
-      },
-      {
-        encodeValuesOnly: true,
-      },
-    );
-
-    if (params.type === "email") {
-      return await this.fetchRenderedTemplate({
-        url:
-          NEXT_PUBLIC_HOST_SERVICE_URL +
-          "/api/email-generator/index.html?" +
-          query,
-      });
-    } else if (params.type === "telegram") {
-      return await this.fetchRenderedTemplate({
-        url: NEXT_PUBLIC_HOST_SERVICE_URL + "/api/telegram-generator?" + query,
-      });
-    }
-
-    throw new Error("Internal error. Passed render type is not supported");
+    const rendered = await this.fetchRenderedTemplate({
+      url: NEXT_PUBLIC_HOST_SERVICE_URL + path,
+      body,
+    });
+    return rendered;
   }
 }

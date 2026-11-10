@@ -1,10 +1,10 @@
 import { createHash } from "node:crypto";
-import type { Service as NotificationService } from "..";
+import type { INotificationModule } from "../../../di";
 import type { IModel as ITemplate } from "@sps/notification/models/template/sdk/model";
 import { api as topicsToNotificationsApi } from "@sps/notification/relations/topics-to-notifications/sdk/server";
 import { api as notificationsToTemplatesApi } from "@sps/notification/relations/notifications-to-templates/sdk/server";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
-import { logger } from "@sps/backend-utils";
+import { getNotificationTemplateChannel, logger } from "@sps/backend-utils";
 
 export interface ISendBoundedNotification {
   key: string;
@@ -20,7 +20,9 @@ export interface ISendBoundedNotification {
 // The caller holds a Broadcast lease across delivery. All channels for a
 // recipient share a notification ID and a persisted three-attempt budget.
 export class Service {
-  constructor(private readonly notification: NotificationService) {}
+  constructor(
+    private readonly notification: INotificationModule["notification"],
+  ) {}
 
   async execute(props: ISendBoundedNotification) {
     const digest = createHash("sha256")
@@ -36,11 +38,10 @@ export class Service {
       return { id, status: "error" };
     }
     if (
-      props.template.variant !== `content-${props.method}` ||
-      !props.template.content?.trim()
+      getNotificationTemplateChannel(props.template.variant) !== props.method
     ) {
       throw new Error(
-        "Configuration error. A content template is required for bounded delivery",
+        "Configuration error. Template does not match delivery channel",
       );
     }
     const data = { ...props.data, attempts: attempts + 1 };
@@ -52,9 +53,9 @@ export class Service {
       data,
     };
     if (!previous) {
-      await this.notification.repository.createDelivery({ id, ...values });
+      await this.notification.createDelivery({ id, ...values });
     } else {
-      await this.notification.repository.updateFirstByField("id", id, values);
+      await this.notification.updateDelivery({ id, data: values });
     }
 
     try {
@@ -67,6 +68,7 @@ export class Service {
         provider,
         template: props.template,
         timeoutMs: 5000,
+        singleMessage: true,
       });
       return { id, status: result.status };
     } catch {
@@ -75,9 +77,7 @@ export class Service {
         transport: props.method,
         notificationId: id,
       });
-      await this.notification.repository.updateFirstByField("id", id, {
-        status: "error",
-      });
+      await this.notification.updateDelivery({ id, data: { status: "error" } });
       return { id, status: "error" };
     }
   }

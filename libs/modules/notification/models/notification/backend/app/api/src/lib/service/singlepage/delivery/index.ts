@@ -34,7 +34,7 @@ export class Service {
   ) {}
 
   async execute(id: string) {
-    const queue = this.broadcast.message.queue;
+    const queue = this.broadcast.channel.queue;
     const channel = await this.channel();
     const key = id;
     await queue.publish({
@@ -212,7 +212,7 @@ export class Service {
     const before = new Date(
       Date.now() - NOTIFICATION_MODULE_NOTIFICATION_EXPIRATION_TIMEOUT,
     );
-    await this.broadcast.message.queue.removeExpired(channel.id, before, 100);
+    await this.broadcast.channel.queue.removeExpired(channel.id, before, 100);
   }
 
   private async channel() {

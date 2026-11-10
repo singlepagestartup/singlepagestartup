@@ -1,30 +1,16 @@
-import { renderNotificationTemplate } from ".";
+import {
+  interpolateNotificationTemplate,
+  getNotificationTemplateChannel,
+} from ".";
 
 describe("saved notification content", () => {
   it("substitutes scalar variables and treats all markup as text", () => {
-    const result = renderNotificationTemplate({
-      type: "email",
+    const result = interpolateNotificationTemplate({
       content:
         "<script>alert(1)</script>\n{{project}}: {{counts.failed}} / {{ok}}",
       payload: { project: "<img src=x>", counts: { failed: 0 }, ok: false },
     });
-    expect(result).toBe(
-      "<p>&lt;script&gt;alert(1)&lt;/script&gt;<br>&lt;img src=x&gt;: 0 / false</p>",
-    );
-  });
-
-  it("produces one Telegram sendMessage with escaped plain text", () => {
-    const result = JSON.parse(
-      renderNotificationTemplate({
-        type: "telegram",
-        content: "{{name}} & ok",
-        payload: { name: "<b>name</b>" },
-      }),
-    );
-    expect(result).toEqual({
-      method: "sendMessage",
-      props: ["&lt;b&gt;name&lt;/b&gt; &amp; ok", { parse_mode: "HTML" }],
-    });
+    expect(result).toBe("<script>alert(1)</script>\n<img src=x>: 0 / false");
   });
 
   it.each([
@@ -35,35 +21,43 @@ describe("saved notification content", () => {
     "{{toString}}",
   ])("rejects missing, object or inherited values: %s", (content) => {
     expect(() =>
-      renderNotificationTemplate({
-        type: "email",
+      interpolateNotificationTemplate({
         content,
         payload: { nested: {} },
       }),
     ).toThrow("Validation error.");
   });
 
-  it("rejects empty, oversized and multi-message content before transport", () => {
+  it("rejects empty and oversized content", () => {
     for (const content of [" ", "x".repeat(32001)]) {
-      expect(() =>
-        renderNotificationTemplate({ type: "email", content }),
-      ).toThrow("Validation error.");
+      expect(() => interpolateNotificationTemplate({ content })).toThrow(
+        "Validation error.",
+      );
     }
-    expect(() =>
-      renderNotificationTemplate({
-        type: "telegram",
-        content: "x".repeat(4001),
-      }),
-    ).toThrow("4000 characters");
   });
 
   it("stops repeated substitutions before allocating an oversized message", () => {
     expect(() =>
-      renderNotificationTemplate({
-        type: "email",
+      interpolateNotificationTemplate({
         content: "{{value}}".repeat(100),
         payload: { value: "x".repeat(32000) },
       }),
     ).toThrow("Rendered template is too large");
   });
+});
+
+describe("notification template channels", () => {
+  it.each([
+    ["content-email", "email"],
+    ["project-security-email", "email"],
+    ["project-security-telegram", "telegram"],
+    ["reset-password", "email"],
+    ["default", null],
+    ["email-telegram", null],
+  ])(
+    "resolves %s without coupling delivery to content variants",
+    (variant, channel) => {
+      expect(getNotificationTemplateChannel(variant as string)).toBe(channel);
+    },
+  );
 });

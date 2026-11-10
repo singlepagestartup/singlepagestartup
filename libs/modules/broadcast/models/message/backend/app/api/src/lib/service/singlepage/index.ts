@@ -4,17 +4,14 @@ import { CRUDService, DI } from "@sps/shared-backend-api";
 import { logger } from "@sps/backend-utils";
 import type { ISelectSchema } from "@sps/broadcast/models/message/backend/repository/database";
 import { Repository } from "../../repository";
-import { DeliveryQueue } from "./delivery-queue";
 
 @injectable()
 export class Service extends CRUDService<ISelectSchema> {
   declare repository: Repository;
-  readonly queue: DeliveryQueue;
   private nextCleanup = 0;
 
   constructor(@inject(DI.IRepository) repository: Repository) {
     super(repository);
-    this.queue = new DeliveryQueue(repository);
   }
 
   async create(props: { data: any }) {
@@ -32,19 +29,11 @@ export class Service extends CRUDService<ISelectSchema> {
     return message;
   }
 
-  transientChannelMessages(channelId: string) {
-    return this.repository.transientChannelMessages(channelId);
-  }
-
   async deleteExpired() {
     const before = new Date();
     let removed = await this.repository.deleteExpired(100, before);
     while (removed.length === 100) {
       removed = await this.repository.deleteExpired(100, before);
-    }
-    let orphans = await this.repository.deleteOrphanedDeliveries(100);
-    while (orphans.length === 100) {
-      orphans = await this.repository.deleteOrphanedDeliveries(100);
     }
   }
 
@@ -59,8 +48,8 @@ export class Service extends CRUDService<ISelectSchema> {
   }
 
   async requireOrdinaryMessage(id: string) {
-    const message = await this.findById({ id });
-    if (message && message.expiresAt === null) {
+    const durable = await this.repository.isDurable(id);
+    if (durable) {
       throw new Error(
         "Conflict error. Use the delivery queue to modify a durable message",
       );

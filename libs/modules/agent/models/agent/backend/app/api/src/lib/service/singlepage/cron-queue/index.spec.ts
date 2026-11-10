@@ -3,7 +3,7 @@ import { CronQueue } from "./index";
 import {
   DeliveryQueue,
   type IDeliveryState,
-} from "@sps/broadcast/models/message/backend/app/api/src/lib/service/singlepage/delivery-queue";
+} from "@sps/broadcast/models/channel/backend/app/api/src/lib/service/singlepage/delivery-queue";
 
 jest.mock("@sps/shared-utils", () => ({
   ...jest.requireActual("@sps/shared-utils"),
@@ -62,7 +62,7 @@ function fixture(agentIds = ["second", "first"]) {
       return { id: key, payload: "{}" };
     },
   } as any);
-  const runs = new AgentRun({ broadcastModule: { message: { queue } } as any });
+  const runs = new AgentRun({ broadcastModule: { channel: { queue } } as any });
   jest.spyOn(runs, "findChannel").mockResolvedValue({ id: "channel" });
   const markers = jest.spyOn(runs, "findMarkers").mockResolvedValue([]);
   const dispatch = jest

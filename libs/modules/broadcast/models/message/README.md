@@ -22,51 +22,11 @@ Messages represent payloads delivered through broadcast channels.
 - `admin-table`: admin table listing messages.
 - `admin-table-row`: admin row showing message fields.
 
-## Worker queues
+## Delivery ownership
 
-Each channel can serve a group of competing workers. The producer supplies an
-existing channel ID, a stable key for the logical job, and a string payload.
-Publishing the same key to that channel again returns `created: false` and
-preserves the original payload. The queue creates the payload in Message and its owner link in
-`channels-to-messages` in one transaction. The relation enforces one job per
-channel and key and records the worker's receipt and lease. Set
-`announce: true` to show this link in the channel feed. That feed is publicly readable in the default SPS
-configuration. Leave the option off for internal work.
-
-Backend services can inject the Message service and call `message.queue`.
-Remote services can call the server SDK's `api.delivery({data, options})` or
-send JSON to `POST /api/broadcast/messages/delivery` with the existing
-`X-RBAC-SECRET-KEY` server credential. The available commands are listed
-below. A receipt identifies one reservation and expires after `leaseSeconds`.
-
-| Command           | Required inputs in addition to `channelId` | Result                                                                                    |
-| ----------------- | ------------------------------------------ | ----------------------------------------------------------------------------------------- |
-| `publish`         | `key`, `payload`                           | `{created}`; optional `announce` links the message to the feed                            |
-| `reserve`         | `leaseSeconds`                             | An array of available deliveries with `id`, `key`, `receipt` and `payload`; empty if busy |
-| `start`           | `key`, `receipt`                           | Starts this reservation once                                                              |
-| `renew`           | `key`, `receipt`, `leaseSeconds`           | Extends the lease of a running worker                                                     |
-| `acknowledge`     | `key`, `receipt`                           | Completes the delivery and optionally replaces its `payload` with the result              |
-| `release`         | `key`, `receipt`                           | Makes the delivery available for retry                                                    |
-| `removeCompleted` | `before` (UTC timestamp), `limit` (1–1000) | Deletes older completed deliveries and returns `{removed}`                                |
-
-The HTTP worker processes one delivery at a time per channel. Local services
-set a common concurrency limit for their workers. Use a separate channel for
-each independent consumer group. A worker starts its reservation before
-performing the job and acknowledges it only after the job succeeds. A lost
-worker's lease eventually expires. Its replacement receives a new receipt.
-A stale receipt returns HTTP 409. A crash after an external operation but
-before acknowledgement can repeat that operation. Use the job key to
-deduplicate payments and other irreversible effects in the receiving system.
-
-Ordinary pushes keep their expiration policy. Cleanup deletes expired rows in
-indexed batches of 100. Completed deliveries keep their keys until the owner
-removes them. The cron scheduler retains its keys to calculate the next run.
-
-Run `npx nx run api:db:migrate` before starting workers that use the queue.
-
-Delivery consumers can call `queue.checkpoint(owner, payload)` to save progress
-while retaining a live lease. The receipt and lease are checked in the same SQL
-statement as the payload update, so an expired worker cannot overwrite its
-successor. `queue.removeExpired(channelId, before, limit)` removes old jobs in
-that channel only when no lease is active; consumers choose their retention
-period. Notification uses it for the same expiration period as its records.
+Channel owns durable worker queues and their relation state. See the
+[Channel queue contract](../channel/README.md#worker-queues). Message owns the
+payload and expiration of ordinary messages. Its CRUD queries exclude durable
+payloads; editing or deleting a durable payload through Message returns a conflict.
+Read an announced delivery through Channel's message feed or the
+ChannelsToMessages `message` SDK operation. Private deliveries stay outside both readers.

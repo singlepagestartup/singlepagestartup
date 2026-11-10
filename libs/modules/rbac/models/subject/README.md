@@ -350,12 +350,16 @@ by the installation owner; the legacy email identity does not itself prove email
 ownership. Delivery credentials remain the existing Notification configuration.
 
 Security summaries require a Notification Topic with slug `security` and at
-least one populated Template:
+least one Template with a title and a matching delivery channel. Default variants:
 
 | Channel  | Template slug               | Variant            |
 | -------- | --------------------------- | ------------------ |
 | Telegram | `security-summary-telegram` | `content-telegram` |
 | Email    | `security-summary-email`    | `content-email`    |
+
+A project may select its own Host variant instead. It receives the same summary
+payload and optional saved Content; delivery limits do not depend on the variant
+name. Default `content-*` variants require Content.
 
 Set Title and content in Admin v2 → Notification → Template. The Settings page
 (`/ru/admin/settings` or `/en/admin/settings`) provides the exact records, an

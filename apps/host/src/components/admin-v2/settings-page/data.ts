@@ -83,7 +83,7 @@ export const recommendations: Record<"ru" | "en", ISetupRecommendation[]> = {
         "Сообщают администраторам о превышениях лимитов и накопленных ошибках входа. Текст и канал доставки задаются шаблонами Notification.",
       steps: [
         `В Topic создайте запись со Slug «${securityNotificationTopicSlug}». Title можно выбрать свой.`,
-        `В Template создайте Slug «${securityNotificationTemplateSlugs.telegram}», Variant «content-telegram» и/или Slug «${securityNotificationTemplateSlugs.email}», Variant «content-email». Заполните Title и текст. Достаточно одного канала.`,
+        `В Template создайте Slug «${securityNotificationTemplateSlugs.telegram}», Variant «content-telegram» и/или Slug «${securityNotificationTemplateSlugs.email}», Variant «content-email». Заполните Title и текст. Оформление задаёт Host-компонент; можно выбрать собственный вариант для того же канала. Достаточно одного канала.`,
         "Настройте контакты администраторов и задачу rbac-module-subjects-check из карточек ниже. Telegram-бот или почтовый провайдер должны быть настроены на сервере.",
         "По умолчанию сводка охватывает 15 минут. После успешной отправки повтора нет; при ошибках — не более трёх попыток на получателя за период, включая резервный канал. Удаление шаблона отключает этот канал. Без Topic или подходящих шаблонов сводки не отправляются; ограничения API и логи продолжают работать.",
       ],
@@ -160,7 +160,7 @@ export const recommendations: Record<"ru" | "en", ISetupRecommendation[]> = {
         "Notify administrators about rate limits and accumulated login failures. Notification templates control message content and delivery channels.",
       steps: [
         `Create a Topic with Slug “${securityNotificationTopicSlug}”. Choose your own Title.`,
-        `Create a Template with Slug “${securityNotificationTemplateSlugs.telegram}” and Variant “content-telegram”, and/or Slug “${securityNotificationTemplateSlugs.email}” and Variant “content-email”. Fill in Title and content. One channel is sufficient.`,
+        `Create a Template with Slug “${securityNotificationTemplateSlugs.telegram}” and Variant “content-telegram”, and/or Slug “${securityNotificationTemplateSlugs.email}” and Variant “content-email”. Fill in Title and content. A Host component controls presentation; a custom variant for the same channel is also supported. One channel is sufficient.`,
         "Configure administrator contacts and the rbac-module-subjects-check task using the cards below. The Telegram bot or email provider must be configured on the server.",
         "The default summary period is 15 minutes. Successful deliveries are not repeated; failures get at most three attempts per recipient and period, including fallback. Removing a template disables that channel. No summaries are sent without the Topic or suitable templates; API limits and server logs remain active.",
       ],

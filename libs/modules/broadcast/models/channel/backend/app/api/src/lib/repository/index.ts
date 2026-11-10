@@ -15,7 +15,9 @@ export class Repository extends DatabaseRepository<typeof Table> {
     return this.db.transaction((tx) =>
       withConsistencyDatabase(tx, async () => {
         const channel = await this.findFirstByField(field, value);
-        if (!channel) return;
+        if (!channel) {
+          return;
+        }
         // An incoming delivery must finish linking before deletion, or fail its FK.
         await tx
           .select({ id: Table.id })

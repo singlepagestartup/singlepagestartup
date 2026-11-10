@@ -1,3 +1,4 @@
+import { DeliveryRepository } from "./repository/delivery";
 import { Container, ContainerModule, interfaces } from "inversify";
 import {
   DI,
@@ -24,6 +25,9 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
   bind<Repository>(DI.IRepository).to(Repository);
   bind<Service>(DI.IService).to(Service);
   bind<Configuration>(DI.IConfiguration).to(Configuration);
+  bind<DeliveryRepository>(ChannelDI.IDeliveryRepository)
+    .toDynamicValue(() => new DeliveryRepository(new MessageConfiguration()))
+    .inSingletonScope();
   bind<MessageService>(ChannelDI.IMessageService)
     .toDynamicValue(
       () =>

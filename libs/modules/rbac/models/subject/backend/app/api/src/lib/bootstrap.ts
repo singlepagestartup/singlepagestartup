@@ -1,6 +1,9 @@
+import { app as roleApp } from "@sps/rbac/models/role/backend/app/api";
+import { app as broadcastChannelApp } from "@sps/broadcast/models/channel/backend/app/api";
+import type { Service as BroadcastChannelService } from "@sps/broadcast/models/channel/backend/app/api/src/lib/service";
+import { app as notificationTopicApp } from "@sps/notification/models/topic/backend/app/api";
+import type { Service as NotificationTopicService } from "@sps/notification/models/topic/backend/app/api/src/lib/service";
 import { app as notificationNotificationApp } from "@sps/notification/models/notification/backend/app/api";
-import { app as broadcastMessageApp } from "@sps/broadcast/models/message/backend/app/api";
-import type { Service as BroadcastMessageService } from "@sps/broadcast/models/message/backend/app/api/src/lib/service";
 import { Service as SecurityNotifications } from "./service/singlepage/security-notifications";
 import { Service as CrmFormService } from "@sps/crm/models/form/backend/app/api/src/lib/service";
 import { Service as CrmRequestService } from "@sps/crm/models/request/backend/app/api/src/lib/service";
@@ -77,8 +80,6 @@ import { Service as IdentityService } from "@sps/rbac/models/identity/backend/ap
 import { Repository as IdentityRepository } from "@sps/rbac/models/identity/backend/app/api/src/lib/repository";
 import { Configuration as IdentityConfiguration } from "@sps/rbac/models/identity/backend/app/api/src/lib/configuration";
 import { Service as RoleService } from "@sps/rbac/models/role/backend/app/api/src/lib/service";
-import { Repository as RoleRepository } from "@sps/rbac/models/role/backend/app/api/src/lib/repository";
-import { Configuration as RoleConfiguration } from "@sps/rbac/models/role/backend/app/api/src/lib/configuration";
 import { Service as PermissionService } from "@sps/rbac/models/permission/backend/app/api/src/lib/service";
 import { Repository as PermissionRepository } from "@sps/rbac/models/permission/backend/app/api/src/lib/repository";
 import { Configuration as PermissionConfiguration } from "@sps/rbac/models/permission/backend/app/api/src/lib/configuration";
@@ -185,8 +186,6 @@ import { Service as BillingPaymentIntentsToCurrenciesService } from "@sps/billin
 import { Repository as BillingPaymentIntentsToInvoicesRepository } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/repository";
 import { Configuration as BillingPaymentIntentsToInvoicesConfiguration } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/configuration";
 import { Service as BillingPaymentIntentsToInvoicesService } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/service";
-import { Repository as NotificationTopicRepository } from "@sps/notification/models/topic/backend/app/api/src/lib/repository";
-import { Configuration as NotificationTopicConfiguration } from "@sps/notification/models/topic/backend/app/api/src/lib/configuration";
 import { Service as NotificationNotificationService } from "@sps/notification/models/notification/backend/app/api/src/lib/service";
 import { Repository as NotificationTemplateRepository } from "@sps/notification/models/template/backend/app/api/src/lib/repository";
 import { Configuration as NotificationTemplateConfiguration } from "@sps/notification/models/template/backend/app/api/src/lib/configuration";
@@ -203,8 +202,6 @@ import { Repository as CrmRequestRepository } from "@sps/crm/models/request/back
 import { Configuration as CrmRequestConfiguration } from "@sps/crm/models/request/backend/app/api/src/lib/configuration";
 import { Repository as CrmFormsToRequestsRepository } from "@sps/crm/relations/forms-to-requests/backend/app/api/src/lib/repository";
 import { Configuration as CrmFormsToRequestsConfiguration } from "@sps/crm/relations/forms-to-requests/backend/app/api/src/lib/configuration";
-import { Repository as BroadcastChannelRepository } from "@sps/broadcast/models/channel/backend/app/api/src/lib/repository";
-import { Configuration as BroadcastChannelConfiguration } from "@sps/broadcast/models/channel/backend/app/api/src/lib/configuration";
 
 const bindings = new ContainerModule((bind: interfaces.Bind) => {
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
@@ -506,9 +503,8 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
   bind<INotificationModule>(SubjectDI.INotificationModule)
     .toDynamicValue(() => {
       return {
-        topic: new CRUDService<any>(
-          new NotificationTopicRepository(new NotificationTopicConfiguration()),
-        ),
+        topic: notificationTopicApp.controller
+          .service as NotificationTopicService,
         notification: notificationNotificationApp.controller
           .service as NotificationNotificationService,
         template: new CRUDService<any>(
@@ -546,7 +542,6 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
       const request = new CrmRequestService(
         new CrmRequestRepository(new CrmRequestConfiguration()),
       );
-      request.configureSubmissions({ formsToRequests });
       return {
         request,
         formsToRequests,
@@ -555,6 +550,7 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
           context.container.get<INotificationModule>(
             SubjectDI.INotificationModule,
           ),
+          { request, formsToRequests },
         ),
         step: new CrmStepService(
           new CrmStepRepository(new CrmStepConfiguration()),
@@ -585,11 +581,8 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
   bind<IBroadcastModule>(SubjectDI.IBroadcastModule)
     .toDynamicValue(() => {
       return {
-        message: broadcastMessageApp.controller
-          .service as BroadcastMessageService,
-        channel: new CRUDService<any>(
-          new BroadcastChannelRepository(new BroadcastChannelConfiguration()),
-        ),
+        channel: broadcastChannelApp.controller
+          .service as BroadcastChannelService,
       };
     })
     .inSingletonScope();
@@ -602,22 +595,17 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
     )
     .inSingletonScope();
   bind<RoleService>(SubjectDI.IRoleService)
-    .toDynamicValue(
-      () => new RoleService(new RoleRepository(new RoleConfiguration())),
-    )
+    .toDynamicValue(() => roleApp.controller.service as RoleService)
     .inSingletonScope();
   bind<PermissionService>(SubjectDI.IPermissionService)
     .toDynamicValue(
-      (context) =>
+      () =>
         new PermissionService(
           new PermissionRepository(new PermissionConfiguration()),
           new PermissionsToBillingModuleCurrenciesService(
             new PermissionsToBillingModuleCurrenciesRepository(
               new PermissionsToBillingModuleCurrenciesConfiguration(),
             ),
-          ),
-          context.container.get<RolesToPermissionsService>(
-            SubjectDI.IRolesToPermissionsService,
           ),
         ),
     )

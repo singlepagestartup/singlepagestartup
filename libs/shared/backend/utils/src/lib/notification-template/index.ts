@@ -1,12 +1,13 @@
-export interface IRenderNotificationTemplate {
+export interface IInterpolateNotificationTemplate {
   content: string;
   payload?: unknown;
-  type: "email" | "telegram";
 }
 
 // Templates substitute scalar data only. They cannot execute code, read files,
-// traverse prototypes, or turn payload values into HTML or Telegram markup.
-export function renderNotificationTemplate(props: IRenderNotificationTemplate) {
+// traverse prototypes. Escaping and presentation belong to the Host renderer.
+export function interpolateNotificationTemplate(
+  props: IInterpolateNotificationTemplate,
+) {
   if (!props.content.trim() || props.content.length > 32000) {
     throw new Error(
       "Validation error. Template content must contain 1–32000 characters",
@@ -53,23 +54,21 @@ export function renderNotificationTemplate(props: IRenderNotificationTemplate) {
     },
   );
 
-  const escaped = text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-  if (props.type === "telegram") {
-    if (escaped.length > 4000) {
-      throw new Error(
-        "Validation error. Telegram template exceeds one message (4000 characters)",
-      );
-    }
-    return JSON.stringify({
-      method: "sendMessage",
-      props: [escaped, { parse_mode: "HTML" }],
-    });
+  // Return text, not HTML. The selected Host renderer owns escaping/markup.
+  return text;
+}
+
+export function getNotificationTemplateChannel(variant: string) {
+  if (variant === "reset-password") {
+    return "email";
   }
-  if (escaped.length > 128000) {
-    throw new Error("Validation error. Rendered email template is too large");
+  const email = variant.includes("email");
+  const telegram = variant.includes("telegram");
+  if (email === telegram) {
+    return null;
   }
-  return "<p>" + escaped.replace(/\r?\n/g, "<br>") + "</p>";
+  if (email) {
+    return "email";
+  }
+  return "telegram";
 }

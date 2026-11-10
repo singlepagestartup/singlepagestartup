@@ -4,14 +4,17 @@ import { Repository as Links } from "@sps/broadcast/relations/channels-to-messag
 import { Configuration as LinksConfiguration } from "@sps/broadcast/relations/channels-to-messages/backend/app/api/src/lib/configuration";
 import { Repository as Channels } from "@sps/broadcast/models/channel/backend/app/api/src/lib/repository";
 import { Configuration as ChannelsConfiguration } from "@sps/broadcast/models/channel/backend/app/api/src/lib/configuration";
-import { Configuration } from "../../configuration";
-import { Repository } from "../../repository";
-import { Service } from "./index";
+import { Configuration } from "@sps/broadcast/models/message/backend/app/api/src/lib/configuration";
+import { Repository } from "@sps/broadcast/models/message/backend/app/api/src/lib/repository";
+import { DeliveryRepository } from "../../../repository/delivery";
+import { DeliveryQueue } from ".";
+import { Service } from "@sps/broadcast/models/message/backend/app/api/src/lib/service";
 
 describe("Broadcast competing consumers", () => {
   const sql = getPostgresClient();
   const service = new Service(new Repository(new Configuration()));
-  const queue = service.queue;
+  const deliveryRepository = new DeliveryRepository(new Configuration());
+  const queue = new DeliveryQueue(deliveryRepository);
   const channelId = randomUUID();
   beforeAll(async () => {
     await sql`insert into sps_bt_channel(id,slug,title,admin_title) values(${channelId},${channelId},${channelId},${channelId})`;
@@ -51,6 +54,10 @@ describe("Broadcast competing consumers", () => {
     const [feed] = await links.findByField("messageId", linked[0].id);
     expect(feed).toBeDefined();
     expect(feed).not.toHaveProperty("receipt");
+    const projection = await links.findWithMessage(feed.id);
+    expect(projection?.message.payload).toBe(message.payload);
+    expect(projection?.relation).not.toHaveProperty("receipt");
+    expect(projection?.relation).not.toHaveProperty("deliveryKey");
     expect(await links.deleteFirstByField("id", feed.id)).toBeUndefined();
     const props = { channelId, concurrency: 1, leaseSeconds: 60 };
     const claimed = (
@@ -72,8 +79,17 @@ describe("Broadcast competing consumers", () => {
     expect(await queue.start(retry)).toBe(true);
     expect(await queue.acknowledge(retry, "completed")).toBe(true);
     expect(await queue.reserve(props)).toEqual([]);
-    const saved = await service.findById({ id: first.id });
+    const saved = await deliveryRepository.findFirstByField("id", first.id);
+    expect(await service.findById({ id: first.id })).toBeFalsy();
     expect(saved?.payload).toBe("completed");
+    expect((await links.findWithMessage(feed.id))?.message.payload).toBe(
+      "completed",
+    );
+    await sql`update sps_bt_cs_to_ms_34z set feed_visible=false where id=${feed.id}`;
+    expect(await links.findWithMessage(feed.id)).toBeNull();
+    expect(
+      await deliveryRepository.findFirstByField("id", first.id),
+    ).toBeFalsy();
     expect(saved).not.toHaveProperty("receipt");
     await expect(service.delete({ id: first.id })).rejects.toThrow();
     expect(
@@ -110,6 +126,9 @@ describe("Broadcast competing consumers", () => {
         }),
       ).toBe(0);
       expect(await service.findById({ id: owner.id })).toBeFalsy();
+      const [privateLink] =
+        await sql`select id from sps_bt_cs_to_ms_34z where me_id=${owner.id}`;
+      expect(await links.findWithMessage(privateLink.id)).toBeNull();
       expect(await queue.start(owner)).toBe(true);
       expect(await queue.release(owner)).toBe(true);
       const [retry] = await queue.reserve({

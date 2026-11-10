@@ -6,4 +6,4 @@ allOf:
       content:
         type: string
         nullable: true
-        description: Plain-text body for content-email and content-telegram templates.
+        description: Optional plain-text copy with scalar placeholders, passed to the Host component.
