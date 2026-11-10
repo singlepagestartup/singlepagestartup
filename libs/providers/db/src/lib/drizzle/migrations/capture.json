@@ -1,5 +1,5 @@
 {
-  "fingerprint": "13f9385c3ab3056d6e77ec6201cd1ef3e6bf345de1df0485615c7c22a45a84d1",
+  "fingerprint": "5fcaf89ddb11dc7c53fcf3360cb560cbf949bd39060c41ca9757b1cfd3beeaf6",
   "resources": [
     {
       "resource": "public.bg_as_to_ee_me_ps_bd9",
@@ -1603,6 +1603,7 @@
         "id": "id",
         "title": "title",
         "url": "url",
+        "slug": "slug",
         "description": "description",
         "createdAt": "created_at",
         "updatedAt": "updated_at",
