@@ -16,10 +16,6 @@ export const controllerGuardedRoutes: IRouteRule[] = [
     methods: ["GET"],
   },
   {
-    regexPath: /^\/api\/file-storage\/files\/[^/]+\/content$/,
-    methods: ["GET", "HEAD"],
-  },
-  {
     regexPath: new RegExp(
       `^/api/rbac/subjects${UUID_PATH_SUFFIX_REGEX.source}`,
     ),
@@ -89,29 +85,18 @@ export const allowedRoutes: IRouteRule[] = [
       /^\/api\/rbac\/subjects\/authentication\/oauth\/[a-z0-9-]+\/callback$/,
     methods: ["GET"],
   },
+  /** Host page composition reads. */
   {
-    regexPath: /^\/public\/file-storage\/.+$/,
-    methods: ["GET"],
-  },
-  /**
-   * The read surface of the public modules, one shape per route: find, count
-   * and find-by-id on every entity, plus the three page reads the host app
-   * calls anonymously. The single unanchored prefix rule these replaced
-   * matched every path under those modules, so it would open whatever route a
-   * module adds next (issue #276).
-   */
-  {
-    regexPath: /^\/api\/(host|website-builder|file-storage)\/[a-z0-9-]+\/?$/,
+    regexPath: /^\/api\/host\/[a-z0-9-]+\/?$/,
     methods: ["GET"],
   },
   {
-    regexPath:
-      /^\/api\/(host|website-builder|file-storage)\/[a-z0-9-]+\/count$/,
+    regexPath: /^\/api\/host\/[a-z0-9-]+\/count$/,
     methods: ["GET"],
   },
   {
     regexPath: new RegExp(
-      `^/api/(host|website-builder|file-storage)/[a-z0-9-]+${UUID_PATH_SUFFIX_REGEX.source}`,
+      `^/api/host/[a-z0-9-]+${UUID_PATH_SUFFIX_REGEX.source}`,
     ),
     methods: ["GET"],
   },

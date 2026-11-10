@@ -428,3 +428,33 @@ it("observe mode always reads fresh data and reports an untracked cached-body di
     cacheHits: 0,
   });
 });
+
+it("preserves the delivery headers on repeated reads of a no-store JSON file", async () => {
+  values.clear();
+  const key = "public.fixture|id|file";
+  const store = {
+    status: async () => ({ epoch: "test" }),
+    versions: async () => ({ [key]: "0" }),
+    covered: async () => true,
+  };
+  const runtime = createConsistencyRuntime({
+    store: store as any,
+    verifyAuthorization: async () => {},
+  });
+  const app = new Hono();
+  app.use(runtime.middleware());
+  app.use(runtime.cache());
+  app.get("/api/file-storage/files/test/content", (c) => {
+    consistencyContext.getStore()!.dependencies.set(key, "0");
+    c.header("Cache-Control", "private, no-store");
+    c.header("Content-Security-Policy", "sandbox");
+    return c.json({ file: true });
+  });
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const response = await app.request("/api/file-storage/files/test/content");
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Cache-Control")).toContain("no-store");
+    expect(response.headers.get("Content-Security-Policy")).toBe("sandbox");
+    expect(values.size).toBe(0);
+  }
+});

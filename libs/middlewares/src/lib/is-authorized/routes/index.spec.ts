@@ -65,27 +65,24 @@ describe("is-authorized allowed routes", () => {
     }
   });
 
-  /**
-   * BDD Scenario: public module reads are allowed, dump and unknown reads
-   *               are not.
-   *
-   * Given: the composed allow-list matcher with the anchored read rules.
-   * When: the four public read shapes and the dump path are tested for each of
-   *       host, website-builder and file-storage.
-   * Then: find, count, find-by-id and the three page reads are allowed and the
-   *       dump path is not.
-   */
-  it("allows the public module reads without opening their dump route", () => {
-    for (const module of ["host", "website-builder", "file-storage"]) {
-      expect(matcher.matches(`/api/${module}/widgets`, "GET")).toBe(true);
-      expect(matcher.matches(`/api/${module}/widgets/`, "GET")).toBe(true);
-      expect(matcher.matches(`/api/${module}/widgets/count`, "GET")).toBe(true);
-      expect(matcher.matches(`/api/${module}/widgets/${uuid}`, "GET")).toBe(
-        true,
-      );
-      expect(matcher.matches(`/api/${module}/widgets/dump`, "GET")).toBe(false);
+  it("delegates Website Builder and File Storage API reads to RBAC", () => {
+    for (const resource of ["website-builder/widgets", "file-storage/files"]) {
+      for (const suffix of ["", "/", "/count", `/${uuid}`, "/dump"]) {
+        expect(matcher.matches(`/api/${resource}${suffix}`, "GET")).toBe(false);
+      }
     }
+    for (const method of ["GET", "HEAD"]) {
+      expect(
+        matcher.matches(`/api/file-storage/files/${uuid}/content`, method),
+      ).toBe(false);
+    }
+  });
 
+  it("allows the Host read routes", () => {
+    for (const suffix of ["", "/", "/count", `/${uuid}`]) {
+      expect(matcher.matches(`/api/host/widgets${suffix}`, "GET")).toBe(true);
+    }
+    expect(matcher.matches("/api/host/widgets/dump", "GET")).toBe(false);
     expect(matcher.matches("/api/host/pages/find-by-url", "GET")).toBe(true);
     expect(matcher.matches("/api/host/pages/urls", "GET")).toBe(true);
     expect(matcher.matches("/api/host/pages/url-segment-value", "GET")).toBe(

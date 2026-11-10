@@ -6,6 +6,7 @@ import { Repository } from "../../repository";
 import { Service as PermissionsToBillingModuleCurrenciesService } from "@sps/rbac/relations/permissions-to-billing-module-currencies/backend/app/api/src/lib/service/singlepage";
 import {
   RouteMatcher,
+  UUID_VALUE_REGEX,
   createMemoryCache,
   normalizeRoutePath,
 } from "@sps/shared-utils";
@@ -195,43 +196,55 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return requirements;
   }
 
+  protected async findRoutePermission({
+    route,
+    method,
+    type,
+  }: IResolveByRouteProps["permission"]) {
+    const segments = route.split("/");
+    if (segments.includes(":uuid")) {
+      return undefined;
+    }
+
+    const exact = await this.findExactPermission({ path: route, method, type });
+    if (exact) {
+      return exact;
+    }
+
+    const permissions = await this.getTemplatePermissions({ method, type });
+    const template = this.findTemplatePermissionByRoute({
+      permissions,
+      route,
+      method,
+      type,
+    });
+    if (template) {
+      return template;
+    }
+
+    const uuidPath = segments
+      .map((segment) => {
+        return UUID_VALUE_REGEX.test(segment) ? ":uuid" : segment;
+      })
+      .join("/");
+    if (uuidPath !== route) {
+      return this.findExactPermission({ path: uuidPath, method, type });
+    }
+    return undefined;
+  }
+
   async resolveByRoute(
     props: IResolveByRouteProps,
   ): Promise<IResolveByRouteResult> {
-    const exactPermission = await this.findExactPermission({
-      path: props.permission.route,
-      method: props.permission.method,
-      type: props.permission.type,
-    });
-    let templatePermissions;
-    if (exactPermission) {
-      templatePermissions = [];
-    } else {
-      templatePermissions = await this.getTemplatePermissions({
-        method: props.permission.method,
-        type: props.permission.type,
-      });
-    }
-    const templatePermission = exactPermission
-      ? undefined
-      : this.findTemplatePermissionByRoute({
-          permissions: templatePermissions,
-          route: props.permission.route,
-          method: props.permission.method,
-          type: props.permission.type,
-        });
-    let methodWildcardPermission;
-    if (exactPermission || templatePermission) {
-      methodWildcardPermission = undefined;
-    } else {
-      methodWildcardPermission = await this.findExactPermission({
+    const { method, type } = props.permission;
+    let matchedPermission = await this.findRoutePermission(props.permission);
+    if (!matchedPermission) {
+      matchedPermission = await this.findExactPermission({
         path: "*",
-        method: props.permission.method,
-        type: props.permission.type,
+        method,
+        type,
       });
     }
-    const permission =
-      exactPermission || templatePermission || methodWildcardPermission;
     const rootPermission = await this.findExactPermission({
       path: "*",
       method: "*",
@@ -239,15 +252,15 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     });
 
     let permissionsToBillingModuleCurrencies;
-    if (props.includeBillingRequirements && permission?.id) {
+    if (props.includeBillingRequirements && matchedPermission?.id) {
       permissionsToBillingModuleCurrencies =
-        await this.getPermissionBillingRequirements(permission.id);
+        await this.getPermissionBillingRequirements(matchedPermission.id);
     } else {
       permissionsToBillingModuleCurrencies = [];
     }
 
     return {
-      permission,
+      permission: matchedPermission,
       rootPermission,
       permissionsToBillingModuleCurrencies,
     };

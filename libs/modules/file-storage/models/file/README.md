@@ -101,8 +101,10 @@ while exposing Retry. No protected Blob enters the global action debug snapshot.
 `GET` and `HEAD /api/file-storage/files/:uuid/content` resolve a File record
 by ID and read the original bytes through the File service. The `content`
 SDK operation sends the caller's credentials and supports cancellation.
-Responses carry `Cache-Control: private, no-store`. The default API serves this route publicly. Downloading a file requires its
-ID and does not check a role, chat membership or article subscription.
+Responses carry `Cache-Control: private, no-store`. RBAC checks the corresponding
+GET or HEAD permission. Both are public by default. To restrict the API download,
+bind both permissions to the required role. An exact content path can restrict
+one file. Metadata, collection reads and direct storage URLs have separate access rules.
 
 The API also serves local files under `/public/...` by path. Anyone with a
 public URL can read those bytes. Both API routes sandbox directly opened

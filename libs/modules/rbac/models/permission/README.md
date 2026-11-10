@@ -27,6 +27,20 @@ fields/startup.ts -> fields/index.ts` composition. `schema.ts` consumes the
 composed fields and constraints; startup-specific overrides stay in their
 respective startup files.
 
+## Website Builder and File Storage reads
+
+The Permission migration installs public GET permissions for each shipped collection,
+its count, and its records by UUID. File content has separate GET and HEAD permissions.
+The migration runs once, including on installations without seed data. Edit these
+permissions and their role bindings in the RBAC admin. New models and custom routes
+need their own permissions.
+
+For example, `GET /api/website-builder/widgets/:uuid` matches a widget UUID.
+The resolver checks the exact path and project bracket templates first. The
+`:uuid` segment matches a full UUID, so `/widgets/dump` needs its own permission.
+A collection permission also covers filtered and unfiltered reads. To restrict
+discovery of records, review collection access alongside individual record permissions.
+
 ## Variants
 
 - `default`: placeholder permission view.

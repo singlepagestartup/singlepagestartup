@@ -375,6 +375,9 @@ export function createConsistencyRuntime(props: IConsistencyRuntimeProps) {
         compactDependencies(context);
         if (
           c.res.status !== 200 ||
+          /(?:^|,)\s*no-store\s*(?:,|$)/i.test(
+            c.res.headers.get("Cache-Control") || "",
+          ) ||
           !context.complete ||
           !context.dependencies.size ||
           !c.res.headers.get("Content-Type")?.includes("application/json")
