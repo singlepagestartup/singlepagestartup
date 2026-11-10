@@ -1,3 +1,5 @@
+import { app as broadcastChannelApp } from "@sps/broadcast/models/channel/backend/app/api";
+import type { Service as BroadcastChannelService } from "@sps/broadcast/models/channel/backend/app/api/src/lib/service";
 import { Container, ContainerModule, interfaces } from "inversify";
 import {
   CRUDService,
@@ -93,11 +95,8 @@ import { Repository as NotificationNotificationRepository } from "@sps/notificat
 import { Configuration as NotificationNotificationConfiguration } from "@sps/notification/models/notification/backend/app/api/src/lib/configuration";
 import { Repository as FileStorageFileRepository } from "@sps/file-storage/models/file/backend/app/api/src/lib/repository";
 import { Configuration as FileStorageFileConfiguration } from "@sps/file-storage/models/file/backend/app/api/src/lib/configuration";
-import { Repository as BroadcastChannelRepository } from "@sps/broadcast/models/channel/backend/app/api/src/lib/repository";
-import { Configuration as BroadcastChannelConfiguration } from "@sps/broadcast/models/channel/backend/app/api/src/lib/configuration";
 import { Service as BroadcastMessageService } from "@sps/broadcast/models/message/backend/app/api/src/lib/service";
-import { Repository as BroadcastMessageRepository } from "@sps/broadcast/models/message/backend/app/api/src/lib/repository";
-import { Configuration as BroadcastMessageConfiguration } from "@sps/broadcast/models/message/backend/app/api/src/lib/configuration";
+import { app as broadcastMessageApp } from "@sps/broadcast/models/message/backend/app/api";
 import { Repository as BroadcastChannelsToMessagesRepository } from "@sps/broadcast/relations/channels-to-messages/backend/app/api/src/lib/repository";
 import { Configuration as BroadcastChannelsToMessagesConfiguration } from "@sps/broadcast/relations/channels-to-messages/backend/app/api/src/lib/configuration";
 import { Repository as HostPageRepository } from "@sps/host/models/page/backend/app/api/src/lib/repository";
@@ -308,12 +307,10 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
   bind<IBroadcastModule>(AgentDI.IBroadcastModule)
     .toDynamicValue(() => {
       return {
-        channel: new CRUDService<any>(
-          new BroadcastChannelRepository(new BroadcastChannelConfiguration()),
-        ),
-        message: new BroadcastMessageService(
-          new BroadcastMessageRepository(new BroadcastMessageConfiguration()),
-        ),
+        channel: broadcastChannelApp.controller
+          .service as BroadcastChannelService,
+        message: broadcastMessageApp.controller
+          .service as BroadcastMessageService,
         channelsToMessages: new CRUDService<any>(
           new BroadcastChannelsToMessagesRepository(
             new BroadcastChannelsToMessagesConfiguration(),

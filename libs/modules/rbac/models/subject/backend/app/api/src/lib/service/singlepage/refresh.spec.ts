@@ -74,7 +74,11 @@ describe("Given: a token presented to the refresh route", () => {
     });
 
     const access = await jwt.verify(result.jwt, "test-jwt-secret", "HS256");
-    const refresh = await jwt.verify(result.refresh, "test-jwt-secret", "HS256");
+    const refresh = await jwt.verify(
+      result.refresh,
+      "test-jwt-secret",
+      "HS256",
+    );
 
     expect(access).toMatchObject({ typ: "access" });
     expect(refresh).toMatchObject({ typ: "refresh" });

@@ -14,7 +14,7 @@ it("reads candidate IDs anonymously through the SDK and rejects malformed or una
       }),
     ).toEqual(["11111111-1111-4111-8111-111111111111"]);
     expect(String(request.mock.calls[0][0])).toContain(
-      "/api/rbac/permissions/public-resource-ids?resource=%2Fapi%2Fcustom%2Fitems",
+      "/api/rbac/roles/public-resource-ids?resource=%2Fapi%2Fcustom%2Fitems",
     );
     expect(request.mock.calls[0][1]?.cache).toBe("no-store");
     const headers = new Headers(request.mock.calls[0][1]?.headers);

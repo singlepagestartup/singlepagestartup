@@ -2,7 +2,7 @@ import {
   route,
   serverHost,
   type IPublicResourceIdsParams,
-} from "@sps/rbac/models/permission/sdk/model";
+} from "@sps/rbac/models/role/sdk/model";
 import {
   consistencyRequestOptions,
   responsePipe,
@@ -37,7 +37,8 @@ export async function action({
   if (
     !Array.isArray(json?.data) ||
     !json.data.every((id) => typeof id === "string")
-  )
+  ) {
     throw new Error("Invalid public resource ID response");
+  }
   return transformResponseItem<IResult>(json);
 }

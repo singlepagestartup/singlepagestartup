@@ -1,3 +1,4 @@
+import { TelegramBot } from "@sps/shared-third-parties/telegram";
 import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
@@ -348,7 +349,7 @@ export class TelegarmBot {
       );
     }
 
-    this.instance = new GrammyBot<TelegramBotContext>(
+    this.instance = new TelegramBot<TelegramBotContext>(
       TELEGRAM_SERVICE_BOT_TOKEN || "",
     );
 

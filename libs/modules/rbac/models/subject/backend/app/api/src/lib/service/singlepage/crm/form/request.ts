@@ -44,7 +44,7 @@ export class Service {
     if (!form) throw new Error("Not Found error. CRM Form not found");
     const normalized = await this.normalize(form, submission);
     const recipients = await this.notificationRecipients();
-    const saved = await this.service.crmModule.request.submit({
+    const saved = await this.service.crmModule.form.submit({
       key,
       digest,
       formId: form.id,

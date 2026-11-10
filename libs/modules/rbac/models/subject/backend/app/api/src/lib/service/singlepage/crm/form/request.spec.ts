@@ -79,7 +79,7 @@ function fixture() {
   const deps = {
     findById: jest.fn(async () => ({ id: subjectId })),
     crmModule: {
-      form: { findById: jest.fn(async () => form) },
+      form: { findById: jest.fn(async () => form), submit: repository.submit },
       formsToSteps: { find: find([{ stepId: stepA }, { stepId: stepB }]) },
       step: {
         find: find([

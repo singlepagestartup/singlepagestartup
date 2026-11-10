@@ -2,11 +2,11 @@ import { randomUUID } from "node:crypto";
 import type {
   IEnqueueMessage,
   IDeliveryOwner,
-  Repository,
-} from "../../repository";
+  DeliveryRepository,
+} from "../../../repository/delivery";
 
 export type IDeliveryState = Awaited<
-  ReturnType<Repository["deliveryStates"]>
+  ReturnType<DeliveryRepository["deliveryStates"]>
 >[number];
 export interface ISelection {
   key: string;
@@ -25,7 +25,7 @@ interface IReserve {
 }
 
 export class DeliveryQueue {
-  constructor(private readonly repository: Repository) {}
+  constructor(private readonly repository: DeliveryRepository) {}
 
   async publish(message: IEnqueueMessage) {
     if (!message.key.trim()) {
@@ -113,6 +113,10 @@ export class DeliveryQueue {
     return this.repository.acknowledgeDelivery(owner, payload, pendingOnly);
   }
 
+  checkpoint(owner: IDeliveryOwner, payload: string) {
+    return this.repository.checkpointDelivery(owner, payload);
+  }
+
   release(owner: IDeliveryOwner) {
     return this.repository.releaseDelivery(owner);
   }
@@ -130,6 +134,16 @@ export class DeliveryQueue {
 
   owns(owner: IDeliveryOwner) {
     return this.repository.ownsDelivery(owner);
+  }
+
+  async removeExpired(channelId: string, before: Date, limit: number) {
+    this.positiveInteger(limit);
+    const removed = await this.repository.removeExpiredDeliveries(
+      channelId,
+      before,
+      limit,
+    );
+    return removed.length;
   }
 
   private positiveInteger(value: number) {

@@ -1,9 +1,9 @@
 import { ConsistencyStore } from "@sps/providers-db";
 import { resourceIdentity, scopeDependencyKey } from "@sps/shared-backend-api";
 import { randomUUID } from "node:crypto";
-import { Service } from "..";
-import { Repository } from "../../repository";
-import { Configuration } from "../../configuration";
+import { Service } from "@sps/crm/models/request/backend/app/api/src/lib/service";
+import { Repository } from "@sps/crm/models/request/backend/app/api/src/lib/repository";
+import { Configuration } from "@sps/crm/models/request/backend/app/api/src/lib/configuration";
 import { Service as FormService } from "@sps/crm/models/form/backend/app/api/src/lib/service";
 import { Repository as FormRepository } from "@sps/crm/models/form/backend/app/api/src/lib/repository";
 import { Configuration as FormConfiguration } from "@sps/crm/models/form/backend/app/api/src/lib/configuration";
@@ -35,6 +35,7 @@ class EffectiveRelationService extends FormsToRequestsService {
 const form = new FormService(
   new FormRepository(new FormConfiguration()),
   {} as any,
+  {} as any,
 );
 afterAll(async () => {
   await getPostgresClient().end();
@@ -52,12 +53,16 @@ it("serializes concurrent retries into one committed Request and relation while 
   const requestDb = request.repository.db;
   const relationDb = relations.repository.db;
   const key = `pr374-${randomUUID()}`;
-  request.configureSubmissions({ formsToRequests: relations });
+  const submissions = new FormService(
+    new FormRepository(new FormConfiguration()),
+    {} as any,
+    { request, formsToRequests: relations },
+  );
   let requestId: string | undefined;
   try {
     const results = await Promise.all(
       [1, 2].map(() =>
-        request.submit({
+        submissions.submit({
           key,
           digest: "digest",
           formId: owner.id,
@@ -86,12 +91,19 @@ it("serializes concurrent retries into one committed Request and relation while 
       BigInt((await store.versions([dependency]))[dependency]),
     ).toBeGreaterThan(0n);
     await expect(
-      request.submit({ key, digest: "changed", formId: owner.id, payload: {} }),
+      submissions.submit({
+        key,
+        digest: "changed",
+        formId: owner.id,
+        payload: {},
+      }),
     ).rejects.toThrow("different values");
     expect(request.repository.db).toBe(requestDb);
     expect(relations.repository.db).toBe(relationDb);
   } finally {
-    if (requestId) await request.delete({ id: requestId });
+    if (requestId) {
+      await request.delete({ id: requestId });
+    }
     await form.delete({ id: owner.id });
   }
 });
@@ -108,11 +120,20 @@ it("rolls back both records when the relation service fails after its insert", a
   const relations = new FailingRelationService(
     new FormsToRequestsRepository(new FormsToRequestsConfiguration()),
   );
-  request.configureSubmissions({ formsToRequests: relations });
+  const submissions = new FormService(
+    new FormRepository(new FormConfiguration()),
+    {} as any,
+    { request, formsToRequests: relations },
+  );
   const key = `pr374-${randomUUID()}`;
   try {
     await expect(
-      request.submit({ key, digest: "digest", formId: owner.id, payload: {} }),
+      submissions.submit({
+        key,
+        digest: "digest",
+        formId: owner.id,
+        payload: {},
+      }),
     ).rejects.toThrow("relation failure");
     expect(
       await request.findSubmission({ key, digest: "digest" }),

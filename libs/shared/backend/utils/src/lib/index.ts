@@ -1,4 +1,8 @@
 export { util as authorization } from "./authorization";
+export {
+  DeliveryRateLimit,
+  DeliveryDeferredError,
+} from "./delivery-rate-limit";
 export { estimateAiContextTokens } from "./ai-context-tokens";
 export {
   assertKnowledgeAttachmentBytes,
@@ -50,3 +54,31 @@ export {
   runWithRequestDiagnostics,
   currentRequestDiagnostics,
 } from "./request-diagnostics";
+export {
+  isPrivateNetworkAddress,
+  readClientAddress,
+  createClientAddressReader,
+  clientAddressRateLimitKey,
+} from "./client-address";
+export {
+  assertWithinRateLimit,
+  createRateLimiter,
+  RateLimitError,
+  type IRateLimiter,
+  type IRateLimitStoreProvider,
+} from "./rate-limit";
+export {
+  AuthenticationAttempts,
+  type IAttemptReservation,
+} from "./authentication-attempts";
+export {
+  SecurityEvents,
+  type ISecuritySummary,
+  type ISecurityEventKind,
+} from "./security-events";
+
+export { type IAtomicStore } from "./kv-operation";
+export {
+  interpolateNotificationTemplate,
+  getNotificationTemplateChannel,
+} from "./notification-template";

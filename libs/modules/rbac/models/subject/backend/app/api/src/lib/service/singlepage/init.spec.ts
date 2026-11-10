@@ -251,7 +251,11 @@ describe("Given: a session initialization request", () => {
     });
 
     const access = await jwt.verify(result.jwt, "test-jwt-secret", "HS256");
-    const refresh = await jwt.verify(result.refresh, "test-jwt-secret", "HS256");
+    const refresh = await jwt.verify(
+      result.refresh,
+      "test-jwt-secret",
+      "HS256",
+    );
 
     expect(result.reused).toBe(true);
     expect(access).toMatchObject({ typ: "access" });

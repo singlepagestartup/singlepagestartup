@@ -16,6 +16,10 @@ export class App extends ModuleApp<Apps> implements IApp {
     super(exceptionFilter, () => new Apps());
   }
 
+  async resolveSubjectId(token: string): Promise<string> {
+    return this.apps.resolveSubjectId(token);
+  }
+
   protected override configureApps(): void {
     this.apps.configure();
   }

@@ -81,3 +81,9 @@ export const HOST_SERVICE_REVALIDATION_SECRET_HEADER =
  * process instead of when those entries expire.
  */
 export const RBAC_REVOKED_SUBJECT_CONTEXT_KEY = "rbac.revoked-subject";
+
+export {
+  securityEventKinds,
+  securityNotificationTopicSlug,
+  securityNotificationTemplateSlugs,
+} from "./security";

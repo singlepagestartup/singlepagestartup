@@ -166,3 +166,10 @@ messages.
 When changing Telegram behavior, update the module README where the behavior is
 implemented. Keep this README focused on the Telegram app as a transport
 adapter and its integration boundaries.
+
+Outbound chat writes use the shared Notification rate limiter. Configure the same
+KV store and `NOTIFICATION_TELEGRAM_*` settings as the API, including for local
+development. The default is 25 messages/sec per bot, 1100 ms per private chat and
+3100 ms per group/channel. Telegram `retry_after` is shared through Redis.
+Payment/callback acknowledgements and polling are not delayed by the notification
+budget. See [Notification delivery](../../libs/modules/notification/models/notification/README.md#delivery-retries-and-provider-limits).

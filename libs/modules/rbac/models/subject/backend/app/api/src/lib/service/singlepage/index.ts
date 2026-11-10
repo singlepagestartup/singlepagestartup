@@ -1,3 +1,4 @@
+import { Service as SecurityNotifications } from "./security-notifications";
 import {
   Service as CreateCartOrder,
   type IExecuteProps as ICreateCartOrderProps,
@@ -225,6 +226,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   subjectsToBillingModuleCurrencies: SubjectsToBillingModuleCurrenciesService;
 
   constructor(
+    @inject(SubjectDI.ISecurityNotificationsService)
+    private readonly securityNotifications: SecurityNotifications,
     @inject(DI.IRepository) repository: Repository,
     @inject(SubjectDI.ISocialModule) socialModule: ISocialModule,
     @inject(SubjectDI.IEcommerceModule) ecommerceModule: IEcommerceModule,
@@ -284,6 +287,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     this.subjectsToBillingModuleCurrencies = subjectsToBillingModuleCurrencies;
     this.blogModule = blogModule;
     this.subjectsToBlogModuleArticles = subjectsToBlogModuleArticles;
+  }
+
+  async sendSecurityNotifications() {
+    await this.securityNotifications.execute();
   }
 
   configureRoleRevocation() {

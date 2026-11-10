@@ -1,89 +1,129 @@
-/**
- * BDD Suite: Email generator response typing.
- *
- * Given: the email generator renders the document that is delivered as an email body.
- * When: it answers a caller.
- * Then: it keeps its HTML content type and resolves only variants the table actually owns.
- */
-
 import { NextRequest } from "next/server";
-import pako from "pako";
-import QueryString from "qs";
-import { Fragment } from "react";
-import { Component } from "./component";
-import { variants } from "./component/variants";
-import { GET } from "./route";
+import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { POST } from "./route";
+import { PassThrough } from "node:stream";
+import { renderToPipeableStream } from "react-dom/server";
+import type { ReactNode } from "react";
 
-// `render` reaches for a dynamic import that jest cannot run without ESM VM
-// modules, and the markup it produces is not what this suite is about.
+// React Email's wrapper dynamically imports react-dom/server, which requires
+// Jest VM modules. Use the same React server renderer through a static import
+// here; the full React Email wrapper is also exercised by the live HTTP check.
+// The actual registry, email components and Tailwind conversion stay real.
 jest.mock("@react-email/components", () => ({
   ...jest.requireActual("@react-email/components"),
-  render: jest.fn(async () => '<html lang="en"></html>'),
+  render: (element: ReactNode) =>
+    new Promise<string>((resolve, reject) => {
+      const output = new PassThrough();
+      let html = "";
+      output.on("data", (chunk) => {
+        html += chunk.toString();
+      });
+      output.on("end", () => resolve(html));
+      output.on("error", reject);
+      const stream = renderToPipeableStream(element, {
+        onAllReady() {
+          stream.pipe(output);
+        },
+        onError: reject,
+      });
+    }),
 }));
 
-function encodePayload(payload: unknown) {
-  return Buffer.from(pako.deflate(JSON.stringify(payload))).toString("base64");
-}
-
-function createRequest(params: Record<string, unknown>) {
+function createRequest(
+  body: Record<string, unknown>,
+  secret = RBAC_SECRET_KEY,
+) {
   return new NextRequest(
-    "http://localhost:3000/api/email-generator/index.html?" +
-      QueryString.stringify(params, { encodeValuesOnly: true }),
+    "http://localhost:3000/api/email-generator/index.html",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-RBAC-SECRET-KEY": secret ?? "",
+      },
+      body: JSON.stringify({
+        template: { title: "Security summary", content: null },
+        ...body,
+      }),
+    },
   );
 }
 
-describe("email generator route", () => {
-  /**
-   * BDD Scenario
-   *
-   * Given: the email generator renders an email body for delivery.
-   * When: it answers a request naming a shipped variant.
-   * Then: it keeps the HTML content type and forbids content sniffing.
-   */
-  it("keeps the HTML content type and forbids sniffing for a shipped variant", async () => {
-    const response = await GET(
+// Verify the actual email component tree, escaping and compiled styles.
+describe("Host email rendering", () => {
+  beforeEach(() => jest.spyOn(console, "error").mockImplementation(() => {}));
+  afterEach(() => jest.restoreAllMocks());
+
+  it("renders editable copy in the Host layout and escapes it exactly once", async () => {
+    const response = await POST(
       createRequest({
-        variant: "generate-email-ecommerce-order-status-changed-default",
-        data: encodePayload({}),
+        variant: "content-email",
+        language: "ru",
+        template: {
+          title: "<Security> & project",
+          content:
+            "<script>alert(1)</script> & test\nNext line\n\nSecond paragraph",
+        },
       }),
     );
-
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toContain("text/html");
-    expect(response.headers.get("x-content-type-options")).toBe("nosniff");
     expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(response.headers.get("x-content-type-options")).toBe("nosniff");
+    const html = await response.text();
+    expect(html).toContain('lang="ru"');
+    expect(html).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
+    expect(html).toContain("&lt;Security&gt; &amp; project");
+    expect(html).not.toContain("&amp;lt;");
+    expect(html).not.toContain("<script>");
+    expect(html).toContain("Second paragraph");
+    expect(html).toMatch(/max-width:\s*600px/);
+    expect(html).toMatch(/font-size:\s*15px/);
   });
 
-  /**
-   * BDD Scenario
-   *
-   * Given: a variant name matching an inherited object member instead of the variant table.
-   * When: the email generator dispatches it.
-   * Then: it is treated as an unknown variant rather than resolved.
-   */
-  it.each(["constructor", "toString", "valueOf", "hasOwnProperty"])(
-    "treats the inherited member %s as an unknown variant",
-    (variant) => {
-      const element = Component({ variant } as any);
+  it("keeps existing component payloads working without saved content", async () => {
+    const response = await POST(
+      createRequest({
+        variant: "generate-email-agent-result-admin",
+        data: { title: "Existing agent result" },
+      }),
+    );
+    expect(response.status).toBe(200);
+    expect(await response.text()).toContain("Existing agent result");
+  });
 
-      expect(element.type).toBe(Fragment);
+  it("fails empty default content before delivery", async () => {
+    const response = await POST(createRequest({ variant: "content-email" }));
+    expect(response.status).toBe(404);
+  });
+
+  it.each(["constructor", "toString", "no-such-variant"])(
+    "rejects unknown variant %s",
+    async (variant) => {
+      const response = await POST(
+        createRequest({ variant, data: { marker: "private marker" } }),
+      );
+      expect(response.status).toBe(404);
+      const body = await response.text();
+      expect(body).not.toContain("private marker");
     },
   );
 
-  /**
-   * BDD Scenario
-   *
-   * Given: a variant name the table actually owns.
-   * When: the email generator dispatches it.
-   * Then: the owned variant component is the one that renders.
-   */
-  it("renders the owned component for a shipped variant", () => {
-    const element = Component({
-      variant: "generate-email-ecommerce-order-status-changed-default",
-    } as any);
+  it("rejects unauthenticated rendering before parsing the body", async () => {
+    const request = createRequest({ variant: "content-email" }, "wrong-secret");
+    const json = jest.spyOn(request, "json");
+    const response = await POST(request);
+    expect(response.status).toBe(403);
+    expect(json).not.toHaveBeenCalled();
+  });
 
-    expect(element.type).toBe(
-      variants["generate-email-ecommerce-order-status-changed-default"],
+  it("rejects malformed input without returning internal details", async () => {
+    const response = await POST(
+      createRequest({ variant: "content-email", template: { content: 42 } }),
     );
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual({
+      error: "Not Found error. Template unavailable",
+    });
   });
 });

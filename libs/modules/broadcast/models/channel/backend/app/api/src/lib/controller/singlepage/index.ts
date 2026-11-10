@@ -1,3 +1,4 @@
+import { Handler as Delivery } from "./delivery";
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import { DI, RESTController } from "@sps/shared-backend-api";
@@ -17,6 +18,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     super(service);
     this.service = service;
     this.bindHttpRoutes([
+      { method: "POST", path: "/delivery", handler: this.delivery },
       {
         method: "GET",
         path: "/",
@@ -68,6 +70,10 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         handler: this.delete,
       },
     ]);
+  }
+
+  delivery(c: Context) {
+    return new Delivery(this.service).execute(c);
   }
 
   async messageCreate(c: Context, next: Next): Promise<Response> {

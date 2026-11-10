@@ -216,6 +216,201 @@ renders the supplied totals and receipt without querying generic Ecommerce
 endpoints. Zero is a valid total, including a free subscription. Standalone
 Ecommerce readers retain their own authorization requirements.
 
+## Rate limits
+
+`ApiRateLimitMiddleware` runs before body parsing, observers, permission queries,
+HTTP caching and public file reads. It applies to all API routes, including
+public routes and the WebSocket handshake. CORS preflight ends before admission;
+WebSocket frames and the Next.js Host are outside this middleware.
+
+Every visitor spends an IP budget. A valid access JWT also spends a Subject
+budget. RBAC resolves the Subject and checks token type, expiry and logout
+revocation using its existing service. Changing devices, refreshing a JWT or
+changing social profiles does not create a new Subject budget. An invalid token
+cannot assign another Subject's ID to a counter. Conflicting header and cookie
+credentials are refused. Requests bearing the verified operator secret are
+exempt from the general visitor budgets, so nested server SDK calls do not
+exhaust one budget for the entire application. The separate wrong-secret guard
+still applies.
+
+| Budget              | Default | Environment variable                |
+| ------------------- | ------- | ----------------------------------- |
+| IP, 10 seconds      | 100000  | `API_RATE_LIMIT_BURST_PER_ADDRESS`  |
+| IP, minute          | 600000  | `API_RATE_LIMIT_MINUTE_PER_ADDRESS` |
+| Subject, 10 seconds | 20000   | `API_RATE_LIMIT_BURST_PER_SUBJECT`  |
+| Subject, minute     | 120000  | `API_RATE_LIMIT_MINUTE_PER_SUBJECT` |
+
+These defaults leave room for pages assembled from many widgets and related
+models. The minute budgets allow six full short-window budgets; the IP budgets
+are five times the Subject budgets to accommodate shared network addresses.
+They are starting values, not measured server capacity or a definition of an
+attack. Tune them against ordinary page loads, polling and expensive operations.
+Set overrides in `apps/api/.env` locally or `tools/deployer/.env` for deployment,
+then restart or redeploy API. Empty settings use the defaults. Authentication
+routes retain their separate, lower budgets against credential guessing.
+A fixed window can admit two budgets around its boundary; the independent minute
+window also counts requests rejected by the short window. This mechanism limits
+request admission, not the execution time or concurrency of work already admitted.
+High-cost routes may need tighter domain limits and bounded execution queues.
+
+Counters live in the configured KV store under `rate-limit:*`, shared by all API
+replicas. Counter increments and TTL updates run in one Redis transaction. No
+ban is written to a Subject or social profile. HTTP 429 includes `Retry-After`
+and `Cache-Control: no-store`; access resumes when the exhausted window ends.
+IPv4-mapped addresses are normalized and IPv6 clients share a /64 budget.
+Unknown peer information uses a common budget instead of bypassing the guard.
+
+The global guard returns HTTP 503 if KV is unavailable. Commands have a bounded
+deadline; after a failure each process waits at least one second before retrying
+KV. Requests are refused during that interval, with no retry queue. The explicit
+`RBAC_RATE_LIMIT_ENABLED=false` switch disables limits for controlled tests.
+The lower-level route limiter remains configurable for standalone use; the
+application's global guard enforces availability of the shared store first.
+
+Authentication retains stricter, independent windows of
+`RBAC_RATE_LIMIT_WINDOW_IN_SECONDS` (default 60):
+
+| Routes under `/api/rbac/subjects/authentication`      | Counter                        | Default                        |
+| ----------------------------------------------------- | ------------------------------ | ------------------------------ |
+| `POST /email-and-password/authentication`             | IP: all calls; login: failures | 20 / 10, plus 50 failures/hour |
+| `POST /email-and-password/forgot-password`            | IP and normalized email        | 20 / 10                        |
+| Registration, reset password, Ethereum authentication | IP                             | 20                             |
+| Init and refresh                                      | IP                             | 60                             |
+| Wrong operator secret on any protected route          | IP                             | 10                             |
+
+Settings are `RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ADDRESS`,
+`RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ACCOUNT`,
+`RBAC_RATE_LIMIT_SESSION_ATTEMPTS_PER_ADDRESS` and
+`RBAC_RATE_LIMIT_OPERATOR_SECRET_FAILURES_PER_ADDRESS`. Each route has its own
+counters. Private and loopback addresses are counted too. Login gives the same
+401 for an unknown account and a wrong password. Forgot-password returns
+201 `{ data: { ok: true } }` for every address. Registration still reports an
+existing identity; address confirmation is tracked in #280.
+
+Password authentication reserves a login's short-window and hourly slots in one
+Redis Lua operation before checking credentials. Parallel requests cannot all
+observe an unused slot. HTTP 401 retains the reservation; a successful login,
+validation error or server failure releases its own reservation. Completion is
+idempotent. A process crash conservatively keeps its pending slot until expiry.
+The per-IP route budget still counts every request, including successful logins.
+
+`RBAC_RATE_LIMIT_PASSWORD_FAILURES_PER_HOUR` defaults to 50. The short login
+budget uses `RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ACCOUNT` (10) and
+`RBAC_RATE_LIMIT_WINDOW_IN_SECONDS` (60 seconds). Redis supplies the clock.
+Windows start with activity and expire without being prolonged by rejected
+requests; they are not sliding windows. Requests near a boundary can consume
+both neighboring windows. All API replicas must use the same limits and store.
+Redis loss or eviction also loses counters; use a dedicated, monitored instance.
+If Redis cannot reserve a password attempt, authentication returns HTTP 503.
+
+Fifty failures/hour slows sustained guessing against one login by twelve times
+compared with ten/minute. It allows several rounds of ordinary typing mistakes,
+but cannot protect a known or easily guessed password. The same login is counted
+across IPs, and unknown logins behave identically. An attacker who knows a login
+can still exhaust its temporary password budget. Existing sessions, refresh and
+other login methods retain their own budgets; this does not revoke them or write
+a permanent account ban. MFA and compromised-password screening are separate
+protections. See the [OWASP authentication guidance](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html)
+for the account-lockout tradeoff. These defaults are an SPS policy, not a claim of
+NIST compliance.
+
+### Administrator security summaries
+
+API middleware increments aggregate counters in Redis. The default summary covers
+15 minutes and contains counts of wrong passwords, successful logins after a
+failure, and first limit crossings for authentication, operator secrets and the
+general API. Crossings count exhausted windows, not every rejected request or
+unique people. No submitted login, password, token, request body or IP is included.
+
+The existing Agent `rbac-module-subjects-check` action calls the operator-protected
+Subject `POST /check` each minute through Broadcast. Subject dispatches the latest
+closed summary before checking orders. Reporting failures do not stop the order
+check. There is no additional timer and no Notification import into middleware.
+The action must remain scheduled in the installation's Agent data, and the
+normal Agent cron trigger must be running.
+
+| Setting                                   | Default | Meaning                                                    |
+| ----------------------------------------- | ------- | ---------------------------------------------------------- |
+| `SECURITY_NOTIFICATIONS_ENABLED`          | `true`  | Collect and deliver summaries                              |
+| `SECURITY_NOTIFICATION_WINDOW_IN_SECONDS` | `900`   | Summary interval, 60–3600 seconds                          |
+| `SECURITY_NOTIFICATION_FAILURE_THRESHOLD` | `20`    | Wrong passwords needed to notify when no limit was crossed |
+
+Any recorded limit crossing also triggers a summary. A single failed password
+without a limit crossing does not send an alert. All three settings and the new
+hourly password budget are forwarded by local deployment and both Actions
+environments. Set them in `apps/api/.env` locally or `tools/deployer/.env` when
+deploying, then restart API. In Actions use the matching repository Secrets;
+preview names have the `PREVIEW_` prefix.
+
+Subject resolves current `admin` role assignments and their linked Identities at
+delivery time, with a maximum of 20 administrators per run. A configured Telegram
+bot and linked Telegram identity are preferred. A configured SES sender and linked
+email are used when Telegram is absent or fails. Admin contacts must be maintained
+by the installation owner; the legacy email identity does not itself prove email
+ownership. Delivery credentials remain the existing Notification configuration.
+
+Security summaries require a Notification Topic with slug `security` and at
+least one Template with a title and a matching delivery channel. Default variants:
+
+| Channel  | Template slug               | Variant            |
+| -------- | --------------------------- | ------------------ |
+| Telegram | `security-summary-telegram` | `content-telegram` |
+| Email    | `security-summary-email`    | `content-email`    |
+
+A project may select its own Host variant instead. It receives the same summary
+payload and optional saved Content; delivery limits do not depend on the variant
+name. Default `content-*` variants require Content.
+
+Set Title and content in Admin v2 → Notification → Template. The Settings page
+(`/ru/admin/settings` or `/en/admin/settings`) provides the exact records, an
+example body and links to their forms. Nothing is created automatically. Missing
+Topic or usable templates skips delivery with
+`security.summary.configuration-missing`; rate limiting and server logs remain
+active. Removing a channel's template disables that channel. The delivery job
+does not fall back to a hardcoded message.
+
+Template data contains `project`, `incidentId`, `start` and `end` (UTC ISO
+timestamps), and `counts` for `password-failed`, `password-limited`,
+`password-recovered`, `auth-limited`, `operator-mismatch`, `operator-limited`,
+`api-limited`. Absent counters are zero. Passwords, tokens, attempted logins and
+raw IP addresses are excluded. Each notification links to its Topic and attempted
+Templates using the ordinary Notification relations and the shared provider.
+
+One private Broadcast message, `security-summary` in `security-notifications`,
+coordinates all replicas. Each summary has at most three worker attempts and each
+recipient at most three transport calls, including fallback. Calls have a
+five-second timeout. Notification records have a stable internal UUID per period
+and Subject; an already sent record prevents another delivery through either
+channel. The public CRUD path still generates its own IDs. Private queue payloads
+are excluded from ordinary Broadcast reads.
+
+The generic internal `Notification.sendBounded` operation owns the shared retry
+budget and calls the regular `provider`/Template renderer. Its caller must hold
+the Broadcast lease. Records use `sending`, `error` or `sent`, never `new`, so
+Topic `send-all` cannot bypass the bounded retry policy. Both the email and
+Telegram templates are restricted to one rendered message per attempt.
+
+The next period replaces an undelivered old summary. A prolonged outage does not
+create an increasing queue or replay old periods on recovery; summaries are
+best-effort alerts and server logs remain the diagnostic record. Redis retains
+only recent aggregate buckets. A crash after a provider accepted a message but
+before PostgreSQL recorded success can still cause a duplicate notification.
+
+Delivery outcomes appear in server logs as `security.summary.delivery`,
+`security.summary.delivery-failed` or `security.summary.dispatch-failed`. A missing
+admin contact produces a delivery record with `recipients: 0`. Redis reporting
+failures use `security.summary.unavailable`, throttled to once/minute/process.
+Notification stores `sending-security`, `sent` or `error`, the period, counts and
+attempt count; these records never enter the generic `new` notification sender.
+Read production logs using the commands in [the deployer guide](../../../../../tools/deployer/README.md#finding-an-api-error).
+
+`RBAC_RATE_LIMIT_TRUSTED_PROXY_CIDRS` is a comma-separated list of proxy networks.
+Direct API development trusts none. The reader starts with Bun's socket peer,
+walks `X-Forwarded-For` from right to left, and stops at the first untrusted IP.
+It never trusts an arbitrary client's header or skips private addresses. See
+[API admission and proxy addresses](../../../../../tools/deployer/README.md#api-admission-and-proxy-addresses)
+for deployment and log queries.
+
 ## Anonymous Session Lifecycle
 
 A subject and a JWT are issued on the first visit, including public browsing,
