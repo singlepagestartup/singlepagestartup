@@ -4,11 +4,11 @@
     "ru": "Начать со своих материалов"
   },
   "subtitle": {},
-  "url": "/ai-chat/create-account",
+  "url": "/rbac/subject/authentication/email-and-password/registration?returnTo=/ai-chat/projects",
   "className": "",
   "id": "fdb0358d-78dd-4583-9f2f-d2699eaa64a6",
   "createdAt": "2026-10-27T08:41:00.930Z",
-  "updatedAt": "2026-10-27T15:00:17.803Z",
+  "updatedAt": "2026-11-10T23:11:44.577Z",
   "variant": "footer-link",
   "adminTitle": "Начать со своих материалов",
   "slug": "ai-chat-editable-footer-button-0"

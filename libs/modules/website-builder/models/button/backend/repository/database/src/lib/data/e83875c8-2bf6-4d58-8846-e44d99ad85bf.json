@@ -4,11 +4,11 @@
     "ru": "Начать со своих материалов"
   },
   "subtitle": {},
-  "url": "/ai-chat/create-account",
+  "url": "/rbac/subject/authentication/email-and-password/registration?returnTo=/ai-chat/projects",
   "className": "",
   "id": "e83875c8-2bf6-4d58-8846-e44d99ad85bf",
   "createdAt": "2026-10-27T08:40:55.218Z",
-  "updatedAt": "2026-10-27T15:00:16.863Z",
+  "updatedAt": "2026-11-10T23:11:44.175Z",
   "variant": "action",
   "adminTitle": "Начать со своих материалов",
   "slug": "ai-chat-editable-hero-button-0"
