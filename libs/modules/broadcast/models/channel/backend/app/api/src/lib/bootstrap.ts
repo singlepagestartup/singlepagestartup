@@ -11,12 +11,11 @@ import { Controller } from "./controller";
 import { Service } from "./service";
 import { App } from "./app";
 import { ChannelDI } from "./di";
-import { Service as MessageService } from "@sps/broadcast/models/message/backend/app/api/src/lib/service/singlepage";
-import { Repository as MessageRepository } from "@sps/broadcast/models/message/backend/app/api/src/lib/repository";
+import { Service as MessageService } from "@sps/broadcast/models/message/backend/app/api/src/lib/service";
+import { app as messageApp } from "@sps/broadcast/models/message/backend/app/api";
 import { Configuration as MessageConfiguration } from "@sps/broadcast/models/message/backend/app/api/src/lib/configuration";
-import { Service as ChannelsToMessagesService } from "@sps/broadcast/relations/channels-to-messages/backend/app/api/src/lib/service/singlepage";
-import { Repository as ChannelsToMessagesRepository } from "@sps/broadcast/relations/channels-to-messages/backend/app/api/src/lib/repository";
-import { Configuration as ChannelsToMessagesConfiguration } from "@sps/broadcast/relations/channels-to-messages/backend/app/api/src/lib/configuration";
+import { Service as ChannelsToMessagesService } from "@sps/broadcast/relations/channels-to-messages/backend/app/api/src/lib/service";
+import { app as channelsToMessagesApp } from "@sps/broadcast/relations/channels-to-messages/backend/app/api";
 
 const bindings = new ContainerModule((bind: interfaces.Bind) => {
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
@@ -29,19 +28,12 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
     .toDynamicValue(() => new DeliveryRepository(new MessageConfiguration()))
     .inSingletonScope();
   bind<MessageService>(ChannelDI.IMessageService)
-    .toDynamicValue(
-      () =>
-        new MessageService(new MessageRepository(new MessageConfiguration())),
-    )
+    .toDynamicValue(() => messageApp.controller.service as MessageService)
     .inSingletonScope();
   bind<ChannelsToMessagesService>(ChannelDI.IChannelsToMessagesService)
     .toDynamicValue(
       () =>
-        new ChannelsToMessagesService(
-          new ChannelsToMessagesRepository(
-            new ChannelsToMessagesConfiguration(),
-          ),
-        ),
+        channelsToMessagesApp.controller.service as ChannelsToMessagesService,
     )
     .inSingletonScope();
 });

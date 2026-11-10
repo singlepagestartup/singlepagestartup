@@ -30,3 +30,10 @@ payload and expiration of ordinary messages. Its CRUD queries exclude durable
 payloads; editing or deleting a durable payload through Message returns a conflict.
 Read an announced delivery through Channel's message feed or the
 ChannelsToMessages `message` SDK operation. Private deliveries stay outside both readers.
+
+The internal service method `findPayloadById` reads a payload through an injected
+shared `DatabaseRepository`, including durable payloads. It has no HTTP route.
+Its higher caller checks visible channel membership before using it. The public
+CRUD repository retains its ordinary-message scope; the internal reader does
+not change that scope or bypass the effective Startup service. Both repositories
+use the model's select schema and shared consistency tracking.

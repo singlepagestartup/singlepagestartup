@@ -737,8 +737,9 @@ OPEN_ROUTER_API_KEY=sk-or-v1-...
 
 `api.sh` writes the selected provider, OpenRouter model, and API key into the
 server API environment. `llm.sh` writes the local Ollama model and dimensions
-into the server LLM environment. `github_deployer.sh` creates the same GitHub
-Actions secrets; preview deployments use their `PREVIEW_`-prefixed variants.
+into the server LLM environment. `github_deployer.sh` stores the provider/model settings in GitHub Actions
+Variables and keeps the API key in Secrets. Preview deployments use their
+`PREVIEW_`-prefixed names.
 
 Changing the provider or embedding model requires a complete Knowledge
 reindex. Do not search a database containing vectors from the previous model.
@@ -782,9 +783,53 @@ FILE_STORAGE_MAX_UPLOAD_BYTES=52428800
 
 `github_deployer.sh` syncs the value to `FILE_STORAGE_MAX_UPLOAD_BYTES` for
 production and `PREVIEW_FILE_STORAGE_MAX_UPLOAD_BYTES` for preview. The
-Ansible workflow reads the corresponding secret and `api.sh` writes the
+Ansible workflow reads the corresponding Variable and `api.sh` writes the
 limit into the server API environment. Set `API_MAX_REQUEST_BODY_BYTES`
 (128 MiB by default) above the largest upload, allowing for multipart overhead.
+
+### Optional AWS S3 provisioning
+
+`aws.sh` configures IAM users and permissions for SES whenever
+`ROOT_AWS_ACCESS_KEY_ID` is supplied. S3 provisioning is independent of SES.
+In `tools/deployer/.env`, leave both names empty to skip S3:
+
+```dotenv
+AWS_S3_BUCKET_NAME=
+AWS_S3_DEV_BUCKET_NAME=
+```
+
+Set `AWS_S3_BUCKET_NAME` to create a production bucket. Set
+`AWS_S3_DEV_BUCKET_NAME` only when a separate development bucket is needed.
+Each name must be globally unique. The deployer does not derive bucket names
+from `PROJECT_NAME` or append `dev`. To keep managing an existing development
+bucket, put its exact name in `AWS_S3_DEV_BUCKET_NAME`.
+
+Run `./aws.sh up` from `tools/deployer` as part of the normal deployment, or
+use `./up.sh`, which includes that step. Adding a bucket to an existing SES
+installation updates its IAM policy without issuing new access keys.
+This provisions storage and permissions; the API's storage provider still
+requires the configuration described above. SES sender verification and
+account sending quotas remain AWS account settings.
+
+`./github.sh up` synchronizes both names as Actions Variables, with `PREVIEW_`
+prefixes when invoked with `PREVIEW`. Empty names remove those provisioning
+Variables and their old same-name Secrets, so a later Actions deployment
+cannot reuse an obsolete bucket name. Synchronize after clearing a name.
+Other empty settings retain the synchronization behavior documented below.
+
+Clearing a name does not delete an existing bucket, revoke its IAM policy, or
+erase its previously generated GitHub storage settings. Clean up unused
+resources explicitly after checking their contents. `./aws.sh down` deletes
+only named, empty buckets before removing IAM users and GitHub credentials;
+a non-empty bucket or an AWS error stops the command. It never force-deletes
+stored files.
+
+Local regression checks run the shell orchestration and Ansible conditions,
+templates, and file operations with cloud and GitHub calls replaced by fixtures:
+
+```bash
+node --test tools/deployer/aws/configuration.test.mjs
+```
 
 ## Let's Encrypt certificates
 
@@ -813,15 +858,14 @@ line and store it as a repository secret:
 base64 < ~/Downloads/LightsailDefaultKey.pem | tr -d '\n'
 ```
 
-Configure the following secrets for the production deployment:
+Configure the production connection in GitHub Actions:
 
-- `ANSIBLE_HOST`
-- `ANSIBLE_PORT` (`22` for a default Lightsail instance)
-- `ANSIBLE_USER` (`ubuntu` for a Lightsail Ubuntu image)
-- `ANSIBLE_PRIVATE_KEY_BASE64`
+- Variables: `ANSIBLE_HOST`, `ANSIBLE_PORT` (`22` for a default Lightsail
+  instance), and `ANSIBLE_USER` (`ubuntu` for a Lightsail Ubuntu image).
+- Secrets: `ANSIBLE_PRIVATE_KEY_BASE64`.
 
-Leave `ANSIBLE_PASSWORD` empty. Preview deployments use the corresponding
-`PREVIEW_ANSIBLE_*` secrets. The workflow decodes the key into an ignored file
+Leave `ANSIBLE_PASSWORD` empty when using a private key. Preview deployments
+use the corresponding `PREVIEW_ANSIBLE_*` names in the same respective stores. The workflow decodes the key into an ignored file
 with mode `0600` before Ansible connects. When `github_deployer.sh` is used, it
 encodes `ANSIBLE_PRIVATE_KEY_FILE` automatically if
 `ANSIBLE_PRIVATE_KEY_BASE64` is empty.
@@ -838,7 +882,7 @@ A deployment runs when a pull request from `main` into one of the branches that
 `Env` workflow (`.github/workflows/deployer.yml`) starts only for pull requests
 into `ansible-*` branches and calls `.github/workflows/ansible.yml` only after a
 merge. That workflow runs the script named by the second segment of the branch
-name, `up.sh` or `down.sh`, and uses the `PREVIEW_` secrets when the name
+name, `up.sh` or `down.sh`, and uses the `PREVIEW_` Secrets and Variables when the name
 contains `-preview`. Closing the pull request without merging deploys nothing.
 To start a deployment by hand, choose **Run workflow** on the `Ansible` workflow
 and select one of these branches; the run uses that branch's copy of the
@@ -846,6 +890,96 @@ workflow files. A run started from `main` finds no script and fails.
 
 Never commit a Lightsail private key, the generated `inventory.yaml`, or a real
 `.env` file. They are ignored by the repository.
+
+### Secrets, Variables, and synchronization
+
+GitHub Actions allows 100 repository Secrets and 500 repository Variables.
+A `PREVIEW_` prefix uses another slot in the same repository; it does not create
+an Environment or a separate quota. See the [Secrets reference](https://docs.github.com/en/actions/reference/security/secrets)
+and [Variables reference](https://docs.github.com/en/actions/reference/workflows-and-actions/variables).
+Variables are plain configuration and are not automatically masked in logs.
+
+`github_deployer.sh` and `github_releaser.sh` contain separate, explicit
+`SECRETS` and `VARIABLES` lists. Passwords, private keys, authentication tokens,
+provider credentials, private invite links, and potentially authenticated
+service URLs stay in Secrets. Portainer webhook URLs also stay in Secrets:
+the URL contains the token that can update a service. Service names, domains,
+ports, public service URLs, model names, limits, and public identifiers use
+Variables. Classification is explicit; a word such as `TOKEN` in a lifetime
+setting does not make that setting a credential.
+
+Synchronization reads values from the selected local `tools/deployer/.env`.
+It does not manufacture application defaults. An unset or empty setting is
+skipped, leaving an existing remote value intact, except for the two optional
+S3 provisioning names described above. An explicitly configured
+value is copied, including `0`, `false`, and a value equal to today's default.
+Service scripts, templates, and runtime configuration still supply defaults
+when the corresponding setting is absent. Delete a remote override explicitly
+when you want that setting to follow future defaults again.
+
+For normal synchronization, run from `tools/deployer`:
+
+```bash
+./github.sh up
+# With the preview deployment's values in .env:
+./github.sh up PREVIEW
+```
+
+Both commands target the repository in `GITHUB_REPOSITORY`. They do not deploy
+services. `github.sh down` removes the listed configuration; it is not a reset
+or a prerequisite for an upgrade.
+
+Variables are written before Secrets to free slots occupied by non-sensitive
+settings. Each successful variable write removes the obsolete same-name
+Actions Secret. A failed write leaves that Secret intact and stops the script.
+Retries update the same variable and tolerate an already removed Secret.
+Values and GitHub tokens travel through JSON on stdin, not command arguments;
+console output contains names and status only. Service `fill_github.yaml` and
+`clear_github.yaml` playbooks use the same stores. Codespaces entries retain
+those playbooks' existing Secrets behavior.
+
+#### Updating an installation that stores everything in Secrets
+
+1. Pause automatic releases/deployments for the migration. Keep a complete
+   private copy of the deployment `.env`, including custom overrides.
+2. Update the workflows on `main` and any deployment branches that will run
+   them. The new workflows read non-sensitive settings from `vars.*`; there
+   is no fallback to `secrets.*`. Complete the following synchronization
+   before running a workflow from the new version.
+3. Give the deployment GitHub token repository **Variables: write** and
+   **Secrets: write** permissions (plus its existing branch permissions).
+4. Run `./github.sh up` with production values, and `./github.sh up PREVIEW`
+   with preview values if that deployment exists. This moves configured
+   values and removes their obsolete Secret entries. Unconfigured names
+   remain untouched, except for empty S3 provisioning names; do not delete
+   an override whose value is missing locally.
+5. Move existing generated public service addresses to same-name Variables
+   before building images: `NEXT_PUBLIC_API_SERVICE_URL`,
+   `NEXT_PUBLIC_API_SERVICE_WS_URL`, `NEXT_PUBLIC_HOST_SERVICE_URL`,
+   `NEXT_PUBLIC_TELEGRAM_SERVICE_URL`, and `MCP_SERVICE_PUBLIC_URL`, including
+   the corresponding preview names when used. Service deployment playbooks
+   generate these Variables on a fresh installation and subsequent service
+   deployments. Keep `PORTAINER_*_UPDATE_URL` in Secrets.
+6. Check that production and preview values are separate. Run a Docker build
+   with `VERIFY_ONLY=true`, then resume the normal deployment flow. An old
+   workflow reading a migrated setting from Secrets will receive an empty
+   value, so do not run old deployment branches after migration.
+
+The sync scripts also forward the configurable API/RBAC limits, security
+summary settings, and Telegram webhook secret. Ansible writes
+`HOST_SERVICE_DOCKER_HUB_REPOSITORY_NAME`, `STRIPE_SECRET_KEY`, and `REDIS_PORT`
+under the same names consumed by service scripts.
+
+Local regression checks make no GitHub writes and do not deploy a server:
+
+```bash
+node --test tools/deployer/github/configuration.test.mjs tools/deployer/github/github-node-api/variables.test.js
+```
+
+They exercise production/preview sync and teardown, Secret/Variable selection,
+empty settings, failed variable migration, private `.env` generation, and
+Docker build environment selection using synthetic values and mocked GitHub
+requests.
 
 ## Docker image rollout
 

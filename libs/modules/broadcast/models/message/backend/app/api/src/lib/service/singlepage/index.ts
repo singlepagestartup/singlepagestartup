@@ -1,17 +1,32 @@
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
-import { CRUDService, DI } from "@sps/shared-backend-api";
+import { CRUDService, DI, type IRepository } from "@sps/shared-backend-api";
 import { logger } from "@sps/backend-utils";
 import type { ISelectSchema } from "@sps/broadcast/models/message/backend/repository/database";
 import { Repository } from "../../repository";
+import { MessageDI } from "../../di";
 
 @injectable()
 export class Service extends CRUDService<ISelectSchema> {
   declare repository: Repository;
   private nextCleanup = 0;
 
-  constructor(@inject(DI.IRepository) repository: Repository) {
+  constructor(
+    @inject(DI.IRepository) repository: Repository,
+    @inject(MessageDI.IPayloadRepository)
+    private readonly payloadRepository: Pick<IRepository, "findFirstByField">,
+  ) {
     super(repository);
+  }
+
+  // Internal read. The higher owner checks visible membership before using it.
+  // This method is not registered as an HTTP route.
+  async findPayloadById(props: { id: string }): Promise<ISelectSchema | null> {
+    const message = await this.payloadRepository.findFirstByField(
+      "id",
+      props.id,
+    );
+    return message ?? null;
   }
 
   async create(props: { data: any }) {
@@ -48,8 +63,8 @@ export class Service extends CRUDService<ISelectSchema> {
   }
 
   async requireOrdinaryMessage(id: string) {
-    const durable = await this.repository.isDurable(id);
-    if (durable) {
+    const message = await this.findPayloadById({ id });
+    if (message && message.expiresAt === null) {
       throw new Error(
         "Conflict error. Use the delivery queue to modify a durable message",
       );

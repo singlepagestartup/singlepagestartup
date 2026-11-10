@@ -1,5 +1,5 @@
 ---
-- name: Fill telegram secrets in GitHub
+- name: Fill telegram settings in GitHub
   hosts: all
   become: yes
   vars:
@@ -29,6 +29,7 @@
         dest: "/home/code/github-node-api/{{ item }}"
       loop:
         - create_secret.js
+        - create_variable.js
         - package.json
 
     - name: Install dependencies
@@ -40,6 +41,24 @@
       shell:
         cmd: "cat /home/code/telegram_webhook_token"
       register: telegram_webhook_token
+
+    - name: Set variables in GitHub
+      no_log: true
+      ansible.builtin.command:
+        argv: [node, ./create_variable.js]
+        stdin: >-
+          {{ {
+            'GITHUB_TOKEN': github_token,
+            'GITHUB_REPOSITORY': github_repository,
+            'VARIABLE_NAME': item.variable_name,
+            'VARIABLE_CONTENT': item.variable_content
+          } | to_json }}
+        chdir: "/home/code/github-node-api"
+      loop:
+        - {
+            variable_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'NEXT_PUBLIC_TELEGRAM_SERVICE_URL' }}",
+            variable_content: "https://{{ service_url }}",
+          }
 
     - name: Set secrets to GitHub
       no_log: true
@@ -58,11 +77,6 @@
         - {
             secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'PORTAINER_TELEGRAM_SERVICE_UPDATE_URL' }}",
             secret_content: "https://{{ portainer_url }}/api/webhooks/{{ telegram_webhook_token.stdout }}",
-            secret_scope: actions,
-          }
-        - {
-            secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'NEXT_PUBLIC_TELEGRAM_SERVICE_URL' }}",
-            secret_content: "https://{{ service_url }}",
             secret_scope: actions,
           }
 

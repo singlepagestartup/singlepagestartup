@@ -96,8 +96,7 @@ import { Configuration as NotificationNotificationConfiguration } from "@sps/not
 import { Repository as FileStorageFileRepository } from "@sps/file-storage/models/file/backend/app/api/src/lib/repository";
 import { Configuration as FileStorageFileConfiguration } from "@sps/file-storage/models/file/backend/app/api/src/lib/configuration";
 import { Service as BroadcastMessageService } from "@sps/broadcast/models/message/backend/app/api/src/lib/service";
-import { Repository as BroadcastMessageRepository } from "@sps/broadcast/models/message/backend/app/api/src/lib/repository";
-import { Configuration as BroadcastMessageConfiguration } from "@sps/broadcast/models/message/backend/app/api/src/lib/configuration";
+import { app as broadcastMessageApp } from "@sps/broadcast/models/message/backend/app/api";
 import { Repository as BroadcastChannelsToMessagesRepository } from "@sps/broadcast/relations/channels-to-messages/backend/app/api/src/lib/repository";
 import { Configuration as BroadcastChannelsToMessagesConfiguration } from "@sps/broadcast/relations/channels-to-messages/backend/app/api/src/lib/configuration";
 import { Repository as HostPageRepository } from "@sps/host/models/page/backend/app/api/src/lib/repository";
@@ -310,9 +309,8 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
       return {
         channel: broadcastChannelApp.controller
           .service as BroadcastChannelService,
-        message: new BroadcastMessageService(
-          new BroadcastMessageRepository(new BroadcastMessageConfiguration()),
-        ),
+        message: broadcastMessageApp.controller
+          .service as BroadcastMessageService,
         channelsToMessages: new CRUDService<any>(
           new BroadcastChannelsToMessagesRepository(
             new BroadcastChannelsToMessagesConfiguration(),
