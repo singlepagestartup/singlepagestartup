@@ -66,9 +66,12 @@ export class Service extends CRUDService<Source> {
       : services.transaction(operation);
   }
   private async saveRecord(props: { id?: string; data: any }) {
-    const source = props.id
-      ? await super.update({ id: props.id, data: props.data })
-      : await super.create({ data: props.data });
+    let source;
+    if (props.id) {
+      source = await super.update({ id: props.id, data: props.data });
+    } else {
+      source = await super.create({ data: props.data });
+    }
     return source;
   }
   async create(props: { data: any }): Promise<Source> {
@@ -86,7 +89,9 @@ export class Service extends CRUDService<Source> {
         .afterCommit(() => scope.dependencies().process(source.id, false));
       return source;
     });
-    return (await this.findById({ id: source.id }))!;
+    const loadedSource = await this.findById({ id: source.id });
+
+    return loadedSource!;
   }
   async findOrCreate(props: { data: any }) {
     return this.run(async (scope) => {
@@ -99,7 +104,9 @@ export class Service extends CRUDService<Source> {
         },
       });
       if (existing) return { entity: existing, statusCode: 200 as const };
-      return { entity: await scope.create(props), statusCode: 201 as const };
+      const entity = await scope.create(props);
+
+      return { entity, statusCode: 201 as const };
     });
   }
   async update(props: { id: string; data: any }): Promise<Source | null> {
@@ -141,9 +148,12 @@ export class Service extends CRUDService<Source> {
     });
   }
   async getStatus() {
+    const sourceCount = await this.count();
+    const chunkCount = await this.dependencies().chunk.count();
+
     return {
-      sources: await this.count(),
-      chunks: await this.dependencies().chunk.count(),
+      sources: sourceCount,
+      chunks: chunkCount,
     };
   }
   async upsertSourceBySlug(
@@ -233,7 +243,9 @@ export class Service extends CRUDService<Source> {
     }
   }
   async updateSource(props: IUpdateSourceProps) {
-    return (await this.updateSourceWithAttachments(props))?.source || null;
+    const update = await this.updateSourceWithAttachments(props);
+
+    return update?.source || null;
   }
   async updateSourceWithAttachments(
     props: IUpdateSourceProps,
@@ -271,8 +283,10 @@ export class Service extends CRUDService<Source> {
         .dependencies()
         .sourcesToFileStorageModuleFiles.append(source.id, props.fileIds || []);
       if (attachmentsChanged) await scope.invalidateSources([updated]);
+      const loadedSource = await scope.findById({ id: source.id });
+
       return {
-        source: (await scope.findById({ id: source.id }))!,
+        source: loadedSource!,
         attachmentsChanged,
       };
     });
@@ -432,9 +446,12 @@ export class Service extends CRUDService<Source> {
     return this.run(async (scope) => {
       const relationService =
         scope.dependencies().sourcesToFileStorageModuleFiles;
-      const previous = props.id
-        ? await relationService.findById({ id: props.id })
-        : null;
+      let previous;
+      if (props.id) {
+        previous = await relationService.findById({ id: props.id });
+      } else {
+        previous = null;
+      }
       if (props.action !== "create" && !previous)
         throw new Error(
           "Not Found error. Knowledge file relation was not found.",
@@ -459,15 +476,17 @@ export class Service extends CRUDService<Source> {
             "Conflict error. Knowledge file relation changed. Retry the operation.",
           );
       }
-      const relation =
-        props.action === "create"
-          ? await relationService.create({ data: props.data })
-          : props.action === "delete"
-            ? await relationService.delete({ id: props.id! })
-            : await relationService.update({
-                id: props.id!,
-                data: { ...previous!, ...props.data },
-              });
+      let relation;
+      if (props.action === "create") {
+        relation = await relationService.create({ data: props.data });
+      } else if (props.action === "delete") {
+        relation = await relationService.delete({ id: props.id! });
+      } else {
+        relation = await relationService.update({
+          id: props.id!,
+          data: { ...previous!, ...props.data },
+        });
+      }
       await scope.invalidateSources(sources);
       for (const id of sourceIds)
         scope
@@ -518,13 +537,15 @@ export class Service extends CRUDService<Source> {
         });
       }
       await scope.invalidateSources(sources);
-      const file =
-        props.action === "delete"
-          ? await fileService.delete({ id: props.id })
-          : await fileService.update({
-              id: props.id,
-              data: { ...previous, ...props.data },
-            });
+      let file;
+      if (props.action === "delete") {
+        file = await fileService.delete({ id: props.id });
+      } else {
+        file = await fileService.update({
+          id: props.id,
+          data: { ...previous, ...props.data },
+        });
+      }
       return { file, sourceIds };
     });
   }

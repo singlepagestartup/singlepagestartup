@@ -1,148 +1,98 @@
-/**
- * BDD Suite: Telegram generator response typing.
- *
- * Given: the telegram generator renders notification payloads for the API.
- * When: it answers any caller.
- * Then: it declares the type it actually produced and reflects nothing beyond the rendered variant.
- */
-
 import { NextRequest } from "next/server";
-import pako from "pako";
-import QueryString from "qs";
-import { GET } from "./route";
+import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { POST } from "./route";
 
-const CALLER_MARKER = "<img src=x onerror=CALLER_MARKER>";
-
-function encodePayload(payload: unknown) {
-  return Buffer.from(pako.deflate(JSON.stringify(payload))).toString("base64");
-}
-
-function createRequest(params: Record<string, unknown>) {
-  return new NextRequest(
-    "http://localhost:3000/api/telegram-generator?" +
-      QueryString.stringify(params, { encodeValuesOnly: true }),
-  );
-}
-
-describe("telegram generator route", () => {
-  afterEach(() => {
-    jest.restoreAllMocks();
+function createRequest(
+  body: Record<string, unknown>,
+  secret = RBAC_SECRET_KEY,
+) {
+  return new NextRequest("http://localhost:3000/api/telegram-generator", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-RBAC-SECRET-KEY": secret ?? "",
+    },
+    body: JSON.stringify({
+      template: { title: "Security summary", content: null },
+      ...body,
+    }),
   });
+}
 
-  /**
-   * BDD Scenario
-   *
-   * Given: a request names a shipped telegram variant.
-   * When: the generator answers.
-   * Then: the response declares a JSON content type and forbids content sniffing.
-   */
-  it("declares JSON and forbids sniffing when a known variant is rendered", async () => {
-    const response = await GET(
+describe("Host Telegram rendering", () => {
+  beforeEach(() => jest.spyOn(console, "error").mockImplementation(() => {}));
+  afterEach(() => jest.restoreAllMocks());
+
+  it("renders saved content as one escaped message", async () => {
+    const response = await POST(
       createRequest({
-        variant: "generate-telegram-social-module-message-created",
-        data: encodePayload({
-          socialModule: { message: { description: "Hello" } },
-        }),
+        variant: "content-telegram",
+        template: { title: "Security", content: "<b>Project</b> & 7" },
       }),
     );
-
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toContain("application/json");
-    expect(response.headers.get("x-content-type-options")).toBe("nosniff");
     expect(response.headers.get("cache-control")).toBe("no-store");
-    expect(JSON.parse(await response.text())).toEqual({
+    expect(await response.json()).toEqual({
+      method: "sendMessage",
+      props: ["&lt;b&gt;Project&lt;/b&gt; &amp; 7", { parse_mode: "HTML" }],
+    });
+  });
+
+  it("preserves the existing social-message component contract", async () => {
+    const response = await POST(
+      createRequest({
+        variant: "generate-telegram-social-module-message-created",
+        data: { socialModule: { message: { description: "Hello" } } },
+      }),
+    );
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
       method: "sendMessage",
       props: ["Hello", { parse_mode: "MarkdownV2" }],
     });
   });
 
-  /**
-   * BDD Scenario
-   *
-   * Given: a shipped variant returns text the caller supplied.
-   * When: the generator answers.
-   * Then: the text is carried as a JSON string value under a type no browser parses as a document.
-   */
-  it("carries caller text as a JSON value rather than as a document", async () => {
-    const response = await GET(
-      createRequest({
-        variant: "generate-telegram-social-module-message-created",
-        data: encodePayload({
-          socialModule: { message: { description: CALLER_MARKER } },
-        }),
-      }),
-    );
-
-    const body = await response.text();
-
-    expect(response.headers.get("content-type")).toContain("application/json");
-    expect(response.headers.get("x-content-type-options")).toBe("nosniff");
-    expect(JSON.parse(body).props[0]).toBe(CALLER_MARKER);
-  });
-
-  /**
-   * BDD Scenario
-   *
-   * Given: a request names a variant that is not in the variant table.
-   * When: the generator answers.
-   * Then: the body is an empty object and carries none of the caller's data.
-   */
-  it("echoes nothing from the caller when the variant is unknown", async () => {
-    const response = await GET(
-      createRequest({
-        variant: "no-such-variant",
-        data: encodePayload({ marker: CALLER_MARKER }),
-      }),
-    );
-
-    const body = await response.text();
-
-    expect(response.headers.get("content-type")).toContain("application/json");
-    expect(JSON.parse(body)).toEqual({});
-    expect(body).not.toContain("CALLER_MARKER");
-  });
-
-  /**
-   * BDD Scenario
-   *
-   * Given: a request names an inherited object member instead of a variant.
-   * When: the generator answers.
-   * Then: it is treated as an unknown variant rather than resolved.
-   */
-  it.each(["constructor", "toString", "valueOf", "hasOwnProperty"])(
-    "treats the inherited member %s as an unknown variant",
-    async (variant) => {
-      const response = await GET(
+  it.each(["", "x".repeat(4001), "&".repeat(801)])(
+    "rejects empty or oversized rendered content",
+    async (content) => {
+      const response = await POST(
         createRequest({
-          variant,
-          data: encodePayload({ marker: CALLER_MARKER }),
+          variant: "content-telegram",
+          template: { title: "Security", content },
         }),
       );
-
-      const body = await response.text();
-
-      expect(JSON.parse(body)).toEqual({});
-      expect(body).not.toContain("CALLER_MARKER");
+      expect(response.status).toBe(404);
     },
   );
 
-  /**
-   * BDD Scenario
-   *
-   * Given: a request carries data the generator cannot decode.
-   * When: the generator answers.
-   * Then: it returns a fixed error without internal detail.
-   */
-  it("returns a fixed error without internals when decoding fails", async () => {
-    jest.spyOn(console, "error").mockImplementation(() => undefined);
+  it.each(["constructor", "toString", "no-such-variant"])(
+    "rejects unknown variant %s",
+    async (variant) => {
+      const response = await POST(
+        createRequest({ variant, data: { marker: "private marker" } }),
+      );
+      expect(response.status).toBe(404);
+      const body = await response.text();
+      expect(body).not.toContain("private marker");
+    },
+  );
 
-    const response = await GET(
-      createRequest({
-        variant: "generate-telegram-social-module-message-created",
-        data: "not-a-deflated-payload",
-      }),
+  it("rejects unauthenticated rendering before parsing the body", async () => {
+    const request = createRequest(
+      { variant: "content-telegram" },
+      "wrong-secret",
     );
+    const json = jest.spyOn(request, "json");
+    const response = await POST(request);
+    expect(response.status).toBe(403);
+    expect(json).not.toHaveBeenCalled();
+  });
 
+  it("rejects malformed input without returning internal details", async () => {
+    const response = await POST(
+      createRequest({ variant: "content-telegram", template: { content: 42 } }),
+    );
     expect(response.status).toBe(404);
     expect(await response.json()).toEqual({
       error: "Not Found error. Template unavailable",

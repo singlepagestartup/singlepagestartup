@@ -41,6 +41,10 @@ describe("util — HTTP error classification", () => {
       "Validation error. Unknown column 'absent'",
       "Validation error. 'filters.and' must be an array",
       "Validation error. Json key is longer than 64 characters",
+      "Validation error. Unknown orderBy method 'sql'",
+      "Validation error. OrderBy column must be an identifier",
+      "Validation error. 'orderBy.and' must be an array",
+      "Validation error. You need to pass an orderBy array with 'column' and 'method' for each item",
     ])("maps '%s' → 400 Validation error", (msg) => {
       const result = util(new Error(msg));
       expect(result.status).toBe(400);
@@ -373,13 +377,16 @@ describe("util — HTTP error classification", () => {
 
     /**
      * BDD Scenario
-     * Given: the fixed messages the shared verification helper throws.
+     * Given: the fixed messages the shared verification helper throws, and
+     * the refusal of a token revoked by a logout.
      * When: they are classified.
      * Then: they reach 401 rather than the 403 pattern for "authentication".
      */
     test.each([
       "Authentication error. Token expired",
       "Authentication error. Invalid token",
+      "Authentication error. Invalid token type",
+      "Authentication error. Token revoked",
     ])("maps '%s' → 401 Authentication error", (msg) => {
       const result = util(new Error(msg));
       expect(result.status).toBe(401);

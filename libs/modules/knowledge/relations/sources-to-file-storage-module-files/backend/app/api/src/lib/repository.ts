@@ -13,10 +13,12 @@ export class Repository extends DatabaseRepository<typeof Table> {
     await trackRepositoryRead(Table, this.db, {
       and: [{ column: "id", method: "eq", value: id }],
     });
-    return (
-      (
-        await this.db.select().from(Table).where(eq(Table.id, id)).for("update")
-      )[0] || null
-    );
+    const records = await this.db
+      .select()
+      .from(Table)
+      .where(eq(Table.id, id))
+      .for("update");
+
+    return records[0] || null;
   }
 }

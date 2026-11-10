@@ -12,3 +12,8 @@ export {
   Middleware as ParseBodyMiddleware,
   type IGeneric as IParseBodyMiddlewareGeneric,
 } from "./parse-body";
+export {
+  Middleware as RequestBodyFitsLimitMiddleware,
+  type IMiddlewareGeneric as IRequestBodyFitsLimitMiddlewareGeneric,
+  type IMiddlewareOptions as IRequestBodyFitsLimitMiddlewareOptions,
+} from "./request-body-fits-limit";

@@ -98,12 +98,12 @@ async function findByFilters(props: {
   params: IContentQueryParams;
   authHeaders: Record<string, string>;
 }) {
-  return (
-    (await props.descriptor.api.find({
-      params: props.params,
-      options: getMcpSdkOptions(props.authHeaders),
-    })) ?? []
-  );
+  const records = await props.descriptor.api.find({
+    params: props.params,
+    options: getMcpSdkOptions(props.authHeaders),
+  });
+
+  return records ?? [];
 }
 
 async function findById(props: {
@@ -398,13 +398,16 @@ export async function resolveHostGraph(
 
   for (const pageWidget of pageWidgets) {
     const widgetId = getStringValue(pageWidget.widgetId);
-    const hostWidget = widgetId
-      ? await findById({
-          descriptor: hostWidgetDescriptor,
-          id: widgetId,
-          authHeaders,
-        })
-      : undefined;
+    let hostWidget;
+    if (widgetId) {
+      hostWidget = await findById({
+        descriptor: hostWidgetDescriptor,
+        id: widgetId,
+        authHeaders,
+      });
+    } else {
+      hostWidget = undefined;
+    }
 
     if (!hostWidget?.id) {
       candidates.push(

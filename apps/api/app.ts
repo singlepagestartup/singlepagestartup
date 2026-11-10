@@ -1,7 +1,11 @@
 import { Hono, type Env } from "hono";
 import { cors } from "hono/cors";
 import { join, normalize } from "node:path";
-import { ExceptionFilter, ParseQueryMiddleware } from "@sps/shared-backend-api";
+import {
+  ExceptionFilter,
+  ParseQueryMiddleware,
+  RequestBodyFitsLimitMiddleware,
+} from "@sps/shared-backend-api";
 import {
   IsAuthorizedMiddleware,
   SearchIndexingMiddleware,
@@ -13,6 +17,8 @@ import {
   ActionLoggerMiddleware,
   BillRouteMiddleware,
   controllerGuardedRoutes,
+  OperatorSecretAttemptsMiddleware,
+  ApiRateLimitMiddleware,
 } from "@sps/middlewares";
 import { MIDDLEWARE_HTTP_CACHE } from "@sps/shared-utils";
 import { getFileContentHeaders, resolveCorsOrigin } from "@sps/backend-utils";
@@ -78,10 +84,27 @@ app.use(
       "X-SPS-Query-Tag",
     ],
     credentials: true,
-    exposeHeaders: ["x-sps-consistency"],
+    exposeHeaders: ["x-sps-consistency", "Retry-After"],
     maxAge: 86400,
   }),
 );
+
+app.use(new RequestIdMiddleware().init());
+app.use(
+  new ApiRateLimitMiddleware({
+    resolveSubjectId: (token) => rbacApp.resolveSubjectId(token),
+  }).init(),
+);
+
+/**
+ * Every route refuses a request body larger than `API_MAX_REQUEST_BODY_BYTES`.
+ * Bun's `maxRequestBodySize` (see `server.ts`) refuses a declared length above
+ * it before any route runs; this middleware also counts a body without a
+ * declared length while a route reads it. Module routes may pass a smaller
+ * limit of their own, as the file-storage upload routes do.
+ */
+const requestBodyFitsLimitMiddleware = new RequestBodyFitsLimitMiddleware();
+app.use(requestBodyFitsLimitMiddleware.init());
 
 app.use("/api/*", new SearchIndexingMiddleware().init());
 const exceptionFilter = new ExceptionFilter();
@@ -126,7 +149,9 @@ app.on(["GET", "HEAD"], "/public/*", async (c) => {
       });
     }
 
-    return new Response(await file.arrayBuffer(), {
+    const buffer = await file.arrayBuffer();
+
+    return new Response(buffer, {
       headers,
     });
   }
@@ -134,10 +159,10 @@ app.on(["GET", "HEAD"], "/public/*", async (c) => {
   return c.notFound();
 });
 
-app.use(new RequestIdMiddleware().init());
 app.use(consistencyMiddleware.init());
 consistencyMiddleware.registerRoutes(app);
 app.options("*", (c) => c.body(null, 204));
+app.use(new OperatorSecretAttemptsMiddleware().init());
 app.use(new ObserverMiddleware().init());
 app.use(revalidationMiddleware.init());
 app.use(new ActionLoggerMiddleware().init());

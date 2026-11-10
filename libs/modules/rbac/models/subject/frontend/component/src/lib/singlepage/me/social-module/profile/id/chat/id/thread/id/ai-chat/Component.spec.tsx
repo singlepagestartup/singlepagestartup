@@ -29,14 +29,21 @@ import { Component } from "./index";
 import { Component as SharedServer } from "@sps/shared-frontend-components/singlepage/subject-default/server";
 
 function findReader(node: unknown): ReactElement<any> | undefined {
-  if (!isValidElement(node)) return;
-  if (node.type === SharedServer) return node as ReactElement<any>;
+  if (!isValidElement(node)) {
+    return undefined;
+  }
+  if (node.type === SharedServer) {
+    return node as ReactElement<any>;
+  }
   for (const child of Children.toArray(
     (node as ReactElement<any>).props.children,
   )) {
     const reader = findReader(child);
-    if (reader) return reader;
+    if (reader) {
+      return reader;
+    }
   }
+  return undefined;
 }
 
 it("loads Subject once and passes scoped Thread results through the public reader without leaking SDK bindings", async () => {

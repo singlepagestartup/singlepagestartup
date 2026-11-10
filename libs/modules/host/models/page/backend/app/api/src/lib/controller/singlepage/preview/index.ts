@@ -21,7 +21,9 @@ export class Handler {
         throw new HTTPException(400, {
           message: `Validation error. ${parsed.error.issues[0].message}`,
         });
-      return c.json({ data: await this.service.seo.preview(parsed.data) });
+      const data = await this.service.seo.preview(parsed.data);
+
+      return c.json({ data });
     } catch (error) {
       if (error instanceof HTTPException) throw error;
       if (error instanceof SyntaxError)

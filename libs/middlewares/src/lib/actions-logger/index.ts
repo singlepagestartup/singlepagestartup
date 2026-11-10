@@ -10,8 +10,12 @@ import {
   RouteMatcher,
 } from "@sps/shared-utils";
 import { MiddlewareHandler } from "hono";
-import { authorization, logger, requestDiagnostics } from "@sps/backend-utils";
-import * as jwt from "hono/jwt";
+import {
+  authorization,
+  logger,
+  requestDiagnostics,
+  verifyJwt,
+} from "@sps/backend-utils";
 import { api as rbacActionApi } from "@sps/rbac/models/action/sdk/server";
 import { api as rbacSubjectsToActionsApi } from "@sps/rbac/relations/subjects-to-actions/sdk/server";
 import { api as agentModuleAgentApi } from "@sps/agent/models/agent/sdk/server";
@@ -72,7 +76,7 @@ export class Middleware {
           void (async () => {
             try {
               const resJson = await c.res.clone().json();
-              const decoded = await jwt.verify(token, RBAC_JWT_SECRET, "HS256");
+              const decoded = await verifyJwt(token, RBAC_JWT_SECRET);
 
               const contentType = c.req.header("content-type");
               let requestData: any = {};

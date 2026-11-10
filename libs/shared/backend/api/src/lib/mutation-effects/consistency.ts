@@ -522,9 +522,12 @@ export function createConsistencyRuntime(props: IConsistencyRuntimeProps) {
     },
     async check(refs: string[], authorization: string) {
       await props.verifyAuthorization(authorization);
+      const status = await store.status();
+      const renewal = await store.renew(refs, consistencyAuth(authorization));
+
       return {
-        ...(await store.status()),
-        ...(await store.renew(refs, consistencyAuth(authorization))),
+        ...status,
+        ...renewal,
       };
     },
   };
