@@ -1,5 +1,4 @@
 "use client";
-import { RBAC_EMAIL_PASSWORD_PATHS } from "@sps/shared-utils";
 import Link from "next/link";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import { Icon } from "@sps/ui-adapter";
@@ -12,7 +11,7 @@ export function Component(props: IComponentPropsExtended) {
   if (!props.authenticated || !props.data)
     return (
       <Link
-        href={`/${language}${RBAC_EMAIL_PASSWORD_PATHS.authentication}`}
+        href={`/${language}/rbac/subject/authentication/email-and-password`}
         className={cn(
           "inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-2 rounded-xl px-2 text-sm font-semibold hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2",
           props.className,

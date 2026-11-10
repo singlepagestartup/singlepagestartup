@@ -86,7 +86,7 @@ it.each(entryPoints)(
     expect(html).not.toContain("Sign in to your workspace");
     expect(mockAuthenticationProps.mock.calls[0][0]).toMatchObject({
       unauthenticatedRedirectHref:
-        "/ru/rbac/subject/authentication/email-and-password?returnTo=/ai-chat/projects",
+        "/ru/rbac/subject/authentication/email-and-password",
     });
   },
 );

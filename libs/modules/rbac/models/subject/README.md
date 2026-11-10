@@ -170,9 +170,10 @@ Registration, recovery email and password replacement use its `/registration`,
 Link each Page to its layout and to the Host Widget for its RBAC form. Each
 RBAC Widget renders the matching Subject form. The layout supplies the navbar
 and footer. An unpublished or missing Page follows normal Host routing.
-After sign-in, the form uses the project's configured success path. Links from
-AI Chat request a return to the projects page. The form accepts only return
-paths listed in `userStories.subjectAuthentication.redirect.allowedReturnPaths`.
+The default sign-in and registration links open the localized RBAC pages. After
+success, the form uses `userStories.subjectAuthentication.redirect.success`
+(`/` by default). A link can specify `returnTo` for a destination listed in
+`userStories.subjectAuthentication.redirect.allowedReturnPaths`.
 
 Recovery email uses Amazon SES and one Notification Template with the
 `reset-password` variant. Its title is the email subject. Host renders a link

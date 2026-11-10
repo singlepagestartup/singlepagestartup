@@ -1,8 +1,3 @@
-import {
-  AI_CHAT_SIGN_IN_HREF,
-  AI_CHAT_REGISTRATION_HREF,
-} from "./ai-chat-service";
-
 export interface IAIChatWebsiteSection {
   title: string;
   paragraphs: string[];
@@ -38,11 +33,11 @@ export const AI_CHAT_WEBSITE_CONTENT: IAIChatWebsiteContent = {
     links: [
       {
         text: "Start with my files",
-        href: AI_CHAT_REGISTRATION_HREF,
+        href: "/rbac/subject/authentication/email-and-password/registration",
       },
       {
         text: "Sign in",
-        href: AI_CHAT_SIGN_IN_HREF,
+        href: "/rbac/subject/authentication/email-and-password",
       },
     ],
   },
@@ -123,11 +118,11 @@ export const AI_CHAT_WEBSITE_CONTENT: IAIChatWebsiteContent = {
     links: [
       {
         text: "Start with my files",
-        href: AI_CHAT_REGISTRATION_HREF,
+        href: "/rbac/subject/authentication/email-and-password/registration",
       },
       {
         text: "Sign in",
-        href: AI_CHAT_SIGN_IN_HREF,
+        href: "/rbac/subject/authentication/email-and-password",
       },
       {
         text: "Code Framework",

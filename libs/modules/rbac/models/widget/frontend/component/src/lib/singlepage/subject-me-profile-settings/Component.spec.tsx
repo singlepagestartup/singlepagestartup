@@ -60,7 +60,6 @@ it("retains Russian in Data and privacy links and sign-out redirect", () => {
   ).toBe("/ru/ai-chat/projects");
   fireEvent.click(screen.getByRole("button", { name: "Выйти" }));
   expect(logout).toHaveBeenCalledWith({
-    redirectTo:
-      "/ru/rbac/subject/authentication/email-and-password?returnTo=/ai-chat/projects",
+    redirectTo: "/ru/rbac/subject/authentication/email-and-password",
   });
 });

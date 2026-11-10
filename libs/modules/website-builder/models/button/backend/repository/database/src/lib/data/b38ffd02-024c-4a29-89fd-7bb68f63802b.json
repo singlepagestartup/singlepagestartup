@@ -4,11 +4,11 @@
     "ru": "Создать продукт"
   },
   "subtitle": {},
-  "url": "/rbac/subject/authentication/email-and-password/registration?returnTo=/ai-chat/projects",
+  "url": "/rbac/subject/authentication/email-and-password/registration",
   "className": "",
   "id": "b38ffd02-024c-4a29-89fd-7bb68f63802b",
   "createdAt": "2026-10-26T00:11:15.762Z",
-  "updatedAt": "2026-11-10T23:11:44.320Z",
+  "updatedAt": "2026-11-10T23:51:16.296Z",
   "variant": "action",
   "adminTitle": "Создать продукт",
   "slug": "framework-reviewed-nav-start-0"

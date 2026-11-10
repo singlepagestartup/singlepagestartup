@@ -53,7 +53,6 @@ export const RBAC_PRIVILEGED_CONTEXT_KEY = "rbac.privileged";
 /** A route acknowledged a duplicate without executing its mutation. */
 export const MUTATION_SKIPPED_CONTEXT_KEY = "mutation.skipped";
 
-export * from "./rbac";
 export * from "./knowledge";
 export * from "./open-router";
 

@@ -1,4 +1,3 @@
-import { AI_CHAT_SIGN_IN_HREF } from "@sps/shared-utils";
 import { internationalization } from "@sps/shared-configuration";
 import Link from "next/link";
 import type { IWorkspaceNoticeProps } from "./interface";
@@ -7,7 +6,7 @@ export function Component({
   state,
   embedded = false,
   message,
-  signInHref = `/${language}${AI_CHAT_SIGN_IN_HREF}`,
+  signInHref = `/${language}/rbac/subject/authentication/email-and-password`,
   projectsHref = `/${language}/ai-chat/projects`,
   onRetry,
 }: IWorkspaceNoticeProps) {

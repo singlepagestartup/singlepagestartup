@@ -6,10 +6,6 @@ import { cn, getLocalizedHref } from "@sps/shared-frontend-client-utils";
 import { useEffect, useState } from "react";
 import { ArrowRight, Eye, EyeOff, LogIn } from "lucide-react";
 import { api as subjectApi } from "@sps/rbac/models/subject/sdk/client";
-import {
-  RBAC_EMAIL_PASSWORD_PATHS,
-  type IEmailPasswordAction,
-} from "@sps/shared-utils";
 import type { IComponentProps } from "./interface";
 
 export function Component(props: IComponentProps) {
@@ -39,15 +35,21 @@ export function Component(props: IComponentProps) {
     userStories.subjectAuthentication.redirect.allowedReturnPaths?.find(
       (path) => path === returnTo,
     );
-  const formPath = getLocalizedHref(pathname, RBAC_EMAIL_PASSWORD_PATHS[mode]);
+  function formPath(action: IComponentProps["mode"]) {
+    const suffix = action === "authentication" ? "" : `/${action}`;
+    return getLocalizedHref(
+      pathname,
+      `/rbac/subject/authentication/email-and-password${suffix}`,
+    );
+  }
   const embeddedSuccessHref =
-    pathname === formPath ? undefined : props.successHref;
+    pathname === formPath(mode) ? undefined : props.successHref;
   const successHref =
     requestedReturnPath ||
     embeddedSuccessHref ||
     userStories.subjectAuthentication.redirect.success;
-  function formHref(action: IEmailPasswordAction) {
-    const path = getLocalizedHref(pathname, RBAC_EMAIL_PASSWORD_PATHS[action]);
+  function formHref(action: IComponentProps["mode"]) {
+    const path = formPath(action);
     if (requestedReturnPath) {
       const query = new URLSearchParams({ returnTo: requestedReturnPath });
       return `${path}?${query}`;

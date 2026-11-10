@@ -1,5 +1,4 @@
 "use client";
-import { AI_CHAT_SIGN_IN_HREF } from "@sps/shared-utils";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import type { IComponentProps } from "./interface";
 import { Icon } from "@sps/ui-adapter";
@@ -10,7 +9,7 @@ export function Component(props: IComponentProps) {
   const chatId = props.socialModuleChatId;
   const signIn = (
     <a
-      href={`/${language}${AI_CHAT_SIGN_IN_HREF}`}
+      href={`/${language}/rbac/subject/authentication/email-and-password`}
       className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 font-semibold hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
     >
       <span className="grid size-8 shrink-0 place-items-center rounded-full bg-muted">

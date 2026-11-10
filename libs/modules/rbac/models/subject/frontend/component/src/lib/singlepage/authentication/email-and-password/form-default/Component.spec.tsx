@@ -181,6 +181,7 @@ it("renders the registered form entrypoint in its explicitly selected mode", () 
 });
 
 it.each([
+  ["authentication", "account-token", "", "/en/"],
   ["registration", "visitor-token", "", "/en/"],
   [
     "registration",

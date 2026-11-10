@@ -4,11 +4,11 @@
     "ru": "Начать"
   },
   "subtitle": {},
-  "url": "/rbac/subject/authentication/email-and-password/registration?returnTo=/ai-chat/projects",
+  "url": "/rbac/subject/authentication/email-and-password/registration",
   "className": "",
   "id": "21341ee8-9ed0-407a-98a6-35dca4430572",
   "createdAt": "2026-10-26T00:12:49.704Z",
-  "updatedAt": "2026-11-10T23:11:44.360Z",
+  "updatedAt": "2026-11-10T23:51:16.389Z",
   "variant": "action-inverse",
   "adminTitle": "Начать",
   "slug": "framework-reviewed-cta-actions-0"

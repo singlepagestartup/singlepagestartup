@@ -1,5 +1,4 @@
 "use client";
-import { AI_CHAT_SIGN_IN_HREF } from "@sps/shared-utils";
 import { useId, useState } from "react";
 import { Select, Icon } from "@sps/ui-adapter";
 import Link from "next/link";
@@ -25,7 +24,7 @@ export function Component(props: IComponentPropsExtended) {
       <Subject
         isServer={false}
         variant="authentication-me-default"
-        unauthenticatedRedirectHref={`/${language}${AI_CHAT_SIGN_IN_HREF}`}
+        unauthenticatedRedirectHref={`/${language}/rbac/subject/authentication/email-and-password`}
       >
         {({ data, authenticated }) =>
           data && authenticated ? (
@@ -72,7 +71,10 @@ function Settings(props: ISettingsProps) {
           disabled={logout.isPending}
           onClick={() =>
             logout.mutate({
-              redirectTo: getLocalizedHref(pathname, AI_CHAT_SIGN_IN_HREF),
+              redirectTo: getLocalizedHref(
+                pathname,
+                "/rbac/subject/authentication/email-and-password",
+              ),
             })
           }
           className="flex min-h-11 items-center gap-2 rounded-xl border border-border bg-card px-5 text-sm font-semibold"
