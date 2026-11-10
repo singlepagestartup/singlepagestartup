@@ -1,3 +1,9 @@
+import { RBAC_EMAIL_PASSWORD_PATHS } from "./rbac";
+
+export const AI_CHAT_PROJECTS_PATH = "/ai-chat/projects";
+export const AI_CHAT_SIGN_IN_HREF = `${RBAC_EMAIL_PASSWORD_PATHS.authentication}?returnTo=${AI_CHAT_PROJECTS_PATH}`;
+export const AI_CHAT_REGISTRATION_HREF = `${RBAC_EMAIL_PASSWORD_PATHS.registration}?returnTo=${AI_CHAT_PROJECTS_PATH}`;
+
 export const AI_CHAT_HELP_CONTENT = {
   sections: {
     hero: {
@@ -237,8 +243,8 @@ export const AI_CHAT_AUTHENTICATION_CONTENT = {
   aside: {
     title: "Trouble signing in?",
     paragraphs: [
-      "Forgot your password? [Contact support](/ai-chat/help). If sign-in fails, check your details and try again.",
-      "No account yet? [Create one](/ai-chat/create-account).",
+      `Forgot your password? [Request a reset link](${RBAC_EMAIL_PASSWORD_PATHS["forgot-password"]}).`,
+      `No account yet? [Create one](${AI_CHAT_REGISTRATION_HREF}).`,
     ],
   },
 };

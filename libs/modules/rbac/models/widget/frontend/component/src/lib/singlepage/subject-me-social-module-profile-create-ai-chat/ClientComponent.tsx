@@ -1,4 +1,5 @@
 "use client";
+import { AI_CHAT_SIGN_IN_HREF } from "@sps/shared-utils";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import { projectHref } from "@sps/rbac/models/subject/sdk/model";
 import { internationalization } from "@sps/shared-configuration";
@@ -46,7 +47,7 @@ export function Component(props: IComponentPropsExtended) {
             onRetry={() => window.location.reload()}
           />
         }
-        unauthenticatedRedirectHref={`/${language}/ai-chat/sign-in`}
+        unauthenticatedRedirectHref={`/${language}${AI_CHAT_SIGN_IN_HREF}`}
       >
         {({ data, authenticated }) => {
           if (!data || !authenticated) return null;

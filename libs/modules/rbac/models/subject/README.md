@@ -164,6 +164,14 @@ Edit either grant in **RBAC → Permissions**. Removing a grant returns 403 for
 that step, even with a previously issued code. Later migrations preserve the
 project's choice. These permissions apply to the whole project.
 
+Browser sign-in uses `/{language}/rbac/subject/authentication/email-and-password`.
+Registration, recovery email and password replacement use its `/registration`,
+`/forgot-password` and `/reset-password` subpaths. Each URL renders the
+project's Host Page when configured, or the corresponding RBAC form otherwise.
+After sign-in, the form uses the project's configured success path. Links from
+AI Chat request a return to the projects page. The form accepts only return
+paths listed in `userStories.subjectAuthentication.redirect.allowedReturnPaths`.
+
 Recovery email uses Amazon SES and one Notification Template with the
 `reset-password` variant. Its title is the email subject. Host renders a link
 to the reset form on `NEXT_PUBLIC_HOST_SERVICE_URL`. The link is valid for one
@@ -1027,7 +1035,7 @@ supply arbitrary period timestamps.
 
 `me-account` resolves the current session and delegates its authenticated view to
 `me-account-ai-chat`, so public pages and AI Chat use the same profile, token
-balance and account actions. Its guest link uses `/ai-chat/sign-in`.
+balance and account actions. Its guest link opens the RBAC email sign-in form.
 
 The cart drawer uses compact Product rows and totals from the authorized
 `includeCartDetails` response. Quantity controls update one exact order line

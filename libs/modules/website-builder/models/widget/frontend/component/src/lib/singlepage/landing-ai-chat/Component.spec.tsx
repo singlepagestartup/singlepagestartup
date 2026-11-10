@@ -207,7 +207,9 @@ jest.mock(
                 : [],
         })
       ) : props.data.id === "start" ? (
-        <a href="/ru/ai-chat/create-account">Начать со своих материалов</a>
+        <a href="/ru/rbac/subject/authentication/email-and-password/registration?returnTo=/ai-chat/projects">
+          Начать со своих материалов
+        </a>
       ) : (
         <>
           <a href="/ru/ecommerce">Купить токены</a>
@@ -315,7 +317,9 @@ it("uses the Russian workspace, isolates each visitor and retains edited knowled
       screen
         .getAllByRole("link", { name: "Начать со своих материалов" })[0]
         .getAttribute("href"),
-    ).toBe("/ru/ai-chat/create-account");
+    ).toBe(
+      "/ru/rbac/subject/authentication/email-and-password/registration?returnTo=/ai-chat/projects",
+    );
     fireEvent.click(screen.getAllByText("Доступ, токены и ваши материалы")[0]);
     for (const [label, href] of [
       ["Купить токены", "/ru/ecommerce"],

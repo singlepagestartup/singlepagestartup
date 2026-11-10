@@ -101,7 +101,9 @@ describe("Host email rendering", () => {
     );
     expect(response.status).toBe(200);
     const html = await response.text();
-    expect(html).toContain("/ai-chat/reset-password#code=example-code");
+    expect(html).toContain(
+      "/rbac/subject/authentication/email-and-password/reset-password#code=example-code",
+    );
     expect(html).not.toContain("?code=");
   });
 

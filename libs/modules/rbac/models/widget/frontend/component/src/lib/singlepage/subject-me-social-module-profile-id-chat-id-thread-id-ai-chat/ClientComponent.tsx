@@ -1,4 +1,5 @@
 "use client";
+import { AI_CHAT_SIGN_IN_HREF } from "@sps/shared-utils";
 import { internationalization } from "@sps/shared-configuration";
 import { Component as Profile } from "@sps/social/models/profile/frontend/component";
 import { Component as Chat } from "@sps/social/models/chat/frontend/component";
@@ -38,7 +39,7 @@ export function Component(props: IClientComponentProps) {
             onRetry={() => window.location.reload()}
           />
         }
-        unauthenticatedRedirectHref={`/${language}/ai-chat/sign-in`}
+        unauthenticatedRedirectHref={`/${language}${AI_CHAT_SIGN_IN_HREF}`}
       >
         {({ data, authenticated }) => {
           if (!data || !authenticated) return null;
@@ -73,7 +74,7 @@ export function Component(props: IClientComponentProps) {
                       language={language}
                       state="access-denied"
                       projectsHref={`/${language}/ai-chat/projects`}
-                      signInHref={`/${language}/ai-chat/sign-in`}
+                      signInHref={`/${language}${AI_CHAT_SIGN_IN_HREF}`}
                     />
                   );
                 const navigation = (
@@ -135,7 +136,7 @@ export function Component(props: IClientComponentProps) {
                               embedded
                               onRetry={retry}
                               projectsHref={`/${language}/ai-chat/projects`}
-                              signInHref={`/${language}/ai-chat/sign-in`}
+                              signInHref={`/${language}${AI_CHAT_SIGN_IN_HREF}`}
                             />
                           )}
                           loading={

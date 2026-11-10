@@ -1,4 +1,5 @@
 "use client";
+import { AI_CHAT_SIGN_IN_HREF } from "@sps/shared-utils";
 import { useId, useState } from "react";
 import { Select, Icon } from "@sps/ui-adapter";
 import Link from "next/link";
@@ -24,7 +25,7 @@ export function Component(props: IComponentPropsExtended) {
       <Subject
         isServer={false}
         variant="authentication-me-default"
-        unauthenticatedRedirectHref={`/${language}/ai-chat/sign-in`}
+        unauthenticatedRedirectHref={`/${language}${AI_CHAT_SIGN_IN_HREF}`}
       >
         {({ data, authenticated }) =>
           data && authenticated ? (
@@ -71,7 +72,7 @@ function Settings(props: ISettingsProps) {
           disabled={logout.isPending}
           onClick={() =>
             logout.mutate({
-              redirectTo: getLocalizedHref(pathname, "/ai-chat/sign-in"),
+              redirectTo: getLocalizedHref(pathname, AI_CHAT_SIGN_IN_HREF),
             })
           }
           className="flex min-h-11 items-center gap-2 rounded-xl border border-border bg-card px-5 text-sm font-semibold"

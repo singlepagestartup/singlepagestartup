@@ -1,5 +1,8 @@
 import React from "react";
-import { NEXT_PUBLIC_HOST_SERVICE_URL } from "@sps/shared-utils";
+import {
+  NEXT_PUBLIC_HOST_SERVICE_URL,
+  RBAC_EMAIL_PASSWORD_PATHS,
+} from "@sps/shared-utils";
 import { internationalization } from "@sps/shared-configuration";
 import { IComponentPropsExtended } from "./interface";
 import {
@@ -14,7 +17,7 @@ import {
 export function Component(props: IComponentPropsExtended) {
   const language = internationalization.defaultLanguage.code;
   const resetUrl = new URL(
-    `/${language}/ai-chat/reset-password`,
+    `/${language}${RBAC_EMAIL_PASSWORD_PATHS["reset-password"]}`,
     NEXT_PUBLIC_HOST_SERVICE_URL,
   );
   resetUrl.hash = new URLSearchParams({ code: props.data.code }).toString();

@@ -1,4 +1,5 @@
 "use client";
+import { AI_CHAT_SIGN_IN_HREF } from "@sps/shared-utils";
 import Link from "next/link";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { ChevronDown, LogOut, Settings } from "lucide-react";
@@ -171,7 +172,9 @@ function AccountMenu({
                 type="button"
                 disabled={logout.isPending}
                 onClick={() =>
-                  logout.mutate({ redirectTo: `${localeBase}/ai-chat/sign-in` })
+                  logout.mutate({
+                    redirectTo: `${localeBase}${AI_CHAT_SIGN_IN_HREF}`,
+                  })
                 }
                 className={`${menuItemClassName} w-full disabled:opacity-50`}
               >

@@ -1,4 +1,5 @@
 "use client";
+import { AI_CHAT_SIGN_IN_HREF } from "@sps/shared-utils";
 import { internationalization } from "@sps/shared-configuration";
 import { Component as Profile } from "@sps/social/models/profile/frontend/component";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
@@ -15,7 +16,7 @@ export function Component(props: IClientComponentProps) {
       <Subject
         isServer={props.isServer}
         variant="authentication-me-default"
-        unauthenticatedRedirectHref={`/${props.language || internationalization.defaultLanguage.code}/ai-chat/sign-in`}
+        unauthenticatedRedirectHref={`/${props.language || internationalization.defaultLanguage.code}${AI_CHAT_SIGN_IN_HREF}`}
       >
         {({ data, authenticated }) => {
           if (!data || !authenticated) return null;

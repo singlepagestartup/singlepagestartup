@@ -72,3 +72,22 @@ describe("Locale redirects preserve the browser origin", () => {
     expect(response.headers.get("x-middleware-next")).toBe("1");
   });
 });
+
+it.each([
+  [
+    "/en/ai-chat/reset-password?code=old",
+    "/en/rbac/subject/authentication/email-and-password/reset-password?code=old",
+  ],
+  [
+    "/ai-chat/sign-in",
+    "/ru/rbac/subject/authentication/email-and-password?returnTo=%2Fai-chat%2Fprojects",
+  ],
+])("redirects the exact old form URL %s", async (oldPath, newPath) => {
+  const response = await proxy(
+    new NextRequest("http://localhost:3000" + oldPath),
+  );
+  expect(response.status).toBe(308);
+  expect(response.headers.get("location")).toBe(
+    "http://localhost:3000" + newPath,
+  );
+});
