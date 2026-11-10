@@ -164,16 +164,7 @@ describe("is-authorized allowed routes", () => {
     ).toBe(false);
   });
 
-  /**
-   * BDD Scenario: each authentication route is allowed for its own method.
-   *
-   * Given: the composed allow-list matcher.
-   * When: every route the subject controller registers under
-   *       /api/rbac/subjects/authentication/ is tested with its method.
-   * Then: all fourteen are allowed, so a caller without a session can still
-   *       start one, renew it, end it and be checked by the middlewares.
-   */
-  it("allows every authentication route for its own method", () => {
+  it("allows session, registration and sign-in routes for their own methods", () => {
     const routes: Array<[string, string]> = [
       ["GET", "is-authorized"],
       ["GET", "me"],
@@ -184,8 +175,6 @@ describe("is-authorized allowed routes", () => {
       ["POST", "ethereum-virtual-machine"],
       ["POST", "email-and-password/registration"],
       ["POST", "email-and-password/authentication"],
-      ["POST", "email-and-password/forgot-password"],
-      ["POST", "email-and-password/reset-password"],
       ["POST", "oauth/exchange"],
       ["POST", "oauth/google"],
       ["GET", "oauth/google/callback"],
@@ -197,6 +186,14 @@ describe("is-authorized allowed routes", () => {
       ).toBe(true);
     }
   });
+
+  it.each(["forgot-password", "reset-password"])(
+    "requires RBAC permission for POST %s",
+    (action) => {
+      const path = `/api/rbac/subjects/authentication/email-and-password/${action}`;
+      expect(matcher.matches(path, "POST")).toBe(false);
+    },
+  );
 
   /**
    * BDD Scenario: the authentication rules open no other path or method.

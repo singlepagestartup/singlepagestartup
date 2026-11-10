@@ -158,6 +158,17 @@ Thread management through `rbac.subject` requires `rbac.permission` records for 
 - `POST /rbac/subjects/authentication/email-and-password/reset-password`: reset password by code.
 - `POST /rbac/subjects/authentication/ethereum-virtual-machine`: EVM signature login.
 
+The permission migration grants anonymous POST access to `forgot-password` and
+`reset-password` under `/api/rbac/subjects/authentication/email-and-password/`.
+Edit either grant in **RBAC → Permissions**. Removing a grant returns 403 for
+that step, even with a previously issued code. Later migrations preserve the
+project's choice. These permissions apply to the whole project.
+
+Recovery email uses Amazon SES and one Notification Template with the
+`reset-password` variant. Its title is the email subject. Host renders a link
+to the reset form on `NEXT_PUBLIC_HOST_SERVICE_URL`. The link is valid for one
+hour and can be used once. Unknown addresses receive the same acknowledgement.
+
 Guest and registered Subjects both use `variant="default"`. A JWT identifies a
 visitor session; it does not establish that an account exists. The `me` response
 adds `authenticated`, derived from the Subject's Identity links. This field is

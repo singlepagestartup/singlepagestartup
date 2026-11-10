@@ -12,6 +12,7 @@
  */
 
 import bcrypt from "bcrypt";
+import { createHash } from "node:crypto";
 
 const OPERATOR_SECRET = "operator-secret";
 
@@ -68,11 +69,61 @@ jest.mock("@sps/shared-backend-api", () => {
   return {
     CRUDService: class {
       constructor(public repository?: unknown) {}
+      async update(props: { data: unknown }) {
+        return props.data;
+      }
     },
   };
 });
 
 import { Service } from ".";
+
+describe("one-time password reset codes", () => {
+  it("stores a digest tied to the matched email and rejects that digest as a credential", async () => {
+    const consume = jest.fn().mockResolvedValue({ id: "identity-owner" });
+    const service = new Service({ consumeFirstByField: consume } as any);
+    const code = await service.issuePasswordResetCode({
+      id: "identity-owner",
+      email: "owner@example.com",
+    });
+    expect(code).toEqual(expect.any(String));
+    const digest = createHash("sha256").update(code!).digest("hex");
+    expect(consume).toHaveBeenCalledWith(
+      "id",
+      "identity-owner",
+      { code: digest },
+      {
+        and: [
+          { column: "email", method: "eq", value: "owner@example.com" },
+          { column: "provider", method: "eq", value: "email_and_password" },
+        ],
+      },
+    );
+    await expect(
+      service.resetPassword({ code: digest, password: "next-password" }),
+    ).rejects.toThrow("Invalid or expired");
+    expect(consume).toHaveBeenCalledTimes(1);
+  });
+
+  it("clears an outstanding link when updating the recovery address", async () => {
+    const service = new Service({} as any);
+    const data = { email: "new@example.com" };
+    await expect(
+      service.update({ id: "identity-owner", data: data as any }),
+    ).resolves.toEqual({ ...data, code: null });
+  });
+
+  it("rejects an expired link before reading or changing the identity", async () => {
+    const service = new Service({} as any);
+    const find = jest.fn();
+    Object.assign(service, { find });
+    const code = `${Date.now() - 1}.${"a".repeat(43)}`;
+    await expect(
+      service.resetPassword({ code, password: "next-password" }),
+    ).rejects.toThrow("Invalid or expired");
+    expect(find).not.toHaveBeenCalled();
+  });
+});
 
 describe("owned password changes through the Identity service", () => {
   it("reads and writes through its service methods without HTTP and stores only a bcrypt hash", async () => {

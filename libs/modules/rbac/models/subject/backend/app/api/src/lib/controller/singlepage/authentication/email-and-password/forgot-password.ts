@@ -1,10 +1,7 @@
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../service";
-import { api as identityApi } from "@sps/rbac/models/identity/sdk/server";
-import bcrypt from "bcrypt";
-import { getHttpErrorType } from "@sps/backend-utils";
+import { getHttpErrorType, logger } from "@sps/backend-utils";
 
 /**
  * The answer to every request, whether or not a reset code was stored
@@ -26,10 +23,6 @@ export class Handler {
 
   async execute(c: Context, next: any): Promise<Response> {
     try {
-      if (!RBAC_SECRET_KEY) {
-        throw new Error("Configuration error. RBAC_SECRET not set");
-      }
-
       const body = await c.req.parseBody();
 
       if (typeof body["data"] !== "string") {
@@ -38,6 +31,10 @@ export class Handler {
 
       const data = JSON.parse(body["data"]);
 
+      if (typeof data.email !== "string" || !data.email.trim()) {
+        return c.json(ACCEPTED, 201);
+      }
+      const email = data.email.trim().toLowerCase();
       const identities = await this.service.identity.find({
         params: {
           filters: {
@@ -45,7 +42,7 @@ export class Handler {
               {
                 column: "email",
                 method: "eq",
-                value: data.email,
+                value: email,
               },
               {
                 column: "provider",
@@ -83,51 +80,20 @@ export class Handler {
         return c.json(ACCEPTED, 201);
       }
 
-      const code = bcrypt.genSaltSync(10).replaceAll("/", "");
-
-      const identity = await identityApi.update({
+      const code = await this.service.identity.issuePasswordResetCode({
         id: identities[0].id,
-        data: {
-          ...identities[0],
-          code,
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
+        email,
       });
-
-      if (!identity) {
-        throw new Error("Not Found error. Could not update identity");
+      if (code) {
+        // Mail-provider latency must not reveal whether the address has an account.
+        void this.service.notificationModule.notification
+          .sendPasswordReset({ email, code })
+          .catch((error: unknown) => {
+            const errorType =
+              error instanceof Error ? error.name : "UnknownError";
+            logger.error("Password reset email delivery failed", { errorType });
+          });
       }
-
-      // await api.notify({
-      //   id: subjectsToIdentities[0].subjectId,
-      //   data: {
-      //     notification: {
-      //       notification: {
-      //         method: "email",
-      //         data: {
-      //           rbac: {
-      //             identity,
-      //           },
-      //         }
-      //       },
-      //       template: {
-      //         variant: "reset-password",
-      //       },
-      //       topic: {
-      //         slug: "security",
-      //       },
-      //     },
-      //   },
-      //   options: {
-      //     headers: {
-      //       "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-      //     },
-      //   },
-      // });
 
       return c.json(ACCEPTED, 201);
     } catch (error: any) {

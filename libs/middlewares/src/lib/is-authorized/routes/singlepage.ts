@@ -52,9 +52,8 @@ export const allowedRoutes: IRouteRule[] = [
     methods: ["GET"],
   },
   /**
-   * Every route of the subject authentication controller, grouped by method.
-   * Callers reach them without a session, and each handler checks what it
-   * needs itself: a token, a password, an OAuth state (issue #308).
+   * Session, sign-in and registration routes check their own credentials.
+   * Password recovery uses the project's POST permissions for both steps.
    */
   {
     regexPath:
@@ -68,7 +67,7 @@ export const allowedRoutes: IRouteRule[] = [
   },
   {
     regexPath:
-      /^\/api\/rbac\/subjects\/authentication\/email-and-password\/(registration|authentication|forgot-password|reset-password)$/,
+      /^\/api\/rbac\/subjects\/authentication\/email-and-password\/(registration|authentication)$/,
     methods: ["POST"],
   },
   /**

@@ -9,6 +9,7 @@ import {
 } from "@sps/shared-utils";
 import { api } from "@sps/rbac/models/identity/sdk/server";
 import bcrypt from "bcrypt";
+import { createHash, randomBytes } from "node:crypto";
 import { IModel } from "@sps/rbac/models/identity/sdk/model";
 import { assertCredentialColumnsAreHashed } from "@sps/backend-utils";
 
@@ -34,6 +35,7 @@ export type IChangePassword = {
  * password. Cost 10 matches the salts registration generates.
  */
 const UNKNOWN_IDENTITY_SALT = bcrypt.genSaltSync(10);
+const PASSWORD_RESET_LIFETIME_MS = 60 * 60 * 1000;
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
@@ -51,7 +53,90 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }): Promise<(typeof Table)["$inferSelect"] | null> {
     assertCredentialColumnsAreHashed(props.data);
 
+    // A link sent to the previous address must not reset the new credentials.
+    if (
+      Object.hasOwn(props.data, "email") ||
+      Object.hasOwn(props.data, "password")
+    ) {
+      return super.update({ ...props, data: { ...props.data, code: null } });
+    }
     return super.update(props);
+  }
+
+  async issuePasswordResetCode(identity: { id: string; email: string }) {
+    const expiresAt = Date.now() + PASSWORD_RESET_LIFETIME_MS;
+    const code = `${expiresAt}.${randomBytes(32).toString("base64url")}`;
+    const digest = createHash("sha256").update(code).digest("hex");
+    const updated = await this.repository.consumeFirstByField(
+      "id",
+      identity.id,
+      { code: digest },
+      {
+        and: [
+          { column: "email", method: "eq", value: identity.email },
+          { column: "provider", method: "eq", value: "email_and_password" },
+        ],
+      },
+    );
+    if (!updated) {
+      return null;
+    }
+    return code;
+  }
+
+  async resetPassword(props: { code: string; password: string }) {
+    const invalidCode =
+      "Validation error. Invalid or expired password reset link.";
+    let storedCode: string;
+    if (/^\d{13}\.[A-Za-z0-9_-]{43}$/.test(props.code)) {
+      const expiresAt = Number(props.code.split(".")[0]);
+      if (expiresAt <= Date.now()) {
+        throw new Error(invalidCode);
+      }
+      storedCode = createHash("sha256").update(props.code).digest("hex");
+    } else if (/^\$2[ab]\$10\$[A-Za-z0-9.]{1,22}$/.test(props.code)) {
+      // Honor an unexpired code issued before the permission migration.
+      storedCode = props.code;
+    } else {
+      throw new Error(invalidCode);
+    }
+
+    const matches = await this.find({
+      params: {
+        limit: 1,
+        filters: {
+          and: [
+            { column: "provider", method: "eq", value: "email_and_password" },
+            { column: "code", method: "eq", value: storedCode },
+          ],
+        },
+      },
+    });
+    if (!matches.length) {
+      throw new Error(invalidCode);
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const password = await bcrypt.hash(props.password, salt);
+    const updated = await this.repository.consumeFirstByField(
+      "id",
+      matches[0].id,
+      { password, salt, code: null },
+      {
+        and: [
+          { column: "code", method: "eq", value: storedCode },
+          {
+            column: "updatedAt",
+            method: "gt",
+            value: new Date(Date.now() - PASSWORD_RESET_LIFETIME_MS),
+          },
+          { column: "provider", method: "eq", value: "email_and_password" },
+        ],
+      },
+    );
+    if (!updated) {
+      throw new Error(invalidCode);
+    }
   }
 
   async emailAndPassowrd(props: IEmailAndPassword): Promise<IModel> {
@@ -206,18 +291,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
 
     if (identity.code) {
-      await api.update({
-        id: identity.id,
-        data: {
-          ...identity,
-          code: null,
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
+      await this.repository.consumeFirstByField(
+        "id",
+        identity.id,
+        { code: null },
+        { and: [{ column: "code", method: "eq", value: identity.code }] },
+      );
     }
 
     return identity;

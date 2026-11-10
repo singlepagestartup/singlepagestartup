@@ -4,7 +4,7 @@ import { internationalization } from "@sps/shared-configuration";
 import Link from "next/link";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { getLocalizedHref } from "@sps/shared-frontend-client-utils";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowRight, Eye, EyeOff, LogIn } from "lucide-react";
 import { api as subjectApi } from "@sps/rbac/models/subject/sdk/client";
 
@@ -35,6 +35,20 @@ export function Component(props: IComponentProps) {
   const router = useRouter();
   const pathname = usePathname();
   const search = useSearchParams();
+  const [fragmentCode, setFragmentCode] = useState<string | null>(null);
+  useEffect(() => {
+    if (!reset) {
+      return;
+    }
+    function readCode() {
+      const fragment = new URLSearchParams(window.location.hash.slice(1));
+      setFragmentCode(fragment.get("code"));
+    }
+    readCode();
+    window.addEventListener("hashchange", readCode);
+    return () => window.removeEventListener("hashchange", readCode);
+  }, [reset]);
+  const resetCode = fragmentCode || search.get("code");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
@@ -67,11 +81,9 @@ export function Component(props: IComponentProps) {
             setStatus(ru ? "Пароли не совпадают." : "Passwords do not match.");
             return;
           }
-          if (
-            (registration && !acceptedTerms) ||
-            (reset && !search.get("code"))
-          )
+          if (registration && !acceptedTerms) {
             return;
+          }
           try {
             if (forgot) {
               await recover.mutateAsync({ data: { email } });
@@ -83,11 +95,14 @@ export function Component(props: IComponentProps) {
               return;
             }
             if (reset) {
+              if (!resetCode) {
+                return;
+              }
               await replace.mutateAsync({
                 data: {
                   password,
                   passwordConfirmation: confirmation,
-                  code: search.get("code") || "",
+                  code: resetCode,
                 },
               });
               setStatus(
@@ -216,7 +231,7 @@ export function Component(props: IComponentProps) {
             </span>
           </label>
         )}
-        {reset && !search.get("code") && (
+        {reset && !resetCode && (
           <p role="alert" className="text-sm text-destructive">
             {ru
               ? "Откройте ссылку для восстановления пароля из письма, чтобы продолжить."
@@ -228,7 +243,7 @@ export function Component(props: IComponentProps) {
             pending ||
             ((reset || registration) && password !== confirmation) ||
             (registration && !acceptedTerms) ||
-            (reset && !search.get("code"))
+            (reset && !resetCode)
           }
           className="flex min-h-11 items-center justify-center gap-3 rounded-xl bg-primary text-primary-foreground px-5 text-sm font-semibold disabled:opacity-50"
         >

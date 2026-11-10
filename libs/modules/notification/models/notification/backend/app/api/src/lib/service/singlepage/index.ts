@@ -1,4 +1,8 @@
-import { NotificationDI, type IBroadcastModule } from "../../di";
+import {
+  NotificationDI,
+  type IBroadcastModule,
+  type ITemplateService,
+} from "../../di";
 import { Service as Delivery, type IDeliveryProgress } from "./delivery";
 import { Repository } from "../../repository";
 import "reflect-metadata";
@@ -35,6 +39,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     @inject(DI.IRepository) repository: Repository,
     @inject(NotificationDI.IBroadcastModule)
     private readonly broadcast: IBroadcastModule,
+    @inject(NotificationDI.ITemplateService)
+    private readonly templates: ITemplateService,
   ) {
     super(repository);
   }
@@ -76,6 +82,49 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
     return { sent: true };
   }
+
+  async sendPasswordReset(props: { email: string; code: string }) {
+    if (!AWS_SES_FROM_EMAIL) {
+      throw new Error("Configuration error. Email delivery is not configured.");
+    }
+    const templates = await this.templates.find({
+      params: {
+        limit: 2,
+        filters: {
+          and: [{ column: "variant", method: "eq", value: "reset-password" }],
+        },
+      },
+    });
+    if (templates.length !== 1) {
+      throw new Error(
+        "Configuration error. Configure one reset-password email template.",
+      );
+    }
+
+    const template = templates[0];
+    const html = await this.templates.render({
+      id: template.id,
+      type: "email",
+      payload: { code: props.code },
+    });
+    if (!html) {
+      throw new Error(
+        "Internal error. Could not render the password reset email.",
+      );
+    }
+    const response = await new AWS().ses.sendEmail({
+      to: props.email,
+      from: AWS_SES_FROM_EMAIL,
+      subject: template.title || "Reset your password",
+      html,
+    });
+    if (!response.MessageId) {
+      throw new Error(
+        "Internal error. The password reset email could not be sent.",
+      );
+    }
+  }
+
   protected splitTelegramText(text: string, limit: number): string[] {
     if (!text) {
       return [""];
