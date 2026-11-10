@@ -66,6 +66,22 @@ describe("Given: API_CORS_ALLOWED_ORIGINS is empty", () => {
     mockAllowedOrigins = "";
   });
 
+  /** Opaque sandbox origins and malformed headers never receive credentialed CORS. */
+  it.each([
+    "null",
+    "file://",
+    "https://app.example.com/path",
+    "https://user:password@app.example.com",
+    "https://app.example.com https://unlisted.example.net",
+  ])(
+    "refuses the non-origin value %s even without a configured list",
+    async (origin) => {
+      const response = await sendPreflight(origin);
+
+      expect(response.headers.get("Access-Control-Allow-Origin")).toBeNull();
+    },
+  );
+
   /**
    * BDD Scenario: a preflight from any origin.
    *
@@ -120,6 +136,24 @@ describe("Given: API_CORS_ALLOWED_ORIGINS is empty", () => {
 describe("Given: API_CORS_ALLOWED_ORIGINS lists two origins", () => {
   beforeEach(() => {
     mockAllowedOrigins = `${LISTED_ORIGIN},${SECOND_LISTED_ORIGIN}`;
+  });
+
+  /** A nonempty invalid configuration must fail closed, including a list of separators. */
+  it.each([", ,", "*", "null", "https://app.example.com/path"])(
+    "does not open arbitrary origins for the configured value %s",
+    async (configuration) => {
+      mockAllowedOrigins = configuration;
+      const response = await sendPreflight(UNLISTED_ORIGIN);
+
+      expect(response.headers.get("Access-Control-Allow-Origin")).toBeNull();
+    },
+  );
+
+  it("never enables an opaque origin even when explicitly listed", async () => {
+    mockAllowedOrigins = "null";
+    const response = await sendPreflight("null");
+
+    expect(response.headers.get("Access-Control-Allow-Origin")).toBeNull();
   });
 
   /**

@@ -130,4 +130,40 @@ completed_date: 2026-09-26
 
 ---
 
-**Last updated**: 2026-09-26T03:25:00+03:00
+**Last updated**: 2026-11-10
+
+## Review after synchronization with main, 2026-11-10
+
+These results supersede the earlier deployment and cache-reset notes. Main through
+`0bcce599d5` is included; nine conflicts are resolved. CORS settings now use GitHub
+Variables in production and preview, alongside main's Secrets/Variables split.
+Current authorization runs before response-cache lookup; this change does not
+require the old GET cache-reset procedure.
+
+Additional fixes reject opaque or malformed request origins and keep nonempty
+invalid configuration, including commas alone, from enabling permissive CORS.
+The Broadcast relation server reader now has its missing `"use server"` directive,
+which fixes the Host Turbopack compilation failure inherited from main.
+
+Verification on the merged implementation:
+
+- Middleware Jest: 16 suites, 91 tests; CORS: 19 tests; consistency cache: 10 tests.
+- Deployer configuration: 12 tests and real Ansible renders of both service
+  templates with the CORS list unset, empty and configured.
+- Middleware and backend-utils TypeScript, focused ESLint, module dependencies,
+  shell syntax and whitespace checks pass.
+- Full API TypeScript reports 27 diagnostics. Comparing main and this branch
+  with the same installed dependencies gives identical file/code/message lists.
+- Real PostgreSQL/Redis API checks pass for init, me, refresh, ordinary-subject
+  denial, Admin access, logout revocation and operator reads. The temporary
+  subject and role relation were deleted.
+- Real response-cache hits preserve per-origin CORS grants and omit the grant
+  for unlisted and opaque origins.
+- Browser: `/ru/framework` renders; sign-in loads and displays the normal
+  invalid-credentials response.
+
+The existing local Redis dump uses RDB format 14 and cannot be read by the
+installed Redis 7.4 image. Verification used isolated Redis on port 16384 and
+preserved the original dump. Production deployment/build and a live OAuth
+provider round trip were not repeated. See the current PR description for
+remaining verification limits and downstream actions.

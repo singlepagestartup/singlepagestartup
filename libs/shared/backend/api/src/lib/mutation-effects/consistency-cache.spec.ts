@@ -1,8 +1,14 @@
 import { Hono } from "hono";
+import { cors } from "hono/cors";
+import { resolveCorsOrigin } from "@sps/backend-utils";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { CONSISTENCY_CACHE_PREFIX } from "@sps/shared-utils";
 const values = new Map<string, string>();
+jest.mock("@sps/shared-utils", () => ({
+  ...jest.requireActual("@sps/shared-utils"),
+  API_CORS_ALLOWED_ORIGINS: "https://app.example.com,https://admin.example.com",
+}));
 jest.mock("@sps/providers-kv", () => ({
   Provider: class {
     async get({ prefix, key }: any) {
@@ -20,6 +26,70 @@ jest.mock("@sps/providers-kv", () => ({
 jest.mock("@sps/providers-db", () => ({ ConsistencyStore: jest.fn() }));
 import { createConsistencyRuntime } from "./consistency";
 import { consistencyContext } from "../repository/database/context";
+
+/** Warmed response bodies must neither reuse another origin's CORS grant nor bypass authorization. */
+it("checks authorization and recomputes CORS for every cached response", async () => {
+  values.clear();
+  const key = "public.fixture|id|record";
+  const store: any = {
+    status: async () => ({ epoch: "test" }),
+    versions: async () => ({ [key]: "0" }),
+    register: async () => ({
+      protocol: 1,
+      ref: "ref",
+      epoch: "test",
+      cursor: "0",
+      expiresAt: new Date(Date.now() + 60000).toISOString(),
+    }),
+    covered: async () => true,
+  };
+  const runtime = createConsistencyRuntime({
+    store,
+    verifyAuthorization: async () => {},
+  });
+  const app = new Hono();
+  let permitted = true;
+  app.use(cors({ origin: resolveCorsOrigin, credentials: true }));
+  app.use(runtime.middleware());
+  app.use(async (c, next) => {
+    if (!permitted) {
+      return c.json({ error: "Permission error. Forbidden" }, 403);
+    }
+    await next();
+  });
+  app.use(runtime.cache());
+  const read = jest.fn((c) => {
+    consistencyContext.getStore()!.dependencies.set(key, "0");
+    return c.json({ data: "fixture" });
+  });
+  app.get("/api/fixture", read);
+  const request = (origin: string) =>
+    app.request("/api/fixture", { headers: { Origin: origin } });
+
+  await request("https://app.example.com");
+  for (const origin of [
+    "https://admin.example.com",
+    "https://unlisted.example.net",
+    "null",
+  ]) {
+    const response = await request(origin);
+    const allowedOrigin =
+      origin === "https://admin.example.com" ? origin : null;
+
+    expect(response.headers.get("X-SPS-Cache")).toBe("hit");
+    expect(response.headers.get("Access-Control-Allow-Origin")).toBe(
+      allowedOrigin,
+    );
+    expect(response.headers.get("Vary")).toContain("Origin");
+  }
+  expect(read).toHaveBeenCalledTimes(1);
+
+  permitted = false;
+  const denied = await request("https://app.example.com");
+  expect(denied.status).toBe(403);
+  expect(denied.headers.get("X-SPS-Cache")).not.toBe("hit");
+  expect(read).toHaveBeenCalledTimes(1);
+});
 
 it("clears only API response envelopes and pointers, preserving unrelated KV state", async () => {
   values.clear();

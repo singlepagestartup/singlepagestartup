@@ -6,7 +6,7 @@ import { API_CORS_ALLOWED_ORIGINS } from "@sps/shared-utils";
  * `origin` option of `hono/cors`, so returning `null` sends no allow-origin
  * header and the browser keeps the response from the calling page.
  *
- * With `API_CORS_ALLOWED_ORIGINS` empty, the default, any origin is echoed
+ * With `API_CORS_ALLOWED_ORIGINS` empty, the default, any HTTP(S) origin is echoed
  * back: local development, tunnels and front ends on other domains keep
  * working without configuration. With a list set, only an origin equal to one
  * of its entries is echoed. A request without an `Origin` header, such as a
@@ -14,17 +14,31 @@ import { API_CORS_ALLOWED_ORIGINS } from "@sps/shared-utils";
  * refuse it and its handler answers as before.
  */
 export function resolveCorsOrigin(origin: string): string | null {
-  if (!origin) {
+  if (!origin || origin === "null") {
     return null;
   }
 
-  const allowedOrigins = API_CORS_ALLOWED_ORIGINS.split(",")
-    .map((allowedOrigin) => allowedOrigin.trim())
-    .filter(Boolean);
+  try {
+    const url = new URL(origin);
 
-  if (!allowedOrigins.length) {
+    if (!["http:", "https:"].includes(url.protocol) || url.origin !== origin) {
+      return null;
+    }
+  } catch {
+    return null;
+  }
+
+  const configuredOrigins = API_CORS_ALLOWED_ORIGINS.trim();
+
+  if (!configuredOrigins) {
     return origin;
   }
 
+  const allowedOrigins = configuredOrigins
+    .split(",")
+    .map((allowedOrigin) => allowedOrigin.trim())
+    .filter(Boolean);
+
+  // A configured but unusable list must not enable the permissive default.
   return allowedOrigins.includes(origin) ? origin : null;
 }
