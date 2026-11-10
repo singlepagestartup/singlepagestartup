@@ -23,14 +23,3 @@ export interface IAuthenticationPresentationProps {
     | "content-ai-chat-forgot-password"
     | "content-ai-chat-reset-password";
 }
-
-export interface IAuthenticationColumnsProps {
-  title: string | undefined;
-  intro?: ReactNode;
-  children: ReactNode;
-  media: ReactNode;
-  aside?: ReactNode;
-  className?: string;
-  id?: string;
-  variant: string;
-}

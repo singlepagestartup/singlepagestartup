@@ -5,7 +5,6 @@ import {
   selectSchema,
   dataDirectory,
 } from "@sps/host/relations/pages-to-layouts/backend/repository/database";
-import { RBAC_EMAIL_PASSWORD_PATHS } from "@sps/shared-utils";
 import { injectable } from "inversify";
 
 @injectable()
@@ -27,43 +26,6 @@ export class Configuration extends ParentConfiguration {
           module: "host",
           name: "pages-to-layouts",
           type: "relation",
-          prepareSnapshot: ({ snapshot: link, seeds, existing }) => {
-            const pageSeeds = seeds.find(
-              (seed) => seed.module === "host" && seed.name === "page",
-            );
-            const page = pageSeeds?.seeds.find(
-              (row) => row.dump.id === link.pageId,
-            );
-            if (
-              page?.new.variant !== "noindex" ||
-              link.variant !== "default" ||
-              !Object.values(RBAC_EMAIL_PASSWORD_PATHS).includes(page.dump.url)
-            ) {
-              return link;
-            }
-            const targets = seeds.find(
-              (seed) => seed.module === "host" && seed.name === "layout",
-            )?.seeds;
-            const original = targets?.find(
-              (row) => row.dump.id === link.layoutId,
-            );
-            const replacement = targets?.find(
-              (row) => row.dump.slug === "ai-chat-layout",
-            );
-            if (!replacement || original?.dump.slug !== "asdffd") {
-              return link;
-            }
-            const currentLinks = existing.filter(
-              (row) => row.pageId === page.new.id,
-            );
-            if (
-              currentLinks.length &&
-              !currentLinks.some((row) => row.layoutId === replacement.new.id)
-            ) {
-              return link;
-            }
-            return { ...link, layoutId: replacement.dump.id };
-          },
           filters: [
             {
               column: "pageId",

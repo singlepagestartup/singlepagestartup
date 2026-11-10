@@ -13,17 +13,7 @@ import Page, {
   generateStaticParams,
 } from "./page";
 jest.mock("@sps/host/models/page/sdk/server", () => ({
-  api: { resolvePageSeo: jest.fn(), find: jest.fn() },
-}));
-jest.mock("@sps/website-builder/models/widget/frontend/component", () => ({
-  Component: ({ variant, children }: any) => (
-    <main data-variant={variant}>{children}</main>
-  ),
-}));
-jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
-  Component: ({ mode, language }: any) => (
-    <form aria-label={mode} lang={language} />
-  ),
+  api: { resolvePageSeo: jest.fn() },
 }));
 jest.mock("@sps/shared-configuration", () => ({
   internationalization: { languages: [{ code: "en" }, { code: "ru" }] },
@@ -76,40 +66,4 @@ it("rejects unsupported locales before reading SEO", async () => {
 it("preserves Next-escaped delimiters without encoding them a second time", async () => {
   await generateMetadata(request("ru", ["blog", "a%2Fb"]));
   expect(pageApi.resolvePageSeo).toHaveBeenCalledWith("/ru/blog/a%2Fb");
-});
-
-it.each([
-  ["", "authentication"],
-  ["/registration", "registration"],
-  ["/forgot-password", "forgot-password"],
-  ["/reset-password", "reset-password"],
-])(
-  "provides the public form at %s when there is no saved Host Page",
-  async (suffix, action) => {
-    jest.mocked(pageApi.find).mockResolvedValue([]);
-    const route = request(
-      "en",
-      ("rbac/subject/authentication/email-and-password" + suffix).split("/"),
-    );
-    const html = renderToStaticMarkup(await Page(route));
-    expect(html).toContain('data-variant="authentication-page-default"');
-    expect(html).toContain(`aria-label="${action}"`);
-    expect(await generateMetadata(route)).toEqual({
-      robots: { index: false, follow: false },
-    });
-  },
-);
-
-it("preserves a project's saved authentication page and SEO", async () => {
-  jest.mocked(pageApi.find).mockResolvedValue([{ id: "project-page" }] as any);
-  const route = request("en", [
-    "rbac",
-    "subject",
-    "authentication",
-    "email-and-password",
-  ]);
-  expect(renderToStaticMarkup(await Page(route))).toContain(
-    'data-variant="document"',
-  );
-  expect(await generateMetadata(route)).toEqual({ title: "SEO" });
 });

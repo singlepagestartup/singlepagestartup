@@ -1,4 +1,3 @@
-import type { IComponentProps as IAuthenticationPage } from "./authentication-page-default/interface";
 import { IComponentProps as IHiddenComponentProps } from "@sps/shared-frontend-components/singlepage/hidden/interface";
 import type { IComponentProps as IContentRich } from "./content-rich/interface";
 import type { IComponentProps as IContentCta } from "./content-cta/interface";
@@ -46,7 +45,6 @@ import { IComponentProps as IFooterDefaultComponentProps } from "./footer-defaul
 import { IComponentProps as INavbarDefaultComponentProps } from "./navbar-default/interface";
 import type { IComponentProps as IContentFeatureFindRow } from "./content-feature-find-row/interface";
 export type IComponentProps =
-  | IAuthenticationPage
   | IHiddenComponentProps
   | IContentRich
   | IContentCta

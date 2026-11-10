@@ -166,10 +166,10 @@ project's choice. These permissions apply to the whole project.
 
 Browser sign-in uses `/{language}/rbac/subject/authentication/email-and-password`.
 Registration, recovery email and password replacement use its `/registration`,
-`/forgot-password` and `/reset-password` subpaths. Each URL renders the
-project's Host Page when configured. The framework seed connects the four pages
-to the Studio authentication layout and its images. An installation without
-saved pages uses the bundled navigation, photograph and footer around the RBAC form.
+`/forgot-password` and `/reset-password` subpaths. Configure these four URLs in **Host → Pages**.
+Link each Page to its layout and to the Host Widget for its RBAC form. Each
+RBAC Widget renders the matching Subject form. The layout supplies the navbar
+and footer. An unpublished or missing Page follows normal Host routing.
 After sign-in, the form uses the project's configured success path. Links from
 AI Chat request a return to the projects page. The form accepts only return
 paths listed in `userStories.subjectAuthentication.redirect.allowedReturnPaths`.
