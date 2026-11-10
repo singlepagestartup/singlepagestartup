@@ -114,11 +114,21 @@
         aws_access_key: "{{ root_aws_access_key_id }}"
         aws_secret_access_key: "{{ root_aws_secret_access_key }}"
 
-    - name: Copy key to local
-      fetch:
+    - name: Read IAM credentials for the controller
+      ansible.builtin.slurp:
         src: "/home/code/{{ item }}"
-        dest: "./"
-        flat: yes
+      register: iam_credentials
       loop:
         - iam.env
         - dev.iam.env
+      no_log: true
+
+    - name: Save private IAM credentials on the controller
+      ansible.builtin.copy:
+        content: "{{ item.content | b64decode }}"
+        dest: "{{ playbook_dir }}/{{ item.item }}"
+        mode: "0600"
+      loop: "{{ iam_credentials.results }}"
+      delegate_to: localhost
+      become: false
+      no_log: true

@@ -1,12 +1,14 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  chmodSync,
   copyFileSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
   rmSync,
+  statSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -127,7 +129,14 @@ function preparePlaybook(directory, filename, values) {
           msg: "Package installation is excluded from the local test.",
         };
       }
-      for (const module of ["stat", "copy", "file", "fetch"]) {
+      for (const module of [
+        "stat",
+        "copy",
+        "file",
+        "fetch",
+        "ansible.builtin.slurp",
+        "ansible.builtin.copy",
+      ]) {
         if (task[module]) {
           for (const key of ["path", "dest", "src"]) {
             const value = task[module][key];
@@ -142,6 +151,13 @@ function preparePlaybook(directory, filename, values) {
       }
       if (task.fetch) {
         task.fetch.dest = `${directory}/download/`;
+      }
+      if (
+        task["ansible.builtin.copy"]?.dest?.startsWith("{{ playbook_dir }}/")
+      ) {
+        task["ansible.builtin.copy"].dest = task[
+          "ansible.builtin.copy"
+        ].dest.replace("{{ playbook_dir }}/", `${directory}/download/`);
       }
       return task;
     });
@@ -235,17 +251,32 @@ if __name__ == '__main__':
       false,
     );
     const key = readFileSync(path.join(directory, "server/iam.env"), "utf8");
+    function assertPrivateCredentials() {
+      for (const name of ["iam.env", "dev.iam.env"]) {
+        const downloaded = path.join(directory, "download", name);
+        assert.equal(statSync(downloaded).mode & 0o777, 0o600);
+        assert.equal(
+          readFileSync(downloaded, "utf8"),
+          readFileSync(path.join(directory, "server", name), "utf8"),
+        );
+      }
+    }
+    assertPrivateCredentials();
 
     for (const [production, development] of [
       ["files-prod", ""],
       ["", "files-dev"],
       ["files-prod", "files-dev"],
     ]) {
+      // A repeated deployment also tightens permissions on older local copies.
+      chmodSync(path.join(directory, "download/iam.env"), 0o644);
+      chmodSync(path.join(directory, "download/dev.iam.env"), 0o644);
       const calls = run(
         ["create_iam_user.yaml", "create_s3.yaml"],
         production,
         development,
       );
+      assertPrivateCredentials();
       assert.equal(
         calls.some(({ operation }) => operation.endsWith("iam_access_key")),
         false,
