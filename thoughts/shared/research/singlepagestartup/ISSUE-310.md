@@ -76,15 +76,15 @@ routes further down do (`:239-243` and on).
 Callers, all through the subject SDK (`libs/modules/rbac/models/subject/sdk/client/src/lib/singlepage/authentication/**`,
 which calls the server SDK action with `host: clientHost`):
 
-| Route           | Caller                                                                                                                                                         | Origin           |
-| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
-| init            | `.../frontend/component/src/lib/singlepage/authentication/init-default/ClientComponent.tsx:78-82,167`, mounted for every page in `apps/host/app/layout.tsx:42` | browser          |
-| refresh         | same component, `:75-77,142-146`                                                                                                                               | browser          |
-| login           | `authentication-form-default/ClientComponent.tsx`, embedded by `select-method-default`                                                                         | browser          |
-| registration    | `registration-form-default/ClientComponent.tsx`                                                                                                                | browser          |
-| forgot-password | `forgot-password-form-default/ClientComponent.tsx`                                                                                                             | browser          |
-| reset-password  | none: `reset-password-form-default/ClientComponent.tsx` is commented out                                                                                       | no active caller |
-| wallet login    | `ethereum-virtual-machine-default/ClientComponent.tsx`                                                                                                         | browser          |
+| Route | Caller | Origin |
+| --- | --- | --- |
+| init | `.../frontend/component/src/lib/singlepage/authentication/init-default/ClientComponent.tsx:78-82,167`, mounted for every page in `apps/host/app/layout.tsx:42` | browser |
+| refresh | same component, `:75-77,142-146` | browser |
+| login | `authentication-form-default/ClientComponent.tsx`, embedded by `select-method-default` | browser |
+| registration | `registration-form-default/ClientComponent.tsx` | browser |
+| forgot-password | `forgot-password-form-default/ClientComponent.tsx` | browser |
+| reset-password | none: `reset-password-form-default/ClientComponent.tsx` is commented out | no active caller |
+| wallet login | `ethereum-virtual-machine-default/ClientComponent.tsx` | browser |
 
 The `server.tsx` of each of these variants renders `Component.tsx`, which
 renders `ClientComponent.tsx`, so the request always leaves the browser. Only
@@ -405,19 +405,19 @@ Telegram (`:64-105`).
 The worktree API ran with the local PostgreSQL and Redis; a throwaway account
 was registered, probed and deleted afterwards.
 
-| Probe                                                               | Result                                                     |
-| ------------------------------------------------------------------- | ---------------------------------------------------------- |
-| login, unknown email                                                | 401, keys `cause error method path requestId stack status` |
-| login, wrong password                                               | 401, same keys                                             |
-| login error text equal on both paths                                | false                                                      |
-| mean time over 5 requests, unknown / wrong password                 | 90.3 ms / 178.2 ms                                         |
-| login, correct password                                             | 201, key `data`                                            |
-| forgot-password, unknown / known address                            | 404 / 201                                                  |
-| registration of a taken address                                     | 404                                                        |
-| wrong operator secret on `GET /api/rbac/permissions` (allow-listed) | 200                                                        |
-| wrong operator secret on `GET /api/rbac/identities`                 | 401                                                        |
-| 30 failed logins from one client                                    | 30 × 401, no refusal                                       |
-| API log lines about the wrong secrets                               | none                                                       |
+| Probe | Result |
+| --- | --- |
+| login, unknown email | 401, keys `cause error method path requestId stack status` |
+| login, wrong password | 401, same keys |
+| login error text equal on both paths | false |
+| mean time over 5 requests, unknown / wrong password | 90.3 ms / 178.2 ms |
+| login, correct password | 201, key `data` |
+| forgot-password, unknown / known address | 404 / 201 |
+| registration of a taken address | 404 |
+| wrong operator secret on `GET /api/rbac/permissions` (allow-listed) | 200 |
+| wrong operator secret on `GET /api/rbac/identities` | 401 |
+| 30 failed logins from one client | 30 × 401, no refusal |
+| API log lines about the wrong secrets | none |
 
 ## Code References
 

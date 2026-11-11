@@ -195,7 +195,7 @@ the budget is exceeded and the seconds left, or nothing when the store failed;
 #### Automated Verification:
 
 - [x] `npx nx run @sps/backend-utils:jest:test` passes, including new specs
-      for the address reader and the limiter
+  for the address reader and the limiter
 - [x] `npx nx run @sps/shared-utils:jest:test` passes
 - [x] `npx nx run @sps/backend-utils:eslint:lint` and `@sps/shared-utils:eslint:lint` pass
 
@@ -237,10 +237,10 @@ and reset-password; add the import and the budget constants. No other edit.
 #### Automated Verification:
 
 - [x] `npx nx run @sps/rbac:jest:test` passes, including the new middleware spec:
-      under the budget passes, over it answers 429 with `Retry-After`, a new window
-      passes again, the account budget holds across addresses and letter case,
-      disabled mode never refuses, a private address is not counted, a failing store
-      lets requests through
+  under the budget passes, over it answers 429 with `Retry-After`, a new window
+  passes again, the account budget holds across addresses and letter case,
+  disabled mode never refuses, a private address is not counted, a failing store
+  lets requests through
 - [x] `npx nx run @sps/rbac:eslint:lint` passes
 
 #### Manual Verification:
@@ -280,10 +280,10 @@ is-authorized, and after the request id exists.
 #### Automated Verification:
 
 - [x] `npx nx run @sps/middlewares:jest:test` passes, including the new spec:
-      no secret untouched, wrong secret logged without its value and counted, over
-      budget 429 with `Retry-After`, a right secret from a refused address 429, from
-      another address passes, a private address logged and not counted, disabled
-      mode logs and never refuses
+  no secret untouched, wrong secret logged without its value and counted, over
+  budget 429 with `Retry-After`, a right secret from a refused address 429, from
+  another address passes, a private address logged and not counted, disabled
+  mode logs and never refuses
 - [x] `npx tsc --noEmit -p libs/middlewares/tsconfig.json` (or the project's build target) passes
 
 #### Manual Verification:
@@ -329,9 +329,9 @@ forgot-password spec runs.
 #### Automated Verification:
 
 - [x] `npx nx run @sps/rbac:jest:test` passes: unknown account, identity
-      without salt and wrong password reject with the same message after a hash each;
-      forgot-password answers identically for unknown, known and ambiguous addresses
-      and stores a code only for the known one
+  without salt and wrong password reject with the same message after a hash each;
+  forgot-password answers identically for unknown, known and ambiguous addresses
+  and stores a code only for the known one
 
 #### Manual Verification:
 
