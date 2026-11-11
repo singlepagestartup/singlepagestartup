@@ -18,13 +18,10 @@ jest.mock("@sps/social/models/profile/frontend/component", () => ({
   BylineSkeleton: () => <div data-variant="byline-loading" />,
   Component: (props: any) => {
     mockReads(props);
+    if (props.variant === "chat-profile-avatar") {
+      return <img src="/stored-avatar.png" alt="Stored avatar" />;
+    }
     return <span data-testid="profile-view" />;
-  },
-}));
-jest.mock("../chat-profile-avatar", () => ({
-  Component: (props: any) => {
-    mockReads(props);
-    return <img src="/stored-avatar.png" alt="Stored avatar" />;
   },
 }));
 beforeEach(() => jest.clearAllMocks());

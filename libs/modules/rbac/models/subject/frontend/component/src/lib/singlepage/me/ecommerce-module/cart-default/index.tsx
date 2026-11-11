@@ -8,12 +8,10 @@ import Server from "./server";
 export function Component(props: IComponentProps) {
   if (props.dataSource === "props") {
     return (
-      <ChildComponent
-        isServer={props.isServer}
-        variant={props.variant}
-        data={props.data}
-        language={props.language}
-        className={props.className}
+      <ParentComponent
+        dataSource="props"
+        Component={ChildComponent}
+        componentProps={props}
       />
     );
   }

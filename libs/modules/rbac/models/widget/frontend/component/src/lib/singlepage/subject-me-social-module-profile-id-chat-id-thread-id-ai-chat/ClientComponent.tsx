@@ -3,9 +3,6 @@ import { internationalization } from "@sps/shared-configuration";
 import { Component as Profile } from "@sps/social/models/profile/frontend/component";
 import { Component as Chat } from "@sps/social/models/chat/frontend/component";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
-import { api as subjectApi } from "@sps/rbac/models/subject/sdk/server";
-import { clientHost } from "@sps/rbac/models/subject/sdk/model";
-import { saturateHeaders } from "@sps/shared-frontend-client-utils";
 import type { IClientComponentProps } from "./interface";
 import { Component as WorkspaceSkeleton } from "./Skeleton";
 import { Component as WorkspaceNotice } from "./Error";
@@ -90,6 +87,7 @@ export function Component(props: IClientComponentProps) {
                     <Profile
                       isServer={props.isServer}
                       variant="id-ai-chat-project"
+                      dataSource="props"
                       data={project.profile}
                       navigation={navigation}
                     >
@@ -97,27 +95,7 @@ export function Component(props: IClientComponentProps) {
                         isServer={props.isServer}
                         variant="id-ai-chat"
                         data={project.chat}
-                        apiProps={{
-                          reactQueryOptions: {
-                            initialData: project.chat,
-                            queryFn: async () => {
-                              const projects =
-                                await subjectApi.socialModuleProfileProjects({
-                                  id: data.id,
-                                  host: clientHost,
-                                  options: {
-                                    headers: saturateHeaders({
-                                      "Cache-Control": "no-store",
-                                    }),
-                                  },
-                                });
-
-                              return projects.find(
-                                (item) => item.chat.id === project.chat.id,
-                              )?.chat;
-                            },
-                          },
-                        }}
+                        dataSource="props"
                       >
                         <Subject
                           language={language}

@@ -84,6 +84,9 @@ import { Component as CrmModuleFormRequestCreate } from "./crm-module/form/reque
 import { Component as EcommerceModuleOrderListTotalDefault } from "./ecommerce-module/order/list/total-default";
 import { Component as EcommerceModuleOrderListQuantityDefault } from "./ecommerce-module/order/list/quantity-default";
 import { Component as EcommerceModuleOrderListDefault } from "./ecommerce-module/order/list/default";
+import { Component as SocialModuleProfileChatDefault } from "./social-module/profile/chat/default";
+import { Component as SocialModuleProfileChatCreate } from "./social-module/profile/chat/create";
+import { Component as SocialModuleProfileChatMessageListDefault } from "./social-module/profile/chat/message/list/default";
 import { Component as SocialModuleProfileChatListDefault } from "./social-module/profile/chat/list/default";
 import { Component as SocialModuleProfileChatOverviewDefault } from "./social-module/profile/chat/overview/default";
 
@@ -216,6 +219,10 @@ export const variants = {
   "ecommerce-module-order-list-quantity-default":
     EcommerceModuleOrderListQuantityDefault,
   "ecommerce-module-order-list-default": EcommerceModuleOrderListDefault,
+  "social-module-profile-chat-default": SocialModuleProfileChatDefault,
+  "social-module-profile-chat-create": SocialModuleProfileChatCreate,
+  "social-module-profile-chat-message-list-default":
+    SocialModuleProfileChatMessageListDefault,
   "social-module-profile-chat-list-default": SocialModuleProfileChatListDefault,
   "social-module-profile-chat-overview-default":
     SocialModuleProfileChatOverviewDefault,

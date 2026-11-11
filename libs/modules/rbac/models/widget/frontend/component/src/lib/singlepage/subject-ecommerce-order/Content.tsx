@@ -39,6 +39,7 @@ export function Component(props: IContentProps) {
                     key={ecommerceModuleOrder.id}
                     isServer={false}
                     variant="cart-default"
+                    dataSource="props"
                     data={ecommerceModuleOrder}
                     language={props.language}
                   />

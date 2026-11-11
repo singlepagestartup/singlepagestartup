@@ -52,6 +52,7 @@ describe("Given: an order bound into the checkout form", () => {
       <Component
         isServer={false}
         variant="form-field-default"
+        dataSource="props"
         data={{ id: "order-1", type: "cart", status: "new" } as any}
         form={form as any}
         formFieldName="ecommerceModule.orders.0.id"
@@ -67,5 +68,28 @@ describe("Given: an order bound into the checkout form", () => {
       "order-1",
     );
     expect(findByIdMock).not.toHaveBeenCalled();
+  });
+
+  it("binds the current SDK value when used without a parent data source", () => {
+    const order = { id: "order-1", type: "cart", status: "new" };
+    const form = { setValue: jest.fn() };
+    findByIdMock.mockReturnValue({
+      data: { ...order, status: "paid" },
+      isLoading: false,
+    });
+
+    render(
+      <Component
+        isServer={false}
+        variant="form-field-default"
+        data={order as any}
+        form={form as any}
+        formFieldName="orderStatus"
+        entityFieldName="status"
+      />,
+    );
+
+    expect(findByIdMock).toHaveBeenCalledWith({ id: order.id });
+    expect(form.setValue).toHaveBeenCalledWith("orderStatus", "paid");
   });
 });

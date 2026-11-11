@@ -46,3 +46,23 @@ it("uses a supplied scoped File result without a public lookup", () => {
   expect(mockClientRead).not.toHaveBeenCalled();
   expect(mockServerRead).not.toHaveBeenCalled();
 });
+
+it.each(["", "unknown"])(
+  "skips the author lookup for placeholder ID '%s'",
+  (id) => {
+    renderToStaticMarkup(<Component {...props} data={{ ...props.data, id }} />);
+    expect(mockClientRead).not.toHaveBeenCalled();
+    expect(mockServerRead).not.toHaveBeenCalled();
+  },
+);
+
+it("keeps the missing-avatar element out of the server reader's loading slot", () => {
+  const fallback = <span>No avatar</span>;
+  const reader = Component({ ...props, isServer: true, fallback });
+  expect(reader.props.componentProps.fallback).toBe(fallback);
+  expect(reader.props.componentProps.skeleton).toBe(false);
+
+  const skeleton = <span>Loading avatar</span>;
+  const custom = Component({ ...props, isServer: true, fallback, skeleton });
+  expect(custom.props.componentProps.skeleton).toBe(skeleton);
+});
