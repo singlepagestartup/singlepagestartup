@@ -67,7 +67,7 @@ jest.mock("@sps/shared-utils", () => {
 jest.mock("@sps/shared-backend-api", () => {
   return {
     CRUDService: class {
-      constructor(public repository?: unknown) {}
+      constructor(public repository: unknown = undefined) {}
       async update(props: { data: unknown }) {
         return props.data;
       }

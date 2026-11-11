@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { injectable } from "inversify";
+import { injectFromBase, injectable } from "inversify";
 import { CRUDService } from "@sps/shared-backend-api";
 import { Table } from "@sps/notification/models/template/backend/repository/database";
 import {
@@ -16,6 +16,7 @@ import {
 } from "@sps/notification/models/template/sdk/model";
 
 @injectable()
+@injectFromBase()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   protected hasRenderErrorPayload(data: string): boolean {
     try {

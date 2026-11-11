@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { RBAC_SECRET_KEY, TELEGRAM_SERVICE_BOT_TOKEN } from "@sps/shared-utils";
 import { IModel as IRbacSubject } from "@sps/rbac/models/subject/sdk/model";
 import { api as rbacModuleIdentityApi } from "@sps/rbac/models/identity/sdk/server";
@@ -329,9 +330,11 @@ export class Service {
         }),
       },
     );
-    const payload = await response.json();
+    const payload = z
+      .object({ ok: z.boolean(), description: z.string().optional() })
+      .parse(await response.json());
 
-    if (!response.ok || !payload?.ok) {
+    if (!response.ok || !payload.ok) {
       throw new Error(
         `Telegram topic sync error. ${payload?.description || response.statusText}`,
       );
@@ -721,8 +724,7 @@ export class Service {
       }),
     ]);
     const telegramBotProfile = telegramBotProfiles?.[0] as
-      | ISocialModuleProfile
-      | undefined;
+      ISocialModuleProfile | undefined;
 
     if ((telegramBotProfiles?.length || 0) > 1) {
       throw new Error(

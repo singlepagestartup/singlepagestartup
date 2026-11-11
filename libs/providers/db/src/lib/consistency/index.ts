@@ -1,3 +1,4 @@
+import type postgres from "postgres";
 import {
   getPostgresClient,
   readCaptureCatalog,
@@ -41,11 +42,11 @@ export class ConsistencyStore {
 
   async versions(
     keys: string[],
-    connection = this.sql,
+    connection: postgres.Sql | postgres.TransactionSql = this.sql,
   ): Promise<Record<string, string>> {
     if (!keys.length) return {};
     const rows =
-      await connection`SELECT key,version::text AS version FROM sps_consistency.generation WHERE key = ANY(${connection.array(keys)}::text[])`;
+      await connection`SELECT key,version::text AS version FROM sps_consistency.generation WHERE key = ANY(${keys}::text[])`;
     return Object.fromEntries(
       keys.map((key) => [
         key,
@@ -135,7 +136,7 @@ export class ConsistencyStore {
       throw new Error("Too many consistency subscriptions");
     if (!refs.length) return [];
     const queries = await this
-      .sql`SELECT ref,auth,dependencies,expires_at FROM sps_consistency.query WHERE ref=ANY(${this.sql.array(refs)}::text[]) AND auth=${auth} AND expires_at>now()`;
+      .sql`SELECT ref,auth,dependencies,expires_at FROM sps_consistency.query WHERE ref=ANY(${refs}::text[]) AND auth=${auth} AND expires_at>now()`;
 
     return queries as unknown as IRegisteredConsistencyQuery[];
   }
@@ -161,7 +162,7 @@ export class ConsistencyStore {
     const expiresAt = new Date(Date.now() + CONSISTENCY_LEASE_MS);
     if (unchanged.length)
       await this
-        .sql`UPDATE sps_consistency.query SET expires_at=${expiresAt.toISOString()}, retain_until=greatest(retain_until,${expiresAt.toISOString()}::timestamptz+interval '2 minutes') WHERE ref=ANY(${this.sql.array(unchanged)}::text[]) AND auth=${auth} AND expires_at>now()`;
+        .sql`UPDATE sps_consistency.query SET expires_at=${expiresAt.toISOString()}, retain_until=greatest(retain_until,${expiresAt.toISOString()}::timestamptz+interval '2 minutes') WHERE ref=ANY(${unchanged}::text[]) AND auth=${auth} AND expires_at>now()`;
     return {
       refs: changed,
       renewedRefs: unchanged,
@@ -172,7 +173,7 @@ export class ConsistencyStore {
   async events(after: string, limit = 128): Promise<IConsistencyEvent[]> {
     if (!/^\d+$/.test(after)) throw new Error("Invalid consistency cursor");
     const rows = await this
-      .sql`SELECT sequence::text,event_id AS "eventId",keys,versions FROM sps_consistency.delivery WHERE sequence>${after}::bigint ORDER BY sequence LIMIT ${Math.min(128, limit)}`;
+      .sql`SELECT sequence::text,event_id AS "eventId",keys,versions FROM sps_consistency.delivery WHERE sequence>${after}::bigint ORDER BY delivery.sequence LIMIT ${Math.min(128, limit)}`;
     return rows as unknown as IConsistencyEvent[];
   }
 
@@ -191,14 +192,14 @@ export class ConsistencyStore {
       if (!pending.length) return 0;
       const keys = [...new Set(pending.flatMap((row) => row.keys as string[]))];
       const queryRows =
-        await tx`SELECT tags FROM sps_consistency.query WHERE retain_until>now() AND dependencies ?| ${tx.array(keys)}::text[]`;
+        await tx`SELECT tags FROM sps_consistency.query WHERE retain_until>now() AND dependencies ?| ${keys}::text[]`;
       const tags = [
         ...new Set(queryRows.flatMap((row) => row.tags as string[])),
       ];
       await invalidateTags(tags, keys);
       // Sequence allocation and commit are serialized by the transaction lock.
       // An outbox UUID/creation time is deliberately never used as a cursor.
-      const versions = await this.versions(keys, tx as typeof this.sql);
+      const versions = await this.versions(keys, tx);
       const operations = new Map<string, { id: string; keys: Set<string> }>();
       for (const row of pending) {
         let group = operations.get(row.operation_id);
@@ -215,7 +216,7 @@ export class ConsistencyStore {
         );
         await tx`INSERT INTO sps_consistency.delivery(event_id,keys,versions) VALUES(${group.id},${JSON.stringify(eventKeys)}::jsonb,${JSON.stringify(eventVersions)}::jsonb) ON CONFLICT(event_id) DO NOTHING`;
       }
-      await tx`UPDATE sps_consistency.outbox SET processed=true WHERE id=ANY(${tx.array(pending.map((row) => row.id))}::text[])`;
+      await tx`UPDATE sps_consistency.outbox SET processed=true WHERE id=ANY(${pending.map((row) => row.id)}::text[])`;
       await tx`SELECT pg_notify('sps_consistency_delivery','changed')`;
       return pending.length;
     });

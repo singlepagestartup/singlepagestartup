@@ -3,7 +3,7 @@ import { rbacSecretMatches } from "@sps/backend-utils";
 import { renderRequestSchema } from "@sps/notification/models/template/sdk/model";
 import { Component } from "./component";
 import { variants } from "./component/variants";
-import { Html, render } from "@react-email/components";
+import { Html, render } from "react-email";
 
 export const POST = async (request: NextRequest) => {
   if (!rbacSecretMatches(request.headers.get("X-RBAC-SECRET-KEY"))) {

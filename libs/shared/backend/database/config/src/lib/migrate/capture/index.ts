@@ -36,7 +36,7 @@ function hasCurrentTriggers(row: ICaptureStatus) {
 }
 
 export async function findMissingCapture(
-  sql: postgres.Sql,
+  sql: postgres.Sql | postgres.TransactionSql,
   catalog: ICaptureResource[],
   options: { includeRegistered?: boolean } = {},
 ) {

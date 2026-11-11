@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { injectable } from "inversify";
+import { injectFromBase, injectable } from "inversify";
 import {
   CRUDService,
   type FindByIdServiceProps,
@@ -22,6 +22,7 @@ export interface FindByUrlServiceProps extends Partial<FindByIdServiceProps> {
 }
 
 @injectable()
+@injectFromBase()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   routing = new RoutingService();
   readonly seo = new SeoService({

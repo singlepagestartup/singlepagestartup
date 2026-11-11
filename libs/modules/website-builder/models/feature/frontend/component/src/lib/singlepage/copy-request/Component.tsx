@@ -1,14 +1,13 @@
 import { generateText, type JSONContent } from "@tiptap/core";
 import { generateJSON } from "@tiptap/html";
 import StarterKit from "@tiptap/starter-kit";
-import Link from "@tiptap/extension-link";
 import { TipTap } from "@sps/shared-ui-shadcn";
 import { Component as ClientComponent } from "./ClientComponent";
 import type { IComponentPropsExtended } from "./interface";
 
 function copyableText(value: string): string {
   if (!value.trim()) return "";
-  const extensions = [StarterKit, Link];
+  const extensions = [StarterKit];
   let document: unknown;
   let parsed = false;
   try {

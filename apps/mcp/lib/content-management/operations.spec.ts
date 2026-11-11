@@ -85,7 +85,7 @@ function createDescriptor(
     operations: ["find", "count", "get", "create", "update", "delete"],
     insertSchema: z
       .object({
-        title: z.record(z.any()).optional(),
+        title: z.record(z.string(), z.any()).optional(),
         adminTitle: z.string().optional(),
         publishedAt: z.date().optional(),
         expiresAt: z.date().nullable().optional(),
@@ -972,7 +972,9 @@ describe("MCP content-management generic operations", () => {
 it("preserves the metadata concurrency token through a strict model schema", async () => {
   const api = createApi();
   const descriptor = createDescriptor(api, { key: "blog.article" });
-  descriptor.insertSchema = z.object({ metadata: z.record(z.unknown()) });
+  descriptor.insertSchema = z.object({
+    metadata: z.record(z.string(), z.unknown()),
+  });
   const previous = { campaign: { name: "keep" } };
   const next = { ...previous, seo: { title: { en: "New title" } } };
   await updateContentModelRecord(

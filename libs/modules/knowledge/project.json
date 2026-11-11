@@ -7,21 +7,38 @@
   "targets": {
     "eslint:lint": {},
     "jest:test": {
-      "executor": "@nx/jest:jest",
-      "outputs": ["{projectRoot}/coverage"],
-      "inputs": ["{projectRoot}"],
+      "outputs": [
+        "{projectRoot}/coverage"
+      ],
+      "inputs": [
+        "{projectRoot}",
+        {
+          "externalDependencies": [
+            "jest",
+            "@nx/jest",
+            "ts-jest"
+          ]
+        }
+      ],
       "options": {
-        "jestConfig": "libs/modules/knowledge/jest.config.ts",
         "passWithNoTests": false
       }
     },
     "jest:integration": {
-      "executor": "@nx/jest:jest",
-      "outputs": ["{projectRoot}/coverage"],
-      "inputs": ["{projectRoot}"],
+      "executor": "nx:run-commands",
+      "outputs": [
+        "{projectRoot}/coverage"
+      ],
+      "inputs": [
+        "{projectRoot}/**/*",
+        "^default"
+      ],
       "options": {
-        "jestConfig": "libs/modules/knowledge/jest.integration.config.ts",
-        "passWithNoTests": true
+        "command": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config ./libs/modules/knowledge/jest.integration.config.ts --passWithNoTests",
+        "cwd": ".",
+        "env": {
+          "TS_NODE_COMPILER_OPTIONS": "{\"moduleResolution\":\"node16\",\"module\":\"Node16\",\"customConditions\":null}"
+        }
       }
     },
     "tsc:build": {},
@@ -35,6 +52,7 @@
     },
     "repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "commands": [
@@ -45,8 +63,7 @@
             "command": "nx run @sps/knowledge:relations:repository-generate"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "repository-migrate": {
       "executor": "nx:run-commands",
@@ -65,6 +82,7 @@
     },
     "models:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "commands": [
@@ -75,11 +93,11 @@
             "command": "nx run @sps/knowledge:models:chunk:repository-generate"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "commands": [
@@ -90,8 +108,7 @@
             "command": "nx run @sps/knowledge:relations:sources-to-chunks:repository-generate"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "models:repository-migrate": {
       "executor": "nx:run-commands",
@@ -125,6 +142,7 @@
     },
     "models:source:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/knowledge/models/source/backend/repository/database",
@@ -136,8 +154,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "models:source:repository-migrate": {
       "executor": "nx:run-commands",
@@ -155,6 +172,7 @@
     },
     "models:chunk:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/knowledge/models/chunk/backend/repository/database",
@@ -166,8 +184,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "models:chunk:repository-migrate": {
       "executor": "nx:run-commands",
@@ -185,6 +202,7 @@
     },
     "relations:sources-to-file-storage-module-files:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/knowledge/relations/sources-to-file-storage-module-files/backend/repository/database",
@@ -196,8 +214,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:sources-to-file-storage-module-files:repository-migrate": {
       "executor": "nx:run-commands",
@@ -215,6 +232,7 @@
     },
     "relations:sources-to-chunks:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/knowledge/relations/sources-to-chunks/backend/repository/database",
@@ -226,8 +244,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:sources-to-chunks:repository-migrate": {
       "executor": "nx:run-commands",

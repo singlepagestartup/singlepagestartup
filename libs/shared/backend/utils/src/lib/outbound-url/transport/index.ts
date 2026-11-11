@@ -35,7 +35,9 @@ export async function requestOutboundUrl(
   // A plain Agent also ignores HTTP_PROXY/HTTPS_PROXY and global dispatchers.
   const dispatcher = new Agent({
     connections: 1,
-    pipelining: 0,
+    // One request per dispatcher. Setting zero sends Connection: close, which
+    // can leave Bun waiting for peer shutdown before it validates a redirect.
+    pipelining: 1,
     maxHeaderSize: 16384,
     connect: { lookup, rejectUnauthorized: true, autoSelectFamily: false },
   });
@@ -53,7 +55,7 @@ export async function requestOutboundUrl(
 
     // Request serializes multipart data without buffering it. Rebuild it for a
     // same-origin redirect so a FormData body can be sent again.
-    const serialized = new Request(target.url, {
+    const serialized = new Request(target.url.href, {
       ...init,
       headers,
       duplex: "half",
@@ -62,7 +64,7 @@ export async function requestOutboundUrl(
 
     if (serialized.body) {
       body = Readable.fromWeb(
-        serialized.body as Parameters<typeof Readable.fromWeb>[0],
+        serialized.body as unknown as Parameters<typeof Readable.fromWeb>[0],
       );
     }
 
@@ -91,7 +93,9 @@ export async function requestOutboundUrl(
       serialized.method !== "HEAD" &&
       ![204, 205, 304].includes(result.statusCode)
     ) {
-      responseBody = Readable.toWeb(result.body) as ReadableStream<Uint8Array>;
+      responseBody = Readable.toWeb(
+        result.body,
+      ) as unknown as ReadableStream<Uint8Array>;
     } else {
       result.body.destroy();
     }

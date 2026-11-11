@@ -1,4 +1,7 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import {
+  McpServer,
+  type ToolCallback,
+} from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import {
   ContentModelCountInputSchema,
@@ -55,7 +58,7 @@ import {
   SPS_PROJECT_GUIDE,
 } from "./lib/guidance";
 
-type ToolHandler = Parameters<McpServer["registerTool"]>[2];
+type ToolHandler = ToolCallback<z.ZodRawShape>;
 
 function withAuth(handler: ToolHandler): ToolHandler {
   return async (args, extra) => {

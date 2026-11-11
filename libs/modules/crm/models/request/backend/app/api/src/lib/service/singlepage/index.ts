@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { injectable } from "inversify";
+import { injectFromBase, injectable } from "inversify";
 import { CRUDService } from "@sps/shared-backend-api";
 import { Table } from "@sps/crm/models/request/backend/repository/database";
 import type { Repository } from "../../repository";
@@ -7,6 +7,7 @@ import type { Repository } from "../../repository";
 type Request = typeof Table.$inferSelect;
 export type TNotificationStatus = "queued" | "sent" | "failed";
 @injectable()
+@injectFromBase()
 export class Service extends CRUDService<Request> {
   private owner() {
     return this.repository as Repository;

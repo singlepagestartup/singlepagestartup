@@ -1,8 +1,8 @@
 import { z } from "zod";
 
-const channel = z.object({ channelId: z.string().uuid() });
+const channel = z.object({ channelId: z.uuid() });
 const keyed = channel.extend({ key: z.string().trim().min(1).max(250) });
-const owner = keyed.extend({ receipt: z.string().uuid() });
+const owner = keyed.extend({ receipt: z.uuid() });
 const seconds = z.number().int().min(1).max(86400);
 const payload = z.string().max(1024 * 1024);
 export const deliveryCommand = z.discriminatedUnion("operation", [

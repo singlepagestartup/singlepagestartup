@@ -126,13 +126,18 @@ export class Handler {
         }
       }
 
+      // Chat creation owns the single default thread. User-created threads have their own variant.
+      let variant = data.variant;
+      if (!variant || variant === "default") {
+        variant = telegramTopic ? "telegram" : "custom";
+      }
       const socialModuleThread = await socialModuleThreadApi.create({
         data: {
           ...data,
           title,
+          variant,
           ...(telegramTopic
             ? {
-                variant: data.variant || "telegram",
                 sourceSystemId: String(telegramTopic.message_thread_id),
               }
             : {}),
@@ -148,7 +153,7 @@ export class Handler {
         data: {
           chatId: socialModuleChatId,
           threadId: socialModuleThread.id,
-          variant: telegramTopic ? "telegram" : data.variant || "default",
+          variant: telegramTopic ? "telegram" : variant,
         },
         options: {
           headers: {

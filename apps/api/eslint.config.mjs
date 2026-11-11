@@ -1,10 +1,10 @@
-import { defineFlatConfig } from "eslint-define-config";
+import { defineConfig } from "eslint/config";
 import parentConfig from "../../eslint.config.mjs";
 import typescriptPlugin from "@typescript-eslint/eslint-plugin";
 import typescriptParser from "@typescript-eslint/parser";
 import prettier from "eslint-plugin-prettier";
 
-export default defineFlatConfig([
+export default defineConfig([
   ...parentConfig,
   {
     files: ["**/*.ts", "**/*.tsx"],

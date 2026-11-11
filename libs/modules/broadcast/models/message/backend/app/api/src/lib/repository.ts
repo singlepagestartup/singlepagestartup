@@ -1,10 +1,11 @@
 import "reflect-metadata";
-import { injectable } from "inversify";
+import { injectFromBase, injectable } from "inversify";
 import { asc, inArray, isNotNull, lte } from "drizzle-orm";
 import { DatabaseRepository } from "@sps/shared-backend-api";
 import { Table } from "@sps/broadcast/models/message/backend/repository/database";
 
 @injectable()
+@injectFromBase()
 export class Repository extends DatabaseRepository<typeof Table> {
   protected override get readScope() {
     return isNotNull(Table.expiresAt);

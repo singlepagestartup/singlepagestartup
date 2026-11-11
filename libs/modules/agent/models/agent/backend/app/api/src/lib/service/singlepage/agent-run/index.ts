@@ -10,7 +10,7 @@ import {
   route,
   runIdHeader,
 } from "@sps/agent/models/agent/sdk/model";
-import cronParser from "cron-parser";
+import { CronExpressionParser } from "cron-parser";
 import { logger } from "@sps/backend-utils";
 import { type IBroadcastModule } from "../../../di";
 
@@ -160,10 +160,9 @@ export class AgentRun {
     let nextExecutionTime: Date;
 
     try {
-      nextExecutionTime = cronParser
-        .parseExpression(agent.interval, {
-          currentDate: marker?.datetime || now,
-        })
+      nextExecutionTime = CronExpressionParser.parse(agent.interval, {
+        currentDate: marker?.datetime || now,
+      })
         .next()
         .toDate();
     } catch (error) {

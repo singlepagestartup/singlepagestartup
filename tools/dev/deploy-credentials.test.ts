@@ -81,17 +81,20 @@ const workflow = parse(
 const steps: IWorkflowStep[] = workflow.jobs.ansible.steps;
 
 test.each([
-  ["Add deployer PREVIEW secrets to env file", "PREVIEW_"],
-  ["Add deployer default secrets to env file", ""],
+  ["Add deployer PREVIEW settings to env file", "PREVIEW_"],
+  ["Add deployer production settings to env file", ""],
 ])("%s writes exactly its declared values", (name, prefix) => {
   const step = steps.find((candidate) => candidate.name === name);
   if (!step?.run || !step.env) {
     throw new Error(`Missing deployer workflow step: ${name}`);
   }
   const variables = Object.keys(step.env);
-  expect(step.env.PROJECT_NAME).toBe(`\${{ secrets.${prefix}PROJECT_NAME }}`);
+  expect(step.env.PROJECT_NAME).toBe(`\${{ vars.${prefix}PROJECT_NAME }}`);
   expect(step.env.DATABASE_BACKUP_RETENTION_DAYS).toBe(
-    `\${{ secrets.${prefix}DATABASE_BACKUP_RETENTION_DAYS }}`,
+    `\${{ vars.${prefix}DATABASE_BACKUP_RETENTION_DAYS }}`,
+  );
+  expect(step.env.DATABASE_PASSWORD).toBe(
+    `\${{ secrets.${prefix}DATABASE_PASSWORD }}`,
   );
   const values = Object.fromEntries(variables.map((key) => [key, marker]));
   values.GITHUB_REPOSITORY = "test/fixture"; // Built in on the Actions runner.

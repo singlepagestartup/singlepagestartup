@@ -1,19 +1,25 @@
 import { hash, KV_REST_API_TOKEN, KV_REST_API_URL } from "@sps/shared-utils";
 import type { IProvider } from "../interface";
-import { kv, createClient } from "@vercel/kv";
+import { Redis } from "@upstash/redis";
 
 export class Provider implements IProvider {
   prefix: string;
-  client: typeof kv;
-
-  constructor() {
-    this.client = kv;
-  }
+  client: Redis;
 
   async connect(): Promise<void> {
-    createClient({
+    if (this.client) {
+      return;
+    }
+    if (!KV_REST_API_URL || !KV_REST_API_TOKEN) {
+      throw new Error(
+        "Configuration error. Missing KV_REST_API_URL or KV_REST_API_TOKEN",
+      );
+    }
+    this.client = new Redis({
       url: KV_REST_API_URL,
       token: KV_REST_API_TOKEN,
+      cache: "default",
+      enableAutoPipelining: true,
     });
   }
 

@@ -1,14 +1,7 @@
 import { useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router";
-import {
-  ChevronRight,
-  Eye,
-  EyeOff,
-  Github,
-  Loader2,
-  Lock,
-  Mail,
-} from "lucide-react";
+import { ChevronRight, Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
+import { FaGithub as Github } from "react-icons/fa6";
 import { useAuth } from "./AuthContext";
 
 export function LoginPage() {

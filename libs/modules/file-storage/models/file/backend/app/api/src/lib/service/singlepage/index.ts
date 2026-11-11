@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { injectable } from "inversify";
+import { injectFromBase, injectable } from "inversify";
 import { CRUDService } from "@sps/shared-backend-api";
 import { fetchOutboundUrl } from "@sps/backend-utils";
 import { Table } from "@sps/file-storage/models/file/backend/repository/database";
@@ -10,6 +10,7 @@ import fs from "fs/promises";
 import type { Repository } from "../../repository";
 
 @injectable()
+@injectFromBase()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   async lock(ids: string[], mode: "key share" | "update" = "key share") {
     return (this.repository as Repository).lock(ids, mode);

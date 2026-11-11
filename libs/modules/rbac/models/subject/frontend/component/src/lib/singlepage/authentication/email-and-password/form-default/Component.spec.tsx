@@ -7,6 +7,7 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
+import { renderToString } from "react-dom/server";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Cookies, CookiesProvider } from "react-cookie";
 
@@ -131,6 +132,45 @@ beforeEach(() => {
   document.cookie = "rbac.subject.jwt=visitor-token; path=/";
 });
 
+it("enables the login form only after React can handle its submission", () => {
+  const form = (
+    <QueryClientProvider client={queryClient}>
+      <CookiesProvider cookies={new Cookies({})}>
+        <Component
+          isServer={false}
+          language="en"
+          variant="authentication-email-and-password-form-default"
+          mode="authentication"
+        />
+      </CookiesProvider>
+    </QueryClientProvider>
+  );
+  const container = document.createElement("div");
+  document.body.appendChild(container);
+  container.innerHTML = renderToString(form);
+  const email = container.querySelector<HTMLInputElement>(
+    'input[type="email"]',
+  )!;
+  const password = container.querySelector<HTMLInputElement>(
+    'input[type="password"]',
+  )!;
+  const submit = container.querySelector<HTMLButtonElement>(
+    'button[type="submit"]',
+  )!;
+  expect([email.disabled, password.disabled, submit.disabled]).toEqual([
+    true,
+    true,
+    true,
+  ]);
+
+  render(form, { container, hydrate: true });
+  expect([email.disabled, password.disabled, submit.disabled]).toEqual([
+    false,
+    false,
+    false,
+  ]);
+});
+
 it.each([
   "authentication",
   "registration",
@@ -150,8 +190,8 @@ it.each([
       </CookiesProvider>
     </QueryClientProvider>,
   );
-  const hrefs = [...view.container.querySelectorAll("a[href]")].map(
-    (link) => link.getAttribute("href")!,
+  const hrefs = [...view.container.querySelectorAll("a[href]")].map((link) =>
+    link.getAttribute("href")!,
   );
   expect(hrefs.length).toBeGreaterThan(0);
   expect(hrefs.every((href) => href.startsWith("/ru/"))).toBe(true);

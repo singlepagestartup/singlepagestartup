@@ -215,9 +215,12 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
         Object.values(filterValue).forEach((v: any) => arrayFilter.push(v));
       }
 
-      resultQueries.push(
-        queryFunctions[method](comparedColumn, arrayFilter) as SQL<any>,
-      );
+      const column = sql`${comparedColumn}`;
+      if (method === "inArray") {
+        resultQueries.push(queryFunctions.inArray(column, arrayFilter));
+      } else {
+        resultQueries.push(queryFunctions.notInArray(column, arrayFilter));
+      }
     }
 
     if (

@@ -465,8 +465,8 @@ describe("Database", () => {
           Table: ConsumeTestTable,
           insertSchema: z.object({
             variant: z.string().optional(),
-            title: z.record(z.string()).default({}),
-            metadata: z.record(z.unknown()).default({}),
+            title: z.record(z.string(), z.string()).default({}),
+            metadata: z.record(z.string(), z.unknown()).default({}),
             ownerId: requiredForeignKey ? z.string() : z.string().optional(),
             updatedAt: z.date().optional(),
           }),

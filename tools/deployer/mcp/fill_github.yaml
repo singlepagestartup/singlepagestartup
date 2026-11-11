@@ -31,10 +31,11 @@
         - create_secret.js
         - create_variable.js
         - package.json
+        - package-lock.json
 
     - name: Install dependencies
       shell:
-        cmd: "npm install"
+        cmd: "npm ci"
         chdir: "/home/code/github-node-api"
 
     - name: Get Portainer mcp webhook token

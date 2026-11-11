@@ -8,17 +8,26 @@
     "eslint:lint": {},
     "jest:test": {},
     "jest:integration": {
-      "executor": "@nx/jest:jest",
-      "outputs": ["{projectRoot}/coverage"],
-      "inputs": ["{projectRoot}"],
+      "executor": "nx:run-commands",
+      "outputs": [
+        "{projectRoot}/coverage"
+      ],
+      "inputs": [
+        "{projectRoot}/**/*",
+        "^default"
+      ],
       "options": {
-        "jestConfig": "libs/modules/broadcast/jest.integration.config.ts",
-        "passWithNoTests": true
+        "command": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config ./libs/modules/broadcast/jest.integration.config.ts --passWithNoTests",
+        "cwd": ".",
+        "env": {
+          "TS_NODE_COMPILER_OPTIONS": "{\"moduleResolution\":\"node16\",\"module\":\"Node16\",\"customConditions\":null}"
+        }
       }
     },
     "tsc:build": {},
     "repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "commands": [
@@ -29,8 +38,7 @@
             "command": "nx run @sps/broadcast:relations:repository-generate"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "repository-migrate": {
       "executor": "nx:run-commands",
@@ -49,6 +57,7 @@
     },
     "models:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "commands": [
@@ -59,11 +68,11 @@
             "command": "nx run @sps/broadcast:models:message:repository-generate"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "commands": [
@@ -71,8 +80,7 @@
             "command": "nx run @sps/broadcast:relations:channels-to-messages:repository-generate"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "models:repository-migrate": {
       "executor": "nx:run-commands",
@@ -103,6 +111,7 @@
     },
     "models:channel:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/broadcast/models/channel/backend/repository/database",
@@ -114,8 +123,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "models:channel:repository-migrate": {
       "executor": "nx:run-commands",
@@ -133,6 +141,7 @@
     },
     "models:message:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/broadcast/models/message/backend/repository/database",
@@ -144,8 +153,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "models:message:repository-migrate": {
       "executor": "nx:run-commands",
@@ -163,6 +171,7 @@
     },
     "relations:channels-to-messages:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/broadcast/relations/channels-to-messages/backend/repository/database",
@@ -174,8 +183,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:channels-to-messages:repository-migrate": {
       "executor": "nx:run-commands",

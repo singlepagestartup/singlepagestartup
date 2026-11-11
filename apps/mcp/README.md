@@ -205,7 +205,7 @@ before applying that override; the generator does not migrate other OpenCode
 settings.
 
 The client generator runs on Bun and uses its built-in TOML parser without
-additional npm dependencies. The project dependency and CI use Bun 1.3.6. The
+additional npm dependencies. The project dependency and CI use Bun 1.4.4. The
 launcher disables automatic `.env` loading; only the existing process variables
 and selected deployer file determine client settings.
 
@@ -498,6 +498,7 @@ configured API origin.
 ## Limits
 
 - `/mcp` refuses a request body larger than `MCP_SERVICE_HTTP_MAX_BODY_BYTES` (4194304 by default) with 413. OAuth endpoints accept up to 64 KiB.
+- Each tool call accepts up to 10,000 object keys and array elements in total across its arguments. The MCP server rejects larger calls before schema validation. Split large edits into smaller calls; a base64 file counts as one string but still has to fit the HTTP body limit.
 - A Streamable HTTP session idle for `MCP_SERVICE_HTTP_SESSION_IDLE_TTL_SECONDS` (86400 by default) is closed, and at `MCP_SERVICE_HTTP_MAX_SESSIONS` (500 by default) the least recently used session is closed to admit a new one. A closed session answers 404, and the client starts a new session as it does after a restart.
 - The HTTP server refuses to start on a legacy `RBAC_SECRET_KEY` or `RBAC_JWT_SECRET` and reports a short or legacy value of its other secrets. `MCP_SECRET_STRENGTH=report` starts it anyway; see `tools/deployer/README.md`.
 

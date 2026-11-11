@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { injectable } from "inversify";
+import { injectFromBase, injectable } from "inversify";
 import {
   type SQL,
   TransactionRollbackError,
@@ -55,6 +55,7 @@ const deliveryState = {
 };
 
 @injectable()
+@injectFromBase()
 export class DeliveryRepository extends DatabaseRepository<typeof Table> {
   protected override async trackRead(
     filters?: Parameters<typeof trackRepositoryRead>[2],

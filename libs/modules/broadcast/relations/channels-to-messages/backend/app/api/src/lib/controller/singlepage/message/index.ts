@@ -8,7 +8,7 @@ export class Handler {
   constructor(private readonly service: Service) {}
   async execute(c: Context) {
     try {
-      const id = z.string().uuid().safeParse(c.req.param("id"));
+      const id = z.uuid().safeParse(c.req.param("id"));
       if (!id.success) {
         throw new Error("Validation error. A relation UUID is required");
       }

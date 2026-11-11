@@ -10,7 +10,7 @@ it("renders saved raster templates without trusting caller image URLs or adding 
   const script = String.raw`
 import assert from "node:assert/strict";
 import { mock } from "bun:test";
-import pako from "pako";
+import { deflate } from "pako";
 import { NextRequest } from "next/server";
 
 const id = "00000000-0000-4000-8000-000000000001";
@@ -61,7 +61,7 @@ function reset() {
 }
 
 function request(file = { id, file: "http://169.254.169.254/latest/meta-data/" }, requestedVariant = variant) {
-  const data = Buffer.from(pako.deflate(JSON.stringify({ fileStorage: { file } }))).toString("base64");
+  const data = Buffer.from(deflate(JSON.stringify({ fileStorage: { file } }))).toString("base64");
   const query = new URLSearchParams({ variant: requestedVariant, data, backgroundImage: "http://127.0.0.1/secret" });
   return new NextRequest("http://localhost/api/image-generator/image.png?" + query);
 }

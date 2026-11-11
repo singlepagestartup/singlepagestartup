@@ -356,7 +356,7 @@ fi
 
 if [ "$1" != "down" ]
 then
-    (cd ./github/github-node-api && npm install) || exit 1
+    (cd ./github/github-node-api && npm ci) || exit 1
 
     for i in "${BRANCHES[@]}"
     do
@@ -390,7 +390,7 @@ then
         fi
     done
 else
-    (cd ./github/github-node-api && npm install) || exit 1
+    (cd ./github/github-node-api && npm ci) || exit 1
 
     for i in "${SECRETS[@]}"
     do

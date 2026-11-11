@@ -8,17 +8,26 @@
     "eslint:lint": {},
     "jest:test": {},
     "jest:integration": {
-      "executor": "@nx/jest:jest",
-      "outputs": ["{projectRoot}/coverage"],
-      "inputs": ["{projectRoot}"],
+      "executor": "nx:run-commands",
+      "outputs": [
+        "{projectRoot}/coverage"
+      ],
+      "inputs": [
+        "{projectRoot}/**/*",
+        "^default"
+      ],
       "options": {
-        "jestConfig": "libs/modules/social/jest.integration.config.ts",
-        "passWithNoTests": true
+        "command": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config ./libs/modules/social/jest.integration.config.ts --passWithNoTests",
+        "cwd": ".",
+        "env": {
+          "TS_NODE_COMPILER_OPTIONS": "{\"moduleResolution\":\"node16\",\"module\":\"Node16\",\"customConditions\":null}"
+        }
       }
     },
     "tsc:build": {},
     "repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "commands": [
@@ -29,8 +38,7 @@
             "command": "nx run @sps/social:relations:repository-generate"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "repository-migrate": {
       "executor": "nx:run-commands",
@@ -49,6 +57,7 @@
     },
     "models:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "commands": [
@@ -80,11 +89,11 @@
             "command": "nx run @sps/social:models:skill:repository-generate"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "commands": [
@@ -152,8 +161,7 @@
             "command": "nx run @sps/social:relations:widgets-to-website-builder-module-widgets:repository-generate"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "models:repository-migrate": {
       "executor": "nx:run-commands",
@@ -265,6 +273,7 @@
     },
     "models:widget:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/social/models/widget/backend/repository/database",
@@ -276,8 +285,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "models:widget:repository-migrate": {
       "executor": "nx:run-commands",
@@ -295,6 +303,7 @@
     },
     "models:profile:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/social/models/profile/backend/repository/database",
@@ -306,8 +315,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "models:profile:repository-migrate": {
       "executor": "nx:run-commands",
@@ -325,6 +333,7 @@
     },
     "models:thread:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/social/models/thread/backend/repository/database",
@@ -336,8 +345,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "models:thread:repository-migrate": {
       "executor": "nx:run-commands",
@@ -355,6 +363,7 @@
     },
     "models:message:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/social/models/message/backend/repository/database",
@@ -366,8 +375,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "models:message:repository-migrate": {
       "executor": "nx:run-commands",
@@ -385,6 +393,7 @@
     },
     "models:chat:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/social/models/chat/backend/repository/database",
@@ -396,8 +405,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "models:chat:repository-migrate": {
       "executor": "nx:run-commands",
@@ -415,6 +423,7 @@
     },
     "models:attribute-key:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/social/models/attribute-key/backend/repository/database",
@@ -426,8 +435,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "models:attribute-key:repository-migrate": {
       "executor": "nx:run-commands",
@@ -445,6 +453,7 @@
     },
     "models:attribute:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/social/models/attribute/backend/repository/database",
@@ -456,8 +465,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "models:attribute:repository-migrate": {
       "executor": "nx:run-commands",
@@ -475,6 +483,7 @@
     },
     "models:action:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/social/models/action/backend/repository/database",
@@ -486,8 +495,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "models:action:repository-migrate": {
       "executor": "nx:run-commands",
@@ -505,6 +513,7 @@
     },
     "relations:profiles-to-website-builder-module-widgets:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/social/relations/profiles-to-website-builder-module-widgets/backend/repository/database",
@@ -516,8 +525,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:profiles-to-website-builder-module-widgets:repository-migrate": {
       "executor": "nx:run-commands",
@@ -535,6 +543,7 @@
     },
     "relations:profiles-to-file-storage-module-files:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/social/relations/profiles-to-file-storage-module-files/backend/repository/database",
@@ -546,8 +555,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:profiles-to-file-storage-module-files:repository-migrate": {
       "executor": "nx:run-commands",
@@ -565,6 +573,7 @@
     },
     "relations:attribute-keys-to-attributes:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/social/relations/attribute-keys-to-attributes/backend/repository/database",
@@ -576,8 +585,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:attribute-keys-to-attributes:repository-migrate": {
       "executor": "nx:run-commands",
@@ -595,6 +603,7 @@
     },
     "relations:profiles-to-attributes:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/social/relations/profiles-to-attributes/backend/repository/database",
@@ -606,8 +615,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:profiles-to-attributes:repository-migrate": {
       "executor": "nx:run-commands",
@@ -625,6 +633,7 @@
     },
     "relations:profiles-to-messages:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/social/relations/profiles-to-messages/backend/repository/database",
@@ -636,8 +645,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:profiles-to-messages:repository-migrate": {
       "executor": "nx:run-commands",
@@ -655,6 +663,7 @@
     },
     "relations:profiles-to-chats:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/social/relations/profiles-to-chats/backend/repository/database",
@@ -666,8 +675,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:profiles-to-chats:repository-migrate": {
       "executor": "nx:run-commands",
@@ -685,6 +693,7 @@
     },
     "relations:profiles-to-ecommerce-module-products:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/social/relations/profiles-to-ecommerce-module-products/backend/repository/database",
@@ -696,8 +705,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:profiles-to-ecommerce-module-products:repository-migrate": {
       "executor": "nx:run-commands",
@@ -715,6 +723,7 @@
     },
     "relations:profiles-to-knowledge-module-sources:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/social/relations/profiles-to-knowledge-module-sources/backend/repository/database",
@@ -726,8 +735,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:profiles-to-knowledge-module-sources:repository-migrate": {
       "executor": "nx:run-commands",
@@ -745,6 +753,7 @@
     },
     "relations:chats-to-messages:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/social/relations/chats-to-messages/backend/repository/database",
@@ -756,8 +765,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:chats-to-messages:repository-migrate": {
       "executor": "nx:run-commands",
@@ -775,6 +783,7 @@
     },
     "relations:messages-to-file-storage-module-files:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/social/relations/messages-to-file-storage-module-files/backend/repository/database",
@@ -786,8 +795,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:messages-to-file-storage-module-files:repository-migrate": {
       "executor": "nx:run-commands",
@@ -805,6 +813,7 @@
     },
     "relations:chats-to-threads:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/social/relations/chats-to-threads/backend/repository/database",
@@ -816,8 +825,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:chats-to-threads:repository-migrate": {
       "executor": "nx:run-commands",
@@ -835,6 +843,7 @@
     },
     "relations:threads-to-messages:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/social/relations/threads-to-messages/backend/repository/database",
@@ -846,8 +855,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:threads-to-messages:repository-migrate": {
       "executor": "nx:run-commands",
@@ -865,6 +873,7 @@
     },
     "relations:profiles-to-actions:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/social/relations/profiles-to-actions/backend/repository/database",
@@ -876,8 +885,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:profiles-to-actions:repository-migrate": {
       "executor": "nx:run-commands",
@@ -895,6 +903,7 @@
     },
     "relations:chats-to-actions:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/social/relations/chats-to-actions/backend/repository/database",
@@ -906,8 +915,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:chats-to-actions:repository-migrate": {
       "executor": "nx:run-commands",
@@ -925,6 +933,7 @@
     },
     "relations:threads-to-actions:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/social/relations/threads-to-actions/backend/repository/database",
@@ -936,8 +945,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:threads-to-actions:repository-migrate": {
       "executor": "nx:run-commands",
@@ -955,6 +963,7 @@
     },
     "models:skill:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/social/models/skill/backend/repository/database",
@@ -966,8 +975,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "models:skill:repository-migrate": {
       "executor": "nx:run-commands",
@@ -985,6 +993,7 @@
     },
     "relations:profiles-to-skills:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/social/relations/profiles-to-skills/backend/repository/database",
@@ -996,8 +1005,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:profiles-to-skills:repository-migrate": {
       "executor": "nx:run-commands",
@@ -1015,6 +1023,7 @@
     },
     "relations:profiles-to-blog-module-articles:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/social/relations/profiles-to-blog-module-articles/backend/repository/database",
@@ -1026,8 +1035,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:profiles-to-blog-module-articles:repository-migrate": {
       "executor": "nx:run-commands",
@@ -1045,6 +1053,7 @@
     },
     "relations:messages-to-knowledge-module-sources:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/social/relations/messages-to-knowledge-module-sources/backend/repository/database",
@@ -1056,8 +1065,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:messages-to-knowledge-module-sources:repository-migrate": {
       "executor": "nx:run-commands",
@@ -1075,6 +1083,7 @@
     },
     "relations:skills-to-knowledge-module-sources:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/social/relations/skills-to-knowledge-module-sources/backend/repository/database",
@@ -1086,8 +1095,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:skills-to-knowledge-module-sources:repository-migrate": {
       "executor": "nx:run-commands",
@@ -1105,6 +1113,7 @@
     },
     "relations:threads-to-ecommerce-module-products:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/social/relations/threads-to-ecommerce-module-products/backend/repository/database",
@@ -1116,8 +1125,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:threads-to-ecommerce-module-products:repository-migrate": {
       "executor": "nx:run-commands",
@@ -1135,6 +1143,7 @@
     },
     "relations:widgets-to-website-builder-module-widgets:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/social/relations/widgets-to-website-builder-module-widgets/backend/repository/database",
@@ -1146,8 +1155,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:widgets-to-website-builder-module-widgets:repository-migrate": {
       "executor": "nx:run-commands",

@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import QueryString from "qs";
 import { createElement } from "react";
 import { Component as ChildComponent } from "./component";
-import pako from "pako";
+import { inflate } from "pako";
 import fs from "fs/promises";
 import path from "path";
 import { fileTypeFromBuffer } from "file-type";
@@ -345,7 +345,7 @@ export const GET = async (request: NextRequest) => {
 
       const uint8Array = new Uint8Array(decodedBuffer);
 
-      const inflatedData = pako.inflate(uint8Array, { to: "string" });
+      const inflatedData = inflate(uint8Array, { toText: true });
 
       data = JSON.parse(inflatedData);
     }

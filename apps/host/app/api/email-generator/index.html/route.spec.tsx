@@ -9,8 +9,8 @@ import type { ReactNode } from "react";
 // Jest VM modules. Use the same React server renderer through a static import
 // here; the full React Email wrapper is also exercised by the live HTTP check.
 // The actual registry, email components and Tailwind conversion stay real.
-jest.mock("@react-email/components", () => ({
-  ...jest.requireActual("@react-email/components"),
+jest.mock("react-email", () => ({
+  ...jest.requireActual("react-email"),
   render: (element: ReactNode) =>
     new Promise<string>((resolve, reject) => {
       const output = new PassThrough();

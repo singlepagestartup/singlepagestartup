@@ -90,7 +90,10 @@ export class Middleware {
                 const formData = await c.req
                   .formData()
                   .catch(() => new FormData());
-                requestData = Object.fromEntries(formData);
+                requestData = Object.create(null);
+                formData.forEach((value, key) => {
+                  requestData[key] = value;
+                });
               }
 
               const parsedRequestData = { ...requestData };

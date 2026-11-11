@@ -181,7 +181,7 @@ class SinglePageStartupMcpSession implements ISinglePageStartupMcpSession {
   private readonly wireClient: IMcpWireClient;
   private readonly toolTimeoutMs: number;
   private readonly resultLimitBytes: number;
-  private readonly ajv = new Ajv({ allErrors: true, strictDefaults: true });
+  private readonly ajv = new Ajv({ allErrors: true, strictSchema: true });
   private tools?: IMcpToolDefinition[];
   private closed = false;
 

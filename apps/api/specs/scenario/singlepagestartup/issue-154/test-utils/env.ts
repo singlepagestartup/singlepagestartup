@@ -9,10 +9,12 @@ export function loadScenarioEnv() {
   }
 
   dotenv.config({
+    quiet: true,
     path: path.resolve(process.cwd(), "apps/api/.env"),
   });
 
   dotenv.config({
+    quiet: true,
     path: path.resolve(process.cwd(), "apps/host/.env.local"),
   });
 

@@ -57,6 +57,11 @@ export function Component(props: IComponentProps) {
     return path;
   }
 
+  const [isHydrated, setIsHydrated] = useState(false);
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
   const [fragmentCode, setFragmentCode] = useState<string | null>(null);
   useEffect(() => {
     if (!reset) {
@@ -162,6 +167,7 @@ export function Component(props: IComponentProps) {
           <label className="grid gap-2 text-sm font-semibold">
             {ru ? "Электронная почта" : "Email"}
             <input
+              disabled={!isHydrated}
               type="email"
               className={field}
               autoComplete="email"
@@ -177,6 +183,7 @@ export function Component(props: IComponentProps) {
             {ru ? "Пароль" : "Password"}
             <span className="relative">
               <input
+                disabled={!isHydrated}
                 type={visible ? "text" : "password"}
                 className={`${field} pr-12`}
                 autoComplete={
@@ -197,6 +204,7 @@ export function Component(props: IComponentProps) {
                       ? "Показать пароль"
                       : "Show password"
                 }
+                disabled={!isHydrated}
                 aria-pressed={visible}
                 type="button"
                 className="absolute right-1 top-1 flex size-10 items-center justify-center text-muted-foreground"
@@ -215,6 +223,7 @@ export function Component(props: IComponentProps) {
           <label className="grid gap-2 text-sm font-semibold">
             {ru ? "Повторите пароль" : "Confirm password"}
             <input
+              disabled={!isHydrated}
               type="password"
               className={field}
               autoComplete="new-password"
@@ -236,6 +245,7 @@ export function Component(props: IComponentProps) {
         {registration && (
           <label className="flex items-start gap-3 text-sm leading-6 text-muted-foreground">
             <input
+              disabled={!isHydrated}
               type="checkbox"
               className="mt-1 size-4 appearance-auto accent-foreground"
               checked={acceptedTerms}
@@ -269,7 +279,9 @@ export function Component(props: IComponentProps) {
           </p>
         )}
         <button
+          type="submit"
           disabled={
+            !isHydrated ||
             pending ||
             ((reset || registration) && password !== confirmation) ||
             (registration && !acceptedTerms) ||
