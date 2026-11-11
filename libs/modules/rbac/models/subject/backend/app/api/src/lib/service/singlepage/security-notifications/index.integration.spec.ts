@@ -78,9 +78,15 @@ describe("Security summaries and password limits with real storage", () => {
   const notificationRepository = new NotificationRepository(
     new NotificationConfiguration(),
   );
-  const notification = new NotificationService(notificationRepository, {
-    channel: { queue } as any,
-  });
+  const templateRepository = new TemplateRepository(
+    new TemplateConfiguration(),
+  );
+  const templateService = new TemplateService(templateRepository);
+  const notification = new NotificationService(
+    notificationRepository,
+    { channel: { queue } as any },
+    templateService,
+  );
   const topic = new TopicService(
     new TopicRepository(new TopicConfiguration()),
     { notification } as any,
@@ -88,10 +94,6 @@ describe("Security summaries and password limits with real storage", () => {
   const topicId = randomUUID();
   const telegramTemplateId = randomUUID();
   const emailTemplateId = randomUUID();
-  const templateRepository = new TemplateRepository(
-    new TemplateConfiguration(),
-  );
-  const templateService = new TemplateService(templateRepository);
   const deliver = mockTransport.mockImplementation(async (method) => {
     if (method === "telegram") {
       throw new Error("simulated blocked Telegram");

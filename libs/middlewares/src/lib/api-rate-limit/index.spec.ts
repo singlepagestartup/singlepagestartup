@@ -107,7 +107,7 @@ it("shares one Subject budget between devices, refreshed tokens and API instance
       })
     ).status,
   ).toBe(200);
-  const refused = await request(first.app, { cookie: "access:alice:new" });
+  const refused = await request(first.app, { token: "access:alice:new" });
   expect(refused.status).toBe(429);
   expect(Number(refused.headers.get("Retry-After"))).toBeGreaterThan(0);
   expect(refused.headers.get("Cache-Control")).toBe("no-store");
@@ -218,13 +218,15 @@ it("exempts only verified operator calls; a wrong secret still spends the budget
   expect((await request(app, { secret: "wrong" })).status).toBe(429);
 });
 
-it("refuses mixed header/cookie identities instead of charging a different user", async () => {
+it("charges only the bearer Subject when the browser also sends a cookie", async () => {
   const { app, handler, resolveSubjectId } = setup();
   const response = await request(app, {
     token: "access:alice",
     cookie: "access:bob",
   });
-  expect(response.status).toBe(401);
-  expect(handler).not.toHaveBeenCalled();
-  expect(resolveSubjectId).not.toHaveBeenCalled();
+  expect(response.status).toBe(200);
+  expect(handler).toHaveBeenCalledTimes(1);
+  expect(resolveSubjectId).toHaveBeenCalledWith("access:alice");
+  await request(app, { cookie: "access:bob" });
+  expect(resolveSubjectId).toHaveBeenCalledTimes(1);
 });

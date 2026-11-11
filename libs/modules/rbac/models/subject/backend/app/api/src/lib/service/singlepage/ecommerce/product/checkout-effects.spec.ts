@@ -30,6 +30,7 @@ jest.mock("@sps/shared-utils", () => ({
   RBAC_SECRET_KEY: "test-secret",
 }));
 jest.mock("@sps/backend-utils", () => ({
+  ...jest.requireActual("@sps/backend-utils"),
   logger: {
     warn: jest.fn(),
     error: jest.fn(),

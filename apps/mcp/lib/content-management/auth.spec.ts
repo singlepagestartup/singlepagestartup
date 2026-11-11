@@ -73,6 +73,24 @@ describe("MCP forwarded authentication helper", () => {
     });
   });
 
+  it("uses transport authentication even with a malformed cookie", () => {
+    expect(
+      getMcpAuthHeaders(
+        createExtra({
+          headers: { cookie: "analytics=%; rbac.subject.jwt=%" },
+          authInfo: { token: "transport-jwt" },
+        }),
+      ),
+    ).toEqual({ Authorization: "Bearer transport-jwt" });
+    expect(() =>
+      getMcpAuthHeaders(
+        createExtra({
+          headers: { cookie: "rbac.subject.jwt=%" },
+        }),
+      ),
+    ).toThrow("Authentication error.");
+  });
+
   /**
    * BDD Scenario: A secret cookie is not a credential
    * Given the MCP request carries the operator secret only in an rbac.secret-key cookie

@@ -1,4 +1,9 @@
 import { createHash } from "node:crypto";
+import {
+  authorization,
+  readRbacSecret,
+  rbacSecretMatches,
+} from "@sps/backend-utils";
 import { ConsistencyStore } from "@sps/providers-db";
 import { Provider as KVProvider } from "@sps/providers-kv";
 import { createMiddleware } from "hono/factory";
@@ -472,20 +477,12 @@ export function createConsistencyRuntime(props: IConsistencyRuntimeProps) {
             !context.dependencies.size
           )
             return;
-          const token =
-            c.req.header("Authorization") ||
-            c.req
-              .header("Cookie")
-              ?.match(/(?:^|;\s*)rbac.subject.jwt=([^;]+)/)?.[1] ||
-            "";
-          const secret =
-            c.req.header("X-RBAC-SECRET-KEY") ||
-            c.req
-              .header("Cookie")
-              ?.match(/(?:^|;\s*)rbac.secret-key=([^;]+)/)?.[1];
+          const token = authorization(c) || "";
+          const secret = readRbacSecret(c);
+          const operator = rbacSecretMatches(secret);
           try {
             const metadata = await store.register({
-              auth: consistencyAuth(secret ? `secret:${secret}` : token),
+              auth: consistencyAuth(operator ? `secret:${secret}` : token),
               identity: c.req.url,
               dependencies: Object.fromEntries(context.dependencies),
               collections: Object.fromEntries(context.collections || []),
@@ -498,13 +495,17 @@ export function createConsistencyRuntime(props: IConsistencyRuntimeProps) {
                   : []),
               ],
             });
-            if (secret) metadata.audience = "service";
-            else metadata.session = consistencyAuth(token);
-            if (options.metadata !== false || secret)
+            if (operator) {
+              metadata.audience = "service";
+            } else {
+              metadata.session = consistencyAuth(token);
+            }
+            if (options.metadata !== false || operator) {
               c.header(
                 CONSISTENCY_HEADER,
                 Buffer.from(JSON.stringify(metadata)).toString("base64url"),
               );
+            }
           } catch {
             context.complete = false;
             c.header("Cache-Control", "no-store");

@@ -25,6 +25,7 @@ export class Handler {
         type: "authentication",
       });
 
+      c.header("Cache-Control", "no-store");
       return c.json(
         {
           data: entity,

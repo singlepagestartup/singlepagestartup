@@ -226,15 +226,7 @@ describe("Given: a deployment that sets NODE_ENV=production", () => {
     expect(body.cause.at(-1).message).toBe(body.error);
   });
 
-  /**
-   * BDD Scenario: the operator asks through the cookie.
-   *
-   * Given: NODE_ENV=production.
-   * When: the failing request carries the operator secret in the
-   *       rbac.secret-key cookie, as the admin browser and MCP transport do.
-   * Then: the body carries the stack and the cause chain.
-   */
-  it("returns the stack and the cause when the operator secret comes in the cookie", async () => {
+  it("keeps production error details private with an operator cookie", async () => {
     const { app } = await createHarness({ nodeEnv: "production" });
 
     const response = await app.request("/orders", {
@@ -242,7 +234,7 @@ describe("Given: a deployment that sets NODE_ENV=production", () => {
     });
 
     expect(Object.keys(await readBody(response)).sort()).toEqual(
-      FULL_BODY_KEYS,
+      BRIEF_BODY_KEYS,
     );
   });
 
@@ -559,7 +551,11 @@ describe("Incident diagnostics", () => {
     const subjectId = "ec5df57a-1014-4869-9c1f-adc6c436e26b";
     const chatId = "da76786a-aafe-4ead-adba-15fa07e7a9bb";
     const token = await sign(
-      { subject: { id: subjectId }, exp: Math.floor(Date.now() / 1000) + 300 },
+      {
+        typ: "access",
+        subject: { id: subjectId },
+        exp: Math.floor(Date.now() / 1000) + 300,
+      },
       "synthetic-jwt-signing-secret",
       "HS256",
     );
@@ -569,6 +565,7 @@ describe("Incident diagnostics", () => {
         method: "POST",
         headers: {
           Authorization: "Bearer " + authorization,
+          Cookie: "rbac.subject.jwt=stale",
           "Content-Type": "application/json",
           "X-Request-Id": privateValue,
         },

@@ -179,7 +179,7 @@ npm run mcp:dev
 
 This starts the stdio transport. It is useful for local MCP clients that launch the server process directly, but HTTP headers from Inspector are not available to resource/tool handlers in this mode.
 
-Run the HTTP transport when you need request headers, cookies, or Inspector `Custom Headers`:
+Run the HTTP transport for OAuth or Inspector `Custom Headers`:
 
 ```bash
 npm run mcp:http
@@ -250,12 +250,11 @@ npm run mcp:inspector
 
 Required environment values are loaded from the app env files created by `./up.sh`; SDK calls need the configured API service URL. MCP does not read `RBAC_SECRET_KEY` from its `.env` for content/API access. Pass authorization with the MCP request instead:
 
-- Prefer `Authorization: Bearer <jwt>` using the same JWT stored by the frontend in the `rbac.subject.jwt` cookie.
-- For root/service access, pass `X-RBAC-SECRET-KEY` as an MCP request header.
-- HTTP transports may also forward the frontend's `rbac.subject.jwt` cookie, which MCP sends to the API as `Authorization: Bearer`. The operator secret is accepted only in the `X-RBAC-SECRET-KEY` header, never in a cookie.
-- Tool input schemas do not expose direct auth fields; pass auth through the MCP transport instead.
+- For Streamable HTTP, complete OAuth and send the MCP access token in the Authorization header. The server resolves the Subject and forwards a bearer JWT to the API.
+- A locally enabled operator fallback accepts the `X-RBAC-SECRET-KEY` header.
+- An embedded transport supplying credentials to the SDK adapter can pass a Subject JWT. The adapter also understands a forwarded `rbac.subject.jwt` cookie. A cookie alone cannot open an authenticated HTTP connection to `/mcp`.
 
-Resources do not have per-call input fields, so resource reads must receive auth from the MCP transport headers, cookies, MCP auth info, or request metadata. A typical edit flow is:
+Tools and resources use the credentials supplied by their transport. A typical edit flow is:
 
 1. Call `project-guide` or read `singlepagestartup://project-guide`.
 2. Call `module-list` or read `singlepagestartup://modules`.

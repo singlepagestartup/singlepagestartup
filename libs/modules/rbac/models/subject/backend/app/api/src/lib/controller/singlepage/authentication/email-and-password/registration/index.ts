@@ -1,8 +1,6 @@
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../service";
-import * as jwt from "hono/jwt";
-import { RBAC_JWT_SECRET } from "@sps/shared-utils";
 import { authorization, getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
@@ -22,21 +20,23 @@ export class Handler {
 
       const data = JSON.parse(body["data"]);
       const token = authorization(c);
-      let session;
+      let subjectId: string | undefined;
       if (token) {
-        session = await jwt.verify(token, RBAC_JWT_SECRET, "HS256");
-      } else {
-        session = undefined;
+        const subject = await this.service.me({ token });
+        if (!subject) {
+          throw new Error("Authentication error. Subject not found");
+        }
+        subjectId = subject.id;
       }
-      const subjectId = session?.subject?.["id"];
 
       const entity = await this.service.authenticationLoginAndPassowrd({
         data,
         type: "registration",
         roles: data.roles || [],
-        subjectId: typeof subjectId === "string" ? subjectId : undefined,
+        subjectId,
       });
 
+      c.header("Cache-Control", "no-store");
       return c.json(
         {
           data: entity,

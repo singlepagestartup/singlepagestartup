@@ -269,8 +269,8 @@ Every visitor spends an IP budget. A valid access JWT also spends a Subject
 budget. RBAC resolves the Subject and checks token type, expiry and logout
 revocation using its existing service. Changing devices, refreshing a JWT or
 changing social profiles does not create a new Subject budget. An invalid token
-cannot assign another Subject's ID to a counter. Conflicting header and cookie
-credentials are refused. Requests bearing the verified operator secret are
+cannot assign another Subject's ID to a counter. The Subject budget uses only the Authorization
+header, including when the browser also sends a session cookie. Requests bearing the verified operator secret are
 exempt from the general visitor budgets, so nested server SDK calls do not
 exhaust one budget for the entire application. The separate wrong-secret guard
 still applies.

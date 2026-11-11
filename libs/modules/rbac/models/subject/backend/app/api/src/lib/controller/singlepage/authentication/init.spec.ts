@@ -42,6 +42,7 @@ describe("Given: a caller initializes a session", () => {
     const response = await hono.request("/init");
 
     expect(response.status).toBe(201);
+    expect(response.headers.get("cache-control")).toBe("no-store");
     expect(await response.json()).toEqual({
       data: { jwt: "session-jwt", refresh: "refresh-jwt" },
     });

@@ -28,6 +28,7 @@ export class Handler {
         refresh: data["refresh"],
       });
 
+      c.header("Cache-Control", "no-store");
       return c.json(
         {
           data: entity,

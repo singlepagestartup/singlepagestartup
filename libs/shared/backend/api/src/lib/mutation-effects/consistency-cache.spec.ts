@@ -7,6 +7,7 @@ import { CONSISTENCY_CACHE_PREFIX } from "@sps/shared-utils";
 const values = new Map<string, string>();
 jest.mock("@sps/shared-utils", () => ({
   ...jest.requireActual("@sps/shared-utils"),
+  RBAC_SECRET_KEY: "operator-test-key",
   API_CORS_ALLOWED_ORIGINS: "https://app.example.com,https://admin.example.com",
 }));
 jest.mock("@sps/providers-kv", () => ({
@@ -24,8 +25,49 @@ jest.mock("@sps/providers-kv", () => ({
   },
 }));
 jest.mock("@sps/providers-db", () => ({ ConsistencyStore: jest.fn() }));
-import { createConsistencyRuntime } from "./consistency";
+import { createConsistencyRuntime, consistencyAuth } from "./consistency";
 import { consistencyContext } from "../repository/database/context";
+
+it("binds a consistency reference to the API credential that authorized the read", async () => {
+  const register = jest.fn(async () => ({ ref: "fixture" }));
+  const runtime = createConsistencyRuntime({
+    store: { register } as any,
+    verifyAuthorization: async () => {},
+  });
+  const app = new Hono();
+  app.use(runtime.middleware());
+  app.get("/api/fixture", (c) => {
+    consistencyContext
+      .getStore()!
+      .dependencies.set("public.fixture|reset", "0");
+    return c.json({ data: "fixture" });
+  });
+  const cookie =
+    "rbac.subject.jwt=old-session; rbac.secret-key=operator-test-key";
+  const read = async (headers: Record<string, string>) => {
+    const response = await app.request("/api/fixture", { headers });
+    const metadata = response.headers.get("X-SPS-Consistency");
+    return JSON.parse(Buffer.from(metadata!, "base64url").toString());
+  };
+  expect(await read({ Cookie: cookie })).toEqual({
+    ref: "fixture",
+    session: consistencyAuth(""),
+  });
+  expect(
+    await read({ Authorization: "Bearer visitor", Cookie: cookie }),
+  ).toEqual({
+    ref: "fixture",
+    session: consistencyAuth("visitor"),
+  });
+  expect(await read({ "X-RBAC-SECRET-KEY": "wrong" })).toEqual({
+    ref: "fixture",
+    session: consistencyAuth(""),
+  });
+  expect(await read({ "X-RBAC-SECRET-KEY": "operator-test-key" })).toEqual({
+    ref: "fixture",
+    audience: "service",
+  });
+});
 
 /** Warmed response bodies must neither reuse another origin's CORS grant nor bypass authorization. */
 it("checks authorization and recomputes CORS for every cached response", async () => {
@@ -55,7 +97,7 @@ it("checks authorization and recomputes CORS for every cached response", async (
     if (!permitted) {
       return c.json({ error: "Permission error. Forbidden" }, 403);
     }
-    await next();
+    return next();
   });
   app.use(runtime.cache());
   const read = jest.fn((c) => {
@@ -132,8 +174,10 @@ it.each(["Authorization", "Cookie", "X-RBAC-SECRET-KEY"])(
     const app = new Hono();
     app.use(runtime.middleware());
     app.use(async (c, next) => {
-      if (!c.req.header(header)) return c.json({ error: "Forbidden" }, 403);
-      await next();
+      if (!c.req.header(header)) {
+        return c.json({ error: "Forbidden" }, 403);
+      }
+      return next();
     });
     app.use(runtime.cache());
     const read = jest.fn((c) => {
@@ -333,8 +377,10 @@ it("checks authorization and PostgreSQL versions before a private cache hit, inc
   const app = new Hono();
   app.use(runtime.middleware());
   app.use(async (c, next) => {
-    if (denied) return c.json({ error: "Forbidden" }, 403);
-    await next();
+    if (denied) {
+      return c.json({ error: "Forbidden" }, 403);
+    }
+    return next();
   });
   app.use(runtime.cache());
   let release!: () => void, started!: () => void;

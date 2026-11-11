@@ -24,6 +24,7 @@ export class Handler {
         data,
       });
 
+      c.header("Cache-Control", "no-store");
       return c.json(
         {
           data: entity,

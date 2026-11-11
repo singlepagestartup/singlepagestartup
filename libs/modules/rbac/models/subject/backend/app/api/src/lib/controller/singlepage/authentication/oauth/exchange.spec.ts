@@ -41,6 +41,7 @@ function createContext(body?: Record<string, string>) {
     req: {
       parseBody: jest.fn().mockResolvedValue(body ?? {}),
     },
+    header: jest.fn(),
     json: jest.fn((payload: unknown, status: number) => ({ payload, status })),
   } as any;
 }

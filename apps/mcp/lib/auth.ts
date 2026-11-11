@@ -42,23 +42,16 @@ function getHeader(
   return foundKey ? normalizeHeaderValue(headers[foundKey]) : undefined;
 }
 
-function parseCookieHeader(cookieHeader?: string) {
-  if (!cookieHeader) {
-    return {};
+function readSubjectCookie(cookieHeader?: string) {
+  const match = cookieHeader?.match(/(?:^|;\s*)rbac\.subject\.jwt=([^;]+)/);
+  if (!match) {
+    return;
   }
-
-  return cookieHeader.split(";").reduce<Record<string, string>>((acc, item) => {
-    const [rawKey, ...rawValue] = item.trim().split("=");
-    const key = rawKey?.trim();
-
-    if (!key) {
-      return acc;
-    }
-
-    acc[key] = decodeURIComponent(rawValue.join("="));
-
-    return acc;
-  }, {});
+  try {
+    return decodeURIComponent(match[1]);
+  } catch {
+    return;
+  }
 }
 
 function normalizeAuthorization(value?: string) {
@@ -103,7 +96,6 @@ export function getMcpAuthHeaders(
   }
 
   const requestHeaders = extra?.requestInfo?.headers ?? {};
-  const cookies = parseCookieHeader(getHeader(requestHeaders, "cookie"));
 
   const rbacSecretKey =
     getHeader(requestHeaders, "x-rbac-secret-key") ??
@@ -114,12 +106,14 @@ export function getMcpAuthHeaders(
 
   const authorization =
     normalizeAuthorization(getHeader(requestHeaders, "authorization")) ??
-    normalizeAuthorization(cookies["rbac.subject.jwt"]) ??
     normalizeAuthorization(extra?.authInfo?.token) ??
     normalizeAuthorization(getAuthInfoExtraString(extra, "jwt")) ??
     normalizeAuthorization(getAuthInfoExtraString(extra, "authorization")) ??
     normalizeAuthorization(getMetaString(extra, "jwt")) ??
-    normalizeAuthorization(getMetaString(extra, "authorization"));
+    normalizeAuthorization(getMetaString(extra, "authorization")) ??
+    normalizeAuthorization(
+      readSubjectCookie(getHeader(requestHeaders, "cookie")),
+    );
 
   if (rbacSecretKey) {
     return {

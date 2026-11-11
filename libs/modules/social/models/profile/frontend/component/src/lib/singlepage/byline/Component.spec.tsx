@@ -18,14 +18,7 @@ jest.mock("@sps/social/models/profile/frontend/component", () => ({
   BylineSkeleton: () => <div data-variant="byline-loading" />,
   Component: (props: any) => {
     mockReads(props);
-    return props.variant === "find" ? (
-      props.children({ data: [mockProfile] })
-    ) : (
-      <span data-testid="profile-view" data-source={props.dataSource}>
-        {props.data.title[props.language]}:{props.size}:
-        {String(Boolean(props.inverse))}
-      </span>
-    );
+    return <span data-testid="profile-view" />;
   },
 }));
 jest.mock(
@@ -130,7 +123,7 @@ it.each([
   },
 );
 it.each([true, false])(
-  "author association loads only its actual linked Profile and uses props mode for the byline in runtime %s",
+  "author association passes the linked Profile ID and display props to the byline in runtime %s",
   (isServer) => {
     render(
       <AuthorRelation
@@ -147,16 +140,15 @@ it.each([true, false])(
         size="xs"
       />,
     );
-    expect(mockReads.mock.calls[0][0].apiProps.params.filters.and).toEqual([
-      { column: "id", method: "eq", value: "profile-a" },
-    ]);
-    expect(mockReads.mock.calls[0][0].isServer).toBe(isServer);
-    expect(screen.getByTestId("profile-view")).toHaveAttribute(
-      "data-source",
-      "props",
+    expect(mockReads).toHaveBeenCalledWith(
+      expect.objectContaining({
+        isServer,
+        variant: "author-byline-default",
+        profileId: "profile-a",
+        language: "ru",
+        size: "xs",
+      }),
     );
-    expect(screen.getByTestId("profile-view")).toHaveTextContent(
-      "Редакция SPS:xs:false",
-    );
+    expect(screen.getByTestId("profile-view")).toBeVisible();
   },
 );

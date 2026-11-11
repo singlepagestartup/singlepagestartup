@@ -1,7 +1,7 @@
 import type { Context } from "hono";
-import { getCookie } from "hono/cookie";
 import { routePath } from "hono/route";
 import {
+  authorization,
   diagnosticId,
   failureLocations,
   rbacSecretMatches,
@@ -15,21 +15,15 @@ async function actor(c: Context) {
   if (rbacSecretMatches(readRbacSecret(c))) {
     return { actor: "operator" };
   }
-  const cookie = getCookie(c, "rbac.subject.jwt");
-  const bearer = c.req.header("Authorization")?.replace(/^Bearer\s+/i, "");
-  const token = cookie || bearer;
+  const token = authorization(c);
   if (!token) {
     return { actor: "anonymous" };
   }
-  if (
-    !RBAC_JWT_SECRET ||
-    token.length > 8192 ||
-    (cookie && bearer && cookie !== bearer)
-  ) {
+  if (!RBAC_JWT_SECRET || token.length > 8192) {
     return { actor: "unverified" };
   }
   try {
-    const payload = await verifyJwt(token, RBAC_JWT_SECRET);
+    const payload = await verifyJwt(token, RBAC_JWT_SECRET, { type: "access" });
     const subject = payload.subject;
     if (!subject || typeof subject !== "object" || !("id" in subject)) {
       return { actor: "unverified" };

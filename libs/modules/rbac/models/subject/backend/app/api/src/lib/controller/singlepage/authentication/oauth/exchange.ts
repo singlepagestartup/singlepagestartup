@@ -37,6 +37,7 @@ export class Handler {
 
       deleteCookie(c, exchangeCodeCookieName, { path: "/" });
 
+      c.header("Cache-Control", "no-store");
       return c.json(
         {
           data: entity,

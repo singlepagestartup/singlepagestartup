@@ -16,6 +16,7 @@ export class Handler {
         token: authorization(c),
       });
 
+      c.header("Cache-Control", "no-store");
       return c.json(
         {
           data: {

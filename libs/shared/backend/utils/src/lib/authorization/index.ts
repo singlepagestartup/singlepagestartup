@@ -9,5 +9,5 @@ import { Context } from "hono";
  * so no cookie authenticates a request.
  */
 export function util(c: Context) {
-  return c.req.header("Authorization")?.replace("Bearer ", "");
+  return c.req.header("Authorization")?.replace(/^Bearer\s+/i, "");
 }

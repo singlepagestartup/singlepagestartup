@@ -27,14 +27,14 @@ export async function action(props: IProps): Promise<IResult> {
     encodeValuesOnly: true,
   });
 
+  const headers = new Headers(options?.headers);
+  headers.set("Cache-Control", "no-store");
+
   const requestOptions: NextRequestOptions = {
     credentials: "include",
     method: "POST",
     ...options,
-    headers: {
-      "Cache-Control": "no-store",
-      ...options?.headers,
-    },
+    headers,
     next: {
       ...options?.next,
     },
