@@ -2,14 +2,7 @@ import React from "react";
 import { NEXT_PUBLIC_HOST_SERVICE_URL } from "@sps/shared-utils";
 import { internationalization } from "@sps/shared-configuration";
 import { IComponentPropsExtended } from "./interface";
-import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Preview,
-  Text,
-} from "@react-email/components";
+import { Body, Button, Container, Head, Preview, Text } from "react-email";
 
 export function Component(props: IComponentPropsExtended) {
   const language = internationalization.defaultLanguage.code;

@@ -8,7 +8,9 @@ import {
 import { inject, injectable } from "inversify";
 import { Apps } from "./apps";
 
-export type IApp = IModuleApp<Apps>;
+export interface IApp extends IModuleApp<Apps> {
+  resolveSubjectId(token: string): Promise<string>;
+}
 
 @injectable()
 export class App extends ModuleApp<Apps> implements IApp {

@@ -1,5 +1,5 @@
 import { DeliveryRepository } from "./repository/delivery";
-import { Container, ContainerModule, interfaces } from "inversify";
+import { Container, ContainerModule } from "inversify";
 import {
   DI,
   ExceptionFilter,
@@ -17,7 +17,7 @@ import { Configuration as MessageConfiguration } from "@sps/broadcast/models/mes
 import { Service as ChannelsToMessagesService } from "@sps/broadcast/relations/channels-to-messages/backend/app/api/src/lib/service";
 import { app as channelsToMessagesApp } from "@sps/broadcast/relations/channels-to-messages/backend/app/api";
 
-const bindings = new ContainerModule((bind: interfaces.Bind) => {
+const bindings = new ContainerModule(({ bind }) => {
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
   bind<App>(DI.IApp).to(App);
   bind<Controller>(DI.IController).to(Controller);
@@ -39,9 +39,7 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
 });
 
 export async function bootstrap() {
-  const container = new Container({
-    skipBaseClassChecks: true,
-  });
+  const container = new Container();
   container.load(bindings);
   const app = container.get<App>(DI.IApp);
 

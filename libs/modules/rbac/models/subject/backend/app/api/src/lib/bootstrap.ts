@@ -26,7 +26,7 @@ import { Configuration as CrmStepsToInputsConfiguration } from "@sps/crm/relatio
 import { Service as CrmInputsToOptionsService } from "@sps/crm/relations/inputs-to-options/backend/app/api/src/lib/service";
 import { Repository as CrmInputsToOptionsRepository } from "@sps/crm/relations/inputs-to-options/backend/app/api/src/lib/repository";
 import { Configuration as CrmInputsToOptionsConfiguration } from "@sps/crm/relations/inputs-to-options/backend/app/api/src/lib/configuration";
-import { Container, ContainerModule, interfaces } from "inversify";
+import { Container, ContainerModule } from "inversify";
 import {
   CRUDService,
   DI,
@@ -203,7 +203,7 @@ import { Configuration as CrmRequestConfiguration } from "@sps/crm/models/reques
 import { Repository as CrmFormsToRequestsRepository } from "@sps/crm/relations/forms-to-requests/backend/app/api/src/lib/repository";
 import { Configuration as CrmFormsToRequestsConfiguration } from "@sps/crm/relations/forms-to-requests/backend/app/api/src/lib/configuration";
 
-const bindings = new ContainerModule((bind: interfaces.Bind) => {
+const bindings = new ContainerModule(({ bind }) => {
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
   bind<App>(DI.IApp).to(App);
   bind<Controller>(DI.IController).to(Controller);
@@ -547,9 +547,7 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
         formsToRequests,
         form: new CrmFormService(
           new CrmFormRepository(new CrmFormConfiguration()),
-          context.container.get<INotificationModule>(
-            SubjectDI.INotificationModule,
-          ),
+          context.get<INotificationModule>(SubjectDI.INotificationModule),
           { request, formsToRequests },
         ),
         step: new CrmStepService(
@@ -699,16 +697,12 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
     SubjectDI.IEcommerceProductCheckout,
   ).toFactory(
     (context) => (props: IEcommerceProductCheckoutProps) =>
-      context.container
-        .get<Service>(DI.IService)
-        .ecommerceProductCheckout(props),
+      context.get<Service>(DI.IService).ecommerceProductCheckout(props),
   );
 });
 
 export async function bootstrap() {
-  const container = new Container({
-    skipBaseClassChecks: true,
-  });
+  const container = new Container();
   container.load(bindings);
   const app = container.get<App>(DI.IApp);
   await app.init();

@@ -1,29 +1,40 @@
-# Weekly version updates. Security updates are enabled in the repository
-# settings and keep opening one pull request per vulnerable dependency: the
-# group below applies to version updates only.
+# The npm group applies to version updates. Security updates keep separate PRs.
 version: 2
 updates:
   - package-ecosystem: "npm"
     directories:
       - "/"
+      - "/apps/api"
       - "/apps/host"
+      - "/apps/mcp"
+      - "/apps/openapi"
+      - "/apps/studio"
+      - "/apps/studio/runnable/startup/singlepagestartup"
+      - "/apps/telegram"
+      - "/tools/deployer/github/github-node-api"
+      - "/tools/plugins/sps-generator-plugin"
     schedule:
-      interval: "weekly"
+      interval: "daily"
     groups:
       npm-minor-and-patch:
         update-types:
           - "minor"
           - "patch"
 
+  - package-ecosystem: "bun"
+    directory: "/apps/studio/runnable/singlepage/admin-v2"
+    schedule:
+      interval: "daily"
+
   - package-ecosystem: "pip"
     directory: "/apps/llm"
     schedule:
-      interval: "weekly"
+      interval: "daily"
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "daily"
 
   - package-ecosystem: "docker"
     directories:
@@ -34,4 +45,4 @@ updates:
       - "/apps/redis"
       - "/tools/deployer/icp"
     schedule:
-      interval: "weekly"
+      interval: "daily"

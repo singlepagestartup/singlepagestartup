@@ -2,35 +2,31 @@ Closes #309.
 
 ## Summary
 
-Update the SDK behind the public MCP endpoint and the multipart parser used by the LLM audio endpoint. The previous SDK could route messages to the wrong client when a server or transport was reused. Later advisories also cover excessive memory use while validating a single request. SPS already creates a separate MCP server and transport per HTTP session; this change upgrades the SDK and enables its input limit.
+The public MCP endpoint accepts untrusted tool arguments. The SDK upgrade addresses cross-client responses and limits the work spent validating one request. The dependency review covers 253 direct JavaScript packages across 11 manifests and all seven direct Python dependencies in the LLM service.
 
 ## Changes
 
-| Runtime dependency | Current main | This PR |
-| ------------------ | ------------ | ------- |
-| MCP TypeScript SDK | 1.18.1       | 1.32.2  |
-| Zod (root install) | 3.24.2       | 3.25.76 |
-| python-multipart   | 0.0.20       | 0.0.32  |
-
-- An MCP tool call may contain at most 10,000 object keys and array elements across its arguments. The SDK checks this before schema validation. The existing HTTP body limit still applies (4 MiB by default). Tool names and OAuth routes are unchanged.
-- MCP registers tools using the SDK's public callback type. Two RBAC chat forms now import Zod through its public entry point. The Telegram service registers its existing HTTP routes with Hono's typed path-array overload.
-- Next.js 16.4.3, Hono 4.13.16 and the shared HS256 verifier already come from main. A regression test checks that a token signed with HS512 is rejected without exposing it in the error.
-- Dependabot checks npm, pip, GitHub Actions and Docker weekly. npm minor and patch version updates are grouped. The separate transitive dependency update is #344.
+- MCP SDK 1.32.2 enforces a maximum of 10,000 object keys and array elements per tool call. The HTTP body limit remains 4 MiB by default. Clients can split a larger batch and continue in the same session. [Cross-client response advisory](https://github.com/advisories/GHSA-345p-7cg4-v4c7) · [Validation advisory](https://github.com/advisories/GHSA-46jr-4wx8-v453)
+- Updated Next.js to 16.4.6, React to 19.3.1, Nx to 24.0.6, Zod to 4.6.7, Inversify to 8.3.0 and Postgres.js to 4.1.1. Migrated their consumers, generators, test configuration and Docker runtime. Production Host builds use Webpack and development uses Turbopack.
+- The shared repository preserves omitted fields in partial updates under Zod 4. Notification retries still accept existing deterministic IDs. SQL array bindings and numeric realtime cursor ordering were verified against PostgreSQL. Framework classes and generator templates explicitly inherit constructor injections under Inversify 8.
+- Updated Studio, wallets, email rendering, Stripe, Redis and Python LLM clients. The deployer installs its GitHub helper from a committed lockfile. The workspace installs without legacy peer resolution. Dependabot checks application dependencies, actions and Docker daily.
 
 ## Verification
 
-- [x] Install the lockfile in an empty directory with npm ci --ignore-scripts. Check the resolved SDK, Zod and the SDK's HTTP adapter.
-- [x] MCP TypeScript check and 121 MCP tests, including OAuth and session handling; 120 JWT and HTTP error tests; 45 Telegram tests; 13 Python LLM tests.
-- [x] Start the Bun HTTP server. An unauthenticated request returned 401. An authenticated SDK client discovered 20 tools; a call over the element limit failed and the next ordinary call succeeded in the same session.
-- [x] Send a multipart audio fixture to the FastAPI transcription route with the transcription engine stubbed: valid form returned 200, missing boundary returned 400.
-- [ ] Telegram's full TypeScript check still reports nine errors in shared code. All nine were reproduced on main; the tenth, in Telegram route registration, is fixed here.
+- [x] Clean npm installation and peer dependency tree. TypeScript checks passed for API, Host, MCP, Studio, Telegram and the Nx generator.
+- [x] 3,391 unit tests passed across 36 Jest projects, with one existing skip. All 122 integration tests passed against isolated PostgreSQL and Redis across 16 projects. All 30 HTTP scenarios passed against the running API, including adding a priced product from the rendered form, reading the cart count after remount, provider webhooks and isolating messages between chat threads. Creating an extra thread previously conflicted with the unique default thread. The user-facing route now assigns a custom variant by default.
+- [x] Opened the Russian framework page against the running Bun API and Turbopack Host. Built and started the production Webpack Host and verified HTTP 200 with page content. Built Storybook and both standalone Studio applications. Ran dry runs for model and frontend variant generation.
+- [x] MCP authentication, ordinary and oversized tool calls, receipt and checkout paths, and notification retries were exercised locally. The LLM service passed 13 tests and a multipart request with a stub transcription provider. Live provider payments, email delivery and wallet signing were outside these checks.
+- [ ] The aggregate Studio validation stops on 11 duplicated sentences in existing agent documentation. The same checker reports the same sentences on the previous revision. The design-system, presentation, GitHub and pipeline checks were run separately.
 
-## Notes
+## Security and version constraints
 
-On November 11, 2026, npm audit --omit=dev reported 96 affected packages versus 98 on main, with no new advisory IDs. Five critical findings remain in both trees. The existing Zod finding [GHSA-mrhx-c7xc-m3w5](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5) requires Zod 4.6.6 or later; the MCP input limit protects tool arguments, not other Zod consumers.
+On November 11, 2026, the root production npm audit reported **zero known findings**, down from 96 on the previous PR revision (including five critical). Both standalone Studio audits and the resolved Python runtime audit returned zero. The full root npm audit reports 20 low-severity package entries through one development dependency, deepmerge 4.3.1. Its maintainers have yet to publish a patched release. [deepmerge advisory](https://github.com/advisories/GHSA-gcqx-w48m-w2h4)
 
-Relevant SDK advisories: [cross-client responses](https://github.com/advisories/GHSA-345p-7cg4-v4c7) and [memory exhaustion during validation](https://github.com/advisories/GHSA-46jr-4wx8-v453).
+Seven direct packages remain on compatible release lines. Nx and Jest use Babel 7 (`@babel/core` and `@babel/preset-react`), the installed React and import lint plugins support ESLint 9 (`eslint` and `@eslint/js`), the Jest transformer and ESLint TypeScript parser support TypeScript 6.0, Nx uses Verdaccio 6, and `@types/node` matches the Node 24 runtime. Installation still reports deprecation notices in this tooling tree.
 
 ## Downstream migration
 
-Refresh the npm install and rebuild the LLM image. Align project-owned manifests that pin the SDK or Zod; replace imports from zod/lib or node_modules/zod/lib with imports from zod. For a custom MCP server, configure its tool input limit and test an oversized call followed by an ordinary call in the same session. Split bulk tool calls over the limit. No database, login or environment migration is required.
+1. Use Node 24.15+ on the 24.x line, npm 11 or 12, and Bun 1.4.4. Reinstall with `npm ci` and rebuild the API, Host and LLM images.
+2. Review project-owned subclasses that rely on an inherited constructor for dependency injection, Zod partial schemas that carry defaults, SQL array parameter bindings and deep imports of retired package APIs. Use the matching updated framework implementations as examples. Align custom Nx executors and generator templates before generating new modules.
+3. Run project type checks and PostgreSQL integration tests, build the production Host and exercise project-specific wallets, payments and notifications with their configured providers. This update requires no database schema or seed migration.

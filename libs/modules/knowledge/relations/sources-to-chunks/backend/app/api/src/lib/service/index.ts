@@ -1,10 +1,11 @@
 import "reflect-metadata";
-import { injectable } from "inversify";
+import { injectFromBase, injectable } from "inversify";
 import { CRUDService } from "@sps/shared-backend-api";
 import { Table } from "@sps/knowledge/relations/sources-to-chunks/backend/repository/database";
 import type { Repository } from "../repository";
 
 @injectable()
+@injectFromBase()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   forChunkIds(ids: string[]) {
     return (this.repository as Repository).forChunkIds(ids);

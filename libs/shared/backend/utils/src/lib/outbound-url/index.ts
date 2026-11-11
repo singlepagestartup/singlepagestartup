@@ -391,7 +391,7 @@ function hasPrefix(
 ): boolean {
   for (let bit = 0; bit < bits; bit++) {
     const index = Math.floor(bit / 8);
-    const mask = 0x80 >> bit % 8;
+    const mask = 0x80 >> (bit % 8);
 
     if ((address[index] & mask) !== (network[index] & mask)) {
       return false;
@@ -454,7 +454,7 @@ async function readBody(
     const format = encoding === "br" ? "brotli" : encoding;
     body = body
       .pipeThrough(
-        new TransformStream<Uint8Array, BufferSource>({
+        new TransformStream<Uint8Array, Uint8Array<ArrayBuffer>>({
           transform(chunk, controller) {
             compressedBytes += chunk.byteLength;
 
@@ -466,7 +466,11 @@ async function readBody(
           },
         }),
       )
-      .pipeThrough(new DecompressionStream(format as CompressionFormat));
+      .pipeThrough(
+        new DecompressionStream(
+          format as ConstructorParameters<typeof DecompressionStream>[0],
+        ),
+      );
     headers.delete("content-encoding");
   }
 

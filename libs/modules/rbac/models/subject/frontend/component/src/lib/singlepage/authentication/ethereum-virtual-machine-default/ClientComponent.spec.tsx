@@ -64,7 +64,7 @@ jest.mock("react-jwt", () => ({
 }));
 
 jest.mock("wagmi", () => ({
-  useAccount: () => ({ address: undefined, isConnected: false }),
+  useConnection: () => ({ address: undefined, isConnected: false }),
 }));
 
 jest.mock("@wagmi/core", () => ({

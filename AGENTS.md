@@ -53,7 +53,7 @@ and must preserve meaning, uncertainty, terminology, formatting, and voice.
 
 ## Environment & Requirements
 
-- Node.js 24+, npm 11+ (as per package engines).
+- Node.js 24.15 or later in the 24.x line and npm 11 or 12. The lockfile is verified with npm 12.2.2.
 - Bun runtime installed (used by `apps/api`).
 - Docker & Docker Compose **required** for Postgres and Redis (the `./up.sh` script expects Docker to be available on the agent machine).
 

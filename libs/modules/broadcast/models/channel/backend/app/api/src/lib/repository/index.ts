@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { injectable } from "inversify";
+import { injectFromBase, injectable } from "inversify";
 import { and, eq, inArray, isNotNull } from "drizzle-orm";
 import { Table as Message } from "@sps/broadcast/models/message/backend/repository/database";
 import { Table as ChannelMessage } from "@sps/broadcast/relations/channels-to-messages/backend/repository/database";
@@ -10,6 +10,7 @@ import {
 import { Table } from "@sps/broadcast/models/channel/backend/repository/database";
 
 @injectable()
+@injectFromBase()
 export class Repository extends DatabaseRepository<typeof Table> {
   override async deleteFirstByField(field: string, value: unknown) {
     return this.db.transaction((tx) =>

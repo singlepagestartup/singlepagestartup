@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  unwrapContentField,
   ContentCreateInputSchema,
   ContentDeleteApplyInputSchema,
   ContentDeletePreviewInputSchema,
@@ -115,61 +116,6 @@ function requireOperation(
   }
 }
 
-function unwrapSchema(
-  schema: z.ZodTypeAny | undefined,
-): z.ZodTypeAny | undefined {
-  let current = schema;
-
-  while (current) {
-    const definition = (current as any)._def;
-    const typeName = definition?.typeName ?? definition?.type;
-
-    if (
-      [
-        "ZodOptional",
-        "ZodNullable",
-        "ZodDefault",
-        "ZodCatch",
-        "ZodBranded",
-        "optional",
-        "nullable",
-        "default",
-        "catch",
-        "branded",
-      ].includes(typeName)
-    ) {
-      current = definition.innerType ?? definition.type;
-      continue;
-    }
-
-    if (typeName === "ZodEffects" || typeName === "effects") {
-      current = definition.schema;
-      continue;
-    }
-
-    if (typeName === "ZodPipeline" || typeName === "pipe") {
-      current = definition.out;
-      continue;
-    }
-
-    return current;
-  }
-
-  return current;
-}
-
-function isDateSchema(schema: z.ZodTypeAny | undefined) {
-  const unwrapped = unwrapSchema(schema);
-
-  const definition = (unwrapped as any)?._def;
-
-  return (
-    definition?.typeName === "ZodDate" ||
-    definition?.type === "date" ||
-    unwrapped instanceof z.ZodDate
-  );
-}
-
 function coerceJsonDateFields(
   descriptor: IContentEntityDescriptor,
   data: Record<string, unknown>,
@@ -178,7 +124,7 @@ function coerceJsonDateFields(
   const coerced = { ...data };
 
   Object.entries(shape).forEach(([field, schema]) => {
-    if (!isDateSchema(schema as z.ZodTypeAny | undefined)) {
+    if (unwrapContentField(schema)?.type !== "date") {
       return;
     }
 

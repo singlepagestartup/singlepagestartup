@@ -1,4 +1,4 @@
-import { Container, ContainerModule, interfaces } from "inversify";
+import { Container, ContainerModule } from "inversify";
 import {
   DI,
   ExceptionFilter,
@@ -21,7 +21,7 @@ import { app as broadcastChannelApp } from "@sps/broadcast/models/channel/backen
 import type { Service as TemplateService } from "@sps/notification/models/template/backend/app/api/src/lib/service";
 import { app as templateApp } from "@sps/notification/models/template/backend/app/api";
 
-const bindings = new ContainerModule((bind: interfaces.Bind) => {
+const bindings = new ContainerModule(({ bind }) => {
   bind<ITemplateService>(NotificationDI.ITemplateService)
     .toDynamicValue(() => templateApp.controller.service as TemplateService)
     .inSingletonScope();
@@ -40,9 +40,7 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
 });
 
 export async function bootstrap() {
-  const container = new Container({
-    skipBaseClassChecks: true,
-  });
+  const container = new Container();
   container.load(bindings);
   const app = container.get<App>(DI.IApp);
 

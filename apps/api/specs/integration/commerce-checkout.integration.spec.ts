@@ -13,6 +13,7 @@ import assert from "node:assert/strict";
 import {randomUUID} from "node:crypto";
 import {Hono} from "hono";
 import {sign} from "hono/jwt";
+import {sql} from "drizzle-orm";
 import {getDrizzle,getPostgresClient} from "@sps/shared-backend-database-config";
 import {ExceptionFilter,ParseQueryMiddleware,withConsistencyDatabase} from "@sps/shared-backend-api";
 import {consistencyContext} from "./libs/shared/backend/api/src/lib/repository/database/context";
@@ -42,7 +43,7 @@ const remember=(resource,row)=>{persisted.push([resource,row.id]);return row;};
 const observer=[],webhooks=[],providers=[];
 const db=getDrizzle({}),pg=getPostgresClient(),transaction=db.transaction;
 const rollback=Error("ROLLBACK_COMMERCE_FIXTURE");
-let nestedSavepoints=0,assertionsComplete=false;
+let assertionsComplete=false;
 const app=new Hono(),exception=new ExceptionFilter();
 app.onError(exception.catch.bind(exception));
 app.use(new ParseQueryMiddleware().init());
@@ -68,11 +69,10 @@ globalThis.fetch=async(input,init)=>{
 };
 try{
  await transaction.call(db,async tx=>withConsistencyDatabase(tx,async()=>{
-  // Cart creation explicitly opens a transaction. Real savepoints keep those
-  // owner transactions inside this disposable fixture rather than committing.
+  // Keep additional owner transactions inside the fixture, including checkout.
   db.transaction=function(operation,config){
    const ambient=consistencyContext.getStore()?.database;
-   if(ambient&&ambient!==db){nestedSavepoints++;return ambient.transaction(operation,config);}
+   if(ambient&&ambient!==db)return ambient.transaction(operation,config);
    return transaction.call(db,operation,config);
   };
   const subject=remember("rbac/subjects",await create("rbac/subjects",{slug:prefix+"-guest"}));
@@ -101,7 +101,12 @@ try{
   const carts=()=>subjectApi.ecommerceModuleOrderList({...ownerProps,params:{includeCartDetails:true}});
   const createCart=()=>subjectApi.ecommerceModuleOrderCreate({...ownerProps,data:{productId:product.id,storeId:store.id,quantity:2,billingModule:{currency:{id:currencies[0].id}}}});
   await createCart();
-  assert(nestedSavepoints>0,"Actual cart creation must use a real nested SQL transaction");
+  const subjectLock=sql.join([
+   sql.raw("SELECT 1 FROM pg_locks WHERE locktype = 'advisory' AND granted AND pid = pg_backend_pid() AND objsubid = 1 AND objid::bigint = (hashtext("),
+   sql.param("rbac.order-delivery.subject:"+subject.id),
+   sql.raw(")::bigint & 4294967295)"),
+  ]);
+  assert.equal((await tx.execute(subjectLock)).length,1,"Cart creation must hold the subject lock in the active transaction");
   let cartList=await carts();assert.equal(cartList.length,1);
   const removedCart=remember("ecommerce/orders",cartList[0]);
   const removedLine=cartList[0].cartDetails.lines[0];

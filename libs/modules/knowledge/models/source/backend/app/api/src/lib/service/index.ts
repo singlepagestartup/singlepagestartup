@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { injectable } from "inversify";
+import { injectFromBase, injectable } from "inversify";
 import { CRUDService } from "@sps/shared-backend-api";
 import { assertKnowledgeAttachmentBytes } from "@sps/backend-utils";
 import { Table } from "@sps/knowledge/models/source/backend/repository/database";
@@ -44,6 +44,7 @@ export interface ISourceServices {
 }
 
 @injectable()
+@injectFromBase()
 export class Service extends CRUDService<Source> {
   private services?: ISourceServices;
   configure(services: ISourceServices) {

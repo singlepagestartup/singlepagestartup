@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { injectable } from "inversify";
+import { injectFromBase, injectable } from "inversify";
 import { CRUDService } from "@sps/shared-backend-api";
 import { Table } from "@sps/knowledge/relations/sources-to-file-storage-module-files/backend/repository/database";
 import type { Repository } from "../repository";
@@ -17,6 +17,7 @@ export interface IFileRelationServices {
   mutate: (props: IFileRelationMutation) => Promise<Relation | null>;
 }
 @injectable()
+@injectFromBase()
 export class Service extends CRUDService<Relation> {
   private services?: IFileRelationServices;
   configure(services: IFileRelationServices) {

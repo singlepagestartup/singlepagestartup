@@ -7,18 +7,27 @@
   "targets": {
     "jest:test": {},
     "jest:integration": {
-      "executor": "@nx/jest:jest",
-      "outputs": ["{projectRoot}/coverage"],
-      "inputs": ["{projectRoot}"],
+      "executor": "nx:run-commands",
+      "outputs": [
+        "{projectRoot}/coverage"
+      ],
+      "inputs": [
+        "{projectRoot}/**/*",
+        "^default"
+      ],
       "options": {
-        "jestConfig": "libs/modules/rbac/jest.integration.config.ts",
-        "passWithNoTests": true
+        "command": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config ./libs/modules/rbac/jest.integration.config.ts --passWithNoTests",
+        "cwd": ".",
+        "env": {
+          "TS_NODE_COMPILER_OPTIONS": "{\"moduleResolution\":\"node16\",\"module\":\"Node16\",\"customConditions\":null}"
+        }
       }
     },
     "eslint:lint": {},
     "tsc:build": {},
     "repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "commands": [
@@ -29,8 +38,7 @@
             "command": "nx run @sps/rbac:relations:repository-generate"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "repository-migrate": {
       "executor": "nx:run-commands",
@@ -68,6 +76,7 @@
     },
     "models:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "commands": [
@@ -90,11 +99,11 @@
             "command": "nx run @sps/rbac:models:widget:repository-generate"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "commands": [
@@ -147,8 +156,7 @@
             "command": "nx run @sps/rbac:relations:widgets-to-ecommerce-module-widgets:repository-generate"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "models:repository-migrate": {
       "executor": "nx:run-commands",
@@ -236,6 +244,7 @@
     },
     "models:identity:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/rbac/models/identity/backend/repository/database",
@@ -247,11 +256,11 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "models:permission:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/rbac/models/permission/backend/repository/database",
@@ -263,11 +272,11 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "models:role:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/rbac/models/role/backend/repository/database",
@@ -279,11 +288,11 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "models:action:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/rbac/models/action/backend/repository/database",
@@ -295,8 +304,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "models:action:repository-migrate": {
       "executor": "nx:run-commands",
@@ -314,6 +322,7 @@
     },
     "models:subject:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/rbac/models/subject/backend/repository/database",
@@ -325,11 +334,11 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "models:widget:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/rbac/models/widget/backend/repository/database",
@@ -341,8 +350,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "models:identity:repository-migrate": {
       "executor": "nx:run-commands",
@@ -416,6 +424,7 @@
     },
     "relations:roles-to-ecommerce-module-products:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/rbac/relations/roles-to-ecommerce-module-products/backend/repository/database",
@@ -427,11 +436,11 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:roles-to-permissions:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/rbac/relations/roles-to-permissions/backend/repository/database",
@@ -443,11 +452,11 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:subjects-to-identities:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/rbac/relations/subjects-to-identities/backend/repository/database",
@@ -459,11 +468,11 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:subjects-to-ecommerce-module-orders:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/rbac/relations/subjects-to-ecommerce-module-orders/backend/repository/database",
@@ -475,11 +484,11 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:subjects-to-billing-module-payment-intents:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/rbac/relations/subjects-to-billing-module-payment-intents/backend/repository/database",
@@ -491,11 +500,11 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:subjects-to-notification-module-topics:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/rbac/relations/subjects-to-notification-module-topics/backend/repository/database",
@@ -507,11 +516,11 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:subjects-to-roles:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/rbac/relations/subjects-to-roles/backend/repository/database",
@@ -523,11 +532,11 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:subjects-to-actions:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/rbac/relations/subjects-to-actions/backend/repository/database",
@@ -539,8 +548,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:roles-to-ecommerce-module-products:repository-migrate": {
       "executor": "nx:run-commands",
@@ -656,6 +664,7 @@
     },
     "relations:subjects-to-social-module-profiles:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/rbac/relations/subjects-to-social-module-profiles/backend/repository/database",
@@ -667,8 +676,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:subjects-to-social-module-profiles:repository-migrate": {
       "executor": "nx:run-commands",
@@ -686,6 +694,7 @@
     },
     "relations:subjects-to-ecommerce-module-products:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/rbac/relations/subjects-to-ecommerce-module-products/backend/repository/database",
@@ -697,8 +706,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:subjects-to-ecommerce-module-products:repository-migrate": {
       "executor": "nx:run-commands",
@@ -716,6 +724,7 @@
     },
     "relations:subjects-to-blog-module-articles:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/rbac/relations/subjects-to-blog-module-articles/backend/repository/database",
@@ -727,8 +736,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:subjects-to-blog-module-articles:repository-migrate": {
       "executor": "nx:run-commands",
@@ -746,6 +754,7 @@
     },
     "relations:subjects-to-billing-module-currencies:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/rbac/relations/subjects-to-billing-module-currencies/backend/repository/database",
@@ -757,8 +766,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:subjects-to-billing-module-currencies:repository-migrate": {
       "executor": "nx:run-commands",
@@ -776,6 +784,7 @@
     },
     "relations:permissions-to-billing-module-currencies:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/rbac/relations/permissions-to-billing-module-currencies/backend/repository/database",
@@ -787,8 +796,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:permissions-to-billing-module-currencies:repository-migrate": {
       "executor": "nx:run-commands",
@@ -806,6 +814,7 @@
     },
     "relations:widgets-to-website-builder-module-widgets:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/rbac/relations/widgets-to-website-builder-module-widgets/backend/repository/database",
@@ -817,8 +826,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:widgets-to-website-builder-module-widgets:repository-migrate": {
       "executor": "nx:run-commands",
@@ -836,6 +844,7 @@
     },
     "relations:widgets-to-crm-module-widgets:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/rbac/relations/widgets-to-crm-module-widgets/backend/repository/database",
@@ -847,8 +856,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:widgets-to-crm-module-widgets:repository-migrate": {
       "executor": "nx:run-commands",
@@ -866,6 +874,7 @@
     },
     "relations:widgets-to-ecommerce-module-widgets:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/rbac/relations/widgets-to-ecommerce-module-widgets/backend/repository/database",
@@ -877,8 +886,7 @@
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:widgets-to-ecommerce-module-widgets:repository-migrate": {
       "executor": "nx:run-commands",

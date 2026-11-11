@@ -1,4 +1,4 @@
-import { Container, ContainerModule, interfaces } from "inversify";
+import { Container, ContainerModule } from "inversify";
 import {
   DI,
   DatabaseRepository,
@@ -13,7 +13,7 @@ import { App } from "./app";
 import { MessageDI } from "./di";
 import { Table } from "@sps/broadcast/models/message/backend/repository/database";
 
-const bindings = new ContainerModule((bind: interfaces.Bind) => {
+const bindings = new ContainerModule(({ bind }) => {
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
   bind<App>(DI.IApp).to(App);
   bind<Controller>(DI.IController).to(Controller);
@@ -21,17 +21,15 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
   bind<Service>(DI.IService).to(Service);
   bind<Configuration>(DI.IConfiguration).to(Configuration);
   bind<DatabaseRepository<typeof Table>>(MessageDI.IPayloadRepository)
-    .toDynamicValue(({ container }) => {
-      const configuration = container.get<Configuration>(DI.IConfiguration);
+    .toDynamicValue((context) => {
+      const configuration = context.get<Configuration>(DI.IConfiguration);
       return new DatabaseRepository(configuration);
     })
     .inSingletonScope();
 });
 
 export async function bootstrap() {
-  const container = new Container({
-    skipBaseClassChecks: true,
-  });
+  const container = new Container();
   container.load(bindings);
   const app = container.get<App>(DI.IApp);
 

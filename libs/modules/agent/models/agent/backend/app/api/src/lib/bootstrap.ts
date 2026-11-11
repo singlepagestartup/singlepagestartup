@@ -1,6 +1,6 @@
 import { app as broadcastChannelApp } from "@sps/broadcast/models/channel/backend/app/api";
 import type { Service as BroadcastChannelService } from "@sps/broadcast/models/channel/backend/app/api/src/lib/service";
-import { Container, ContainerModule, interfaces } from "inversify";
+import { Container, ContainerModule } from "inversify";
 import {
   CRUDService,
   DI,
@@ -103,14 +103,14 @@ import { Repository as HostPageRepository } from "@sps/host/models/page/backend/
 import { Configuration as HostPageConfiguration } from "@sps/host/models/page/backend/app/api/src/lib/configuration";
 import { Service as HostPageService } from "@sps/host/models/page/backend/app/api/src/lib/service";
 
-const bindings = new ContainerModule((bind: interfaces.Bind) => {
+const bindings = new ContainerModule(({ bind }) => {
   bind<ITelegramConversationStore>(AgentDI.ITelegramConversationStore)
     .toDynamicValue(() => new TelegramConversationMemoryStore())
     .inSingletonScope();
   bind<ITelegramConversationRuntime>(AgentDI.ITelegramConversationRuntime)
     .toDynamicValue((context) => {
       return new TelegramConversationRuntime(
-        context.container.get<ITelegramConversationStore>(
+        context.get<ITelegramConversationStore>(
           AgentDI.ITelegramConversationStore,
         ),
       );
@@ -331,9 +331,7 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
 });
 
 export async function bootstrap() {
-  const container = new Container({
-    skipBaseClassChecks: true,
-  });
+  const container = new Container();
   container.load(bindings);
   const app = container.get<App>(DI.IApp);
 

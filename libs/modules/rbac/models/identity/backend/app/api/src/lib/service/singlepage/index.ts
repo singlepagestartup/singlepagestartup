@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { injectable } from "inversify";
+import { injectFromBase, injectable } from "inversify";
 import { CRUDService } from "@sps/shared-backend-api";
 import { Table } from "@sps/rbac/models/identity/backend/repository/database";
 import {
@@ -38,6 +38,7 @@ const UNKNOWN_IDENTITY_SALT = bcrypt.genSaltSync(10);
 const PASSWORD_RESET_LIFETIME_MS = 60 * 60 * 1000;
 
 @injectable()
+@injectFromBase()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   /**
    * Rejects a credential column the generic update path would otherwise write

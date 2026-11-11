@@ -6,7 +6,7 @@ import {
   Preview,
   Tailwind,
   Text,
-} from "@react-email/components";
+} from "react-email";
 import { IComponentPropsExtended } from "./interface";
 
 export function Component(props: IComponentPropsExtended) {

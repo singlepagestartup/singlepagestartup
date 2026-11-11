@@ -3,7 +3,7 @@ import { z } from "zod";
 export * from "./schema";
 import { Table } from "./schema";
 
-const metadataSchema = z.record(z.unknown());
+const metadataSchema = z.record(z.string(), z.unknown());
 const embeddingSchema = z.array(z.number()).length(768);
 
 export const insertSchema = createInsertSchema(Table).extend({

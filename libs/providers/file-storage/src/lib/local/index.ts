@@ -34,12 +34,7 @@ export class Provider implements IProvider {
 
     const fileName = `${crypto.getRandomValues(new Uint32Array(1))[0].toString(16)}${crypto.getRandomValues(new Uint32Array(1))[0].toString(16)}`;
 
-    await fs.promises
-      .stat(path.join(this.filesPath))
-      .then(() => true)
-      .catch(async () => {
-        await fs.promises.mkdir(path.join(this.filesPath));
-      });
+    await fs.promises.mkdir(this.filesPath, { recursive: true });
 
     const filePath = path.join(this.filesPath, fileName + "." + extension);
 

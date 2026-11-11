@@ -34,6 +34,12 @@
         "label": "Slug",
         "kind": "text",
         "nullable": false
+      },
+      {
+        "key": "tokensValidAfter",
+        "label": "Tokens Valid After",
+        "kind": "timestamp",
+        "nullable": true
       }
     ]
   },
@@ -43,21 +49,24 @@
       "createdAt": "2026-01-01T00:00:00.000Z",
       "updatedAt": "2026-01-01T00:00:00.000Z",
       "variant": "default",
-      "slug": "subject-example-1"
+      "slug": "subject-example-1",
+      "tokensValidAfter": null
     },
     {
       "id": "1327f822-3f06-4df7-a618-de56ee1ba282",
       "createdAt": "2026-01-01T00:00:00.000Z",
       "updatedAt": "2026-01-01T00:00:00.000Z",
       "variant": "default",
-      "slug": "subject-example-2"
+      "slug": "subject-example-2",
+      "tokensValidAfter": null
     },
     {
       "id": "7eb64a61-5805-450e-a282-ae9e2615d510",
       "createdAt": "2026-01-01T00:00:00.000Z",
       "updatedAt": "2026-01-01T00:00:00.000Z",
       "variant": "default",
-      "slug": "subject-example-3"
+      "slug": "subject-example-3",
+      "tokensValidAfter": null
     }
   ]
 }

@@ -62,8 +62,18 @@ try {
   await pg.unsafe('INSERT INTO "'+child+'"(id,thread_id,body) VALUES($1,$2,$3)',[earlyId,earlyThread,"early"]);
   await store.dispatch();release();await late;await store.dispatch();
   const otherKey=scopeDependencyKey(childResource,"thread_id",earlyThread);
-  let events=[];
-  for(let attempt=0;attempt<80;attempt++){await store.dispatch();events=await store.events(initial.cursor);if(events.some(event=>event.keys.includes(key))&&events.some(event=>event.keys.includes(otherKey)))break;await new Promise(resolve=>setTimeout(resolve,100));}
+  let cursor=initial.cursor;
+  const events=[];
+  for(let attempt=0;attempt<80;attempt++){
+   await store.dispatch();
+   const page=await store.events(cursor);
+   if(page.length){
+    events.push(...page);
+    cursor=page.at(-1).sequence;
+   }
+   if(events.some(event=>event.keys.includes(key))&&events.some(event=>event.keys.includes(otherKey)))break;
+   await new Promise(resolve=>setTimeout(resolve,100));
+  }
   assert(events.some(event=>event.keys.includes(key)));assert(events.some(event=>event.keys.includes(otherKey)));
   const previous=(await store.versions([key]))[key];
   await pg.unsafe('DELETE FROM "'+parent+'" WHERE id=$1',[thread]);
@@ -107,7 +117,7 @@ try {
     const isolated = new FixtureStore();
     const wrap=connection=>{
       const tagged=(strings,...values)=>{const translated=strings.map(value=>value.replace(/sps_consistency\.(?!capture\()/g,namespace+'.'));translated.raw=translated;return connection(translated,...values);};
-      tagged.array=connection.array.bind(connection);tagged.begin=callback=>connection.begin(tx=>callback(wrap(tx)));return tagged;
+      tagged.begin=callback=>connection.begin(tx=>callback(wrap(tx)));return tagged;
     };
     Object.defineProperty(isolated,'sql',{value:wrap(pg)});
     await pg.unsafe('INSERT INTO "'+namespace+'".state(id,value) VALUES($1,$2)',['epoch','before']);

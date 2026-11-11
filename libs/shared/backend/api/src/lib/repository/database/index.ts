@@ -1,7 +1,11 @@
 import { logger } from "@sps/backend-utils";
 import { getDrizzle } from "@sps/shared-backend-database-config";
 import * as methods from "drizzle-orm";
-import { getTableConfig, PgTableWithColumns } from "drizzle-orm/pg-core";
+import {
+  getTableConfig,
+  type PgTable,
+  PgTableWithColumns,
+} from "drizzle-orm/pg-core";
 import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import fs from "fs/promises";
 import { inject, injectable } from "inversify";
@@ -40,7 +44,7 @@ function isDateSchema(value: unknown): boolean {
   }
 
   if (value instanceof ZodOptional || value instanceof ZodNullable) {
-    return isDateSchema(value._def.innerType);
+    return isDateSchema(value.unwrap());
   }
 
   return false;
@@ -66,9 +70,9 @@ function parseOrderByColumn(column: unknown): string {
 }
 
 @injectable()
-export class Database<T extends PgTableWithColumns<any>>
-  implements IRepository
-{
+export class Database<
+  T extends PgTableWithColumns<any>,
+> implements IRepository {
   private database: PostgresJsDatabase<any>;
   get db(): PostgresJsDatabase<any> {
     // Explicit owner transaction clones retain precedence over ambient scope.
@@ -150,7 +154,7 @@ export class Database<T extends PgTableWithColumns<any>>
 
       const records = await this.db
         .select()
-        .from(this.Table)
+        .from(this.Table as PgTable)
         .where(methods.and(this.readScope, ...(filters || [])))
         .limit(Number(props?.params?.limit) as number)
         .offset(Number(props?.params?.offset) as number)
@@ -185,7 +189,7 @@ export class Database<T extends PgTableWithColumns<any>>
 
       const [record] = await this.db
         .select({ count: methods.count() })
-        .from(this.Table)
+        .from(this.Table as PgTable)
         .where(methods.and(this.readScope, ...(filters || [])))
         .execute();
 
@@ -214,7 +218,7 @@ export class Database<T extends PgTableWithColumns<any>>
 
       const records = await this.db
         .select()
-        .from(this.Table)
+        .from(this.Table as PgTable)
         .where(
           methods.and(this.readScope, methods.eq(this.Table[field], value)),
         )
@@ -348,9 +352,7 @@ export class Database<T extends PgTableWithColumns<any>>
 
       const [record] = await this.findByField(field, value);
 
-      const plainData: Partial<T["$inferInsert"]> = this.insertSchema
-        .partial()
-        .parse(this.prepareWritableData(data));
+      const plainData = this.parseUpdate(data);
 
       const [result] = await this.db
         .update(this.Table)
@@ -407,9 +409,7 @@ export class Database<T extends PgTableWithColumns<any>>
         filters: predicate,
       });
 
-      const plainData: Partial<T["$inferInsert"]> = this.insertSchema
-        .partial()
-        .parse(this.prepareWritableData(data));
+      const plainData = this.parseUpdate(data);
 
       const [result] = await this.db
         .update(this.Table)
@@ -494,6 +494,22 @@ export class Database<T extends PgTableWithColumns<any>>
       order.push(methods.asc(this.Table.id));
     }
     return order;
+  }
+
+  private parseUpdate(
+    data: Partial<T["$inferInsert"]>,
+  ): Partial<T["$inferInsert"]> {
+    const supplied = this.prepareWritableData({ ...data });
+    const parsed: Partial<T["$inferInsert"]> = this.insertSchema
+      .partial()
+      .parse(supplied);
+    // Zod 4 applies insert defaults even inside optional fields.
+    for (const key of Object.keys(parsed)) {
+      if (!Object.hasOwn(supplied, key) || supplied[key] === undefined) {
+        delete parsed[key];
+      }
+    }
+    return parsed;
   }
 
   protected prepareWritableData(data: any) {

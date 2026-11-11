@@ -21,6 +21,7 @@
     },
     "db:generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "apps/api",
@@ -71,8 +72,7 @@
             "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "db:migrate": {
       "executor": "nx:run-commands",
@@ -143,7 +143,9 @@
     },
     "db:dump": {
       "executor": "nx:run-commands",
-      "dependsOn": ["db:prepare"],
+      "dependsOn": [
+        "db:prepare"
+      ],
       "options": {
         "parallel": false,
         "cwd": "apps/api",
@@ -156,7 +158,9 @@
     },
     "db:seed": {
       "executor": "nx:run-commands",
-      "dependsOn": ["db:prepare"],
+      "dependsOn": [
+        "db:prepare"
+      ],
       "options": {
         "parallel": false,
         "cwd": "apps/api",
@@ -181,22 +185,37 @@
     "eslint:lint": {},
     "jest:test": {},
     "jest:integration": {
-      "executor": "@nx/jest:jest",
-      "outputs": ["{projectRoot}/coverage"],
-      "inputs": ["{projectRoot}"],
+      "executor": "nx:run-commands",
+      "outputs": [
+        "{projectRoot}/coverage"
+      ],
+      "inputs": [
+        "{projectRoot}/**/*",
+        "^default"
+      ],
       "options": {
-        "jestConfig": "apps/api/jest.integration.config.ts",
-        "passWithNoTests": true
+        "command": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config ./apps/api/jest.integration.config.ts --passWithNoTests",
+        "cwd": ".",
+        "env": {
+          "TS_NODE_COMPILER_OPTIONS": "{\"moduleResolution\":\"node16\",\"module\":\"Node16\",\"customConditions\":null}"
+        }
       }
     },
     "jest:scenario": {
-      "executor": "@nx/jest:jest",
-      "outputs": ["{projectRoot}/coverage"],
-      "inputs": ["{projectRoot}"],
+      "executor": "nx:run-commands",
+      "outputs": [
+        "{projectRoot}/coverage"
+      ],
+      "inputs": [
+        "{projectRoot}/**/*",
+        "^default"
+      ],
       "options": {
-        "jestConfig": "apps/api/jest.scenario.config.ts",
-        "passWithNoTests": false,
-        "runInBand": true
+        "command": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config ./apps/api/jest.scenario.config.ts --runInBand",
+        "cwd": ".",
+        "env": {
+          "TS_NODE_COMPILER_OPTIONS": "{\"moduleResolution\":\"node16\",\"module\":\"Node16\",\"customConditions\":null}"
+        }
       }
     }
   }

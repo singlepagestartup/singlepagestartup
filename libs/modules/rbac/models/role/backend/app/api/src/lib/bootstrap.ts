@@ -4,7 +4,7 @@ import { Configuration as RolesToPermissionsConfiguration } from "@sps/rbac/rela
 import { RoleDI } from "./di";
 import { app as permissionApp } from "@sps/rbac/models/permission/backend/app/api";
 import type { Service as PermissionService } from "@sps/rbac/models/permission/backend/app/api/src/lib/service";
-import { Container, ContainerModule, interfaces } from "inversify";
+import { Container, ContainerModule } from "inversify";
 import {
   DI,
   ExceptionFilter,
@@ -16,7 +16,7 @@ import { Controller } from "./controller";
 import { Service } from "./service";
 import { App } from "./app";
 
-const bindings = new ContainerModule((bind: interfaces.Bind) => {
+const bindings = new ContainerModule(({ bind }) => {
   bind<RolesToPermissionsService>(RoleDI.IRolesToPermissionsService)
     .toDynamicValue(
       () =>
@@ -39,9 +39,7 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
 });
 
 export async function bootstrap() {
-  const container = new Container({
-    skipBaseClassChecks: true,
-  });
+  const container = new Container();
   container.load(bindings);
   const app = container.get<App>(DI.IApp);
 
