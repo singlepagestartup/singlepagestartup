@@ -63,6 +63,11 @@
       shell: cat /home/code/docker_hub_registry_id
       register: cmd_docker_hub_registry_id
 
+    - name: Read the Traefik overlay subnets for trusted forwarding
+      ansible.builtin.command: docker network inspect traefik_overlay
+      register: traefik_network
+      changed_when: false
+
     - name: Create api.env file
       ansible.builtin.template:
         src: api.env.j2

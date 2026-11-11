@@ -1,8 +1,6 @@
 import { cn } from "@sps/shared-frontend-client-utils";
 import { IComponentPropsExtended } from "./interface";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
-import Link from "next/link";
-import { GalleryVerticalEnd } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -14,6 +12,7 @@ import {
 import { internationalization } from "@sps/shared-configuration";
 
 export function Component(props: IComponentPropsExtended) {
+  const language = props.language || internationalization.defaultLanguage.code;
   return (
     <div
       data-module="rbac"
@@ -27,28 +26,15 @@ export function Component(props: IComponentPropsExtended) {
       )}
     >
       <div className="flex w-full max-w-sm flex-col gap-6">
-        <Link
-          href="/"
-          className="flex items-center gap-2 self-center font-medium"
-        >
-          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
-            <GalleryVerticalEnd className="size-4" />
-          </div>
-          Acme Inc.
-        </Link>
         <div className={cn("flex flex-col gap-6", props.className)}>
           <Card>
             <CardHeader className="text-center">
               <CardTitle className="text-xl">
-                {props.data.title?.[internationalization.defaultLanguage.code]}
+                {props.data.title?.[language]}
               </CardTitle>
               {props.data.subtitle ? (
                 <CardDescription>
-                  {
-                    props.data.subtitle?.[
-                      internationalization.defaultLanguage.code
-                    ]
-                  }
+                  {props.data.subtitle?.[language]}
                 </CardDescription>
               ) : null}
             </CardHeader>
@@ -56,20 +42,16 @@ export function Component(props: IComponentPropsExtended) {
               <div className="grid gap-6">
                 <Subject
                   isServer={false}
+                  language={language}
+                  className="rounded-none border-0 p-0 sm:p-0"
                   variant="authentication-email-and-password-registration-form-default"
                 />
               </div>
             </CardContent>
           </Card>
-          {props.data.description?.[
-            internationalization.defaultLanguage.code
-          ] ? (
+          {props.data.description?.[language] ? (
             <TipTap
-              value={
-                props.data.description?.[
-                  internationalization.defaultLanguage.code
-                ] || ""
-              }
+              value={props.data.description?.[language] || ""}
               className="text-center prose-sm"
             />
           ) : null}

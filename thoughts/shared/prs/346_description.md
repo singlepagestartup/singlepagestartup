@@ -9,8 +9,8 @@ The raw Social chat collection and profile-to-file records also carried roleless
 ## Changes
 
 - **Seed.** 29 `roles-to-permissions` rows attach the Admin role to: the order list, `[id]`, `[id]/receipt`, `[id]/checkout-attributes` and `count`; the invoice and payment-intent list, `[id]` and `count`; `payment-intents-to-invoices`, `payment-intents-to-currencies/count`, `orders-to-billing-module-payment-intents` and `subjects-to-billing-module-payment-intents/count`; `subjects-to-roles`; the `subjects-to-ecommerce-module-orders` reads, `POST` and `DELETE`; `POST /api/notification/topics/send-all`; `POST /api/file-storage/files/create-from-url`. The rows were created through the API on a copy of the development database the snapshots come from and written by `npx nx run api:db:dump`; a database seeded from the snapshots gets new ids and cannot produce them. `migrate.sh seed` inserts them on existing deployments at the next start.
-- **Owner order route.** `GET /api/rbac/subjects/:id/ecommerce-module/orders` applies a caller's `filters.and` inside the subject's own orders; without filters it answers the active cart as before. The client action keys its query by params, as the factory list query does.
-- **Cart.** The cart sheet (`ecommerce-module-order-list-checkout-default`) reads orders through the owner route, takes the subject from its token through `subject-default` and imports the inner update and delete components, as the product cart does. The subject read by id is closed to callers without a role, so on `main` the sheet waits on a refused request for customers. The product cart button drops its second, module-level order read. The order list widget (`subject-ecommerce-order`) reads the owner route with a type filter.
+- **Owner order route.** The widget reads orders through the existing `GET /api/rbac/subjects/:id/ecommerce-module/orders` endpoint. It applies the requested filters within the subject’s orders and returns the active cart by default.
+- **Cart.** The checkout sheet resolves the current subject through `subject-default`. The order list widget reads the Subject endpoint with a cart filter and passes each returned order to its renderer.
 - **Order variants.** `cart-default` and `form-field-default` render the order they receive instead of reading it again by id, as `chat-sidebar-item` does; the fetching halves of `form-field-default` are removed, and neither variant accepts `apiProps`.
 - **Reviewed list.** `libs/modules/rbac/models/permission/backend/repository/database/src/lib/roleless-permissions/` lists reviewed role-less seed routes as `METHOD path`, grouped by reason, with the `singlepage -> startup -> index` seam of `fields` and `constraints`. The is-authorized service's `findUnlistedRolelessPermissions()` returns the role-less rows missing from the list; the boot report logs only those, and the rbac unit lane runs it against the seed.
 - **Route guard.** `RequestProfileSubjectIdOwner` on `GET /api/rbac/subjects/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/openrouter/models`.
@@ -19,23 +19,14 @@ The raw Social chat collection and profile-to-file records also carried roleless
 - **Social access.** Reading or counting all chats requires an assigned role. A roleless GET permission can publish one chat by its literal UUID. A template cannot publish another chat. Private conversations use the Subject route and its membership check. Raw profile media links require a role. Public bylines read the author avatar through the existing author SDK.
 - **Cart integration.** The owner order list retains the cart aggregate, currency selection and consistency-aware query keys from `main`.
 
-## Verification
+## Verification after merging main
 
-- [x] On the refreshed branch, 40 targeted RBAC tests and 24 Social tests passed. The module dependency check reported zero violations.
-- [x] A Bun API using PostgreSQL 17 returned 403 for an anonymous raw chat list, its count, private chat details and raw media links. The explicitly published demo returned 200. An owner read their private chat through Subject (200). A foreign token on the owner route returned 401, and the foreign Subject's own route returned 404 for that chat. An administrator could list the chats.
-- [x] The public author response contained the selected image and omitted a second, unpublished file linked to the same profile. Public widget composition and editorial credits remained readable.
-
-Earlier verification on the original branch:
-
-
-- [x] `npx nx run-many --target=jest:test --projects=@sps/rbac,@sps/ecommerce,@sps/host,@sps/shared-frontend-api,@sps/shared-frontend-server-api,@sps/shared-frontend-client-api,@sps/shared-frontend-client-utils,@sps/shared-frontend-client-store,@sps/shared-frontend-components`: all pass (`@sps/rbac` 84 suites and 391 tests).
-- [x] `npx nx run-many --target=eslint:lint --projects=@sps/rbac,@sps/ecommerce,@sps/host`: pass, no warnings.
-- [x] `npx tsc --noEmit -p libs/modules/{rbac,ecommerce,host}/tsconfig.json`: no errors.
-- [x] `node tools/agents/code-placement.mjs`: clean.
-- [x] Mutation checks: the `main` versions of the cart sheet, the product cart, the order list widget and both order variants fail their new scenarios; removing a list entry, the list filter, the 29 attachments or the middleware fails the matching specs.
-- [x] HTTP on port 4303 against a throwaway copy of the database: an `init` subject creates its cart order and lists it through the owner route (200, also with a type filter); `GET /api/ecommerce/orders` and `/orders/:id` answer 403 without a token and with that subject's token, 200 with an admin token; `POST /api/rbac/subjects-to-ecommerce-module-orders`, `send-all` and `create-from-url` answer 403 without a token; `openrouter/models` answers 400 without a token, 401 for another subject and 404 for a profile the subject does not own; product, order line and blog reads stay 200.
-- [ ] Browser check of the cart sheet and the product cart as an anonymous visitor. Not run: the host needs a real install in the worktree.
-- [ ] `npm run test:scenario:issue-152`. Not run: the local Redis rejects the configured password, and the scenario preflight needs the HTTP cache.
+- Started the Bun API against an isolated PostgreSQL database after applying the framework seed, with a separate Redis instance and HTTP caching enabled.
+- Issued 158 HTTP requests including fixture setup. All 29 affected routes returned 403 to both a signed-out caller and a registered customer. The authorization endpoint granted an Admin JWT all 29 permissions. Admin collection and count requests and a read of an existing order returned 200.
+- Two customers added the same product to separate carts. Each saw their own order. A request using the other customer's Subject URL returned 401. Filtering one's own list for the other customer's order returned an empty list.
+- The public demo chat and author projections returned 200. A private chat returned 403 to visitors even after an administrator read it. Its member received 200 through the Subject route. A different subject using the member's URL received 401, and their own profile outside that chat received 403. The OpenRouter model route refused a missing token, a different subject and an unowned profile.
+- Chromium opened the Pro product page in a fresh visitor session. Adding the product and opening the cart displayed the item, removal action and checkout button. The order requests returned 200 and the browser observed no 403 during the flow.
+- All 1,443 RBAC, Social and Ecommerce unit tests and the four tests in the issue-152 cart scenario passed. TypeScript checks passed for API and Host. The module dependency checker reported zero violations.
 
 ## Notes
 
@@ -46,7 +37,7 @@ Earlier verification on the original branch:
 
 - **Social reads.** Replace anonymous raw chat lists with exact public grants and private Subject reads. Replace raw profile media queries with the scoped participant avatar or the public author projection. Verify the demo, a private chat, owner and stranger tokens, and an author with more than one attached file.
 
-- **Seed.** Projects that merge the framework seed receive 29 relation files. If a relation file's `permissionId` names no file in your permission snapshots, delete the 29 files, attach the Admin role to the same rows in your development database and dump.
+- **Seed.** Apply the 29 role bindings with the normal seed. Projects that own their snapshots should check the referenced permission and role records. If their snapshot IDs differ, attach Admin to the matching permissions in the project database and export those bindings with the standard dump.
 - **Role-less rows.** `npx nx run @sps/rbac:jest:test` names every role-less seed row missing from the list. Attach a role through `roles-to-permissions`, or add the row as `METHOD path` to `roleless-permissions/startup.ts` when it is public on purpose.
 - **Browser reads.** Components that read `/api/ecommerce/orders`, `/api/billing/**` or `subjects-to-ecommerce-module-orders` in a non-admin browser move to `GET /api/rbac/subjects/:id/ecommerce-module/orders` (with `filters.and` for statuses other than the active cart) and pass the full order to `cart-default` and `form-field-default`.
 

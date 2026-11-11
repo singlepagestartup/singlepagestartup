@@ -22,15 +22,12 @@ jest.mock("@sps/shared-utils", () => ({
 
 jest.mock("@sps/backend-utils", () => ({
   authorization: (...args: unknown[]) => authorizationMock(...args),
+  verifyJwt: (...args: unknown[]) => verifyMock(...args),
   getHttpErrorType: (error: Error) => ({
     status: 400,
     message: error.message,
     details: null,
   }),
-}));
-
-jest.mock("hono/jwt", () => ({
-  verify: (...args: unknown[]) => verifyMock(...args),
 }));
 
 jest.mock("hono/http-exception", () => ({

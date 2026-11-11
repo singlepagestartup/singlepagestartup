@@ -75,8 +75,7 @@ it("persists independent editable professions for two profiles and rolls back a 
     await skill.update({
       id: first[0].id,
       data: {
-        title: first[0].title,
-        slug: first[0].slug,
+        ...first[0],
         description: "Owner's custom Brief instructions",
       },
     });

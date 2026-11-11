@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { injectable } from "inversify";
+import { injectFromBase, injectable } from "inversify";
 import {
   DatabaseRepository,
   trackRepositoryRead,
@@ -19,6 +19,7 @@ export interface ISubscriptionPeriodWrite {
 }
 
 @injectable()
+@injectFromBase()
 export class Repository extends DatabaseRepository<typeof Table> {
   async lockForLifecycle(props: { id: string }) {
     await trackRepositoryRead(Table, this.db, {

@@ -28,6 +28,11 @@ export class Configuration extends ParentConfiguration {
           type: "model",
           filters: [
             {
+              column: "type",
+              method: "eq",
+              value: ({ entity }) => entity.dump.type ?? "HTTP",
+            },
+            {
               column: "path",
               method: "eq",
               value: (data) => {

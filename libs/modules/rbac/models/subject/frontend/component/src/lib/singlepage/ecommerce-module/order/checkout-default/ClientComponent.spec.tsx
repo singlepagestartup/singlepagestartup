@@ -23,20 +23,7 @@ const submitPayload = {
   },
 };
 
-const originalLocation = window.location;
-
-beforeAll(() => {
-  Object.defineProperty(window, "location", {
-    value: { href: "" },
-    writable: true,
-  });
-});
-
-afterAll(() => {
-  Object.defineProperty(window, "location", {
-    value: originalLocation,
-  });
-});
+const checkoutPage = window.location.href;
 
 jest.mock("@sps/shared-frontend-client-utils", () => ({
   cn: (...classes: Array<string | undefined>) =>
@@ -79,11 +66,11 @@ describe("Given: order checkout-default action component", () => {
   beforeEach(() => {
     mutateAsyncMock.mockReset();
     useFormMock.mockReset();
-    (window.location as any).href = "";
+    window.history.replaceState(null, "", checkoutPage);
 
     mutateAsyncMock.mockResolvedValue({
       billingModule: {
-        invoices: [{ paymentUrl: "https://pay.local/invoice-1" }],
+        invoices: [{ paymentUrl: `${checkoutPage}#invoice-1` }],
       },
     });
 
@@ -122,7 +109,7 @@ describe("Given: order checkout-default action component", () => {
     });
 
     await waitFor(() => {
-      expect((window.location as any).href).toBe("https://pay.local/invoice-1");
+      expect(window.location.href).toBe(`${checkoutPage}#invoice-1`);
     });
 
     expect(useFormMock).toHaveBeenCalledWith(

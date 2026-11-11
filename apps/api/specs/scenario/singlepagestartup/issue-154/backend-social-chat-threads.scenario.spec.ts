@@ -363,6 +363,9 @@ describe("Given: issue-154 social chat thread scenario", () => {
       title: `issue-154-custom-thread-${Date.now().toString(36)}`,
     });
 
+    expect(customThread.variant).toBe("custom");
+    getSingleDefaultThread(await listChatThreads(socialModuleChat.id));
+
     const defaultThreadMessage = await createThreadMessage({
       socialModuleChatId: socialModuleChat.id,
       socialModuleThreadId: defaultThread.id,

@@ -40,6 +40,9 @@ export {
   resourceIdentity,
   scopeDependencyKey,
 } from "./lib/repository/database/context";
-export { createConsistencyRuntime } from "./lib/mutation-effects/consistency";
+export {
+  clearHttpResponseCache,
+  createConsistencyRuntime,
+} from "./lib/mutation-effects/consistency";
 export * from "./lib/configuration";
 export * from "./lib/middleware";

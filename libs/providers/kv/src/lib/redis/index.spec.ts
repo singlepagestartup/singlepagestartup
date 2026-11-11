@@ -16,6 +16,23 @@ jest.mock("ioredis", () => {
     listeners: Record<string, Array<(...args: any[]) => void>> = {};
     incr = jest.fn(async () => 5);
     expire = jest.fn(async () => 1);
+    multi = jest.fn(() => {
+      const transaction = {
+        incr: (key: string) => {
+          this.incr(key);
+          return transaction;
+        },
+        expire: (key: string, ttl: number) => {
+          this.expire(key, ttl);
+          return transaction;
+        },
+        exec: jest.fn(async () => [
+          [null, 5],
+          [null, 1],
+        ]),
+      };
+      return transaction;
+    });
     get = jest.fn(async () => null);
     set = jest.fn(async () => "OK");
     del = jest.fn(async () => 1);

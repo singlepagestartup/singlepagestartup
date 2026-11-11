@@ -15,7 +15,7 @@ export function Component(props: IClientComponentProps) {
       <Subject
         isServer={props.isServer}
         variant="authentication-me-default"
-        unauthenticatedRedirectHref={`/${props.language || internationalization.defaultLanguage.code}/ai-chat/sign-in`}
+        unauthenticatedRedirectHref={`/${props.language || internationalization.defaultLanguage.code}/rbac/subject/authentication/email-and-password`}
       >
         {({ data, authenticated }) => {
           if (!data || !authenticated) return null;

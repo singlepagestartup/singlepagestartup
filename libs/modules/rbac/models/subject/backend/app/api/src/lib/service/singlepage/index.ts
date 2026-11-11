@@ -1,3 +1,4 @@
+import { Service as SecurityNotifications } from "./security-notifications";
 import {
   Service as CreateCartOrder,
   type IExecuteProps as ICreateCartOrderProps,
@@ -57,7 +58,11 @@ import { Service as RoleRevocation } from "./ecommerce/order/role-revocation";
 import type { IArticleCreateInput } from "@sps/rbac/models/subject/sdk/model/src/lib/blog-article-create";
 import type { Service as SubjectsToBlogModuleArticlesService } from "@sps/rbac/relations/subjects-to-blog-module-articles/backend/app/api/src/lib/service";
 import { Table } from "@sps/rbac/models/subject/backend/repository/database";
-import { Service as Logout } from "./logout";
+import {
+  Service as Logout,
+  IExecuteProps as ILogoutExecuteProps,
+} from "./logout";
+import { Service as Me, IExecuteProps as IMeExecuteProps } from "./me";
 import {
   Service as Refresh,
   IExecuteProps as IRefreshExecuteProps,
@@ -221,6 +226,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   subjectsToBillingModuleCurrencies: SubjectsToBillingModuleCurrenciesService;
 
   constructor(
+    @inject(SubjectDI.ISecurityNotificationsService)
+    private readonly securityNotifications: SecurityNotifications,
     @inject(DI.IRepository) repository: Repository,
     @inject(SubjectDI.ISocialModule) socialModule: ISocialModule,
     @inject(SubjectDI.IEcommerceModule) ecommerceModule: IEcommerceModule,
@@ -280,6 +287,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     this.subjectsToBillingModuleCurrencies = subjectsToBillingModuleCurrencies;
     this.blogModule = blogModule;
     this.subjectsToBlogModuleArticles = subjectsToBlogModuleArticles;
+  }
+
+  async sendSecurityNotifications() {
+    await this.securityNotifications.execute();
   }
 
   configureRoleRevocation() {
@@ -415,9 +426,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
 
     for (let attempt = 0; attempt < 2; attempt++) {
-      const current = attempt
-        ? await this.socialModule.thread.findById({ id: thread.id })
-        : thread;
+      let current;
+      if (attempt) {
+        current = await this.socialModule.thread.findById({ id: thread.id });
+      } else {
+        current = thread;
+      }
       const metadata = setRbacAiThreadModelPreference({
         metadata: current.metadata,
         modelId: props.modelId,
@@ -439,8 +453,22 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     );
   }
 
-  async logout(): Promise<any> {
-    return new Logout(this.repository).execute();
+  async logout(props: ILogoutExecuteProps) {
+    const logout = new Logout({
+      me: (meProps) => this.me(meProps),
+      update: ({ id, data }) => this.update({ id, data }),
+      invalidateSubjectRevocationCache: (subjectId) =>
+        this.isAuthorizedService.invalidateSubjectRevocationCache(subjectId),
+    });
+    const result = await logout.execute(props);
+
+    return result;
+  }
+
+  async me(props: IMeExecuteProps) {
+    return new Me({
+      findById: ({ id }) => this.findById({ id }),
+    }).execute(props);
   }
 
   async recordActivity(props: IRecordActivityExecuteProps) {
@@ -451,7 +479,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
   async init(props: IInitExecuteProps) {
     return new Init({
-      findById: ({ id }) => this.findById({ id }),
+      me: (meProps) => this.me(meProps),
       recordActivity: (recordActivityProps) =>
         this.recordActivity(recordActivityProps),
     }).execute(props);
@@ -468,19 +496,25 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   async authenticationLoginAndPassowrd(
     props: IAuthenticationEmailAndPasswordExecuteProps,
   ) {
-    return this.completeUserAuthentication(
-      await new AuthenticationEmailAndPassword(this.repository).execute(props),
-    );
+    const authentication = await new AuthenticationEmailAndPassword(
+      this.repository,
+    ).execute(props);
+
+    const result = await this.completeUserAuthentication(authentication);
+
+    return result;
   }
 
   async authenticationEthereumVirtualMachine(
     props: IAuthenticationEthereumVirtualMachineExecuteProps,
   ) {
-    return this.completeUserAuthentication(
-      await new AuthenticationEthereumVirtualMachine(this.repository).execute(
-        props,
-      ),
-    );
+    const authentication = await new AuthenticationEthereumVirtualMachine(
+      this.repository,
+    ).execute(props);
+
+    const result = await this.completeUserAuthentication(authentication);
+
+    return result;
   }
 
   async authenticationOAuthStart(props: IAuthenticationOAuthStartExecuteProps) {
@@ -496,9 +530,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   async authenticationOAuthExchange(
     props: IAuthenticationOAuthExchangeExecuteProps,
   ) {
-    return this.completeUserAuthentication(
-      await new AuthenticationOAuthExchange(this.repository).execute(props),
-    );
+    const authentication = await new AuthenticationOAuthExchange(
+      this.repository,
+    ).execute(props);
+
+    const result = await this.completeUserAuthentication(authentication);
+
+    return result;
   }
 
   async socialModuleProfileOwnershipEnsure(props: { subjectId: string }) {

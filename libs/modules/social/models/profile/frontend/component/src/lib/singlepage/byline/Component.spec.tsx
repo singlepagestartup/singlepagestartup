@@ -18,11 +18,7 @@ jest.mock("@sps/social/models/profile/frontend/component", () => ({
   BylineSkeleton: () => <div data-variant="byline-loading" />,
   Component: (props: any) => {
     mockReads(props);
-    return (
-      <span data-testid="profile-view">
-        {props.profileId}:{props.size}:{String(Boolean(props.inverse))}
-      </span>
-    );
+    return <span data-testid="profile-view" />;
   },
 }));
 jest.mock("../chat-profile-avatar", () => ({
@@ -107,7 +103,7 @@ it.each([
   },
 );
 it.each([true, false])(
-  "author association passes only the linked profile ID to the public author byline in runtime %s",
+  "author association passes the linked Profile ID and display props to the byline in runtime %s",
   (isServer) => {
     render(
       <AuthorRelation
@@ -124,13 +120,15 @@ it.each([true, false])(
         size="xs"
       />,
     );
-    expect(mockReads.mock.calls[0][0]).toMatchObject({
-      variant: "author-byline-default",
-      profileId: "profile-a",
-      isServer,
-    });
-    expect(screen.getByTestId("profile-view")).toHaveTextContent(
-      "profile-a:xs:false",
+    expect(mockReads).toHaveBeenCalledWith(
+      expect.objectContaining({
+        isServer,
+        variant: "author-byline-default",
+        profileId: "profile-a",
+        language: "ru",
+        size: "xs",
+      }),
     );
+    expect(screen.getByTestId("profile-view")).toBeVisible();
   },
 );

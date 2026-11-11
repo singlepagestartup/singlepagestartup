@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { injectable } from "inversify";
+import { injectFromBase, injectable } from "inversify";
 import { CRUDService } from "@sps/shared-backend-api";
 import { Table } from "@sps/rbac/relations/subjects-to-roles/backend/repository/database";
 import type { Repository } from "../../repository";
@@ -14,6 +14,7 @@ export interface IRevocationDependencies {
   canFulfill(grant: IGrant, scope: IFulfillmentGrant): Promise<boolean>;
 }
 @injectable()
+@injectFromBase()
 export class Service extends CRUDService<IGrant> {
   private revocation?: IRevocationDependencies;
   configureRevocation(dependencies: IRevocationDependencies) {

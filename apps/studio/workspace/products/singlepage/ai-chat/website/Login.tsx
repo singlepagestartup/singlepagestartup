@@ -19,7 +19,7 @@ const pageContent = {
       title: "Не получается войти?",
       paragraphs: [
         "Забыли пароль? [Обратитесь в поддержку](/ai-chat/help). При ошибке входа проверьте данные и повторите попытку.",
-        "Ещё нет аккаунта? [Создайте его](/ai-chat/rbac/subjects/authentication/registration).",
+        "Ещё нет аккаунта? [Создайте его](/rbac/subject/authentication/email-and-password/registration).",
       ],
       items: [],
       links: [
@@ -29,7 +29,7 @@ const pageContent = {
         },
         {
           text: "Создайте его",
-          href: "/ai-chat/rbac/subjects/authentication/registration",
+          href: "/rbac/subject/authentication/email-and-password/registration",
         },
       ],
     },
@@ -83,7 +83,7 @@ const pageContent = {
         },
         {
           title: "register-href",
-          text: "/ai-chat/rbac/subjects/authentication/registration",
+          text: "/rbac/subject/authentication/email-and-password/registration",
         },
         {
           title: "no-account",
@@ -135,7 +135,8 @@ const pageContent = {
     "forgot-label": "Забыли пароль?",
     "forgot-href": "/help",
     "register-label": "Создать аккаунт",
-    "register-href": "/ai-chat/rbac/subjects/authentication/registration",
+    "register-href":
+      "/rbac/subject/authentication/email-and-password/registration",
     "no-account": "Ещё нет аккаунта?",
     "continue-label": "Открыть рабочее пространство",
     "continue-href": "/ai-chat/social/profiles/example",
@@ -153,7 +154,7 @@ const pageContent = {
 export default function Login({ text }: { text?: string } = {}) {
   return (
     <AIChatPreview
-      initialHref="/ai-chat/rbac/subjects/authentication/select-method"
+      initialHref="/rbac/subject/authentication/email-and-password"
       loginCopy={pageContent}
     />
   );

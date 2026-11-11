@@ -14,10 +14,12 @@ export const httpErrorPatterns: ErrorPatternEntry[] = [
       /invalid token/i,
       /invalid jwt token/i,
       /token .*expired/i,
+      /token revoked/i,
       /is being used before it's valid/i,
       /signature mismatched/i,
       /invalid signature/i,
       /jwt malformed/i,
+      /jwt algorithm mismatch/i,
     ],
   },
   {

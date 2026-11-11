@@ -16,7 +16,7 @@
     "title": "Не получается войти?",
     "paragraphs": [
       "Забыли пароль? [Обратитесь в поддержку](/ai-chat/help). При ошибке входа проверьте данные и повторите попытку.",
-      "Ещё нет аккаунта? [Создайте его](/ai-chat/rbac/subjects/authentication/registration)."
+      "Ещё нет аккаунта? [Создайте его](/rbac/subject/authentication/email-and-password/registration)."
     ]
   }
 }

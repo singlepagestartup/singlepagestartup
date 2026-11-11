@@ -54,12 +54,3 @@ BEGIN
 END $fn$;
 `;
 }
-
-export function installCaptureSQL(props: {
-  resource: string;
-  topic: string;
-  columns: Record<string, string>;
-}): string {
-  const literal = (v: string) => "'" + v.replaceAll("'", "''") + "'";
-  return `SELECT sps_consistency.install_capture(${literal(props.resource)},${literal(props.topic)},${literal(JSON.stringify(props.columns))}::jsonb);`;
-}

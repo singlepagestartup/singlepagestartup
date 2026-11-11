@@ -15,6 +15,7 @@ import {
   GOOGLE_TAG_MANAGER_ID,
   YANDEX_METRIKA_ID,
 } from "@sps/shared-utils";
+import { CookiesProvider } from "../../src/components/cookies-provider";
 import { Component as Revalidation } from "../../src/components/revalidation";
 import http from "http";
 import https from "https";
@@ -41,12 +42,14 @@ export default async function RootLayout({
       <body
         className={`${fonts.defaultFont.variable} ${fonts.primaryFont.variable}`}
       >
-        <RbacSubject isServer={false} variant="authentication-init-default" />
-        <Revalidation isServer={true} />
-        <div className="relative">
-          {children}
-          <Toaster />
-        </div>
+        <CookiesProvider>
+          <RbacSubject isServer={false} variant="authentication-init-default" />
+          <Revalidation isServer={true} />
+          <div className="relative">
+            {children}
+            <Toaster />
+          </div>
+        </CookiesProvider>
       </body>
       {GOOGLE_ANALYTICS_ID ? (
         <GoogleAnalytics gaId={GOOGLE_ANALYTICS_ID} />

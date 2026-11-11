@@ -27,6 +27,9 @@ export async function action(props: IProps): Promise<IResult> {
     encodeValuesOnly: true,
   });
 
+  const headers = new Headers(options?.headers);
+  headers.set("Cache-Control", "no-store");
+
   const requestOptions: NextRequestOptions = {
     credentials: "include",
     method: "GET",
@@ -34,9 +37,7 @@ export async function action(props: IProps): Promise<IResult> {
     next: {
       ...options?.next,
     },
-    headers: {
-      "Cache-Control": "no-store",
-    },
+    headers,
   };
 
   const res = await fetch(

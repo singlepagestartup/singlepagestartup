@@ -1,4 +1,4 @@
-import { Container, ContainerModule, interfaces } from "inversify";
+import { Container, ContainerModule } from "inversify";
 import {
   CRUDService,
   DI,
@@ -18,7 +18,7 @@ import { Configuration as BillingInvoiceConfiguration } from "@sps/billing/model
 import { Repository as BillingPaymentIntentsToInvoicesRepository } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/repository";
 import { Configuration as BillingPaymentIntentsToInvoicesConfiguration } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/configuration";
 
-const bindings = new ContainerModule((bind: interfaces.Bind) => {
+const bindings = new ContainerModule(({ bind }) => {
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
   bind<App>(DI.IApp).to(App);
   bind<Controller>(DI.IController).to(Controller);
@@ -45,9 +45,7 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
 });
 
 export async function bootstrap() {
-  const container = new Container({
-    skipBaseClassChecks: true,
-  });
+  const container = new Container();
   container.load(bindings);
   const app = container.get<App>(DI.IApp);
 
