@@ -88,24 +88,7 @@
         dest: /home/code/docker-compose.api.yaml
 
     - name: Run api service
-      ansible.builtin.command: docker stack deploy --detach=false --with-registry-auth --compose-file=/home/code/docker-compose.api.yaml api
-
-    - name: Wait for replaced API tasks to stop serving
-      ansible.builtin.command:
-        argv:
-          - docker
-          - service
-          - ps
-          - "api_{{ service_name }}"
-          - --filter
-          - desired-state=shutdown
-          - --format
-          - "{% raw %}{{.CurrentState}}{% endraw %}"
-      register: replaced_api_tasks
-      until: replaced_api_tasks.rc == 0 and (replaced_api_tasks.stdout_lines | select('match', '^(Running|Starting) ') | list | length) == 0
-      retries: 60
-      delay: 2
-      changed_when: false
+      shell: docker stack deploy --with-registry-auth --compose-file=/home/code/docker-compose.api.yaml api
 
     - name: Get api service id
       shell:

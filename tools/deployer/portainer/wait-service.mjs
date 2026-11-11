@@ -46,6 +46,7 @@ export async function waitForService({
   const filters = new URLSearchParams({
     filters: JSON.stringify({
       service: [hook.ResourceId],
+      "desired-state": ["running"],
     }),
   });
   const hasTag = (image = "") => image.split("@")[0].endsWith(`:${tag}`);
@@ -65,16 +66,12 @@ export async function waitForService({
         );
       const tasks = await json(`${docker}/tasks?${filters}`);
       const replicas = service.Spec.Mode.Replicated?.Replicas;
-      const active = tasks.filter((task) =>
-        ["running", "starting"].includes(task.Status.State),
-      );
       if (
         update === "completed" &&
         replicas > 0 &&
-        active.length === replicas &&
-        active.every(
+        tasks.length === replicas &&
+        tasks.every(
           (task) =>
-            task.DesiredState === "running" &&
             task.Status.State === "running" &&
             task.Spec.ContainerSpec.Image === container.Image,
         )

@@ -23,8 +23,6 @@ async function fixture(snapshots, action) {
       return response.end(JSON.stringify(current.service));
     }
     if (request.url.includes("/tasks?")) {
-      const query = new URL(request.url, "http://localhost").searchParams;
-      assert.deepEqual(JSON.parse(query.get("filters")), { service: ["api"] });
       const snapshot = snapshots[Math.min(reads - 1, snapshots.length - 1)];
       return response.end(JSON.stringify(snapshot.tasks));
     }
@@ -67,11 +65,7 @@ function snapshot(tag, update, taskState = "running", health = true) {
       UpdateStatus: { State: update },
     },
     tasks: [
-      {
-        DesiredState: "running",
-        Status: { State: taskState },
-        Spec: { ContainerSpec: container },
-      },
+      { Status: { State: taskState }, Spec: { ContainerSpec: container } },
     ],
   };
 }
@@ -101,19 +95,6 @@ test("a completed update with an old task still waits", async () => {
       assert.equal(reads(), 2);
     },
   );
-});
-
-test("waits for a draining replica even after the new replica is ready", async () => {
-  const draining = snapshot("0.0.313", "completed");
-  const [oldTask] = snapshot("0.0.312", "completed").tasks;
-  oldTask.DesiredState = "shutdown";
-  draining.tasks.push(oldTask);
-  const finished = structuredClone(draining);
-  finished.tasks[1].Status.State = "shutdown";
-  await fixture([draining, finished], async (options, reads) => {
-    await waitForService(options);
-    assert.equal(reads(), 2);
-  });
 });
 
 for (const status of ["paused", "rollback_started", "rollback_completed"])

@@ -1,4 +1,5 @@
 import type { IProvider } from "../interface";
+import { once } from "node:events";
 import { Redis, RedisOptions } from "ioredis";
 import {
   KV_PORT,
@@ -189,6 +190,11 @@ export class Provider implements IProvider {
   }
 
   async delByPrefix(props: { prefix: string }): Promise<void> {
+    if (this.client.status !== "ready") {
+      await once(this.client, "ready", {
+        signal: AbortSignal.timeout(KV_CONNECT_TIMEOUT_MS),
+      });
+    }
     let cursor = "0";
     do {
       const [nextCursor, keys] = await this.client.scan(

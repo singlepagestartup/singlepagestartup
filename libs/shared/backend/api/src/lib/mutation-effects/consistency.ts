@@ -50,6 +50,14 @@ export interface IConsistencyRuntimeProps {
   publishLegacy?: (topics: string[]) => Promise<void>;
 }
 
+export function clearHttpResponseCache(
+  cache: Pick<KVProvider, "delByPrefix"> = new KVProvider({
+    type: KV_PROVIDER,
+  }),
+) {
+  return cache.delByPrefix({ prefix: CONSISTENCY_CACHE_NAMESPACE });
+}
+
 export function createConsistencyRuntime(props: IConsistencyRuntimeProps) {
   const store = props.store || new ConsistencyStore();
   const cache = props.cache || new KVProvider({ type: KV_PROVIDER });
@@ -282,8 +290,8 @@ export function createConsistencyRuntime(props: IConsistencyRuntimeProps) {
       };
     },
     tick,
-    async clearCache() {
-      await cache.delByPrefix({ prefix: CONSISTENCY_CACHE_NAMESPACE });
+    clearCache() {
+      return clearHttpResponseCache(cache);
     },
     /** Register after authorization. PostgreSQL, never Redis, proves freshness. */
     cache(options: { observe?: boolean; excludedRoutes?: IRouteRule[] } = {}) {

@@ -170,9 +170,8 @@ app.use(new IsAuthorizedMiddleware().init());
 app.use(new BillRouteMiddleware().init());
 app.use(new ParseQueryMiddleware().init());
 
-const httpCacheEnabled = MIDDLEWARE_HTTP_CACHE === "true";
-httpCacheMiddleware.registerRoutes(app, httpCacheEnabled);
-if (httpCacheEnabled) {
+if (MIDDLEWARE_HTTP_CACHE === "true") {
+  httpCacheMiddleware.registerRoutes(app);
   app.use(httpCacheMiddleware.init());
 }
 

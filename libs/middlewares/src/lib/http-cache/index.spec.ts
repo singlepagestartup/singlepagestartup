@@ -38,18 +38,3 @@ it("guards cache management before any cached response can answer it", async () 
   expect(clearCache).toHaveBeenCalledTimes(1);
   expect(readCache).not.toHaveBeenCalled();
 });
-
-it("reports a disabled cache to the operator without accessing KV", async () => {
-  const clearCache = jest.fn();
-  const middleware = new Middleware({
-    runtime: { cache: jest.fn(), clearCache },
-  });
-  const app = new Hono();
-  middleware.registerRoutes(app, false);
-  expect((await app.request("/api/http-cache/clear")).status).toBe(401);
-  const response = await app.request("/api/http-cache/clear", {
-    headers: { "X-RBAC-SECRET-KEY": "operator-test-key" },
-  });
-  expect(await response.json()).toEqual({ message: "Cache disabled" });
-  expect(clearCache).not.toHaveBeenCalled();
-});
