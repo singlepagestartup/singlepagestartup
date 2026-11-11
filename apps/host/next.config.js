@@ -1,4 +1,3 @@
-import { withNx } from "@nx/next/plugins/with-nx.js";
 import bundleAnalyzer from "@next/bundle-analyzer";
 
 const API_SERVICE_URL = process.env.API_SERVICE_URL || "http://localhost:4000";
@@ -24,6 +23,9 @@ function makeConfig() {
 
   return withBundleAnalyzer({
     reactStrictMode: true,
+    ...(process.env.SPS_HOST_STATIC_EXPORT === "true"
+      ? { output: "export" }
+      : {}),
     // Shared agent guidance is maintained in the root AGENTS.md.
     agentRules: false,
     distDir: process.env.SPS_HOST_DIST_DIR || ".next",
@@ -125,10 +127,7 @@ function makeConfig() {
         { test: /\.map$/, use: "ignore-loader" },
       );
 
-      // Optional modules of the wallet libraries that are not installed. The
-      // `@x402/*` peers of `@coinbase/cdp-sdk` are reached through wagmi's Base
-      // Account connector, which this app does not configure.
-      config.externals.push("pino-pretty", "lokijs", "encoding", /^@x402\//);
+      config.externals.push("pino-pretty", "lokijs", "encoding");
 
       return config;
     },
@@ -136,4 +135,4 @@ function makeConfig() {
   });
 }
 
-export default withNx(makeConfig());
+export default makeConfig();

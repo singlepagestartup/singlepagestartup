@@ -46,11 +46,12 @@ export async function readProjectFiles(
         throw new Error(
           `${file.name} is too long for a document draft. Add a shorter text file.`,
         );
-      return {
-        file,
-        id: `${prefix}-${crypto.randomUUID()}`,
-        text: plain ? await file.text() : "",
-      };
+      const id = `${prefix}-${crypto.randomUUID()}`;
+      let text = "";
+      if (plain) {
+        text = await file.text();
+      }
+      return { file, id, text };
     }),
   );
   return prepared.map(({ file, id, text }) => ({

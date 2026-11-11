@@ -73,9 +73,11 @@ describe("MCP project guidance delivery", () => {
       const projectGuideResource = await client.readResource({
         uri: PROJECT_GUIDE_RESOURCE_URI,
       });
-      const projectGuidePayload = JSON.parse(
-        (projectGuideResource.contents[0] as { text: string }).text,
-      );
+      const guideContent = projectGuideResource.contents[0];
+      if (!guideContent || !("text" in guideContent)) {
+        throw new Error("Expected project-guide text resource");
+      }
+      const projectGuidePayload = JSON.parse(guideContent.text);
 
       expect(projectGuidePayload.data).toEqual(
         expect.objectContaining({
@@ -117,6 +119,37 @@ describe("MCP project guidance delivery", () => {
         "same MCP connector",
       );
       expect(operationsGuidePayload.data.ambiguityRule).toContain("UNKNOWN");
+    } finally {
+      await client.close();
+      await server.close();
+    }
+  });
+
+  it("rejects oversized tool arguments before validation and keeps the session usable", async () => {
+    const server = createMcpServer();
+    const client = new Client({ name: "input-limit-test", version: "1.0.0" });
+    const [clientTransport, serverTransport] =
+      InMemoryTransport.createLinkedPair();
+    await server.connect(serverTransport);
+    await client.connect(clientTransport);
+
+    try {
+      const rejected = await client.callTool({
+        name: "content-operations-guide",
+        arguments: { items: Array(10_001).fill(null) },
+      });
+      expect(rejected.isError).toBe(true);
+      expect(rejected.content).toEqual([
+        expect.objectContaining({
+          text: expect.stringContaining("10000 elements"),
+        }),
+      ]);
+
+      const accepted = await client.callTool({
+        name: "content-operations-guide",
+        arguments: {},
+      });
+      expect(accepted.isError).not.toBe(true);
     } finally {
       await client.close();
       await server.close();

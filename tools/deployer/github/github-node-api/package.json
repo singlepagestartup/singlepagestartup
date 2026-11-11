@@ -9,7 +9,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "libsodium-wrappers": "^0.7.13",
+    "libsodium-wrappers": "^0.8.4",
     "octokit": "^5.0.5"
   }
 }

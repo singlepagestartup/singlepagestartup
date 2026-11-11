@@ -14,8 +14,10 @@ export class Handler {
         throw new HTTPException(400, {
           message: `Validation error. ${parsed.error.issues[0].message}`,
         });
+      const data = await this.service.seo.resolve(parsed.data.url);
+
       return c.json({
-        data: await this.service.seo.resolve(parsed.data.url),
+        data,
       });
     } catch (error) {
       if (error instanceof HTTPException) throw error;

@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Form } from "@sps/shared-ui-shadcn";
 import { toast } from "sonner";
-import { useAccount } from "wagmi";
+import { useConnection } from "wagmi";
 import { disconnect, signMessage } from "@wagmi/core";
 import { ethereumVirtualMachine } from "@sps/shared-frontend-client-web3";
 import { cn } from "@sps/shared-frontend-client-utils";
@@ -25,7 +25,7 @@ export function Component(props: IComponentPropsExtended) {
   const [isClient, setIsClient] = useState(false);
 
   const authenticateEthereumVirtualMachine = api.identityCreate({});
-  const account = useAccount();
+  const account = useConnection();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

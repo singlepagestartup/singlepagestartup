@@ -63,7 +63,7 @@ export function action(props: IProps) {
         throw error;
       }
     },
-    async onSuccess(data, variables, context) {
+    async onSuccess(data, variables, onMutateResult, context) {
       const prefix = `${route}/${props.id}/social-module/profiles/${props.socialModuleProfileId}/chats/${props.socialModuleChatId}/`;
       for (const query of queryClient.getQueryCache().findAll({
         predicate: (query) =>
@@ -89,7 +89,7 @@ export function action(props: IProps) {
         requestId: createId(),
       });
 
-      await consumerOnSuccess?.(data, variables, context);
+      await consumerOnSuccess?.(data, variables, onMutateResult, context);
     },
     ...reactQueryOptions,
   });

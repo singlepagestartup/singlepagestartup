@@ -694,9 +694,12 @@ export class Service {
     skipModelLookup?: boolean;
   }): Promise<IOpenRouterBilling> {
     const usage = this.normalizeUsage(props.data?.usage);
-    const models = props.skipModelLookup
-      ? []
-      : await this.getModels().catch(() => []);
+    let models;
+    if (props.skipModelLookup) {
+      models = [];
+    } else {
+      models = await this.getModels().catch(() => []);
+    }
     const pricingModelId =
       typeof props.data?.model === "string"
         ? props.data.model
@@ -828,13 +831,16 @@ export class Service {
     requestModelId: string;
     messages: IOpenRouterRequestMessage[];
   }): Promise<IOpenRouterGenerationError> {
-    const billing = props.data?.usage
-      ? await this.buildBilling({
-          data: props.data,
-          requestModelId: props.requestModelId,
-          messages: props.messages,
-        })
-      : null;
+    let billing;
+    if (props.data?.usage) {
+      billing = await this.buildBilling({
+        data: props.data,
+        requestModelId: props.requestModelId,
+        messages: props.messages,
+      });
+    } else {
+      billing = null;
+    }
 
     return {
       error: props.data?.error || props.data,

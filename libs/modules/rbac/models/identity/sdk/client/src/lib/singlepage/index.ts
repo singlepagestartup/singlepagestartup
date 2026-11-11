@@ -10,6 +10,7 @@ import {
 } from "@sps/rbac/models/identity/sdk/model";
 import { factory, queryClient } from "@sps/shared-frontend-client-api";
 import { globalActionsStore } from "@sps/shared-frontend-client-store";
+import { saturateHeaders } from "@sps/shared-frontend-client-utils";
 import {
   NextRequestOptions,
   prepareFormDataToSend,
@@ -87,11 +88,14 @@ export const api = {
             },
           );
 
+          const options = mutationFunctionProps.options || props?.options;
+
           const requestOptions: NextRequestOptions = {
             credentials: "include",
             method: "PATCH",
             body: formData,
-            ...(mutationFunctionProps.options || props?.options),
+            ...options,
+            headers: saturateHeaders(options?.headers),
             next: {
               ...(mutationFunctionProps.options?.next || props?.options?.next),
             },

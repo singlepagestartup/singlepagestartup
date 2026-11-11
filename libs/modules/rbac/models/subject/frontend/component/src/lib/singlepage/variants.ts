@@ -1,3 +1,4 @@
+import { Component as EmailPasswordForm } from "./authentication/email-and-password/form-default";
 import { Component as EcommerceModuleProductCategoryDefault } from "./ecommerce-module/product/category-default";
 import { Component as EcommerceModuleProductProfileDefault } from "./ecommerce-module/product/profile-default";
 import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
@@ -119,6 +120,7 @@ export const variants = {
   "me-ecommerce-module-order-list-checkout-default":
     MeEcommerceModuleOrderListCheckoutDefault,
 
+  "authentication-email-and-password-form-default": EmailPasswordForm,
   "authentication-email-and-password-form-ai-chat":
     AuthenticationEmailAndPasswordFormAiChat,
   "me-social-module-profile-id-sidebar-ai-chat":

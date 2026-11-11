@@ -121,11 +121,14 @@ export class Handler {
           ? "telegram"
           : undefined;
 
-      const socialModuleChat = data.social?.chat?.id
-        ? await this.service.socialModule.chat.findById({
-            id: data.social.chat.id,
-          })
-        : null;
+      let socialModuleChat;
+      if (data.social?.chat?.id) {
+        socialModuleChat = await this.service.socialModule.chat.findById({
+          id: data.social.chat.id,
+        });
+      } else {
+        socialModuleChat = null;
+      }
 
       const attachments = data.fileStorage?.files?.map(
         (fileStorageModuleFile: IFileStorageModuleFile) => {

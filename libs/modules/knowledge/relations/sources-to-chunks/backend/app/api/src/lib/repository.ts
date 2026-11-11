@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { injectable } from "inversify";
+import { injectFromBase, injectable } from "inversify";
 import {
   DatabaseRepository,
   trackRepositoryRead,
@@ -8,6 +8,7 @@ import { Table } from "@sps/knowledge/relations/sources-to-chunks/backend/reposi
 import { sql } from "drizzle-orm";
 
 @injectable()
+@injectFromBase()
 export class Repository extends DatabaseRepository<typeof Table> {
   async forChunkIds(ids: string[]) {
     if (!ids.length) return [];

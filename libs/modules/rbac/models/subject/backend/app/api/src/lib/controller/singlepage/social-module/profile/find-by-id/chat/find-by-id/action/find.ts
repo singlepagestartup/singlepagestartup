@@ -122,10 +122,12 @@ export class Handler {
           },
         );
 
+        const actions = await new ActionPresentations(this.service).enrich(
+          socialModuleActions,
+        );
+
         return c.json({
-          data: await new ActionPresentations(this.service).enrich(
-            socialModuleActions,
-          ),
+          data: actions,
         });
       }
 
@@ -172,10 +174,12 @@ export class Handler {
         },
       });
 
+      const actions = await new ActionPresentations(this.service).enrich(
+        socialModuleActions,
+      );
+
       return c.json({
-        data: await new ActionPresentations(this.service).enrich(
-          socialModuleActions,
-        ),
+        data: actions,
       });
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);

@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { QueryClient, QueryObserver } from "@tanstack/react-query";
+import type * as SharedFrontendClientApi from "@sps/shared-frontend-client-api";
 import { Service } from "./checkout";
 import {
   createConsistencyRuntime,
@@ -29,6 +30,7 @@ jest.mock("@sps/shared-utils", () => ({
   RBAC_SECRET_KEY: "test-secret",
 }));
 jest.mock("@sps/backend-utils", () => ({
+  ...jest.requireActual("@sps/backend-utils"),
   logger: {
     warn: jest.fn(),
     error: jest.fn(),
@@ -112,7 +114,7 @@ it("keeps nested mutation effects when Product checkout runs without its outer H
     verifyAuthorization: async () => {},
   });
   const revalidation = new RevalidationMiddleware();
-  revalidation.revalidateTag = jest.fn();
+  revalidation.revalidateTags = jest.fn();
   mockApp = new Hono();
   mockApp.use(runtime.middleware());
   mockApp.use(revalidation.init());
@@ -154,7 +156,9 @@ it("keeps nested mutation effects when Product checkout runs without its outer H
     );
     // Browsers have separate module runtimes, so each client owns its subscription registry.
     jest.isolateModules(() => {
-      const { subscription } = require("@sps/shared-frontend-client-api");
+      const { subscription } = jest.requireActual<
+        typeof SharedFrontendClientApi
+      >("@sps/shared-frontend-client-api");
       cleanups.push(subscription(route, client));
     });
   }

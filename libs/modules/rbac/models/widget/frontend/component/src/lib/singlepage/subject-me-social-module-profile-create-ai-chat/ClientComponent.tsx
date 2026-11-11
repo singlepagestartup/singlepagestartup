@@ -46,7 +46,7 @@ export function Component(props: IComponentPropsExtended) {
             onRetry={() => window.location.reload()}
           />
         }
-        unauthenticatedRedirectHref={`/${language}/ai-chat/sign-in`}
+        unauthenticatedRedirectHref={`/${language}/rbac/subject/authentication/email-and-password`}
       >
         {({ data, authenticated }) => {
           if (!data || !authenticated) return null;

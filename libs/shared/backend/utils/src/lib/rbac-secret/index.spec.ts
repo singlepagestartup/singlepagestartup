@@ -1,10 +1,11 @@
 /**
- * BDD Suite: RBAC secret comparison.
+ * BDD Suite: RBAC secret reading and comparison.
  *
  * Given: a deployment whose RBAC_SECRET_KEY may be set, empty or absent.
- * When: a caller-supplied secret is compared against it.
- * Then: only an exact match passes, and an unconfigured deployment refuses
- *       every caller instead of accepting an empty one.
+ * When: a caller-supplied secret is read from a request and compared against it.
+ * Then: only the X-RBAC-SECRET-KEY header is read, only an exact match passes,
+ *       and an unconfigured deployment refuses every caller instead of
+ *       accepting an empty one.
  */
 
 let mockConfiguredSecret: string | undefined;
@@ -143,21 +144,20 @@ describe("Given: a request carries the credential in a header or a cookie", () =
   });
 
   /**
-   * BDD Scenario: only the cookie carries the credential.
+   * BDD Scenario: only a cookie carries the credential.
    *
-   * Given: a request with an rbac.secret-key cookie and no header.
+   * Given: a request with an rbac.secret-key cookie holding the configured
+   *        secret and no header.
    * When: the credential is read from the request.
-   * Then: the cookie value is returned, so the documented MCP transport keeps
-   *       working.
+   * Then: nothing is returned, because the secret is accepted only from a
+   *       service header and never from a browser cookie.
    */
-  it("falls back to the rbac.secret-key cookie when no header is sent", async () => {
+  it("ignores an rbac.secret-key cookie when no header is sent", async () => {
     const response = await createSecretReadingApp().request("/", {
       headers: { Cookie: `rbac.secret-key=${CONFIGURED_SECRET}` },
     });
 
-    await expect(response.json()).resolves.toEqual({
-      secret: CONFIGURED_SECRET,
-    });
+    await expect(response.json()).resolves.toEqual({ secret: null });
   });
 
   /**
@@ -165,9 +165,9 @@ describe("Given: a request carries the credential in a header or a cookie", () =
    *
    * Given: a request whose header and cookie disagree.
    * When: the credential is read from the request.
-   * Then: the header wins, matching the order is-authorized already uses.
+   * Then: the header value is returned.
    */
-  it("prefers the header over the cookie when both are present", async () => {
+  it("reads the header when a cookie is present as well", async () => {
     const response = await createSecretReadingApp().request("/", {
       headers: {
         "X-RBAC-SECRET-KEY": CONFIGURED_SECRET,

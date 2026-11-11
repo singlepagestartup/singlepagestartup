@@ -23,7 +23,9 @@ import { Service as AvatarService } from "../../../../../../service/singlepage/s
 
 function createService() {
   const service = {
-    fileStorageModule: { file: { find: jest.fn() } },
+    fileStorageModule: {
+      file: { find: jest.fn(), findById: jest.fn(), readBytes: jest.fn() },
+    },
     socialModuleProfileAvatarUpdate: (props: any) =>
       new AvatarService(service).execute(props),
   };

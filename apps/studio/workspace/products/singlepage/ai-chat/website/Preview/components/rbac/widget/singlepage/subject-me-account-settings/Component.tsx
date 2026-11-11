@@ -1,19 +1,16 @@
 "use client";
-import { forwardRef as forwardRef } from "react";
-import * as SelectPrimitive from "@radix-ui/react-select";
-import { useState as useStatePresentation } from "react";
-import { twMerge as twMerge } from "tailwind-merge";
-import { forwardRef as forwardRefPresentation } from "react";
-import { type SVGProps as SVGProps } from "react";
-import { twMerge as twMergePresentation } from "tailwind-merge";
-import { Component as WebsiteBuilderModuleButton } from "../../../../website-builder/button/index";
 import {
-  forwardRef as forwardRefControl,
+  forwardRef,
+  useId,
+  useState,
   type ButtonHTMLAttributes as ButtonControlProps,
+  type SVGProps,
 } from "react";
+import * as SelectPrimitive from "@radix-ui/react-select";
+import { twMerge } from "tailwind-merge";
+import { Component as WebsiteBuilderModuleButton } from "../../../../website-builder/button/index";
 import IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
 import type { IAIChatServicePageContent } from "../../../../website-builder/widget/singlepage/content/ai-chat/content";
-import { useId, useState } from "react";
 import { Component as RbacModuleSubject } from "../../../subject/index";
 import { useStudioAccount } from "../../../subject/singlepage/account/Account";
 interface IModuleIconProps extends SVGProps<SVGSVGElement> {
@@ -108,13 +105,13 @@ type IconName =
   | "warning"
   | "x";
 function createIcon(name: IconName) {
-  const Component = forwardRefPresentation<SVGSVGElement, IModuleIconProps>(
+  const Component = forwardRef<SVGSVGElement, IModuleIconProps>(
     function ModuleGlyph({ className, size = 20, children, ...props }, ref) {
       return (
         <span className="contents">
           <Icon
             name={name}
-            className={twMergePresentation("h-5 w-5", className)}
+            className={twMerge("h-5 w-5", className)}
             svgProps={{ ...props, ref, width: size, height: size }}
           />
         </span>
@@ -260,7 +257,7 @@ export function SubjectMeAccountSettings({
               className="underline"
               href={
                 showTokens
-                  ? "/ai-chat/rbac/subjects/authentication/select-method"
+                  ? "/rbac/subject/authentication/email-and-password"
                   : "/?path=/story/modules-host-models-page-singlepage-rbac-module-subject-me-authentication-select-method--default"
               }
               target={showTokens ? undefined : "_top"}
@@ -374,8 +371,8 @@ export const Select = forwardRef<HTMLButtonElement, ISelectProps>(
     },
     ref,
   ) {
-    const [projection, setProjection] = useStatePresentation("singlepage");
-    const [editorDepth, setEditorDepth] = useStatePresentation(0);
+    const [projection, setProjection] = useState("singlepage");
+    const [editorDepth, setEditorDepth] = useState(0);
     return (
       <div
         ref={(node) => {
@@ -464,7 +461,7 @@ export const Select = forwardRef<HTMLButtonElement, ISelectProps>(
     );
   },
 );
-const Button = forwardRefControl<
+const Button = forwardRef<
   HTMLButtonElement,
   ButtonControlProps<HTMLButtonElement> & {
     variant?: "primary" | "secondary" | "plain" | "danger";

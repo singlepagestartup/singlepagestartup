@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  unwrapContentField,
   ContentCreateInputSchema,
   ContentDeleteApplyInputSchema,
   ContentDeletePreviewInputSchema,
@@ -115,61 +116,6 @@ function requireOperation(
   }
 }
 
-function unwrapSchema(
-  schema: z.ZodTypeAny | undefined,
-): z.ZodTypeAny | undefined {
-  let current = schema;
-
-  while (current) {
-    const definition = (current as any)._def;
-    const typeName = definition?.typeName ?? definition?.type;
-
-    if (
-      [
-        "ZodOptional",
-        "ZodNullable",
-        "ZodDefault",
-        "ZodCatch",
-        "ZodBranded",
-        "optional",
-        "nullable",
-        "default",
-        "catch",
-        "branded",
-      ].includes(typeName)
-    ) {
-      current = definition.innerType ?? definition.type;
-      continue;
-    }
-
-    if (typeName === "ZodEffects" || typeName === "effects") {
-      current = definition.schema;
-      continue;
-    }
-
-    if (typeName === "ZodPipeline" || typeName === "pipe") {
-      current = definition.out;
-      continue;
-    }
-
-    return current;
-  }
-
-  return current;
-}
-
-function isDateSchema(schema: z.ZodTypeAny | undefined) {
-  const unwrapped = unwrapSchema(schema);
-
-  const definition = (unwrapped as any)?._def;
-
-  return (
-    definition?.typeName === "ZodDate" ||
-    definition?.type === "date" ||
-    unwrapped instanceof z.ZodDate
-  );
-}
-
 function coerceJsonDateFields(
   descriptor: IContentEntityDescriptor,
   data: Record<string, unknown>,
@@ -178,7 +124,7 @@ function coerceJsonDateFields(
   const coerced = { ...data };
 
   Object.entries(shape).forEach(([field, schema]) => {
-    if (!isDateSchema(schema as z.ZodTypeAny | undefined)) {
+    if (unwrapContentField(schema)?.type !== "date") {
       return;
     }
 
@@ -280,9 +226,12 @@ export async function describeContentModel(
     throw new Error(parsed.error.message);
   }
 
-  return summarizeContentEntity(
-    await requireContentModelDescriptor(parsed.data, options?.registry),
+  const descriptor = await requireContentModelDescriptor(
+    parsed.data,
+    options?.registry,
   );
+
+  return summarizeContentEntity(descriptor);
 }
 
 export async function describeContentRelation(
@@ -295,9 +244,12 @@ export async function describeContentRelation(
     throw new Error(parsed.error.message);
   }
 
-  return summarizeContentEntity(
-    await requireContentRelationDescriptor(parsed.data, options?.registry),
+  const descriptor = await requireContentRelationDescriptor(
+    parsed.data,
+    options?.registry,
   );
+
+  return summarizeContentEntity(descriptor);
 }
 
 export async function findContentRecords(
@@ -676,10 +628,9 @@ async function findContextRecords(
   options?: IContentOperationOptions,
 ) {
   try {
-    return ((await findContentRecords(input, options)) ?? []) as Record<
-      string,
-      any
-    >[];
+    const records = await findContentRecords(input, options);
+
+    return (records ?? []) as Record<string, any>[];
   } catch {
     return [];
   }
@@ -690,7 +641,9 @@ async function getContextRecord(
   options?: IContentOperationOptions,
 ) {
   try {
-    return (await getContentRecordById(input, options)) as Record<string, any>;
+    const result = await getContentRecordById(input, options);
+
+    return result as Record<string, any>;
   } catch {
     return;
   }
@@ -749,20 +702,24 @@ async function buildDeleteRelationContext(
   }
 
   if (input.entity === "host.pages-to-widgets") {
-    const page =
-      typeof record.pageId === "string"
-        ? await getContextRecord(
-            { entity: "host.page", id: record.pageId },
-            options,
-          )
-        : undefined;
-    const hostWidget =
-      typeof record.widgetId === "string"
-        ? await getContextRecord(
-            { entity: "host.widget", id: record.widgetId },
-            options,
-          )
-        : undefined;
+    let page;
+    if (typeof record.pageId === "string") {
+      page = await getContextRecord(
+        { entity: "host.page", id: record.pageId },
+        options,
+      );
+    } else {
+      page = undefined;
+    }
+    let hostWidget;
+    if (typeof record.widgetId === "string") {
+      hostWidget = await getContextRecord(
+        { entity: "host.widget", id: record.widgetId },
+        options,
+      );
+    } else {
+      hostWidget = undefined;
+    }
 
     if (!page && !hostWidget) {
       return;
@@ -775,21 +732,27 @@ async function buildDeleteRelationContext(
   }
 
   if (input.entity === "host.widgets-to-external-widgets") {
-    const hostWidget =
-      typeof record.widgetId === "string"
-        ? await getContextRecord(
-            { entity: "host.widget", id: record.widgetId },
-            options,
-          )
-        : undefined;
-    const externalWidget =
+    let hostWidget;
+    if (typeof record.widgetId === "string") {
+      hostWidget = await getContextRecord(
+        { entity: "host.widget", id: record.widgetId },
+        options,
+      );
+    } else {
+      hostWidget = undefined;
+    }
+    let externalWidget;
+    if (
       record.externalModule === "blog" &&
       typeof record.externalWidgetId === "string"
-        ? await getContextRecord(
-            { entity: "blog.widget", id: record.externalWidgetId },
-            options,
-          )
-        : undefined;
+    ) {
+      externalWidget = await getContextRecord(
+        { entity: "blog.widget", id: record.externalWidgetId },
+        options,
+      );
+    } else {
+      externalWidget = undefined;
+    }
 
     if (!hostWidget && !externalWidget) {
       return;

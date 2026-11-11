@@ -1,9 +1,15 @@
 import { createHash } from "node:crypto";
+import {
+  authorization,
+  readRbacSecret,
+  rbacSecretMatches,
+} from "@sps/backend-utils";
 import { ConsistencyStore } from "@sps/providers-db";
 import { Provider as KVProvider } from "@sps/providers-kv";
 import { createMiddleware } from "hono/factory";
 import {
   CONSISTENCY_HEADER,
+  CONSISTENCY_CACHE_NAMESPACE,
   CONSISTENCY_CACHE_PREFIX,
   KV_PROVIDER,
   HTTP_CACHE_MAX_ENTRY_BYTES,
@@ -42,6 +48,14 @@ export interface IConsistencyRuntimeProps {
   verifyAuthorization: (authorization: string) => Promise<void>;
   invalidateTags?: (tags: string[]) => Promise<void>;
   publishLegacy?: (topics: string[]) => Promise<void>;
+}
+
+export function clearHttpResponseCache(
+  cache: Pick<KVProvider, "delByPrefix"> = new KVProvider({
+    type: KV_PROVIDER,
+  }),
+) {
+  return cache.delByPrefix({ prefix: CONSISTENCY_CACHE_NAMESPACE });
 }
 
 export function createConsistencyRuntime(props: IConsistencyRuntimeProps) {
@@ -276,8 +290,8 @@ export function createConsistencyRuntime(props: IConsistencyRuntimeProps) {
       };
     },
     tick,
-    async clearCache() {
-      await cache.delByPrefix({ prefix: CONSISTENCY_CACHE_PREFIX });
+    clearCache() {
+      return clearHttpResponseCache(cache);
     },
     /** Register after authorization. PostgreSQL, never Redis, proves freshness. */
     cache(options: { observe?: boolean; excludedRoutes?: IRouteRule[] } = {}) {
@@ -375,6 +389,9 @@ export function createConsistencyRuntime(props: IConsistencyRuntimeProps) {
         compactDependencies(context);
         if (
           c.res.status !== 200 ||
+          /(?:^|,)\s*no-store\s*(?:,|$)/i.test(
+            c.res.headers.get("Cache-Control") || "",
+          ) ||
           !context.complete ||
           !context.dependencies.size ||
           !c.res.headers.get("Content-Type")?.includes("application/json")
@@ -469,20 +486,12 @@ export function createConsistencyRuntime(props: IConsistencyRuntimeProps) {
             !context.dependencies.size
           )
             return;
-          const token =
-            c.req.header("Authorization") ||
-            c.req
-              .header("Cookie")
-              ?.match(/(?:^|;\s*)rbac.subject.jwt=([^;]+)/)?.[1] ||
-            "";
-          const secret =
-            c.req.header("X-RBAC-SECRET-KEY") ||
-            c.req
-              .header("Cookie")
-              ?.match(/(?:^|;\s*)rbac.secret-key=([^;]+)/)?.[1];
+          const token = authorization(c) || "";
+          const secret = readRbacSecret(c);
+          const operator = rbacSecretMatches(secret);
           try {
             const metadata = await store.register({
-              auth: consistencyAuth(secret ? `secret:${secret}` : token),
+              auth: consistencyAuth(operator ? `secret:${secret}` : token),
               identity: c.req.url,
               dependencies: Object.fromEntries(context.dependencies),
               collections: Object.fromEntries(context.collections || []),
@@ -495,13 +504,17 @@ export function createConsistencyRuntime(props: IConsistencyRuntimeProps) {
                   : []),
               ],
             });
-            if (secret) metadata.audience = "service";
-            else metadata.session = consistencyAuth(token);
-            if (options.metadata !== false || secret)
+            if (operator) {
+              metadata.audience = "service";
+            } else {
+              metadata.session = consistencyAuth(token);
+            }
+            if (options.metadata !== false || operator) {
               c.header(
                 CONSISTENCY_HEADER,
                 Buffer.from(JSON.stringify(metadata)).toString("base64url"),
               );
+            }
           } catch {
             context.complete = false;
             c.header("Cache-Control", "no-store");
@@ -522,9 +535,12 @@ export function createConsistencyRuntime(props: IConsistencyRuntimeProps) {
     },
     async check(refs: string[], authorization: string) {
       await props.verifyAuthorization(authorization);
+      const status = await store.status();
+      const renewal = await store.renew(refs, consistencyAuth(authorization));
+
       return {
-        ...(await store.status()),
-        ...(await store.renew(refs, consistencyAuth(authorization))),
+        ...status,
+        ...renewal,
       };
     },
   };

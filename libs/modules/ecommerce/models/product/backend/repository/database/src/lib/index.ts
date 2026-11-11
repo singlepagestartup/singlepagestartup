@@ -7,16 +7,16 @@ import { z } from "zod";
 export const insertSchema = createInsertSchema(Table, {
   metadata: entityMetadataSchema.optional(),
 }).extend({
-  title: z.record(z.any()).default({}),
-  shortDescription: z.record(z.any()).default({}),
-  description: z.record(z.any()).default({}),
+  title: z.record(z.string(), z.any()).default({}),
+  shortDescription: z.record(z.string(), z.any()).default({}),
+  description: z.record(z.string(), z.any()).default({}),
 });
 export const selectSchema = createSelectSchema(Table, {
   metadata: entityMetadataSchema,
 }).extend({
-  title: z.record(z.any()).default({}),
-  shortDescription: z.record(z.any()).default({}),
-  description: z.record(z.any()).default({}),
+  title: z.record(z.string(), z.any()).default({}),
+  shortDescription: z.record(z.string(), z.any()).default({}),
+  description: z.record(z.string(), z.any()).default({}),
 });
 export type ISelectSchema = typeof Table.$inferSelect;
 export type IInsertSchema = typeof Table.$inferInsert;

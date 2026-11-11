@@ -10,7 +10,7 @@ import {
   route,
   runIdHeader,
 } from "@sps/agent/models/agent/sdk/model";
-import cronParser from "cron-parser";
+import { CronExpressionParser } from "cron-parser";
 import { logger } from "@sps/backend-utils";
 import { type IBroadcastModule } from "../../../di";
 
@@ -70,7 +70,7 @@ export class AgentRun {
   broadcastModule: IBroadcastModule;
 
   get queue() {
-    return this.broadcastModule.message.queue;
+    return this.broadcastModule.channel.queue;
   }
 
   constructor(props: IAgentRunProps) {
@@ -101,7 +101,7 @@ export class AgentRun {
     const channel = props?.channel || (await this.findChannel());
 
     const messages =
-      await this.broadcastModule.message.transientChannelMessages(channel.id);
+      await this.broadcastModule.channel.transientChannelMessages(channel.id);
 
     const markers: IAgentRunMarker[] = [];
 
@@ -160,10 +160,9 @@ export class AgentRun {
     let nextExecutionTime: Date;
 
     try {
-      nextExecutionTime = cronParser
-        .parseExpression(agent.interval, {
-          currentDate: marker?.datetime || now,
-        })
+      nextExecutionTime = CronExpressionParser.parse(agent.interval, {
+        currentDate: marker?.datetime || now,
+      })
         .next()
         .toDate();
     } catch (error) {
@@ -246,7 +245,9 @@ export class AgentRun {
     runId: string;
   }): Promise<boolean> {
     const owner = await this.owner(props.slug, props.runId);
-    return !(await this.queue.owns(owner));
+    const ownsDelivery = await this.queue.owns(owner);
+
+    return !ownsDelivery;
   }
 
   async dispatch(props: IAgentRunClaim): Promise<IAgentRunDispatch> {

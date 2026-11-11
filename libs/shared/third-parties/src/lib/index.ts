@@ -1,4 +1,5 @@
 export * from "./aws";
+export { TelegramBot, telegramDeliveryRateLimit } from "./telegram";
 export * from "./yandex";
 export { Service as OpenAI, type TranscribeAudioResult } from "./open-ai";
 export { Service as ZAI } from "./z-ai";

@@ -1,4 +1,5 @@
-import { Bot, GrammyError } from "grammy";
+import { TelegramBot } from "@sps/shared-third-parties/telegram";
+import { GrammyError } from "grammy";
 import { logger } from "@sps/backend-utils";
 import {
   BUG_SERVICE_PROJECT,
@@ -54,7 +55,7 @@ async function send(
   requestId: string,
 ) {
   try {
-    const bot = new Bot(token, { client: { timeoutSeconds } });
+    const bot = new TelegramBot(token, { client: { timeoutSeconds } });
     const text = `${BUG_SERVICE_PROJECT}\n${signature}\nrequestId: ${requestId}`;
     try {
       await bot.api.sendMessage(chatId, text);

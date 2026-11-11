@@ -1,5 +1,5 @@
 ---
-- name: Delete Postgres secrets from GitHub
+- name: Delete Postgres settings from GitHub
   hosts: all
   become: yes
   vars:
@@ -27,30 +27,28 @@
         dest: "/home/code/github-node-api/{{ item }}"
       loop:
         - delete_secret.js
+        - delete_variable.js
         - package.json
+        - package-lock.json
 
     - name: Install dependencies
       shell:
-        cmd: "npm install"
+        cmd: "npm ci"
         chdir: "/home/code/github-node-api"
 
-    - name: Delete secrets from GitHub
+    - name: Delete variables from GitHub
       no_log: true
       ansible.builtin.command:
-        argv: [node, ./delete_secret.js]
+        argv: [node, ./delete_variable.js]
         stdin: >-
           {{ {
             'GITHUB_TOKEN': github_token,
             'GITHUB_REPOSITORY': github_repository,
-            'SECRET_NAME': item.secret_name,
-            'SECRET_SCOPE': item.secret_scope
+            'VARIABLE_NAME': item.variable_name
           } | to_json }}
         chdir: "/home/code/github-node-api"
       loop:
-        - {
-            secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'DATABASE_HOST' }}",
-            secret_scope: actions,
-          }
+        - { variable_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'DATABASE_HOST' }}" }
 
     - name: Delete artifacts
       file:
