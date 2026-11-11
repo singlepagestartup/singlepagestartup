@@ -10,7 +10,7 @@ import { Component as ChildComponent } from "./Component";
 export function Component(props: IComponentProps) {
   return (
     <ParentComponent
-      Component={ChildComponent as any}
+      Component={ChildComponent}
       Provider={Provider}
       clientApi={clientApi}
       serverApi={serverApi}

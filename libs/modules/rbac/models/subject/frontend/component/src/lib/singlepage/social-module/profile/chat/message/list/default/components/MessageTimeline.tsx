@@ -4,7 +4,7 @@ import { ActionProfileLoader } from "./ActionProfileLoader";
 import { AiExecutionActionRow } from "./AiExecutionActionRow";
 import { areActionRowPropsEqual } from "./action-row-memo";
 import { MessageProfileLoader } from "./MessageProfileLoader";
-import { Component as SocialModuleActionChatActionRow } from "@sps/social/models/action/frontend/component/src/lib/singlepage/chat-action-row";
+import { Component as SocialModuleAction } from "@sps/social/models/action/frontend/component";
 import { Component as SocialModuleProfile } from "@sps/social/models/profile/frontend/component";
 import type { ISocialModuleMessagesAndActionsQuery } from "../interface";
 import type { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
@@ -93,9 +93,10 @@ const MemoizedActionRow = memo(function MemoizedActionRow(
         }
 
         return (
-          <SocialModuleActionChatActionRow
+          <SocialModuleAction
             isServer={false}
             variant="chat-action-row"
+            dataSource="props"
             data={props.action}
             language={props.language}
             profile={profile}

@@ -51,3 +51,36 @@ export const RBAC_OAUTH_EXCHANGE_LIFETIME_IN_SECONDS =
  */
 export const RBAC_OAUTH_EXCHANGE_CODE_IN_QUERY =
   process.env["RBAC_OAUTH_EXCHANGE_CODE_IN_QUERY"] === "true";
+
+export const RBAC_RATE_LIMIT_ENABLED =
+  process.env["RBAC_RATE_LIMIT_ENABLED"] !== "false";
+export const RBAC_RATE_LIMIT_WINDOW_IN_SECONDS =
+  Number(process.env["RBAC_RATE_LIMIT_WINDOW_IN_SECONDS"]) || 60;
+/** No forwarding headers are trusted on a direct API installation. */
+export const RBAC_RATE_LIMIT_TRUSTED_PROXY_CIDRS = (
+  process.env["RBAC_RATE_LIMIT_TRUSTED_PROXY_CIDRS"] || ""
+)
+  .split(",")
+  .map((value) => value.trim())
+  .filter(Boolean);
+export const RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ADDRESS =
+  Number(process.env["RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ADDRESS"]) || 20;
+export const RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ACCOUNT =
+  Number(process.env["RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ACCOUNT"]) || 10;
+export const RBAC_RATE_LIMIT_PASSWORD_FAILURES_PER_HOUR =
+  Number(process.env["RBAC_RATE_LIMIT_PASSWORD_FAILURES_PER_HOUR"]) || 50;
+export const RBAC_RATE_LIMIT_SESSION_ATTEMPTS_PER_ADDRESS =
+  Number(process.env["RBAC_RATE_LIMIT_SESSION_ATTEMPTS_PER_ADDRESS"]) || 60;
+export const RBAC_RATE_LIMIT_OPERATOR_SECRET_FAILURES_PER_ADDRESS =
+  Number(process.env["RBAC_RATE_LIMIT_OPERATOR_SECRET_FAILURES_PER_ADDRESS"]) ||
+  10;
+
+/** Short bursts and sustained traffic have independent fixed-window budgets. */
+export const API_RATE_LIMIT_BURST_PER_ADDRESS =
+  Number(process.env["API_RATE_LIMIT_BURST_PER_ADDRESS"]) || 100_000;
+export const API_RATE_LIMIT_MINUTE_PER_ADDRESS =
+  Number(process.env["API_RATE_LIMIT_MINUTE_PER_ADDRESS"]) || 600_000;
+export const API_RATE_LIMIT_BURST_PER_SUBJECT =
+  Number(process.env["API_RATE_LIMIT_BURST_PER_SUBJECT"]) || 20_000;
+export const API_RATE_LIMIT_MINUTE_PER_SUBJECT =
+  Number(process.env["API_RATE_LIMIT_MINUTE_PER_SUBJECT"]) || 120_000;

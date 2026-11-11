@@ -24,7 +24,7 @@ export function Component(props: IComponentPropsExtended) {
       <Subject
         isServer={false}
         variant="authentication-me-default"
-        unauthenticatedRedirectHref={`/${language}/ai-chat/sign-in`}
+        unauthenticatedRedirectHref={`/${language}/rbac/subject/authentication/email-and-password`}
       >
         {({ data, authenticated }) =>
           data && authenticated ? (
@@ -71,7 +71,10 @@ function Settings(props: ISettingsProps) {
           disabled={logout.isPending}
           onClick={() =>
             logout.mutate({
-              redirectTo: getLocalizedHref(pathname, "/ai-chat/sign-in"),
+              redirectTo: getLocalizedHref(
+                pathname,
+                "/rbac/subject/authentication/email-and-password",
+              ),
             })
           }
           className="flex min-h-11 items-center gap-2 rounded-xl border border-border bg-card px-5 text-sm font-semibold"

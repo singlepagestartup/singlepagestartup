@@ -10,6 +10,60 @@
  * Entries are `METHOD path`, exactly as the permission row stores them.
  */
 export const rolelessPermissions: string[] = [
+  // Public Website Builder and File Storage reads configured in the seed.
+  "GET /api/file-storage/files",
+  "GET /api/file-storage/files/:uuid",
+  "GET /api/file-storage/files/:uuid/content",
+  "GET /api/file-storage/widgets",
+  "GET /api/file-storage/widgets-to-files",
+  "GET /api/file-storage/widgets-to-files/:uuid",
+  "GET /api/file-storage/widgets/:uuid",
+  "GET /api/website-builder/buttons",
+  "GET /api/website-builder/buttons-arrays",
+  "GET /api/website-builder/buttons-arrays-to-buttons",
+  "GET /api/website-builder/buttons-arrays-to-buttons/:uuid",
+  "GET /api/website-builder/buttons-arrays/:uuid",
+  "GET /api/website-builder/buttons-to-file-storage-module-files",
+  "GET /api/website-builder/buttons-to-file-storage-module-files/:uuid",
+  "GET /api/website-builder/buttons/:uuid",
+  "GET /api/website-builder/features",
+  "GET /api/website-builder/features-to-buttons-arrays",
+  "GET /api/website-builder/features-to-buttons-arrays/:uuid",
+  "GET /api/website-builder/features-to-file-storage-module-files",
+  "GET /api/website-builder/features-to-file-storage-module-files/:uuid",
+  "GET /api/website-builder/features/:uuid",
+  "GET /api/website-builder/logotypes",
+  "GET /api/website-builder/logotypes-to-file-storage-module-files",
+  "GET /api/website-builder/logotypes-to-file-storage-module-files/:uuid",
+  "GET /api/website-builder/logotypes/:uuid",
+  "GET /api/website-builder/sliders",
+  "GET /api/website-builder/sliders-to-slides",
+  "GET /api/website-builder/sliders-to-slides/:uuid",
+  "GET /api/website-builder/sliders/:uuid",
+  "GET /api/website-builder/slides",
+  "GET /api/website-builder/slides-to-buttons-arrays",
+  "GET /api/website-builder/slides-to-buttons-arrays/:uuid",
+  "GET /api/website-builder/slides-to-file-storage-module-files",
+  "GET /api/website-builder/slides-to-file-storage-module-files/:uuid",
+  "GET /api/website-builder/slides/:uuid",
+  "GET /api/website-builder/widgets",
+  "GET /api/website-builder/widgets-to-buttons-arrays",
+  "GET /api/website-builder/widgets-to-buttons-arrays/:uuid",
+  "GET /api/website-builder/widgets-to-features",
+  "GET /api/website-builder/widgets-to-features/:uuid",
+  "GET /api/website-builder/widgets-to-file-storage-module-files",
+  "GET /api/website-builder/widgets-to-file-storage-module-files/:uuid",
+  "GET /api/website-builder/widgets-to-logotypes",
+  "GET /api/website-builder/widgets-to-logotypes/:uuid",
+  "GET /api/website-builder/widgets-to-sliders",
+  "GET /api/website-builder/widgets-to-sliders/:uuid",
+  "GET /api/website-builder/widgets/:uuid",
+  "HEAD /api/file-storage/files/:uuid/content",
+
+  // Password recovery is enabled by the project Permissions.
+  "POST /api/rbac/subjects/authentication/email-and-password/forgot-password",
+  "POST /api/rbac/subjects/authentication/email-and-password/reset-password",
+
   // Widget composition, public author DTOs and editorial article credits.
   "GET /api/blog/categories-to-website-builder-module-widgets",
   "GET /api/blog/widgets-to-categories",
@@ -28,11 +82,9 @@ export const rolelessPermissions: string[] = [
   // Historical seed entries. The sensitive route policy blocks raw reads even with an empty role list.
   "GET /api/social/chats",
   "GET /api/social/profiles-to-file-storage-module-files",
-  // Content the host renders for anonymous visitors: the blog, the ecommerce
-  // catalog, CRM forms, currencies, social profiles with their links, widgets,
-  // and the host, website-builder and file-storage reads the is-authorized
-  // allow-list serves. Its count routes stay without a role: they count
-  // published content and page widgets (issue #348).
+  // Anonymous pages use these reads to render the blog, catalog, forms,
+  // currencies and widgets. Their public count permissions are listed here
+  // alongside the corresponding list and detail reads.
   "GET /api/agent/widgets/count",
   "GET /api/analytic/widgets/count",
   "GET /api/billing/currencies",

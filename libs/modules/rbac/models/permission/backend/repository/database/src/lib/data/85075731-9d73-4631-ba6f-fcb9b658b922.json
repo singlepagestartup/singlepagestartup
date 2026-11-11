@@ -1,0 +1,9 @@
+{
+  "id": "85075731-9d73-4631-ba6f-fcb9b658b922",
+  "createdAt": "2026-11-10T20:43:00.645Z",
+  "updatedAt": "2026-11-10T20:43:00.645Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/website-builder/features-to-file-storage-module-files"
+}

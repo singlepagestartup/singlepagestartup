@@ -90,6 +90,7 @@ describe("Given: an order read through the subject's cart route", () => {
       <Component
         isServer={false}
         variant="cart-default"
+        dataSource="props"
         data={{ id: "order-1", type: "cart", status: "new" } as any}
         language="en"
       >
@@ -101,5 +102,22 @@ describe("Given: an order read through the subject's cart route", () => {
     expect(screen.getByText("Quantity: 2")).toBeTruthy();
     expect(screen.getByTestId("cart-actions")).toBeTruthy();
     expect(findByIdMock).not.toHaveBeenCalled();
+  });
+
+  it("reads the order by ID when used without a parent data source", () => {
+    const order = { id: "order-1", type: "cart", status: "new" };
+    findByIdMock.mockReturnValue({ data: order, isLoading: false });
+
+    render(
+      <Component
+        isServer={false}
+        variant="cart-default"
+        data={order as any}
+        language="en"
+      />,
+    );
+
+    expect(findByIdMock).toHaveBeenCalledWith({ id: order.id });
+    expect(screen.getByText("Order #order-1")).toBeTruthy();
   });
 });

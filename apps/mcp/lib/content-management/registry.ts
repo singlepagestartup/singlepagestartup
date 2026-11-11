@@ -1,6 +1,7 @@
 import { existsSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { z } from "zod";
+import { unwrapContentField } from "./schemas";
 import {
   IContentEntityDescriptor,
   IContentEntityKey,
@@ -33,8 +34,8 @@ interface IContentEntityRef {
 }
 
 interface ISdkModelModule {
-  insertSchema?: z.AnyZodObject;
-  selectSchema?: z.AnyZodObject;
+  insertSchema?: z.ZodObject;
+  selectSchema?: z.ZodObject;
   route?: string;
   variants?: readonly string[];
   externalModules?: readonly string[];
@@ -170,86 +171,33 @@ export function listContentEntityRefs() {
   return contentEntityRefs;
 }
 
-function getZodShape(schema: z.AnyZodObject | undefined) {
-  if (!schema) {
-    return {};
-  }
-
-  const zodObject = schema as any;
-  const shape = zodObject.shape ?? zodObject._def?.shape;
-
-  if (typeof shape === "function") {
-    return shape() as Record<string, z.ZodTypeAny>;
-  }
-
-  return (shape ?? {}) as Record<string, z.ZodTypeAny>;
-}
-
-function unwrapSchema(
-  schema: z.ZodTypeAny | undefined,
-): z.ZodTypeAny | undefined {
-  let current = schema;
-
-  while (current) {
-    const typeName = (current as any)._def?.typeName;
-
-    if (
-      typeName === z.ZodFirstPartyTypeKind.ZodOptional ||
-      typeName === z.ZodFirstPartyTypeKind.ZodNullable ||
-      typeName === z.ZodFirstPartyTypeKind.ZodDefault
-    ) {
-      current = (current as any)._def.innerType;
-      continue;
-    }
-
-    if (typeName === z.ZodFirstPartyTypeKind.ZodEffects) {
-      current = (current as any)._def.schema;
-      continue;
-    }
-
-    return current;
-  }
-
-  return current;
-}
-
-function inferFieldType(schema: z.ZodTypeAny | undefined) {
-  const unwrapped = unwrapSchema(schema);
-  const typeName = (unwrapped as any)?._def?.typeName;
-
-  switch (typeName) {
-    case z.ZodFirstPartyTypeKind.ZodString:
-      return "string";
-    case z.ZodFirstPartyTypeKind.ZodNumber:
-      return "number";
-    case z.ZodFirstPartyTypeKind.ZodBoolean:
-      return "boolean";
-    case z.ZodFirstPartyTypeKind.ZodDate:
-      return "date";
-    case z.ZodFirstPartyTypeKind.ZodArray:
-      return "array";
-    case z.ZodFirstPartyTypeKind.ZodRecord:
-      return "record";
-    case z.ZodFirstPartyTypeKind.ZodObject:
-      return "object";
-    case z.ZodFirstPartyTypeKind.ZodEnum:
-      return "enum";
-    case z.ZodFirstPartyTypeKind.ZodLiteral:
-      return "literal";
+function inferFieldType(schema: z.core.$ZodType | undefined) {
+  const field = unwrapContentField(schema);
+  switch (field?.type) {
+    case "string":
+    case "number":
+    case "boolean":
+    case "date":
+    case "array":
+    case "record":
+    case "object":
+    case "enum":
+    case "literal":
+      return field.type;
     default:
       return "unknown";
   }
 }
 
-function isRequired(schema: z.ZodTypeAny | undefined) {
-  if (!schema) {
+function isRequired(schema: z.core.$ZodType | undefined) {
+  if (!(schema instanceof z.ZodType)) {
     return false;
   }
 
   return !schema.safeParse(undefined).success;
 }
 
-function isLocalizedField(name: string, schema: z.ZodTypeAny | undefined) {
+function isLocalizedField(name: string, schema: z.core.$ZodType | undefined) {
   const type = inferFieldType(schema);
 
   return (
@@ -259,11 +207,11 @@ function isLocalizedField(name: string, schema: z.ZodTypeAny | undefined) {
 }
 
 function buildFields(props: {
-  insertSchema: z.AnyZodObject;
-  selectSchema: z.AnyZodObject;
+  insertSchema: z.ZodObject;
+  selectSchema: z.ZodObject;
 }) {
-  const insertShape = getZodShape(props.insertSchema);
-  const selectShape = getZodShape(props.selectSchema);
+  const insertShape = props.insertSchema.shape;
+  const selectShape = props.selectSchema.shape;
   const fieldNames = Array.from(
     new Set([...Object.keys(selectShape), ...Object.keys(insertShape)]),
   ).sort((a, b) => a.localeCompare(b));
@@ -460,18 +408,16 @@ export function summarizeContentModules(
 ): IContentModuleSummary[] {
   const moduleMap = new Map<string, IContentModuleSummary>();
   const refs = registry
-    ? registry.map(
-        (descriptor): IContentEntityRef => ({
-          key: descriptor.key,
-          kind: descriptor.kind,
-          module: descriptor.module,
-          name: descriptor.name,
-          label: toLabel(descriptor.name),
-          modelImportPath: "",
-          serverImportPath: "",
-          operations: descriptor.operations,
-        }),
-      )
+    ? registry.map((descriptor): IContentEntityRef => ({
+        key: descriptor.key,
+        kind: descriptor.kind,
+        module: descriptor.module,
+        name: descriptor.name,
+        label: toLabel(descriptor.name),
+        modelImportPath: "",
+        serverImportPath: "",
+        operations: descriptor.operations,
+      }))
     : listContentEntityRefs();
 
   for (const ref of refs) {

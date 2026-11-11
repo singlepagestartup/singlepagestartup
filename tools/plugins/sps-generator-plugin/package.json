@@ -4,8 +4,8 @@
   "main": "./src/index.js",
   "typings": "./src/index.d.ts",
   "dependencies": {
-    "@nx/devkit": "18.0.4",
-    "tslib": "^2.3.0"
+    "@nx/devkit": "24.0.6",
+    "tslib": "^2.9.1"
   },
   "generators": "./generators.json"
 }

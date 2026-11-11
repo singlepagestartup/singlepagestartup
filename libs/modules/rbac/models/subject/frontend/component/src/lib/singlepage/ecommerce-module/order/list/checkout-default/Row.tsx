@@ -7,7 +7,7 @@ import { INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG } from "@sps/shared-utils";
 import { Icon, Select } from "@sps/ui-adapter";
 import { Component as EcommerceModuleProduct } from "@sps/ecommerce/models/product/frontend/component";
 import { Component as EcommerceModuleOrder } from "@sps/ecommerce/models/order/frontend/component";
-import { Component as DeleteDefault } from "../../delete-default";
+import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import type { IRowProps, IQuantityProps, ICurrencyProps } from "./interface";
 
 function Currency(props: ICurrencyProps) {
@@ -220,7 +220,7 @@ export const Component = memo(function Row(props: IRowProps) {
           ecommerceModuleOrder={props.ecommerceModuleOrder}
           language={props.language}
         />
-        <DeleteDefault
+        <Subject
           isServer={false}
           variant="ecommerce-module-order-delete-default"
           data={props.subject}

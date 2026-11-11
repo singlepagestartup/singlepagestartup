@@ -21,6 +21,7 @@ import { ConsistencyStore } from "@sps/providers-db";
 import { resourceIdentity, scopeDependencyKey } from "@sps/shared-backend-api";
 const consistency = new ConsistencyStore();
 import { createKnowledgeServices } from "./composition";
+import { Service as StartupSourceService } from "@sps/knowledge/models/source/backend/app/api/src/lib/service/startup";
 import { Service as FileStorageFileService } from "@sps/file-storage/models/file/backend/app/api/src/lib/service";
 import {
   getDrizzle,
@@ -83,27 +84,20 @@ afterEach(() => {
 it("serves generic Source CRUD through effective services and refreshes a warm HTTP cache before a second client refetch", async () => {
   const { Hono } = await import("hono");
   const { createServer } = await import("node:http");
-  const { createConsistencyRuntime, ExceptionFilter } = await import(
-    "@sps/shared-backend-api"
-  );
-  const { App: SourceApp } = await import(
-    "@sps/knowledge/models/source/backend/app/api/src/lib/app"
-  );
-  const { Controller: SourceController } = await import(
-    "@sps/knowledge/models/source/backend/app/api/src/lib/controller"
-  );
-  const { Configuration: SourceConfiguration } = await import(
-    "@sps/knowledge/models/source/backend/app/api/src/lib/configuration"
-  );
-  const { App: RelationApp } = await import(
-    "@sps/knowledge/relations/sources-to-file-storage-module-files/backend/app/api/src/lib/app"
-  );
-  const { Controller: RelationController } = await import(
-    "@sps/knowledge/relations/sources-to-file-storage-module-files/backend/app/api/src/lib/controller"
-  );
-  const { Configuration: RelationConfiguration } = await import(
-    "@sps/knowledge/relations/sources-to-file-storage-module-files/backend/app/api/src/lib/configuration"
-  );
+  const { createConsistencyRuntime, ExceptionFilter } =
+    await import("@sps/shared-backend-api");
+  const { App: SourceApp } =
+    await import("@sps/knowledge/models/source/backend/app/api/src/lib/app");
+  const { Controller: SourceController } =
+    await import("@sps/knowledge/models/source/backend/app/api/src/lib/controller");
+  const { Configuration: SourceConfiguration } =
+    await import("@sps/knowledge/models/source/backend/app/api/src/lib/configuration");
+  const { App: RelationApp } =
+    await import("@sps/knowledge/relations/sources-to-file-storage-module-files/backend/app/api/src/lib/app");
+  const { Controller: RelationController } =
+    await import("@sps/knowledge/relations/sources-to-file-storage-module-files/backend/app/api/src/lib/controller");
+  const { Configuration: RelationConfiguration } =
+    await import("@sps/knowledge/relations/sources-to-file-storage-module-files/backend/app/api/src/lib/configuration");
   let baseUrl = "";
   let sourceId = "";
   const runtime = createConsistencyRuntime({
@@ -434,6 +428,30 @@ describe("effective service boundaries and SVG policy", () => {
 });
 
 describe("Knowledge Source transactions", () => {
+  it("uses the startup create override inside findOrCreate", async () => {
+    const inheritedCreate = StartupSourceService.prototype.create;
+    jest
+      .spyOn(StartupSourceService.prototype, "create")
+      .mockImplementation(function (this: StartupSourceService, props) {
+        return inheritedCreate.call(this, {
+          data: { ...props.data, description: "Added by the project service" },
+        });
+      });
+
+    const result = await repository.findOrCreate({
+      data: {
+        slug: `knowledge-test-${randomUUID()}`,
+        title: "Project override",
+        content: "Test source",
+      },
+    });
+    sourceIds.push(result.entity.id);
+
+    expect(result.statusCode).toBe(201);
+    const stored = await repository.findById({ id: result.entity.id });
+    expect(stored?.description).toBe("Added by the project service");
+  });
+
   it("reuses one Source across concurrent preserved upserts of the same document slug", async () => {
     const slug = `knowledge-concurrent-document-${randomUUID()}`;
     const saved = await Promise.all(

@@ -346,12 +346,13 @@ export async function findMissingSpecimens(
   if (!documented.length) return [];
 
   const layouts = await Promise.all(
-    (["singlepage", "startup"] as const).map(async (layer) =>
-      parseDesignLayout(
-        await read(path.join(workspaceRoot, "design", layer, "layout.yaml")),
-        layer,
-      ),
-    ),
+    (["singlepage", "startup"] as const).map(async (layer) => {
+      const content = await read(
+        path.join(workspaceRoot, "design", layer, "layout.yaml"),
+      );
+
+      return parseDesignLayout(content, layer);
+    }),
   );
   const layout = resolveDesignLayout(layouts[0], layouts[1]);
 
@@ -391,12 +392,13 @@ export async function findSpecimenDeviations(
   workspaceRoot: string,
 ): Promise<IBrandbookFinding[]> {
   const sources = await Promise.all(
-    (["singlepage", "startup"] as const).map(async (layer) =>
-      parseDesignLayout(
-        await read(path.join(workspaceRoot, "design", layer, "layout.yaml")),
-        layer,
-      ),
-    ),
+    (["singlepage", "startup"] as const).map(async (layer) => {
+      const content = await read(
+        path.join(workspaceRoot, "design", layer, "layout.yaml"),
+      );
+
+      return parseDesignLayout(content, layer);
+    }),
   );
   const framework = sources[0];
   const layout = resolveDesignLayout(framework, sources[1]);

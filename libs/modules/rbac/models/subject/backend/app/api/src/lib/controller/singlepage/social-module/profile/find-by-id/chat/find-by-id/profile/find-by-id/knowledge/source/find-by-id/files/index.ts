@@ -21,8 +21,11 @@ export class Handler {
         throw new Error("Validation error. Knowledge Source is required.");
       const knowledge = new KnowledgeService();
       const source = knowledge.source;
-      if (c.req.method === "GET")
-        return c.json({ data: await source.sourceFiles(sourceId) });
+      if (c.req.method === "GET") {
+        const files = await source.sourceFiles(sourceId);
+
+        return c.json({ data: files });
+      }
       const body = await c.req.formData();
       const removeFileId = body.get("removeFileId");
       const replaceFileId = body.get("replaceFileId");
@@ -134,9 +137,11 @@ export class Handler {
         }
       }
       const savedSource = await source.findSourceById(sourceId);
+      const files = await source.sourceFiles(sourceId);
+
       return c.json({
         data: {
-          files: await source.sourceFiles(sourceId),
+          files,
           source: savedSource,
           processingError,
           analysisPending:

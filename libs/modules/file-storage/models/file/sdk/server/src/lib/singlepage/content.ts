@@ -22,5 +22,7 @@ export async function action(props: IProps): Promise<IResult> {
     requestOptions,
   );
   if (!res.ok) await responsePipe({ res });
-  return (await res.blob()) as unknown as IResult;
+  const blob = await res.blob();
+
+  return blob as unknown as IResult;
 }

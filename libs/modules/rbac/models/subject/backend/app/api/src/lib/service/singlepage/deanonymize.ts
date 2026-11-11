@@ -58,26 +58,29 @@ export class Service {
       },
     });
 
-    const identities = subjectsToIdentities?.length
-      ? await this.identity.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "id",
-                  method: "inArray",
-                  value: subjectsToIdentities.map((item) => item.identityId),
-                },
-                {
-                  column: "email",
-                  method: "eq",
-                  value: props.email,
-                },
-              ],
-            },
+    let identities;
+    if (subjectsToIdentities?.length) {
+      identities = await this.identity.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "id",
+                method: "inArray",
+                value: subjectsToIdentities.map((item) => item.identityId),
+              },
+              {
+                column: "email",
+                method: "eq",
+                value: props.email,
+              },
+            ],
           },
-        })
-      : [];
+        },
+      });
+    } else {
+      identities = [];
+    }
 
     if (!identities?.length) {
       const identity = await identityApi.create({

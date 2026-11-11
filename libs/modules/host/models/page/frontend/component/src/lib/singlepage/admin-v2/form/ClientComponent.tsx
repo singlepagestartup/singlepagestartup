@@ -2,6 +2,7 @@
 
 import { IComponentPropsExtended, variant, IModel } from "./interface";
 import { api } from "@sps/host/models/page/sdk/client";
+import { randomWordsGenerator } from "@sps/shared-utils";
 import { useForm } from "react-hook-form";
 import { FormField } from "@sps/ui-adapter";
 import { z } from "zod";
@@ -36,6 +37,7 @@ export function Component(props: IComponentPropsExtended) {
       description: props.data?.description || "",
       title: props.data?.title || "",
       url: props.data?.url || "/",
+      slug: props.data?.slug || randomWordsGenerator({ type: "slug" }),
       variant: props.data?.variant || "default",
       className: props.data?.className || "",
     },
@@ -186,6 +188,15 @@ export function Component(props: IComponentPropsExtended) {
               label="Url"
               form={form}
               placeholder="Type url"
+            />
+
+            <FormField
+              ui="shadcn"
+              type="text"
+              name="slug"
+              label="Slug"
+              form={form}
+              placeholder="Type slug"
             />
 
             <FormField

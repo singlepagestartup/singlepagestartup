@@ -1,5 +1,5 @@
 import type { IComponentPropsExtended } from "./interface";
-import { Component as ProfileAvatar } from "../chat-profile-avatar";
+import { Component as Profile } from "@sps/social/models/profile/frontend/component";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { getLocalizedPlainText } from "../plain-text";
 
@@ -37,7 +37,7 @@ export function Component(props: IComponentPropsExtended) {
         )}
       >
         {initials}
-        <ProfileAvatar
+        <Profile
           isServer={props.isServer}
           variant="chat-profile-avatar"
           data={props.data}

@@ -14,7 +14,10 @@ import {
 } from "../../../../../../../tools/studio/design-system/isolation";
 import { renderToStaticMarkup } from "react-dom/server";
 import { AIChatPreview } from "./Preview";
-import { isAIChatRoute } from "../../../layout/singlepage/ai-chat-landing/routes";
+import {
+  aiChatServiceHrefs,
+  isAIChatRoute,
+} from "../../../layout/singlepage/ai-chat-landing/routes";
 import { documentAgent } from "../../../../social/profile/singlepage/agent/id/ai-chat/resolver";
 import { ProjectAgentPicker } from "../../../../social/profile/singlepage/agent/id/ai-chat/index";
 import { FilesProvider } from "../../../../file-storage/file/singlepage/list-attachments-ai-chat/Files";
@@ -243,7 +246,11 @@ describe("Local AI Chat components", () => {
     for (const method of ["select-method", "registration"]) {
       const html = renderToStaticMarkup(
         <AIChatPreview
-          initialHref={`/ai-chat/rbac/subjects/authentication/${method}`}
+          initialHref={
+            method === "registration"
+              ? aiChatServiceHrefs.register
+              : aiChatServiceHrefs.login
+          }
         />,
       );
       expect(html.match(/data-ds-block="host\.layout\.[^"]+"/g)).toHaveLength(
@@ -274,7 +281,7 @@ describe("Local AI Chat components", () => {
   test("Host routes content and form overrides to their separate owners", () => {
     const html = renderToStaticMarkup(
       <AIChatPreview
-        initialHref="/ai-chat/rbac/subjects/authentication/select-method"
+        initialHref="/rbac/subject/authentication/email-and-password"
         loginCopy={{
           content: {
             ...authenticationContent,
@@ -342,7 +349,10 @@ describe("Local AI Chat components", () => {
 
   test("authentication navbars display the current Subject account and omit back links", () => {
     for (const method of ["select-method", "registration"]) {
-      const href = `/ai-chat/rbac/subjects/authentication/${method}`;
+      const href =
+        method === "registration"
+          ? aiChatServiceHrefs.register
+          : aiChatServiceHrefs.login;
       const signedIn = renderToStaticMarkup(
         <AIChatPreview initialHref={href} signedIn />,
       );
@@ -481,8 +491,8 @@ describe("Local AI Chat components", () => {
   test("recognizes prototype routes without intercepting unrelated pages", () => {
     for (const url of [
       "/",
-      "/ai-chat/rbac/subjects/authentication/registration",
-      "/ai-chat/rbac/subjects/authentication/select-method",
+      "/rbac/subject/authentication/email-and-password/registration",
+      "/rbac/subject/authentication/email-and-password",
       "/ai-chat/rbac/subjects/settings",
       "/ai-chat/rbac/subjects/tokens",
       "/ai-chat/help",
@@ -563,8 +573,8 @@ describe("Local AI Chat components", () => {
   test("page components render local assets and prototype navigation", () => {
     for (const url of [
       "/",
-      "/ai-chat/rbac/subjects/authentication/registration",
-      "/ai-chat/rbac/subjects/authentication/select-method",
+      "/rbac/subject/authentication/email-and-password/registration",
+      "/rbac/subject/authentication/email-and-password",
       "/ai-chat/rbac/subjects/settings",
       "/ai-chat/rbac/subjects/tokens",
       "/ai-chat/help",
@@ -581,6 +591,8 @@ describe("Local AI Chat components", () => {
         expect(
           href === "/" ||
             href === "/framework" ||
+            href === aiChatServiceHrefs.login ||
+            href === aiChatServiceHrefs.register ||
             href.startsWith("/ai-chat/") ||
             href.startsWith("/?path=/story/modules-"),
         ).toBe(true);
