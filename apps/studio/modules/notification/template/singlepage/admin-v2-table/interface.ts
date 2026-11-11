@@ -1,10 +1,5 @@
 export type JsonValue =
-  | null
-  | string
-  | number
-  | boolean
-  | JsonValue[]
-  | { [key: string]: JsonValue };
+  null | string | number | boolean | JsonValue[] | { [key: string]: JsonValue };
 
 export interface IRecord {
   id: string;
@@ -12,21 +7,14 @@ export interface IRecord {
   updatedAt: string;
   variant: string;
   title: string | null;
+  content: string | null;
   adminTitle: string;
   slug: string;
 }
 
 export const variant = "admin-v2-table";
-
-export interface IProps {
-  variant?: "admin-v2-table";
+export interface IComponentProps {
+  variant?: typeof variant;
   empty?: boolean;
 }
-
-type IVariantInputs = NonNullable<IProps>;
-
-export interface IComponentProps extends Omit<IVariantInputs, "variant"> {
-  variant?: "admin-v2-table";
-}
-
 export interface IComponentPropsExtended extends IComponentProps {}

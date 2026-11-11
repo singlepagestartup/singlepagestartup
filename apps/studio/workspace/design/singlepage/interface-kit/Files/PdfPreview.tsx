@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import { Icon } from "../primitives";
 import type {
   PDFDocumentProxy,
@@ -41,7 +40,10 @@ export function PdfPreview(props: IPdfPreviewProps) {
       try {
         const blob = props.file;
         // Vite resolves the worker asset locally; file bytes stay in this browser.
-        const pdfjs = await import("pdfjs-dist");
+        const [pdfjs, { default: pdfWorkerUrl }] = await Promise.all([
+          import("pdfjs-dist"),
+          import("pdfjs-dist/build/pdf.worker.min.mjs?url"),
+        ]);
         pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
         const data = new Uint8Array(await blob.arrayBuffer());
         if (!active) return;

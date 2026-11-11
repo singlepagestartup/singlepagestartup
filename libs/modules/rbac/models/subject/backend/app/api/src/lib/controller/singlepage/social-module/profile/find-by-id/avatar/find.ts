@@ -6,10 +6,12 @@ export class Handler {
   constructor(private readonly service: Service) {}
   async execute(c: Context): Promise<Response> {
     try {
+      const avatar = await this.service.socialModuleProfileAvatarFind({
+        socialModuleProfileId: c.req.param("socialModuleProfileId"),
+      });
+
       return c.json({
-        data: await this.service.socialModuleProfileAvatarFind({
-          socialModuleProfileId: c.req.param("socialModuleProfileId"),
-        }),
+        data: avatar,
       });
     } catch (error: unknown) {
       const { status, message, details } = getHttpErrorType(error);

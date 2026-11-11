@@ -23,30 +23,30 @@ it("streams the supplied Skeleton before a delayed server SDK result", async () 
     output.on("end", resolve);
     output.on("error", reject);
   });
-  let shellReady: () => void = () => undefined;
-  const shell = new Promise<void>((resolve) => {
-    shellReady = resolve;
-  });
+  const firstChunk = new Promise<void>((resolve) =>
+    output.once("data", () => resolve()),
+  );
   const stream = renderToPipeableStream(
-    <Component
-      isServer={true}
-      variant="test"
-      data={{ id: "record" }}
-      Provider={({ children }: any) => children}
-      clientApi={{} as any}
-      serverApi={{ findById: read } as any}
-      Skeleton={<div role="status">Server record skeleton</div>}
-      Component={(props: any) => <div>{props.data.title}</div>}
-    />,
+    <main>
+      <Component
+        isServer={true}
+        variant="test"
+        data={{ id: "record" }}
+        Provider={({ children }: any) => children}
+        clientApi={{} as any}
+        serverApi={{ findById: read } as any}
+        Skeleton={<div role="status">Server record skeleton</div>}
+        Component={(props: any) => <div>{props.data.title}</div>}
+      />
+    </main>,
     {
       onShellReady() {
         stream.pipe(output);
-        shellReady();
       },
       onError: (error) => output.destroy(error as Error),
     },
   );
-  await shell;
+  await firstChunk;
   expect(html).toContain("Server record skeleton");
   expect(html).not.toContain("Loaded record");
   expect(read).toHaveBeenCalledTimes(1);

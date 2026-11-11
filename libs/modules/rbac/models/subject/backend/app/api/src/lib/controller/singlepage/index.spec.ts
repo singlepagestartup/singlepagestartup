@@ -1,11 +1,16 @@
 /**
- * BDD Suite: subject checkout route guards.
+ * BDD Suite: subject controller route guards.
  *
  * Given: the subject controller's route table mounted the way the module app mounts it.
- * When: the order checkout and the product checkout of a subject are requested with and without a credential.
- * Then: a request without a credential or with another subject's token is refused before the checkout
- * handler runs, and only the subject's own token reaches the handler.
+ * When: a caller requests a chat model catalog or starts an ecommerce checkout.
+ * Then: each route checks ownership before invoking the requested service.
  */
+
+import { OPEN_ROUTER_ASSISTANT_MODEL } from "@sps/shared-utils";
+
+const mockOpenRouterGetModels = jest.fn();
+const mockSubjectsToSocialModuleProfilesFind = jest.fn();
+const mockSocialModuleProfileFindById = jest.fn();
 
 jest.mock("@sps/shared-utils", () => {
   const actual = jest.requireActual("@sps/shared-utils");
@@ -17,44 +22,43 @@ jest.mock("@sps/shared-utils", () => {
   };
 });
 
-import { sign } from "hono/jwt";
+jest.mock("@sps/shared-third-parties", () => {
+  const actual = jest.requireActual("@sps/shared-third-parties");
+
+  return {
+    ...actual,
+    OpenRouter: jest.fn(() => {
+      return {
+        getModels: mockOpenRouterGetModels,
+      };
+    }),
+  };
+});
+
+jest.mock(
+  "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server",
+  () => ({
+    api: {
+      find: (...args: unknown[]) =>
+        mockSubjectsToSocialModuleProfilesFind(...args),
+    },
+  }),
+);
+
+jest.mock("@sps/social/models/profile/sdk/server", () => ({
+  api: {
+    findById: (...args: unknown[]) => mockSocialModuleProfileFindById(...args),
+  },
+}));
+
+import { signJwt } from "@sps/backend-utils";
 import { DefaultApp } from "@sps/shared-backend-api";
 import { Controller } from ".";
 
-const subjectId = "subject-owner";
+const catalogPath =
+  "/subject-owner/social-module/profiles/profile-owned/chats/chat-1/openrouter/models";
 
-const orderCheckout = {
-  path: `/${subjectId}/ecommerce-module/orders/checkout`,
-  data: {
-    provider: "dummy",
-    email: "owner@example.test",
-    ecommerceModule: {
-      orders: [{ id: "order-1" }],
-    },
-  },
-};
-
-const productCheckout = {
-  path: `/${subjectId}/ecommerce-module/products/product-1/checkout`,
-  data: {
-    provider: "dummy",
-    email: "owner@example.test",
-    storeId: "store-1",
-  },
-};
-
-/**
- * No subject row stands behind the id, so a request that reaches a checkout
- * handler stops at its first lookup with 404 and never calls another module.
- */
-function createService() {
-  return {
-    findById: jest.fn().mockResolvedValue(null),
-    ecommerceProductCheckout: jest.fn(async () => { throw new Error("Not Found error. No product"); }),
-  };
-}
-
-function createApp(service: ReturnType<typeof createService>) {
+function createApp(service = {}) {
   const app = new DefaultApp(
     {} as any,
     new Controller(service as any) as any,
@@ -66,184 +70,202 @@ function createApp(service: ReturnType<typeof createService>) {
   return app.hono;
 }
 
-async function requestCheckout(props: {
-  route: typeof orderCheckout | typeof productCheckout;
-  service: ReturnType<typeof createService>;
-  tokenSubjectId?: string;
-  operatorSecret?: string;
-}) {
+async function requestCatalog(subjectId?: string) {
   const headers: Record<string, string> = {};
 
-  if (props.tokenSubjectId) {
-    const token = await sign(
-      { subject: { id: props.tokenSubjectId } },
+  if (subjectId) {
+    const token = await signJwt(
+      { subjectId, type: "access", lifetimeInSeconds: 60 },
       "test-jwt-secret",
     );
 
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  if (props.operatorSecret) {
-    headers["X-RBAC-SECRET-KEY"] = props.operatorSecret;
-  }
-
-  const body = new FormData();
-  body.append("data", JSON.stringify(props.route.data));
-
-  return createApp(props.service).request(props.route.path, {
-    method: "POST",
-    headers,
-    body,
-  });
+  return createApp().request(catalogPath, { headers });
 }
 
-describe("Given: the order checkout route of a subject", () => {
+describe("Given: the OpenRouter model catalog route of a chat", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockOpenRouterGetModels.mockResolvedValue([
+      {
+        id: OPEN_ROUTER_ASSISTANT_MODEL.id,
+        name: "GPT Basic",
+        description: "",
+        architecture: {
+          input_modalities: ["text"],
+          output_modalities: ["text"],
+        },
+      },
+    ]);
+    mockSubjectsToSocialModuleProfilesFind.mockResolvedValue([
+      { id: "subject-owner-profile", subjectId: "subject-owner" },
+    ]);
+    mockSocialModuleProfileFindById.mockResolvedValue({ id: "profile-owned" });
+  });
+
   /**
    * BDD Scenario
-   * Given: a request without a token or an operator secret.
-   * When: the subject's order checkout is requested.
-   * Then: it is refused and the checkout handler does not run.
+   * Given: a request without a token.
+   * When: the catalog is requested.
+   * Then: it is refused and OpenRouter is not asked.
    */
-  it("When: no credential is sent Then: refuses the checkout before the handler", async () => {
-    const service = createService();
-
-    const response = await requestCheckout({ route: orderCheckout, service });
+  it("When: no token is sent Then: refuses the request before OpenRouter", async () => {
+    const response = await requestCatalog();
 
     expect(response.status).toBe(400);
-    expect(service.findById).not.toHaveBeenCalled();
+    expect(mockOpenRouterGetModels).not.toHaveBeenCalled();
   });
 
   /**
    * BDD Scenario
    * Given: a token issued to another subject.
-   * When: that subject requests the owner's order checkout.
-   * Then: it is refused and the checkout handler does not run.
+   * When: that subject requests the owner's catalog route.
+   * Then: it is refused and OpenRouter is not asked.
    */
-  it("When: another subject's token is sent Then: refuses the checkout before the handler", async () => {
-    const service = createService();
-
-    const response = await requestCheckout({
-      route: orderCheckout,
-      service,
-      tokenSubjectId: "subject-other",
-    });
+  it("When: another subject asks Then: refuses the request before OpenRouter", async () => {
+    const response = await requestCatalog("subject-other");
 
     expect(response.status).toBe(401);
-    expect(service.findById).not.toHaveBeenCalled();
+    expect(mockOpenRouterGetModels).not.toHaveBeenCalled();
   });
 
   /**
    * BDD Scenario
-   * Given: a token issued to the subject in the path, as the browser cart sends it.
-   * When: the subject requests its own order checkout.
-   * Then: the owner guard rejects the request before checkout.
+   * Given: the owner's token and a profile the owner is not linked to.
+   * When: the catalog is requested through that profile.
+   * Then: it is refused and OpenRouter is not asked.
    */
-  it("When: the subject's own token is sent Then: the checkout handler runs for the subject", async () => {
-    const service = createService();
+  it("When: the profile belongs to someone else Then: refuses the request before OpenRouter", async () => {
+    mockSubjectsToSocialModuleProfilesFind.mockResolvedValue([]);
 
-    const response = await requestCheckout({
-      route: orderCheckout,
-      service,
-      tokenSubjectId: subjectId,
-    });
+    const response = await requestCatalog("subject-owner");
 
     expect(response.status).toBe(404);
-    expect(service.findById).toHaveBeenCalledWith({ id: subjectId });
+    expect(mockOpenRouterGetModels).not.toHaveBeenCalled();
   });
 
   /**
    * BDD Scenario
-   * Given: the operator secret in `X-RBAC-SECRET-KEY` and no token.
-   * When: an operator process requests the subject's order checkout.
-   * Then: the owner guard rejects the request before checkout.
+   * Given: the owner's token and a profile linked to the owner.
+   * When: the catalog is requested.
+   * Then: it answers the grouped OpenRouter catalog.
    */
-  it("When: only the operator secret is sent Then: the JWT owner guard refuses checkout", async () => {
-    const service = createService();
+  it("When: the owner asks through an owned profile Then: returns the catalog", async () => {
+    const response = await requestCatalog("subject-owner");
+    const body = await response.json();
 
-    const response = await requestCheckout({
-      route: orderCheckout,
-      service,
-      operatorSecret: "test-rbac-secret-key",
-    });
-
-    expect(response.status).toBe(400);
-    expect(service.findById).not.toHaveBeenCalled();
-    expect(service.ecommerceProductCheckout).not.toHaveBeenCalled();
+    expect(response.status).toBe(200);
+    expect(mockOpenRouterGetModels).toHaveBeenCalledTimes(1);
+    expect(body.data.groups[0].models).toEqual([
+      expect.objectContaining({ id: OPEN_ROUTER_ASSISTANT_MODEL.id }),
+    ]);
   });
 });
 
-describe("Given: the product checkout route of a subject", () => {
-  /**
-   * BDD Scenario
-   * Given: a request without a token or an operator secret.
-   * When: the subject's product checkout is requested.
-   * Then: it is refused and the checkout handler does not run.
-   */
-  it("When: no credential is sent Then: refuses the checkout before the handler", async () => {
+const checkoutSubjectId = "subject-owner";
+
+describe.each([
+  {
+    name: "order checkout",
+    route: `/${checkoutSubjectId}/ecommerce-module/orders/checkout`,
+    data: {
+      provider: "dummy",
+      email: "owner@example.test",
+      ecommerceModule: {
+        orders: [{ id: "00000000-0000-4000-8000-000000000001" }],
+      },
+    },
+    lookup: "findById" as const,
+  },
+  {
+    name: "product checkout",
+    route: `/${checkoutSubjectId}/ecommerce-module/products/product-1/checkout`,
+    data: {
+      provider: "dummy",
+      email: "owner@example.test",
+      storeId: "store-1",
+    },
+    lookup: "ecommerceProductCheckout" as const,
+  },
+])("Given: the Subject $name route", ({ route, data, lookup }) => {
+  function createService() {
+    return {
+      findById: jest.fn().mockResolvedValue(null),
+      ecommerceProductCheckout: jest
+        .fn()
+        .mockRejectedValue(new Error("Not Found error. No product")),
+    };
+  }
+
+  function requestCheckout(
+    service: ReturnType<typeof createService>,
+    headers: Record<string, string>,
+  ) {
+    const body = new FormData();
+    body.set("data", JSON.stringify(data));
+    return createApp(service).request(route, { method: "POST", headers, body });
+  }
+
+  it.each([
+    { name: "no credential", headers: {} },
+    {
+      name: "only the operator secret",
+      headers: { "X-RBAC-SECRET-KEY": "test-rbac-secret-key" },
+    },
+  ] as const)(
+    "When: the client sends $name Then: refuses checkout before the handler",
+    async ({ headers }) => {
+      const service = createService();
+      const response = await requestCheckout(service, { ...headers });
+
+      expect(response.status).toBe(400);
+      expect(service[lookup]).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([
+    {
+      name: "another subject's access token",
+      subjectId: "subject-other",
+      type: "access" as const,
+    },
+    {
+      name: "the owner's refresh token",
+      subjectId: checkoutSubjectId,
+      type: "refresh" as const,
+    },
+  ])(
+    "When: the client sends $name Then: refuses checkout before the handler",
+    async ({ subjectId, type }) => {
+      const service = createService();
+      const token = await signJwt(
+        { subjectId, type, lifetimeInSeconds: 60 },
+        "test-jwt-secret",
+      );
+      const response = await requestCheckout(service, {
+        Authorization: `Bearer ${token}`,
+      });
+
+      expect(response.status).toBe(401);
+      expect(service[lookup]).not.toHaveBeenCalled();
+    },
+  );
+
+  it("When: the owner sends an access token Then: the handler looks up that Subject's checkout", async () => {
     const service = createService();
-
-    const response = await requestCheckout({ route: productCheckout, service });
-
-    expect(response.status).toBe(400);
-    expect(service.findById).not.toHaveBeenCalled();
-  });
-
-  /**
-   * BDD Scenario
-   * Given: a token issued to another subject.
-   * When: that subject requests a product checkout for the owner.
-   * Then: it is refused and the checkout handler does not run.
-   */
-  it("When: another subject's token is sent Then: refuses the checkout before the handler", async () => {
-    const service = createService();
-
-    const response = await requestCheckout({
-      route: productCheckout,
-      service,
-      tokenSubjectId: "subject-other",
-    });
-
-    expect(response.status).toBe(401);
-    expect(service.findById).not.toHaveBeenCalled();
-  });
-
-  /**
-   * BDD Scenario
-   * Given: a token issued to the subject in the path, as the browser and the agent module send it.
-   * When: the subject requests a product checkout for itself.
-   * Then: the owner guard rejects the request before checkout.
-   */
-  it("When: the subject's own token is sent Then: the checkout handler runs for the subject", async () => {
-    const service = createService();
-
-    const response = await requestCheckout({
-      route: productCheckout,
-      service,
-      tokenSubjectId: subjectId,
+    const token = await signJwt(
+      { subjectId: checkoutSubjectId, type: "access", lifetimeInSeconds: 60 },
+      "test-jwt-secret",
+    );
+    const response = await requestCheckout(service, {
+      Authorization: `Bearer ${token}`,
     });
 
     expect(response.status).toBe(404);
-    expect(service.ecommerceProductCheckout).toHaveBeenCalledWith(expect.objectContaining({ id: subjectId }));
-  });
-
-  /**
-   * BDD Scenario
-   * Given: the operator secret in `X-RBAC-SECRET-KEY` and no token, as subscription renewal and
-   * Telegram free-subscription provisioning send it.
-   * When: an operator process requests a product checkout for the subject.
-   * Then: the owner guard rejects the request before checkout.
-   */
-  it("When: only the operator secret is sent Then: the JWT owner guard refuses checkout", async () => {
-    const service = createService();
-
-    const response = await requestCheckout({
-      route: productCheckout,
-      service,
-      operatorSecret: "test-rbac-secret-key",
-    });
-
-    expect(response.status).toBe(400);
-    expect(service.findById).not.toHaveBeenCalled();
-    expect(service.ecommerceProductCheckout).not.toHaveBeenCalled();
+    expect(service[lookup]).toHaveBeenCalledWith(
+      expect.objectContaining({ id: checkoutSubjectId }),
+    );
   });
 });

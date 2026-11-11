@@ -1,4 +1,4 @@
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { RBAC_SECRET_KEY, UUID_VALUE_REGEX } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../service";
@@ -43,7 +43,7 @@ export class Handler {
         );
       }
 
-      if (!data["provider"]) {
+      if (!data?.provider) {
         throw new Error("Validation error. No provider provided");
       }
 
@@ -55,18 +55,19 @@ export class Handler {
         throw new Error("Validation error. No ecommerceModule provided");
       }
 
-      if (!data["ecommerceModule"]["orders"]?.length) {
+      const requestedOrders = data.ecommerceModule.orders;
+      if (!Array.isArray(requestedOrders) || !requestedOrders.length) {
         throw new Error("Validation error. No ecommerceModule.orders provided");
       }
 
-      if (
-        !data["ecommerceModule"]["orders"].every((order: { id: string }) => {
-          return order.id;
-        })
-      ) {
-        throw new Error(
-          "Validation error. No ecommerceModule.orders[number].id provided",
-        );
+      const requestedOrderIds: string[] = [];
+      for (const order of requestedOrders) {
+        if (typeof order?.id !== "string" || !UUID_VALUE_REGEX.test(order.id)) {
+          throw new Error(
+            "Validation error. Expected a UUID for each ecommerceModule.orders entry",
+          );
+        }
+        requestedOrderIds.push(order.id);
       }
 
       const entity = await this.service.findById({ id });
@@ -74,8 +75,6 @@ export class Handler {
       if (!entity) {
         throw new Error("Not Found error. No entity found with id:" + id);
       }
-
-      await this.service.deanonymize({ id, email: data.email });
 
       const subjectsToEcommerceModuleOrders =
         await this.service.subjectsToEcommerceModuleOrders.find({
@@ -87,24 +86,23 @@ export class Handler {
                   method: "eq",
                   value: id,
                 },
+                {
+                  column: "ecommerceModuleOrderId",
+                  method: "inArray",
+                  value: requestedOrderIds,
+                },
               ],
             },
           },
         });
 
-      const ecommerceModuleOrderIds = data.ecommerceModule.orders
-        .map((order: { id: string }) => order.id)
-        .filter((orderId: string) => {
-          return subjectsToEcommerceModuleOrders?.some(
-            (subjectToEcommerceModuleOrder) =>
-              subjectToEcommerceModuleOrder.ecommerceModuleOrderId === orderId,
-          );
-        });
-
-      if (!ecommerceModuleOrderIds.length) {
+      if (!subjectsToEcommerceModuleOrders?.length) {
         throw new Error("Not Found error. No ecommerce module orders found");
       }
 
+      const ecommerceModuleOrderIds = subjectsToEcommerceModuleOrders.map(
+        (link) => link.ecommerceModuleOrderId,
+      );
       const ecommerceModuleOrders = await ecommerceModuleOrderApi.find({
         params: {
           filters: {
@@ -129,20 +127,21 @@ export class Handler {
         throw new Error("Not Found error. No ecommerce module orders found");
       }
 
-      for (const ecommerceModuleOrder of ecommerceModuleOrders) {
-        await ecommerceModuleOrderApi.update({
-          id: ecommerceModuleOrder.id,
-          data: {
-            ...ecommerceModuleOrder,
-            comment: data.comment,
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
+      await this.service.deanonymize({ id, email: data.email });
+
+      if (data.comment !== undefined) {
+        for (const order of ecommerceModuleOrders) {
+          await ecommerceModuleOrderApi.update({
+            id: order.id,
+            data: { comment: data.comment },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                "Cache-Control": "no-store",
+              },
             },
-          },
-        });
+          });
+        }
       }
 
       const result = await this.service.ecommerceOrderCheckout({

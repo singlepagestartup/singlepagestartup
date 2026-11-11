@@ -51,7 +51,9 @@ jest.mock("@sps/ecommerce/models/product/frontend/component", () => ({
 jest.mock("@sps/ecommerce/models/order/frontend/component", () => ({
   Component: () => null,
 }));
-jest.mock("../../delete-default", () => ({ Component: () => null }));
+jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
+  Component: () => null,
+}));
 const props: any = {
   subject: { id: "owner" },
   ecommerceModuleOrder: {

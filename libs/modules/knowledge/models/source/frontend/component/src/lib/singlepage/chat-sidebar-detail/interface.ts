@@ -1,3 +1,4 @@
+import type { IComponentProps as IParentComponentProps } from "@sps/shared-frontend-components/singlepage/default/interface";
 export { type IModel } from "@sps/knowledge/models/source/sdk/model";
 import { IModel } from "@sps/knowledge/models/source/sdk/model";
 import { ISpsComponentBase } from "@sps/ui-adapter";
@@ -9,8 +10,10 @@ export interface IKnowledgeSourceDraft {
   title: string;
 }
 
-export interface IClientComponentProps
-  extends Pick<ISpsComponentBase, "className" | "isServer"> {
+export interface IClientComponentProps extends Pick<
+  ISpsComponentBase,
+  "className" | "isServer"
+> {
   data: IModel;
   language: string;
   draft: IKnowledgeSourceDraft;
@@ -28,9 +31,8 @@ export interface IClientComponentProps
 }
 
 export interface IComponentProps
-  extends ISpsComponentBase,
-    IClientComponentProps {
-  variant: typeof variant;
-}
+  extends
+    IParentComponentProps<IModel, typeof variant>,
+    IClientComponentProps {}
 
 export interface IComponentPropsExtended extends IComponentProps {}

@@ -1,3 +1,8 @@
+import {
+  action as publicResourceIds,
+  type IProps as IPublicResourceIdsProps,
+  type IResult as IPublicResourceIdsResult,
+} from "./public-resource-ids";
 import { factory } from "@sps/shared-frontend-server-api";
 import {
   serverHost,
@@ -7,13 +12,16 @@ import {
   options,
 } from "@sps/rbac/models/role/sdk/model";
 
-export type IProps = {};
+export type IProps = { IPublicResourceIdsProps: IPublicResourceIdsProps };
 
-export type IResult = {};
+export type IResult = { IPublicResourceIdsResult: IPublicResourceIdsResult };
 
-export const api = factory<IModel>({
-  route,
-  host: serverHost,
-  options,
-  params: query,
-});
+export const api = {
+  publicResourceIds,
+  ...factory<IModel>({
+    route,
+    host: serverHost,
+    options,
+    params: query,
+  }),
+};

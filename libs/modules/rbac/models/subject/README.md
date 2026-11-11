@@ -113,7 +113,7 @@ to calculate against the saved Order currency and current Product prices.
 
 ## Authorization Layering
 
-- `backend/app/api/src/lib/service/singlepage/is-authorized.ts` must stay thin: it resolves `rbac.permission` and role access only.
+- `backend/app/api/src/lib/service/singlepage/is-authorized.ts` must stay thin: it accepts an unrevoked access token (see Session Tokens) and resolves `rbac.permission` and role access only.
 - Permission and relation lookups are injected through Subject DI and use the
   startup-exported backend services. Child projects can override those
   services or the main Subject Service method without a loopback API request.
@@ -148,25 +148,46 @@ Thread management through `rbac.subject` requires `rbac.permission` records for 
 
 ### Ecommerce Checkout Routes
 
-`POST /api/rbac/subjects/[rbac.subjects.id]/ecommerce-module/orders/checkout` and `POST /api/rbac/subjects/[rbac.subjects.id]/ecommerce-module/products/[ecommerce.products.id]/checkout` carry `RequestSubjectIdOwner`, so every caller presents a token of the subject in the path or the operator secret:
+`POST /api/rbac/subjects/[rbac.subjects.id]/ecommerce-module/orders/checkout` and `POST /api/rbac/subjects/[rbac.subjects.id]/ecommerce-module/products/[ecommerce.products.id]/checkout` require an access token for the Subject in the URL. The browser sends the current Subject's token through the client SDK. The Agent's Telegram checkout callback signs a token for the user who pressed the button. Subscription renewal calls the product checkout service in-process.
 
-- the browser sends the signed-in subject's token through the client SDK;
-- server code acting for a subject signs a token for that subject, as the agent module's Telegram checkout callback does;
-- operator processes, such as subscription renewal and Telegram free-subscription provisioning, send `X-RBAC-SECRET-KEY`.
-
-The order checkout acts only on orders linked to the subject through `subjects-to-ecommerce-module-orders`; any other id in `data.ecommerceModule.orders` is ignored, as the id of a deleted order is.
+Order checkout selects the requested orders linked to that Subject through `subjects-to-ecommerce-module-orders`. The checkout skips deleted or foreign orders in a mixed request. If no matching order exists, it returns 404 before recording the email, updating comments or starting payment.
 
 ## Authentication API
 
 - `GET /rbac/subjects/authentication/init`: initialize anonymous/authenticated session tokens.
 - `GET /rbac/subjects/authentication/me`: resolve the current Subject and its server-derived `authenticated` status.
-- `POST /rbac/subjects/authentication/refresh`: refresh JWT/refresh pair.
-- `POST /rbac/subjects/authentication/logout`: logout current session.
+- `POST /rbac/subjects/authentication/refresh`: exchange a refresh token for a new JWT/refresh pair.
+- `POST /rbac/subjects/authentication/logout`: revoke every token of the presented access token's subject.
 - `POST /rbac/subjects/authentication/email-and-password/authentication`: login by email+password.
 - `POST /rbac/subjects/authentication/email-and-password/registration`: register by email+password.
 - `POST /rbac/subjects/authentication/email-and-password/forgot-password`: request reset code.
 - `POST /rbac/subjects/authentication/email-and-password/reset-password`: reset password by code.
 - `POST /rbac/subjects/authentication/ethereum-virtual-machine`: EVM signature login.
+
+After migrating a new database, run `npx nx run api:db:seed` to load the two
+POST permissions for password recovery from the Permission dump. By default
+both steps allow anonymous requests. Without its permission, a step returns 403,
+even if the user already has a reset code.
+
+To restrict recovery for the project, edit the permissions in **RBAC → Permissions**.
+If you delete either permission, export the updated Permission dump before the
+next seed. A seed restores any permission still present in the project's dump.
+
+Browser sign-in uses `/{language}/rbac/subject/authentication/email-and-password`.
+Registration, recovery email and password replacement use its `/registration`,
+`/forgot-password` and `/reset-password` subpaths. Configure these four URLs in **Host → Pages**.
+Link each Page to its layout and to the Host Widget for its RBAC form. Each
+RBAC Widget renders the matching Subject form. The layout supplies the navbar
+and footer. An unpublished or missing Page follows normal Host routing.
+The default sign-in and registration links open the localized RBAC pages. After
+success, the form uses `userStories.subjectAuthentication.redirect.success`
+(`/` by default). A link can specify `returnTo` for a destination listed in
+`userStories.subjectAuthentication.redirect.allowedReturnPaths`.
+
+Recovery email uses Amazon SES and one Notification Template with the
+`reset-password` variant. Its title is the email subject. Host renders a link
+to the reset form on `NEXT_PUBLIC_HOST_SERVICE_URL`. The link is valid for one
+hour and can be used once. Unknown addresses receive the same acknowledgement.
 
 Guest and registered Subjects both use `variant="default"`. A JWT identifies a
 visitor session; it does not establish that an account exists. The `me` response
@@ -226,15 +247,226 @@ renders the supplied totals and receipt without querying generic Ecommerce
 endpoints. Zero is a valid total, including a free subscription. Standalone
 Ecommerce readers retain their own authorization requirements.
 
+## Session Credentials
+
+- The token routes (`init`, `refresh`, `ethereum-virtual-machine`,
+  `oauth/exchange`, `email-and-password/authentication` and
+  `email-and-password/registration`) answer with `{ jwt, refresh }` in the
+  body and write no session cookie.
+- The browser keeps the JWT in its own `rbac.subject.jwt` cookie on the host
+  origin and the refresh token in localStorage
+  (`persistAuthenticationTokens`), and sends the JWT as
+  `Authorization: Bearer <jwt>` through `saturateHeaders`.
+- The API reads the subject only from the `Authorization` header
+  (`authorization` in `@sps/backend-utils`) and the operator secret only from
+  the `X-RBAC-SECRET-KEY` header (`readRbacSecret`). A cookie carrying either
+  is ignored.
+- `logout` deletes an API-origin `rbac.subject.jwt` cookie that an earlier
+  release may have left in the browser.
+
+## Rate limits
+
+`ApiRateLimitMiddleware` runs before body parsing, observers, permission queries,
+HTTP caching and public file reads. It applies to all API routes, including
+public routes and the WebSocket handshake. CORS preflight ends before admission;
+WebSocket frames and the Next.js Host are outside this middleware.
+
+Every visitor spends an IP budget. A valid access JWT also spends a Subject
+budget. RBAC resolves the Subject and checks token type, expiry and logout
+revocation using its existing service. Changing devices, refreshing a JWT or
+changing social profiles does not create a new Subject budget. An invalid token
+cannot assign another Subject's ID to a counter. The Subject budget uses only the Authorization
+header, including when the browser also sends a session cookie. Requests bearing the verified operator secret are
+exempt from the general visitor budgets, so nested server SDK calls do not
+exhaust one budget for the entire application. The separate wrong-secret guard
+still applies.
+
+| Budget              | Default | Environment variable                |
+| ------------------- | ------- | ----------------------------------- |
+| IP, 10 seconds      | 100000  | `API_RATE_LIMIT_BURST_PER_ADDRESS`  |
+| IP, minute          | 600000  | `API_RATE_LIMIT_MINUTE_PER_ADDRESS` |
+| Subject, 10 seconds | 20000   | `API_RATE_LIMIT_BURST_PER_SUBJECT`  |
+| Subject, minute     | 120000  | `API_RATE_LIMIT_MINUTE_PER_SUBJECT` |
+
+These defaults leave room for pages assembled from many widgets and related
+models. The minute budgets allow six full short-window budgets; the IP budgets
+are five times the Subject budgets to accommodate shared network addresses.
+They are starting values, not measured server capacity or a definition of an
+attack. Tune them against ordinary page loads, polling and expensive operations.
+Set overrides in `apps/api/.env` locally or `tools/deployer/.env` for deployment,
+then restart or redeploy API. Empty settings use the defaults. Authentication
+routes retain their separate, lower budgets against credential guessing.
+A fixed window can admit two budgets around its boundary; the independent minute
+window also counts requests rejected by the short window. This mechanism limits
+request admission, not the execution time or concurrency of work already admitted.
+High-cost routes may need tighter domain limits and bounded execution queues.
+
+Counters live in the configured KV store under `rate-limit:*`, shared by all API
+replicas. Counter increments and TTL updates run in one Redis transaction. No
+ban is written to a Subject or social profile. HTTP 429 includes `Retry-After`
+and `Cache-Control: no-store`; access resumes when the exhausted window ends.
+IPv4-mapped addresses are normalized and IPv6 clients share a /64 budget.
+Unknown peer information uses a common budget instead of bypassing the guard.
+
+The global guard returns HTTP 503 if KV is unavailable. Commands have a bounded
+deadline; after a failure each process waits at least one second before retrying
+KV. Requests are refused during that interval, with no retry queue. The explicit
+`RBAC_RATE_LIMIT_ENABLED=false` switch disables limits for controlled tests.
+The lower-level route limiter remains configurable for standalone use; the
+application's global guard enforces availability of the shared store first.
+
+Authentication retains stricter, independent windows of
+`RBAC_RATE_LIMIT_WINDOW_IN_SECONDS` (default 60):
+
+| Routes under `/api/rbac/subjects/authentication`      | Counter                        | Default                        |
+| ----------------------------------------------------- | ------------------------------ | ------------------------------ |
+| `POST /email-and-password/authentication`             | IP: all calls; login: failures | 20 / 10, plus 50 failures/hour |
+| `POST /email-and-password/forgot-password`            | IP and normalized email        | 20 / 10                        |
+| Registration, reset password, Ethereum authentication | IP                             | 20                             |
+| Init and refresh                                      | IP                             | 60                             |
+| Wrong operator secret on any protected route          | IP                             | 10                             |
+
+Settings are `RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ADDRESS`,
+`RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ACCOUNT`,
+`RBAC_RATE_LIMIT_SESSION_ATTEMPTS_PER_ADDRESS` and
+`RBAC_RATE_LIMIT_OPERATOR_SECRET_FAILURES_PER_ADDRESS`. Each route has its own
+counters. Private and loopback addresses are counted too. Login gives the same
+401 for an unknown account and a wrong password. Forgot-password returns
+201 `{ data: { ok: true } }` for every address. Registration still reports an
+existing identity; address confirmation is tracked in #280.
+
+Password authentication reserves a login's short-window and hourly slots in one
+Redis Lua operation before checking credentials. Parallel requests cannot all
+observe an unused slot. HTTP 401 retains the reservation; a successful login,
+validation error or server failure releases its own reservation. Completion is
+idempotent. A process crash conservatively keeps its pending slot until expiry.
+The per-IP route budget still counts every request, including successful logins.
+
+`RBAC_RATE_LIMIT_PASSWORD_FAILURES_PER_HOUR` defaults to 50. The short login
+budget uses `RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ACCOUNT` (10) and
+`RBAC_RATE_LIMIT_WINDOW_IN_SECONDS` (60 seconds). Redis supplies the clock.
+Windows start with activity and expire without being prolonged by rejected
+requests; they are not sliding windows. Requests near a boundary can consume
+both neighboring windows. All API replicas must use the same limits and store.
+Redis loss or eviction also loses counters; use a dedicated, monitored instance.
+If Redis cannot reserve a password attempt, authentication returns HTTP 503.
+
+Fifty failures/hour slows sustained guessing against one login by twelve times
+compared with ten/minute. It allows several rounds of ordinary typing mistakes,
+but cannot protect a known or easily guessed password. The same login is counted
+across IPs, and unknown logins behave identically. An attacker who knows a login
+can still exhaust its temporary password budget. Existing sessions, refresh and
+other login methods retain their own budgets; this does not revoke them or write
+a permanent account ban. MFA and compromised-password screening are separate
+protections. See the [OWASP authentication guidance](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html)
+for the account-lockout tradeoff. These defaults are an SPS policy, not a claim of
+NIST compliance.
+
+### Administrator security summaries
+
+API middleware increments aggregate counters in Redis. The default summary covers
+15 minutes and contains counts of wrong passwords, successful logins after a
+failure, and first limit crossings for authentication, operator secrets and the
+general API. Crossings count exhausted windows, not every rejected request or
+unique people. No submitted login, password, token, request body or IP is included.
+
+The existing Agent `rbac-module-subjects-check` action calls the operator-protected
+Subject `POST /check` each minute through Broadcast. Subject dispatches the latest
+closed summary before checking orders. Reporting failures do not stop the order
+check. There is no additional timer and no Notification import into middleware.
+The action must remain scheduled in the installation's Agent data, and the
+normal Agent cron trigger must be running.
+
+| Setting                                   | Default | Meaning                                                    |
+| ----------------------------------------- | ------- | ---------------------------------------------------------- |
+| `SECURITY_NOTIFICATIONS_ENABLED`          | `true`  | Collect and deliver summaries                              |
+| `SECURITY_NOTIFICATION_WINDOW_IN_SECONDS` | `900`   | Summary interval, 60–3600 seconds                          |
+| `SECURITY_NOTIFICATION_FAILURE_THRESHOLD` | `20`    | Wrong passwords needed to notify when no limit was crossed |
+
+Any recorded limit crossing also triggers a summary. A single failed password
+without a limit crossing does not send an alert. All three settings and the new
+hourly password budget are forwarded by local deployment and both Actions
+environments. Set them in `apps/api/.env` locally or `tools/deployer/.env` when
+deploying, then restart API. In Actions use the matching repository Secrets;
+preview names have the `PREVIEW_` prefix.
+
+Subject resolves current `admin` role assignments and their linked Identities at
+delivery time, with a maximum of 20 administrators per run. A configured Telegram
+bot and linked Telegram identity are preferred. A configured SES sender and linked
+email are used when Telegram is absent or fails. Admin contacts must be maintained
+by the installation owner; the legacy email identity does not itself prove email
+ownership. Delivery credentials remain the existing Notification configuration.
+
+Security summaries require a Notification Topic with slug `security` and at
+least one Template with a title and a matching delivery channel. Default variants:
+
+| Channel  | Template slug               | Variant            |
+| -------- | --------------------------- | ------------------ |
+| Telegram | `security-summary-telegram` | `content-telegram` |
+| Email    | `security-summary-email`    | `content-email`    |
+
+A project may select its own Host variant instead. It receives the same summary
+payload and optional saved Content; delivery limits do not depend on the variant
+name. Default `content-*` variants require Content.
+
+Set Title and content in Admin v2 → Notification → Template. The Settings page
+(`/ru/admin/settings` or `/en/admin/settings`) provides the exact records, an
+example body and links to their forms. Nothing is created automatically. Missing
+Topic or usable templates skips delivery with
+`security.summary.configuration-missing`; rate limiting and server logs remain
+active. Removing a channel's template disables that channel. The delivery job
+does not fall back to a hardcoded message.
+
+Template data contains `project`, `incidentId`, `start` and `end` (UTC ISO
+timestamps), and `counts` for `password-failed`, `password-limited`,
+`password-recovered`, `auth-limited`, `operator-mismatch`, `operator-limited`,
+`api-limited`. Absent counters are zero. Passwords, tokens, attempted logins and
+raw IP addresses are excluded. Each notification links to its Topic and attempted
+Templates using the ordinary Notification relations and the shared provider.
+
+One private Broadcast message, `security-summary` in `security-notifications`,
+coordinates all replicas. Each summary has at most three worker attempts and each
+recipient at most three transport calls, including fallback. Calls have a
+five-second timeout. Notification records have a stable internal UUID per period
+and Subject; an already sent record prevents another delivery through either
+channel. The public CRUD path still generates its own IDs. Private queue payloads
+are excluded from ordinary Broadcast reads.
+
+The generic internal `Notification.sendBounded` operation owns the shared retry
+budget and calls the regular `provider`/Template renderer. Its caller must hold
+the Broadcast lease. Records use `sending`, `error` or `sent`, never `new`, so
+Topic `send-all` cannot bypass the bounded retry policy. Both the email and
+Telegram templates are restricted to one rendered message per attempt.
+
+The next period replaces an undelivered old summary. A prolonged outage does not
+create an increasing queue or replay old periods on recovery; summaries are
+best-effort alerts and server logs remain the diagnostic record. Redis retains
+only recent aggregate buckets. A crash after a provider accepted a message but
+before PostgreSQL recorded success can still cause a duplicate notification.
+
+Delivery outcomes appear in server logs as `security.summary.delivery`,
+`security.summary.delivery-failed` or `security.summary.dispatch-failed`. A missing
+admin contact produces a delivery record with `recipients: 0`. Redis reporting
+failures use `security.summary.unavailable`, throttled to once/minute/process.
+Notification stores `sending-security`, `sent` or `error`, the period, counts and
+attempt count; these records never enter the generic `new` notification sender.
+Read production logs using the commands in [the deployer guide](../../../../../tools/deployer/README.md#finding-an-api-error).
+
+`RBAC_RATE_LIMIT_TRUSTED_PROXY_CIDRS` is a comma-separated list of proxy networks.
+Direct API development trusts none. The reader starts with Bun's socket peer,
+walks `X-Forwarded-For` from right to left, and stops at the first untrusted IP.
+It never trusts an arbitrary client's header or skips private addresses. See
+[API admission and proxy addresses](../../../../../tools/deployer/README.md#api-admission-and-proxy-addresses)
+for deployment and log queries.
+
 ## Anonymous Session Lifecycle
 
 A subject and a JWT are issued on the first visit, including public browsing,
 so visitor actions can be recorded from the first request.
 
 `GET /rbac/subjects/authentication/init` reuses a session instead of creating
-one whenever the request carries a token this installation signed - in the
-`rbac.subject.jwt` cookie or the `Authorization` header - and the subject in
-that token still exists. A request with no token, with a malformed or expired
+one whenever the request carries a token this installation signed in the
+`Authorization` header and the subject in that token still exists. A request with no token, with a malformed or expired
 token, or with a token for a deleted subject creates a subject, so first-visit
 creation is unchanged.
 
@@ -259,6 +491,60 @@ subject service.
   `2592000`, 30 days). It is independent of the token lifetimes.
 - `RBAC_ANONYMOUS_SUBJECT_CLEANUP_BATCH_SIZE`: subjects examined per cleanup
   run (default `500`). A larger backlog drains over consecutive runs.
+
+## Session Tokens
+
+Every token the framework signs for a subject carries `exp`, `iat`, a unique
+`jti`, its type in `typ`, and `subject: { id }`. The subject row is never
+copied into a token; `me` reads it from the database.
+
+- An access token (`typ: "access"`, `RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS`)
+  authorizes requests. The is-authorized check, `me`, `logout`, session reuse
+  in `init`, the source subject of the OAuth link flow and route billing accept
+  only access tokens.
+- A refresh token (`typ: "refresh"`,
+  `RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS`, or
+  `RBAC_ANONYMOUS_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS` from `init`) is
+  accepted only by `POST /rbac/subjects/authentication/refresh`.
+- A token without `typ` was signed before token types existed. It is accepted
+  as either type until it expires, so sessions survive the upgrade; the last of
+  them expires within the longest configured refresh lifetime after the deploy
+  (28 days with the defaults). No framework code signs such tokens any more.
+- Code that signs a subject token, including project code, calls `signJwt`
+  from `@sps/backend-utils` with the subject id, the type and a lifetime. The
+  Telegram bot, the agent module and the subject's internal calls sign access
+  tokens this way.
+- `jti` makes every token unique; nothing consults it yet.
+
+### Logout and revocation
+
+The direct `GET /rbac/subjects/:id` owner read resolves the caller through
+`me` before applying ownership or role permissions. It rejects refresh tokens,
+revoked access tokens and tokens for deleted subjects, including requests
+forwarded by MCP. Operator reads retain their separate secret-key check.
+
+`logout` writes `tokensValidAfter` for the subject of the presented access
+token. Every token of that subject signed in or before that second is refused
+from then on with 401 `Authentication error. Token revoked`, on every device:
+logout ends all sessions of the subject, including the token an MCP connector
+stored, which then has to be authorized again. The Telegram bot and the agent
+module sign a new token for every call and are not affected after that second.
+A token signed later in the same second as the logout is refused as well,
+because `iat` has one-second resolution. `init` answers a revoked token with a
+new subject, and the browser clears a revoked session and starts an anonymous
+one.
+
+A logout without a token, or with an invalid, expired or refresh token, revokes
+nothing and still answers `{ ok: true }`. An already revoked token revokes
+nothing either, so an old token cannot end sessions started after the logout
+that revoked it.
+
+The API process that handles the logout refuses every token of the subject at
+once: logout drops the is-authorized service's cached mark for the subject and
+names the subject in the `RBAC_REVOKED_SUBJECT_CONTEXT_KEY` request variable,
+after which the is-authorized middleware answers none of that subject's tokens
+from its decision cache for as long as those decisions can live. Other API
+instances refuse them once their 30-second cache entries expire.
 
 ## OAuth Configuration
 
@@ -300,6 +586,7 @@ subject service.
 - `updatedAt`: last update timestamp.
 - `variant`: display variant.
 - `slug`: URL-friendly unique identifier.
+- `tokensValidAfter`: revocation mark written by logout; tokens of the subject signed in or before its second are refused. Empty until the first logout.
 
 ## Telegram Personal AI Agent
 
@@ -776,7 +1063,7 @@ supply arbitrary period timestamps.
 
 `me-account` resolves the current session and delegates its authenticated view to
 `me-account-ai-chat`, so public pages and AI Chat use the same profile, token
-balance and account actions. Its guest link uses `/ai-chat/sign-in`.
+balance and account actions. Its guest link opens the RBAC email sign-in form.
 
 The cart drawer uses compact Product rows and totals from the authorized
 `includeCartDetails` response. Quantity controls update one exact order line

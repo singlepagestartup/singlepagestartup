@@ -1,26 +1,45 @@
 /**
  * BDD Suite: Page seed identity.
  * Given: one Page shared by all locales.
- * When: a Page snapshot is seeded, including a legacy snapshot without language.
- * Then: its URL is reconciled without creating a language-specific copy.
+ * When: a snapshot changes its URL or an older dump omits its slug.
+ * Then: the seed updates the existing page and keeps its local ID.
  */
+import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import { Configuration } from "./configuration";
 import { Repository } from "./repository";
 
 afterEach(() => jest.restoreAllMocks());
 
-it.each(["en", "ru", undefined])(
-  "reconciles the same Page URL when a legacy snapshot has language %s",
-  async (language) => {
+it.each([
+  { slug: "about", url: "/company", language: undefined },
+  { slug: undefined, url: "/about", language: "en" },
+  { slug: undefined, url: "/about", language: "ru" },
+  { slug: undefined, url: "/about", language: undefined },
+])(
+  "reuses the Page when seeding slug $slug, URL $url and language $language",
+  async ({ slug, url, language }) => {
     const rows = [
-      { id: "page", url: "/about", language: "en", title: "About" },
-      { id: "other", url: "/contacts", language: "en", title: "Contacts" },
+      {
+        id: "page",
+        url: "/about",
+        slug: "about",
+        language: "en",
+        title: "About",
+      },
+      {
+        id: "other",
+        url: "/contacts",
+        slug: "contacts",
+        language: "en",
+        title: "Contacts",
+      },
     ];
     const originalOther = { ...rows[1] };
     const snapshot = {
       id: "snapshot-page",
-      url: "/about",
+      url,
+      ...(slug ? { slug } : {}),
       ...(language ? { language } : {}),
       title: "Updated snapshot",
     };
@@ -50,7 +69,26 @@ it.each(["en", "ru", undefined])(
     expect(repository.insert).not.toHaveBeenCalled();
     expect(repository.updateFirstByField).toHaveBeenCalledTimes(1);
     expect(result.seeds.map((seed) => seed.new.id)).toEqual(["page"]);
-    expect(rows.find((r) => r.id === "page")?.title).toBe(snapshot.title);
+    expect(rows[0]).toMatchObject({
+      id: "page",
+      url,
+      slug: "about",
+      title: snapshot.title,
+    });
     expect(rows.find((r) => r.id === originalOther.id)).toEqual(originalOther);
   },
 );
+
+it("adopts the dump slug only while the existing URL has its backfilled slug", () => {
+  const filter = new Configuration().repository.seed.filters![0];
+  const url = "/company";
+  const initial = `page-${createHash("sha256").update(url).digest("hex")}`;
+  const dump = { url, slug: "company" };
+  const page = { url, slug: initial };
+  const match = (db: (typeof page)[]) =>
+    filter.value({ seeds: [], entity: { dump, db } });
+
+  expect(match([page])).toBe(initial);
+  expect(match([{ url, slug: "edited-by-owner" }])).toBe(dump.slug);
+  expect(match([page, { url: "/previous", slug: dump.slug }])).toBe(dump.slug);
+});

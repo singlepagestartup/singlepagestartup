@@ -210,18 +210,23 @@ export class Service {
       },
     });
 
-    const productsToAttributesWithAttributes = productsToAttributes?.length
-      ? await Promise.all(
-          productsToAttributes.map(async (item) => {
-            return {
-              ...item,
-              attribute: await this.extendedEcommerceModuleAttributeById({
-                id: item.attributeId,
-              }),
-            };
-          }),
-        )
-      : [];
+    let productsToAttributesWithAttributes;
+    if (productsToAttributes?.length) {
+      productsToAttributesWithAttributes = await Promise.all(
+        productsToAttributes.map(async (item) => {
+          const relation = { ...item };
+          const attribute = await this.extendedEcommerceModuleAttributeById({
+            id: item.attributeId,
+          });
+          return {
+            ...relation,
+            attribute,
+          };
+        }),
+      );
+    } else {
+      productsToAttributesWithAttributes = [];
+    }
 
     const productsToFileStorageModuleFiles =
       await this.productsToFileStorageModuleFiles.find({
@@ -238,23 +243,26 @@ export class Service {
         },
       });
 
-    const fileStorageModuleFiles = productsToFileStorageModuleFiles?.length
-      ? await this.fileStorageModule.file.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "id",
-                  method: "inArray",
-                  value: productsToFileStorageModuleFiles.map(
-                    (item) => item.fileStorageModuleFileId,
-                  ),
-                },
-              ],
-            },
+    let fileStorageModuleFiles: IFileStorageModuleFile[] | null;
+    if (productsToFileStorageModuleFiles?.length) {
+      fileStorageModuleFiles = await this.fileStorageModule.file.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "id",
+                method: "inArray",
+                value: productsToFileStorageModuleFiles.map(
+                  (item) => item.fileStorageModuleFileId,
+                ),
+              },
+            ],
           },
-        })
-      : [];
+        },
+      });
+    } else {
+      fileStorageModuleFiles = [];
+    }
 
     const fileStorageModuleFilesById = new Map(
       (fileStorageModuleFiles ?? []).map((item) => [item.id, item]),

@@ -1,8 +1,18 @@
-import { RBAC_JWT_SECRET, createMemoryCache } from "@sps/shared-utils";
+import {
+  RBAC_JWT_SECRET,
+  createMemoryCache,
+  isExactResourceGrant,
+} from "@sps/shared-utils";
+import { DI, type IRepository } from "@sps/shared-backend-api";
 import { Service as PermissionService } from "@sps/rbac/models/permission/backend/app/api/src/lib/service";
+import { rolelessPermissions } from "@sps/rbac/models/permission/backend/repository/database";
 import { Service as RolesToPermissionsService } from "@sps/rbac/relations/roles-to-permissions/backend/app/api/src/lib/service";
 import { logger, verifyJwt } from "@sps/backend-utils";
 import { Service as SubjectsToRolesService } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/service";
+import {
+  type IModel as ISubject,
+  isRbacSubjectTokenRevoked,
+} from "@sps/rbac/models/subject/sdk/model";
 import { inject, injectable } from "inversify";
 import { SubjectDI } from "../../di";
 
@@ -25,6 +35,7 @@ export class Service {
   permissionService: PermissionService;
   rolesToPermissionsService: RolesToPermissionsService;
   subjectsToRolesService: SubjectsToRolesService;
+  repository: IRepository;
 
   constructor(
     @inject(SubjectDI.IPermissionService)
@@ -33,14 +44,73 @@ export class Service {
     rolesToPermissionsService: RolesToPermissionsService,
     @inject(SubjectDI.ISubjectsToRolesService)
     subjectsToRolesService: SubjectsToRolesService,
+    @inject(DI.IRepository) repository: IRepository,
   ) {
     this.permissionService = permissionService;
     this.rolesToPermissionsService = rolesToPermissionsService;
     this.subjectsToRolesService = subjectsToRolesService;
+    this.repository = repository;
   }
 
   invalidateSubjectRoleCache(subjectId: string) {
     cache.del(`subjects-to-roles:subject:${subjectId}`);
+  }
+
+  /**
+   * Drops the cached revocation mark of a subject, so the next request reads
+   * the one logout has just written instead of waiting for the entry to
+   * expire.
+   */
+  invalidateSubjectRevocationCache(subjectId: string) {
+    cache.del(`subject:tokens-valid-after:${subjectId}`);
+  }
+
+  /**
+   * Resolves the subject of an access token. A refresh token, or a token
+   * signed before its subject last logged out, is refused. A token whose
+   * subject no longer exists still resolves to its id, which holds no role.
+   * Route billing resolves the subject it charges through this as well.
+   */
+  async getSubjectId(authorization: string) {
+    const decoded = await verifyJwt(authorization, RBAC_JWT_SECRET as string, {
+      type: "access",
+    });
+    const subjectId = decoded.subject?.["id"];
+    if (typeof subjectId !== "string" || !subjectId) {
+      throw new Error("Validation error. No subject provided in the token");
+    }
+
+    const tokensValidAfter = await this.getSubjectTokensValidAfter(subjectId);
+
+    if (
+      isRbacSubjectTokenRevoked({
+        subject: { tokensValidAfter },
+        issuedAt: decoded.iat,
+      })
+    ) {
+      throw new Error("Authentication error. Token revoked");
+    }
+
+    return subjectId;
+  }
+
+  protected async getSubjectTokensValidAfter(subjectId: string) {
+    const cacheKey = `subject:tokens-valid-after:${subjectId}`;
+    const cached = await cache.getAsync<{ tokensValidAfter: Date | null }>(
+      cacheKey,
+    );
+
+    if (cached) {
+      return cached.tokensValidAfter;
+    }
+
+    const subject: ISubject | undefined =
+      await this.repository.findFirstByField("id", subjectId);
+    const tokensValidAfter = subject?.tokensValidAfter ?? null;
+
+    cache.set(cacheKey, { tokensValidAfter });
+
+    return tokensValidAfter;
   }
 
   protected async getSubjectRoleIds(subjectId: string) {
@@ -83,15 +153,17 @@ export class Service {
   }
 
   /**
-   * One-shot inventory of the permission rows that carry no role — the routes
-   * this deployment answers for anonymous callers (issue #270). A project
-   * upgrading reads its own surface here instead of auditing the seed by hand.
+   * The permission rows that carry no role and are missing from the reviewed
+   * `rolelessPermissions` list, as `METHOD path` (issue #303). The rbac unit
+   * lane runs it against the seed and the boot report against the live table,
+   * so a new role-less row fails the lane and appears in the log until it is
+   * listed.
    *
    * It lives on this service rather than on the permission service because the
    * attachments come from the roles-to-permissions relation, and this is the
    * only class holding both reads.
    */
-  protected async reportRolelessPermissions() {
+  async findUnlistedRolelessPermissions() {
     const [permissions, rolesToPermissions] = await Promise.all([
       this.permissionService.find(),
       this.rolesToPermissionsService.find(),
@@ -102,20 +174,39 @@ export class Service {
         (roleToPermission) => roleToPermission.permissionId,
       ),
     );
+    const listedRolelessPermissions = new Set(rolelessPermissions);
 
-    const roleless = permissions
+    return permissions
       .filter((permission) => !permissionIdsWithRole.has(permission.id))
+      .filter(
+        (permission) =>
+          !(
+            permission.method === "GET" &&
+            isExactResourceGrant("/api/social/chats", permission.path)
+          ),
+      )
       .map((permission) => `${permission.method} ${permission.path}`)
+      .filter((permission) => !listedRolelessPermissions.has(permission))
       .sort();
+  }
 
-    if (!roleless.length) {
+  /**
+   * One-shot inventory of the role-less permission rows missing from the list,
+   * which this deployment answers for anonymous callers unless the route is
+   * sensitive (issues #270, #303). A project upgrading reads here the rows it
+   * still has to review.
+   */
+  protected async reportRolelessPermissions() {
+    const unlisted = await this.findUnlistedRolelessPermissions();
+
+    if (!unlisted.length) {
       return;
     }
 
     logger.warn(
       [
-        `RBAC: ${roleless.length} permission(s) carry no role and stay public unless the route is sensitive:`,
-        ...roleless,
+        `RBAC: ${unlisted.length} permission(s) carry no role and are missing from the reviewed list; they stay public unless the route is sensitive:`,
+        ...unlisted,
       ].join("\n"),
     );
   }
@@ -167,24 +258,7 @@ export class Service {
     const authorization = props.authorization.value;
 
     if (authorization) {
-      const tokenCacheKey = `jwt:subject:${authorization}`;
-      // Verify exp on every authorization, even while role data is cached.
-      subjectId = undefined;
-
-      if (!subjectId) {
-        const decoded = await verifyJwt(authorization, RBAC_JWT_SECRET);
-
-        if (!decoded.subject?.["id"]) {
-          throw new Error("Validation error. No subject provided in the token");
-        }
-
-        if (typeof decoded.subject["id"] !== "string") {
-          throw new Error("Validation error. Subject ID is not a string");
-        }
-
-        subjectId = decoded.subject["id"];
-        cache.set(tokenCacheKey, subjectId);
-      }
+      subjectId = await this.getSubjectId(authorization);
     }
 
     const permissionResolutionCacheKey = [
@@ -242,6 +316,7 @@ export class Service {
         authorized = !(await this.permissionService.isSensitiveRoute(
           props.permission.route,
           props.permission.method,
+          permission.path,
         ));
       }
 

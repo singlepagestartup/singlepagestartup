@@ -1,9 +1,9 @@
 /**
  * BDD Suite: service-composed RBAC authorization.
  *
- * Given: Permission, roles-to-permissions, and subjects-to-roles services are injected.
+ * Given: Permission, roles-to-permissions, and subjects-to-roles services and the subject repository are injected.
  * When: authorization is evaluated.
- * Then: filtered service reads replace loopback API calls while public permissions remain public.
+ * Then: filtered service reads replace loopback API calls while public permissions remain public, and only unrevoked access tokens act as their subject.
  */
 
 jest.mock("@sps/shared-utils", () => {
@@ -21,9 +21,14 @@ jest.mock("hono/jwt", () => ({
   }),
 }));
 
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { JwtTokenExpired } from "hono/utils/jwt/types";
 import { verify } from "hono/jwt";
+import { logger } from "@sps/backend-utils";
 import { Service as PermissionService } from "@sps/rbac/models/permission/backend/app/api/src/lib/service";
+import { dataDirectory as permissionDataDirectory } from "@sps/rbac/models/permission/backend/repository/database";
+import { dataDirectory as rolesToPermissionsDataDirectory } from "@sps/rbac/relations/roles-to-permissions/backend/repository/database";
 import { Service } from "./is-authorized";
 
 /**
@@ -35,11 +40,7 @@ function createPermissionService(props: {
   permission?: Record<string, unknown>;
   rootPermission?: Record<string, unknown>;
 }) {
-  const service = new PermissionService(
-    {} as any,
-    { find: jest.fn() } as any,
-    { find: jest.fn() } as any,
-  );
+  const service = new PermissionService({} as any, { find: jest.fn() } as any);
 
   service.find = jest.fn().mockResolvedValue([]);
   service.resolveByRoute = jest.fn().mockResolvedValue({
@@ -49,6 +50,15 @@ function createPermissionService(props: {
   });
 
   return service;
+}
+
+/**
+ * The subject repository the service reads revocation marks from.
+ */
+function createSubjectRepository(subject?: Record<string, unknown> | null) {
+  return {
+    findFirstByField: jest.fn().mockResolvedValue(subject ?? undefined),
+  };
 }
 
 describe("Given: injected RBAC services", () => {
@@ -73,6 +83,7 @@ describe("Given: injected RBAC services", () => {
       permissionService as any,
       rolesToPermissionsService as any,
       { find: jest.fn() } as any,
+      createSubjectRepository() as any,
     );
 
     await expect(
@@ -121,6 +132,10 @@ describe("Given: injected RBAC services", () => {
       }) as any,
       rolesToPermissionsService as any,
       subjectsToRolesService as any,
+      createSubjectRepository({
+        id: "subject-1",
+        tokensValidAfter: null,
+      }) as any,
     );
 
     await expect(
@@ -160,6 +175,7 @@ describe("Given: injected RBAC services", () => {
       { resolveByRoute: jest.fn() } as any,
       { find: jest.fn() } as any,
       { find: jest.fn() } as any,
+      createSubjectRepository() as any,
     );
 
     const execution = service.execute({
@@ -204,6 +220,7 @@ describe("Given: a role-less permission on a sensitive route", () => {
       }) as any,
       { find: jest.fn().mockResolvedValue([]) } as any,
       { find: jest.fn() } as any,
+      createSubjectRepository() as any,
     );
 
     await expect(
@@ -254,6 +271,10 @@ describe("Given: a role-less permission on a sensitive route", () => {
         ]),
       } as any,
       subjectsToRolesService as any,
+      createSubjectRepository({
+        id: "subject-admin",
+        tokensValidAfter: null,
+      }) as any,
     );
 
     await expect(
@@ -306,6 +327,10 @@ describe("Given: a role-less permission on a sensitive route", () => {
             { subjectId: "subject-member", roleId: "role-user" },
           ]),
       } as any,
+      createSubjectRepository({
+        id: "subject-member",
+        tokensValidAfter: null,
+      }) as any,
     );
 
     await expect(
@@ -343,6 +368,7 @@ describe("Given: a role-less permission on a sensitive route", () => {
       permissionService as any,
       { find: jest.fn().mockResolvedValue([]) } as any,
       { find: jest.fn() } as any,
+      createSubjectRepository() as any,
     );
 
     await expect(
@@ -352,4 +378,377 @@ describe("Given: a role-less permission on a sensitive route", () => {
       }),
     ).resolves.toEqual({ ok: true });
   });
+});
+
+/**
+ * BDD Suite: token type and revocation in authorization.
+ *
+ * Given: a route whose permission grants a role the subject holds.
+ * When: the request carries a refresh token, a token signed before types
+ * existed, or a token signed before its subject logged out.
+ * Then: only an unrevoked access token acts as its subject; a token without a
+ * type still does until it expires.
+ */
+describe("Given: a request that carries a subject token", () => {
+  function createService(props: {
+    subjectId: string;
+    subjectRepository: ReturnType<typeof createSubjectRepository>;
+  }) {
+    return new Service(
+      createPermissionService({
+        permission: { id: `permission-for-${props.subjectId}` },
+      }) as any,
+      {
+        find: jest.fn().mockResolvedValue([
+          {
+            permissionId: `permission-for-${props.subjectId}`,
+            roleId: "role-member",
+          },
+        ]),
+      } as any,
+      {
+        find: jest
+          .fn()
+          .mockResolvedValue([
+            { subjectId: props.subjectId, roleId: "role-member" },
+          ]),
+      } as any,
+      props.subjectRepository as any,
+    );
+  }
+
+  function authorize(service: Service, token: string) {
+    return service.execute({
+      permission: {
+        route: `/private-route-for-${token}`,
+        method: "GET",
+        type: "HTTP",
+      },
+      authorization: { value: token },
+    });
+  }
+
+  /**
+   * BDD Scenario
+   * Given: a valid refresh token for a subject that holds the role.
+   * When: it is presented as the request credential.
+   * Then: it is refused, because only the refresh route accepts it.
+   */
+  it("When: a refresh token is presented Then: refuses it", async () => {
+    (verify as jest.Mock).mockResolvedValueOnce({
+      typ: "refresh",
+      iat: Math.floor(Date.now() / 1000),
+      subject: { id: "subject-refresh" },
+    });
+
+    const subjectRepository = createSubjectRepository({
+      id: "subject-refresh",
+      tokensValidAfter: null,
+    });
+    const service = createService({
+      subjectId: "subject-refresh",
+      subjectRepository,
+    });
+
+    await expect(authorize(service, "jwt-refresh")).rejects.toThrow(
+      "Authentication error. Invalid token type",
+    );
+    expect(subjectRepository.findFirstByField).not.toHaveBeenCalled();
+  });
+
+  /**
+   * BDD Scenario
+   * Given: an access token and a token signed before token types existed,
+   * each for a subject that holds the role and never logged out.
+   * When: each is presented.
+   * Then: both authorize the request.
+   */
+  it("When: an access token or an untyped token is presented Then: authorizes it", async () => {
+    (verify as jest.Mock).mockResolvedValueOnce({
+      typ: "access",
+      iat: Math.floor(Date.now() / 1000),
+      subject: { id: "subject-access" },
+    });
+
+    await expect(
+      authorize(
+        createService({
+          subjectId: "subject-access",
+          subjectRepository: createSubjectRepository({
+            id: "subject-access",
+            tokensValidAfter: null,
+          }),
+        }),
+        "jwt-access",
+      ),
+    ).resolves.toEqual({ ok: true });
+
+    (verify as jest.Mock).mockResolvedValueOnce({
+      iat: Math.floor(Date.now() / 1000),
+      subject: { id: "subject-untyped" },
+    });
+
+    await expect(
+      authorize(
+        createService({
+          subjectId: "subject-untyped",
+          subjectRepository: createSubjectRepository({
+            id: "subject-untyped",
+            tokensValidAfter: null,
+          }),
+        }),
+        "jwt-untyped",
+      ),
+    ).resolves.toEqual({ ok: true });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: an access token signed a minute before its subject logged out.
+   * When: it is presented.
+   * Then: it is refused as revoked, although it has not expired.
+   */
+  it("When: the token was signed before the subject logged out Then: refuses it", async () => {
+    const issuedAt = Math.floor(Date.now() / 1000) - 60;
+
+    (verify as jest.Mock).mockResolvedValueOnce({
+      typ: "access",
+      iat: issuedAt,
+      subject: { id: "subject-revoked" },
+    });
+
+    const service = createService({
+      subjectId: "subject-revoked",
+      subjectRepository: createSubjectRepository({
+        id: "subject-revoked",
+        tokensValidAfter: new Date((issuedAt + 30) * 1000),
+      }),
+    });
+
+    await expect(authorize(service, "jwt-revoked")).rejects.toThrow(
+      "Authentication error. Token revoked",
+    );
+  });
+
+  /**
+   * BDD Scenario
+   * Given: an authorized token whose subject's revocation mark is cached,
+   * and a logout that then writes the mark.
+   * When: the cache entry is invalidated and the token is presented again.
+   * Then: the new mark is read and the token is refused within the cache
+   * lifetime.
+   */
+  it("When: logout invalidates the cached mark Then: the next request reads it and refuses the token", async () => {
+    const issuedAt = Math.floor(Date.now() / 1000) - 60;
+
+    (verify as jest.Mock).mockResolvedValue({
+      typ: "access",
+      iat: issuedAt,
+      subject: { id: "subject-logout" },
+    });
+
+    const subjectRepository = createSubjectRepository({
+      id: "subject-logout",
+      tokensValidAfter: null,
+    });
+    const service = createService({
+      subjectId: "subject-logout",
+      subjectRepository,
+    });
+
+    await expect(authorize(service, "jwt-logout")).resolves.toEqual({
+      ok: true,
+    });
+
+    subjectRepository.findFirstByField.mockResolvedValue({
+      id: "subject-logout",
+      tokensValidAfter: new Date(),
+    });
+    service.invalidateSubjectRevocationCache("subject-logout");
+
+    await expect(authorize(service, "jwt-logout")).rejects.toThrow(
+      "Authentication error. Token revoked",
+    );
+    expect(subjectRepository.findFirstByField).toHaveBeenCalledTimes(2);
+  });
+});
+
+/**
+ * BDD Suite: the reviewed list of role-less permissions.
+ *
+ * Given: the framework permission and roles-to-permissions seed.
+ * When: the is-authorized service inventories the rows that carry no role.
+ * Then: every role-less seed row is on the reviewed list, a role-less row
+ * missing from it is named, and the boot report names only such rows.
+ */
+describe("Given: the framework permission seed", () => {
+  function readSeed<T>(directory: string): T[] {
+    return readdirSync(directory)
+      .filter((file) => file.endsWith(".json"))
+      .map((file) => JSON.parse(readFileSync(join(directory, file), "utf-8")));
+  }
+
+  function createService(props: {
+    permissions: Record<string, unknown>[];
+    rolesToPermissions: Record<string, unknown>[];
+  }) {
+    const permissionService = createPermissionService({});
+
+    permissionService.find = jest.fn().mockResolvedValue(props.permissions);
+
+    return new Service(
+      permissionService as any,
+      { find: jest.fn().mockResolvedValue(props.rolesToPermissions) } as any,
+      { find: jest.fn() } as any,
+      createSubjectRepository() as any,
+    );
+  }
+
+  const permissions = readSeed<{ id: string; method: string; path: string }>(
+    permissionDataDirectory,
+  );
+  const rolesToPermissions = readSeed<{ permissionId: string }>(
+    rolesToPermissionsDataDirectory,
+  );
+
+  /**
+   * BDD Scenario
+   * Given: the permission and roles-to-permissions rows the framework seeds.
+   * When: the rows that carry no role are compared with the reviewed list.
+   * Then: none is missing, so the seed publishes no route by omission.
+   */
+  it("When: the seed is inventoried Then: every role-less row is on the reviewed list", async () => {
+    const service = createService({ permissions, rolesToPermissions });
+
+    await expect(service.findUnlistedRolelessPermissions()).resolves.toEqual(
+      [],
+    );
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a new permission row that carries no role and is not listed.
+   * When: the seed is inventoried.
+   * Then: the check names that row.
+   */
+  it("When: a role-less row is not listed Then: the check names it", async () => {
+    const service = createService({
+      permissions: [
+        ...permissions,
+        {
+          id: "permission-unlisted",
+          method: "GET",
+          path: "/api/ecommerce/orders/export",
+        },
+      ],
+      rolesToPermissions,
+    });
+
+    await expect(service.findUnlistedRolelessPermissions()).resolves.toEqual([
+      "GET /api/ecommerce/orders/export",
+    ]);
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a seed in which the order list read lost its Admin attachment.
+   * When: the seed is inventoried.
+   * Then: the check names the order list read, which would otherwise answer
+   * every caller.
+   */
+  it("When: the order list read carries no role Then: the check names it", async () => {
+    const orderListRead = permissions.find((permission) => {
+      return (
+        permission.method === "GET" &&
+        permission.path === "/api/ecommerce/orders"
+      );
+    });
+    const service = createService({
+      permissions,
+      rolesToPermissions: rolesToPermissions.filter((roleToPermission) => {
+        return roleToPermission.permissionId !== orderListRead?.id;
+      }),
+    });
+
+    await expect(service.findUnlistedRolelessPermissions()).resolves.toEqual([
+      "GET /api/ecommerce/orders",
+    ]);
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a live table with one listed and one unlisted role-less row.
+   * When: the boot report runs.
+   * Then: it warns about the unlisted row only.
+   */
+  it("When: the boot report runs Then: it names only the unlisted rows", async () => {
+    class ReportingService extends Service {
+      report() {
+        return this.reportRolelessPermissions();
+      }
+    }
+
+    const permissionService = createPermissionService({});
+
+    permissionService.find = jest.fn().mockResolvedValue([
+      { id: "permission-listed", method: "GET", path: "/api/blog/articles" },
+      {
+        id: "permission-unlisted",
+        method: "GET",
+        path: "/api/ecommerce/orders/export",
+      },
+    ]);
+
+    const warn = jest.spyOn(logger, "warn").mockImplementation(() => logger);
+    const service = new ReportingService(
+      permissionService as any,
+      { find: jest.fn().mockResolvedValue([]) } as any,
+      { find: jest.fn() } as any,
+      createSubjectRepository() as any,
+    );
+
+    await service.report();
+
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0][0]).toContain("GET /api/ecommerce/orders/export");
+    expect(warn.mock.calls[0][0]).not.toContain("GET /api/blog/articles");
+
+    warn.mockRestore();
+  });
+});
+
+describe("roleless Chat access", () => {
+  const chat = "/api/social/chats/11111111-1111-4111-8111-111111111111";
+  const otherChat = "/api/social/chats/22222222-2222-4222-8222-222222222222";
+  it.each([
+    ["/api/social/chats", "/api/social/chats", false],
+    [chat, chat, true],
+    [otherChat, "/api/social/chats/[social.chats.id]", false],
+    [
+      "/api/social/profiles-to-file-storage-module-files",
+      "/api/social/profiles-to-file-storage-module-files",
+      false,
+    ],
+  ] as const)(
+    "checks the resolved grant before authorizing %s",
+    async (route, permissionPath, allowed) => {
+      const service = new Service(
+        createPermissionService({
+          permission: { id: "roleless", path: permissionPath },
+        }) as any,
+        { find: jest.fn().mockResolvedValue([]) } as any,
+        { find: jest.fn() } as any,
+        createSubjectRepository() as any,
+      );
+      const check = service.execute({
+        permission: { route, method: "GET", type: "HTTP" },
+        authorization: {},
+      });
+      if (allowed) {
+        await expect(check).resolves.toEqual({ ok: true });
+      } else {
+        await expect(check).rejects.toThrow("Permission error.");
+      }
+    },
+  );
 });

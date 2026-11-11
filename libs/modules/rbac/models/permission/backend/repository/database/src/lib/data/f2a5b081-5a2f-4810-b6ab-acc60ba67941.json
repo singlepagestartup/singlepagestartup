@@ -1,0 +1,9 @@
+{
+  "id": "f2a5b081-5a2f-4810-b6ab-acc60ba67941",
+  "createdAt": "2026-11-10T20:43:00.645Z",
+  "updatedAt": "2026-11-10T20:43:00.645Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/website-builder/buttons/:uuid"
+}

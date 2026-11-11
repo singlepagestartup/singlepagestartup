@@ -1,3 +1,4 @@
+import { z } from "zod";
 import {
   CLOUDPAYMENTS_API_SECRET,
   CLOUDPAYMENTS_PUBLIC_ID,
@@ -131,7 +132,7 @@ export class Handler {
               );
             }
 
-            const paymentsList = await fetch(
+            const response = await fetch(
               "https://api.cloudpayments.ru/payments/list",
               {
                 method: "POST",
@@ -143,85 +144,28 @@ export class Handler {
                   Date: new Date(invoice.createdAt).toISOString().split("T")[0],
                 }),
               },
-            ).then((res) => res.json());
-
-            let matchedTransaction: {
-              ReasonCode: number;
-              PublicId: string;
-              TerminalUrl: string;
-              TransactionId: number;
-              Amount: number;
-              Currency: string;
-              CurrencyCode: number;
-              PaymentAmount: number;
-              PaymentCurrency: string;
-              PaymentCurrencyCode: number;
-              InvoiceId: string;
-              AccountId: string;
-              Email: string;
-              Description: string;
-              JsonData: string;
-              CreatedDate: string;
-              PayoutDate: string;
-              PayoutDateIso: string;
-              PayoutAmount: number;
-              CreatedDateIso: string;
-              AuthDate: string;
-              AuthDateIso: string;
-              ConfirmDate: string;
-              ConfirmDateIso: string;
-              AuthCode: string;
-              TestMode: boolean;
-              Rrn: string;
-              OriginalTransactionId: string;
-              FallBackScenarioDeclinedTransactionId: string;
-              IpAddress: string;
-              IpCountry: string;
-              IpCity: string;
-              IpRegion: string;
-              IpDistrict: string;
-              IpLatitude: number;
-              IpLongitude: number;
-              CardFirstSix: string;
-              CardLastFour: string;
-              CardExpDate: string;
-              CardType: string;
-              CardProduct: string;
-              CardCategory: string;
-              EscrowAccumulationId: string;
-              IssuerBankCountry: string;
-              Issuer: string;
-              CardTypeCode: number;
-              Status: string;
-              StatusCode: number;
-              CultureName: string;
-              Reason: string;
-              CardHolderMessage: string;
-              Type: number;
-              Refunded: boolean;
-              Name: string;
-              Token: string;
-              SubscriptionId: string;
-              GatewayName: string;
-              ApplePay: boolean;
-              AndroidPay: boolean;
-              WalletType: string;
-              TotalFee: number;
-              IsLocalOrder: boolean;
-              Gateway: number;
-              MasterPass: boolean;
-              InfoShopData: string;
-              Receiver: string;
-              Splits: string;
-            } | null = null;
-            if (paymentsList.Model?.length) {
-              matchedTransaction = paymentsList.Model.find((tx: any) => {
-                const jsonData = JSON.parse(tx.JsonData);
-                const invoiceId = jsonData.invoiceId;
-
-                return invoiceId === invoice.id;
-              });
-            }
+            );
+            const paymentsList = z
+              .object({
+                Model: z
+                  .array(
+                    z.object({
+                      Amount: z.number(),
+                      JsonData: z.string().nullish(),
+                    }),
+                  )
+                  .nullish(),
+              })
+              .parse(await response.json());
+            const matchedTransaction = paymentsList.Model?.find(
+              (transaction) => {
+                if (!transaction.JsonData) {
+                  return false;
+                }
+                const metadata = JSON.parse(transaction.JsonData);
+                return metadata?.invoiceId === invoice.id;
+              },
+            );
 
             if (matchedTransaction) {
               await invoiceApi.update({

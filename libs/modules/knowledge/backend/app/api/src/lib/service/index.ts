@@ -130,8 +130,10 @@ export class KnowledgeService {
         console.error("Knowledge indexing failed", source.id, indexError);
       }
     }
+    const loadedSource = await this.source.findSourceById(source.id);
+
     return {
-      source: await this.source.findSourceById(source.id),
+      source: loadedSource,
       indexError,
       processingError,
     };
@@ -163,7 +165,12 @@ export class KnowledgeService {
   }
 
   async deleteStoredFile(props: { id: string }) {
-    return (await this.mutateStoredFile({ action: "delete", ...props }))!;
+    const relation = await this.mutateStoredFile({
+      action: "delete",
+      ...props,
+    });
+
+    return relation!;
   }
 
   private async mutateStoredFile(
@@ -207,9 +214,14 @@ export class KnowledgeService {
     }
 
     const config = getKnowledgeConfiguration();
-    const embedding = props.sessionId
-      ? await this.embeddingClient.embed(query, { sessionId: props.sessionId })
-      : await this.embeddingClient.embed(query);
+    let embedding;
+    if (props.sessionId) {
+      embedding = await this.embeddingClient.embed(query, {
+        sessionId: props.sessionId,
+      });
+    } else {
+      embedding = await this.embeddingClient.embed(query);
+    }
     const topK = Math.min(
       Math.max(Number(props.topK || config.search.defaultTopK), 1),
       50,
@@ -225,21 +237,24 @@ export class KnowledgeService {
       sourceIds,
     });
 
-    const neighborChunks = neighborWindow
-      ? await this.source.findNeighborChunks({
-          window: neighborWindow,
-          seeds: seedChunks
-            .filter((chunk) => Boolean(chunk.sourceId))
-            .map((chunk) => {
-              return {
-                sourceId: chunk.sourceId as string,
-                chunkIndex: chunk.chunkIndex,
-                distance: chunk.distance,
-                similarity: chunk.similarity,
-              };
-            }),
-        })
-      : [];
+    let neighborChunks;
+    if (neighborWindow) {
+      neighborChunks = await this.source.findNeighborChunks({
+        window: neighborWindow,
+        seeds: seedChunks
+          .filter((chunk) => Boolean(chunk.sourceId))
+          .map((chunk) => {
+            return {
+              sourceId: chunk.sourceId as string,
+              chunkIndex: chunk.chunkIndex,
+              distance: chunk.distance,
+              similarity: chunk.similarity,
+            };
+          }),
+      });
+    } else {
+      neighborChunks = [];
+    }
     const results = this.dedupeSearchResults([
       ...seedChunks,
       ...neighborChunks,
@@ -273,15 +288,17 @@ export class KnowledgeService {
     const generationModelSlug =
       props.generationModelSlug || DEFAULT_KNOWLEDGE_GENERATION_MODEL_SLUG;
     const selectedModel = await this.modelClient.get(generationModelSlug);
-    const contexts =
-      props.useKnowledgeSearch === false
-        ? []
-        : await this.search({
-            query: props.query,
-            topK: props.topK,
-            minSimilarity: props.minSimilarity,
-            sourceIds: props.sourceIds,
-          });
+    let contexts;
+    if (props.useKnowledgeSearch === false) {
+      contexts = [];
+    } else {
+      contexts = await this.search({
+        query: props.query,
+        topK: props.topK,
+        minSimilarity: props.minSimilarity,
+        sourceIds: props.sourceIds,
+      });
+    }
     const generation = await this.generationClient.generate({
       query: props.query,
       contexts,
@@ -380,8 +397,10 @@ export class KnowledgeService {
       indexError = error instanceof Error ? error.message : String(error);
       console.error("Knowledge indexing failed", source.id, indexError);
     }
+    const loadedSource = await this.source.findSourceById(source.id);
+
     return {
-      source: await this.source.findSourceById(source.id),
+      source: loadedSource,
       index,
       indexError,
       processingError,

@@ -30,7 +30,7 @@ export interface ITelegramConversation {
   path: string;
   handler: (
     conversation: GrammyConversation<any>,
-    ctx: GrammyContext & GrammyConversationFlavor,
+    ctx: GrammyConversationFlavor<GrammyContext>,
   ) => void;
 }
 

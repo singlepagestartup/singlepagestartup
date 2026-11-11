@@ -433,17 +433,24 @@ export async function prepareFrameworkWidgetCutover(
       (input.privateArticles?.length ?? 0)
   )
     throw Error("Provide distinct explicit Article and association IDs");
+  const preparedInput = structuredClone(input);
+  const createdAt = new Date().toISOString();
+  let graphReferences = references;
+  if (graphReferences == null) {
+    graphReferences = [];
+    if (input.privateArticles?.length) {
+      graphReferences = await frameworkGraphReferences();
+    }
+  }
   const manifest: IFrameworkWidgetManifest = {
     schema: "sps.framework-widget-cutover.v1",
-    input: structuredClone(input),
-    createdAt: new Date().toISOString(),
+    input: preparedInput,
+    createdAt,
     status: "prepared",
     checks: [],
     operations: [],
     privateGraphs: [],
-    graphReferences:
-      references ??
-      (input.privateArticles?.length ? await frameworkGraphReferences() : []),
+    graphReferences,
     freezes: [],
   };
   const observe = (entity: string, record: IRecord) => {

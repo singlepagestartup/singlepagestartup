@@ -24,7 +24,7 @@ The RBAC module defines authentication subjects, identities, roles, permissions,
 - Session and refresh JWTs use HS256. Hono verification calls specify this
   algorithm explicitly; the shared `verifyJwt` helper also sanitizes credential
   failures, including algorithm mismatches.
-- `subject/backend/app/api/src/lib/service/singlepage/is-authorized.ts` is only the global permission resolver.
+- `subject/backend/app/api/src/lib/service/singlepage/is-authorized.ts` is only the global permission resolver. The token it reads must be an unrevoked access token (subject README, "Session Tokens").
 - The resolver receives the startup-exported Permission,
   roles-to-permissions, and subjects-to-roles services through Subject DI. It
   uses filtered service `find` calls; it must not call the local HTTP API or
@@ -32,6 +32,12 @@ The RBAC module defines authentication subjects, identities, roles, permissions,
 - A bracketed path segment such as `[knowledge.sources.id]` is a dynamic
   permission mask. A concrete UUID is literal and grants no access to another
   record id. Permissions without any role relation remain public.
+- The inventory of permission rows without a role lives in
+  `models/permission/backend/repository/database/src/lib/roleless-permissions`
+  (framework rows in `singlepage.ts`, project rows in `startup.ts`). The rbac
+  unit lane checks each row against the list, except an explicit GET grant for
+  one Chat UUID. The API logs unlisted rows from the live table on its first
+  authorization. See the permission model README.
 - Add route access through `rbac.permissions`; keep resource ownership and module-specific checks in `backend/app/middlewares/src/lib/*` middleware for that module.
 - Controllers should compose exported middleware instances, not define middleware bodies inline.
 - Do not put social chat/thread/profile ownership logic, billing rules, or other domain rules into the global authorization service.
