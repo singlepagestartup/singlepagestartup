@@ -7,7 +7,11 @@ import type { IComponentPropsExtended } from "./interface";
 import { internationalization } from "@sps/shared-configuration";
 
 export function Component(props: IComponentPropsExtended) {
-  const language = props.language || internationalization.defaultLanguage.code;
+  const language = (
+    internationalization.languages.find(
+      (configured) => configured.code === props.language,
+    ) ?? internationalization.defaultLanguage
+  ).code;
   if (!props.authenticated || !props.data)
     return (
       <Link

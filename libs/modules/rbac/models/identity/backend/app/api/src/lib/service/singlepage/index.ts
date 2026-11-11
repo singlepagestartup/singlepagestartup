@@ -9,7 +9,7 @@ import {
 } from "@sps/shared-utils";
 import { api } from "@sps/rbac/models/identity/sdk/server";
 import bcrypt from "bcrypt";
-import { createHash, randomBytes } from "node:crypto";
+import { createHmac, randomBytes } from "node:crypto";
 import { IModel } from "@sps/rbac/models/identity/sdk/model";
 import { assertCredentialColumnsAreHashed } from "@sps/backend-utils";
 
@@ -63,10 +63,20 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return super.update(props);
   }
 
+  private passwordResetDigest(code: string): string {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Configuration error. RBAC_SECRET_KEY is required");
+    }
+    return createHmac("sha256", RBAC_SECRET_KEY)
+      .update("rbac.password-reset:")
+      .update(code)
+      .digest("hex");
+  }
+
   async issuePasswordResetCode(identity: { id: string; email: string }) {
     const expiresAt = Date.now() + PASSWORD_RESET_LIFETIME_MS;
     const code = `${expiresAt}.${randomBytes(32).toString("base64url")}`;
-    const digest = createHash("sha256").update(code).digest("hex");
+    const digest = this.passwordResetDigest(code);
     const updated = await this.repository.consumeFirstByField(
       "id",
       identity.id,
@@ -93,7 +103,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       if (expiresAt <= Date.now()) {
         throw new Error(invalidCode);
       }
-      storedCode = createHash("sha256").update(props.code).digest("hex");
+      storedCode = this.passwordResetDigest(props.code);
     } else if (/^\$2[ab]\$10\$[A-Za-z0-9.]{1,22}$/.test(props.code)) {
       // Honor an unexpired code issued before the permission migration.
       storedCode = props.code;

@@ -12,7 +12,6 @@
  */
 
 import bcrypt from "bcrypt";
-import { createHash } from "node:crypto";
 
 const OPERATOR_SECRET = "operator-secret";
 
@@ -87,7 +86,9 @@ describe("one-time password reset codes", () => {
       email: "owner@example.com",
     });
     expect(code).toEqual(expect.any(String));
-    const digest = createHash("sha256").update(code!).digest("hex");
+    const digest = consume.mock.calls[0][2].code;
+    expect(digest).toMatch(/^[a-f0-9]{64}$/);
+    expect(digest).not.toBe(code);
     expect(consume).toHaveBeenCalledWith(
       "id",
       "identity-owner",
@@ -103,6 +104,48 @@ describe("one-time password reset codes", () => {
       service.resetPassword({ code: digest, password: "next-password" }),
     ).rejects.toThrow("Invalid or expired");
     expect(consume).toHaveBeenCalledTimes(1);
+  });
+
+  it("accepts the issued link once and rejects changes to its expiry", async () => {
+    let stored: string | null = null;
+    const consume = jest.fn(async (_field, id, data, predicate) => {
+      const expected = predicate.and.find(
+        (filter: IFilter) => filter.column === "code",
+      );
+      if (expected && expected.value !== stored) {
+        return null;
+      }
+      stored = data.code;
+      return { id };
+    });
+    const service = new Service({ consumeFirstByField: consume } as any);
+    Object.assign(service, {
+      find: async ({ params }: { params: { filters: { and: IFilter[] } } }) => {
+        const match = params.filters.and.find(
+          (filter) => filter.column === "code",
+        );
+        return match?.value === stored ? [{ id: "owner" }] : [];
+      },
+    });
+    const code = await service.issuePasswordResetCode({
+      id: "owner",
+      email: "owner@example.com",
+    });
+    if (!code) {
+      throw new Error("Expected an issued reset link");
+    }
+    const [expiry, token] = code.split(".");
+    const password = "replacement-password";
+    await expect(
+      service.resetPassword({
+        code: `${Number(expiry) + 1000}.${token}`,
+        password,
+      }),
+    ).rejects.toThrow("Invalid or expired");
+    await service.resetPassword({ code, password });
+    await expect(service.resetPassword({ code, password })).rejects.toThrow(
+      "Invalid or expired",
+    );
   });
 
   it("clears an outstanding link when updating the recovery address", async () => {
