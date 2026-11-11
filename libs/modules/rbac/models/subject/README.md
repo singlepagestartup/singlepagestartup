@@ -158,11 +158,14 @@ Thread management through `rbac.subject` requires `rbac.permission` records for 
 - `POST /rbac/subjects/authentication/email-and-password/reset-password`: reset password by code.
 - `POST /rbac/subjects/authentication/ethereum-virtual-machine`: EVM signature login.
 
-The permission migration grants anonymous POST access to `forgot-password` and
-`reset-password` under `/api/rbac/subjects/authentication/email-and-password/`.
-Edit either grant in **RBAC → Permissions**. Removing a grant returns 403 for
-that step, even with a previously issued code. Later migrations preserve the
-project's choice. These permissions apply to the whole project.
+After migrating a new database, run `npx nx run api:db:seed` to load the two
+POST permissions for password recovery from the Permission dump. By default
+both steps allow anonymous requests. Without its permission, a step returns 403,
+even if the user already has a reset code.
+
+To restrict recovery for the project, edit the permissions in **RBAC → Permissions**.
+If you delete either permission, export the updated Permission dump before the
+next seed. A seed restores any permission still present in the project's dump.
 
 Browser sign-in uses `/{language}/rbac/subject/authentication/email-and-password`.
 Registration, recovery email and password replacement use its `/registration`,
