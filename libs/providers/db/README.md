@@ -6,12 +6,10 @@ model CRUD routes and data snapshot seeding do not expose these tables.
 
 ## Model and relation changes
 
-Every existing model/relation `repository-generate` target runs Drizzle followed
-by `@sps/providers-db:repository-generate`. New model and relation generators
-create the same sequence. Generation targets run uncached because they write
-migration files and the capture catalog.
-
-For example, after changing Startup Widget fields, run from the repository root:
+Define framework fields in `fields/singlepage.ts` and project extensions in
+`fields/startup.ts`. Capture reads the resulting Drizzle Table and the entity's
+SDK route. This also applies to new models and relations in the Startup module.
+For example, after adding a column to Startup Widget, run:
 
 ```sh
 npx nx run @sps/startup:models:widget:repository-generate
@@ -19,37 +17,27 @@ npx nx run api:db:migrate
 npx nx run @sps/providers-db:consistency-check
 ```
 
-Use the matching model or relation target for other entities. Capture generation
-scans every module's effective `schema.ts` Table and SDK route, including new
-Startup models, relations and fields inherited through `fields/startup.ts`.
-Commit the generated entity migrations, infrastructure migration, Drizzle
-metadata and `capture.json` together. Never add tables to capture SQL or edit
-the catalog by hand. Repeating generation without schema or capture changes
-creates no new capture migration.
+Commit the Widget field definition and the migrations in the Widget repository.
+Other entities keep their own histories. If upstream and a project both change
+the same entity, reconcile that entity's Drizzle migrations during the merge.
 
-`api:db:migrate` applies infrastructure first. Each model/relation migrator
-installs capture after its own table migration, so newly created tables receive
-triggers. The infrastructure migrator also reconciles the generated catalog
-with deployed tables. `consistency-check` checks both catalog freshness and
-installed database triggers; run it after applying the complete migration set.
+During deployment the provider installs the shared PostgreSQL functions first.
+Each entity then applies its DDL and registers its table, effective column names
+and SDK topic. The migrator repairs missing or outdated triggers. A changed
+migration revision, registration or repaired trigger invalidates cached reads
+of that table. The revision and invalidation are committed together. The first
+deployment of revision tracking invalidates each migrated table once.
 
-Each capture SQL file contains the full generated table catalog and its trigger
-functions. The mappings come from the Drizzle tables and SDK routes. Installation
-skips triggers for tables that have yet to be created. API startup and
-`consistency-check` require both triggers on every table in the current project's
-catalog and on any additional registered table that still exists. Historical
-registrations for tables removed or renamed by the project can remain in the
-database without blocking startup.
-
-Client-owned or manually added generation targets must preserve the same
-uncached, sequential Drizzle-then-capture contract. Run the infrastructure
-command from the workspace root when introducing a custom migration workflow.
-Models and relations in the standard module layout need no manual capture list
-or second relation graph.
+After the entity migrations, `consistency-finalize` verifies coverage and
+invalidates old registrations for tables removed from both PostgreSQL and the
+project. Custom deploy scripts should use the same order as `migrate.sh`.
+API startup and the read-only `consistency-check` discover the project catalog
+from the source tree shipped in the API image. Both verify the topic, column
+mapping, row and truncate triggers, and captured UUID columns.
 
 ## Infrastructure changes
 
-When changing the consistency schema or capture generator itself, run:
+For changes to the provider schema or to the shared trigger functions, run:
 
 ```sh
 npx nx run @sps/providers-db:repository-generate
@@ -57,11 +45,13 @@ npx nx run api:db:migrate
 npx nx run @sps/providers-db:consistency-check
 ```
 
-Drizzle creates schema migrations and custom migration entries. The capture
-extension fills only a newly generated custom migration and records a catalog
-fingerprint. Repeating generation without Table/function changes creates no
-migration. Coverage checking fails when a catalog table lacks its capture
-trigger; uncovered reads cannot receive cache capabilities.
+A change to the functions generates a provider migration and resets the global
+epoch. Earlier releases included full table catalogs in those SQL migrations.
+Leave applied migrations intact. If a fork already applied a locally generated
+provider migration, retain its SQL and journal entry when merging. Before
+accepting deletion of a locally modified `capture.json`, check that each
+project-owned entry has its Drizzle Table and SDK route in the source tree.
+New entity changes use the entity journal only.
 
 ## Writes and delivery
 

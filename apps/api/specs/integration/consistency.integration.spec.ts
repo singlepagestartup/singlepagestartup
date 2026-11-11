@@ -8,6 +8,7 @@ import assert from "node:assert/strict";
 import {randomUUID,createHash} from "node:crypto";
 import {getPostgresClient} from "@sps/shared-backend-database-config";
 import {ConsistencyStore} from "@sps/providers-db";
+import {reconcileCapture} from "./libs/shared/backend/database/config/src/lib/migrate/capture";
 import {scopeDependencyKey,consistencyContext,trackRepositoryRead} from "./libs/shared/backend/api/src/lib/repository/database/context";
 import {pgTable,uuid,text} from "drizzle-orm/pg-core";
 import {getDrizzle} from "@sps/shared-backend-database-config";
@@ -68,6 +69,27 @@ try {
   await pg.unsafe('DELETE FROM "'+parent+'" WHERE id=$1',[thread]);
   assert(BigInt((await store.versions([key]))[key])>BigInt(previous));
   await store.dispatch();
+  const descriptor = {resource: childResource, topic: "fixture.messages", columns: {id: "id", threadId: "thread_id", body: "body"}};
+  await reconcileCapture(pg, descriptor, "initial");
+  const resetKey = childResource + "|reset";
+  const baseline = (await store.versions([resetKey]))[resetKey];
+  const triggerOids = () => pg.unsafe(
+    "SELECT oid FROM pg_trigger WHERE tgrelid=to_regclass($1) AND NOT tgisinternal ORDER BY oid",
+    [childResource],
+  );
+  const beforeTriggers = await triggerOids();
+  await reconcileCapture(pg, descriptor, "initial");
+  assert.equal((await store.versions([resetKey]))[resetKey], baseline);
+  assert.deepEqual(Array.from(await triggerOids()), Array.from(beforeTriggers));
+  await pg.unsafe('ALTER TABLE "' + child + '" ADD COLUMN client_reference uuid');
+  descriptor.columns.clientReference = "client_reference";
+  await assert.rejects(store.assertCoverage([descriptor]), /Consistency migrations required/);
+  await reconcileCapture(pg, descriptor, "new-field");
+  await store.assertCoverage([descriptor]);
+  assert.equal(BigInt((await store.versions([resetKey]))[resetKey]), BigInt(baseline) + 1n);
+  await pg.unsafe('INSERT INTO "' + child + '"(id,client_reference) VALUES ($1,$2)', [randomUUID(),message]);
+  const fieldKey = scopeDependencyKey(childResource, "client_reference", message);
+  assert.equal((await store.versions([fieldKey]))[fieldKey], "1");
   // Exercise maintenance on isolated copies of the generated infrastructure.
   // The live application's epoch and registry are never reset by this test.
   const namespace="consistency_reset_"+suffix;
@@ -77,9 +99,14 @@ try {
       const migrationSql=(await readFile(folder+'/'+migration,'utf8')).replaceAll('"sps_consistency"','"'+namespace+'"').replaceAll('sps_consistency.',namespace+'.');
       for(const statement of migrationSql.split('--> statement-breakpoint'))if(statement.trim())await pg.unsafe(statement);
     }
-    const isolated=new ConsistencyStore();
+    class FixtureStore extends ConsistencyStore {
+      assertCoverage() {
+        return super.assertCoverage([]);
+      }
+    }
+    const isolated = new FixtureStore();
     const wrap=connection=>{
-      const tagged=(strings,...values)=>{const translated=strings.map(value=>value.replaceAll('sps_consistency.',namespace+'.'));translated.raw=translated;return connection(translated,...values);};
+      const tagged=(strings,...values)=>{const translated=strings.map(value=>value.replace(/sps_consistency\.(?!capture\()/g,namespace+'.'));translated.raw=translated;return connection(translated,...values);};
       tagged.array=connection.array.bind(connection);tagged.begin=callback=>connection.begin(tx=>callback(wrap(tx)));return tagged;
     };
     Object.defineProperty(isolated,'sql',{value:wrap(pg)});
@@ -110,6 +137,7 @@ try {
   console.log(JSON.stringify({captured:true,rollback:true,emptyMembership:true,cascade:true,lateCommit:true}));
 } finally {
   await pg.unsafe('DROP TABLE IF EXISTS "'+child+'"');await pg.unsafe('DROP TABLE IF EXISTS "'+parent+'"');
+  await pg.unsafe('DELETE FROM sps_consistency.state WHERE id=$1', ['migration:' + childResource]);
   await pg.unsafe('DELETE FROM sps_consistency.query WHERE identity=$1',["empty thread"]);
   await pg.unsafe('DELETE FROM sps_consistency.resource WHERE resource=$1 OR resource=$2',[parentResource,childResource]);
   await pg.end();
