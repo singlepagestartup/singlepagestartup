@@ -1,7 +1,7 @@
 "use client";
 
 import { SocialSkill } from "../types";
-import { Component as SocialModuleSkillChatSelectedPill } from "@sps/social/models/skill/frontend/component/src/lib/singlepage/chat-selected-pill";
+import { Component as SocialModuleSkill } from "@sps/social/models/skill/frontend/component";
 import { BookOpenText, Eye, FileText, X } from "lucide-react";
 
 export interface SelectedComposerFile {
@@ -79,10 +79,11 @@ export function SelectedComposerPills(props: SelectedComposerPillsProps) {
       ) : null}
       {props.skills.map((skill) => {
         return (
-          <SocialModuleSkillChatSelectedPill
+          <SocialModuleSkill
             key={skill.id}
             isServer={false}
             variant="chat-selected-pill"
+            dataSource="props"
             data={skill}
             language={props.language}
             onRemove={() => {

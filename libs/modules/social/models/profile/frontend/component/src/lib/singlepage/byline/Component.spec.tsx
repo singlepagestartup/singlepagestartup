@@ -18,30 +18,12 @@ jest.mock("@sps/social/models/profile/frontend/component", () => ({
   BylineSkeleton: () => <div data-variant="byline-loading" />,
   Component: (props: any) => {
     mockReads(props);
+    if (props.variant === "chat-profile-avatar") {
+      return <img src="/stored-avatar.png" alt="Stored avatar" />;
+    }
     return <span data-testid="profile-view" />;
   },
 }));
-jest.mock(
-  "@sps/social/relations/profiles-to-file-storage-module-files/frontend/component",
-  () => ({
-    Component: (props: any) => {
-      mockReads(props);
-      return props.variant === "find" ? (
-        props.children({
-          data: [
-            {
-              id: "avatar-link",
-              profileId: mockProfile.id,
-              fileStorageModuleFileId: "avatar-file",
-            },
-          ],
-        })
-      ) : (
-        <img src="/stored-avatar.png" alt="Stored avatar" />
-      );
-    },
-  }),
-);
 beforeEach(() => jest.clearAllMocks());
 afterEach(() => jest.restoreAllMocks());
 it.each([true, false])(
@@ -65,13 +47,8 @@ it.each([true, false])(
     expect(screen.getByText("Stored role")).toBeVisible();
     const query = mockReads.mock.calls[0][0];
     expect(query.isServer).toBe(isServer);
-    expect(query.apiProps.params.filters.and).toEqual([
-      { column: "profileId", method: "eq", value: "profile-a" },
-    ]);
-    expect(query.apiProps.params.orderBy.and).toEqual([
-      { column: "orderIndex", method: "asc" },
-    ]);
-    expect(query.apiProps.params.limit).toBe(1);
+    expect(query.variant).toBe("chat-profile-avatar");
+    expect(query.data.id).toBe("profile-a");
     expect(screen.getByText("Редакция SPS")).toHaveClass(
       "text-default-foreground",
     );

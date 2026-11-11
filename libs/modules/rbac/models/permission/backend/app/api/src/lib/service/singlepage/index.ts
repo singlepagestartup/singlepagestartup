@@ -6,6 +6,7 @@ import { Repository } from "../../repository";
 import { Service as PermissionsToBillingModuleCurrenciesService } from "@sps/rbac/relations/permissions-to-billing-module-currencies/backend/app/api/src/lib/service/singlepage";
 import {
   RouteMatcher,
+  isExactResourceGrant,
   UUID_VALUE_REGEX,
   createMemoryCache,
   normalizeRoutePath,
@@ -63,8 +64,20 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
    * widen the list, or to re-open a route the project deliberately serves to
    * anonymous callers.
    */
-  async isSensitiveRoute(route: string, method: string): Promise<boolean> {
-    return sensitiveRoutesMatcher.matches(normalizeRoutePath(route), method);
+  async isSensitiveRoute(
+    route: string,
+    method: string,
+    permissionPath?: string,
+  ): Promise<boolean> {
+    const path = normalizeRoutePath(route).replace(/\/$/, "");
+    if (
+      ["GET", "HEAD"].includes(method.toUpperCase()) &&
+      permissionPath === path &&
+      isExactResourceGrant("/api/social/chats", path)
+    ) {
+      return false;
+    }
+    return sensitiveRoutesMatcher.matches(path, method);
   }
 
   protected async getTemplatePermissions(props: {

@@ -56,6 +56,7 @@ export function Component(props: IClientComponentProps) {
                     <Profile
                       isServer={props.isServer}
                       variant="id-ai-chat-project"
+                      dataSource="props"
                       data={project.profile}
                       navigation={navigation}
                     >

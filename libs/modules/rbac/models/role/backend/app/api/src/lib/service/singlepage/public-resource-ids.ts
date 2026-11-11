@@ -1,6 +1,6 @@
 import type { IModel } from "@sps/rbac/models/permission/sdk/model";
 import type { FindServiceProps } from "@sps/shared-backend-api";
-import { UUID_PATH_SUFFIX_REGEX } from "@sps/shared-utils";
+import { isExactResourceGrant } from "@sps/shared-utils";
 import {
   publicResourceIdsSchema,
   type IPublicResourceIdsParams,
@@ -11,7 +11,11 @@ interface IRead<T> {
 }
 export interface IDependencies {
   permission: IRead<IModel> & {
-    isSensitiveRoute(route: string, method: string): Promise<boolean>;
+    isSensitiveRoute(
+      route: string,
+      method: string,
+      permissionPath?: string,
+    ): Promise<boolean>;
   };
   rolesToPermissions: IRead<{ permissionId: string }>;
 }
@@ -44,13 +48,9 @@ export class Service {
           offset,
         },
       });
-      const exact = permissions.filter((permission) => {
-        const match = UUID_PATH_SUFFIX_REGEX.exec(permission.path);
-        return (
-          match?.index === resource.length &&
-          match[0] === permission.path.slice(resource.length)
-        );
-      });
+      const exact = permissions.filter((permission) =>
+        isExactResourceGrant(resource, permission.path),
+      );
       const bound = new Set<string>();
       if (exact.length) {
         let linkOffset = 0;
@@ -85,6 +85,7 @@ export class Service {
           !(await this.dependencies.permission.isSensitiveRoute(
             permission.path,
             "GET",
+            permission.path,
           ))
         ) {
           ids.add(permission.path.slice(resource.length + 1));
