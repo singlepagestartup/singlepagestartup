@@ -1,0 +1,9 @@
+{
+  "id": "87d7c561-31f2-41a0-a207-f78bb02d3b6b",
+  "createdAt": "2026-11-10T20:43:00.645Z",
+  "updatedAt": "2026-11-10T20:43:00.645Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/website-builder/sliders-to-slides"
+}

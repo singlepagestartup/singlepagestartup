@@ -29,11 +29,15 @@ respective startup files.
 
 ## Website Builder and File Storage reads
 
-The Permission migration installs public GET permissions for each shipped collection,
-its count, and its records by UUID. File content has separate GET and HEAD permissions.
-The migration runs once, including on installations without seed data. Edit these
-permissions and their role bindings in the RBAC admin. New models and custom routes
-need their own permissions.
+Run `npx nx run api:db:seed` to load the shipped read permissions from the
+Permission dump. It covers GET for the list, count and records by UUID on 23
+collections, plus GET and HEAD for file content. Running migrations alone leaves
+these defaults out of a new database.
+
+The seed matches each permission by type, method and path, preserving its local
+ID and role bindings. To restrict a route, assign a role in **RBAC → Permissions**.
+To keep a permission deleted on future seeds, export the change to the project's
+dump. Custom routes need their own permissions.
 
 For example, `GET /api/website-builder/widgets/:uuid` matches a widget UUID.
 The resolver checks the exact path and project bracket templates first. The

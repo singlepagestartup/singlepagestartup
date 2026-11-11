@@ -1,0 +1,9 @@
+{
+  "id": "a11a37d7-e6bb-48b2-9037-944abca7960d",
+  "createdAt": "2026-11-10T20:43:00.645Z",
+  "updatedAt": "2026-11-10T20:43:00.645Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/website-builder/widgets-to-buttons-arrays"
+}
