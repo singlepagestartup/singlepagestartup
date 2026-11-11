@@ -9,6 +9,7 @@ import { Provider as KVProvider } from "@sps/providers-kv";
 import { createMiddleware } from "hono/factory";
 import {
   CONSISTENCY_HEADER,
+  CONSISTENCY_CACHE_NAMESPACE,
   CONSISTENCY_CACHE_PREFIX,
   KV_PROVIDER,
   HTTP_CACHE_MAX_ENTRY_BYTES,
@@ -282,7 +283,7 @@ export function createConsistencyRuntime(props: IConsistencyRuntimeProps) {
     },
     tick,
     async clearCache() {
-      await cache.delByPrefix({ prefix: CONSISTENCY_CACHE_PREFIX });
+      await cache.delByPrefix({ prefix: CONSISTENCY_CACHE_NAMESPACE });
     },
     /** Register after authorization. PostgreSQL, never Redis, proves freshness. */
     cache(options: { observe?: boolean; excludedRoutes?: IRouteRule[] } = {}) {

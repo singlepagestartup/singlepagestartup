@@ -137,6 +137,9 @@ it("clears only API response envelopes and pointers, preserving unrelated KV sta
   values.clear();
   values.set(CONSISTENCY_CACHE_PREFIX + ":pointer", "envelope");
   values.set(CONSISTENCY_CACHE_PREFIX + ":envelope", "response");
+  values.set("sps-consistency:v1:old-pointer", "old");
+  values.set("sps-consistency:v2:old-envelope", "old");
+  values.set("sps-consistency-other:state", "keep");
   values.set("mcp:oauth:client", "oauth");
   values.set("rbac:subject:preferences", "preferences");
   const runtime = createConsistencyRuntime({
@@ -145,6 +148,7 @@ it("clears only API response envelopes and pointers, preserving unrelated KV sta
   });
   await runtime.clearCache();
   expect([...values.entries()]).toEqual([
+    ["sps-consistency-other:state", "keep"],
     ["mcp:oauth:client", "oauth"],
     ["rbac:subject:preferences", "preferences"],
   ]);

@@ -70,3 +70,9 @@ jobs:
           SERVICE_UPDATE_URL: ${{ secrets.PORTAINER_API_UPDATE_URL }}
           IMAGE_TAG: ${{ inputs.TAG || 'latest' }}
         run: node tools/deployer/portainer/wait-service.mjs
+
+      - name: Clear cached API responses after rollout
+        env:
+          API_URL: ${{ vars[inputs.PRERELEASE && 'PREVIEW_API_URL' || 'API_URL'] }}
+          RBAC_SECRET_KEY: ${{ secrets[inputs.PRERELEASE && 'PREVIEW_RBAC_SECRET_KEY' || 'RBAC_SECRET_KEY'] }}
+        run: node tools/deployer/api/clear-cache.mjs

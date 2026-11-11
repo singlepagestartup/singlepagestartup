@@ -1028,6 +1028,14 @@ ID map is required. A paused update, rollback, missing health check or timeout
 fails the job and keeps dependent services on their previous images. Check the
 gate with `node --test tools/deployer/portainer/wait-service.test.mjs`.
 
+Once the previous API tasks have stopped, both the release job and `api.sh`
+clear the API response cache with the environment's operator credential.
+The release job waits for confirmation before updating dependent services.
+Session credentials and rate-limit counters are preserved. Projects with a
+custom rollout can run the same step with
+`node tools/deployer/api/clear-cache.mjs` and their current HTTPS `API_URL`
+and `RBAC_SECRET_KEY`.
+
 The service deploy creates its Portainer webhook or retrieves the matching one
 if the service already has a hook. A login failure or a mismatched hook stops
 the play before publishing an update URL. The server and the deployer keep the

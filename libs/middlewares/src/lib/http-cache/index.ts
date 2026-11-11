@@ -21,11 +21,18 @@ export class Middleware {
     });
   }
 
-  registerRoutes<Environment extends Env>(app: Hono<Environment>) {
+  registerRoutes<Environment extends Env>(
+    app: Hono<Environment>,
+    enabled = true,
+  ) {
     app.get(
       "/api/http-cache/clear",
       new OperatorSecretMiddleware().init(),
       async (c) => {
+        c.header("Cache-Control", "no-store");
+        if (!enabled) {
+          return c.json({ message: "Cache disabled" });
+        }
         await this.options.runtime.clearCache();
         return c.json({ message: "Cache cleared" });
       },
