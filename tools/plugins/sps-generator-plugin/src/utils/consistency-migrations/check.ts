@@ -12,18 +12,13 @@ try {
       "utf8",
     ),
   );
-  const uncovered: string[] = [];
-  for (const { resource } of manifest.resources)
-    if (!(await store.covered(resource))) uncovered.push(resource);
-  if (uncovered.length)
-    throw new Error(
-      `Consistency capture missing on ${uncovered.length} resources: ${uncovered.join(", ")}`,
-    );
+  await store.assertCoverage();
+  const status = await store.status();
   console.log(
     JSON.stringify({
       resources: manifest.resources.length,
       covered: manifest.resources.length,
-      ...(await store.status()),
+      ...status,
     }),
   );
 } finally {

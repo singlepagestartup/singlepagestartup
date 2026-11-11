@@ -1,5 +1,6 @@
 import { getPostgresClient } from "@sps/shared-backend-database-config";
 import { createHash, randomUUID } from "node:crypto";
+import captureCatalog from "../drizzle/migrations/capture.json";
 import {
   CONSISTENCY_LEASE_MS,
   type IConsistencyMetadata,
@@ -71,12 +72,28 @@ export class ConsistencyStore {
   }
 
   async assertCoverage() {
-    const missing = await this
-      .sql`SELECT resource FROM sps_consistency.resource r WHERE NOT EXISTS(SELECT 1 FROM pg_trigger t WHERE t.tgrelid=to_regclass(r.resource) AND t.tgname='sps_consistency_rows' AND t.tgenabled IN ('O','A')) OR NOT EXISTS(SELECT 1 FROM pg_trigger t WHERE t.tgrelid=to_regclass(r.resource) AND t.tgname='sps_consistency_truncate' AND t.tgenabled IN ('O','A'))`;
-    if (missing.length)
+    const declared = captureCatalog.resources.map(({ resource }) => resource);
+    const missing = await this.sql`
+      WITH required(resource) AS (
+        SELECT jsonb_array_elements_text(${JSON.stringify(declared)}::jsonb)
+        UNION
+        SELECT resource FROM sps_consistency.resource
+        WHERE to_regclass(resource) IS NOT NULL
+      )
+      SELECT resource FROM required
+      WHERE (
+        SELECT count(*) FROM pg_trigger
+        WHERE tgrelid = to_regclass(required.resource)
+          AND tgname IN ('sps_consistency_rows', 'sps_consistency_truncate')
+          AND tgenabled IN ('O', 'A')
+      ) < 2
+      ORDER BY resource
+    `;
+    if (missing.length) {
       throw new Error(
         `Consistency migrations required for ${missing.map((row) => row.resource).join(", ")}`,
       );
+    }
   }
 
   async register(props: {

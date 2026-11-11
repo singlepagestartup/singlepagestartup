@@ -33,6 +33,14 @@ triggers. The infrastructure migrator also reconciles the generated catalog
 with deployed tables. `consistency-check` checks both catalog freshness and
 installed database triggers; run it after applying the complete migration set.
 
+Each capture SQL file contains the full generated table catalog and its trigger
+functions. The mappings come from the Drizzle tables and SDK routes. Installation
+skips triggers for tables that have yet to be created. API startup and
+`consistency-check` require both triggers on every table in the current project's
+catalog and on any additional registered table that still exists. Historical
+registrations for tables removed or renamed by the project can remain in the
+database without blocking startup.
+
 Client-owned or manually added generation targets must preserve the same
 uncached, sequential Drizzle-then-capture contract. Run the infrastructure
 command from the workspace root when introducing a custom migration workflow.

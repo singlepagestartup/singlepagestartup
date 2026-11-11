@@ -85,6 +85,19 @@ try {
     Object.defineProperty(isolated,'sql',{value:wrap(pg)});
     await pg.unsafe('INSERT INTO "'+namespace+'".state(id,value) VALUES($1,$2)',['epoch','before']);
     await pg.unsafe('INSERT INTO "'+namespace+'".resource(resource,topic,columns) VALUES($1,$2,$3::jsonb)',[childResource,'fixture.messages','{}']);
+    // A child project may retain a registration from before a model was renamed.
+    const retiredResource = namespace + '.retired';
+    await pg.unsafe(
+      'INSERT INTO "' + namespace + '".resource(resource,topic,columns) VALUES($1,$2,$3::jsonb)',
+      [retiredResource, 'fixture.retired', '{}'],
+    );
+    await isolated.assertCoverage();
+    await pg.unsafe('CREATE TABLE "' + namespace + '".retired(id uuid primary key)');
+    await assert.rejects(
+      isolated.assertCoverage(),
+      error => error.message.includes(retiredResource),
+    );
+    await pg.unsafe('DROP TABLE "' + namespace + '".retired');
     await isolated.register({auth:'actor',identity:'maintenance',dependencies:{[childResource+'|reset']:'0'},tags:['fixture-tag']});
     await assert.rejects(isolated.reset(async()=>{throw new Error('Next unavailable');}));
     assert.equal((await isolated.status()).epoch,'before');
