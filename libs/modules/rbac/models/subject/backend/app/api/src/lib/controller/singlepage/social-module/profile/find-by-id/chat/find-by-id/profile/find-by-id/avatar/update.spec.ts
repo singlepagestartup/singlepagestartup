@@ -48,6 +48,8 @@ function createService(defaultFiles: Array<Record<string, unknown>> = []) {
     fileStorageModule: {
       file: {
         find: jest.fn().mockResolvedValue(defaultFiles),
+        findById: jest.fn(),
+        readBytes: jest.fn(),
       },
     },
     socialModuleProfileAvatarUpdate: (props: any) =>

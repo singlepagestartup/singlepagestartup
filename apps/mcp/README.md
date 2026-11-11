@@ -95,6 +95,8 @@ Generated/local client file as base64:
 
 Do not pass ChatGPT/Claude sandbox paths such as `/mnt/data/cover.webp`; the SinglePageStartup server cannot read files from the model provider's container. Encode the generated file as base64 or provide a publicly reachable URL.
 
+A base64 upload travels inside the tool call, so the whole call has to fit in `MCP_SERVICE_HTTP_MAX_BODY_BYTES` (4 MiB by default). Larger files need a public URL or a higher limit.
+
 ## Local Development
 
 Run stdio for local MCP clients that launch the process:
@@ -109,7 +111,7 @@ Run Streamable HTTP locally:
 npm run mcp:http
 ```
 
-Local HTTP defaults to `http://127.0.0.1:3001/mcp`. For Inspector/debugging with the static RBAC fallback:
+Local HTTP defaults to `http://127.0.0.1:3001/mcp`. `npm run mcp:http` loads `apps/api/.env` outside production, which is where a local process gets `RBAC_SECRET_KEY` for the fallback. For Inspector/debugging with the static RBAC fallback:
 
 ```bash
 MCP_SERVICE_ALLOW_RBAC_SECRET_FALLBACK=true RBAC_SECRET_KEY=<secret> npm run mcp:http
@@ -123,7 +125,9 @@ To test the OAuth/Bearer flow locally without console commands, start `npm run m
 http://127.0.0.1:3001/authentication/oauth
 ```
 
-The page registers a local OAuth client, generates PKCE, redirects to the MCP login page, exchanges the authorization code for an MCP access token, and can run an MCP `initialize` smoke test with `Authorization: Bearer ...`.
+Opening `http://127.0.0.1:3001/` redirects to this page. `/mcp` remains the authenticated protocol endpoint for MCP clients.
+
+The page registers a local OAuth client, generates PKCE, redirects to the MCP consent and sign-in steps, exchanges the authorization code for an MCP access token, and can run an MCP `initialize` smoke test with `Authorization: Bearer ...`.
 
 For MCP Inspector with Streamable HTTP OAuth:
 
@@ -138,7 +142,12 @@ connecting. Keep custom auth headers empty for OAuth. Inspector should open
 `/oauth/authorize`, store the MCP access token, and attach
 `Authorization: Bearer ...` automatically on the next connection attempt.
 
-If Inspector keeps reconnecting without `Authorization`, clear the Inspector browser session storage or restart Inspector. It caches OAuth clients and tokens by MCP server URL.
+Inspector caches OAuth clients and tokens by server URL. If an older deployment
+has already deleted its registration, clear that server's OAuth credentials in
+Inspector and register again. Inspector versions with server-side storage retain
+these credentials across browser reloads and process restarts; clearing browser
+session storage alone may not reset them. Once sign-in succeeds, this server keeps
+the registration independently of token expiry.
 
 ## Generated Project Client Configs
 
@@ -424,6 +433,75 @@ https://mcp.<domain>/.well-known/oauth-authorization-server/mcp
 
 The `/mcp` suffix variants are intentionally supported for clients that resolve OAuth metadata for the exact protected resource URL.
 
+## OAuth Scopes and Consent
+
+MCP advertises one OAuth scope, `mcp:content`, for connecting to the project.
+Every API operation uses the authenticated subject's RBAC permissions,
+including deleting records. There is no separate MCP delete permission. The
+delete tools still require their preview and confirmation token.
+
+The authorization page first shows the application name, client id and callback
+address. Continue opens the SinglePageStartup sign-in form; Cancel returns
+`error=access_denied` and the state to the registered callback. Both pages
+refuse to render inside a frame.
+
+Dynamic registration accepts an `https` callback or an `http` callback on
+`localhost`, `127.0.0.1` or `[::1]`, without a fragment, credentials, whitespace
+or non-ASCII characters. Authorization matches the registered address exactly,
+except that a native HTTP loopback callback may use a different port on the same
+host. The path and query must match; `localhost`, `127.0.0.1` and `[::1]` are not
+interchangeable. HTTPS callbacks remain exact. Code exchange must use the exact
+callback from that authorization request, including its port.
+
+### Token lifetimes and refresh
+
+API and MCP use the same RBAC settings:
+
+| Setting                                      | Default | Use in MCP                     |
+| -------------------------------------------- | ------- | ------------------------------ |
+| `RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS`         | `3600`  | Maximum access-token lifetime  |
+| `RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS` | `86400` | Maximum refresh-token lifetime |
+
+MCP tokens cannot outlive the corresponding signed RBAC JWT. MCP stores the
+RBAC refresh token on the server. When a connector refreshes its MCP token,
+MCP calls `rbacSubjectApi.authenticationRefresh` to obtain a new RBAC pair,
+then issues a new MCP pair mapped to the same subject. A failed RBAC refresh
+requires signing in again with the existing client registration.
+
+A new, unused client registration lasts 24 hours. At most 1000 registrations may
+be pending; concurrent requests share this limit in Redis. A successful sign-in
+removes the registration's expiry and releases its pending slot. The client id
+and any client secret then survive token expiry and MCP process restarts. They
+identify the connector and do not grant access without a valid user session.
+An abandoned setup must register again after its pending registration expires.
+The bounded pending index is retained without a TTL; registration prunes expired
+entries, and completing sign-in removes its entry.
+
+Authorization codes and MCP refresh tokens are consumed atomically, including
+across processes using Redis. Concurrent exchanges of one token cannot both
+succeed. `MCP_SERVICE_OAUTH_AUTH_CODE_TTL_SECONDS` still controls the separate,
+short-lived authorization code (300 seconds by default).
+
+After upgrading from the previous implementation, reconnect existing OAuth
+clients: their stored refresh records do not contain an RBAC refresh token.
+Replace custom `MCP_SERVICE_OAUTH_ACCESS_TOKEN_TTL_SECONDS`,
+`MCP_SERVICE_OAUTH_REFRESH_TOKEN_TTL_SECONDS` and
+`MCP_SERVICE_OAUTH_CLIENT_TTL_SECONDS` settings with the shared RBAC settings
+above, with matching values in API and MCP.
+
+SDK requests to `API_SERVICE_URL` reject redirects, even when a caller requests
+`redirect: "follow"`. This prevents an API redirect from forwarding a subject
+JWT, operator header, password or refresh token. Configure the final API URL;
+redirecting aliases will fail. Credentials are automatically added only to the
+configured API origin.
+
+## Limits
+
+- `/mcp` refuses a request body larger than `MCP_SERVICE_HTTP_MAX_BODY_BYTES` (4194304 by default) with 413. OAuth endpoints accept up to 64 KiB.
+- Each tool call accepts up to 10,000 object keys and array elements in total across its arguments. The MCP server rejects larger calls before schema validation. Split large edits into smaller calls; a base64 file counts as one string but still has to fit the HTTP body limit.
+- A Streamable HTTP session idle for `MCP_SERVICE_HTTP_SESSION_IDLE_TTL_SECONDS` (86400 by default) is closed, and at `MCP_SERVICE_HTTP_MAX_SESSIONS` (500 by default) the least recently used session is closed to admit a new one. A closed session answers 404, and the client starts a new session as it does after a restart.
+- The HTTP server refuses to start on a legacy `RBAC_SECRET_KEY` or `RBAC_JWT_SECRET` and reports a short or legacy value of its other secrets. `MCP_SECRET_STRENGTH=report` starts it anyway; see `tools/deployer/README.md`.
+
 ## Internal rbac.subject Token Exchange
 
 `apps.api` exchanges a server-signed `rbac.subject` authentication JWT inside
@@ -446,8 +524,8 @@ containing a separate `subject`, `subjectId`, `subject_id`, `rbacSubjectId`, or
 A successful exchange returns an access-only bearer with:
 
 - client id `internal-rbac-subject`;
-- scope `mcp:content`;
-- a fixed five-minute lifetime;
+- scope `mcp:content`, with every operation checked by API RBAC;
+- a lifetime capped by `RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS` and the remaining lifetime of the supplied subject JWT;
 - no refresh token.
 
 Configure the same dedicated `MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET` in `apps.api`
@@ -478,11 +556,31 @@ MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET=
 MCP_SERVICE_URL=http://mcp:3001/mcp
 MCP_SERVICE_OAUTH_JWT_SECRET=
 MCP_SERVICE_OAUTH_AUTH_CODE_TTL_SECONDS=300
-MCP_SERVICE_OAUTH_ACCESS_TOKEN_TTL_SECONDS=3600
-MCP_SERVICE_OAUTH_REFRESH_TOKEN_TTL_SECONDS=2592000
+RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS=3600
+RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS=86400
+MCP_SERVICE_HTTP_MAX_BODY_BYTES=4194304
+MCP_SERVICE_HTTP_SESSION_IDLE_TTL_SECONDS=86400
+MCP_SERVICE_HTTP_MAX_SESSIONS=500
 ```
 
-`MCP_SERVICE_DOCKER_HUB_REPOSITORY_NAME` falls back to `API_SERVICE_DOCKER_HUB_REPOSITORY_NAME` when empty. Leave `MCP_SERVICE_ALLOWED_ORIGINS` empty to allow every Origin; OAuth/Bearer still protects data access. Redis is used for OAuth clients, codes, access-token mappings, and refresh tokens.
+`MCP_SERVICE_DOCKER_HUB_REPOSITORY_NAME` falls back to `API_SERVICE_DOCKER_HUB_REPOSITORY_NAME` when empty. Leave `MCP_SERVICE_ALLOWED_ORIGINS` empty to allow every Origin; OAuth/Bearer still protects data access. Redis stores OAuth clients, codes, access-token mappings, and refresh tokens.
+Completed client registrations have no TTL; codes and user tokens expire.
+Set `MCP_SERVICE_OAUTH_STORE=redis` or `KV_PROVIDER=redis` for persistent
+connections. The in-memory store is for testing and loses all state on restart.
+Use `REDIS_MAXMEMORY_POLICY=volatile-lru` so cache pressure cannot evict completed
+registrations or the pending-registration index. The local and production Redis
+Compose defaults use this policy. Existing `.env` files and explicit overrides
+must be updated before rollout; recreating only MCP does not update Redis.
+Keep the Redis `/data` volume across deployments. The default RDB snapshots
+preserve registrations through a graceful Redis restart; abrupt host failure can
+lose changes since the latest snapshot. AOF with `appendfsync everysec` reduces
+that window; follow [Redis's live conversion procedure](https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/#how-i-can-switch-to-aof-if-im-currently-using-dumprdb-snapshots)
+before enabling it on an existing database. Do not clear OAuth keys as cache.
+Under memory pressure, expiring tokens can still be evicted and require sign-in;
+monitor memory and leave capacity for persistent registrations. See the
+[Redis administration instructions](../../tools/deployer/README.md#postgresql-and-redis-administration).
+
+The rendered MCP environment never contains `RBAC_SECRET_KEY`. To use `MCP_SERVICE_ALLOW_RBAC_SECRET_FALLBACK=true` on a server for private debugging, add `RBAC_SECRET_KEY` to the MCP service env by hand; without it the fallback refuses every header.
 
 Deploy or remove only the MCP service:
 
@@ -493,3 +591,50 @@ cd tools/deployer
 ```
 
 The full deployer runs MCP after `api` and before `telegram`/`host`.
+
+## Runtime authentication check
+
+`tools/dev/mcp-auth.test.ts` starts an actual MCP HTTP process and loopback RBAC
+fixture with signed test JWTs. Supply a dedicated Redis instance; the test
+creates both expiring and persistent `mcp:oauth:*` keys. Remove the isolated test
+instance afterward. The check exercises SDK login and refresh, expired access
+and refresh rejection, single-use exchanges, repeated sign-in after MCP restart,
+loopback port changes, hosted ChatGPT/Claude callback URLs, tool discovery and
+read calls, the concurrent registration limit, and redirects 301, 302, 303, 307
+and 308. It does not use a real user's account or test the API's RBAC
+implementation.
+
+```bash
+MCP_TEST_REDIS_PORT=<isolated-redis-port> bun test --no-env-file --timeout 30000 tools/dev/mcp-auth.test.ts
+```
+
+## Remote client compatibility
+
+Remote clients use Streamable HTTP at the public HTTPS `/mcp` URL, discover OAuth
+metadata, register through DCR, and sign in with PKCE S256. No operator key belongs
+in a public client configuration. The server currently negotiates MCP protocol
+`2025-06-18`; a client must allow that supported version. OAuth Client ID Metadata
+Documents (CIMD) and legacy HTTP+SSE are not advertised. Clients that require those
+features without a fallback need separate support.
+
+| Client                                            | Connection path and limits                                                                                                                                                                                                                                                                  |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ChatGPT custom connector / plugin                 | Public HTTPS and OAuth. DCR is supported; keep the registered client id for reconnects. [Authentication contract](https://developers.openai.com/plugins/build/auth).                                                                                                                        |
+| Claude web / Desktop connector                    | Public HTTPS, OAuth and `https://claude.ai/api/mcp/auth_callback`. [Connector authentication](https://claude.com/docs/connectors/building/authentication).                                                                                                                                  |
+| Claude Code                                       | Remote HTTP with OAuth and an HTTP loopback callback whose port may change. [MCP setup](https://code.claude.com/docs/en/mcp).                                                                                                                                                               |
+| Kimi Code                                         | HTTP server configuration and `/mcp-config login <name>`. This does not establish custom-connector support in the Kimi consumer chat. [Kimi Code MCP](https://moonshotai.github.io/kimi-code/en/customization/mcp.html).                                                                    |
+| DeepSeek and other models in an MCP-capable agent | The agent handles MCP and OAuth. DeepSeek's Responses API currently ignores the built-in `mcp` tool; configure an agent adapter such as OpenCode instead. [DeepSeek tool types](https://api-docs.deepseek.com/guides/responses_api/), [OpenCode MCP](https://opencode.ai/docs/mcp-servers). |
+
+All 20 tools declare `readOnlyHint`, `destructiveHint` and `openWorldHint`.
+Reads and previews have no mutation or external-effect flags. The six generic
+mutation tools cover every module: they can overwrite or delete records, make
+content public, create notification deliveries, or fetch a file from a supplied
+URL. Their flags conservatively describe those capabilities even for a dry run.
+These are client-facing hints, not permissions; API RBAC still checks each call.
+[OpenAI annotation requirements](https://developers.openai.com/plugins/plugin-guidelines#correct-annotation).
+
+The automated runtime check covers these protocol contracts with the official
+MCP SDK and a test RBAC fixture. Hosted account connections, provider-specific
+approval screens, subscription restrictions and full API authorization must also
+be tested on the deployed endpoint. The model vendor alone does not establish
+MCP support in a particular chat application.

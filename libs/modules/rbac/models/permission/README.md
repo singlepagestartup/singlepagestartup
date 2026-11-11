@@ -27,6 +27,24 @@ fields/startup.ts -> fields/index.ts` composition. `schema.ts` consumes the
 composed fields and constraints; startup-specific overrides stay in their
 respective startup files.
 
+## Website Builder and File Storage reads
+
+Run `npx nx run api:db:seed` to load the shipped read permissions from the
+Permission dump. It covers GET for the list, count and records by UUID on 23
+collections, plus GET and HEAD for file content. Running migrations alone leaves
+these defaults out of a new database.
+
+The seed matches each permission by type, method and path, preserving its local
+ID and role bindings. To restrict a route, assign a role in **RBAC → Permissions**.
+To keep a permission deleted on future seeds, export the change to the project's
+dump. Custom routes need their own permissions.
+
+For example, `GET /api/website-builder/widgets/:uuid` matches a widget UUID.
+The resolver checks the exact path and project bracket templates first. The
+`:uuid` segment matches a full UUID, so `/widgets/dump` needs its own permission.
+A collection permission also covers filtered and unfiltered reads. To restrict
+discovery of records, review collection access alongside individual record permissions.
+
 ## Variants
 
 - `default`: placeholder permission view.
@@ -36,21 +54,9 @@ respective startup files.
 - `admin-table`: admin table listing permissions.
 - `admin-table-row`: admin row showing permission fields.
 
-## Exact public resource discovery
+## Public resource discovery
 
-`GET /api/rbac/permissions/public-resource-ids?resource=/api/<module>/<collection>`
-and the server SDK `publicResourceIds({ params: { resource } })` return UUIDs
-from exact HTTP GET Permissions without Role bindings. The owning Permission
-Service applies its effective `isSensitiveRoute` policy. Bracket templates,
-collection/count paths, nested operations and permissions for other resources
-do not supply IDs. Both Permission rows and Role bindings are read in batches.
-
-This operation discovers explicit grants; it does not create permissions or
-make a private collection public. Consumers still read each candidate through
-its anonymous resource API, so deleted records and additional access guards
-remain effective. Host Page uses it to expand private collections in saved URL
-masks without importing authorization rules or embedding resource names.
-
-Permission Service now receives RolesToPermissions Service through
-`PermissionDI.IRolesToPermissionsService`. Owned factories must provide this
-third constructor dependency; ordinary CRUD methods retain their contracts.
+[Role](../role/README.md#exact-public-resource-discovery) owns discovery across
+Permissions and RolesToPermissions. Permission supplies route resolution and
+its effective `isSensitiveRoute` policy; it does not import incoming role links.
+Its constructor takes its repository and PermissionsToBillingModuleCurrencies.

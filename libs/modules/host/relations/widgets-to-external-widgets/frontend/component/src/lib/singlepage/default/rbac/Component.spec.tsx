@@ -72,7 +72,7 @@ it.each(["select-method", "registration", "forgot-password", "reset-password"])(
         {...({
           isServer: true,
           data: { externalWidgetId: record.id },
-          url: "/ai-chat/sign-in",
+          url: "/rbac/subject/authentication/email-and-password",
           language: "en",
           socialModuleProfileId: "profile",
           socialModuleChatId: "chat",
@@ -122,7 +122,7 @@ it.each(["select-method", "registration", "forgot-password", "reset-password"])(
     expect(pageReads).toHaveBeenCalledWith(
       expect.objectContaining({
         variant: "url-segment-values",
-        url: "/ai-chat/sign-in",
+        url: "/rbac/subject/authentication/email-and-password",
       }),
     );
   },

@@ -85,6 +85,9 @@
       ],
       "@sps/shared-hooks": ["libs/shared/hooks/src/index.ts"],
       "@sps/shared-third-parties": ["libs/shared/third-parties/src/index.ts"],
+      "@sps/shared-third-parties/telegram": [
+        "libs/shared/third-parties/src/lib/telegram/index.ts"
+      ],
       "@sps/shared-ui-aceternity": ["libs/shared/ui/aceternity/src/index.ts"],
       "@sps/shared-ui-shadcn": ["libs/shared/ui/shadcn/src/index.ts"],
       "@sps/shared-utils": ["libs/shared/utils/src/index.ts"],

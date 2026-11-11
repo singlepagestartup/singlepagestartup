@@ -114,13 +114,17 @@ export class Handler {
           });
       }
 
-      const document =
-        data.document === undefined
-          ? undefined
-          : await this.service.socialModuleChatLifecycleValidateDocument({
-              socialModuleChatId,
-              document: data.document,
-            });
+      let document;
+      if (data.document === undefined) {
+        document = undefined;
+      } else {
+        document = await this.service.socialModuleChatLifecycleValidateDocument(
+          {
+            socialModuleChatId,
+            document: data.document,
+          },
+        );
+      }
 
       if (!title && preferenceUpdatedThread && document === undefined) {
         return c.json({

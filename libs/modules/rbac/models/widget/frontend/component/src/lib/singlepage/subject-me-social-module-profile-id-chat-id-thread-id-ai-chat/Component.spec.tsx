@@ -24,13 +24,20 @@ import { Component as Settings } from "../subject-me-profile-settings/index";
 import { Component as ServerReader } from "@sps/shared-frontend-components/singlepage/default/server";
 
 function findServerReader(node: unknown): ReactElement<any> | undefined {
-  if (!isValidElement(node)) return;
-  if (node.type === ServerReader) return node as ReactElement<any>;
+  if (!isValidElement(node)) {
+    return undefined;
+  }
+  if (node.type === ServerReader) {
+    return node as ReactElement<any>;
+  }
   const element = node as ReactElement<{ children?: unknown }>;
   for (const child of Children.toArray(element.props.children as any)) {
     const found = findServerReader(child);
-    if (found) return found;
+    if (found) {
+      return found;
+    }
   }
+  return undefined;
 }
 
 it.each([Workspace, Settings])(

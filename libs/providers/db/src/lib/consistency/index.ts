@@ -1,5 +1,11 @@
-import { getPostgresClient } from "@sps/shared-backend-database-config";
+import {
+  getPostgresClient,
+  readCaptureCatalog,
+  findMissingCapture,
+  type ICaptureResource,
+} from "@sps/shared-backend-database-config";
 import { createHash, randomUUID } from "node:crypto";
+
 import {
   CONSISTENCY_LEASE_MS,
   type IConsistencyMetadata,
@@ -70,13 +76,17 @@ export class ConsistencyStore {
     return Boolean(row?.covered);
   }
 
-  async assertCoverage() {
-    const missing = await this
-      .sql`SELECT resource FROM sps_consistency.resource r WHERE NOT EXISTS(SELECT 1 FROM pg_trigger t WHERE t.tgrelid=to_regclass(r.resource) AND t.tgname='sps_consistency_rows' AND t.tgenabled IN ('O','A')) OR NOT EXISTS(SELECT 1 FROM pg_trigger t WHERE t.tgrelid=to_regclass(r.resource) AND t.tgname='sps_consistency_truncate' AND t.tgenabled IN ('O','A'))`;
-    if (missing.length)
+  async assertCoverage(catalog?: ICaptureResource[]) {
+    const declared = catalog ?? (await readCaptureCatalog());
+    const missing = await findMissingCapture(this.sql, declared, {
+      includeRegistered: true,
+    });
+    if (missing.length) {
       throw new Error(
         `Consistency migrations required for ${missing.map((row) => row.resource).join(", ")}`,
       );
+    }
+    return declared.length;
   }
 
   async register(props: {
@@ -124,8 +134,10 @@ export class ConsistencyStore {
     if (refs.length > 100)
       throw new Error("Too many consistency subscriptions");
     if (!refs.length) return [];
-    return (await this
-      .sql`SELECT ref,auth,dependencies,expires_at FROM sps_consistency.query WHERE ref=ANY(${this.sql.array(refs)}::text[]) AND auth=${auth} AND expires_at>now()`) as unknown as IRegisteredConsistencyQuery[];
+    const queries = await this
+      .sql`SELECT ref,auth,dependencies,expires_at FROM sps_consistency.query WHERE ref=ANY(${this.sql.array(refs)}::text[]) AND auth=${auth} AND expires_at>now()`;
+
+    return queries as unknown as IRegisteredConsistencyQuery[];
   }
 
   async changed(refs: string[], auth: string) {
@@ -224,7 +236,9 @@ export class ConsistencyStore {
       (SELECT count(*)::int FROM sps_consistency.query) AS retained_refs,
       (SELECT count(*)::int FROM sps_consistency.delivery) AS deliveries,
       (SELECT count(*)::int FROM sps_consistency.generation) AS generations`;
-    return { ...(await this.status()), ...counts };
+    const status = await this.status();
+
+    return { ...status, ...counts };
   }
 
   /** Call after restoring capture and before reopening traffic after maintenance. */

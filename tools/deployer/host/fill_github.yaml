@@ -1,5 +1,5 @@
 ---
-- name: Fill host secrets in GitHub
+- name: Fill host settings in GitHub
   hosts: all
   become: yes
   vars:
@@ -30,6 +30,7 @@
         dest: "/home/code/github-node-api/{{ item }}"
       loop:
         - create_secret.js
+        - create_variable.js
         - package.json
 
     - name: Install dependencies
@@ -41,6 +42,36 @@
       shell:
         cmd: "cat /home/code/host_webhook_token"
       register: host_webhook_token
+
+    - name: Set variables in GitHub
+      no_log: true
+      ansible.builtin.command:
+        argv: [node, ./create_variable.js]
+        stdin: >-
+          {{ {
+            'GITHUB_TOKEN': github_token,
+            'GITHUB_REPOSITORY': github_repository,
+            'VARIABLE_NAME': item.variable_name,
+            'VARIABLE_CONTENT': item.variable_content
+          } | to_json }}
+        chdir: "/home/code/github-node-api"
+      loop:
+        - {
+            variable_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'NEXT_PUBLIC_HOST_SERVICE_URL' }}",
+            variable_content: "https://{{ service_url }}",
+          }
+        - {
+            variable_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'NEXT_PUBLIC_API_SERVICE_URL' }}",
+            variable_content: "https://{{ api_service_url }}",
+          }
+        - {
+            variable_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'API_SERVICE_URL' }}",
+            variable_content: "http://api:4000",
+          }
+        - {
+            variable_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'NEXT_PUBLIC_API_SERVICE_WS_URL' }}",
+            variable_content: "wss://{{ api_service_url }}",
+          }
 
     - name: Set secrets to GitHub
       no_log: true
@@ -59,26 +90,6 @@
         - {
             secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'PORTAINER_HOST_UPDATE_URL' }}",
             secret_content: "https://{{ portainer_url }}/api/webhooks/{{ host_webhook_token.stdout }}",
-            secret_scope: actions,
-          }
-        - {
-            secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'NEXT_PUBLIC_HOST_SERVICE_URL' }}",
-            secret_content: "https://{{ service_url }}",
-            secret_scope: actions,
-          }
-        - {
-            secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'NEXT_PUBLIC_API_SERVICE_URL' }}",
-            secret_content: "https://{{ api_service_url }}",
-            secret_scope: actions,
-          }
-        - {
-            secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'API_SERVICE_URL' }}",
-            secret_content: "http://api:4000",
-            secret_scope: actions,
-          }
-        - {
-            secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'NEXT_PUBLIC_API_SERVICE_WS_URL' }}",
-            secret_content: "wss://{{ api_service_url }}",
             secret_scope: actions,
           }
 

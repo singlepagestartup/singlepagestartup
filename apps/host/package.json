@@ -12,7 +12,7 @@
     "@grammyjs/conversations": "1.2.0",
     "@grammyjs/types": "3.19.0",
     "@hookform/resolvers": "3.10.0",
-    "@modelcontextprotocol/sdk": "1.26.0",
+    "@modelcontextprotocol/sdk": "1.32.2",
     "@next/bundle-analyzer": "16.4.3",
     "@next/third-parties": "16.4.3",
     "@paralleldrive/cuid2": "2.2.2",

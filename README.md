@@ -72,6 +72,8 @@ Complete OAuth login in the chosen client after generation; see [project client 
 for OpenCode V1/V2 formats and login commands. The following CLI commands are
 also available for manual registration.
 
+Connector tokens carry the single OAuth scope `mcp:content`. Every operation, including deletion, uses the connected subject's API permissions. The authorization page names the connecting application and its callback address before sign-in. MCP uses the shared RBAC token lifetimes and refreshes the subject's session through the RBAC SDK. See [MCP authorization and limits](apps/mcp/README.md#oauth-scopes-and-consent).
+
 For Codex Desktop/CLI, register the remote MCP explicitly:
 
 ```bash
@@ -177,7 +179,7 @@ npm run mcp:dev
 
 This starts the stdio transport. It is useful for local MCP clients that launch the server process directly, but HTTP headers from Inspector are not available to resource/tool handlers in this mode.
 
-Run the HTTP transport when you need request headers, cookies, or Inspector `Custom Headers`:
+Run the HTTP transport for OAuth or Inspector `Custom Headers`:
 
 ```bash
 npm run mcp:http
@@ -238,7 +240,7 @@ For MCP Inspector, use `Streamable HTTP` with the same URL and put auth under `C
 
 For a remote server, run the MCP HTTP process on the application server behind HTTPS and make the API service URL reachable from that process. Production connector auth is OAuth/Bearer by default.
 
-Do not store JWTs or `RBAC_SECRET_KEY` in repository files. Static `X-RBAC-SECRET-KEY` is a local/private debugging fallback only when `MCP_SERVICE_ALLOW_RBAC_SECRET_FALLBACK=true`.
+Do not store JWTs or `RBAC_SECRET_KEY` in repository files. Static `X-RBAC-SECRET-KEY` is a local/private debugging fallback only when `MCP_SERVICE_ALLOW_RBAC_SECRET_FALLBACK=true`. The deployed MCP environment never contains `RBAC_SECRET_KEY`; a server that enables the fallback gets the secret added to its MCP env by hand, and without it the fallback refuses every header.
 
 The legacy Inspector command starts the MCP server through stdio:
 
@@ -248,12 +250,11 @@ npm run mcp:inspector
 
 Required environment values are loaded from the app env files created by `./up.sh`; SDK calls need the configured API service URL. MCP does not read `RBAC_SECRET_KEY` from its `.env` for content/API access. Pass authorization with the MCP request instead:
 
-- Prefer `Authorization: Bearer <jwt>` using the same JWT stored by the frontend in the `rbac.subject.jwt` cookie.
-- For root/service access, pass `X-RBAC-SECRET-KEY` as an MCP request header.
-- HTTP transports may also forward the frontend cookies `rbac.subject.jwt` or `rbac.secret-key`.
-- Tool input schemas do not expose direct auth fields; pass auth through the MCP transport instead.
+- For Streamable HTTP, complete OAuth and send the MCP access token in the Authorization header. The server resolves the Subject and forwards a bearer JWT to the API.
+- A locally enabled operator fallback accepts the `X-RBAC-SECRET-KEY` header.
+- An embedded transport supplying credentials to the SDK adapter can pass a Subject JWT. The adapter also understands a forwarded `rbac.subject.jwt` cookie. A cookie alone cannot open an authenticated HTTP connection to `/mcp`.
 
-Resources do not have per-call input fields, so resource reads must receive auth from the MCP transport headers, cookies, MCP auth info, or request metadata. A typical edit flow is:
+Tools and resources use the credentials supplied by their transport. A typical edit flow is:
 
 1. Call `project-guide` or read `singlepagestartup://project-guide`.
 2. Call `module-list` or read `singlepagestartup://modules`.
@@ -276,7 +277,7 @@ Strict layered architecture: Repository → Service → Controller → App.
 - Fields defined in `fields/`, table schema in `schema.ts`
 - Database structure changes are managed via generated Drizzle SQL migrations
 - After changing `schema.ts` or any `fields/*` table definition, run the matching `repository-generate` Nx target, for example `npx nx run @sps/<module>:models:<model>:repository-generate` or the corresponding relation target. Do not hand-write migration SQL, `migrations/meta/*` snapshots, or `_journal.json` entries.
-- Every model/relation generation target runs uncached and regenerates Consistency Capture after Drizzle, including client-owned Startup schemas. Commit the generated schema and capture artifacts together. Apply them with `npx nx run api:db:migrate`, then run `npx nx run @sps/providers-db:consistency-check`. Custom targets must retain the final capture-generation command. See [PostgreSQL consistency storage](libs/providers/db/README.md) for the lifecycle and checks.
+- Generate Drizzle migrations in the owning model or relation. During `npx nx run api:db:migrate`, the entity registers its effective Table and SDK route with Consistency, including inherited Startup fields. Use `npx nx run @sps/providers-db:consistency-check` to verify coverage. Generate provider migrations only for infrastructure changes. See [PostgreSQL consistency storage](libs/providers/db/README.md).
 
 #### Service Layer
 
@@ -507,7 +508,7 @@ Available Error Categories and Keywords
 Here are the available categories and examples of keywords that trigger them:
 | Category | HTTP Status | Example Keywords |
 | ------------------------------ | ----------- | ------------------------------------------------------------------------ |
-| **Authentication error** | 401 | unauthorized, invalid credentials, token required, no session |
+| **Authentication error** | 401 | unauthorized, invalid credentials, token required, no session, token revoked |
 | **Permission error** | 403 | forbidden, permission denied, only order owner |
 | **Validation error** | 400 | invalid data, missing headers, no id provided, invalid url |
 | **Unprocessable Entity error** | 422 | expected string, invalid body['data'], unprocessable entity |

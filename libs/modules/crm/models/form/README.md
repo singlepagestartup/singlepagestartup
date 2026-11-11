@@ -27,3 +27,13 @@ Forms define multi-step CRM data collection flows with localized metadata.
 - `admin-select-input`: admin select input for choosing a form.
 - `admin-table`: admin table listing forms.
 - `admin-table-row`: admin row showing form fields.
+
+## Submission transaction
+
+`form.submit` owns creation of a Request and its FormsToRequests association.
+Both effective services run in one transaction under the submission-key advisory
+lock. Concurrent retries return the same Request; a different digest is rejected.
+A relation failure rolls back both rows and their consistency events.
+Request keeps submission lookup and notification-status updates, without importing
+FormsToRequests. Direct callers move `request.submit` to `form.submit`; Subject's
+form-request API and payload stay unchanged.

@@ -13,5 +13,10 @@ follow what runs, when it stops and which errors it returns.
 - Reserve ternary expressions for a simple choice between two values. Use
   named intermediate values or explicit branches for nested choices,
   side effects, validation and asynchronous operations.
+- Complete asynchronous work before constructing a response. Assign awaited
+  service and SDK results to named variables, then pass those values to
+  `c.json`, `Response`, MCP response helpers or returned objects. Keep
+  conditional work inside its branch, preserve existing `Promise.all`
+  concurrency, and keep awaits inside the same error and transaction scopes.
 - When reviewing a loop change, check empty input, the last item or chunk,
   early errors and resource cleanup. Preserve the order of side effects.

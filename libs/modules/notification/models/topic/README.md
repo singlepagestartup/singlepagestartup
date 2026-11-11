@@ -23,3 +23,14 @@ Topics group notifications and define delivery types.
 - `admin-select-input`: admin select input for choosing a topic.
 - `admin-table`: admin table listing topics.
 - `admin-table-row`: admin row showing topic fields.
+
+## Bounded delivery
+
+`topic.sendBounded` creates or resumes a notification, ensures its Topic and
+Template links exist, and delegates provider delivery to Notification. A failed
+link prevents the provider call and leaves the notification retryable. Retries
+share a stable ID and a three-attempt budget; an already sent notification is
+not sent again. The caller retains its Broadcast lease throughout the operation.
+
+Topic owns association orchestration. Notification owns its record updates,
+provider limits and delivery. Templates store content; Host components render it.

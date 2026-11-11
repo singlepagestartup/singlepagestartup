@@ -174,11 +174,14 @@ export class Service {
       },
     });
     const link = links.find((link) => link.profileId === profile.id);
-    const file = link
-      ? await this.dependencies.file.findById({
-          id: link.fileStorageModuleFileId,
-        })
-      : null;
+    let file;
+    if (link) {
+      file = await this.dependencies.file.findById({
+        id: link.fileStorageModuleFileId,
+      });
+    } else {
+      file = null;
+    }
     let avatar: IProfileAvatar | null = null;
     if (file?.mimeType?.startsWith("image/")) {
       const { id, file: path, mimeType, extension, alt, width, height } = file;
@@ -195,8 +198,10 @@ export class Service {
     profile: IProfile,
     selected: Awaited<ReturnType<Service["selected"]>>,
   ): Promise<IAuthorSummary> {
+    const presentation = await this.presentation(profile);
+
     return {
-      ...(await this.presentation(profile)),
+      ...presentation,
       description: profile.description,
       ...(profile.metadata?.seo
         ? { metadata: { seo: profile.metadata.seo } }
@@ -224,7 +229,9 @@ export class Service {
   }
   async authorFindCount(params: IAuthorFilters = {}): Promise<number> {
     this.filters(params);
-    return (await this.selected(params)).profiles.length;
+    const selection = await this.selected(params);
+
+    return selection.profiles.length;
   }
   async authorFindById({ id }: { id: string }): Promise<IAuthorDetail | null> {
     this.filters({ profileId: id });
@@ -257,8 +264,10 @@ export class Service {
           .map((link) => link.ecommerceModuleProductId),
       ),
     ];
+    const summary = await this.summary(profile, selected);
+
     return {
-      ...(await this.summary(profile, selected)),
+      ...summary,
       articles: articleIds.map((id) => {
         const {
           id: articleId,

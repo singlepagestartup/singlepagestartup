@@ -1,9 +1,9 @@
 #!/bin/bash
 . ./get_environment_type.sh
 
-get_environment_type $2
+get_environment_type "$2"
 
-./create_inventory.sh
+./create_inventory.sh || exit 1
 
 . ./get_env.sh
 . ./github/input.sh
@@ -18,12 +18,15 @@ DOCKER_HUB_PASSWORD=$(get_env "$BASH_SOURCE" "DOCKER_HUB_PASSWORD")
 GITHUB_TOKEN=$(get_env "$BASH_SOURCE" "GITHUB_TOKEN")
 GITHUB_REPOSITORY=$(get_env "$BASH_SOURCE" "GITHUB_REPOSITORY")
 
-SECRETS=(\
-    "PROJECT_NAME $PROJECT_NAME" \
-    "DOCKER_HUB_USERNAME $DOCKER_HUB_USERNAME" \
-    "DOCKER_HUB_LOGIN_USERNAME $DOCKER_HUB_LOGIN_USERNAME" \
-    "DOCKER_HUB_URL $DOCKER_HUB_URL" \
-    "DOCKER_HUB_PASSWORD $DOCKER_HUB_PASSWORD" \
+SECRETS=(
+    "DOCKER_HUB_PASSWORD $DOCKER_HUB_PASSWORD"
+)
+
+VARIABLES=(
+    "PROJECT_NAME $PROJECT_NAME"
+    "DOCKER_HUB_USERNAME $DOCKER_HUB_USERNAME"
+    "DOCKER_HUB_LOGIN_USERNAME $DOCKER_HUB_LOGIN_USERNAME"
+    "DOCKER_HUB_URL $DOCKER_HUB_URL"
 )
 
 if [ -z "$ENVIRONMENT_TYPE" ]; then
@@ -45,7 +48,7 @@ fi
 
 if [ "$1" != "down" ]
 then
-    cd ./github/github-node-api && npm install && cd ../..
+    (cd ./github/github-node-api && npm install) || exit 1
 
     for i in "${BRANCHES[@]}"
     do
@@ -53,15 +56,29 @@ then
         github_command create_branch BRANCH_NAME || exit 1
     done
         
+    # Move configured non-sensitive settings first to free old secret slots.
+    for i in "${VARIABLES[@]}"
+    do
+        VARIABLE_NAME="${PREFIX}${i%% *}"
+        VARIABLE_CONTENT="${i#* }"
+        if [ -n "$VARIABLE_CONTENT" ]
+        then
+            github_command create_variable VARIABLE_NAME VARIABLE_CONTENT || exit 1
+        fi
+    done
+
     for i in "${SECRETS[@]}"
     do
         SECRET_NAME="${i%% *}"
         SECRET_CONTENT="${i#* }"
 
-        SECRET_NAME="${PREFIX}${SECRET_NAME}" github_command create_secret SECRET_NAME SECRET_CONTENT || exit 1
+        if [ -n "$SECRET_CONTENT" ]
+        then
+            SECRET_NAME="${PREFIX}${SECRET_NAME}" github_command create_secret SECRET_NAME SECRET_CONTENT || exit 1
+        fi
     done
 else
-    cd ./github/github-node-api && npm install && cd ../..
+    (cd ./github/github-node-api && npm install) || exit 1
 
     for i in "${SECRETS[@]}"
     do
@@ -70,4 +87,10 @@ else
 
         SECRET_NAME="${PREFIX}${SECRET_NAME}" github_command delete_secret SECRET_NAME || exit 1
     done
+    for i in "${VARIABLES[@]}"
+    do
+        VARIABLE_NAME="${PREFIX}${i%% *}"
+        github_command delete_variable VARIABLE_NAME || exit 1
+    done
+
 fi

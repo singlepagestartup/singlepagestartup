@@ -37,6 +37,14 @@
         "command": "bun --env-file=apps/api/.env libs/providers/db/src/lib/drizzle/migrate-consistency.ts"
       }
     },
+    "consistency-finalize": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "cwd": ".",
+        "command": "bun --env-file=apps/api/.env libs/providers/db/src/lib/drizzle/migrate-consistency.ts --finalize"
+      }
+    },
     "consistency-check": {
       "executor": "nx:run-commands",
       "cache": false,

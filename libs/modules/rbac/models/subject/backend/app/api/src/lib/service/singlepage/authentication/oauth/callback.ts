@@ -174,9 +174,14 @@ export class Service {
       email: profile.email,
     });
 
-    const existingProviderIdentitySubjectId = providerIdentity
-      ? await this.findSubjectIdByIdentityId(providerIdentity.id)
-      : undefined;
+    let existingProviderIdentitySubjectId;
+    if (providerIdentity) {
+      existingProviderIdentitySubjectId = await this.findSubjectIdByIdentityId(
+        providerIdentity.id,
+      );
+    } else {
+      existingProviderIdentitySubjectId = undefined;
+    }
 
     let targetSubjectId: string | undefined = undefined;
     let matchedEmailPasswordSubjectId: string | undefined = undefined;
