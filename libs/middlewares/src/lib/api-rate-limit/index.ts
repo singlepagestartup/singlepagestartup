@@ -1,7 +1,5 @@
 import { Context, MiddlewareHandler } from "hono";
 import { createMiddleware } from "hono/factory";
-import { getCookie } from "hono/cookie";
-import { HTTPException } from "hono/http-exception";
 import { Provider as StoreProvider } from "@sps/providers-kv";
 import {
   API_RATE_LIMIT_BURST_PER_ADDRESS,
@@ -128,13 +126,6 @@ export class Middleware {
         this.addressLimits,
       );
 
-      const cookie = getCookie(c, "rbac.subject.jwt");
-      const bearer = c.req.header("Authorization")?.replace(/^Bearer\s+/i, "");
-      if (cookie && bearer && cookie !== bearer) {
-        throw new HTTPException(401, {
-          message: "Authentication error. Conflicting credentials",
-        });
-      }
       const token = authorization(c);
       let subjectId: string | undefined;
       if (token) {

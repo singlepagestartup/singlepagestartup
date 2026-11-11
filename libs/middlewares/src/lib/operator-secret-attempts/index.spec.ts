@@ -243,26 +243,18 @@ describe("Given: requests that present an operator secret", () => {
     expect(mockWarn).not.toHaveBeenCalled();
   });
 
-  /**
-   * BDD Scenario
-   * Given: a wrong secret in the rbac.secret-key cookie rather than the header.
-   * When: the address presents it past its budget.
-   * Then: it is logged, counted and refused like the header.
-   */
-  it("counts a wrong secret presented in the cookie", async () => {
+  it("ignores an operator cookie across repeated requests", async () => {
     const { storeProvider } = createStore();
     const { app } = createApi({ storeProvider });
 
-    await request(app, { address: "203.0.113.9", cookie: WRONG_SECRET });
-    await request(app, { address: "203.0.113.9", cookie: WRONG_SECRET });
-
-    const refused = await request(app, {
-      address: "203.0.113.9",
-      cookie: WRONG_SECRET,
-    });
-
-    expect(refused.status).toBe(429);
-    expect(mockWarn).toHaveBeenCalledTimes(1);
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const response = await request(app, {
+        address: "203.0.113.9",
+        cookie: WRONG_SECRET,
+      });
+      expect(response.status).toBe(200);
+    }
+    expect(mockWarn).not.toHaveBeenCalled();
   });
 });
 

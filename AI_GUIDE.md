@@ -120,7 +120,7 @@ npm run mcp:dev
 
 This uses stdio. Use it when the MCP client launches the server process directly.
 
-For HTTP headers, cookies, or Inspector `Custom Headers`, start the Streamable HTTP transport:
+For OAuth or Inspector `Custom Headers`, start the Streamable HTTP transport:
 
 ```bash
 npm run mcp:http
@@ -174,7 +174,7 @@ Claude Desktop and Claude.ai remote connectors cannot reach local `127.0.0.1`; u
 
 OAuth connections use the single `mcp:content` scope. The API's RBAC permissions decide whether the connected subject may read, create, update or delete. Delete tools still require their preview and confirmation token. The `X-RBAC-SECRET-KEY` configs above use operator access instead of a user's permissions.
 
-MCP SDK calls require the configured API service URL. `./up.sh` creates the local env files expected by the API/MCP workflow, but MCP content/API access does not read `RBAC_SECRET_KEY` from the MCP `.env`. Pass auth with the MCP request, matching the frontend/API contract: `Authorization: Bearer <jwt>`, `X-RBAC-SECRET-KEY`, cookie `rbac.subject.jwt`, or cookie `rbac.secret-key`. Tool input schemas do not expose direct auth fields; resources and tools need auth from transport headers, cookies, MCP auth info, or request metadata.
+MCP SDK calls require the configured API service URL. `./up.sh` creates the local env files expected by the API/MCP workflow, but MCP content/API access does not read `RBAC_SECRET_KEY` from the MCP `.env`. Authenticate HTTP clients with the MCP OAuth access token. A locally enabled operator fallback accepts the `X-RBAC-SECRET-KEY` header. The SDK adapter can convert a Subject JWT supplied by an embedded transport into an API bearer header. A browser cookie alone does not authenticate the HTTP `/mcp` endpoint.
 
 ### 6.1 MCP content-management workflow
 

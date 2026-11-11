@@ -1,7 +1,10 @@
-import { authorization, getHttpErrorType } from "@sps/backend-utils";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import {
+  authorization,
+  getHttpErrorType,
+  readRbacSecret,
+  rbacSecretMatches,
+} from "@sps/backend-utils";
 import { type MiddlewareHandler } from "hono";
-import { getCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
 import type { Service } from "../../../../api/src/lib/service";
@@ -22,10 +25,9 @@ export class Middleware {
           throw new Error("Validation error. No id provided");
         }
 
-        const secretKey =
-          c.req.header("X-RBAC-SECRET-KEY") || getCookie(c, "rbac.secret-key");
+        const secretKey = readRbacSecret(c);
         if (secretKey) {
-          if (!RBAC_SECRET_KEY || secretKey !== RBAC_SECRET_KEY) {
+          if (!rbacSecretMatches(secretKey)) {
             throw new Error("Authentication error. Invalid credentials");
           }
           return next();

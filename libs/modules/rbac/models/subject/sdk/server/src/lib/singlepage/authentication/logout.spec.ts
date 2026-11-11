@@ -36,9 +36,7 @@ describe("logout server SDK action", () => {
       await action({
         host: "https://api.example.com",
         options: {
-          headers: {
-            Authorization: "Bearer access-token-1",
-          },
+          headers: new Headers({ Authorization: "Bearer access-token-1" }),
         },
       });
 
@@ -46,10 +44,10 @@ describe("logout server SDK action", () => {
         "https://api.example.com/api/rbac/subjects/authentication/logout?",
         expect.objectContaining({
           method: "POST",
-          headers: {
+          headers: new Headers({
             "Cache-Control": "no-store",
             Authorization: "Bearer access-token-1",
-          },
+          }),
         }),
       );
     } finally {
@@ -75,9 +73,7 @@ describe("logout server SDK action", () => {
         "https://api.example.com/api/rbac/subjects/authentication/logout?",
         expect.objectContaining({
           method: "POST",
-          headers: {
-            "Cache-Control": "no-store",
-          },
+          headers: new Headers({ "Cache-Control": "no-store" }),
         }),
       );
     } finally {

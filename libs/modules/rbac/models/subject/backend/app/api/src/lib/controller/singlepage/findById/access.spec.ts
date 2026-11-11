@@ -89,29 +89,23 @@ beforeEach(() => {
   globalAuthorization.mockRejectedValue(new Error("Permission error. Denied"));
 });
 
-it.each(["header", "cookie"])(
-  "lets a guest session read only its own Subject using a %s JWT",
-  async (transport) => {
-    const { app, service } = fixture();
-    const jwt = await token();
-    const headers: Record<string, string> =
-      transport === "header"
-        ? { Authorization: `Bearer ${jwt}` }
-        : { Cookie: `rbac.subject.jwt=${jwt}` };
-    const response = await app.request(
-      `/api/rbac/subjects/${ownerId}?filters[or][0][column]=id&filters[or][0][method]=eq&filters[or][0][value]=${otherId}`,
-      { headers },
-    );
+it("lets a guest read its own Subject with an access header", async () => {
+  const { app, service } = fixture();
+  const jwt = await token();
+  const headers = { Authorization: `Bearer ${jwt}` };
+  const response = await app.request(
+    `/api/rbac/subjects/${ownerId}?filters[or][0][column]=id&filters[or][0][method]=eq&filters[or][0][value]=${otherId}`,
+    { headers },
+  );
 
-    expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({
-      data: { id: ownerId, variant: "default" },
-    });
-    expect(service.findById).toHaveBeenCalledWith({ id: ownerId });
-    expect(service.isAuthorized).not.toHaveBeenCalled();
-    expect(globalAuthorization).not.toHaveBeenCalled();
-  },
-);
+  expect(response.status).toBe(200);
+  expect(await response.json()).toEqual({
+    data: { id: ownerId, variant: "default" },
+  });
+  expect(service.findById).toHaveBeenCalledWith({ id: ownerId });
+  expect(service.isAuthorized).not.toHaveBeenCalled();
+  expect(globalAuthorization).not.toHaveBeenCalled();
+});
 
 it("rejects a foreign Subject before reading its data", async () => {
   const { app, service } = fixture();
@@ -143,32 +137,43 @@ it("preserves explicit RBAC access to another Subject", async () => {
   expect(service.findById).toHaveBeenCalledWith({ id: otherId });
 });
 
-it.each(["missing", "forged", "expired", "no-subject", "wrong-secret"])(
-  "rejects %s credentials before reading a Subject",
-  async (scenario) => {
-    const { app, service } = fixture();
-    const headers: Record<string, string> = {};
-    if (scenario === "forged") {
-      headers.Authorization = `Bearer ${await sign({ subject: { id: ownerId } }, "another-secret")}`;
-    }
-    if (scenario === "expired") {
-      headers.Authorization = `Bearer ${await token({ exp: Math.floor(Date.now() / 1000) - 60 })}`;
-    }
-    if (scenario === "no-subject") {
-      headers.Authorization = `Bearer ${await token({ subject: {} })}`;
-    }
-    if (scenario === "wrong-secret") {
-      headers["X-RBAC-SECRET-KEY"] = "wrong-secret";
-    }
-    const response = await app.request(`/api/rbac/subjects/${ownerId}`, {
-      headers,
-    });
+it.each([
+  "missing",
+  "forged",
+  "expired",
+  "no-subject",
+  "wrong-secret",
+  "cookie-jwt",
+  "cookie-secret",
+])("rejects %s credentials before reading a Subject", async (scenario) => {
+  const { app, service } = fixture();
+  const headers: Record<string, string> = {};
+  if (scenario === "cookie-jwt") {
+    headers.Cookie = `rbac.subject.jwt=${await token()}`;
+  }
+  if (scenario === "cookie-secret") {
+    headers.Cookie = "rbac.secret-key=subject-read-operator-secret";
+  }
+  if (scenario === "forged") {
+    headers.Authorization = `Bearer ${await sign({ subject: { id: ownerId } }, "another-secret")}`;
+  }
+  if (scenario === "expired") {
+    headers.Authorization = `Bearer ${await token({ exp: Math.floor(Date.now() / 1000) - 60 })}`;
+  }
+  if (scenario === "no-subject") {
+    headers.Authorization = `Bearer ${await token({ subject: {} })}`;
+  }
+  if (scenario === "wrong-secret") {
+    headers["X-RBAC-SECRET-KEY"] = "wrong-secret";
+  }
+  const response = await app.request(`/api/rbac/subjects/${ownerId}`, {
+    headers,
+  });
 
-    expect(response.status).toBe(401);
-    expect(service.findById).not.toHaveBeenCalled();
-    expect(service.isAuthorized).not.toHaveBeenCalled();
-  },
-);
+  expect(response.status).toBe(401);
+  expect(service.findById).not.toHaveBeenCalled();
+  expect(service.isAuthorized).not.toHaveBeenCalled();
+});
 
 it.each(["header", "cookie"])(
   "rejects a refresh token in a %s before reading its own Subject",
@@ -190,33 +195,27 @@ it.each(["header", "cookie"])(
   },
 );
 
-it.each(["header", "cookie"])(
-  "rejects a previously accepted %s token after its Subject is revoked",
-  async (transport) => {
-    const state: IFixtureProps = { tokensValidAfter: null };
-    const { app, service } = fixture(state);
-    const access = await token();
-    const headers: Record<string, string> =
-      transport === "header"
-        ? { Authorization: `Bearer ${access}` }
-        : { Cookie: `rbac.subject.jwt=${access}` };
-    const first = await app.request(`/api/rbac/subjects/${ownerId}`, {
-      headers,
-    });
-    expect(first.status).toBe(200);
+it("rejects a previously accepted bearer token after logout", async () => {
+  const state: IFixtureProps = { tokensValidAfter: null };
+  const { app, service } = fixture(state);
+  const access = await token();
+  const headers = { Authorization: `Bearer ${access}` };
+  const first = await app.request(`/api/rbac/subjects/${ownerId}`, {
+    headers,
+  });
+  expect(first.status).toBe(200);
 
-    state.tokensValidAfter = new Date();
-    service.findById.mockClear();
-    const revoked = await app.request(`/api/rbac/subjects/${ownerId}`, {
-      headers,
-    });
+  state.tokensValidAfter = new Date();
+  service.findById.mockClear();
+  const revoked = await app.request(`/api/rbac/subjects/${ownerId}`, {
+    headers,
+  });
 
-    expect(revoked.status).toBe(401);
-    expect(await revoked.text()).toContain("Token revoked");
-    expect(service.findById).not.toHaveBeenCalled();
-    expect(service.isAuthorized).not.toHaveBeenCalled();
-  },
-);
+  expect(revoked.status).toBe(401);
+  expect(await revoked.text()).toContain("Token revoked");
+  expect(service.findById).not.toHaveBeenCalled();
+  expect(service.isAuthorized).not.toHaveBeenCalled();
+});
 
 it("rejects an access token whose Subject no longer exists", async () => {
   const { app, service } = fixture({ exists: false });
