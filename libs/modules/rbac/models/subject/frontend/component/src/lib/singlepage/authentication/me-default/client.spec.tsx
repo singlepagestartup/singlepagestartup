@@ -274,7 +274,7 @@ describe("Given: authentication me-default client", () => {
         <Client
           variant="authentication-me-default"
           isServer={false}
-          unauthenticatedRedirectHref="/ru/ai-chat/sign-in"
+          unauthenticatedRedirectHref="/ru/rbac/subject/authentication/email-and-password"
           fallback={<span>Sign in to your workspace.</span>}
         >
           {() => <span>Private workspace</span>}
@@ -285,7 +285,9 @@ describe("Given: authentication me-default client", () => {
     it("redirects a verified visitor to the supplied localized sign-in page", () => {
       mockAuthenticated = false;
       render(protectedView());
-      expect(mockRouter.replace).toHaveBeenCalledWith("/ru/ai-chat/sign-in");
+      expect(mockRouter.replace).toHaveBeenCalledWith(
+        "/ru/rbac/subject/authentication/email-and-password",
+      );
       expect(screen.queryByText("Private workspace")).toBeNull();
       expect(screen.queryByText("Sign in to your workspace.")).toBeNull();
     });

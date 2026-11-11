@@ -77,6 +77,38 @@ describe("Given: the is-authorized middleware caches decisions per token", () =>
     mockIsAuthorized.mockReset();
   });
 
+  it("does not reuse an authorization decision after the access token expires", async () => {
+    const app = createApp();
+    const now = Date.now();
+    const token = await jwt.sign(
+      {
+        subject: { id: "subject-expiring-token" },
+        exp: Math.floor(now / 1000) + 5,
+      },
+      "test-secret",
+    );
+
+    mockIsAuthorized.mockResolvedValue({ ok: true });
+
+    expect((await readOrders(app, token)).status).toBe(200);
+    expect((await readOrders(app, token)).status).toBe(200);
+    expect(mockIsAuthorized).toHaveBeenCalledTimes(1);
+
+    const clock = jest.spyOn(Date, "now").mockReturnValue(now + 6000);
+    mockIsAuthorized.mockRejectedValue(
+      new Error("Authentication error. Token expired"),
+    );
+
+    try {
+      const response = await readOrders(app, token);
+
+      expect(response.status).toBe(401);
+      expect(mockIsAuthorized).toHaveBeenCalledTimes(2);
+    } finally {
+      clock.mockRestore();
+    }
+  });
+
   /**
    * BDD Scenario
    * Given: a token whose decision for a protected route is cached.

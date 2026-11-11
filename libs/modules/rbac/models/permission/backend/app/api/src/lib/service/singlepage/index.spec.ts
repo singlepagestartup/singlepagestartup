@@ -6,6 +6,7 @@
  * Then: exact paths win and only bracketed segments behave as dynamic masks.
  */
 
+import type { FindServiceProps } from "@sps/shared-backend-api";
 import { Service } from ".";
 
 function createService() {
@@ -111,5 +112,73 @@ describe("Given: exact and masked RBAC permission paths", () => {
         },
       }),
     ).resolves.toEqual(expect.objectContaining({ permission: undefined }));
+  });
+});
+
+describe("UUID read permissions", () => {
+  const collection = "/api/file-storage/files";
+  const id = "3f2504e0-4f89-11d3-9a0c-0305e82c3301";
+  const contentPermission = {
+    path: `${collection}/:uuid/content`,
+    method: "GET",
+    type: "HTTP",
+  };
+  const readPermission = { ...contentPermission, path: `${collection}/:uuid` };
+
+  function resolve(
+    route: string,
+    method = "GET",
+    permissions = [readPermission, contentPermission],
+  ) {
+    const service = createService();
+    service.find = jest
+      .fn()
+      .mockImplementation(async ({ params }: FindServiceProps) => {
+        const path = params?.filters?.and.find(
+          (filter) => filter.column === "path",
+        );
+        if (!path || path.method === "like") {
+          return [];
+        }
+        return permissions.filter(
+          (permission) =>
+            permission.path === path.value && permission.method === method,
+        );
+      });
+    return service.resolveByRoute({
+      permission: { type: "HTTP", method, route },
+    });
+  }
+
+  it("matches a record or its content and gives an exact record permission precedence", async () => {
+    const exact = { ...readPermission, path: `${collection}/${id}` };
+    expect((await resolve(exact.path)).permission).toBe(readPermission);
+    expect((await resolve(exact.path + "/content")).permission).toBe(
+      contentPermission,
+    );
+    expect(
+      (await resolve(exact.path, "GET", [readPermission, exact])).permission,
+    ).toBe(exact);
+  });
+
+  it.each([
+    "dump",
+    "count",
+    "future-action",
+    ":uuid",
+    "%64ump",
+    "dump/content",
+    `${id}/delete`,
+    `${id}/content/`,
+  ])("does not grant %s through a record permission", async (suffix) => {
+    expect(
+      (await resolve(`${collection}/${suffix}`)).permission,
+    ).toBeUndefined();
+  });
+
+  it("requires a separate HEAD permission for content", async () => {
+    expect(
+      (await resolve(`${collection}/${id}/content`, "HEAD")).permission,
+    ).toBeUndefined();
   });
 });

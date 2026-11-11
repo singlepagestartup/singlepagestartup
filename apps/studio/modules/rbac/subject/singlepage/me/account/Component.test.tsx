@@ -41,7 +41,7 @@ test("guest headers share one sign-in control with the appropriate destination",
     expect(html).not.toContain("Admin Panel");
   }
   expect(chat).toContain(
-    'href="/ai-chat/rbac/subjects/authentication/select-method"',
+    'href="/rbac/subject/authentication/email-and-password"',
   );
   expect(website).toContain(
     "rbac-module-subject-me-authentication-select-method",

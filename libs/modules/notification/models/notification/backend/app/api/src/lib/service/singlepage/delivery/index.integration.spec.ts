@@ -45,9 +45,13 @@ describe("Notification delivery on Broadcast", () => {
     new DeliveryRepository(new MessageConfiguration()),
   );
   const repository = new Repository(new Configuration());
-  const notifications = new NotificationService(repository, {
-    channel: Object.assign(new CRUDService(channelRepository), { queue }),
-  });
+  const notifications = new NotificationService(
+    repository,
+    {
+      channel: Object.assign(new CRUDService(channelRepository), { queue }),
+    },
+    { find: jest.fn(), render: jest.fn() },
+  );
   const channel = {
     queue,
     find: jest.fn(async () => [{ id: channelId }]),

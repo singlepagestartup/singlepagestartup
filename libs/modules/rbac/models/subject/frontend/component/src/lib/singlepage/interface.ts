@@ -1,3 +1,4 @@
+import type { IComponentProps as IEmailPasswordForm } from "./authentication/email-and-password/form-default/interface";
 import type { IComponentProps as IEcommerceModuleProductCategoryDefaultProps } from "./ecommerce-module/product/category-default/interface";
 import type { IComponentProps as IEcommerceModuleProductProfileDefaultProps } from "./ecommerce-module/product/profile-default/interface";
 import { IComponentProps as IHiddenComponentProps } from "@sps/shared-frontend-components/singlepage/hidden/interface";
@@ -108,6 +109,7 @@ export type IComponentProps =
   | IMeEcommerceModuleProductCheckoutDefaultInterface
   | IMeEcommerceModuleProductCartDefaultInterface
   | IMeEcommerceModuleOrderListCheckoutDefaultInterface
+  | IEmailPasswordForm
   | IAuthenticationEmailAndPasswordFormAiChat
   | IMeSocialModuleProfileIdSidebarAiChat
   | IResetPasswordFormAiChat

@@ -11,7 +11,9 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Cookies, CookiesProvider } from "react-cookie";
 
 const mockRouter = { push: jest.fn(), refresh: jest.fn(), replace: jest.fn() };
-let mockPathname = "/en/ai-chat/create-account";
+let mockPathname =
+  "/en/rbac/subject/authentication/email-and-password/registration";
+let mockSearch = "";
 let mockAuthenticated = false;
 let mockIssuedJwt = "account-token";
 const mockMe = jest.fn(async (..._args: unknown[]) => ({
@@ -27,7 +29,7 @@ const mockAuthenticate = jest.fn(async (..._args: unknown[]) => {
 jest.mock("next/navigation", () => ({
   useRouter: () => mockRouter,
   usePathname: () => mockPathname,
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => new URLSearchParams(mockSearch),
 }));
 jest.mock("next/link", () => ({
   __esModule: true,
@@ -41,8 +43,12 @@ jest.mock("react-jwt", () => ({
     isExpired: false,
   }),
 }));
-jest.mock("@sps/shared-utils", () => ({ STALE_TIME: 60_000 }));
+jest.mock("@sps/shared-utils", () => ({
+  ...jest.requireActual("@sps/shared-utils"),
+  STALE_TIME: 60_000,
+}));
 jest.mock("@sps/shared-frontend-client-utils", () => ({
+  cn: jest.requireActual("@sps/shared-frontend-client-utils").cn,
   getLocalizedHref: jest.requireActual("@sps/shared-frontend-client-utils")
     .getLocalizedHref,
   saturateHeaders: () => ({}),
@@ -115,7 +121,9 @@ afterAll(() => {
 });
 
 beforeEach(() => {
-  mockPathname = "/en/ai-chat/create-account";
+  mockSearch = "";
+  mockPathname =
+    "/en/rbac/subject/authentication/email-and-password/registration";
   queryClient.clear();
   jest.clearAllMocks();
   mockAuthenticated = false;
@@ -129,14 +137,14 @@ it.each([
   "forgot-password",
   "reset-password",
 ] as const)("retains Russian in %s secondary navigation", (mode) => {
-  mockPathname = "/ru/ai-chat/sign-in";
+  mockPathname = "/ru/rbac/subject/authentication/email-and-password";
   const view = render(
     <QueryClientProvider client={queryClient}>
       <CookiesProvider cookies={new Cookies({})}>
         <Component
           isServer={false}
           language="ru"
-          variant="authentication-email-and-password-form-ai-chat"
+          variant="authentication-email-and-password-form-default"
           mode={mode}
         />
       </CookiesProvider>
@@ -160,7 +168,7 @@ it("renders the registered form entrypoint in its explicitly selected mode", () 
       <PublicForm
         language="en"
         isServer={false}
-        variant="authentication-email-and-password-form-ai-chat"
+        variant="authentication-email-and-password-form-default"
         mode="forgot-password"
       />
     </QueryClientProvider>,
@@ -173,12 +181,28 @@ it("renders the registered form entrypoint in its explicitly selected mode", () 
 });
 
 it.each([
-  ["registration", "visitor-token"],
-  ["registration", "account-token"],
-  ["authentication", "account-token"],
+  ["authentication", "account-token", "", "/en/"],
+  ["registration", "visitor-token", "", "/en/"],
+  [
+    "registration",
+    "account-token",
+    "returnTo=/ai-chat/projects",
+    "/en/ai-chat/projects",
+  ],
+  ["authentication", "account-token", "returnTo=//attacker.example", "/en/"],
+  [
+    "authentication",
+    "account-token",
+    "returnTo=https://attacker.example",
+    "/en/",
+  ],
 ] as const)(
   "updates mounted account and project readers after %s with %s without a reload",
-  async (mode, issuedJwt) => {
+  async (mode, issuedJwt, search, destination) => {
+    mockSearch = search;
+    mockPathname =
+      "/en/rbac/subject/authentication/email-and-password" +
+      (mode === "registration" ? "/registration" : "");
     mockIssuedJwt = issuedJwt;
     render(
       <QueryClientProvider client={queryClient}>
@@ -214,8 +238,9 @@ it.each([
           <Component
             isServer={false}
             language="en"
-            variant="authentication-email-and-password-form-ai-chat"
+            variant="authentication-email-and-password-form-default"
             mode={mode}
+            successHref="/ai-chat/projects"
           />
         </CookiesProvider>
       </QueryClientProvider>,
@@ -244,7 +269,7 @@ it.each([
     });
 
     await waitFor(() =>
-      expect(mockRouter.push).toHaveBeenCalledWith("/en/ai-chat/projects"),
+      expect(mockRouter.push).toHaveBeenCalledWith(destination),
     );
     await screen.findByText("Account menu");
     expect(screen.getByLabelText("Project name")).toBeTruthy();

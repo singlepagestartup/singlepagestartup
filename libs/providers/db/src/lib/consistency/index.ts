@@ -1,5 +1,11 @@
-import { getPostgresClient } from "@sps/shared-backend-database-config";
+import {
+  getPostgresClient,
+  readCaptureCatalog,
+  findMissingCapture,
+  type ICaptureResource,
+} from "@sps/shared-backend-database-config";
 import { createHash, randomUUID } from "node:crypto";
+
 import {
   CONSISTENCY_LEASE_MS,
   type IConsistencyMetadata,
@@ -70,13 +76,17 @@ export class ConsistencyStore {
     return Boolean(row?.covered);
   }
 
-  async assertCoverage() {
-    const missing = await this
-      .sql`SELECT resource FROM sps_consistency.resource r WHERE NOT EXISTS(SELECT 1 FROM pg_trigger t WHERE t.tgrelid=to_regclass(r.resource) AND t.tgname='sps_consistency_rows' AND t.tgenabled IN ('O','A')) OR NOT EXISTS(SELECT 1 FROM pg_trigger t WHERE t.tgrelid=to_regclass(r.resource) AND t.tgname='sps_consistency_truncate' AND t.tgenabled IN ('O','A'))`;
-    if (missing.length)
+  async assertCoverage(catalog?: ICaptureResource[]) {
+    const declared = catalog ?? (await readCaptureCatalog());
+    const missing = await findMissingCapture(this.sql, declared, {
+      includeRegistered: true,
+    });
+    if (missing.length) {
       throw new Error(
         `Consistency migrations required for ${missing.map((row) => row.resource).join(", ")}`,
       );
+    }
+    return declared.length;
   }
 
   async register(props: {

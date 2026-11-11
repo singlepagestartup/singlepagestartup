@@ -1,0 +1,9 @@
+{
+  "id": "73b74b12-015a-41c9-8edf-0bade66af80f",
+  "createdAt": "2026-11-10T21:11:00.250Z",
+  "updatedAt": "2026-11-10T21:11:00.250Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "POST",
+  "path": "/api/rbac/subjects/authentication/email-and-password/reset-password"
+}

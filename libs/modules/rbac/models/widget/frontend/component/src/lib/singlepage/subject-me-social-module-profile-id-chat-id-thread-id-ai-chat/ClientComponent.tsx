@@ -38,7 +38,7 @@ export function Component(props: IClientComponentProps) {
             onRetry={() => window.location.reload()}
           />
         }
-        unauthenticatedRedirectHref={`/${language}/ai-chat/sign-in`}
+        unauthenticatedRedirectHref={`/${language}/rbac/subject/authentication/email-and-password`}
       >
         {({ data, authenticated }) => {
           if (!data || !authenticated) return null;
@@ -73,7 +73,6 @@ export function Component(props: IClientComponentProps) {
                       language={language}
                       state="access-denied"
                       projectsHref={`/${language}/ai-chat/projects`}
-                      signInHref={`/${language}/ai-chat/sign-in`}
                     />
                   );
                 const navigation = (
@@ -135,7 +134,6 @@ export function Component(props: IClientComponentProps) {
                               embedded
                               onRetry={retry}
                               projectsHref={`/${language}/ai-chat/projects`}
-                              signInHref={`/${language}/ai-chat/sign-in`}
                             />
                           )}
                           loading={

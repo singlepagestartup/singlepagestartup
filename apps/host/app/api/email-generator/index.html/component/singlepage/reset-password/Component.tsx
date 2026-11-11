@@ -1,4 +1,6 @@
 import React from "react";
+import { NEXT_PUBLIC_HOST_SERVICE_URL } from "@sps/shared-utils";
+import { internationalization } from "@sps/shared-configuration";
 import { IComponentPropsExtended } from "./interface";
 import {
   Body,
@@ -10,16 +12,24 @@ import {
 } from "@react-email/components";
 
 export function Component(props: IComponentPropsExtended) {
+  const language = internationalization.defaultLanguage.code;
+  const resetUrl = new URL(
+    `/${language}/rbac/subject/authentication/email-and-password/reset-password`,
+    NEXT_PUBLIC_HOST_SERVICE_URL,
+  );
+  resetUrl.hash = new URLSearchParams({ code: props.data.code }).toString();
+
   return (
     <>
       <Head />
-      <Preview>Order Status Is Changed To Paid</Preview>
+      <Preview>Reset your password</Preview>
 
       <Body>
         <Container>
+          <Text>Use this link within one hour to choose a new password.</Text>
           <Button
             className="box-border w-full rounded-[8px] bg-yellow-500 px-[12px] py-[12px] text-center font-semibold text-white"
-            href={`http://localhost:3000/rbac/reset-password?code=${props.data.code}`}
+            href={resetUrl.toString()}
           >
             Reset password
           </Button>

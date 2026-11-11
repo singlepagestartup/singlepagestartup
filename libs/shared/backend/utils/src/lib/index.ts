@@ -82,3 +82,5 @@ export {
   interpolateNotificationTemplate,
   getNotificationTemplateChannel,
 } from "./notification-template";
+
+export { resolveCorsOrigin } from "./cors-origin";

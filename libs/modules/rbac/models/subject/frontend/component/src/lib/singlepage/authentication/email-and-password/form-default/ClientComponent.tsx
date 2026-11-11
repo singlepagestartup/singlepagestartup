@@ -1,40 +1,76 @@
 "use client";
-import { internationalization } from "@sps/shared-configuration";
-
+import { internationalization, userStories } from "@sps/shared-configuration";
 import Link from "next/link";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { getLocalizedHref } from "@sps/shared-frontend-client-utils";
-import { useState } from "react";
+import { cn, getLocalizedHref } from "@sps/shared-frontend-client-utils";
+import { useEffect, useState } from "react";
 import { ArrowRight, Eye, EyeOff, LogIn } from "lucide-react";
 import { api as subjectApi } from "@sps/rbac/models/subject/sdk/client";
-
 import type { IComponentProps } from "./interface";
 
 export function Component(props: IComponentProps) {
-  const language = props.language || internationalization.defaultLanguage.code;
+  const pathname = usePathname();
+  const pathLanguage = pathname.split("/")[1];
+  const language =
+    props.language ||
+    internationalization.languages.find(({ code }) => code === pathLanguage)
+      ?.code ||
+    internationalization.defaultLanguage.code;
   const ru = language === "ru";
   const { mode } = props;
   const registration = mode === "registration";
   const forgot = mode === "forgot-password";
   const reset = mode === "reset-password";
-  const heading = registration
-    ? ru
-      ? "Создать аккаунт"
-      : "Create an account"
-    : forgot
-      ? ru
-        ? "Восстановить пароль"
-        : "Reset your password"
-      : reset
-        ? ru
-          ? "Задайте новый пароль"
-          : "Choose a new password"
-        : ru
-          ? "Войти"
-          : "Sign in";
+  const headings = {
+    authentication: ru ? "Войти" : "Sign in",
+    registration: ru ? "Создать аккаунт" : "Create an account",
+    "forgot-password": ru ? "Восстановить пароль" : "Reset your password",
+    "reset-password": ru ? "Задайте новый пароль" : "Choose a new password",
+  };
+  const heading = headings[mode];
   const router = useRouter();
-  const pathname = usePathname();
   const search = useSearchParams();
+  const returnTo = search.get("returnTo");
+  const requestedReturnPath =
+    userStories.subjectAuthentication.redirect.allowedReturnPaths?.find(
+      (path) => path === returnTo,
+    );
+  function formPath(action: IComponentProps["mode"]) {
+    const suffix = action === "authentication" ? "" : `/${action}`;
+    return getLocalizedHref(
+      pathname,
+      `/rbac/subject/authentication/email-and-password${suffix}`,
+    );
+  }
+  const embeddedSuccessHref =
+    pathname === formPath(mode) ? undefined : props.successHref;
+  const successHref =
+    requestedReturnPath ||
+    embeddedSuccessHref ||
+    userStories.subjectAuthentication.redirect.success;
+  function formHref(action: IComponentProps["mode"]) {
+    const path = formPath(action);
+    if (requestedReturnPath) {
+      const query = new URLSearchParams({ returnTo: requestedReturnPath });
+      return `${path}?${query}`;
+    }
+    return path;
+  }
+
+  const [fragmentCode, setFragmentCode] = useState<string | null>(null);
+  useEffect(() => {
+    if (!reset) {
+      return;
+    }
+    function readCode() {
+      const fragment = new URLSearchParams(window.location.hash.slice(1));
+      setFragmentCode(fragment.get("code"));
+    }
+    readCode();
+    window.addEventListener("hashchange", readCode);
+    return () => window.removeEventListener("hashchange", readCode);
+  }, [reset]);
+  const resetCode = fragmentCode || search.get("code");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
@@ -53,7 +89,15 @@ export function Component(props: IComponentProps) {
   const field =
     "min-h-12 w-full rounded-xl border border-border bg-card px-4 text-base focus:outline-2";
   return (
-    <section className="rounded-2xl border border-border bg-card p-6 sm:p-8">
+    <section
+      data-module="rbac"
+      data-model="subject"
+      data-variant={props.variant}
+      className={cn(
+        "rounded-2xl border border-border bg-card p-6 sm:p-8",
+        props.className,
+      )}
+    >
       <h2 className="flex items-center gap-3 text-xl font-semibold">
         <LogIn className="size-5" />
         {heading}
@@ -67,11 +111,9 @@ export function Component(props: IComponentProps) {
             setStatus(ru ? "Пароли не совпадают." : "Passwords do not match.");
             return;
           }
-          if (
-            (registration && !acceptedTerms) ||
-            (reset && !search.get("code"))
-          )
+          if (registration && !acceptedTerms) {
             return;
+          }
           try {
             if (forgot) {
               await recover.mutateAsync({ data: { email } });
@@ -83,11 +125,14 @@ export function Component(props: IComponentProps) {
               return;
             }
             if (reset) {
+              if (!resetCode) {
+                return;
+              }
               await replace.mutateAsync({
                 data: {
                   password,
                   passwordConfirmation: confirmation,
-                  code: search.get("code") || "",
+                  code: resetCode,
                 },
               });
               setStatus(
@@ -100,7 +145,7 @@ export function Component(props: IComponentProps) {
             await (registration ? register : login).mutateAsync({
               data: { login: email, password },
             });
-            router.push(getLocalizedHref(pathname, "/ai-chat/projects"));
+            router.push(getLocalizedHref(pathname, successHref));
             router.refresh();
           } catch (error) {
             setStatus(
@@ -183,7 +228,7 @@ export function Component(props: IComponentProps) {
         {!registration && !forgot && !reset && (
           <Link
             className="text-sm underline"
-            href={getLocalizedHref(pathname, "/ai-chat/forgot-password")}
+            href={formHref("forgot-password")}
           >
             {ru ? "Забыли пароль?" : "Forgot password?"}
           </Link>
@@ -216,7 +261,7 @@ export function Component(props: IComponentProps) {
             </span>
           </label>
         )}
-        {reset && !search.get("code") && (
+        {reset && !resetCode && (
           <p role="alert" className="text-sm text-destructive">
             {ru
               ? "Откройте ссылку для восстановления пароля из письма, чтобы продолжить."
@@ -228,7 +273,7 @@ export function Component(props: IComponentProps) {
             pending ||
             ((reset || registration) && password !== confirmation) ||
             (registration && !acceptedTerms) ||
-            (reset && !search.get("code"))
+            (reset && !resetCode)
           }
           className="flex min-h-11 items-center justify-center gap-3 rounded-xl bg-primary text-primary-foreground px-5 text-sm font-semibold disabled:opacity-50"
         >
@@ -255,7 +300,7 @@ export function Component(props: IComponentProps) {
       </form>
       {forgot || reset ? (
         <Link
-          href={getLocalizedHref(pathname, "/ai-chat/sign-in")}
+          href={formHref("authentication")}
           className="mt-6 block text-center text-sm font-semibold underline"
         >
           {ru ? "Вернуться ко входу" : "Back to sign in"}
@@ -271,10 +316,7 @@ export function Component(props: IComponentProps) {
               : "No account yet? "}
           <Link
             className="font-semibold text-foreground underline"
-            href={getLocalizedHref(
-              pathname,
-              registration ? "/ai-chat/sign-in" : "/ai-chat/create-account",
-            )}
+            href={formHref(registration ? "authentication" : "registration")}
           >
             {registration
               ? ru

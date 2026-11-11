@@ -24,6 +24,7 @@
   "id": "c430d671-dac2-4736-a58e-c39c0708aefc",
   "title": "RBAC · Code Framework",
   "url": "/framework/modules/rbac",
+  "slug": "page-8f02a82d32bf4b2ad7d708a3b4de3c0c173ebb6818ad6f0db85e0ac964d01266",
   "description": "Accounts, authentication, roles and current-user operations with access scope.",
   "createdAt": "2026-10-24T01:06:01.428Z",
   "updatedAt": "2026-10-30T22:25:05.003Z",

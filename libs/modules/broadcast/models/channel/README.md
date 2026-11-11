@@ -47,8 +47,8 @@ Publishing the same key to that channel again returns `created: false` and
 preserves the original payload. The queue creates the payload in Message and its owner link in
 `channels-to-messages` in one transaction. The relation enforces one job per
 channel and key and records the worker's receipt and lease. Set
-`announce: true` to show this link in the channel feed. That feed is publicly readable in the default SPS
-configuration. Leave the option off for internal work.
+`announce: true` to show this link in the channel feed. The feed is subject to route permissions; announcing a message does not grant
+access to its channel. Leave the option off for internal work.
 
 Backend services can inject the Channel service and call `channel.queue`.
 Remote services can call the Channel server SDK's `api.delivery({data, options})` or

@@ -68,11 +68,105 @@ jest.mock("@sps/shared-backend-api", () => {
   return {
     CRUDService: class {
       constructor(public repository?: unknown) {}
+      async update(props: { data: unknown }) {
+        return props.data;
+      }
     },
   };
 });
 
 import { Service } from ".";
+
+describe("one-time password reset codes", () => {
+  it("stores a digest tied to the matched email and rejects that digest as a credential", async () => {
+    const consume = jest.fn().mockResolvedValue({ id: "identity-owner" });
+    const service = new Service({ consumeFirstByField: consume } as any);
+    const code = await service.issuePasswordResetCode({
+      id: "identity-owner",
+      email: "owner@example.com",
+    });
+    expect(code).toEqual(expect.any(String));
+    const digest = consume.mock.calls[0][2].code;
+    expect(digest).toMatch(/^[a-f0-9]{64}$/);
+    expect(digest).not.toBe(code);
+    expect(consume).toHaveBeenCalledWith(
+      "id",
+      "identity-owner",
+      { code: digest },
+      {
+        and: [
+          { column: "email", method: "eq", value: "owner@example.com" },
+          { column: "provider", method: "eq", value: "email_and_password" },
+        ],
+      },
+    );
+    await expect(
+      service.resetPassword({ code: digest, password: "next-password" }),
+    ).rejects.toThrow("Invalid or expired");
+    expect(consume).toHaveBeenCalledTimes(1);
+  });
+
+  it("accepts the issued link once and rejects changes to its expiry", async () => {
+    let stored: string | null = null;
+    const consume = jest.fn(async (_field, id, data, predicate) => {
+      const expected = predicate.and.find(
+        (filter: IFilter) => filter.column === "code",
+      );
+      if (expected && expected.value !== stored) {
+        return null;
+      }
+      stored = data.code;
+      return { id };
+    });
+    const service = new Service({ consumeFirstByField: consume } as any);
+    Object.assign(service, {
+      find: async ({ params }: { params: { filters: { and: IFilter[] } } }) => {
+        const match = params.filters.and.find(
+          (filter) => filter.column === "code",
+        );
+        return match?.value === stored ? [{ id: "owner" }] : [];
+      },
+    });
+    const code = await service.issuePasswordResetCode({
+      id: "owner",
+      email: "owner@example.com",
+    });
+    if (!code) {
+      throw new Error("Expected an issued reset link");
+    }
+    const [expiry, token] = code.split(".");
+    const password = "replacement-password";
+    await expect(
+      service.resetPassword({
+        code: `${Number(expiry) + 1000}.${token}`,
+        password,
+      }),
+    ).rejects.toThrow("Invalid or expired");
+    await service.resetPassword({ code, password });
+    await expect(service.resetPassword({ code, password })).rejects.toThrow(
+      "Invalid or expired",
+    );
+  });
+
+  it("clears an outstanding link when updating the recovery address", async () => {
+    const service = new Service({} as any);
+    const data = { email: "new@example.com" };
+    await expect(
+      service.update({ id: "identity-owner", data: data as any }),
+    ).resolves.toEqual({ ...data, code: null });
+  });
+
+  it("rejects an expired link before reading or changing the identity", async () => {
+    const service = new Service({} as any);
+    const find = jest.fn();
+    Object.assign(service, { find });
+    const code = `${Date.now() - 1}.${"a".repeat(43)}`;
+    await expect(
+      service.resetPassword({ code, password: "next-password" }),
+    ).rejects.toThrow("Invalid or expired");
+    expect(find).not.toHaveBeenCalled();
+  });
+});
 
 describe("owned password changes through the Identity service", () => {
   it("reads and writes through its service methods without HTTP and stores only a bcrypt hash", async () => {

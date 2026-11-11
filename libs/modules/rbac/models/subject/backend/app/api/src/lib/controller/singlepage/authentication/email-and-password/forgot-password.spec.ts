@@ -8,22 +8,8 @@
  *       stored only for an address held by exactly one linked identity.
  */
 
-const mockUpdate = jest.fn();
-
-jest.mock("@sps/shared-utils", () => {
-  return {
-    ...jest.requireActual("@sps/shared-utils"),
-    RBAC_SECRET_KEY: "operator-secret",
-  };
-});
-
-jest.mock("@sps/rbac/models/identity/sdk/server", () => {
-  return {
-    api: {
-      update: (props: unknown) => mockUpdate(props),
-    },
-  };
-});
+const mockIssueCode = jest.fn();
+const mockSendPasswordReset = jest.fn();
 
 import { Handler } from "./forgot-password";
 
@@ -34,7 +20,11 @@ function createService(props: {
   linkedIdentityIds: string[];
 }) {
   return {
+    notificationModule: {
+      notification: { sendPasswordReset: mockSendPasswordReset },
+    },
     identity: {
+      issuePasswordResetCode: mockIssueCode,
       find: jest.fn(async (query: any) => {
         const email = query.params.filters.and.find(
           (filter: any) => filter.column === "email",
@@ -84,18 +74,15 @@ const OWNER: IIdentity = {
 
 describe("Given: forgot-password requests for different addresses", () => {
   beforeEach(() => {
-    mockUpdate.mockReset();
-    mockUpdate.mockImplementation(async (props: any) => ({
-      ...props.data,
-      id: props.id,
-    }));
+    mockIssueCode.mockReset().mockResolvedValue("test-code");
+    mockSendPasswordReset.mockReset().mockResolvedValue(undefined);
   });
 
   /**
    * BDD Scenario
    * Given: an address held by one identity linked to a subject.
    * When: a forgot-password request arrives for it.
-   * Then: a reset code is stored with the operator secret and the request is
+   * Then: Notification receives the issued link code and the request is
    *       answered 201.
    */
   it("stores a reset code for an address one linked identity holds", async () => {
@@ -107,14 +94,24 @@ describe("Given: forgot-password requests for different addresses", () => {
     const answer = await requestReset(service, OWNER.email);
 
     expect(answer).toEqual({ body: { data: { ok: true } }, status: 201 });
-    expect(mockUpdate).toHaveBeenCalledTimes(1);
+    expect(mockIssueCode).toHaveBeenCalledWith({
+      id: OWNER.id,
+      email: OWNER.email,
+    });
+    expect(mockSendPasswordReset).toHaveBeenCalledWith({
+      email: OWNER.email,
+      code: "test-code",
+    });
+  });
 
-    const update = mockUpdate.mock.calls[0][0];
-
-    expect(update.id).toBe(OWNER.id);
-    expect(typeof update.data.code).toBe("string");
-    expect(update.data.code).not.toContain("/");
-    expect(update.options.headers["X-RBAC-SECRET-KEY"]).toBe("operator-secret");
+  it("acknowledges the request while email delivery is pending", async () => {
+    mockSendPasswordReset.mockReturnValue(new Promise<void>(() => {}));
+    const service = createService({
+      identities: [OWNER],
+      linkedIdentityIds: [OWNER.id],
+    });
+    const answer = await requestReset(service, OWNER.email.toUpperCase());
+    expect(answer).toEqual({ body: { data: { ok: true } }, status: 201 });
   });
 
   /**
@@ -130,7 +127,8 @@ describe("Given: forgot-password requests for different addresses", () => {
       OWNER.email,
     );
 
-    mockUpdate.mockClear();
+    mockIssueCode.mockClear();
+    mockSendPasswordReset.mockClear();
 
     const unknown = await requestReset(
       createService({ identities: [OWNER], linkedIdentityIds: [OWNER.id] }),
@@ -151,6 +149,7 @@ describe("Given: forgot-password requests for different addresses", () => {
     expect(unknown).toEqual(known);
     expect(ambiguous).toEqual(known);
     expect(unlinked).toEqual(known);
-    expect(mockUpdate).not.toHaveBeenCalled();
+    expect(mockIssueCode).not.toHaveBeenCalled();
+    expect(mockSendPasswordReset).not.toHaveBeenCalled();
   });
 });

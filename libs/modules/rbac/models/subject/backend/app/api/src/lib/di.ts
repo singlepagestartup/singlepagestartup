@@ -126,7 +126,7 @@ export interface IBlogModule {
 
 export interface INotificationService
   extends IReadService,
-    Pick<NotificationService, "sendVerificationCode"> {}
+    Pick<NotificationService, "sendVerificationCode" | "sendPasswordReset"> {}
 
 export interface INotificationModule {
   topic: IReadService & Pick<NotificationTopicService, "sendBounded">;

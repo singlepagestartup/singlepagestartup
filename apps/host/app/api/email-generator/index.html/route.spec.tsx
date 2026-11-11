@@ -92,6 +92,21 @@ describe("Host email rendering", () => {
     expect(await response.text()).toContain("Existing agent result");
   });
 
+  it("puts the one-time code in the fragment of the reset form link", async () => {
+    const response = await POST(
+      createRequest({
+        variant: "reset-password",
+        data: { code: "example-code" },
+      }),
+    );
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    expect(html).toContain(
+      "/rbac/subject/authentication/email-and-password/reset-password#code=example-code",
+    );
+    expect(html).not.toContain("?code=");
+  });
+
   it("fails empty default content before delivery", async () => {
     const response = await POST(createRequest({ variant: "content-email" }));
     expect(response.status).toBe(404);

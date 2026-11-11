@@ -1,8 +1,8 @@
 /**
- * BDD Suite: repository generation includes Consistency Capture.
+ * BDD Suite: entity-owned migration history.
  * Given: the checked-in model and relation targets.
  * When: an entity's migrations are generated independently.
- * Then: uncached sequential generation also refreshes the capture catalog.
+ * Then: generating an entity never writes to the shared migration journal.
  */
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
@@ -16,7 +16,7 @@ const modules = readdirSync(path.join(root, "libs/modules"), {
   .map((entry) => entry.name);
 
 it.each(modules)(
-  "keeps every %s repository generation target uncached and connected",
+  "keeps every %s repository generation target uncached and independent of the provider journal",
   (module) => {
     const project = JSON.parse(
       readFileSync(
@@ -34,10 +34,7 @@ it.each(modules)(
       );
       if (!commands.some((command: string) => command.includes("drizzle-kit")))
         continue;
-      expect(commands.at(-1)).toBe(hook);
-      expect(
-        commands.filter((command: string) => command === hook),
-      ).toHaveLength(1);
+      expect(commands).not.toContain(hook);
     }
   },
 );

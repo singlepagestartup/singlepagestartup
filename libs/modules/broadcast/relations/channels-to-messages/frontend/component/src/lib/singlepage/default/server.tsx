@@ -1,3 +1,5 @@
+"use server";
+
 import "server-only";
 import { api } from "@sps/broadcast/relations/channels-to-messages/sdk/server";
 import { Component as ChildComponent } from "./Component";

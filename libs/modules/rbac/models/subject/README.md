@@ -158,6 +158,31 @@ Thread management through `rbac.subject` requires `rbac.permission` records for 
 - `POST /rbac/subjects/authentication/email-and-password/reset-password`: reset password by code.
 - `POST /rbac/subjects/authentication/ethereum-virtual-machine`: EVM signature login.
 
+After migrating a new database, run `npx nx run api:db:seed` to load the two
+POST permissions for password recovery from the Permission dump. By default
+both steps allow anonymous requests. Without its permission, a step returns 403,
+even if the user already has a reset code.
+
+To restrict recovery for the project, edit the permissions in **RBAC → Permissions**.
+If you delete either permission, export the updated Permission dump before the
+next seed. A seed restores any permission still present in the project's dump.
+
+Browser sign-in uses `/{language}/rbac/subject/authentication/email-and-password`.
+Registration, recovery email and password replacement use its `/registration`,
+`/forgot-password` and `/reset-password` subpaths. Configure these four URLs in **Host → Pages**.
+Link each Page to its layout and to the Host Widget for its RBAC form. Each
+RBAC Widget renders the matching Subject form. The layout supplies the navbar
+and footer. An unpublished or missing Page follows normal Host routing.
+The default sign-in and registration links open the localized RBAC pages. After
+success, the form uses `userStories.subjectAuthentication.redirect.success`
+(`/` by default). A link can specify `returnTo` for a destination listed in
+`userStories.subjectAuthentication.redirect.allowedReturnPaths`.
+
+Recovery email uses Amazon SES and one Notification Template with the
+`reset-password` variant. Its title is the email subject. Host renders a link
+to the reset form on `NEXT_PUBLIC_HOST_SERVICE_URL`. The link is valid for one
+hour and can be used once. Unknown addresses receive the same acknowledgement.
+
 Guest and registered Subjects both use `variant="default"`. A JWT identifies a
 visitor session; it does not establish that an account exists. The `me` response
 adds `authenticated`, derived from the Subject's Identity links. This field is
@@ -1016,7 +1041,7 @@ supply arbitrary period timestamps.
 
 `me-account` resolves the current session and delegates its authenticated view to
 `me-account-ai-chat`, so public pages and AI Chat use the same profile, token
-balance and account actions. Its guest link uses `/ai-chat/sign-in`.
+balance and account actions. Its guest link opens the RBAC email sign-in form.
 
 The cart drawer uses compact Product rows and totals from the authorized
 `includeCartDetails` response. Quantity controls update one exact order line

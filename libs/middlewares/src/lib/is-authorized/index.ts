@@ -2,7 +2,6 @@ import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
 import {
   IRouteRule,
-  NEXT_PUBLIC_HOST_SERVICE_URL,
   RBAC_PRIVILEGED_CONTEXT_KEY,
   RBAC_REVOKED_SUBJECT_CONTEXT_KEY,
   RBAC_SECRET_KEY,
@@ -55,16 +54,6 @@ export class Middleware {
         c.req.header("Authorization")?.replace("Bearer ", "") ||
         getCookie(c, "rbac.subject.jwt");
 
-      const origin = c.req.header("Host");
-      const allowedOrigins = new Set([
-        "http://localhost:3000",
-        NEXT_PUBLIC_HOST_SERVICE_URL,
-      ]);
-
-      if (origin && allowedOrigins.has(origin)) {
-        c.res.headers["Access-Control-Allow-Origin"] = origin;
-      }
-
       if (secretKey && secretKey === RBAC_SECRET_KEY) {
         /**
          * Marks the operator caller so the REST boundary skips a model's
@@ -92,7 +81,7 @@ export class Middleware {
         const cacheKey = `${reqMethod}:${reqPath}:${authorization || ""}:${secretKey || ""}`;
         if (
           (await cache.getAsync<boolean>(cacheKey)) &&
-          !this.isSubjectRevoked(authorization)
+          !this.isAuthorizationInvalidated(authorization)
         ) {
           return proceed();
         }
@@ -147,27 +136,33 @@ export class Middleware {
   }
 
   /**
-   * Whether the subject a token names logged out within the cache lifetime.
-   * The payload is read without verification because it only decides whether
-   * a cached decision may be reused: a forged token can make a request skip
-   * the cache, never pass it.
+   * A cached decision cannot outlive the token or a subject's logout. Reading
+   * the payload here only rejects cache reuse: the complete authorization
+   * service verifies any token that does not have a reusable decision.
    */
-  private isSubjectRevoked(authorization?: string) {
+  private isAuthorizationInvalidated(authorization?: string) {
     if (!authorization) {
       return false;
     }
 
     try {
-      const subject = decode(authorization).payload["subject"] as
-        | { id?: unknown }
-        | undefined;
+      const payload = decode(authorization).payload;
+
+      if (
+        typeof payload.exp === "number" &&
+        payload.exp <= Math.floor(Date.now() / 1000)
+      ) {
+        return true;
+      }
+
+      const subject = payload["subject"] as { id?: unknown } | undefined;
 
       return (
         typeof subject?.id === "string" &&
         Boolean(cache.get<boolean>(`revoked-subject:${subject.id}`))
       );
     } catch {
-      return false;
+      return true;
     }
   }
 }

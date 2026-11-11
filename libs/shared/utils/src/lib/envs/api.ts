@@ -57,3 +57,14 @@ export const OUTBOUND_URL_TIMEOUT_MS =
   Number(process.env["OUTBOUND_URL_TIMEOUT_MS"]) || 30 * 1000;
 export const OUTBOUND_URL_MAX_RESPONSE_BYTES =
   Number(process.env["OUTBOUND_URL_MAX_RESPONSE_BYTES"]) || 50 * 1024 * 1024;
+
+/**
+ * Browser origins the API, Telegram and OpenAPI apps accept for credentialed
+ * cross-origin requests: a comma-separated list such as
+ * `https://example.com,https://admin.example.com`, each entry written the way
+ * a browser sends `Origin` (scheme, host and port, no path). Empty, the
+ * default, echoes every HTTP(S) origin, which local development and tunnels rely on.
+ * Read by `resolveCorsOrigin` in `@sps/backend-utils`.
+ */
+export const API_CORS_ALLOWED_ORIGINS =
+  process.env["API_CORS_ALLOWED_ORIGINS"] || "";
