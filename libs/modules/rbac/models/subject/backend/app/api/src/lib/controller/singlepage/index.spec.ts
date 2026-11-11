@@ -2,9 +2,8 @@
  * BDD Suite: subject controller route guards.
  *
  * Given: the subject controller's route table mounted the way the module app mounts it.
- * When: the OpenRouter model catalog of a chat is requested.
- * Then: a caller who does not own the subject and the profile is refused before
- * OpenRouter is asked, and the owner receives the catalog.
+ * When: a caller requests a chat model catalog or starts an ecommerce checkout.
+ * Then: each route checks ownership before invoking the requested service.
  */
 
 import { OPEN_ROUTER_ASSISTANT_MODEL } from "@sps/shared-utils";
@@ -52,17 +51,17 @@ jest.mock("@sps/social/models/profile/sdk/server", () => ({
   },
 }));
 
-import { sign } from "hono/jwt";
+import { signJwt } from "@sps/backend-utils";
 import { DefaultApp } from "@sps/shared-backend-api";
 import { Controller } from ".";
 
 const catalogPath =
   "/subject-owner/social-module/profiles/profile-owned/chats/chat-1/openrouter/models";
 
-function createApp() {
+function createApp(service = {}) {
   const app = new DefaultApp(
     {} as any,
-    new Controller({} as any) as any,
+    new Controller(service as any) as any,
     {} as any,
   );
 
@@ -75,7 +74,10 @@ async function requestCatalog(subjectId?: string) {
   const headers: Record<string, string> = {};
 
   if (subjectId) {
-    const token = await sign({ subject: { id: subjectId } }, "test-jwt-secret");
+    const token = await signJwt(
+      { subjectId, type: "access", lifetimeInSeconds: 60 },
+      "test-jwt-secret",
+    );
 
     headers["Authorization"] = `Bearer ${token}`;
   }
@@ -159,5 +161,111 @@ describe("Given: the OpenRouter model catalog route of a chat", () => {
     expect(body.data.groups[0].models).toEqual([
       expect.objectContaining({ id: OPEN_ROUTER_ASSISTANT_MODEL.id }),
     ]);
+  });
+});
+
+const checkoutSubjectId = "subject-owner";
+
+describe.each([
+  {
+    name: "order checkout",
+    route: `/${checkoutSubjectId}/ecommerce-module/orders/checkout`,
+    data: {
+      provider: "dummy",
+      email: "owner@example.test",
+      ecommerceModule: {
+        orders: [{ id: "00000000-0000-4000-8000-000000000001" }],
+      },
+    },
+    lookup: "findById" as const,
+  },
+  {
+    name: "product checkout",
+    route: `/${checkoutSubjectId}/ecommerce-module/products/product-1/checkout`,
+    data: {
+      provider: "dummy",
+      email: "owner@example.test",
+      storeId: "store-1",
+    },
+    lookup: "ecommerceProductCheckout" as const,
+  },
+])("Given: the Subject $name route", ({ route, data, lookup }) => {
+  function createService() {
+    return {
+      findById: jest.fn().mockResolvedValue(null),
+      ecommerceProductCheckout: jest
+        .fn()
+        .mockRejectedValue(new Error("Not Found error. No product")),
+    };
+  }
+
+  function requestCheckout(
+    service: ReturnType<typeof createService>,
+    headers: Record<string, string>,
+  ) {
+    const body = new FormData();
+    body.set("data", JSON.stringify(data));
+    return createApp(service).request(route, { method: "POST", headers, body });
+  }
+
+  it.each([
+    { name: "no credential", headers: {} },
+    {
+      name: "only the operator secret",
+      headers: { "X-RBAC-SECRET-KEY": "test-rbac-secret-key" },
+    },
+  ] as const)(
+    "When: the client sends $name Then: refuses checkout before the handler",
+    async ({ headers }) => {
+      const service = createService();
+      const response = await requestCheckout(service, { ...headers });
+
+      expect(response.status).toBe(400);
+      expect(service[lookup]).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([
+    {
+      name: "another subject's access token",
+      subjectId: "subject-other",
+      type: "access" as const,
+    },
+    {
+      name: "the owner's refresh token",
+      subjectId: checkoutSubjectId,
+      type: "refresh" as const,
+    },
+  ])(
+    "When: the client sends $name Then: refuses checkout before the handler",
+    async ({ subjectId, type }) => {
+      const service = createService();
+      const token = await signJwt(
+        { subjectId, type, lifetimeInSeconds: 60 },
+        "test-jwt-secret",
+      );
+      const response = await requestCheckout(service, {
+        Authorization: `Bearer ${token}`,
+      });
+
+      expect(response.status).toBe(401);
+      expect(service[lookup]).not.toHaveBeenCalled();
+    },
+  );
+
+  it("When: the owner sends an access token Then: the handler looks up that Subject's checkout", async () => {
+    const service = createService();
+    const token = await signJwt(
+      { subjectId: checkoutSubjectId, type: "access", lifetimeInSeconds: 60 },
+      "test-jwt-secret",
+    );
+    const response = await requestCheckout(service, {
+      Authorization: `Bearer ${token}`,
+    });
+
+    expect(response.status).toBe(404);
+    expect(service[lookup]).toHaveBeenCalledWith(
+      expect.objectContaining({ id: checkoutSubjectId }),
+    );
   });
 });

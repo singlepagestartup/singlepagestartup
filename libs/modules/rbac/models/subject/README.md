@@ -146,6 +146,12 @@ Thread management through `rbac.subject` requires `rbac.permission` records for 
 - `PATCH /api/rbac/subjects/[rbac.subjects.id]/social-module/chats/[social.chats.id]/threads/[social.threads.id]`
 - `DELETE /api/rbac/subjects/[rbac.subjects.id]/social-module/chats/[social.chats.id]/threads/[social.threads.id]`
 
+### Ecommerce Checkout Routes
+
+`POST /api/rbac/subjects/[rbac.subjects.id]/ecommerce-module/orders/checkout` and `POST /api/rbac/subjects/[rbac.subjects.id]/ecommerce-module/products/[ecommerce.products.id]/checkout` require an access token for the Subject in the URL. The browser sends the current Subject's token through the client SDK. The Agent's Telegram checkout callback signs a token for the user who pressed the button. Subscription renewal calls the product checkout service in-process.
+
+Order checkout selects the requested orders linked to that Subject through `subjects-to-ecommerce-module-orders`. The checkout skips deleted or foreign orders in a mixed request. If no matching order exists, it returns 404 before recording the email, updating comments or starting payment.
+
 ## Authentication API
 
 - `GET /rbac/subjects/authentication/init`: initialize anonymous/authenticated session tokens.
