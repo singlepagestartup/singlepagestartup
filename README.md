@@ -50,7 +50,7 @@ in `*.example` files. `up.sh` and ENV creation leave client connections alone.
 
 Configure your project's `MCP_SERVICE_NAME` and `DOMAIN` in
 `tools/deployer/.env`; `MCP_SERVICE_SUBDOMAIN` defaults to `mcp`. Then generate
-a local connection explicitly for the chosen client with Bun 1.3.6:
+a local connection explicitly for the chosen client with Bun 1.4.4:
 
 ```bash
 npm run mcp:clients:generate -- --client codex

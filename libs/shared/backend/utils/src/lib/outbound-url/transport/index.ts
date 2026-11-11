@@ -35,7 +35,9 @@ export async function requestOutboundUrl(
   // A plain Agent also ignores HTTP_PROXY/HTTPS_PROXY and global dispatchers.
   const dispatcher = new Agent({
     connections: 1,
-    pipelining: 0,
+    // One request per dispatcher. Setting zero sends Connection: close, which
+    // can leave Bun waiting for peer shutdown before it validates a redirect.
+    pipelining: 1,
     maxHeaderSize: 16384,
     connect: { lookup, rejectUnauthorized: true, autoSelectFamily: false },
   });

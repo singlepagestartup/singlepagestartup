@@ -96,7 +96,7 @@ MCP image does not generate the bundle.
 
 `up.sh` and root `create_env.sh` do not generate client connections. Developers
 configure them explicitly after setting their own MCP endpoint. Client
-generation runs on Bun 1.3.6 without installing dependencies or logging in.
+generation runs on Bun 1.4.4 without installing dependencies or logging in.
 
 Use `MCP_CLIENT_OPENCODE_VERSION=auto` to preserve the project's existing
 OpenCode format. A new configuration uses the installed client's version, or

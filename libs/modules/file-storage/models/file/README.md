@@ -151,7 +151,7 @@ paths keep the existing filesystem path checks.
   cannot bypass the decoded-size limit. Connections and timers are released on
   success, rejection and cancellation.
 
-The client is a direct root dependency, `undici@7.30.1`, imported through
+The client is a direct root dependency, `undici@8.12.4`, imported through
 `undici/index.js` to avoid Bun's partial built-in compatibility module. Native
 Bun 1.3.6 fetch cannot combine IP pinning with pre-request hostname verification
 using its custom certificate callback. No application-wide fetch replacement
@@ -235,9 +235,9 @@ docker run --rm --read-only --tmpfs /tmp \
   --env SPS_TEST_PUBLIC_IP=93.184.215.2 \
   --env SPS_TEST_CERTIFICATES=/certificates \
   --env NODE_EXTRA_CA_CERTS=/certificates/cert.pem \
-  oven/bun:1.3.6 bun test --no-env-file tools/dev/outbound-url.test.ts
+  oven/bun:1.4.4 bun test --no-env-file tools/dev/outbound-url.test.ts
 ```
 
-The security suite also passed under Bun 1.3.14 from the available deployment
-image. TLS trust is extended only with the generated fixture certificate;
-certificate verification remains enabled in both runs.
+The fixture adds its generated CA to the trust store for this container run.
+The tests verify that downloads reject a hostname mismatch and an untrusted
+certificate before sending HTTP data.

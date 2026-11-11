@@ -205,7 +205,7 @@ before applying that override; the generator does not migrate other OpenCode
 settings.
 
 The client generator runs on Bun and uses its built-in TOML parser without
-additional npm dependencies. The project dependency and CI use Bun 1.3.6. The
+additional npm dependencies. The project dependency and CI use Bun 1.4.4. The
 launcher disables automatic `.env` loading; only the existing process variables
 and selected deployer file determine client settings.
 
