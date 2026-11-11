@@ -74,7 +74,7 @@ export function Component({
         data-ds-block="rbac.subject.account"
         href={
           showTokens
-            ? "/ai-chat/rbac/subjects/authentication/select-method"
+            ? "/rbac/subject/authentication/email-and-password"
             : "/?path=/story/modules-host-models-page-singlepage-rbac-module-subject-me-authentication-select-method--default"
         }
         target={showTokens ? undefined : "_top"}

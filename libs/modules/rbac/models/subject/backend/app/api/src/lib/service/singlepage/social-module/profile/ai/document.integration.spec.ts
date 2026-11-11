@@ -115,7 +115,6 @@ it("persists a confirmed document Source with profile and origin links, indexes 
   const knowledge = new KnowledgeService({
     source: createKnowledgeServices({
       processing: false,
-      publishEffects: async () => {},
     }).source,
     embeddingClient: {
       embed: async () => vector,

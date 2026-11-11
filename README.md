@@ -72,6 +72,8 @@ Complete OAuth login in the chosen client after generation; see [project client 
 for OpenCode V1/V2 formats and login commands. The following CLI commands are
 also available for manual registration.
 
+Connector tokens carry the single OAuth scope `mcp:content`. Every operation, including deletion, uses the connected subject's API permissions. The authorization page names the connecting application and its callback address before sign-in. MCP uses the shared RBAC token lifetimes and refreshes the subject's session through the RBAC SDK. See [MCP authorization and limits](apps/mcp/README.md#oauth-scopes-and-consent).
+
 For Codex Desktop/CLI, register the remote MCP explicitly:
 
 ```bash
@@ -238,7 +240,7 @@ For MCP Inspector, use `Streamable HTTP` with the same URL and put auth under `C
 
 For a remote server, run the MCP HTTP process on the application server behind HTTPS and make the API service URL reachable from that process. Production connector auth is OAuth/Bearer by default.
 
-Do not store JWTs or `RBAC_SECRET_KEY` in repository files. Static `X-RBAC-SECRET-KEY` is a local/private debugging fallback only when `MCP_SERVICE_ALLOW_RBAC_SECRET_FALLBACK=true`.
+Do not store JWTs or `RBAC_SECRET_KEY` in repository files. Static `X-RBAC-SECRET-KEY` is a local/private debugging fallback only when `MCP_SERVICE_ALLOW_RBAC_SECRET_FALLBACK=true`. The deployed MCP environment never contains `RBAC_SECRET_KEY`; a server that enables the fallback gets the secret added to its MCP env by hand, and without it the fallback refuses every header.
 
 The legacy Inspector command starts the MCP server through stdio:
 
@@ -276,7 +278,7 @@ Strict layered architecture: Repository → Service → Controller → App.
 - Fields defined in `fields/`, table schema in `schema.ts`
 - Database structure changes are managed via generated Drizzle SQL migrations
 - After changing `schema.ts` or any `fields/*` table definition, run the matching `repository-generate` Nx target, for example `npx nx run @sps/<module>:models:<model>:repository-generate` or the corresponding relation target. Do not hand-write migration SQL, `migrations/meta/*` snapshots, or `_journal.json` entries.
-- Every model/relation generation target runs uncached and regenerates Consistency Capture after Drizzle, including client-owned Startup schemas. Commit the generated schema and capture artifacts together. Apply them with `npx nx run api:db:migrate`, then run `npx nx run @sps/providers-db:consistency-check`. Custom targets must retain the final capture-generation command. See [PostgreSQL consistency storage](libs/providers/db/README.md) for the lifecycle and checks.
+- Generate Drizzle migrations in the owning model or relation. During `npx nx run api:db:migrate`, the entity registers its effective Table and SDK route with Consistency, including inherited Startup fields. Use `npx nx run @sps/providers-db:consistency-check` to verify coverage. Generate provider migrations only for infrastructure changes. See [PostgreSQL consistency storage](libs/providers/db/README.md).
 
 #### Service Layer
 
@@ -507,7 +509,7 @@ Available Error Categories and Keywords
 Here are the available categories and examples of keywords that trigger them:
 | Category | HTTP Status | Example Keywords |
 | ------------------------------ | ----------- | ------------------------------------------------------------------------ |
-| **Authentication error** | 401 | unauthorized, invalid credentials, token required, no session |
+| **Authentication error** | 401 | unauthorized, invalid credentials, token required, no session, token revoked |
 | **Permission error** | 403 | forbidden, permission denied, only order owner |
 | **Validation error** | 400 | invalid data, missing headers, no id provided, invalid url |
 | **Unprocessable Entity error** | 422 | expected string, invalid body['data'], unprocessable entity |

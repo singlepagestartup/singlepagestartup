@@ -28,10 +28,12 @@ export class Service extends CRUDService<Relation> {
         "Configuration error. Knowledge file relation services are not configured.",
       );
     if (this.services.inTransaction) return super.create(props);
-    return (await this.services.mutate({
+    const relation = await this.services.mutate({
       action: "create",
       data: props.data,
-    }))!;
+    });
+
+    return relation!;
   }
   async update(props: { id: string; data: any }): Promise<Relation | null> {
     if (!this.services)
@@ -47,7 +49,9 @@ export class Service extends CRUDService<Relation> {
         "Configuration error. Knowledge file relation services are not configured.",
       );
     if (this.services.inTransaction) return super.delete(props);
-    return (await this.services.mutate({ action: "delete", ...props }))!;
+    const relation = await this.services.mutate({ action: "delete", ...props });
+
+    return relation!;
   }
   async findOrCreate(props: { data: any }) {
     const existing = await this.find({
@@ -66,7 +70,9 @@ export class Service extends CRUDService<Relation> {
     });
     if (existing.length)
       return { entity: existing[0], statusCode: 200 as const };
-    return { entity: await this.create(props), statusCode: 201 as const };
+    const entity = await this.create(props);
+
+    return { entity, statusCode: 201 as const };
   }
   lockById(id: string) {
     return (this.repository as Repository).lockById(id);

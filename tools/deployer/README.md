@@ -175,6 +175,32 @@ docker service update --force api_api
 docker service update --force mcp_mcp
 ```
 
+Redis contains OAuth registrations as well as cache entries. Use
+`REDIS_MAXMEMORY_POLICY=volatile-lru` in `tools/deployer/.env` (or
+`apps/redis/.env` locally). Existing files may still contain `allkeys-lru`, which
+can delete a connected application's registration when Redis reaches its memory
+limit. Actions accepts `REDIS_MAXMEMORY` and `REDIS_MAXMEMORY_POLICY` secrets
+(with the `PREVIEW_` prefix for preview); empty values use `256mb` and
+`volatile-lru`. Deploy the Redis stack after changing the value, then verify inside the
+protected `redis-cli` session:
+
+```text
+CONFIG GET maxmemory-policy
+CONFIG GET dir
+INFO persistence
+```
+
+Expect `volatile-lru`, `/data`, and no persistence errors. Keep `redis_data`
+when updating Redis. The default RDB snapshot preserves state on a graceful
+stop; an abrupt host failure can lose changes since the last snapshot. For AOF,
+follow [Redis's live conversion instructions](https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/#how-i-can-switch-to-aof-if-im-currently-using-dumprdb-snapshots)
+before changing startup configuration on an existing instance.
+`volatile-lru` preserves keys without TTL, including completed OAuth registrations;
+it can evict expiring tokens and require users to sign in again. Monitor Redis
+memory: if persistent data alone reaches the limit, writes fail until capacity
+is added or unused records are deliberately removed. Never run `FLUSHDB` or
+`FLUSHALL` as an application cache reset.
+
 ### PostgreSQL roles
 
 The PostgreSQL stack holds two roles:
@@ -303,6 +329,13 @@ The API deployment uses `API_ERROR_DETAILS=brief`. The client can give the
 operator its request ID to locate the incident in the private server journal.
 See [Finding an API error](#finding-an-api-error).
 
+The Telegram and MCP services run the same check when they start. They stop on
+a legacy `RBAC_SECRET_KEY` or `RBAC_JWT_SECRET` and report a short or legacy
+value of their other secrets. A secret a service does not hold is not a finding:
+each refuses the operation that needs it. `TELEGRAM_SECRET_STRENGTH=report` and
+`MCP_SECRET_STRENGTH=report` start them anyway, with the same consequence as
+`API_SECRET_STRENGTH=report`.
+
 ### Rotating the secrets of a deployment that already bootstrapped
 
 Until this change, the bootstrap scripts derived every generated credential from
@@ -325,19 +358,19 @@ instead by rotating value by value, as below.
 On a deployment that must keep its data, rotate in this order. The two token
 secrets end every session, so plan the window.
 
-| Value                                        | What to do                                                                                                                                                                         | Effect                                                                                                                                               |
-| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `POSTGRES_PASSWORD`                          | run `ALTER ROLE "<POSTGRES_USER>" WITH PASSWORD '<new>';` inside the running PostgreSQL container, then update `tools/deployer/.env` and the GitHub secret and redeploy PostgreSQL | Application traffic uses a separate login. Editing the image environment alone does not change the password of an existing role.                     |
-| `DATABASE_PASSWORD`                          | update the deployer and GitHub values, pause writers and run `./postgres.sh migrate-role` as in the procedure below, then deploy the API and restore its replica count             | the API cannot open new connections between the script and its redeploy                                                                              |
-| `REDIS_PASSWORD`                             | follow the coordinated procedure above: update the secret, deploy Redis, API and MCP as one rollout, then force-update `api_api` and `mcp_mcp`                                     | cache and KV unavailable for the window                                                                                                              |
-| `RBAC_JWT_SECRET`                            | rotate in `tools/deployer/.env` and in the GitHub secrets, then deploy API, Telegram and MCP together                                                                              | every access and refresh token is invalidated. It also rotates the MCP OAuth signing key, because the MCP template falls back to this value          |
-| `RBAC_SECRET_KEY`                            | rotate in `tools/deployer/.env` and in the GitHub secrets, then deploy API, Telegram and MCP                                                                                       | this is the full authorization bypass. Only the X-RBAC-SECRET-KEY header grants operator access |
-| `MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET` | rotate and deploy API and MCP together                                                                                                                                             | the API-to-MCP exchange fails until both sides match                                                                                                 |
-| `HOST_SERVICE_REVALIDATION_SECRET`           | rotate in `tools/deployer/.env` and in the GitHub secrets, then deploy API and host together                                                                                       | the Host rejects invalidation until both sides match and the outbox retries pending batches                                                          |
-| `RBAC_COOKIE_SESSION_SECRET`                 | rotate for hygiene                                                                                                                                                                 | no runtime effect: nothing reads it today                                                                                                            |
-| Administrator identity password              | change it through the API or the admin UI, then update `apps/api/.env` and `.agents/.env`                                                                                          | editing `.env` alone does not change the stored bcrypt hash; that value is only the bootstrap input                                                  |
+| Value                                        | What to do                                                                                                                                                                         | Effect                                                                                                                                      |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POSTGRES_PASSWORD`                          | run `ALTER ROLE "<POSTGRES_USER>" WITH PASSWORD '<new>';` inside the running PostgreSQL container, then update `tools/deployer/.env` and the GitHub secret and redeploy PostgreSQL | Application traffic uses a separate login. Editing the image environment alone does not change the password of an existing role.            |
+| `DATABASE_PASSWORD`                          | update the deployer and GitHub values, pause writers and run `./postgres.sh migrate-role` as in the procedure below, then deploy the API and restore its replica count             | the API cannot open new connections between the script and its redeploy                                                                     |
+| `REDIS_PASSWORD`                             | follow the coordinated procedure above: update the secret, deploy Redis, API and MCP as one rollout, then force-update `api_api` and `mcp_mcp`                                     | cache and KV unavailable for the window                                                                                                     |
+| `RBAC_JWT_SECRET`                            | rotate in `tools/deployer/.env` and in the GitHub secrets, then deploy API, Telegram and MCP together                                                                              | every access and refresh token is invalidated. It also rotates the MCP OAuth signing key, because the MCP template falls back to this value |
+| `RBAC_SECRET_KEY`                            | rotate in `tools/deployer/.env` and in the GitHub secrets, then deploy API, Telegram and MCP                                                                                       | this is the full authorization bypass. Only the X-RBAC-SECRET-KEY header grants operator access                                             |
+| `MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET` | rotate and deploy API and MCP together                                                                                                                                             | the API-to-MCP exchange fails until both sides match                                                                                        |
+| `HOST_SERVICE_REVALIDATION_SECRET`           | rotate in `tools/deployer/.env` and in the GitHub secrets, then deploy API and host together                                                                                       | the Host rejects invalidation until both sides match and the outbox retries pending batches                                                 |
+| `RBAC_COOKIE_SESSION_SECRET`                 | rotate for hygiene                                                                                                                                                                 | no runtime effect: nothing reads it today                                                                                                   |
+| Administrator identity password              | change it through the API or the admin UI, then update `apps/api/.env` and `.agents/.env`                                                                                          | editing `.env` alone does not change the stored bcrypt hash; that value is only the bootstrap input                                         |
 
-Four copies survive a rotation unless they are handled as well:
+Five copies survive a rotation unless they are handled as well:
 
 - **Docker images.** `.dockerignore` keeps env files, key material and
   `tools/deployer` out of the build context. An image built from a
@@ -349,6 +382,9 @@ Four copies survive a rotation unless they are handled as well:
 - **`tools/deployer/.env`** on the operator's own machine.
 - **The server crontab.** Run `./api.sh up` to replace an older entry that
   contains credentials with the credential-free trigger.
+- **An MCP service env** where `MCP_SERVICE_ALLOW_RBAC_SECRET_FALLBACK` was
+  enabled and `RBAC_SECRET_KEY` added by hand. The deployer does not render the
+  secret into the MCP env, so no other MCP copy exists.
 
 Afterwards, treat the window before the rotation as one in which the old
 `RBAC_SECRET_KEY` could have been guessed. Review the action log for requests
@@ -679,6 +715,32 @@ hardening restores the public `5432`/`9000` configuration and catch-all TCP
 routers. If rollback is unavoidable, restrict those ports at the provider
 firewall first and recheck host listeners immediately afterward.
 
+## Browser origins for the API
+
+The API and Telegram services echo any HTTP(S) browser `Origin` in
+`Access-Control-Allow-Origin`, with credentials allowed, until
+`API_CORS_ALLOWED_ORIGINS` is set. A production deployment lists the origins of
+its own front ends in `tools/deployer/.env`, comma-separated and without
+spaces:
+
+```dotenv
+API_CORS_ALLOWED_ORIGINS=https://domain.com,https://admin.domain.com
+```
+
+`api.sh` and `telegram.sh` write the value into both service environments, and
+`github_deployer.sh` creates the matching GitHub Actions variable; preview
+deployments use `PREVIEW_API_CORS_ALLOWED_ORIGINS`. List the host and every
+other front end that calls the API from a browser: an origin that is missing
+from the list cannot read API responses in the browser. An empty value keeps
+the echo. A change takes effect when `api.sh` and `telegram.sh` run again.
+
+Opaque `Origin: null` values (including sandboxed HTML previews) and malformed
+origins never receive credentialed CORS access. A nonempty list of invalid entries
+or separators denies all origins instead of enabling the permissive default.
+CORS controls browser response access; it does not replace RBAC or prevent
+non-browser requests and simple cross-origin writes. Configure the production
+list explicitly.
+
 ## Knowledge embedding provider
 
 Knowledge uses the private `apps/llm` service and its Ollama embedding model by
@@ -701,8 +763,9 @@ OPEN_ROUTER_API_KEY=sk-or-v1-...
 
 `api.sh` writes the selected provider, OpenRouter model, and API key into the
 server API environment. `llm.sh` writes the local Ollama model and dimensions
-into the server LLM environment. `github_deployer.sh` creates the same GitHub
-Actions secrets; preview deployments use their `PREVIEW_`-prefixed variants.
+into the server LLM environment. `github_deployer.sh` stores the provider/model settings in GitHub Actions
+Variables and keeps the API key in Secrets. Preview deployments use their
+`PREVIEW_`-prefixed names.
 
 Changing the provider or embedding model requires a complete Knowledge
 reindex. Do not search a database containing vectors from the previous model.
@@ -746,10 +809,53 @@ FILE_STORAGE_MAX_UPLOAD_BYTES=52428800
 
 `github_deployer.sh` syncs the value to `FILE_STORAGE_MAX_UPLOAD_BYTES` for
 production and `PREVIEW_FILE_STORAGE_MAX_UPLOAD_BYTES` for preview. The
-Ansible workflow reads the corresponding secret and `api.sh` writes the
-limit into the server API environment. Bun refuses request bodies
-above 128 MiB, so a larger value also needs `maxRequestBodySize` raised in
-`apps/api/server.ts`.
+Ansible workflow reads the corresponding Variable and `api.sh` writes the
+limit into the server API environment. Set `API_MAX_REQUEST_BODY_BYTES`
+(128 MiB by default) above the largest upload, allowing for multipart overhead.
+
+### Optional AWS S3 provisioning
+
+`aws.sh` configures IAM users and permissions for SES whenever
+`ROOT_AWS_ACCESS_KEY_ID` is supplied. S3 provisioning is independent of SES.
+In `tools/deployer/.env`, leave both names empty to skip S3:
+
+```dotenv
+AWS_S3_BUCKET_NAME=
+AWS_S3_DEV_BUCKET_NAME=
+```
+
+Set `AWS_S3_BUCKET_NAME` to create a production bucket. Set
+`AWS_S3_DEV_BUCKET_NAME` only when a separate development bucket is needed.
+Each name must be globally unique. The deployer does not derive bucket names
+from `PROJECT_NAME` or append `dev`. To keep managing an existing development
+bucket, put its exact name in `AWS_S3_DEV_BUCKET_NAME`.
+
+Run `./aws.sh up` from `tools/deployer` as part of the normal deployment, or
+use `./up.sh`, which includes that step. Adding a bucket to an existing SES
+installation updates its IAM policy without issuing new access keys.
+This provisions storage and permissions; the API's storage provider still
+requires the configuration described above. SES sender verification and
+account sending quotas remain AWS account settings.
+
+`./github.sh up` synchronizes both names as Actions Variables, with `PREVIEW_`
+prefixes when invoked with `PREVIEW`. Empty names remove those provisioning
+Variables and their old same-name Secrets, so a later Actions deployment
+cannot reuse an obsolete bucket name. Synchronize after clearing a name.
+Other empty settings retain the synchronization behavior documented below.
+
+Clearing a name does not delete an existing bucket, revoke its IAM policy, or
+erase its previously generated GitHub storage settings. Clean up unused
+resources explicitly after checking their contents. `./aws.sh down` deletes
+only named, empty buckets before removing IAM users and GitHub credentials;
+a non-empty bucket or an AWS error stops the command. It never force-deletes
+stored files.
+
+Local regression checks run the shell orchestration and Ansible conditions,
+templates, and file operations with cloud and GitHub calls replaced by fixtures:
+
+```bash
+node --test tools/deployer/aws/configuration.test.mjs
+```
 
 ## Let's Encrypt certificates
 
@@ -778,15 +884,14 @@ line and store it as a repository secret:
 base64 < ~/Downloads/LightsailDefaultKey.pem | tr -d '\n'
 ```
 
-Configure the following secrets for the production deployment:
+Configure the production connection in GitHub Actions:
 
-- `ANSIBLE_HOST`
-- `ANSIBLE_PORT` (`22` for a default Lightsail instance)
-- `ANSIBLE_USER` (`ubuntu` for a Lightsail Ubuntu image)
-- `ANSIBLE_PRIVATE_KEY_BASE64`
+- Variables: `ANSIBLE_HOST`, `ANSIBLE_PORT` (`22` for a default Lightsail
+  instance), and `ANSIBLE_USER` (`ubuntu` for a Lightsail Ubuntu image).
+- Secrets: `ANSIBLE_PRIVATE_KEY_BASE64`.
 
-Leave `ANSIBLE_PASSWORD` empty. Preview deployments use the corresponding
-`PREVIEW_ANSIBLE_*` secrets. The workflow decodes the key into an ignored file
+Leave `ANSIBLE_PASSWORD` empty when using a private key. Preview deployments
+use the corresponding `PREVIEW_ANSIBLE_*` names in the same respective stores. The workflow decodes the key into an ignored file
 with mode `0600` before Ansible connects. When `github_deployer.sh` is used, it
 encodes `ANSIBLE_PRIVATE_KEY_FILE` automatically if
 `ANSIBLE_PRIVATE_KEY_BASE64` is empty.
@@ -803,7 +908,7 @@ A deployment runs when a pull request from `main` into one of the branches that
 `Env` workflow (`.github/workflows/deployer.yml`) starts only for pull requests
 into `ansible-*` branches and calls `.github/workflows/ansible.yml` only after a
 merge. That workflow runs the script named by the second segment of the branch
-name, `up.sh` or `down.sh`, and uses the `PREVIEW_` secrets when the name
+name, `up.sh` or `down.sh`, and uses the `PREVIEW_` Secrets and Variables when the name
 contains `-preview`. Closing the pull request without merging deploys nothing.
 To start a deployment by hand, choose **Run workflow** on the `Ansible` workflow
 and select one of these branches; the run uses that branch's copy of the
@@ -811,6 +916,96 @@ workflow files. A run started from `main` finds no script and fails.
 
 Never commit a Lightsail private key, the generated `inventory.yaml`, or a real
 `.env` file. They are ignored by the repository.
+
+### Secrets, Variables, and synchronization
+
+GitHub Actions allows 100 repository Secrets and 500 repository Variables.
+A `PREVIEW_` prefix uses another slot in the same repository; it does not create
+an Environment or a separate quota. See the [Secrets reference](https://docs.github.com/en/actions/reference/security/secrets)
+and [Variables reference](https://docs.github.com/en/actions/reference/workflows-and-actions/variables).
+Variables are plain configuration and are not automatically masked in logs.
+
+`github_deployer.sh` and `github_releaser.sh` contain separate, explicit
+`SECRETS` and `VARIABLES` lists. Passwords, private keys, authentication tokens,
+provider credentials, private invite links, and potentially authenticated
+service URLs stay in Secrets. Portainer webhook URLs also stay in Secrets:
+the URL contains the token that can update a service. Service names, domains,
+ports, public service URLs, model names, limits, and public identifiers use
+Variables. Classification is explicit; a word such as `TOKEN` in a lifetime
+setting does not make that setting a credential.
+
+Synchronization reads values from the selected local `tools/deployer/.env`.
+It does not manufacture application defaults. An unset or empty setting is
+skipped, leaving an existing remote value intact, except for the two optional
+S3 provisioning names described above. An explicitly configured
+value is copied, including `0`, `false`, and a value equal to today's default.
+Service scripts, templates, and runtime configuration still supply defaults
+when the corresponding setting is absent. Delete a remote override explicitly
+when you want that setting to follow future defaults again.
+
+For normal synchronization, run from `tools/deployer`:
+
+```bash
+./github.sh up
+# With the preview deployment's values in .env:
+./github.sh up PREVIEW
+```
+
+Both commands target the repository in `GITHUB_REPOSITORY`. They do not deploy
+services. `github.sh down` removes the listed configuration; it is not a reset
+or a prerequisite for an upgrade.
+
+Variables are written before Secrets to free slots occupied by non-sensitive
+settings. Each successful variable write removes the obsolete same-name
+Actions Secret. A failed write leaves that Secret intact and stops the script.
+Retries update the same variable and tolerate an already removed Secret.
+Values and GitHub tokens travel through JSON on stdin, not command arguments;
+console output contains names and status only. Service `fill_github.yaml` and
+`clear_github.yaml` playbooks use the same stores. Codespaces entries retain
+those playbooks' existing Secrets behavior.
+
+#### Updating an installation that stores everything in Secrets
+
+1. Pause automatic releases/deployments for the migration. Keep a complete
+   private copy of the deployment `.env`, including custom overrides.
+2. Update the workflows on `main` and any deployment branches that will run
+   them. The new workflows read non-sensitive settings from `vars.*`; there
+   is no fallback to `secrets.*`. Complete the following synchronization
+   before running a workflow from the new version.
+3. Give the deployment GitHub token repository **Variables: write** and
+   **Secrets: write** permissions (plus its existing branch permissions).
+4. Run `./github.sh up` with production values, and `./github.sh up PREVIEW`
+   with preview values if that deployment exists. This moves configured
+   values and removes their obsolete Secret entries. Unconfigured names
+   remain untouched, except for empty S3 provisioning names; do not delete
+   an override whose value is missing locally.
+5. Move existing generated public service addresses to same-name Variables
+   before building images: `NEXT_PUBLIC_API_SERVICE_URL`,
+   `NEXT_PUBLIC_API_SERVICE_WS_URL`, `NEXT_PUBLIC_HOST_SERVICE_URL`,
+   `NEXT_PUBLIC_TELEGRAM_SERVICE_URL`, and `MCP_SERVICE_PUBLIC_URL`, including
+   the corresponding preview names when used. Service deployment playbooks
+   generate these Variables on a fresh installation and subsequent service
+   deployments. Keep `PORTAINER_*_UPDATE_URL` in Secrets.
+6. Check that production and preview values are separate. Run a Docker build
+   with `VERIFY_ONLY=true`, then resume the normal deployment flow. An old
+   workflow reading a migrated setting from Secrets will receive an empty
+   value, so do not run old deployment branches after migration.
+
+The sync scripts also forward the configurable API/RBAC limits, security
+summary settings, and Telegram webhook secret. Ansible writes
+`HOST_SERVICE_DOCKER_HUB_REPOSITORY_NAME`, `STRIPE_SECRET_KEY`, and `REDIS_PORT`
+under the same names consumed by service scripts.
+
+Local regression checks make no GitHub writes and do not deploy a server:
+
+```bash
+node --test tools/deployer/github/configuration.test.mjs tools/deployer/github/github-node-api/variables.test.js
+```
+
+They exercise production/preview sync and teardown, Secret/Variable selection,
+empty settings, failed variable migration, private `.env` generation, and
+Docker build environment selection using synthetic values and mocked GitHub
+requests.
 
 ## Docker image rollout
 
@@ -909,3 +1104,102 @@ default is 30 days; set it to `0` to disable pruning.
 Existing installations must run `tools/deployer/host.sh up` once after this
 change so the host service is recreated with the persistent volume. Subsequent
 image releases preserve and update the volume automatically.
+
+## API admission and proxy addresses
+
+All API replicas must share the same KV store and `API_RATE_LIMIT_*` settings.
+The defaults allow a Subject 20000 requests per 10 seconds and 120000 per minute;
+an IP gets 100000 and 600000. These budgets leave room for pages assembled from
+many widgets, including several users behind one IP. The values are initial
+budgets to tune against normal traffic, not a claim about the server's capacity.
+Limits do not replace CDN/WAF protection against distributed floods, network
+saturation, or per-operation resource bounds. The Next.js Host is a separate
+entry point.
+
+Set the four values in `tools/deployer/.env` before deploying API:
+
+```dotenv
+API_RATE_LIMIT_BURST_PER_SUBJECT=20000
+API_RATE_LIMIT_MINUTE_PER_SUBJECT=120000
+API_RATE_LIMIT_BURST_PER_ADDRESS=100000
+API_RATE_LIMIT_MINUTE_PER_ADDRESS=600000
+```
+
+For local API startup, put overrides in `apps/api/.env` and restart API.
+For GitHub Actions deployment, use repository secrets with these names for
+production and the `PREVIEW_` prefix for preview. Both workflows pass the values
+through the deployer into the API container. Empty settings use the defaults;
+existing explicit overrides remain in effect. Authentication route budgets
+are separate and are not raised by these variables.
+
+The deployer publishes Traefik ports 80/443 in host mode, preserving the peer IP.
+It uses `stop-first` updates because two tasks on the same node cannot bind those
+ports simultaneously; updating Traefik on a single node causes a brief interruption.
+Deploy Traefik as well as API when adopting this PR. An API-only image update does
+not change an existing Swarm ingress publication.
+
+Before rendering `api.env`, Ansible reads `traefik_overlay` and trusts its actual
+subnets. With `USE_CLOUDFLARE_SSL=true`, both API and Traefik also trust the
+[Cloudflare proxy ranges](https://www.cloudflare.com/ips/) recorded in their
+templates. Review both copies when Cloudflare changes the published ranges.
+The API port must remain internal to the overlay. Other containers on that
+network are trusted infrastructure and must not be accessible to untrusted code.
+
+`RBAC_RATE_LIMIT_TRUSTED_PROXY_CIDRS` overrides the API trust list for a custom
+proxy topology. List only the actual proxy subnets, never `0.0.0.0/0` or `::/0`.
+Configure Traefik's `forwardedHeaders.trustedIPs` separately if another upstream
+proxy replaces Cloudflare. Local API startup has an empty list by default and
+uses the socket address. A missing or malformed forwarding entry cannot remove
+the address budget; a wrong topology may instead group visitors into one budget.
+
+The first exceeded counter in a window emits `rate_limit.exceeded`, including
+`scope`, `subjectId` or IP prefix, route pattern, method, `requestId` and retry
+delay. The IP marker identifies a network, not necessarily a person. JWTs,
+passwords, email addresses, query strings and request bodies are absent. Repeated
+429 responses do not generate error diagnostics or Telegram messages. The first
+wrong operator credential is logged once per window. Keep `LOG_LEVEL=warn` or
+more verbose to retain these warnings; production uses the existing Pino/journald
+logging setup and retention policy.
+
+Use the service tag from [Finding an API error](#finding-an-api-error):
+
+```bash
+sudo journalctl -t "$tag" --since '1 hour ago' --no-pager -o cat |
+  jq -Rc 'fromjson? | objects | select(.event == "rate_limit.exceeded")'
+```
+
+To locate a particular Subject, add `and .subjectId == $id` to the predicate
+and pass `--arg id "$subject_id"` to jq. HTTP 429 carries `Retry-After`; clients
+should wait that long rather than retry immediately. The temporary marker is a
+Redis counter with TTL under `rate-limit:*`. It disappears automatically and
+never changes the account's status. A KV outage returns HTTP 503 with a one-second
+retry delay; bounded commands and a short retry pause prevent an unbounded queue.
+
+A new environment setting must be passed through both production and preview
+sections of `.github/workflows/ansible.yml`, `api.sh`, and `api/api.env.j2`.
+The four API budgets and proxy CIDRs follow that complete path.
+
+## Shared outgoing notification limits
+
+API and Telegram services share Redis admission for outbound notifications.
+The rate settings and retry behavior are documented in
+[Notification delivery](../../libs/modules/notification/models/notification/README.md#delivery-retries-and-provider-limits).
+Use the same Redis instance and Telegram settings on every replica. Deployment
+now passes `REDIS_PASSWORD` and `REDIS_PORT` into the Telegram environment too.
+For an existing local checkout, copy the API's `KV_PROVIDER`, `KV_HOST`, `KV_PORT`,
+`KV_USERNAME` and `KV_PASSWORD` values into `apps/telegram/.env` without committing
+secrets. New checkouts receive them through `apps/telegram/create_env.sh`.
+
+Before deploying this change, add `ses:GetSendQuota` on resource `*` to an existing
+SES IAM identity; `aws/ses_policy.j2` includes it for installations managed by the
+deployer. Existing deployments that skip IAM provisioning need this permission
+updated separately. Missing quota permission stops SES delivery rather than
+assuming an unlimited account. `NOTIFICATION_SES_MESSAGES_PER_SECOND=0` reads
+the account's rate; a positive value sets a lower application cap.
+
+Enable the existing Agent action `notification-module-topics-send-all` with an
+appropriate cron interval for durable retries. No seed or new schedule is created
+automatically. `notification.delivery.deferred` logs contain Notification ID,
+failure count and next attempt time, without recipient addresses or message text.
+Use the Notification admin list for `new`/`sent`/`error` status. These settings
+have not been applied to production by this code change.

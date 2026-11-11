@@ -572,10 +572,15 @@ export async function repairIdentityNaturalKeys(props: {
   if (props.mode === "check") {
     const checked = await sql.begin(
       "isolation level repeatable read read only",
-      async (transaction) => ({
-        before: await inspect(transaction, tables),
-        diagnostics: await inspectDiagnostics(transaction, tables),
-      }),
+      async (transaction) => {
+        const before = await inspect(transaction, tables);
+        const diagnostics = await inspectDiagnostics(transaction, tables);
+
+        return {
+          before,
+          diagnostics,
+        };
+      },
     );
 
     return {

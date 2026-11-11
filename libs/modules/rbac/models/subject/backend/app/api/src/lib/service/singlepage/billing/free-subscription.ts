@@ -70,8 +70,10 @@ export class Service {
         const orderIds = owned
           .filter((link) => link.subjectId === props.id)
           .map((link) => link.ecommerceModuleOrderId);
-        const lines = orderIds.length
-          ? await this.dependencies.ecommerceModule.ordersToProducts.find({
+        let lines;
+        if (orderIds.length) {
+          lines = await this.dependencies.ecommerceModule.ordersToProducts.find(
+            {
               params: {
                 filters: {
                   and: [
@@ -84,8 +86,11 @@ export class Service {
                   ],
                 },
               },
-            })
-          : [];
+            },
+          );
+        } else {
+          lines = [];
+        }
         const previousIds = [
           ...new Set<string>(lines.map((line) => line.orderId)),
         ];
@@ -353,11 +358,14 @@ export class Service {
       throw new Error(
         "Conflict error. Initial Free PaymentIntent is ambiguous",
       );
-    let intent = orderLinks.length
-      ? await billingModule.paymentIntent.findById({
-          id: orderLinks[0].billingModulePaymentIntentId,
-        })
-      : undefined;
+    let intent;
+    if (orderLinks.length) {
+      intent = await billingModule.paymentIntent.findById({
+        id: orderLinks[0].billingModulePaymentIntentId,
+      });
+    } else {
+      intent = undefined;
+    }
     if (orderLinks.length && !intent)
       throw new Error("Conflict error. Initial Free PaymentIntent is missing");
     if (
@@ -422,9 +430,14 @@ export class Service {
       await billingModule.paymentIntentsToInvoices.find(intentFilter);
     if (invoiceLinks.length > 1)
       throw new Error("Conflict error. Initial Free Invoice is ambiguous");
-    let invoice = invoiceLinks.length
-      ? await billingModule.invoice.findById({ id: invoiceLinks[0].invoiceId })
-      : undefined;
+    let invoice;
+    if (invoiceLinks.length) {
+      invoice = await billingModule.invoice.findById({
+        id: invoiceLinks[0].invoiceId,
+      });
+    } else {
+      invoice = undefined;
+    }
     if (invoiceLinks.length && !invoice)
       throw new Error("Conflict error. Initial Free Invoice is missing");
     if (

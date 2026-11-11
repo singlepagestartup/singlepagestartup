@@ -1,0 +1,1 @@
+ALTER TABLE "sps_nn_template" ADD COLUMN "content" text;

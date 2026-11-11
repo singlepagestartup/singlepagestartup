@@ -14,11 +14,12 @@ export async function readProjectFiles(
         throw new Error(
           `${file.name} слишком велик для черновика. Добавьте текстовый файл меньшего размера.`,
         );
-      return {
-        file,
-        id: `${prefix}-${Date.now()}-${index}`,
-        text: plain ? await file.text() : "",
-      };
+      const id = `${prefix}-${Date.now()}-${index}`;
+      let text = "";
+      if (plain) {
+        text = await file.text();
+      }
+      return { file, id, text };
     }),
   );
   return prepared.map(({ file, id, text }) => ({

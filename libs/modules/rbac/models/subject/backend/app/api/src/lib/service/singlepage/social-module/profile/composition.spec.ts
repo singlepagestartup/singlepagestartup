@@ -8,6 +8,7 @@
 
 import { Service } from "../../index";
 import { Service as StartupService } from "../../../startup";
+import { Service as SocialModuleProfileSkillsService } from "./skills";
 import type {
   IAiExecutionActionReporter,
   IProfileMcpCatalogSession,
@@ -180,9 +181,9 @@ it("resolves document skills through the Subject factory and permits a startup o
   const find = jest.fn().mockResolvedValue(skill);
   class CustomSubjectService extends StartupService {
     protected override getSocialModuleProfileSkillsService() {
-      return { forDocument: find } as ReturnType<
-        Service["getSocialModuleProfileSkillsService"]
-      >;
+      const service = new SocialModuleProfileSkillsService(this.socialModule);
+      jest.spyOn(service, "forDocument").mockImplementation(find);
+      return service;
     }
   }
   const service = Object.create(

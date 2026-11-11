@@ -88,12 +88,15 @@ export class Handler {
           });
       }
 
-      const telegramTopic = canMirrorTelegramTopic({ socialModuleChat })
-        ? await createTelegramForumTopic({
-            socialModuleChat,
-            title,
-          })
-        : null;
+      let telegramTopic;
+      if (canMirrorTelegramTopic({ socialModuleChat })) {
+        telegramTopic = await createTelegramForumTopic({
+          socialModuleChat,
+          title,
+        });
+      } else {
+        telegramTopic = null;
+      }
 
       if (telegramTopic) {
         const existingThread = await this.findExistingTelegramThread({

@@ -10,6 +10,10 @@ export type IMcpRequestExtra = RequestHandlerExtra<
   ServerNotification
 >;
 
+/** OAuth identifies the connection; API RBAC determines every operation. */
+export const MCP_CONTENT_SCOPE = "mcp:content";
+export const MCP_SCOPES = [MCP_CONTENT_SCOPE];
+
 function firstHeaderValue(value: string | string[] | undefined) {
   if (Array.isArray(value)) {
     return value[0];

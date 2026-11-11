@@ -23,11 +23,11 @@ export async function generateMetadata({
   const { language, url = [] } = await params;
   if (!internationalization.languages.some(({ code }) => code === language))
     notFound();
-  return (
-    await pageApi.resolvePageSeo(
-      `/${language}${url.length ? "/" + url.join("/") : ""}`,
-    )
-  ).metadata;
+  const pageSeo = await pageApi.resolvePageSeo(
+    `/${language}${url.length ? "/" + url.join("/") : ""}`,
+  );
+
+  return pageSeo.metadata;
 }
 
 export default async function Page({ params }: IPageProps) {

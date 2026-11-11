@@ -1,5 +1,5 @@
 ---
-- name: Delete AWS secrets from GitHub
+- name: Delete AWS settings from GitHub
   hosts: all
   become: yes
   vars:
@@ -27,12 +27,28 @@
         dest: "/home/code/github-node-api/{{ item }}"
       loop:
         - delete_secret.js
+        - delete_variable.js
         - package.json
 
     - name: Install dependencies
       shell:
         cmd: "npm install"
         chdir: "/home/code/github-node-api"
+
+    - name: Delete variables from GitHub
+      no_log: true
+      ansible.builtin.command:
+        argv: [node, ./delete_variable.js]
+        stdin: >-
+          {{ {
+            'GITHUB_TOKEN': github_token,
+            'GITHUB_REPOSITORY': github_repository,
+            'VARIABLE_NAME': item.variable_name
+          } | to_json }}
+        chdir: "/home/code/github-node-api"
+      loop:
+        - { variable_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'AWS_S3_BUCKET' }}" }
+        - { variable_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'AWS_S3_ENDPOINT' }}" }
 
     - name: Delete secrets from GitHub
       no_log: true
@@ -57,10 +73,6 @@
           }
         - {
             secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'AWS_S3_BUCKET' }}",
-            secret_scope: actions,
-          }
-        - {
-            secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'AWS_S3_BUCKET' }}",
             secret_scope: codespaces,
           }
         - {
@@ -70,10 +82,6 @@
         - {
             secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'AWS_S3_ENDPOINT' }}",
             secret_scope: codespaces,
-          }
-        - {
-            secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'AWS_S3_ENDPOINT' }}",
-            secret_scope: actions,
           }
         - {
             secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'AWS_ACCESS_KEY_ID' }}",

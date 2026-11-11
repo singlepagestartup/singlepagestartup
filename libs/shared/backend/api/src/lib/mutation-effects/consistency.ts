@@ -375,6 +375,9 @@ export function createConsistencyRuntime(props: IConsistencyRuntimeProps) {
         compactDependencies(context);
         if (
           c.res.status !== 200 ||
+          /(?:^|,)\s*no-store\s*(?:,|$)/i.test(
+            c.res.headers.get("Cache-Control") || "",
+          ) ||
           !context.complete ||
           !context.dependencies.size ||
           !c.res.headers.get("Content-Type")?.includes("application/json")
@@ -522,9 +525,12 @@ export function createConsistencyRuntime(props: IConsistencyRuntimeProps) {
     },
     async check(refs: string[], authorization: string) {
       await props.verifyAuthorization(authorization);
+      const status = await store.status();
+      const renewal = await store.renew(refs, consistencyAuth(authorization));
+
       return {
-        ...(await store.status()),
-        ...(await store.renew(refs, consistencyAuth(authorization))),
+        ...status,
+        ...renewal,
       };
     },
   };
