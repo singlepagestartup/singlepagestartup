@@ -1,4 +1,4 @@
-FROM node:24.22.2-bookworm
+FROM node:26.13.0-bookworm
 
 # Keep in step with the bun package version in package-lock.json.
 ARG BUN_VERSION=1.4.4
