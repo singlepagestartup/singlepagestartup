@@ -97,6 +97,19 @@ CORS controls browser response access; it does not replace RBAC or prevent
 non-browser requests and simple cross-origin writes. Configure the production
 list explicitly.
 
+## Creating an administrator
+
+Run `./apps/api/create_rbac_subject.sh`. It uses the API URL, operator key,
+email and password from `apps/api/.env`. After assigning the role, it signs
+in and verifies the subject and its role. A timeout at this last step does
+not undo the assignment. Sign in with the same account and open the admin
+panel to check access.
+
+The script makes up to three attempts for transient connection failures.
+It retries a write only when the connection failed before it could send the
+request. If the connection drops after sending a write, check whether the
+change was applied before running the script again.
+
 ## Guidelines
 
 - `apps/api/app.ts` is the **only** host: mount every module backend app via `app.route("/api/<module>", moduleApp.hono)`; modules must not expose their own servers.
