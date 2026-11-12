@@ -78,6 +78,16 @@ can exceed Next's fixed 5 MiB development static-path cache and repeat that
 expensive enumeration on each request. The URL enumeration API remains available
 for explicit consumers such as the sitemap.
 
+## Locale redirects
+
+Locale middleware adds the default language prefix while preserving the request
+Host header. It clears the internal server port before applying Host, so redirects
+behind a reverse proxy use the public domain and local redirects retain their
+explicit port. The path and query parameters remain in the redirect.
+
+`skipMiddlewareUrlNormalize` prevents Next from rewriting loopback hosts in the
+outgoing Location header; a login on `127.0.0.1` keeps the same cookie origin.
+
 ## Testing
 
 This repository uses a layered test strategy so developers can validate changes quickly without manual UI clicking.
