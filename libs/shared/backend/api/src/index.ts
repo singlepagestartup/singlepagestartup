@@ -11,6 +11,7 @@ export {
  */
 export { applyOutputSchema } from "./lib/output-schema";
 
+export { readDump } from "./lib/seeder/read-dump";
 export { Seeder } from "./lib/seeder/Seeder";
 export { Dumper } from "./lib/dumper/Dumper";
 export { ModuleSeeder } from "./lib/seeder/ModuleSeeder";

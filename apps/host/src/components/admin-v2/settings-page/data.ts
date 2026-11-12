@@ -6,6 +6,23 @@ import type { ISetupRecommendation } from "./interface";
 
 export const copy = {
   ru: {
+    permissionsTitle: "Публичные разрешения API",
+    permissionsDescription:
+      "Выберите разрешения из dump проекта. Выбранные записи будут созданы без роли, и RBAC разрешит гостям вызывать эти маршруты. Обработчик может дополнительно проверять владельца или подпись. Существующие назначения ролей сохраняются.",
+    choosePermissions: "Выбрать разрешения",
+    module: "Выберите модуль",
+    searchPermissions: "Поиск по методу или пути",
+    configured: "Уже настроено",
+    createSelected: "Создать выбранные",
+    permissionsSaving: "Создаём",
+    permissionsLoading: "Загружаем разрешения…",
+    permissionsSaved: "Выбранные разрешения настроены.",
+    permissionsFailed: "Не удалось создать разрешение.",
+    permissionsChanged:
+      "Список разрешений изменился. Проверьте выбор и повторите.",
+    permissionsEmpty: "В dump проекта нет доступных шаблонов разрешений.",
+    noMatches: "Совпадений нет.",
+    retry: "Повторить",
     settings: "Настройки",
     introduction:
       "Обслуживание проекта и данные для подключения нужных функций после установки.",
@@ -27,6 +44,23 @@ export const copy = {
     success: "Кэш страниц сброшен.",
   },
   en: {
+    permissionsTitle: "Public API permissions",
+    permissionsDescription:
+      "Choose permissions from the project dump. New entries have no role, so RBAC allows guests to call these routes. A handler may also check ownership or a signature. Existing role assignments are preserved.",
+    choosePermissions: "Choose permissions",
+    module: "Select a module",
+    searchPermissions: "Search by method or path",
+    configured: "Already configured",
+    createSelected: "Create selected",
+    permissionsSaving: "Creating",
+    permissionsLoading: "Loading permissions…",
+    permissionsSaved: "Selected permissions are configured.",
+    permissionsFailed: "Could not create the permission.",
+    permissionsChanged:
+      "The permission list changed. Review your selection and try again.",
+    permissionsEmpty: "The project dump contains no eligible permissions.",
+    noMatches: "No matches.",
+    retry: "Retry",
     settings: "Settings",
     introduction:
       "Project maintenance and records needed to enable features after installation.",

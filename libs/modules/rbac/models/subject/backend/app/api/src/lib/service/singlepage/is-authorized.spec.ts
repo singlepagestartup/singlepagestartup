@@ -25,8 +25,8 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { JwtTokenExpired } from "hono/utils/jwt/types";
 import { verify } from "hono/jwt";
-import { logger } from "@sps/backend-utils";
 import { Service as PermissionService } from "@sps/rbac/models/permission/backend/app/api/src/lib/service";
+import { dataDirectory as roleDataDirectory } from "@sps/rbac/models/role/backend/repository/database";
 import { dataDirectory as permissionDataDirectory } from "@sps/rbac/models/permission/backend/repository/database";
 import { dataDirectory as rolesToPermissionsDataDirectory } from "@sps/rbac/relations/roles-to-permissions/backend/repository/database";
 import { Service } from "./is-authorized";
@@ -92,6 +92,8 @@ describe("Given: injected RBAC services", () => {
         authorization: {},
       }),
     ).resolves.toEqual({ ok: true });
+    expect(permissionService.find).not.toHaveBeenCalled();
+    expect(rolesToPermissionsService.find).toHaveBeenCalledTimes(1);
     expect(rolesToPermissionsService.find).toHaveBeenCalledWith({
       params: {
         filters: {
@@ -573,174 +575,69 @@ describe("Given: a request that carries a subject token", () => {
   });
 });
 
-/**
- * BDD Suite: the reviewed list of role-less permissions.
- *
- * Given: the framework permission and roles-to-permissions seed.
- * When: the is-authorized service inventories the rows that carry no role.
- * Then: every role-less seed row is on the reviewed list, a role-less row
- * missing from it is named, including an order read or a count route that
- * lost its Admin attachment, and the boot report names only such rows.
- */
-describe("Given: the framework permission seed", () => {
+describe("framework RBAC snapshots", () => {
   function readSeed<T>(directory: string): T[] {
     return readdirSync(directory)
       .filter((file) => file.endsWith(".json"))
       .map((file) => JSON.parse(readFileSync(join(directory, file), "utf-8")));
   }
 
-  function createService(props: {
-    permissions: Record<string, unknown>[];
-    rolesToPermissions: Record<string, unknown>[];
-  }) {
-    const permissionService = createPermissionService({});
-
-    permissionService.find = jest.fn().mockResolvedValue(props.permissions);
-
-    return new Service(
-      permissionService as any,
-      { find: jest.fn().mockResolvedValue(props.rolesToPermissions) } as any,
-      { find: jest.fn() } as any,
-      createSubjectRepository() as any,
-    );
-  }
-
   const permissions = readSeed<{ id: string; method: string; path: string }>(
     permissionDataDirectory,
   );
-  const rolesToPermissions = readSeed<{ permissionId: string }>(
+  const links = readSeed<{ permissionId: string; roleId: string }>(
     rolesToPermissionsDataDirectory,
   );
+  const roles = readSeed<{ id: string; slug: string }>(roleDataDirectory);
+  const admin = roles.find((role) => role.slug === "admin");
 
-  /**
-   * BDD Scenario
-   * Given: the permission and roles-to-permissions rows the framework seeds.
-   * When: the rows that carry no role are compared with the reviewed list.
-   * Then: none is missing, so the seed publishes no route by omission.
-   */
-  it("When: the seed is inventoried Then: every role-less row is on the reviewed list", async () => {
-    const service = createService({ permissions, rolesToPermissions });
-
-    await expect(service.findUnlistedRolelessPermissions()).resolves.toEqual(
-      [],
+  it.each([
+    "/api/ecommerce/orders",
+    "/api/social/messages/count",
+    "/api/notification/templates/count",
+  ])("ships %s with the Admin role", (path) => {
+    const permission = permissions.find(
+      (row) => row.method === "GET" && row.path === path,
+    );
+    expect(admin).toBeDefined();
+    expect(permission).toBeDefined();
+    expect(links).toContainEqual(
+      expect.objectContaining({
+        permissionId: permission?.id,
+        roleId: admin?.id,
+      }),
     );
   });
 
-  /**
-   * BDD Scenario
-   * Given: a new permission row that carries no role and is not listed.
-   * When: the seed is inventoried.
-   * Then: the check names that row.
-   */
-  it("When: a role-less row is not listed Then: the check names it", async () => {
-    const service = createService({
-      permissions: [
-        ...permissions,
-        {
-          id: "permission-unlisted",
-          method: "GET",
-          path: "/api/ecommerce/orders/export",
-        },
-      ],
-      rolesToPermissions,
-    });
-
-    await expect(service.findUnlistedRolelessPermissions()).resolves.toEqual([
-      "GET /api/ecommerce/orders/export",
-    ]);
-  });
-
-  /**
-   * BDD Scenario
-   * Given: a seed in which the order list read lost its Admin attachment.
-   * When: the seed is inventoried.
-   * Then: the check names the order list read, which would otherwise answer
-   * every caller.
-   */
-  it("When: the order list read carries no role Then: the check names it", async () => {
-    const orderListRead = permissions.find((permission) => {
-      return (
-        permission.method === "GET" &&
-        permission.path === "/api/ecommerce/orders"
-      );
-    });
-    const service = createService({
-      permissions,
-      rolesToPermissions: rolesToPermissions.filter((roleToPermission) => {
-        return roleToPermission.permissionId !== orderListRead?.id;
-      }),
-    });
-
-    await expect(service.findUnlistedRolelessPermissions()).resolves.toEqual([
-      "GET /api/ecommerce/orders",
-    ]);
-  });
-
-  /**
-   * BDD Scenario
-   * Given: a seed in which the social message count lost its Admin attachment.
-   * When: the seed is inventoried.
-   * Then: the check names the count route, which only the admin UI and MCP
-   * use.
-   */
-  it("When: the social message count carries no role Then: the check names it", async () => {
-    const messageCount = permissions.find((permission) => {
-      return (
-        permission.method === "GET" &&
-        permission.path === "/api/social/messages/count"
-      );
-    });
-    const service = createService({
-      permissions,
-      rolesToPermissions: rolesToPermissions.filter((roleToPermission) => {
-        return roleToPermission.permissionId !== messageCount?.id;
-      }),
-    });
-
-    await expect(service.findUnlistedRolelessPermissions()).resolves.toEqual([
-      "GET /api/social/messages/count",
-    ]);
-  });
-
-  /**
-   * BDD Scenario
-   * Given: a live table with one listed and one unlisted role-less row.
-   * When: the boot report runs.
-   * Then: it warns about the unlisted row only.
-   */
-  it("When: the boot report runs Then: it names only the unlisted rows", async () => {
-    class ReportingService extends Service {
-      report() {
-        return this.reportRolelessPermissions();
+  it("restricts counts at least as closely as their protected collection", () => {
+    const collections = new Map(
+      permissions
+        .filter((row) => row.method === "GET")
+        .map((row) => [row.path, row]),
+    );
+    const rolesFor = (id: string) =>
+      links
+        .filter((link) => link.permissionId === id)
+        .map((link) => link.roleId);
+    const exposed: string[] = [];
+    for (const [path, count] of collections) {
+      if (!path.endsWith("/count")) {
+        continue;
+      }
+      const collection = collections.get(path.slice(0, -"/count".length));
+      if (!collection) {
+        continue;
+      }
+      const allowed = new Set(rolesFor(collection.id));
+      const actual = rolesFor(count.id);
+      if (
+        allowed.size &&
+        (!actual.length || actual.some((roleId) => !allowed.has(roleId)))
+      ) {
+        exposed.push(path);
       }
     }
-
-    const permissionService = createPermissionService({});
-
-    permissionService.find = jest.fn().mockResolvedValue([
-      { id: "permission-listed", method: "GET", path: "/api/blog/articles" },
-      {
-        id: "permission-unlisted",
-        method: "GET",
-        path: "/api/ecommerce/orders/export",
-      },
-    ]);
-
-    const warn = jest.spyOn(logger, "warn").mockImplementation(() => logger);
-    const service = new ReportingService(
-      permissionService as any,
-      { find: jest.fn().mockResolvedValue([]) } as any,
-      { find: jest.fn() } as any,
-      createSubjectRepository() as any,
-    );
-
-    await service.report();
-
-    expect(warn).toHaveBeenCalledTimes(1);
-    expect(warn.mock.calls[0][0]).toContain("GET /api/ecommerce/orders/export");
-    expect(warn.mock.calls[0][0]).not.toContain("GET /api/blog/articles");
-
-    warn.mockRestore();
+    expect(exposed).toEqual([]);
   });
 });
 

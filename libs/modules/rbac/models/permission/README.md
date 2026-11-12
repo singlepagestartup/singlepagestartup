@@ -29,21 +29,11 @@ respective startup files.
 
 ## Role-less permissions
 
-A permission row with no `roles-to-permissions` attachment answers every caller
-unless `isSensitiveRoute` closes its route. The framework lists reviewed routes
-as `METHOD path` in `roleless-permissions/singlepage.ts`. A project adds its own
-routes in `startup.ts`. A GET permission naming one exact Chat UUID already
-expresses the decision to publish that chat and needs no second entry.
+A permission without a role allows guest access under RBAC unless the sensitive-route policy applies. A handler can also require ownership, a signature or another resource-specific check. The active policy comes from the permission and role records in the database.
 
-The subject is-authorized service compares the table with that list.
-`findUnlistedRolelessPermissions()` returns the role-less rows that are not
-listed; the rbac unit lane runs it against the seed and fails on any result, and
-the API logs the same result from the live table once per process.
+In **Admin v2 → Settings → Public API permissions**, choose a module, select the exact methods and paths to enable and click **Create selected**. The picker reads the project's Permission, RolesToPermissions and PermissionsToBillingModuleCurrencies snapshots on demand. It omits role-bound, paid and sensitive routes, wildcards and grants for a specific UUID. Existing permissions, including ones the project has restricted, appear as already configured. Only selected missing rows are created through the Permission SDK.
 
-A route that needs a role gets it through a `roles-to-permissions` row in the
-seed. Seed rows are changed on a database that holds the snapshot ids and
-written with `npx nx run api:db:dump`; a database seeded from the snapshots gets
-new ids and cannot produce them.
+Use **RBAC → Permissions** and role assignments to configure other routes. Export the intended records with the standard dump and load them in another installation with the standard seed. Project-specific paths need no entry in TypeScript.
 
 ## Website Builder and File Storage reads
 

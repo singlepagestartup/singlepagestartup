@@ -16,6 +16,13 @@ import {
   REVALIDATE,
 } from "@sps/shared-utils";
 
+export interface IPermissionDefault {
+  type: string;
+  method: string;
+  path: string;
+  configured: boolean;
+}
+
 export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/rbac/subjects";
