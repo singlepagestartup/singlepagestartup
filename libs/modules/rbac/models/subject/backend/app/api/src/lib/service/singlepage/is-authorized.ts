@@ -1,13 +1,8 @@
-import {
-  RBAC_JWT_SECRET,
-  createMemoryCache,
-  isExactResourceGrant,
-} from "@sps/shared-utils";
+import { RBAC_JWT_SECRET, createMemoryCache } from "@sps/shared-utils";
 import { DI, type IRepository } from "@sps/shared-backend-api";
 import { Service as PermissionService } from "@sps/rbac/models/permission/backend/app/api/src/lib/service";
-import { rolelessPermissions } from "@sps/rbac/models/permission/backend/repository/database";
 import { Service as RolesToPermissionsService } from "@sps/rbac/relations/roles-to-permissions/backend/app/api/src/lib/service";
-import { logger, verifyJwt } from "@sps/backend-utils";
+import { verifyJwt } from "@sps/backend-utils";
 import { Service as SubjectsToRolesService } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/service";
 import {
   type IModel as ISubject,
@@ -17,7 +12,6 @@ import { inject, injectable } from "inversify";
 import { SubjectDI } from "../../di";
 
 const cache = createMemoryCache({ ttlMs: 30_000, maxSize: 10_000 });
-let rolelessPermissionsReported = false;
 
 export type IExecuteProps = {
   permission: {
@@ -152,65 +146,6 @@ export class Service {
     return roleIds;
   }
 
-  /**
-   * The permission rows that carry no role and are missing from the reviewed
-   * `rolelessPermissions` list, as `METHOD path` (issue #303). The rbac unit
-   * lane runs it against the seed and the boot report against the live table,
-   * so a new role-less row fails the lane and appears in the log until it is
-   * listed.
-   *
-   * It lives on this service rather than on the permission service because the
-   * attachments come from the roles-to-permissions relation, and this is the
-   * only class holding both reads.
-   */
-  async findUnlistedRolelessPermissions() {
-    const [permissions, rolesToPermissions] = await Promise.all([
-      this.permissionService.find(),
-      this.rolesToPermissionsService.find(),
-    ]);
-
-    const permissionIdsWithRole = new Set(
-      rolesToPermissions.map(
-        (roleToPermission) => roleToPermission.permissionId,
-      ),
-    );
-    const listedRolelessPermissions = new Set(rolelessPermissions);
-
-    return permissions
-      .filter((permission) => !permissionIdsWithRole.has(permission.id))
-      .filter(
-        (permission) =>
-          !(
-            permission.method === "GET" &&
-            isExactResourceGrant("/api/social/chats", permission.path)
-          ),
-      )
-      .map((permission) => `${permission.method} ${permission.path}`)
-      .filter((permission) => !listedRolelessPermissions.has(permission))
-      .sort();
-  }
-
-  /**
-   * One-shot inventory of the role-less permission rows missing from the list,
-   * which this deployment answers for anonymous callers unless the route is
-   * sensitive (issues #270, #303). A project upgrading reads here the rows it
-   * still has to review.
-   */
-  protected async reportRolelessPermissions() {
-    const unlisted = await this.findUnlistedRolelessPermissions();
-
-    if (!unlisted.length) {
-      return;
-    }
-
-    logger.warn(
-      [
-        `RBAC: ${unlisted.length} permission(s) carry no role and are missing from the reviewed list; they stay public unless the route is sensitive:`,
-        ...unlisted,
-      ].join("\n"),
-    );
-  }
-
   protected async getRoleIdsByPermissionId(permissionId?: string) {
     if (!permissionId) {
       return [];
@@ -244,14 +179,6 @@ export class Service {
 
     if (!RBAC_JWT_SECRET) {
       throw new Error("Configuration error. RBAC_JWT_SECRET is not defined");
-    }
-
-    if (!rolelessPermissionsReported) {
-      rolelessPermissionsReported = true;
-
-      this.reportRolelessPermissions().catch((error) => {
-        logger.error(error);
-      });
     }
 
     let subjectId: string | undefined = undefined;

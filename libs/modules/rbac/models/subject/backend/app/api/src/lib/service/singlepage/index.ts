@@ -199,6 +199,8 @@ import {
   type IExecuteProps as ISocialModuleProfileAvatarUpdateProps,
 } from "./social-module/profile/avatar";
 
+import { Service as PermissionDefaults } from "./permission-defaults";
+
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   declare repository: Repository;
@@ -552,6 +554,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
   async revalidateHostCache() {
     await requestHostRevalidation({ path: "/", type: "layout" });
+  }
+
+  permissionDefaults() {
+    return new PermissionDefaults(
+      this.permission,
+      this.rolesToPermissions,
+    ).execute();
   }
 
   async isAdmin(subjectId: string) {

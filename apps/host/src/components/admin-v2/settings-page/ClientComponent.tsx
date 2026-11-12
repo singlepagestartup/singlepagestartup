@@ -3,6 +3,7 @@
 import { api, Provider } from "@sps/rbac/models/subject/sdk/client";
 import { Button, Card, Textarea } from "@sps/shared-ui-shadcn";
 import { useState } from "react";
+import { PermissionDefaults } from "./PermissionDefaults";
 import { copy } from "./data";
 import type { ISettingsPageProps, ITemplateExampleProps } from "./interface";
 
@@ -74,6 +75,7 @@ export function Component(props: ISettingsPageProps) {
   return (
     <Provider>
       <Maintenance language={props.language} />
+      <PermissionDefaults language={props.language} />
     </Provider>
   );
 }

@@ -50,6 +50,7 @@ import { Handler as AuthenticationOAuthStart } from "./authentication/oauth/star
 import { Handler as AuthenticationOAuthCallback } from "./authentication/oauth/callback";
 import { Handler as AuthenticationOAuthExchange } from "./authentication/oauth/exchange";
 
+import { Handler as PermissionDefaults } from "./permission-defaults";
 import { Handler as RevalidateHostCache } from "./revalidate-host-cache";
 import { Handler as Notify } from "./notify";
 import { Handler as Check } from "./check";
@@ -134,17 +135,22 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
   constructor(@inject(DI.IService) service: Service) {
     super(service);
     this.service = service;
+    const authenticatedAdmin = new RequestAuthenticatedAdmin().init({
+      authenticationMe: (props) => this.service.authenticationMe(props),
+      isAdmin: (subjectId) => this.service.isAdmin(subjectId),
+    });
     this.bindHttpRoutes([
+      {
+        method: "GET",
+        path: "/permission-defaults",
+        handler: (c) => new PermissionDefaults(this.service).execute(c),
+        middlewares: [authenticatedAdmin],
+      },
       {
         method: "POST",
         path: "/host-cache/revalidate",
         handler: (c) => new RevalidateHostCache(this.service).execute(c),
-        middlewares: [
-          new RequestAuthenticatedAdmin().init({
-            authenticationMe: (props) => this.service.authenticationMe(props),
-            isAdmin: (subjectId) => this.service.isAdmin(subjectId),
-          }),
-        ],
+        middlewares: [authenticatedAdmin],
       },
       {
         method: "POST",

@@ -430,6 +430,10 @@ import {
 } from "./social-module/chat/find-by-id/profile/delete";
 
 import {
+  action as permissionDefaults,
+  type IResult as IPermissionDefaultsResult,
+} from "./permission-defaults";
+import {
   action as hostCacheRevalidate,
   type IResult as IHostCacheRevalidateResult,
 } from "./host-cache/revalidate";
@@ -523,6 +527,7 @@ export type IProps = {
 };
 
 export type IResult = {
+  IPermissionDefaultsResult: IPermissionDefaultsResult;
   IHostCacheRevalidateResult: IHostCacheRevalidateResult;
   IBlogModuleArticleCreateResult: IBlogModuleArticleCreateResult;
   IBillingModuleBalanceResult: IBillingModuleBalanceResult;
@@ -612,6 +617,7 @@ export type IResult = {
 };
 
 export const api = {
+  permissionDefaults,
   hostCacheRevalidate,
   blogModuleArticleCreate,
   socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdate,

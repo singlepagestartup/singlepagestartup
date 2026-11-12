@@ -475,12 +475,18 @@ import {
 } from "./social-module/chat/find-by-id/profile/delete";
 
 import {
+  action as permissionDefaults,
+  type IResult as IPermissionDefaultsResult,
+  type IProps as IPermissionDefaultsProps,
+} from "./permission-defaults";
+import {
   action as hostCacheRevalidate,
   type IProps as IHostCacheRevalidateProps,
   type IResult as IHostCacheRevalidateResult,
 } from "./host-cache/revalidate";
 
 export type IProps = {
+  IPermissionDefaultsProps: IPermissionDefaultsProps;
   IHostCacheRevalidateProps: IHostCacheRevalidateProps;
   IBlogModuleArticleCreateProps: IBlogModuleArticleCreateProps;
   IEcommerceModuleOrderFreezeSubscriptionPeriodProps: IEcommerceModuleOrderFreezeSubscriptionPeriodProps;
@@ -583,6 +589,7 @@ export type IProps = {
 };
 
 export type IResult = {
+  IPermissionDefaultsResult: IPermissionDefaultsResult;
   IHostCacheRevalidateResult: IHostCacheRevalidateResult;
   IBlogModuleArticleCreateResult: IBlogModuleArticleCreateResult;
   IEcommerceModuleOrderFreezeSubscriptionPeriodResult: IEcommerceModuleOrderFreezeSubscriptionPeriodResult;
@@ -685,6 +692,7 @@ export type IResult = {
 };
 
 export const api = {
+  permissionDefaults,
   hostCacheRevalidate,
   blogModuleArticleCreate,
   ecommerceModuleOrderFreezeSubscriptionPeriod,

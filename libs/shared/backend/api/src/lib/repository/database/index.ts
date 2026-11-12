@@ -1,3 +1,4 @@
+import { readDump } from "../../seeder/read-dump";
 import { logger } from "@sps/backend-utils";
 import { getDrizzle } from "@sps/shared-backend-database-config";
 import * as methods from "drizzle-orm";
@@ -599,27 +600,7 @@ export class Database<
 
     const directory = this.configuration.repository.dump.directory;
 
-    const getDumpEntities = async (): Promise<T["$inferSelect"][]> => {
-      const entities: T["$inferSelect"][] = [];
-
-      const seedFiles = await fs.readdir(directory);
-
-      const sanitizedFiles = seedFiles.filter((file) => file.endsWith(".json"));
-
-      for (const sanitizedFile of sanitizedFiles) {
-        const seed = await fs.readFile(`${directory}/${sanitizedFile}`, {
-          encoding: "utf-8",
-        });
-
-        const parsedSeedFile = JSON.parse(seed);
-
-        entities.push(parsedSeedFile as T["$inferSelect"]);
-      }
-
-      return entities;
-    };
-
-    const dumpEntities = await getDumpEntities();
+    const dumpEntities = await readDump<T["$inferSelect"]>(directory);
     const dbEntities = await this.find();
 
     const insertedEntities: ISeedResult["seeds"] = [];
