@@ -34,13 +34,16 @@ export class Service {
       },
     });
     const ids = (links || []).map((link) => link.threadId);
-    const threads = ids.length
-      ? await this.socialModule.thread.find({
-          params: {
-            filters: { and: [{ column: "id", method: "inArray", value: ids }] },
-          },
-        })
-      : [];
+    let threads;
+    if (ids.length) {
+      threads = await this.socialModule.thread.find({
+        params: {
+          filters: { and: [{ column: "id", method: "inArray", value: ids }] },
+        },
+      });
+    } else {
+      threads = [];
+    }
     const initial = threads?.find(
       (thread) => thread.id === props.initialThread?.id,
     );
@@ -110,18 +113,21 @@ export class Service {
             "Conflict error. Thread document changed concurrently. Retry document initialization.",
           );
       }
-      const thread =
-        pending ||
-        (reusable
-          ? await threadApi.update({
-              id: reusable.id,
-              data: { title: data.title },
-              options,
-            })
-          : await threadApi.create({
-              data: { ...data, slug, variant: "default" },
-              options,
-            }));
+      let thread = pending;
+      if (!thread) {
+        if (reusable) {
+          thread = await threadApi.update({
+            id: reusable.id,
+            data: { title: data.title },
+            options,
+          });
+        } else {
+          thread = await threadApi.create({
+            data: { ...data, slug, variant: "default" },
+            options,
+          });
+        }
+      }
       if (!reusable || pending)
         await linksApi.create({
           data: {

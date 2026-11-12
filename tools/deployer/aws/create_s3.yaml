@@ -1,52 +1,26 @@
 ---
-- name: Create S3 bucket
+- name: Create configured S3 buckets
   hosts: all
   become: yes
   vars:
     root_aws_access_key_id: "{{ ROOT_AWS_ACCESS_KEY_ID }}"
     root_aws_secret_access_key: "{{ ROOT_AWS_SECRET_ACCESS_KEY }}"
     aws_region: "{{ AWS_REGION }}"
-    project_name: "{{ PROJECT_NAME }}"
-    aws_s3_bucket_name: "{{ AWS_S3_BUCKET_NAME }}"
+    aws_s3_bucket_name: "{{ AWS_S3_BUCKET_NAME | default('') | trim }}"
+    aws_s3_dev_bucket_name: "{{ AWS_S3_DEV_BUCKET_NAME | default('') | trim }}"
   tasks:
-    - name: Check is S3 file exists
-      stat:
-        path: "/home/code/s3_bucket"
-      register: s3_bucket_file
-
-    - name: Create S3 bucket
+    - name: Configure S3
+      when: aws_s3_bucket_name | length > 0 or aws_s3_dev_bucket_name | length > 0
       block:
-        - name: Get ansible ansible_system_vendor
-          set_fact:
-            ansible_system_vendor: "{{ hostvars[inventory_hostname]['ansible_system_vendor'] }}"
-
-        - name: If DigitalOcean
-          block:
-            - name: Install required Python packages
-              pip:
-                name: "{{ item }}"
-                state: present
-                virtualenv: /opt/venv
-              loop:
-                - boto
-                - boto3
-                - botocore
-                - awscli
-          when: ansible_system_vendor == "DigitalOcean"
-
-        - name: If not DigitalOcean
-          block:
-            - name: Install required Python packages
-              pip:
-                name: "{{ item }}"
-                state: present
-                virtualenv: /opt/venv
-              loop:
-                - boto
-                - boto3
-                - botocore
-                - awscli
-          when: ansible_system_vendor != "DigitalOcean"
+        - name: Install required Python packages
+          pip:
+            name:
+              - boto
+              - boto3
+              - botocore
+              - awscli
+            state: present
+            virtualenv: /opt/venv
 
         - name: Create S3 bucket
           amazon.aws.s3_bucket:
@@ -64,22 +38,25 @@
               restrict_public_buckets: false
           loop:
             - "{{ aws_s3_bucket_name }}"
-            - "{{ aws_s3_bucket_name }}dev"
+            - "{{ aws_s3_dev_bucket_name }}"
+          when: item | length > 0
 
         - name: Create S3 name file
           copy:
             content: "{{ item.content }}"
             dest: "/home/code/{{ item.name }}.env"
-            mode: 0600
+            mode: "0600"
           loop:
             - { name: "s3_bucket", content: "{{ aws_s3_bucket_name }}" }
-            - { name: "s3_bucket_dev", content: "{{ aws_s3_bucket_name }}dev" }
+            - { name: "s3_bucket_dev", content: "{{ aws_s3_dev_bucket_name }}" }
+          when: item.content | length > 0
 
         - name: Set CORS permissions
           community.aws.s3_cors:
             name: "{{ item }}"
             access_key: "{{ root_aws_access_key_id }}"
             secret_key: "{{ root_aws_secret_access_key }}"
+            region: "{{ aws_region }}"
             state: present
             rules:
               - allowed_origins:
@@ -92,5 +69,5 @@
                 max_age_seconds: 30000
           loop:
             - "{{ aws_s3_bucket_name }}"
-            - "{{ aws_s3_bucket_name }}dev"
-      when: s3_bucket_file.stat.exists == False
+            - "{{ aws_s3_dev_bucket_name }}"
+          when: item | length > 0

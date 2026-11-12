@@ -2,9 +2,12 @@ import { createMiddleware } from "hono/factory";
 import { Provider as StoreProvider } from "@sps/providers-kv";
 import { IRouteRule, KV_PROVIDER, RouteMatcher } from "@sps/shared-utils";
 import { MiddlewareHandler } from "hono";
-import { authorization, getHttpErrorType } from "@sps/backend-utils";
+import {
+  authorization,
+  getHttpErrorType,
+  readRbacSecret,
+} from "@sps/backend-utils";
 import { api as rbacModuleSubjectApi } from "@sps/rbac/models/subject/sdk/server";
-import { getCookie } from "hono/cookie";
 import { HTTPException } from "hono/http-exception";
 import { createBillingRoutesMatcher } from "./routes";
 
@@ -35,8 +38,7 @@ export class Middleware {
   init(): MiddlewareHandler<any, any, {}> {
     return createMiddleware(async (c, next) => {
       const route = c.req.path.toLowerCase();
-      const secretKey =
-        c.req.header("X-RBAC-SECRET-KEY") || getCookie(c, "rbac.secret-key");
+      const secretKey = readRbacSecret(c);
       const token = authorization(c);
 
       const method = c.req.method;

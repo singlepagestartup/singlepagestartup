@@ -324,7 +324,11 @@ if (import.meta.main) {
   if (command === "prepare") {
     const before = Object.fromEntries(
       await Promise.all(
-        Object.entries(api).map(async ([key, sdk]) => [key, await sdk.find()]),
+        Object.entries(api).map(async ([key, sdk]) => {
+          const records = await sdk.find();
+
+          return [key, records];
+        }),
       ),
     ) as IPageLanguageSnapshot;
     const plan = preparePageLanguages(before);

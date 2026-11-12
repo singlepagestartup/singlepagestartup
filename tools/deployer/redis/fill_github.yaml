@@ -1,5 +1,5 @@
 ---
-- name: Fill Redis secrets in GitHub
+- name: Fill Redis settings in GitHub
   hosts: all
   become: yes
   vars:
@@ -27,31 +27,31 @@
         dest: "/home/code/github-node-api/{{ item }}"
       loop:
         - create_secret.js
+        - create_variable.js
         - package.json
+        - package-lock.json
 
     - name: Install dependencies
       shell:
-        cmd: "npm install"
+        cmd: "npm ci"
         chdir: "/home/code/github-node-api"
 
-    - name: Set secrets to GitHub
+    - name: Set variables in GitHub
       no_log: true
       ansible.builtin.command:
-        argv: [node, ./create_secret.js]
+        argv: [node, ./create_variable.js]
         stdin: >-
           {{ {
             'GITHUB_TOKEN': github_token,
             'GITHUB_REPOSITORY': github_repository,
-            'SECRET_NAME': item.secret_name,
-            'SECRET_SCOPE': item.secret_scope,
-            'SECRET_CONTENT': item.secret_content
+            'VARIABLE_NAME': item.variable_name,
+            'VARIABLE_CONTENT': item.variable_content
           } | to_json }}
         chdir: "/home/code/github-node-api"
       loop:
         - {
-            secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'REDIS_HOST' }}",
-            secret_content: "{{ inventory_hostname }}",
-            secret_scope: actions,
+            variable_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'REDIS_HOST' }}",
+            variable_content: "{{ inventory_hostname }}",
           }
 
     - name: Delete artifacts

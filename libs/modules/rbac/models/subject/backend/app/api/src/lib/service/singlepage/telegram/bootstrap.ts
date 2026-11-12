@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { RBAC_SECRET_KEY, TELEGRAM_SERVICE_BOT_TOKEN } from "@sps/shared-utils";
 import { IModel as IRbacSubject } from "@sps/rbac/models/subject/sdk/model";
 import { api as rbacModuleIdentityApi } from "@sps/rbac/models/identity/sdk/server";
@@ -329,9 +330,11 @@ export class Service {
         }),
       },
     );
-    const payload = await response.json();
+    const payload = z
+      .object({ ok: z.boolean(), description: z.string().optional() })
+      .parse(await response.json());
 
-    if (!response.ok || !payload?.ok) {
+    if (!response.ok || !payload.ok) {
       throw new Error(
         `Telegram topic sync error. ${payload?.description || response.statusText}`,
       );
@@ -366,11 +369,14 @@ export class Service {
       return props.socialModuleThread;
     }
 
-    const title = shouldRepairTitle
-      ? repairedTitle.slice(0, 128).trim()
-      : await this.generateTelegramThreadTitle({
-          messageText: titleSourceText as string,
-        });
+    let title;
+    if (shouldRepairTitle) {
+      title = repairedTitle.slice(0, 128).trim();
+    } else {
+      title = await this.generateTelegramThreadTitle({
+        messageText: titleSourceText as string,
+      });
+    }
 
     if (!title || title === props.socialModuleThread.title) {
       return props.socialModuleThread;
@@ -407,7 +413,7 @@ export class Service {
   }
 
   protected async findTelegramChats(chatId: string) {
-    return ((await this.socialModule.chat.find({
+    const chats = await this.socialModule.chat.find({
       params: {
         filters: {
           and: [
@@ -424,7 +430,9 @@ export class Service {
           ],
         },
       },
-    })) || []) as ISocialModuleChat[];
+    });
+
+    return (chats || []) as ISocialModuleChat[];
   }
 
   protected async resolveTelegramChat(props: {
@@ -716,8 +724,7 @@ export class Service {
       }),
     ]);
     const telegramBotProfile = telegramBotProfiles?.[0] as
-      | ISocialModuleProfile
-      | undefined;
+      ISocialModuleProfile | undefined;
 
     if ((telegramBotProfiles?.length || 0) > 1) {
       throw new Error(
@@ -772,21 +779,24 @@ export class Service {
           .filter((profileId): profileId is string => Boolean(profileId)) || [],
       ),
     );
-    const connectedProfiles = connectedProfileIds.length
-      ? await this.socialModule.profile.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "id",
-                  method: "inArray",
-                  value: connectedProfileIds,
-                },
-              ],
-            },
+    let connectedProfiles;
+    if (connectedProfileIds.length) {
+      connectedProfiles = await this.socialModule.profile.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "id",
+                method: "inArray",
+                value: connectedProfileIds,
+              },
+            ],
           },
-        })
-      : [];
+        },
+      });
+    } else {
+      connectedProfiles = [];
+    }
 
     for (const profile of connectedProfiles || []) {
       if (

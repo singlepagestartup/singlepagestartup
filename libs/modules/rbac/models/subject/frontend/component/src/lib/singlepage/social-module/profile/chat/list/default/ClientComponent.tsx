@@ -2,8 +2,7 @@
 
 import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
-import { Component as SocialModuleProfileChatDefault } from "../../default";
-import { Component as SocialModuleProfileChatCreate } from "../../create";
+import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import {
   Button,
   Dialog,
@@ -52,7 +51,7 @@ export function Component(props: IComponentPropsExtended) {
             </DialogTrigger>
             <DialogContent>
               <DialogTitle>New Chat</DialogTitle>
-              <SocialModuleProfileChatCreate
+              <Subject
                 isServer={false}
                 variant="social-module-profile-chat-create"
                 data={props.data}
@@ -67,7 +66,7 @@ export function Component(props: IComponentPropsExtended) {
             <div className="flex flex-col gap-1">
               {props.socialModuleChats.map((socialModuleChat) => {
                 return (
-                  <SocialModuleProfileChatDefault
+                  <Subject
                     key={socialModuleChat.id}
                     isServer={false}
                     variant="social-module-profile-chat-default"

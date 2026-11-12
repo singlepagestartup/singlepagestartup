@@ -1,4 +1,5 @@
 import {
+  readProjectConfiguration,
   generateFiles,
   offsetFromRoot,
   updateProjectConfiguration,
@@ -38,7 +39,7 @@ export class Migrator {
     this.parent.coder.tree.delete(`${baseDirectory}/tsconfig.spec.json`);
 
     updateProjectConfiguration(this.parent.coder.tree, baseName, {
-      ...(this.parent.coder.project as ProjectConfiguration),
+      ...readProjectConfiguration(this.parent.coder.tree, baseName),
       targets: {
         "tsc:build": {},
       },

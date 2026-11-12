@@ -6,8 +6,10 @@
  * When: the per-order quantity, total, update and delete routes are requested.
  * Then: an order not linked to the subject in the path, or another subject's token, is
  * refused before the handler, while the subject's own order reaches the handler with the
- * subject's token or the operator secret; the cart routes beside them are not affected.
+ * owner's access JWT; the cart routes beside them are not affected.
  */
+
+jest.mock("@sps/providers-kv", () => ({ Provider: jest.fn() }));
 
 jest.mock("@sps/shared-utils", () => {
   const actual = jest.requireActual("@sps/shared-utils");
@@ -19,7 +21,8 @@ jest.mock("@sps/shared-utils", () => {
   };
 });
 
-import { sign } from "hono/jwt";
+import { signJwt } from "@sps/backend-utils";
+import { Service as EcommerceOrderAccess } from "../../service/singlepage/ecommerce/order/access";
 import { DefaultApp } from "@sps/shared-backend-api";
 import { Controller } from ".";
 
@@ -97,13 +100,14 @@ const subjectsToEcommerceModuleOrders = [
 ];
 
 function createService() {
+  const access = new EcommerceOrderAccess({
+    subjectsToOrders: {
+      find: jest.fn().mockResolvedValue(subjectsToEcommerceModuleOrders),
+    },
+    ordersToProducts: { find: jest.fn() },
+  });
   return {
-    ecommerceModuleOrderAssertAccess: jest.fn(async ({ subjectId, orderId }) => {
-      if (!subjectsToEcommerceModuleOrders.some((relation) =>
-        relation.subjectId === subjectId && relation.ecommerceModuleOrderId === orderId)) {
-        throw new Error("Permission error. Order does not belong to subject");
-      }
-    }),
+    ecommerceModuleOrderAssertAccess: jest.fn(access.execute.bind(access)),
   };
 }
 
@@ -151,8 +155,12 @@ async function request(props: {
   const headers: Record<string, string> = {};
 
   if (props.tokenSubjectId) {
-    const token = await sign(
-      { subject: { id: props.tokenSubjectId } },
+    const token = await signJwt(
+      {
+        subjectId: props.tokenSubjectId,
+        type: "access",
+        lifetimeInSeconds: 60,
+      },
       "test-jwt-secret",
     );
 
@@ -184,7 +192,7 @@ describe("Given: the per-order subject routes", () => {
    * BDD Scenario
    * Given: the subject's own token and, in its own path, an order linked to another subject.
    * When: each per-order route is requested.
-   * Then: it is refused with 401 before the handler runs.
+   * Then: it is refused with 403 before the handler runs.
    */
   it.each(perOrderRoutes)(
     "When: the subject names an order of another subject Then: $name refuses before the handler",
@@ -219,9 +227,7 @@ describe("Given: the per-order subject routes", () => {
 
       expect(response.status).toBe(401);
       expect(handler).not.toHaveBeenCalled();
-      expect(
-        service.ecommerceModuleOrderAssertAccess,
-      ).not.toHaveBeenCalled();
+      expect(service.ecommerceModuleOrderAssertAccess).not.toHaveBeenCalled();
     },
   );
 
@@ -246,26 +252,29 @@ describe("Given: the per-order subject routes", () => {
     },
   );
 
-  /**
-   * BDD Scenario
-   * Given: the operator secret in `X-RBAC-SECRET-KEY` and an order linked to the subject in the path.
-   * When: each per-order route is requested.
-   * Then: the handler runs.
-   */
-  it.each(perOrderRoutes)(
-    "When: the operator secret names the subject's own order Then: $name requires the owner's JWT",
-    async (route) => {
-      const { response, handler } = await request({
-        route,
-        subjectId: "subject-owner",
-        orderId: "order-owner",
-        operatorSecret: "test-rbac-secret-key",
-      });
-
-      expect(response.status).toBe(400);
-      expect(handler).not.toHaveBeenCalled();
+  describe.each([
+    { credential: "no credential", operatorSecret: undefined },
+    {
+      credential: "only the operator secret",
+      operatorSecret: "test-rbac-secret-key",
     },
-  );
+  ])("Given: $credential", ({ operatorSecret }) => {
+    it.each(perOrderRoutes)(
+      "When: $name is requested Then: it requires the owner's JWT",
+      async (route) => {
+        const { response, handler, service } = await request({
+          route,
+          subjectId: "subject-owner",
+          orderId: "order-owner",
+          operatorSecret,
+        });
+
+        expect(response.status).toBe(400);
+        expect(service.ecommerceModuleOrderAssertAccess).not.toHaveBeenCalled();
+        expect(handler).not.toHaveBeenCalled();
+      },
+    );
+  });
 
   /**
    * BDD Scenario
@@ -285,9 +294,7 @@ describe("Given: the per-order subject routes", () => {
 
       expect(response.status).toBe(200);
       expect(handler).toHaveBeenCalledTimes(1);
-      expect(
-        service.ecommerceModuleOrderAssertAccess,
-      ).not.toHaveBeenCalled();
+      expect(service.ecommerceModuleOrderAssertAccess).not.toHaveBeenCalled();
     },
   );
 });

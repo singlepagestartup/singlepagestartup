@@ -140,7 +140,7 @@ export class Coder {
           ...json.compilerOptions,
           paths: {
             ...json.compilerOptions.paths,
-            [this.baseName + "/*"]: ["libs/modules/" + this.name + "/*"],
+            [this.baseName + "/*"]: ["./libs/modules/" + this.name + "/*"],
           },
         },
       };

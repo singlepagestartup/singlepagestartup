@@ -1,11 +1,14 @@
 /**
- * BDD Suite: password registration against an address another method holds.
+ * BDD Suite: password registration and sign-in against stored identities.
  *
  * Given: identities stored with the providers that created them.
- * When: a password registration arrives for an address.
- * Then: it is refused when a provider that proves the address already holds
- *       it, and proceeds otherwise, storing a bcrypt hash (issue #280 interim
- *       guard).
+ * When: a password registration or a password sign-in arrives for an address.
+ * Then: registration is refused when a provider that proves the address
+ *       already holds it, and proceeds otherwise, storing a bcrypt hash (issue
+ *       #280 interim guard); sign-in answers an unknown address, an identity
+ *       without a salt and a wrong password with one error after one bcrypt
+ *       round each, and returns the identity for the right password (issue
+ *       #310).
  */
 
 import bcrypt from "bcrypt";
@@ -39,11 +42,16 @@ const mockCreate = jest.fn(async (props: { data: IRow }) => {
   return { id: "identity-new", ...props.data };
 });
 
+const mockUpdate = jest.fn(async (props: { id: string; data: IRow }) => {
+  return { ...props.data, id: props.id };
+});
+
 jest.mock("@sps/rbac/models/identity/sdk/server", () => {
   return {
     api: {
       find: (props: any) => mockFind(props),
       create: (props: any) => mockCreate(props),
+      update: (props: any) => mockUpdate(props),
     },
   };
 });
@@ -59,12 +67,106 @@ jest.mock("@sps/shared-utils", () => {
 jest.mock("@sps/shared-backend-api", () => {
   return {
     CRUDService: class {
-      constructor(public repository?: unknown) {}
+      constructor(public repository: unknown = undefined) {}
+      async update(props: { data: unknown }) {
+        return props.data;
+      }
     },
   };
 });
 
 import { Service } from ".";
+
+describe("one-time password reset codes", () => {
+  it("stores a digest tied to the matched email and rejects that digest as a credential", async () => {
+    const consume = jest.fn().mockResolvedValue({ id: "identity-owner" });
+    const service = new Service({ consumeFirstByField: consume } as any);
+    const code = await service.issuePasswordResetCode({
+      id: "identity-owner",
+      email: "owner@example.com",
+    });
+    expect(code).toEqual(expect.any(String));
+    const digest = consume.mock.calls[0][2].code;
+    expect(digest).toMatch(/^[a-f0-9]{64}$/);
+    expect(digest).not.toBe(code);
+    expect(consume).toHaveBeenCalledWith(
+      "id",
+      "identity-owner",
+      { code: digest },
+      {
+        and: [
+          { column: "email", method: "eq", value: "owner@example.com" },
+          { column: "provider", method: "eq", value: "email_and_password" },
+        ],
+      },
+    );
+    await expect(
+      service.resetPassword({ code: digest, password: "next-password" }),
+    ).rejects.toThrow("Invalid or expired");
+    expect(consume).toHaveBeenCalledTimes(1);
+  });
+
+  it("accepts the issued link once and rejects changes to its expiry", async () => {
+    let stored: string | null = null;
+    const consume = jest.fn(async (_field, id, data, predicate) => {
+      const expected = predicate.and.find(
+        (filter: IFilter) => filter.column === "code",
+      );
+      if (expected && expected.value !== stored) {
+        return null;
+      }
+      stored = data.code;
+      return { id };
+    });
+    const service = new Service({ consumeFirstByField: consume } as any);
+    Object.assign(service, {
+      find: async ({ params }: { params: { filters: { and: IFilter[] } } }) => {
+        const match = params.filters.and.find(
+          (filter) => filter.column === "code",
+        );
+        return match?.value === stored ? [{ id: "owner" }] : [];
+      },
+    });
+    const code = await service.issuePasswordResetCode({
+      id: "owner",
+      email: "owner@example.com",
+    });
+    if (!code) {
+      throw new Error("Expected an issued reset link");
+    }
+    const [expiry, token] = code.split(".");
+    const password = "replacement-password";
+    await expect(
+      service.resetPassword({
+        code: `${Number(expiry) + 1000}.${token}`,
+        password,
+      }),
+    ).rejects.toThrow("Invalid or expired");
+    await service.resetPassword({ code, password });
+    await expect(service.resetPassword({ code, password })).rejects.toThrow(
+      "Invalid or expired",
+    );
+  });
+
+  it("clears an outstanding link when updating the recovery address", async () => {
+    const service = new Service({} as any);
+    const data = { email: "new@example.com" };
+    await expect(
+      service.update({ id: "identity-owner", data: data as any }),
+    ).resolves.toEqual({ ...data, code: null });
+  });
+
+  it("rejects an expired link before reading or changing the identity", async () => {
+    const service = new Service({} as any);
+    const find = jest.fn();
+    Object.assign(service, { find });
+    const code = `${Date.now() - 1}.${"a".repeat(43)}`;
+    await expect(
+      service.resetPassword({ code, password: "next-password" }),
+    ).rejects.toThrow("Invalid or expired");
+    expect(find).not.toHaveBeenCalled();
+  });
+});
 
 describe("owned password changes through the Identity service", () => {
   it("reads and writes through its service methods without HTTP and stores only a bcrypt hash", async () => {
@@ -232,5 +334,119 @@ describe("Given: a password registration for an address", () => {
       email: "new@example.com",
       provider: "email_and_password",
     });
+  });
+});
+
+function signIn(login: string, password: string) {
+  return new Service({} as any).emailAndPassowrd({
+    data: { type: "login", login, password },
+  });
+}
+
+async function storeIdentity(props: { password: string; withSalt?: boolean }) {
+  const salt = await bcrypt.genSalt(4);
+
+  mockRows = [
+    {
+      id: "identity-owner",
+      email: "owner@example.com",
+      provider: "email_and_password",
+      ...(props.withSalt === false ? {} : { salt }),
+      password: await bcrypt.hash(props.password, salt),
+    },
+  ];
+}
+
+async function rejection(promise: Promise<unknown>) {
+  try {
+    await promise;
+  } catch (error) {
+    return (error as Error).message;
+  }
+
+  throw new Error("The sign-in was expected to be refused");
+}
+
+describe("Given: a password sign-in for an address", () => {
+  beforeEach(() => {
+    mockRows = [];
+    mockFind.mockClear();
+    mockUpdate.mockClear();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  /**
+   * BDD Scenario
+   * Given: one password identity holds the address.
+   * When: a sign-in arrives for an unknown address and another with a wrong
+   *       password for the known one.
+   * Then: both are refused with the same error.
+   */
+  it("refuses an unknown address and a wrong password with the same error", async () => {
+    await storeIdentity({ password: "correct horse battery" });
+
+    const unknown = await rejection(
+      signIn("nobody@example.com", "correct horse battery"),
+    );
+    const wrong = await rejection(
+      signIn("owner@example.com", "incorrect horse battery"),
+    );
+
+    expect(unknown).toBe("Authentication error. Invalid credentials");
+    expect(wrong).toBe(unknown);
+  });
+
+  /**
+   * BDD Scenario
+   * Given: one password identity holds the address.
+   * When: a sign-in arrives for an unknown address and another with a wrong
+   *       password.
+   * Then: each spends exactly one bcrypt round, so the time taken does not
+   *       tell the two apart.
+   */
+  it("spends one bcrypt round for an unknown address as for a wrong password", async () => {
+    await storeIdentity({ password: "correct horse battery" });
+
+    const hash = jest.spyOn(bcrypt, "hash");
+
+    await rejection(signIn("nobody@example.com", "correct horse battery"));
+
+    expect(hash).toHaveBeenCalledTimes(1);
+
+    await rejection(signIn("owner@example.com", "incorrect horse battery"));
+
+    expect(hash).toHaveBeenCalledTimes(2);
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a password identity stored without a salt.
+   * When: a sign-in arrives for it.
+   * Then: it is refused with the same error as an unknown address.
+   */
+  it("refuses an identity without a salt with the same error", async () => {
+    await storeIdentity({ password: "correct horse battery", withSalt: false });
+
+    await expect(
+      signIn("owner@example.com", "correct horse battery"),
+    ).rejects.toThrow("Authentication error. Invalid credentials");
+  });
+
+  /**
+   * BDD Scenario
+   * Given: one password identity holds the address.
+   * When: a sign-in arrives with the right password in another letter case of
+   *       the address.
+   * Then: the identity is returned.
+   */
+  it("returns the identity for the right password", async () => {
+    await storeIdentity({ password: "correct horse battery" });
+
+    await expect(
+      signIn("Owner@Example.com", "correct horse battery"),
+    ).resolves.toMatchObject({ id: "identity-owner" });
   });
 });

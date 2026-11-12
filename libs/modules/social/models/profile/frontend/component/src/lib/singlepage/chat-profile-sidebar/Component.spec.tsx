@@ -14,26 +14,17 @@ import { act } from "react";
 import { createRoot, Root } from "react-dom/client";
 import { Component } from "./Component";
 
-jest.mock(
-  "@sps/knowledge/models/source/frontend/component/src/lib/singlepage/chat-sidebar-item",
-  () => ({
-    Component: () => <div data-testid="knowledge-sidebar-item" />,
-  }),
-);
+jest.mock("@sps/knowledge/models/source/frontend/component", () => ({
+  Component: () => <div data-testid="knowledge-sidebar-item" />,
+}));
 
-jest.mock(
-  "@sps/social/models/skill/frontend/component/src/lib/singlepage/chat-sidebar-item",
-  () => ({
-    Component: () => <div data-testid="skill-sidebar-item" />,
-  }),
-);
+jest.mock("@sps/social/models/skill/frontend/component", () => ({
+  Component: () => <div data-testid="skill-sidebar-item" />,
+}));
 
-jest.mock(
-  "@sps/social/models/profile/frontend/component/src/lib/singlepage/chat-profile-avatar",
-  () => ({
-    Component: () => <div data-testid="profile-avatar" />,
-  }),
-);
+jest.mock("@sps/social/models/profile/frontend/component", () => ({
+  Component: () => <div data-testid="profile-avatar" />,
+}));
 
 describe("GIVEN: social profile chat sidebar actions", () => {
   let container: HTMLDivElement;

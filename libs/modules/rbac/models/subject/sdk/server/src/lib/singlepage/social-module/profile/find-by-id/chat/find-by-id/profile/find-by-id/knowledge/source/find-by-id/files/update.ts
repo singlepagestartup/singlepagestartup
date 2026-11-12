@@ -44,7 +44,7 @@ export async function action(props: IProps): Promise<IResult> {
     `${props.host || serverHost}${route}/${props.id}/social-module/profiles/${props.socialModuleProfileId}/chats/${props.socialModuleChatId}/profiles/${props.targetSocialModuleProfileId}/knowledge/sources/${props.knowledgeModuleSourceId}/files`,
     { credentials: "include", method: "POST", body, ...props.options },
   );
-  return transformResponseItem<IResult>(
-    await responsePipe<{ data: IResult }>({ res }),
-  );
+  const json = await responsePipe<{ data: IResult }>({ res });
+
+  return transformResponseItem<IResult>(json);
 }

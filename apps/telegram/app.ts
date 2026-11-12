@@ -1,19 +1,14 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { ContentfulStatusCode } from "hono/utils/http-status";
+import { resolveCorsOrigin } from "@sps/backend-utils";
 import { app as telegramApp } from "./src";
 
 export const app = new Hono().basePath("/");
 
 app.use(
   cors({
-    origin: (origin) => {
-      if (!origin) {
-        return null;
-      }
-
-      return origin;
-    },
+    origin: resolveCorsOrigin,
     allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowHeaders: [
       "X-CSRF-Token",

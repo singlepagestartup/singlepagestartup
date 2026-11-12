@@ -36,12 +36,15 @@ export class Migrator {
       }
     }
 
-    const oldRootContractsImportPath = `${this.parent.coder.parent.project.root.baseName}`;
-    const newRootContractsImportPath = `${this.parent.coder.parent.project.root.absoluteName}`;
+    const owner = this.parent.coder.parent.parent;
+    const oldRootContractsImportPath = `${owner.baseName}-contracts`;
+    const newRootContractsImportPath = `${owner.absoluteName}/contracts/root`;
 
-    const interfacesFile = this.parent.coder.tree
-      .read(`${baseDirectory}/src/lib/interfaces/sps-lite.ts`)
-      .toString("utf8");
+    const interfacePath = `${baseDirectory}/src/lib/interfaces/sps-lite.ts`;
+    const interfacesFile = this.parent.coder.tree.read(interfacePath, "utf8");
+    if (interfacesFile === null) {
+      throw new Error(`Missing interfaces file: ${interfacePath}`);
+    }
 
     const newInterfacesFile = interfacesFile.replace(
       new RegExp(oldRootContractsImportPath, "g"),

@@ -1,3 +1,9 @@
 allOf:
   - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/model.yaml"
   - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/internationalisation.yaml"
+  - type: object
+    properties:
+      content:
+        type: string
+        nullable: true
+        description: Optional plain-text copy with scalar placeholders, passed to the Host component.

@@ -1,0 +1,9 @@
+{
+  "id": "aa18e47e-c98c-4b60-86d0-228bd0c34171",
+  "createdAt": "2026-11-10T20:43:00.645Z",
+  "updatedAt": "2026-11-10T20:43:00.645Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/website-builder/widgets-to-logotypes"
+}

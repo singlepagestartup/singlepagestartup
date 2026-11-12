@@ -64,7 +64,7 @@ export function action(props: IProps) {
         throw error;
       }
     },
-    onSuccess(data, variables, context) {
+    onSuccess(data, variables, onMutateResult, context) {
       const collectionRoute =
         mutationKey.split("/knowledge/sources")[0] + "/knowledge/sources";
       for (const query of queryClient.getQueryCache().findAll({
@@ -88,7 +88,7 @@ export function action(props: IProps) {
         requestId: createId(),
       });
 
-      consumerOnSuccess?.(data, variables, context);
+      consumerOnSuccess?.(data, variables, onMutateResult, context);
       return data;
     },
     ...reactQueryOptions,

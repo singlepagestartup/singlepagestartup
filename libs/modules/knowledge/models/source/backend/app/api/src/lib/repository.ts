@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { injectable } from "inversify";
+import { injectFromBase, injectable } from "inversify";
 import {
   DatabaseRepository,
   trackRepositoryRead,
@@ -8,6 +8,7 @@ import { Table } from "@sps/knowledge/models/source/backend/repository/database"
 import { asc, inArray, sql } from "drizzle-orm";
 
 @injectable()
+@injectFromBase()
 export class Repository extends DatabaseRepository<typeof Table> {
   transaction<T>(operation: (tx: typeof this.db) => Promise<T>) {
     return this.db.transaction(operation);

@@ -1,3 +1,4 @@
+import { z } from "zod";
 import "reflect-metadata";
 import { injectable } from "inversify";
 import { Table } from "@sps/billing/models/payment-intent/backend/repository/database";
@@ -249,7 +250,9 @@ export class Service {
         );
       }
 
-      const tokenResponse: IPayKeeperTokenResponse = await response.json();
+      const tokenResponse: IPayKeeperTokenResponse = z
+        .object({ token: z.string() })
+        .parse(await response.json());
 
       if (!tokenResponse.token) {
         throw new Error(
@@ -393,8 +396,14 @@ export class Service {
           );
         }
 
-        const paykeeperResponse: IPayKeeperPaymentResponse =
-          await response.json();
+        const paykeeperResponse: IPayKeeperPaymentResponse = z
+          .object({
+            invoice_id: z.string().optional(),
+            invoice_url: z.httpUrl().optional(),
+            result: z.string().optional(),
+            msg: z.string().optional(),
+          })
+          .parse(await response.json());
 
         if (paykeeperResponse.result === "fail") {
           const errorMessage = paykeeperResponse.msg || "Unknown error";

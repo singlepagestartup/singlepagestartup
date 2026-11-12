@@ -7,7 +7,7 @@
  *
  * Given: response handling may recover from expected API errors or browser auth state.
  * When: non-OK API responses are processed with catch or client-side throw behavior.
- * Then: expected silent statuses skip noisy logs while existing auth recovery behavior remains intact.
+ * Then: expected silent statuses skip noisy logs while existing auth recovery behavior remains intact, and a revoked session is cleared.
  */
 
 import { util as responsePipe } from "./response-pipe";
@@ -69,6 +69,40 @@ describe("Given: client-side unauthorized responses", () => {
     const response = new Response(
       JSON.stringify({
         message: "Authorization error. Token required",
+      }),
+      {
+        status: 401,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    await expect(responsePipe({ res: response })).rejects.toMatchObject({
+      message: "Session expired. Please sign in again.",
+      status: 401,
+    });
+
+    expect(localStorage.getItem("rbac.subject.refresh")).toBeNull();
+    expect(document.cookie).not.toContain("rbac.subject.jwt=jwt-token");
+  });
+
+  /**
+   * BDD Scenario: Revoked session.
+   *
+   * Given: the browser still has a refresh token, and the subject logged out
+   * on another device.
+   * When: responsePipe handles the 401 that refuses the revoked token.
+   * Then: the browser authorization state is cleared, because the refresh
+   * token was revoked with it and cannot restore the session.
+   */
+  it("When: a 401 reports a revoked token Then: browser auth state is cleared even with a refresh token", async () => {
+    localStorage.setItem("rbac.subject.refresh", "refresh-token");
+    document.cookie = "rbac.subject.jwt=jwt-token; path=/";
+
+    const response = new Response(
+      JSON.stringify({
+        message: "Authentication error. Token revoked",
       }),
       {
         status: 401,

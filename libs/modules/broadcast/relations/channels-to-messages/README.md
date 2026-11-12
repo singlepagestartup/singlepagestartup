@@ -32,3 +32,19 @@ worker fields. Ordinary links remain editable through CRUD.
 - `admin-select-input`: admin select input for choosing a relation.
 - `admin-table`: admin table listing relations.
 - `admin-table-row`: admin row showing relation fields.
+
+## Reading a visible message
+
+`GET /api/broadcast/channels-to-messages/:id/message` and the relation SDK's
+`message({ id })` return `{ relation, message }`, or `null` when membership is
+missing or hidden. The relation service first reads the visible link with
+`findById`, then calls Message Service's internal `findPayloadById`. Both use
+the shared repository readers, which sanitize results and record consistency
+dependencies. `withConsistencySnapshot` keeps both reads in one database
+snapshot. Public schemas omit receipts, leases and other worker state. This
+read never changes queue ownership.
+
+The default relation variant uses local client/server readers for this SDK
+operation. It passes the loaded payload to Message with `dataSource="props"`,
+so Message does not perform a second read that would exclude durable messages.
+The client query subscribes to relation and message invalidation topics.

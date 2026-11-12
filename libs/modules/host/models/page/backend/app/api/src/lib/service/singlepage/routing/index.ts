@@ -1,8 +1,9 @@
 import QueryString from "qs";
 import { factory } from "@sps/shared-frontend-server-api";
-import { api as permissionApi } from "@sps/rbac/models/permission/sdk/server";
+import { api as roleApi } from "@sps/rbac/models/role/sdk/server";
 import {
   API_SERVICE_URL,
+  RBAC_SECRET_KEY,
   responsePipe,
   SEO_SITEMAP_MAX_CANDIDATES,
 } from "@sps/shared-utils";
@@ -126,9 +127,9 @@ export class RoutingService {
         ![401, 403].includes(Number(error.status))
       )
         throw error;
-      return (await this.exactPublicRecords(name)).filter(
-        (record) => String(record[column]) === value,
-      );
+      const records = await this.exactPublicRecords(name);
+
+      return records.filter((record) => String(record[column]) === value);
     }
   }
 
@@ -168,8 +169,17 @@ export class RoutingService {
   private async exactPublicRecords(name: string): Promise<IRouteRecord[]> {
     const source = this.sources.get(name);
     if (!source) throw new Error("Validation error. Unknown route source");
-    const ids = await permissionApi.publicResourceIds({
+    if (!RBAC_SECRET_KEY) {
+      throw new Error(
+        "Configuration error. Public resource discovery requires a service credential",
+      );
+    }
+    const ids = await roleApi.publicResourceIds({
       params: { resource: source.route },
+      options: {
+        headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY },
+        redirect: "error",
+      },
     });
     return this.readableRecords(name, ids);
   }

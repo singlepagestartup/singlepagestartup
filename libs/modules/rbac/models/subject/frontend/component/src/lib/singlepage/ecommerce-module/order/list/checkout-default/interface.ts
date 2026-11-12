@@ -5,7 +5,7 @@ import type { UseFormReturn } from "react-hook-form";
 import type {
   IComponentProps as IParentComponentProps,
   IComponentPropsExtended as IParentComponentPropsExtended,
-} from "@sps/shared-frontend-components/singlepage/default/interface";
+} from "@sps/shared-frontend-components/singlepage/subject-default/interface";
 
 export type { IModel };
 
