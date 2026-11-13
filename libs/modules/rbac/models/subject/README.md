@@ -95,7 +95,9 @@ legacy SDK topics retain cross-client invalidation after line, quantity or
 price or selected-currency changes. Mutable reads remain no-store at the Next boundary.
 
 Cart routes use RequestSubjectIdOwner first. Order-ID routes additionally use
-RequestSubjectOwnsEcommerceModuleOrder. The owning Subject service verifies the
+RequestSubjectOwnsEcommerceModuleOrder. Reading the quantity or total, updating and
+deleting a single order all require the owner's access JWT, even with an operator
+secret. The owning Subject service verifies the
 Subject–Order link and, for quantity edits, every submitted Order–Product line.
 A caller's own Subject ID alone does not authorize changes to another order.
 
