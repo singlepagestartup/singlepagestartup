@@ -239,24 +239,28 @@ export class Service {
       (fileStorageModuleFiles ?? []).map((item) => [item.id, item]),
     );
 
-    const billingModulePaymentIntents =
-      ordersToBillingModulePaymentIntents?.length
-        ? await this.billingModule.paymentIntent.find({
-            params: {
-              filters: {
-                and: [
-                  {
-                    column: "id",
-                    method: "inArray",
-                    value: ordersToBillingModulePaymentIntents.map(
-                      (item) => item.billingModulePaymentIntentId,
-                    ),
-                  },
-                ],
-              },
+    let billingModulePaymentIntents: IBillingModulePaymentIntent[] | null;
+    if (ordersToBillingModulePaymentIntents?.length) {
+      billingModulePaymentIntents = await this.billingModule.paymentIntent.find(
+        {
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "id",
+                  method: "inArray",
+                  value: ordersToBillingModulePaymentIntents.map(
+                    (item) => item.billingModulePaymentIntentId,
+                  ),
+                },
+              ],
             },
-          })
-        : [];
+          },
+        },
+      );
+    } else {
+      billingModulePaymentIntents = [];
+    }
 
     const [paymentIntentsToCurrencies, paymentIntentsToInvoices] =
       await Promise.all([

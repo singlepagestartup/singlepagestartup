@@ -2,9 +2,8 @@
  * BDD Suite: subject controller route guards.
  *
  * Given: the subject controller's route table mounted the way the module app mounts it.
- * When: the OpenRouter model catalog of a chat, or the lines of the subject's orders, are requested.
- * Then: a caller who does not own the subject (and, for the catalog, the profile) is refused
- * before the data is read, and the owner receives it.
+ * When: a caller requests a chat model catalog, order lines or an ecommerce checkout.
+ * Then: each route checks ownership before invoking the requested service.
  */
 
 import { OPEN_ROUTER_ASSISTANT_MODEL } from "@sps/shared-utils";
@@ -12,6 +11,11 @@ import { OPEN_ROUTER_ASSISTANT_MODEL } from "@sps/shared-utils";
 const mockOpenRouterGetModels = jest.fn();
 const mockSubjectsToSocialModuleProfilesFind = jest.fn();
 const mockSocialModuleProfileFindById = jest.fn();
+
+jest.mock("@sps/shared-backend-api", () => ({
+  ...jest.requireActual("@sps/shared-backend-api"),
+  withConsistencySnapshot: (read: () => Promise<unknown>) => read(),
+}));
 
 jest.mock("@sps/shared-utils", () => {
   const actual = jest.requireActual("@sps/shared-utils");
@@ -52,14 +56,14 @@ jest.mock("@sps/social/models/profile/sdk/server", () => ({
   },
 }));
 
-import { sign } from "hono/jwt";
+import { signJwt } from "@sps/backend-utils";
 import { DefaultApp } from "@sps/shared-backend-api";
 import { Controller } from ".";
 
 const catalogPath =
   "/subject-owner/social-module/profiles/profile-owned/chats/chat-1/openrouter/models";
 
-function createApp(service: Record<string, unknown> = {}) {
+function createApp(service = {}) {
   const app = new DefaultApp(
     {} as any,
     new Controller(service as any) as any,
@@ -75,7 +79,10 @@ async function createHeaders(subjectId?: string) {
   const headers: Record<string, string> = {};
 
   if (subjectId) {
-    const token = await sign({ subject: { id: subjectId } }, "test-jwt-secret");
+    const token = await signJwt(
+      { subjectId, type: "access", lifetimeInSeconds: 60 },
+      "test-jwt-secret",
+    );
 
     headers["Authorization"] = `Bearer ${token}`;
   }
@@ -168,6 +175,112 @@ describe("Given: the OpenRouter model catalog route of a chat", () => {
   });
 });
 
+const checkoutSubjectId = "subject-owner";
+
+describe.each([
+  {
+    name: "order checkout",
+    route: `/${checkoutSubjectId}/ecommerce-module/orders/checkout`,
+    data: {
+      provider: "dummy",
+      email: "owner@example.test",
+      ecommerceModule: {
+        orders: [{ id: "00000000-0000-4000-8000-000000000001" }],
+      },
+    },
+    lookup: "findById" as const,
+  },
+  {
+    name: "product checkout",
+    route: `/${checkoutSubjectId}/ecommerce-module/products/product-1/checkout`,
+    data: {
+      provider: "dummy",
+      email: "owner@example.test",
+      storeId: "store-1",
+    },
+    lookup: "ecommerceProductCheckout" as const,
+  },
+])("Given: the Subject $name route", ({ route, data, lookup }) => {
+  function createService() {
+    return {
+      findById: jest.fn().mockResolvedValue(null),
+      ecommerceProductCheckout: jest
+        .fn()
+        .mockRejectedValue(new Error("Not Found error. No product")),
+    };
+  }
+
+  function requestCheckout(
+    service: ReturnType<typeof createService>,
+    headers: Record<string, string>,
+  ) {
+    const body = new FormData();
+    body.set("data", JSON.stringify(data));
+    return createApp(service).request(route, { method: "POST", headers, body });
+  }
+
+  it.each([
+    { name: "no credential", headers: {} },
+    {
+      name: "only the operator secret",
+      headers: { "X-RBAC-SECRET-KEY": "test-rbac-secret-key" },
+    },
+  ] as const)(
+    "When: the client sends $name Then: refuses checkout before the handler",
+    async ({ headers }) => {
+      const service = createService();
+      const response = await requestCheckout(service, { ...headers });
+
+      expect(response.status).toBe(400);
+      expect(service[lookup]).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([
+    {
+      name: "another subject's access token",
+      subjectId: "subject-other",
+      type: "access" as const,
+    },
+    {
+      name: "the owner's refresh token",
+      subjectId: checkoutSubjectId,
+      type: "refresh" as const,
+    },
+  ])(
+    "When: the client sends $name Then: refuses checkout before the handler",
+    async ({ subjectId, type }) => {
+      const service = createService();
+      const token = await signJwt(
+        { subjectId, type, lifetimeInSeconds: 60 },
+        "test-jwt-secret",
+      );
+      const response = await requestCheckout(service, {
+        Authorization: `Bearer ${token}`,
+      });
+
+      expect(response.status).toBe(401);
+      expect(service[lookup]).not.toHaveBeenCalled();
+    },
+  );
+
+  it("When: the owner sends an access token Then: the handler looks up that Subject's checkout", async () => {
+    const service = createService();
+    const token = await signJwt(
+      { subjectId: checkoutSubjectId, type: "access", lifetimeInSeconds: 60 },
+      "test-jwt-secret",
+    );
+    const response = await requestCheckout(service, {
+      Authorization: `Bearer ${token}`,
+    });
+
+    expect(response.status).toBe(404);
+    expect(service[lookup]).toHaveBeenCalledWith(
+      expect.objectContaining({ id: checkoutSubjectId }),
+    );
+  });
+});
+
 describe("Given: the order lines route of a subject", () => {
   const ordersToProductsPath =
     "/subject-owner/ecommerce-module/orders/orders-to-products";
@@ -217,6 +330,16 @@ describe("Given: the order lines route of a subject", () => {
     const response = await requestOrdersToProducts("subject-other");
 
     expect(response.status).toBe(401);
+    expect(mockEcommerceOrderOrdersToProducts).not.toHaveBeenCalled();
+  });
+
+  it("requires the owner's JWT even when the operator header is present", async () => {
+    const response = await createApp({
+      ecommerceOrderOrdersToProducts: mockEcommerceOrderOrdersToProducts,
+    }).request(ordersToProductsPath, {
+      headers: { "X-RBAC-SECRET-KEY": "test-rbac-secret-key" },
+    });
+    expect(response.status).toBe(400);
     expect(mockEcommerceOrderOrdersToProducts).not.toHaveBeenCalled();
   });
 

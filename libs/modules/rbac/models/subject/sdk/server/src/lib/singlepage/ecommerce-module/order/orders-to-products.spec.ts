@@ -11,7 +11,7 @@ import QueryString from "qs";
 import { action } from "./orders-to-products";
 
 describe("Given: the subject order lines SDK action", () => {
-  const originalFetch = global.fetch;
+  const fetchSpy = jest.spyOn(global, "fetch");
   const lines = [
     {
       id: "line-1",
@@ -28,7 +28,7 @@ describe("Given: the subject order lines SDK action", () => {
   ];
 
   beforeEach(() => {
-    global.fetch = jest.fn().mockImplementation(async () => {
+    fetchSpy.mockImplementation(async () => {
       return new Response(JSON.stringify({ data: lines }), {
         headers: {
           "Content-Type": "application/json",
@@ -38,7 +38,7 @@ describe("Given: the subject order lines SDK action", () => {
   });
 
   afterAll(() => {
-    global.fetch = originalFetch;
+    fetchSpy.mockRestore();
   });
 
   /**
@@ -61,7 +61,7 @@ describe("Given: the subject order lines SDK action", () => {
       params,
     });
 
-    const [url] = (global.fetch as jest.Mock).mock.calls[0];
+    const [url] = fetchSpy.mock.calls[0];
     const [path, query] = String(url).split("?");
 
     expect(path).toBe(

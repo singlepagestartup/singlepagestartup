@@ -86,9 +86,10 @@ export class Service {
       let total: IEcommerceModuleOrdersToProductsResult["ITotalResult"] = [];
 
       try {
-        total = await this.ecommerceModule.ordersToProducts.getTotal({
+        const pricing = await this.ecommerceModule.ordersToProducts.getTotal({
           id: ecommerceModuleOrderToProduct.id,
         });
+        total = pricing.totals;
       } catch (error: any) {
         logger.error("Rbac subject order line total not computed", {
           ecommerceModuleOrderToProductId: ecommerceModuleOrderToProduct.id,

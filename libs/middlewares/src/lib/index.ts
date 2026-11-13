@@ -43,3 +43,13 @@ export {
   Middleware as ConsistencyMiddleware,
   type IMiddlewareOptions as IConsistencyMiddlewareOptions,
 } from "./consistency";
+export {
+  Middleware as OperatorSecretAttemptsMiddleware,
+  type IMiddlewareGeneric as IOperatorSecretAttemptsMiddlewareGeneric,
+  type IMiddlewareOptions as IOperatorSecretAttemptsMiddlewareOptions,
+} from "./operator-secret-attempts";
+
+export {
+  Middleware as ApiRateLimitMiddleware,
+  type IMiddlewareOptions as IApiRateLimitMiddlewareOptions,
+} from "./api-rate-limit";

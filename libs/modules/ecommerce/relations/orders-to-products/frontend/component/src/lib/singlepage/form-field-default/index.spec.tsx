@@ -52,6 +52,7 @@ describe("Given: an order line bound into the cart update form", () => {
       <Component
         isServer={false}
         variant="form-field-default"
+        dataSource="props"
         data={
           {
             id: "line-1",

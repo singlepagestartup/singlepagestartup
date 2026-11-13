@@ -29,8 +29,35 @@ jest.mock("@sps/ecommerce/models/order/sdk/client", () => ({
 jest.mock(
   "@sps/ecommerce/relations/orders-to-products/frontend/component",
   () => ({
-    Component: (props: any) => {
-      ordersToProductsMock(props);
+    Component: ({ variant, children }: any) => {
+      ordersToProductsMock(variant);
+      if (variant === "find") {
+        return children
+          ? children({
+              data: [
+                {
+                  id: "order-to-product-1",
+                  orderId: "order-1",
+                  productId: "product-1",
+                  quantity: 2,
+                },
+              ],
+            })
+          : null;
+      }
+
+      if (variant === "id-total-default") {
+        return children
+          ? children({
+              data: [
+                {
+                  total: 20,
+                  billingModuleCurrency: { id: "currency-1", symbol: "$" },
+                },
+              ],
+            })
+          : null;
+      }
 
       return null;
     },
@@ -87,6 +114,7 @@ describe("Given: an order and its lines read through the subject's routes", () =
       <Component
         isServer={false}
         variant="cart-default"
+        dataSource="props"
         data={{ id: "order-1", type: "cart", status: "new" } as any}
         ordersToProducts={ordersToProducts as any}
         language="en"
@@ -117,6 +145,7 @@ describe("Given: an order and its lines read through the subject's routes", () =
         isServer={false}
         variant="cart-default"
         data={{ id: "order-1", type: "cart", status: "new" } as any}
+        dataSource="props"
         ordersToProducts={ordersToProducts as any}
         billingModuleCurrencyId="currency-eur"
         language="en"
@@ -130,5 +159,46 @@ describe("Given: an order and its lines read through the subject's routes", () =
         .querySelector('[data-model="order"]')
         ?.getAttribute("data-available"),
     ).toBe("true");
+  });
+
+  it("renders each supplied line once and shares the order actions across lines", () => {
+    render(
+      <Component
+        isServer={false}
+        variant="cart-default"
+        dataSource="props"
+        data={{ id: "order-1" } as any}
+        ordersToProducts={
+          [
+            ordersToProducts[0],
+            { ...ordersToProducts[0], id: "line-2", quantity: 3 },
+          ] as any
+        }
+        language="en"
+      >
+        <button>Checkout</button>
+      </Component>,
+    );
+    expect(screen.getAllByText("Quantity: 2")).toHaveLength(1);
+    expect(screen.getAllByText("Quantity: 3")).toHaveLength(1);
+    expect(screen.getAllByRole("button", { name: "Checkout" })).toHaveLength(1);
+    expect(ordersToProductsMock).not.toHaveBeenCalled();
+  });
+
+  it("reads the order by ID when used without a parent data source", () => {
+    const order = { id: "order-1", type: "cart", status: "new" };
+    findByIdMock.mockReturnValue({ data: order, isLoading: false });
+
+    render(
+      <Component
+        isServer={false}
+        variant="cart-default"
+        data={order as any}
+        language="en"
+      />,
+    );
+
+    expect(findByIdMock).toHaveBeenCalledWith({ id: order.id });
+    expect(screen.getByText("Order #order-1")).toBeTruthy();
   });
 });

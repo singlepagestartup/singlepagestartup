@@ -8,9 +8,19 @@ import { Component as ServerReader } from "@sps/shared-frontend-components/singl
 
 jest.mock("server-only", () => ({}));
 jest.mock(
-  "@sps/social/models/profile/frontend/component/src/lib/variants",
+  "@sps/social/models/profile/frontend/component/src/lib/singlepage/variants",
   () => ({
     variants: { "author-overview-default": jest.requireActual(".").Component },
+  }),
+);
+jest.mock(
+  "@sps/social/models/profile/frontend/component/src/lib/startup/variants",
+  () => ({
+    variants: {
+      "chat-profile-avatar": ({ data }: { data: { id: string } }) => (
+        <span data-testid="startup-avatar">{data.id}</span>
+      ),
+    },
   }),
 );
 jest.mock("@sps/social/models/profile/sdk/client", () => ({
@@ -62,6 +72,7 @@ it("loads the exact Profile model through the public variant and ordinary shared
   expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(
     "Framework editorial",
   );
+  expect(screen.getByTestId("startup-avatar").textContent).toBe(profile.id);
   expect(profileApi.findById).toHaveBeenCalledWith({ id: "public-id" });
   expect(profileApi.find).not.toHaveBeenCalled();
   expect(profileApi.authorFindById).not.toHaveBeenCalled();

@@ -37,12 +37,14 @@ export class Handler {
           throw new Error("Validation error. Invalid Profile slug");
         allowed.slug = data.slug;
       }
+      const profile = await profileApi.update({
+        id,
+        data: allowed,
+        options: { headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY } },
+      });
+
       return c.json({
-        data: await profileApi.update({
-          id,
-          data: allowed,
-          options: { headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY } },
-        }),
+        data: profile,
       });
     } catch (error: unknown) {
       const { status, message, details } = getHttpErrorType(error);

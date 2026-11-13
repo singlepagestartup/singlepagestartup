@@ -79,8 +79,8 @@ jest.mock(
 );
 
 jest.mock("@sps/ecommerce/models/order/frontend/component", () => ({
-  Component: ({ variant, data, ordersToProducts }: any) => (
-    <div data-testid={`${variant}-${data.id}`}>
+  Component: ({ variant, data, ordersToProducts, dataSource }: any) => (
+    <div data-testid={`${variant}-${data.id}`} data-source={dataSource}>
       {ordersToProducts?.map((orderToProduct: any) => (
         <p key={orderToProduct.id}>{orderToProduct.id}</p>
       ))}
@@ -91,12 +91,7 @@ jest.mock("@sps/ecommerce/models/order/frontend/component", () => ({
 import { Component } from "./Content";
 
 function renderWidget() {
-  return render(
-    <Component
-      isServer={false}
-      language="en"
-    />,
-  );
+  return render(<Component isServer={false} language="en" />);
 }
 
 describe("Given: the subject order list widget", () => {
@@ -165,6 +160,12 @@ describe("Given: the subject order list widget", () => {
     expect(screen.getByTestId("cart-default-order-paid")).toBeTruthy();
     expect(screen.getByText("line-of-order-new")).toBeTruthy();
     expect(screen.getByText("line-of-order-paid")).toBeTruthy();
+    expect(screen.getByTestId("cart-default-order-new").dataset.source).toBe(
+      "props",
+    );
+    expect(screen.getByTestId("cart-default-order-paid").dataset.source).toBe(
+      "props",
+    );
     expect(subjectsToEcommerceModuleOrdersMock).not.toHaveBeenCalled();
     expect(ecommerceModuleOrdersToProductsMock).not.toHaveBeenCalled();
   });

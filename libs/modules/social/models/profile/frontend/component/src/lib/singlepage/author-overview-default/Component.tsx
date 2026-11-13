@@ -8,7 +8,7 @@ import type {
 } from "./interface";
 import { Component as ProfilesToBlogModuleArticles } from "@sps/social/relations/profiles-to-blog-module-articles/frontend/component";
 import { Component as ProfilesToEcommerceModuleProducts } from "@sps/social/relations/profiles-to-ecommerce-module-products/frontend/component";
-import { Component as ProfileAvatar } from "../chat-profile-avatar";
+import { Component as Profile } from "@sps/social/models/profile/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {
   const ru = props.language === "ru";
@@ -43,7 +43,7 @@ export function Component(props: IComponentPropsExtended) {
               .slice(0, 2)
               .map((part) => part[0])
               .join("")}
-            <ProfileAvatar
+            <Profile
               isServer={props.isServer}
               variant="chat-profile-avatar"
               data={props.data}

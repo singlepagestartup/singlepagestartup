@@ -1,6 +1,5 @@
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 export * from "./schema";
-export * from "./roleless-permissions";
 import { Table } from "./schema";
 
 export const insertSchema = createInsertSchema(Table);

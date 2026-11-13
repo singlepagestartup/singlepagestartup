@@ -1,3 +1,4 @@
+import { withConsistencySnapshot } from "@sps/shared-backend-api";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { getHttpErrorType } from "@sps/backend-utils";
@@ -23,11 +24,13 @@ export class Handler {
        * keeps the lines to the orders linked to that subject, so the caller's
        * filters only narrow them (issue #349).
        */
-      const ecommerceModuleOrdersToProducts =
-        await this.service.ecommerceOrderOrdersToProducts({
-          id,
-          filters: c.get("parsedQuery")?.filters?.["and"],
-        });
+      const ecommerceModuleOrdersToProducts = await withConsistencySnapshot(
+        () =>
+          this.service.ecommerceOrderOrdersToProducts({
+            id,
+            filters: c.get("parsedQuery")?.filters?.["and"],
+          }),
+      );
 
       return c.json({
         data: ecommerceModuleOrdersToProducts,

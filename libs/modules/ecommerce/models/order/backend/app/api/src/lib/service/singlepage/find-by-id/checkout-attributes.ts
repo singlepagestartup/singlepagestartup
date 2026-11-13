@@ -118,7 +118,7 @@ export class Service {
 
     const intervalAttributeKey = intervalAttributeKeys?.[0];
 
-    const priceAttributeKey = priceAttributeKeys[0];
+    const priceAttributeKeyIds = priceAttributeKeys.map((key) => key.id);
 
     const orderToProducts = await this.ordersToProducts.find({
       params: {
@@ -198,8 +198,8 @@ export class Service {
               },
               {
                 column: "attributeKeyId",
-                method: "eq",
-                value: priceAttributeKey.id,
+                method: "inArray",
+                value: priceAttributeKeyIds,
               },
             ],
           },

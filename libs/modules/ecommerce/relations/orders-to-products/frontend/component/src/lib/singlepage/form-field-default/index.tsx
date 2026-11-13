@@ -1,11 +1,20 @@
+import {
+  Provider,
+  api as clientApi,
+} from "@sps/ecommerce/relations/orders-to-products/sdk/client";
+import { api as serverApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
 import { IComponentProps } from "./interface";
+import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/default";
 import { Component as ChildComponent } from "./Component";
 
-/**
- * Binds the order line it is handed instead of reading it again by id. The
- * subject cart reads its lines through the owner-checked subject route, and
- * the module-level order line reads require the Admin role (issue #349).
- */
 export function Component(props: IComponentProps) {
-  return <ChildComponent {...props} />;
+  return (
+    <ParentComponent
+      Component={ChildComponent}
+      Provider={Provider}
+      clientApi={clientApi}
+      serverApi={serverApi}
+      {...props}
+    />
+  );
 }

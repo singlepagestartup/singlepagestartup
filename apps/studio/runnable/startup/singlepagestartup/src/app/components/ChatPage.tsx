@@ -35,7 +35,7 @@ import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { useAuth } from "./AuthContext";
 import { format, isToday, isYesterday, parseISO } from "date-fns";
 import data from "@emoji-mart/data";
-import Picker from "@emoji-mart/react";
+import { Picker } from "emoji-mart";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useEscapeStack } from "../hooks/useEscapeStack";
@@ -1049,13 +1049,15 @@ function ThreadView({
     setAttachedFiles([]);
   };
 
-  const handleEmojiSelect = (emoji: { native: string }) => {
+  const handleEmojiSelect = useCallback((emoji: { native: string }) => {
     const textarea = textareaRef.current;
     if (textarea) {
       const start = textarea.selectionStart;
       const end = textarea.selectionEnd;
       const newText =
-        newMessage.slice(0, start) + emoji.native + newMessage.slice(end);
+        textarea.value.slice(0, start) +
+        emoji.native +
+        textarea.value.slice(end);
       setNewMessage(newText);
       // Restore cursor after emoji
       setTimeout(() => {
@@ -1067,7 +1069,25 @@ function ThreadView({
       setNewMessage((prev) => prev + emoji.native);
     }
     setShowEmojiPicker(false);
-  };
+  }, []);
+
+  const mountEmojiPicker = useCallback(
+    (container: HTMLDivElement | null) => {
+      if (!container) return;
+      const picker = new Picker({
+        data,
+        onEmojiSelect: handleEmojiSelect,
+        theme: "light",
+        previewPosition: "none",
+        skinTonePosition: "none",
+        maxFrequentRows: 1,
+        perLine: 8,
+      });
+      container.appendChild(picker);
+      return () => picker.remove();
+    },
+    [handleEmojiSelect],
+  );
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -1334,15 +1354,7 @@ function ThreadView({
               {/* Emoji picker popover */}
               {showEmojiPicker && (
                 <div className="absolute bottom-8 right-0 z-50">
-                  <Picker
-                    data={data}
-                    onEmojiSelect={handleEmojiSelect}
-                    theme="light"
-                    previewPosition="none"
-                    skinTonePosition="none"
-                    maxFrequentRows={1}
-                    perLine={8}
-                  />
+                  <div ref={mountEmojiPicker} />
                 </div>
               )}
             </div>

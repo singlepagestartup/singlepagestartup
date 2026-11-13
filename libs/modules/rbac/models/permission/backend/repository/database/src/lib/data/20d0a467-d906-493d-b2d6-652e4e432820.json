@@ -1,0 +1,9 @@
+{
+  "id": "20d0a467-d906-493d-b2d6-652e4e432820",
+  "createdAt": "2026-11-10T20:43:00.645Z",
+  "updatedAt": "2026-11-10T20:43:00.645Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/website-builder/slides-to-file-storage-module-files"
+}

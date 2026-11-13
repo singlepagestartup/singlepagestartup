@@ -35,7 +35,7 @@ add_env "REDIS_DATABASES" 16
 
 add_env "REDIS_MAXMEMORY" "256mb"
 
-add_env "REDIS_MAXMEMORY_POLICY" "allkeys-lru"
+add_env "REDIS_MAXMEMORY_POLICY" "volatile-lru"
 
 REDIS_PASSWORD=$(generate_secret 32) || exit 1
 

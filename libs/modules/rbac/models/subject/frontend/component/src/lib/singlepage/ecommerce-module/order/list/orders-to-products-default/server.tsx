@@ -1,11 +1,12 @@
 "use server";
 import "server-only";
 
-import { IComponentProps } from "./interface";
-import { api } from "@sps/rbac/models/subject/sdk/server";
+import { Component as ChildComponent } from "./Component";
+import type { IComponentProps } from "./interface";
+import { api as subjectApi } from "@sps/rbac/models/subject/sdk/server";
 
 export async function Component(props: IComponentProps) {
-  const data = await api.ecommerceModuleOrderOrdersToProducts({
+  const data = await subjectApi.ecommerceModuleOrderOrdersToProducts({
     id: props.data.id,
     ...props.apiProps,
   });
@@ -14,9 +15,5 @@ export async function Component(props: IComponentProps) {
     return null;
   }
 
-  if (props.children) {
-    return props.children({ data });
-  }
-
-  return <></>;
+  return <ChildComponent {...props} data={data} />;
 }

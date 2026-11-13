@@ -8,103 +8,123 @@ import {
 } from "@sps/shared-ui-shadcn";
 import { Component as Product } from "@sps/ecommerce/models/product/frontend/component";
 
+import { Component as OrdersToProducts } from "@sps/ecommerce/relations/orders-to-products/frontend/component";
+import type {
+  IModel as ILine,
+  IOrderLineTotal,
+} from "@sps/ecommerce/relations/orders-to-products/sdk/model";
+
+function Line({
+  props,
+  line,
+  totals,
+}: {
+  props: IComponentPropsExtended;
+  line: ILine;
+  totals: IOrderLineTotal[];
+}) {
+  const visibleTotals = totals.filter(
+    (price) =>
+      !props.billingModuleCurrencyId ||
+      price.billingModuleCurrency.id === props.billingModuleCurrencyId,
+  );
+  return (
+    <Card
+      data-module="ecommerce"
+      data-model="order"
+      data-id={props.data.id}
+      data-variant={props.variant}
+      data-available={totals.some(
+        (price) =>
+          price.billingModuleCurrency.id === props.billingModuleCurrencyId,
+      )}
+      className={cn(
+        "w-full flex flex-col data-[available=false]:opacity-70",
+        props.className,
+      )}
+    >
+      <CardHeader>
+        <CardTitle className="text-xs">Order #{props.data.id}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-sm text-muted-foreground">
+          Quantity: {line.quantity}
+        </p>
+        <Product
+          isServer={props.isServer}
+          variant="find"
+          apiProps={{
+            params: {
+              filters: {
+                and: [{ column: "id", method: "eq", value: line.productId }],
+              },
+            },
+          }}
+        >
+          {({ data: products }) =>
+            products?.map((product) => (
+              <Product
+                key={product.id}
+                isServer={props.isServer}
+                dataSource="props"
+                variant="cart-default"
+                data={product}
+                language={props.language}
+              />
+            ))
+          }
+        </Product>
+        {visibleTotals.map((price) => (
+          <p key={price.billingModuleCurrency.id}>
+            {price.total} {price.billingModuleCurrency.symbol}
+          </p>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
 export function Component(props: IComponentPropsExtended) {
+  let lines;
+  if (props.ordersToProducts) {
+    lines = props.ordersToProducts.map((line) => (
+      <Line key={line.id} props={props} line={line} totals={line.total} />
+    ));
+  } else {
+    lines = (
+      <OrdersToProducts
+        isServer={props.isServer}
+        variant="find"
+        apiProps={{
+          params: {
+            filters: {
+              and: [{ column: "orderId", method: "eq", value: props.data.id }],
+            },
+          },
+        }}
+      >
+        {({ data }) =>
+          data?.map((line) => (
+            <OrdersToProducts
+              key={line.id}
+              isServer={props.isServer}
+              variant="id-total-default"
+              data={line}
+              language={props.language}
+            >
+              {({ data: totals }) => (
+                <Line props={props} line={line} totals={totals} />
+              )}
+            </OrdersToProducts>
+          ))
+        }
+      </OrdersToProducts>
+    );
+  }
   return (
     <div className={cn("flex flex-col gap-1", props.className)}>
-      {props.ordersToProducts.map((ecommerceModuleOrdersToProduct) => {
-        const availability = ecommerceModuleOrdersToProduct.total.find(
-          (total) =>
-            total.billingModuleCurrency.id === props.billingModuleCurrencyId,
-        );
-
-        return (
-          <Card
-            key={ecommerceModuleOrdersToProduct.id}
-            data-module="ecommerce"
-            data-model="order"
-            data-id={props.data.id || ""}
-            data-variant={props.variant}
-            data-available={availability ? true : false}
-            className={cn(
-              "w-full flex flex-col data-[available=false]:opacity-70",
-              props.className,
-            )}
-          >
-            <CardHeader>
-              <CardTitle className="text-xs">Order #{props.data.id}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col gap-1">
-                {props.ordersToProducts.map(
-                  (ecommerceModuleOrdersToProduct) => {
-                    return (
-                      <div
-                        key={ecommerceModuleOrdersToProduct.id}
-                        className="flex flex-col gap-1"
-                      >
-                        <p className="text-sm text-muted-foreground">
-                          Quantity: {ecommerceModuleOrdersToProduct.quantity}
-                        </p>
-
-                        <Product
-                          isServer={props.isServer}
-                          variant="find"
-                          apiProps={{
-                            params: {
-                              filters: {
-                                and: [
-                                  {
-                                    column: "id",
-                                    method: "eq",
-                                    value:
-                                      ecommerceModuleOrdersToProduct.productId,
-                                  },
-                                ],
-                              },
-                            },
-                          }}
-                        >
-                          {({ data: ecommerceModuleProducts }) => {
-                            return ecommerceModuleProducts?.map(
-                              (ecommerceModuleProduct) => {
-                                return (
-                                  <Product
-                                    key={ecommerceModuleProduct.id}
-                                    isServer={props.isServer}
-                                    variant="cart-default"
-                                    data={ecommerceModuleProduct}
-                                    language={props.language}
-                                  />
-                                );
-                              },
-                            );
-                          }}
-                        </Product>
-                        {ecommerceModuleOrdersToProduct.total
-                          .filter((total) => {
-                            return props.billingModuleCurrencyId
-                              ? total.billingModuleCurrency.id ===
-                                  props.billingModuleCurrencyId
-                              : true;
-                          })
-                          .map((total, index) => {
-                            return (
-                              <p key={index}>
-                                {total.total}{" "}
-                                {total.billingModuleCurrency.symbol}
-                              </p>
-                            );
-                          })}
-                      </div>
-                    );
-                  },
-                )}
-              </div>
-              {props.children}
-            </CardContent>
-          </Card>
-        );
-      })}
+      {lines}
+      {props.children}
     </div>
   );
 }

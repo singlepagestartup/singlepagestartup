@@ -1,6 +1,7 @@
 export const CONSISTENCY_PROTOCOL = 1 as const;
 export const CONSISTENCY_HEADER = "x-sps-consistency";
-export const CONSISTENCY_CACHE_PREFIX = "sps-consistency:v1";
+export const CONSISTENCY_CACHE_NAMESPACE = "sps-consistency:";
+export const CONSISTENCY_CACHE_PREFIX = `${CONSISTENCY_CACHE_NAMESPACE}http`;
 export const CONSISTENCY_RESPONSE_EVENT = "sps:consistency-response";
 export const CONSISTENCY_LEASE_MS = 5 * 60 * 1000;
 export const CONSISTENCY_MAX_DEPENDENCIES = 256;

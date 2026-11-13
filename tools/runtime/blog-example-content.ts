@@ -499,9 +499,12 @@ export async function prepareBlogExamples(
   ) => {
     const rows = await find(adapter, entity, selector);
     if (rows.length > 1) throw Error(`Ambiguous managed record ${key}`);
-    const before = requiredId
-      ? await exact(adapter, entity, requiredId)
-      : rows[0];
+    let before;
+    if (requiredId) {
+      before = await exact(adapter, entity, requiredId);
+    } else {
+      before = rows[0];
+    }
     if (before && !matches(before, selector) && entity !== "blog.category")
       throw Error(`Immutable natural key differs ${key}`);
     if (requiredId && rows[0] && rows[0].id !== requiredId)
@@ -1026,10 +1029,12 @@ export async function applyBlogExamples(
           throw Error(`Deletion readback failed ${op.key}`);
         op.state = "done";
       } else {
-        const result =
-          op.action === "create"
-            ? await sdk.create({ data: op.data! })
-            : await sdk.update({ id: op.id, data: op.data! });
+        let result;
+        if (op.action === "create") {
+          result = await sdk.create({ data: op.data! });
+        } else {
+          result = await sdk.update({ id: op.id, data: op.data! });
+        }
         if (!result?.id || !matches(result as IRecord, op.data!))
           throw Error(`Mutation result differs ${op.key}`);
         const row = await exact(adapter, op.entity, result.id);
@@ -1177,11 +1182,13 @@ export async function blogExampleCli(argv = process.argv.slice(2)) {
         manifest.apiOrigin !== origin.origin
       )
         throw Error("Manifest does not belong to this publication/API");
-      console.log(
-        mode === "apply"
-          ? await applyBlogExamples(manifest, adapter, persist)
-          : await verifyBlogExamples(manifest, adapter),
-      );
+      let result;
+      if (mode === "apply") {
+        result = await applyBlogExamples(manifest, adapter, persist);
+      } else {
+        result = await verifyBlogExamples(manifest, adapter);
+      }
+      console.log(result);
       for (const path of manifest.input.publicReadPaths) {
         const response = await fetch(origin.origin + path, {
           cache: "no-store",

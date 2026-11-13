@@ -26,6 +26,7 @@ export class Middleware {
       "/api/http-cache/clear",
       new OperatorSecretMiddleware().init(),
       async (c) => {
+        c.header("Cache-Control", "no-store");
         await this.options.runtime.clearCache();
         return c.json({ message: "Cache cleared" });
       },

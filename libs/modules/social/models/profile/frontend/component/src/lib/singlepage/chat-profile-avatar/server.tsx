@@ -1,12 +1,12 @@
 "use server";
 import "server-only";
-import { api } from "@sps/social/models/profile/sdk/server";
+import { api as profileApi } from "@sps/social/models/profile/sdk/server";
 import type { IComponentProps } from "./interface";
-import { Component } from "./Component";
+import { Component as ChildComponent } from "./Component";
 
 export default async function Server(props: IComponentProps) {
-  const authors = await api.authorFind({
+  const authors = await profileApi.authorFind({
     params: { profileId: props.data.id },
   });
-  return <Component {...props} file={authors?.[0]?.avatar ?? null} />;
+  return <ChildComponent {...props} file={authors?.[0]?.avatar ?? null} />;
 }

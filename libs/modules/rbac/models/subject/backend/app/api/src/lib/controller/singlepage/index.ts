@@ -16,7 +16,14 @@ import { Table } from "@sps/rbac/models/subject/backend/repository/database";
 import { Service } from "../../service";
 import { Context } from "hono";
 import {
+  RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ACCOUNT,
+  RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ADDRESS,
+  RBAC_RATE_LIMIT_SESSION_ATTEMPTS_PER_ADDRESS,
+} from "@sps/shared-utils";
+import {
   RequestProfileSubjectIdOwner,
+  RequestRateLimit,
+  RequestPasswordAttempts,
   RequestSocialModuleThreadBelongsToChat,
   RequestSubjectCanManageChatAgentProfile,
   RequestSubjectIdOwner,
@@ -43,6 +50,7 @@ import { Handler as AuthenticationOAuthStart } from "./authentication/oauth/star
 import { Handler as AuthenticationOAuthCallback } from "./authentication/oauth/callback";
 import { Handler as AuthenticationOAuthExchange } from "./authentication/oauth/exchange";
 
+import { Handler as PermissionDefaults } from "./permission-defaults";
 import { Handler as RevalidateHostCache } from "./revalidate-host-cache";
 import { Handler as Notify } from "./notify";
 import { Handler as Check } from "./check";
@@ -128,17 +136,22 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
   constructor(@inject(DI.IService) service: Service) {
     super(service);
     this.service = service;
+    const authenticatedAdmin = new RequestAuthenticatedAdmin().init({
+      authenticationMe: (props) => this.service.authenticationMe(props),
+      isAdmin: (subjectId) => this.service.isAdmin(subjectId),
+    });
     this.bindHttpRoutes([
+      {
+        method: "GET",
+        path: "/permission-defaults",
+        handler: (c) => new PermissionDefaults(this.service).execute(c),
+        middlewares: [authenticatedAdmin],
+      },
       {
         method: "POST",
         path: "/host-cache/revalidate",
         handler: (c) => new RevalidateHostCache(this.service).execute(c),
-        middlewares: [
-          new RequestAuthenticatedAdmin().init({
-            authenticationMe: (props) => this.service.authenticationMe(props),
-            isAdmin: (subjectId) => this.service.isAdmin(subjectId),
-          }),
-        ],
+        middlewares: [authenticatedAdmin],
       },
       {
         method: "POST",
@@ -241,21 +254,45 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "GET",
         path: "/authentication/init",
         handler: this.authenticationInit,
+        middlewares: [
+          new RequestRateLimit().init({
+            name: "init",
+            attemptsPerAddress: RBAC_RATE_LIMIT_SESSION_ATTEMPTS_PER_ADDRESS,
+          }),
+        ],
       },
       {
         method: "POST",
         path: "/authentication/email-and-password/registration",
         handler: this.authenticationEmailAndPasswordRegistraion,
+        middlewares: [
+          new RequestRateLimit().init({
+            name: "email-and-password-registration",
+            attemptsPerAddress: RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ADDRESS,
+          }),
+        ],
       },
       {
         method: "POST",
         path: "/authentication/ethereum-virtual-machine",
         handler: this.authenticationEthereumVirtualMachine,
+        middlewares: [
+          new RequestRateLimit().init({
+            name: "ethereum-virtual-machine",
+            attemptsPerAddress: RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ADDRESS,
+          }),
+        ],
       },
       {
         method: "POST",
         path: "/authentication/refresh",
         handler: this.authenticationRefresh,
+        middlewares: [
+          new RequestRateLimit().init({
+            name: "refresh",
+            attemptsPerAddress: RBAC_RATE_LIMIT_SESSION_ATTEMPTS_PER_ADDRESS,
+          }),
+        ],
       },
       {
         method: "POST",
@@ -276,6 +313,13 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "POST",
         path: "/authentication/email-and-password/authentication",
         handler: this.authenticationEmailAndPasswordAuthentication,
+        middlewares: [
+          new RequestRateLimit().init({
+            name: "email-and-password-authentication",
+            attemptsPerAddress: RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ADDRESS,
+          }),
+          new RequestPasswordAttempts().init(),
+        ],
       },
       {
         method: "GET",
@@ -302,6 +346,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       {
         method: "POST",
         path: "/check",
+        middlewares: [new RequestOperatorSecret().init()],
         handler: this.check,
       },
       {
@@ -333,11 +378,25 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "POST",
         path: "/authentication/email-and-password/forgot-password",
         handler: this.authenticationEmailAndPasswordForgotPassword,
+        middlewares: [
+          new RequestRateLimit().init({
+            name: "email-and-password-forgot-password",
+            attemptsPerAddress: RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ADDRESS,
+            attemptsPerAccount: RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ACCOUNT,
+            accountField: "email",
+          }),
+        ],
       },
       {
         method: "POST",
         path: "/authentication/email-and-password/reset-password",
         handler: this.authenticationEmailAndPasswordResetPassword,
+        middlewares: [
+          new RequestRateLimit().init({
+            name: "email-and-password-reset-password",
+            attemptsPerAddress: RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ADDRESS,
+          }),
+        ],
       },
       {
         method: "GET",
@@ -408,7 +467,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "GET",
         path: "/:id/ecommerce-module/orders/orders-to-products",
         handler: this.ecommerceModuleOrderOrdersToProducts,
-        middlewares: [new RequestSubjectIdOwner().init()],
+        middlewares: [new RequestSubjectIdOwner().init({ requireJwt: true })],
       },
       {
         method: "GET",

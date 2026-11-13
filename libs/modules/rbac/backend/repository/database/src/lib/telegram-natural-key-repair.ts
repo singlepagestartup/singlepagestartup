@@ -104,7 +104,7 @@ async function tablesExist(
   const tableNames = Object.values(tables);
   const rows = await sql<{ table_name: string; resolved: string | null }[]>`
     SELECT table_name, to_regclass(table_name)::text AS resolved
-    FROM unnest(${sql.array(tableNames)}::text[]) AS table_name
+    FROM unnest(${tableNames}::text[]) AS table_name
   `;
   const availability = new Map(
     rows.map((row) => [row.table_name, Boolean(row.resolved)]),

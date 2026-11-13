@@ -10,8 +10,11 @@ import {
   type IResult as IParentResult,
 } from "@sps/rbac/models/subject/sdk/server";
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
-import { queryClient, subscription } from "@sps/shared-frontend-client-api";
-import QueryString from "qs";
+import {
+  queryClient,
+  subscription,
+  consistencyQueryKey,
+} from "@sps/shared-frontend-client-api";
 import { useEffect } from "react";
 
 export type IProps =
@@ -25,9 +28,7 @@ export type IResult =
 
 export function action(props: IProps) {
   const queryKey = `${route}/${props.id}/ecommerce-module/orders/orders-to-products`;
-  // Merge caller meta last but never let it clobber topics (issue #195): a
-  // project passing reactQueryOptions.meta must not silently drop the realtime
-  // topic subscription.
+  // Preserve order invalidation while accepting additional caller topics.
   const { meta: userMeta, ...restReactQueryOptions } =
     props.reactQueryOptions ?? {};
 
@@ -37,22 +38,20 @@ export function action(props: IProps) {
   }, [queryKey]);
 
   return useQuery<IResult>({
-    // Params are part of the key, as in the factory list query: the cart card
-    // and the update and delete actions of one order share a query, and other
-    // filters get their own (issue #349).
-    queryKey: [
-      queryKey,
-      props.params
-        ? QueryString.stringify(props.params, {
-            encodeValuesOnly: true,
-          })
-        : undefined,
-    ],
-    // Canonical realtime subscription (issue #195). The lines of the subject's
-    // orders change with the orders and with the lines themselves.
+    queryKey: consistencyQueryKey(queryKey, props.params, clientHost),
     meta: {
-      topics: ["ecommerce.orders", "ecommerce.orders-to-products"],
       ...(userMeta ?? {}),
+      topics: Array.from(
+        new Set([
+          "ecommerce.orders",
+          "ecommerce.orders-to-products",
+          "rbac.subjects-to-ecommerce-module-orders",
+          "ecommerce.products",
+          "ecommerce.products-to-attributes",
+          "ecommerce.attributes",
+          ...((userMeta?.topics as string[] | undefined) ?? []),
+        ]),
+      ),
     },
     queryFn: async () => {
       const result = await api.ecommerceModuleOrderOrdersToProducts({
@@ -64,20 +63,18 @@ export function action(props: IProps) {
         host: clientHost,
       });
 
-      return result;
-    },
-    select(data) {
       globalActionsStore.getState().addAction({
         type: "query",
         name: `${route}/${props.id}/ecommerce-module/orders/orders-to-products`,
-        props: this,
-        result: data,
+        props: { params: props.params },
+        result,
         timestamp: Date.now(),
         requestId: createId(),
       });
 
-      return data;
+      return result;
     },
+
     staleTime: 0,
     refetchOnMount: "always",
     refetchOnWindowFocus: true,

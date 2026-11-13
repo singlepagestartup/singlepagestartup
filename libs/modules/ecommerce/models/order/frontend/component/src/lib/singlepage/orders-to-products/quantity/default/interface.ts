@@ -1,6 +1,5 @@
 export { type IModel } from "@sps/ecommerce/models/order/sdk/model";
 import { IModel } from "@sps/ecommerce/models/order/sdk/model";
-import { IModel as IOrdersToProducts } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
 import {
   IComponentProps as IParentComponentProps,
   IComponentPropsExtended as IParentComponentPropsExtended,
@@ -9,9 +8,8 @@ import {
 export const variant = "orders-to-products-quantity-default" as const;
 
 export interface IComponentProps
-  extends Omit<IParentComponentProps<IModel, typeof variant>, "apiProps"> {
+  extends IParentComponentProps<IModel, typeof variant> {
   language: string;
-  ordersToProducts: IOrdersToProducts[];
 }
 
 export interface IComponentPropsExtended

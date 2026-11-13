@@ -1,0 +1,9 @@
+{
+  "id": "e3750dc4-0674-494e-8e15-54f90c40ad9e",
+  "createdAt": "2026-11-10T20:43:00.645Z",
+  "updatedAt": "2026-11-10T20:43:00.645Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/website-builder/features/:uuid"
+}

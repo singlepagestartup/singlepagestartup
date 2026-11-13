@@ -10,7 +10,7 @@ import { api as subjectsToIdentitiesApi } from "@sps/rbac/relations/subjects-to-
 import { api as roleApi } from "@sps/rbac/models/role/sdk/server";
 import { api } from "@sps/rbac/models/subject/sdk/server";
 import { api as subjectsToRolesApi } from "@sps/rbac/relations/subjects-to-roles/sdk/server";
-import * as jwt from "hono/jwt";
+import { signJwt } from "@sps/backend-utils";
 
 export type IExecuteProps = {
   data: {
@@ -62,10 +62,12 @@ export class Service {
         "Cache-Control": "no-store",
       },
     };
-    const currentSubject =
-      props.type === "registration" && props.subjectId
-        ? await api.findById({ id: props.subjectId, options })
-        : undefined;
+    let currentSubject;
+    if (props.type === "registration" && props.subjectId) {
+      currentSubject = await api.findById({ id: props.subjectId, options });
+    } else {
+      currentSubject = undefined;
+    }
     if (props.type === "registration" && props.subjectId) {
       if (!currentSubject || currentSubject.variant !== "default")
         throw new Error(
@@ -215,24 +217,20 @@ export class Service {
       throw new Error("Not Found error. No subject found");
     }
 
-    const jwtToken = await jwt.sign(
+    const jwtToken = await signJwt(
       {
-        exp: Math.floor(Date.now() / 1000) + RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
-        iat: Math.floor(Date.now() / 1000),
-        subject,
+        subjectId: subject.id,
+        type: "access",
+        lifetimeInSeconds: RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
       },
       RBAC_JWT_SECRET,
     );
 
-    const refreshToken = await jwt.sign(
+    const refreshToken = await signJwt(
       {
-        exp:
-          Math.floor(Date.now() / 1000) +
-          RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS,
-        iat: Math.floor(Date.now() / 1000),
-        subject: {
-          id: subject.id,
-        },
+        subjectId: subject.id,
+        type: "refresh",
+        lifetimeInSeconds: RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS,
       },
       RBAC_JWT_SECRET,
     );

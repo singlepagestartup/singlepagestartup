@@ -5,6 +5,7 @@ import "client-only";
 import { Component } from "./Component";
 import { Skeleton } from "./Skeleton";
 import { IComponentProps } from "./interface";
+import { api } from "@sps/ecommerce/relations/orders-to-products/sdk/client";
 import { useEffect, useState } from "react";
 import { api as attributeKeyApi } from "@sps/ecommerce/models/attribute-key/sdk/server";
 import { api as productApi } from "@sps/ecommerce/models/product/sdk/server";
@@ -15,11 +16,10 @@ import { api as attributesToAttributeKeysApi } from "@sps/ecommerce/relations/at
 export default function Client(props: IComponentProps) {
   const [amount, setAmount] = useState<string | undefined>();
 
-  /**
-   * The line the caller hands over; the module-level order line reads require
-   * the Admin role (issue #349).
-   */
-  const data = props.data;
+  const { data, isFetching, isLoading } = api.findById({
+    id: props.data.id,
+    ...props.apiProps,
+  });
 
   useEffect(() => {
     if (props.set && typeof props.set === "function") {
@@ -141,7 +141,7 @@ export default function Client(props: IComponentProps) {
     }
   }, [data?.id, data?.quantity]);
 
-  if (!amount) {
+  if (isFetching || isLoading || !amount) {
     return <></>;
   }
 

@@ -9,18 +9,19 @@ import {
 
 export const variant = "cart-default" as const;
 
-export interface IComponentProps
-  extends Omit<IParentComponentProps<IModel, typeof variant>, "apiProps"> {
+export interface IComponentProps extends IParentComponentProps<
+  IModel,
+  typeof variant
+> {
   language: string;
   billingModuleCurrencyId?: string;
-  ordersToProducts: (IOrdersToProducts & {
+  ordersToProducts?: (IOrdersToProducts & {
     total: IOrdersToProductsResult["ITotalResult"];
   })[];
 }
 
-export interface IComponentPropsExtended
-  extends IParentComponentPropsExtended<
-    IModel,
-    typeof variant,
-    IComponentProps
-  > {}
+export interface IComponentPropsExtended extends IParentComponentPropsExtended<
+  IModel,
+  typeof variant,
+  IComponentProps
+> {}

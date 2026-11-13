@@ -149,11 +149,11 @@ products:
                 source: ai-chat/website/Landing.tsx
               - id: register
                 title: Создать аккаунт
-                route: /ai-chat/rbac/subjects/authentication/registration
+                route: /rbac/subject/authentication/email-and-password/registration
                 source: ai-chat/website/Register.tsx
               - id: login
                 title: Войти
-                route: /ai-chat/rbac/subjects/authentication/select-method
+                route: /rbac/subject/authentication/email-and-password
                 source: ai-chat/website/Login.tsx
               - id: project-workspace
                 title: Чат проекта

@@ -1,56 +1,37 @@
-import { HOST_SERVICE_URL } from "@sps/shared-utils";
 import { NextRequest, NextResponse } from "next/server";
-import QueryString from "qs";
+import { rbacSecretMatches } from "@sps/backend-utils";
+import { renderRequestSchema } from "@sps/notification/models/template/sdk/model";
 import { response } from "./response";
-import pako from "pako";
+import { variants } from "./response/variants";
 
-export const GET = async (request: NextRequest) => {
-  try {
-    const { searchParams } = request.nextUrl;
-    const params = searchParams.toString();
-    const parsedParams = QueryString.parse(params);
-
-    if (!HOST_SERVICE_URL) {
-      throw new Error("Configuration error. Host URL not found");
-    }
-
-    let data;
-
-    if (typeof parsedParams.data === "string") {
-      const decodedBuffer = Buffer.from(parsedParams.data, "base64");
-
-      const uint8Array = new Uint8Array(decodedBuffer);
-
-      const inflatedData = pako.inflate(uint8Array, { to: "string" });
-
-      data = JSON.parse(inflatedData);
-    }
-
-    // NextResponse.json derives the declared type from the body it serialises,
-    // so the two cannot drift apart the way a literal header next to a
-    // JSON.stringify call did.
+export const POST = async (request: NextRequest) => {
+  if (!rbacSecretMatches(request.headers.get("X-RBAC-SECRET-KEY"))) {
     return NextResponse.json(
-      response({
-        variant: parsedParams.variant as any,
-        data,
-        language: (parsedParams.language as string) || "en",
-      }),
-      {
-        headers: {
-          "X-Content-Type-Options": "nosniff",
-          "Cache-Control": "no-store",
-        },
-      },
+      { error: "Permission error. Operator credential required" },
+      { status: 403 },
     );
-  } catch (error: any) {
-    // The route is unauthenticated, so decode and render internals stay in the
-    // host log instead of travelling back to the caller.
-    console.error("Telegram generator render failed:", error);
+  }
 
-    return NextResponse.json(
-      {
-        error: "Not Found error. Template unavailable",
+  try {
+    const body = await request.json();
+    const props = renderRequestSchema.parse(body);
+    if (!Object.hasOwn(variants, props.variant)) {
+      throw new Error("Not Found error. Template variant not found");
+    }
+    const rendered = response({
+      ...props,
+      language: props.language ?? "en",
+    } as any);
+    return NextResponse.json(rendered, {
+      headers: {
+        "X-Content-Type-Options": "nosniff",
+        "Cache-Control": "no-store",
       },
+    });
+  } catch (error) {
+    console.error("Telegram generator render failed:", error);
+    return NextResponse.json(
+      { error: "Not Found error. Template unavailable" },
       { status: 404 },
     );
   }

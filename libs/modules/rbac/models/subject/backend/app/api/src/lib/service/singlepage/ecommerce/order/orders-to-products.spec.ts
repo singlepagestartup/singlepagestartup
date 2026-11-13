@@ -34,7 +34,9 @@ function createService(props?: {
         { id: "line-1", orderId: "order-1", productId: "product-1" },
       ],
     );
-  const ordersToProductsGetTotal = jest.fn().mockResolvedValue(total);
+  const ordersToProductsGetTotal = jest
+    .fn()
+    .mockResolvedValue({ totals: total, unpriced: [] });
 
   const service = new Service({
     ecommerceModule: {
@@ -185,7 +187,7 @@ describe("Given: the order lines of a subject", () => {
         throw new Error("Product does not have any target price attributes");
       }
 
-      return total;
+      return { totals: total, unpriced: [] };
     });
 
     await expect(service.execute({ id: "subject-1" })).resolves.toEqual([

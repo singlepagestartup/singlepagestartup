@@ -67,6 +67,7 @@ export function Component(props: IComponentPropsExtended) {
         <Subject
           isServer={false}
           variant="ecommerce-module-order-list-checkout-default"
+          dataSource="props"
           data={props.data}
           language={language}
           className="min-h-0 flex-1"

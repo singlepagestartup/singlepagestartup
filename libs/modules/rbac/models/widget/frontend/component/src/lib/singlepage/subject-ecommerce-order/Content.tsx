@@ -60,6 +60,7 @@ export function Component(props: IContentProps) {
                         <EcommerceModuleOrder
                           isServer={false}
                           variant="cart-default"
+                          dataSource="props"
                           data={ecommerceModuleOrder}
                           ordersToProducts={ecommerceModuleOrdersToProducts}
                           language={props.language}

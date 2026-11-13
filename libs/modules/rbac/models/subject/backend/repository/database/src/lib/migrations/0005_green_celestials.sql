@@ -1,0 +1,1 @@
+ALTER TABLE "sps_rc_subject" ADD COLUMN "tokens_valid_after" timestamp;

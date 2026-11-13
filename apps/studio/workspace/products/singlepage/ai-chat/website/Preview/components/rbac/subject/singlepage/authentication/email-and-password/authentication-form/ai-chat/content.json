@@ -18,7 +18,7 @@
       "title": "Не получается войти?",
       "paragraphs": [
         "Забыли пароль? [Напишите в поддержку](/ai-chat/help). Если войти не удалось, проверьте почту и пароль, затем попробуйте ещё раз.",
-        "Ещё нет аккаунта? [Зарегистрируйтесь](/ai-chat/rbac/subjects/authentication/registration)."
+        "Ещё нет аккаунта? [Зарегистрируйтесь](/rbac/subject/authentication/email-and-password/registration)."
       ],
       "items": [],
       "links": [
@@ -28,7 +28,7 @@
         },
         {
           "text": "Create one",
-          "href": "/ai-chat/rbac/subjects/authentication/registration"
+          "href": "/rbac/subject/authentication/email-and-password/registration"
         }
       ]
     },
@@ -82,7 +82,7 @@
         },
         {
           "title": "register-href",
-          "text": "/ai-chat/rbac/subjects/authentication/registration"
+          "text": "/rbac/subject/authentication/email-and-password/registration"
         },
         {
           "title": "no-account",
@@ -134,7 +134,7 @@
     "forgot-label": "Забыли пароль?",
     "forgot-href": "/ai-chat/help",
     "register-label": "Создать аккаунт",
-    "register-href": "/ai-chat/rbac/subjects/authentication/registration",
+    "register-href": "/rbac/subject/authentication/email-and-password/registration",
     "no-account": "Ещё нет аккаунта?",
     "continue-label": "Открыть проект",
     "continue-href": "/ai-chat/social/profiles/example",

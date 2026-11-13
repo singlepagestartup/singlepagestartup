@@ -17,7 +17,7 @@ export async function action(props: IProps): Promise<IResult> {
     `${props.host || serverHost}${route}/${props.id}/social-module/profiles/${props.socialModuleProfileId}/avatar`,
     { ...props.options, method: "GET", credentials: "include" },
   );
-  return transformResponseItem<IResult>(
-    await responsePipe<{ data: IResult }>({ res }),
-  );
+  const json = await responsePipe<{ data: IResult }>({ res });
+
+  return transformResponseItem<IResult>(json);
 }

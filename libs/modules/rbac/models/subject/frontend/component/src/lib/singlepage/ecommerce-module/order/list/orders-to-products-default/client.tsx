@@ -1,11 +1,12 @@
 "use client";
 import "client-only";
 
-import { IComponentProps } from "./interface";
-import { api } from "@sps/rbac/models/subject/sdk/client";
+import { Component as ChildComponent } from "./Component";
+import type { IComponentProps } from "./interface";
+import { api as subjectApi } from "@sps/rbac/models/subject/sdk/client";
 
 export function Component(props: IComponentProps) {
-  const { data } = api.ecommerceModuleOrderOrdersToProducts({
+  const { data } = subjectApi.ecommerceModuleOrderOrdersToProducts({
     id: props.data.id,
     ...props.apiProps,
   });
@@ -14,9 +15,5 @@ export function Component(props: IComponentProps) {
     return null;
   }
 
-  if (props.children) {
-    return props.children({ data });
-  }
-
-  return <></>;
+  return <ChildComponent {...props} data={data} />;
 }

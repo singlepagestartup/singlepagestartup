@@ -31,7 +31,7 @@ const formSchema = z.object({
       (value) => providers.some((provider) => provider === value),
       "Invalid provider",
     ),
-  email: z.string().email(),
+  email: z.email(),
   quantity: z.number().int().positive(),
   comment: z.string().optional(),
   storeId: z.string().optional(),

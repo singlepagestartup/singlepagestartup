@@ -1,3 +1,4 @@
+import type { IComponentProps as IEmailPasswordForm } from "./authentication/email-and-password/form-default/interface";
 import type { IComponentProps as IEcommerceModuleProductCategoryDefaultProps } from "./ecommerce-module/product/category-default/interface";
 import type { IComponentProps as IEcommerceModuleProductProfileDefaultProps } from "./ecommerce-module/product/profile-default/interface";
 import { IComponentProps as IHiddenComponentProps } from "@sps/shared-frontend-components/singlepage/hidden/interface";
@@ -85,6 +86,9 @@ import { IComponentProps as IEcommerceModuleOrderListDefaultComponentProps } fro
 import { IComponentProps as IEcommerceModuleOrderListOrdersToProductsDefaultComponentProps } from "./ecommerce-module/order/list/orders-to-products-default/interface";
 
 import { IComponentProps as ICrmModuleFormRequestCreateComponentProps } from "./crm-module/form/request/create/interface";
+import { IComponentProps as ISocialModuleProfileChatDefaultComponentProps } from "./social-module/profile/chat/default/interface";
+import { IComponentProps as ISocialModuleProfileChatCreateComponentProps } from "./social-module/profile/chat/create/interface";
+import { IComponentProps as ISocialModuleProfileChatMessageListDefaultComponentProps } from "./social-module/profile/chat/message/list/default/interface";
 import { IComponentProps as ISocialModuleProfileChatListDefaultComponentProps } from "./social-module/profile/chat/list/default/interface";
 import { IComponentProps as ISocialModuleProfileChatOverviewDefaultComponentProps } from "./social-module/profile/chat/overview/default/interface";
 
@@ -109,6 +113,7 @@ export type IComponentProps =
   | IMeEcommerceModuleProductCheckoutDefaultInterface
   | IMeEcommerceModuleProductCartDefaultInterface
   | IMeEcommerceModuleOrderListCheckoutDefaultInterface
+  | IEmailPasswordForm
   | IAuthenticationEmailAndPasswordFormAiChat
   | IMeSocialModuleProfileIdSidebarAiChat
   | IResetPasswordFormAiChat
@@ -176,6 +181,9 @@ export type IComponentProps =
   | IEcommerceModuleOrderListQuantityDefaultComponentProps
   | IEcommerceModuleOrderListDefaultComponentProps
   | IEcommerceModuleOrderListOrdersToProductsDefaultComponentProps
+  | ISocialModuleProfileChatDefaultComponentProps
+  | ISocialModuleProfileChatCreateComponentProps
+  | ISocialModuleProfileChatMessageListDefaultComponentProps
   | ISocialModuleProfileChatListDefaultComponentProps
   | ISocialModuleProfileChatOverviewDefaultComponentProps
   | never;

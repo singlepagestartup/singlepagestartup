@@ -16,11 +16,15 @@ export default async function Server(props: IComponentProps) {
   const document = getAIChatDocument(props.thread.metadata);
   const isDocument = document?.profileId === project.profile.id;
   try {
-    const data = !isDocument
-      ? []
-      : await subjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFind(
+    let data;
+    if (!isDocument) {
+      data = [];
+    } else {
+      data =
+        await subjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFind(
           { ...scope },
         );
+    }
     return (
       <ChildComponent
         {...props}

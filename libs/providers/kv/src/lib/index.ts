@@ -28,6 +28,15 @@ export class Provider implements IProvider {
     return await this.client.connect();
   }
 
+  async eval(props: {
+    prefix: string;
+    key: string;
+    script: string;
+    args: string[];
+  }) {
+    return this.client.eval(props);
+  }
+
   async hashKey(props: { key: string }) {
     return await this.client.hashKey(props);
   }

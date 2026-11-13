@@ -1,0 +1,9 @@
+{
+  "id": "cedd19e9-20da-4a0e-ad11-17115b0aada5",
+  "createdAt": "2026-11-10T20:43:00.645Z",
+  "updatedAt": "2026-11-10T20:43:00.645Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/file-storage/widgets-to-files"
+}

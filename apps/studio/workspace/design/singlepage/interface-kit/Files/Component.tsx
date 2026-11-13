@@ -33,10 +33,10 @@ export default function Files() {
         (!file.type && /\.(txt|md|pdf|png|jpe?g)$/i.test(file.name));
       if (!supported)
         rejected.push(
-          `${file.name}: choose a TXT, Markdown, PDF, PNG or JPEG file.`,
+          `${file.name}: выберите TXT, Markdown, PDF, PNG или JPEG.`,
         );
       else if (file.size > 10 * 1024 * 1024)
-        rejected.push(`${file.name}: the demo limit is 10 MB per file.`);
+        rejected.push(`${file.name}: в примере допустимы файлы до 10 МБ.`);
       else
         accepted.push({
           id: `${file.name}:${file.size}:${file.lastModified}`,
@@ -64,17 +64,17 @@ export default function Files() {
     <div className="grid gap-6">
       <Specimen
         id="file-upload"
-        title="File upload"
-        description="Select or drop real local files to preview type and size validation."
+        title="Загрузка файлов"
+        description="Выберите или перетащите локальные файлы, чтобы проверить тип и размер."
         states={[
-          "Empty",
-          "Drag over",
-          "Selected",
-          "Invalid type",
-          "Too large",
-          "Removed",
+          "Пусто",
+          "Перетаскивание",
+          "Выбрано",
+          "Неверный тип",
+          "Слишком большой",
+          "Удалено",
         ]}
-        usage="Name accepted types and limits before selection. Selected files can be previewed locally; their contents are never uploaded or saved."
+        usage="До выбора назовите типы и ограничения. Пример читает только метаданные, не загружает и не сохраняет содержимое."
         recipe="rounded-2xl border border-dashed border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] p-6 text-center"
       >
         <div
@@ -100,13 +100,13 @@ export default function Files() {
           <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--workspace-brand-surface)]">
             <Icon name="upload-simple" size={24} />
           </span>
-          <p className="mt-4 text-base font-semibold">Drop files here</p>
+          <p className="mt-4 text-base font-semibold">Перетащите файлы сюда</p>
           <p
             id={helpId}
             className={`mx-auto mt-2 max-w-lg text-sm ${kit.muted}`}
           >
-            TXT, Markdown, PDF, PNG or JPEG. Up to 10 MB each. Files stay on
-            your device.
+            TXT, Markdown, PDF, PNG или JPEG. До 10 МБ каждый. Файлы остаются на
+            устройстве.
           </p>
           <input
             ref={input}
@@ -114,7 +114,7 @@ export default function Files() {
             multiple
             accept=".txt,.md,.pdf,.png,.jpg,.jpeg,text/plain,text/markdown,application/pdf,image/png,image/jpeg"
             className="hidden"
-            aria-label="Select files for the local preview"
+            aria-label="Выбрать файлы для локального просмотра"
             onChange={(event) => {
               acceptFiles(Array.from(event.target.files ?? []));
               event.target.value = "";
@@ -126,7 +126,7 @@ export default function Files() {
             aria-describedby={`${helpId}${errors.length ? ` ${errorId}` : ""}`}
             onClick={() => input.current?.click()}
           >
-            Choose local files
+            Выбрать локальные файлы
           </Button>
         </div>
         {errors.length ? (
@@ -135,7 +135,7 @@ export default function Files() {
             role="alert"
             className="mt-4 rounded-xl border border-[var(--workspace-brand-danger-line)] bg-[var(--workspace-brand-danger-surface)] p-4 text-sm text-[var(--workspace-brand-danger)]"
           >
-            <p className="font-semibold">Some files were not added</p>
+            <p className="font-semibold">Некоторые файлы не добавлены</p>
             <ul className="mt-2 list-inside list-disc space-y-1">
               {errors.map((error) => (
                 <li className="break-words" key={error}>
@@ -147,8 +147,8 @@ export default function Files() {
         ) : null}
         <p role="status" className={`mt-4 text-sm ${kit.muted}`}>
           {files.length
-            ? `${files.length} local ${files.length === 1 ? "file selected" : "files selected"}. No files have been uploaded.`
-            : "No files selected."}
+            ? `${files.length} local ${files.length === 1 ? "файл выбран" : "файлов выбрано"}. Файлы ещё не загружены.`
+            : "Файлы не выбраны."}
         </p>
         {files.length ? (
           <ul className="mt-4 grid gap-3">
@@ -161,16 +161,16 @@ export default function Files() {
 
       <Specimen
         id="attachments"
-        title="Attachments"
-        description="An attachment shows its name, type and available local actions."
+        title="Вложения"
+        description="Вложение показывает имя, тип и доступные локальные действия."
         states={[
           "Attached",
-          "Preview open",
-          "Preview closed",
-          "Removed",
-          "Restored",
+          "Просмотр открыт",
+          "Просмотр закрыт",
+          "Удалено",
+          "Восстановлено",
         ]}
-        usage="Keep the file name readable and the remove action explicit. This example contains sample text, not an uploaded document."
+        usage="Имя файла читаемо, удаление явно обозначено. Здесь текст примера, не загруженный документ."
         recipe="flex flex-wrap items-center gap-3 rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-4"
       >
         {attachmentVisible ? (
@@ -182,7 +182,7 @@ export default function Files() {
                   project-notes.md
                 </p>
                 <p className={`mt-1 text-xs ${kit.muted}`}>
-                  Markdown · sample attachment
+                  Markdown · пример вложения
                 </p>
               </div>
               <Button
@@ -192,12 +192,12 @@ export default function Files() {
                 onClick={() => setPreviewOpen((value) => !value)}
               >
                 <Icon name="eye" />
-                {previewOpen ? "Hide preview" : "Preview"}
+                {previewOpen ? "Скрыть просмотр" : "Просмотр"}
               </Button>
               <Button
                 variant="plain"
                 className="px-3"
-                aria-label="Remove sample attachment"
+                aria-label="Убрать пример вложения"
                 onClick={() => {
                   setAttachmentVisible(false);
                   setPreviewOpen(false);
@@ -211,13 +211,13 @@ export default function Files() {
                 id={previewId}
                 className="mt-4 rounded-xl bg-[var(--workspace-brand-background)] p-4 text-sm leading-relaxed"
               >
-                <p className="font-semibold">Project notes</p>
+                <p className="font-semibold">Заметки проекта</p>
                 <p className={`mt-2 ${kit.muted}`}>
-                  Collect the existing materials, list the questions that
-                  remain, and review the next draft together.
+                  Соберите имеющиеся материалы, перечислите открытые вопросы и
+                  вместе проверьте следующий черновик.
                 </p>
                 <p className={`mt-3 text-xs ${kit.muted}`}>
-                  Static sample text for the attachment preview.
+                  Статичный текст примера вложения.
                 </p>
               </div>
             ) : null}
@@ -225,13 +225,13 @@ export default function Files() {
         ) : (
           <div className="flex flex-wrap items-center gap-3">
             <p role="status" className={`text-sm ${kit.muted}`}>
-              Sample attachment removed.
+              Пример вложения убран.
             </p>
             <Button
               variant="secondary"
               onClick={() => setAttachmentVisible(true)}
             >
-              Restore sample
+              Восстановить пример
             </Button>
           </div>
         )}

@@ -2,8 +2,8 @@
 
 import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
-import { Component as SocialModuleProfileChatMessageListDefault } from "../../message/list/default";
-import { Component as SocialModuleProfileChatProfileAvatar } from "@sps/social/models/profile/frontend/component/src/lib/singlepage/chat-profile-avatar";
+import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
+import { Component as SocialModuleProfile } from "@sps/social/models/profile/frontend/component";
 import {
   emptyLocalizedTextFields,
   getLocalizedText,
@@ -1169,7 +1169,7 @@ export function Component(props: IComponentPropsExtended) {
                                 key={profileItem.profile.id}
                                 className="flex items-center gap-2 rounded-md px-2 py-2 transition hover:bg-slate-50"
                               >
-                                <SocialModuleProfileChatProfileAvatar
+                                <SocialModuleProfile
                                   isServer={false}
                                   variant="chat-profile-avatar"
                                   data={profileItem.profile}
@@ -1272,7 +1272,7 @@ export function Component(props: IComponentPropsExtended) {
                                   key={profileItem.profile.id}
                                   className="flex items-center gap-2 rounded-md px-2 py-2 transition hover:bg-slate-50"
                                 >
-                                  <SocialModuleProfileChatProfileAvatar
+                                  <SocialModuleProfile
                                     isServer={false}
                                     variant="chat-profile-avatar"
                                     data={profileItem.profile}
@@ -1735,7 +1735,7 @@ export function Component(props: IComponentPropsExtended) {
                 </p>
               </div>
             ) : activeSocialModuleThread ? (
-              <SocialModuleProfileChatMessageListDefault
+              <Subject
                 isServer={false}
                 data={props.data}
                 language={props.language}
