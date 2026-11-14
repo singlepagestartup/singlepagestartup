@@ -1,3 +1,4 @@
+import type { IOrderLineTotals } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
 import type { Service as BroadcastChannelService } from "@sps/broadcast/models/channel/backend/app/api/src/lib/service";
 import type { Service as NotificationTopicService } from "@sps/notification/models/topic/backend/app/api/src/lib/service";
 import type { Service as NotificationService } from "@sps/notification/models/notification/backend/app/api/src/lib/service";
@@ -31,7 +32,8 @@ export interface IExtendedReadService extends IReadService {
 }
 
 export interface IEcommerceOrderReadService
-  extends IExtendedReadService,
+  extends
+    IExtendedReadService,
     ICreateService,
     Pick<
       EcommerceOrderService,
@@ -56,7 +58,7 @@ export interface IEcommerceOrderReadService
 }
 
 export interface IEcommerceOrdersToProductsService extends ICreateService {
-  getTotal: (props: { id: string }) => Promise<any>;
+  getTotal: (props: { id: string }) => Promise<IOrderLineTotals>;
 }
 
 export interface ISocialModule {
@@ -125,7 +127,8 @@ export interface IBlogModule {
 }
 
 export interface INotificationService
-  extends IReadService,
+  extends
+    IReadService,
     Pick<NotificationService, "sendVerificationCode" | "sendPasswordReset"> {}
 
 export interface INotificationModule {

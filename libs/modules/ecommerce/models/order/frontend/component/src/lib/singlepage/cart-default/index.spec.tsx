@@ -5,15 +5,17 @@
 /**
  * BDD Suite: ecommerce order cart card.
  *
- * Given: an order read through the subject's own cart route, and order reads by id
- * that require the Admin role.
- * When: the order is rendered through the cart-default variant.
- * Then: the card renders from the order it is handed and never requests the order again.
+ * Given: an order and its lines read through the subject's own routes, and order and order
+ * line reads that require the Admin role.
+ * When: the order is rendered through the cart-default variant with its lines.
+ * Then: the card renders each line's quantity, product and totals from what it is handed and
+ * never requests the order or its lines.
  */
 
 import { render, screen } from "@testing-library/react";
 
 const findByIdMock = jest.fn();
+const ordersToProductsMock = jest.fn();
 
 jest.mock("server-only", () => ({}), { virtual: true });
 
@@ -28,6 +30,7 @@ jest.mock(
   "@sps/ecommerce/relations/orders-to-products/frontend/component",
   () => ({
     Component: ({ variant, children }: any) => {
+      ordersToProductsMock(variant);
       if (variant === "find") {
         return children
           ? children({
@@ -73,25 +76,47 @@ jest.mock("@sps/ecommerce/models/product/frontend/component", () => ({
 
 import { Component } from "@sps/ecommerce/models/order/frontend/component";
 
-describe("Given: an order read through the subject's cart route", () => {
+const ordersToProducts = [
+  {
+    id: "line-1",
+    orderId: "order-1",
+    productId: "product-1",
+    quantity: 2,
+    total: [
+      {
+        total: 20,
+        billingModuleCurrency: { id: "currency-usd", symbol: "$" },
+      },
+      {
+        total: 18,
+        billingModuleCurrency: { id: "currency-eur", symbol: "€" },
+      },
+    ],
+  },
+];
+
+describe("Given: an order and its lines read through the subject's routes", () => {
   beforeEach(() => {
     findByIdMock.mockReset();
     findByIdMock.mockReturnValue({ data: undefined, isLoading: true });
+    ordersToProductsMock.mockReset();
   });
 
   /**
    * BDD Scenario
-   * Given: the cart hands the variant a complete order.
-   * When: the cart-default variant renders it.
-   * Then: the card shows the order and its product line without an order request by id.
+   * Given: the cart hands the variant a complete order and its lines with totals.
+   * When: the cart-default variant renders them.
+   * Then: the card shows the line's quantity, product and totals and requests
+   * neither the order nor its lines.
    */
-  it("When: the cart card renders Then: it uses the order it is handed", () => {
+  it("When: the cart card renders Then: it uses the order and the lines it is handed", () => {
     render(
       <Component
         isServer={false}
         variant="cart-default"
         dataSource="props"
         data={{ id: "order-1", type: "cart", status: "new" } as any}
+        ordersToProducts={ordersToProducts as any}
         language="en"
       >
         <div data-testid="cart-actions" />
@@ -100,8 +125,64 @@ describe("Given: an order read through the subject's cart route", () => {
 
     expect(screen.getByText("Order #order-1")).toBeTruthy();
     expect(screen.getByText("Quantity: 2")).toBeTruthy();
+    expect(screen.getByText("20 $")).toBeTruthy();
+    expect(screen.getByText("18 €")).toBeTruthy();
+    expect(screen.getByTestId("product-cart-default")).toBeTruthy();
     expect(screen.getByTestId("cart-actions")).toBeTruthy();
     expect(findByIdMock).not.toHaveBeenCalled();
+    expect(ordersToProductsMock).not.toHaveBeenCalled();
+  });
+
+  /**
+   * BDD Scenario
+   * Given: the cart selects one currency.
+   * When: the cart-default variant renders the lines.
+   * Then: only that currency's total is shown and the card is marked available.
+   */
+  it("When: a currency is selected Then: shows that currency's total only", () => {
+    const { container } = render(
+      <Component
+        isServer={false}
+        variant="cart-default"
+        data={{ id: "order-1", type: "cart", status: "new" } as any}
+        dataSource="props"
+        ordersToProducts={ordersToProducts as any}
+        billingModuleCurrencyId="currency-eur"
+        language="en"
+      />,
+    );
+
+    expect(screen.getByText("18 €")).toBeTruthy();
+    expect(screen.queryByText("20 $")).toBeNull();
+    expect(
+      container
+        .querySelector('[data-model="order"]')
+        ?.getAttribute("data-available"),
+    ).toBe("true");
+  });
+
+  it("renders each supplied line once and shares the order actions across lines", () => {
+    render(
+      <Component
+        isServer={false}
+        variant="cart-default"
+        dataSource="props"
+        data={{ id: "order-1" } as any}
+        ordersToProducts={
+          [
+            ordersToProducts[0],
+            { ...ordersToProducts[0], id: "line-2", quantity: 3 },
+          ] as any
+        }
+        language="en"
+      >
+        <button>Checkout</button>
+      </Component>,
+    );
+    expect(screen.getAllByText("Quantity: 2")).toHaveLength(1);
+    expect(screen.getAllByText("Quantity: 3")).toHaveLength(1);
+    expect(screen.getAllByRole("button", { name: "Checkout" })).toHaveLength(1);
+    expect(ordersToProductsMock).not.toHaveBeenCalled();
   });
 
   it("reads the order by ID when used without a parent data source", () => {

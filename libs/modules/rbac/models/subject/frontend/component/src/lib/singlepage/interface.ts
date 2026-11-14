@@ -83,6 +83,7 @@ import { IComponentProps as IIdentitySettingsDefaultComponentProps } from "./ide
 import { IComponentProps as IEcommerceModuleOrderListTotalDefaultComponentProps } from "./ecommerce-module/order/list/total-default/interface";
 import { IComponentProps as IEcommerceModuleOrderListQuantityDefaultComponentProps } from "./ecommerce-module/order/list/quantity-default/interface";
 import { IComponentProps as IEcommerceModuleOrderListDefaultComponentProps } from "./ecommerce-module/order/list/default/interface";
+import { IComponentProps as IEcommerceModuleOrderListOrdersToProductsDefaultComponentProps } from "./ecommerce-module/order/list/orders-to-products-default/interface";
 
 import { IComponentProps as ICrmModuleFormRequestCreateComponentProps } from "./crm-module/form/request/create/interface";
 import { IComponentProps as ISocialModuleProfileChatDefaultComponentProps } from "./social-module/profile/chat/default/interface";
@@ -179,6 +180,7 @@ export type IComponentProps =
   | IEcommerceModuleOrderListTotalDefaultComponentProps
   | IEcommerceModuleOrderListQuantityDefaultComponentProps
   | IEcommerceModuleOrderListDefaultComponentProps
+  | IEcommerceModuleOrderListOrdersToProductsDefaultComponentProps
   | ISocialModuleProfileChatDefaultComponentProps
   | ISocialModuleProfileChatCreateComponentProps
   | ISocialModuleProfileChatMessageListDefaultComponentProps

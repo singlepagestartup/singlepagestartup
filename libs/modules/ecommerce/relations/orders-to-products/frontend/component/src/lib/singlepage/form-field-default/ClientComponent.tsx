@@ -8,7 +8,7 @@ import { useEffect } from "react";
 export function Component(props: IComponentPropsExtended) {
   useEffect(() => {
     props.form.setValue(props.name, props.data[props.field] || 0);
-  }, [props.data, props.name, props.field]);
+  }, [props.data, props.name, props.field, props.form]);
 
   return (
     <FormField

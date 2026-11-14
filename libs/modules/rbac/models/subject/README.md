@@ -148,6 +148,17 @@ Thread management through `rbac.subject` requires `rbac.permission` records for 
 - `PATCH /api/rbac/subjects/[rbac.subjects.id]/social-module/chats/[social.chats.id]/threads/[social.threads.id]`
 - `DELETE /api/rbac/subjects/[rbac.subjects.id]/social-module/chats/[social.chats.id]/threads/[social.threads.id]`
 
+### Ecommerce Order Line Route
+
+The cart reads the lines of the subject's orders through
+`GET /api/rbac/subjects/[rbac.subjects.id]/ecommerce-module/orders-to-products`,
+through a GET permission shipped in the RBAC seed. An ordinary customer without a matching grant receives 403. The seeded permission has no role restriction; the route still requires an access token whose Subject ID matches the URL.
+Each line carries its totals per currency (an empty list when its price cannot
+be computed), and a caller's `filters.and` narrows the lines within the orders
+linked to the subject. The module-level
+`orders-to-products` reads require the Admin role, so the Subject order widget passes these lines into the ecommerce `cart-default` variant.
+The checkout sheet reads its lines with `includeCartDetails` on the Subject order list.
+
 ### Ecommerce Checkout Routes
 
 `POST /api/rbac/subjects/[rbac.subjects.id]/ecommerce-module/orders/checkout` and `POST /api/rbac/subjects/[rbac.subjects.id]/ecommerce-module/products/[ecommerce.products.id]/checkout` require an access token for the Subject in the URL. The browser sends the current Subject's token through the client SDK. The Agent's Telegram checkout callback signs a token for the user who pressed the button. Subscription renewal calls the product checkout service in-process.
@@ -697,6 +708,7 @@ Public author URLs use `/authors/<Social Profile UUID>`. Social's `authors`, `au
 - `ecommerce-module-order-checkout-default`: order checkout flow.
 - `ecommerce-module-order-list-default`: list orders for subject.
 - `me-ecommerce-module-order-list-ai-chat`: the current Subject’s paid purchase history and receipt links. The order collection accepts query filters; without filters it retains the active cart defaults (`type=cart`, `status=new`). Every collection result remains restricted to orders linked to the Subject.
+- `ecommerce-module-order-list-orders-to-products-default`: list the lines of the subject's orders with their totals.
 - `ecommerce-module-order-list-checkout-default`: list orders in checkout context.
 - `ecommerce-module-order-list-quantity-default`: list order quantities.
 - `ecommerce-module-order-list-total-default`: list order totals.

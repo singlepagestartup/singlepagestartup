@@ -593,6 +593,10 @@ describe("framework RBAC snapshots", () => {
 
   it.each([
     "/api/ecommerce/orders",
+    "/api/ecommerce/orders-to-products",
+    "/api/ecommerce/orders-to-products/count",
+    "/api/ecommerce/orders-to-products/[ecommerce.orders-to-products.id]",
+    "/api/ecommerce/orders-to-products/[ecommerce.orders-to-products.id]/total",
     "/api/social/messages/count",
     "/api/notification/templates/count",
   ])("ships %s with the Admin role", (path) => {

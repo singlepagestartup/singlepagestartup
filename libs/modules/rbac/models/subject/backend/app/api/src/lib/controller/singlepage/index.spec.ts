@@ -2,7 +2,7 @@
  * BDD Suite: subject controller route guards.
  *
  * Given: the subject controller's route table mounted the way the module app mounts it.
- * When: a caller requests a chat model catalog or starts an ecommerce checkout.
+ * When: a caller requests a chat model catalog, order lines or an ecommerce checkout.
  * Then: each route checks ownership before invoking the requested service.
  */
 
@@ -11,6 +11,11 @@ import { OPEN_ROUTER_ASSISTANT_MODEL } from "@sps/shared-utils";
 const mockOpenRouterGetModels = jest.fn();
 const mockSubjectsToSocialModuleProfilesFind = jest.fn();
 const mockSocialModuleProfileFindById = jest.fn();
+
+jest.mock("@sps/shared-backend-api", () => ({
+  ...jest.requireActual("@sps/shared-backend-api"),
+  withConsistencySnapshot: (read: () => Promise<unknown>) => read(),
+}));
 
 jest.mock("@sps/shared-utils", () => {
   const actual = jest.requireActual("@sps/shared-utils");
@@ -70,7 +75,7 @@ function createApp(service = {}) {
   return app.hono;
 }
 
-async function requestCatalog(subjectId?: string) {
+async function createHeaders(subjectId?: string) {
   const headers: Record<string, string> = {};
 
   if (subjectId) {
@@ -82,7 +87,13 @@ async function requestCatalog(subjectId?: string) {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  return createApp().request(catalogPath, { headers });
+  return headers;
+}
+
+async function requestCatalog(subjectId?: string) {
+  return createApp().request(catalogPath, {
+    headers: await createHeaders(subjectId),
+  });
 }
 
 describe("Given: the OpenRouter model catalog route of a chat", () => {
@@ -267,5 +278,85 @@ describe.each([
     expect(service[lookup]).toHaveBeenCalledWith(
       expect.objectContaining({ id: checkoutSubjectId }),
     );
+  });
+});
+
+describe("Given: the order lines route of a subject", () => {
+  const ordersToProductsPath =
+    "/subject-owner/ecommerce-module/orders-to-products";
+  const mockEcommerceOrdersToProductsList = jest.fn();
+
+  async function requestOrdersToProducts(subjectId?: string) {
+    return createApp({
+      ecommerceOrdersToProductsList: mockEcommerceOrdersToProductsList,
+    }).request(ordersToProductsPath, {
+      headers: await createHeaders(subjectId),
+    });
+  }
+
+  beforeEach(() => {
+    mockEcommerceOrdersToProductsList.mockReset();
+    mockEcommerceOrdersToProductsList.mockResolvedValue([
+      {
+        id: "line-1",
+        orderId: "order-1",
+        productId: "product-1",
+        quantity: 1,
+        total: [],
+      },
+    ]);
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a request without a token.
+   * When: the lines of the owner's orders are requested.
+   * Then: it is refused and no line is read.
+   */
+  it("When: no token is sent Then: refuses the request before reading lines", async () => {
+    const response = await requestOrdersToProducts();
+
+    expect(response.status).toBe(400);
+    expect(mockEcommerceOrdersToProductsList).not.toHaveBeenCalled();
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a token issued to another subject.
+   * When: that subject requests the owner's order lines.
+   * Then: it is refused and no line is read.
+   */
+  it("When: another subject asks Then: refuses the request before reading lines", async () => {
+    const response = await requestOrdersToProducts("subject-other");
+
+    expect(response.status).toBe(401);
+    expect(mockEcommerceOrdersToProductsList).not.toHaveBeenCalled();
+  });
+
+  it("requires the owner's JWT even when the operator header is present", async () => {
+    const response = await createApp({
+      ecommerceOrdersToProductsList: mockEcommerceOrdersToProductsList,
+    }).request(ordersToProductsPath, {
+      headers: { "X-RBAC-SECRET-KEY": "test-rbac-secret-key" },
+    });
+    expect(response.status).toBe(400);
+    expect(mockEcommerceOrdersToProductsList).not.toHaveBeenCalled();
+  });
+
+  /**
+   * BDD Scenario
+   * Given: the owner's token.
+   * When: the owner requests the lines of its orders.
+   * Then: the lines of that subject are read and answered.
+   */
+  it("When: the owner asks Then: returns the lines of its orders", async () => {
+    const response = await requestOrdersToProducts("subject-owner");
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(mockEcommerceOrdersToProductsList).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "subject-owner" }),
+    );
+    expect(body.data).toEqual([expect.objectContaining({ id: "line-1" })]);
   });
 });

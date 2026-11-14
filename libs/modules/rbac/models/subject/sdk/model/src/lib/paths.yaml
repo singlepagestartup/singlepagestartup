@@ -1120,6 +1120,48 @@ paths:
                 type: integer
                 format: int32
 
+  /rbac/subjects/{id}/ecommerce-module/orders-to-products:
+    get:
+      tags:
+        - "rbac-subject"
+      summary: List order lines
+      description: Retrieve the lines of the subject's ecommerce orders with the totals of each line; a line whose price cannot be computed has an empty total list. Requires the subject's access token. Filters narrow the results to matching lines within that subject's orders.
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/filters.yaml"
+      responses:
+        "200":
+          description: Order lines
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: "../../../../../../../../../libs/modules/ecommerce/relations/orders-to-products/sdk/model/src/lib/ecommerce-orders-to-products.yaml"
+                        - type: object
+                          required: [total]
+                          properties:
+                            total:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  total:
+                                    type: number
+                                  billingModuleCurrency:
+                                    $ref: "../../../../../../../../../libs/modules/billing/models/currency/sdk/model/src/lib/billing-currency.yaml"
+        "400":
+          description: Missing owner access token.
+        "401":
+          description: The access token does not belong to the subject in the path.
+        "403":
+          description: No RBAC permission grants the caller access to this route.
+
   /rbac/subjects/{id}/ecommerce-module/orders/{orderId}:
     patch:
       tags:

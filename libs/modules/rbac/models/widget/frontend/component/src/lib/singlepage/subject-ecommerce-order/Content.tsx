@@ -35,14 +35,39 @@ export function Component(props: IContentProps) {
             {({ data: ecommerceModuleOrders }) => {
               return ecommerceModuleOrders?.map((ecommerceModuleOrder) => {
                 return (
-                  <EcommerceModuleOrder
+                  <RbacModuleSubject
                     key={ecommerceModuleOrder.id}
                     isServer={false}
-                    variant="cart-default"
-                    dataSource="props"
-                    data={ecommerceModuleOrder}
+                    variant="ecommerce-module-order-list-orders-to-products-default"
+                    data={subject}
                     language={props.language}
-                  />
+                    apiProps={{
+                      params: {
+                        filters: {
+                          and: [
+                            {
+                              column: "orderId",
+                              method: "eq",
+                              value: ecommerceModuleOrder.id,
+                            },
+                          ],
+                        },
+                      },
+                    }}
+                  >
+                    {({ data: ecommerceModuleOrdersToProducts }) => {
+                      return (
+                        <EcommerceModuleOrder
+                          isServer={false}
+                          variant="cart-default"
+                          dataSource="props"
+                          data={ecommerceModuleOrder}
+                          ordersToProducts={ecommerceModuleOrdersToProducts}
+                          language={props.language}
+                        />
+                      );
+                    }}
+                  </RbacModuleSubject>
                 );
               });
             }}
