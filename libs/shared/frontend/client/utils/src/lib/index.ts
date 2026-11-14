@@ -19,7 +19,7 @@ export {
   useAdminBasePath,
 } from "./admin-route";
 
-export { getLocalizedHref } from "./localized-href";
+export { getLanguageSwitchHref, getLocalizedHref } from "./localized-href";
 export {
   getFilePreviewKind,
   getFilePreviewUrl,

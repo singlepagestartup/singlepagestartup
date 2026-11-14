@@ -1,5 +1,6 @@
 import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
 import { Component as NavigationInline } from "./navigation-inline";
+import { Component as Internationalization } from "./internationalization";
 import { Component as Navigation } from "./navigation";
 import { Component as ActionsFull } from "./actions-full";
 import { Component as Actions } from "./actions";
@@ -20,6 +21,7 @@ import { Component as Default } from "./default";
 export const variants = {
   hidden: Hidden,
   "navigation-inline": NavigationInline,
+  internationalization: Internationalization,
   navigation: Navigation,
   "actions-full": ActionsFull,
   actions: Actions,
