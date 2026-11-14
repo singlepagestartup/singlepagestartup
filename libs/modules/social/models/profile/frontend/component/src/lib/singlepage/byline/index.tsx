@@ -12,7 +12,7 @@ export function Component(props: IComponentProps) {
   return (
     <ParentComponent
       Skeleton={<Skeleton size={props.size} inverse={props.inverse} />}
-      Component={ChildComponent as any}
+      Component={ChildComponent}
       Provider={Provider}
       clientApi={clientApi}
       serverApi={serverApi}

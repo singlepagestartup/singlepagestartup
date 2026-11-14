@@ -186,7 +186,7 @@ describe("Website Builder navbar composition", () => {
       const html = renderToStaticMarkup(
         <Navbar
           buttonsArrayId="ai-chat-register"
-          activeHref="/ai-chat/rbac/subjects/authentication/registration"
+          activeHref="/rbac/subject/authentication/email-and-password/registration"
           navigationLayout={navigationLayout}
           navigationLabel="Preview navigation"
           profileSelect={() => <button>Selected project slot</button>}
@@ -194,7 +194,7 @@ describe("Website Builder navbar composition", () => {
         />,
       );
       expect(html).toContain(
-        'href="/ai-chat/rbac/subjects/authentication/registration"',
+        'href="/rbac/subject/authentication/email-and-password/registration"',
       );
       expect(html).toContain('aria-current="page"');
       expect(html).toContain('aria-label="Preview navigation"');
@@ -260,20 +260,18 @@ describe("Website Builder navbar composition", () => {
 
   test("every header Page owns its model slots through one header Layout", () => {
     const routes = [
-      "rbac/subjects/authentication/registration",
-      "rbac/subjects/authentication/select-method",
-      "rbac/subjects/settings",
-      "help",
-      "rbac/subjects/tokens",
-      "social/profiles/create",
-      "social/profiles/pottery",
-      "social/profiles/pottery/settings",
-      "social/profiles/pottery/chats/pottery%3Aproject-chat/threads/create",
+      aiChatServiceHrefs.register,
+      aiChatServiceHrefs.login,
+      "/ai-chat/rbac/subjects/settings",
+      "/ai-chat/help",
+      "/ai-chat/rbac/subjects/tokens",
+      "/ai-chat/social/profiles/create",
+      "/ai-chat/social/profiles/pottery",
+      "/ai-chat/social/profiles/pottery/settings",
+      "/ai-chat/social/profiles/pottery/chats/pottery%3Aproject-chat/threads/create",
     ];
     for (const route of routes) {
-      const html = renderToStaticMarkup(
-        <AIChatPreview initialHref={`/ai-chat/${route}`} />,
-      );
+      const html = renderToStaticMarkup(<AIChatPreview initialHref={route} />);
       expect(
         html.match(/data-ds-block="website-builder.widget.navbar-ai-chat"/g)
           ?.length,
@@ -303,7 +301,7 @@ describe("Website Builder navbar composition", () => {
         expect(source).toContain("showTokens");
         expect(source).toContain("rbac/subject/index");
       }
-      if (route.startsWith("social/profiles")) {
+      if (route.startsWith("/ai-chat/social/profiles")) {
         expect(source).toContain("profileSelect=");
         expect(source).toMatch(
           /variant="(?:select-ai-chat-project|me-social-module-profile-select-ai-chat)"/,

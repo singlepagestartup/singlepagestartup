@@ -51,3 +51,7 @@ unknown statuses keep it `queued`. Failure takes precedence across recipients.
 unknown. Every returned receipt refers to a saved Request. Retrying a saved
 submission does not send its notifications again. Failed or interrupted delivery
 requires explicit follow-up rather than automatic resubmission.
+
+Submission creation and linking belong to [Form](../form/README.md#submission-transaction).
+Request exposes transaction-scoped operations that preserve startup overrides;
+it does not know which Forms own it.

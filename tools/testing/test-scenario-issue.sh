@@ -38,6 +38,7 @@ set_api_endpoint() {
   API_BASE_URL="http://${SCENARIO_API_HOST}:${API_PORT}"
   export API_SERVICE_PORT="$API_PORT"
   export API_SERVICE_URL="$API_BASE_URL"
+  export NEXT_PUBLIC_API_SERVICE_URL="$API_BASE_URL"
 }
 
 is_api_ready() {
@@ -59,8 +60,8 @@ start_api_server() {
   echo "[scenario] Starting API server on ${API_BASE_URL}..."
 
   (
-    cd apps/api &&
-      API_SERVICE_PORT="$API_PORT" API_SERVICE_URL="$API_BASE_URL" MIDDLEWARE_HTTP_CACHE="$CACHE_MIDDLEWARE_VALUE" bun run dev \
+    cd apps/api || exit 1
+    exec env API_SERVICE_PORT="$API_PORT" API_SERVICE_URL="$API_BASE_URL" MIDDLEWARE_HTTP_CACHE="$CACHE_MIDDLEWARE_VALUE" bun server.ts \
         > "$API_LOG_FILE" 2>&1
   ) &
 
@@ -229,4 +230,6 @@ if [ "${#SCENARIO_TEST_FILES[@]}" -eq 0 ]; then
   exit 1
 fi
 
-npx jest --config apps/api/jest.scenario.config.ts --runInBand --runTestsByPath "${SCENARIO_TEST_FILES[@]}"
+TS_NODE_COMPILER_OPTIONS='{"moduleResolution":"node16","module":"Node16","customConditions":null}' \
+  node --experimental-vm-modules node_modules/jest/bin/jest.js \
+    --config apps/api/jest.scenario.config.ts --runInBand --runTestsByPath "${SCENARIO_TEST_FILES[@]}"

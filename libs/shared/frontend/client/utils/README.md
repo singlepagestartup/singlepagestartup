@@ -8,7 +8,7 @@ Client-side utility library for SinglePageStartup (SPS). Provides functions for 
 src/
 ├── lib/
 │   ├── authorization/    # Authorization utilities
-│   │   └── headers.ts    # Read authorization headers from cookies
+│   │   └── headers.ts    # Build the Authorization header from the session cookie
 │   ├── saturate-headers/ # Header merging
 │   │   └── index.ts      # Merge user-provided and authorization headers
 │   └── cn/              # CSS class utilities
@@ -18,16 +18,18 @@ src/
 
 ### Authorization & Headers
 
-- `authorization.headers()` — Read authorization headers from cookies
+- `authorization.headers()` — Build the `Authorization` header from the `rbac.subject.jwt` cookie
 
   ```typescript
   const headers = authorization.headers();
   // Returns:
   // {
-  //   Authorization: "Bearer <jwt>",
-  //   "X-RBAC-SECRET-KEY": "<secret-key>"
+  //   Authorization: "Bearer <jwt>"
   // }
   ```
+
+  The operator secret never travels from the browser: it is a service
+  credential sent as `X-RBAC-SECRET-KEY` by server code only.
 
 - `saturateHeaders(userHeaders?)` — Merge user-provided headers with authorization headers
   ```typescript

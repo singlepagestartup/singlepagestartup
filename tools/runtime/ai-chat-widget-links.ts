@@ -84,22 +84,21 @@ async function find(
   entity: string,
   filters: IData,
 ) {
-  return (
-    (await (
-      await adapter(entity)
-    ).find({
-      params: {
-        filters: {
-          and: Object.entries(filters).map(([column, value]) => ({
-            column,
-            method: "eq",
-            value,
-          })),
-        },
-        limit: 101,
+  const sdk = await adapter(entity);
+  const records = await sdk.find({
+    params: {
+      filters: {
+        and: Object.entries(filters).map(([column, value]) => ({
+          column,
+          method: "eq",
+          value,
+        })),
       },
-    })) ?? []
-  );
+      limit: 101,
+    },
+  });
+
+  return records ?? [];
 }
 async function read(
   adapter: IWidgetCutoverAdapter,
@@ -129,11 +128,18 @@ async function assertSinglePresentationRoot(
   });
   if (siblings.length >= 101)
     throw new Error("Host links require pagination before transfer");
-  const linkedContent = binding.rbacWidgetId
-    ? await find(adapter, "rbac.widgets-to-website-builder-module-widgets", {
+  let linkedContent;
+  if (binding.rbacWidgetId) {
+    linkedContent = await find(
+      adapter,
+      "rbac.widgets-to-website-builder-module-widgets",
+      {
         widgetId: binding.rbacWidgetId,
-      })
-    : [];
+      },
+    );
+  } else {
+    linkedContent = [];
+  }
   if (linkedContent.length >= 101)
     throw new Error("Content links require pagination before transfer");
   const presentationIds = new Set([
@@ -335,17 +341,20 @@ export async function prepareWidgetCutover(
       const form = await required("crm.form", target.crmFormId);
       if (form.variant !== "support-ai-chat")
         throw new Error("Expected the support-ai-chat CRM Form");
-      const widget = target.crmWidgetId
-        ? await required("crm.widget", target.crmWidgetId)
-        : await ensure(
-            "crm.widget",
-            { slug: `ai-chat-support-${rbac.id}` },
-            {
-              slug: `ai-chat-support-${rbac.id}`,
-              variant: "default",
-              adminTitle: "AI Chat support form",
-            },
-          );
+      let widget;
+      if (target.crmWidgetId) {
+        widget = await required("crm.widget", target.crmWidgetId);
+      } else {
+        widget = await ensure(
+          "crm.widget",
+          { slug: `ai-chat-support-${rbac.id}` },
+          {
+            slug: `ai-chat-support-${rbac.id}`,
+            variant: "default",
+            adminTitle: "AI Chat support form",
+          },
+        );
+      }
       const existingForms = await find(adapter, "crm.widgets-to-forms", {
         widgetId: widget.id,
       });

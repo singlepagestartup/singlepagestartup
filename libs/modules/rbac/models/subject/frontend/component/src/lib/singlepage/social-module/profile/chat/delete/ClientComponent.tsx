@@ -6,7 +6,7 @@ import { Form, Button } from "@sps/shared-ui-shadcn";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import z from "node_modules/zod/lib";
+import { z } from "zod";
 import { insertSchema as socialModuleChatInsertSchema } from "@sps/social/models/chat/sdk/model";
 
 const formSchema = socialModuleChatInsertSchema;

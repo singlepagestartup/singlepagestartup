@@ -6,8 +6,15 @@ import { Skeleton } from "./Skeleton";
 import Client from "./client";
 import Server from "./server";
 export function Component(props: IComponentProps) {
-  if (props.dataSource === "props" && props.data)
-    return <ChildComponent {...props} data={props.data} />;
+  if (props.dataSource === "props" && props.data) {
+    return (
+      <ParentComponent
+        dataSource="props"
+        Component={ChildComponent}
+        componentProps={{ ...props, data: props.data }}
+      />
+    );
+  }
   return (
     <ParentComponent
       Component={props.isServer ? Server : Client}

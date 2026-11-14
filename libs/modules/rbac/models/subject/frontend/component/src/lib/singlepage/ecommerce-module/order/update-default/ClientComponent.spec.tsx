@@ -34,11 +34,8 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
 }));
 
 jest.mock("react-hook-form", () => ({
+  ...jest.requireActual("react-hook-form"),
   useForm: (...args: unknown[]) => useFormMock(...args),
-}));
-
-jest.mock("@hookform/resolvers/zod", () => ({
-  zodResolver: () => undefined,
 }));
 
 jest.mock("sonner", () => ({
@@ -73,7 +70,10 @@ jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
       data: [
         {
           id: "order-1",
-          cartDetails: { lines: [{ id: "line-1", quantity: 1 }] },
+          cartDetails: {
+            maxLineQuantity: 7,
+            lines: [{ id: "line-1", quantity: 1 }],
+          },
         },
       ],
     }),
@@ -115,4 +115,26 @@ describe("Given: order update-default action component", () => {
       data: submitPayload,
     });
   });
+});
+
+it("validates quantities against the limit returned by the API", async () => {
+  useFormMock.mockReturnValue({ control: {}, handleSubmit: jest.fn() });
+  render(
+    <Component
+      isServer={false}
+      variant="ecommerce-module-order-update-default"
+      data={{ id: "subject-1" } as any}
+      ecommerceModuleOrder={{ id: "order-1" } as any}
+      language="en"
+    />,
+  );
+  const { resolver } = useFormMock.mock.calls[0][0];
+  const options = { fields: {}, shouldUseNativeValidation: false };
+  const payload = (quantity: number) => ({
+    ordersToProducts: [{ id: "line-1", quantity }],
+  });
+  const accepted = await resolver(payload(7), {}, options);
+  const refused = await resolver(payload(8), {}, options);
+  expect(accepted.values).toEqual(payload(7));
+  expect(refused.errors.ordersToProducts[0].quantity).toBeDefined();
 });

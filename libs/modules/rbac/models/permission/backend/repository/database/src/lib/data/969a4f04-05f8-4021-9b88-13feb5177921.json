@@ -1,0 +1,9 @@
+{
+  "id": "969a4f04-05f8-4021-9b88-13feb5177921",
+  "createdAt": "2026-11-10T20:43:00.645Z",
+  "updatedAt": "2026-11-10T20:43:00.645Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/website-builder/slides"
+}

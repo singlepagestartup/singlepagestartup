@@ -63,6 +63,6 @@
   },
   "startLink": {
     "text": "Начать с моих материалов",
-    "href": "/ai-chat/rbac/subjects/authentication/registration"
+    "href": "/rbac/subject/authentication/email-and-password/registration"
   }
 }

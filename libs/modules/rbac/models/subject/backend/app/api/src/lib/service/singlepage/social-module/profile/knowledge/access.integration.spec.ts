@@ -42,13 +42,17 @@ interface ITestServices {
 }
 
 function createTestServices(): ITestServices {
+  const rolesToPermissions = new RolesToPermissionsService(
+    new RolesToPermissionsRepository(new RolesToPermissionsConfiguration()),
+  );
   const permission = new PermissionService(
     new PermissionRepository(new PermissionConfiguration()),
     { find: async () => [] } as any,
   );
-  const role = new RoleService(new RoleRepository(new RoleConfiguration()));
-  const rolesToPermissions = new RolesToPermissionsService(
-    new RolesToPermissionsRepository(new RolesToPermissionsConfiguration()),
+  const role = new RoleService(
+    new RoleRepository(new RoleConfiguration()),
+    permission,
+    rolesToPermissions,
   );
   const subjectsToRoles = new SubjectsToRolesService(
     new SubjectsToRolesRepository(new SubjectsToRolesConfiguration()),
@@ -165,6 +169,7 @@ describe("Given: a clean subject and profile-specific Knowledge grant", () => {
         services.permission,
         services.rolesToPermissions,
         services.subjectsToRoles,
+        services.subjectRepository,
       );
       const ownerToken = await sign(
         {

@@ -19,7 +19,7 @@ export class Handler {
 
       logger.info("Broadcast module message delete expired started");
 
-      await this.service.broadcastModule.message.deleteExpired();
+      await this.service.broadcastModule.channel.deleteExpired();
 
       logger.info("Broadcast module message delete expired finished");
 

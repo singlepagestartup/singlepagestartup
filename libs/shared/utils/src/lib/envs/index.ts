@@ -7,6 +7,7 @@ export * from "./telegram";
 export * from "./client";
 export * from "./artificial-intelligence";
 export * from "./crm";
+export * from "./ecommerce";
 export * from "./openapi";
 export * from "./notification";
 export * from "./api";

@@ -5,23 +5,24 @@ import type { UseFormReturn } from "react-hook-form";
 import type {
   IComponentProps as IParentComponentProps,
   IComponentPropsExtended as IParentComponentPropsExtended,
-} from "@sps/shared-frontend-components/singlepage/default/interface";
+} from "@sps/shared-frontend-components/singlepage/subject-default/interface";
 
 export type { IModel };
 
 export const variant = "ecommerce-module-order-list-checkout-default" as const;
 
-export interface IComponentProps
-  extends IParentComponentProps<IModel, typeof variant> {
+export interface IComponentProps extends IParentComponentProps<
+  IModel,
+  typeof variant
+> {
   language: string;
 }
 
-export interface IComponentPropsExtended
-  extends IParentComponentPropsExtended<
-    IModel,
-    typeof variant,
-    IComponentProps
-  > {}
+export interface IComponentPropsExtended extends IParentComponentPropsExtended<
+  IModel,
+  typeof variant,
+  IComponentProps
+> {}
 
 export interface IRowProps {
   subject: IModel;
@@ -34,9 +35,12 @@ export interface IRowProps {
 export interface IQuantityProps {
   subjectId: string;
   orderId: string;
+  maxLineQuantity: number;
   line: ICartDetails["lines"][number];
   language: string;
 }
 
-export interface ICurrencyProps
-  extends Pick<IRowProps, "subject" | "ecommerceModuleOrder" | "language"> {}
+export interface ICurrencyProps extends Pick<
+  IRowProps,
+  "subject" | "ecommerceModuleOrder" | "language"
+> {}

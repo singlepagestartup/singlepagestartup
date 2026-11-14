@@ -15,7 +15,7 @@ import { useThreadMessagesRefetch } from "./hooks/use-thread-messages-refetch";
 import { IComponentPropsExtended } from "./interface";
 import type { KnowledgeSource, SocialSkill } from "./types";
 import { cn } from "@sps/shared-frontend-client-utils";
-import { Component as SocialModuleSkillChatCreateDialog } from "@sps/social/models/skill/frontend/component/src/lib/singlepage/chat-create-dialog";
+import { Component as SocialModuleSkill } from "@sps/social/models/skill/frontend/component";
 import { useCallback, useRef, useState } from "react";
 import type { IModel as SocialProfile } from "@sps/social/models/profile/sdk/model";
 
@@ -215,7 +215,7 @@ export function Component(props: IComponentPropsExtended) {
             subjectId={props.data.id}
             threadMessagesCache={threadMessagesCache}
           />
-          <SocialModuleSkillChatCreateDialog
+          <SocialModuleSkill
             isServer={false}
             variant="chat-create-dialog"
             language={props.language}

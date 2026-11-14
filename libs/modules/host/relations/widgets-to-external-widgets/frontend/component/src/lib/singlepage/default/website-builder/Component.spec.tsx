@@ -186,7 +186,7 @@ it("shows the sign-in control for an anonymous default Subject without reading a
     <Component {...props} url="/ai-chat/projects" />,
   );
   expect(html).toContain("Sign in");
-  expect(html).toContain("/en/ai-chat/sign-in");
+  expect(html).toContain("/en/rbac/subject/authentication/email-and-password");
   expect(html).not.toContain("Projects unavailable");
   expect(subjectCalls.mock.calls.map(([call]) => call.variant)).toEqual([
     "me-navigation-controls-ai-chat",

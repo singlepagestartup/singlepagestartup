@@ -82,7 +82,8 @@ describe("durable subscription grant revocation", () => {
 
   it("skips a paid order with a paid invoice but an unconfirmed payment intent", async () => {
     const { service, order } = lifecycle("paid", false, false);
-    order().ordersToBillingModulePaymentIntents[0].billingModulePaymentIntent.status = "processing";
+    order().ordersToBillingModulePaymentIntents[0].billingModulePaymentIntent.status =
+      "processing";
     await service.execute({});
     expect(mockSubjectsToRolesCreate).not.toHaveBeenCalled();
     expect(order().status).toBe("paid");
@@ -486,14 +487,24 @@ describe("durable subscription grant revocation", () => {
       },
     ]);
     let amount = "1200";
-    service.subjectsToBillingModuleCurrencies.find = jest.fn(
-      async () =>
-        [{ id: "wallet", billingModuleCurrencyId: "tokens", amount }] as any,
-    );
+    const wallet = {
+      id: "wallet",
+      subjectId: "subject",
+      billingModuleCurrencyId: "tokens",
+      amount,
+      createdAt: new Date("2026-01-01"),
+      updatedAt: new Date("2026-01-01"),
+      variant: "default",
+      className: null,
+      orderIndex: 0,
+    };
+    service.subjectsToBillingModuleCurrencies.find = jest.fn(async () => [
+      { ...wallet, amount },
+    ]);
     const credit = jest.fn(async (props) => {
       expect(props.expectedAmount).toBe(amount);
       amount = props.amount;
-      return { id: "wallet", amount };
+      return { ...wallet, amount };
     });
     service.subjectsToBillingModuleCurrencies.updateAmountIfUnchanged = credit;
     await service.execute({ subjectId: "subject" });
@@ -1051,7 +1062,7 @@ describe("Given: delivered subscription order without invoice context", () => {
           ordersToBillingModulePaymentIntents: [
             {
               billingModulePaymentIntent: {
-            status: "succeeded",
+                status: "succeeded",
                 type: "one_off",
                 paymentIntentsToCurrencies: [
                   {
@@ -1147,7 +1158,7 @@ describe("Given: an expired Telegram Stars subscription order", () => {
         ordersToBillingModulePaymentIntents: [
           {
             billingModulePaymentIntent: {
-            status: "succeeded",
+              status: "succeeded",
               type: "one_off",
               paymentIntentsToCurrencies: [
                 {

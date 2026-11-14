@@ -43,9 +43,12 @@ export class MaterialService {
         }
       }
       const materials = parts.join("\n\n");
-      const overview = materials
-        ? await this.media.synthesize(materials, userContext)
-        : "";
+      let overview;
+      if (materials) {
+        overview = await this.media.synthesize(materials, userContext);
+      } else {
+        overview = "";
+      }
       const saved = await this.props.source.saveAnalyzedContent({
         sourceId,
         expectedContentHash: reset.contentHash,

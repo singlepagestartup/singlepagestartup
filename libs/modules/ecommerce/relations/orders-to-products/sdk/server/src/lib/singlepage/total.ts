@@ -1,9 +1,9 @@
 import {
   serverHost,
   route,
-  IModel,
+  type IModel,
+  type IOrderLineTotals,
 } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
-import { IModel as IBillingModuleCurrency } from "@sps/billing/models/currency/sdk/model";
 import {
   NextRequestOptions,
   responsePipe,
@@ -22,10 +22,7 @@ export interface IProps {
   options?: Partial<NextRequestOptions>;
 }
 
-export type IResult = {
-  total: number;
-  billingModuleCurrency: IBillingModuleCurrency;
-}[];
+export type IResult = IOrderLineTotals["totals"];
 
 export async function action(props: IProps): Promise<IResult> {
   const { id, params, options, host = serverHost } = props;

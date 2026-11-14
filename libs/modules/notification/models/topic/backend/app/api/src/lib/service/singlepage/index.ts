@@ -1,4 +1,8 @@
 import "reflect-metadata";
+import {
+  Service as BoundedDelivery,
+  type ISendBoundedNotification,
+} from "./bounded-delivery";
 import { inject, injectable } from "inversify";
 import { CRUDService, DI } from "@sps/shared-backend-api";
 import { Table } from "@sps/notification/models/topic/backend/repository/database";
@@ -16,5 +20,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   ) {
     super(repository);
     this.notificationModule = notificationModule;
+  }
+  async sendBounded(props: ISendBoundedNotification) {
+    const delivery = new BoundedDelivery(this.notificationModule.notification);
+    const result = await delivery.execute(props);
+    return result;
   }
 }
