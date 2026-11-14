@@ -43,6 +43,7 @@ describe("subscription period PostgreSQL write boundary", () => {
           ordersToBillingModulePaymentIntents: [
             {
               billingModulePaymentIntent: {
+                status: "succeeded",
                 paymentIntentsToInvoices: await Promise.all(
                   paymentInvoices.map(async (id) => ({
                     invoice: await invoices.findFirstByField("id", id),

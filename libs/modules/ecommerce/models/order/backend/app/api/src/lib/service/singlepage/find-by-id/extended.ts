@@ -6,7 +6,10 @@ import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/
 import { IModel as IEcommerceModuleOrdersToBillingModuleCurrencies } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/model";
 import { IModel as IEcommerceModuleOrdersToFileStorageModuleFiles } from "@sps/ecommerce/relations/orders-to-file-storage-module-files/sdk/model";
 import { IModel as IEcommerceModuleOrdersToBillingModulePaymentIntents } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/model";
-import { IModel as IBillingModulePaymentIntent } from "@sps/billing/models/payment-intent/sdk/model";
+import {
+  isConfirmedInvoice,
+  type IModel as IBillingModulePaymentIntent,
+} from "@sps/billing/models/payment-intent/sdk/model";
 import { IModel as IBillingModulePaymentIntentsToCurrecies } from "@sps/billing/relations/payment-intents-to-currencies/sdk/model";
 import { IModel as IBillingModulePaymentIntentsToInvoices } from "@sps/billing/relations/payment-intents-to-invoices/sdk/model";
 import { IModel as IBillingModuleInvoice } from "@sps/billing/models/invoice/sdk/model";
@@ -509,28 +512,37 @@ export class Service {
     const paid = [...candidates.values()].filter(
       ({ invoice }) => invoice.status === "paid",
     );
-    for (const { invoice } of paid)
-      if (!Number.isFinite(new Date(invoice.createdAt).getTime()))
+    for (const { invoice } of paid) {
+      if (!Number.isFinite(new Date(invoice.createdAt).getTime())) {
         throw new Error("Validation error. Stored Invoice date is invalid");
+      }
+    }
     if (
       order.subscriptionPeriodInvoiceId &&
       !paid.some(
         ({ invoice }) => invoice.id === order.subscriptionPeriodInvoiceId,
       )
-    )
+    ) {
       throw new Error(
         "Validation error. Accepted Invoice is missing from this Order payment context",
       );
+    }
     paid.sort((a, b) => {
       const first = new Date(a.invoice.createdAt).getTime();
       const second = new Date(b.invoice.createdAt).getTime();
       return first - second || a.invoice.id.localeCompare(b.invoice.id);
     });
-    if (!paid.length && candidates.size > 1)
+    if (!paid.length && candidates.size > 1) {
       throw new Error(
         "Validation error. Unpaid Order has multiple Invoice contexts",
       );
-    const selected = paid.at(-1) ?? [...candidates.values()][0];
+    }
+    const confirmed = paid.filter(({ intent, invoice }) =>
+      isConfirmedInvoice(intent, invoice),
+    );
+    // Pending attempts still have displayable terms before fulfilment.
+    const selected =
+      confirmed.at(-1) ?? paid.at(-1) ?? candidates.values().next().value;
     if (selected) {
       const { intent, invoice } = selected;
       if (!Number.isFinite(invoice.amount) || invoice.amount < 0)

@@ -80,6 +80,17 @@ describe("durable subscription grant revocation", () => {
     mockEcommerceOrderUpdate.mockReset();
   });
 
+  it("skips a paid order with a paid invoice but an unconfirmed payment intent", async () => {
+    const { service, order } = lifecycle("paid", false, false);
+    order().ordersToBillingModulePaymentIntents[0].billingModulePaymentIntent.status =
+      "processing";
+    await service.execute({});
+    await service.execute({});
+    expect(mockSubjectsToRolesCreate).not.toHaveBeenCalled();
+    expect(order().status).toBe("paid");
+    expect(mockLoggerError).toHaveBeenCalledTimes(1);
+  });
+
   function lifecycle(
     status: string,
     granted: boolean,
@@ -116,6 +127,7 @@ describe("durable subscription grant revocation", () => {
       ordersToBillingModulePaymentIntents: [
         {
           billingModulePaymentIntent: {
+            status: "succeeded",
             id: "payment",
             type: "one_off",
             paymentIntentsToCurrencies: [{ currency: { id: "currency" } }],
@@ -237,6 +249,27 @@ describe("durable subscription grant revocation", () => {
       new Date("2026-10-24T10:00:00Z"),
     );
     expect(mockSubjectsToRolesCreate).not.toHaveBeenCalled();
+  });
+
+  it("renews only after the intent for the new paid invoice succeeds", async () => {
+    const { service, order, accept } = lifecycle("delivering", true);
+    const links = order().ordersToBillingModulePaymentIntents;
+    const first = links[0].billingModulePaymentIntent;
+    const renewal = {
+      ...first,
+      id: "renewal",
+      status: "processing",
+      paymentIntentsToInvoices: first.paymentIntentsToInvoices.splice(1),
+    };
+    links.push({ billingModulePaymentIntent: renewal });
+    await service.execute({ subjectId: "subject" });
+    expect(order().subscriptionPeriodInvoiceId).toBe("invoice-a");
+    expect(accept).not.toHaveBeenCalled();
+    renewal.status = "succeeded";
+    await service.execute({ subjectId: "subject" });
+    await service.execute({ subjectId: "subject" });
+    expect(order().subscriptionPeriodInvoiceId).toBe("invoice-b");
+    expect(accept).toHaveBeenCalledTimes(1);
   });
 
   it("allows a new explicit purchase to issue its first role and activate its first period", async () => {
@@ -585,6 +618,7 @@ it("never renews internal Free and preserves all wallet balances on completion",
       ordersToBillingModulePaymentIntents: [
         {
           billingModulePaymentIntent: {
+            status: "succeeded",
             type: "one_off",
             paymentIntentsToCurrencies: [{ currency: { id: "currency" } }],
             paymentIntentsToInvoices: [
@@ -702,7 +736,7 @@ describe("Given: unscoped RBAC ecommerce order proceed execution", () => {
    *
    * Given: the unscoped candidate order query returns no orders.
    * When: ecommerce order proceed runs without a subject id.
-   * Then: the first query uses actionable statuses, batch limit, and updatedAt ordering.
+   * Then: the first query uses actionable statuses, batch limit, and stable ID ordering.
    */
   it("Then: selects actionable orders with a fixed deterministic batch", async () => {
     const {
@@ -728,7 +762,7 @@ describe("Given: unscoped RBAC ecommerce order proceed execution", () => {
         orderBy: {
           and: [
             {
-              column: "updatedAt",
+              column: "id",
               method: "asc",
             },
           ],
@@ -941,12 +975,18 @@ describe("Given: scoped RBAC ecommerce order proceed execution", () => {
 });
 
 describe("bounded fair order scheduling", () => {
-  it.each([false, true])(
-    "processes a fresh paid purchase behind more than 100 expired orders, scoped=%s",
-    async (scoped) => {
+  it.each([
+    [false, "paid"],
+    [true, "paid"],
+    [false, "expired"],
+    [true, "expired"],
+  ] as const)(
+    "continues scanning both queues with more than 100 unchanged candidates, scoped=%s backlog=%s",
+    async (scoped, backlog) => {
+      const otherStatus = backlog === "paid" ? "expired" : "paid";
       const dataset: any[] = Array.from({ length: 151 }, (_, index) => ({
         id: `order-${String(index).padStart(4, "0")}`,
-        status: index === 150 ? "paid" : "expired",
+        status: index < 150 ? backlog : otherStatus,
         updatedAt: new Date(2026, 0, 1, 0, index),
         ordersToProducts: [],
       }));
@@ -998,7 +1038,7 @@ describe("bounded fair order scheduling", () => {
       await service.execute(scoped ? { subjectId: "subject" } : {});
       expect(paid).toHaveBeenCalledWith(
         expect.objectContaining({
-          order: expect.objectContaining({ id: "order-0150", status: "paid" }),
+          order: expect.objectContaining({ id: "order-0150" }),
         }),
       );
       expect(paid.mock.calls.length).toBe(ECOMMERCE_ORDER_PROCEED_BATCH_LIMIT);
@@ -1051,6 +1091,7 @@ describe("Given: delivered subscription order without invoice context", () => {
           ordersToBillingModulePaymentIntents: [
             {
               billingModulePaymentIntent: {
+                status: "succeeded",
                 type: "one_off",
                 paymentIntentsToCurrencies: [
                   {
@@ -1146,6 +1187,7 @@ describe("Given: an expired Telegram Stars subscription order", () => {
         ordersToBillingModulePaymentIntents: [
           {
             billingModulePaymentIntent: {
+              status: "succeeded",
               type: "one_off",
               paymentIntentsToCurrencies: [
                 {

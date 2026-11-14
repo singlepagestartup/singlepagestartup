@@ -1,3 +1,4 @@
+import { isConfirmedInvoice } from "@sps/billing/models/payment-intent/sdk/model";
 import type { IModel as IOrder } from "@sps/ecommerce/models/order/sdk/model";
 import type { IResult as IExtendedOrder } from "../find-by-id/extended";
 import type { Repository } from "../../../repository";
@@ -163,10 +164,10 @@ export class Service {
     const invoices = Array.from(
       new Map(
         order.ordersToBillingModulePaymentIntents
-          .flatMap((link) =>
-            link.billingModulePaymentIntent.paymentIntentsToInvoices
-              .map((relation) => relation.invoice)
-              .filter((invoice) => invoice?.status === "paid"),
+          .flatMap(({ billingModulePaymentIntent: intent }) =>
+            intent.paymentIntentsToInvoices
+              .map(({ invoice }) => invoice)
+              .filter((invoice) => isConfirmedInvoice(intent, invoice)),
           )
           .map((invoice) => [invoice.id, invoice]),
       ).values(),
