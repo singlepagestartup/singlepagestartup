@@ -11,7 +11,7 @@ Links orders to products, including quantity information.
 - `updatedAt`: last update timestamp.
 - `variant`: display variant.
 - `orderIndex`: ordering index for display.
-- `quantity`: quantity of the product in the order.
+- `quantity`: quantity of the product in the order, a whole number of at least 1. The subject cart routes accept up to 1,000,000 units per line by default. Set `ECOMMERCE_ORDER_LINE_MAX_QUANTITY` in `apps/api/.env` for local development or `tools/deployer/.env` for deployment. Use a whole number from 1 to 2,147,483,647. Restart the API with the updated environment and reload the cart. Its `cartDetails.maxLineQuantity` field supplies the limit to the browser.
 - `className`: optional CSS class name.
 - `orderId`: linked order ID.
 - `productId`: linked product ID.

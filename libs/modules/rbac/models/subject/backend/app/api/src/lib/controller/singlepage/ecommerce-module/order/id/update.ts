@@ -1,4 +1,5 @@
 import {
+  ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds,
   INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
   RBAC_JWT_SECRET,
   RBAC_SECRET_KEY,
@@ -83,16 +84,23 @@ export class Handler {
 
       if (
         !Array.isArray(data.ordersToProducts) ||
-        !data.ordersToProducts.length ||
-        data.ordersToProducts.some(
-          (line: { id?: string; quantity?: number }) =>
-            !line ||
-            typeof line.id !== "string" ||
-            !Number.isSafeInteger(line.quantity) ||
-            Number(line.quantity) <= 0,
-        )
+        !data.ordersToProducts.length
       ) {
         throw new Error("Validation error. No ordersToProducts provided");
+      }
+      for (const line of data.ordersToProducts) {
+        if (!line || typeof line.id !== "string") {
+          throw new Error("Validation error. Each order line needs an id");
+        }
+        if (
+          !Number.isSafeInteger(line.quantity) ||
+          line.quantity < quantityBounds.min ||
+          line.quantity > quantityBounds.max
+        ) {
+          throw new Error(
+            `Validation error. ordersToProducts[].quantity must be a whole number between ${quantityBounds.min} and ${quantityBounds.max}`,
+          );
+        }
       }
 
       const entity = await this.service.findById({

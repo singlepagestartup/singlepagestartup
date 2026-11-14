@@ -1,4 +1,5 @@
 import {
+  ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds,
   INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
   RBAC_JWT_SECRET,
   RBAC_SECRET_KEY,
@@ -66,6 +67,17 @@ export class Handler {
         throw new Error(
           "Permission error. Initial Free is available only through authentication bootstrap",
         );
+      const quantity = data.quantity ?? 1;
+      if (
+        !Number.isInteger(quantity) ||
+        quantity < quantityBounds.min ||
+        quantity > quantityBounds.max
+      ) {
+        throw new Error(
+          `Validation error. Quantity must be an integer between ${quantityBounds.min} and ${quantityBounds.max}`,
+        );
+      }
+
       const requestedCurrencyId = data["billingModule"]?.currency?.id;
 
       let storeId = data.storeId;
@@ -98,7 +110,7 @@ export class Handler {
         subjectId: id,
         productId,
         storeId,
-        quantity: data.quantity || 1,
+        quantity,
         billingModuleCurrencyId: requestedCurrencyId,
       });
 
