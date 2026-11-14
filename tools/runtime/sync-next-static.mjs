@@ -4,7 +4,9 @@ import { pathToFileURL } from "node:url";
 
 async function directoryExists(directory) {
   try {
-    return (await stat(directory)).isDirectory();
+    const stats = await stat(directory);
+
+    return stats.isDirectory();
   } catch (error) {
     if (error?.code === "ENOENT") {
       return false;

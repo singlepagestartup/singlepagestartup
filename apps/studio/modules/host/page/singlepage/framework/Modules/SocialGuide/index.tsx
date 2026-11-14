@@ -398,7 +398,7 @@ export default function SocialGuide({ copy, resolveLink }: ISocialGuideProps) {
                 {copy.start.paragraphs[0]}
               </p>
               <PreviewLink
-                href="/ai-chat/rbac/subjects/authentication/registration"
+                href="/rbac/subject/authentication/email-and-password/registration"
                 resolveLink={resolveLink}
                 className={`mt-6 inline-flex min-h-11 items-center justify-center gap-3 rounded-xl bg-[#18232a] px-5 py-3 text-sm font-semibold text-white ${siteStyles.focus}`}
               >

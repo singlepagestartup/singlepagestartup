@@ -79,7 +79,7 @@ does not change the period.
 ## Variants
 
 - `default`: order card wrapper with header and child content.
-- `cart-default`: cart layout showing products, quantities, and totals.
+- `cart-default`: cart layout showing products, quantities, and totals. Pass the owner-scoped lines as `ordersToProducts` in customer views. Standalone use reads the lines with the permissions of the caller.
 - `orders-to-products-quantity-default`: renders quantities from order-product relations.
 - `purchase-ai-chat`: purchase history row. The shared record reader loads the
   Order; local `client.tsx`/`server.tsx` readers load SDK totals and pass typed

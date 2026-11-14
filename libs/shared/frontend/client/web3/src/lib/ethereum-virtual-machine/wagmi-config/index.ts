@@ -1,6 +1,6 @@
 import { config as defaultConfig } from "./default";
 
-export const wagmiConfig = {
+export const wagmiConfig: { default: typeof defaultConfig } = {
   default: defaultConfig,
 };
 

@@ -142,7 +142,7 @@ export const websiteContent: ICodeFrameworkWebsiteContent = {
     links: [
       {
         text: "Создать продукт",
-        href: "/ai-chat/rbac/subjects/authentication/registration",
+        href: "/rbac/subject/authentication/email-and-password/registration",
       },
     ],
     quote: "",
@@ -228,7 +228,7 @@ export const websiteContent: ICodeFrameworkWebsiteContent = {
     links: [
       {
         text: "Создать продукт",
-        href: "/ai-chat/rbac/subjects/authentication/registration",
+        href: "/rbac/subject/authentication/email-and-password/registration",
       },
       {
         text: "Тарифы и токены",
@@ -322,7 +322,7 @@ export const websiteContent: ICodeFrameworkWebsiteContent = {
     links: [
       {
         text: "Начать",
-        href: "/ai-chat/rbac/subjects/authentication/registration",
+        href: "/rbac/subject/authentication/email-and-password/registration",
       },
       {
         text: "Посмотреть код",

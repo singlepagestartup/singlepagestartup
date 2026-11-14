@@ -15,6 +15,13 @@ const mockTelegramSendMessage = jest.fn();
 const mockTelegramEditMessageCaption = jest.fn();
 const mockTelegramEditMessageText = jest.fn();
 
+jest.mock("@sps/shared-third-parties", () => ({
+  ...jest.requireActual("@sps/shared-third-parties"),
+  TelegramBot: function (...args: unknown[]) {
+    return new (jest.requireMock("grammy").Bot)(...args);
+  },
+}));
+
 jest.mock("grammy", () => ({
   Bot: jest.fn().mockImplementation(() => ({
     api: {
@@ -144,7 +151,7 @@ describe("notification send service", () => {
       findById: jest.fn().mockResolvedValue(null),
     });
 
-    await expect(service.send({ id: "missing-id" })).resolves.toBeNull();
+    await expect(service.sendNow({ id: "missing-id" })).resolves.toBeNull();
     expect(service.provider).not.toHaveBeenCalled();
     expect(service.delete).not.toHaveBeenCalled();
     expect(notificationsToTemplatesFindMock).not.toHaveBeenCalled();
@@ -167,7 +174,7 @@ describe("notification send service", () => {
     });
 
     await expect(
-      service.send({ id: expiredNotification.id }),
+      service.sendNow({ id: expiredNotification.id }),
     ).resolves.toBeNull();
     expect(service.delete).toHaveBeenCalledWith({ id: expiredNotification.id });
     expect(service.provider).not.toHaveBeenCalled();
@@ -202,7 +209,7 @@ describe("notification send service", () => {
       },
     ]);
 
-    await expect(service.send({ id: notification.id })).resolves.toBe(
+    await expect(service.sendNow({ id: notification.id })).resolves.toBe(
       sentNotification,
     );
     expect(service.provider).toHaveBeenCalledWith({
@@ -255,7 +262,7 @@ describe("notification send service", () => {
       },
     ]);
 
-    await expect(service.send({ id: notification.id })).resolves.toBe(
+    await expect(service.sendNow({ id: notification.id })).resolves.toBe(
       erroredNotification,
     );
     expect(service.provider).toHaveBeenCalledWith({
@@ -316,7 +323,7 @@ describe("notification send service", () => {
       },
     ]);
 
-    await expect(service.send({ id: notification.id })).resolves.toBe(
+    await expect(service.sendNow({ id: notification.id })).resolves.toBe(
       sentNotification,
     );
     expect(service.provider).toHaveBeenCalledTimes(2);
@@ -390,7 +397,7 @@ describe("notification send service", () => {
       findById: jest.fn().mockResolvedValue(erroredNotification),
     });
 
-    await expect(service.send({ id: erroredNotification.id })).resolves.toBe(
+    await expect(service.sendNow({ id: erroredNotification.id })).resolves.toBe(
       erroredNotification,
     );
     expect(service.provider).not.toHaveBeenCalled();
@@ -433,7 +440,7 @@ describe("notification send service", () => {
       },
     ]);
 
-    await expect(service.send({ id: notification.id })).rejects.toThrow(
+    await expect(service.sendNow({ id: notification.id })).rejects.toThrow(
       "Internal Server Error",
     );
     expect(service.provider).toHaveBeenCalledWith({
@@ -551,4 +558,68 @@ describe("notification send service", () => {
 
     fetchSpy.mockRestore();
   });
+  it("does not mark an unconfirmed provider delivery as sent", async () => {
+    const notification = createNotification({
+      reciever: "12345",
+      status: "sending",
+    });
+    const service = Object.assign(Object.create(Service.prototype), {
+      findById: jest.fn().mockResolvedValue(notification),
+      update: jest.fn(),
+    }) as Service;
+    (templateApi.render as jest.Mock).mockResolvedValue(
+      JSON.stringify({
+        method: "sendMessage",
+        props: ["Text", { parse_mode: "HTML" }],
+      }),
+    );
+    mockTelegramSendMessage.mockResolvedValue({});
+    await expect(
+      service.provider({
+        id: notification.id,
+        method: "telegram",
+        provider: "Telegram",
+        template: { id: "template-id", variant: "content-telegram" } as any,
+      }),
+    ).rejects.toThrow("not accepted");
+    expect(service.update).not.toHaveBeenCalled();
+  });
+  it.each([
+    {
+      method: "sendMessage",
+      props: ["x".repeat(4001), { parse_mode: "HTML" }],
+    },
+    { method: "sendPhoto", props: ["https://example.invalid/image.png"] },
+    { method: "sendMessage", props: ["", { parse_mode: "HTML" }] },
+  ])(
+    "keeps custom bounded templates to one physical text message",
+    async (rendered) => {
+      const notification = createNotification({
+        reciever: "12345",
+        status: "sending",
+      });
+      const service = Object.assign(Object.create(Service.prototype), {
+        findById: jest.fn().mockResolvedValue(notification),
+        update: jest.fn(),
+      }) as Service;
+      (templateApi.render as jest.Mock).mockResolvedValue(
+        JSON.stringify(rendered),
+      );
+      await expect(
+        service.provider({
+          id: notification.id,
+          method: "telegram",
+          provider: "Telegram",
+          template: {
+            id: "template-id",
+            variant: "project-security-telegram",
+          } as any,
+          singleMessage: true,
+        }),
+      ).rejects.toThrow("Bounded delivery requires one text message");
+      expect(mockTelegramSendMessage).not.toHaveBeenCalled();
+      expect(mockTelegramSendDocument).not.toHaveBeenCalled();
+      expect(service.update).not.toHaveBeenCalled();
+    },
+  );
 });

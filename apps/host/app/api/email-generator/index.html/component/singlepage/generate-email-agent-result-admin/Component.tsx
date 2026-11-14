@@ -1,13 +1,6 @@
 import React from "react";
 import { IComponentPropsExtended } from "./interface";
-import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Preview,
-  Text,
-} from "@react-email/components";
+import { Body, Button, Container, Head, Preview, Text } from "react-email";
 
 export function Component(props: IComponentPropsExtended) {
   return (

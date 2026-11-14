@@ -1,7 +1,10 @@
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
-import { getHttpErrorType } from "@sps/backend-utils";
+import {
+  getHttpErrorType,
+  getNotificationTemplateChannel,
+} from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -40,15 +43,11 @@ export class Handler {
           ? JSON.parse(body["data"])
           : undefined;
 
-      const type = entity.variant.includes("email")
-        ? "email"
-        : entity.variant.includes("telegram")
-          ? "telegram"
-          : null;
+      const type = getNotificationTemplateChannel(entity.variant);
 
       if (!type) {
         throw new Error(
-          "Validation error. Invalid type. Expected email, got: " + type,
+          "Validation error. Template must select an email or Telegram variant",
         );
       }
 

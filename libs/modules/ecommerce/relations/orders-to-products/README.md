@@ -16,11 +16,15 @@ Links orders to products, including quantity information.
 - `orderId`: linked order ID.
 - `productId`: linked product ID.
 
+## Prices and API reads
+
+The CRUD routes return the stored relation, including `orderId`, `productId` and `quantity`. The `getTotal` service calculates prices per currency. Its `IOrderLineTotals` result has `totals` and `unpriced`; neither is a database column. The dedicated `GET /api/ecommerce/orders-to-products/{id}/total` returns `{ data: totals, unpriced }`. The cart reads a different response from the Subject route: each owned line includes `total`, an array of amounts per currency.
+
 ## Variants
 
 - `default`: renders the related product using its frontend variant.
 - `amount`: placeholder variant for order-product amount views.
-- `form-field-default`: writes relation data into a form field.
+- `form-field-default`: writes relation data into a form field. Use `dataSource="props"` for a line already loaded through the Subject.
 - `id-total-default`: fetches total amounts for this relation id.
 - `find`: data-fetch wrapper for querying relations.
 - `admin-form`: admin create/edit form for relation fields and IDs.

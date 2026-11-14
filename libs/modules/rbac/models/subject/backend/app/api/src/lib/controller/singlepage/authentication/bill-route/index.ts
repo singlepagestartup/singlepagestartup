@@ -1,10 +1,13 @@
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { getCookie } from "hono/cookie";
 import QueryString from "qs";
 import { Service } from "../../../../service";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
-import { getHttpErrorType } from "@sps/backend-utils";
+import {
+  authorization,
+  getHttpErrorType,
+  readRbacSecret,
+} from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -15,9 +18,7 @@ export class Handler {
 
   async execute(c: Context, next: any): Promise<Response> {
     try {
-      const secretKeyHeader = c.req.header("X-RBAC-SECRET-KEY");
-      const secretKeyCookie = getCookie(c, "rbac.secret-key");
-      const secretKey = secretKeyHeader || secretKeyCookie;
+      const secretKey = readRbacSecret(c);
 
       if (secretKey && secretKey !== RBAC_SECRET_KEY) {
         throw new Error("Validation error. Unauthorized");
@@ -50,11 +51,6 @@ export class Handler {
         );
       }
 
-      const authorizationCookie = getCookie(c, "rbac.subject.jwt");
-      const authorizationHeader = c.req.header("Authorization");
-      const authorization =
-        authorizationCookie || authorizationHeader?.replace("Bearer ", "");
-
       const isAuthorizedProps = {
         permission: {
           route: parsedQuery["permission"]["route"],
@@ -62,7 +58,7 @@ export class Handler {
           type: parsedQuery["permission"]["type"] || "HTTP",
         },
         authorization: {
-          value: authorization,
+          value: authorization(c),
         },
       };
 

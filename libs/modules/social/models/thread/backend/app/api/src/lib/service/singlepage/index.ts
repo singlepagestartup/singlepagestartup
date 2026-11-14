@@ -1,11 +1,12 @@
 import "reflect-metadata";
-import { injectable } from "inversify";
+import { injectFromBase, injectable } from "inversify";
 import { CRUDService } from "@sps/shared-backend-api";
 import { Table } from "@sps/social/models/thread/backend/repository/database";
 import { Repository } from "../../repository";
 import type { IThreadMetadataNamespaceUpdate } from "@sps/social/models/thread/sdk/model";
 
 @injectable()
+@injectFromBase()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   async updateMetadataNamespace(
     props: IThreadMetadataNamespaceUpdate & { id: string },

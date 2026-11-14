@@ -6,8 +6,19 @@
     root_aws_access_key_id: "{{ ROOT_AWS_ACCESS_KEY_ID }}"
     root_aws_secret_access_key: "{{ ROOT_AWS_SECRET_ACCESS_KEY }}"
     project_name: "{{ PROJECT_NAME }}"
-    aws_s3_bucket_name: "{{ AWS_S3_BUCKET_NAME }}"
+    aws_s3_bucket_name: "{{ AWS_S3_BUCKET_NAME | default('') | trim }}"
+    aws_s3_dev_bucket_name: "{{ AWS_S3_DEV_BUCKET_NAME | default('') | trim }}"
   tasks:
+    - name: Install required Python packages
+      pip:
+        name:
+          - boto
+          - boto3
+          - botocore
+          - awscli
+        state: present
+        virtualenv: /opt/venv
+
     - name: Check is iam.env file exists
       stat:
         path: "/home/code/iam.env"
@@ -15,38 +26,6 @@
 
     - name: Create iam
       block:
-        - name: Get ansible ansible_system_vendor
-          set_fact:
-            ansible_system_vendor: "{{ hostvars[inventory_hostname]['ansible_system_vendor'] }}"
-
-        - name: If DigitalOcean
-          block:
-            - name: Install required Python packages
-              pip:
-                name: "{{ item }}"
-                state: present
-                virtualenv: /opt/venv
-              loop:
-                - boto
-                - boto3
-                - botocore
-                - awscli
-          when: ansible_system_vendor == "DigitalOcean"
-
-        - name: If not DigitalOcean
-          block:
-            - name: Install required Python packages
-              pip:
-                name: "{{ item }}"
-                state: present
-                virtualenv: /opt/venv
-              loop:
-                - boto
-                - boto3
-                - botocore
-                - awscli
-          when: ansible_system_vendor != "DigitalOcean"
-
         - name: Create IAM user
           amazon.aws.iam_user:
             name: "{{ item }}"
@@ -58,6 +37,7 @@
             - "{{ project_name }}dev"
 
         - name: Create user's key
+          no_log: true
           community.aws.iam_access_key:
             user_name: "{{ project_name }}"
             state: present
@@ -66,6 +46,7 @@
           register: user_key
 
         - name: Create dev user's key
+          no_log: true
           community.aws.iam_access_key:
             user_name: "{{ project_name }}dev"
             state: present
@@ -74,63 +55,80 @@
           register: dev_user_key
 
         - name: Write key to file
+          no_log: true
           copy:
             content: "AWS_ACCESS_KEY_ID={{ user_key.access_key.access_key_id }}\nAWS_SECRET_ACCESS_KEY={{ user_key.secret_access_key }}"
             dest: /home/code/iam.env
-            mode: 0600
+            mode: "0600"
 
         - name: Write dev key to file
+          no_log: true
           copy:
             content: "AWS_ACCESS_KEY_ID={{ dev_user_key.access_key.access_key_id }}\nAWS_SECRET_ACCESS_KEY={{ dev_user_key.secret_access_key }}"
             dest: /home/code/dev.iam.env
-            mode: 0600
+            mode: "0600"
 
-        - name: Create policy for S3 bucket
-          community.aws.iam_policy:
-            iam_type: user
-            iam_name: "{{ project_name }}"
-            state: present
-            policy_name: "single-s3-bucket-policy-{{ project_name }}"
-            policy_json: "{{ lookup('template','single_s3_bucket_policy.j2') }}"
-            aws_access_key: "{{ root_aws_access_key_id }}"
-            aws_secret_access_key: "{{ root_aws_secret_access_key }}"
-
-        - name: Create policy for dev S3 bucket
-          community.aws.iam_policy:
-            iam_type: user
-            iam_name: "{{ project_name }}dev"
-            state: present
-            policy_name: "single-s3-bucket-policy-{{ project_name }}dev"
-            policy_json: "{{ lookup('template','single_s3_dev_bucket_policy.j2') }}"
-            aws_access_key: "{{ root_aws_access_key_id }}"
-            aws_secret_access_key: "{{ root_aws_secret_access_key }}"
-
-        - name: Create SES policy
-          community.aws.iam_policy:
-            iam_type: user
-            iam_name: "{{ project_name }}"
-            state: present
-            policy_name: "ses-policy"
-            policy_json: "{{ lookup('template','ses_policy.j2') }}"
-            aws_access_key: "{{ root_aws_access_key_id }}"
-            aws_secret_access_key: "{{ root_aws_secret_access_key }}"
-
-        - name: Create dev SES policy
-          community.aws.iam_policy:
-            iam_type: user
-            iam_name: "{{ project_name }}dev"
-            state: present
-            policy_name: "ses-policy-dev"
-            policy_json: "{{ lookup('template','ses_policy.j2') }}"
-            aws_access_key: "{{ root_aws_access_key_id }}"
-            aws_secret_access_key: "{{ root_aws_secret_access_key }}"
       when: iam.stat.exists == False
 
-    - name: Copy key to local
-      fetch:
+    - name: Create policy for S3 bucket
+      community.aws.iam_policy:
+        iam_type: user
+        iam_name: "{{ project_name }}"
+        state: present
+        policy_name: "single-s3-bucket-policy-{{ project_name }}"
+        policy_json: "{{ lookup('template','single_s3_bucket_policy.j2') }}"
+        aws_access_key: "{{ root_aws_access_key_id }}"
+        aws_secret_access_key: "{{ root_aws_secret_access_key }}"
+
+      when: aws_s3_bucket_name | length > 0
+
+    - name: Create policy for dev S3 bucket
+      community.aws.iam_policy:
+        iam_type: user
+        iam_name: "{{ project_name }}dev"
+        state: present
+        policy_name: "single-s3-bucket-policy-{{ project_name }}dev"
+        policy_json: "{{ lookup('template','single_s3_dev_bucket_policy.j2') }}"
+        aws_access_key: "{{ root_aws_access_key_id }}"
+        aws_secret_access_key: "{{ root_aws_secret_access_key }}"
+
+      when: aws_s3_dev_bucket_name | length > 0
+
+    - name: Create SES policy
+      community.aws.iam_policy:
+        iam_type: user
+        iam_name: "{{ project_name }}"
+        state: present
+        policy_name: "ses-policy"
+        policy_json: "{{ lookup('template','ses_policy.j2') }}"
+        aws_access_key: "{{ root_aws_access_key_id }}"
+        aws_secret_access_key: "{{ root_aws_secret_access_key }}"
+
+    - name: Create dev SES policy
+      community.aws.iam_policy:
+        iam_type: user
+        iam_name: "{{ project_name }}dev"
+        state: present
+        policy_name: "ses-policy-dev"
+        policy_json: "{{ lookup('template','ses_policy.j2') }}"
+        aws_access_key: "{{ root_aws_access_key_id }}"
+        aws_secret_access_key: "{{ root_aws_secret_access_key }}"
+
+    - name: Read IAM credentials for the controller
+      ansible.builtin.slurp:
         src: "/home/code/{{ item }}"
-        dest: "./"
-        flat: yes
+      register: iam_credentials
       loop:
         - iam.env
         - dev.iam.env
+      no_log: true
+
+    - name: Save private IAM credentials on the controller
+      ansible.builtin.copy:
+        content: "{{ item.content | b64decode }}"
+        dest: "{{ playbook_dir }}/{{ item.item }}"
+        mode: "0600"
+      loop: "{{ iam_credentials.results }}"
+      delegate_to: localhost
+      become: false
+      no_log: true

@@ -59,7 +59,7 @@ import {
   AdminV2Overview as WebsiteBuilderAdminV2Overview,
   AdminV2SidebarModuleItem as WebsiteBuilderAdminV2SidebarModuleItem,
 } from "@sps/website-builder/frontend/component";
-import { SettingsPageClientComponent } from "./settings-page";
+import { SettingsPageComponent } from "./settings-page";
 import { IComponentProps } from "./interface";
 import { Button } from "@sps/shared-ui-shadcn";
 import { Component as PanelComponent } from "@sps/shared-frontend-components/singlepage/admin-v2/panel/Component";
@@ -167,7 +167,7 @@ export function Component(props: IComponentProps) {
             </div>
           </header>
           {props.url === "/admin/settings" ? (
-            <SettingsPageClientComponent language={props.language} />
+            <SettingsPageComponent language={props.language} />
           ) : (
             <>
               <EcommerceAdminV2Overview

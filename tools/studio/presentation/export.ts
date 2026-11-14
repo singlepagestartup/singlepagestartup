@@ -252,9 +252,11 @@ function startStaticServer(buildRoot: string) {
           return new Response("Not found", { status: 404 });
         }
         const file = Bun.file(filePath);
-        return (await file.exists())
-          ? new Response(file)
-          : new Response("Not found", { status: 404 });
+        const exists = await file.exists();
+        if (exists) {
+          return new Response(file);
+        }
+        return new Response("Not found", { status: 404 });
       },
     });
 

@@ -1,3 +1,4 @@
+import { Component as EmailPasswordForm } from "./authentication/email-and-password/form-default";
 import { Component as EcommerceModuleProductCategoryDefault } from "./ecommerce-module/product/category-default";
 import { Component as EcommerceModuleProductProfileDefault } from "./ecommerce-module/product/profile-default";
 import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
@@ -83,6 +84,11 @@ import { Component as CrmModuleFormRequestCreate } from "./crm-module/form/reque
 import { Component as EcommerceModuleOrderListTotalDefault } from "./ecommerce-module/order/list/total-default";
 import { Component as EcommerceModuleOrderListQuantityDefault } from "./ecommerce-module/order/list/quantity-default";
 import { Component as EcommerceModuleOrderListDefault } from "./ecommerce-module/order/list/default";
+import { Component as EcommerceModuleOrderListOrdersToProductsDefault } from "./ecommerce-module/order/list/orders-to-products-default";
+
+import { Component as SocialModuleProfileChatDefault } from "./social-module/profile/chat/default";
+import { Component as SocialModuleProfileChatCreate } from "./social-module/profile/chat/create";
+import { Component as SocialModuleProfileChatMessageListDefault } from "./social-module/profile/chat/message/list/default";
 import { Component as SocialModuleProfileChatListDefault } from "./social-module/profile/chat/list/default";
 import { Component as SocialModuleProfileChatOverviewDefault } from "./social-module/profile/chat/overview/default";
 
@@ -119,6 +125,7 @@ export const variants = {
   "me-ecommerce-module-order-list-checkout-default":
     MeEcommerceModuleOrderListCheckoutDefault,
 
+  "authentication-email-and-password-form-default": EmailPasswordForm,
   "authentication-email-and-password-form-ai-chat":
     AuthenticationEmailAndPasswordFormAiChat,
   "me-social-module-profile-id-sidebar-ai-chat":
@@ -214,6 +221,13 @@ export const variants = {
   "ecommerce-module-order-list-quantity-default":
     EcommerceModuleOrderListQuantityDefault,
   "ecommerce-module-order-list-default": EcommerceModuleOrderListDefault,
+  "ecommerce-module-order-list-orders-to-products-default":
+    EcommerceModuleOrderListOrdersToProductsDefault,
+
+  "social-module-profile-chat-default": SocialModuleProfileChatDefault,
+  "social-module-profile-chat-create": SocialModuleProfileChatCreate,
+  "social-module-profile-chat-message-list-default":
+    SocialModuleProfileChatMessageListDefault,
   "social-module-profile-chat-list-default": SocialModuleProfileChatListDefault,
   "social-module-profile-chat-overview-default":
     SocialModuleProfileChatOverviewDefault,

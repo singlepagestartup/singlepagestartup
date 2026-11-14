@@ -9,8 +9,6 @@ import {
   Edit3,
   ExternalLink,
   Eye,
-  Github,
-  Linkedin,
   LogOut,
   Mail,
   MapPin,
@@ -19,10 +17,14 @@ import {
   Save,
   Settings,
   ThumbsUp,
-  Twitter,
   User,
   X,
 } from "lucide-react";
+import {
+  FaGithub as Github,
+  FaLinkedin as Linkedin,
+  FaTwitter as Twitter,
+} from "react-icons/fa6";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { useAuth } from "./AuthContext";
 import {

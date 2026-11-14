@@ -63,6 +63,53 @@ request ID. The local journal keeps the underlying incident independently.
 See the [server incident runbook](../../tools/deployer/README.md#finding-an-api-error)
 for storage, retention, SSH commands and access policy.
 
+The server itself reads:
+
+- `API_MAX_REQUEST_BODY_BYTES` - optional, defaults to `134217728` (128 MiB,
+  the limit Bun applies without the option). A request whose `Content-Length`
+  is larger is answered `413` before any route runs, and a body without a
+  declared length is answered `413` once a route reads past the limit. Uploads
+  pass through this server, so keep the value at least as large as the largest
+  upload the deployment accepts.
+
+`API_CORS_ALLOWED_ORIGINS` decides which browser origins the API, Telegram and
+OpenAPI apps answer for credentialed cross-origin requests. It is optional and
+holds a comma-separated list of origins written the way a browser sends
+`Origin`: scheme, host and port, with no path and no trailing slash, for
+example `https://example.com,https://admin.example.com`.
+
+- Unset or empty, the default: every HTTP(S) origin is echoed in
+  `Access-Control-Allow-Origin` with credentials allowed. Local development,
+  Codespaces, Gitpod and tunnels rely on this.
+- Set: only an origin equal to one of the entries is echoed. Any other origin
+  gets no `Access-Control-Allow-Origin`, so the browser refuses a preflighted
+  request and keeps every response from the calling page. List the host and
+  every other front end that calls the API from a browser.
+
+Requests without an `Origin` header, such as server-to-server calls, MCP and
+scripts, are answered the same way in both modes. The three apps take the value
+through `resolveCorsOrigin` in `@sps/backend-utils`.
+
+Opaque `Origin: null` values (including sandboxed HTML previews) and malformed
+origins never receive credentialed CORS access. A nonempty list of invalid entries
+or separators denies all origins instead of enabling the permissive default.
+CORS controls browser response access; it does not replace RBAC or prevent
+non-browser requests and simple cross-origin writes. Configure the production
+list explicitly.
+
+## Creating an administrator
+
+Run `./apps/api/create_rbac_subject.sh`. It uses the API URL, operator key,
+email and password from `apps/api/.env`. After assigning the role, it signs
+in and verifies the subject and its role. A timeout at this last step does
+not undo the assignment. Sign in with the same account and open the admin
+panel to check access.
+
+The script makes up to three attempts for transient connection failures.
+It retries a write only when the connection failed before it could send the
+request. If the connection drops after sending a write, check whether the
+change was applied before running the script again.
+
 ## Guidelines
 
 - `apps/api/app.ts` is the **only** host: mount every module backend app via `app.route("/api/<module>", moduleApp.hono)`; modules must not expose their own servers.

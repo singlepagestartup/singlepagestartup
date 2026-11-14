@@ -38,14 +38,14 @@ export class Migrator {
       }
     }
 
-    const leftModelSchemaTableOldImportPath = `${this.parent.coder.parent.parent.parent.parent.parent.project.models[0].project.model.project.backend.project.schema.project.table.baseName}`;
-    const leftModelSchemaTableNewImportPath = `${this.parent.coder.parent.parent.parent.parent.parent.project.models[0].project.model.project.backend.project.schema.project.table.absoluteName}`;
-    const rightModelSchemaTableOldImportPath = `${this.parent.coder.parent.parent.parent.parent.parent.project.models[1].project.model.project.backend.project.schema.project.table.baseName}`;
-    const rightModelSchemaTableNewImportPath = `${this.parent.coder.parent.parent.parent.parent.parent.project.models[1].project.model.project.backend.project.schema.project.table.absoluteName}`;
-
-    const moduleRootSchema =
-      this.parent.coder.parent.parent.parent.parent.parent.project.backend
-        .project.schema.project.root.baseDirectory;
+    const relation = this.parent.coder.parent.parent.parent;
+    const [left, right] = relation.models;
+    const moduleRootSchema = `${relation.parent.parent.baseDirectory}/backend/schema/root`;
+    // These are the model imports in a 0.1.0 checkout.
+    const leftModelSchemaTableOldImportPath = `@sps/${left.module}-models-${left.name}-backend-schema-table`;
+    const leftModelSchemaTableNewImportPath = `@sps/${left.module}/models/${left.name}/backend/schema/table`;
+    const rightModelSchemaTableOldImportPath = `@sps/${right.module}-models-${right.name}-backend-schema-table`;
+    const rightModelSchemaTableNewImportPath = `@sps/${right.module}/models/${right.name}/backend/schema/table`;
 
     const oldImportPath = `${this.parent.coder.baseName}`;
     const newImportPath = `${this.parent.coder.absoluteName}`;

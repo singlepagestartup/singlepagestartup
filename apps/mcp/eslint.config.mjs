@@ -4,7 +4,7 @@ const typescriptPlugin = require("@typescript-eslint/eslint-plugin");
 const typescriptParser = require("@typescript-eslint/parser");
 const prettier = require("eslint-plugin-prettier");
 
-module.exports = defineFlatConfig([
+module.exports = defineConfig([
   ...parentConfig,
   {
     files: ["**/*.ts"],

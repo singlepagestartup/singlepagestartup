@@ -1,6 +1,6 @@
 import { sql, eq } from "drizzle-orm";
 import "reflect-metadata";
-import { injectable } from "inversify";
+import { injectFromBase, injectable } from "inversify";
 import {
   DatabaseRepository,
   withConsistencyDatabase,
@@ -9,6 +9,7 @@ import {
 import { Table } from "@sps/rbac/relations/subjects-to-roles/backend/repository/database";
 
 @injectable()
+@injectFromBase()
 export class Repository extends DatabaseRepository<typeof Table> {
   withSubjectGrantTransaction<T>(
     subjectId: string,

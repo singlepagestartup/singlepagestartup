@@ -44,6 +44,24 @@ lower module. Intra-module dependencies must also avoid circular imports.
   layer inside packages is a separate inheritance mechanism and does not
   change an import's owning module.
 
+## Model and relation ownership
+
+Within a module, `parents-to-children` belongs above the child model. The parent
+or a higher consumer composes the relation and child services. The child must
+not import that incoming relation, including its SDK or types. Passing the
+relation into a child service does not change who owns the operation.
+
+Confirmed compositions include Topic → TopicsToNotifications → Notification,
+Form → FormsToRequests → Request, Role → RolesToPermissions → Permission, and
+Channel → ChannelsToMessages → Message. Relation schemas may reference both
+endpoints to enforce foreign keys; that does not authorize reverse service
+imports. Transactional work spanning an association belongs to the higher
+owner and must preserve one transaction and the existing lock order.
+
+The dependency checker also checks backend model imports of incoming relations,
+including aliases and neutral barrels. It does not infer every model-to-model
+hierarchy from names; review direct and transitive service composition separately.
+
 ## Applications and infrastructure
 
 `apps/api`, `apps/host`, `apps/mcp` and `apps/telegram` compose the business

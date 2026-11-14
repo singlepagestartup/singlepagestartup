@@ -28,7 +28,7 @@ export async function action(props: IProps): Promise<IResult> {
       },
     ),
   );
-  return transformResponseItem<IResult>(
-    await responsePipe<{ data: IResult }>({ res }),
-  );
+  const json = await responsePipe<{ data: IResult }>({ res });
+
+  return transformResponseItem<IResult>(json);
 }
