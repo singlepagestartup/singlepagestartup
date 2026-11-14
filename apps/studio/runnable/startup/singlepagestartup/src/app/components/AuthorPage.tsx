@@ -6,15 +6,17 @@ import {
   Clock,
   ChevronRight,
   ExternalLink,
-  Github,
-  Linkedin,
   MapPin,
   MessageSquare,
   Newspaper,
   ThumbsUp,
-  Twitter,
   User,
 } from "lucide-react";
+import {
+  FaGithub as Github,
+  FaLinkedin as Linkedin,
+  FaTwitter as Twitter,
+} from "react-icons/fa6";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import {
   getAuthorBySlug,

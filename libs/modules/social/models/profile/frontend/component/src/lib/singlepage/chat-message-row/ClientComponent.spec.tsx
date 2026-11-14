@@ -21,25 +21,22 @@ jest.mock(
   }),
 );
 
-jest.mock(
-  "@sps/social/models/profile/frontend/component/src/lib/singlepage/chat-profile-avatar",
-  () => ({
-    Component: (props: {
-      data: { title?: { en?: string }; adminTitle?: string; slug?: string };
-    }) => {
-      return (
-        <span data-testid="profile-avatar">
-          {(
-            props.data.title?.en ||
-            props.data.adminTitle ||
-            props.data.slug ||
-            "?"
-          ).charAt(0)}
-        </span>
-      );
-    },
-  }),
-);
+jest.mock("@sps/social/models/profile/frontend/component", () => ({
+  Component: (props: {
+    data: { title?: { en?: string }; adminTitle?: string; slug?: string };
+  }) => {
+    return (
+      <span data-testid="profile-avatar">
+        {(
+          props.data.title?.en ||
+          props.data.adminTitle ||
+          props.data.slug ||
+          "?"
+        ).charAt(0)}
+      </span>
+    );
+  },
+}));
 
 jest.mock("next/link", () => {
   return {

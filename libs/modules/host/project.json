@@ -8,17 +8,26 @@
     "eslint:lint": {},
     "jest:test": {},
     "jest:integration": {
-      "executor": "@nx/jest:jest",
-      "outputs": ["{projectRoot}/coverage"],
-      "inputs": ["{projectRoot}"],
+      "executor": "nx:run-commands",
+      "outputs": [
+        "{projectRoot}/coverage"
+      ],
+      "inputs": [
+        "{projectRoot}/**/*",
+        "^default"
+      ],
       "options": {
-        "jestConfig": "libs/modules/host/jest.integration.config.ts",
-        "passWithNoTests": true
+        "command": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config ./libs/modules/host/jest.integration.config.ts --passWithNoTests",
+        "cwd": ".",
+        "env": {
+          "TS_NODE_COMPILER_OPTIONS": "{\"moduleResolution\":\"node16\",\"module\":\"Node16\",\"customConditions\":null}"
+        }
       }
     },
     "tsc:build": {},
     "repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "commands": [
@@ -29,8 +38,7 @@
             "command": "nx run @sps/host:relations:repository-generate"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "repository-migrate": {
       "executor": "nx:run-commands",
@@ -49,6 +57,7 @@
     },
     "models:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "commands": [
@@ -65,11 +74,11 @@
             "command": "nx run @sps/host:models:widget:repository-generate"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "commands": [
@@ -92,8 +101,7 @@
             "command": "nx run @sps/host:relations:metadata-to-file-storage-module-files:repository-generate"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "models:repository-migrate": {
       "executor": "nx:run-commands",
@@ -156,9 +164,6 @@
           },
           {
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
-          },
-          {
-            "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
       }
@@ -176,9 +181,6 @@
           },
           {
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
-          },
-          {
-            "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
       }
@@ -196,9 +198,6 @@
           },
           {
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
-          },
-          {
-            "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
       }
@@ -216,9 +215,6 @@
           },
           {
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
-          },
-          {
-            "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
       }
@@ -292,9 +288,6 @@
           },
           {
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
-          },
-          {
-            "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
       }
@@ -312,9 +305,6 @@
           },
           {
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
-          },
-          {
-            "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
       }
@@ -332,9 +322,6 @@
           },
           {
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
-          },
-          {
-            "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
       }
@@ -352,9 +339,6 @@
           },
           {
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
-          },
-          {
-            "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
       }
@@ -372,9 +356,6 @@
           },
           {
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
-          },
-          {
-            "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
       }
@@ -451,6 +432,7 @@
     },
     "relations:metadata-to-file-storage-module-files:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/host/relations/metadata-to-file-storage-module-files/backend/repository/database",
@@ -460,13 +442,9 @@
           },
           {
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
-          },
-          {
-            "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:metadata-to-file-storage-module-files:repository-migrate": {
       "executor": "nx:run-commands",

@@ -14,7 +14,7 @@ services:
         --port "$${REDIS_PORT:-6379}"
         --requirepass "$${REDIS_PASSWORD}"
         --maxmemory "$${REDIS_MAXMEMORY:-256mb}"
-        --maxmemory-policy "$${REDIS_MAXMEMORY_POLICY:-allkeys-lru}"
+        --maxmemory-policy "$${REDIS_MAXMEMORY_POLICY:-volatile-lru}"
     restart: always
     volumes:
       - ./redis_data:/data

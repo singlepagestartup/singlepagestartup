@@ -10,7 +10,7 @@ function Component(props: IPageStoryProps) {
   return (
     <AIChatPreview
       {...props}
-      initialHref="/ai-chat/rbac/subjects/authentication/registration"
+      initialHref="/rbac/subject/authentication/email-and-password/registration"
     />
   );
 }

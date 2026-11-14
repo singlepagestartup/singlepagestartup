@@ -7,41 +7,41 @@
   "targets": {
     "jest:test": {},
     "next:dev": {
-      "executor": "@nx/next:server",
-      "defaultConfiguration": "development",
+      "executor": "nx:run-commands",
       "cache": false,
       "options": {
-        "buildTarget": "next:build",
-        "dev": true,
-        "port": 3000,
-        "turbo": true
+        "cwd": "apps/host",
+        "command": "next dev --turbopack"
       }
     },
     "next:build": {
-      "executor": "@nx/next:build",
-      "outputs": ["{options.outputPath}"],
-      "dependsOn": [],
+      "executor": "nx:run-commands",
       "cache": true,
-      "defaultConfiguration": "production",
       "options": {
-        "outputPath": "apps/host",
-        "webpack": true
-      }
+        "cwd": "apps/host",
+        "command": "next build --webpack"
+      },
+      "outputs": [
+        "{projectRoot}/.next"
+      ]
     },
     "next:start": {
-      "executor": "@nx/next:server",
-      "defaultConfiguration": "production",
-      "dependsOn": [],
+      "executor": "nx:run-commands",
+      "cache": false,
       "options": {
-        "buildTarget": "host:next:build",
-        "dev": false,
-        "port": 3000
+        "cwd": "apps/host",
+        "command": "next start"
       }
     },
     "next:export": {
-      "executor": "@nx/next:export",
+      "executor": "nx:run-commands",
+      "cache": false,
       "options": {
-        "buildTarget": "host:build:production"
+        "cwd": "apps/host",
+        "command": "next build --webpack",
+        "env": {
+          "SPS_HOST_STATIC_EXPORT": "true"
+        }
       }
     },
     "eslint:lint": {}

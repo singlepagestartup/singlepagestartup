@@ -1,11 +1,11 @@
-import { defineFlatConfig } from "eslint-define-config";
+import { defineConfig } from "eslint/config";
 import typescriptPlugin from "@typescript-eslint/eslint-plugin";
 import typescriptParser from "@typescript-eslint/parser";
-import jsoncParser from "jsonc-eslint-parser";
+import * as jsoncParser from "jsonc-eslint-parser";
 import prettier from "eslint-plugin-prettier";
 import nxPlugin from "@nx/eslint-plugin";
 
-export default defineFlatConfig([
+export default defineConfig([
   {
     ignores: [
       "node_modules/",
@@ -13,7 +13,8 @@ export default defineFlatConfig([
       "dist/",
       "**/dist/",
       "tmp/",
-      "apps/host/.next/",
+      "apps/host/.next*/",
+      ".claude/worktrees/",
     ],
   },
   {
@@ -21,7 +22,6 @@ export default defineFlatConfig([
     languageOptions: {
       parser: typescriptParser,
       parserOptions: {
-        project: ["./tsconfig.base.json", "./apps/studio/tsconfig.eslint.json"],
         ecmaFeatures: {
           jsx: true,
         },

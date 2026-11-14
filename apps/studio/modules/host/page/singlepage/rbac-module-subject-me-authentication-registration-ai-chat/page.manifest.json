@@ -3,7 +3,7 @@
   "title": "rbac-module-subject-me-authentication-registration-ai-chat",
   "layer": "singlepage",
   "state": "draft",
-  "description": "AI Chat page recipe for /ai-chat/rbac/subjects/authentication/registration.",
+  "description": "AI Chat page recipe for /rbac/subject/authentication/email-and-password/registration.",
   "files": {
     "component": "Component.tsx",
     "story": "Component.stories.tsx"

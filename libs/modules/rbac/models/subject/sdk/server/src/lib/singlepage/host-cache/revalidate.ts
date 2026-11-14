@@ -20,7 +20,7 @@ export async function action({
     headers: authorization ? { Authorization: authorization } : undefined,
   });
 
-  return transformResponseItem<IResult>(
-    await responsePipe<{ data: IResult }>({ res }),
-  );
+  const json = await responsePipe<{ data: IResult }>({ res });
+
+  return transformResponseItem<IResult>(json);
 }

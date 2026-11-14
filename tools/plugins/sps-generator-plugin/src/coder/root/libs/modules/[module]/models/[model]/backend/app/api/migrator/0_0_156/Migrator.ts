@@ -1,4 +1,5 @@
 import {
+  readProjectConfiguration,
   generateFiles,
   getProjects,
   offsetFromRoot,
@@ -42,7 +43,7 @@ export class Migrator {
     this.parent.coder.tree.delete(`${baseDirectory}/tsconfig.spec.json`);
 
     updateProjectConfiguration(this.parent.coder.tree, baseName, {
-      ...(this.parent.coder.project as ProjectConfiguration),
+      ...readProjectConfiguration(this.parent.coder.tree, baseName),
       targets: {
         "tsc:build": {},
       },
@@ -54,25 +55,25 @@ export class Migrator {
 
   async moveToRootFolder() {
     const baseDirectory = this.parent.coder.baseDirectory;
-    const project = this.parent.coder.project;
+    const projectName = this.parent.coder.baseName;
+    const project = readProjectConfiguration(
+      this.parent.coder.tree,
+      projectName,
+    );
 
     if (!project.root.endsWith("root")) {
       const tmpPath = project.root.split("/").slice(0, -1).join("/") + "/temp";
 
       await moveGenerator(this.parent.coder.tree, {
-        projectName: project.name,
-        newProjectName: project.name,
+        projectName,
         destination: tmpPath,
         updateImportPath: false,
-        projectNameAndRootFormat: "as-provided",
       });
 
       await moveGenerator(this.parent.coder.tree, {
-        projectName: project.name,
-        newProjectName: project.name,
+        projectName,
         destination: baseDirectory,
         updateImportPath: false,
-        projectNameAndRootFormat: "as-provided",
       });
 
       this.parent.coder.project = getProjects(this.parent.coder.tree).get(

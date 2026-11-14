@@ -11,7 +11,9 @@ export class Handler {
     try {
       const id = c.req.param("id");
       if (!id) throw new Error("Validation error. Subject id is required");
-      return c.json({ data: await new Balance(this.service).execute(id) });
+      const balance = await new Balance(this.service).execute(id);
+
+      return c.json({ data: balance });
     } catch (error) {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });

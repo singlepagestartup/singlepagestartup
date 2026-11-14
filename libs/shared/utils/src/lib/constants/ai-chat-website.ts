@@ -33,11 +33,11 @@ export const AI_CHAT_WEBSITE_CONTENT: IAIChatWebsiteContent = {
     links: [
       {
         text: "Start with my files",
-        href: "/ai-chat/create-account",
+        href: "/rbac/subject/authentication/email-and-password/registration",
       },
       {
         text: "Sign in",
-        href: "/ai-chat/sign-in",
+        href: "/rbac/subject/authentication/email-and-password",
       },
     ],
   },
@@ -118,11 +118,11 @@ export const AI_CHAT_WEBSITE_CONTENT: IAIChatWebsiteContent = {
     links: [
       {
         text: "Start with my files",
-        href: "/ai-chat/create-account",
+        href: "/rbac/subject/authentication/email-and-password/registration",
       },
       {
         text: "Sign in",
-        href: "/ai-chat/sign-in",
+        href: "/rbac/subject/authentication/email-and-password",
       },
       {
         text: "Code Framework",

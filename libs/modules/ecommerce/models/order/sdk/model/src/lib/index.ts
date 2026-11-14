@@ -5,6 +5,7 @@ import type {
 import type { IModel as IProduct } from "@sps/ecommerce/models/product/sdk/model";
 
 export interface ICartDetails {
+  maxLineQuantity: number;
   /** Currencies shared by every line; the persisted selection may be stale. */
   availableCurrencyIds?: string[];
   billingModuleCurrencyId?: string;

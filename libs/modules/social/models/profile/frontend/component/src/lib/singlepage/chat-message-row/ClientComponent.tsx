@@ -3,7 +3,7 @@
 import { IClientComponentProps } from "./interface";
 import { getLocalizedPlainText } from "../plain-text";
 import { cn } from "@sps/shared-frontend-client-utils";
-import { Component as SocialModuleProfileChatProfileAvatar } from "@sps/social/models/profile/frontend/component/src/lib/singlepage/chat-profile-avatar";
+import { Component as Profile } from "@sps/social/models/profile/frontend/component";
 import { Component as SocialModuleMessagesToFileStorageModuleFiles } from "@sps/social/relations/messages-to-file-storage-module-files/frontend/component";
 import { CollapsibleContent, CollapsibleTrigger } from "@sps/shared-ui-shadcn";
 import { Collapsible } from "@radix-ui/react-collapsible";
@@ -150,9 +150,9 @@ export function Component(props: IClientComponentProps) {
   const audioTranscription = getAudioTranscriptionStatus(props.message);
   const canOpenProfile = Boolean(
     props.onProfileOpen &&
-      props.profile &&
-      props.profile.id === props.data.id &&
-      props.data.id !== "unknown",
+    props.profile &&
+    props.profile.id === props.data.id &&
+    props.data.id !== "unknown",
   );
 
   useEffect(() => {
@@ -213,9 +213,10 @@ export function Component(props: IClientComponentProps) {
           className={avatarTriggerClassName}
           aria-label={`Open ${profileDisplayName} profile`}
         >
-          <SocialModuleProfileChatProfileAvatar
-            isServer={props.isServer}
+          <Profile
+            isServer={false}
             variant="chat-profile-avatar"
+            dataSource="props"
             data={props.data}
             file={props.avatar ?? null}
             language={props.language}
@@ -223,9 +224,10 @@ export function Component(props: IClientComponentProps) {
         </button>
       ) : (
         <span className={avatarTriggerClassName}>
-          <SocialModuleProfileChatProfileAvatar
-            isServer={props.isServer}
+          <Profile
+            isServer={false}
             variant="chat-profile-avatar"
+            dataSource="props"
             data={props.data}
             file={props.avatar ?? null}
             language={props.language}

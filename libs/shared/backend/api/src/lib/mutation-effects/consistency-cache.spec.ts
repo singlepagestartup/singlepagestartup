@@ -1,8 +1,15 @@
 import { Hono } from "hono";
+import { cors } from "hono/cors";
+import { resolveCorsOrigin } from "@sps/backend-utils";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { CONSISTENCY_CACHE_PREFIX } from "@sps/shared-utils";
 const values = new Map<string, string>();
+jest.mock("@sps/shared-utils", () => ({
+  ...jest.requireActual("@sps/shared-utils"),
+  RBAC_SECRET_KEY: "operator-test-key",
+  API_CORS_ALLOWED_ORIGINS: "https://app.example.com,https://admin.example.com",
+}));
 jest.mock("@sps/providers-kv", () => ({
   Provider: class {
     async get({ prefix, key }: any) {
@@ -18,13 +25,121 @@ jest.mock("@sps/providers-kv", () => ({
   },
 }));
 jest.mock("@sps/providers-db", () => ({ ConsistencyStore: jest.fn() }));
-import { createConsistencyRuntime } from "./consistency";
+import { createConsistencyRuntime, consistencyAuth } from "./consistency";
 import { consistencyContext } from "../repository/database/context";
+
+it("binds a consistency reference to the API credential that authorized the read", async () => {
+  const register = jest.fn(async () => ({ ref: "fixture" }));
+  const runtime = createConsistencyRuntime({
+    store: { register } as any,
+    verifyAuthorization: async () => {},
+  });
+  const app = new Hono();
+  app.use(runtime.middleware());
+  app.get("/api/fixture", (c) => {
+    consistencyContext
+      .getStore()!
+      .dependencies.set("public.fixture|reset", "0");
+    return c.json({ data: "fixture" });
+  });
+  const cookie =
+    "rbac.subject.jwt=old-session; rbac.secret-key=operator-test-key";
+  const read = async (headers: Record<string, string>) => {
+    const response = await app.request("/api/fixture", { headers });
+    const metadata = response.headers.get("X-SPS-Consistency");
+    return JSON.parse(Buffer.from(metadata!, "base64url").toString());
+  };
+  expect(await read({ Cookie: cookie })).toEqual({
+    ref: "fixture",
+    session: consistencyAuth(""),
+  });
+  expect(
+    await read({ Authorization: "Bearer visitor", Cookie: cookie }),
+  ).toEqual({
+    ref: "fixture",
+    session: consistencyAuth("visitor"),
+  });
+  expect(await read({ "X-RBAC-SECRET-KEY": "wrong" })).toEqual({
+    ref: "fixture",
+    session: consistencyAuth(""),
+  });
+  expect(await read({ "X-RBAC-SECRET-KEY": "operator-test-key" })).toEqual({
+    ref: "fixture",
+    audience: "service",
+  });
+});
+
+/** Warmed response bodies must neither reuse another origin's CORS grant nor bypass authorization. */
+it("checks authorization and recomputes CORS for every cached response", async () => {
+  values.clear();
+  const key = "public.fixture|id|record";
+  const store: any = {
+    status: async () => ({ epoch: "test" }),
+    versions: async () => ({ [key]: "0" }),
+    register: async () => ({
+      protocol: 1,
+      ref: "ref",
+      epoch: "test",
+      cursor: "0",
+      expiresAt: new Date(Date.now() + 60000).toISOString(),
+    }),
+    covered: async () => true,
+  };
+  const runtime = createConsistencyRuntime({
+    store,
+    verifyAuthorization: async () => {},
+  });
+  const app = new Hono();
+  let permitted = true;
+  app.use(cors({ origin: resolveCorsOrigin, credentials: true }));
+  app.use(runtime.middleware());
+  app.use(async (c, next) => {
+    if (!permitted) {
+      return c.json({ error: "Permission error. Forbidden" }, 403);
+    }
+    return next();
+  });
+  app.use(runtime.cache());
+  const read = jest.fn((c) => {
+    consistencyContext.getStore()!.dependencies.set(key, "0");
+    return c.json({ data: "fixture" });
+  });
+  app.get("/api/fixture", read);
+  const request = (origin: string) =>
+    app.request("/api/fixture", { headers: { Origin: origin } });
+
+  await request("https://app.example.com");
+  for (const origin of [
+    "https://admin.example.com",
+    "https://unlisted.example.net",
+    "null",
+  ]) {
+    const response = await request(origin);
+    const allowedOrigin =
+      origin === "https://admin.example.com" ? origin : null;
+
+    expect(response.headers.get("X-SPS-Cache")).toBe("hit");
+    expect(response.headers.get("Access-Control-Allow-Origin")).toBe(
+      allowedOrigin,
+    );
+    expect(response.headers.get("Vary")).toContain("Origin");
+  }
+  expect(read).toHaveBeenCalledTimes(1);
+
+  permitted = false;
+  const denied = await request("https://app.example.com");
+  expect(denied.status).toBe(403);
+  expect(denied.headers.get("X-SPS-Cache")).not.toBe("hit");
+  expect(read).toHaveBeenCalledTimes(1);
+});
 
 it("clears only API response envelopes and pointers, preserving unrelated KV state", async () => {
   values.clear();
   values.set(CONSISTENCY_CACHE_PREFIX + ":pointer", "envelope");
   values.set(CONSISTENCY_CACHE_PREFIX + ":envelope", "response");
+  values.set("sps-consistency:v1:old-pointer", "old");
+  values.set("sps-consistency:v2:old-envelope", "old");
+  values.set("sps-consistency-other:state", "keep");
   values.set("mcp:oauth:client", "oauth");
   values.set("rbac:subject:preferences", "preferences");
   const runtime = createConsistencyRuntime({
@@ -33,6 +148,7 @@ it("clears only API response envelopes and pointers, preserving unrelated KV sta
   });
   await runtime.clearCache();
   expect([...values.entries()]).toEqual([
+    ["sps-consistency-other:state", "keep"],
     ["mcp:oauth:client", "oauth"],
     ["rbac:subject:preferences", "preferences"],
   ]);
@@ -62,8 +178,10 @@ it.each(["Authorization", "Cookie", "X-RBAC-SECRET-KEY"])(
     const app = new Hono();
     app.use(runtime.middleware());
     app.use(async (c, next) => {
-      if (!c.req.header(header)) return c.json({ error: "Forbidden" }, 403);
-      await next();
+      if (!c.req.header(header)) {
+        return c.json({ error: "Forbidden" }, 403);
+      }
+      return next();
     });
     app.use(runtime.cache());
     const read = jest.fn((c) => {
@@ -263,8 +381,10 @@ it("checks authorization and PostgreSQL versions before a private cache hit, inc
   const app = new Hono();
   app.use(runtime.middleware());
   app.use(async (c, next) => {
-    if (denied) return c.json({ error: "Forbidden" }, 403);
-    await next();
+    if (denied) {
+      return c.json({ error: "Forbidden" }, 403);
+    }
+    return next();
   });
   app.use(runtime.cache());
   let release!: () => void, started!: () => void;
@@ -357,4 +477,34 @@ it("observe mode always reads fresh data and reports an untracked cached-body di
     shadowMismatches: 1,
     cacheHits: 0,
   });
+});
+
+it("preserves the delivery headers on repeated reads of a no-store JSON file", async () => {
+  values.clear();
+  const key = "public.fixture|id|file";
+  const store = {
+    status: async () => ({ epoch: "test" }),
+    versions: async () => ({ [key]: "0" }),
+    covered: async () => true,
+  };
+  const runtime = createConsistencyRuntime({
+    store: store as any,
+    verifyAuthorization: async () => {},
+  });
+  const app = new Hono();
+  app.use(runtime.middleware());
+  app.use(runtime.cache());
+  app.get("/api/file-storage/files/test/content", (c) => {
+    consistencyContext.getStore()!.dependencies.set(key, "0");
+    c.header("Cache-Control", "private, no-store");
+    c.header("Content-Security-Policy", "sandbox");
+    return c.json({ file: true });
+  });
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const response = await app.request("/api/file-storage/files/test/content");
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Cache-Control")).toContain("no-store");
+    expect(response.headers.get("Content-Security-Policy")).toBe("sandbox");
+    expect(values.size).toBe(0);
+  }
 });

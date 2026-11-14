@@ -7,6 +7,7 @@ jest.mock("@sps/shared-utils", () => ({
   RBAC_JWT_SECRET: "test-jwt",
 }));
 jest.mock("@sps/backend-utils", () => ({
+  ...jest.requireActual("@sps/backend-utils"),
   authorization: (c: any) => c.req.header("Authorization"),
   verifyJwt: async () => ({ subject: { id: "owner" } }),
   getHttpErrorType: (error: Error) => ({

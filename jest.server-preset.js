@@ -8,7 +8,6 @@ module.exports = {
     "^.+\\.[tj]sx?$": [
       "ts-jest",
       {
-        isolatedModules: true,
         diagnostics: false,
       },
     ],

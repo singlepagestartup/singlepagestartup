@@ -33,7 +33,7 @@
         "key": "expiresAt",
         "label": "Expires At",
         "kind": "timestamp",
-        "nullable": false
+        "nullable": true
       },
       {
         "key": "payload",

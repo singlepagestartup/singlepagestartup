@@ -1,13 +1,6 @@
 import React from "react";
 import { IComponentPropsExtended } from "./interface";
-import {
-  Body,
-  CodeBlock,
-  Container,
-  Head,
-  Preview,
-  Text,
-} from "@react-email/components";
+import { Body, CodeBlock, Container, Head, Preview, Text } from "react-email";
 import { internationalization } from "@sps/shared-configuration";
 
 export function Component(props: IComponentPropsExtended) {

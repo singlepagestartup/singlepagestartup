@@ -171,7 +171,9 @@ function AccountMenu({
                 type="button"
                 disabled={logout.isPending}
                 onClick={() =>
-                  logout.mutate({ redirectTo: `${localeBase}/ai-chat/sign-in` })
+                  logout.mutate({
+                    redirectTo: `${localeBase}/rbac/subject/authentication/email-and-password`,
+                  })
                 }
                 className={`${menuItemClassName} w-full disabled:opacity-50`}
               >

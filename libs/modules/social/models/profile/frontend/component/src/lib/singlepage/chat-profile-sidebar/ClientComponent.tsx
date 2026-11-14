@@ -4,9 +4,9 @@ import { IClientComponentProps } from "./interface";
 import { getLocalizedPlainText } from "../plain-text";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { ScrollArea } from "@sps/shared-ui-shadcn";
-import { Component as KnowledgeModuleSourceChatSidebarItem } from "@sps/knowledge/models/source/frontend/component/src/lib/singlepage/chat-sidebar-item";
-import { Component as SocialModuleProfileChatProfileAvatar } from "@sps/social/models/profile/frontend/component/src/lib/singlepage/chat-profile-avatar";
-import { Component as SocialModuleSkillChatSidebarItem } from "@sps/social/models/skill/frontend/component/src/lib/singlepage/chat-sidebar-item";
+import { Component as KnowledgeModuleSource } from "@sps/knowledge/models/source/frontend/component";
+import { Component as Profile } from "@sps/social/models/profile/frontend/component";
+import { Component as Skill } from "@sps/social/models/skill/frontend/component";
 import { resolveMcpServerConfiguration } from "@sps/social/models/profile/sdk/model";
 import {
   BookOpen,
@@ -72,8 +72,8 @@ export function Component(props: IClientComponentProps) {
                 props.onProfileEdit?.(props.data);
               }}
             >
-              <SocialModuleProfileChatProfileAvatar
-                isServer={props.isServer}
+              <Profile
+                isServer={false}
                 variant="chat-profile-avatar"
                 data={props.data}
                 language={props.language}
@@ -81,8 +81,8 @@ export function Component(props: IClientComponentProps) {
               />
             </button>
           ) : (
-            <SocialModuleProfileChatProfileAvatar
-              isServer={props.isServer}
+            <Profile
+              isServer={false}
               variant="chat-profile-avatar"
               data={props.data}
               language={props.language}
@@ -247,10 +247,11 @@ export function Component(props: IClientComponentProps) {
               <div className="space-y-1">
                 {skills.map((skill) => {
                   return (
-                    <SocialModuleSkillChatSidebarItem
+                    <Skill
                       key={skill.id}
                       isServer={false}
                       variant="chat-sidebar-item"
+                      dataSource="props"
                       data={skill}
                       language={props.language}
                       onSelect={props.onSkillEdit}
@@ -302,10 +303,11 @@ export function Component(props: IClientComponentProps) {
               <div className="space-y-1">
                 {knowledgeSources.map((document) => {
                   return (
-                    <KnowledgeModuleSourceChatSidebarItem
+                    <KnowledgeModuleSource
                       key={document.id}
                       isServer={false}
                       variant="chat-sidebar-item"
+                      dataSource="props"
                       data={document}
                       language={props.language}
                       isSelected={

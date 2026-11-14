@@ -110,7 +110,9 @@ it("exports current scoped Sources using the already authorized Thread without a
   URL.revokeObjectURL = jest.fn();
   const click = jest
     .spyOn(HTMLAnchorElement.prototype, "click")
-    .mockImplementation(() => {});
+    .mockImplementation(function (this: HTMLAnchorElement) {
+      expect(this.download).toBe("Brief.md");
+    });
 
   try {
     const view = render(<Component {...props} />);
@@ -132,7 +134,7 @@ it("exports current scoped Sources using the already authorized Thread without a
     expect(await readBlob(createObjectURL.mock.calls[0][0] as Blob)).toBe(
       "# Brief.md\n\n## Context\n\nBefore",
     );
-    expect(click.mock.instances[0].download).toBe("Brief.md");
+    expect(click).toHaveBeenCalledTimes(1);
 
     mockSourceRead.mockReturnValue(sourceResult("After"));
     view.rerender(<Component {...props} />);

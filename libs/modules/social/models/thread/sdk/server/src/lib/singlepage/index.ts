@@ -26,17 +26,17 @@ export const api = {
       IThreadMetadataNamespaceUpdate,
   ): Promise<IModel | null> => {
     const { namespace, expectedValue, value, ...request } = props;
-    return (
-      (await crud.update({
-        ...request,
-        data: {
-          metadataNamespaceUpdate: {
-            namespace,
-            expectedValue: expectedValue ?? null,
-            value,
-          },
-        } as unknown as Partial<IModel>,
-      })) ?? null
-    );
+    const updatedRecord = await crud.update({
+      ...request,
+      data: {
+        metadataNamespaceUpdate: {
+          namespace,
+          expectedValue: expectedValue ?? null,
+          value,
+        },
+      } as unknown as Partial<IModel>,
+    });
+
+    return updatedRecord ?? null;
   },
 };

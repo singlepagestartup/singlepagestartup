@@ -1,8 +1,8 @@
 import { App, type IApp } from "./app";
 import { DI, ExceptionFilter, IExceptionFilter } from "@sps/shared-backend-api";
-import { Container, ContainerModule, interfaces } from "inversify";
+import { Container, ContainerModule } from "inversify";
 
-const bindings = new ContainerModule((bind: interfaces.Bind) => {
+const bindings = new ContainerModule(({ bind }) => {
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
   bind<IApp>(DI.IApp).to(App);
 });

@@ -81,7 +81,9 @@ export class LlmModelClient {
       );
     }
 
-    return normalizeModelOption(await res.json());
+    const body = await res.json();
+
+    return normalizeModelOption(body);
   }
 }
 

@@ -1,5 +1,10 @@
+import type { IOrderLineTotals } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
+import type { Service as BroadcastChannelService } from "@sps/broadcast/models/channel/backend/app/api/src/lib/service";
+import type { Service as NotificationTopicService } from "@sps/notification/models/topic/backend/app/api/src/lib/service";
+import type { Service as NotificationService } from "@sps/notification/models/notification/backend/app/api/src/lib/service";
 import type { Service as EcommerceOrderService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service";
 import type { ICartDetails } from "@sps/ecommerce/models/order/sdk/model";
+import type { Service as CrmFormService } from "@sps/crm/models/form/backend/app/api/src/lib/service";
 import type { Service as CrmRequestService } from "@sps/crm/models/request/backend/app/api/src/lib/service";
 import type { Service as SocialProfileService } from "@sps/social/models/profile/backend/app/api/src/lib/service";
 export interface IReadService {
@@ -27,7 +32,8 @@ export interface IExtendedReadService extends IReadService {
 }
 
 export interface IEcommerceOrderReadService
-  extends IExtendedReadService,
+  extends
+    IExtendedReadService,
     ICreateService,
     Pick<
       EcommerceOrderService,
@@ -52,7 +58,7 @@ export interface IEcommerceOrderReadService
 }
 
 export interface IEcommerceOrdersToProductsService extends ICreateService {
-  getTotal: (props: { id: string }) => Promise<any>;
+  getTotal: (props: { id: string }) => Promise<IOrderLineTotals>;
 }
 
 export interface ISocialModule {
@@ -120,14 +126,14 @@ export interface IBlogModule {
   categoriesToArticles: ICreateService;
 }
 
+export interface INotificationService
+  extends
+    IReadService,
+    Pick<NotificationService, "sendVerificationCode" | "sendPasswordReset"> {}
+
 export interface INotificationModule {
-  topic: IReadService;
-  notification: IReadService & {
-    sendVerificationCode: (props: {
-      email: string;
-      code: string;
-    }) => Promise<{ sent: boolean }>;
-  };
+  topic: IReadService & Pick<NotificationTopicService, "sendBounded">;
+  notification: INotificationService;
   template: IReadService;
   topicsToNotifications: IReadService;
   notificationsToTemplates: IReadService;
@@ -140,7 +146,7 @@ export interface IFileStorageModule {
 }
 
 export interface ICrmModule {
-  form: IReadService;
+  form: IReadService & Pick<CrmFormService, "submit">;
   request: CrmRequestService;
   formsToRequests: IReadService;
   step: IReadService;
@@ -152,10 +158,13 @@ export interface ICrmModule {
 }
 
 export interface IBroadcastModule {
-  channel: IReadService;
+  channel: ICreateService & Pick<BroadcastChannelService, "queue">;
 }
 
 export const SubjectDI = {
+  ISecurityNotificationsService: Symbol.for(
+    "rbac.subject.security-notifications.service",
+  ),
   IBlogModule: Symbol.for("rbac.subject.blog.module"),
   ISubjectsToBlogModuleArticlesService: Symbol.for(
     "rbac.subject.subjects-to-blog-module-articles.service",

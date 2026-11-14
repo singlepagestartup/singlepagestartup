@@ -32,6 +32,12 @@
         "default": "/"
       },
       {
+        "key": "slug",
+        "label": "Slug",
+        "kind": "text",
+        "nullable": false
+      },
+      {
         "key": "description",
         "label": "Description",
         "kind": "text",
@@ -84,6 +90,7 @@
       "id": "b1c9d8d1-6a1b-413f-a3ce-296c18e541a3",
       "title": "page example 1",
       "url": "/",
+      "slug": "page-example-1",
       "description": "Description",
       "createdAt": "2026-01-01T00:00:00.000Z",
       "updatedAt": "2026-01-01T00:00:00.000Z",
@@ -97,6 +104,7 @@
       "id": "d3c21332-aede-44ec-ac6d-bb646da21ff5",
       "title": "page example 2",
       "url": "/",
+      "slug": "page-example-2",
       "description": "Description",
       "createdAt": "2026-01-01T00:00:00.000Z",
       "updatedAt": "2026-01-01T00:00:00.000Z",
@@ -110,6 +118,7 @@
       "id": "70412fef-7b2e-4d9b-a0d4-c08071bd675c",
       "title": "page example 3",
       "url": "/",
+      "slug": "page-example-3",
       "description": "Description",
       "createdAt": "2026-01-01T00:00:00.000Z",
       "updatedAt": "2026-01-01T00:00:00.000Z",

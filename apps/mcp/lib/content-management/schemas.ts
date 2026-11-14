@@ -1,5 +1,32 @@
 import { z } from "zod";
 
+export function unwrapContentField(schema: z.core.$ZodType | undefined) {
+  let current = schema;
+  while (current) {
+    if (
+      current instanceof z.ZodOptional ||
+      current instanceof z.ZodNullable ||
+      current instanceof z.ZodDefault ||
+      current instanceof z.ZodCatch ||
+      current instanceof z.ZodPrefault ||
+      current instanceof z.ZodReadonly
+    ) {
+      current = current.unwrap();
+      continue;
+    }
+    if (current instanceof z.ZodPipe) {
+      current =
+        current.out instanceof z.ZodTransform ? current.in : current.out;
+      continue;
+    }
+    if (current instanceof z.ZodType) {
+      return current;
+    }
+    break;
+  }
+  return undefined;
+}
+
 export const ContentEntityKeySchema = z.string().min(1);
 
 export const ContentFilterMethodSchema = z.enum([
@@ -34,7 +61,7 @@ export const ContentFilterSchema = z.object({
     .union([
       JsonPrimitiveSchema,
       z.array(JsonPrimitiveSchema),
-      z.record(z.any()),
+      z.record(z.string(), z.any()),
     ])
     .optional(),
 });
@@ -117,35 +144,35 @@ export const ContentRelationGetByIdInputSchema =
   });
 
 export const ContentCreateInputSchema = ContentEntitySelectorSchema.extend({
-  data: z.record(z.any()),
+  data: z.record(z.string(), z.any()),
   dryRun: z.boolean().default(true),
 });
 
 export const ContentModelCreateInputSchema = ContentModelSelectorSchema.extend({
-  data: z.record(z.any()),
+  data: z.record(z.string(), z.any()),
   dryRun: z.boolean().default(true),
 });
 
 export const ContentRelationCreateInputSchema =
   ContentRelationSelectorSchema.extend({
-    data: z.record(z.any()),
+    data: z.record(z.string(), z.any()),
     dryRun: z.boolean().default(true),
   });
 
 export const ContentUpdateInputSchema = ContentGetByIdInputSchema.extend({
-  data: z.record(z.any()),
+  data: z.record(z.string(), z.any()),
   dryRun: z.boolean().default(true),
 });
 
 export const ContentModelUpdateInputSchema =
   ContentModelGetByIdInputSchema.extend({
-    data: z.record(z.any()),
+    data: z.record(z.string(), z.any()),
     dryRun: z.boolean().default(true),
   });
 
 export const ContentRelationUpdateInputSchema =
   ContentRelationGetByIdInputSchema.extend({
-    data: z.record(z.any()),
+    data: z.record(z.string(), z.any()),
     dryRun: z.boolean().default(true),
   });
 

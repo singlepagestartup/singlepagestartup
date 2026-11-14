@@ -522,7 +522,7 @@ describe("Design layout", () => {
     dom.window.HTMLAnchorElement.prototype.click = () => {};
     const scrolls: { id: string; hidden: boolean }[] = [];
     dom.window.HTMLElement.prototype.scrollIntoView = function () {
-      scrolls.push({ id: this.id, hidden: this.hidden });
+      scrolls.push({ id: this.id, hidden: Boolean(this.hidden) });
     };
     const Counter = () => {
       const [count, setCount] = useState(0);

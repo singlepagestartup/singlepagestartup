@@ -141,8 +141,9 @@ export const TipTapEditable = forwardRef<
   ITipTapEditableProps
 >((props: ITipTapEditableProps, ref) => {
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
-      StarterKit,
+      StarterKit.configure({ link: false }),
       Link.configure({
         openOnClick: false,
         autolink: true,

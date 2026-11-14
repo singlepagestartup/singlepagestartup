@@ -9,11 +9,7 @@
 import { Service } from ".";
 
 function createService() {
-  return new Service(
-    {} as any,
-    { find: jest.fn() } as any,
-    { find: jest.fn() } as any,
-  );
+  return new Service({} as any, { find: jest.fn() } as any);
 }
 
 describe("Given: the framework sensitive-route list", () => {
@@ -180,4 +176,53 @@ describe("Given: the framework sensitive-route list", () => {
       ),
     ).resolves.toBe(true);
   });
+});
+
+describe("public Social reads", () => {
+  const demoId = "72f56db2-4eb1-4798-a302-c138f89da53a";
+  const demo = "/api/social/chats/" + demoId;
+  const service = createService();
+
+  it.each(["GET", "HEAD"])(
+    "requires an exact record grant for %s chat reads",
+    async (method) => {
+      for (const route of [
+        "/api/social/chats",
+        "/api/social/chats/count",
+        "/api/social/chats/",
+      ]) {
+        await expect(
+          service.isSensitiveRoute(route, method, route),
+        ).resolves.toBe(true);
+      }
+      await expect(
+        service.isSensitiveRoute(
+          demo,
+          method,
+          "/api/social/chats/[social.chats.id]",
+        ),
+      ).resolves.toBe(true);
+      await expect(service.isSensitiveRoute(demo, method, demo)).resolves.toBe(
+        false,
+      );
+    },
+  );
+  it.each(["", "/count", "/" + demoId])(
+    "protects raw profile media links%s",
+    async (suffix) => {
+      const path = "/api/social/profiles-to-file-storage-module-files" + suffix;
+      await expect(service.isSensitiveRoute(path, "GET", path)).resolves.toBe(
+        true,
+      );
+    },
+  );
+  it.each(["", "/count", "/" + demoId])(
+    "preserves public author projections%s",
+    async (suffix) => {
+      const path = "/api/social/profiles/authors" + suffix;
+      await expect(service.isSensitiveRoute(path, "GET", path)).resolves.toBe(
+        false,
+      );
+    },
+  );
 });

@@ -25,12 +25,14 @@ export class Handler {
       if (!parsed.success)
         throw new Error("Validation error. Invalid CRM submission values");
       const data = parsed.data;
+      const request = await this.service.crmModuleFormRequestCreate({
+        subjectId,
+        crmModuleFormId,
+        data,
+      });
+
       return c.json({
-        data: await this.service.crmModuleFormRequestCreate({
-          subjectId,
-          crmModuleFormId,
-          data,
-        }),
+        data: request,
       });
     } catch (error) {
       const { status, message, details } = getHttpErrorType(error);

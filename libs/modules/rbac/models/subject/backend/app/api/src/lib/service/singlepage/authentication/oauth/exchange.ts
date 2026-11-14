@@ -7,7 +7,7 @@ import {
 } from "@sps/shared-utils";
 import { api as rbacActionApi } from "@sps/rbac/models/action/sdk/server";
 import { api as rbacSubjectApi } from "@sps/rbac/models/subject/sdk/server";
-import * as jwt from "hono/jwt";
+import { signJwt } from "@sps/backend-utils";
 import { consumeOauthAction } from "./utils";
 
 type TOAuthExchangePayload = {
@@ -116,24 +116,20 @@ export class Service {
       throw new Error("Not Found error. OAuth subject not found");
     }
 
-    const jwtToken = await jwt.sign(
+    const jwtToken = await signJwt(
       {
-        exp: Math.floor(Date.now() / 1000) + RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
-        iat: Math.floor(Date.now() / 1000),
-        subject,
+        subjectId: subject.id,
+        type: "access",
+        lifetimeInSeconds: RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
       },
       RBAC_JWT_SECRET,
     );
 
-    const refreshToken = await jwt.sign(
+    const refreshToken = await signJwt(
       {
-        exp:
-          Math.floor(Date.now() / 1000) +
-          RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS,
-        iat: Math.floor(Date.now() / 1000),
-        subject: {
-          id: subject.id,
-        },
+        subjectId: subject.id,
+        type: "refresh",
+        lifetimeInSeconds: RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS,
       },
       RBAC_JWT_SECRET,
     );

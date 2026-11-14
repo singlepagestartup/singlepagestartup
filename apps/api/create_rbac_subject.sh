@@ -47,30 +47,69 @@ ADMIN_ROLE_ID=""
 IDENTITY_ID=""
 SUBJECT_ID=""
 
+can_retry_request() {
+    local method="$1"
+    local curl_status="$2"
+    local http_code="$3"
+    local bytes_sent="$4"
+    local transfer_ready_at="$5"
+
+    case "$curl_status" in
+        5|6|7|28|35|52|55|56) ;;
+        *) return 1 ;;
+    esac
+
+    if [ "$method" = "GET" ]; then
+        return 0
+    fi
+
+    # Replay a write only if curl never finished setting up the connection.
+    [ "$http_code" = "000" ] && [ "$bytes_sent" = "0" ] && [ "$transfer_ready_at" = "0.000000" ]
+}
+
 request() {
     local method="$1"
     local path="$2"
     shift 2
 
-    local response_file
+    local response_file metrics bytes_sent transfer_ready_at curl_status
+    local attempt=1
+    local max_attempts=3
     response_file="$(mktemp)"
 
-    if ! HTTP_CODE=$(curl -sS \
-        --connect-timeout "$CURL_CONNECT_TIMEOUT" \
-        --max-time "$CURL_MAX_TIME" \
-        -o "$response_file" \
-        -w "%{http_code}" \
-        -X "$method" \
-        "$API_URL$path" \
-        "$@"); then
-        RESPONSE_BODY="$(cat "$response_file" 2>/dev/null || true)"
-        rm -f "$response_file"
-        HTTP_CODE="${HTTP_CODE:-000}"
-        return 0
-    fi
+    while [ "$attempt" -le "$max_attempts" ]; do
+        if metrics=$(curl -q -sS \
+            --connect-timeout "$CURL_CONNECT_TIMEOUT" \
+            --max-time "$CURL_MAX_TIME" \
+            -o "$response_file" \
+            -w "%{http_code} %{size_request} %{time_pretransfer}" \
+            -X "$method" \
+            "$API_URL$path" \
+            "$@"); then
+            HTTP_CODE="${metrics%% *}"
+            RESPONSE_BODY="$(cat "$response_file")"
+            rm -f "$response_file"
+            return 0
+        else
+            curl_status=$?
+        fi
 
-    RESPONSE_BODY="$(cat "$response_file")"
+        read -r HTTP_CODE bytes_sent transfer_ready_at <<< "$metrics"
+        if [ "$attempt" -eq "$max_attempts" ] || ! can_retry_request "$method" "$curl_status" "$HTTP_CODE" "$bytes_sent" "$transfer_ready_at"; then
+            break
+        fi
+
+        echo "Retrying $method $path after transport error (curl $curl_status, attempt $attempt/$max_attempts)." >&2
+        sleep "$attempt"
+        attempt=$((attempt + 1))
+    done
+
     rm -f "$response_file"
+    echo "Error: $method $path did not complete (curl $curl_status, $attempt attempt(s))." >&2
+    if [ "$method" != "GET" ] && [ "$transfer_ready_at" != "0.000000" ]; then
+        echo "The server may already have applied this change. Check its state before retrying." >&2
+    fi
+    exit 1
 }
 
 secret_request() {

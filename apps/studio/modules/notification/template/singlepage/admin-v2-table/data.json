@@ -36,6 +36,12 @@
         "nullable": true
       },
       {
+        "key": "content",
+        "label": "Content",
+        "kind": "text",
+        "nullable": true
+      },
+      {
         "key": "adminTitle",
         "label": "Admin Title",
         "kind": "text",
@@ -56,6 +62,7 @@
       "updatedAt": "2026-01-01T00:00:00.000Z",
       "variant": "default",
       "title": "template example 1",
+      "content": null,
       "adminTitle": "template example 1",
       "slug": "template-example-1"
     },
@@ -65,6 +72,7 @@
       "updatedAt": "2026-01-01T00:00:00.000Z",
       "variant": "default",
       "title": "template example 2",
+      "content": null,
       "adminTitle": "template example 2",
       "slug": "template-example-2"
     },
@@ -74,6 +82,7 @@
       "updatedAt": "2026-01-01T00:00:00.000Z",
       "variant": "default",
       "title": "template example 3",
+      "content": null,
       "adminTitle": "template example 3",
       "slug": "template-example-3"
     }

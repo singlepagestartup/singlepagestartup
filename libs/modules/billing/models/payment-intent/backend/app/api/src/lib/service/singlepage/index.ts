@@ -1,3 +1,4 @@
+import { z } from "zod";
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import { CRUDService, DI } from "@sps/shared-backend-api";
@@ -428,10 +429,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
         return invoice;
       } else if (data.object === "invoice") {
-        if (typeof data.subscription === "string") {
-          const subscription = await stripe.subscriptions.retrieve(
-            data.subscription,
-          );
+        const reference = data.parent?.subscription_details?.subscription;
+        const subscriptionId =
+          reference ?? ("subscription" in data ? data.subscription : undefined);
+        if (typeof subscriptionId === "string") {
+          const subscription =
+            await stripe.subscriptions.retrieve(subscriptionId);
 
           logger.debug("🚀 ~ subscription:", subscription);
 
@@ -525,6 +528,43 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
   }
 
+  async checkCloudpaymentsInvoice(invoice: IInvoice) {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Configuration error. RBAC secret key not found");
+    }
+    const provider = new Cloudpayments();
+    const payment = await provider.findCompletedPayment(invoice);
+    if (payment) {
+      const paidInvoice = await invoiceApi.update({
+        id: invoice.id,
+        data: { amount: payment.Amount, status: "paid" },
+        options: { headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY } },
+      });
+      if (!paidInvoice) {
+        throw new Error("Not Found error. CloudPayments invoice not found");
+      }
+      await this.updatePaymentIntentStatus({ invoice: paidInvoice });
+      return;
+    }
+
+    const expiresAt =
+      new Date(invoice.createdAt).getTime() + 24 * 60 * 60 * 1000;
+    if (Date.now() > expiresAt && invoice.status === "open") {
+      await this.billingModule.invoice.failOpenInvoice(invoice.id);
+    }
+  }
+
+  async failUnpaidIntent(id: string, expectedStatus: string) {
+    await this.repository.consumeFirstByField(
+      "id",
+      id,
+      { status: "failed" },
+      {
+        and: [{ column: "status", method: "eq", value: expectedStatus }],
+      },
+    );
+  }
+
   async cloudpayments(props: ICloudpaymentsProceedProps) {
     const cloudpayments = new Cloudpayments();
     return cloudpayments.proceed(props);
@@ -597,13 +637,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         formData.append("test", `${true}`);
       }
 
-      const checkout: {
-        redirectUrl: string;
-        id: number;
-      } = await fetch("https://app.0xProcessing.com/Payment", {
+      const response = await fetch("https://app.0xProcessing.com/Payment", {
         method: "POST",
         body: formData,
-      }).then((res) => res.json());
+      });
+      const checkout = z
+        .object({ redirectUrl: z.httpUrl(), id: z.number() })
+        .parse(await response.json());
 
       logger.debug("🚀 ~ checkout:", checkout);
 
@@ -1087,21 +1127,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         )
         .digest("hex");
 
-      const checkout:
-        | {
-            Id: string;
-            Status: string;
-            Url: string;
-            Invoice: string;
-            Description: string;
-            Amount: string;
-            Currency: string;
-            CreatedDate: string;
-          }
-        | {
-            Code: string;
-            Description: string;
-          } = await fetch(
+      const response = await fetch(
         "https://webform.payselection.com/webpayments/paylink_create",
         {
           method,
@@ -1113,7 +1139,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           },
           body: payload,
         },
-      ).then((res) => res.json());
+      );
+      const checkout = z
+        .union([
+          z.object({ Id: z.string(), Url: z.httpUrl() }),
+          z.object({ Code: z.string(), Description: z.string() }),
+        ])
+        .parse(await response.json());
 
       if ("Id" in checkout) {
         const updated = await invoiceApi.update({

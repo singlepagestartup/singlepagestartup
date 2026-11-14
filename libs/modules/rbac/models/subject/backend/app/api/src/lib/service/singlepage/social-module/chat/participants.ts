@@ -10,13 +10,16 @@ export class Service {
   constructor(readonly service: Pick<SubjectService, "socialModule">) {}
 
   async execute(props: IExecuteProps): Promise<ISocialModuleProfile[]> {
-    if (!props.socialModuleChatId)
+    if (!props.socialModuleChatId) {
       throw new Error("Validation error. Chat ID is required");
-    return (
-      (await this.findForChats([props.socialModuleChatId])).get(
-        props.socialModuleChatId,
-      ) || []
-    );
+    }
+    const participantsByChat = await this.findForChats([
+      props.socialModuleChatId,
+    ]);
+
+    const participants = participantsByChat.get(props.socialModuleChatId) || [];
+
+    return participants;
   }
 
   async findForChats(

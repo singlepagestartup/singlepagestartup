@@ -1,4 +1,4 @@
 export default {
   displayName: "@sps/shared-configuration",
-  preset: "../../../../jest.server-preset.js",
+  preset: "../../../jest.server-preset.js",
 };

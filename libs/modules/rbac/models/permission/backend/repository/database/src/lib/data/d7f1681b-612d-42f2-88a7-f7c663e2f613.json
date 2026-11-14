@@ -1,0 +1,9 @@
+{
+  "id": "d7f1681b-612d-42f2-88a7-f7c663e2f613",
+  "createdAt": "2026-11-10T20:43:00.645Z",
+  "updatedAt": "2026-11-10T20:43:00.645Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/file-storage/widgets"
+}

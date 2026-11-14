@@ -6,6 +6,8 @@ import { Repository } from "../../repository";
 import { Service as PermissionsToBillingModuleCurrenciesService } from "@sps/rbac/relations/permissions-to-billing-module-currencies/backend/app/api/src/lib/service/singlepage";
 import {
   RouteMatcher,
+  isExactResourceGrant,
+  UUID_VALUE_REGEX,
   createMemoryCache,
   normalizeRoutePath,
 } from "@sps/shared-utils";
@@ -13,9 +15,6 @@ import { match } from "path-to-regexp";
 import { PermissionDI } from "../../di";
 import { type IModel as IPermissionsToBillingModuleCurrencies } from "@sps/rbac/relations/permissions-to-billing-module-currencies/sdk/model";
 import { sensitiveRoutes } from "./sensitive-routes";
-import { Service as RolesToPermissionsService } from "@sps/rbac/relations/roles-to-permissions/backend/app/api/src/lib/service";
-import type { IPublicResourceIdsParams } from "@sps/rbac/models/permission/sdk/model";
-import { Service as PublicResourceIdsService } from "./public-resource-ids";
 
 const cache = createMemoryCache({ ttlMs: 30_000, maxSize: 10_000 });
 const matcherCache = new Map<string, ReturnType<typeof match>>();
@@ -44,19 +43,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     @inject(DI.IRepository) repository: Repository,
     @inject(PermissionDI.IPermissionsToBillingModuleCurrenciesService)
     permissionsToBillingModuleCurrenciesService: PermissionsToBillingModuleCurrenciesService,
-    @inject(PermissionDI.IRolesToPermissionsService)
-    readonly rolesToPermissions: RolesToPermissionsService,
   ) {
     super(repository);
     this.permissionsToBillingModuleCurrenciesService =
       permissionsToBillingModuleCurrenciesService;
-  }
-
-  publicResourceIds(props: IPublicResourceIdsParams) {
-    return new PublicResourceIdsService({
-      permission: this,
-      rolesToPermissions: this.rolesToPermissions,
-    }).execute(props);
   }
 
   invalidateRouteResolutionCache() {
@@ -74,8 +64,20 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
    * widen the list, or to re-open a route the project deliberately serves to
    * anonymous callers.
    */
-  async isSensitiveRoute(route: string, method: string): Promise<boolean> {
-    return sensitiveRoutesMatcher.matches(normalizeRoutePath(route), method);
+  async isSensitiveRoute(
+    route: string,
+    method: string,
+    permissionPath?: string,
+  ): Promise<boolean> {
+    const path = normalizeRoutePath(route).replace(/\/$/, "");
+    if (
+      ["GET", "HEAD"].includes(method.toUpperCase()) &&
+      permissionPath === path &&
+      isExactResourceGrant("/api/social/chats", path)
+    ) {
+      return false;
+    }
+    return sensitiveRoutesMatcher.matches(path, method);
   }
 
   protected async getTemplatePermissions(props: {
@@ -207,51 +209,71 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return requirements;
   }
 
+  protected async findRoutePermission({
+    route,
+    method,
+    type,
+  }: IResolveByRouteProps["permission"]) {
+    const segments = route.split("/");
+    if (segments.includes(":uuid")) {
+      return undefined;
+    }
+
+    const exact = await this.findExactPermission({ path: route, method, type });
+    if (exact) {
+      return exact;
+    }
+
+    const permissions = await this.getTemplatePermissions({ method, type });
+    const template = this.findTemplatePermissionByRoute({
+      permissions,
+      route,
+      method,
+      type,
+    });
+    if (template) {
+      return template;
+    }
+
+    const uuidPath = segments
+      .map((segment) => {
+        return UUID_VALUE_REGEX.test(segment) ? ":uuid" : segment;
+      })
+      .join("/");
+    if (uuidPath !== route) {
+      return this.findExactPermission({ path: uuidPath, method, type });
+    }
+    return undefined;
+  }
+
   async resolveByRoute(
     props: IResolveByRouteProps,
   ): Promise<IResolveByRouteResult> {
-    const exactPermission = await this.findExactPermission({
-      path: props.permission.route,
-      method: props.permission.method,
-      type: props.permission.type,
-    });
-    const templatePermissions = exactPermission
-      ? []
-      : await this.getTemplatePermissions({
-          method: props.permission.method,
-          type: props.permission.type,
-        });
-    const templatePermission = exactPermission
-      ? undefined
-      : this.findTemplatePermissionByRoute({
-          permissions: templatePermissions,
-          route: props.permission.route,
-          method: props.permission.method,
-          type: props.permission.type,
-        });
-    const methodWildcardPermission =
-      exactPermission || templatePermission
-        ? undefined
-        : await this.findExactPermission({
-            path: "*",
-            method: props.permission.method,
-            type: props.permission.type,
-          });
-    const permission =
-      exactPermission || templatePermission || methodWildcardPermission;
+    const { method, type } = props.permission;
+    let matchedPermission = await this.findRoutePermission(props.permission);
+    if (!matchedPermission) {
+      matchedPermission = await this.findExactPermission({
+        path: "*",
+        method,
+        type,
+      });
+    }
     const rootPermission = await this.findExactPermission({
       path: "*",
       method: "*",
       type: props.permission.type,
     });
 
-    const permissionsToBillingModuleCurrencies =
-      props.includeBillingRequirements && permission?.id
-        ? await this.getPermissionBillingRequirements(permission.id)
-        : [];
+    let permissionsToBillingModuleCurrencies;
+    if (props.includeBillingRequirements && matchedPermission?.id) {
+      permissionsToBillingModuleCurrencies =
+        await this.getPermissionBillingRequirements(matchedPermission.id);
+    } else {
+      permissionsToBillingModuleCurrencies = [];
+    }
 
     return {
-      permission,
+      permission: matchedPermission,
       rootPermission,
       permissionsToBillingModuleCurrencies,
     };

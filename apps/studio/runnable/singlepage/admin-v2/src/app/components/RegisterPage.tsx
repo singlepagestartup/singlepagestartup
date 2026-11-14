@@ -4,13 +4,13 @@ import {
   ChevronRight,
   Eye,
   EyeOff,
-  Github,
   Loader2,
   Lock,
   Mail,
   User,
   UserPlus,
 } from "lucide-react";
+import { FaGithub as Github } from "react-icons/fa6";
 import { useAuth } from "./AuthContext";
 
 export function RegisterPage() {

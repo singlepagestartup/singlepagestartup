@@ -12,7 +12,7 @@ describe("Markdown document preview", () => {
         }
       </MarkdownDocument>,
     );
-    expect(html).toContain("<pre><code>indented code");
+    expect(html).toMatch(/<pre><code(?:\s[^>]*)?>indented code<\/code><\/pre>/);
     expect(html).toContain("<h3");
     expect(html).toContain("<strong>Cup workshop</strong>");
     expect(html).toContain("<em>small groups</em>");

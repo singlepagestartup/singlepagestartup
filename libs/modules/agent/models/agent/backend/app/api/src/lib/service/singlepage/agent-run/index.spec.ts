@@ -38,9 +38,6 @@ function createBroadcastModule(markers: IStoredMarker[]) {
   return {
     channel: {
       find: jest.fn().mockResolvedValue([{ id: "cron-channel-id" }]),
-      findById: jest.fn(),
-    },
-    message: {
       transientChannelMessages: jest.fn().mockResolvedValue(
         markers.map((marker) => ({
           id: marker.id,
@@ -57,7 +54,7 @@ function createAgentRun(markers: IStoredMarker[] = []) {
   mockAcknowledge.mockImplementation(async (owner: { receipt: string }) =>
     markers.some((marker) => marker.runId === owner.receipt && !marker.result),
   );
-  broadcastModule.message.queue = { acknowledge: mockAcknowledge };
+  broadcastModule.channel.queue = { acknowledge: mockAcknowledge };
   return new AgentRun({ broadcastModule });
 }
 

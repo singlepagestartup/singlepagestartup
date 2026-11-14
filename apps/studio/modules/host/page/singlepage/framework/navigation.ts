@@ -18,9 +18,11 @@ export const resolveFrameworkLink: FrameworkLinkResolver = (href) => {
     args = `articleSlug:${decodeURIComponent(pathname.slice(15))}`;
   } else if (pathname === "/ecommerce") story = "ecommerce-module-token-find";
   else if (pathname === "/" || pathname === "/ai-chat/") story = "ai-chat";
-  else if (pathname === "/ai-chat/rbac/subjects/authentication/registration")
+  else if (
+    pathname === "/rbac/subject/authentication/email-and-password/registration"
+  )
     story = "rbac-module-subject-me-authentication-registration-ai-chat";
-  else if (pathname === "/ai-chat/rbac/subjects/authentication/select-method")
+  else if (pathname === "/rbac/subject/authentication/email-and-password")
     story = "rbac-module-subject-me-authentication-select-method-ai-chat";
   else if (pathname === "/ai-chat/rbac/subjects/subscriptions/pro")
     story = "ecommerce-module-token-find";

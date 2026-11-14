@@ -28,15 +28,18 @@ export default async function Server(props: IComponentProps) {
       .catch(() => undefined),
   ]);
   const profile = profiles?.[0];
-  const avatar = profile
-    ? await subjectApi
-        .socialModuleProfileFindByIdAvatarFind({
-          id: props.data.id,
-          socialModuleProfileId: profile.id,
-          options,
-        })
-        .catch(() => undefined)
-    : undefined;
+  let avatar;
+  if (profile) {
+    avatar = await subjectApi
+      .socialModuleProfileFindByIdAvatarFind({
+        id: props.data.id,
+        socialModuleProfileId: profile.id,
+        options,
+      })
+      .catch(() => undefined);
+  } else {
+    avatar = undefined;
+  }
   return (
     <ChildComponent
       {...props}
