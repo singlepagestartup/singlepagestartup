@@ -23,11 +23,11 @@ function Calendar({
         month_caption: "flex pt-1 pl-1 relative items-center w-fit",
         caption_label: "font-medium",
         nav: "flex items-center gap-1 absolute right-0 top-0 z-10",
-        table: "w-full border-collapse space-x-1",
-        head_row: "flex",
-        head_cell:
+        month_grid: "w-full border-collapse space-x-1",
+        weekdays: "flex",
+        weekday:
           "text-muted-foreground rounded-md w-8 font-normal text-[0.8rem]",
-        row: "flex w-full mt-2",
+        week: "flex w-full mt-2",
         day: cn(
           "relative text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent [&:has([aria-selected].day-range-end)]:rounded-r-md",
           props.mode === "range"
@@ -38,19 +38,19 @@ function Calendar({
           buttonVariants({ variant: "ghost" }),
           "border border-input p-3 font-normal aria-selected:opacity-100 rounded-md hover:border-primary hover:bg-primary hover:text-primary-foreground aria-selected:border-primary aria-selected:bg-primary aria-selected:text-primary-foreground",
         ),
-        day_range_start:
+        range_start:
           "day-range-start aria-selected:bg-primary aria-selected:text-primary-foreground",
-        day_range_end:
+        range_end:
           "day-range-end aria-selected:bg-primary aria-selected:text-primary-foreground",
         selected:
           "[&>button]:bg-primary [&>button]:border-primary text-primary-foreground",
         today: "[&>button]:bg-input text-accent-foreground",
-        day_outside:
+        outside:
           "day-outside text-muted-foreground aria-selected:text-muted-foreground",
         disabled: "text-muted-foreground opacity-50",
-        day_range_middle:
+        range_middle:
           "aria-selected:bg-accent aria-selected:text-accent-foreground",
-        day_hidden: "invisible",
+        hidden: "invisible",
         ...classNames,
       }}
       components={{

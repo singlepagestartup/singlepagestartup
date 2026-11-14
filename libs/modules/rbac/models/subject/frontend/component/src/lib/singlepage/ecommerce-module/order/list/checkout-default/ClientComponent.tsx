@@ -105,7 +105,7 @@ export function Component(props: IComponentPropsExtended) {
       queryKey: [`${route}/${props.data.id}/ecommerce-module/orders`],
     }) > 0;
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm({
     resolver: zodResolver(formSchema),
     shouldUnregister: true,
     defaultValues: {

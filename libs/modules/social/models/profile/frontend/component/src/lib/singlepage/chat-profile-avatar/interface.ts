@@ -9,8 +9,10 @@ import type { IModel as IFile } from "@sps/file-storage/models/file/sdk/model";
 
 export const variant = "chat-profile-avatar" as const;
 
-export interface IClientComponentProps
-  extends Pick<ISpsComponentBase, "className" | "isServer"> {
+export interface IClientComponentProps extends Pick<
+  ISpsComponentBase,
+  "className" | "isServer"
+> {
   data: Pick<IModel, "id" | "title">;
   language: string;
   fallback?: ReactNode;
@@ -18,8 +20,9 @@ export interface IClientComponentProps
 }
 
 export interface IComponentProps
-  extends ISpsComponentBase,
-    IClientComponentProps {
+  extends ISpsComponentBase, IClientComponentProps {
+  /** The parent may supply the avatar; otherwise the reader calls Profile.authorFind. */
+  dataSource?: "api" | "props";
   variant: typeof variant;
 }
 

@@ -124,3 +124,45 @@ paths:
             application/json:
               schema:
                 $ref: "ecommerce-orders-to-products.yaml"
+
+  /ecommerce/orders-to-products/{id}/total:
+    get:
+      tags:
+        - "ecommerce-orders-to-products"
+      summary: Calculate an order line's totals per currency
+      description: The default RBAC seed grants this route to Admin. Customers read their own priced lines through the Subject route.
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      responses:
+        "200":
+          description: Calculated amounts and lines that could not be priced.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, unpriced]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      required: [total, billingModuleCurrency]
+                      properties:
+                        total:
+                          type: number
+                        billingModuleCurrency:
+                          $ref: "../../../../../../../../../libs/modules/billing/models/currency/sdk/model/src/lib/billing-currency.yaml"
+                  unpriced:
+                    type: array
+                    items:
+                      type: object
+                      required: [ordersToProductsId, productId, reason]
+                      properties:
+                        ordersToProductsId:
+                          type: string
+                          format: uuid
+                        productId:
+                          type: string
+                          format: uuid
+                        reason:
+                          type: string

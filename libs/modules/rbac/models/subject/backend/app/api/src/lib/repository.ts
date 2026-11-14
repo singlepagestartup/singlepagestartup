@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { injectable } from "inversify";
+import { injectFromBase, injectable } from "inversify";
 import {
   DatabaseRepository,
   consistencyContext,
@@ -9,6 +9,7 @@ import { Table } from "@sps/rbac/models/subject/backend/repository/database";
 import { sql } from "drizzle-orm";
 
 @injectable()
+@injectFromBase()
 export class Repository extends DatabaseRepository<typeof Table> {
   withSubjectLock<T>(
     scope: { subjectId: string },

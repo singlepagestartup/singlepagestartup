@@ -9,7 +9,9 @@ export const variant =
   "subject-authentication-email-and-password-forgot-password-form-default" as const;
 
 export interface IComponentProps
-  extends IParentComponentProps<IModel, typeof variant> {}
+  extends IParentComponentProps<IModel, typeof variant> {
+  language?: string;
+}
 
 export interface IComponentPropsExtended
   extends IParentComponentPropsExtended<

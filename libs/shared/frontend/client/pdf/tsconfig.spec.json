@@ -2,8 +2,8 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "../../../../../dist/out-tsc",
-    "module": "commonjs",
-    "moduleResolution": "node10",
+    "module": "Node16",
+    "moduleResolution": "Node16",
     "jsx": "react-jsx",
     "types": ["jest", "node"]
   },

@@ -7,7 +7,7 @@ export function Component({
   topups = defaultTopups,
   registrationAllowance = 3000,
   tokenRate = 0.13,
-  registrationHref = "/ai-chat/rbac/subjects/authentication/registration",
+  registrationHref = "/rbac/subject/authentication/email-and-password/registration",
   chatHref = "/",
   frameworkHref = "/framework",
   linkTarget = "_self",

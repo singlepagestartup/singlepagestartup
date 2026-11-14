@@ -272,13 +272,15 @@ export class SocialProfileJevService {
       const results = await Promise.all(
         batches.slice(offset, offset + 3).map(async (items) => {
           const request = requestFor(items);
+          const result = await this.decide(
+            "knowledge_rerank",
+            request.state,
+            request.questions,
+          );
+
           return {
             items,
-            result: await this.decide(
-              "knowledge_rerank",
-              request.state,
-              request.questions,
-            ),
+            result,
           };
         }),
       );

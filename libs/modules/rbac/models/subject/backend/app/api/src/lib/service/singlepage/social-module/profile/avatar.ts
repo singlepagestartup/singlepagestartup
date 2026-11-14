@@ -23,11 +23,14 @@ export class Service {
       throw new Error("Validation error. No profile id provided");
     const relations = await this.findAvatarRelations(socialModuleProfileId);
     const relation = relations[0] ?? null;
-    const file = relation
-      ? await this.props.fileStorageModule.file.findById({
-          id: relation.fileStorageModuleFileId,
-        })
-      : null;
+    let file;
+    if (relation) {
+      file = await this.props.fileStorageModule.file.findById({
+        id: relation.fileStorageModuleFileId,
+      });
+    } else {
+      file = null;
+    }
     return { file: file ?? null, relation };
   }
 
@@ -109,8 +112,8 @@ export class Service {
   }
 
   private async findAvatarRelations(profileId: string) {
-    return (
-      (await socialModuleProfilesToFileStorageModuleFilesApi.find({
+    const relations =
+      await socialModuleProfilesToFileStorageModuleFilesApi.find({
         params: {
           filters: {
             and: [{ column: "profileId", method: "eq", value: profileId }],
@@ -119,8 +122,9 @@ export class Service {
         options: {
           headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY as string },
         },
-      })) || []
-    );
+      });
+
+    return relations || [];
   }
 
   private deleteAvatarRelation(id: string) {

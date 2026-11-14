@@ -21,12 +21,20 @@ const presentation: IProfilePresentation = {
     height: 80,
   },
 };
-const participant = {
+const participant: IProfile = {
   id: "profile-a",
   slug: "private-subject-id",
   title: { en: "Saved sender" },
   subtitle: {},
-} as IProfile;
+  description: {},
+  metadata: {},
+  allowedMcpServerIds: [],
+  createdAt: new Date("2026-01-01"),
+  updatedAt: new Date("2026-01-01"),
+  className: null,
+  variant: "default",
+  adminTitle: "Saved sender",
+};
 const message = {
   id: "message-a",
   authorProfiles: [presentation],

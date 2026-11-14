@@ -12,24 +12,26 @@ import {
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 
 async function runStartup(failingTarget = "") {
   const directory = await mkdtemp(path.join(os.tmpdir(), "sps-api-startup-"));
   try {
-    for (const name of ["start.sh", "migrate.sh"])
+    for (const name of ["start.sh", "migrate.sh"]) {
       await copyFile(
         new URL(`../../${name}`, import.meta.url),
         path.join(directory, name),
       );
+    }
     const log = path.join(directory, "commands.log");
-    await writeFile(
-      path.join(directory, "create_env.sh"),
-      "#!/bin/bash\nexit 0\n",
-      { mode: 0o755 },
-    );
     await writeFile(
       path.join(directory, "bun"),
       '#!/bin/bash\nprintf "bun %s\\n" "$*" >> "$STARTUP_LOG"\nif [ "bun $*" = "$FAILING_TARGET" ]; then exit 17; fi\n',
+      { mode: 0o755 },
+    );
+    await writeFile(
+      path.join(directory, "create_env.sh"),
+      "#!/bin/bash\nexit 0\n",
       { mode: 0o755 },
     );
     await writeFile(
@@ -70,52 +72,38 @@ test("API starts only after infrastructure, model migrations and seed complete",
     "nx run @sps/providers-db:repository-migrate",
   ]);
   assert.ok(result.commands.includes("nx run @sps/social:repository-migrate"));
-  assert.deepEqual(result.commands.slice(-2), [
+  assert.deepEqual(result.commands.slice(-3), [
+    "nx run @sps/providers-db:consistency-finalize",
     "nx run api:db:seed",
     "npm run api:start",
   ]);
 });
 
 for (const target of [
-  "@sps/providers-db:repository-migrate",
-  "@sps/social:repository-migrate",
-  "api:db:seed",
-])
+  "bun --cwd apps/api src/db/check-application-role.ts",
+  "nx run @sps/providers-db:repository-migrate",
+  "nx run @sps/social:repository-migrate",
+  "nx run @sps/providers-db:consistency-finalize",
+  "nx run api:db:seed",
+]) {
   test(`API remains stopped when ${target} fails`, async () => {
-    const result = await runStartup(`nx run ${target}`);
+    const result = await runStartup(target);
     assert.equal(result.status, 17, result.stderr);
-    assert.equal(result.commands.at(-1), `nx run ${target}`);
-    assert.ok(
-      !result.commands.some((command) =>
-        command.startsWith("npm run api:start"),
-      ),
-    );
+    assert.equal(result.commands.at(-1), target);
+    assert.ok(!result.commands.includes("npm run api:start"));
   });
+}
 
 async function runNxStartup(mode, failingTarget = "") {
   const directory = await mkdtemp(path.join(os.tmpdir(), "sps-api-direct-"));
-  const repository = path.resolve(new URL("../../", import.meta.url).pathname);
+  const repository = fileURLToPath(new URL("../../", import.meta.url));
   try {
     await mkdir(path.join(directory, "apps/api"), { recursive: true });
     await writeFile(path.join(directory, "nx.json"), "{}");
     await writeFile(path.join(directory, "package.json"), '{"private":true}');
-    const project = JSON.parse(
-      await readFile(
-        new URL("../../apps/api/project.json", import.meta.url),
-        "utf8",
-      ),
-    );
-    await writeFile(
+    await copyFile(
+      new URL("../../apps/api/project.json", import.meta.url),
       path.join(directory, "apps/api/project.json"),
-      JSON.stringify({
-        ...project,
-        targets: Object.fromEntries(
-          ["dev", "start", "db:migrate"].map((name) => [
-            name,
-            project.targets[name],
-          ]),
-        ),
-      }),
     );
     await copyFile(
       new URL("../../migrate.sh", import.meta.url),
@@ -128,6 +116,7 @@ async function runNxStartup(mode, failingTarget = "") {
       "dir",
     );
     const log = path.join(directory, "commands.log");
+    await writeFile(log, "");
     for (const executable of ["npx", "bun"]) {
       await writeFile(
         path.join(directory, "node_modules/.bin", executable),
@@ -155,10 +144,7 @@ async function runNxStartup(mode, failingTarget = "") {
         timeout: 30000,
       },
     );
-    let commands = [];
-    try {
-      commands = (await readFile(log, "utf8")).trim().split("\n");
-    } catch {}
+    const commands = (await readFile(log, "utf8")).trim().split("\n");
     return { ...result, commands };
   } finally {
     await rm(directory, { recursive: true, force: true });
@@ -188,11 +174,4 @@ test("explicit database migration stops when infrastructure migration fails", as
     "bun --cwd apps/api src/db/check-application-role.ts",
   );
   assert.ok(!result.commands.includes("bun run start"));
-});
-
-test("a rejected application role stops startup before migrations or seed", async () => {
-  const roleCheck = "bun --cwd apps/api src/db/check-application-role.ts";
-  const result = await runStartup(roleCheck);
-  assert.equal(result.status, 17, result.stderr);
-  assert.deepEqual(result.commands, [roleCheck]);
 });

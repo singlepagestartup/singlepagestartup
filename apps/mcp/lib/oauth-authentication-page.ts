@@ -44,7 +44,7 @@ export function getOAuthAuthenticationPage() {
             <input id="redirectUri" readonly />
           </div>
         </div>
-        <p>Click start, then sign in on the SinglePageStartup login page using an existing SinglePageStartup email/password.</p>
+        <p>Click start, approve the connection on the consent step, then sign in with an existing SinglePageStartup email/password.</p>
         <div class="row">
           <button id="startButton" type="button">Start OAuth authentication</button>
           <button id="resetButton" type="button" class="secondary">Reset local state</button>

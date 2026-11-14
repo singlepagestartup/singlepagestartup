@@ -17,8 +17,7 @@ export interface IProps {
 }
 
 export type IResult = {
-  jwt: string;
-  refresh: string;
+  ok: boolean;
 };
 
 export async function action(props: IProps): Promise<IResult> {
@@ -28,15 +27,16 @@ export async function action(props: IProps): Promise<IResult> {
     encodeValuesOnly: true,
   });
 
+  const headers = new Headers(options?.headers);
+  headers.set("Cache-Control", "no-store");
+
   const requestOptions: NextRequestOptions = {
     credentials: "include",
     method: "POST",
     ...options,
+    headers,
     next: {
       ...options?.next,
-    },
-    headers: {
-      "Cache-Control": "no-store",
     },
   };
 

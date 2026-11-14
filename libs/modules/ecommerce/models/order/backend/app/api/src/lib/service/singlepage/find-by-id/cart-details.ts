@@ -1,3 +1,4 @@
+import { ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS } from "@sps/shared-utils";
 import type { ICartDetails } from "@sps/ecommerce/models/order/sdk/model";
 import type { Service as OrdersToProductsService } from "@sps/ecommerce/relations/orders-to-products/backend/app/api/src/lib/service";
 import type { Service as ProductService } from "@sps/ecommerce/models/product/backend/app/api/src/lib/service";
@@ -20,7 +21,10 @@ export class Service {
         },
       },
     });
-    if (!lines?.length) return { lines: [], totals: [] };
+    const maxLineQuantity = ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS.max;
+    if (!lines?.length) {
+      return { lines: [], totals: [], maxLineQuantity };
+    }
     const products = await this.dependencies.product.find({
       params: {
         filters: {
@@ -47,6 +51,7 @@ export class Service {
       ...new Set(currencyLinks?.map((link) => link.billingModuleCurrencyId)),
     ];
     return {
+      maxLineQuantity,
       availableCurrencyIds: result.availableCurrencyIds,
       ...(selectedIds.length === 1
         ? { billingModuleCurrencyId: selectedIds[0] }

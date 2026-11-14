@@ -61,8 +61,10 @@ export class Handler {
         });
       }
 
+      const favorites = await this.readFavorites(subjectId);
+
       return c.json({
-        data: await this.readFavorites(subjectId),
+        data: favorites,
       });
     } catch (error: unknown) {
       const { status, message, details } = getHttpErrorType(error);

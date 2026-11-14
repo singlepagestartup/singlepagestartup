@@ -1,7 +1,6 @@
 import { RoutingService } from "@sps/host/models/page/backend/app/api/src/lib/service/singlepage/routing";
 import type { IModel as IMetadata } from "@sps/host/models/metadata/sdk/model";
 import { api as metadataApi } from "@sps/host/models/metadata/sdk/server";
-import type { IResolvedPage } from "@sps/host/models/page/sdk/model";
 import { api as pagesToMetadataApi } from "@sps/host/relations/pages-to-metadata/sdk/server";
 import { internationalization } from "@sps/shared-configuration";
 import {
@@ -17,6 +16,7 @@ import {
 } from "@sps/shared-utils";
 import type { IGeneratePageSeoProps } from "./interface";
 import type {
+  IResolvedPage,
   IPageSeoResult,
   IResolvedPageSeo,
   ISeoMetadata,
@@ -118,15 +118,13 @@ export class SeoService {
     ): Promise<string | undefined> {
       if (!value?.trim()) return fallback;
       try {
-        return (
-          plainText(
-            await renderMetadataTemplate(value, {
-              language,
-              list,
-              resolve: (reference) => context.resolve(reference),
-            }),
-          ) || fallback
-        );
+        const renderedText = await renderMetadataTemplate(value, {
+          language,
+          list,
+          resolve: (reference) => context.resolve(reference),
+        });
+
+        return plainText(renderedText) || fallback;
       } catch (error) {
         if (!(error instanceof MetadataMaskError)) throw error;
         diagnostics.push(error.message);
@@ -167,18 +165,27 @@ export class SeoService {
       await text(selected?.opengraphImage),
       canonical,
     );
-    const selectedImage =
-      !explicitImage && selected && selected.id !== "preview"
-        ? await context.metadataImage(selected)
-        : undefined;
-    const primaryImage =
-      !explicitImage && !selectedImage && primary
-        ? await context.metadataImage(primary)
-        : undefined;
-    const primaryImageUrl =
-      !explicitImage && !selectedImage && !primaryImage
-        ? absoluteHttpUrl(await text(primary?.opengraphImage), canonical)
-        : undefined;
+    let selectedImage;
+    if (!explicitImage && selected && selected.id !== "preview") {
+      selectedImage = await context.metadataImage(selected);
+    } else {
+      selectedImage = undefined;
+    }
+    let primaryImage;
+    if (!explicitImage && !selectedImage && primary) {
+      primaryImage = await context.metadataImage(primary);
+    } else {
+      primaryImage = undefined;
+    }
+    let primaryImageUrl;
+    if (!explicitImage && !selectedImage && !primaryImage) {
+      primaryImageUrl = absoluteHttpUrl(
+        await text(primary?.opengraphImage),
+        canonical,
+      );
+    } else {
+      primaryImageUrl = undefined;
+    }
     const image = explicitImage
       ? { url: explicitImage }
       : selectedImage ||

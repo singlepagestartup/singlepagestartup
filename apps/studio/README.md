@@ -302,8 +302,8 @@ adapter selects the corresponding Page variant for each address:
 | Profile overview | `/ai-chat/social/profiles/[social.profiles.id]`                                        |
 | Profile settings | `/ai-chat/social/profiles/[social.profiles.id]/settings`                               |
 | Create Thread    | `/ai-chat/social/profiles/[social.profiles.id]/chats/[social.chats.id]/threads/create` |
-| Sign in          | `/ai-chat/rbac/subjects/authentication/select-method`                                  |
-| Registration     | `/ai-chat/rbac/subjects/authentication/registration`                                   |
+| Sign in          | `/rbac/subject/authentication/email-and-password`                                      |
+| Registration     | `/rbac/subject/authentication/email-and-password/registration`                         |
 | Account settings | `/ai-chat/rbac/subjects/settings`                                                      |
 | Tokens           | `/ai-chat/rbac/subjects/tokens`                                                        |
 

@@ -37,12 +37,24 @@
         "command": "bun --env-file=apps/api/.env libs/providers/db/src/lib/drizzle/migrate-consistency.ts"
       }
     },
+    "consistency-finalize": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "cwd": ".",
+        "command": "bun --env-file=apps/api/.env libs/providers/db/src/lib/drizzle/migrate-consistency.ts --finalize"
+      }
+    },
     "consistency-check": {
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
         "cwd": ".",
-        "command": "bun --env-file=apps/api/.env tools/plugins/sps-generator-plugin/src/utils/consistency-migrations/check.ts"
+        "parallel": false,
+        "commands": [
+          "bun tools/plugins/sps-generator-plugin/src/utils/consistency-migrations/generate.ts --check",
+          "bun --env-file=apps/api/.env tools/plugins/sps-generator-plugin/src/utils/consistency-migrations/check.ts"
+        ]
       }
     },
     "consistency-status": {

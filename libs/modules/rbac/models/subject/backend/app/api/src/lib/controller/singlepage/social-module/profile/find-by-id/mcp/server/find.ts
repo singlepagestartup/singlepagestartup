@@ -1,11 +1,10 @@
-import { getHttpErrorType } from "@sps/backend-utils";
+import { getHttpErrorType, signJwt } from "@sps/backend-utils";
 import {
   RBAC_JWT_SECRET,
   RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
 } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import * as jwt from "hono/jwt";
 import { Service } from "../../../../../../../service";
 
 export class Handler {
@@ -70,12 +69,11 @@ export class Handler {
         throw new Error("Not found error. Linked rbac.subject not found");
       }
 
-      const issuedAt = Math.floor(Date.now() / 1000);
-      const rbacSubjectAuthenticationJwt = await jwt.sign(
+      const rbacSubjectAuthenticationJwt = await signJwt(
         {
-          exp: issuedAt + RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
-          iat: issuedAt,
-          subject: rbacSubject,
+          subjectId: rbacSubject.id,
+          type: "access",
+          lifetimeInSeconds: RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
         },
         RBAC_JWT_SECRET,
       );

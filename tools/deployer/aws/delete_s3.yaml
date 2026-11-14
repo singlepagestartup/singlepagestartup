@@ -1,61 +1,45 @@
 ---
-- name: Delete S3 bucket
+- name: Delete configured empty S3 buckets
   hosts: all
   become: yes
   vars:
     root_aws_access_key_id: "{{ ROOT_AWS_ACCESS_KEY_ID }}"
     root_aws_secret_access_key: "{{ ROOT_AWS_SECRET_ACCESS_KEY }}"
-    project_name: "{{ PROJECT_NAME }}"
-    aws_s3_bucket_name: "{{ AWS_S3_BUCKET_NAME }}"
+    aws_region: "{{ AWS_REGION }}"
+    aws_s3_bucket_name: "{{ AWS_S3_BUCKET_NAME | default('') | trim }}"
+    aws_s3_dev_bucket_name: "{{ AWS_S3_DEV_BUCKET_NAME | default('') | trim }}"
   tasks:
-    - name: Get ansible ansible_system_vendor
-      set_fact:
-        ansible_system_vendor: "{{ hostvars[inventory_hostname]['ansible_system_vendor'] }}"
-
-    - name: If DigitalOcean
+    - name: Remove configured S3 buckets
+      when: aws_s3_bucket_name | length > 0 or aws_s3_dev_bucket_name | length > 0
       block:
         - name: Install required Python packages
           pip:
-            name: "{{ item }}"
+            name:
+              - boto
+              - boto3
+              - botocore
+              - awscli
             state: present
             virtualenv: /opt/venv
-          loop:
-            - boto
-            - boto3
-            - botocore
-            - awscli
-      when: ansible_system_vendor == "DigitalOcean"
 
-    - name: If not DigitalOcean
-      block:
-        - name: Install required Python packages
-          pip:
+        - name: Delete S3 bucket
+          amazon.aws.s3_bucket:
             name: "{{ item }}"
-            state: present
-            virtualenv: /opt/venv
+            access_key: "{{ root_aws_access_key_id }}"
+            secret_key: "{{ root_aws_secret_access_key }}"
+            region: "{{ aws_region }}"
+            state: absent
+            force: false
           loop:
-            - boto
-            - boto3
-            - botocore
-            - awscli
-      when: ansible_system_vendor != "DigitalOcean"
+            - "{{ aws_s3_bucket_name }}"
+            - "{{ aws_s3_dev_bucket_name }}"
+          when: item | length > 0
 
-    - name: Delete S3 bucket
-      amazon.aws.s3_bucket:
-        name: "{{ item }}"
-        access_key: "{{ root_aws_access_key_id }}"
-        secret_key: "{{ root_aws_secret_access_key }}"
-        state: absent
-        force: true
-      ignore_errors: yes
-      loop:
-        - "{{ aws_s3_bucket_name }}"
-        - "{{ aws_s3_bucket_name }}dev"
-
-    - name: Delete S3 name file
-      file:
-        path: "/home/code/{{ item }}"
-        state: absent
-      loop:
-        - "s3_bucket"
-        - "s3_bucket_dev"
+        - name: Delete S3 name file
+          file:
+            path: "/home/code/{{ item.name }}.env"
+            state: absent
+          loop:
+            - { name: "s3_bucket", bucket: "{{ aws_s3_bucket_name }}" }
+            - { name: "s3_bucket_dev", bucket: "{{ aws_s3_dev_bucket_name }}" }
+          when: item.bucket | length > 0

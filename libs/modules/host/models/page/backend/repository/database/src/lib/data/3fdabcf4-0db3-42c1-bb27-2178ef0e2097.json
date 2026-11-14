@@ -36,6 +36,7 @@
   "id": "3fdabcf4-0db3-42c1-bb27-2178ef0e2097",
   "title": "Social Chats Find By Id",
   "url": "/social/chats/[social.chats.id]",
+  "slug": "page-c98fe3745235d8782483d75a74287bc940742acc5afc0d7e49159e81d6d50442",
   "description": "Description",
   "createdAt": "2026-04-12T21:02:30.484Z",
   "updatedAt": "2026-10-30T22:25:05.990Z",

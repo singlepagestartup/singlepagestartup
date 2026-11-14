@@ -1,11 +1,12 @@
 import "reflect-metadata";
-import { injectable } from "inversify";
+import { injectFromBase, injectable } from "inversify";
 import {
   type ITelegramCommandDefinitionOverride,
   Service as ParentService,
 } from "../singlepage";
 
 @injectable()
+@injectFromBase()
 export class Service extends ParentService {
   protected getStartupTelegramCommandDefinitions(): ITelegramCommandDefinitionOverride[] {
     return [];

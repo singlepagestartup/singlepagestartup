@@ -1,4 +1,22 @@
-import { getLocalizedHref } from "./index";
+import { getLanguageSwitchHref, getLocalizedHref } from "./index";
+
+describe("switching the current page language", () => {
+  it.each([
+    ["/en/framework", "ru", "/ru/framework"],
+    ["/ru/framework/modules", "en", "/en/framework/modules"],
+    ["/en", "ru", "/ru"],
+    ["/ru/", "en", "/en/"],
+    ["/framework", "en", "/en/framework"],
+    [
+      "/en/blog/en/intro%20post?tag=a&tag=b#details",
+      "ru",
+      "/ru/blog/en/intro%20post?tag=a&tag=b#details",
+    ],
+  ])("switches %s to %s", (path, language, expected) => {
+    const location = new URL(path, "https://example.com");
+    expect(getLanguageSwitchHref(location, language)).toBe(expected);
+  });
+});
 
 describe("localized navigation", () => {
   it("keeps the current language when opening Help or a project action", () => {

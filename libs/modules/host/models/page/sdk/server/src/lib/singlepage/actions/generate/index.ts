@@ -50,7 +50,9 @@ export async function generatePageSeo(
   return nextMetadata(result);
 }
 export async function action(props: IGeneratePageSeoProps): Promise<Metadata> {
-  return (await generatePageSeo(props)).metadata;
+  const pageSeo = await generatePageSeo(props);
+
+  return pageSeo.metadata;
 }
 /** Shared per server render, independently from persistent ISR caching. */
 export const resolvePageSeo = cache(async (url: string) => {

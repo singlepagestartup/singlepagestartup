@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { Configuration as ParentConfiguration } from "@sps/shared-backend-api";
 import {
   Table,
@@ -28,10 +29,27 @@ export class Configuration extends ParentConfiguration {
           type: "model",
           filters: [
             {
-              column: "url",
+              column: "slug",
               method: "eq",
-              value: (data) => {
-                return data.entity.dump.url;
+              value: ({ entity: { dump, db = [] } }) => {
+                if (dump.slug && db.some((page) => page.slug === dump.slug)) {
+                  return dump.slug;
+                }
+
+                const page = db.find((row) => row.url === dump.url);
+                if (!page || !dump.slug) {
+                  return page?.slug ?? dump.slug;
+                }
+
+                // An installation may already use the new URL when the migration runs.
+                const urlHash = createHash("sha256")
+                  .update(page.url)
+                  .digest("hex");
+                if (page.slug === `page-${urlHash}`) {
+                  return page.slug;
+                }
+
+                return dump.slug;
               },
             },
           ],

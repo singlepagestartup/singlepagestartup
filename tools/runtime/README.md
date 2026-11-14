@@ -7,9 +7,9 @@ changes database schemas, run `npx nx run api:db:migrate` before starting the
 API. This explicit command uses `migrate.sh` without seeding application data.
 
 API release startup runs `migrate.sh seed` before opening its HTTP listener.
-Consistency infrastructure migrates first, followed by the module migrations
-and seed. The deployment health check keeps a new API task in startup while
-this work runs; a failed command prevents the API from starting.
+After the database role check, the script migrates Consistency infrastructure
+and each module, verifies trigger coverage, then seeds application data.
+If any step fails, the release exits before starting the API.
 
 Check the startup ordering and failure handling with
 `node --test tools/runtime/api-startup.test.mjs`.

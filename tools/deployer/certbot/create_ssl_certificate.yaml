@@ -25,6 +25,16 @@
         dest: /home/code/certbot/.well-known/acme-challenge/sps-webroot-check
         mode: "0644"
 
+    - name: Wait for the deployment server to resolve the service domain
+      ansible.builtin.command:
+        argv: [getent, ahostsv4, "{{ fqdn }}"]
+      register: service_dns
+      changed_when: false
+      until: service_dns.rc == 0
+      # Recursive resolvers can cache NXDOMAIN for 30 minutes after down.sh.
+      retries: 65
+      delay: 30
+
     - name: Verify ACME webroot is publicly reachable
       ansible.builtin.uri:
         url: "http://{{ fqdn }}/.well-known/acme-challenge/sps-webroot-check"

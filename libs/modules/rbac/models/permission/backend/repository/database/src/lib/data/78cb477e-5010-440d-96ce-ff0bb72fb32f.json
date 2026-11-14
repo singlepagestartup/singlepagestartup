@@ -1,0 +1,9 @@
+{
+  "id": "78cb477e-5010-440d-96ce-ff0bb72fb32f",
+  "createdAt": "2026-11-10T20:43:00.645Z",
+  "updatedAt": "2026-11-10T20:43:00.645Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/website-builder/slides-to-file-storage-module-files/:uuid"
+}

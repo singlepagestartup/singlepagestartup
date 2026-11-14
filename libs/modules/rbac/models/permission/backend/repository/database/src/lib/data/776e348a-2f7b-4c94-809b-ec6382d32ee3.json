@@ -1,0 +1,9 @@
+{
+  "id": "776e348a-2f7b-4c94-809b-ec6382d32ee3",
+  "createdAt": "2026-11-10T20:43:00.645Z",
+  "updatedAt": "2026-11-10T20:43:00.645Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/website-builder/logotypes-to-file-storage-module-files"
+}

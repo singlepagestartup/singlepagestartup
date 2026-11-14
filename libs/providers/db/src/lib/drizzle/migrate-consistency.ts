@@ -2,69 +2,40 @@ import { migrate } from "drizzle-orm/postgres-js/migrator";
 import {
   getDrizzle,
   getPostgresClient,
+  readCaptureCatalog,
 } from "@sps/shared-backend-database-config";
+import { ConsistencyStore } from "../consistency";
 import { resolve } from "node:path";
 
-interface ICaptureResource {
-  resource: string;
-  topic: string;
-  columns: Record<string, string>;
-}
-
 try {
-  const discovery = Bun.spawnSync(
-    [
-      process.execPath,
-      resolve(
-        "tools/plugins/sps-generator-plugin/src/utils/consistency-migrations/generate.ts",
-      ),
-      "--catalog",
-    ],
-    { cwd: process.cwd(), stdout: "pipe", stderr: "inherit" },
-  );
-  if (discovery.exitCode !== 0)
-    throw new Error("Could not discover the effective consistency catalog");
-  const catalog: { resources: ICaptureResource[] } = JSON.parse(
-    new TextDecoder().decode(discovery.stdout),
-  );
-  if (!Array.isArray(catalog.resources) || !catalog.resources.length)
-    throw new Error(
-      "No effective consistency schemas found; run migrations from the repository root",
-    );
-  await migrate(getDrizzle({}), {
-    migrationsFolder: resolve(import.meta.dir, "migrations"),
-    migrationsTable: "sps_consistency",
-    migrationsSchema: "drizzle",
-  });
   const pg = getPostgresClient();
-  await pg.begin(async (transaction) => {
-    const previous =
-      await transaction`SELECT resource,topic,columns FROM sps_consistency.resource ORDER BY resource`;
-    const signature = (resources: ICaptureResource[]) =>
-      JSON.stringify(
-        [...resources]
-          .sort((a, b) => a.resource.localeCompare(b.resource))
-          .map((resource) => [
-            resource.resource,
-            resource.topic,
-            Object.entries(resource.columns).sort(([a], [b]) =>
-              a.localeCompare(b),
-            ),
-          ]),
-      );
-    const changed =
-      signature(previous as unknown as ICaptureResource[]) !==
-      signature(catalog.resources);
-    const names = catalog.resources.map((resource) => resource.resource);
-    await transaction`DELETE FROM sps_consistency.resource WHERE NOT (resource = ANY(${transaction.array(names)}::text[]))`;
-    for (const resource of catalog.resources)
-      await transaction`SELECT sps_consistency.install_capture(${resource.resource},${resource.topic},${JSON.stringify(resource.columns)}::jsonb)`;
-    if (changed) {
-      await transaction`SELECT sps_consistency.bump(ARRAY(SELECT resource||'|reset' FROM sps_consistency.resource ORDER BY resource))`;
-      await transaction`UPDATE sps_consistency.state SET value=gen_random_uuid()::text WHERE id='epoch'`;
-    }
-  });
-  console.log("Consistency migrations applied");
+  if (process.argv.includes("--finalize")) {
+    const catalog = await readCaptureCatalog();
+    const store = new ConsistencyStore();
+    await store.assertCoverage(catalog);
+    // Retire old names only after every model has finished migrating.
+    const declared = catalog.map((entry) => entry.resource);
+    await pg.begin(async (tx) => {
+      const retired = await tx`
+        DELETE FROM sps_consistency.resource
+        WHERE to_regclass(resource) IS NULL AND resource NOT IN (
+          SELECT jsonb_array_elements_text(${JSON.stringify(declared)}::text::jsonb)
+        ) RETURNING resource
+      `;
+      for (const { resource } of retired) {
+        await tx`DELETE FROM sps_consistency.state WHERE id = ${"migration:" + resource}`;
+        await tx`SELECT sps_consistency.bump(ARRAY[${resource + "|reset"}]::text[])`;
+      }
+    });
+    console.log(`Consistency capture verified for ${catalog.length} tables`);
+  } else {
+    await migrate(getDrizzle({}), {
+      migrationsFolder: resolve(import.meta.dir, "migrations"),
+      migrationsTable: "sps_consistency",
+      migrationsSchema: "drizzle",
+    });
+    console.log("Consistency migrations applied");
+  }
 } finally {
   await getPostgresClient().end();
 }

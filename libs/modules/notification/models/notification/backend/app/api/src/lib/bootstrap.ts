@@ -1,4 +1,4 @@
-import { Container, ContainerModule, interfaces } from "inversify";
+import { Container, ContainerModule } from "inversify";
 import {
   DI,
   ExceptionFilter,
@@ -10,7 +10,27 @@ import { Controller } from "./controller";
 import { Service } from "./service";
 import { App } from "./app";
 
-const bindings = new ContainerModule((bind: interfaces.Bind) => {
+import type { Service as BroadcastChannelService } from "@sps/broadcast/models/channel/backend/app/api/src/lib/service";
+import {
+  NotificationDI,
+  type IBroadcastModule,
+  type ITemplateService,
+} from "./di";
+import { app as broadcastChannelApp } from "@sps/broadcast/models/channel/backend/app/api";
+
+import type { Service as TemplateService } from "@sps/notification/models/template/backend/app/api/src/lib/service";
+import { app as templateApp } from "@sps/notification/models/template/backend/app/api";
+
+const bindings = new ContainerModule(({ bind }) => {
+  bind<ITemplateService>(NotificationDI.ITemplateService)
+    .toDynamicValue(() => templateApp.controller.service as TemplateService)
+    .inSingletonScope();
+  bind<IBroadcastModule>(NotificationDI.IBroadcastModule)
+    .toDynamicValue(() => ({
+      channel: broadcastChannelApp.controller
+        .service as BroadcastChannelService,
+    }))
+    .inSingletonScope();
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
   bind<App>(DI.IApp).to(App);
   bind<Controller>(DI.IController).to(Controller);
@@ -20,9 +40,7 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
 });
 
 export async function bootstrap() {
-  const container = new Container({
-    skipBaseClassChecks: true,
-  });
+  const container = new Container();
   container.load(bindings);
   const app = container.get<App>(DI.IApp);
 

@@ -79,13 +79,22 @@ describe("Given: an oauth exchange code is redeemed", () => {
    *
    * Given: the row is unconsumed and inside its lifetime.
    * When: the code is redeemed.
-   * Then: a session token and a refresh token are issued.
+   * Then: an access token and a refresh token are issued, each naming its
+   * type and the subject id alone, not the subject row.
    */
   it("issues tokens for an unconsumed code", async () => {
     const result = await redeem();
 
     expect(result).toEqual({ jwt: "signed-token", refresh: "signed-token" });
     expect(mockJwtSign).toHaveBeenCalledTimes(2);
+
+    const [accessPayload] = mockJwtSign.mock.calls[0];
+    const [refreshPayload] = mockJwtSign.mock.calls[1];
+
+    expect(accessPayload).toMatchObject({ typ: "access" });
+    expect(refreshPayload).toMatchObject({ typ: "refresh" });
+    expect(accessPayload.subject).toEqual({ id: "subject-1" });
+    expect(refreshPayload.subject).toEqual({ id: "subject-1" });
   });
 
   /**

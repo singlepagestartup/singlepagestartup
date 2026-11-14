@@ -20,10 +20,12 @@ export class Handler {
       } catch {
         throw new Error("Validation error. Invalid profile JSON");
       }
-      return c.json(
-        { data: await new Profiles(this.service).create({ subjectId, data }) },
-        201,
-      );
+      const profile = await new Profiles(this.service).create({
+        subjectId,
+        data,
+      });
+
+      return c.json({ data: profile }, 201);
     } catch (error: unknown) {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });

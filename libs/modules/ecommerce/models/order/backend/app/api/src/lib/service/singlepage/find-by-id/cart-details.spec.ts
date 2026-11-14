@@ -1,3 +1,4 @@
+import { ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds } from "@sps/shared-utils";
 import { Service } from "./cart-details";
 describe("Cart detail capability", () => {
   it("loads only products referenced by this order and preserves missing-product lines", async () => {
@@ -33,6 +34,7 @@ describe("Cart detail capability", () => {
         },
       },
     });
+    expect(result.maxLineQuantity).toBe(quantityBounds.max);
     expect(result.lines[0].product?.id).toBe("a");
     expect(result.lines[1].product).toBeNull();
     expect(result.totals).toEqual([{ total: 250 }]);
@@ -46,7 +48,7 @@ describe("Cart detail capability", () => {
     };
     expect(
       await new Service(dependencies as any).execute({ id: "empty" }),
-    ).toEqual({ lines: [], totals: [] });
+    ).toEqual({ lines: [], totals: [], maxLineQuantity: quantityBounds.max });
     expect(dependencies.product.find).not.toHaveBeenCalled();
     expect(dependencies.total).not.toHaveBeenCalled();
   });

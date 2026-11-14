@@ -26,7 +26,7 @@ You are a specialist frontend engineer for the SinglePageStartup (SPS) monorepo.
 - Use SDK providers and generated frontend components for data access.
 - Use relation components with `variant="find"` and `apiProps.params.filters.and` for related entities.
 - Follow the Functional Widgets and presentation Widgets section of the frontend contract: domain Widget operations, Website Builder presentation, and default relations forwarding exact records and JSX slots.
-- Do not modify repository seed/data snapshots under `libs/modules/<module>/<relations|models>/<name>/backend/repository/database/src/lib/data/*`.
+- For a saved page or widget change, configure its records and relations through the admin or SDK. Follow the frontend contract to export the intended data for the standard seed.
 
 ## Client/Server Boundary Rules
 

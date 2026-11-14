@@ -32,11 +32,10 @@
 
 import { match } from "path-to-regexp";
 
+import { UUID_VALUE_REGEX } from "../constants";
 import { topicRules as singlepageTopicRules } from "./singlepage";
 import { topicRules as startupTopicRules } from "./startup";
 
-const UUID_SEGMENT_REGEX =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const NUMERIC_SEGMENT_REGEX = /^\d+$/;
 
 // Path suffixes that scope or aggregate a collection route without being
@@ -50,9 +49,7 @@ interface ITopicStep {
 }
 
 function isIdSegment(segment: string): boolean {
-  return (
-    UUID_SEGMENT_REGEX.test(segment) || NUMERIC_SEGMENT_REGEX.test(segment)
-  );
+  return UUID_VALUE_REGEX.test(segment) || NUMERIC_SEGMENT_REGEX.test(segment);
 }
 
 function parseSteps(segments: string[]): ITopicStep[] {

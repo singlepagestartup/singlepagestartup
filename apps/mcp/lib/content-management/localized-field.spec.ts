@@ -25,8 +25,11 @@ const descriptor: IContentEntityDescriptor = {
   localizedFields: ["title"],
   relationFields: [],
   operations: ["find", "count", "get", "create", "update", "delete"],
-  insertSchema: z.object({ title: z.record(z.any()).optional() }),
-  selectSchema: z.object({ id: z.string(), title: z.record(z.any()) }),
+  insertSchema: z.object({ title: z.record(z.string(), z.any()).optional() }),
+  selectSchema: z.object({
+    id: z.string(),
+    title: z.record(z.string(), z.any()),
+  }),
   api: {
     find: jest.fn(),
     count: jest.fn(),

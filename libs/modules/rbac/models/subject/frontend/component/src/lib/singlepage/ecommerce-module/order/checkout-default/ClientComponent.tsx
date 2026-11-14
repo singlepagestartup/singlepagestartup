@@ -36,7 +36,7 @@ const formSchema = z.object({
         value === "paykeeper",
       "Invalid provider",
     ),
-  email: z.string().email(),
+  email: z.email(),
   ecommerceModule: z.object({
     orders: z.array(
       z.object({
@@ -50,7 +50,7 @@ export function Component(props: IComponentPropsExtended) {
   const ecommerceModuleOrderCheckout = api.ecommerceModuleOrderCheckout({});
   const [error, setError] = useState("");
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       provider: "stripe",

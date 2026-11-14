@@ -28,6 +28,10 @@ const TELEGRAM_WEBHOOK_SECRET = "9c4a1f7e2b5d8036a9c4a1f7e2b5d8036";
 
 let mockWebhookSecret: string | undefined = TELEGRAM_WEBHOOK_SECRET;
 
+jest.mock("@sps/shared-third-parties/telegram", () => ({
+  TelegramBot: jest.requireActual("grammy").Bot,
+}));
+
 jest.mock("@sps/shared-utils", () => {
   return {
     NEXT_PUBLIC_TELEGRAM_SERVICE_URL: "https://telegram.example.com",

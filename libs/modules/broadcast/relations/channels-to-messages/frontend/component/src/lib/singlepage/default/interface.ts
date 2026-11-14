@@ -1,3 +1,4 @@
+import type { IResult } from "@sps/broadcast/relations/channels-to-messages/sdk/server";
 export { type IModel } from "@sps/broadcast/relations/channels-to-messages/sdk/model";
 import { IModel } from "@sps/broadcast/relations/channels-to-messages/sdk/model";
 import {
@@ -15,4 +16,7 @@ export interface IComponentPropsExtended
     IModel,
     typeof variant,
     IComponentProps
-  > {}
+  > {
+  // The relation SDK reads visible membership and payload together.
+  message: NonNullable<IResult["IMessageResult"]>["message"];
+}

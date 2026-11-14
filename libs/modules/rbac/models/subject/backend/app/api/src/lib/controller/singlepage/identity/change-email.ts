@@ -26,7 +26,7 @@ export class Handler {
         const parsed = z
           .object({
             email: z.string().optional(),
-            verificationId: z.string().uuid().optional(),
+            verificationId: z.uuid().optional(),
           })
           .strict()
           .safeParse(input);
@@ -34,17 +34,19 @@ export class Handler {
           throw new Error(
             "Validation error. Invalid email verification request",
           );
+        const result = await service.request({
+          subjectId,
+          identityId,
+          data: parsed.data,
+        });
+
         return c.json({
-          data: await service.request({
-            subjectId,
-            identityId,
-            data: parsed.data,
-          }),
+          data: result,
         });
       }
       const parsed = z
         .object({
-          challengeId: z.string().uuid(),
+          challengeId: z.uuid(),
           code: z.string().regex(/^\d{6}$/),
         })
         .strict()

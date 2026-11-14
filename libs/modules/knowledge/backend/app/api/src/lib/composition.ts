@@ -144,8 +144,11 @@ export function createKnowledgeServices(
     scope.sourcesToFileStorageModuleFiles.configure({
       inTransaction,
       fileStorageFile: scope.fileStorageModule.file,
-      mutate: async (operation) =>
-        (await scope.source.mutateFileRelation(operation)).relation,
+      mutate: async (operation) => {
+        const mutation = await scope.source.mutateFileRelation(operation);
+
+        return mutation.relation;
+      },
     });
   };
   configure(graph, false, []);

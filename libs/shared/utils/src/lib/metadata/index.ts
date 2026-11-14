@@ -43,10 +43,13 @@ export const entityMetadataSchema = z
       .object({
         seo: z
           .object({
-            title: z.record(z.string().max(500)).optional(),
-            description: z.record(z.string().max(2000)).optional(),
+            title: z.record(z.string(), z.string().max(500)).optional(),
+            description: z.record(z.string(), z.string().max(2000)).optional(),
             keywords: z
-              .record(z.array(z.string().trim().min(1).max(120)).max(50))
+              .record(
+                z.string(),
+                z.array(z.string().trim().min(1).max(120)).max(50),
+              )
               .optional(),
           })
           .strict()

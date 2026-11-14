@@ -36,39 +36,79 @@ jobs:
 
       - name: Set preview deployment configuration
         if: ${{ inputs.PRERELEASE == true }}
+        env:
+          DOMAIN: ${{ vars.PREVIEW_DOMAIN }}
+          PORTAINER_SERVICE_SUBDOMAIN: ${{ vars.PREVIEW_PORTAINER_SERVICE_SUBDOMAIN }}
+          PORTAINER_USERNAME: ${{ vars.PREVIEW_PORTAINER_USERNAME }}
+          PORTAINER_PASSWORD: ${{ secrets.PREVIEW_PORTAINER_PASSWORD }}
+          DOCKER_HUB_URL: ${{ vars.PREVIEW_DOCKER_HUB_URL }}
+          DOCKER_HUB_USERNAME: ${{ vars.PREVIEW_DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_LOGIN_USERNAME: ${{ vars.PREVIEW_DOCKER_HUB_LOGIN_USERNAME }}
+          HOST_REPOSITORY: ${{ vars.PREVIEW_HOST_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}
+          API_REPOSITORY: ${{ vars.PREVIEW_API_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}
+          LLM_REPOSITORY: ${{ vars.PREVIEW_LLM_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}
+          MCP_REPOSITORY: ${{ vars.PREVIEW_MCP_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}
+          TELEGRAM_REPOSITORY: ${{ vars.PREVIEW_TELEGRAM_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}
         run: |
-          {
-            echo "DOMAIN=${{ secrets.PREVIEW_DOMAIN }}"
-            echo "PORTAINER_SERVICE_SUBDOMAIN=${{ secrets.PREVIEW_PORTAINER_SERVICE_SUBDOMAIN }}"
-            echo "PORTAINER_USERNAME=${{ secrets.PREVIEW_PORTAINER_USERNAME }}"
-            echo "PORTAINER_PASSWORD=${{ secrets.PREVIEW_PORTAINER_PASSWORD }}"
-            echo "DOCKER_HUB_URL=${{ secrets.PREVIEW_DOCKER_HUB_URL }}"
-            echo "DOCKER_HUB_USERNAME=${{ secrets.PREVIEW_DOCKER_HUB_USERNAME }}"
-            echo "DOCKER_HUB_LOGIN_USERNAME=${{ secrets.PREVIEW_DOCKER_HUB_LOGIN_USERNAME }}"
-            echo "HOST_REPOSITORY=${{ secrets.PREVIEW_HOST_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"
-            echo "API_REPOSITORY=${{ secrets.PREVIEW_API_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"
-            echo "LLM_REPOSITORY=${{ secrets.PREVIEW_LLM_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"
-            echo "MCP_REPOSITORY=${{ secrets.PREVIEW_MCP_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"
-            echo "TELEGRAM_REPOSITORY=${{ secrets.PREVIEW_TELEGRAM_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"
-          } >> "$GITHUB_ENV"
+          settings=(
+            "DOMAIN=$DOMAIN"
+            "PORTAINER_SERVICE_SUBDOMAIN=$PORTAINER_SERVICE_SUBDOMAIN"
+            "PORTAINER_USERNAME=$PORTAINER_USERNAME"
+            "PORTAINER_PASSWORD=$PORTAINER_PASSWORD"
+            "DOCKER_HUB_URL=$DOCKER_HUB_URL"
+            "DOCKER_HUB_USERNAME=$DOCKER_HUB_USERNAME"
+            "DOCKER_HUB_LOGIN_USERNAME=$DOCKER_HUB_LOGIN_USERNAME"
+            "HOST_REPOSITORY=$HOST_REPOSITORY"
+            "API_REPOSITORY=$API_REPOSITORY"
+            "LLM_REPOSITORY=$LLM_REPOSITORY"
+            "MCP_REPOSITORY=$MCP_REPOSITORY"
+            "TELEGRAM_REPOSITORY=$TELEGRAM_REPOSITORY"
+          )
+          for setting in "${settings[@]}"; do
+            if [[ "$setting" == *$'\n'* || "$setting" == *$'\r'* ]]; then
+              echo "${setting%%=*} must be a single-line value" >&2
+              exit 1
+            fi
+            printf '%s\n' "$setting" >> "$GITHUB_ENV"
+          done
 
       - name: Set production deployment configuration
         if: ${{ inputs.PRERELEASE == false }}
+        env:
+          DOMAIN: ${{ vars.DOMAIN }}
+          PORTAINER_SERVICE_SUBDOMAIN: ${{ vars.PORTAINER_SERVICE_SUBDOMAIN }}
+          PORTAINER_USERNAME: ${{ vars.PORTAINER_USERNAME }}
+          PORTAINER_PASSWORD: ${{ secrets.PORTAINER_PASSWORD }}
+          DOCKER_HUB_URL: ${{ vars.DOCKER_HUB_URL }}
+          DOCKER_HUB_USERNAME: ${{ vars.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_LOGIN_USERNAME: ${{ vars.DOCKER_HUB_LOGIN_USERNAME }}
+          HOST_REPOSITORY: ${{ vars.HOST_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}
+          API_REPOSITORY: ${{ vars.API_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}
+          LLM_REPOSITORY: ${{ vars.LLM_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}
+          MCP_REPOSITORY: ${{ vars.MCP_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}
+          TELEGRAM_REPOSITORY: ${{ vars.TELEGRAM_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}
         run: |
-          {
-            echo "DOMAIN=${{ secrets.DOMAIN }}"
-            echo "PORTAINER_SERVICE_SUBDOMAIN=${{ secrets.PORTAINER_SERVICE_SUBDOMAIN }}"
-            echo "PORTAINER_USERNAME=${{ secrets.PORTAINER_USERNAME }}"
-            echo "PORTAINER_PASSWORD=${{ secrets.PORTAINER_PASSWORD }}"
-            echo "DOCKER_HUB_URL=${{ secrets.DOCKER_HUB_URL }}"
-            echo "DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}"
-            echo "DOCKER_HUB_LOGIN_USERNAME=${{ secrets.DOCKER_HUB_LOGIN_USERNAME }}"
-            echo "HOST_REPOSITORY=${{ secrets.HOST_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"
-            echo "API_REPOSITORY=${{ secrets.API_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"
-            echo "LLM_REPOSITORY=${{ secrets.LLM_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"
-            echo "MCP_REPOSITORY=${{ secrets.MCP_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"
-            echo "TELEGRAM_REPOSITORY=${{ secrets.TELEGRAM_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"
-          } >> "$GITHUB_ENV"
+          settings=(
+            "DOMAIN=$DOMAIN"
+            "PORTAINER_SERVICE_SUBDOMAIN=$PORTAINER_SERVICE_SUBDOMAIN"
+            "PORTAINER_USERNAME=$PORTAINER_USERNAME"
+            "PORTAINER_PASSWORD=$PORTAINER_PASSWORD"
+            "DOCKER_HUB_URL=$DOCKER_HUB_URL"
+            "DOCKER_HUB_USERNAME=$DOCKER_HUB_USERNAME"
+            "DOCKER_HUB_LOGIN_USERNAME=$DOCKER_HUB_LOGIN_USERNAME"
+            "HOST_REPOSITORY=$HOST_REPOSITORY"
+            "API_REPOSITORY=$API_REPOSITORY"
+            "LLM_REPOSITORY=$LLM_REPOSITORY"
+            "MCP_REPOSITORY=$MCP_REPOSITORY"
+            "TELEGRAM_REPOSITORY=$TELEGRAM_REPOSITORY"
+          )
+          for setting in "${settings[@]}"; do
+            if [[ "$setting" == *$'\n'* || "$setting" == *$'\r'* ]]; then
+              echo "${setting%%=*} must be a single-line value" >&2
+              exit 1
+            fi
+            printf '%s\n' "$setting" >> "$GITHUB_ENV"
+          done
 
       - name: Pull release images through Portainer
         env:

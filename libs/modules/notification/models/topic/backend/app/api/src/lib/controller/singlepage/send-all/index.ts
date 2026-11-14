@@ -1,8 +1,6 @@
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
-import { api as notificationApi } from "@sps/notification/models/notification/sdk/server";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
@@ -14,55 +12,7 @@ export class Handler {
 
   async execute(c: Context, next: any): Promise<Response> {
     try {
-      if (!RBAC_SECRET_KEY) {
-        throw new Error("Configuration error. RBAC_SECRET_KEY is required");
-      }
-
-      const topics = await this.service.find();
-
-      for (const topic of topics) {
-        const topicsToNotifications =
-          await this.service.notificationModule.topicsToNotifications.find({
-            params: {
-              filters: {
-                and: [
-                  {
-                    column: "topicId",
-                    method: "eq",
-                    value: topic.id,
-                  },
-                ],
-              },
-            },
-          });
-
-        if (topicsToNotifications?.length) {
-          for (const topicToNotification of topicsToNotifications) {
-            const notification =
-              await this.service.notificationModule.notification.findById({
-                id: topicToNotification.notificationId,
-              });
-
-            if (!notification || notification.status !== "new") {
-              continue;
-            }
-
-            await notificationApi
-              .send({
-                id: notification.id,
-                options: {
-                  headers: {
-                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                  },
-                },
-              })
-              .then(() => {})
-              .catch(() => {
-                //
-              });
-          }
-        }
-      }
+      await this.service.notificationModule.notification.sendPending();
 
       return c.json({
         ok: true,

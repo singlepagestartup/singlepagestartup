@@ -36,6 +36,7 @@
   "id": "b8ce23e9-63c3-406d-b44a-ba382b4cccc8",
   "title": "AI Chat — workspace",
   "url": "/ai-chat/social/profiles/[social.profiles.id]/chats/[social.chats.id]/threads/[social.threads.id]",
+  "slug": "page-f9a296a86a79d563df9f824a546fc580142778cf380a0e55b3bc9d656e95bae7",
   "description": "Description",
   "createdAt": "2026-10-11T02:00:25.769Z",
   "updatedAt": "2026-10-30T22:25:08.548Z",

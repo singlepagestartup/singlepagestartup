@@ -32,7 +32,7 @@ sections:
         source: interface-kit/Overlays.tsx
       - id: kit-files
         title: Файлы
-        source: interface-kit/Files.tsx
+        source: interface-kit/Files/Component.tsx
       - id: kit-conversation
         title: Диалог
         source: interface-kit/Conversation.tsx

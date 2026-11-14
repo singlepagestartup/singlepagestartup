@@ -1,8 +1,4 @@
-import {
-  CLOUDPAYMENTS_API_SECRET,
-  CLOUDPAYMENTS_PUBLIC_ID,
-  RBAC_SECRET_KEY,
-} from "@sps/shared-utils";
+import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
@@ -102,187 +98,37 @@ export class Handler {
         });
       }
 
-      const invoices = await this.service.billingModule.invoice.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "id",
-                method: "inArray",
-                value: paymentIntentsToInvoices.map((item) => item.invoiceId),
-              },
-            ],
+      const invoiceIds = paymentIntentsToInvoices.map((link) => link.invoiceId);
+      const readInvoices = () =>
+        this.service.billingModule.invoice.find({
+          params: {
+            filters: {
+              and: [{ column: "id", method: "inArray", value: invoiceIds }],
+            },
           },
-        },
-      });
+        });
+      const invoices = await readInvoices();
 
+      const hasCloudpaymentsInvoice = invoices?.some(
+        (invoice) => invoice.provider === "cloudpayments",
+      );
       if (invoices?.length) {
         for (const invoice of invoices) {
           if (invoice.provider === "cloudpayments") {
-            if (!CLOUDPAYMENTS_PUBLIC_ID || !CLOUDPAYMENTS_API_SECRET) {
-              throw new Error(
-                "Not Found error. Cloudpayments credentials not found",
-              );
-            }
-
-            if (!invoice.providerId) {
-              throw new Error(
-                "Not Found error. Cloudpayments invoice id not found",
-              );
-            }
-
-            const paymentsList = await fetch(
-              "https://api.cloudpayments.ru/payments/list",
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Basic ${Buffer.from(`${CLOUDPAYMENTS_PUBLIC_ID}:${CLOUDPAYMENTS_API_SECRET}`).toString("base64")}`,
-                },
-                body: JSON.stringify({
-                  Date: new Date(invoice.createdAt).toISOString().split("T")[0],
-                }),
-              },
-            ).then((res) => res.json());
-
-            let matchedTransaction: {
-              ReasonCode: number;
-              PublicId: string;
-              TerminalUrl: string;
-              TransactionId: number;
-              Amount: number;
-              Currency: string;
-              CurrencyCode: number;
-              PaymentAmount: number;
-              PaymentCurrency: string;
-              PaymentCurrencyCode: number;
-              InvoiceId: string;
-              AccountId: string;
-              Email: string;
-              Description: string;
-              JsonData: string;
-              CreatedDate: string;
-              PayoutDate: string;
-              PayoutDateIso: string;
-              PayoutAmount: number;
-              CreatedDateIso: string;
-              AuthDate: string;
-              AuthDateIso: string;
-              ConfirmDate: string;
-              ConfirmDateIso: string;
-              AuthCode: string;
-              TestMode: boolean;
-              Rrn: string;
-              OriginalTransactionId: string;
-              FallBackScenarioDeclinedTransactionId: string;
-              IpAddress: string;
-              IpCountry: string;
-              IpCity: string;
-              IpRegion: string;
-              IpDistrict: string;
-              IpLatitude: number;
-              IpLongitude: number;
-              CardFirstSix: string;
-              CardLastFour: string;
-              CardExpDate: string;
-              CardType: string;
-              CardProduct: string;
-              CardCategory: string;
-              EscrowAccumulationId: string;
-              IssuerBankCountry: string;
-              Issuer: string;
-              CardTypeCode: number;
-              Status: string;
-              StatusCode: number;
-              CultureName: string;
-              Reason: string;
-              CardHolderMessage: string;
-              Type: number;
-              Refunded: boolean;
-              Name: string;
-              Token: string;
-              SubscriptionId: string;
-              GatewayName: string;
-              ApplePay: boolean;
-              AndroidPay: boolean;
-              WalletType: string;
-              TotalFee: number;
-              IsLocalOrder: boolean;
-              Gateway: number;
-              MasterPass: boolean;
-              InfoShopData: string;
-              Receiver: string;
-              Splits: string;
-            } | null = null;
-            if (paymentsList.Model?.length) {
-              matchedTransaction = paymentsList.Model.find((tx: any) => {
-                const jsonData = JSON.parse(tx.JsonData);
-                const invoiceId = jsonData.invoiceId;
-
-                return invoiceId === invoice.id;
-              });
-            }
-
-            if (matchedTransaction) {
-              await invoiceApi.update({
-                id: invoice.id,
-                data: {
-                  ...invoice,
-                  amount: matchedTransaction.Amount,
-                  status: "paid",
-                },
-                options: {
-                  headers: {
-                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                  },
-                },
-              });
-
-              await this.service.updatePaymentIntentStatus({
-                invoice,
-              });
-            }
-
-            if (
-              new Date(invoice.createdAt).getTime() + 24 * 60 * 60 * 1000 <
-              Date.now()
-            ) {
-              await invoiceApi.update({
-                id: invoice.id,
-                data: {
-                  ...invoice,
-                  status: "failed",
-                },
-                options: {
-                  headers: {
-                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                  },
-                },
-              });
-
-              await api.update({
-                id: entity.id,
-                data: {
-                  ...entity,
-                  status: "failed",
-                },
-                options: {
-                  headers: {
-                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                  },
-                },
-              });
-            }
-
-            return c.json({
-              data: entity,
-            });
+            await this.service.checkCloudpaymentsInvoice(invoice);
+            continue;
           }
 
           if (
             new Date(invoice.createdAt).getTime() + 7 * 24 * 60 * 60 * 1000 <
             Date.now()
           ) {
+            if (hasCloudpaymentsInvoice) {
+              await this.service.billingModule.invoice.failOpenInvoice(
+                invoice.id,
+              );
+              continue;
+            }
             await invoiceApi.update({
               id: invoice.id,
               data: {
@@ -310,6 +156,18 @@ export class Handler {
             });
           }
         }
+      }
+
+      if (hasCloudpaymentsInvoice) {
+        const currentInvoices = await readInvoices();
+        if (
+          currentInvoices?.length === new Set(invoiceIds).size &&
+          currentInvoices.every((invoice) => invoice.status === "failed")
+        ) {
+          await this.service.failUnpaidIntent(entity.id, entity.status);
+        }
+        const currentIntent = await this.service.findById({ id: entity.id });
+        return c.json({ data: currentIntent });
       }
 
       return c.json({

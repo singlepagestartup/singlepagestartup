@@ -6,6 +6,7 @@ export const variant =
   "authentication-email-and-password-forgot-password-form-default" as const;
 
 export interface IComponentProps extends ISpsComponentBase {
+  language?: string;
   variant: typeof variant;
 }
 

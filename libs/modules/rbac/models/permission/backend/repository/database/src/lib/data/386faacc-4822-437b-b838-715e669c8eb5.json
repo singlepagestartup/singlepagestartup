@@ -1,0 +1,9 @@
+{
+  "id": "386faacc-4822-437b-b838-715e669c8eb5",
+  "createdAt": "2026-11-10T20:43:00.645Z",
+  "updatedAt": "2026-11-10T20:43:00.645Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/file-storage/widgets/:uuid"
+}

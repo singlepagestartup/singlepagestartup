@@ -1,6 +1,7 @@
 import { afterAll, expect, test } from "bun:test";
 import { spawnSync } from "node:child_process";
 import {
+  copyFileSync,
   mkdtempSync,
   readFileSync,
   rmSync,
@@ -80,17 +81,20 @@ const workflow = parse(
 const steps: IWorkflowStep[] = workflow.jobs.ansible.steps;
 
 test.each([
-  ["Add deployer PREVIEW secrets to env file", "PREVIEW_"],
-  ["Add deployer default secrets to env file", ""],
+  ["Add deployer PREVIEW settings to env file", "PREVIEW_"],
+  ["Add deployer production settings to env file", ""],
 ])("%s writes exactly its declared values", (name, prefix) => {
   const step = steps.find((candidate) => candidate.name === name);
   if (!step?.run || !step.env) {
     throw new Error(`Missing deployer workflow step: ${name}`);
   }
   const variables = Object.keys(step.env);
-  expect(step.env.PROJECT_NAME).toBe(`\${{ secrets.${prefix}PROJECT_NAME }}`);
+  expect(step.env.PROJECT_NAME).toBe(`\${{ vars.${prefix}PROJECT_NAME }}`);
   expect(step.env.DATABASE_BACKUP_RETENTION_DAYS).toBe(
-    `\${{ secrets.${prefix}DATABASE_BACKUP_RETENTION_DAYS }}`,
+    `\${{ vars.${prefix}DATABASE_BACKUP_RETENTION_DAYS }}`,
+  );
+  expect(step.env.DATABASE_PASSWORD).toBe(
+    `\${{ secrets.${prefix}DATABASE_PASSWORD }}`,
   );
   const values = Object.fromEntries(variables.map((key) => [key, marker]));
   values.GITHUB_REPOSITORY = "test/fixture"; // Built in on the Actions runner.
@@ -120,3 +124,60 @@ test.each([
     lines,
   );
 });
+
+test.each([
+  ["defaults", "", "", "256mb", "volatile-lru"],
+  ["overrides", "512mb", "noeviction", "512mb", "noeviction"],
+])(
+  "Redis deployer passes memory %s to Ansible",
+  (_, memory, policy, expectedMemory, expectedPolicy) => {
+    const directory = mkdtempSync(path.join(scratch, "redis-"));
+    for (const file of [
+      "redis.sh",
+      "get_env.sh",
+      "get_environment_type.sh",
+      "ansible_vars.sh",
+    ]) {
+      copyFileSync(path.join(deployer, file), path.join(directory, file));
+    }
+    writeFileSync(
+      path.join(directory, "create_inventory.sh"),
+      "#!/bin/bash\nexit 0\n",
+      { mode: 0o700 },
+    );
+    writeFileSync(
+      path.join(directory, ".env"),
+      [
+        "REDIS_PASSWORD=synthetic-password",
+        "GITHUB_TOKEN=synthetic-token",
+        "GITHUB_REPOSITORY=test/fixture",
+        `REDIS_MAXMEMORY=${memory}`,
+        `REDIS_MAXMEMORY_POLICY=${policy}`,
+      ].join("\n"),
+    );
+    writeFileSync(
+      path.join(directory, "run-check.sh"),
+      `
+    ansible-playbook() {
+      if [[ "$1" == "./redis/create_redis.yaml" ]]; then
+        printf '%s\\n' "$REDIS_MAXMEMORY" "$REDIS_MAXMEMORY_POLICY" > "$REDIS_TEST_RESULT"
+      fi
+    }
+    source ./redis.sh up
+  `,
+    );
+    const resultFile = path.join(directory, "redis-values");
+    const result = spawnSync("bash", ["run-check.sh"], {
+      cwd: directory,
+      env: { ...env, REDIS_TEST_RESULT: resultFile },
+      stdio: "ignore",
+    });
+    if (result.status !== 0) {
+      throw new Error(`Redis deployer test failed: ${result.status}`);
+    }
+    expect(readFileSync(resultFile, "utf8").trim().split("\n")).toEqual([
+      expectedMemory,
+      expectedPolicy,
+    ]);
+  },
+);

@@ -238,11 +238,9 @@ async function readIndex(
       `${toPosix(indexPath)}: index file does not exist`,
     ]);
   }
-  return parseIndex(
-    parseYaml(await readFile(indexPath, "utf8"), indexPath),
-    indexPath,
-    layer,
-  );
+  const content = await readFile(indexPath, "utf8");
+
+  return parseIndex(parseYaml(content, indexPath), indexPath, layer);
 }
 
 function resolveEntryPath(

@@ -34,7 +34,7 @@ export function Component(props: IComponentPropsExtended) {
     createEntity,
   });
 
-  const form = useForm<z.infer<typeof insertSchema>>({
+  const form = useForm({
     resolver: zodResolver(insertSchema),
     defaultValues: {
       variant: props.data?.variant || "default",

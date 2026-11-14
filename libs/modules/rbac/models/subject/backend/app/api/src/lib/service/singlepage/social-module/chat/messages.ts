@@ -36,15 +36,18 @@ export class Service {
     const fileIds = [
       ...new Set(links.map((link) => link.fileStorageModuleFileId as string)),
     ];
-    const files = fileIds.length
-      ? await this.service.fileStorageModule.file.find({
-          params: {
-            filters: {
-              and: [{ column: "id", method: "inArray", value: fileIds }],
-            },
+    let files;
+    if (fileIds.length) {
+      files = await this.service.fileStorageModule.file.find({
+        params: {
+          filters: {
+            and: [{ column: "id", method: "inArray", value: fileIds }],
           },
-        })
-      : [];
+        },
+      });
+    } else {
+      files = [];
+    }
     const safeFiles: NonNullable<typeof files> = [];
     for (const file of files || []) {
       try {

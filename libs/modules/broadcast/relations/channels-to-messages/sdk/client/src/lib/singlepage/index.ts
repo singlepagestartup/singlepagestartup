@@ -1,6 +1,11 @@
 "use client";
 
 import {
+  action as message,
+  type IProps as IMessageProps,
+  type IResult as IMessageResult,
+} from "./message";
+import {
   IModel,
   route,
   clientHost,
@@ -10,14 +15,17 @@ import {
 import { factory, queryClient } from "@sps/shared-frontend-client-api";
 export { Provider, queryClient } from "@sps/shared-frontend-client-api";
 
-export type IProps = {};
+export type IProps = { IMessageProps: IMessageProps };
 
-export type IResult = {};
+export type IResult = { IMessageResult: IMessageResult };
 
-export const api = factory<IModel>({
-  queryClient,
-  route,
-  host: clientHost,
-  params: query,
-  options,
-});
+export const api = {
+  message,
+  ...factory<IModel>({
+    queryClient,
+    route,
+    host: clientHost,
+    params: query,
+    options,
+  }),
+};

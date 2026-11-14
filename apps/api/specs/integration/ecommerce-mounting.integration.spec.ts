@@ -29,9 +29,8 @@ describe("api/ecommerce mounting integration", () => {
       "utf-8",
     );
 
-    expect(appSource).toContain(
-      'app.route("/api/ecommerce", ecommerceApp.hono);',
-    );
+    expect(appSource).toContain("ecommerce: ecommerceApp");
+    expect(appSource).toContain('app.route("/api/" + name, module.hono)');
   });
 
   it("keeps selected ecommerce resources in module apps registry", () => {

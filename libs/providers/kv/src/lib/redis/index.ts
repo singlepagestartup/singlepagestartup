@@ -1,4 +1,5 @@
 import type { IProvider } from "../interface";
+import { once } from "node:events";
 import { Redis, RedisOptions } from "ioredis";
 import {
   KV_PORT,
@@ -122,6 +123,21 @@ export class Provider implements IProvider {
     //
   }
 
+  async eval(props: {
+    prefix: string;
+    key: string;
+    script: string;
+    args: string[];
+  }) {
+    const hashedKey = await this.hashKey({ key: props.key });
+    return this.client.eval(
+      props.script,
+      1,
+      `${props.prefix}:${hashedKey}`,
+      ...props.args,
+    );
+  }
+
   async hashKey(props: { key: string }): Promise<string> {
     return hash.sha256(props.key);
   }
@@ -138,16 +154,24 @@ export class Provider implements IProvider {
   }): Promise<number> {
     const hashedKey = await this.hashKey({ key: props.key });
     const redisKey = `${props.prefix}:${hashedKey}`;
-    const value = await this.client.incr(redisKey);
-
-    // Issue #233: refresh the expiry on EVERY increment, not only when the
-    // counter is created. Refreshing the TTL lets a frequently updated counter
-    // expire once its writes stop.
-    if (props.options?.ttl) {
-      await this.client.expire(redisKey, props.options.ttl);
+    if (!props.options?.ttl) {
+      return this.client.incr(redisKey);
     }
 
-    return value;
+    const result = await this.client
+      .multi()
+      .incr(redisKey)
+      .expire(redisKey, props.options.ttl)
+      .exec();
+    if (!result) {
+      throw new Error("KV counter transaction aborted");
+    }
+    for (const [error] of result) {
+      if (error) {
+        throw error;
+      }
+    }
+    return Number(result[0][1]);
   }
 
   async set(props: {
@@ -166,6 +190,11 @@ export class Provider implements IProvider {
   }
 
   async delByPrefix(props: { prefix: string }): Promise<void> {
+    if (this.client.status !== "ready") {
+      await once(this.client, "ready", {
+        signal: AbortSignal.timeout(KV_CONNECT_TIMEOUT_MS),
+      });
+    }
     let cursor = "0";
     do {
       const [nextCursor, keys] = await this.client.scan(

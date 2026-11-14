@@ -5,12 +5,7 @@ export type IContentEntityKey = string;
 export type IContentEntityKind = "model" | "relation";
 
 export type IContentOperation =
-  | "find"
-  | "count"
-  | "get"
-  | "create"
-  | "update"
-  | "delete";
+  "find" | "count" | "get" | "create" | "update" | "delete";
 
 export interface IContentFilter {
   column: string;
@@ -109,8 +104,8 @@ export interface IContentEntityDescriptor<
   relationFields: IContentFieldDescriptor[];
   externalModules?: readonly string[];
   operations: readonly IContentOperation[];
-  insertSchema: z.AnyZodObject;
-  selectSchema: z.AnyZodObject;
+  insertSchema: z.ZodObject;
+  selectSchema: z.ZodObject;
   api: IContentSdkAdapter<TEntity>;
 }
 
