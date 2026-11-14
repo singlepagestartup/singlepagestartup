@@ -1,0 +1,9 @@
+{
+  "id": "b91b8c90-f243-45c2-a0c4-37eb075d58dd",
+  "createdAt": "2026-11-10T20:43:00.645Z",
+  "updatedAt": "2026-11-10T20:43:00.645Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/website-builder/logotypes"
+}

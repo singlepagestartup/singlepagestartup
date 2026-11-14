@@ -40,7 +40,9 @@ async function post<T>(
       body: prepareFormDataToSend({ data: props.data }),
     },
   );
-  return transformResponseItem<T>(await responsePipe<{ data: T }>({ res }));
+  const json = await responsePipe<{ data: T }>({ res });
+
+  return transformResponseItem<T>(json);
 }
 export const request = (props: IRequestProps) =>
   post<IRequestResult>(props, "code");

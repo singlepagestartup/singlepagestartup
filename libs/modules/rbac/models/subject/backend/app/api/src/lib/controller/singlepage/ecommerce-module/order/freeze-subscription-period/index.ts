@@ -18,12 +18,15 @@ export class Handler {
         throw new Error(
           "Validation error. Expected updated timestamp required",
         );
-      return c.json({
-        data: await this.service.ecommerceModuleOrderFreezeSubscriptionPeriod({
+      const order =
+        await this.service.ecommerceModuleOrderFreezeSubscriptionPeriod({
           id,
           ecommerceModuleOrderId,
           data: { expectedUpdatedAt: data.expectedUpdatedAt },
-        }),
+        });
+
+      return c.json({
+        data: order,
       });
     } catch (error) {
       const { status, message, details } = getHttpErrorType(error);

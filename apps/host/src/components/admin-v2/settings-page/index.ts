@@ -1,1 +1,1 @@
-export { Component as SettingsPageClientComponent } from "./ClientComponent";
+export { Component as SettingsPageComponent } from "./Component";

@@ -44,7 +44,7 @@ if [ "$1" != "down" ]; then
 else
   echo "[INFO] Removing DNS record for $SERVICE_URL"
   ansible-playbook ./traefik/remove_service_cert_from_traefik.yaml \
-    -e "SERVICE_URL=$SERVICE_URL" && \
+    -e "SERVICE_URL=$SERVICE_URL"
   ansible-playbook ./cloudflare/dns_records.yaml \
     -e "CLOUDFLARE_ACCOUNT_EMAIL=$CLOUDFLARE_ACCOUNT_EMAIL \
         CLOUDFLARE_ACCOUNT_API_KEY=$CLOUDFLARE_ACCOUNT_API_KEY \
@@ -54,7 +54,7 @@ else
         SERVICE_A=$SERVICE_A \
         USE_CLOUDFLARE_SSL=$USE_CLOUDFLARE_SSL"
 
-    if [ "$USE_CLOUDFLARE_SSL" = "true" ]; then
+  if [ "$USE_CLOUDFLARE_SSL" = "true" ]; then
     echo "[INFO] Deleting Cloudflare Origin Certificate for $SERVICE_URL"
     ansible-playbook ./cloudflare/delete_ssl_certificate.yaml \
         -e "CLOUDFLARE_ACCOUNT_EMAIL=$CLOUDFLARE_ACCOUNT_EMAIL \
@@ -62,9 +62,9 @@ else
             DOMAIN=$DOMAIN \
             STATE=absent \
             SERVICE_URL=$SERVICE_URL"
-    else
+  else
     echo "[INFO] Deleting Let's Encrypt certificate for $SERVICE_URL"
     ansible-playbook ./certbot/delete_ssl_certificate.yaml \
         -e "SERVICE_URL=$SERVICE_URL"
-    fi
+  fi
 fi

@@ -3,9 +3,6 @@ import { internationalization } from "@sps/shared-configuration";
 import { Component as Profile } from "@sps/social/models/profile/frontend/component";
 import { Component as Chat } from "@sps/social/models/chat/frontend/component";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
-import { api as subjectApi } from "@sps/rbac/models/subject/sdk/server";
-import { clientHost } from "@sps/rbac/models/subject/sdk/model";
-import { saturateHeaders } from "@sps/shared-frontend-client-utils";
 import type { IClientComponentProps } from "./interface";
 import { Component as WorkspaceSkeleton } from "./Skeleton";
 import { Component as WorkspaceNotice } from "./Error";
@@ -38,7 +35,7 @@ export function Component(props: IClientComponentProps) {
             onRetry={() => window.location.reload()}
           />
         }
-        unauthenticatedRedirectHref={`/${language}/ai-chat/sign-in`}
+        unauthenticatedRedirectHref={`/${language}/rbac/subject/authentication/email-and-password`}
       >
         {({ data, authenticated }) => {
           if (!data || !authenticated) return null;
@@ -73,7 +70,6 @@ export function Component(props: IClientComponentProps) {
                       language={language}
                       state="access-denied"
                       projectsHref={`/${language}/ai-chat/projects`}
-                      signInHref={`/${language}/ai-chat/sign-in`}
                     />
                   );
                 const navigation = (
@@ -91,6 +87,7 @@ export function Component(props: IClientComponentProps) {
                     <Profile
                       isServer={props.isServer}
                       variant="id-ai-chat-project"
+                      dataSource="props"
                       data={project.profile}
                       navigation={navigation}
                     >
@@ -98,24 +95,7 @@ export function Component(props: IClientComponentProps) {
                         isServer={props.isServer}
                         variant="id-ai-chat"
                         data={project.chat}
-                        apiProps={{
-                          reactQueryOptions: {
-                            initialData: project.chat,
-                            queryFn: async () =>
-                              (
-                                await subjectApi.socialModuleProfileProjects({
-                                  id: data.id,
-                                  host: clientHost,
-                                  options: {
-                                    headers: saturateHeaders({
-                                      "Cache-Control": "no-store",
-                                    }),
-                                  },
-                                })
-                              ).find((item) => item.chat.id === project.chat.id)
-                                ?.chat,
-                          },
-                        }}
+                        dataSource="props"
                       >
                         <Subject
                           language={language}
@@ -132,7 +112,6 @@ export function Component(props: IClientComponentProps) {
                               embedded
                               onRetry={retry}
                               projectsHref={`/${language}/ai-chat/projects`}
-                              signInHref={`/${language}/ai-chat/sign-in`}
                             />
                           )}
                           loading={

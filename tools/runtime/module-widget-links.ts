@@ -53,22 +53,21 @@ export async function prepareModuleWidgetCutover(
     operations: [],
   };
   async function find(entity: string, selector: Record<string, unknown>) {
-    return (
-      (await (
-        await adapter(entity)
-      ).find({
-        params: {
-          limit: 2,
-          filters: {
-            and: Object.entries(selector).map(([column, value]) => ({
-              column,
-              method: "eq",
-              value,
-            })),
-          },
+    const sdk = await adapter(entity);
+    const records = await sdk.find({
+      params: {
+        limit: 2,
+        filters: {
+          and: Object.entries(selector).map(([column, value]) => ({
+            column,
+            method: "eq",
+            value,
+          })),
         },
-      })) ?? []
-    );
+      },
+    });
+
+    return records ?? [];
   }
   async function read(entity: string, id: string) {
     const rows = await find(entity, { id });

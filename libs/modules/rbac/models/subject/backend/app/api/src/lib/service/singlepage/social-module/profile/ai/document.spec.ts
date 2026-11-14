@@ -10,7 +10,10 @@ const attachProposalFile = jest.fn(async ({ data }: any) => data);
 jest.mock(
   "@sps/social/relations/messages-to-file-storage-module-files/sdk/server",
   () => ({
-    api: { findOrCreate: (...args: any[]) => attachProposalFile(...args) },
+    api: {
+      findOrCreate: (props: Parameters<typeof attachProposalFile>[0]) =>
+        attachProposalFile(props),
+    },
   }),
 );
 jest.mock("@sps/social/models/thread/sdk/server", () => ({

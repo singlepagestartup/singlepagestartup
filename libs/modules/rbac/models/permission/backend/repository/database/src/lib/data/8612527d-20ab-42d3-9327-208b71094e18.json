@@ -1,0 +1,9 @@
+{
+  "id": "8612527d-20ab-42d3-9327-208b71094e18",
+  "createdAt": "2026-11-10T20:43:00.645Z",
+  "updatedAt": "2026-11-10T20:43:00.645Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "HEAD",
+  "path": "/api/file-storage/files/:uuid/content"
+}

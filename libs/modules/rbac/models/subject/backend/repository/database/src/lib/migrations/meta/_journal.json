@@ -36,6 +36,13 @@
       "when": 1746381777456,
       "tag": "0004_sparkling_lilandra",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790373970327,
+      "tag": "0005_green_celestials",
+      "breakpoints": true
     }
   ]
 }

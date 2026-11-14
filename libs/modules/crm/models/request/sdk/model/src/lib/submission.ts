@@ -1,20 +1,18 @@
 import { z } from "zod";
 
 export const requestInputSchema = z.object({
-  id: z.string().uuid(),
+  id: z.uuid(),
   string: z.string().max(20000).optional(),
   number: z.number().finite().optional(),
   boolean: z.boolean().optional(),
-  option: z
-    .union([z.string().uuid(), z.object({ id: z.string().uuid() })])
-    .optional(),
+  option: z.union([z.uuid(), z.object({ id: z.uuid() })]).optional(),
 });
 export const requestSubmissionSchema = z.object({
-  submissionId: z.string().uuid(),
+  submissionId: z.uuid(),
   steps: z
     .array(
       z.object({
-        id: z.string().uuid(),
+        id: z.uuid(),
         inputs: z.array(requestInputSchema).max(200),
       }),
     )

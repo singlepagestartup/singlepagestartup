@@ -31,7 +31,6 @@ then
             ENVIRONMENT_TYPE=$ENVIRONMENT_TYPE" && \
     ./domain.sh present $SERVICE_URL $SERVICE_A
 else
-    ansible-playbook \
-        ./traefik/delete_traefik.yaml && \
-    ./domain.sh down $SERVICE_URL $SERVICE_A
+    ./domain.sh down "$SERVICE_URL" "$SERVICE_A" && \
+    ansible-playbook ./traefik/delete_traefik.yaml
 fi

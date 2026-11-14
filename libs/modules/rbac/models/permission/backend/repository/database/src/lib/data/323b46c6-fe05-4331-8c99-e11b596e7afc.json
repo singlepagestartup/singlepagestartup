@@ -1,0 +1,9 @@
+{
+  "id": "323b46c6-fe05-4331-8c99-e11b596e7afc",
+  "createdAt": "2026-11-10T20:43:00.645Z",
+  "updatedAt": "2026-11-10T20:43:00.645Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/website-builder/widgets/:uuid"
+}

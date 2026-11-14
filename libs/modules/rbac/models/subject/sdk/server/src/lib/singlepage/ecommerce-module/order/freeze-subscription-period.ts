@@ -31,7 +31,7 @@ export async function action(props: IProps): Promise<IResult> {
     `${props.host || serverHost}${route}/${props.id}/ecommerce-module/orders/${props.ecommerceModuleOrderId}/subscription-period/freeze`,
     requestOptions,
   );
-  return transformResponseItem<IResult>(
-    await responsePipe<{ data: IResult }>({ res }),
-  );
+  const json = await responsePipe<{ data: IResult }>({ res });
+
+  return transformResponseItem<IResult>(json);
 }

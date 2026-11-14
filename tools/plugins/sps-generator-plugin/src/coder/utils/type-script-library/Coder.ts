@@ -28,7 +28,6 @@ export class Coder {
     await jsLibraryGenerator(tree, {
       name: this.name,
       bundler: "tsc",
-      projectNameAndRootFormat: "as-provided",
       directory: this.directory,
       minimal: true,
       unitTestRunner: "none",

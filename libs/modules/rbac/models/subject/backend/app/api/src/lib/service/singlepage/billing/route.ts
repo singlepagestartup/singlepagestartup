@@ -6,10 +6,10 @@ import {
 } from "@sps/shared-utils";
 import { api as permissionApi } from "@sps/rbac/models/permission/sdk/server";
 import { type IModel as ISubjectsToBillingModuleCurrencies } from "@sps/rbac/relations/subjects-to-billing-module-currencies/sdk/model";
-import * as jwt from "hono/jwt";
 import { Service as SubjectsToBillingModuleCurrenciesService } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/app/api/src/lib/service/singlepage";
 import { inject, injectable } from "inversify";
 import { SubjectDI } from "../../../di";
+import { Service as IsAuthorizedService } from "../is-authorized";
 import {
   isOpenRouterBillingRoute,
   OPEN_ROUTER_PRECHARGE_TOKENS,
@@ -47,15 +47,19 @@ type TResolvedBillingContext = {
 export class Service {
   repository: IRepository;
   subjectsToBillingModuleCurrenciesService: SubjectsToBillingModuleCurrenciesService;
+  isAuthorizedService: IsAuthorizedService;
 
   constructor(
     @inject(DI.IRepository) repository: IRepository,
     @inject(SubjectDI.ISubjectsToBillingModuleCurrenciesService)
     subjectsToBillingModuleCurrenciesService: SubjectsToBillingModuleCurrenciesService,
+    @inject(SubjectDI.IIsAuthorizedService)
+    isAuthorizedService: IsAuthorizedService,
   ) {
     this.repository = repository;
     this.subjectsToBillingModuleCurrenciesService =
       subjectsToBillingModuleCurrenciesService;
+    this.isAuthorizedService = isAuthorizedService;
   }
 
   protected parseAmount(value: string | number | undefined | null): number {
@@ -82,36 +86,17 @@ export class Service {
       : configuredAmount;
   }
 
+  /**
+   * The subject to charge, resolved the way authorization resolves it, so a
+   * refresh token or a token revoked by logout is refused here too - this
+   * route is reachable directly, not only behind the is-authorized middleware.
+   */
   protected async getSubjectId(authorization?: string) {
     if (!authorization) {
       return undefined;
     }
 
-    const cacheKey = `jwt:subject:${authorization}`;
-    let subjectId = cache.get<string>(cacheKey);
-
-    if (!subjectId) {
-      const decoded = await jwt.verify(
-        authorization,
-        RBAC_JWT_SECRET as string,
-        "HS256",
-      );
-
-      if (!decoded.subject?.["id"]) {
-        throw new Error(
-          "Authorization error. No subject provided in the token",
-        );
-      }
-
-      if (typeof decoded.subject["id"] !== "string") {
-        throw new Error("Authorization error. Subject ID is not a string");
-      }
-
-      subjectId = decoded.subject["id"];
-      cache.set(cacheKey, subjectId);
-    }
-
-    return subjectId;
+    return this.isAuthorizedService.getSubjectId(authorization);
   }
 
   protected async resolvePermissionResolution(

@@ -1,20 +1,41 @@
 import { hash, KV_REST_API_TOKEN, KV_REST_API_URL } from "@sps/shared-utils";
 import type { IProvider } from "../interface";
-import { kv, createClient } from "@vercel/kv";
+import { Redis } from "@upstash/redis";
 
 export class Provider implements IProvider {
   prefix: string;
-  client: typeof kv;
-
-  constructor() {
-    this.client = kv;
-  }
+  client: Redis;
 
   async connect(): Promise<void> {
-    createClient({
+    if (this.client) {
+      return;
+    }
+    if (!KV_REST_API_URL || !KV_REST_API_TOKEN) {
+      throw new Error(
+        "Configuration error. Missing KV_REST_API_URL or KV_REST_API_TOKEN",
+      );
+    }
+    this.client = new Redis({
       url: KV_REST_API_URL,
       token: KV_REST_API_TOKEN,
+      cache: "default",
+      enableAutoPipelining: true,
     });
+  }
+
+  async eval(props: {
+    prefix: string;
+    key: string;
+    script: string;
+    args: string[];
+  }) {
+    await this.connect();
+    const hashedKey = await this.hashKey({ key: props.key });
+    return this.client.eval(
+      props.script,
+      [`${props.prefix}${hashedKey}`],
+      props.args,
+    );
   }
 
   async hashKey(props: { key: string }): Promise<string> {
@@ -43,16 +64,16 @@ export class Provider implements IProvider {
 
     const hasedKey = await this.hashKey({ key: props.key });
     const cacheKey = `${props.prefix}${hasedKey}`;
-    const value = await this.client.incr(cacheKey);
-
-    // Issue #233: same contract as the Redis provider — a supplied TTL is
-    // refreshed on every increment, so a counter that keeps being bumped
-    // still expires once its path goes idle.
-    if (props.options?.ttl) {
-      await this.client.expire(cacheKey, props.options.ttl);
+    if (!props.options?.ttl) {
+      return this.client.incr(cacheKey);
     }
 
-    return value;
+    const result = await this.client
+      .multi()
+      .incr(cacheKey)
+      .expire(cacheKey, props.options.ttl)
+      .exec();
+    return Number(result[0]);
   }
 
   async set(props: {

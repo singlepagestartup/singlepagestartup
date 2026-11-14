@@ -10,9 +10,13 @@ function currentCheckout() {
   };
   const service = new CheckoutAttributes(
     {
-      find: async ({ params }: any) => [
-        { id: keys[params.filters.and[0].value as keyof typeof keys] },
-      ],
+      find: async ({ params }: any) => {
+        const type = params.filters.and[0].value;
+        if (type === "price") {
+          return [{ id: "unrelated-price-key" }, { id: keys.price }];
+        }
+        return [{ id: keys.interval }];
+      },
     } as any,
     { find: async () => [{ productId: "pro", quantity: 1 }] } as any,
     { findById: async () => ({ id: "pro", type: "subscription" }) } as any,
@@ -28,8 +32,9 @@ function currentCheckout() {
         const selection = params.filters.and.find(
           (item: any) => item.column === "attributeId",
         );
-        if (key === keys.price)
+        if (Array.isArray(key) && key.includes(keys.price)) {
           return [{ attributeId: "usd" }, { attributeId: "rub" }];
+        }
         return selection.value === "interval"
           ? [{ attributeId: "interval" }]
           : [];

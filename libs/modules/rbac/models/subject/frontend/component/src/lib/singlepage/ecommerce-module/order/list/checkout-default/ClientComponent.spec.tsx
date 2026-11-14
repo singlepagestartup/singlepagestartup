@@ -33,20 +33,7 @@ const submitPayload = {
   },
 };
 
-const originalLocation = window.location;
-
-beforeAll(() => {
-  Object.defineProperty(window, "location", {
-    value: { href: "" },
-    writable: true,
-  });
-});
-
-afterAll(() => {
-  Object.defineProperty(window, "location", {
-    value: originalLocation,
-  });
-});
+const checkoutPage = window.location.href;
 
 jest.mock("next/link", () => ({
   __esModule: true,
@@ -182,7 +169,7 @@ describe("Given: order list checkout component", () => {
     mutateAsyncMock.mockReset();
     useFormMock.mockReset();
     ecommerceModuleOrderApiPropsMock.mockReset();
-    (window.location as any).href = "";
+    window.history.replaceState(null, "", checkoutPage);
 
     useFormMock.mockReturnValue({
       control: {},
@@ -198,7 +185,7 @@ describe("Given: order list checkout component", () => {
   it("When: checkout returns one invoice Then: browser redirects to payment URL", async () => {
     mutateAsyncMock.mockResolvedValue({
       billingModule: {
-        invoices: [{ paymentUrl: "https://pay.local/single" }],
+        invoices: [{ paymentUrl: `${checkoutPage}#single` }],
       },
     });
 
@@ -221,7 +208,7 @@ describe("Given: order list checkout component", () => {
     });
 
     await waitFor(() => {
-      expect((window.location as any).href).toBe("https://pay.local/single");
+      expect(window.location.href).toBe(`${checkoutPage}#single`);
     });
   });
 
@@ -258,7 +245,7 @@ describe("Given: order list checkout component", () => {
       ).toBe(true);
     });
 
-    expect((window.location as any).href).toBe("");
+    expect(window.location.href).toBe(checkoutPage);
   });
 
   /**

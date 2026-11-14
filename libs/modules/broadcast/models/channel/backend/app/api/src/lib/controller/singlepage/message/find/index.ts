@@ -65,7 +65,7 @@ export class Handler {
           },
         };
 
-        const messages = await this.service.messages.find({
+        const messages = await this.service.findMessages({
           params: mergedParams,
         });
 

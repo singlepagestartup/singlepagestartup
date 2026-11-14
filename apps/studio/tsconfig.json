@@ -1,18 +1,17 @@
 {
   "compilerOptions": {
-    "baseUrl": "../..",
     "paths": {
       "@sps/shared-utils/metadata": [
-        "libs/shared/utils/src/lib/metadata/index.ts"
+        "../../libs/shared/utils/src/lib/metadata/index.ts"
       ],
       "@sps/shared-frontend-client-utils/chat-scroll": [
-        "libs/shared/frontend/client/utils/src/lib/chat-scroll/index.ts"
+        "../../libs/shared/frontend/client/utils/src/lib/chat-scroll/index.ts"
       ],
       "@sps/shared-utils/chat-scroll": [
-        "libs/shared/utils/src/lib/constants/chat-scroll.ts"
+        "../../libs/shared/utils/src/lib/constants/chat-scroll.ts"
       ],
       "@sps/ui-adapter/toast": [
-        "libs/shared/ui/adapter/src/lib/toast/index.tsx"
+        "../../libs/shared/ui/adapter/src/lib/toast/index.tsx"
       ]
     },
     "target": "ES2022",
@@ -29,7 +28,8 @@
     "noEmit": true,
     "strict": true,
     "noImplicitAny": false,
-    "types": ["node", "bun"]
+    "types": ["node", "bun"],
+    "noUncheckedSideEffectImports": false
   },
   "include": [
     ".storybook/**/*.ts",

@@ -11,6 +11,7 @@ export {
  */
 export { applyOutputSchema } from "./lib/output-schema";
 
+export { readDump } from "./lib/seeder/read-dump";
 export { Seeder } from "./lib/seeder/Seeder";
 export { Dumper } from "./lib/dumper/Dumper";
 export { ModuleSeeder } from "./lib/seeder/ModuleSeeder";
@@ -40,6 +41,9 @@ export {
   resourceIdentity,
   scopeDependencyKey,
 } from "./lib/repository/database/context";
-export { createConsistencyRuntime } from "./lib/mutation-effects/consistency";
+export {
+  clearHttpResponseCache,
+  createConsistencyRuntime,
+} from "./lib/mutation-effects/consistency";
 export * from "./lib/configuration";
 export * from "./lib/middleware";

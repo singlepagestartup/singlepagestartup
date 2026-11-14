@@ -2,7 +2,6 @@
 
 import { WagmiProvider, deserialize, serialize } from "wagmi";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
-import { ConnectKitProvider } from "connectkit";
 import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
 import { QueryClient } from "@tanstack/react-query";
 import { IComponentProps } from "./interface";
@@ -28,7 +27,7 @@ export function Component(props: IComponentProps) {
         client={queryClient}
         persistOptions={{ persister }}
       >
-        <ConnectKitProvider>{props.children}</ConnectKitProvider>
+        {props.children}
       </PersistQueryClientProvider>
     </WagmiProvider>
   );

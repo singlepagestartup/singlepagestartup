@@ -158,6 +158,11 @@ import {
   type IResult as IEcommerceModuleOrderListResult,
 } from "./ecommerce-module/order/list";
 import {
+  action as ecommerceModuleOrdersToProductsList,
+  type IProps as IEcommerceModuleOrdersToProductsListProps,
+  type IResult as IEcommerceModuleOrdersToProductsListResult,
+} from "./ecommerce-module/orders-to-products/list";
+import {
   action as ecommerceModuleOrderQuantity,
   type IProps as IEcommerceModuleOrderQuantityProps,
   type IResult as IEcommerceModuleOrderQuantityResult,
@@ -430,6 +435,10 @@ import {
 } from "./social-module/chat/find-by-id/profile/delete";
 
 import {
+  action as permissionDefaults,
+  type IResult as IPermissionDefaultsResult,
+} from "./permission-defaults";
+import {
   action as hostCacheRevalidate,
   type IResult as IHostCacheRevalidateResult,
 } from "./host-cache/revalidate";
@@ -472,6 +481,7 @@ export type IProps = {
   IEcommerceModuleOrderTotalProps: IEcommerceModuleOrderTotalProps;
   IEcommerceModuleOrderQuantityProps: IEcommerceModuleOrderQuantityProps;
   IEcommerceModuleOrderListProps: IEcommerceModuleOrderListProps;
+  IEcommerceModuleOrdersToProductsListProps: IEcommerceModuleOrdersToProductsListProps;
 
   ICrmModuleFromRequestCreateProps: ICrmModuleFromRequestCreateProps;
 
@@ -523,6 +533,7 @@ export type IProps = {
 };
 
 export type IResult = {
+  IPermissionDefaultsResult: IPermissionDefaultsResult;
   IHostCacheRevalidateResult: IHostCacheRevalidateResult;
   IBlogModuleArticleCreateResult: IBlogModuleArticleCreateResult;
   IBillingModuleBalanceResult: IBillingModuleBalanceResult;
@@ -561,6 +572,7 @@ export type IResult = {
   IEcommerceModuleOrderTotalResult: IEcommerceModuleOrderTotalResult;
   IEcommerceModuleOrderQuantityResult: IEcommerceModuleOrderQuantityResult;
   IEcommerceModuleOrderListResult: IEcommerceModuleOrderListResult;
+  IEcommerceModuleOrdersToProductsListResult: IEcommerceModuleOrdersToProductsListResult;
 
   ICrmModuleFromRequestCreateResult: ICrmModuleFromRequestCreateResult;
 
@@ -612,6 +624,7 @@ export type IResult = {
 };
 
 export const api = {
+  permissionDefaults,
   hostCacheRevalidate,
   blogModuleArticleCreate,
   socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdate,
@@ -652,6 +665,7 @@ export const api = {
   ecommerceModuleOrderTotal,
   ecommerceModuleOrderQuantity,
   ecommerceModuleOrderList,
+  ecommerceModuleOrdersToProductsList,
 
   crmModuleFromRequestCreate,
 

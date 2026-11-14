@@ -7,6 +7,9 @@ export const FILE_CONTENT_SECURITY_HEADERS = {
   "x-content-type-options": "nosniff",
 } as const;
 
+export const UUID_VALUE_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export const UUID_PATH_SUFFIX_REGEX =
   /\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}(?=\/?$|\?.*$)/;
 
@@ -73,3 +76,17 @@ export * from "./agent";
 
 export const HOST_SERVICE_REVALIDATION_SECRET_HEADER =
   "X-HOST-REVALIDATION-SECRET";
+/**
+ * Hono context variable a handler sets to the id of the subject whose tokens
+ * it has just revoked, as logout does. The is-authorized middleware reads it
+ * once the handler returns and stops answering any token of that subject from
+ * its cached decisions, so every one of them is refused at once in this
+ * process instead of when those entries expire.
+ */
+export const RBAC_REVOKED_SUBJECT_CONTEXT_KEY = "rbac.revoked-subject";
+
+export {
+  securityEventKinds,
+  securityNotificationTopicSlug,
+  securityNotificationTemplateSlugs,
+} from "./security";

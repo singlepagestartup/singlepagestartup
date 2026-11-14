@@ -1,7 +1,7 @@
 "use client";
 
 import { KnowledgeMentionOption, SocialSkill } from "../types";
-import { Component as SocialModuleSkillChatMentionOption } from "@sps/social/models/skill/frontend/component/src/lib/singlepage/chat-mention-option";
+import { Component as SocialModuleSkill } from "@sps/social/models/skill/frontend/component";
 import { cn } from "@sps/shared-frontend-client-utils";
 import {
   Command,
@@ -71,9 +71,10 @@ export function SkillMentionPicker(props: SkillMentionPickerProps) {
                         : "bg-transparent data-[selected=true]:!bg-transparent",
                     )}
                   >
-                    <SocialModuleSkillChatMentionOption
+                    <SocialModuleSkill
                       isServer={false}
                       variant="chat-mention-option"
+                      dataSource="props"
                       data={skill}
                       language={props.language}
                     />

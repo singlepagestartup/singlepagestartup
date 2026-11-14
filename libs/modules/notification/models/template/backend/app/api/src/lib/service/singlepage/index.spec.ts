@@ -104,4 +104,64 @@ describe("template render service", () => {
       service.render({ id: "template-id", type: "telegram", payload: {} }),
     ).resolves.toBeNull();
   });
+  it.each(["content-email", "project-security-email"])(
+    "passes saved copy and original data to Host for %s",
+    async (variant) => {
+      const fetch = jest
+        .spyOn(global, "fetch")
+        .mockResolvedValue(new Response("<html>Host layout</html>"));
+      const service = createService({
+        findById: jest.fn().mockResolvedValue(
+          createTemplate({
+            variant,
+            content: "{{project}}: {{counts.failed}}",
+          }),
+        ),
+      });
+      const payload = { project: "<project>", counts: { failed: 7 } };
+      const content = await service.render({
+        id: "template-id",
+        type: "email",
+        payload,
+      });
+      expect(content).toBe("<html>Host layout</html>");
+      const [url, request] = fetch.mock.calls[0];
+      expect(String(url)).toMatch(/\/api\/email-generator\/index.html$/);
+      expect(request).toMatchObject({ method: "POST", redirect: "error" });
+      expect(JSON.parse(request?.body as string)).toEqual({
+        variant,
+        data: payload,
+        template: { title: "Template title", content: "<project>: 7" },
+      });
+    },
+  );
+
+  it("leaves content optional for existing component templates", async () => {
+    const fetch = jest
+      .spyOn(global, "fetch")
+      .mockResolvedValue(new Response("{}"));
+    await createService().render({
+      id: "template-id",
+      type: "telegram",
+      payload: { id: 1 },
+    });
+    const request = fetch.mock.calls[0][1];
+    expect(JSON.parse(request?.body as string)).toMatchObject({
+      data: { id: 1 },
+      template: { title: "Template title", content: null },
+    });
+  });
+
+  it("rejects a mismatched delivery channel for a saved template", async () => {
+    const service = createService({
+      findById: jest
+        .fn()
+        .mockResolvedValue(
+          createTemplate({ variant: "content-email", content: "Text" }),
+        ),
+    });
+    await expect(
+      service.render({ id: "template-id", type: "telegram" }),
+    ).rejects.toThrow("does not match delivery channel");
+  });
 });

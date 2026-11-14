@@ -20,12 +20,15 @@ export default async function Server(props: IComponentProps) {
       },
       options: props.apiProps?.options,
     });
-    const contexts = profiles.length
-      ? await subjectApi.socialModuleProfileProjects({
-          id: props.data.id,
-          options: props.apiProps?.options,
-        })
-      : [];
+    let contexts;
+    if (profiles.length) {
+      contexts = await subjectApi.socialModuleProfileProjects({
+        id: props.data.id,
+        options: props.apiProps?.options,
+      });
+    } else {
+      contexts = [];
+    }
     const profileIds = new Set(profiles.map((profile) => profile.id));
     return (
       <ChildComponent

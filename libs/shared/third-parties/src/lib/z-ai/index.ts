@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { Z_AI_API_KEY } from "@sps/shared-utils";
 
 export class Service {
@@ -28,7 +29,13 @@ export class Service {
       }),
     });
 
-    const data = await response.json();
+    const data = z
+      .object({
+        choices: z
+          .array(z.object({ message: z.object({ content: z.string() }) }))
+          .nonempty(),
+      })
+      .parse(await response.json());
 
     console.log("🚀 ~ generateText ~ data:", data);
 

@@ -24,7 +24,7 @@ jest.mock("@sps/shared-utils", () => {
 });
 
 jest.mock("wagmi", () => ({
-  useAccount: () => ({
+  useConnection: () => ({
     address: undefined,
     isConnected: false,
   }),
@@ -38,17 +38,6 @@ jest.mock("@wagmi/core", () => ({
 jest.mock("@sps/shared-frontend-client-web3", () => ({
   ethereumVirtualMachine: {},
 }));
-
-jest.mock(
-  "@sps/host/relations/widgets-to-external-widgets/frontend/component",
-  () => {
-    const { Component } = jest.requireActual(
-      "@sps/host/relations/widgets-to-external-widgets/frontend/component/src/lib/singlepage/default/rbac/subject",
-    );
-
-    return { Component };
-  },
-);
 
 jest.mock("@sps/rbac/models/subject/frontend/component", () => {
   const { Component: AuthenticationMeDefault } = jest.requireActual(
@@ -82,8 +71,8 @@ import {
   Provider as ClientApiProvider,
   queryClient,
 } from "@sps/shared-frontend-client-api";
-import { Component as OrderCreateClientComponent } from "@sps/rbac/models/subject/frontend/component/src/lib/singlepage/ecommerce-module/order/create-default/ClientComponent";
-import { Component as HostModuleWidgetsToExternalWidgets } from "@sps/host/relations/widgets-to-external-widgets/frontend/component";
+import { Component as OrderCreate } from "@sps/rbac/models/subject/frontend/component/src/lib/singlepage/ecommerce-module/order/create-default/ClientComponent";
+import { Component as CartWidget } from "@sps/rbac/models/subject/frontend/component/src/lib/singlepage/me/ecommerce-module/cart-default/ClientComponent";
 import { authenticateScenarioSubject } from "./test-utils/auth";
 import {
   clearSubjectCartOrders,
@@ -93,9 +82,6 @@ import {
 } from "./test-utils/fixtures";
 
 describe("Given: issue-152 frontend cart scenario", () => {
-  const OrderCreate = OrderCreateClientComponent as any;
-  const CartWidget = HostModuleWidgetsToExternalWidgets as any;
-
   let subjectId = "";
   let jwt = "";
   let fixtures: TCartScenarioFixtures | null = null;
@@ -130,10 +116,11 @@ describe("Given: issue-152 frontend cart scenario", () => {
         <ClientApiProvider>
           <>
             <OrderCreate
+              isServer={false}
               variant="ecommerce-module-order-create-default"
               data={{ id: subjectId } as any}
-              product={{ id: scenarioFixtures.productId } as any}
-              store={{ id: scenarioFixtures.storeId } as any}
+              ecommerceModuleProduct={{ id: scenarioFixtures.productId } as any}
+              ecommerceModuleStore={{ id: scenarioFixtures.storeId } as any}
               billingModule={
                 { currency: { id: scenarioFixtures.currencyId } } as any
               }
@@ -144,6 +131,7 @@ describe("Given: issue-152 frontend cart scenario", () => {
               <CartWidget
                 isServer={false}
                 variant="me-ecommerce-module-cart-default"
+                data={{ id: subjectId } as any}
                 language="en"
               />
             </div>
@@ -153,7 +141,9 @@ describe("Given: issue-152 frontend cart scenario", () => {
 
     const initialView = renderScenario();
 
-    fireEvent.click(screen.getByRole("button", { name: "Add to cart" }));
+    const addButton = screen.getByRole("button", { name: "Add to cart" });
+    await waitFor(() => expect(addButton).toHaveProperty("disabled", false));
+    fireEvent.click(addButton);
 
     await waitFor(async () => {
       const backendQuantity = await getCartQuantityRaw({

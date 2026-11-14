@@ -1,7 +1,7 @@
 FROM node:24.22.2-bookworm
 
 # Keep in step with the bun package version in package-lock.json.
-ARG BUN_VERSION=1.3.6
+ARG BUN_VERSION=1.4.4
 
 RUN apt-get update && \
     apt-get -qy full-upgrade && \
