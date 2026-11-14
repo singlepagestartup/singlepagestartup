@@ -4,7 +4,7 @@ Closes #357.
 
 A customer receives a product role or balance credit when the order has a linked successful Payment Intent with a paid Invoice. This applies to provider payments, manually recorded payments and the zero-amount settlement for the initial Free subscription.
 
-The current main branch already checks for a confirmed payment before the first grant. This PR also checks **which payment** supplies the amount, interval and Invoice for a subscription renewal. If a customer has an earlier successful payment and a newer attempt is still processing, the earlier payment cannot confirm that newer Invoice. The next order check can accept the renewal when its own intent succeeds. A previously revoked role stays revoked.
+Before this change, a paid Invoice was sufficient for the first grant even while its Payment Intent was still processing. The same confirmation rule now determines **which payment** supplies the amount, interval and Invoice for a subscription renewal. If a customer has an earlier successful payment and a newer attempt is still processing, the earlier payment cannot confirm that newer Invoice. The next order check can accept the renewal when its own intent succeeds. A previously revoked role stays revoked.
 
 A customer can still inspect the invoice while payment is pending. The recurring order check scans up to 100 orders at a time and advances through both new purchases and recurring orders, including when the first batch remains unconfirmed. The API logs skipped fulfilment with the order ID, status and subject ID. Per-process deduplication keeps up to 10,000 keys for 24 hours.
 
