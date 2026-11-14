@@ -18,8 +18,9 @@ npx nx run @sps/providers-db:consistency-check
 ```
 
 Commit the Widget field definition and the migrations in the Widget repository.
-Other entities keep their own histories. If upstream and a project both change
-the same entity, reconcile that entity's Drizzle migrations during the merge.
+Other entities keep their own histories. When upstream and a project both add
+migrations to the same entity, follow the [adapt-upstream procedure for divergent
+Drizzle migrations](../../../.agents/workflows/engineering/adapt-upstream.md#divergent-drizzle-migrations).
 
 During deployment the provider installs the shared PostgreSQL functions first.
 Each entity then applies its DDL and registers its table, effective column names

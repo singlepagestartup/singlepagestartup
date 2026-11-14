@@ -61,20 +61,21 @@ export class Config {
         );
       }
 
-      let beforeMigrations = [];
-
       const db = getDrizzle({ schema: this.schema });
 
       await db.execute(sql`CREATE EXTENSION IF NOT EXISTS vector`);
 
-      try {
-        beforeMigrations = await db.execute(
-          sql`SELECT * FROM drizzle.${sql.raw(this.migrationsTable)}`,
+      const journal = sql.identifier(this.migrationsTable);
+      const [existingJournal] = await db.execute(
+        sql`SELECT 1 FROM pg_catalog.pg_tables
+            WHERE schemaname = 'drizzle' AND tablename = ${this.migrationsTable}`,
+      );
+      let previousMigrationCount = 0;
+      if (existingJournal) {
+        const [row] = await db.execute(
+          sql`SELECT count(*)::integer AS count FROM drizzle.${journal}`,
         );
-      } catch (error: any) {
-        if (!error.message.includes("does not exist")) {
-          throw error;
-        }
+        previousMigrationCount = Number(row.count);
       }
 
       const migrationConfig = {
@@ -104,10 +105,10 @@ export class Config {
       }
 
       const afterMigrations = await db.execute(
-        sql`SELECT * FROM drizzle.${sql.raw(this.migrationsTable)} ORDER BY created_at DESC, id DESC`,
+        sql`SELECT * FROM drizzle.${journal} ORDER BY created_at DESC, id DESC`,
       );
 
-      const schemaChanged = beforeMigrations.length !== afterMigrations.length;
+      const schemaChanged = previousMigrationCount !== afterMigrations.length;
       const [capture] = await db.execute(
         sql`SELECT to_regprocedure('sps_consistency.install_capture(text,text,jsonb)') IS NOT NULL AS installed`,
       );
