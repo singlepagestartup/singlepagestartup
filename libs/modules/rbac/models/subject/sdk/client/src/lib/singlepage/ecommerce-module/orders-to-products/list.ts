@@ -18,16 +18,16 @@ import {
 import { useEffect } from "react";
 
 export type IProps =
-  IParentProps["IEcommerceModuleOrderOrdersToProductsProps"] & {
+  IParentProps["IEcommerceModuleOrdersToProductsListProps"] & {
     reactQueryOptions?: Partial<UseQueryOptions<any>>;
     mute?: boolean;
   };
 
 export type IResult =
-  IParentResult["IEcommerceModuleOrderOrdersToProductsResult"];
+  IParentResult["IEcommerceModuleOrdersToProductsListResult"];
 
 export function action(props: IProps) {
-  const queryKey = `${route}/${props.id}/ecommerce-module/orders/orders-to-products`;
+  const queryKey = `${route}/${props.id}/ecommerce-module/orders-to-products`;
   // Preserve order invalidation while accepting additional caller topics.
   const { meta: userMeta, ...restReactQueryOptions } =
     props.reactQueryOptions ?? {};
@@ -54,7 +54,7 @@ export function action(props: IProps) {
       ),
     },
     queryFn: async () => {
-      const result = await api.ecommerceModuleOrderOrdersToProducts({
+      const result = await api.ecommerceModuleOrdersToProductsList({
         ...props,
         options: {
           ...props.options,
@@ -65,7 +65,7 @@ export function action(props: IProps) {
 
       globalActionsStore.getState().addAction({
         type: "query",
-        name: `${route}/${props.id}/ecommerce-module/orders/orders-to-products`,
+        name: `${route}/${props.id}/ecommerce-module/orders-to-products`,
         props: { params: props.params },
         result,
         timestamp: Date.now(),

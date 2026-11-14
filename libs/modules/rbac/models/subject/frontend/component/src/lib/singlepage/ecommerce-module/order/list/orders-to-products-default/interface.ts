@@ -12,17 +12,17 @@ export interface IComponentProps extends ISpsComponentBase {
   data: IModel;
   language: string;
   apiProps?: {
-    params?: IProps["IEcommerceModuleOrderOrdersToProductsProps"]["params"];
-    options?: IProps["IEcommerceModuleOrderOrdersToProductsProps"]["options"];
+    params?: IProps["IEcommerceModuleOrdersToProductsListProps"]["params"];
+    options?: IProps["IEcommerceModuleOrdersToProductsListProps"]["options"];
   };
   className?: string;
   children?: ({
     data,
   }: {
-    data: IResult["IEcommerceModuleOrderOrdersToProductsResult"];
+    data: IResult["IEcommerceModuleOrdersToProductsListResult"];
   }) => ReactNode;
 }
 
 export interface IComponentPropsExtended extends Omit<IComponentProps, "data"> {
-  data: IResult["IEcommerceModuleOrderOrdersToProductsResult"];
+  data: IResult["IEcommerceModuleOrdersToProductsListResult"];
 }

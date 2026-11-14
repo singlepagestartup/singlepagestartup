@@ -9,7 +9,7 @@
 import { action as list } from "./list";
 import { action as quantity } from "./quantity";
 import { action as total } from "./total";
-import { action as ordersToProducts } from "./orders-to-products";
+import { action as ordersToProducts } from "../orders-to-products/list";
 
 describe("subject cart aggregate cache policy", () => {
   const originalFetch = global.fetch;

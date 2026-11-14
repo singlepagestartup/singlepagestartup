@@ -8,7 +8,7 @@
  */
 
 import QueryString from "qs";
-import { action } from "./orders-to-products";
+import { action } from "./list";
 
 describe("Given: the subject order lines SDK action", () => {
   const fetchSpy = jest.spyOn(global, "fetch");
@@ -65,7 +65,7 @@ describe("Given: the subject order lines SDK action", () => {
     const [path, query] = String(url).split("?");
 
     expect(path).toBe(
-      "http://api.test/api/rbac/subjects/subject-1/ecommerce-module/orders/orders-to-products",
+      "http://api.test/api/rbac/subjects/subject-1/ecommerce-module/orders-to-products",
     );
     expect(QueryString.parse(query)).toEqual(params);
     expect(result).toEqual(lines);

@@ -6,7 +6,7 @@ import type { IComponentProps } from "./interface";
 import { api as subjectApi } from "@sps/rbac/models/subject/sdk/server";
 
 export async function Component(props: IComponentProps) {
-  const data = await subjectApi.ecommerceModuleOrderOrdersToProducts({
+  const data = await subjectApi.ecommerceModuleOrdersToProductsList({
     id: props.data.id,
     ...props.apiProps,
   });

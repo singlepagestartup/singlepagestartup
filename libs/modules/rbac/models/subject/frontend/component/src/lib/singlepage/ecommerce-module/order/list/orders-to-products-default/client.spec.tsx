@@ -17,7 +17,7 @@ const ordersToProductsMock = jest.fn();
 
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   api: {
-    ecommerceModuleOrderOrdersToProducts: (...args: unknown[]) =>
+    ecommerceModuleOrdersToProductsList: (...args: unknown[]) =>
       ordersToProductsMock(...args),
   },
 }));

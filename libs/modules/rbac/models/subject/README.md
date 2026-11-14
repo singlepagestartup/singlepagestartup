@@ -151,8 +151,8 @@ Thread management through `rbac.subject` requires `rbac.permission` records for 
 ### Ecommerce Order Line Route
 
 The cart reads the lines of the subject's orders through
-`GET /api/rbac/subjects/[rbac.subjects.id]/ecommerce-module/orders/orders-to-products`,
-which has a role-less permission row and `RequestSubjectIdOwner` as its guard.
+`GET /api/rbac/subjects/[rbac.subjects.id]/ecommerce-module/orders-to-products`,
+through a GET permission shipped in the RBAC seed. An ordinary customer without a matching grant receives 403. The seeded permission has no role restriction; the route still requires an access token whose Subject ID matches the URL.
 Each line carries its totals per currency (an empty list when its price cannot
 be computed), and a caller's `filters.and` narrows the lines within the orders
 linked to the subject. The module-level

@@ -8,7 +8,7 @@
  */
 
 import { logger } from "@sps/backend-utils";
-import { Service } from "./orders-to-products";
+import { Service } from "./list";
 
 const total = [
   {

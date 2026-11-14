@@ -45,7 +45,7 @@ export async function action(props: IProps): Promise<IResult> {
   };
 
   const res = await fetch(
-    `${host}${route}/${id}/ecommerce-module/orders/orders-to-products?${stringifiedQuery}`,
+    `${host}${route}/${id}/ecommerce-module/orders-to-products?${stringifiedQuery}`,
     requestOptions,
   );
 

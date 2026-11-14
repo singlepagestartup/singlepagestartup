@@ -114,9 +114,9 @@ import {
   type IExecuteProps as IEcommerceProductCheckoutProps,
 } from "./ecommerce/product/checkout";
 import {
-  Service as EcommerceOrderOrdersToProducts,
-  IExecuteProps as IEcommerceOrderOrdersToProductsExecuteProps,
-} from "./ecommerce/order/orders-to-products";
+  Service as EcommerceOrdersToProductsList,
+  IExecuteProps as IEcommerceOrdersToProductsListExecuteProps,
+} from "./ecommerce/orders-to-products/list";
 import {
   Service as ChatSubjectsWithSocialModuleProfiles,
   IExecuteProps as IChatSubjectsWithSocialModuleProfilesProps,
@@ -705,10 +705,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return new ChatParticipants(this).execute(props);
   }
 
-  async ecommerceOrderOrdersToProducts(
-    props: IEcommerceOrderOrdersToProductsExecuteProps,
+  async ecommerceOrdersToProductsList(
+    props: IEcommerceOrdersToProductsListExecuteProps,
   ) {
-    return new EcommerceOrderOrdersToProducts({
+    return new EcommerceOrdersToProductsList({
       ecommerceModule: this.ecommerceModule,
       subjectsToEcommerceModuleOrders: this.subjectsToEcommerceModuleOrders,
     }).execute(props);

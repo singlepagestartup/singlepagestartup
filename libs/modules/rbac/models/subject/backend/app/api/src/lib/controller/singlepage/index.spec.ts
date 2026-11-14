@@ -283,20 +283,20 @@ describe.each([
 
 describe("Given: the order lines route of a subject", () => {
   const ordersToProductsPath =
-    "/subject-owner/ecommerce-module/orders/orders-to-products";
-  const mockEcommerceOrderOrdersToProducts = jest.fn();
+    "/subject-owner/ecommerce-module/orders-to-products";
+  const mockEcommerceOrdersToProductsList = jest.fn();
 
   async function requestOrdersToProducts(subjectId?: string) {
     return createApp({
-      ecommerceOrderOrdersToProducts: mockEcommerceOrderOrdersToProducts,
+      ecommerceOrdersToProductsList: mockEcommerceOrdersToProductsList,
     }).request(ordersToProductsPath, {
       headers: await createHeaders(subjectId),
     });
   }
 
   beforeEach(() => {
-    mockEcommerceOrderOrdersToProducts.mockReset();
-    mockEcommerceOrderOrdersToProducts.mockResolvedValue([
+    mockEcommerceOrdersToProductsList.mockReset();
+    mockEcommerceOrdersToProductsList.mockResolvedValue([
       {
         id: "line-1",
         orderId: "order-1",
@@ -317,7 +317,7 @@ describe("Given: the order lines route of a subject", () => {
     const response = await requestOrdersToProducts();
 
     expect(response.status).toBe(400);
-    expect(mockEcommerceOrderOrdersToProducts).not.toHaveBeenCalled();
+    expect(mockEcommerceOrdersToProductsList).not.toHaveBeenCalled();
   });
 
   /**
@@ -330,17 +330,17 @@ describe("Given: the order lines route of a subject", () => {
     const response = await requestOrdersToProducts("subject-other");
 
     expect(response.status).toBe(401);
-    expect(mockEcommerceOrderOrdersToProducts).not.toHaveBeenCalled();
+    expect(mockEcommerceOrdersToProductsList).not.toHaveBeenCalled();
   });
 
   it("requires the owner's JWT even when the operator header is present", async () => {
     const response = await createApp({
-      ecommerceOrderOrdersToProducts: mockEcommerceOrderOrdersToProducts,
+      ecommerceOrdersToProductsList: mockEcommerceOrdersToProductsList,
     }).request(ordersToProductsPath, {
       headers: { "X-RBAC-SECRET-KEY": "test-rbac-secret-key" },
     });
     expect(response.status).toBe(400);
-    expect(mockEcommerceOrderOrdersToProducts).not.toHaveBeenCalled();
+    expect(mockEcommerceOrdersToProductsList).not.toHaveBeenCalled();
   });
 
   /**
@@ -354,7 +354,7 @@ describe("Given: the order lines route of a subject", () => {
     const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(mockEcommerceOrderOrdersToProducts).toHaveBeenCalledWith(
+    expect(mockEcommerceOrdersToProductsList).toHaveBeenCalledWith(
       expect.objectContaining({ id: "subject-owner" }),
     );
     expect(body.data).toEqual([expect.objectContaining({ id: "line-1" })]);

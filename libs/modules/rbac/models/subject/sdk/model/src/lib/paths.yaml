@@ -1120,7 +1120,7 @@ paths:
                 type: integer
                 format: int32
 
-  /rbac/subjects/{id}/ecommerce-module/orders/orders-to-products:
+  /rbac/subjects/{id}/ecommerce-module/orders-to-products:
     get:
       tags:
         - "rbac-subject"
@@ -1135,21 +1135,32 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  allOf:
-                    - $ref: "../../../../../../../../../libs/modules/ecommerce/relations/orders-to-products/sdk/model/src/lib/ecommerce-orders-to-products.yaml"
-                    - type: object
-                      properties:
-                        total:
-                          type: array
-                          items:
-                            type: object
-                            properties:
-                              total:
-                                type: number
-                              billingModuleCurrency:
-                                $ref: "../../../../../../../../../libs/modules/billing/models/currency/sdk/model/src/lib/billing-currency.yaml"
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: "../../../../../../../../../libs/modules/ecommerce/relations/orders-to-products/sdk/model/src/lib/ecommerce-orders-to-products.yaml"
+                        - type: object
+                          required: [total]
+                          properties:
+                            total:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  total:
+                                    type: number
+                                  billingModuleCurrency:
+                                    $ref: "../../../../../../../../../libs/modules/billing/models/currency/sdk/model/src/lib/billing-currency.yaml"
+        "400":
+          description: Missing owner access token.
+        "401":
+          description: The access token does not belong to the subject in the path.
+        "403":
+          description: No RBAC permission grants the caller access to this route.
 
   /rbac/subjects/{id}/ecommerce-module/orders/{orderId}:
     patch:

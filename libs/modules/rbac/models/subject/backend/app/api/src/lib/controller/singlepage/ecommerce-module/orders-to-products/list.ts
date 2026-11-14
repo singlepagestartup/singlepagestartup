@@ -26,7 +26,7 @@ export class Handler {
        */
       const ecommerceModuleOrdersToProducts = await withConsistencySnapshot(
         () =>
-          this.service.ecommerceOrderOrdersToProducts({
+          this.service.ecommerceOrdersToProductsList({
             id,
             filters: c.get("parsedQuery")?.filters?.["and"],
           }),

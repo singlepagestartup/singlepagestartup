@@ -192,8 +192,8 @@ paths:
     $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1ecommerce-module~1orders~1total"
   /rbac/subjects/{id}/ecommerce-module/orders/quantity:
     $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1ecommerce-module~1orders~1quantity"
-  /rbac/subjects/{id}/ecommerce-module/orders/orders-to-products:
-    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1ecommerce-module~1orders~1orders-to-products"
+  /rbac/subjects/{id}/ecommerce-module/orders-to-products:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1ecommerce-module~1orders-to-products"
   /rbac/subjects/{id}/ecommerce-module/orders/{orderId}:
     $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1ecommerce-module~1orders~1{orderId}"
   /rbac/subjects/{id}/ecommerce-module/orders/{orderId}/total:
@@ -796,6 +796,8 @@ paths:
     $ref: "../../libs/modules/ecommerce/relations/orders-to-products/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1orders-to-products~1{id}"
 
   # ecommerce/relations/products-to-attributes
+  /ecommerce/orders-to-products/{id}/total:
+    $ref: "../../libs/modules/ecommerce/relations/orders-to-products/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1orders-to-products~1{id}~1total"
   /ecommerce/products-to-attributes:
     $ref: "../../libs/modules/ecommerce/relations/products-to-attributes/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1products-to-attributes"
   /ecommerce/products-to-attributes/count:
