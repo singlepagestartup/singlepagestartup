@@ -64,6 +64,89 @@ export type IServiceProceedProps =
 export class Service {
   constructor() {}
 
+  async findCompletedPayment(invoice: IInvoice) {
+    if (!CLOUDPAYMENTS_PUBLIC_ID || !CLOUDPAYMENTS_API_SECRET) {
+      throw new Error(
+        "Configuration error. CloudPayments credentials not found",
+      );
+    }
+    if (!invoice.providerId) {
+      throw new Error("Not Found error. CloudPayments invoice id not found");
+    }
+
+    const createdFrom = new Date(invoice.createdAt).toISOString();
+    const checkedAt = new Date().toISOString();
+    const pageSchema = z.object({
+      Success: z.literal(true),
+      Model: z.array(
+        z.object({
+          Status: z.string(),
+          Type: z.number(),
+          Refunded: z.boolean(),
+          Amount: z.number(),
+          JsonData: z.string().nullish(),
+        }),
+      ),
+    });
+    const credentials = Buffer.from(
+      `${CLOUDPAYMENTS_PUBLIC_ID}:${CLOUDPAYMENTS_API_SECRET}`,
+    ).toString("base64");
+    let pageNumber = 1;
+    let hasMore: boolean;
+    do {
+      const response = await fetch(
+        "https://api.cloudpayments.ru/v2/payments/list",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Basic ${credentials}`,
+          },
+          body: JSON.stringify({
+            CreatedDateGte: createdFrom,
+            CreatedDateLte: checkedAt,
+            PageNumber: pageNumber,
+            Statuses: ["Completed"],
+            TimeZone: "UTC",
+          }),
+        },
+      );
+      if (!response.ok) {
+        throw new Error(
+          `Internal error. CloudPayments lookup failed (HTTP ${response.status})`,
+        );
+      }
+      const page = pageSchema.safeParse(await response.json());
+      if (!page.success) {
+        throw new Error(
+          "Internal error. Invalid CloudPayments transaction list",
+        );
+      }
+      for (const transaction of page.data.Model) {
+        if (
+          transaction.Status !== "Completed" ||
+          transaction.Type !== 0 ||
+          transaction.Refunded ||
+          !transaction.JsonData
+        ) {
+          continue;
+        }
+        let metadata;
+        try {
+          metadata = JSON.parse(transaction.JsonData);
+        } catch {
+          continue;
+        }
+        if (metadata?.invoiceId === invoice.id) {
+          return transaction;
+        }
+      }
+      hasMore = page.data.Model.length === 100;
+      pageNumber++;
+    } while (hasMore);
+    return null;
+  }
+
   async proceed(props: IServiceProceedProps) {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC secret key not found");
