@@ -528,6 +528,43 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
   }
 
+  async checkCloudpaymentsInvoice(invoice: IInvoice) {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Configuration error. RBAC secret key not found");
+    }
+    const provider = new Cloudpayments();
+    const payment = await provider.findCompletedPayment(invoice);
+    if (payment) {
+      const paidInvoice = await invoiceApi.update({
+        id: invoice.id,
+        data: { amount: payment.Amount, status: "paid" },
+        options: { headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY } },
+      });
+      if (!paidInvoice) {
+        throw new Error("Not Found error. CloudPayments invoice not found");
+      }
+      await this.updatePaymentIntentStatus({ invoice: paidInvoice });
+      return;
+    }
+
+    const expiresAt =
+      new Date(invoice.createdAt).getTime() + 24 * 60 * 60 * 1000;
+    if (Date.now() > expiresAt && invoice.status === "open") {
+      await this.billingModule.invoice.failOpenInvoice(invoice.id);
+    }
+  }
+
+  async failUnpaidIntent(id: string, expectedStatus: string) {
+    await this.repository.consumeFirstByField(
+      "id",
+      id,
+      { status: "failed" },
+      {
+        and: [{ column: "status", method: "eq", value: expectedStatus }],
+      },
+    );
+  }
+
   async cloudpayments(props: ICloudpaymentsProceedProps) {
     const cloudpayments = new Cloudpayments();
     return cloudpayments.proceed(props);

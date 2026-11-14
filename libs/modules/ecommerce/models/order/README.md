@@ -41,14 +41,14 @@ owned subscription Orders. Proceed, repeated paid transitions, recreated Roles
 and automatic renewal cannot restore those Orders.
 
 Extended Order reads preserve existing payment terms when a Product's prices
-or offered currencies change. The read uses the Order's matching-currency paid
-Invoice amount and its Payment Intent's saved subscription interval. Commerce
-Product type still selects delivery: a Telegram `one_off` payment transport can
-settle a subscription while retaining its saved interval. The latest
-paid Invoice wins by creation time, then ID; an accepted period anchor must
-still belong to that paid context. The read never rewrites the accepted period.
-A sole unpaid Invoice remains visible with its saved amount and interval, while
-its unpaid status and missing entitlement stay unchanged. Missing anchors,
+or offered currencies change. The latest paid Invoice on a successful Payment
+Intent in the Order's currency supplies the amount and interval. Creation time
+and then Invoice ID determine the order. The Product type still selects delivery.
+A Telegram `one_off` payment can settle a subscription with its saved interval.
+While payment is pending, the customer can still see the saved terms from a
+paid Invoice or a sole open Invoice. Reading the Order leaves its accepted
+period unchanged. Starting or renewing a period requires a confirmed payment.
+Missing anchors,
 conflicting payment currencies and ambiguous Invoice contexts require
 reconciliation rather than an arbitrary fallback.
 
@@ -62,7 +62,7 @@ or new checkout through this read compatibility.
 
 Natural recurring expiry removes its grant through the internal fulfillment
 operation and sets `status=expired`, retaining its paid Invoice anchor. A later
-newer paid Invoice can reactivate that same unrevoked Order for a full interval.
+confirmed payment can reactivate that same unrevoked Order for a full interval.
 Role changes, credits and period acceptance share one transaction with Subject
 and Order locks; failure leaves the paid Order retryable. Notifications and
 automatic follow-up checkout run after commit. Urgent paid/cleanup work precedes

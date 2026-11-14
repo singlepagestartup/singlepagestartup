@@ -295,6 +295,30 @@ describe("Order payment history after a Product price cutover", () => {
     ).toBe(1);
   });
 
+  it("shows a paid invoice during settlement when the order also has an open invoice", async () => {
+    const { state, service } = fixture();
+    state.order.status = "paid";
+    state.order.subscriptionPeriodInvoiceId = null;
+    state.order.subscriptionPeriodStartsAt = null;
+    state.order.subscriptionPeriodEndsAt = null;
+    state.intents[0].status = "processing";
+    state.intentInvoices.push({
+      id: "retry-link",
+      paymentIntentId: "intent",
+      invoiceId: "retry",
+    });
+    state.invoices.push({
+      id: "retry",
+      status: "open",
+      amount: 100,
+      createdAt: new Date("2026-10-21T00:00:00Z"),
+    });
+    const result = await service.execute({ id: "order" });
+    expect(result.checkoutAttributesByCurrency.amount).toBe(1);
+    expect(result.subscriptionPeriodInvoiceId).toBeNull();
+    expect(result.status).toBe("paid");
+  });
+
   it.each(["paid", "open"])(
     "handles a newer %s Invoice in another currency without mixing its interval with the accepted payment",
     async (status) => {
@@ -375,6 +399,15 @@ describe("Order payment history after a Product price cutover", () => {
       amount: 29,
       createdAt: new Date("2026-10-21T00:00:00Z"),
     });
+    const newerIntent = state.intents.at(-1)!;
+    newerIntent.status = "processing";
+    const pending = await service.execute({ id: "order" });
+    expect(pending.checkoutAttributesByCurrency).toEqual({
+      amount: 1,
+      type: "subscription",
+      interval: "minute",
+    });
+    newerIntent.status = "succeeded";
     const result = await service.execute({ id: "order" });
     expect(result.checkoutAttributesByCurrency).toEqual({
       amount: 29,

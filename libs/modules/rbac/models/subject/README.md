@@ -592,6 +592,16 @@ instances refuse them once their 30-second cache entries expire.
 1. `?oauthExchange=<provider>` on success, with the code in the HttpOnly `rbac.oauth.exchange-code` cookie. `?code=<oauth-exchange-action-id>` is added as well while `RBAC_OAUTH_EXCHANGE_CODE_IN_QUERY` is on.
 2. `?oauthError=<error-code>` on failure.
 
+## Ecommerce Order Fulfilment
+
+The Agent runs the Subject order check regularly. Before granting a product role or crediting a balance, the Subject service locks the order, reloads its payment records and looks for a linked `succeeded` Payment Intent with a `paid` Invoice. Without that pair the order stays pending fulfilment. The API logs its order ID, status and subject ID. Each process suppresses repeat reports for 24 hours while the entry remains among its 10,000 cached keys.
+
+A confirmed one-off order moves from `paid` to `approving`. A subscription moves to `delivering` when its first period is accepted. Each renewal requires a newer paid Invoice on a successful intent for that order. A removed role stays revoked. An initial Free subscription uses the same payment check with its zero-amount settlement.
+
+### Recording an offline payment
+
+After verifying the payment, record the paid Invoice and its successful Payment Intent in Billing. The intent must be linked to the Order and its payment currency, with the amount and terms of that purchase. The Invoice must be linked to that intent. If the order already has these records, update their statuses. The regular order check can advance a paying order to `paid`, and the Subject check can then grant the purchase.
+
 ## Fields
 
 - `id`: unique identifier (UUID).

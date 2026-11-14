@@ -5,4 +5,15 @@ import { Table } from "@sps/billing/models/invoice/backend/repository/database";
 
 @injectable()
 @injectFromBase()
-export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {}
+export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  async failOpenInvoice(id: string) {
+    return this.repository.consumeFirstByField(
+      "id",
+      id,
+      { status: "failed" },
+      {
+        and: [{ column: "status", method: "eq", value: "open" }],
+      },
+    );
+  }
+}
