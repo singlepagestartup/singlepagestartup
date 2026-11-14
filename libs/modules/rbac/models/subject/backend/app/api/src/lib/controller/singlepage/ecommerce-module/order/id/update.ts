@@ -1,5 +1,5 @@
-import { ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds } from "@sps/shared-utils";
 import {
+  ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds,
   INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
   RBAC_JWT_SECRET,
   RBAC_SECRET_KEY,
@@ -82,15 +82,24 @@ export class Handler {
         return c.json({ data: subject });
       }
 
-      if (!Array.isArray(data.ordersToProducts) || !data.ordersToProducts.length) {
+      if (
+        !Array.isArray(data.ordersToProducts) ||
+        !data.ordersToProducts.length
+      ) {
         throw new Error("Validation error. No ordersToProducts provided");
       }
       for (const line of data.ordersToProducts) {
         if (!line || typeof line.id !== "string") {
           throw new Error("Validation error. Each order line needs an id");
         }
-        if (!Number.isSafeInteger(line.quantity) || line.quantity < quantityBounds.min || line.quantity > quantityBounds.max) {
-          throw new Error(`Validation error. ordersToProducts[].quantity must be a whole number between ${quantityBounds.min} and ${quantityBounds.max}`);
+        if (
+          !Number.isSafeInteger(line.quantity) ||
+          line.quantity < quantityBounds.min ||
+          line.quantity > quantityBounds.max
+        ) {
+          throw new Error(
+            `Validation error. ordersToProducts[].quantity must be a whole number between ${quantityBounds.min} and ${quantityBounds.max}`,
+          );
         }
       }
 

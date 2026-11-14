@@ -59,6 +59,7 @@ const props: any = {
   ecommerceModuleOrder: {
     id: "order",
     cartDetails: {
+      maxLineQuantity: 3,
       lines: [
         {
           id: "line",
@@ -180,3 +181,42 @@ it("requires an explicit choice when a legacy selection is no longer priced", ()
   ).toBe("");
   expect(mockUpdate).not.toHaveBeenCalled();
 });
+
+it.each([2, 6])(
+  "stops increasing at the API limit and lets the buyer reduce a saved quantity of %i",
+  async (quantity) => {
+    const details = props.ecommerceModuleOrder.cartDetails;
+    render(
+      <Component
+        {...props}
+        ecommerceModuleOrder={{
+          ...props.ecommerceModuleOrder,
+          cartDetails: {
+            ...details,
+            maxLineQuantity: 2,
+            lines: [{ ...details.lines[0], quantity }],
+          },
+        }}
+      />,
+    );
+    const increase = screen.getByRole("button", {
+      name: "Увеличить количество",
+    }) as HTMLButtonElement;
+    expect(increase.disabled).toBe(true);
+    fireEvent.click(increase);
+    expect(mockUpdate).not.toHaveBeenCalled();
+    fireEvent.click(
+      screen.getByRole("button", { name: "Уменьшить количество" }),
+    );
+    const expectedQuantity = quantity === 2 ? 1 : 2;
+    await waitFor(() =>
+      expect(mockUpdate).toHaveBeenCalledWith({
+        id: "owner",
+        orderId: "order",
+        data: {
+          ordersToProducts: [{ id: "line", quantity: expectedQuantity }],
+        },
+      }),
+    );
+  },
+);

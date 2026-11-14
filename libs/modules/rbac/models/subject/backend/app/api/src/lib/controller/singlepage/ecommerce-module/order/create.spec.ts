@@ -16,7 +16,6 @@ const ordersToBillingModuleCurrenciesCreateMock = jest.fn();
 
 jest.mock("@sps/shared-utils", () => ({
   ...jest.requireActual("@sps/shared-utils"),
-  ...jest.requireActual("@sps/shared-utils"),
   RBAC_JWT_SECRET: "jwt-secret",
   RBAC_SECRET_KEY: "rbac-secret",
 }));
@@ -42,6 +41,7 @@ jest.mock("hono/http-exception", () => ({
   },
 }));
 
+import { ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds } from "@sps/shared-utils";
 import { Handler } from "./create";
 import { Service as CreateCartOrder } from "../../../../service/singlepage/ecommerce/order/create";
 
@@ -356,6 +356,20 @@ describe("Given: a subject adding a product it may already hold", () => {
     expect(orderCreateMock).toHaveBeenCalled();
   });
 
+  it("stores the configured maximum on the order line", async () => {
+    const { service } = createPricedService([]);
+    await new Handler(service).execute(
+      createContext(PRICED_PRODUCT, quantityBounds.max),
+      jest.fn(),
+    );
+
+    expect(ordersToProductsCreateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ quantity: quantityBounds.max }),
+      }),
+    );
+  });
+
   /**
    * BDD Scenario: a different product is unaffected by an occupied cart.
    *
@@ -385,11 +399,19 @@ describe("Given: a subject adding a product it may already hold", () => {
   });
 });
 
-it.each([0, -1, 1.5, 1001])("refuses quantity %s before cart writes", async (quantity) => {
-  jest.clearAllMocks();
-  const { service } = createService();
-  authorizationMock.mockReturnValue("token");
-  verifyMock.mockResolvedValue({ subject: { id: "subject-1" } });
-  await expect(new Handler(service).execute(createContext("product", quantity) as any, jest.fn())).rejects.toThrow("Quantity");
-  expect(orderCreateMock).not.toHaveBeenCalled();
-});
+it.each([0, -1, 1.5, quantityBounds.max + 1])(
+  "refuses quantity %s before cart writes",
+  async (quantity) => {
+    jest.clearAllMocks();
+    const { service } = createService();
+    authorizationMock.mockReturnValue("token");
+    verifyMock.mockResolvedValue({ subject: { id: "subject-1" } });
+    await expect(
+      new Handler(service).execute(
+        createContext("product", quantity) as any,
+        jest.fn(),
+      ),
+    ).rejects.toThrow("Quantity");
+    expect(orderCreateMock).not.toHaveBeenCalled();
+  },
+);

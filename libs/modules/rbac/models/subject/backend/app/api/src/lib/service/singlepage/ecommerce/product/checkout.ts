@@ -1,6 +1,6 @@
-import { ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds } from "@sps/shared-utils";
 import type { Service as SubjectService } from "../../index";
 import {
+  ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds,
   INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
@@ -49,8 +49,14 @@ export class Service {
         "Validation error. Subject, Product and data are required",
       );
     const quantity = data.quantity ?? 1;
-    if (!Number.isInteger(quantity) || quantity < quantityBounds.min || quantity > quantityBounds.max) {
-      throw new Error(`Validation error. Quantity must be an integer between ${quantityBounds.min} and ${quantityBounds.max}`);
+    if (
+      !Number.isInteger(quantity) ||
+      quantity < quantityBounds.min ||
+      quantity > quantityBounds.max
+    ) {
+      throw new Error(
+        `Validation error. Quantity must be an integer between ${quantityBounds.min} and ${quantityBounds.max}`,
+      );
     }
 
     const product = await this.service.ecommerceModule.product.findById({

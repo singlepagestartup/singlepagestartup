@@ -70,7 +70,7 @@ export * from "./ai-chat-attachments";
 export * from "./file-preview";
 export * from "./ai-context";
 
-export { INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG, ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS } from "./ecommerce";
+export { INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG } from "./ecommerce";
 
 export * from "./agent";
 
