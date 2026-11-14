@@ -2,64 +2,104 @@
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
   "targetDefaults": {
     "eslint:lint": {
-      "executor": "@nx/eslint:lint",
+      "executor": "nx:run-commands",
       "cache": true,
-      "inputs": ["{projectRoot}/**/*"],
+      "inputs": [
+        "{projectRoot}/**/*"
+      ],
       "options": {
-        "eslintConfig": "eslint.config.mjs",
-        "quiet": false
+        "command": "eslint {projectRoot}"
       }
     },
     "tsc:build": {
       "executor": "@nx/js:tsc",
-      "outputs": ["{options.outputPath}"],
-      "dependsOn": ["^tsc:build"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "dependsOn": [
+        "^tsc:build"
+      ],
       "cache": true,
       "options": {
         "outputPath": "dist/tsc/{projectRoot}",
         "main": "{projectRoot}/src/index.ts",
         "tsConfig": "{projectRoot}/tsconfig.json",
-        "assets": ["{projectRoot}/*.md"],
+        "assets": [
+          "{projectRoot}/*.md"
+        ],
         "transformers": [
           {
-            "name": "typescript-transform-paths/nx-transformer"
+            "name": "typescript-transform-paths/plugins/nx"
           }
         ]
       }
     },
     "tsc:lib": {
       "executor": "@nx/js:tsc",
-      "outputs": ["{options.outputPath}"],
-      "dependsOn": ["^tsc:lib"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "dependsOn": [
+        "^tsc:lib"
+      ],
       "options": {
         "outputPath": "dist/{projectRoot}",
         "main": "{projectRoot}/src/index.ts",
         "tsConfig": "{projectRoot}/tsconfig.lib.json",
-        "assets": ["{projectRoot}/*.md"],
+        "assets": [
+          "{projectRoot}/*.md"
+        ],
         "transformers": []
       }
     },
     "@nx/js:tsc": {
       "cache": true,
-      "dependsOn": ["^build"],
-      "inputs": ["production", "^production"]
+      "dependsOn": [
+        "^build"
+      ],
+      "inputs": [
+        "production",
+        "^production"
+      ]
     },
     "jest:test": {
-      "executor": "@nx/jest:jest",
-      "outputs": ["{projectRoot}/coverage"],
-      "inputs": ["{projectRoot}"],
+      "executor": "nx:run-commands",
+      "outputs": [
+        "{projectRoot}/coverage"
+      ],
+      "inputs": [
+        "{projectRoot}/**/*",
+        "^default"
+      ],
       "options": {
-        "jestConfig": "{projectRoot}/jest.config.ts",
-        "passWithNoTests": true
+        "command": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config {projectRoot}/jest.config.ts --passWithNoTests --maxWorkers=2",
+        "env": {
+          "TS_NODE_COMPILER_OPTIONS": "{\"moduleResolution\":\"node16\",\"module\":\"Node16\",\"customConditions\":null}"
+        }
       }
     }
   },
   "namedInputs": {
-    "default": ["{projectRoot}/**/*"],
+    "default": [
+      "{projectRoot}/**/*"
+    ],
     "production": [],
     "sharedGlobals": []
   },
   "generators": {},
-  "plugins": [],
-  "analytics": false
+  "plugins": [
+    {
+      "plugin": "@nx/jest/plugin",
+      "options": {
+        "targetName": "jest:test"
+      },
+      "include": [
+        "libs/modules/knowledge/**/*"
+      ]
+    }
+  ],
+  "analytics": false,
+  "affected": {
+    "legacy": true
+  }
 }

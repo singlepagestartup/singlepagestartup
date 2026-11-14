@@ -1,7 +1,7 @@
 "use client";
 
 import { KnowledgeSource, KnowledgeSourceDraft } from "../types";
-import { Component as KnowledgeModuleSourceChatSidebarDetail } from "@sps/knowledge/models/source/frontend/component/src/lib/singlepage/chat-sidebar-detail";
+import { Component as KnowledgeModuleSource } from "@sps/knowledge/models/source/frontend/component";
 import {
   Dialog,
   DialogContent,
@@ -49,9 +49,10 @@ export function KnowledgeSourceDialog(props: KnowledgeSourceDialogProps) {
           </DialogDescription>
         </DialogHeader>
         {props.document ? (
-          <KnowledgeModuleSourceChatSidebarDetail
+          <KnowledgeModuleSource
             isServer={false}
             variant="chat-sidebar-detail"
+            dataSource="props"
             data={props.document}
             language={props.language}
             draft={props.draft}

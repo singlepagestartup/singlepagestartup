@@ -42,7 +42,9 @@ jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
     }
 
     if (props.variant === "ecommerce-module-order-list-checkout-default") {
-      return <div data-testid="checkout-panel" />;
+      return (
+        <div data-testid="checkout-panel" data-source={props.dataSource} />
+      );
     }
 
     return <div data-testid={props.variant} />;
@@ -89,7 +91,7 @@ describe("Given: me ecommerce cart widget", () => {
 
     expect(screen.queryByTestId("cart-icon")).not.toBeNull();
     expect(screen.queryByText("3")).not.toBeNull();
-    expect(screen.queryByTestId("checkout-panel")).not.toBeNull();
+    expect(screen.getByTestId("checkout-panel").dataset.source).toBe("props");
   });
 
   it("When: auth subject exists and quantity is zero Then: quantity badge is hidden", () => {

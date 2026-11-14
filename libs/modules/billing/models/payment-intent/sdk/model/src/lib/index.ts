@@ -27,6 +27,13 @@ export const statuses = [
   "failed",
   "canceled",
 ];
+export function isConfirmedInvoice(
+  intent: { status: string },
+  invoice: { status: string } | null | undefined,
+): boolean {
+  return intent.status === "succeeded" && invoice?.status === "paid";
+}
+
 export const query = {};
 export const options = {
   next: {

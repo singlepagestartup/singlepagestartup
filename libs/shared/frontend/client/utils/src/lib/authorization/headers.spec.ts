@@ -1,9 +1,10 @@
 /**
  * BDD Suite: authorization headers.
  *
- * Given: suite fixtures and test doubles are prepared for deterministic behavior.
- * When: a scenario action from this suite is executed.
- * Then: assertions verify expected observable behavior and contracts.
+ * Given: the browser keeps its session JWT in the rbac.subject.jwt cookie.
+ * When: request headers are built from document.cookie.
+ * Then: the JWT becomes a bearer Authorization header and no other cookie,
+ *       including an rbac.secret-key cookie, becomes a credential header.
  */
 
 import { util as headers } from "./headers";
@@ -13,7 +14,34 @@ describe("authorization headers", () => {
     delete (global as any).document;
   });
 
-  it("extracts jwt and secret key from cookies", () => {
+  /**
+   * BDD Scenario: the session cookie becomes the bearer header.
+   *
+   * Given: document.cookie holds rbac.subject.jwt among other cookies.
+   * When: headers are built.
+   * Then: only Authorization: Bearer <jwt> is returned.
+   */
+  it("extracts the jwt from cookies as a bearer header", () => {
+    Object.defineProperty(global, "document", {
+      value: {
+        cookie: "foo=bar; rbac.subject.jwt=test-jwt-token",
+      },
+      configurable: true,
+    });
+
+    expect(headers()).toEqual({
+      Authorization: "Bearer test-jwt-token",
+    });
+  });
+
+  /**
+   * BDD Scenario: the operator secret never leaves the browser as a header.
+   *
+   * Given: document.cookie also holds an rbac.secret-key cookie.
+   * When: headers are built.
+   * Then: X-RBAC-SECRET-KEY is not sent; the secret belongs to services.
+   */
+  it("does not forward an rbac.secret-key cookie as X-RBAC-SECRET-KEY", () => {
     Object.defineProperty(global, "document", {
       value: {
         cookie:
@@ -24,10 +52,16 @@ describe("authorization headers", () => {
 
     expect(headers()).toEqual({
       Authorization: "Bearer test-jwt-token",
-      "X-RBAC-SECRET-KEY": "test-secret",
     });
   });
 
+  /**
+   * BDD Scenario: no session cookie.
+   *
+   * Given: document.cookie holds no authentication cookie.
+   * When: headers are built.
+   * Then: an empty object is returned.
+   */
   it("returns empty object when cookies do not contain auth keys", () => {
     Object.defineProperty(global, "document", {
       value: {

@@ -27,8 +27,8 @@ export function action(props: IProps) {
       topics: ["rbac.identities", "rbac.subjects-to-identities"],
       ...props.reactQueryOptions?.meta,
     },
-    queryFn: async () =>
-      (await api.identityFind({
+    queryFn: async () => {
+      const identities = await api.identityFind({
         ...props,
         host: clientHost,
         options: {
@@ -36,6 +36,9 @@ export function action(props: IProps) {
           next: { ...props.options?.next },
           headers: saturateHeaders(props.options?.headers),
         },
-      })) ?? [],
+      });
+
+      return identities ?? [];
+    },
   });
 }

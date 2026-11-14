@@ -41,7 +41,12 @@ export class Handler {
       const contentType = c.req.header("content-type");
       const headers = c.req.header();
       const isMultipart = contentType?.includes("multipart/form-data");
-      const rawBody = isMultipart ? "" : await c.req.text();
+      let rawBody;
+      if (isMultipart) {
+        rawBody = "";
+      } else {
+        rawBody = await c.req.text();
+      }
 
       logger.debug("🚀 ~ providerWebhook ~ headers:", headers);
       logger.debug("🚀 ~ providerWebhook ~ c.req.text:", rawBody);

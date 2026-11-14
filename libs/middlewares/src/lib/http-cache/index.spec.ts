@@ -34,6 +34,7 @@ it("guards cache management before any cached response can answer it", async () 
     headers: { "X-RBAC-SECRET-KEY": "operator-test-key" },
   });
   expect(await response.json()).toEqual({ message: "Cache cleared" });
+  expect(response.headers.get("Cache-Control")).toBe("no-store");
   expect(clearCache).toHaveBeenCalledTimes(1);
   expect(readCache).not.toHaveBeenCalled();
 });

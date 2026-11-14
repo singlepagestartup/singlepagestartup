@@ -71,7 +71,7 @@ segments:
         context: Предприниматель знакомится с фреймворком и хочет понять, что получится для его бизнеса.
         message: Начните с описания своей задачи. Готовые модули станут основой разработки.
         cta: Создать продукт
-        destination: /ai-chat/rbac/subjects/authentication/registration
+        destination: /rbac/subject/authentication/email-and-password/registration
       - id: hosted-chat
         channel: AI Chat
         context: После полезного опыта в чате человек с идеей своего продукта может заинтересоваться его основой.

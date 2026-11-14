@@ -203,7 +203,7 @@ export class Service {
     this.options();
     const identity = await this.ownIdentity(props.subjectId, props.identityId);
     if (
-      !z.string().uuid().safeParse(props.data.challengeId).success ||
+      !z.uuid().safeParse(props.data.challengeId).success ||
       !/^\d{6}$/.test(props.data.code)
     )
       throw new Error(

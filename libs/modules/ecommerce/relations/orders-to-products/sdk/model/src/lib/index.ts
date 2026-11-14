@@ -31,6 +31,8 @@ export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/ecommerce/orders-to-products";
 export const variants = ["default", "hidden"] as const;
+/** For browser cart controls, use the API value in cartDetails.maxLineQuantity. */
+export { ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds } from "@sps/shared-utils";
 export const query = {};
 export const options = {
   next: {

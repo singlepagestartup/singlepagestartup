@@ -1,8 +1,7 @@
 import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import * as jwt from "hono/jwt";
-import { authorization, getHttpErrorType } from "@sps/backend-utils";
+import { authorization, getHttpErrorType, verifyJwt } from "@sps/backend-utils";
 import { Service } from "../../../../service";
 import { withConsistencySnapshot } from "@sps/shared-backend-api";
 import type {
@@ -40,7 +39,9 @@ export class Handler {
         throw new Error("Validation error. No token");
       }
 
-      const decoded = await jwt.verify(token, RBAC_JWT_SECRET, "HS256");
+      const decoded = await verifyJwt(token, RBAC_JWT_SECRET, {
+        type: "access",
+      });
 
       if (decoded?.["subject"]?.["id"] !== id) {
         throw new Error("Validation error. Only order owner can read orders");
@@ -157,17 +158,18 @@ export class Handler {
           const receiptIds = (links || []).map(
             (link) => link.fileStorageModuleFileId,
           );
-          const files = receiptIds.length
-            ? await this.service.fileStorageModule.file.find({
-                params: {
-                  filters: {
-                    and: [
-                      { column: "id", method: "inArray", value: receiptIds },
-                    ],
-                  },
+          let files;
+          if (receiptIds.length) {
+            files = await this.service.fileStorageModule.file.find({
+              params: {
+                filters: {
+                  and: [{ column: "id", method: "inArray", value: receiptIds }],
                 },
-              })
-            : [];
+              },
+            });
+          } else {
+            files = [];
+          }
           const receipts = receiptIds.flatMap((id) => {
             const file = files?.find((file) => file.id === id);
             return file ? [file] : [];

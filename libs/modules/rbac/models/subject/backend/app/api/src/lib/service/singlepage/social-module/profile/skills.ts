@@ -108,22 +108,25 @@ export class Service {
       },
     });
     const skillIds = links.map((link) => link.skillId);
-    const skills: ISkill[] = skillIds.length
-      ? await this.socialModule.skill.find({
-          params: {
-            filters: {
-              and: [
-                { column: "id", method: "inArray", value: skillIds },
-                {
-                  column: "slug",
-                  method: "inArray",
-                  value: [ownedSlug, definition.skillSlug],
-                },
-              ],
-            },
+    let skills: ISkill[];
+    if (skillIds.length) {
+      skills = await this.socialModule.skill.find({
+        params: {
+          filters: {
+            and: [
+              { column: "id", method: "inArray", value: skillIds },
+              {
+                column: "slug",
+                method: "inArray",
+                value: [ownedSlug, definition.skillSlug],
+              },
+            ],
           },
-        })
-      : [];
+        },
+      });
+    } else {
+      skills = [];
+    }
     // Legacy profiles remain usable until their shared links are migrated.
     const skill =
       skills.find((record) => record.slug === ownedSlug) ||

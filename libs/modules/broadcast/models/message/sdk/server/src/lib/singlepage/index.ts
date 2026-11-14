@@ -7,15 +7,8 @@ import {
   options,
 } from "@sps/broadcast/models/message/sdk/model";
 
-import { action as delivery, type IProps as IDeliveryProps } from "./delivery";
-import type {
-  IDeliveryCommand,
-  IDeliveryResult,
-} from "@sps/broadcast/models/message/sdk/model";
-
-export type IProps = { IDeliveryProps: IDeliveryProps<IDeliveryCommand> };
-
-export type IResult = { IDeliveryResult: IDeliveryResult<IDeliveryCommand> };
+export type IProps = {};
+export type IResult = {};
 
 export const api = {
   ...factory<IModel>({
@@ -24,5 +17,4 @@ export const api = {
     options,
     params: query,
   }),
-  delivery,
 };

@@ -368,12 +368,14 @@ export async function platformExampleCli(argv = process.argv.slice(2)) {
         manifest.apiOrigin !== origin.origin
       )
         throw Error("Manifest origin or schema mismatch");
-      const result =
-        mode === "apply"
-          ? await applyPlatformExamples(manifest, adapter, persist)
-          : mode === "rollback"
-            ? await rollbackPlatformExamples(manifest, adapter, persist)
-            : await verifyPlatformExamples(manifest, adapter);
+      let result;
+      if (mode === "apply") {
+        result = await applyPlatformExamples(manifest, adapter, persist);
+      } else if (mode === "rollback") {
+        result = await rollbackPlatformExamples(manifest, adapter, persist);
+      } else {
+        result = await verifyPlatformExamples(manifest, adapter);
+      }
       console.log(JSON.stringify({ mode, status: manifest.status, result }));
     }
   } finally {

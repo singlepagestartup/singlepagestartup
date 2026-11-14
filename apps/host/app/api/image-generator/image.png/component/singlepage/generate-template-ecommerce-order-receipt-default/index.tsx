@@ -1,7 +1,6 @@
 import React from "react";
 import { IComponentPropsExtended } from "./interface";
 import { internationalization } from "@sps/shared-configuration";
-import { NEXT_PUBLIC_API_SERVICE_URL } from "@sps/shared-utils";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -12,11 +11,7 @@ export function Component(props: IComponentPropsExtended) {
       }}
     >
       <img
-        src={
-          NEXT_PUBLIC_API_SERVICE_URL +
-          "/public" +
-          props.data.fileStorage.file.file
-        }
+        src={props.backgroundImage}
         style={{
           position: "absolute",
           objectFit: "contain",

@@ -23,6 +23,7 @@ export const options = {
 export const variants = [
   "hidden",
   "navigation-inline",
+  "internationalization",
   "navigation",
   "actions-full",
   "actions",

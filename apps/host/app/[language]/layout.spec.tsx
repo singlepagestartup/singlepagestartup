@@ -4,6 +4,8 @@
  * When: RootLayout prepares the HTML shell.
  * Then: the HTML document uses the requested language.
  */
+import { useCookies } from "react-cookie";
+import { renderToStaticMarkup } from "react-dom/server";
 import RootLayout from "./layout";
 
 jest.mock("../../styles/fonts.css", () => ({}));
@@ -48,4 +50,18 @@ it("allows the separately routed admin without a Page record", async () => {
     params: Promise.resolve({ language: "en" }),
   });
   expect(result.props.lang).toBe("en");
+});
+
+it("provides the cookie context used by signed-in widgets", async () => {
+  function SubjectWidget() {
+    useCookies(["rbac.subject.jwt"]);
+    return <span>Account navigation</span>;
+  }
+
+  const result = await RootLayout({
+    children: <SubjectWidget />,
+    params: Promise.resolve({ language: "ru" }),
+  });
+
+  expect(renderToStaticMarkup(result)).toContain("Account navigation");
 });

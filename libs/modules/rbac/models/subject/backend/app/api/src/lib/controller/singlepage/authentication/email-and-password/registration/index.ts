@@ -1,9 +1,6 @@
-import { RBAC_JWT_SECRET } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import * as jwt from "hono/jwt";
 import { Service } from "../../../../../service";
-import { setCookie } from "hono/cookie";
 import { authorization, getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
@@ -15,10 +12,6 @@ export class Handler {
 
   async execute(c: Context, next: any): Promise<Response> {
     try {
-      if (!RBAC_JWT_SECRET) {
-        throw new Error("Configuration error. RBAC_JWT_SECRET not set");
-      }
-
       const body = await c.req.parseBody();
 
       if (typeof body["data"] !== "string") {
@@ -27,32 +20,23 @@ export class Handler {
 
       const data = JSON.parse(body["data"]);
       const token = authorization(c);
-      const session = token
-        ? await jwt.verify(token, RBAC_JWT_SECRET, "HS256")
-        : undefined;
-      const subjectId = session?.subject?.["id"];
+      let subjectId: string | undefined;
+      if (token) {
+        const subject = await this.service.me({ token });
+        if (!subject) {
+          throw new Error("Authentication error. Subject not found");
+        }
+        subjectId = subject.id;
+      }
 
       const entity = await this.service.authenticationLoginAndPassowrd({
         data,
         type: "registration",
         roles: data.roles || [],
-        subjectId: typeof subjectId === "string" ? subjectId : undefined,
+        subjectId,
       });
 
-      const decodedJwt = await jwt.verify(entity.jwt, RBAC_JWT_SECRET, "HS256");
-
-      if (!decodedJwt.exp) {
-        throw new Error("Validation error. Invalid token issued");
-      }
-
-      setCookie(c, "rbac.subject.jwt", entity.jwt, {
-        path: "/",
-        secure: true,
-        httpOnly: false,
-        expires: new Date(decodedJwt.exp * 1000),
-        sameSite: "Strict",
-      });
-
+      c.header("Cache-Control", "no-store");
       return c.json(
         {
           data: entity,

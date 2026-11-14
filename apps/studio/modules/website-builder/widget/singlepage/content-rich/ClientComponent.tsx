@@ -20,7 +20,8 @@ export function Component(props?: IComponentProps) {
       immediatelyRender: false,
       extensions: [
         StarterKit.configure({
-          history: false,
+          undoRedo: false,
+          link: false,
         }),
         Link.configure({
           autolink: false,

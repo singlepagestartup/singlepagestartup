@@ -10,6 +10,7 @@ export const variant =
 
 export interface IComponentProps {
   variant: typeof variant;
+  backgroundImage?: string;
   data: {
     ecommerce: {
       order: IEcommerceOrder & {

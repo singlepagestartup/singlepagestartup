@@ -156,7 +156,7 @@ export function SubjectMeProfileSettings({
               className="underline"
               href={
                 showTokens
-                  ? "/ai-chat/rbac/subjects/authentication/select-method"
+                  ? "/rbac/subject/authentication/email-and-password"
                   : "/?path=/story/modules-host-models-page-singlepage-rbac-module-subject-me-authentication-select-method--default"
               }
               target={showTokens ? undefined : "_top"}

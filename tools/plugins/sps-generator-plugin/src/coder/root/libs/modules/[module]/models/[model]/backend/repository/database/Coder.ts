@@ -140,10 +140,6 @@ export class Coder {
                       command:
                         "drizzle-kit generate --config=./src/lib/config.ts",
                     },
-                    {
-                      command:
-                        "npx nx run @sps/providers-db:repository-generate",
-                    },
                   ],
                 },
               }

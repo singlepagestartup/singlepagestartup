@@ -603,9 +603,12 @@ export class TelegramAssistantConversation {
       (editor.kind === "knowledge-create" ||
         editor.kind === "knowledge-edit") &&
       editor.field === "content";
-    const editorFile = isKnowledgeContent
-      ? await transport.resolveEditorFile(message)
-      : undefined;
+    let editorFile;
+    if (isKnowledgeContent) {
+      editorFile = await transport.resolveEditorFile(message);
+    } else {
+      editorFile = undefined;
+    }
     let value = message.description?.trim();
 
     if (editorFile) {
@@ -1015,21 +1018,26 @@ export class TelegramAssistantConversation {
       const available = state.page === "skills-available";
       const page =
         state.pagination[available ? "availableSkills" : "skills"] || 0;
-      const skills = available
-        ? await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdSkillAvailable(
-            {
-              ...this.requestProps(context, state),
-              limit: pageSize + 1,
-              offset: page * pageSize,
-            },
-          )
-        : await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdSkillFind(
+      let skills;
+      if (available) {
+        skills =
+          await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdSkillAvailable(
             {
               ...this.requestProps(context, state),
               limit: pageSize + 1,
               offset: page * pageSize,
             },
           );
+      } else {
+        skills =
+          await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdSkillFind(
+            {
+              ...this.requestProps(context, state),
+              limit: pageSize + 1,
+              offset: page * pageSize,
+            },
+          );
+      }
       skills.slice(0, pageSize).forEach((skill) => {
         rows.push([
           button(
@@ -1065,9 +1073,16 @@ export class TelegramAssistantConversation {
     }
 
     if (state.page === "skill") {
-      const skill = state.selectedEntityId
-        ? await this.requireLinkedSkill(context, state, state.selectedEntityId)
-        : undefined;
+      let skill;
+      if (state.selectedEntityId) {
+        skill = await this.requireLinkedSkill(
+          context,
+          state,
+          state.selectedEntityId,
+        );
+      } else {
+        skill = undefined;
+      }
       if (state.confirmation?.kind === "skill-unlink") {
         rows.push([
           button("Да, отвязать", "confirm"),
@@ -1117,13 +1132,16 @@ export class TelegramAssistantConversation {
       };
     }
 
-    const document = state.selectedEntityId
-      ? await this.requireKnowledgeSource(
-          context,
-          state,
-          state.selectedEntityId,
-        )
-      : undefined;
+    let document;
+    if (state.selectedEntityId) {
+      document = await this.requireKnowledgeSource(
+        context,
+        state,
+        state.selectedEntityId,
+      );
+    } else {
+      document = undefined;
+    }
     if (state.confirmation?.kind === "knowledge-delete") {
       rows.push([button("Да, удалить", "confirm"), button("Отмена", "cancel")]);
     } else if (document) {
@@ -1203,8 +1221,10 @@ export class TelegramAssistantConversation {
     context: ITelegramAssistantConversationContext,
     token?: string,
   ) {
+    const profiles = await this.manageableProfiles(context);
+
     return this.resolveEntityToken(
-      await this.manageableProfiles(context),
+      profiles,
       token,
       "Профиль больше недоступен для управления в этом чате.",
     );

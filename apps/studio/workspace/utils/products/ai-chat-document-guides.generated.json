@@ -72,7 +72,7 @@
     },
     "guideSource": "apps/studio/workspace/products/singlepage/ai-chat/content/document-guides.md",
     "templateSource": ".agents/templates/products.yaml",
-    "templateSha256": "c6b697b3f52cb7e86fb94794b3230a98c93f9091cc1f2e665a0211a678b929bb"
+    "templateSha256": "b8d6e1107a0395e4a64a7d8b434ff9315aa776d15cbaf0ddd942f9faf870a8b0"
   },
   "product": {
     "title": "Описание продукта",

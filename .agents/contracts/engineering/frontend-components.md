@@ -247,8 +247,10 @@ association that `default` cannot express. A page's appearance or business
 scenario alone is insufficient. When changing existing composition, preserve
 content and record IDs through a resumable SDK data flow, fork shared content
 before giving scenarios independent variants, and verify repeat/rollback and
-both client/server rendering. Never repair the graph through seed snapshots or
-runtime global variant/slug searches.
+both client/server rendering. Export the intended saved records and relations
+with the standard dump so the standard seed reproduces the composition on
+other installations. Each model or relation controls participation through
+its repository configuration. Render the exact saved links at request time.
 
 ## Resolved Page parameters
 

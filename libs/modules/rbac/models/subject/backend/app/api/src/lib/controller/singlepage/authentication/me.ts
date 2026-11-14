@@ -1,7 +1,6 @@
-import { RBAC_JWT_SECRET } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { authorization, getHttpErrorType, verifyJwt } from "@sps/backend-utils";
+import { authorization, getHttpErrorType } from "@sps/backend-utils";
 import { Service } from "../../../service";
 
 export class Handler {
@@ -26,21 +25,19 @@ export class Handler {
         );
       }
 
-      if (!RBAC_JWT_SECRET) {
-        throw new Error("Configuration error. JWT secret not provided");
+      const subject = await this.service.me({ token });
+
+      if (!subject) {
+        return c.json({ data: null });
       }
 
-      const decoded = await verifyJwt(token, RBAC_JWT_SECRET);
-
-      if (!decoded.subject?.["id"]) {
-        throw new Error("Validation error. No subject provided in the token");
-      }
+      const authenticatedSubject = await this.service.authenticationMe({
+        subjectId: subject.id,
+      });
+      const data = authenticatedSubject ?? null;
 
       return c.json({
-        data:
-          (await this.service.authenticationMe({
-            subjectId: decoded.subject["id"] as string,
-          })) ?? null,
+        data,
       });
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);

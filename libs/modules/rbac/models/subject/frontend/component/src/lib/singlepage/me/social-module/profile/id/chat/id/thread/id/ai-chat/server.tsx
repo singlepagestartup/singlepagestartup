@@ -6,13 +6,16 @@ import type { IComponentProps } from "./interface";
 
 export default async function Server(props: IComponentProps) {
   try {
-    const threads = props.project
-      ? await subjectApi.socialModuleChatFindByIdThreadFind({
-          id: props.data.id,
-          socialModuleChatId: props.project.chat.id,
-          options: props.apiProps?.options,
-        })
-      : [];
+    let threads;
+    if (props.project) {
+      threads = await subjectApi.socialModuleChatFindByIdThreadFind({
+        id: props.data.id,
+        socialModuleChatId: props.project.chat.id,
+        options: props.apiProps?.options,
+      });
+    } else {
+      threads = [];
+    }
     return (
       <ChildComponent {...props} threads={threads} threadsLoading={false} />
     );

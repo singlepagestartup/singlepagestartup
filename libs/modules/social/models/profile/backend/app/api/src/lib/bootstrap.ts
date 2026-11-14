@@ -1,4 +1,4 @@
-import { Container, ContainerModule, interfaces } from "inversify";
+import { Container, ContainerModule } from "inversify";
 import {
   DI,
   ExceptionFilter,
@@ -30,7 +30,7 @@ import { app as profilesToProductsApp } from "@sps/social/relations/profiles-to-
 import { app as profilesToFilesApp } from "@sps/social/relations/profiles-to-file-storage-module-files/backend/app/api";
 import type { IDependencies as IAuthorDependencies } from "./service/singlepage/authors";
 
-const bindings = new ContainerModule((bind: interfaces.Bind) => {
+const bindings = new ContainerModule(({ bind }) => {
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
   bind<App>(DI.IApp).to(App);
   bind<Controller>(DI.IController).to(Controller);
@@ -90,9 +90,7 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
 });
 
 function createContainer() {
-  const container = new Container({
-    skipBaseClassChecks: true,
-  });
+  const container = new Container();
   container.load(bindings);
   return container;
 }

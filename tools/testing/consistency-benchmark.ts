@@ -94,9 +94,13 @@ const summary = Object.fromEntries(
 const status = await fetch(current + "/api/consistency/status", {
   headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY },
 });
-const diagnostics = status.ok
-  ? ((await status.json()) as { data: Record<string, unknown> }).data
-  : { status: status.status };
+let diagnostics;
+if (status.ok) {
+  diagnostics = ((await status.json()) as { data: Record<string, unknown> })
+    .data;
+} else {
+  diagnostics = { status: status.status };
+}
 const report = {
   sampledAt: new Date().toISOString(),
   scenario:

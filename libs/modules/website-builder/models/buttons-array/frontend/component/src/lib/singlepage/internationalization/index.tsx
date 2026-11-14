@@ -1,0 +1,21 @@
+import {
+  Provider,
+  api as clientApi,
+} from "@sps/website-builder/models/buttons-array/sdk/client";
+import { api as serverApi } from "@sps/website-builder/models/buttons-array/sdk/server";
+import type { IModel } from "@sps/website-builder/models/buttons-array/sdk/model";
+import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/default";
+import { Component as ChildComponent } from "./Component";
+import type { IComponentProps, variant } from "./interface";
+
+export function Component(props: IComponentProps) {
+  return (
+    <ParentComponent<IModel, typeof variant, IComponentProps>
+      Component={ChildComponent}
+      Provider={Provider}
+      clientApi={clientApi}
+      serverApi={serverApi}
+      {...props}
+    />
+  );
+}

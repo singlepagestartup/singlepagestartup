@@ -119,6 +119,11 @@ export function checkModuleDependencies(root) {
       });
       continue;
     }
+    const model = relative(root, file)
+      .replaceAll("\\", "/")
+      .match(/^libs\/modules\/([^/]+)\/models\/([^/]+)\/backend\/app\//);
+    // Incoming relations are composed by their left-hand owner, never by the
+    // lower model. Relation schema FKs to both endpoints remain valid.
     // Stop at another domain boundary: that module's own edges are checked separately.
     const pending = [{ path: file, trace: [] }];
     const seen = new Set([file]);
@@ -134,6 +139,25 @@ export function checkModuleDependencies(root) {
             specifier: edge.specifier,
           },
         ];
+        if (model && targetOwner === sourceOwner) {
+          const relation = relative(root, edge.target)
+            .replaceAll("\\", "/")
+            .match(/^libs\/modules\/[^/]+\/relations\/([^/]+)-to-([^/]+)\//);
+          const plural = model[2].endsWith("y")
+            ? model[2].slice(0, -1) + "ies"
+            : model[2] + "s";
+          const names = new Set([model[2], plural]);
+          if (relation && names.has(relation[2]) && !names.has(relation[1])) {
+            violations.push({
+              file: relative(root, file),
+              line: trace[0].line,
+              source: `${sourceOwner}.${model[2]}`,
+              target: `${sourceOwner}.${relation[1]}-to-${relation[2]}`,
+              reason: "Lower model imports its incoming relation",
+              trace,
+            });
+          }
+        }
         if (targetOwner && targetOwner !== sourceOwner) {
           if (
             !ranks.has(targetOwner) ||

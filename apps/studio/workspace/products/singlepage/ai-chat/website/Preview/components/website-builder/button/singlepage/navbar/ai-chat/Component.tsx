@@ -159,12 +159,12 @@ const buttons: Record<string, IHeaderButton> = {
   "ai-chat-help": { title: "Помощь", url: "/ai-chat/help", icon: "question" },
   "ai-chat-login": {
     title: "Войти",
-    url: "/ai-chat/rbac/subjects/authentication/select-method",
+    url: "/rbac/subject/authentication/email-and-password",
     icon: "user-circle",
   },
   "ai-chat-register": {
     title: "Создать аккаунт",
-    url: "/ai-chat/rbac/subjects/authentication/registration",
+    url: "/rbac/subject/authentication/email-and-password/registration",
     icon: "user-circle",
   },
 };

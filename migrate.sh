@@ -23,6 +23,7 @@ npx nx run @sps/rbac:repository-migrate
 npx nx run @sps/host:repository-migrate
 npx nx run @sps/agent:repository-migrate
 npx nx run @sps/analytic:repository-migrate
+npx nx run @sps/providers-db:consistency-finalize
 
 if [ "${1:-}" = "seed" ]; then
   npx nx run api:db:seed

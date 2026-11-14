@@ -11,7 +11,11 @@ import { type Control, useController } from "react-hook-form";
 import { z } from "zod";
 
 export interface IAllowedMcpServersFieldProps {
-  control: Control<z.infer<typeof insertSchema>>;
+  control: Control<
+    z.input<typeof insertSchema>,
+    unknown,
+    z.output<typeof insertSchema>
+  >;
   storedIdentifiers?: readonly string[];
 }
 

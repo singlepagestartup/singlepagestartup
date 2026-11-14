@@ -1,4 +1,7 @@
-import { ISeedResult } from "@sps/shared-backend-api";
+import {
+  clearHttpResponseCache,
+  type ISeedResult,
+} from "@sps/shared-backend-api";
 import { app as agentApp } from "@sps/agent/backend/app/api";
 import { app as billingApp } from "@sps/billing/backend/app/api";
 import { app as blogApp } from "@sps/blog/backend/app/api";
@@ -18,7 +21,7 @@ import { logger, requestHostRevalidation } from "@sps/backend-utils";
 import { exit } from "process";
 import {
   API_SERVICE_URL,
-  HOST_SERVICE_URL,
+  MIDDLEWARE_HTTP_CACHE,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
 
@@ -364,21 +367,17 @@ import {
     seeds.push(startupRelationsSeeds);
   }
 
+  if (MIDDLEWARE_HTTP_CACHE === "true") {
+    try {
+      await clearHttpResponseCache();
+    } catch {
+      logger.warn({ event: "api.seed.http-cache.clear-failed" });
+    }
+  }
+
   if (!RBAC_SECRET_KEY) {
     return;
   }
-
-  await fetch(API_SERVICE_URL + "/api/http-cache/clear", {
-    headers: {
-      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-    },
-  })
-    .then((res) => {
-      return res.json();
-    })
-    .catch((error) => {
-      logger.error("🚀 ~ /api/http-cache/clear error:", error);
-    });
 
   await requestHostRevalidation({ path: "/", type: "layout" }).catch(
     (error) => {

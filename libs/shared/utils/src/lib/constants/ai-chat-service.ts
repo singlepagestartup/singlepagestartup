@@ -237,8 +237,8 @@ export const AI_CHAT_AUTHENTICATION_CONTENT = {
   aside: {
     title: "Trouble signing in?",
     paragraphs: [
-      "Forgot your password? [Contact support](/ai-chat/help). If sign-in fails, check your details and try again.",
-      "No account yet? [Create one](/ai-chat/create-account).",
+      "Forgot your password? [Request a reset link](/rbac/subject/authentication/email-and-password/forgot-password).",
+      "No account yet? [Create one](/rbac/subject/authentication/email-and-password/registration).",
     ],
   },
 };

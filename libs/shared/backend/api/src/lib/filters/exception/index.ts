@@ -6,6 +6,7 @@ import { IFilter } from "./interface";
 export { type IFilter } from "./interface";
 import {
   getHttpErrorType,
+  RateLimitError,
   logger,
   requestDiagnostics,
   rbacSecretMatches,
@@ -29,6 +30,16 @@ export class Filter implements IFilter {
       detail === category + "." || detail.startsWith(category + ". ")
         ? detail
         : `${category}. ${detail}`;
+    // Admission refusals are logged once per counter window by the limiter.
+    // Do not inspect request bodies or enqueue Telegram work for every 429.
+    if (error instanceof RateLimitError) {
+      c.header("Cache-Control", "no-store");
+      if (status === 503) {
+        c.header("Retry-After", "1");
+      }
+      return c.json({ requestId, status, error: message }, status);
+    }
+
     const event = await errorEvent(c, error, status, category);
     logger.errorEvent(event);
     reportToTelegram(event);

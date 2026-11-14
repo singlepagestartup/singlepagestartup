@@ -36,6 +36,7 @@
   "id": "a9b2427c-ebd4-4072-b707-ac108bfebb48",
   "title": "AI Chat — new-thread",
   "url": "/ai-chat/social/profiles/[social.profiles.id]/chats/[social.chats.id]/threads/create",
+  "slug": "page-719b3dbafea41832640f5d379f2c3b979c29460e8ae600740eb1794f6b24add3",
   "description": "Description",
   "createdAt": "2026-10-11T02:03:56.095Z",
   "updatedAt": "2026-10-30T22:25:07.490Z",

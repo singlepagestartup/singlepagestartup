@@ -77,15 +77,18 @@ export class Service {
       },
     });
     const threadIds = [...new Set(threadLinks.map((link) => link.threadId))];
-    const threads = threadIds.length
-      ? await this.service.socialModule.thread.find({
-          params: {
-            filters: {
-              and: [{ column: "id", method: "inArray", value: threadIds }],
-            },
+    let threads;
+    if (threadIds.length) {
+      threads = await this.service.socialModule.thread.find({
+        params: {
+          filters: {
+            and: [{ column: "id", method: "inArray", value: threadIds }],
           },
-        })
-      : [];
+        },
+      });
+    } else {
+      threads = [];
+    }
     const projects: IAIChatProject[] = [];
     for (const chat of chats) {
       const requesterProfileId = ownMemberships.find(

@@ -1,3 +1,4 @@
+import type { IComponentProps as IParentComponentProps } from "@sps/shared-frontend-components/singlepage/default/interface";
 export { type IModel } from "@sps/social/models/profile/sdk/model";
 import { IModel } from "@sps/social/models/profile/sdk/model";
 import { IModel as IKnowledgeModuleSource } from "@sps/knowledge/models/source/sdk/model";
@@ -6,8 +7,10 @@ import { ISpsComponentBase } from "@sps/ui-adapter";
 
 export const variant = "chat-profile-sidebar" as const;
 
-export interface IClientComponentProps
-  extends Pick<ISpsComponentBase, "className" | "isServer"> {
+export interface IClientComponentProps extends Pick<
+  ISpsComponentBase,
+  "className" | "isServer"
+> {
   data: IModel;
   language: string;
   skills?: ISocialModuleSkill[];
@@ -26,9 +29,8 @@ export interface IClientComponentProps
 }
 
 export interface IComponentProps
-  extends ISpsComponentBase,
-    IClientComponentProps {
-  variant: typeof variant;
-}
+  extends
+    IParentComponentProps<IModel, typeof variant>,
+    IClientComponentProps {}
 
 export interface IComponentPropsExtended extends IComponentProps {}

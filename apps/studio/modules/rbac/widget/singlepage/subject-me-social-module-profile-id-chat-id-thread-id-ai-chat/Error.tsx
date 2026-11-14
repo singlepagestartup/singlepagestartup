@@ -6,7 +6,7 @@ export function Component({
   state,
   embedded = false,
   message,
-  signInHref = "/ai-chat/rbac/subjects/authentication/select-method",
+  signInHref = "/rbac/subject/authentication/email-and-password",
   projectsHref = "/ai-chat/projects",
   onRetry,
 }: IWorkspaceNoticeProps) {

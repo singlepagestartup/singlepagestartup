@@ -196,6 +196,7 @@ interface IOpenRouterAttachmentContextHandler {
   ): string[];
   resolveOpenRouterMessageContext(props: {
     fileStorageFiles: Array<{
+      adminTitle?: string;
       extension?: string | null;
       file: string;
       mimeType?: string | null;
@@ -1915,6 +1916,7 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       }),
     ]);
     const openRouter = {
+      generate: jest.fn(),
       decide: jest.fn(async () => ({
         answers: { chunk_0: { type: "noul", noul: 0.01 } },
         billing: null,
@@ -2306,6 +2308,7 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       }),
     ]);
     const openRouter = {
+      generate: jest.fn(),
       decide: jest.fn(async () => ({
         error: { message: "Invalid Decisions response" },
         billing: null,
@@ -2497,7 +2500,10 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       selectedBy: "priority",
     });
     expect(openRouter.generate).not.toHaveBeenCalled();
-    expect(decide.mock.calls[0][0].model).toBe("typesafe/jev-1.13");
+    expect(decide).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ model: "typesafe/jev-1.13" }),
+    );
   });
 });
 

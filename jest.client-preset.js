@@ -8,7 +8,6 @@ module.exports = {
       "ts-jest",
       {
         tsconfig: "<rootDir>/tsconfig.spec.json",
-        isolatedModules: true,
         diagnostics: false,
       },
     ],

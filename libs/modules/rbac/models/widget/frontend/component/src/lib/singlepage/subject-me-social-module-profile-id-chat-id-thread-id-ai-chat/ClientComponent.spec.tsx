@@ -39,20 +39,15 @@ jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
   },
 }));
 jest.mock("@sps/social/models/profile/frontend/component", () => ({
-  Component: (props: any) => <section>{props.children}</section>,
+  Component: (props: any) => (
+    <section data-profile-source={props.dataSource}>{props.children}</section>
+  ),
 }));
 jest.mock("@sps/social/models/chat/frontend/component", () => ({
-  Component: (props: any) => <section>{props.children}</section>,
+  Component: (props: any) => (
+    <section data-chat-source={props.dataSource}>{props.children}</section>
+  ),
 }));
-jest.mock("@sps/rbac/models/subject/sdk/server", () => ({ api: {} }));
-jest.mock("@sps/rbac/models/subject/sdk/model", () => ({
-  ...jest.requireActual("@sps/rbac/models/subject/sdk/model"),
-  clientHost: "",
-}));
-jest.mock("@sps/shared-frontend-client-utils", () => ({
-  saturateHeaders: () => ({}),
-}));
-
 import { Component as Thread } from "./ClientComponent";
 import { Component as ThreadCreate } from "../subject-me-social-module-profile-id-chat-id-thread-create-ai-chat/ClientComponent";
 import { Component as ProjectSettings } from "../subject-me-social-module-profile-id-settings-ai-chat/ClientComponent";
@@ -85,10 +80,23 @@ it.each(entryPoints)(
     );
     expect(html).not.toContain("Sign in to your workspace");
     expect(mockAuthenticationProps.mock.calls[0][0]).toMatchObject({
-      unauthenticatedRedirectHref: "/ru/ai-chat/sign-in",
+      unauthenticatedRedirectHref:
+        "/ru/rbac/subject/authentication/email-and-password",
     });
   },
 );
+
+it.each([Thread, ThreadCreate, ProjectSettings])(
+  "renders the private profile supplied by the Subject project reader",
+  (View) => {
+    const html = renderToStaticMarkup(<View {...(props as any)} />);
+    expect(html).toContain('data-profile-source="props"');
+  },
+);
+it("renders the chat from the same Subject response", () => {
+  const html = renderToStaticMarkup(<Thread {...(props as any)} />);
+  expect(html).toContain('data-chat-source="props"');
+});
 
 it.each(entryPoints)(
   "does not request private projects for a guest",

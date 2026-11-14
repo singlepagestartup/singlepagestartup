@@ -1,0 +1,9 @@
+{
+  "id": "6a94a3cc-228f-43bf-8320-da287128640e",
+  "createdAt": "2026-11-10T20:43:00.645Z",
+  "updatedAt": "2026-11-10T20:43:00.645Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/website-builder/features-to-buttons-arrays/:uuid"
+}
