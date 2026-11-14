@@ -16,6 +16,7 @@ beforeEach(() => mockSubject.mockClear());
 it("uses the same account reader and menu as AI Chat within the client subtree", () => {
   renderToStaticMarkup(
     <Component
+      isServer={false}
       variant="me-account"
       language="en"
       authenticated
@@ -31,12 +32,23 @@ it("uses the same account reader and menu as AI Chat within the client subtree",
   );
 });
 it.each([
-  ["en", "Sign in", "/en/ai-chat/sign-in"],
-  ["ru", "Войти", "/ru/ai-chat/sign-in"],
-  [undefined, "Войти", "/ru/ai-chat/sign-in"],
+  ["en", "Sign in", "/en/rbac/subject/authentication/email-and-password"],
+  ["ru", "Войти", "/ru/rbac/subject/authentication/email-and-password"],
+  [
+    "/external.example",
+    "Войти",
+    "/ru/rbac/subject/authentication/email-and-password",
+  ],
+  [
+    "\\external.example",
+    "Войти",
+    "/ru/rbac/subject/authentication/email-and-password",
+  ],
+  ["", "Войти", "/ru/rbac/subject/authentication/email-and-password"],
 ])("localizes guest navigation for %s", (language, label, href) => {
   const html = renderToStaticMarkup(
     <Component
+      isServer={false}
       variant="me-account"
       language={language}
       authenticated={false}

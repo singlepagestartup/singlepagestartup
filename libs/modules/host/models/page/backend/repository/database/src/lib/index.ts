@@ -5,6 +5,7 @@ import { Table } from "./schema";
 
 export const insertSchema = createInsertSchema(Table, {
   metadata: entityMetadataSchema.optional(),
+  slug: (schema) => schema.trim().min(1),
 });
 export const selectSchema = createSelectSchema(Table, {
   metadata: entityMetadataSchema,

@@ -11,6 +11,7 @@ const transformResponseItemMock = jest.fn();
 const prepareFormDataToSendMock = jest.fn();
 
 jest.mock("@sps/shared-utils", () => ({
+  consistencyRequestOptions: (_url: string, options: RequestInit) => options,
   responsePipe: (...args: unknown[]) => responsePipeMock(...args),
   transformResponseItem: (...args: unknown[]) =>
     transformResponseItemMock(...args),

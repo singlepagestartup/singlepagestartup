@@ -1,3 +1,4 @@
+import { z } from "zod";
 import "reflect-metadata";
 import { injectable } from "inversify";
 import { Table } from "@sps/billing/models/payment-intent/backend/repository/database";
@@ -118,37 +119,19 @@ export class Service {
         JsonData: { ...props.metadata, invoiceId: invoice.id },
       };
 
-      const checkout: {
-        Model: {
-          Id: string;
-          Number: number;
-          Amount: number;
-          Currency: (typeof checkoutData)["Currency"];
-          CurrencyCode: number;
-          Email: (typeof checkoutData)["Email"];
-          Phone: (typeof checkoutData)["Phone"];
-          Description: (typeof checkoutData)["Description"];
-          RequireConfirmation: (typeof checkoutData)["RequireConfirmation"];
-          Url: string;
-          CultureName: (typeof checkoutData)["CultureName"];
-          CreatedDate: string;
-          CreatedDateIso: string;
-          PaymentDate: null;
-          PaymentDateIso: null;
-          StatusCode: number;
-          Status: string;
-          InternalId: number;
-        };
-        Success: boolean;
-        Message: null;
-      } = await fetch("https://api.tiptoppay.kz/orders/create", {
+      const response = await fetch("https://api.tiptoppay.kz/orders/create", {
         method: "POST",
         body: JSON.stringify(checkoutData),
         headers: {
           "Content-Type": "application/json",
           Authorization: `Basic ${Buffer.from(`${TIPTOPPAY_PUBLIC_ID}:${TIPTOPPAY_API_SECRET}`).toString("base64")}`,
         },
-      }).then((res) => res.json());
+      });
+      const checkout = z
+        .object({
+          Model: z.object({ InternalId: z.number(), Url: z.httpUrl() }),
+        })
+        .parse(await response.json());
 
       logger.debug("🚀 ~ checkout:", checkout);
 

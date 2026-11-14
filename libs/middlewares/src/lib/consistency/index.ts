@@ -63,23 +63,28 @@ export class Middleware {
         )
       )
         return c.json({ error: "Validation error. Invalid refs" }, 400);
+      const data = await this.runtime.check(
+        body.refs,
+        c.req.header("Authorization") || "",
+      );
+
       return c.json({
-        data: await this.runtime.check(
-          body.refs,
-          c.req.header("Authorization") || "",
-        ),
+        data,
       });
     });
     app.get(
       "/api/consistency/status",
       new OperatorSecretMiddleware().init(),
-      async (c) =>
-        c.json({
+      async (c) => {
+        const diagnostics = await this.runtime.store.diagnostics();
+
+        return c.json({
           data: {
-            ...(await this.runtime.store.diagnostics()),
+            ...diagnostics,
             ...this.runtime.metrics(),
           },
-        }),
+        });
+      },
     );
     const { upgradeWebSocket } = createBunWebSocket<ServerWebSocket>();
     app.get(

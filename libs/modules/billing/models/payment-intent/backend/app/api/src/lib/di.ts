@@ -1,3 +1,5 @@
+import type { Service as InvoiceService } from "@sps/billing/models/invoice/backend/app/api/src/lib/service";
+
 export interface IReadService {
   find: (props?: any) => Promise<any>;
   findById: (props: { id: string }) => Promise<any>;
@@ -5,7 +7,7 @@ export interface IReadService {
 
 export interface IBillingModule {
   currency: IReadService;
-  invoice: IReadService;
+  invoice: IReadService & Pick<InvoiceService, "failOpenInvoice">;
   paymentIntentsToInvoices: IReadService;
 }
 

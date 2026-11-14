@@ -88,3 +88,26 @@ test("rejects upward import-equals and literal require calls", () => {
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+test("rejects incoming relation imports in a lower model, including through a neutral barrel", () => {
+  const root = fixture({
+    "libs/modules/knowledge/models/source/backend/app/index.ts":
+      "import type { link } from '@shared/link';",
+    "libs/shared/link/index.ts":
+      "export { link } from '@sps/knowledge/relations/topics-to-sources';",
+    "libs/modules/knowledge/relations/topics-to-sources/index.ts":
+      "export const link = true;",
+    "libs/modules/knowledge/models/topic/backend/app/index.ts":
+      "import { link } from '@sps/knowledge/relations/topics-to-sources';",
+    "libs/modules/knowledge/relations/topics-to-sources/schema.ts":
+      "import { source } from '@sps/knowledge';",
+  });
+  try {
+    const result = checkModuleDependencies(root);
+    assert.equal(result.violations.length, 1);
+    assert.equal(result.violations[0].source, "knowledge.source");
+    assert.equal(result.violations[0].trace.length, 2);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});

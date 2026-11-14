@@ -14,6 +14,7 @@ export function createMcpServer() {
     },
     {
       instructions: SPS_MCP_SERVER_INSTRUCTIONS,
+      maxToolInputElements: 10_000,
     },
   );
 

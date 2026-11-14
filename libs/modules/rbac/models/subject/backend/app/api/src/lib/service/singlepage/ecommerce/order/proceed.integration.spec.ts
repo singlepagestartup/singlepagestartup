@@ -112,6 +112,7 @@ describe("paid order atomic fulfillment", () => {
         ordersToBillingModulePaymentIntents: [
           {
             billingModulePaymentIntent: {
+              status: "succeeded",
               type: "one_off",
               paymentIntentsToInvoices: await Promise.all(
                 activeInvoices.map(async (id) => ({
@@ -188,7 +189,7 @@ describe("paid order atomic fulfillment", () => {
     ];
     const versions = async () => {
       const rows =
-        await getPostgresClient()`SELECT key,version::text AS version FROM sps_consistency.generation WHERE key = ANY(${getPostgresClient().array(keys)}::text[])`;
+        await getPostgresClient()`SELECT key,version::text AS version FROM sps_consistency.generation WHERE key = ANY(${keys}::text[])`;
       return keys.map(
         (key) => rows.find((row) => row.key === key)?.version ?? "0",
       );

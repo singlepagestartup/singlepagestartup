@@ -55,14 +55,19 @@ function publish(relative: string, data: string | Buffer) {
     writeFileSync(destination, data);
   }
 }
+function isProjectHref(href: string) {
+  return (
+    href === "/" ||
+    /^\/framework(?:[?#]|$)/.test(href) ||
+    /^\/rbac\/subject\/authentication\/email-and-password(?:[/?#]|$)/.test(href)
+  );
+}
 function servicePaths(value: unknown): unknown {
   if (typeof value === "string") {
-    if (value === "/" || /^\/framework(?:[?#]|$)/.test(value)) return value;
+    if (isProjectHref(value)) return value;
     return value
       .replace(/\]\((\/(?!ai-chat\/)[^)]*)\)/g, (match, href: string) =>
-        href === "/" || /^\/framework(?:[?#]|$)/.test(href)
-          ? match
-          : `](/ai-chat${href})`,
+        isProjectHref(href) ? match : `](/ai-chat${href})`,
       )
       .replace(/^\/(?!ai-chat\/|workspace-assets\/)(.*)$/, "/ai-chat/$1");
   }

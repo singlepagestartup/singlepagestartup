@@ -3,10 +3,8 @@
 import { IComponentPropsExtended } from "./interface";
 import { getLocalizedPlainText } from "../plain-text";
 import { cn } from "@sps/shared-frontend-client-utils";
-import { Component as FileStorageModuleFile } from "@sps/file-storage/models/file/frontend/component";
 import type { IProfileAvatar } from "@sps/social/models/profile/sdk/model";
 import type { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
-import { Component as SocialModuleProfilesToFileStorageModuleFiles } from "@sps/social/relations/profiles-to-file-storage-module-files/frontend/component";
 import { NEXT_PUBLIC_API_SERVICE_URL } from "@sps/shared-utils";
 import Image from "next/image";
 import type { ReactNode } from "react";
@@ -85,108 +83,12 @@ export function Component(props: IComponentPropsExtended) {
   const fallback = props.fallback ?? (
     <FallbackAvatar className={props.className} displayName={displayName} />
   );
-  if (props.file !== undefined)
-    return (
-      <FileAvatar
-        file={props.file}
-        displayName={displayName}
-        className={props.className}
-        fallback={fallback}
-      />
-    );
-
-  if (props.data.id === "unknown") {
-    return fallback;
-  }
-
   return (
-    <SocialModuleProfilesToFileStorageModuleFiles
-      isServer={false}
-      variant="find"
-      apiProps={{
-        params: {
-          filters: {
-            and: [
-              {
-                column: "profileId",
-                method: "eq",
-                value: props.data.id,
-              },
-            ],
-          },
-          orderBy: {
-            and: [
-              {
-                column: "orderIndex",
-                method: "desc",
-              },
-              {
-                column: "updatedAt",
-                method: "desc",
-              },
-              {
-                column: "createdAt",
-                method: "desc",
-              },
-            ],
-          },
-          limit: 1,
-        },
-      }}
-    >
-      {({ data: profileFiles }) => {
-        const profileFile = profileFiles?.[0];
-
-        if (!profileFile?.fileStorageModuleFileId) {
-          return fallback;
-        }
-
-        return (
-          <FileStorageModuleFile
-            isServer={false}
-            variant="find"
-            apiProps={{
-              params: {
-                filters: {
-                  and: [
-                    {
-                      column: "id",
-                      method: "eq",
-                      value: profileFile.fileStorageModuleFileId,
-                    },
-                  ],
-                },
-                limit: 1,
-              },
-            }}
-          >
-            {({ data: files }) => {
-              const file = files?.[0];
-
-              if (!file || !isImageFile(file)) {
-                return fallback;
-              }
-
-              return (
-                <div
-                  className={cn(
-                    "relative h-8 w-8 shrink-0 overflow-hidden rounded-full bg-slate-100",
-                    props.className,
-                  )}
-                >
-                  <Image
-                    src={getFileSrc(file)}
-                    alt={displayName}
-                    fill
-                    className="object-cover"
-                    sizes="40px"
-                  />
-                </div>
-              );
-            }}
-          </FileStorageModuleFile>
-        );
-      }}
-    </SocialModuleProfilesToFileStorageModuleFiles>
+    <FileAvatar
+      file={props.file}
+      displayName={displayName}
+      className={props.className}
+      fallback={fallback}
+    />
   );
 }

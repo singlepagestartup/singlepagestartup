@@ -268,7 +268,7 @@ async function fixture() {
         },
       })
     )[0];
-  const makePaidOrder = async (product: any) => {
+  const makePaidOrder = async (product: any, intentStatus = "succeeded") => {
     const order = await services.order.create({
       data: { type: "history", status: "paid" },
     });
@@ -285,7 +285,7 @@ async function fixture() {
       data: { orderId: order.id, billingModuleCurrencyId: currency.id },
     });
     const intent = await services.intent.create({
-      data: { amount: 0, status: "succeeded", type: "one_off" },
+      data: { amount: 0, status: intentStatus, type: "one_off" },
     });
     await services.orderIntents.create({
       data: { orderId: order.id, billingModulePaymentIntentId: intent.id },
@@ -316,6 +316,49 @@ async function fixture() {
     makePaidOrder,
   };
 }
+
+it("waits for the linked payment intent to succeed before granting a paid pack", async () => {
+  const f = await fixture();
+  const pack = await f.services.product.create({
+    data: { slug: `issue357-pack-${randomUUID()}`, type: "one_off" },
+  });
+  f.products.set(pack.id, {
+    ...pack,
+    productsToAttributes: [
+      f.attribute("topup", { number: "100" }, [f.tokenProjection]),
+    ],
+  });
+  const order = await f.makePaidOrder(pack, "processing");
+  const [link] = await f.services.orderIntents.find({
+    params: {
+      filters: { and: [{ column: "orderId", method: "eq", value: order.id }] },
+    },
+  });
+  const proceed = () =>
+    f.proceed.fromPaidStatus({
+      order,
+      extendedOrder: order,
+      subjectToEcommerceModuleOrder: {
+        subjectId: f.subject.id,
+        ecommerceModuleOrderId: order.id,
+      },
+    });
+  const before = Number((await f.balance())?.amount ?? 0);
+  await proceed();
+  expect((await f.services.order.findById({ id: order.id })).status).toBe(
+    "paid",
+  );
+  expect(Number((await f.balance())?.amount ?? 0)).toBe(before);
+  await f.services.intent.update({
+    id: link.billingModulePaymentIntentId,
+    data: { status: "succeeded" },
+  });
+  await Promise.all([proceed(), proceed()]);
+  expect((await f.services.order.findById({ id: order.id })).status).toBe(
+    "approving",
+  );
+  expect(Number((await f.balance()).amount)).toBe(before + 100);
+});
 
 it("serializes Free and ordinary delivery, survives unknown response and rejects a duplicate legacy gift", async () => {
   const f = await fixture();

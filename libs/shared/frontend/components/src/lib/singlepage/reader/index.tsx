@@ -8,7 +8,12 @@ import { Component as Skeleton } from "../default/Skeleton";
 export function Component<P extends ISpsComponentBase>(
   props: IComponentProps<P>,
 ) {
-  const { Component: Reader, Provider, componentProps } = props;
+  const { Component: Reader, componentProps } = props;
+  if (props.dataSource === "props") {
+    return <Reader {...componentProps} />;
+  }
+
+  const { Provider } = props;
   const skeleton = componentProps.skeleton ?? <Skeleton />;
 
   return (

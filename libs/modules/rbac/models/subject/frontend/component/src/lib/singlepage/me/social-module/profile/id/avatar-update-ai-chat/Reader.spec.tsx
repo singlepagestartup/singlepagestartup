@@ -82,7 +82,9 @@ it("streams the avatar Skeleton during its scoped server read and strips binding
         stream.pipe(output);
         ready();
       },
-      onError: (error) => output.destroy(error as Error),
+      onError: (error) => {
+        output.destroy(error as Error);
+      },
     },
   );
   await shellReady;

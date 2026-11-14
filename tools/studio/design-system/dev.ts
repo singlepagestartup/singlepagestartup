@@ -146,9 +146,11 @@ async function readStaticFile(
         return null;
       }
 
+      const content = await readFile(indexPath);
+
       return {
         filePath: indexPath,
-        content: await readFile(indexPath),
+        content,
       };
     }
 
@@ -156,9 +158,11 @@ async function readStaticFile(
       return null;
     }
 
+    const content = await readFile(absolutePath);
+
     return {
       filePath: absolutePath,
-      content: await readFile(absolutePath),
+      content,
     };
   } catch {
     return null;

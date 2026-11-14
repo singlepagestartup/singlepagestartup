@@ -12,7 +12,7 @@ export interface IArticleCreateResult {
   article: IArticle;
   author: IAuthorSummary;
 }
-const uuid = z.string().uuid();
+const uuid = z.uuid();
 function invalid(message: string): never {
   throw new Error(`Validation error. ${message}`);
 }

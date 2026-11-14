@@ -1,0 +1,9 @@
+{
+  "id": "dc1a9839-0549-42f5-b55b-94642bc01795",
+  "createdAt": "2026-11-10T20:43:00.645Z",
+  "updatedAt": "2026-11-10T20:43:00.645Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/website-builder/slides-to-buttons-arrays"
+}

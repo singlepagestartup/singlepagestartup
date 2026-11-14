@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { injectable } from "inversify";
+import { injectFromBase, injectable } from "inversify";
 import {
   CRUDService,
   type FindByIdServiceProps,
@@ -22,6 +22,7 @@ export interface FindByUrlServiceProps extends Partial<FindByIdServiceProps> {
 }
 
 @injectable()
+@injectFromBase()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   routing = new RoutingService();
   readonly seo = new SeoService({
@@ -34,7 +35,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   protected async routePages() {
-    return (await this.find()).sort(
+    const records = await this.find();
+
+    return records.sort(
       (a, b) =>
         (a.url.match(/\[/g)?.length || 0) - (b.url.match(/\[/g)?.length || 0) ||
         a.id.localeCompare(b.id),

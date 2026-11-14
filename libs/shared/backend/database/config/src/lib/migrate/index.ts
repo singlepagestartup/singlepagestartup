@@ -1,9 +1,14 @@
 import { DATABASE_OPTIONS } from "@sps/shared-utils";
 import { Config as DrizzleConfig, defineConfig } from "drizzle-kit";
-import { getDrizzle } from "../postgres";
+import { getDrizzle, getPostgresClient } from "../postgres";
+import {
+  assertCaptureTable,
+  readCaptureResource,
+  reconcileCapture,
+} from "./capture";
 import { migrate as drizzleMigrator } from "drizzle-orm/postgres-js/migrator";
-import { sql, getTableColumns } from "drizzle-orm";
-import { getTableConfig, PgDialect } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { PgDialect } from "drizzle-orm/pg-core";
 import { readMigrationFiles } from "drizzle-orm/migrator";
 import { logger } from "@sps/backend-utils";
 
@@ -29,6 +34,9 @@ export class Config {
   }
 
   init() {
+    if (this.schema.Table) {
+      assertCaptureTable(this.schemaPaths[0], this.schema.Table);
+    }
     this.drizzleConfig = defineConfig({
       schema: this.schemaPaths,
       out: this.out,
@@ -95,30 +103,24 @@ export class Config {
         );
       }
 
-      // The infrastructure migration runs first. Reinstall after table changes,
-      // including new/startup Tables; no cache-specific relation map is needed.
-      const [installed] = await db.execute(
-        sql`SELECT to_regprocedure('sps_consistency.install_capture(text,text,jsonb)') IS NOT NULL AS ready`,
+      const afterMigrations = await db.execute(
+        sql`SELECT * FROM drizzle.${sql.raw(this.migrationsTable)} ORDER BY created_at DESC, id DESC`,
       );
-      if (installed?.ready && this.schema.Table) {
-        const table = this.schema.Table;
-        const config = getTableConfig(table);
-        const resource = `${config.schema || "public"}.${config.name}`;
-        const columns = Object.fromEntries(
-          Object.entries(
-            getTableColumns(table) as Record<string, { name: string }>,
-          ).map(([key, column]) => [key, column.name]),
+
+      const schemaChanged = beforeMigrations.length !== afterMigrations.length;
+      const [capture] = await db.execute(
+        sql`SELECT to_regprocedure('sps_consistency.install_capture(text,text,jsonb)') IS NOT NULL AS installed`,
+      );
+      if (this.schema.Table && capture?.installed) {
+        const entry = await readCaptureResource(
+          this.schemaPaths[0],
+          this.schema.Table,
         );
-        await db.execute(
-          sql`SELECT sps_consistency.install_capture(${resource},coalesce((SELECT topic FROM sps_consistency.resource WHERE resource=${resource}),${resource}),${JSON.stringify(columns)}::jsonb)`,
-        );
+        const revision = String(afterMigrations[0]?.hash ?? "");
+        await reconcileCapture(getPostgresClient(), entry, revision);
       }
 
-      const afterMigrations = await db.execute(
-        sql`SELECT * FROM drizzle.${sql.raw(this.migrationsTable)}`,
-      );
-
-      if (beforeMigrations.length !== afterMigrations.length) {
+      if (schemaChanged) {
         logger.info("NEW_MIGRATIONS=true");
       }
 

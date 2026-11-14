@@ -7,6 +7,7 @@ import {
   transformResponseItem,
 } from "@sps/shared-utils";
 import QueryString from "qs";
+import { saturateHeaders } from "@sps/shared-frontend-client-utils";
 import { IModel as IChat } from "@sps/social/models/chat/sdk/model";
 
 export interface IFindByIdChatFindProps {
@@ -35,6 +36,7 @@ export async function action(
     credentials: "include",
     method: "GET",
     ...options,
+    headers: saturateHeaders(options?.headers),
     next: {
       ...options?.next,
     },

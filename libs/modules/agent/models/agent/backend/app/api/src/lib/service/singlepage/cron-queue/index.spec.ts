@@ -3,7 +3,7 @@ import { CronQueue } from "./index";
 import {
   DeliveryQueue,
   type IDeliveryState,
-} from "@sps/broadcast/models/message/backend/app/api/src/lib/service/singlepage/delivery-queue";
+} from "@sps/broadcast/models/channel/backend/app/api/src/lib/service/singlepage/delivery-queue";
 
 jest.mock("@sps/shared-utils", () => ({
   ...jest.requireActual("@sps/shared-utils"),
@@ -35,6 +35,7 @@ function fixture(agentIds = ["second", "first"]) {
       ).length,
     publishDelivery: async ({ key, previous }: any) =>
       states.set(key, {
+        payload: "{}",
         key,
         receipt: null,
         startedAt: null,
@@ -50,6 +51,7 @@ function fixture(agentIds = ["second", "first"]) {
       leaseUntil: Date,
     ) => {
       states.set(key, {
+        payload: "{}",
         key,
         receipt,
         claimedAt,
@@ -60,7 +62,7 @@ function fixture(agentIds = ["second", "first"]) {
       return { id: key, payload: "{}" };
     },
   } as any);
-  const runs = new AgentRun({ broadcastModule: { message: { queue } } as any });
+  const runs = new AgentRun({ broadcastModule: { channel: { queue } } as any });
   jest.spyOn(runs, "findChannel").mockResolvedValue({ id: "channel" });
   const markers = jest.spyOn(runs, "findMarkers").mockResolvedValue([]);
   const dispatch = jest
@@ -89,6 +91,7 @@ it("fills a freed slot in the same tick and defers agents due in the next minute
   ]);
   const tickStart = new Date("2026-11-05T12:00:00Z");
   states.set("later", {
+    payload: "{}",
     key: "later",
     receipt: "already-finished",
     claimedAt: tickStart,
@@ -154,6 +157,7 @@ it("recovers an abandoned claim and fences the old run id", async () => {
   const f = fixture();
   const stale = new Date("2026-11-05T11:50:00Z");
   f.states.set("first", {
+    payload: "{}",
     key: "first",
     receipt: "lost",
     claimedAt: stale,
@@ -163,6 +167,7 @@ it("recovers an abandoned claim and fences the old run id", async () => {
   });
   const fresh = new Date("2026-11-05T12:00:00Z");
   f.states.set("second", {
+    payload: "{}",
     key: "second",
     receipt: "done",
     claimedAt: fresh,

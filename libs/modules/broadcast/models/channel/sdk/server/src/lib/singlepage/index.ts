@@ -1,5 +1,8 @@
+import { action as delivery, type IProps as IDeliveryProps } from "./delivery";
 import { factory } from "@sps/shared-frontend-server-api";
 import {
+  type IDeliveryCommand,
+  type IDeliveryResult,
   serverHost,
   route,
   IModel,
@@ -28,6 +31,7 @@ import {
 } from "./message-delete";
 
 export type IProps = {
+  IDeliveryProps: IDeliveryProps<IDeliveryCommand>;
   IPushMessageProps: IPushMessageProps;
   IMessageFindProps: IMessageFindProps;
   IMessageCreateProps: IMessageCreateProps;
@@ -35,6 +39,7 @@ export type IProps = {
 };
 
 export type IResult = {
+  IDeliveryResult: IDeliveryResult<IDeliveryCommand>;
   IPushMessageResult: IPushMessageResult;
   IMessageFindResult: IMessageFindResult;
   IMessageCreateResult: IMessageCreateResult;
@@ -42,6 +47,7 @@ export type IResult = {
 };
 
 export const api = {
+  delivery,
   ...factory<IModel>({
     route,
     host: serverHost,

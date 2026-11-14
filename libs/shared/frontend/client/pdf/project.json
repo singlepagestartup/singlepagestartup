@@ -17,10 +17,7 @@
     },
     "eslint:lint": {
       "options": {
-        "lintFilePatterns": [
-          "libs/shared/frontend/client/pdf/**/*.{ts,tsx}"
-        ],
-        "eslintConfig": "libs/shared/frontend/client/pdf/eslint.config.mjs"
+        "command": "eslint --config libs/shared/frontend/client/pdf/eslint.config.mjs libs/shared/frontend/client/pdf"
       }
     },
     "jest:test": {

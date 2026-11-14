@@ -100,7 +100,8 @@ export const pageContent = {
   },
   labels: {
     register: "Создать аккаунт AI Chat",
-    "register-href": "/ai-chat/rbac/subjects/authentication/registration",
+    "register-href":
+      "/rbac/subject/authentication/email-and-password/registration",
     "pro-eyebrow": "Ежемесячный тариф",
     currency: "Валюта оплаты",
     "per-month": "в месяц",

@@ -21,7 +21,7 @@ import {
   RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
-import * as jwt from "hono/jwt";
+import { signJwt } from "@sps/backend-utils";
 
 const AUDIO_EXTENSIONS = [
   "aac",
@@ -415,14 +415,11 @@ export class AudioTranscriptionService {
       );
     }
 
-    const nowInSeconds = Math.floor(Date.now() / 1000);
-    const token = await jwt.sign(
+    const token = await signJwt(
       {
-        exp: nowInSeconds + RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
-        iat: nowInSeconds,
-        subject: {
-          id: props.rbacModuleSubjectId,
-        },
+        subjectId: props.rbacModuleSubjectId,
+        type: "access",
+        lifetimeInSeconds: RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
       },
       RBAC_JWT_SECRET,
     );
@@ -669,7 +666,9 @@ export class AudioTranscriptionService {
           ? responseType
           : transcriptionFile.type;
 
-      return new File([await response.arrayBuffer()], transcriptionFile.name, {
+      const audioBytes = await response.arrayBuffer();
+
+      return new File([audioBytes], transcriptionFile.name, {
         type,
       });
     }

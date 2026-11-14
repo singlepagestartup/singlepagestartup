@@ -33,4 +33,10 @@ fi
 RBAC_SECRET_KEY=$(get_env "$BASH_SOURCE" "RBAC_SECRET_KEY" "../api/.env")
 add_env "RBAC_SECRET_KEY" $RBAC_SECRET_KEY
 
+# Use the same rate-limit store as the API.
+for key in KV_PROVIDER KV_HOST KV_PORT KV_USERNAME KV_PASSWORD KV_REST_API_URL KV_REST_API_TOKEN; do
+    value=$(get_env "$BASH_SOURCE" "$key" "../api/.env")
+    add_env "$key" "$value"
+done
+
 chmod 600 .env

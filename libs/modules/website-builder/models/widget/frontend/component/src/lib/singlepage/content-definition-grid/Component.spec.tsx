@@ -1,6 +1,16 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import type { ComponentType } from "react";
 
+jest.mock("@sps/website-builder/models/feature/frontend/component", () => ({
+  Component: ({ children }: any) =>
+    children({
+      data: [
+        { id: "feature-first", variant: "step" },
+        { id: "feature-second", variant: "step" },
+      ],
+    }),
+}));
+
 interface IViewCase {
   variant: string;
   View: ComponentType<any>;
@@ -9,8 +19,18 @@ interface IViewCase {
 const mockFeatureQueries = jest.fn();
 const mockFeatureRows = jest.fn();
 const mockLinks = [
-  { id: "saved-second", widgetId: "saved-widget", orderIndex: 2 },
-  { id: "saved-first", widgetId: "saved-widget", orderIndex: 1 },
+  {
+    id: "saved-second",
+    widgetId: "saved-widget",
+    featureId: "feature-second",
+    orderIndex: 2,
+  },
+  {
+    id: "saved-first",
+    widgetId: "saved-widget",
+    featureId: "feature-first",
+    orderIndex: 1,
+  },
 ];
 
 jest.mock("@sps/shared-ui-shadcn", () => ({
@@ -25,7 +45,10 @@ jest.mock(
     Component: (props: any) => {
       if (props.variant === "find") {
         mockFeatureQueries(props.apiProps);
-        return props.children({ data: mockLinks });
+        const links = props.apiProps.params.orderBy
+          ? [...mockLinks].sort((a, b) => a.orderIndex - b.orderIndex)
+          : mockLinks;
+        return props.children({ data: links });
       }
       mockFeatureRows(props);
       return <article data-saved-feature={props.data.id} />;
@@ -97,13 +120,16 @@ describe.each(views)(
           html.indexOf("saved-second"),
         );
         expect(mockFeatureQueries).toHaveBeenCalledTimes(1);
-        expect(mockFeatureQueries).toHaveBeenCalledWith({
-          params: {
-            filters: {
-              and: [
-                { column: "widgetId", method: "eq", value: "saved-widget" },
-              ],
-            },
+        const params = mockFeatureQueries.mock.calls[0][0].params;
+        if (variant === "content-steps" || variant === "content-faq") {
+          expect(params.orderBy.and).toEqual([
+            { column: "orderIndex", method: "asc" },
+            { column: "id", method: "asc" },
+          ]);
+        }
+        expect(params).toMatchObject({
+          filters: {
+            and: [{ column: "widgetId", method: "eq", value: "saved-widget" }],
           },
         });
         expect(mockFeatureRows.mock.calls.map(([row]) => row.data.id)).toEqual([

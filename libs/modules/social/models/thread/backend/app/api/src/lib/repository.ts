@@ -1,11 +1,12 @@
 import "reflect-metadata";
-import { injectable } from "inversify";
+import { injectFromBase, injectable } from "inversify";
 import { DatabaseRepository } from "@sps/shared-backend-api";
 import { Table } from "@sps/social/models/thread/backend/repository/database";
 import type { IThreadMetadataNamespaceUpdate } from "@sps/social/models/thread/sdk/model";
 import { and, eq, sql } from "drizzle-orm";
 
 @injectable()
+@injectFromBase()
 export class Repository extends DatabaseRepository<typeof Table> {
   async updateMetadataNamespace(
     props: IThreadMetadataNamespaceUpdate & { id: string },

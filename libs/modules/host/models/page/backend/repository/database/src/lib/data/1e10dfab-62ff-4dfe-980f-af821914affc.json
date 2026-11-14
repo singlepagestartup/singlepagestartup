@@ -10,6 +10,7 @@
   "id": "1e10dfab-62ff-4dfe-980f-af821914affc",
   "title": "Framework private article demo",
   "url": "/framework/blog/articles/[blog.articles.slug]",
+  "slug": "page-c9690858acc9e332c77643d0cb3269a853720bcce95775ff0b95e0e24ecf6e87",
   "description": "Local audit fixture for public and subscriber content",
   "createdAt": "2026-10-22T20:30:17.228Z",
   "updatedAt": "2026-10-30T22:25:04.748Z",

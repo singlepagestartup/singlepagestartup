@@ -426,9 +426,11 @@ async function readStaticFile(
       if (!indexInfo.isFile()) {
         return null;
       }
+      const content = await readFile(indexPath);
+
       return {
         path: indexPath,
-        content: await readFile(indexPath),
+        content,
       };
     }
 
@@ -436,9 +438,11 @@ async function readStaticFile(
       return null;
     }
 
+    const content = await readFile(filePath);
+
     return {
       path: filePath,
-      content: await readFile(filePath),
+      content,
     };
   } catch {
     return null;

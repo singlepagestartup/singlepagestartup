@@ -1,5 +1,5 @@
 import type { IComponentPropsExtended } from "./interface";
-import { Component as ProfilesToFileStorageModuleFiles } from "@sps/social/relations/profiles-to-file-storage-module-files/frontend/component";
+import { Component as Profile } from "@sps/social/models/profile/frontend/component";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { getLocalizedPlainText } from "../plain-text";
 
@@ -37,36 +37,14 @@ export function Component(props: IComponentPropsExtended) {
         )}
       >
         {initials}
-        <ProfilesToFileStorageModuleFiles
+        <Profile
           isServer={props.isServer}
-          variant="find"
-          skeleton={null}
-          apiProps={{
-            params: {
-              filters: {
-                and: [
-                  { column: "profileId", method: "eq", value: props.data.id },
-                ],
-              },
-              orderBy: { and: [{ column: "orderIndex", method: "asc" }] },
-              limit: 1,
-            },
-          }}
-        >
-          {({ data }) =>
-            data?.map((link) => (
-              <ProfilesToFileStorageModuleFiles
-                key={link.id}
-                isServer={props.isServer}
-                variant="default"
-                dataSource="props"
-                data={link}
-                language={props.language}
-                className="absolute inset-0 [&_[data-model=file]]:size-full [&_img]:size-full [&_img]:object-cover"
-              />
-            ))
-          }
-        </ProfilesToFileStorageModuleFiles>
+          variant="chat-profile-avatar"
+          data={props.data}
+          language={props.language}
+          className="absolute inset-0 size-full"
+          fallback={<></>}
+        />
       </div>
       <div className="min-w-0">
         <p

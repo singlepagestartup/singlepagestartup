@@ -1,4 +1,4 @@
-import { Container, ContainerModule, interfaces } from "inversify";
+import { Container, ContainerModule } from "inversify";
 import {
   DI,
   ExceptionFilter,
@@ -13,27 +13,14 @@ import { PermissionDI } from "./di";
 import { Service as PermissionsToBillingModuleCurrenciesService } from "@sps/rbac/relations/permissions-to-billing-module-currencies/backend/app/api/src/lib/service/singlepage";
 import { Repository as PermissionsToBillingModuleCurrenciesRepository } from "@sps/rbac/relations/permissions-to-billing-module-currencies/backend/app/api/src/lib/repository";
 import { Configuration as PermissionsToBillingModuleCurrenciesConfiguration } from "@sps/rbac/relations/permissions-to-billing-module-currencies/backend/app/api/src/lib/configuration";
-import { Service as RolesToPermissionsService } from "@sps/rbac/relations/roles-to-permissions/backend/app/api/src/lib/service";
-import { Repository as RolesToPermissionsRepository } from "@sps/rbac/relations/roles-to-permissions/backend/app/api/src/lib/repository";
-import { Configuration as RolesToPermissionsConfiguration } from "@sps/rbac/relations/roles-to-permissions/backend/app/api/src/lib/configuration";
 
-const bindings = new ContainerModule((bind: interfaces.Bind) => {
+const bindings = new ContainerModule(({ bind }) => {
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
   bind<App>(DI.IApp).to(App);
   bind<Controller>(DI.IController).to(Controller);
   bind<Repository>(DI.IRepository).to(Repository);
   bind<Service>(DI.IService).to(Service);
   bind<Configuration>(DI.IConfiguration).to(Configuration);
-  bind<RolesToPermissionsService>(PermissionDI.IRolesToPermissionsService)
-    .toDynamicValue(
-      () =>
-        new RolesToPermissionsService(
-          new RolesToPermissionsRepository(
-            new RolesToPermissionsConfiguration(),
-          ),
-        ),
-    )
-    .inSingletonScope();
   bind<PermissionsToBillingModuleCurrenciesService>(
     PermissionDI.IPermissionsToBillingModuleCurrenciesService,
   )
@@ -49,9 +36,7 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
 });
 
 export async function bootstrap() {
-  const container = new Container({
-    skipBaseClassChecks: true,
-  });
+  const container = new Container();
   container.load(bindings);
   const app = container.get<App>(DI.IApp);
 

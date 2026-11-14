@@ -29,6 +29,31 @@ export const mockChatComponentState = {
   socialSkills: [] as any[],
 };
 
+jest.mock("@sps/social/models/skill/frontend/component", () => {
+  const views: Record<string, React.ComponentType<any>> = {
+    "chat-mention-option": jest.requireActual(
+      "@sps/social/models/skill/frontend/component/src/lib/singlepage/chat-mention-option/Component",
+    ).Component,
+    "chat-selected-pill": jest.requireActual(
+      "@sps/social/models/skill/frontend/component/src/lib/singlepage/chat-selected-pill/Component",
+    ).Component,
+    "chat-create-dialog": jest.requireActual(
+      "@sps/social/models/skill/frontend/component/src/lib/singlepage/chat-create-dialog/Component",
+    ).Component,
+  };
+  return {
+    Component: (props: any) => {
+      const View = views[props.variant];
+      return View ? <View {...props} /> : null;
+    },
+  };
+});
+jest.mock("@sps/social/models/action/frontend/component", () => ({
+  Component: jest.requireActual(
+    "@sps/social/models/action/frontend/component/src/lib/singlepage/chat-action-row/Component",
+  ).Component,
+}));
+
 jest.mock(
   "@sps/social/relations/profiles-to-messages/frontend/component",
   () => {
@@ -174,72 +199,69 @@ jest.mock("@sps/social/models/profile/frontend/component", () => {
   };
 });
 
-jest.mock(
-  "@sps/knowledge/models/source/frontend/component/src/lib/singlepage/chat-sidebar-detail",
-  () => {
-    return {
-      Component: (props: any) => {
-        return (
-          <div data-testid="knowledge-document-dialog-form">
-            <input
-              aria-label="Knowledge title"
-              value={props.draft?.title || ""}
-              onChange={(event) => {
-                props.onDraftChange?.({
-                  ...props.draft,
-                  title: event.target.value,
-                });
-              }}
-            />
-            <textarea
-              aria-label="Knowledge content"
-              value={props.draft?.content || ""}
-              onChange={(event) => {
-                props.onDraftChange?.({
-                  ...props.draft,
-                  content: event.target.value,
-                });
-              }}
-            />
+jest.mock("@sps/knowledge/models/source/frontend/component", () => {
+  return {
+    Component: (props: any) => {
+      return (
+        <div data-testid="knowledge-document-dialog-form">
+          <input
+            aria-label="Knowledge title"
+            value={props.draft?.title || ""}
+            onChange={(event) => {
+              props.onDraftChange?.({
+                ...props.draft,
+                title: event.target.value,
+              });
+            }}
+          />
+          <textarea
+            aria-label="Knowledge content"
+            value={props.draft?.content || ""}
+            onChange={(event) => {
+              props.onDraftChange?.({
+                ...props.draft,
+                content: event.target.value,
+              });
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => {
+              props.onSave?.(props.data);
+            }}
+          >
+            {props.mode === "create" ? "Create knowledge" : "Save knowledge"}
+          </button>
+          {props.mode !== "create" ? (
             <button
               type="button"
               onClick={() => {
-                props.onSave?.(props.data);
+                void props.onReindex?.(props.data);
               }}
             >
-              {props.mode === "create" ? "Create knowledge" : "Save knowledge"}
+              Reindex knowledge
             </button>
-            {props.mode !== "create" ? (
+          ) : null}
+          {props.mode !== "create" && props.onDelete ? (
+            <>
+              <button type="button" aria-label="Delete knowledge">
+                Delete
+              </button>
               <button
                 type="button"
                 onClick={() => {
-                  void props.onReindex?.(props.data);
+                  void props.onDelete?.(props.data);
                 }}
               >
-                Reindex knowledge
+                Delete Knowledge
               </button>
-            ) : null}
-            {props.mode !== "create" && props.onDelete ? (
-              <>
-                <button type="button" aria-label="Delete knowledge">
-                  Delete
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    void props.onDelete?.(props.data);
-                  }}
-                >
-                  Delete Knowledge
-                </button>
-              </>
-            ) : null}
-          </div>
-        );
-      },
-    };
-  },
-);
+            </>
+          ) : null}
+        </div>
+      );
+    },
+  };
+});
 
 jest.mock("@sps/social/models/skill/sdk/client", () => {
   return {

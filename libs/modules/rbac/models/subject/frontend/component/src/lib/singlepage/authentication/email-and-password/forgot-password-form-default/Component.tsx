@@ -1,12 +1,14 @@
-import { IComponentPropsExtended } from "./interface";
-import { Component as ClientComponent } from "./ClientComponent";
+import { Component as Form } from "../form-default/Component";
+import type { IComponentPropsExtended } from "./interface";
 
 export function Component(props: IComponentPropsExtended) {
   return (
-    <ClientComponent
+    <Form
+      language={props.language}
       isServer={props.isServer}
-      variant={props.variant}
       className={props.className}
+      variant="authentication-email-and-password-form-default"
+      mode="forgot-password"
     />
   );
 }

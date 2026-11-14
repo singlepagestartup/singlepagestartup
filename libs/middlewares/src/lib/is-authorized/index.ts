@@ -2,16 +2,20 @@ import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
 import {
   IRouteRule,
-  NEXT_PUBLIC_HOST_SERVICE_URL,
   RBAC_PRIVILEGED_CONTEXT_KEY,
+  RBAC_REVOKED_SUBJECT_CONTEXT_KEY,
   RBAC_SECRET_KEY,
   RouteMatcher,
   createMemoryCache,
 } from "@sps/shared-utils";
-import { MiddlewareHandler } from "hono";
+import { Context, MiddlewareHandler } from "hono";
 import { api as subjectApi } from "@sps/rbac/models/subject/sdk/server";
-import { getCookie } from "hono/cookie";
-import { getHttpErrorType } from "@sps/backend-utils";
+import { decode } from "hono/jwt";
+import {
+  authorization,
+  getHttpErrorType,
+  readRbacSecret,
+} from "@sps/backend-utils";
 import { createAllowedRoutesMatcher } from "./routes";
 
 export type IMiddlewareGeneric = unknown;
@@ -39,23 +43,16 @@ export class Middleware {
 
   init(): MiddlewareHandler<any, any, {}> {
     return createMiddleware(async (c, next) => {
+      const proceed = async () => {
+        await next();
+
+        this.markRevokedSubject(c);
+      };
+
       const reqMethod = c.req.method.toUpperCase();
       const reqPath = c.req.path.toLowerCase();
-      const secretKey =
-        c.req.header("X-RBAC-SECRET-KEY") || getCookie(c, "rbac.secret-key");
-      const authorization =
-        c.req.header("Authorization")?.replace("Bearer ", "") ||
-        getCookie(c, "rbac.subject.jwt");
-
-      const origin = c.req.header("Host");
-      const allowedOrigins = new Set([
-        "http://localhost:3000",
-        NEXT_PUBLIC_HOST_SERVICE_URL,
-      ]);
-
-      if (origin && allowedOrigins.has(origin)) {
-        c.res.headers["Access-Control-Allow-Origin"] = origin;
-      }
+      const secretKey = readRbacSecret(c);
+      const token = authorization(c);
 
       if (secretKey && secretKey === RBAC_SECRET_KEY) {
         /**
@@ -70,20 +67,23 @@ export class Middleware {
       }
 
       if (this.allowedRoutesMatcher.matches(reqPath, reqMethod)) {
-        return next();
+        return proceed();
       }
 
       try {
         const headers: Record<string, string> = {
           ...(secretKey ? { "X-RBAC-SECRET-KEY": secretKey } : {}),
-          ...(authorization ? { Authorization: authorization } : {}),
+          ...(token ? { Authorization: token } : {}),
           "Cache-Control": "no-store",
           "X-SPS-Consistency": "1",
         };
 
-        const cacheKey = `${reqMethod}:${reqPath}:${authorization || ""}:${secretKey || ""}`;
-        if (await cache.getAsync<boolean>(cacheKey)) {
-          return next();
+        const cacheKey = `${reqMethod}:${reqPath}:${token || ""}:${secretKey || ""}`;
+        if (
+          (await cache.getAsync<boolean>(cacheKey)) &&
+          !this.isAuthorizationInvalidated(token)
+        ) {
+          return proceed();
         }
 
         const existing = undefined;
@@ -117,7 +117,52 @@ export class Middleware {
         throw new HTTPException(status, { message, cause: details });
       }
 
-      return next();
+      return proceed();
     });
+  }
+
+  /**
+   * A handler that revokes the tokens of a subject, as logout does, names the
+   * subject in the request context. For as long as cached decisions can live,
+   * no token of that subject is answered from them, so the next request with
+   * any of its tokens reaches the subject service, which refuses it.
+   */
+  private markRevokedSubject(c: Context) {
+    const subjectId = c.get(RBAC_REVOKED_SUBJECT_CONTEXT_KEY);
+
+    if (typeof subjectId === "string" && subjectId) {
+      cache.set(`revoked-subject:${subjectId}`, true);
+    }
+  }
+
+  /**
+   * A cached decision cannot outlive the token or a subject's logout. Reading
+   * the payload here only rejects cache reuse: the complete authorization
+   * service verifies any token that does not have a reusable decision.
+   */
+  private isAuthorizationInvalidated(authorization?: string) {
+    if (!authorization) {
+      return false;
+    }
+
+    try {
+      const payload = decode(authorization).payload;
+
+      if (
+        typeof payload.exp === "number" &&
+        payload.exp <= Math.floor(Date.now() / 1000)
+      ) {
+        return true;
+      }
+
+      const subject = payload["subject"] as { id?: unknown } | undefined;
+
+      return (
+        typeof subject?.id === "string" &&
+        Boolean(cache.get<boolean>(`revoked-subject:${subject.id}`))
+      );
+    } catch {
+      return true;
+    }
   }
 }

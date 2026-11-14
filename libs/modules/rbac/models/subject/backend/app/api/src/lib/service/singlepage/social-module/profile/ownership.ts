@@ -68,21 +68,24 @@ export class Service {
         },
       },
     });
-    const ownedRoles = assignments.length
-      ? await this.service.role.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "id",
-                  method: "inArray",
-                  value: assignments.map((link) => link.roleId),
-                },
-              ],
-            },
+    let ownedRoles;
+    if (assignments.length) {
+      ownedRoles = await this.service.role.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "id",
+                method: "inArray",
+                value: assignments.map((link) => link.roleId),
+              },
+            ],
           },
-        })
-      : [];
+        },
+      });
+    } else {
+      ownedRoles = [];
+    }
     for (const ownedRole of ownedRoles) {
       const profileId =
         /^social-profile-([0-9a-f-]{36})-knowledge-owner$/i.exec(
@@ -147,21 +150,24 @@ export class Service {
         },
       },
     });
-    const profiles = links.length
-      ? await this.service.socialModule.profile.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "id",
-                  method: "inArray",
-                  value: links.map((link) => link.socialModuleProfileId),
-                },
-              ],
-            },
+    let profiles;
+    if (links.length) {
+      profiles = await this.service.socialModule.profile.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "id",
+                method: "inArray",
+                value: links.map((link) => link.socialModuleProfileId),
+              },
+            ],
           },
-        })
-      : [];
+        },
+      });
+    } else {
+      profiles = [];
+    }
     for (const link of links) {
       if (
         link.variant === "default" &&

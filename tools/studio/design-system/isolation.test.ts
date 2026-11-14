@@ -127,9 +127,13 @@ const codeExtension = /\.(?:[cm]?[jt]sx?|css|html|json)$/;
 function files(directory: string): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     if (
-      ["node_modules", ".generated", "output", "storybook-static"].includes(
-        entry.name,
-      )
+      [
+        "node_modules",
+        ".generated",
+        "dist",
+        "output",
+        "storybook-static",
+      ].includes(entry.name)
     )
       return [];
     const file = path.join(directory, entry.name);
@@ -325,8 +329,8 @@ function forbidden(file: string, specifier: string): boolean {
     specifier.startsWith("@sps/") ||
     Boolean(
       resolved &&
-        (within(resolved, path.join(root, "libs")) ||
-          within(resolved, path.join(root, "apps/host"))),
+      (within(resolved, path.join(root, "libs")) ||
+        within(resolved, path.join(root, "apps/host"))),
     )
   );
 }
@@ -394,12 +398,12 @@ function isolationViolations(
         Boolean(pureStudioUtility(options.root, reference.specifier)) ||
         Boolean(
           pureSource &&
-            reference.specifier.startsWith(".") &&
-            dependency &&
-            isPureStudioUtilityFile(
-              options.root,
-              resolveFile(dependency) ?? dependency,
-            ),
+          reference.specifier.startsWith(".") &&
+          dependency &&
+          isPureStudioUtilityFile(
+            options.root,
+            resolveFile(dependency) ?? dependency,
+          ),
         );
       if (
         wrongOwner ||

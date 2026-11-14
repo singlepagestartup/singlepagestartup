@@ -13,34 +13,10 @@ export function Component(props: IComponentPropsExtended) {
     >
       <Message
         isServer={props.isServer}
-        variant="find"
-        apiProps={{
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "id",
-                  method: "eq",
-                  value: props.data.messageId,
-                },
-              ],
-            },
-          },
-        }}
-      >
-        {({ data }) => {
-          return data?.map((entity, index) => {
-            return (
-              <Message
-                key={index}
-                isServer={props.isServer}
-                data={entity}
-                variant={entity.variant as any}
-              />
-            );
-          });
-        }}
-      </Message>
+        dataSource="props"
+        data={props.message}
+        variant={props.message.variant as "default"}
+      />
     </div>
   );
 }
