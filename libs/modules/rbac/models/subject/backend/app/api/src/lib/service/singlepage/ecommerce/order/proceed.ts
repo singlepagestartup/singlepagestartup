@@ -1,5 +1,7 @@
+import { isConfirmedInvoice } from "@sps/billing/models/payment-intent/sdk/model";
 import { DI, type FindServiceProps } from "@sps/shared-backend-api";
 import {
+  createMemoryCache,
   INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
@@ -131,8 +133,11 @@ export class Service {
   subjectsToBillingModuleCurrencies: SubjectsToBillingModuleCurrenciesService;
   subjectsToIdentities: SubjectsToIdentitiesService;
   protected processingOrderIds = new Set<string>();
-  protected reportedUnconfirmedPaymentOrders = new Set<string>();
-  private recurringCursors = new Map<string, string>();
+  private readonly reportedUnconfirmedPaymentOrders = createMemoryCache({
+    ttlMs: 24 * 60 * 60 * 1000,
+    maxSize: 10_000,
+  });
+  private scanCursors = new Map<string, string>();
 
   constructor(
     @inject(DI.IRepository) repository: Repository,
@@ -318,10 +323,6 @@ export class Service {
               extendedOrder.status,
             )
           ) {
-            if (extendedOrder.status === "delivering" && !this.isPaymentConfirmed({ extendedOrder })) {
-              this.reportUnconfirmedPayment({ order: extendedOrder, subjectId: subjectToEcommerceModuleOrder.subjectId });
-              continue;
-            }
             // A removed grant is a durable revocation. Ordinary proceed never repairs it.
             if (
               !extendedOrder.subscriptionRevokedAt &&
@@ -432,7 +433,9 @@ export class Service {
 
   private async ownedOrderIds(subjectId: string): Promise<string[]> {
     const ids = new Set<string>();
-    for (let offset = 0; ; offset += ECOMMERCE_ORDER_PROCEED_BATCH_LIMIT) {
+    let offset = 0;
+    let hasMore = true;
+    while (hasMore) {
       const page = await this.subjectsToEcommerceModuleOrders.find({
         params: {
           filters: {
@@ -443,10 +446,13 @@ export class Service {
           orderBy: { and: [{ column: "id", method: "asc" }] },
         },
       });
-      for (const link of page ?? [])
-        if (link.subjectId === subjectId && link.ecommerceModuleOrderId)
+      for (const link of page ?? []) {
+        if (link.subjectId === subjectId && link.ecommerceModuleOrderId) {
           ids.add(link.ecommerceModuleOrderId);
-      if (!page || page.length < ECOMMERCE_ORDER_PROCEED_BATCH_LIMIT) break;
+        }
+      }
+      hasMore = page?.length === ECOMMERCE_ORDER_PROCEED_BATCH_LIMIT;
+      offset += ECOMMERCE_ORDER_PROCEED_BATCH_LIMIT;
     }
     return Array.from(ids);
   }
@@ -455,63 +461,76 @@ export class Service {
     scope: IFindFilter[],
     cursorKey: string,
   ): Promise<IEcommerceModuleOrder[]> {
-    const priorityStatuses = ["paid", "delivered", "canceling"];
-    const priority = await this.ecommerceModule.order.find({
-      params: {
-        filters: {
-          and: [
-            ...scope,
-            { column: "status", method: "inArray", value: priorityStatuses },
-          ],
-        },
-        limit: ECOMMERCE_ORDER_PROCEED_BATCH_LIMIT,
-        orderBy: { and: [{ column: "updatedAt", method: "asc" }] },
-      },
-    });
-    const selected = getBoundedUniqueOrders(
-      (priority ?? []).filter((order) =>
-        priorityStatuses.includes(order.status),
-      ),
-    ).orders;
-    const remaining = ECOMMERCE_ORDER_PROCEED_BATCH_LIMIT - selected.length;
-    if (!remaining) return selected;
-    const recurringStatuses = [
-      "delivering",
-      "requested_cancelation",
-      "expired",
-    ];
-    const cursor = this.recurringCursors.get(cursorKey);
-    const read = (after?: string) =>
-      this.ecommerceModule.order.find({
+    const priorityKey = `priority:${cursorKey}`;
+    const recurringKey = `recurring:${cursorKey}`;
+    const priority = await this.candidatePage(
+      scope,
+      priorityKey,
+      ["paid", "delivered", "canceling"],
+      ECOMMERCE_ORDER_PROCEED_BATCH_LIMIT,
+    );
+    // Keep renewals moving even when a full batch of paid orders is waiting for confirmation.
+    const remaining = Math.max(
+      1,
+      ECOMMERCE_ORDER_PROCEED_BATCH_LIMIT - priority.length,
+    );
+    const recurring = await this.candidatePage(
+      scope,
+      recurringKey,
+      ["delivering", "requested_cancelation", "expired"],
+      remaining,
+    );
+    const selected = priority.slice(
+      0,
+      ECOMMERCE_ORDER_PROCEED_BATCH_LIMIT - recurring.length,
+    );
+    this.rememberLastOrder(priorityKey, selected);
+    this.rememberLastOrder(recurringKey, recurring);
+    return [...selected, ...recurring];
+  }
+
+  private async candidatePage(
+    scope: IFindFilter[],
+    key: string,
+    statuses: string[],
+    limit: number,
+  ): Promise<IEcommerceModuleOrder[]> {
+    const after = this.scanCursors.get(key);
+    const read = (cursor?: string) => {
+      const filters: IFindFilter[] = [
+        ...scope,
+        { column: "status", method: "inArray", value: statuses },
+      ];
+      if (cursor) {
+        filters.push({ column: "id", method: "gt", value: cursor });
+      }
+      return this.ecommerceModule.order.find({
         params: {
-          filters: {
-            and: [
-              ...scope,
-              { column: "status", method: "inArray", value: recurringStatuses },
-              ...(after
-                ? [{ column: "id", method: "gt" as const, value: after }]
-                : []),
-            ],
-          },
-          limit: remaining,
+          filters: { and: filters },
+          limit,
           orderBy: { and: [{ column: "id", method: "asc" }] },
         },
       });
-    let page = await read(cursor);
-    if (!page?.length && cursor) page = await read();
+    };
+    let page = await read(after);
+    if (!page?.length && after) {
+      page = await read();
+    }
     const valid = (page ?? []).filter((order) =>
-      recurringStatuses.includes(order.status),
+      statuses.includes(order.status),
     );
-    const last = valid.at(-1)?.id;
+    return getBoundedUniqueOrders(valid).orders.slice(0, limit);
+  }
+
+  private rememberLastOrder(key: string, page: IEcommerceModuleOrder[]) {
+    this.scanCursors.delete(key);
+    const last = page.at(-1);
     if (last) {
-      this.recurringCursors.delete(cursorKey);
-      this.recurringCursors.set(cursorKey, last);
-      if (this.recurringCursors.size > 256)
-        this.recurringCursors.delete(
-          this.recurringCursors.keys().next().value!,
-        );
-    } else this.recurringCursors.delete(cursorKey);
-    return getBoundedUniqueOrders([...selected, ...valid]).orders;
+      this.scanCursors.set(key, last.id);
+      if (this.scanCursors.size > 512) {
+        this.scanCursors.delete(this.scanCursors.keys().next().value!);
+      }
+    }
   }
 
   async collectTopupCurrencies(props: {
@@ -588,46 +607,17 @@ export class Service {
     return [...currencies.values()];
   }
 
-  protected isPaymentConfirmed(props: {
-    extendedOrder: IExtendedEcommerceModuleOrder;
-  }) {
-    return (
-      props.extendedOrder.ordersToBillingModulePaymentIntents?.some(
-        (orderToBillingModulePaymentIntent) => {
-          const billingModulePaymentIntent =
-            orderToBillingModulePaymentIntent.billingModulePaymentIntent;
-
-          return (
-            billingModulePaymentIntent?.status === "succeeded" &&
-            Boolean(
-              billingModulePaymentIntent.paymentIntentsToInvoices?.some(
-                (paymentIntentToInvoice) => {
-                  return paymentIntentToInvoice.invoice?.status === "paid";
-                },
-              ),
-            )
-          );
-        },
-      ) ?? false
-    );
-  }
-
-  /**
-   * Reports an order that fulfilment skipped for want of a confirmed payment,
-   * once per order and status for the life of the process, so the recurring
-   * check does not repeat the report every run.
-   */
   protected reportUnconfirmedPayment(props: {
     order: IEcommerceModuleOrder;
     subjectId: string;
   }) {
     const reportKey = `${props.order.id}:${props.order.status}`;
 
-    if (this.reportedUnconfirmedPaymentOrders.has(reportKey)) {
+    if (this.reportedUnconfirmedPaymentOrders.get(reportKey)) {
       return;
     }
 
-    this.reportedUnconfirmedPaymentOrders.add(reportKey);
+    this.reportedUnconfirmedPaymentOrders.set(reportKey, true);
 
     logger.error(
       "RBAC ecommerce order proceed skipped an order without a confirmed payment",
@@ -782,7 +772,14 @@ export class Service {
       throw new Error("Configuration error. RBAC_SECRET_KEY not set");
     }
 
-    if (!this.isPaymentConfirmed({ extendedOrder: props.extendedOrder })) {
+    const paidInvoices =
+      props.extendedOrder.ordersToBillingModulePaymentIntents.flatMap(
+        ({ billingModulePaymentIntent: intent }) =>
+          intent.paymentIntentsToInvoices
+            .map(({ invoice }) => invoice)
+            .filter((invoice) => isConfirmedInvoice(intent, invoice)),
+      );
+    if (!paidInvoices.length) {
       this.reportUnconfirmedPayment({
         order: props.order,
         subjectId: props.subjectToEcommerceModuleOrder.subjectId,
@@ -791,15 +788,9 @@ export class Service {
     }
 
     const free = this.isInitialFree(props.extendedOrder);
-    if (free && !(await this.freeDeliveryEligible(props))) return;
-    const paidInvoices = props.extendedOrder.ordersToBillingModulePaymentIntents
-      .filter((link) => link.billingModulePaymentIntent?.status === "succeeded")
-      .flatMap(
-        (link) => link.billingModulePaymentIntent.paymentIntentsToInvoices,
-      )
-      .map((link) => link.invoice)
-      .filter((invoice) => invoice?.status === "paid");
-    if (!paidInvoices.length) return;
+    if (free && !(await this.freeDeliveryEligible(props))) {
+      return;
+    }
     if (
       free &&
       (props.extendedOrder.checkoutAttributesByCurrency.amount !== 0 ||

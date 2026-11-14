@@ -13,6 +13,7 @@ const storesToOrdersCreateMock = jest.fn();
 const ordersToBillingCurrenciesCreateMock = jest.fn();
 
 jest.mock("@sps/shared-utils", () => ({
+  ...jest.requireActual("@sps/shared-utils"),
   RBAC_SECRET_KEY: "rbac-secret",
 }));
 

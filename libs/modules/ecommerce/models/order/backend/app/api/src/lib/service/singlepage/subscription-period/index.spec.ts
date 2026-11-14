@@ -23,6 +23,7 @@ function fixture(
     ordersToBillingModulePaymentIntents: [
       {
         billingModulePaymentIntent: {
+          status: "succeeded",
           paymentIntentsToInvoices: invoices.map((invoice) => ({ invoice })),
         },
       },

@@ -112,6 +112,7 @@ describe("paid order atomic fulfillment", () => {
         ordersToBillingModulePaymentIntents: [
           {
             billingModulePaymentIntent: {
+              status: "succeeded",
               type: "one_off",
               paymentIntentsToInvoices: await Promise.all(
                 activeInvoices.map(async (id) => ({
