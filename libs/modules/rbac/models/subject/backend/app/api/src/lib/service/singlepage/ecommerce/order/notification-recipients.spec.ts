@@ -4,6 +4,10 @@
  * When: the real order notification service prepares delivery.
  * Then: default recipients remain compatible and project channels need no admin access.
  */
+import { Container } from "inversify";
+import { DI } from "@sps/shared-backend-api";
+import { SubjectDI } from "../../../../di";
+import { Service as StartupService } from "../../../startup/ecommerce/order/proceed";
 const mockNotify = jest.fn();
 jest.mock("@sps/shared-utils", () => ({
   ...jest.requireActual("@sps/shared-utils"),
@@ -72,6 +76,23 @@ function fixture(Ctor: typeof Service) {
   return { service, order };
 }
 beforeEach(() => jest.clearAllMocks());
+
+it("injects the inherited dependencies into the Startup order processor", () => {
+  const container = new Container();
+  const repository = {};
+  container.bind(DI.IRepository).toConstantValue(repository);
+  for (const token of Object.values(SubjectDI)) {
+    container.bind(token).toConstantValue({});
+  }
+  container.bind(StartupService).toSelf();
+
+  const service = container.get(StartupService);
+  expect(service.repository).toBe(repository);
+  expect(service.notificationModule).toBe(
+    container.get(SubjectDI.INotificationModule),
+  );
+});
+
 /**
  * BDD Scenario: stock framework services have no project override.
  * Given: administrators are configured through the existing admin role.
