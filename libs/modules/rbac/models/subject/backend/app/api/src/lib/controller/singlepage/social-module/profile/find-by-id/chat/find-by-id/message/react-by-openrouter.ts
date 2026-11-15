@@ -3923,7 +3923,11 @@ export class Handler {
 
       if (fileStorageFile.mimeType?.includes("image")) {
         routingTextParts.push(`Attached image: ${fileName}`);
-        mediaParts.push({ type: "text", text: `Attached image: ${fileName}` });
+        // The model also needs the URL in text to reuse this image in an HTML file.
+        mediaParts.push({
+          type: "text",
+          text: `Attached image: ${fileName}\nImage URL: ${fileUrl}`,
+        });
         mediaParts.push({
           type: "image_url",
           image_url: {

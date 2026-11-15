@@ -1221,7 +1221,10 @@ describe("Given: OpenRouter thread context and reply validation", () => {
           url: `${NEXT_PUBLIC_API_SERVICE_URL}/public/file-storage/static/cat-part-2.txt`,
         },
       },
-      { type: "text", text: "Attached image: Барсик.jpeg" },
+      {
+        type: "text",
+        text: `Attached image: Барсик.jpeg\nImage URL: ${NEXT_PUBLIC_API_SERVICE_URL}/public/file-storage/static/cat.jpeg`,
+      },
       {
         type: "image_url",
         image_url: {

@@ -327,7 +327,17 @@ it("loads stored HTML only after opening and keeps its executable markup outside
   );
   const policy = wrapper
     .querySelector('meta[http-equiv="Content-Security-Policy"]')!
-    .getAttribute("content");
+    .getAttribute("content")!;
+  const rules = policy.split("; ");
+  const imageSources = rules
+    .find((rule) => rule.startsWith("img-src "))!
+    .split(" ");
+  expect(imageSources).toEqual(
+    expect.arrayContaining(["data:", "blob:", "https:"]),
+  );
+  expect(imageSources).not.toContain("http:");
+  const scripts = rules.find((rule) => rule.startsWith("script-src "))!;
+  expect(scripts.split(" ")).not.toContain("https:");
   expect(policy).toContain("frame-src data:");
   expect(policy).toContain("connect-src 'none'");
   expect(screen.queryByRole("link", { name: "Open original" })).toBeNull();

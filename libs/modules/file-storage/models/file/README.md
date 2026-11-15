@@ -76,11 +76,16 @@ Legacy SVG attachments keep their noninteractive card.
 Opening an HTML attachment reads up to 2 MiB into an isolated document.
 Inline JavaScript runs there. Scripts and stylesheets may load from
 `cdn.tailwindcss.com`, `cdn.jsdelivr.net` and `cdnjs.cloudflare.com`.
+Images can use absolute HTTPS URLs from any host, including URLs without a
+filename extension. For File Storage, use the full public URL supplied with the
+chat image. On a local installation this can be
+`http://localhost:4000/public/file-storage/static/photo.png`. The browser fetches
+each image directly and its host can see the viewer's IP. The original HTML
+keeps its URLs when downloaded.
+
 The attachment has an opaque origin. The enclosing frame restricts navigation
-to data documents, and the inherited content policy blocks API requests.
-The viewer also offers source text and a download. A draft never links to a
-top-level Blob document. External CDN requests disclose the viewer's IP to the
-CDN. Only open an interactive preview when you want its scripts to run.
+to data documents. The inherited content policy blocks fetch and WebSocket
+connections. The viewer also offers the source text and the original download.
 
 ## Protected article media
 
