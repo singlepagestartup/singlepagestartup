@@ -1,9 +1,13 @@
-FROM node:18
+FROM node:24.22.3-trixie
 
 WORKDIR /usr/src/app
 
-RUN sh -ci "$(curl -fsSL https://internetcomputer.org/install.sh)"
+RUN curl -fsSL https://internetcomputer.org/install.sh -o /tmp/install-dfx.sh && \
+    DFXVM_INIT_YES=1 sh /tmp/install-dfx.sh && \
+    rm /tmp/install-dfx.sh
 
-RUN ["dfx", "stop"]
-ENTRYPOINT ["dfx", "start", "--clean", "--emulator"]
+ENV PATH="/root/.local/share/dfx/bin:${PATH}"
+
+RUN ["dfx", "--version"]
+ENTRYPOINT ["dfx", "start", "--clean"]
 # CMD ["tail", "-f", "/dev/null"]

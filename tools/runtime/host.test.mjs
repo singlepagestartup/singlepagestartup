@@ -39,3 +39,21 @@ test("Host starts with SSR-compatible storage when NODE_OPTIONS is absent", () =
   assert.equal(result.status, 0, result.stderr);
   assert.equal(result.stdout.trim(), "undefined");
 });
+
+test("Host builds have an 8 GiB heap default and preserve explicit limits", () => {
+  assert.match(
+    hostEnvironment({}, "build").NODE_OPTIONS,
+    /--max-old-space-size=8192/,
+  );
+  for (const limit of [
+    "--max-old-space-size=16384",
+    "--max_old_space_size=4096",
+  ]) {
+    const environment = hostEnvironment({ NODE_OPTIONS: limit }, "build");
+    assert.equal(
+      environment.NODE_OPTIONS,
+      `${limit} --no-experimental-webstorage`,
+    );
+  }
+  assert.doesNotMatch(hostEnvironment({}).NODE_OPTIONS, /--max-old-space-size/);
+});
