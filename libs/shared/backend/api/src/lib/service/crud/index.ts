@@ -19,9 +19,9 @@ import { IDumpResult, ISeedResult } from "../../configuration";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 
 @injectable()
-export class Service<DTO extends Record<string, unknown>>
-  implements IService<DTO>
-{
+export class Service<
+  DTO extends Record<string, unknown>,
+> implements IService<DTO> {
   repository: IRepository;
 
   constructor(@inject(DI.IRepository) repository: IRepository) {

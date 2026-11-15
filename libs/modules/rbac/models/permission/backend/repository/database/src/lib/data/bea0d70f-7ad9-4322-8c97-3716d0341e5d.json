@@ -1,0 +1,9 @@
+{
+  "id": "bea0d70f-7ad9-4322-8c97-3716d0341e5d",
+  "createdAt": "2026-10-31T22:11:29.734Z",
+  "updatedAt": "2026-10-31T22:11:29.734Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/social/profiles/f11415c5-ea50-4c08-b5c9-ca404eb8b835"
+}
