@@ -1,4 +1,4 @@
-import { DeliveryQueue } from "../startup/delivery-queue";
+import { Service as DeliveryQueue } from "../startup/delivery-queue";
 import { DeliveryRepository } from "../../repository/delivery";
 import "reflect-metadata";
 import { inject, injectable } from "inversify";

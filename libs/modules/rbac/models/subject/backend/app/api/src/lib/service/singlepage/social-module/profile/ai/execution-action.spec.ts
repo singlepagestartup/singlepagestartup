@@ -32,7 +32,7 @@ jest.mock("@sps/social/relations/threads-to-actions/sdk/server", () => ({
   api: { create: jest.fn() },
 }));
 
-import { AiExecutionActionReporter } from "./execution-action";
+import { Service as AiExecutionActionReporter } from "./execution-action";
 import type { TSocialProfileAiToolLoopEvent } from "./tool-loop";
 import { isSocialMessageExcludedFromOpenRouter } from "@sps/social/models/message/sdk/model";
 import { api as rbacModuleSubjectApi } from "@sps/rbac/models/subject/sdk/server";

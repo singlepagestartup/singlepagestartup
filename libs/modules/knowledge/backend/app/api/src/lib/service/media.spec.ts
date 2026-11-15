@@ -1,4 +1,4 @@
-import { MediaService } from "./media";
+import { Service as MediaService } from "./media";
 jest.mock("file-type", () => ({
   fileTypeFromBuffer: jest.fn(async () => undefined),
 }));

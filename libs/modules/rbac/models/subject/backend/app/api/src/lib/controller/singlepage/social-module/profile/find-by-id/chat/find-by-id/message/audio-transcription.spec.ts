@@ -73,7 +73,7 @@ jest.mock("@sps/social/models/thread/sdk/server", () => {
 });
 
 import {
-  AudioTranscriptionService,
+  Service as AudioTranscriptionService,
   shouldSkipOrdinaryNotificationForAudioTranscription,
 } from "./audio-transcription";
 import {

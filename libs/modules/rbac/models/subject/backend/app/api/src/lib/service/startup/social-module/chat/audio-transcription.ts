@@ -1,3 +1,3 @@
-import { AudioTranscriptionService as ParentAudioTranscriptionService } from "../../../singlepage/social-module/chat/audio-transcription";
+import { Service as ParentService } from "../../../singlepage/social-module/chat/audio-transcription";
 
-export class AudioTranscriptionService extends ParentAudioTranscriptionService {}
+export class Service extends ParentService {}

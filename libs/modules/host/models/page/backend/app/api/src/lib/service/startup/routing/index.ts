@@ -1,3 +1,3 @@
-import { RoutingService as ParentRoutingService } from "../../singlepage/routing";
+import { Service as ParentService } from "../../singlepage/routing";
 
-export class RoutingService extends ParentRoutingService {}
+export class Service extends ParentService {}

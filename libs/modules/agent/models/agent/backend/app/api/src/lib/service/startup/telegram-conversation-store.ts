@@ -1,3 +1,3 @@
-import { TelegramConversationMemoryStore as ParentTelegramConversationMemoryStore } from "../singlepage/telegram-conversation-store";
+import { Service as ParentService } from "../singlepage/telegram-conversation-store";
 
-export class TelegramConversationMemoryStore extends ParentTelegramConversationMemoryStore {}
+export class Service extends ParentService {}

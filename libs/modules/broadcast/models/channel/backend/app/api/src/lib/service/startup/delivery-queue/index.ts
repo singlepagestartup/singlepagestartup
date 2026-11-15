@@ -1,3 +1,3 @@
-import { DeliveryQueue as ParentDeliveryQueue } from "../../singlepage/delivery-queue";
+import { Service as ParentService } from "../../singlepage/delivery-queue";
 
-export class DeliveryQueue extends ParentDeliveryQueue {}
+export class Service extends ParentService {}

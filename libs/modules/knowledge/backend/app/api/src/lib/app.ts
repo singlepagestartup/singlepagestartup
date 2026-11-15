@@ -2,7 +2,7 @@ import "reflect-metadata";
 import { DI, ModuleApp, type IExceptionFilter } from "@sps/shared-backend-api";
 import { inject, injectable } from "inversify";
 import { Apps } from "./apps";
-import { KnowledgeService } from "./service";
+import { Service as KnowledgeService } from "./service";
 
 @injectable()
 export class App extends ModuleApp<Apps> {

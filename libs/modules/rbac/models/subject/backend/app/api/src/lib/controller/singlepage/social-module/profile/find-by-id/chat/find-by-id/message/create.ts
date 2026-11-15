@@ -1,4 +1,4 @@
-import { AudioTranscriptionService } from "../../../../../../../../service/startup/social-module/chat/audio-transcription";
+import { Service as AudioTranscriptionService } from "../../../../../../../../service/startup/social-module/chat/audio-transcription";
 import {
   RBAC_JWT_SECRET,
   RBAC_SECRET_KEY,

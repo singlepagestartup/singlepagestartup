@@ -1,3 +1,3 @@
-import { AgentRun as ParentAgentRun } from "../../singlepage/agent-run";
+import { Service as ParentService } from "../../singlepage/agent-run";
 
-export class AgentRun extends ParentAgentRun {}
+export class Service extends ParentService {}

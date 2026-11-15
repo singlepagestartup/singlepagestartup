@@ -1,3 +1,3 @@
-import { MaterialService as ParentMaterialService } from "../singlepage/materials";
+import { Service as ParentService } from "../singlepage/materials";
 
-export class MaterialService extends ParentMaterialService {}
+export class Service extends ParentService {}

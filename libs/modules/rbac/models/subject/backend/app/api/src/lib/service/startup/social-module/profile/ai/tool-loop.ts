@@ -1,3 +1,3 @@
-import { SocialProfileAiToolLoop as ParentSocialProfileAiToolLoop } from "../../../../singlepage/social-module/profile/ai/tool-loop";
+import { Service as ParentService } from "../../../../singlepage/social-module/profile/ai/tool-loop";
 
-export class SocialProfileAiToolLoop extends ParentSocialProfileAiToolLoop {}
+export class Service extends ParentService {}

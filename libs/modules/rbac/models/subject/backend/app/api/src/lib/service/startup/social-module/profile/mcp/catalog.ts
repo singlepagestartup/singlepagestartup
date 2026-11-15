@@ -1,3 +1,3 @@
-import { ProfileMcpCatalogService as ParentProfileMcpCatalogService } from "../../../../singlepage/social-module/profile/mcp/catalog";
+import { Service as ParentService } from "../../../../singlepage/social-module/profile/mcp/catalog";
 
-export class ProfileMcpCatalogService extends ParentProfileMcpCatalogService {}
+export class Service extends ParentService {}

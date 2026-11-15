@@ -66,7 +66,7 @@ export interface IAgentRunProps {
  *
  * Broadcast owns delivery. The handler acknowledges the message after its work finishes.
  */
-export class AgentRun {
+export class Service {
   broadcastModule: IBroadcastModule;
 
   get queue() {

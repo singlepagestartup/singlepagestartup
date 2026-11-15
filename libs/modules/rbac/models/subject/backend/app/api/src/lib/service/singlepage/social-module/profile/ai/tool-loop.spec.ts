@@ -8,7 +8,7 @@
 
 import {
   SOCIAL_PROFILE_AI_TOOL_LOOP_DEFAULTS,
-  SocialProfileAiToolLoop,
+  Service as SocialProfileAiToolLoop,
   type ISocialProfileAiTool,
   type TSocialProfileAiToolLoopEvent,
 } from "./tool-loop";

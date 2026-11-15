@@ -64,9 +64,9 @@ import {
   IModel as ISocialModuleProfile,
 } from "@sps/social/models/profile/sdk/model";
 import { IModel as ISocialModuleSkill } from "@sps/social/models/skill/sdk/model";
-import { SocialProfileJevService } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/startup/social-module/profile/ai/jev";
+import { Service as SocialProfileJevService } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/startup/social-module/profile/ai/jev";
 import type { TJevKnowledgeAction } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/social-module/profile/ai/jev";
-import { KnowledgeService } from "@sps/knowledge/backend/app/api/src/lib/service";
+import { Service as KnowledgeService } from "@sps/knowledge/backend/app/api/src/lib/service";
 import { Service as DocumentService } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/startup/social-module/profile/ai/document";
 import type { IAIChatDocumentContext } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/social-module/profile/ai/document";
 import { Service as ProfileSkills } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/startup/social-module/profile/skills";

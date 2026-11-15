@@ -1,3 +1,3 @@
-import { TelegramConversationRuntime as ParentTelegramConversationRuntime } from "../../singlepage/telegram-conversation";
+import { Service as ParentService } from "../../singlepage/telegram-conversation";
 
-export class TelegramConversationRuntime extends ParentTelegramConversationRuntime {}
+export class Service extends ParentService {}

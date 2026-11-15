@@ -3,7 +3,7 @@ import { Service as TopicService } from "@sps/notification/models/topic/backend/
 import { Repository as TopicRepository } from "@sps/notification/models/topic/backend/app/api/src/lib/repository";
 import { Configuration as TopicConfiguration } from "@sps/notification/models/topic/backend/app/api/src/lib/configuration";
 import { DeliveryRepository } from "@sps/broadcast/models/channel/backend/app/api/src/lib/repository/delivery";
-import { DeliveryQueue } from "@sps/broadcast/models/channel/backend/app/api/src/lib/service/singlepage/delivery-queue";
+import { Service as DeliveryQueue } from "@sps/broadcast/models/channel/backend/app/api/src/lib/service/singlepage/delivery-queue";
 import type { IModel as ITemplate } from "@sps/notification/models/template/sdk/model";
 import { randomUUID } from "node:crypto";
 import { Hono } from "hono";

@@ -3,7 +3,7 @@ import {
   supportedMcpServerDescriptors,
   type IMcpServerDescriptor,
 } from "@sps/social/models/profile/sdk/model";
-import { SinglePageStartupMcpClientService } from "../../../../startup/social-module/profile/mcp/singlepagestartup-client";
+import { Service as SinglePageStartupMcpClientService } from "../../../../startup/social-module/profile/mcp/singlepagestartup-client";
 import {
   SINGLEPAGESTARTUP_MCP_SERVER_ID,
   type IMcpToolDefinition,
@@ -36,7 +36,7 @@ export interface IProfileMcpCatalogOpenProps {
   rbacSubjectAuthenticationJwt: string;
 }
 
-export class ProfileMcpCatalogService {
+export class Service {
   private readonly singlePageStartupMcpClient: SinglePageStartupMcpClientService;
 
   constructor(

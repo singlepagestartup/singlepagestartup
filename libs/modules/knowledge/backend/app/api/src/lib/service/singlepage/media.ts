@@ -15,7 +15,7 @@ export interface MediaServiceProps {
 }
 const runCommand = promisify(execFile);
 
-export class MediaService {
+export class Service {
   private run: typeof runCommand;
   constructor(private props: MediaServiceProps = {}) {
     this.run = props.run || runCommand;

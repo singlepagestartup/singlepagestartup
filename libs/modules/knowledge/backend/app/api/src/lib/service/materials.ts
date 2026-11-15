@@ -1,2 +1,2 @@
-export { MaterialService } from "./startup/materials";
+export { Service, Service as MaterialService } from "./startup/materials";
 export type { MaterialServiceProps } from "./singlepage/materials";

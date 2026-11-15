@@ -1,7 +1,7 @@
-import { AgentRun } from "../agent-run";
-import { CronQueue } from "./index";
+import { Service as AgentRun } from "../agent-run";
+import { Service as CronQueue } from "./index";
 import {
-  DeliveryQueue,
+  Service as DeliveryQueue,
   type IDeliveryState,
 } from "@sps/broadcast/models/channel/backend/app/api/src/lib/service/singlepage/delivery-queue";
 

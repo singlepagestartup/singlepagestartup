@@ -5,7 +5,7 @@
  * Then: pagination is applied before source hydration.
  */
 jest.mock("@sps/knowledge/backend/app/api/src/lib/service", () => ({
-  KnowledgeService: jest.fn().mockImplementation(() => ({
+  Service: jest.fn().mockImplementation(() => ({
     listSources: jest.fn().mockResolvedValue([{ id: "source-2" }]),
   })),
 }));

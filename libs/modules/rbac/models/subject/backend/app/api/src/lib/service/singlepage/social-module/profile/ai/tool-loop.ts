@@ -23,10 +23,7 @@ export const SOCIAL_PROFILE_AI_TOOL_LOOP_DEFAULTS: ISocialProfileAiToolLoopLimit
   };
 
 export type TSocialProfileAiToolSource =
-  | "skill"
-  | "knowledge"
-  | "mcp"
-  | "context";
+  "skill" | "knowledge" | "mcp" | "context";
 
 export interface ISocialProfileAiTool {
   completeAfterSuccess?: boolean;
@@ -129,7 +126,7 @@ class ToolLoopStopError extends Error {
   }
 }
 
-export class SocialProfileAiToolLoop {
+export class Service {
   async run(
     props: ISocialProfileAiToolLoopProps,
   ): Promise<ISocialProfileAiToolLoopResult> {

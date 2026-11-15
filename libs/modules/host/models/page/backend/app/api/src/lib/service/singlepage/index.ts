@@ -10,10 +10,10 @@ import {
   extractRouteParams,
   SEO_SITEMAP_MAX_CANDIDATES,
 } from "@sps/shared-utils";
-import { RoutingService } from "../startup/routing";
+import { Service as RoutingService } from "../startup/routing";
 import type { IRouteSource } from "./routing";
 import type { IPageUrl } from "@sps/host/models/page/sdk/model";
-import { SeoService } from "../startup/seo";
+import { Service as SeoService } from "../startup/seo";
 
 export interface EntityWithUrls extends Record<string, unknown> {
   urls: { url: string }[];

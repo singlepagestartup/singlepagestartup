@@ -1,3 +1,3 @@
-import { ChatLifecycleService as ParentChatLifecycleService } from "../../../singlepage/social-module/chat/lifecycle";
+import { Service as ParentService } from "../../../singlepage/social-module/chat/lifecycle";
 
-export class ChatLifecycleService extends ParentChatLifecycleService {}
+export class Service extends ParentService {}

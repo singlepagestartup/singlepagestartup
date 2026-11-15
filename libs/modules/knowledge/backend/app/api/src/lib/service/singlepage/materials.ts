@@ -1,5 +1,5 @@
 import type { Service as SourceService } from "@sps/knowledge/models/source/backend/app/api/src/lib/service";
-import { MediaService } from "../media";
+import { Service as MediaService } from "../media";
 import { assembleContent, readUserContext } from "../utils";
 
 export interface MaterialServiceProps {
@@ -7,7 +7,7 @@ export interface MaterialServiceProps {
   media?: MediaService;
 }
 
-export class MaterialService {
+export class Service {
   private media: MediaService;
   constructor(private props: MaterialServiceProps) {
     this.media =

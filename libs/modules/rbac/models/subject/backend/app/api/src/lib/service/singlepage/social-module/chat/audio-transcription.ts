@@ -82,7 +82,7 @@ export function shouldSkipOrdinaryNotificationForAudioTranscription(
   return status === "processing" || status === "failed";
 }
 
-export class AudioTranscriptionService {
+export class Service {
   async prepareAndRun(props: {
     fileStorageModuleFiles?: IFileStorageModuleFile[];
     now?: () => string;

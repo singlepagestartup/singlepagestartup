@@ -76,7 +76,7 @@ interface IRbacSubjectTokenExchangeResponse {
   scope: string;
 }
 
-export class SinglePageStartupMcpClientService {
+export class Service {
   private readonly fetchImplementation: typeof fetch;
   private readonly mcpUrl: string;
   private readonly exchangeSecret: string;

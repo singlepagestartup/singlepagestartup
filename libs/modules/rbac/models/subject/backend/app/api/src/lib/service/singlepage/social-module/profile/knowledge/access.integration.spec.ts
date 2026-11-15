@@ -30,7 +30,7 @@ import { Repository as SubjectsToRolesRepository } from "@sps/rbac/relations/sub
 import { Service as SubjectsToRolesService } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/service";
 import {
   getSocialProfileKnowledgePermissionDescriptors,
-  SocialProfileKnowledgeAccessService,
+  Service as SocialProfileKnowledgeAccessService,
 } from "./access";
 
 interface ITestServices {

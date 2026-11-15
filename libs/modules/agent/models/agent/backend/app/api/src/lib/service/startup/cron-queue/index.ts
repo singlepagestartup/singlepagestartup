@@ -1,3 +1,3 @@
-import { CronQueue as ParentCronQueue } from "../../singlepage/cron-queue";
+import { Service as ParentService } from "../../singlepage/cron-queue";
 
-export class CronQueue extends ParentCronQueue {}
+export class Service extends ParentService {}

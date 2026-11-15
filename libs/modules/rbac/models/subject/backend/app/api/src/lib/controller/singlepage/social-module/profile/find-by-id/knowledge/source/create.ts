@@ -1,7 +1,7 @@
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { getHttpErrorType } from "@sps/backend-utils";
-import { KnowledgeService } from "@sps/knowledge/backend/app/api/src/lib/service";
+import { Service as KnowledgeService } from "@sps/knowledge/backend/app/api/src/lib/service";
 import { Service } from "../../../../../../../service";
 import { requireParam, resolveKnowledgeSourceProfileId } from "./helpers";
 

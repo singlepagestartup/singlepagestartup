@@ -1,8 +1,8 @@
-import { SeoService } from "./index";
+import { Service as SeoService } from "./index";
 import { api as metadata } from "@sps/host/models/metadata/sdk/server";
 import { api as linksApi } from "@sps/host/relations/pages-to-metadata/sdk/server";
 import type { IResolvedPage } from "@sps/host/models/page/sdk/model";
-import { RoutingService } from "@sps/host/models/page/backend/app/api/src/lib/service/singlepage/routing";
+import { Service as RoutingService } from "@sps/host/models/page/backend/app/api/src/lib/service/singlepage/routing";
 jest.mock("@sps/host/models/metadata/sdk/server", () => ({
   api: { find: jest.fn() },
 }));

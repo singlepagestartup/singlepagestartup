@@ -124,18 +124,18 @@ import type {
 } from "./telegram/sync-membership";
 import { Service as TelegramCheckoutFreeSubscription } from "../startup/telegram/checkout-free-subscription";
 import type { IExecuteProps as ITelegramCheckoutFreeSubscriptionExecuteProps } from "./telegram/checkout-free-subscription";
-import { ChatLifecycleService } from "../startup/social-module/chat/lifecycle";
-import { ProfileMcpCatalogService } from "../startup/social-module/profile/mcp/catalog";
+import { Service as ChatLifecycleService } from "../startup/social-module/chat/lifecycle";
+import { Service as ProfileMcpCatalogService } from "../startup/social-module/profile/mcp/catalog";
 import type {
   IProfileMcpCatalogOpenProps,
   IProfileMcpCatalogSession,
 } from "./social-module/profile/mcp/catalog";
-import { AiExecutionActionReporter } from "../startup/social-module/profile/ai/execution-action";
+import { Service as AiExecutionActionReporter } from "../startup/social-module/profile/ai/execution-action";
 import type {
   IAiExecutionActionReporter,
   IAiExecutionActionReporterProps,
 } from "./social-module/profile/ai/execution-action";
-import { SocialProfileAiToolLoop } from "../startup/social-module/profile/ai/tool-loop";
+import { Service as SocialProfileAiToolLoop } from "../startup/social-module/profile/ai/tool-loop";
 import type {
   ISocialProfileAiToolLoopProps,
   ISocialProfileAiToolLoopResult,
@@ -148,7 +148,7 @@ import {
 import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
 import { IModel as ISocialModuleThread } from "@sps/social/models/thread/sdk/model";
 import { setRbacAiThreadModelPreference } from "@sps/rbac/models/subject/sdk/model";
-import { SocialProfileKnowledgeAccessService } from "../startup/social-module/profile/knowledge/access";
+import { Service as SocialProfileKnowledgeAccessService } from "../startup/social-module/profile/knowledge/access";
 import type { IEnsureSocialProfileKnowledgeAccessProps } from "./social-module/profile/knowledge/access";
 import { Service as SocialModuleProfileAvatarUpdate } from "../startup/social-module/profile/avatar";
 import type { IExecuteProps as ISocialModuleProfileAvatarUpdateProps } from "./social-module/profile/avatar";

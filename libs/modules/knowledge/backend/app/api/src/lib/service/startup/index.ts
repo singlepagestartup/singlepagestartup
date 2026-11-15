@@ -1,3 +1,3 @@
-import { KnowledgeService as ParentKnowledgeService } from "../singlepage";
+import { Service as ParentService } from "../singlepage";
 
-export class KnowledgeService extends ParentKnowledgeService {}
+export class Service extends ParentService {}

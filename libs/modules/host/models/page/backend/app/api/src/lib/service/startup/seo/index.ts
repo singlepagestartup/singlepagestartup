@@ -1,3 +1,3 @@
-import { SeoService as ParentSeoService } from "../../singlepage/seo";
+import { Service as ParentService } from "../../singlepage/seo";
 
-export class SeoService extends ParentSeoService {}
+export class Service extends ParentService {}

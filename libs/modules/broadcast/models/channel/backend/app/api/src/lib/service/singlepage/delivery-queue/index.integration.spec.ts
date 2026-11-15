@@ -12,7 +12,7 @@ import { Configuration as ChannelsConfiguration } from "@sps/broadcast/models/ch
 import { Configuration } from "@sps/broadcast/models/message/backend/app/api/src/lib/configuration";
 import { Repository } from "@sps/broadcast/models/message/backend/app/api/src/lib/repository";
 import { DeliveryRepository } from "../../../repository/delivery";
-import { DeliveryQueue } from ".";
+import { Service as DeliveryQueue } from ".";
 import { Service } from "@sps/broadcast/models/message/backend/app/api/src/lib/service";
 
 describe("Broadcast competing consumers", () => {

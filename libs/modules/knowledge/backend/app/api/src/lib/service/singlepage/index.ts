@@ -14,14 +14,14 @@ import {
   KnowledgeModelTask,
 } from "@sps/knowledge/sdk/model";
 import { KnowledgeSearchResult } from "../../types";
-import { MaterialService } from "../materials";
+import { Service as MaterialService } from "../materials";
 
 export interface IKnowledgePersona {
   title?: string | null;
   description?: unknown;
 }
 
-export class KnowledgeService {
+export class Service {
   readonly source: SourceService;
   private embeddingClient: IKnowledgeEmbeddingClient;
   private generationClient: LlmChatClient;
@@ -389,7 +389,7 @@ export class KnowledgeService {
           error instanceof Error ? error.message : String(error);
       }
     }
-    let index: Awaited<ReturnType<KnowledgeService["index"]>> | undefined;
+    let index: Awaited<ReturnType<Service["index"]>> | undefined;
     let indexError: string | undefined;
     try {
       if (!processingError) index = await this.index({ sourceId: source.id });

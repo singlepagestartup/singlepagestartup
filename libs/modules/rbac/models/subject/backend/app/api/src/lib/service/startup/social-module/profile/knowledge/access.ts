@@ -1,3 +1,3 @@
-import { SocialProfileKnowledgeAccessService as ParentSocialProfileKnowledgeAccessService } from "../../../../singlepage/social-module/profile/knowledge/access";
+import { Service as ParentService } from "../../../../singlepage/social-module/profile/knowledge/access";
 
-export class SocialProfileKnowledgeAccessService extends ParentSocialProfileKnowledgeAccessService {}
+export class Service extends ParentService {}

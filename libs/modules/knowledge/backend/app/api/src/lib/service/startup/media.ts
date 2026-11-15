@@ -1,3 +1,3 @@
-import { MediaService as ParentMediaService } from "../singlepage/media";
+import { Service as ParentService } from "../singlepage/media";
 
-export class MediaService extends ParentMediaService {}
+export class Service extends ParentService {}

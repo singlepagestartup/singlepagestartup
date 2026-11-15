@@ -11,7 +11,7 @@ import {
 import { tmpdir } from "node:os";
 import path from "node:path";
 import sharp from "sharp";
-import { MediaService } from "./media";
+import { Service as MediaService } from "./media";
 jest.mock("file-type", () => ({
   fileTypeFromBuffer: async (bytes: Buffer) =>
     bytes.subarray(0, 5).toString() === "%PDF-"

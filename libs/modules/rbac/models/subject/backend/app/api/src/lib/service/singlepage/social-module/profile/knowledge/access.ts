@@ -55,7 +55,7 @@ export function getSocialProfileKnowledgePermissionDescriptors(
   ];
 }
 
-export class SocialProfileKnowledgeAccessService {
+export class Service {
   protected permission: PermissionService;
   protected role: RoleService;
   protected rolesToPermissions: RolesToPermissionsService;
