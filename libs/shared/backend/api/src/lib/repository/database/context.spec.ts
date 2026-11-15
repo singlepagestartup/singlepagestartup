@@ -1,5 +1,7 @@
 import { pgTable, uuid, integer, text } from "drizzle-orm/pg-core";
-jest.mock("@sps/providers-db", () => ({ ConsistencyStore: jest.fn() }));
+jest.mock("@sps/providers-db/consistency", () => ({
+  ConsistencyStore: jest.fn(),
+}));
 import { createMemoryCache } from "@sps/shared-utils";
 import {
   consistencyContext,

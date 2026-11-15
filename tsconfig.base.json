@@ -48,6 +48,9 @@
       "@sps/http-cache": ["./libs/middlewares/src/lib/http-cache/index.ts"],
       "@sps/notification/*": ["./libs/modules/notification/*"],
       "@sps/providers-db": ["./libs/providers/db/src/index.ts"],
+      "@sps/providers-db/consistency": [
+        "./libs/providers/db/src/lib/consistency/index.ts"
+      ],
       "@sps/providers-file-storage": [
         "./libs/providers/file-storage/src/index.ts"
       ],

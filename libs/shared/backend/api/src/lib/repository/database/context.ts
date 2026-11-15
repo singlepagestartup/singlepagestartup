@@ -11,7 +11,7 @@ import {
   observeMemoryCache,
   invalidateMemoryCacheEntries,
 } from "@sps/shared-utils";
-import { ConsistencyStore } from "@sps/providers-db";
+import { ConsistencyStore } from "@sps/providers-db/consistency";
 
 export interface IConsistencyReadContext {
   dependencies: Map<string, string>;
@@ -36,8 +36,7 @@ observeMemoryCache(({ type, metadata }) => {
   if (!context) return;
   if (type === "validate") {
     const snapshot = metadata.get(memorySnapshot) as
-      | IMemorySnapshot
-      | undefined;
+      IMemorySnapshot | undefined;
     if (!snapshot?.complete) return false;
     return new ConsistencyStore()
       .versions(snapshot.dependencies.map(([key]) => key))
@@ -54,8 +53,7 @@ observeMemoryCache(({ type, metadata }) => {
     } satisfies IMemorySnapshot);
   else {
     const snapshot = metadata.get(memorySnapshot) as
-      | IMemorySnapshot
-      | undefined;
+      IMemorySnapshot | undefined;
     if (!snapshot) {
       context.complete = false;
       return;
@@ -80,8 +78,7 @@ export function invalidateConsistencyMemory(keys: string[]) {
   const changed = new Set(keys);
   invalidateMemoryCacheEntries((metadata) => {
     const snapshot = metadata.get(memorySnapshot) as
-      | IMemorySnapshot
-      | undefined;
+      IMemorySnapshot | undefined;
     return (
       !!snapshot &&
       (!snapshot.complete ||
