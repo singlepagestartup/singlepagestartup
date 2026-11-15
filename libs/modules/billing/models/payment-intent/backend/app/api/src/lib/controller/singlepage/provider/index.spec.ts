@@ -61,6 +61,7 @@ describe("Given: the payment-intent provider handler", () => {
       }),
       findById: jest.fn().mockResolvedValue(paymentIntent),
       dummy: jest.fn(),
+      settleFreePayment: jest.fn(),
       billingModule: {
         currency: {
           findById: jest.fn().mockResolvedValue({
@@ -96,6 +97,25 @@ describe("Given: the payment-intent provider handler", () => {
       body,
     });
   }
+
+  it.each(["stripe", "paykeeper", "dummy"])(
+    "settles a free %s checkout during creation",
+    async (provider) => {
+      const service = createService({ allowedProviders: [provider] });
+      const freeIntent = { ...paymentIntent, amount: 0 };
+      const paidIntent = { ...freeIntent, status: "succeeded" };
+      service.findById.mockResolvedValue(freeIntent);
+      service.settleFreePayment.mockResolvedValue(paidIntent);
+      const response = await createPayment({ service, provider });
+      expect(response.status).toBe(201);
+      await expect(response.json()).resolves.toEqual({ data: paidIntent });
+      expect(service.settleFreePayment).toHaveBeenCalledWith(
+        freeIntent.id,
+        provider,
+      );
+      expect(fetchMock).not.toHaveBeenCalled();
+    },
+  );
 
   const fetchMock = jest.fn();
   const originalFetch = global.fetch;

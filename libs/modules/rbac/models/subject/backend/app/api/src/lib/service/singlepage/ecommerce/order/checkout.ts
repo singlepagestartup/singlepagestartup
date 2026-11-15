@@ -453,6 +453,7 @@ export class Service {
     }
 
     const billingModulePaymentIntents: {
+      orderIds: string[];
       billingModulePaymentIntent: IBillingModulePaymentIntent;
       billingModuleCurrencyId: string;
       checkoutAttributesByCurrency: {
@@ -726,6 +727,10 @@ export class Service {
         );
 
         billingModulePaymentIntents.push({
+          orderIds: [
+            ...existingBillingModulePaymentIntentWithSameBillingModuleCurrencyAndCheckoutAttributes.orderIds,
+            order.id,
+          ],
           billingModulePaymentIntent: updatedBillingModulePaymentIntent,
           billingModuleCurrencyId,
           checkoutAttributesByCurrency: {
@@ -768,6 +773,7 @@ export class Service {
         .catch(compensateFailedCheckout);
 
       billingModulePaymentIntents.push({
+        orderIds: [order.id],
         billingModulePaymentIntent,
         billingModuleCurrencyId,
         checkoutAttributesByCurrency: {
@@ -791,6 +797,7 @@ export class Service {
         .catch(compensateFailedCheckout);
     }
 
+    const settledFreeOrderIds = new Set<string>();
     for (const billingModulePaymentIntent of billingModulePaymentIntents) {
       await billingModulePaymentIntentApi
         .provider({
@@ -807,37 +814,46 @@ export class Service {
           },
         })
         .catch(compensateFailedCheckout);
+      if (billingModulePaymentIntent.billingModulePaymentIntent.amount === 0) {
+        for (const orderId of billingModulePaymentIntent.orderIds) {
+          settledFreeOrderIds.add(orderId);
+        }
+      }
     }
 
     for (const order of ecommerceModuleOrders) {
-      await broadcastModuleChannelApi.pushMessage({
-        data: {
-          slug: "observer",
-          payload: JSON.stringify({
-            expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(),
-            trigger: {
-              type: "request",
-              method: "POST",
-              url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/billing/payment-intents/${props.provider}/webhook`,
-            },
-            pipe: [
-              {
+      if (!settledFreeOrderIds.has(order.id)) {
+        await broadcastModuleChannelApi.pushMessage({
+          data: {
+            slug: "observer",
+            payload: JSON.stringify({
+              expiresAt: new Date(
+                Date.now() + 1000 * 60 * 60 * 24,
+              ).toISOString(),
+              trigger: {
                 type: "request",
                 method: "POST",
-                url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/ecommerce/orders/${order["id"]}/check`,
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                },
+                url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/billing/payment-intents/${props.provider}/webhook`,
               },
-            ],
-          }),
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              pipe: [
+                {
+                  type: "request",
+                  method: "POST",
+                  url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/ecommerce/orders/${order["id"]}/check`,
+                  headers: {
+                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                  },
+                },
+              ],
+            }),
           },
-        },
-      });
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        });
+      }
 
       await broadcastModuleChannelApi.pushMessage({
         data: {
@@ -867,6 +883,13 @@ export class Service {
           },
         },
       });
+      if (settledFreeOrderIds.has(order.id)) {
+        await ecommerceModuleOrderApi.check({
+          id: order.id,
+          data: {},
+          options: { headers: { "X-RBAC-SECRET-KEY": rbacSecretKey } },
+        });
+      }
     }
 
     const billingModulePaymentIntentsToInvoices =

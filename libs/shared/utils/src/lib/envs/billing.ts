@@ -65,6 +65,7 @@ export const TIPTOPPAY_API_SECRET = process.env["TIPTOPPAY_API_SECRET"];
 export const PAYKEEPER_BASE_URL = process.env["PAYKEEPER_BASE_URL"];
 export const PAYKEEPER_API_LOGIN = process.env["PAYKEEPER_API_LOGIN"];
 export const PAYKEEPER_API_PASSWORD = process.env["PAYKEEPER_API_PASSWORD"];
+/** Merchant secret word (secret_seed) configured for PayKeeper POST notifications. */
 export const PAYKEEPER_WEBHOOK_SECRET = process.env["PAYKEEPER_WEBHOOK_SECRET"];
 export const PAYKEEPER_SUCCESS_URL = process.env["PAYKEEPER_SUCCESS_URL"];
 export const PAYKEEPER_FAIL_URL = process.env["PAYKEEPER_FAIL_URL"];

@@ -7,9 +7,7 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
 import { api } from "@sps/billing/models/payment-intent/sdk/server";
-import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import { getHttpErrorType, logger } from "@sps/backend-utils";
-import { api as paymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
 import { api as paymentIntentsToCurrenciesApi } from "@sps/billing/relations/payment-intents-to-currencies/sdk/server";
 
 export class Handler {
@@ -91,82 +89,11 @@ export class Handler {
       }
 
       if (entity.amount === 0) {
-        if (entity.type === "subscription") {
-          await api.update({
-            id: entity.id,
-            data: {
-              ...entity,
-              type: "one_off",
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
-            },
-          });
-        }
-
-        const invoice = await invoiceApi.create({
-          data: {
-            amount: entity.amount,
-            status: "open",
-            provider,
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-          },
-        });
-
-        await paymentIntentsToInvoicesApi.create({
-          data: {
-            paymentIntentId: entity.id,
-            invoiceId: invoice.id,
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-          },
-        });
-
-        setTimeout(async () => {
-          if (!RBAC_SECRET_KEY) {
-            return;
-          }
-
-          fetch(
-            API_SERVICE_URL +
-              `/api/billing/payment-intents/${provider}/webhook`,
-            {
-              credentials: "include",
-              method: "POST",
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                data: {
-                  id: invoice.id,
-                },
-              }),
-            } as Partial<NextRequestOptions>,
-          )
-            .then(async (res) => {
-              return res.json();
-            })
-            .catch((error) => {
-              logger.error("Error:", error);
-            });
-        }, 100);
-
-        return c.json(
-          {
-            data: entity,
-          },
-          201,
+        const paidIntent = await this.service.settleFreePayment(
+          entity.id,
+          provider,
         );
+        return c.json({ data: paidIntent }, 201);
       }
 
       if (provider === "stripe") {

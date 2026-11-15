@@ -167,39 +167,6 @@ describe("Given: the payment-intent provider webhook handler", () => {
   /**
    * BDD Scenario
    *
-   * Given: the list names stripe and the invoice amount is zero.
-   * When: the stripe webhook is posted with the invoice id, as payment creation does for a free payment.
-   * Then: the handler marks the invoice paid and updates its payment intents.
-   */
-  it("Then: still settles a zero-amount invoice for a listed provider", async () => {
-    const service = createService({ allowedProviders: ["stripe"] });
-    const invoice = { id: "invoice-1", amount: 0, status: "open" };
-    const paidInvoice = { ...invoice, status: "paid" };
-    service.billingModule.invoice.findById.mockResolvedValue(invoice);
-    mockInvoiceUpdate.mockResolvedValue(paidInvoice);
-
-    const response = await postWebhook({
-      service,
-      provider: "stripe",
-      body: { data: { id: "invoice-1" } },
-    });
-
-    expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({ data: paidInvoice });
-    expect(mockInvoiceUpdate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        id: "invoice-1",
-        data: expect.objectContaining({ status: "paid" }),
-      }),
-    );
-    expect(service.updatePaymentIntentStatus).toHaveBeenCalledWith({
-      invoice: paidInvoice,
-    });
-  });
-
-  /**
-   * BDD Scenario
-   *
    * Given: the list names telegram-star.
    * When: the telegram-star webhook is posted without the operator secret.
    * Then: it answers 403 and never reaches the Telegram Star service.

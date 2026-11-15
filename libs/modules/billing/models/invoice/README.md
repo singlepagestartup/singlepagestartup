@@ -24,6 +24,17 @@ creation date in an existing full-record payload; the repository removes it
 from the SQL patch. This keeps the subscription Invoice ordering stable when
 payment status changes or a webhook is repeated.
 
+## Payment confirmation
+
+Provider handlers delegate payment confirmation to the Payment Intent
+settlement service. It updates the Invoice and linked Payment Intents in one
+transaction, with Payment Intents locked in UUID order before the Invoice.
+`lockForSettlement` requires the caller's transaction; it cannot hold a lock
+outside that transaction. Successful retries do not rewrite paid invoices.
+Invoice expiry uses the same locking order and preserves a committed payment.
+See the [Payment Intent contract](../payment-intent/README.md#atomic-payment-confirmation)
+for provider authentication, amount checks and custom adapter migration.
+
 ## Variants
 
 - `default`: shows invoice status and a Pay button when `paymentUrl` is present.

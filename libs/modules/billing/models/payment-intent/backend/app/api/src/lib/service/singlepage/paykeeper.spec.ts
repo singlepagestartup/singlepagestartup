@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 /**
  * BDD Suite: PayKeeper webhook identifier validation.
  *
@@ -58,7 +59,7 @@ function webhookData(overrides: Record<string, unknown> = {}) {
     sum: "100.00",
     clientid: "",
     orderid: paymentIntentId,
-    key: "provider-key",
+    key: "",
     pk_hostname: "paykeeper.test",
     ps_id: "ps-1",
     client_email: "client@example.com",
@@ -70,10 +71,34 @@ function webhookData(overrides: Record<string, unknown> = {}) {
   } as any;
 }
 
+function signedData(overrides: Record<string, unknown> = {}) {
+  const data = webhookData(overrides);
+  data.key = createHash("md5")
+    .update(
+      `${data.id}${data.sum}${data.clientid}${data.orderid}paykeeper-webhook-secret`,
+    )
+    .digest("hex");
+  return data;
+}
+const dependencies = {
+  billingModule: {
+    paymentIntentsToInvoices: {
+      find: (...args: unknown[]) => mockedPaymentIntentToInvoiceFind(...args),
+    },
+    invoice: {
+      findById: (...args: unknown[]) => mockedInvoiceFindById(...args),
+    },
+  },
+  settle: jest.fn().mockResolvedValue(undefined),
+};
+function service() {
+  return new Service(dependencies as any);
+}
+
 function webhookProps(overrides: Record<string, unknown> = {}) {
   return {
     action: "webhook" as const,
-    data: webhookData(overrides),
+    data: signedData(overrides),
     rawBody: "",
     headers: {},
     callback: jest.fn().mockResolvedValue({ ok: true }),
@@ -82,11 +107,25 @@ function webhookProps(overrides: Record<string, unknown> = {}) {
 
 describe("PayKeeper webhook identifiers", () => {
   beforeEach(() => {
-    jest.resetAllMocks();
+    jest.clearAllMocks();
+    dependencies.settle.mockResolvedValue(undefined);
   });
 
   afterEach(() => {
     jest.restoreAllMocks();
+  });
+
+  it("refuses a non-RUB checkout before creating an invoice", async () => {
+    await expect(
+      service().proceed({
+        action: "create",
+        currency: "usd",
+        entity: { id: paymentIntentId, amount: 100 } as any,
+        email: "fixture@example.invalid",
+        metadata: { paymentIntentId },
+      }),
+    ).rejects.toThrow("Validation error. PayKeeper supports RUB payments only");
+    expect(invoiceApi.create).not.toHaveBeenCalled();
   });
 
   it.each([undefined, null, [], "malformed", 42])(
@@ -96,7 +135,7 @@ describe("PayKeeper webhook identifiers", () => {
       const fetchSpy = jest
         .spyOn(globalThis, "fetch")
         .mockRejectedValue(new Error("Unexpected provider call"));
-      await expect(new Service().proceed(props)).rejects.toThrow(
+      await expect(service().proceed(props)).rejects.toThrow(
         "Validation error. Invalid webhook payload",
       );
       expect(mockedPaymentIntentToInvoiceFind).not.toHaveBeenCalled();
@@ -117,12 +156,26 @@ describe("PayKeeper webhook identifiers", () => {
     "rejects malformed %s before any relation lookup",
     async (field, value) => {
       await expect(
-        new Service().proceed(webhookProps({ [field as string]: value })),
+        service().proceed(webhookProps({ [field as string]: value })),
       ).rejects.toThrow(`Validation error. Invalid ${field}`);
       expect(mockedPaymentIntentToInvoiceFind).not.toHaveBeenCalled();
       expect(mockedInvoiceUpdate).not.toHaveBeenCalled();
     },
   );
+
+  it("rejects an invalid signature before any lookup, provider call or settlement", async () => {
+    const props = webhookProps();
+    props.data.key = "0".repeat(32);
+    const fetchSpy = jest
+      .spyOn(globalThis, "fetch")
+      .mockRejectedValue(new Error("Unexpected network"));
+    await expect(service().proceed(props)).rejects.toThrow(
+      "Permission error. Invalid PayKeeper webhook signature",
+    );
+    expect(mockedPaymentIntentToInvoiceFind).not.toHaveBeenCalled();
+    expect(dependencies.settle).not.toHaveBeenCalled();
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
 
   /**
    * BDD Scenario
@@ -132,7 +185,7 @@ describe("PayKeeper webhook identifiers", () => {
    */
   it("refuses a non-uuid orderid before the relation is queried", async () => {
     await expect(
-      new Service().proceed(webhookProps({ orderid: "not-a-uuid" })),
+      service().proceed(webhookProps({ orderid: "not-a-uuid" })),
     ).rejects.toThrow("Validation error. Invalid orderid");
 
     expect(mockedPaymentIntentToInvoiceFind).not.toHaveBeenCalled();
@@ -147,7 +200,7 @@ describe("PayKeeper webhook identifiers", () => {
    */
   it("refuses a payment identifier that is not a string", async () => {
     await expect(
-      new Service().proceed(webhookProps({ id: { value: "301" } })),
+      service().proceed(webhookProps({ id: { value: "301" } })),
     ).rejects.toThrow("Validation error. Invalid id");
 
     expect(mockedPaymentIntentToInvoiceFind).not.toHaveBeenCalled();
@@ -162,7 +215,7 @@ describe("PayKeeper webhook identifiers", () => {
   it("answers not found for a canonical but unknown orderid", async () => {
     mockedPaymentIntentToInvoiceFind.mockResolvedValue([]);
 
-    await expect(new Service().proceed(webhookProps())).rejects.toThrow(
+    await expect(service().proceed(webhookProps())).rejects.toThrow(
       "Not Found error. Payment intent to invoice relation not found",
     );
 
@@ -170,17 +223,8 @@ describe("PayKeeper webhook identifiers", () => {
       params: {
         filters: {
           and: [
-            {
-              column: "paymentIntentId",
-              method: "eq",
-              value: paymentIntentId,
-            },
+            { column: "paymentIntentId", method: "eq", value: paymentIntentId },
           ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": "rbac-secret",
         },
       },
     });
@@ -198,7 +242,7 @@ describe("PayKeeper webhook identifiers", () => {
       .mockImplementation(() => undefined);
     const invoice = {
       id: "invoice-1",
-      amount: 0,
+      amount: 100,
       status: "open",
       provider: "paykeeper",
       providerId: "301",
@@ -219,6 +263,8 @@ describe("PayKeeper webhook identifiers", () => {
           status: "paid",
           pay_amount: "100.00",
           orderid: paymentIntentId,
+          paymentid: "301",
+          clientid: "",
         }),
     } as any);
 
@@ -228,21 +274,25 @@ describe("PayKeeper webhook identifiers", () => {
     mockedInvoiceFindById.mockResolvedValue(invoice);
     mockedInvoiceUpdate.mockResolvedValue(updatedInvoice);
 
-    await expect(new Service().proceed(props)).resolves.toEqual({ ok: true });
-
-    expect(mockedInvoiceUpdate).toHaveBeenCalledWith({
-      id: "invoice-1",
-      data: expect.objectContaining({
-        amount: 100,
-        status: "paid",
-      }),
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": "rbac-secret",
-        },
-      },
+    await expect(service().proceed(props)).resolves.toEqual({
+      ok: true,
+      acknowledgment:
+        "OK " +
+        createHash("md5").update("301paykeeper-webhook-secret").digest("hex"),
     });
-    expect(props.callback).toHaveBeenCalledWith({ invoice: updatedInvoice });
+
+    expect(dependencies.settle).toHaveBeenCalledWith(
+      expect.objectContaining({
+        invoiceId: "invoice-1",
+        providerId: "301",
+        event: expect.objectContaining({
+          id: "301",
+          orderid: paymentIntentId,
+          amountInMinorUnits: 10000,
+        }),
+      }),
+    );
+    expect(mockedInvoiceUpdate).not.toHaveBeenCalled();
     expect(logSpy).not.toHaveBeenCalled();
 
     fetchSpy.mockRestore();

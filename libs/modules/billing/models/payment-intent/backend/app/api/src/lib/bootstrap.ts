@@ -1,6 +1,5 @@
 import { Container, ContainerModule } from "inversify";
 import {
-  CRUDService,
   DI,
   ExceptionFilter,
   type IExceptionFilter,
@@ -11,11 +10,13 @@ import { Controller } from "./controller";
 import { Service } from "./service";
 import { App } from "./app";
 import { PaymentIntentDI, type IBillingModule } from "./di";
+import { Service as BillingCurrencyService } from "@sps/billing/models/currency/backend/app/api/src/lib/service";
 import { Repository as BillingCurrencyRepository } from "@sps/billing/models/currency/backend/app/api/src/lib/repository";
 import { Configuration as BillingCurrencyConfiguration } from "@sps/billing/models/currency/backend/app/api/src/lib/configuration";
 import { Service as BillingInvoiceService } from "@sps/billing/models/invoice/backend/app/api/src/lib/service";
 import { Repository as BillingInvoiceRepository } from "@sps/billing/models/invoice/backend/app/api/src/lib/repository";
 import { Configuration as BillingInvoiceConfiguration } from "@sps/billing/models/invoice/backend/app/api/src/lib/configuration";
+import { Service as BillingPaymentIntentsToInvoicesService } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/service";
 import { Repository as BillingPaymentIntentsToInvoicesRepository } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/repository";
 import { Configuration as BillingPaymentIntentsToInvoicesConfiguration } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/configuration";
 
@@ -29,13 +30,13 @@ const bindings = new ContainerModule(({ bind }) => {
   bind<IBillingModule>(PaymentIntentDI.IBillingModule)
     .toDynamicValue(() => {
       return {
-        currency: new CRUDService<any>(
+        currency: new BillingCurrencyService(
           new BillingCurrencyRepository(new BillingCurrencyConfiguration()),
         ),
         invoice: new BillingInvoiceService(
           new BillingInvoiceRepository(new BillingInvoiceConfiguration()),
         ),
-        paymentIntentsToInvoices: new CRUDService<any>(
+        paymentIntentsToInvoices: new BillingPaymentIntentsToInvoicesService(
           new BillingPaymentIntentsToInvoicesRepository(
             new BillingPaymentIntentsToInvoicesConfiguration(),
           ),

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import "reflect-metadata";
-import { injectable } from "inversify";
+import { injectable, unmanaged } from "inversify";
 import { Table } from "@sps/billing/models/payment-intent/backend/repository/database";
 import {
   RBAC_SECRET_KEY,
@@ -15,7 +15,9 @@ import {
 import { api as paymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
 import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
-import { validateWebhookIdentifiers } from "@sps/backend-utils";
+import { verifyPaykeeperWebhook } from "@sps/backend-utils";
+import type { IBillingModule } from "../../di";
+import type { IExecuteProps as ISettlementProps } from "./paykeeper-settlement";
 
 interface IMetadata {
   ecommerceModule?: {
@@ -204,16 +206,16 @@ export type IServiceProceedProps =
         "x-content-hmac"?: string;
         "content-hmac"?: string;
       };
-      callback: ({
-        invoice,
-      }: {
-        invoice: IInvoice;
-      }) => Promise<{ ok: boolean }>;
     };
+
+interface IConstructorProps {
+  billingModule: Pick<IBillingModule, "invoice" | "paymentIntentsToInvoices">;
+  settle: (props: ISettlementProps) => Promise<void>;
+}
 
 @injectable()
 export class Service {
-  constructor() {}
+  constructor(@unmanaged() private readonly dependencies?: IConstructorProps) {}
 
   protected async authHeaders() {
     if (!PAYKEEPER_API_LOGIN) {
@@ -272,7 +274,7 @@ export class Service {
     try {
       const authHeaders = await this.authHeaders();
 
-      const requestUrl = `${PAYKEEPER_BASE_URL}/info/invoice/byid/?id=${invoiceId}`;
+      const requestUrl = `${PAYKEEPER_BASE_URL}/info/invoice/byid/?id=${encodeURIComponent(invoiceId)}`;
 
       const response = await fetch(requestUrl, {
         method: "GET",
@@ -280,9 +282,8 @@ export class Service {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
         throw new Error(
-          `Internal error. PayKeeper invoice request failed: ${response.status} ${response.statusText}. Response: ${errorText}`,
+          `Internal error. PayKeeper invoice request failed: ${response.status}`,
         );
       }
 
@@ -290,14 +291,19 @@ export class Service {
 
       let invoiceResponse: IPayKeeperInvoiceData;
       try {
-        invoiceResponse = JSON.parse(responseText);
+        const parsed = JSON.parse(responseText);
+        if (Array.isArray(parsed) && parsed.length !== 1)
+          throw new Error("Invalid provider invoice response");
+        invoiceResponse = Array.isArray(parsed) ? parsed[0] : parsed;
       } catch (parseError) {
-        throw new Error(
-          `Internal error. Failed to parse PayKeeper response: ${responseText}`,
-        );
+        throw new Error("Internal error. Invalid PayKeeper invoice response");
       }
 
-      if (!invoiceResponse) {
+      if (
+        !invoiceResponse ||
+        typeof invoiceResponse !== "object" ||
+        Array.isArray(invoiceResponse)
+      ) {
         throw new Error(
           "Internal error. PayKeeper did not return invoice data",
         );
@@ -333,6 +339,10 @@ export class Service {
     }
 
     if (props.action === "create") {
+      if (props.currency.toLowerCase() !== "rub")
+        throw new Error(
+          "Validation error. PayKeeper supports RUB payments only",
+        );
       let invoice = await invoiceApi.create({
         data: {
           amount: props.entity.amount,
@@ -461,93 +471,51 @@ export class Service {
         throw error;
       }
     } else {
-      const { data } = props;
-
-      try {
-        const { orderid } = validateWebhookIdentifiers({
-          data,
-          uuidFields: ["orderid"],
-          stringFields: ["id", "sum", "clientid"],
-        });
-
-        const paymentIntentToInvoice = await paymentIntentsToInvoicesApi.find({
+      const event = verifyPaykeeperWebhook({
+        data: props.data,
+        secret: PAYKEEPER_WEBHOOK_SECRET,
+      });
+      if (!this.dependencies)
+        throw new Error(
+          "Configuration error. PayKeeper settlement dependencies not set",
+        );
+      const links =
+        await this.dependencies.billingModule.paymentIntentsToInvoices.find({
           params: {
             filters: {
               and: [
                 {
                   column: "paymentIntentId",
                   method: "eq",
-                  value: orderid,
+                  value: event.orderid,
                 },
               ],
             },
           },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-          },
         });
-
-        if (!paymentIntentToInvoice || paymentIntentToInvoice.length === 0) {
-          throw new Error(
-            `Not Found error. Payment intent to invoice relation not found for payment-intent ID: ${orderid}`,
-          );
-        }
-
-        let invoice = await invoiceApi.findById({
-          id: paymentIntentToInvoice[0].invoiceId,
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-          },
-        });
-
-        if (!invoice) {
-          throw new Error(
-            `Not Found error. Invoice not found for ID: ${paymentIntentToInvoice[0].invoiceId}`,
-          );
-        }
-
-        if (!invoice.providerId) {
-          throw new Error(
-            "Not Found error. Invoice providerId not found - cannot get PayKeeper invoice data",
-          );
-        }
-        const paykeeperInvoiceData = await this.getInvoiceData(
-          invoice.providerId,
+      if (!links?.length)
+        throw new Error(
+          "Not Found error. Payment intent to invoice relation not found",
         );
-
-        if (!paykeeperInvoiceData) {
-          throw new Error("Failed to get invoice data from PayKeeper");
-        }
-
-        if (paykeeperInvoiceData.status === "paid") {
-          invoice = await invoiceApi.update({
-            id: invoice.id,
-            data: {
-              ...invoice,
-              amount: parseInt(paykeeperInvoiceData.pay_amount),
-              status: "paid",
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
-            },
-          });
-        }
-
-        const result = await props.callback({ invoice });
-
-        if (!result.ok) {
-          throw new Error("Failed to update payment intent status");
-        }
-        return { ok: true };
-      } catch (error) {
-        throw error;
-      }
+      if (links.length !== 1)
+        throw new Error(
+          "Conflict error. Ambiguous PayKeeper invoice association",
+        );
+      const invoice = await this.dependencies.billingModule.invoice.findById({
+        id: links[0].invoiceId,
+      });
+      if (!invoice || invoice.provider !== "paykeeper" || !invoice.providerId)
+        throw new Error(
+          "Validation error. PayKeeper invoice not found or has another provider",
+        );
+      const providerInvoice = await this.getInvoiceData(invoice.providerId);
+      await this.dependencies.settle({
+        event,
+        invoiceId: invoice.id,
+        providerId: invoice.providerId,
+        providerInvoice,
+      });
+      return { ok: true, acknowledgment: event.acknowledgment };
     }
   }
 

@@ -49,7 +49,6 @@ jest.mock("@sps/billing/models/payment-intent/sdk/server", () => ({
   },
 }));
 
-import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import { Service } from "../../../service";
 import { Service as InvoiceService } from "@sps/billing/models/invoice/backend/app/api/src/lib/service";
 import {
@@ -79,6 +78,7 @@ describe("Given: a payment intent has no invoice relation yet", () => {
     };
     const service = {
       findById: jest.fn().mockResolvedValue(paymentIntent),
+      failUninitializedPaymentIntent: mockPaymentIntentUpdate,
       billingModule: {
         paymentIntentsToInvoices: {
           find: jest.fn().mockResolvedValue([]),
@@ -151,15 +151,10 @@ describe("Given: a payment intent has no invoice relation yet", () => {
     ).resolves.toEqual({
       data: failedPaymentIntent,
     });
-    expect(mockPaymentIntentUpdate).toHaveBeenCalledWith({
-      id: paymentIntent.id,
-      data: failedPaymentIntent,
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": "test-rbac-secret",
-        },
-      },
-    });
+    expect(mockPaymentIntentUpdate).toHaveBeenCalledWith(
+      paymentIntent.id,
+      new Date(Date.now() - PAYMENT_INTENT_INITIALIZATION_GRACE_PERIOD_MS),
+    );
   });
 });
 
@@ -196,6 +191,10 @@ describe("CloudPayments invoice reconciliation", () => {
       createdAt: date,
     };
     const invoiceRepository = {
+      lockForSettlement: jest.fn(),
+      updateFirstByField: jest.fn(async (_field, _id, data) =>
+        Object.assign(invoice, data),
+      ),
       find: jest.fn(async () => [{ ...invoice }]),
       findFirstByField: jest.fn(async () => ({ ...invoice })),
       consumeFirstByField: jest.fn(async (_field, _id, data, predicate) => {
@@ -206,6 +205,10 @@ describe("CloudPayments invoice reconciliation", () => {
       }),
     };
     const repository = {
+      withPaymentIntentLocks: jest.fn(async (_ids, run) => run()),
+      updateFirstByField: jest.fn(async (_field, _id, data) =>
+        Object.assign(intent, data),
+      ),
       findFirstByField: jest.fn(async () => ({ ...intent })),
       consumeFirstByField: jest.fn(async (_field, _id, data, predicate) => {
         if (predicate.and[0].value !== intent.status) {
@@ -218,19 +221,16 @@ describe("CloudPayments invoice reconciliation", () => {
       currency: {} as any,
       invoice: new InvoiceService(invoiceRepository as any),
       paymentIntentsToInvoices: {
-        find: jest.fn().mockResolvedValue([{ invoiceId: invoice.id }]),
+        create: jest.fn(),
+        find: jest
+          .fn()
+          .mockResolvedValue([
+            { invoiceId: invoice.id, paymentIntentId: intent.id },
+          ]),
         findById: jest.fn(),
       },
     });
-    const settle = jest.spyOn(service, "updatePaymentIntentStatus");
-    mockPaymentIntentFind.mockImplementation(async () => [{ ...intent }]);
-    mockPaymentIntentUpdate.mockImplementation(async ({ data }) =>
-      Object.assign(intent, data),
-    );
-    jest.mocked(invoiceApi.update).mockImplementation(async ({ data }) => {
-      Object.assign(invoice, data);
-      return { ...invoice } as any;
-    });
+    const settle = jest.spyOn(service, "settlePayment");
     const ctx = {
       req: { param: () => intent.id, parseBody: async () => ({ data: "{}" }) },
       json: (value: unknown) => value,
@@ -254,7 +254,10 @@ describe("CloudPayments invoice reconciliation", () => {
     await check();
     expect(settle).toHaveBeenCalledTimes(1);
     expect(settle).toHaveBeenCalledWith({
-      invoice: expect.objectContaining({ status: "paid", amount: 125 }),
+      invoiceId: invoice.id,
+      providerId: invoice.providerId,
+      provider: "cloudpayments",
+      amount: 125,
     });
     expect(provider).toHaveBeenCalledTimes(1);
   });

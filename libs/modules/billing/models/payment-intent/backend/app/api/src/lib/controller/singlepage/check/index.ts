@@ -2,8 +2,6 @@ import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
-import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
-import { api as api } from "@sps/billing/models/payment-intent/sdk/server";
 import { getHttpErrorType } from "@sps/backend-utils";
 
 export const PAYMENT_INTENT_INITIALIZATION_GRACE_PERIOD_MS = 5 * 60 * 1000;
@@ -75,18 +73,13 @@ export class Handler {
           Date.now() - PAYMENT_INTENT_INITIALIZATION_GRACE_PERIOD_MS;
 
         if (initializationExpired) {
-          const failedEntity = await api.update({
-            id: entity.id,
-            data: {
-              ...entity,
-              status: "failed",
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
-            },
-          });
+          const failedEntity =
+            await this.service.failUninitializedPaymentIntent(
+              entity.id,
+              new Date(
+                Date.now() - PAYMENT_INTENT_INITIALIZATION_GRACE_PERIOD_MS,
+              ),
+            );
 
           return c.json({
             data: failedEntity,
@@ -99,80 +92,28 @@ export class Handler {
       }
 
       const invoiceIds = paymentIntentsToInvoices.map((link) => link.invoiceId);
-      const readInvoices = () =>
-        this.service.billingModule.invoice.find({
-          params: {
-            filters: {
-              and: [{ column: "id", method: "inArray", value: invoiceIds }],
-            },
+      const invoices = await this.service.billingModule.invoice.find({
+        params: {
+          filters: {
+            and: [{ column: "id", method: "inArray", value: invoiceIds }],
           },
-        });
-      const invoices = await readInvoices();
-
-      const hasCloudpaymentsInvoice = invoices?.some(
-        (invoice) => invoice.provider === "cloudpayments",
-      );
-      if (invoices?.length) {
-        for (const invoice of invoices) {
-          if (invoice.provider === "cloudpayments") {
-            await this.service.checkCloudpaymentsInvoice(invoice);
-            continue;
-          }
-
-          if (
-            new Date(invoice.createdAt).getTime() + 7 * 24 * 60 * 60 * 1000 <
-            Date.now()
-          ) {
-            if (hasCloudpaymentsInvoice) {
-              await this.service.billingModule.invoice.failOpenInvoice(
-                invoice.id,
-              );
-              continue;
-            }
-            await invoiceApi.update({
-              id: invoice.id,
-              data: {
-                ...invoice,
-                status: "failed",
-              },
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                },
-              },
-            });
-
-            await api.update({
-              id: entity.id,
-              data: {
-                ...entity,
-                status: "failed",
-              },
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                },
-              },
-            });
-          }
-        }
-      }
-
-      if (hasCloudpaymentsInvoice) {
-        const currentInvoices = await readInvoices();
-        if (
-          currentInvoices?.length === new Set(invoiceIds).size &&
-          currentInvoices.every((invoice) => invoice.status === "failed")
-        ) {
-          await this.service.failUnpaidIntent(entity.id, entity.status);
-        }
-        const currentIntent = await this.service.findById({ id: entity.id });
-        return c.json({ data: currentIntent });
-      }
-
-      return c.json({
-        data: entity,
+        },
       });
+
+      const expiresBefore = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      for (const invoice of invoices) {
+        if (invoice.provider === "cloudpayments") {
+          await this.service.checkCloudpaymentsInvoice(invoice);
+        } else if (new Date(invoice.createdAt) < expiresBefore) {
+          await this.service.expireInvoice({
+            invoiceId: invoice.id,
+            provider: invoice.provider,
+            expiresBefore,
+          });
+        }
+      }
+      const currentIntent = await this.service.findById({ id: entity.id });
+      return c.json({ data: currentIntent });
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });

@@ -1,4 +1,7 @@
 import { z } from "zod";
+import { Service as Settlement } from "../startup/settlement";
+import { Service as PaykeeperSettlement } from "../startup/paykeeper-settlement";
+import type { IExecuteProps as ISettlementProps } from "./settlement";
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import { CRUDService, DI } from "@sps/shared-backend-api";
@@ -27,7 +30,6 @@ import {
   ALLOWED_BILLING_SERVICE_PROVIDERS,
 } from "@sps/shared-utils";
 import { api as paymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
-import { api as paymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
 import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
 import * as crypto from "crypto";
@@ -43,8 +45,18 @@ import type { IServiceProceedProps as ITelegramStarProps } from "./telegram-star
 import { logger } from "@sps/backend-utils";
 import { PaymentIntentDI, type IBillingModule } from "../../di";
 
+interface IStripeInvoiceProps {
+  paymentIntentId: string;
+  providerId: string;
+  amount: number;
+  paymentUrl?: string;
+  successUrl?: string | null;
+  cancelUrl?: string | null;
+}
+
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  declare repository: Repository;
   billingModule: IBillingModule;
 
   constructor(
@@ -66,82 +78,192 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     );
   }
 
-  async updatePaymentIntentStatus(props: { invoice: IInvoice }) {
-    if (!RBAC_SECRET_KEY) {
-      throw new Error("Configuration error. RBAC secret key not found");
-    }
+  settlePayment(props: ISettlementProps) {
+    return new Settlement({
+      repository: this.repository,
+      service: this,
+    }).execute(props);
+  }
 
-    const paymentIntentsToInvoice = await paymentIntentsToInvoicesApi.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "invoiceId",
-              method: "eq",
-              value: props.invoice.id,
-            },
-          ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          "Cache-Control": "no-store",
-        },
-      },
-    });
-
-    if (paymentIntentsToInvoice?.length) {
-      const paymentIntents = await paymentIntentApi.find({
+  async settleFreePayment(id: string, provider: string) {
+    return this.repository.withPaymentIntentLock(id, async () => {
+      const intent = await this.findById({ id });
+      if (!intent) {
+        throw new Error("Not Found error. Payment intent not found");
+      }
+      if (intent.amount !== 0 || intent.status === "canceled") {
+        throw new Error(
+          "Conflict error. Payment intent cannot be settled as free",
+        );
+      }
+      if (intent.status === "succeeded") {
+        return intent;
+      }
+      if (intent.type === "subscription") {
+        await this.update({ id, data: { ...intent, type: "one_off" } });
+      }
+      const { invoice, paymentIntentsToInvoices } = this.billingModule;
+      const links = await paymentIntentsToInvoices.find({
         params: {
           filters: {
-            and: [
-              {
-                column: "id",
-                method: "inArray",
-                value: paymentIntentsToInvoice.map(
-                  (item) => item.paymentIntentId,
-                ),
-              },
-            ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
+            and: [{ column: "paymentIntentId", method: "eq", value: id }],
           },
         },
       });
-
-      if (paymentIntents?.length) {
-        let amount = props.invoice.amount;
-
-        for (const paymentIntent of paymentIntents) {
-          if (
-            amount >= paymentIntent.amount &&
-            paymentIntent.status !== "succeeded" &&
-            paymentIntent.status !== "canceled"
-          ) {
-            amount -= paymentIntent.amount;
-            await paymentIntentApi.update({
-              id: paymentIntent.id,
-              data: {
-                ...paymentIntent,
-                status: "succeeded",
-              },
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+      let freeInvoice: IInvoice | undefined;
+      if (links.length) {
+        const matches = await invoice.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "id",
+                  method: "inArray",
+                  value: links.map((link) => link.invoiceId),
                 },
-              },
-            });
-          }
-        }
+                { column: "provider", method: "eq", value: provider },
+                { column: "amount", method: "eq", value: 0 },
+                { column: "status", method: "eq", value: "open" },
+              ],
+            },
+          },
+        });
+        freeInvoice = matches[0];
       }
-    }
+      if (!freeInvoice) {
+        freeInvoice = await invoice.create({
+          data: { amount: 0, status: "open", provider },
+        });
+        await paymentIntentsToInvoices.create({
+          data: { paymentIntentId: id, invoiceId: freeInvoice.id },
+        });
+      }
+      await this.settlePayment({
+        invoiceId: freeInvoice.id,
+        provider,
+        paymentIntentId: id,
+        amount: 0,
+      });
+      return this.findById({ id });
+    });
+  }
 
+  expireInvoice(props: {
+    invoiceId: string;
+    provider: string | null;
+    expiresBefore: Date;
+  }) {
+    return new Settlement({
+      repository: this.repository,
+      service: this,
+    }).expire(props);
+  }
+
+  async failUninitializedPaymentIntent(id: string, expiresBefore: Date) {
+    return this.repository.withPaymentIntentLock(id, async () => {
+      const intent = await this.findById({ id });
+      if (!intent) throw new Error("Not Found error. Payment intent not found");
+      if (
+        ["succeeded", "failed", "canceled"].includes(intent.status) ||
+        new Date(intent.updatedAt ?? intent.createdAt) >= expiresBefore
+      )
+        return intent;
+      const links = await this.billingModule.paymentIntentsToInvoices.find({
+        params: {
+          filters: {
+            and: [{ column: "paymentIntentId", method: "eq", value: id }],
+          },
+        },
+      });
+      if (links?.length) return intent;
+      return this.update({ id, data: { ...intent, status: "failed" } });
+    });
+  }
+
+  // Compatibility entrypoint for project callers; always rereads the committed invoice.
+  async updatePaymentIntentStatus(props: { invoice: IInvoice }) {
+    const invoice = await this.billingModule.invoice.findById({
+      id: props.invoice.id,
+    });
+    if (!invoice || invoice.status !== "paid" || !invoice.provider)
+      throw new Error("Conflict error. Invoice is not paid");
+    await this.settlePayment({
+      invoiceId: invoice.id,
+      provider: invoice.provider,
+      providerId: invoice.providerId,
+      amount: invoice.amount,
+    });
     return { ok: true };
+  }
+
+  private withStripeInvoice(
+    props: IStripeInvoiceProps,
+    operation: (invoice: IInvoice) => Promise<IInvoice>,
+  ) {
+    return this.repository.withPaymentIntentLock(
+      props.paymentIntentId,
+      async () => {
+        const intent = await this.findById({ id: props.paymentIntentId });
+        if (!intent)
+          throw new Error("Not Found error. Payment intent not found");
+        if (
+          !props.providerId ||
+          !Number.isSafeInteger(props.amount) ||
+          props.amount < 0
+        )
+          throw new Error("Validation error. Invalid Stripe invoice");
+        const invoices = await this.billingModule.invoice.find({
+          params: {
+            filters: {
+              and: [
+                { column: "provider", method: "eq", value: "stripe" },
+                { column: "providerId", method: "eq", value: props.providerId },
+              ],
+            },
+          },
+        });
+        if (invoices && invoices.length > 1)
+          throw new Error("Conflict error. Multiple Stripe invoices found");
+        let invoice = invoices?.[0];
+        if (!invoice)
+          invoice = await this.billingModule.invoice.create({
+            data: {
+              provider: "stripe",
+              providerId: props.providerId,
+              amount: props.amount,
+              status: "open",
+              paymentUrl: props.paymentUrl || "",
+              successUrl: props.successUrl || "",
+              cancelUrl: props.cancelUrl || "",
+            },
+          });
+        const links = await this.billingModule.paymentIntentsToInvoices.find({
+          params: {
+            filters: {
+              and: [{ column: "invoiceId", method: "eq", value: invoice.id }],
+            },
+          },
+        });
+        if (links?.length) {
+          if (links.length !== 1 || links[0].paymentIntentId !== intent.id)
+            throw new Error(
+              "Conflict error. Stripe invoice belongs to another payment intent",
+            );
+        } else {
+          const link = await this.billingModule.paymentIntentsToInvoices.create(
+            {
+              data: {
+                invoiceId: invoice.id,
+                paymentIntentId: intent.id,
+              },
+            },
+          );
+          if (!link)
+            throw new Error("Internal error. Failed to link Stripe invoice");
+        }
+        return operation(invoice);
+      },
+    );
   }
 
   async stripe(
@@ -309,59 +431,33 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         throw new Error("Not Found error. Checkout not found");
       }
 
-      let invoice: any;
-
-      if ("url" in checkout && checkout.url) {
-        invoice = await invoiceApi.create({
-          data: {
-            provider: "stripe",
-            status: "open",
+      if ("url" in checkout && checkout.url)
+        return this.withStripeInvoice(
+          {
+            paymentIntentId: props.entity.id,
             amount: props.entity.amount,
             providerId: checkout.id,
             paymentUrl: checkout.url,
             successUrl: checkout.success_url,
             cancelUrl: checkout.cancel_url,
           },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-          },
-        });
-      } else if ("latest_invoice" in checkout && checkout.latest_invoice) {
-        invoice = await invoiceApi.create({
-          data: {
-            provider: "stripe",
-            status: "open",
+          async (invoice) => invoice,
+        );
+      if (
+        "latest_invoice" in checkout &&
+        checkout.latest_invoice &&
+        typeof checkout.latest_invoice !== "string"
+      )
+        return this.withStripeInvoice(
+          {
+            paymentIntentId: props.entity.id,
             amount: props.entity.amount,
-            providerId: checkout.latest_invoice?.["id"],
-            paymentUrl: checkout.latest_invoice?.["hosted_invoice_url"],
+            providerId: checkout.latest_invoice.id,
+            paymentUrl: checkout.latest_invoice.hosted_invoice_url || "",
           },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-          },
-        });
-      }
-
-      if (!invoice) {
-        throw new Error("Not Found error. Invoice not found");
-      }
-
-      await paymentIntentsToInvoicesApi.create({
-        data: {
-          paymentIntentId: props.entity.id,
-          invoiceId: invoice.id,
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
-
-      return invoice;
+          async (invoice) => invoice,
+        );
+      throw new Error("Not Found error. Stripe invoice not found");
     } else {
       const data = props.data.data.object;
 
@@ -390,35 +486,23 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           throw new Error("Not Found error. Invoice not found");
         }
 
-        let invoice = invoices[0];
-
-        if (!invoice) {
-          throw new Error("Not Found error. Invoice not found");
-        }
-
-        if (data["status"] === "complete") {
-          invoice = await invoiceApi.update({
-            id: invoice.id,
-            data: {
-              ...invoice,
-              amount: (data?.["amount_total"] || 0) / 100,
-              providerId: data.id,
-              status: "paid",
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
-            },
+        if (invoices.length !== 1)
+          throw new Error("Conflict error. Multiple invoices found");
+        const invoice = invoices[0];
+        if (
+          data.status === "complete" &&
+          (data.payment_status === "paid" ||
+            data.payment_status === "no_payment_required")
+        ) {
+          if (data.amount_total === null)
+            throw new Error("Validation error. Stripe amount is missing");
+          return this.settlePayment({
+            invoiceId: invoice.id,
+            provider: "stripe",
+            providerId: data.id,
+            amount: data.amount_total / 100,
           });
-
-          if (!invoice) {
-            throw new Error("Not Found error. Invoice not found");
-          }
-
-          await this.updatePaymentIntentStatus({ invoice });
         }
-
         return invoice;
       } else if (data.object === "invoice") {
         const reference = data.parent?.subscription_details?.subscription;
@@ -428,91 +512,29 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           const subscription =
             await stripe.subscriptions.retrieve(subscriptionId);
 
-          logger.debug("🚀 ~ subscription:", subscription);
-
-          const invoices = await invoiceApi.find({
-            params: {
-              filters: {
-                and: [
-                  {
-                    column: "providerId",
-                    method: "eq",
-                    value: data.id,
-                  },
-                ],
-              },
+          const intentId = subscription.metadata?.paymentIntentId;
+          if (!intentId)
+            throw new Error(
+              "Validation error. Stripe subscription payment intent is missing",
+            );
+          return this.withStripeInvoice(
+            {
+              paymentIntentId: intentId,
+              providerId: data.id,
+              amount: data.amount_due / 100,
             },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                "Cache-Control": "no-store",
-              },
-            },
-          });
-
-          logger.debug("🚀 ~ invoices:", invoices);
-
-          let invoice: IInvoice | undefined | null;
-
-          if (invoices?.length) {
-            invoice = invoices[0];
-          } else {
-            invoice = await invoiceApi.create({
-              data: {
-                amount: data.amount_due / 100,
-                providerId: data.id,
-                status: "open",
-              },
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                },
-              },
-            });
-
-            if (subscription?.metadata?.["paymentIntentId"]) {
-              await paymentIntentsToInvoicesApi.create({
-                data: {
-                  paymentIntentId: subscription.metadata["paymentIntentId"],
+            async (invoice) => {
+              if (data.status === "paid")
+                return this.settlePayment({
                   invoiceId: invoice.id,
-                },
-                options: {
-                  headers: {
-                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                  },
-                },
-              });
-            }
-          }
-
-          logger.debug("🚀 ~ invoice:", invoice);
-
-          if (!invoice) {
-            throw new Error("Not Found error. Invoice not found");
-          }
-
-          if (data.status === "paid") {
-            invoice = await invoiceApi.update({
-              id: invoice.id,
-              data: {
-                ...invoice,
-                status: "paid",
-              },
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                },
-              },
-            });
-
-            if (!invoice) {
-              throw new Error("Not Found error. Invoice not found");
-            }
-
-            await this.updatePaymentIntentStatus({ invoice });
-          }
-
-          return invoice;
+                  provider: "stripe",
+                  providerId: data.id,
+                  paymentIntentId: intentId,
+                  amount: data.amount_paid / 100,
+                });
+              return invoice;
+            },
+          );
         }
       }
 
@@ -524,25 +546,30 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC secret key not found");
     }
-    const provider = new Cloudpayments();
+    const provider = new Cloudpayments({
+      settle: (input) => this.settlePayment(input),
+    });
     const payment = await provider.findCompletedPayment(invoice);
     if (payment) {
-      const paidInvoice = await invoiceApi.update({
-        id: invoice.id,
-        data: { amount: payment.Amount, status: "paid" },
-        options: { headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY } },
+      await this.settlePayment({
+        invoiceId: invoice.id,
+        provider: "cloudpayments",
+        providerId: invoice.providerId,
+        amount: payment.Amount,
       });
-      if (!paidInvoice) {
-        throw new Error("Not Found error. CloudPayments invoice not found");
-      }
-      await this.updatePaymentIntentStatus({ invoice: paidInvoice });
       return;
     }
 
-    const expiresAt =
-      new Date(invoice.createdAt).getTime() + 24 * 60 * 60 * 1000;
-    if (Date.now() > expiresAt && invoice.status === "open") {
-      await this.billingModule.invoice.failOpenInvoice(invoice.id);
+    const expiresBefore = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    if (
+      ["open", "failed"].includes(invoice.status) &&
+      new Date(invoice.createdAt) < expiresBefore
+    ) {
+      await this.expireInvoice({
+        invoiceId: invoice.id,
+        provider: "cloudpayments",
+        expiresBefore,
+      });
     }
   }
 
@@ -558,12 +585,16 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   async cloudpayments(props: ICloudpaymentsProceedProps) {
-    const cloudpayments = new Cloudpayments();
+    const cloudpayments = new Cloudpayments({
+      settle: (input) => this.settlePayment(input),
+    });
     return cloudpayments.proceed(props);
   }
 
   async tiptoppay(props: ITiptippayProceedProps) {
-    const tiptoppay = new Tiptoppay();
+    const tiptoppay = new Tiptoppay({
+      settle: (input) => this.settlePayment(input),
+    });
     return tiptoppay.proceed(props);
   }
 
@@ -715,25 +746,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       }
 
       if (props.data.Status === "Success") {
-        invoice = await invoiceApi.update({
-          id: invoice.id,
-          data: {
-            ...invoice,
-            amount: props.data.AmountUSD,
-            status: "paid",
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-          },
+        invoice = await this.settlePayment({
+          invoiceId: invoice.id,
+          provider: "0xprocessing",
+          providerId: String(PaymentId),
+          amount: Number(props.data.AmountUSD),
         });
-
-        if (!invoice) {
-          throw new Error("Not Found error. Invoice not found");
-        }
-
-        await this.updatePaymentIntentStatus({ invoice });
       }
 
       return invoice;
@@ -824,24 +842,17 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
       let invoice = invoices[0];
 
-      invoice = await invoiceApi.update({
-        id: invoice.id,
-        data: {
-          ...invoice,
-          status: "paid",
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
-
-      if (!invoice) {
-        throw new Error("Not Found error. Invoice not found");
+      if (invoice.provider !== "dummy") {
+        throw new Error(
+          "Permission error. Invoice belongs to another payment provider",
+        );
       }
 
-      await this.updatePaymentIntentStatus({ invoice });
+      invoice = await this.settlePayment({
+        invoiceId: invoice.id,
+        provider: "dummy",
+        amount: invoice.amount,
+      });
 
       return invoice;
     }
@@ -1213,29 +1224,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       }
 
       if (props.data.Event === "Payment") {
-        invoice = await invoiceApi.update({
-          id: invoice.id,
-          data: {
-            ...invoice,
-            status: "paid",
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
-            },
-          },
+        invoice = await this.settlePayment({
+          invoiceId: invoice.id,
+          provider: "payselection",
+          providerId: invoice.providerId,
+          amount: Number(props.data.Amount),
         });
-
-        if (!invoice) {
-          logger.error(
-            "Payselection Webhook - Invoice not found: " + props.rawBody,
-          );
-
-          return;
-        }
-
-        await this.updatePaymentIntentStatus({ invoice });
       }
 
       return invoice;
@@ -1243,12 +1237,21 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   async paykeeper(props: IPaykeeperProceedProps) {
-    const paykeeper = new Paykeeper();
+    const paykeeper = new Paykeeper({
+      billingModule: this.billingModule,
+      settle: (input) =>
+        new PaykeeperSettlement({
+          repository: this.repository,
+          service: this,
+        }).execute(input),
+    });
     return paykeeper.proceed(props);
   }
 
   async telegramStar(props: ITelegramStarProps) {
-    const telegramStar = new TelegramStar();
+    const telegramStar = new TelegramStar({
+      settle: (input) => this.settlePayment(input),
+    });
     return telegramStar.proceed(props);
   }
 }

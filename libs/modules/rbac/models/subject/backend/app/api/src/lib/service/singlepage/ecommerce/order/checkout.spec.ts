@@ -8,6 +8,7 @@
 
 const mockCheckoutAttributesByCurrency = jest.fn();
 const mockCheckoutAttributes = jest.fn();
+const mockEcommerceOrderCheck = jest.fn();
 const mockEcommerceOrderUpdate = jest.fn();
 const mockBillingModulePaymentIntentCreate = jest.fn();
 const mockBillingModulePaymentIntentUpdate = jest.fn();
@@ -28,6 +29,7 @@ jest.mock("@sps/ecommerce/models/order/sdk/server", () => ({
       mockCheckoutAttributesByCurrency(...args),
     checkoutAttributes: (...args: unknown[]) => mockCheckoutAttributes(...args),
     update: (...args: unknown[]) => mockEcommerceOrderUpdate(...args),
+    check: (...args: unknown[]) => mockEcommerceOrderCheck(...args),
   },
 }));
 
@@ -713,6 +715,35 @@ describe("Given: subject starts checkout for a product", () => {
   });
 
   describe("When: checkout completes successfully", () => {
+    it("checks a settled free order after registering its subject observer", async () => {
+      const { service, checkoutOrders } = createTestContext({
+        activeOrderProductId: "product-other",
+      });
+      mockBillingModulePaymentIntentCreate.mockResolvedValueOnce({
+        id: "free-intent",
+        amount: 0,
+      });
+      const id = checkoutOrders[0].id;
+      await service.execute({
+        id: "subject-1",
+        email: "subject@example.com",
+        provider: "paykeeper",
+        ecommerceModule: { orders: [{ id }] },
+      });
+      expect(mockBroadcastChannelPushMessage).toHaveBeenCalledTimes(1);
+      expect(
+        JSON.parse(
+          mockBroadcastChannelPushMessage.mock.calls[0][0].data.payload,
+        ).trigger.method,
+      ).toBe("PATCH");
+      expect(mockEcommerceOrderCheck).toHaveBeenCalledWith(
+        expect.objectContaining({ id }),
+      );
+      expect(
+        mockBroadcastChannelPushMessage.mock.invocationCallOrder[0],
+      ).toBeLessThan(mockEcommerceOrderCheck.mock.invocationCallOrder[0]);
+    });
+
     it("Then: observer messages are scheduled for webhook check and RBAC subject recheck", async () => {
       const { service, checkoutOrders } = createTestContext({
         activeOrderProductId: "product-other",
