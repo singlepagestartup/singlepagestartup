@@ -357,6 +357,7 @@ export class Service {
       return await this.run(executable, args, {
         cwd: directory,
         env: {
+          NODE_ENV: process.env.NODE_ENV,
           PATH: process.env.PATH,
           HOME: directory,
           TMPDIR: directory,

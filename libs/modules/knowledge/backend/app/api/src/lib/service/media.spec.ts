@@ -144,6 +144,7 @@ it("limits a decoder to the selected input format and omits API environment and 
   expect(args[args.indexOf("-format_whitelist") + 1]).toBe("png_pipe");
   expect(args[args.indexOf("-f") + 1]).toBe("png_pipe");
   expect(options.env).toEqual({
+    NODE_ENV: process.env.NODE_ENV,
     HOME: options.cwd,
     TMPDIR: options.cwd,
     PATH: process.env.PATH,
