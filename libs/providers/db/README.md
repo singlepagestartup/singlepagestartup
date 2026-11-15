@@ -4,6 +4,13 @@ The `sps_consistency` schema stores resource generations, a transactional outbox
 a delivery journal and temporary query registrations. It is infrastructure;
 model CRUD routes and data snapshot seeding do not expose these tables.
 
+Shared runtime code imports `ConsistencyStore` through
+`@sps/providers-db/consistency`. This entry point loads the class without
+initializing the application Drizzle database. Constructing the store requires
+the configured application database credentials. The `@sps/providers-db` entry
+point also initializes the application database and is intended for database
+consumers such as migrations and API database composition.
+
 ## Model and relation changes
 
 Define framework fields in `fields/singlepage.ts` and project extensions in

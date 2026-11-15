@@ -24,7 +24,9 @@ jest.mock("@sps/providers-kv", () => ({
     }
   },
 }));
-jest.mock("@sps/providers-db", () => ({ ConsistencyStore: jest.fn() }));
+jest.mock("@sps/providers-db/consistency", () => ({
+  ConsistencyStore: jest.fn(),
+}));
 import { createConsistencyRuntime, consistencyAuth } from "./consistency";
 import { consistencyContext } from "../repository/database/context";
 

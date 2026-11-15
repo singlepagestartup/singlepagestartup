@@ -4,7 +4,7 @@ import {
   readRbacSecret,
   rbacSecretMatches,
 } from "@sps/backend-utils";
-import { ConsistencyStore } from "@sps/providers-db";
+import { ConsistencyStore } from "@sps/providers-db/consistency";
 import { Provider as KVProvider } from "@sps/providers-kv";
 import { createMiddleware } from "hono/factory";
 import {
@@ -328,8 +328,7 @@ export function createConsistencyRuntime(props: IConsistencyRuntimeProps) {
         }
         const pointer = await disposable(() => cache.get({ prefix, key }));
         let candidate:
-          | { body: string; dependencies: Record<string, string> }
-          | undefined;
+          { body: string; dependencies: Record<string, string> } | undefined;
         if (pointer) {
           try {
             const raw = await disposable(() =>
