@@ -9,6 +9,7 @@ import QueryString from "qs";
 
 export interface IProps {
   host?: string;
+  onUnauthorized?: () => void;
   params?: {
     [key: string]: any;
   };
@@ -49,6 +50,7 @@ export async function action(props: IProps): Promise<IResult> {
 
   const json = await responsePipe<{ data: IResult }>({
     res,
+    onUnauthorized: props.onUnauthorized,
   });
 
   const transformedData = transformResponseItem<IResult>(json);

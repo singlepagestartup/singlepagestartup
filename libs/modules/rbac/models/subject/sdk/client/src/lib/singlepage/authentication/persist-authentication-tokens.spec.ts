@@ -11,6 +11,7 @@
  */
 
 const cookiesSetMock = jest.fn();
+const cookiesGetMock = jest.fn();
 const cookiesRemoveMock = jest.fn();
 const parseJwtMock = jest.fn();
 const dispatchEventMock = jest.fn();
@@ -19,6 +20,7 @@ jest.mock("js-cookie", () => ({
   __esModule: true,
   default: {
     set: (...args: unknown[]) => cookiesSetMock(...args),
+    get: (...args: unknown[]) => cookiesGetMock(...args),
     remove: (...args: unknown[]) => cookiesRemoveMock(...args),
   },
 }));
@@ -32,7 +34,10 @@ jest.mock("@sps/shared-frontend-client-utils", () => ({
 import {
   AUTHENTICATION_STORAGE_EVENT,
   clearAuthenticationTokens,
+  clearRejectedAccessToken,
+  clearRejectedRefreshToken,
   persistAuthenticationTokens,
+  readAuthenticationTokens,
 } from "./persist-authentication-tokens";
 
 describe("Given: authentication tokens persistence", () => {
@@ -49,9 +54,49 @@ describe("Given: authentication tokens persistence", () => {
   beforeEach(() => {
     localStorage.clear();
     cookiesSetMock.mockReset();
+    cookiesGetMock.mockReset();
     cookiesRemoveMock.mockReset();
     parseJwtMock.mockReset();
     dispatchEventMock.mockReset();
+  });
+
+  it("drops the rejected access token and keeps the refresh token for one recovery attempt", () => {
+    cookiesGetMock.mockReturnValue("old-access");
+    localStorage.setItem("rbac.subject.refresh", "old-refresh");
+    clearRejectedAccessToken("Bearer old-access");
+    expect(cookiesRemoveMock).toHaveBeenCalledWith("rbac.subject.jwt", {
+      path: "/",
+    });
+    expect(localStorage.getItem("rbac.subject.refresh")).toBe("old-refresh");
+    expect(dispatchEventMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("ignores a late rejection after a new sign-in", () => {
+    cookiesGetMock.mockReturnValue("new-access");
+    localStorage.setItem("rbac.subject.refresh", "new-refresh");
+    clearRejectedAccessToken("Bearer old-access");
+    clearRejectedRefreshToken("old-refresh");
+    expect(localStorage.getItem("rbac.subject.refresh")).toBe("new-refresh");
+    expect(cookiesRemoveMock).not.toHaveBeenCalled();
+    expect(dispatchEventMock).not.toHaveBeenCalled();
+  });
+
+  it("finishes recovery when the current refresh token is also rejected", () => {
+    localStorage.setItem("rbac.subject.refresh", "old-refresh");
+    clearRejectedRefreshToken("old-refresh");
+    expect(localStorage.getItem("rbac.subject.refresh")).toBeNull();
+    expect(dispatchEventMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not apply an earlier background response after sign-in", () => {
+    const previous = readAuthenticationTokens();
+    persistAuthenticationTokens({ jwt: "new-access", refresh: "new-refresh" });
+    persistAuthenticationTokens(
+      { jwt: "old-access", refresh: "old-refresh" },
+      previous,
+    );
+    expect(localStorage.getItem("rbac.subject.refresh")).toBe("new-refresh");
+    expect(cookiesSetMock).toHaveBeenCalledTimes(1);
   });
 
   it("When: JWT contains exp Then: cookie is persisted with matching expiration", () => {

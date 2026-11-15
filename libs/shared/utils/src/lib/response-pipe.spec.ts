@@ -22,6 +22,20 @@ describe("Given: client-side unauthorized responses", () => {
     jest.restoreAllMocks();
   });
 
+  it("lets the session request handle its own 401 without clearing a newer login", async () => {
+    localStorage.setItem("rbac.subject.refresh", "new-refresh");
+    const onUnauthorized = jest.fn();
+    const res = new Response(
+      JSON.stringify({ message: "Authentication error. Token revoked" }),
+      { status: 401 },
+    );
+    await expect(responsePipe({ res, onUnauthorized })).rejects.toMatchObject({
+      status: 401,
+    });
+    expect(onUnauthorized).toHaveBeenCalledTimes(1);
+    expect(localStorage.getItem("rbac.subject.refresh")).toBe("new-refresh");
+  });
+
   /**
    * BDD Scenario: Recoverable unauthorized response.
    *
