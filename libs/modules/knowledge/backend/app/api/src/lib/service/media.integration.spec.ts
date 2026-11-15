@@ -1,4 +1,4 @@
-import { execFile } from "node:child_process";
+import { execFile, type ExecFileOptions } from "node:child_process";
 import { promisify } from "node:util";
 import {
   mkdtemp,
@@ -7,17 +7,12 @@ import {
   writeFile,
   rm,
   access,
+  readFile,
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import sharp from "sharp";
 import { Service as MediaService } from "./media";
-jest.mock("file-type", () => ({
-  fileTypeFromBuffer: async (bytes: Buffer) =>
-    bytes.subarray(0, 5).toString() === "%PDF-"
-      ? { ext: "pdf", mime: "application/pdf" }
-      : { ext: "png", mime: "image/png" },
-}));
 function pdfFixture() {
   const text = "BT /F1 12 Tf 20 100 Td (Knowledge parser fixture) Tj ET";
   const objects = [
@@ -87,11 +82,11 @@ it.each(["png", "pdf"])(
     const service = new MediaService({
       provider: { generate } as any,
       readFile: async () => bytes,
-      run: ((command: string, args: string[], options: object) =>
+      run: ((command: string, args: string[], options: ExecFileOptions) =>
         native(command, args, {
           ...options,
           env: {
-            ...process.env,
+            ...options.env,
             FONTCONFIG_FILE: config,
             FONTCONFIG_PATH: directory,
           },
@@ -112,6 +107,10 @@ it.each(["png", "pdf"])(
       const payload = (generate.mock.calls[0] as any)[0].context[0].content[1]
         .image_url.url;
       expect(payload).toMatch(/^data:image\/jpeg;base64,/);
+      const image = await sharp(
+        Buffer.from(payload.split(",")[1], "base64"),
+      ).metadata();
+      expect(Math.max(image.width!, image.height!)).toBeLessThanOrEqual(2048);
       expect(JSON.stringify(generate.mock.calls)).not.toContain(
         "image/svg+xml",
       );
@@ -121,3 +120,48 @@ it.each(["png", "pdf"])(
   },
   60000,
 );
+
+it("renders and transcribes local MP4 tracks with the restricted FFmpeg input options", async () => {
+  const directory = await mkdtemp(path.join(tmpdir(), "sps-knowledge-video-"));
+  const fixture = path.join(directory, "clip.mp4");
+  try {
+    await promisify(execFile)("ffmpeg", [
+      "-v",
+      "error",
+      "-nostdin",
+      "-f",
+      "lavfi",
+      "-i",
+      "color=size=32x24:rate=2:duration=2",
+      "-f",
+      "lavfi",
+      "-i",
+      "sine=duration=2",
+      "-c:v",
+      "mpeg4",
+      "-c:a",
+      "aac",
+      "-shortest",
+      fixture,
+    ]);
+    const provider = {
+      generate: jest.fn(async () => ({
+        text: "Test frame",
+        finishReason: "stop",
+      })),
+      transcribeAudio: jest.fn(async () => ({
+        segments: [{ text: "Test speech", start: 0, end: 1 }],
+      })),
+    };
+    const service = new MediaService({
+      readFile: () => readFile(fixture),
+      provider: provider as any,
+    });
+    const timeline = await service.analyze({ file: "/clip.mp4" } as any, "");
+    expect(timeline).toContain("Test frame");
+    expect(timeline).toContain("Test speech");
+    expect(provider.transcribeAudio).toHaveBeenCalledTimes(1);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+}, 60000);

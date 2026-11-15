@@ -10,7 +10,7 @@ File format is detected from stored bytes. The common material service processes
 
 - PDF: render every page, transcribe text and tables, describe images and diagrams.
 - Raster image: recognize text and describe the visual content. SVG and SVGZ attachments are unsupported, including renamed files and existing stored Files.
-- Video: describe frames at one-second intervals by default and combine them with time-aligned speech transcription.
+- Video: sample at one-second intervals by default. For longer clips, increase the interval to cover the duration with at most 120 frames. Combine frame descriptions with time-aligned speech transcription.
 - Audio: transcribe speech with segment timestamps.
 - UTF-8 text: preserve its structure and timestamps.
 
@@ -122,10 +122,17 @@ Embeddings and chat configuration live in `backend/app/api/src/lib/configuration
 | ------------------------------------ | ------------------ |
 | `KNOWLEDGE_TRANSCRIPTION_MODEL`      | `openai/whisper-1` |
 | `KNOWLEDGE_VIDEO_FRAME_STEP_SECONDS` | `1`                |
+| `KNOWLEDGE_NATIVE_MEDIA_ENABLED`     | `true`             |
 | `KNOWLEDGE_PDF_INFO_COMMAND`         | `pdfinfo`          |
 | `KNOWLEDGE_PDF_RENDER_COMMAND`       | `pdftoppm`         |
 
 Install Poppler and FFmpeg for local processing; the application Docker image includes them. Current per-file limits are 100 MB, 200 PDF pages, and 3600 seconds of audio/video. A synthesis input over one million characters is rejected. Empty, failed, or truncated model responses are not published. Errors are returned by the operation or logged; Source has no persisted processing-status fields.
+
+Set `KNOWLEDGE_NATIVE_MEDIA_ENABLED=false` in the API environment and restart the API to disable local PDF, image, audio and video analysis. With the deployer, set it in `tools/deployer/.env` and redeploy the API. UTF-8 text analysis stays available. A Source rebuild clears the previous generated description and index before analyzing its attachments. If native analysis is disabled and a binary attachment needs processing, the original files and user notes remain available for retry. This setting applies to Knowledge media analysis; Telegram voice normalization and RBAC chat audio transcription have their own handlers.
+
+FFmpeg and FFprobe use single-file formats selected from the detected bytes, with the local file protocol as their only input protocol. The service renders images and PDF pages at up to 2048 pixels on the long side and video frames at up to 1280. It runs each utility with a private working directory, a restricted environment and a two-minute timeout. Visual descriptions and speech transcription still send derived media to the configured model provider.
+
+The utilities run under the API's operating-system user. For untrusted uploads, keeping originals and application credentials outside a decoder's reach requires a separate sandbox with no network, read-only access to one input, disposable output and OS-enforced CPU, memory and disk limits. Disabling native analysis removes these utility calls until such isolation is available.
 
 ## Verification
 

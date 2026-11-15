@@ -110,6 +110,7 @@ add_env "ALLOWED_BILLING_SERVICE_PROVIDERS" "stripe,0xprocessing,payselection,cl
 
 add_env "LLM_SERVICE_URL" "http://localhost:8765"
 add_env "KNOWLEDGE_EMBEDDING_PROVIDER" "llm"
+add_env "KNOWLEDGE_NATIVE_MEDIA_ENABLED" "true"
 add_env "KNOWLEDGE_OPEN_ROUTER_EMBEDDING_MODEL" "qwen/qwen3-embedding-8b"
 add_env "OPEN_ROUTER_API_KEY" ""
 add_env "OLLAMA_URL" "http://localhost:11434"

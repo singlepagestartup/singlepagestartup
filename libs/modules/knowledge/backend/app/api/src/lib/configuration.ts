@@ -9,6 +9,45 @@ export const KNOWLEDGE_LLM_EMBEDDING_MODEL = "local/default-embedding";
 export const KNOWLEDGE_DEFAULT_OPEN_ROUTER_EMBEDDING_MODEL =
   "qwen/qwen3-embedding-8b";
 
+// Only single-file demuxers. Keys are formats detected from the stored bytes.
+export const knowledgeMediaDemuxers = new Map<string, string>([
+  ["image/png", "png_pipe"],
+  ["image/apng", "apng"],
+  ["image/jpeg", "jpeg_pipe"],
+  ["image/gif", "gif"],
+  ["image/webp", "webp_pipe"],
+  ["image/bmp", "bmp_pipe"],
+  ["image/tiff", "tiff_pipe"],
+  ["image/avif", "mov"],
+  ["image/heic", "mov"],
+  ["image/heif", "mov"],
+  ["audio/mpeg", "mp3"],
+  ["audio/aac", "aac"],
+  ["audio/wav", "wav"],
+  ["audio/flac", "flac"],
+  ["audio/aiff", "aiff"],
+  ["audio/amr", "amr"],
+  ["audio/ogg", "ogg"],
+  ["audio/ogg; codecs=opus", "ogg"],
+  ["audio/mp4", "mov"],
+  ["audio/x-m4a", "mov"],
+  ["video/mp4", "mov"],
+  ["video/x-m4v", "mov"],
+  ["video/quicktime", "mov"],
+  ["video/3gpp", "mov"],
+  ["video/3gpp2", "mov"],
+  ["video/webm", "matroska"],
+  ["video/matroska", "matroska"],
+  ["video/vnd.avi", "avi"],
+  ["video/ogg", "ogg"],
+  ["video/mpeg", "mpeg"],
+  ["video/MP1S", "mpeg"],
+  ["video/MP2P", "mpeg"],
+  ["video/mp2t", "mpegts"],
+]);
+export const KNOWLEDGE_MAX_VIDEO_FRAMES = 120;
+export const KNOWLEDGE_MAX_MEDIA_SECONDS = 3600;
+
 export type KnowledgeEmbeddingProvider = "llm" | "openrouter";
 
 function resolveKnowledgeContentRoot() {
