@@ -22,7 +22,7 @@ jest.mock("@sps/backend-utils", () => ({
   },
 }));
 
-import { AgentRun } from "./index";
+import { Service as AgentRun } from "./index";
 
 const originalFetch = globalThis.fetch;
 

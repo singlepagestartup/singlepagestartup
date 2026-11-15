@@ -18,7 +18,7 @@ import type {
   IOpenRouterTool,
   IOpenRouterResponseFormat,
 } from "@sps/shared-third-parties";
-import { Service as ToolsService } from "./tools";
+import { Service as ToolsService } from "../../../../../startup/social-module/profile/ai/context/tools";
 import {
   aiContextText,
   aiContextPrefixHash,

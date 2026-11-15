@@ -6,7 +6,7 @@
  * Then: document scope is explicit and caller context stays generic.
  */
 
-import { KnowledgeService } from "./service";
+import { Service as KnowledgeService } from "./service";
 import type { KnowledgeSearchResult } from "./types";
 
 function createSearchResult(

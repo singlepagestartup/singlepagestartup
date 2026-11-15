@@ -15,7 +15,7 @@ import {
   readKnowledgeUserContext,
   replaceKnowledgeUserContext,
 } from "@sps/shared-utils";
-import type { KnowledgeService } from "@sps/knowledge/backend/app/api/src/lib/service";
+import type { Service as KnowledgeService } from "@sps/knowledge/backend/app/api/src/lib/service";
 import type { KnowledgeMissingFilesError } from "@sps/knowledge/backend/app/api/src/lib/types";
 import type { ISocialModule } from "../../../../../di";
 import type { ISocialProfileAiTool } from "./tool-loop";
@@ -368,8 +368,7 @@ export class Service {
       );
     let saved: IAIChatDocumentSaveResult | undefined;
     let existingSource:
-      | Awaited<ReturnType<KnowledgeService["listSources"]>>[number]
-      | undefined;
+      Awaited<ReturnType<KnowledgeService["listSources"]>>[number] | undefined;
     if (proposal.sourceId) {
       const [source] = await this.knowledge.listSources({
         sourceIds: [proposal.sourceId],

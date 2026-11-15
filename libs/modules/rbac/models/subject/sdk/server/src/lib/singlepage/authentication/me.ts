@@ -9,6 +9,7 @@ import { PHASE_PRODUCTION_BUILD } from "next/constants";
 export interface IProps {
   host?: string;
   catchErrors?: boolean;
+  onUnauthorized?: () => void;
   options?: Partial<NextRequestOptions>;
 }
 
@@ -42,6 +43,7 @@ export async function action(props: IProps): Promise<IResult> {
   const json = await responsePipe<{ data: IResult }>({
     res,
     catchErrors: props.catchErrors || productionBuild,
+    onUnauthorized: props.onUnauthorized,
   });
 
   if (!json) {

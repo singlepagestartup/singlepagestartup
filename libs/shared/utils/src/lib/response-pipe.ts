@@ -25,8 +25,7 @@ const sessionStatePattern =
 
 function dispatchBrowserAuthorizationStateChange() {
   const browserWindow = browserGlobals.window as
-    | { dispatchEvent: (event: Event) => void }
-    | undefined;
+    { dispatchEvent: (event: Event) => void } | undefined;
 
   if (!browserWindow) {
     return;
@@ -113,6 +112,7 @@ async function util<T>(props: {
   res: Response;
   catchErrors?: boolean;
   silentErrorStatuses?: number[];
+  onUnauthorized?: () => void;
 }): Promise<T | undefined> {
   if (!props.res.ok) {
     let errorJson;
@@ -191,12 +191,16 @@ async function util<T>(props: {
         cause: errorPayload,
       });
     } else {
-      const shouldClearAuthorizationState = shouldTreatAsExpiredSession({
-        status: errorPayload.status,
-        message: errorPayload.message,
-      });
+      const shouldClearAuthorizationState =
+        !props.onUnauthorized &&
+        shouldTreatAsExpiredSession({
+          status: errorPayload.status,
+          message: errorPayload.message,
+        });
 
-      if (shouldClearAuthorizationState) {
+      if (errorPayload.status === 401 && props.onUnauthorized) {
+        props.onUnauthorized();
+      } else if (shouldClearAuthorizationState) {
         clearBrowserAuthorizationState();
       }
 

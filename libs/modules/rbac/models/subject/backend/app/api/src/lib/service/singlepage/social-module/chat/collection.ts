@@ -1,6 +1,6 @@
 import type { Service as SubjectService } from "../../index";
-import { Service as Participants } from "./participants";
-import { Service as Presentations } from "./presentations";
+import { Service as Participants } from "../../../startup/social-module/chat/participants";
+import { Service as Presentations } from "../../../startup/social-module/chat/presentations";
 
 export interface IFindProps {
   subjectId: string;

@@ -4,7 +4,7 @@ import type { Service as BroadcastChannelService } from "@sps/broadcast/models/c
 import { app as notificationTopicApp } from "@sps/notification/models/topic/backend/app/api";
 import type { Service as NotificationTopicService } from "@sps/notification/models/topic/backend/app/api/src/lib/service";
 import { app as notificationNotificationApp } from "@sps/notification/models/notification/backend/app/api";
-import { Service as SecurityNotifications } from "./service/singlepage/security-notifications";
+import { Service as SecurityNotifications } from "./service/startup/security-notifications";
 import { Service as CrmFormService } from "@sps/crm/models/form/backend/app/api/src/lib/service";
 import { Service as CrmRequestService } from "@sps/crm/models/request/backend/app/api/src/lib/service";
 import { Service as CrmStepService } from "@sps/crm/models/step/backend/app/api/src/lib/service";
@@ -66,12 +66,12 @@ import {
 import { Service as SubjectsToRolesService } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/service";
 import { Repository as SubjectsToRolesRepository } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/repository";
 import { Configuration as SubjectsToRolesConfiguration } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/configuration";
-import { Service as IsAuthorizedService } from "./service/singlepage/is-authorized";
+import { Service as IsAuthorizedService } from "./service/startup/is-authorized";
 import { Service as SubjectsToBillingModuleCurrenciesService } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/app/api/src/lib/service";
 import { Repository as SubjectsToBillingModuleCurrenciesRepository } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/app/api/src/lib/repository";
 import { Configuration as SubjectsToBillingModuleCurrenciesConfiguration } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/app/api/src/lib/configuration";
-import { Service as BillRouteService } from "./service/singlepage/billing/route";
-import { Service as EcommerceOrderProceedService } from "./service/singlepage/ecommerce/order/proceed";
+import { Service as BillRouteService } from "./service/startup/billing/route";
+import { Service as EcommerceOrderProceedService } from "./service/startup/ecommerce/order/proceed";
 import type {
   ICheckout as IEcommerceProductCheckout,
   IExecuteProps as IEcommerceProductCheckoutProps,
@@ -148,9 +148,9 @@ import { Configuration as SocialAttributeKeysToAttributesConfiguration } from "@
 import { Repository as EcommerceOrderRepository } from "@sps/ecommerce/models/order/backend/app/api/src/lib/repository";
 import { Configuration as EcommerceOrderConfiguration } from "@sps/ecommerce/models/order/backend/app/api/src/lib/configuration";
 import { Service as EcommerceOrderService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service";
-import { Service as EcommerceOrderFindByIdCheckoutAttributesService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service/singlepage/find-by-id/checkout-attributes";
-import { Service as EcommerceOrderFindByIdTotalService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service/singlepage/find-by-id/total";
-import { Service as EcommerceOrderFindByIdQuantityService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service/singlepage/find-by-id/quantity";
+import { Service as EcommerceOrderFindByIdCheckoutAttributesService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service/startup/find-by-id/checkout-attributes";
+import { Service as EcommerceOrderFindByIdTotalService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service/startup/find-by-id/total";
+import { Service as EcommerceOrderFindByIdQuantityService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service/startup/find-by-id/quantity";
 import { Service as EcommerceProductService } from "@sps/ecommerce/models/product/backend/app/api/src/lib/service";
 import { Repository as EcommerceProductRepository } from "@sps/ecommerce/models/product/backend/app/api/src/lib/repository";
 import { Configuration as EcommerceProductConfiguration } from "@sps/ecommerce/models/product/backend/app/api/src/lib/configuration";

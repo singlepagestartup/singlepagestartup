@@ -5,7 +5,7 @@ import { Table } from "@sps/ecommerce/models/order/backend/repository/database";
 import { Service } from "../../service";
 import { Context } from "hono";
 import { Handler as Update } from "./update";
-import { Handler as Check } from "./find-by-id/check";
+import { Handler as Check } from "../startup/find-by-id/check";
 import { Handler as CheckoutAttributes } from "./find-by-id/checkout-attributes";
 import { Handler as ClearOldOrders } from "./clear-old-orders";
 import { Handler as Total } from "./find-by-id/total";

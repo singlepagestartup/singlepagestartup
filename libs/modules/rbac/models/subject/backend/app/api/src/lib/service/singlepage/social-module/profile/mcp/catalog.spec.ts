@@ -6,7 +6,7 @@
  * Then: only supported configured servers connect and stale identifiers remain visible.
  */
 
-import { ProfileMcpCatalogService } from "./catalog";
+import { Service as ProfileMcpCatalogService } from "./catalog";
 
 function createSession() {
   return {

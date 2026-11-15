@@ -1,5 +1,5 @@
 import { DeliveryRepository } from "@sps/broadcast/models/channel/backend/app/api/src/lib/repository/delivery";
-import { DeliveryQueue } from "@sps/broadcast/models/channel/backend/app/api/src/lib/service/singlepage/delivery-queue";
+import { Service as DeliveryQueue } from "@sps/broadcast/models/channel/backend/app/api/src/lib/service/singlepage/delivery-queue";
 import { randomUUID, createHash } from "node:crypto";
 import { getPostgresClient } from "@sps/shared-backend-database-config";
 import { CRUDService } from "@sps/shared-backend-api";

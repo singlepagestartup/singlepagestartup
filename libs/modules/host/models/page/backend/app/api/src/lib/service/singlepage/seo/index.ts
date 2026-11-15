@@ -1,4 +1,4 @@
-import { RoutingService } from "@sps/host/models/page/backend/app/api/src/lib/service/singlepage/routing";
+import { Service as RoutingService } from "@sps/host/models/page/backend/app/api/src/lib/service/startup/routing";
 import type { IModel as IMetadata } from "@sps/host/models/metadata/sdk/model";
 import { api as metadataApi } from "@sps/host/models/metadata/sdk/server";
 import { api as pagesToMetadataApi } from "@sps/host/relations/pages-to-metadata/sdk/server";
@@ -34,7 +34,7 @@ interface IPageReader {
   findByUrl: (props: { url: string }) => Promise<IResolvedPage | undefined>;
 }
 
-export class SeoService {
+export class Service {
   routing = new RoutingService();
   constructor(private readonly pages: IPageReader) {}
   private async assemble(

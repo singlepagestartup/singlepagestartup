@@ -2,7 +2,7 @@ import { api as roleApi } from "@sps/rbac/models/role/sdk/server";
 jest.mock("@sps/rbac/models/role/sdk/server", () => ({
   api: { publicResourceIds: jest.fn() },
 }));
-import { RoutingService } from "./index";
+import { Service as RoutingService } from "./index";
 const sources = [
   {
     name: "custom.owners",

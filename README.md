@@ -285,6 +285,16 @@ Strict layered architecture: Repository → Service → Controller → App.
 - Can extend or utilize shared service logic
 - Located under `backend/app/api/src/lib/service/`
 
+Each model or relation exports its effective `Service` from `service/index.ts`.
+An operation exports `Service` in both layers. Its Startup class extends
+`ParentService`, and callers give it a local name such as
+`import { Service as TelegramConversationMemoryStore } from "./service/startup/telegram-conversation-store"`.
+To change one operation in a downstream project, override its method in the
+matching `service/startup/` class. For example, Ecommerce and RBAC both use
+the Order model's `service/startup/find-by-id/quantity.ts` for order quantities.
+Keep the inherited method signature. For a service registered with Inversify,
+keep `@injectFromBase()` when the subclass inherits its injected constructor.
+
 #### Controller Layer
 
 - Publishes public API endpoints

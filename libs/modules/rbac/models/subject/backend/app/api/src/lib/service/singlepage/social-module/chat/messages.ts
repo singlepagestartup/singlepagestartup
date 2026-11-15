@@ -4,7 +4,7 @@ import type {
   IChatMessage,
 } from "@sps/social/models/message/sdk/model";
 import { assertKnowledgeAttachmentBytes } from "@sps/backend-utils";
-import { Service as Presentations } from "./presentations";
+import { Service as Presentations } from "../../../startup/social-module/chat/presentations";
 
 export class Service {
   constructor(

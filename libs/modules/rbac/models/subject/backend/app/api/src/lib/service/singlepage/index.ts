@@ -1,36 +1,20 @@
-import { Service as SecurityNotifications } from "./security-notifications";
-import {
-  Service as CreateCartOrder,
-  type IExecuteProps as ICreateCartOrderProps,
-} from "./ecommerce/order/create";
-import {
-  Service as FindOpenCartOrderWithProduct,
-  type IExecuteProps as IFindOpenCartOrderWithProductProps,
-} from "./ecommerce/order/find-open-cart-order-with-product";
-import {
-  Service as SetOrderCurrency,
-  type IExecuteProps as ISetOrderCurrencyProps,
-} from "./ecommerce/order/set-currency";
-import {
-  Service as ResolveOrderCurrency,
-  type IExecuteProps as IResolveOrderCurrencyProps,
-} from "./ecommerce/order/resolve-currency";
-import {
-  Service as FreezeSubscriptionPeriod,
-  type IExecuteProps as IFreezeSubscriptionPeriodProps,
-} from "./ecommerce/order/freeze-subscription-period";
-import {
-  Service as ChatParticipants,
-  type IExecuteProps as IChatParticipantsProps,
-} from "./social-module/chat/participants";
-import {
-  Service as EcommerceOrderAccess,
-  type IExecuteProps as IEcommerceOrderAccessProps,
-} from "./ecommerce/order/access";
-import {
-  Service as CrmFormRequestCreate,
-  type IExecuteProps as ICrmFormRequestCreateProps,
-} from "./crm/form/request";
+import type { Service as SecurityNotifications } from "./security-notifications";
+import { Service as CreateCartOrder } from "../startup/ecommerce/order/create";
+import type { IExecuteProps as ICreateCartOrderProps } from "./ecommerce/order/create";
+import { Service as FindOpenCartOrderWithProduct } from "../startup/ecommerce/order/find-open-cart-order-with-product";
+import type { IExecuteProps as IFindOpenCartOrderWithProductProps } from "./ecommerce/order/find-open-cart-order-with-product";
+import { Service as SetOrderCurrency } from "../startup/ecommerce/order/set-currency";
+import type { IExecuteProps as ISetOrderCurrencyProps } from "./ecommerce/order/set-currency";
+import { Service as ResolveOrderCurrency } from "../startup/ecommerce/order/resolve-currency";
+import type { IExecuteProps as IResolveOrderCurrencyProps } from "./ecommerce/order/resolve-currency";
+import { Service as FreezeSubscriptionPeriod } from "../startup/ecommerce/order/freeze-subscription-period";
+import type { IExecuteProps as IFreezeSubscriptionPeriodProps } from "./ecommerce/order/freeze-subscription-period";
+import { Service as ChatParticipants } from "../startup/social-module/chat/participants";
+import type { IExecuteProps as IChatParticipantsProps } from "./social-module/chat/participants";
+import { Service as EcommerceOrderAccess } from "../startup/ecommerce/order/access";
+import type { IExecuteProps as IEcommerceOrderAccessProps } from "./ecommerce/order/access";
+import { Service as CrmFormRequestCreate } from "../startup/crm/form/request";
+import type { IExecuteProps as ICrmFormRequestCreateProps } from "./crm/form/request";
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import { CRUDService, DI } from "@sps/shared-backend-api";
@@ -38,95 +22,67 @@ import { Repository } from "../../repository";
 import { verify } from "hono/jwt";
 import { requestHostRevalidation } from "@sps/backend-utils";
 import { RBAC_JWT_SECRET } from "@sps/shared-utils";
-import {
-  Service as AiContextService,
-  type IAiContextServiceProps,
-  type IAiContextService,
+import { Service as AiContextService } from "../startup/social-module/profile/ai/context";
+import type {
+  IAiContextServiceProps,
+  IAiContextService,
 } from "./social-module/profile/ai/context";
-import { Service as ProfileOwnership } from "./social-module/profile/ownership";
-import {
-  Service as ProfileSkills,
-  type IForDocumentProps as IProfileDocumentSkillProps,
-} from "./social-module/profile/skills";
-import { Service as AuthenticationMe } from "./authentication/me";
-import {
-  Service as FreeSubscription,
-  type IConstructorProps as IFreeSubscriptionDependencies,
-} from "./billing/free-subscription";
-import { Service as BlogArticleCreate } from "./blog/article/create";
-import { Service as RoleRevocation } from "./ecommerce/order/role-revocation";
+import { Service as ProfileOwnership } from "../startup/social-module/profile/ownership";
+import { Service as ProfileSkills } from "../startup/social-module/profile/skills";
+import type { IForDocumentProps as IProfileDocumentSkillProps } from "./social-module/profile/skills";
+import { Service as AuthenticationMe } from "../startup/authentication/me";
+import { Service as FreeSubscription } from "../startup/billing/free-subscription";
+import type { IConstructorProps as IFreeSubscriptionDependencies } from "./billing/free-subscription";
+import { Service as BlogArticleCreate } from "../startup/blog/article/create";
+import { Service as RoleRevocation } from "../startup/ecommerce/order/role-revocation";
 import type { IArticleCreateInput } from "@sps/rbac/models/subject/sdk/model/src/lib/blog-article-create";
 import type { Service as SubjectsToBlogModuleArticlesService } from "@sps/rbac/relations/subjects-to-blog-module-articles/backend/app/api/src/lib/service";
 import { Table } from "@sps/rbac/models/subject/backend/repository/database";
-import {
-  Service as Logout,
-  IExecuteProps as ILogoutExecuteProps,
-} from "./logout";
-import { Service as Me, IExecuteProps as IMeExecuteProps } from "./me";
-import {
-  Service as Refresh,
-  IExecuteProps as IRefreshExecuteProps,
-} from "./refresh";
-import { Service as Init, IExecuteProps as IInitExecuteProps } from "./init";
-import {
-  Service as RecordActivity,
-  IExecuteProps as IRecordActivityExecuteProps,
-} from "./record-activity";
-import {
-  Service as AuthenticationEmailAndPassword,
-  IExecuteProps as IAuthenticationEmailAndPasswordExecuteProps,
-} from "./authentication/email-and-password";
-import {
+import { Service as Logout } from "../startup/logout";
+import type { IExecuteProps as ILogoutExecuteProps } from "./logout";
+import { Service as Me } from "../startup/me";
+import type { IExecuteProps as IMeExecuteProps } from "./me";
+import { Service as Refresh } from "../startup/refresh";
+import type { IExecuteProps as IRefreshExecuteProps } from "./refresh";
+import { Service as Init } from "../startup/init";
+import type { IExecuteProps as IInitExecuteProps } from "./init";
+import { Service as RecordActivity } from "../startup/record-activity";
+import type { IExecuteProps as IRecordActivityExecuteProps } from "./record-activity";
+import { Service as AuthenticationEmailAndPassword } from "../startup/authentication/email-and-password";
+import type { IExecuteProps as IAuthenticationEmailAndPasswordExecuteProps } from "./authentication/email-and-password";
+import type {
   Service as IsAuthorized,
   IExecuteProps as IIsAuthorizedExecuteProps,
 } from "./is-authorized";
-import {
-  Service as AuthenticationEthereumVirtualMachine,
-  IExecuteProps as IAuthenticationEthereumVirtualMachineExecuteProps,
-} from "./authentication/ethereum-virtual-machine";
-import {
-  Service as AuthenticationOAuthStart,
-  IExecuteProps as IAuthenticationOAuthStartExecuteProps,
-} from "./authentication/oauth/start";
-import {
-  Service as AuthenticationOAuthCallback,
-  IExecuteProps as IAuthenticationOAuthCallbackExecuteProps,
-} from "./authentication/oauth/callback";
-import {
-  Service as AuthenticationOAuthExchange,
-  IExecuteProps as IAuthenticationOAuthExchangeExecuteProps,
-} from "./authentication/oauth/exchange";
-import {
-  Service as DeleteAnonymousSubjects,
+import { Service as AuthenticationEthereumVirtualMachine } from "../startup/authentication/ethereum-virtual-machine";
+import type { IExecuteProps as IAuthenticationEthereumVirtualMachineExecuteProps } from "./authentication/ethereum-virtual-machine";
+import { Service as AuthenticationOAuthStart } from "../startup/authentication/oauth/start";
+import type { IExecuteProps as IAuthenticationOAuthStartExecuteProps } from "./authentication/oauth/start";
+import { Service as AuthenticationOAuthCallback } from "../startup/authentication/oauth/callback";
+import type { IExecuteProps as IAuthenticationOAuthCallbackExecuteProps } from "./authentication/oauth/callback";
+import { Service as AuthenticationOAuthExchange } from "../startup/authentication/oauth/exchange";
+import type { IExecuteProps as IAuthenticationOAuthExchangeExecuteProps } from "./authentication/oauth/exchange";
+import { Service as DeleteAnonymousSubjects } from "../startup/delete-anonymous-subjects";
+import type {
   IExecuteProps as IDeleteAnonymousSubjectsExecuteProps,
   IRetentionBlocker as IAnonymousSubjectRetentionBlocker,
 } from "./delete-anonymous-subjects";
-import {
-  Service as Deanonymize,
-  IExecuteProps as IDeanonymizeExecuteProps,
-} from "./deanonymize";
-import {
-  Service as EcommerceOrderCheckout,
-  IExecuteProps as IEcommerceOrderCheckoutExecuteProps,
-} from "./ecommerce/order/checkout";
-import {
-  Service as EcommerceProductCheckout,
-  type IExecuteProps as IEcommerceProductCheckoutProps,
-} from "./ecommerce/product/checkout";
-import {
-  Service as EcommerceOrdersToProductsList,
-  IExecuteProps as IEcommerceOrdersToProductsListExecuteProps,
-} from "./ecommerce/orders-to-products/list";
-import {
-  Service as ChatSubjectsWithSocialModuleProfiles,
-  IExecuteProps as IChatSubjectsWithSocialModuleProfilesProps,
-} from "./social-module/chat/subjects-with-profiles";
-import {
+import { Service as Deanonymize } from "../startup/deanonymize";
+import type { IExecuteProps as IDeanonymizeExecuteProps } from "./deanonymize";
+import { Service as EcommerceOrderCheckout } from "../startup/ecommerce/order/checkout";
+import type { IExecuteProps as IEcommerceOrderCheckoutExecuteProps } from "./ecommerce/order/checkout";
+import { Service as EcommerceProductCheckout } from "../startup/ecommerce/product/checkout";
+import type { IExecuteProps as IEcommerceProductCheckoutProps } from "./ecommerce/product/checkout";
+import { Service as EcommerceOrdersToProductsList } from "../startup/ecommerce/orders-to-products/list";
+import type { IExecuteProps as IEcommerceOrdersToProductsListExecuteProps } from "./ecommerce/orders-to-products/list";
+import { Service as ChatSubjectsWithSocialModuleProfiles } from "../startup/social-module/chat/subjects-with-profiles";
+import type { IExecuteProps as IChatSubjectsWithSocialModuleProfilesProps } from "./social-module/chat/subjects-with-profiles";
+import type {
   Service as BillRoute,
   IExecuteProps as IBillRouteProps,
   ISettleProps as IBillRouteSettleProps,
 } from "./billing/route";
-import {
+import type {
   Service as EcommerceOrderProceed,
   IExecuteProps as IEcommerceOrderProceedProps,
 } from "./ecommerce/order/proceed";
@@ -151,40 +107,38 @@ import { Service as SubjectsToRolesService } from "@sps/rbac/relations/subjects-
 import { Service as SubjectsToEcommerceModuleOrdersService } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/service";
 import { Service as SubjectsToBillingModuleCurrenciesService } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/app/api/src/lib/service";
 import { Service as RolesToEcommerceModuleProductsService } from "@sps/rbac/relations/roles-to-ecommerce-module-products/backend/app/api/src/lib/service";
-import {
-  Service as TelegramBootstrap,
+import { Service as TelegramBootstrap } from "../startup/telegram/bootstrap";
+import type {
   IExecuteProps as ITelegramBootstrapExecuteProps,
   IResult as ITelegramBootstrapResult,
 } from "./telegram/bootstrap";
-import {
-  Service as TelegramPersonalAiAgent,
+import { Service as TelegramPersonalAiAgent } from "../startup/telegram/personal-ai-agent";
+import type {
   IExecuteProps as ITelegramPersonalAiAgentExecuteProps,
   IResult as ITelegramPersonalAiAgentResult,
 } from "./telegram/personal-ai-agent";
-import {
-  Service as TelegramSyncMembership,
+import { Service as TelegramSyncMembership } from "../startup/telegram/sync-membership";
+import type {
   IExecuteProps as ITelegramSyncMembershipExecuteProps,
   IResult as ITelegramSyncMembershipResult,
 } from "./telegram/sync-membership";
-import {
-  Service as TelegramCheckoutFreeSubscription,
-  IExecuteProps as ITelegramCheckoutFreeSubscriptionExecuteProps,
-} from "./telegram/checkout-free-subscription";
-import { ChatLifecycleService } from "./social-module/chat/lifecycle";
-import {
-  ProfileMcpCatalogService,
-  type IProfileMcpCatalogOpenProps,
-  type IProfileMcpCatalogSession,
+import { Service as TelegramCheckoutFreeSubscription } from "../startup/telegram/checkout-free-subscription";
+import type { IExecuteProps as ITelegramCheckoutFreeSubscriptionExecuteProps } from "./telegram/checkout-free-subscription";
+import { Service as ChatLifecycleService } from "../startup/social-module/chat/lifecycle";
+import { Service as ProfileMcpCatalogService } from "../startup/social-module/profile/mcp/catalog";
+import type {
+  IProfileMcpCatalogOpenProps,
+  IProfileMcpCatalogSession,
 } from "./social-module/profile/mcp/catalog";
-import {
-  AiExecutionActionReporter,
-  type IAiExecutionActionReporter,
-  type IAiExecutionActionReporterProps,
+import { Service as AiExecutionActionReporter } from "../startup/social-module/profile/ai/execution-action";
+import type {
+  IAiExecutionActionReporter,
+  IAiExecutionActionReporterProps,
 } from "./social-module/profile/ai/execution-action";
-import {
-  SocialProfileAiToolLoop,
-  type ISocialProfileAiToolLoopProps,
-  type ISocialProfileAiToolLoopResult,
+import { Service as SocialProfileAiToolLoop } from "../startup/social-module/profile/ai/tool-loop";
+import type {
+  ISocialProfileAiToolLoopProps,
+  ISocialProfileAiToolLoopResult,
 } from "./social-module/profile/ai/tool-loop";
 import {
   summarizeOpenRouterBilling,
@@ -194,16 +148,12 @@ import {
 import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
 import { IModel as ISocialModuleThread } from "@sps/social/models/thread/sdk/model";
 import { setRbacAiThreadModelPreference } from "@sps/rbac/models/subject/sdk/model";
-import {
-  SocialProfileKnowledgeAccessService,
-  type IEnsureSocialProfileKnowledgeAccessProps,
-} from "./social-module/profile/knowledge/access";
-import {
-  Service as SocialModuleProfileAvatarUpdate,
-  type IExecuteProps as ISocialModuleProfileAvatarUpdateProps,
-} from "./social-module/profile/avatar";
+import { Service as SocialProfileKnowledgeAccessService } from "../startup/social-module/profile/knowledge/access";
+import type { IEnsureSocialProfileKnowledgeAccessProps } from "./social-module/profile/knowledge/access";
+import { Service as SocialModuleProfileAvatarUpdate } from "../startup/social-module/profile/avatar";
+import type { IExecuteProps as ISocialModuleProfileAvatarUpdateProps } from "./social-module/profile/avatar";
 
-import { Service as PermissionDefaults } from "./permission-defaults";
+import { Service as PermissionDefaults } from "../startup/permission-defaults";
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {

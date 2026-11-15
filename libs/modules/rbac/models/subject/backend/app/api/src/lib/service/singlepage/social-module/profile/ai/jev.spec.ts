@@ -1,4 +1,4 @@
-import { SocialProfileJevService } from "./jev";
+import { Service as SocialProfileJevService } from "./jev";
 import type { ISocialProfileAiTool } from "./tool-loop";
 
 describe("JEV profile routing", () => {

@@ -7,7 +7,7 @@ import { Repository } from "../../repository";
 import { RoleDI } from "../../di";
 import { Service as PermissionService } from "@sps/rbac/models/permission/backend/app/api/src/lib/service";
 import { Service as RolesToPermissionsService } from "@sps/rbac/relations/roles-to-permissions/backend/app/api/src/lib/service";
-import { Service as PublicResourceIdsService } from "./public-resource-ids";
+import { Service as PublicResourceIdsService } from "../startup/public-resource-ids";
 import type { IPublicResourceIdsParams } from "@sps/rbac/models/role/sdk/model";
 
 @injectable()

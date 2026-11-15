@@ -81,7 +81,7 @@ type TTransitionOutcome = {
   };
 };
 
-export class TelegramAssistantConversation {
+export class Service {
   constructor(readonly runtime: ITelegramConversationRuntime) {}
 
   async enter(

@@ -1,3 +1,4 @@
+import { Service as AudioTranscriptionService } from "../../../../../../../../service/startup/social-module/chat/audio-transcription";
 import {
   RBAC_JWT_SECRET,
   RBAC_SECRET_KEY,
@@ -22,10 +23,7 @@ import {
 } from "@sps/social/models/message/sdk/model";
 import { api as fileStorageModuleFileApi } from "@sps/file-storage/models/file/sdk/server";
 import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
-import {
-  AudioTranscriptionService,
-  shouldSkipOrdinaryNotificationForAudioTranscription,
-} from "./audio-transcription";
+import { shouldSkipOrdinaryNotificationForAudioTranscription } from "./audio-transcription";
 import {
   normalizeRbacAiReactionRequestMetadata,
   parseRbacAiReactionRequestMetadata,

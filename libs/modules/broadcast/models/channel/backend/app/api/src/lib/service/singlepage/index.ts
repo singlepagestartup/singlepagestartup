@@ -1,4 +1,4 @@
-import { DeliveryQueue } from "./delivery-queue";
+import { Service as DeliveryQueue } from "../startup/delivery-queue";
 import { DeliveryRepository } from "../../repository/delivery";
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
@@ -9,8 +9,8 @@ import {
 } from "@sps/shared-backend-api";
 import { Table } from "@sps/broadcast/models/channel/backend/repository/database";
 import { Repository } from "../../repository";
-import { Service as MessageService } from "@sps/broadcast/models/message/backend/app/api/src/lib/service/singlepage";
-import { Service as ChannelsToMessagesService } from "@sps/broadcast/relations/channels-to-messages/backend/app/api/src/lib/service/singlepage";
+import type { Service as MessageService } from "@sps/broadcast/models/message/backend/app/api/src/lib/service";
+import type { Service as ChannelsToMessagesService } from "@sps/broadcast/relations/channels-to-messages/backend/app/api/src/lib/service";
 import { ChannelDI } from "../../di";
 
 @injectable()

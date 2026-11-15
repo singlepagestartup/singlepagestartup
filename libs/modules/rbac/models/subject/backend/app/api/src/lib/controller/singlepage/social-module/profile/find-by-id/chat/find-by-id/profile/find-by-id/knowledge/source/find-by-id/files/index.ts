@@ -6,7 +6,7 @@ import {
   logger,
   assertKnowledgeAttachmentBytes,
 } from "@sps/backend-utils";
-import { KnowledgeService } from "@sps/knowledge/backend/app/api/src/lib/service";
+import { Service as KnowledgeService } from "@sps/knowledge/backend/app/api/src/lib/service";
 import { api as fileStorageFileApi } from "@sps/file-storage/models/file/sdk/server";
 import {
   RBAC_SECRET_KEY,
@@ -148,7 +148,7 @@ export class Handler {
             detached &&
             Boolean(
               savedSource &&
-                savedSource.contentHash !== savedSource.indexedContentHash,
+              savedSource.contentHash !== savedSource.indexedContentHash,
             ),
         },
       });

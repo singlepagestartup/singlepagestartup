@@ -147,7 +147,7 @@ function renderTelegramAiExecutionMessage(props: {
   return description;
 }
 
-export class AiExecutionActionReporter implements IAiExecutionActionReporter {
+export class Service implements IAiExecutionActionReporter {
   private readonly props: IAiExecutionActionReporterProps;
   private readonly now: () => Date;
   private readonly persistence: IAiExecutionActionPersistence;

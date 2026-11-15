@@ -9,7 +9,7 @@ const mockSource = {
   indexedContentHash: "hash" as string | null,
 };
 jest.mock("@sps/knowledge/backend/app/api/src/lib/service", () => ({
-  KnowledgeService: jest.fn(() => ({
+  Service: jest.fn(() => ({
     rebuildFiles: mockRebuild,
     source: {
       sourceFiles: mockSourceFiles,

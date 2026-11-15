@@ -3,7 +3,7 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../../../service";
 import { getHttpErrorType } from "@sps/backend-utils";
-import { Service as ActionPresentations } from "../../../../../../../../service/singlepage/social-module/chat/actions";
+import { Service as ActionPresentations } from "../../../../../../../../service/startup/social-module/chat/actions";
 
 export class Handler {
   service: Service;

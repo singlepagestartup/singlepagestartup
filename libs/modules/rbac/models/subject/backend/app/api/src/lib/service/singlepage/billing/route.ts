@@ -6,10 +6,10 @@ import {
 } from "@sps/shared-utils";
 import { api as permissionApi } from "@sps/rbac/models/permission/sdk/server";
 import { type IModel as ISubjectsToBillingModuleCurrencies } from "@sps/rbac/relations/subjects-to-billing-module-currencies/sdk/model";
-import { Service as SubjectsToBillingModuleCurrenciesService } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/app/api/src/lib/service/singlepage";
+import type { Service as SubjectsToBillingModuleCurrenciesService } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/app/api/src/lib/service";
 import { inject, injectable } from "inversify";
 import { SubjectDI } from "../../../di";
-import { Service as IsAuthorizedService } from "../is-authorized";
+import type { Service as IsAuthorizedService } from "../is-authorized";
 import {
   isOpenRouterBillingRoute,
   OPEN_ROUTER_PRECHARGE_TOKENS,

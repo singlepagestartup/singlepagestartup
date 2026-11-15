@@ -14,6 +14,7 @@ import {
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
 import { queryClient, subscription } from "@sps/shared-frontend-client-api";
 import { useEffect } from "react";
+import { clearRejectedAccessToken } from "./persist-authentication-tokens";
 
 export type IProps = IParentProps["IAuthenticationMeProps"] & {
   subjectId?: string;
@@ -30,19 +31,24 @@ export function action(props: IProps) {
     queryKey: [queryKey, props.subjectId],
     meta: { topics: ["rbac.subjects"], ...meta },
     queryFn: async () => {
+      const headers = saturateHeaders(props.options?.headers);
+      const authorization = new Headers(headers).get("Authorization");
       try {
         const result = await api.authenticationMe({
           ...props,
           options: {
             ...props.options,
-            headers: saturateHeaders(props.options?.headers),
+            headers,
           },
+          onUnauthorized: () => clearRejectedAccessToken(authorization),
           host: clientHost,
         });
 
         return result;
       } catch (error: any) {
-        toast.error(error.message);
+        if (error.status !== 401) {
+          toast.error(error.message);
+        }
 
         throw error;
       }

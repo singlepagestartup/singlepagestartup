@@ -1,7 +1,7 @@
 import { api as profileSourcesApi } from "@sps/social/relations/profiles-to-knowledge-module-sources/sdk/server";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { getHttpErrorType } from "@sps/backend-utils";
-import { KnowledgeService } from "@sps/knowledge/backend/app/api/src/lib/service";
+import { Service as KnowledgeService } from "@sps/knowledge/backend/app/api/src/lib/service";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../../../../../../../service";

@@ -1,6 +1,6 @@
-import { Service as Bootstrap } from "./ai/bootstrap";
-import { Service as Documents } from "./documents";
-import { Service as Skills } from "./skills";
+import { Service as Bootstrap } from "../../../startup/social-module/profile/ai/bootstrap";
+import { Service as Documents } from "../../../startup/social-module/profile/documents";
+import { Service as Skills } from "../../../startup/social-module/profile/skills";
 import type { Service as SubjectService } from "../../index";
 import { api as profileApi } from "@sps/social/models/profile/sdk/server";
 import { api as subjectProfilesApi } from "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server";

@@ -29,9 +29,9 @@ const mockRbacApi = {
 
 jest.mock("@sps/rbac/models/subject/sdk/server", () => ({ api: mockRbacApi }));
 
-import { TelegramAssistantConversation } from "./index";
-import { TelegramConversationMemoryStore } from "../telegram-conversation-store";
-import { TelegramConversationRuntime } from "../telegram-conversation";
+import { Service as TelegramAssistantConversation } from "./index";
+import { Service as TelegramConversationMemoryStore } from "../telegram-conversation-store";
+import { Service as TelegramConversationRuntime } from "../telegram-conversation";
 
 const profile = {
   id: "profile-1",

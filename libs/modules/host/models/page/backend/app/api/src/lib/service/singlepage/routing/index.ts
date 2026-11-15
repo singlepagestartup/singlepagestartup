@@ -29,7 +29,7 @@ export interface IRouteRelation {
 }
 
 /** Registered API contracts describe URL sources; publication belongs to Page. */
-export class RoutingService {
+export class Service {
   private readonly sources: Map<string, IRouteSource>;
   constructor(sources: IRouteSource[] = []) {
     this.sources = new Map(sources.map((source) => [source.name, source]));

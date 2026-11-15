@@ -9,7 +9,7 @@ const deleteSource = jest.fn();
 const deleteRelation = jest.fn();
 
 jest.mock("@sps/knowledge/backend/app/api/src/lib/service", () => ({
-  KnowledgeService: jest.fn().mockImplementation(() => ({
+  Service: jest.fn().mockImplementation(() => ({
     listSources,
     deleteSource,
   })),

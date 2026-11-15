@@ -8,7 +8,7 @@
 
 import {
   SINGLEPAGESTARTUP_MCP_RBAC_SUBJECT_TOKEN_EXCHANGE_PATH,
-  SinglePageStartupMcpClientService,
+  Service as SinglePageStartupMcpClientService,
 } from "./singlepagestartup-client";
 
 function createTool(overrides: Record<string, unknown> = {}) {

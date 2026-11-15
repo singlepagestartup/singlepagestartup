@@ -5,7 +5,7 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../../service";
 import { getHttpErrorType } from "@sps/backend-utils";
-import { Service as Presentations } from "../../../../../../../service/singlepage/social-module/chat/presentations";
+import { Service as Presentations } from "../../../../../../../service/startup/social-module/chat/presentations";
 
 export class Handler {
   service: Service;

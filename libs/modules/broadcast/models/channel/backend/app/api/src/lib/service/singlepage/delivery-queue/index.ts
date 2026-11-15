@@ -24,7 +24,7 @@ interface IReserve {
   };
 }
 
-export class DeliveryQueue {
+export class Service {
   constructor(private readonly repository: DeliveryRepository) {}
 
   async publish(message: IEnqueueMessage) {

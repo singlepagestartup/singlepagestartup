@@ -32,22 +32,14 @@ import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
 import * as crypto from "crypto";
 // import { api as ecommerceOrdersToBillingModulePaymentIntentsApi } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/server";
-import {
-  Service as Cloudpayments,
-  IServiceProceedProps as ICloudpaymentsProceedProps,
-} from "./cloudpayments";
-import {
-  Service as Tiptoppay,
-  IServiceProceedProps as ITiptippayProceedProps,
-} from "./tiptoppay";
-import {
-  Service as Paykeeper,
-  IServiceProceedProps as IPaykeeperProceedProps,
-} from "./paykeeper";
-import {
-  Service as TelegramStar,
-  IServiceProceedProps as ITelegramStarProps,
-} from "./telegram-star";
+import { Service as Cloudpayments } from "../startup/cloudpayments";
+import type { IServiceProceedProps as ICloudpaymentsProceedProps } from "./cloudpayments";
+import { Service as Tiptoppay } from "../startup/tiptoppay";
+import type { IServiceProceedProps as ITiptippayProceedProps } from "./tiptoppay";
+import { Service as Paykeeper } from "../startup/paykeeper";
+import type { IServiceProceedProps as IPaykeeperProceedProps } from "./paykeeper";
+import { Service as TelegramStar } from "../startup/telegram-star";
+import type { IServiceProceedProps as ITelegramStarProps } from "./telegram-star";
 import { logger } from "@sps/backend-utils";
 import { PaymentIntentDI, type IBillingModule } from "../../di";
 

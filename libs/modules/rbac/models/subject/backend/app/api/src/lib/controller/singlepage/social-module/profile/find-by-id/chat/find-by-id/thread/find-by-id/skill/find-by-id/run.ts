@@ -3,7 +3,7 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../../../../../../service";
 import { getHttpErrorType } from "@sps/backend-utils";
-import { KnowledgeService } from "@sps/knowledge/backend/app/api/src/lib/service";
+import { Service as KnowledgeService } from "@sps/knowledge/backend/app/api/src/lib/service";
 import { LlmChatClient } from "@sps/knowledge/backend/app/api/src/lib/generation";
 import { getKnowledgeConfiguration } from "@sps/knowledge/backend/app/api/src/lib/configuration";
 import { api as socialModuleMessageApi } from "@sps/social/models/message/sdk/server";

@@ -44,7 +44,7 @@ jest.mock("@sps/social/relations/profiles-to-chats/sdk/server", () => ({
   api: {},
 }));
 
-import { ChatLifecycleService } from "./lifecycle";
+import { Service as ChatLifecycleService } from "./lifecycle";
 
 describe("Given: a web chat has several default-variant threads", () => {
   beforeEach(() => {

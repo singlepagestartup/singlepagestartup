@@ -15,7 +15,11 @@ import {
   type IResult as IParentResult,
 } from "@sps/rbac/models/subject/sdk/server";
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
-import { persistAuthenticationTokens } from "./persist-authentication-tokens";
+import {
+  clearRejectedRefreshToken,
+  persistAuthenticationTokens,
+  readAuthenticationTokens,
+} from "./persist-authentication-tokens";
 
 export type IProps = {
   reactQueryOptions?: Partial<UseMutationOptions<any, DefaultError, any>>;
@@ -34,6 +38,8 @@ export function action(props: IProps) {
     mutationFn: async (
       mutationFunctionProps: IParentProps["IAuthenticationRefreshProps"],
     ) => {
+      const previous = readAuthenticationTokens();
+      const requestedRefresh = mutationFunctionProps.data.refresh;
       try {
         const result = await api.authenticationRefresh({
           ...mutationFunctionProps,
@@ -42,9 +48,12 @@ export function action(props: IProps) {
             headers: saturateHeaders(mutationFunctionProps.options?.headers),
           },
           host: clientHost,
+          onUnauthorized: () => clearRejectedRefreshToken(requestedRefresh),
         });
 
-        persistAuthenticationTokens(result);
+        if (!previous.refresh || previous.refresh === requestedRefresh) {
+          persistAuthenticationTokens(result, previous);
+        }
 
         return result;
       } catch (error: any) {

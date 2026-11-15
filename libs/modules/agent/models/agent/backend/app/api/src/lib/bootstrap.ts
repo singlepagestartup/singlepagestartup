@@ -25,8 +25,8 @@ import {
   type ITelegramConversationRuntime,
   type ITelegramConversationStore,
 } from "./di";
-import { TelegramConversationMemoryStore } from "./service/singlepage/telegram-conversation-store";
-import { TelegramConversationRuntime } from "./service/singlepage/telegram-conversation";
+import { Service as TelegramConversationMemoryStore } from "./service/startup/telegram-conversation-store";
+import { Service as TelegramConversationRuntime } from "./service/startup/telegram-conversation";
 import { Repository as SocialProfileRepository } from "@sps/social/models/profile/backend/app/api/src/lib/repository";
 import { Configuration as SocialProfileConfiguration } from "@sps/social/models/profile/backend/app/api/src/lib/configuration";
 import { Repository as SocialChatRepository } from "@sps/social/models/chat/backend/app/api/src/lib/repository";

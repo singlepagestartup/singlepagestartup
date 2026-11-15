@@ -64,16 +64,12 @@ import {
   IModel as ISocialModuleProfile,
 } from "@sps/social/models/profile/sdk/model";
 import { IModel as ISocialModuleSkill } from "@sps/social/models/skill/sdk/model";
-import {
-  SocialProfileJevService,
-  type TJevKnowledgeAction,
-} from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/social-module/profile/ai/jev";
-import { KnowledgeService } from "@sps/knowledge/backend/app/api/src/lib/service";
-import {
-  Service as DocumentService,
-  type IAIChatDocumentContext,
-} from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/social-module/profile/ai/document";
-import { Service as ProfileSkills } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/social-module/profile/skills";
+import { Service as SocialProfileJevService } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/startup/social-module/profile/ai/jev";
+import type { TJevKnowledgeAction } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/social-module/profile/ai/jev";
+import { Service as KnowledgeService } from "@sps/knowledge/backend/app/api/src/lib/service";
+import { Service as DocumentService } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/startup/social-module/profile/ai/document";
+import type { IAIChatDocumentContext } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/social-module/profile/ai/document";
+import { Service as ProfileSkills } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/startup/social-module/profile/skills";
 import { KnowledgeSearchResult } from "@sps/knowledge/backend/app/api/src/lib/types";
 
 import { fingerprintAiContextMessage } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/social-module/profile/ai/context/utils";
@@ -998,8 +994,7 @@ export class Handler {
                   presentationOnlyFileIds: isAssistantMessage
                     ? (
                         socialModuleMessage.metadata?.["knowledge"] as
-                          | { documentProposalFileIds?: string[] }
-                          | undefined
+                          { documentProposalFileIds?: string[] } | undefined
                       )?.documentProposalFileIds
                     : undefined,
                   fileStorageFiles: fileStorageFiles || [],
@@ -1018,8 +1013,7 @@ export class Handler {
                 isAssistantMessage
                   ? (
                       socialModuleMessage.metadata?.["knowledge"] as
-                        | { documentProposalFileIds?: string[] }
-                        | undefined
+                        { documentProposalFileIds?: string[] } | undefined
                     )?.documentProposalFileIds || []
                   : [],
               );
@@ -1562,8 +1556,7 @@ export class Handler {
 
       let selectModelForRequest: string | null = null;
       let generationResult:
-        | Pick<IOpenRouterGenerationSuccess, "text" | "images">
-        | undefined;
+        Pick<IOpenRouterGenerationSuccess, "text" | "images"> | undefined;
       let socialProfileToolLoopResult: ISocialProfileAiToolLoopResult | null =
         null;
       let contextWindowExceeded = false;
@@ -3105,8 +3098,8 @@ export class Handler {
                 contentHash: result.source?.contentHash,
                 indexed: Boolean(
                   result.source &&
-                    result.source.contentHash ===
-                      result.source.indexedContentHash,
+                  result.source.contentHash ===
+                    result.source.indexedContentHash,
                 ),
                 processingError: result.processingError,
                 analysisPending: result.analysisPending || false,
@@ -3930,7 +3923,11 @@ export class Handler {
 
       if (fileStorageFile.mimeType?.includes("image")) {
         routingTextParts.push(`Attached image: ${fileName}`);
-        mediaParts.push({ type: "text", text: `Attached image: ${fileName}` });
+        // The model also needs the URL in text to reuse this image in an HTML file.
+        mediaParts.push({
+          type: "text",
+          text: `Attached image: ${fileName}\nImage URL: ${fileUrl}`,
+        });
         mediaParts.push({
           type: "image_url",
           image_url: {
@@ -4183,10 +4180,10 @@ export class Handler {
 
     return Boolean(
       mimeType.startsWith("audio/") ||
-        (mimeType === "video/webm" &&
-          !(file as IFileStorageModuleFile & { width?: unknown }).width &&
-          !(file as IFileStorageModuleFile & { height?: unknown }).height) ||
-        audioExtensions.includes(extension.toLowerCase()),
+      (mimeType === "video/webm" &&
+        !(file as IFileStorageModuleFile & { width?: unknown }).width &&
+        !(file as IFileStorageModuleFile & { height?: unknown }).height) ||
+      audioExtensions.includes(extension.toLowerCase()),
     );
   }
 
