@@ -3,7 +3,7 @@ import {
   type IVerifiedPaykeeperWebhook,
 } from "@sps/backend-utils";
 import type { Repository } from "../../repository";
-import { Service as Settlement } from "./settlement";
+import { Service as Settlement } from "../startup/settlement";
 import type { Service as PaymentIntentService } from "./index";
 import type { IPayKeeperInvoiceData } from "./paykeeper";
 

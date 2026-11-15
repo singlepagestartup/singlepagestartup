@@ -1,0 +1,9 @@
+{
+  "id": "d0ac62ea-6b67-4112-b105-b56c8ba6bc9f",
+  "createdAt": "2026-11-10T20:43:00.645Z",
+  "updatedAt": "2026-11-10T20:43:00.645Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/website-builder/buttons-to-file-storage-module-files/:uuid"
+}

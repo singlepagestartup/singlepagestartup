@@ -1,8 +1,7 @@
-import {
-  Service as Settlement,
-  type IExecuteProps as ISettlementProps,
-} from "./settlement";
-import { Service as PaykeeperSettlement } from "./paykeeper-settlement";
+import { z } from "zod";
+import { Service as Settlement } from "../startup/settlement";
+import { Service as PaykeeperSettlement } from "../startup/paykeeper-settlement";
+import type { IExecuteProps as ISettlementProps } from "./settlement";
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import { CRUDService, DI } from "@sps/shared-backend-api";
@@ -35,22 +34,14 @@ import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
 import * as crypto from "crypto";
 // import { api as ecommerceOrdersToBillingModulePaymentIntentsApi } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/server";
-import {
-  Service as Cloudpayments,
-  IServiceProceedProps as ICloudpaymentsProceedProps,
-} from "./cloudpayments";
-import {
-  Service as Tiptoppay,
-  IServiceProceedProps as ITiptippayProceedProps,
-} from "./tiptoppay";
-import {
-  Service as Paykeeper,
-  IServiceProceedProps as IPaykeeperProceedProps,
-} from "./paykeeper";
-import {
-  Service as TelegramStar,
-  IServiceProceedProps as ITelegramStarProps,
-} from "./telegram-star";
+import { Service as Cloudpayments } from "../startup/cloudpayments";
+import type { IServiceProceedProps as ICloudpaymentsProceedProps } from "./cloudpayments";
+import { Service as Tiptoppay } from "../startup/tiptoppay";
+import type { IServiceProceedProps as ITiptippayProceedProps } from "./tiptoppay";
+import { Service as Paykeeper } from "../startup/paykeeper";
+import type { IServiceProceedProps as IPaykeeperProceedProps } from "./paykeeper";
+import { Service as TelegramStar } from "../startup/telegram-star";
+import type { IServiceProceedProps as ITelegramStarProps } from "./telegram-star";
 import { logger } from "@sps/backend-utils";
 import { PaymentIntentDI, type IBillingModule } from "../../di";
 
@@ -92,6 +83,69 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       repository: this.repository,
       service: this,
     }).execute(props);
+  }
+
+  async settleFreePayment(id: string, provider: string) {
+    return this.repository.withPaymentIntentLock(id, async () => {
+      const intent = await this.findById({ id });
+      if (!intent) {
+        throw new Error("Not Found error. Payment intent not found");
+      }
+      if (intent.amount !== 0 || intent.status === "canceled") {
+        throw new Error(
+          "Conflict error. Payment intent cannot be settled as free",
+        );
+      }
+      if (intent.status === "succeeded") {
+        return intent;
+      }
+      if (intent.type === "subscription") {
+        await this.update({ id, data: { ...intent, type: "one_off" } });
+      }
+      const { invoice, paymentIntentsToInvoices } = this.billingModule;
+      const links = await paymentIntentsToInvoices.find({
+        params: {
+          filters: {
+            and: [{ column: "paymentIntentId", method: "eq", value: id }],
+          },
+        },
+      });
+      let freeInvoice: IInvoice | undefined;
+      if (links.length) {
+        const matches = await invoice.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "id",
+                  method: "inArray",
+                  value: links.map((link) => link.invoiceId),
+                },
+                { column: "provider", method: "eq", value: provider },
+                { column: "amount", method: "eq", value: 0 },
+                { column: "status", method: "eq", value: "open" },
+              ],
+            },
+          },
+        });
+        freeInvoice = matches[0];
+      }
+      if (!freeInvoice) {
+        freeInvoice = await invoice.create({
+          data: { amount: 0, status: "open", provider },
+        });
+        await paymentIntentsToInvoices.create({
+          data: { paymentIntentId: id, invoiceId: freeInvoice.id },
+        });
+      }
+      await this.settlePayment({
+        invoiceId: freeInvoice.id,
+        provider,
+        paymentIntentId: id,
+        amount: 0,
+      });
+      return this.findById({ id });
+    });
   }
 
   expireInvoice(props: {
@@ -451,11 +505,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         }
         return invoice;
       } else if (data.object === "invoice") {
-        if (typeof data.subscription === "string") {
-          // Provider I/O finishes before taking database locks.
-          const subscription = await stripe.subscriptions.retrieve(
-            data.subscription,
-          );
+        const reference = data.parent?.subscription_details?.subscription;
+        const subscriptionId =
+          reference ?? ("subscription" in data ? data.subscription : undefined);
+        if (typeof subscriptionId === "string") {
+          const subscription =
+            await stripe.subscriptions.retrieve(subscriptionId);
+
           const intentId = subscription.metadata?.paymentIntentId;
           if (!intentId)
             throw new Error(
@@ -484,6 +540,48 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
       throw new Error("Validation error. Unknown stripe webhook data");
     }
+  }
+
+  async checkCloudpaymentsInvoice(invoice: IInvoice) {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Configuration error. RBAC secret key not found");
+    }
+    const provider = new Cloudpayments({
+      settle: (input) => this.settlePayment(input),
+    });
+    const payment = await provider.findCompletedPayment(invoice);
+    if (payment) {
+      await this.settlePayment({
+        invoiceId: invoice.id,
+        provider: "cloudpayments",
+        providerId: invoice.providerId,
+        amount: payment.Amount,
+      });
+      return;
+    }
+
+    const expiresBefore = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    if (
+      ["open", "failed"].includes(invoice.status) &&
+      new Date(invoice.createdAt) < expiresBefore
+    ) {
+      await this.expireInvoice({
+        invoiceId: invoice.id,
+        provider: "cloudpayments",
+        expiresBefore,
+      });
+    }
+  }
+
+  async failUnpaidIntent(id: string, expectedStatus: string) {
+    await this.repository.consumeFirstByField(
+      "id",
+      id,
+      { status: "failed" },
+      {
+        and: [{ column: "status", method: "eq", value: expectedStatus }],
+      },
+    );
   }
 
   async cloudpayments(props: ICloudpaymentsProceedProps) {
@@ -562,13 +660,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         formData.append("test", `${true}`);
       }
 
-      const checkout: {
-        redirectUrl: string;
-        id: number;
-      } = await fetch("https://app.0xProcessing.com/Payment", {
+      const response = await fetch("https://app.0xProcessing.com/Payment", {
         method: "POST",
         body: formData,
-      }).then((res) => res.json());
+      });
+      const checkout = z
+        .object({ redirectUrl: z.httpUrl(), id: z.number() })
+        .parse(await response.json());
 
       logger.debug("🚀 ~ checkout:", checkout);
 
@@ -1032,21 +1130,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         )
         .digest("hex");
 
-      const checkout:
-        | {
-            Id: string;
-            Status: string;
-            Url: string;
-            Invoice: string;
-            Description: string;
-            Amount: string;
-            Currency: string;
-            CreatedDate: string;
-          }
-        | {
-            Code: string;
-            Description: string;
-          } = await fetch(
+      const response = await fetch(
         "https://webform.payselection.com/webpayments/paylink_create",
         {
           method,
@@ -1058,7 +1142,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           },
           body: payload,
         },
-      ).then((res) => res.json());
+      );
+      const checkout = z
+        .union([
+          z.object({ Id: z.string(), Url: z.httpUrl() }),
+          z.object({ Code: z.string(), Description: z.string() }),
+        ])
+        .parse(await response.json());
 
       if ("Id" in checkout) {
         const updated = await invoiceApi.update({

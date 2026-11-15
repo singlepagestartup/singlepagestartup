@@ -22,15 +22,12 @@ jest.mock("@sps/shared-utils", () => ({
 
 jest.mock("@sps/backend-utils", () => ({
   authorization: (...args: unknown[]) => authorizationMock(...args),
+  verifyJwt: (...args: unknown[]) => verifyMock(...args),
   getHttpErrorType: (error: Error) => ({
     status: 400,
     message: error.message,
     details: null,
   }),
-}));
-
-jest.mock("hono/jwt", () => ({
-  verify: (...args: unknown[]) => verifyMock(...args),
 }));
 
 jest.mock("hono/http-exception", () => ({
@@ -44,6 +41,7 @@ jest.mock("hono/http-exception", () => ({
   },
 }));
 
+import { ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds } from "@sps/shared-utils";
 import { Handler } from "./create";
 import { Service as CreateCartOrder } from "../../../../service/singlepage/ecommerce/order/create";
 
@@ -59,14 +57,14 @@ interface ISubjectOrder {
   productIds: string[];
 }
 
-function createContext(productId = "product-unpriced") {
+function createContext(productId = "product-unpriced", quantity = 1) {
   return {
     req: {
       param: (name: string) => (name === "id" ? "subject-1" : undefined),
       parseBody: jest.fn().mockResolvedValue({
         data: JSON.stringify({
           productId,
-          quantity: 1,
+          quantity,
         }),
       }),
     },
@@ -358,6 +356,20 @@ describe("Given: a subject adding a product it may already hold", () => {
     expect(orderCreateMock).toHaveBeenCalled();
   });
 
+  it("stores the configured maximum on the order line", async () => {
+    const { service } = createPricedService([]);
+    await new Handler(service).execute(
+      createContext(PRICED_PRODUCT, quantityBounds.max),
+      jest.fn(),
+    );
+
+    expect(ordersToProductsCreateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ quantity: quantityBounds.max }),
+      }),
+    );
+  });
+
   /**
    * BDD Scenario: a different product is unaffected by an occupied cart.
    *
@@ -386,3 +398,20 @@ describe("Given: a subject adding a product it may already hold", () => {
     expect(orderCreateMock).toHaveBeenCalled();
   });
 });
+
+it.each([0, -1, 1.5, quantityBounds.max + 1])(
+  "refuses quantity %s before cart writes",
+  async (quantity) => {
+    jest.clearAllMocks();
+    const { service } = createService();
+    authorizationMock.mockReturnValue("token");
+    verifyMock.mockResolvedValue({ subject: { id: "subject-1" } });
+    await expect(
+      new Handler(service).execute(
+        createContext("product", quantity) as any,
+        jest.fn(),
+      ),
+    ).rejects.toThrow("Quantity");
+    expect(orderCreateMock).not.toHaveBeenCalled();
+  },
+);

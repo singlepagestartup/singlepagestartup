@@ -4,8 +4,8 @@
  * When: sessions transition, expire, restart, terminate, or receive callbacks.
  * Then: state is isolated, serialized, bounded, and protected from stale input.
  */
-import { TelegramConversationMemoryStore } from "../telegram-conversation-store";
-import { TelegramConversationRuntime } from "./index";
+import { Service as TelegramConversationMemoryStore } from "../telegram-conversation-store";
+import { Service as TelegramConversationRuntime } from "./index";
 
 const key = (
   overrides: Partial<

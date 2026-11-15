@@ -89,7 +89,7 @@ const pageContent = {
         },
         {
           title: "sign-in-href",
-          text: "/ai-chat/rbac/subjects/authentication/select-method",
+          text: "/rbac/subject/authentication/email-and-password",
         },
         {
           title: "existing-account",
@@ -159,7 +159,7 @@ const pageContent = {
       "/ai-chat/social/profiles/create#how-your-materials-are-processed-and-stored",
     submit: "Создать аккаунт",
     "sign-in-label": "Войти",
-    "sign-in-href": "/ai-chat/rbac/subjects/authentication/select-method",
+    "sign-in-href": "/rbac/subject/authentication/email-and-password",
     "existing-account": "Уже есть аккаунт?",
     "continue-label": "Открыть чат проекта",
     "continue-href": "/ai-chat/social/profiles/create",

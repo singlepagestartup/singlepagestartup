@@ -12,7 +12,7 @@ services:
         --port "$${REDIS_PORT:-6379}"
         --requirepass "$${REDIS_PASSWORD}"
         --maxmemory "$${REDIS_MAXMEMORY:-256mb}"
-        --maxmemory-policy "$${REDIS_MAXMEMORY_POLICY:-allkeys-lru}"
+        --maxmemory-policy "$${REDIS_MAXMEMORY_POLICY:-volatile-lru}"
     volumes:
       - ./redis_data:/data
     networks:
@@ -22,7 +22,7 @@ services:
       REDIS_PORT: {{ REDIS_PORT | default('6379', true) | to_json }}
       REDIS_PASSWORD: {{ REDIS_PASSWORD | to_json }}
       REDIS_MAXMEMORY: {{ REDIS_MAXMEMORY | default('256mb', true) | to_json }}
-      REDIS_MAXMEMORY_POLICY: {{ REDIS_MAXMEMORY_POLICY | default('allkeys-lru', true) | to_json }}
+      REDIS_MAXMEMORY_POLICY: {{ REDIS_MAXMEMORY_POLICY | default('volatile-lru', true) | to_json }}
     deploy:
       placement:
         constraints:

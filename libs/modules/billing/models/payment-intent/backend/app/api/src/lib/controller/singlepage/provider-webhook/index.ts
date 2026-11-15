@@ -9,7 +9,6 @@ import {
   rbacSecretMatches,
   readRbacSecret,
 } from "@sps/backend-utils";
-import { IModel as Invoice } from "@sps/billing/models/invoice/sdk/model";
 
 export class Handler {
   service: Service;
@@ -38,7 +37,12 @@ export class Handler {
       const contentType = c.req.header("content-type");
       const headers = c.req.header();
       const isMultipart = contentType?.includes("multipart/form-data");
-      const rawBody = isMultipart ? "" : await c.req.text();
+      let rawBody;
+      if (isMultipart) {
+        rawBody = "";
+      } else {
+        rawBody = await c.req.text();
+      }
 
       if (provider !== "paykeeper") {
         logger.debug("🚀 ~ providerWebhook ~ headers:", headers);
@@ -85,33 +89,6 @@ export class Handler {
         c.header("Cache-Control", "no-store");
         c.header("X-Robots-Tag", "noindex");
         return c.text(result.acknowledgment, 200);
-      }
-
-      if (provider === "dummy" && data?.data?.id) {
-        let invoice: Invoice | undefined | null;
-
-        try {
-          invoice = await this.service.billingModule.invoice.findById({
-            id: data.data.id,
-          });
-
-          if (invoice?.provider === "dummy" && invoice.amount === 0) {
-            invoice = await this.service.settlePayment({
-              invoiceId: invoice.id,
-              provider: "dummy",
-              amount: 0,
-            });
-
-            return c.json(
-              {
-                data: invoice,
-              },
-              200,
-            );
-          }
-        } catch (error) {
-          //
-        }
       }
 
       let result: any;

@@ -83,18 +83,21 @@ export class Handler {
             .filter((id): id is string => typeof id === "string"),
         ),
       );
-      const agentSubjects = subjectIds.length
-        ? await this.service.find({
-            params: {
-              filters: {
-                and: [
-                  { column: "id", method: "inArray", value: subjectIds },
-                  { column: "variant", method: "eq", value: "agent" },
-                ],
-              },
+      let agentSubjects;
+      if (subjectIds.length) {
+        agentSubjects = await this.service.find({
+          params: {
+            filters: {
+              and: [
+                { column: "id", method: "inArray", value: subjectIds },
+                { column: "variant", method: "eq", value: "agent" },
+              ],
             },
-          })
-        : [];
+          },
+        });
+      } else {
+        agentSubjects = [];
+      }
       const agentSubjectIds = new Set(
         (agentSubjects || []).map((subject) => subject.id),
       );

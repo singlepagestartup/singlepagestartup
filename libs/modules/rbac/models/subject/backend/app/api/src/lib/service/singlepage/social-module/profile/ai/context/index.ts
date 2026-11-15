@@ -18,7 +18,7 @@ import type {
   IOpenRouterTool,
   IOpenRouterResponseFormat,
 } from "@sps/shared-third-parties";
-import { Service as ToolsService } from "./tools";
+import { Service as ToolsService } from "../../../../../startup/social-module/profile/ai/context/tools";
 import {
   aiContextText,
   aiContextPrefixHash,
@@ -346,15 +346,18 @@ export class Service implements IAiContextService {
           .filter(Boolean),
       ),
     ];
-    const files = fileIds.length
-      ? await this.props.fileStorageModule.file.find({
-          params: {
-            filters: {
-              and: [{ column: "id", method: "inArray", value: fileIds }],
-            },
+    let files;
+    if (fileIds.length) {
+      files = await this.props.fileStorageModule.file.find({
+        params: {
+          filters: {
+            and: [{ column: "id", method: "inArray", value: fileIds }],
           },
-        })
-      : [];
+        },
+      });
+    } else {
+      files = [];
+    }
     const filesById = new Map(files.map((file: any) => [file.id, file]));
     for (const frame of history) {
       const message = byId.get(frame.id) as any;

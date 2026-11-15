@@ -5,7 +5,7 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../../service";
 import { getHttpErrorType } from "@sps/backend-utils";
-import { Service as Presentations } from "../../../../../../../service/singlepage/social-module/chat/presentations";
+import { Service as Presentations } from "../../../../../../../service/startup/social-module/chat/presentations";
 
 export class Handler {
   service: Service;
@@ -134,21 +134,26 @@ export class Handler {
     c: Context,
     chat: ISocialModuleChat,
   ): Promise<Response> {
-    const participants =
-      c.req.query("includeParticipants") === "true"
-        ? await this.service.socialModuleChatParticipants({
-            socialModuleChatId: chat.id,
-          })
-        : undefined;
-    const participantPresentations = participants
-      ? [
-          ...(
-            await new Presentations(this.service).find(
-              participants.map((profile) => profile.id),
-            )
-          ).values(),
-        ]
-      : undefined;
+    let participants;
+    if (c.req.query("includeParticipants") === "true") {
+      participants = await this.service.socialModuleChatParticipants({
+        socialModuleChatId: chat.id,
+      });
+    } else {
+      participants = undefined;
+    }
+    let participantPresentations;
+    if (participants) {
+      participantPresentations = [
+        ...(
+          await new Presentations(this.service).find(
+            participants.map((profile) => profile.id),
+          )
+        ).values(),
+      ];
+    } else {
+      participantPresentations = undefined;
+    }
     return c.json({
       data: participants
         ? { ...chat, participants, participantPresentations }

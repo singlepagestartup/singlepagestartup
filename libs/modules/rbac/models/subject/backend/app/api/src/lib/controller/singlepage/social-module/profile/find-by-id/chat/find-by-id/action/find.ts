@@ -3,7 +3,7 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../../../service";
 import { getHttpErrorType } from "@sps/backend-utils";
-import { Service as ActionPresentations } from "../../../../../../../../service/singlepage/social-module/chat/actions";
+import { Service as ActionPresentations } from "../../../../../../../../service/startup/social-module/chat/actions";
 
 export class Handler {
   service: Service;
@@ -122,10 +122,12 @@ export class Handler {
           },
         );
 
+        const actions = await new ActionPresentations(this.service).enrich(
+          socialModuleActions,
+        );
+
         return c.json({
-          data: await new ActionPresentations(this.service).enrich(
-            socialModuleActions,
-          ),
+          data: actions,
         });
       }
 
@@ -172,10 +174,12 @@ export class Handler {
         },
       });
 
+      const actions = await new ActionPresentations(this.service).enrich(
+        socialModuleActions,
+      );
+
       return c.json({
-        data: await new ActionPresentations(this.service).enrich(
-          socialModuleActions,
-        ),
+        data: actions,
       });
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);

@@ -3,6 +3,7 @@ import { getDrizzle } from "../postgres";
 import { migrate as migrateAll } from "drizzle-orm/postgres-js/migrator";
 import { readMigrationFiles } from "drizzle-orm/migrator";
 import { PgDialect } from "drizzle-orm/pg-core";
+import { logger } from "@sps/backend-utils";
 
 jest.mock("../postgres", () => ({
   getDrizzle: jest.fn(),
@@ -52,6 +53,33 @@ it("keeps ordinary migrations on the existing complete migration path", async ()
   await config().migrate();
   expect(migrateAll).toHaveBeenCalledTimes(1);
   expect(apply).not.toHaveBeenCalled();
+});
+it("lets Drizzle create a missing journal on the first installation", async () => {
+  const execute = jest
+    .fn()
+    .mockResolvedValueOnce([]) // extension
+    .mockResolvedValueOnce([]) // journal lookup
+    .mockResolvedValueOnce([{ hash: "first" }]) // journal after migration
+    .mockResolvedValueOnce([{ installed: false }]);
+  jest.mocked(getDrizzle).mockReturnValue({ execute } as any);
+  await config().migrate();
+  expect(migrateAll).toHaveBeenCalledTimes(1);
+  expect(execute).toHaveBeenCalledTimes(4);
+  expect(logger.info).toHaveBeenCalledWith("NEW_MIGRATIONS=true");
+});
+it("preserves the migration status of an already current journal", async () => {
+  const execute = jest
+    .fn()
+    .mockResolvedValueOnce([])
+    .mockResolvedValueOnce([{ exists: 1 }])
+    .mockResolvedValueOnce([{ count: 1 }])
+    .mockResolvedValueOnce([{ hash: "first" }])
+    .mockResolvedValueOnce([{ installed: false }]);
+  jest.mocked(getDrizzle).mockReturnValue({ execute } as any);
+  await config().migrate();
+  expect(migrateAll).toHaveBeenCalledTimes(1);
+  expect(process.exit).toHaveBeenCalledWith(0);
+  expect(logger.info).not.toHaveBeenCalledWith("NEW_MIGRATIONS=true");
 });
 it("applies only the requested generated prefix through Drizzle's normal journal", async () => {
   await config().migrate({ through: 2 });

@@ -5,11 +5,12 @@ import {
   FILE_STORAGE_FOLDER,
   FILE_STORAGE_MAX_UPLOAD_BYTES,
   FILE_STORAGE_PROVIDER,
+  HOST_SERVICE_URL,
 } from "@sps/shared-utils";
 import { Provider } from "@sps/providers-file-storage";
 import { fileTypeFromBuffer } from "file-type";
 import { imageSize } from "image-size";
-import { getHttpErrorType } from "@sps/backend-utils";
+import { fetchOutboundUrl, getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -30,18 +31,58 @@ export class Handler {
         throw new Error("Validation error. Invalid data");
       }
 
-      const data = JSON.parse(body["data"]);
+      let data: Record<string, unknown>;
 
-      if (!data.url) {
+      try {
+        data = JSON.parse(body["data"]);
+      } catch {
+        throw new Error("Validation error. Invalid data");
+      }
+
+      if (
+        !data ||
+        typeof data !== "object" ||
+        typeof data.url !== "string" ||
+        !data.url
+      ) {
         throw new Error("Validation error. Invalid url");
       }
 
-      const response = await fetch(data.url);
-      const blob = await this.readBody(response);
-      const fullFileName = data.url.split("?")[0].split("/").pop();
-      const fileName = fullFileName.split(".")[0];
-      const extension = fullFileName.split(".").pop();
-      const file = new File([blob], `${fileName}.${extension}`);
+      let url: URL;
+
+      try {
+        url = new URL(data.url);
+      } catch {
+        throw new Error("Validation error. Invalid url");
+      }
+
+      // The generate action uses this one internal endpoint. A caller's URL
+      // must not grant access to other API or Host routes on the same origin.
+      const imageGeneratorUrl = new URL(
+        "/api/image-generator/image.png",
+        HOST_SERVICE_URL,
+      );
+      imageGeneratorUrl.search = url.search;
+
+      const response = await fetchOutboundUrl(
+        url,
+        { signal: c.req.raw.signal },
+        {
+          maxResponseBytes: FILE_STORAGE_MAX_UPLOAD_BYTES,
+          limitName: "upload",
+          allowedUrl: imageGeneratorUrl.href,
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          "Validation error. Download URL did not return a successful response",
+        );
+      }
+
+      const blob = await response.blob();
+      const fileName = url.pathname.split("/").pop() || "download";
+      const file = new File([blob], fileName);
 
       const fileStorage = new Provider({
         type: FILE_STORAGE_PROVIDER,
@@ -95,50 +136,5 @@ export class Handler {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });
     }
-  }
-
-  /**
-   * Reads a fetched body of at most `FILE_STORAGE_MAX_UPLOAD_BYTES` (issue
-   * #304). A declared `Content-Length` above the limit is refused before the
-   * body is read; any other body is counted while it streams, and the stream
-   * is cancelled as soon as it passes the limit.
-   */
-  protected async readBody(response: Response) {
-    const tooLargeMessage = `Payload Too Large error. The upload limit is ${FILE_STORAGE_MAX_UPLOAD_BYTES} bytes`;
-
-    if (
-      Number(response.headers.get("content-length")) >
-      FILE_STORAGE_MAX_UPLOAD_BYTES
-    ) {
-      await response.body?.cancel();
-
-      throw new Error(tooLargeMessage);
-    }
-
-    if (!response.body) {
-      return await response.blob();
-    }
-
-    const reader = response.body.getReader();
-    const chunks: Uint8Array<ArrayBuffer>[] = [];
-    let size = 0;
-
-    try {
-      let chunk = await reader.read();
-      while (!chunk.done) {
-        size += chunk.value.byteLength;
-        if (size > FILE_STORAGE_MAX_UPLOAD_BYTES) {
-          await reader.cancel();
-          throw new Error(tooLargeMessage);
-        }
-
-        chunks.push(chunk.value);
-        chunk = await reader.read();
-      }
-    } finally {
-      reader.releaseLock();
-    }
-
-    return new Blob(chunks);
   }
 }

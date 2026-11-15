@@ -8,7 +8,7 @@ jest.mock("@sps/social/models/thread/sdk/server", () => ({
   api: { update: jest.fn(), updateMetadataNamespace: jest.fn() },
 }));
 import { Handler } from "./update";
-import { ChatLifecycleService } from "../../../../../../service/singlepage/social-module/chat/lifecycle";
+import { Service as ChatLifecycleService } from "../../../../../../service/singlepage/social-module/chat/lifecycle";
 import { api } from "@sps/social/models/thread/sdk/server";
 
 function context(document: unknown) {

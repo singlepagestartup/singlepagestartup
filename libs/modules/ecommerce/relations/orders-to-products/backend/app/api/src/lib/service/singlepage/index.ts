@@ -9,10 +9,8 @@ import { Service as AttributeKeyService } from "@sps/ecommerce/models/attribute-
 import { Service as ProductsToAttributesService } from "@sps/ecommerce/relations/products-to-attributes/backend/app/api/src/lib/service";
 import { Service as AttributeKeysToAttributesService } from "@sps/ecommerce/relations/attribute-keys-to-attributes/backend/app/api/src/lib/service";
 import { Service as AttributesToBillingModuleCurrenciesService } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/backend/app/api/src/lib/service";
-import {
-  Service as GetTotalService,
-  type IExecuteProps as IGetTotalExecuteProps,
-} from "./get-total";
+import { Service as GetTotalService } from "../startup/get-total";
+import type { IExecuteProps as IGetTotalExecuteProps } from "./get-total";
 import { OrdersToProductsDI } from "../../di";
 
 @injectable()

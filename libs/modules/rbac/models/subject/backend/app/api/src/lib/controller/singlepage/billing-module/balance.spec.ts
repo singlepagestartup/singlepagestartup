@@ -8,8 +8,9 @@ jest.mock("@sps/shared-utils", () => ({
 }));
 import { RequestSubjectIdOwner } from "../../../../../../middlewares";
 import { Handler } from "./balance";
+import { Service as StartupBalance } from "../../../service/startup/billing/balance";
 
-it("allows an ordinary Subject to read its balance and rejects another Subject", async () => {
+it("serves the project balance to its owner and rejects another Subject", async () => {
   const balances = { find: jest.fn().mockResolvedValue([{ amount: "3000" }]) };
   const handler = new Handler({
     billingModule: {
@@ -38,4 +39,22 @@ it("allows an ordinary Subject to read its balance and rejects another Subject",
   });
   expect(foreign.status).toBe(401);
   expect(balances.find).not.toHaveBeenCalled();
+
+  const projectBalance = { amount: "7300", currencyId: "project-currency" };
+  const override = jest
+    .spyOn(StartupBalance.prototype, "execute")
+    .mockResolvedValue(projectBalance);
+  try {
+    const response = await app.request(
+      "/subjects/owner/billing-module/balance",
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ data: projectBalance });
+    expect(override).toHaveBeenCalledWith("owner");
+  } finally {
+    override.mockRestore();
+  }
 });

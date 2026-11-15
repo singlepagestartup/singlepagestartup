@@ -41,14 +41,14 @@ owned subscription Orders. Proceed, repeated paid transitions, recreated Roles
 and automatic renewal cannot restore those Orders.
 
 Extended Order reads preserve existing payment terms when a Product's prices
-or offered currencies change. The read uses the Order's matching-currency paid
-Invoice amount and its Payment Intent's saved subscription interval. Commerce
-Product type still selects delivery: a Telegram `one_off` payment transport can
-settle a subscription while retaining its saved interval. The latest
-paid Invoice wins by creation time, then ID; an accepted period anchor must
-still belong to that paid context. The read never rewrites the accepted period.
-A sole unpaid Invoice remains visible with its saved amount and interval, while
-its unpaid status and missing entitlement stay unchanged. Missing anchors,
+or offered currencies change. The latest paid Invoice on a successful Payment
+Intent in the Order's currency supplies the amount and interval. Creation time
+and then Invoice ID determine the order. The Product type still selects delivery.
+A Telegram `one_off` payment can settle a subscription with its saved interval.
+While payment is pending, the customer can still see the saved terms from a
+paid Invoice or a sole open Invoice. Reading the Order leaves its accepted
+period unchanged. Starting or renewing a period requires a confirmed payment.
+Missing anchors,
 conflicting payment currencies and ambiguous Invoice contexts require
 reconciliation rather than an arbitrary fallback.
 
@@ -62,7 +62,7 @@ or new checkout through this read compatibility.
 
 Natural recurring expiry removes its grant through the internal fulfillment
 operation and sets `status=expired`, retaining its paid Invoice anchor. A later
-newer paid Invoice can reactivate that same unrevoked Order for a full interval.
+confirmed payment can reactivate that same unrevoked Order for a full interval.
 Role changes, credits and period acceptance share one transaction with Subject
 and Order locks; failure leaves the paid Order retryable. Notifications and
 automatic follow-up checkout run after commit. Urgent paid/cleanup work precedes
@@ -79,7 +79,7 @@ does not change the period.
 ## Variants
 
 - `default`: order card wrapper with header and child content.
-- `cart-default`: cart layout showing products, quantities, and totals.
+- `cart-default`: cart layout showing products, quantities, and totals. Pass the owner-scoped lines as `ordersToProducts` in customer views. Standalone use reads the lines with the permissions of the caller.
 - `orders-to-products-quantity-default`: renders quantities from order-product relations.
 - `purchase-ai-chat`: purchase history row. The shared record reader loads the
   Order; local `client.tsx`/`server.tsx` readers load SDK totals and pass typed
@@ -129,3 +129,9 @@ line available for removal. Missing order lines, missing configuration and sourc
 failures still fail the read. Current Subject checkout shows the diagnostics and
 blocks payment until those lines are removed. Payment calculation retains its
 separate checkout validation; an omitted cart amount is not a zero-price grant.
+
+## Payment success extension
+
+The payment check route uses `controller/startup/find-by-id/check/index.ts`. Override its protected `onPaymentSucceeded({ order })` method to run project logic before persisting `paid`. The default hook does nothing. A failed hook leaves the order in `paying`, so a subsequent check can repeat the operation. Use idempotent SDK operations and keep payment confirmation independent of notification delivery.
+
+Runtime SDK create calls generate IDs. For partial retries, find an existing side effect by a stable unique key, such as a slug, and use the returned ID in relations. Include all required relation fields when updating a link.

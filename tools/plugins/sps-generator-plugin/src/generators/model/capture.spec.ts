@@ -2,7 +2,7 @@
  * BDD Suite: client-owned Startup models and relations.
  * Given: the Startup module and its existing Widget model.
  * When: a new model and Widget relation are generated.
- * Then: their standalone generation targets both refresh Consistency Capture.
+ * Then: their standalone generation targets only generate their own Drizzle history.
  */
 import { createTreeWithEmptyWorkspace } from "@nx/devkit/testing";
 import { readFileSync } from "node:fs";
@@ -62,7 +62,6 @@ it("generates Startup model and relation targets with the complete migration con
     ).toEqual([
       "drizzle-kit up --config=./src/lib/config.ts",
       "drizzle-kit generate --config=./src/lib/config.ts",
-      "npx nx run @sps/providers-db:repository-generate",
     ]);
   }
   for (const entity of [

@@ -370,9 +370,9 @@ it("previews staged Markdown and PDF locally without submitting, then keeps remo
       'a[href^="javascript:"], script, img[src="https://example.com/tracker.png"]',
     ),
   ).toBeNull();
-  fireEvent.click(screen.getByRole("button", { name: "Source", exact: true }));
+  fireEvent.click(screen.getByRole("button", { name: "Source" }));
   expect(screen.getByText(/# Local notes/).tagName).toBe("PRE");
-  fireEvent.click(screen.getByRole("button", { name: "Close", exact: true }));
+  fireEvent.click(screen.getByRole("button", { name: "Close" }));
   fireEvent.click(screen.getByRole("button", { name: "Preview Demo.html" }));
   const frame = await screen.findByTitle("HTML preview");
   expect(frame.getAttribute("sandbox")).toBe("allow-scripts");

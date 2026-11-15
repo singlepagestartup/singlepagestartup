@@ -159,7 +159,7 @@ beforeAll(async () => {
   const port = await listen(reserve);
   await new Promise<void>((resolve) => reserve.close(() => resolve()));
   base = `http://127.0.0.1:${port}`;
-  api = spawn("bun", ["server.ts"], {
+  api = spawn(require.resolve("bun/bin/bun.exe"), ["server.ts"], {
     cwd: join(process.cwd(), "apps/api"),
     stdio: "ignore",
     env: {
@@ -167,6 +167,8 @@ beforeAll(async () => {
       API_SERVICE_PORT: String(port),
       API_SERVICE_URL: base,
       NEXT_PUBLIC_API_SERVICE_URL: base,
+      ALLOWED_BILLING_SERVICE_PROVIDERS:
+        "paykeeper,cloudpayments,tiptoppay,0xprocessing,payselection,payselection-international,telegram-star,dummy",
       PAYKEEPER_BASE_URL: `http://127.0.0.1:${bankPort}`,
       PAYKEEPER_API_LOGIN: "scenario",
       PAYKEEPER_API_PASSWORD: "scenario",

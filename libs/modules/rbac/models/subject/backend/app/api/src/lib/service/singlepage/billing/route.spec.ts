@@ -25,20 +25,15 @@ jest.mock("@sps/rbac/models/permission/sdk/server", () => {
   };
 });
 
-jest.mock("hono/jwt", () => {
-  return {
-    verify: jest.fn(),
-  };
-});
-
 import { Service } from "./route";
 import { api as permissionApi } from "@sps/rbac/models/permission/sdk/server";
-import * as jwt from "hono/jwt";
 
 const mockedResolveByRoute = permissionApi.resolveByRoute as jest.Mock;
-const mockedJwtVerify = jwt.verify as jest.Mock;
 
-function createService(subjectCurrencyAmount: string | string[]) {
+function createService(
+  subjectCurrencyAmount: string | string[],
+  getSubjectId = jest.fn().mockResolvedValue("subject-1"),
+) {
   const balances = (
     Array.isArray(subjectCurrencyAmount)
       ? subjectCurrencyAmount
@@ -62,6 +57,7 @@ function createService(subjectCurrencyAmount: string | string[]) {
   const service = new Service(
     {} as any,
     subjectsToBillingModuleCurrenciesService as any,
+    { getSubjectId } as any,
   );
 
   return {
@@ -87,11 +83,6 @@ function buildExecuteProps(route: string) {
 describe("OpenRouter route billing service behavior", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockedJwtVerify.mockResolvedValue({
-      subject: {
-        id: "subject-1",
-      },
-    });
     mockedResolveByRoute.mockResolvedValue({
       permission: {
         id: "permission-1",
@@ -325,5 +316,36 @@ describe("OpenRouter route billing service behavior", () => {
         buildExecuteProps("/zero-configured/react-by/openrouter"),
       ),
     ).rejects.toThrow("do not have enough balance");
+  });
+
+  /**
+   * BDD Scenario
+   * Given: the billing route is called directly with a token that the
+   * authorization resolution refuses, such as one revoked by logout.
+   * When: the precharge runs.
+   * Then: the refusal reaches the caller and no balance is touched.
+   */
+  it("charges nothing for a token authorization refuses", async () => {
+    const { service, subjectsToBillingModuleCurrenciesService } = createService(
+      "5",
+      jest
+        .fn()
+        .mockRejectedValue(new Error("Authentication error. Token revoked")),
+    );
+
+    await expect(
+      service.execute(
+        buildExecuteProps(
+          "/api/rbac/subjects/subject-1/social-module/profiles/profile-1/chats/chat-1/messages/message-1/react-by/openrouter",
+        ),
+      ),
+    ).rejects.toThrow("Authentication error. Token revoked");
+
+    expect(
+      subjectsToBillingModuleCurrenciesService.find,
+    ).not.toHaveBeenCalled();
+    expect(
+      subjectsToBillingModuleCurrenciesService.updateAmountIfUnchanged,
+    ).not.toHaveBeenCalled();
   });
 });

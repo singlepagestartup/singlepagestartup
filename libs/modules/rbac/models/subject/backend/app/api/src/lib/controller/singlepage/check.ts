@@ -17,6 +17,7 @@ export class Handler {
         throw new Error("Configuration error. RBAC_SECRET_KEY not set");
       }
 
+      await this.service.sendSecurityNotifications();
       await this.service.ecommerceOrderProceed({});
 
       return c.json({

@@ -41,6 +41,11 @@ export class Apps {
     );
   }
 
+  async resolveSubjectId(token: string): Promise<string> {
+    const controller = subject.controller as SubjectController;
+    return controller.service.isAuthorizedService.getSubjectId(token);
+  }
+
   bindApps() {
     this.apps.push({
       type: "relation",

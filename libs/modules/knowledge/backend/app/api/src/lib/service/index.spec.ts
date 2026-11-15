@@ -5,7 +5,7 @@
  * Then: unchanged links avoid another provider request and failure is reported
  * separately from the committed notes and attachments.
  */
-import { KnowledgeService } from "./index";
+import { Service as KnowledgeService } from "./index";
 const source = {
   id: "source",
   content: "Confirmed notes",

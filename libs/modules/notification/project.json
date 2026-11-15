@@ -8,17 +8,26 @@
     "eslint:lint": {},
     "jest:test": {},
     "jest:integration": {
-      "executor": "@nx/jest:jest",
-      "outputs": ["{projectRoot}/coverage"],
-      "inputs": ["{projectRoot}"],
+      "executor": "nx:run-commands",
+      "outputs": [
+        "{projectRoot}/coverage"
+      ],
+      "inputs": [
+        "{projectRoot}/**/*",
+        "^default"
+      ],
       "options": {
-        "jestConfig": "libs/modules/notification/jest.integration.config.ts",
-        "passWithNoTests": true
+        "command": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config ./libs/modules/notification/jest.integration.config.ts --passWithNoTests",
+        "cwd": ".",
+        "env": {
+          "TS_NODE_COMPILER_OPTIONS": "{\"moduleResolution\":\"node16\",\"module\":\"Node16\",\"customConditions\":null}"
+        }
       }
     },
     "tsc:build": {},
     "repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "commands": [
@@ -29,8 +38,7 @@
             "command": "nx run @sps/notification:relations:repository-generate"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "repository-migrate": {
       "executor": "nx:run-commands",
@@ -49,6 +57,7 @@
     },
     "models:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "commands": [
@@ -65,11 +74,11 @@
             "command": "nx run @sps/notification:models:widget:repository-generate"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "commands": [
@@ -80,8 +89,7 @@
             "command": "nx run @sps/notification:relations:topics-to-notifications:repository-generate"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "models:repository-migrate": {
       "executor": "nx:run-commands",
@@ -121,6 +129,7 @@
     },
     "models:template:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/notification/models/template/backend/repository/database",
@@ -130,13 +139,9 @@
           },
           {
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
-          },
-          {
-            "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "models:template:repository-migrate": {
       "executor": "nx:run-commands",
@@ -154,6 +159,7 @@
     },
     "models:notification:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/notification/models/notification/backend/repository/database",
@@ -163,13 +169,9 @@
           },
           {
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
-          },
-          {
-            "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "models:notification:repository-migrate": {
       "executor": "nx:run-commands",
@@ -187,6 +189,7 @@
     },
     "models:topic:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/notification/models/topic/backend/repository/database",
@@ -196,13 +199,9 @@
           },
           {
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
-          },
-          {
-            "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "models:topic:repository-migrate": {
       "executor": "nx:run-commands",
@@ -220,6 +219,7 @@
     },
     "models:widget:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/notification/models/widget/backend/repository/database",
@@ -229,13 +229,9 @@
           },
           {
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
-          },
-          {
-            "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "models:widget:repository-migrate": {
       "executor": "nx:run-commands",
@@ -253,6 +249,7 @@
     },
     "relations:topics-to-notifications:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/notification/relations/topics-to-notifications/backend/repository/database",
@@ -262,13 +259,9 @@
           },
           {
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
-          },
-          {
-            "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:topics-to-notifications:repository-migrate": {
       "executor": "nx:run-commands",
@@ -286,6 +279,7 @@
     },
     "relations:notifications-to-templates:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "cwd": "libs/modules/notification/relations/notifications-to-templates/backend/repository/database",
@@ -295,13 +289,9 @@
           },
           {
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
-          },
-          {
-            "command": "npx nx run @sps/providers-db:repository-generate"
           }
         ]
-      },
-      "cache": false
+      }
     },
     "relations:notifications-to-templates:repository-migrate": {
       "executor": "nx:run-commands",

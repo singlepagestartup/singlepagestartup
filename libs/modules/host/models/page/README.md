@@ -6,7 +6,17 @@ keeps URL unique. `metadata` is the same JSON container used by other content
 models; `metadata.seo.title` and `metadata.seo.description` can hold language maps
 referenced by explicit Metadata masks. Legacy text fields remain fallback values.
 The old `language` column is retained for compatibility and has no routing,
-publication or indexing role. Seed reconciliation uses URL alone.
+publication or indexing role.
+
+The seed matches pages by their unique `slug`. Keep the slug when changing a
+page URL so the seed updates the same page and preserves its ID. When upgrading,
+the migration gives each existing row a stable slug derived from its URL at
+migration time. The same URL produces the same initial slug across installations
+even when their page IDs differ. New pages receive a generated slug unless the
+editor supplies one. Older dumps without a slug can still match a page by URL. If a site already
+uses the incoming URL, the seed can adopt its snapshot slug while the row still
+has its original migration-generated slug.
+A page's layout and widget assignments are managed separately in Host Pages.
 
 ## Route lookup
 

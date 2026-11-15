@@ -12,11 +12,11 @@ const pageContent = {
     links: [
       {
         text: "Начать с моих материалов",
-        href: "/ai-chat/rbac/subjects/authentication/registration",
+        href: "/rbac/subject/authentication/email-and-password/registration",
       },
       {
         text: "Войти",
-        href: "/ai-chat/rbac/subjects/authentication/select-method",
+        href: "/rbac/subject/authentication/email-and-password",
       },
     ],
   },
@@ -89,11 +89,11 @@ const pageContent = {
     links: [
       {
         text: "Начать с моих материалов",
-        href: "/ai-chat/rbac/subjects/authentication/registration",
+        href: "/rbac/subject/authentication/email-and-password/registration",
       },
       {
         text: "Войти",
-        href: "/ai-chat/rbac/subjects/authentication/select-method",
+        href: "/rbac/subject/authentication/email-and-password",
       },
     ],
   },

@@ -10,7 +10,7 @@ const deleteSource = jest.fn();
 
 jest.mock("@sps/knowledge/backend/app/api/src/lib/service", () => {
   return {
-    KnowledgeService: jest.fn().mockImplementation(() => {
+    Service: jest.fn().mockImplementation(() => {
       return {
         deleteSource,
       };

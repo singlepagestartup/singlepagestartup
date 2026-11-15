@@ -1,4 +1,4 @@
-import { SQL, getOperators, sql } from "drizzle-orm";
+import { Column, SQL, getOperators, is, sql } from "drizzle-orm";
 import { PgTableWithColumns } from "drizzle-orm/pg-core";
 
 interface QueryBuilderFilterMethods extends ReturnType<typeof getOperators> {}
@@ -159,7 +159,9 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
     const { name, jsonKey } = parseFilterColumn(filter?.column);
     const tableColumn = table[name];
 
-    if (!tableColumn) {
+    // The table object also carries functions, such as `enableRLS` and its
+    // prototype members, which a truthiness check would take for columns.
+    if (!is(tableColumn, Column)) {
       throw new Error(`Validation error. Unknown column '${name}'`);
     }
 
@@ -213,9 +215,12 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
         Object.values(filterValue).forEach((v: any) => arrayFilter.push(v));
       }
 
-      resultQueries.push(
-        queryFunctions[method](comparedColumn, arrayFilter) as SQL<any>,
-      );
+      const column = sql`${comparedColumn}`;
+      if (method === "inArray") {
+        resultQueries.push(queryFunctions.inArray(column, arrayFilter));
+      } else {
+        resultQueries.push(queryFunctions.notInArray(column, arrayFilter));
+      }
     }
 
     if (

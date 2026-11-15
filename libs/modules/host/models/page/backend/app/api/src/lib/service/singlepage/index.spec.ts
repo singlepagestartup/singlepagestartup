@@ -1,5 +1,5 @@
 import { Service } from "./index";
-import { RoutingService } from "./routing";
+import { Service as RoutingService } from "./routing";
 
 function create(pages: any[]) {
   const service = Object.create(Service.prototype) as Service;

@@ -16,11 +16,7 @@ import type {
 import type { ISocialProfileAiTool } from "./tool-loop";
 
 export type TJevKnowledgeAction =
-  | "none"
-  | "read"
-  | "create"
-  | "update"
-  | "auto";
+  "none" | "read" | "create" | "update" | "auto";
 
 export interface ISocialProfileJevServiceProps {
   openRouter: OpenRouter;
@@ -42,7 +38,7 @@ export interface IJevRequestRoute {
   documentProposalAction?: "confirm" | "reject" | "revise" | "none";
 }
 
-export class SocialProfileJevService {
+export class Service {
   constructor(private readonly props: ISocialProfileJevServiceProps) {}
 
   async selectModel(props: {
@@ -207,10 +203,7 @@ export class SocialProfileJevService {
                 result.answers.documentProposalAction.choice,
               )
                 ? (result.answers.documentProposalAction.choice as
-                    | "confirm"
-                    | "reject"
-                    | "revise"
-                    | "none")
+                    "confirm" | "reject" | "revise" | "none")
                 : ("none" as const),
           }
         : {}),
@@ -272,13 +265,15 @@ export class SocialProfileJevService {
       const results = await Promise.all(
         batches.slice(offset, offset + 3).map(async (items) => {
           const request = requestFor(items);
+          const result = await this.decide(
+            "knowledge_rerank",
+            request.state,
+            request.questions,
+          );
+
           return {
             items,
-            result: await this.decide(
-              "knowledge_rerank",
-              request.state,
-              request.questions,
-            ),
+            result,
           };
         }),
       );

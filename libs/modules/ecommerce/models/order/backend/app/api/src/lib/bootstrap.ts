@@ -1,4 +1,4 @@
-import { Container, ContainerModule, interfaces } from "inversify";
+import { Container, ContainerModule } from "inversify";
 import {
   DI,
   ExceptionFilter,
@@ -61,11 +61,11 @@ import { Configuration as BillingInvoiceConfiguration } from "@sps/billing/model
 import { Service as FileStorageFileService } from "@sps/file-storage/models/file/backend/app/api/src/lib/service";
 import { Repository as FileStorageFileRepository } from "@sps/file-storage/models/file/backend/app/api/src/lib/repository";
 import { Configuration as FileStorageFileConfiguration } from "@sps/file-storage/models/file/backend/app/api/src/lib/configuration";
-import { Service as FindByIdCheckoutAttributesService } from "./service/singlepage/find-by-id/checkout-attributes";
-import { Service as FindByIdTotalService } from "./service/singlepage/find-by-id/total";
-import { Service as FindByIdQuantityService } from "./service/singlepage/find-by-id/quantity";
+import { Service as FindByIdCheckoutAttributesService } from "./service/startup/find-by-id/checkout-attributes";
+import { Service as FindByIdTotalService } from "./service/startup/find-by-id/total";
+import { Service as FindByIdQuantityService } from "./service/startup/find-by-id/quantity";
 
-const bindings = new ContainerModule((bind: interfaces.Bind) => {
+const bindings = new ContainerModule(({ bind }) => {
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
   bind<App>(DI.IApp).to(App);
   bind<Controller>(DI.IController).to(Controller);
@@ -408,9 +408,7 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
 });
 
 export async function bootstrap() {
-  const container = new Container({
-    skipBaseClassChecks: true,
-  });
+  const container = new Container();
   container.load(bindings);
   const app = container.get<App>(DI.IApp);
 

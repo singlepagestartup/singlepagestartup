@@ -39,40 +39,42 @@ export default async function Server(props: IComponentProps) {
       skillsPromise,
       knowledgePromise,
     ]);
-    const sourceFiles =
-      knowledge.status === "fulfilled"
-        ? await Promise.all(
-            knowledge.value.map(async (source) => {
-              try {
-                const files =
-                  await subjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesFind(
-                    { ...target, knowledgeModuleSourceId: source.id },
-                  );
-                return [
-                  source.id,
-                  <SourceFiles
-                    language={props.language}
-                    key={source.id}
-                    files={files}
-                  />,
-                ] as const;
-              } catch (error) {
-                return [
-                  source.id,
-                  <SourceFiles
-                    language={props.language}
-                    key={source.id}
-                    error={
-                      error instanceof Error
-                        ? error.message
-                        : "Files could not be loaded."
-                    }
-                  />,
-                ] as const;
-              }
-            }),
-          )
-        : [];
+    let sourceFiles;
+    if (knowledge.status === "fulfilled") {
+      sourceFiles = await Promise.all(
+        knowledge.value.map(async (source) => {
+          try {
+            const files =
+              await subjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesFind(
+                { ...target, knowledgeModuleSourceId: source.id },
+              );
+            return [
+              source.id,
+              <SourceFiles
+                language={props.language}
+                key={source.id}
+                files={files}
+              />,
+            ] as const;
+          } catch (error) {
+            return [
+              source.id,
+              <SourceFiles
+                language={props.language}
+                key={source.id}
+                error={
+                  error instanceof Error
+                    ? error.message
+                    : "Files could not be loaded."
+                }
+              />,
+            ] as const;
+          }
+        }),
+      );
+    } else {
+      sourceFiles = [];
+    }
     return (
       <ChildComponent
         {...props}

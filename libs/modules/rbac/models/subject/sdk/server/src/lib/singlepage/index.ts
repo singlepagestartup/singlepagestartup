@@ -146,6 +146,11 @@ import {
   type IProps as IEcommerceModuleOrderListProps,
   type IResult as IEcommerceModuleOrderListResult,
 } from "./ecommerce-module/order/list";
+import {
+  action as ecommerceModuleOrdersToProductsList,
+  type IProps as IEcommerceModuleOrdersToProductsListProps,
+  type IResult as IEcommerceModuleOrdersToProductsListResult,
+} from "./ecommerce-module/orders-to-products/list";
 
 import {
   action as identityFind,
@@ -475,12 +480,18 @@ import {
 } from "./social-module/chat/find-by-id/profile/delete";
 
 import {
+  action as permissionDefaults,
+  type IResult as IPermissionDefaultsResult,
+  type IProps as IPermissionDefaultsProps,
+} from "./permission-defaults";
+import {
   action as hostCacheRevalidate,
   type IProps as IHostCacheRevalidateProps,
   type IResult as IHostCacheRevalidateResult,
 } from "./host-cache/revalidate";
 
 export type IProps = {
+  IPermissionDefaultsProps: IPermissionDefaultsProps;
   IHostCacheRevalidateProps: IHostCacheRevalidateProps;
   IBlogModuleArticleCreateProps: IBlogModuleArticleCreateProps;
   IEcommerceModuleOrderFreezeSubscriptionPeriodProps: IEcommerceModuleOrderFreezeSubscriptionPeriodProps;
@@ -511,6 +522,7 @@ export type IProps = {
   IEcommerceModuleOrderQuantityProps: IEcommerceModuleOrderQuantityProps;
   IEcommerceModuleOrderIdCheckoutProps: IEcommerceModuleOrderIdCheckoutProps;
   IEcommerceModuleOrderListProps: IEcommerceModuleOrderListProps;
+  IEcommerceModuleOrdersToProductsListProps: IEcommerceModuleOrdersToProductsListProps;
 
   IIdentityFindProps: IIdentityFindProps;
   IIdentityUpdateProps: IIdentityUpdateProps;
@@ -583,6 +595,7 @@ export type IProps = {
 };
 
 export type IResult = {
+  IPermissionDefaultsResult: IPermissionDefaultsResult;
   IHostCacheRevalidateResult: IHostCacheRevalidateResult;
   IBlogModuleArticleCreateResult: IBlogModuleArticleCreateResult;
   IEcommerceModuleOrderFreezeSubscriptionPeriodResult: IEcommerceModuleOrderFreezeSubscriptionPeriodResult;
@@ -613,6 +626,7 @@ export type IResult = {
   IEcommerceModuleOrderQuantityResult: IEcommerceModuleOrderQuantityResult;
   IEcommerceModuleOrderIdCheckoutResult: IEcommerceModuleOrderIdCheckoutResult;
   IEcommerceModuleOrderListResult: IEcommerceModuleOrderListResult;
+  IEcommerceModuleOrdersToProductsListResult: IEcommerceModuleOrdersToProductsListResult;
 
   IIdentityFindResult: IIdentityFindResult;
   IIdentityUpdateResult: IIdentityUpdateResult;
@@ -685,6 +699,7 @@ export type IResult = {
 };
 
 export const api = {
+  permissionDefaults,
   hostCacheRevalidate,
   blogModuleArticleCreate,
   ecommerceModuleOrderFreezeSubscriptionPeriod,
@@ -713,6 +728,7 @@ export const api = {
   ecommerceModuleOrderQuantity,
   ecommerceModuleOrderIdCheckout,
   ecommerceModuleOrderList,
+  ecommerceModuleOrdersToProductsList,
 
   identityFind,
   identityUpdate,

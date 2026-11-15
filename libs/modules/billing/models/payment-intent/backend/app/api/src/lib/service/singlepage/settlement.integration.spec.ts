@@ -323,6 +323,44 @@ describe.each(providers)("Atomic settlement for %s", (provider) => {
   });
 });
 
+it("keeps the intent payable until its last open invoice expires", async () => {
+  const f = await fixture("cloudpayments");
+  const second = await f.invoices.create({
+    data: { provider: "dummy", amount: 100, status: "open" },
+  });
+  removals.push(() => f.invoices.delete({ id: second.id }));
+  const relations = f.service.billingModule.paymentIntentsToInvoices;
+  const link = await relations.create({
+    data: { paymentIntentId: f.intent.id, invoiceId: second.id },
+  });
+  const relationStore = new RelationService(
+    new RelationRepository(new RelationConfiguration()),
+  );
+  removals.push(() => relationStore.delete({ id: link.id }));
+
+  const expiresBefore = new Date(Date.now() + 1000);
+  await f.service.expireInvoice({
+    invoiceId: f.invoice.id,
+    provider: "cloudpayments",
+    expiresBefore,
+  });
+  expect((await f.invoices.findById({ id: f.invoice.id }))?.status).toBe(
+    "failed",
+  );
+  expect((await f.service.findById({ id: f.intent.id }))?.status).toBe(
+    f.intent.status,
+  );
+
+  await f.service.expireInvoice({
+    invoiceId: second.id,
+    provider: "dummy",
+    expiresBefore,
+  });
+  expect((await f.service.findById({ id: f.intent.id }))?.status).toBe(
+    "failed",
+  );
+});
+
 it("keeps zero-amount dummy settlement atomic and idempotent", async () => {
   const f = await fixture("dummy", 0);
   await Promise.all(
@@ -340,6 +378,57 @@ it("keeps zero-amount dummy settlement atomic and idempotent", async () => {
   expect((await f.service.findById({ id: f.intent.id }))?.status).toBe(
     "succeeded",
   );
+});
+
+it("creates one paid invoice when a free checkout is submitted twice", async () => {
+  const f = await fixture("paykeeper", 0);
+  const links = new RelationService(
+    new RelationRepository(new RelationConfiguration()),
+  );
+  try {
+    const results = await Promise.all([
+      f.service.settleFreePayment(f.intent.id, "stripe"),
+      f.service.settleFreePayment(f.intent.id, "stripe"),
+    ]);
+    expect(results.map((intent) => intent?.status)).toEqual([
+      "succeeded",
+      "succeeded",
+    ]);
+    const relations = await links.find({
+      params: {
+        filters: {
+          and: [
+            { column: "paymentIntentId", method: "eq", value: f.intent.id },
+          ],
+        },
+      },
+    });
+    const created = relations.filter((link) => link.invoiceId !== f.invoice.id);
+    expect(created).toHaveLength(1);
+    expect(
+      await f.invoices.findById({ id: created[0].invoiceId }),
+    ).toMatchObject({
+      amount: 0,
+      provider: "stripe",
+      status: "paid",
+    });
+  } finally {
+    const relations = await links.find({
+      params: {
+        filters: {
+          and: [
+            { column: "paymentIntentId", method: "eq", value: f.intent.id },
+          ],
+        },
+      },
+    });
+    for (const link of relations) {
+      if (link.invoiceId !== f.invoice.id) {
+        await links.delete({ id: link.id });
+        await f.invoices.delete({ id: link.invoiceId });
+      }
+    }
+  }
 });
 
 it("handles overlapping invoices without deadlocks and updates a shared intent once", async () => {

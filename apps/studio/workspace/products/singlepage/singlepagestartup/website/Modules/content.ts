@@ -2278,7 +2278,8 @@ export const modulesPageContent: IModulesPageContent = {
     "explore-module": "Посмотреть примеры",
     "source-guide": "Документация {module}",
     "prepare-action": "Создать продукт",
-    "register-href": "/ai-chat/rbac/subjects/authentication/registration",
+    "register-href":
+      "/rbac/subject/authentication/email-and-password/registration",
     "missing-title": "Модуль не найден",
     "missing-description": "Выберите модуль из списка.",
     "composition-eyebrow": "Соберите свой набор возможностей",

@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { injectable } from "inversify";
+import { injectFromBase, injectable } from "inversify";
 import {
   DatabaseRepository,
   consistencyContext,
@@ -10,6 +10,7 @@ import { eq } from "drizzle-orm";
 import { Table } from "@sps/billing/models/invoice/backend/repository/database";
 
 @injectable()
+@injectFromBase()
 export class Repository extends DatabaseRepository<typeof Table> {
   async lockForSettlement(id: string) {
     if (!consistencyContext.getStore()?.database)
@@ -54,11 +55,9 @@ export class Repository extends DatabaseRepository<typeof Table> {
     value: unknown,
     data: Record<string, unknown>,
   ) {
-    return super.updateFirstByField(
-      field,
-      value,
-      await this.immutableData(field, value, data),
-    );
+    const immutableData = await this.immutableData(field, value, data);
+
+    return super.updateFirstByField(field, value, immutableData);
   }
 
   override async consumeFirstByField(
@@ -67,11 +66,8 @@ export class Repository extends DatabaseRepository<typeof Table> {
     data: Record<string, unknown>,
     predicate?: Parameters<IRepository["consumeFirstByField"]>[3],
   ) {
-    return super.consumeFirstByField(
-      field,
-      value,
-      await this.immutableData(field, value, data),
-      predicate,
-    );
+    const immutableData = await this.immutableData(field, value, data);
+
+    return super.consumeFirstByField(field, value, immutableData, predicate);
   }
 }

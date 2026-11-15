@@ -14,12 +14,12 @@ import {
   type AIChatDocumentKey,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
-import { Service } from "../../index";
+import type { Service as SubjectService } from "../../index";
 
-export class ChatLifecycleService {
-  protected service: Service;
+export class Service {
+  protected service: SubjectService;
 
-  constructor(service: Service) {
+  constructor(service: SubjectService) {
     this.service = service;
   }
 

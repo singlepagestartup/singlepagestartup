@@ -13,9 +13,9 @@ import { Table as MessageSources } from "@sps/social/relations/messages-to-knowl
 import { Table as Source } from "@sps/knowledge/models/source/backend/repository/database";
 import { createKnowledgeServices } from "@sps/knowledge/backend/app/api/src/lib/composition";
 import { Service as FileStorageFileService } from "@sps/file-storage/models/file/backend/app/api/src/lib/service";
-import { KnowledgeService } from "@sps/knowledge/backend/app/api/src/lib/service";
+import { Service as KnowledgeService } from "@sps/knowledge/backend/app/api/src/lib/service";
 import { Service } from "./document";
-import { MaterialService } from "@sps/knowledge/backend/app/api/src/lib/service/materials";
+import { Service as MaterialService } from "@sps/knowledge/backend/app/api/src/lib/service/materials";
 import { readKnowledgeUserContext } from "@sps/shared-utils";
 import { Table as File } from "@sps/file-storage/models/file/backend/repository/database";
 import { Table as MessageFiles } from "@sps/social/relations/messages-to-file-storage-module-files/backend/repository/database";
@@ -115,7 +115,6 @@ it("persists a confirmed document Source with profile and origin links, indexes 
   const knowledge = new KnowledgeService({
     source: createKnowledgeServices({
       processing: false,
-      publishEffects: async () => {},
     }).source,
     embeddingClient: {
       embed: async () => vector,

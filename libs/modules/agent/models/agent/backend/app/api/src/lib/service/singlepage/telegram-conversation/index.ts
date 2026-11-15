@@ -120,9 +120,7 @@ export interface ITelegramConversationRuntime {
 
 const clone = <T>(value: T): T => structuredClone(value);
 
-export class TelegramConversationRuntime
-  implements ITelegramConversationRuntime
-{
+export class Service implements ITelegramConversationRuntime {
   constructor(
     protected readonly store: ITelegramConversationStore,
     protected readonly options: {

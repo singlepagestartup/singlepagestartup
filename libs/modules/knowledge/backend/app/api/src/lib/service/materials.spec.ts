@@ -1,4 +1,4 @@
-import { MaterialService } from "./materials";
+import { Service as MaterialService } from "./materials";
 import { assembleContent, hashContent, readUserContext } from "./utils";
 
 function setup() {

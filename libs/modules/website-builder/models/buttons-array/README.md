@@ -20,6 +20,7 @@ ButtonsArray groups multiple buttons into a single ordered set.
 
 - `actions`: ordered action group with content-width children and a wrapping row.
 - `actions-full`: the same ordered group with full-width action relations for a registration or form CTA.
+- `internationalization`: shows the current language code and a menu of the other languages from `@sps/shared-configuration`. Choosing a language preserves the current path, query parameters and fragment. Attach the array to a navbar through `widgets-to-buttons-arrays`. It works with an empty array of saved buttons.
 
 - `default`: renders buttons via `buttons-arrays-to-buttons` relation.
 - `find`: data-fetch wrapper for querying arrays.

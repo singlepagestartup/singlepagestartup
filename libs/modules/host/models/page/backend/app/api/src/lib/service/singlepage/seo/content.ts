@@ -6,9 +6,9 @@ import {
   metadataPathValue,
   type IMetadataReference,
 } from "@sps/shared-utils";
-import {
-  RoutingService,
-  type IRouteRecord,
+import type {
+  Service as RoutingService,
+  IRouteRecord,
 } from "@sps/host/models/page/backend/app/api/src/lib/service/singlepage/routing";
 import { absoluteHttpUrl, decodeRouteValue, plainText } from "./utils";
 
@@ -57,11 +57,14 @@ export function createMetadataContext(
         key,
         (async () => {
           try {
-            return many
-              ? await routing.all(name, {
-                  filters: { and: [{ column, method: "eq", value }] },
-                })
-              : await routing.resolve(name, column, value);
+            if (many) {
+              const records = await routing.all(name, {
+                filters: { and: [{ column, method: "eq", value }] },
+              });
+              return records;
+            }
+            const record = await routing.resolve(name, column, value);
+            return record;
           } catch (error) {
             if (
               error &&

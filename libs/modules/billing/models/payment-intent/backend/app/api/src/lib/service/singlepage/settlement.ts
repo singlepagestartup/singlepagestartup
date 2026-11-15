@@ -164,27 +164,58 @@ export class Service {
     return this.withInvoice(props, async (invoice, intents) => {
       if (
         new Date(invoice.createdAt) >= props.expiresBefore ||
-        ["paid", "canceled", "failed"].includes(invoice.status) ||
+        ["paid", "canceled"].includes(invoice.status) ||
         intents.some(
           (intent) =>
             intent.status === "succeeded" || intent.status === "canceled",
         )
       )
         return;
-      const updatedInvoice = await service.billingModule.invoice.update({
-        id: invoice.id,
-        data: { ...invoice, status: "failed" },
-      });
-      if (!updatedInvoice)
-        throw new Error("Not Found error. Invoice not found");
+      if (invoice.status !== "failed") {
+        const updatedInvoice = await service.billingModule.invoice.update({
+          id: invoice.id,
+          data: { ...invoice, status: "failed" },
+        });
+        if (!updatedInvoice) {
+          throw new Error("Not Found error. Invoice not found");
+        }
+      }
       for (const intent of intents) {
-        if (intent.status !== "failed") {
-          const updated = await service.update({
-            id: intent.id,
-            data: { ...intent, status: "failed" },
-          });
-          if (!updated)
-            throw new Error("Not Found error. Payment intent not found");
+        if (intent.status === "failed") {
+          continue;
+        }
+        const links = await service.billingModule.paymentIntentsToInvoices.find(
+          {
+            params: {
+              filters: {
+                and: [
+                  { column: "paymentIntentId", method: "eq", value: intent.id },
+                ],
+              },
+            },
+          },
+        );
+        const invoiceIds = [...new Set(links.map((link) => link.invoiceId))];
+        const invoices = await service.billingModule.invoice.find({
+          params: {
+            filters: {
+              and: [{ column: "id", method: "inArray", value: invoiceIds }],
+            },
+          },
+        });
+        if (
+          !invoiceIds.length ||
+          invoices.length !== invoiceIds.length ||
+          invoices.some((linkedInvoice) => linkedInvoice.status !== "failed")
+        ) {
+          continue;
+        }
+        const updated = await service.update({
+          id: intent.id,
+          data: { ...intent, status: "failed" },
+        });
+        if (!updated) {
+          throw new Error("Not Found error. Payment intent not found");
         }
       }
     });

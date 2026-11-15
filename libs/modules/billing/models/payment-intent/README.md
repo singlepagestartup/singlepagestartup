@@ -39,10 +39,10 @@ override in its `startup` service.
 
 All supported providers use the Payment Intent settlement service:
 `stripe`, `cloudpayments`, `tiptoppay`, `0xprocessing`, `payselection`,
-`paykeeper`, `telegram-star` and `dummy`. Each provider authenticates its
-notification and checks its successful-payment condition before calling
-`settlePayment({ invoiceId, provider, amount, ... })`. Provider API requests
-finish before database locks are acquired.
+`paykeeper`, `telegram-star` and `dummy`. External providers verify their
+notifications before calling `settlePayment({ invoiceId, provider, amount, ... })`.
+The dummy provider simulates a payment when explicitly enabled. Provider API
+requests finish before database locks are acquired.
 
 Settlement locks the linked Payment Intents in ascending UUID order, then the
 Invoice, and rereads their amounts, statuses, provider identity and associations.
@@ -66,15 +66,18 @@ transaction and Payment Intent lock. Pending out-of-order events do not
 reset an existing paid invoice.
 
 Telegram Stars binds the successful charge ID under the lock; a different
-charge cannot replace it. The zero-amount dummy path also uses settlement and
-accepts only dummy invoices. Provider response formats and authentication
-remain provider-specific. Database idempotence does not initiate, refund or
-prevent an external charge.
+charge cannot replace it. For a zero-price checkout, the creation handler reads
+the stored intent under lock, creates or reuses its free invoice and settles
+it within the same transaction. The selected provider receives no synthetic
+webhook. Repeating the checkout for the same Payment Intent returns the succeeded
+intent. Subject checkout registers its order observer and checks free orders
+immediately. Each provider keeps its own response format and authentication.
 
 The scheduled CloudPayments check calls the same settlement operation only
 for a completed, incoming, non-refunded transaction. Invoice expiry and stale
 orphan recovery also reread under the same Payment Intent locks, so stale
-checks cannot overwrite a committed success. Capture, generations and outbox
+checks cannot overwrite a committed success. An expired invoice fails the intent
+only when all its linked invoices have failed. Capture, generations and outbox
 remain part of the write transaction. No schema migration is required.
 
 Custom provider adapters must inject `settle` and delegate both status writes

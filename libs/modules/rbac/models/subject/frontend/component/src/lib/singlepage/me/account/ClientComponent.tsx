@@ -7,11 +7,15 @@ import type { IComponentPropsExtended } from "./interface";
 import { internationalization } from "@sps/shared-configuration";
 
 export function Component(props: IComponentPropsExtended) {
-  const language = props.language || internationalization.defaultLanguage.code;
+  const language = (
+    internationalization.languages.find(
+      (configured) => configured.code === props.language,
+    ) ?? internationalization.defaultLanguage
+  ).code;
   if (!props.authenticated || !props.data)
     return (
       <Link
-        href={`/${language}/ai-chat/sign-in`}
+        href={`/${language}/rbac/subject/authentication/email-and-password`}
         className={cn(
           "inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-2 rounded-xl px-2 text-sm font-semibold hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2",
           props.className,

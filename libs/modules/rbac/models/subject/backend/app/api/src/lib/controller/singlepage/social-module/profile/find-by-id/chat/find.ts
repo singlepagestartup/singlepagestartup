@@ -3,7 +3,7 @@ import { HTTPException } from "hono/http-exception";
 import { withConsistencySnapshot } from "@sps/shared-backend-api";
 import { getHttpErrorType } from "@sps/backend-utils";
 import type { Service } from "../../../../../../service";
-import { Service as Chats } from "../../../../../../service/singlepage/social-module/chat/collection";
+import { Service as Chats } from "../../../../../../service/startup/social-module/chat/collection";
 
 export class Handler {
   constructor(readonly service: Service) {}

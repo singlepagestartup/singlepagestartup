@@ -1,8 +1,4 @@
-import {
-  CLOUDPAYMENTS_API_SECRET,
-  CLOUDPAYMENTS_PUBLIC_ID,
-  RBAC_SECRET_KEY,
-} from "@sps/shared-utils";
+import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
@@ -95,168 +91,29 @@ export class Handler {
         });
       }
 
+      const invoiceIds = paymentIntentsToInvoices.map((link) => link.invoiceId);
       const invoices = await this.service.billingModule.invoice.find({
         params: {
           filters: {
-            and: [
-              {
-                column: "id",
-                method: "inArray",
-                value: paymentIntentsToInvoices.map((item) => item.invoiceId),
-              },
-            ],
+            and: [{ column: "id", method: "inArray", value: invoiceIds }],
           },
         },
       });
 
-      if (invoices?.length) {
-        for (const invoice of invoices) {
-          if (invoice.provider === "cloudpayments") {
-            if (!CLOUDPAYMENTS_PUBLIC_ID || !CLOUDPAYMENTS_API_SECRET) {
-              throw new Error(
-                "Not Found error. Cloudpayments credentials not found",
-              );
-            }
-
-            if (!invoice.providerId) {
-              throw new Error(
-                "Not Found error. Cloudpayments invoice id not found",
-              );
-            }
-
-            const paymentsList = await fetch(
-              "https://api.cloudpayments.ru/payments/list",
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Basic ${Buffer.from(`${CLOUDPAYMENTS_PUBLIC_ID}:${CLOUDPAYMENTS_API_SECRET}`).toString("base64")}`,
-                },
-                body: JSON.stringify({
-                  Date: new Date(invoice.createdAt).toISOString().split("T")[0],
-                }),
-              },
-            ).then((res) => res.json());
-
-            let matchedTransaction: {
-              ReasonCode: number;
-              PublicId: string;
-              TerminalUrl: string;
-              TransactionId: number;
-              Amount: number;
-              Currency: string;
-              CurrencyCode: number;
-              PaymentAmount: number;
-              PaymentCurrency: string;
-              PaymentCurrencyCode: number;
-              InvoiceId: string;
-              AccountId: string;
-              Email: string;
-              Description: string;
-              JsonData: string;
-              CreatedDate: string;
-              PayoutDate: string;
-              PayoutDateIso: string;
-              PayoutAmount: number;
-              CreatedDateIso: string;
-              AuthDate: string;
-              AuthDateIso: string;
-              ConfirmDate: string;
-              ConfirmDateIso: string;
-              AuthCode: string;
-              TestMode: boolean;
-              Rrn: string;
-              OriginalTransactionId: string;
-              FallBackScenarioDeclinedTransactionId: string;
-              IpAddress: string;
-              IpCountry: string;
-              IpCity: string;
-              IpRegion: string;
-              IpDistrict: string;
-              IpLatitude: number;
-              IpLongitude: number;
-              CardFirstSix: string;
-              CardLastFour: string;
-              CardExpDate: string;
-              CardType: string;
-              CardProduct: string;
-              CardCategory: string;
-              EscrowAccumulationId: string;
-              IssuerBankCountry: string;
-              Issuer: string;
-              CardTypeCode: number;
-              Status: string;
-              StatusCode: number;
-              CultureName: string;
-              Reason: string;
-              CardHolderMessage: string;
-              Type: number;
-              Refunded: boolean;
-              Name: string;
-              Token: string;
-              SubscriptionId: string;
-              GatewayName: string;
-              ApplePay: boolean;
-              AndroidPay: boolean;
-              WalletType: string;
-              TotalFee: number;
-              IsLocalOrder: boolean;
-              Gateway: number;
-              MasterPass: boolean;
-              InfoShopData: string;
-              Receiver: string;
-              Splits: string;
-            } | null = null;
-            if (paymentsList.Model?.length) {
-              matchedTransaction = paymentsList.Model.find((tx: any) => {
-                if (tx.Status !== "Completed" || tx.Type !== 0 || tx.Refunded)
-                  return false;
-                try {
-                  const jsonData =
-                    typeof tx.JsonData === "string"
-                      ? JSON.parse(tx.JsonData)
-                      : tx.JsonData;
-                  return jsonData?.invoiceId === invoice.id;
-                } catch {
-                  return false;
-                }
-              });
-            }
-
-            if (
-              matchedTransaction?.Status === "Completed" &&
-              matchedTransaction.Type === 0 &&
-              !matchedTransaction.Refunded
-            ) {
-              await this.service.settlePayment({
-                invoiceId: invoice.id,
-                provider: "cloudpayments",
-                providerId: invoice.providerId,
-                amount: Number(matchedTransaction.Amount),
-              });
-            } else {
-              await this.service.expireInvoice({
-                invoiceId: invoice.id,
-                provider: "cloudpayments",
-                expiresBefore: new Date(Date.now() - 24 * 60 * 60 * 1000),
-              });
-            }
-            return c.json({
-              data: await this.service.findById({ id: entity.id }),
-            });
-          }
-
+      const expiresBefore = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      for (const invoice of invoices) {
+        if (invoice.provider === "cloudpayments") {
+          await this.service.checkCloudpaymentsInvoice(invoice);
+        } else if (new Date(invoice.createdAt) < expiresBefore) {
           await this.service.expireInvoice({
             invoiceId: invoice.id,
             provider: invoice.provider,
-            expiresBefore: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+            expiresBefore,
           });
         }
       }
-
-      return c.json({
-        data: await this.service.findById({ id: entity.id }),
-      });
+      const currentIntent = await this.service.findById({ id: entity.id });
+      return c.json({ data: currentIntent });
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });

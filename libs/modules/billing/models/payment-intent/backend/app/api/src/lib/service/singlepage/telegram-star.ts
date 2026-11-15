@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import type { IExecuteProps as ISettlementProps } from "./settlement";
-import { injectable } from "inversify";
+import { injectable, unmanaged } from "inversify";
 import { Table } from "@sps/billing/models/payment-intent/backend/repository/database";
 import { RBAC_SECRET_KEY, TELEGRAM_SERVICE_BOT_TOKEN } from "@sps/shared-utils";
 import { api as paymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
@@ -35,7 +35,7 @@ interface IConstructorProps {
 
 @injectable()
 export class Service {
-  constructor(private readonly dependencies: IConstructorProps) {}
+  constructor(@unmanaged() private readonly dependencies: IConstructorProps) {}
 
   async proceed(props: IServiceProceedProps) {
     if (!RBAC_SECRET_KEY) {

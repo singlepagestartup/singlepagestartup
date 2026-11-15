@@ -1,4 +1,4 @@
-import { Container, ContainerModule, interfaces } from "inversify";
+import { Container, ContainerModule } from "inversify";
 import {
   DI,
   ExceptionFilter,
@@ -10,11 +10,17 @@ import { Controller } from "./controller";
 import { Service } from "./service";
 import { App } from "./app";
 import { PaymentIntentDI, type IBillingModule } from "./di";
-import { app as currencyApp } from "@sps/billing/models/currency/backend/app/api";
-import { app as invoiceApp } from "@sps/billing/models/invoice/backend/app/api";
-import { app as relationApp } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api";
+import { Service as BillingCurrencyService } from "@sps/billing/models/currency/backend/app/api/src/lib/service";
+import { Repository as BillingCurrencyRepository } from "@sps/billing/models/currency/backend/app/api/src/lib/repository";
+import { Configuration as BillingCurrencyConfiguration } from "@sps/billing/models/currency/backend/app/api/src/lib/configuration";
+import { Service as BillingInvoiceService } from "@sps/billing/models/invoice/backend/app/api/src/lib/service";
+import { Repository as BillingInvoiceRepository } from "@sps/billing/models/invoice/backend/app/api/src/lib/repository";
+import { Configuration as BillingInvoiceConfiguration } from "@sps/billing/models/invoice/backend/app/api/src/lib/configuration";
+import { Service as BillingPaymentIntentsToInvoicesService } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/service";
+import { Repository as BillingPaymentIntentsToInvoicesRepository } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/repository";
+import { Configuration as BillingPaymentIntentsToInvoicesConfiguration } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/configuration";
 
-const bindings = new ContainerModule((bind: interfaces.Bind) => {
+const bindings = new ContainerModule(({ bind }) => {
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
   bind<App>(DI.IApp).to(App);
   bind<Controller>(DI.IController).to(Controller);
@@ -24,18 +30,24 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
   bind<IBillingModule>(PaymentIntentDI.IBillingModule)
     .toDynamicValue(() => {
       return {
-        currency: currencyApp.controller.service,
-        invoice: invoiceApp.controller.service,
-        paymentIntentsToInvoices: relationApp.controller.service,
+        currency: new BillingCurrencyService(
+          new BillingCurrencyRepository(new BillingCurrencyConfiguration()),
+        ),
+        invoice: new BillingInvoiceService(
+          new BillingInvoiceRepository(new BillingInvoiceConfiguration()),
+        ),
+        paymentIntentsToInvoices: new BillingPaymentIntentsToInvoicesService(
+          new BillingPaymentIntentsToInvoicesRepository(
+            new BillingPaymentIntentsToInvoicesConfiguration(),
+          ),
+        ),
       };
     })
     .inSingletonScope();
 });
 
 export async function bootstrap() {
-  const container = new Container({
-    skipBaseClassChecks: true,
-  });
+  const container = new Container();
   container.load(bindings);
   const app = container.get<App>(DI.IApp);
 

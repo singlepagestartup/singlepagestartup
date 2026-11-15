@@ -11,7 +11,7 @@ import { createMiddleware } from "hono/factory";
 import { api as channelApi } from "@sps/broadcast/models/channel/sdk/server";
 import { api as messagesApi } from "@sps/broadcast/models/message/sdk/server";
 import { IModel as IBroadcastMessage } from "@sps/broadcast/models/message/sdk/model";
-import { logger } from "@sps/backend-utils";
+import { fetchOutboundUrl, logger } from "@sps/backend-utils";
 import { createSkippedRoutesMatcher } from "./routes";
 
 export type IMiddlewareGeneric = unknown;
@@ -247,7 +247,9 @@ export class Middleware {
         options.body = formData;
       }
 
-      const result = await fetch(pipe[index].url, options).then(async (res) => {
+      const result = await fetchOutboundUrl(pipe[index].url, options, {
+        allowServiceOrigins: true,
+      }).then(async (res) => {
         if (res.status >= 200 && res.status < 300) {
           if (!RBAC_SECRET_KEY) {
             throw Error(

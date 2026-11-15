@@ -7,14 +7,28 @@
  */
 
 const mockPaymentIntentUpdate = jest.fn();
+const mockPaymentIntentFind = jest.fn();
+
+jest.mock(
+  "@sps/billing/relations/payment-intents-to-invoices/sdk/server",
+  () => ({
+    api: {
+      find: jest.fn(async () => [
+        { paymentIntentId: "intent-1", invoiceId: "invoice-1" },
+      ]),
+    },
+  }),
+);
 
 jest.mock("@sps/shared-utils", () => ({
-  CLOUDPAYMENTS_API_SECRET: "fixture-secret",
-  CLOUDPAYMENTS_PUBLIC_ID: "fixture-public",
+  ...jest.requireActual("@sps/shared-utils"),
+  CLOUDPAYMENTS_API_SECRET: "test-secret",
+  CLOUDPAYMENTS_PUBLIC_ID: "test-public",
   RBAC_SECRET_KEY: "test-rbac-secret",
 }));
 
 jest.mock("@sps/backend-utils", () => ({
+  ...jest.requireActual("@sps/backend-utils"),
   getHttpErrorType: (error: Error) => ({
     details: error,
     message: error.message,
@@ -30,10 +44,13 @@ jest.mock("@sps/billing/models/invoice/sdk/server", () => ({
 
 jest.mock("@sps/billing/models/payment-intent/sdk/server", () => ({
   api: {
+    find: (...args: unknown[]) => mockPaymentIntentFind(...args),
     update: (...args: unknown[]) => mockPaymentIntentUpdate(...args),
   },
 }));
 
+import { Service } from "../../../service";
+import { Service as InvoiceService } from "@sps/billing/models/invoice/backend/app/api/src/lib/service";
 import {
   Handler,
   PAYMENT_INTENT_INITIALIZATION_GRACE_PERIOD_MS,
@@ -141,78 +158,207 @@ describe("Given: a payment intent has no invoice relation yet", () => {
   });
 });
 
-describe("CloudPayments reconciliation", () => {
-  afterEach(() => jest.restoreAllMocks());
+describe("CloudPayments invoice reconciliation", () => {
+  const checkedAt = new Date("2026-07-30T10:00:00Z");
+  const createdAt = new Date("2026-07-29T09:00:00Z");
+  const completed = {
+    Status: "Completed",
+    Amount: 125,
+    JsonData: JSON.stringify({ invoiceId: "invoice-1" }),
+    Type: 0,
+    Refunded: false,
+  };
 
-  it.each(["Completed", "Declined", "Authorized"])(
-    "only settles a completed incoming transaction (%s)",
-    async (status) => {
-      const entity = {
-        id: "intent-1",
-        status: "requires_payment_method",
-        amount: 100,
-      };
-      const invoice = {
-        id: "invoice-1",
-        provider: "cloudpayments",
-        providerId: "456",
-        amount: 100,
-        status: "open",
-        createdAt: new Date(Date.now() - 2 * 86400000),
-      };
-      const service = {
-        findById: jest.fn(async () => entity),
-        settlePayment: jest.fn(async () => {
-          entity.status = "succeeded";
-          return invoice;
-        }),
-        expireInvoice: jest.fn(),
-        billingModule: {
-          paymentIntentsToInvoices: {
-            find: jest.fn().mockResolvedValue([{ invoiceId: invoice.id }]),
-          },
-          invoice: { find: jest.fn().mockResolvedValue([invoice]) },
-        },
-      };
-      jest.spyOn(globalThis, "fetch").mockResolvedValue({
-        json: async () => ({
-          Model: [
-            {
-              JsonData: JSON.stringify({ invoiceId: invoice.id }),
-              Status: status,
-              Type: 0,
-              Refunded: false,
-              Amount: 100,
-            },
-          ],
-        }),
-      } as any);
-      const context = {
-        req: {
-          param: () => entity.id,
-          parseBody: async () => ({ data: "{}" }),
-        },
-        json: (value: unknown) => value,
-      };
-      const result = await new Handler(service as any).execute(
-        context as any,
-        undefined,
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.useFakeTimers();
+    jest.setSystemTime(checkedAt);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+    jest.useRealTimers();
+  });
+
+  function fixture(date = createdAt) {
+    const intent = { id: "intent-1", status: "processing", amount: 125 };
+    const invoice = {
+      id: "invoice-1",
+      status: "open",
+      provider: "cloudpayments",
+      providerId: "1234",
+      amount: 125,
+      createdAt: date,
+    };
+    const invoiceRepository = {
+      lockForSettlement: jest.fn(),
+      updateFirstByField: jest.fn(async (_field, _id, data) =>
+        Object.assign(invoice, data),
+      ),
+      find: jest.fn(async () => [{ ...invoice }]),
+      findFirstByField: jest.fn(async () => ({ ...invoice })),
+      consumeFirstByField: jest.fn(async (_field, _id, data, predicate) => {
+        if (predicate.and[0].value !== invoice.status) {
+          return undefined;
+        }
+        return Object.assign(invoice, data);
+      }),
+    };
+    const repository = {
+      withPaymentIntentLocks: jest.fn(async (_ids, run) => run()),
+      updateFirstByField: jest.fn(async (_field, _id, data) =>
+        Object.assign(intent, data),
+      ),
+      findFirstByField: jest.fn(async () => ({ ...intent })),
+      consumeFirstByField: jest.fn(async (_field, _id, data, predicate) => {
+        if (predicate.and[0].value !== intent.status) {
+          return undefined;
+        }
+        return Object.assign(intent, data);
+      }),
+    };
+    const service = new Service(repository as any, {
+      currency: {} as any,
+      invoice: new InvoiceService(invoiceRepository as any),
+      paymentIntentsToInvoices: {
+        create: jest.fn(),
+        find: jest
+          .fn()
+          .mockResolvedValue([
+            { invoiceId: invoice.id, paymentIntentId: intent.id },
+          ]),
+        findById: jest.fn(),
+      },
+    });
+    const settle = jest.spyOn(service, "settlePayment");
+    const ctx = {
+      req: { param: () => intent.id, parseBody: async () => ({ data: "{}" }) },
+      json: (value: unknown) => value,
+    };
+    const handler = new Handler(service);
+    const check = () => handler.execute(ctx as any, undefined);
+    const provider = jest.spyOn(globalThis, "fetch");
+    return { intent, invoice, settle, check, provider };
+  }
+
+  it("retains a confirmed payment for an invoice older than 24 hours and returns its final intent", async () => {
+    const { intent, invoice, check, provider, settle } = fixture();
+    provider.mockResolvedValue(
+      Response.json({ Success: true, Model: [completed] }),
+    );
+    await expect(check()).resolves.toMatchObject({
+      data: { status: "succeeded" },
+    });
+    expect(invoice.status).toBe("paid");
+    expect(intent.status).toBe("succeeded");
+    await check();
+    expect(settle).toHaveBeenCalledTimes(1);
+    expect(settle).toHaveBeenCalledWith({
+      invoiceId: invoice.id,
+      providerId: invoice.providerId,
+      provider: "cloudpayments",
+      amount: 125,
+    });
+    expect(provider).toHaveBeenCalledTimes(1);
+  });
+
+  it("fails an expired invoice and intent when the provider confirms there is no payment", async () => {
+    const { intent, invoice, check, provider, settle } = fixture();
+    provider.mockResolvedValue(Response.json({ Success: true, Model: [] }));
+    await expect(check()).resolves.toMatchObject({
+      data: { status: "failed" },
+    });
+    expect(invoice.status).toBe("failed");
+    expect(intent.status).toBe("failed");
+    expect(settle).not.toHaveBeenCalled();
+  });
+
+  it("includes payments completed the next UTC day and follows the next page", async () => {
+    const { check, provider, invoice } = fixture();
+    const unrelated = { ...completed, JsonData: '{"invoiceId":"unrelated"}' };
+    provider
+      .mockResolvedValueOnce(
+        Response.json({ Success: true, Model: Array(100).fill(unrelated) }),
+      )
+      .mockResolvedValueOnce(
+        Response.json({ Success: true, Model: [completed] }),
       );
-      if (status === "Completed") {
-        expect(service.settlePayment).toHaveBeenCalledWith({
-          invoiceId: invoice.id,
-          provider: "cloudpayments",
-          providerId: "456",
-          amount: 100,
-        });
-        expect(service.expireInvoice).not.toHaveBeenCalled();
-        expect(result).toEqual({
-          data: expect.objectContaining({ status: "succeeded" }),
-        });
-      } else {
-        expect(service.settlePayment).not.toHaveBeenCalled();
-        expect(service.expireInvoice).toHaveBeenCalled();
-      }
+    await expect(check()).resolves.toMatchObject({
+      data: { status: "succeeded" },
+    });
+    expect(invoice.status).toBe("paid");
+    const requests = provider.mock.calls.map(([url, options]) => ({
+      url,
+      ...JSON.parse(String(options?.body)),
+    }));
+    expect(requests).toEqual(
+      [1, 2].map((page) =>
+        expect.objectContaining({
+          url: "https://api.cloudpayments.ru/v2/payments/list",
+          PageNumber: page,
+          CreatedDateGte: createdAt.toISOString(),
+          CreatedDateLte: checkedAt.toISOString(),
+        }),
+      ),
+    );
+  });
+
+  it("keeps a fresh invoice open when the payment is missing", async () => {
+    const { check, provider, invoice } = fixture(checkedAt);
+    provider.mockResolvedValue(Response.json({ Success: true, Model: [] }));
+    await expect(check()).resolves.toMatchObject({
+      data: { status: "processing" },
+    });
+    expect(invoice.status).toBe("open");
+  });
+
+  it("only settles a completed payment for this invoice", async () => {
+    const { check, provider, settle, invoice } = fixture();
+    provider.mockResolvedValue(
+      Response.json({
+        Success: true,
+        Model: [
+          { ...completed, Status: "Declined" },
+          { ...completed, Type: 1 },
+          { ...completed, Refunded: true },
+          { ...completed, JsonData: '{"invoiceId":"another-invoice"}' },
+        ],
+      }),
+    );
+    await expect(check()).resolves.toMatchObject({
+      data: { status: "failed" },
+    });
+    expect(invoice.status).toBe("failed");
+    expect(settle).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    [503, { Success: false }],
+    [200, { Success: false, Model: [] }],
+    [200, { Success: true }],
+  ])(
+    "keeps an expired invoice retryable on an inconclusive provider response (%s)",
+    async (status, body) => {
+      const { check, provider, intent, invoice } = fixture();
+      provider.mockResolvedValue(
+        Response.json(body, { status: Number(status) }),
+      );
+      await expect(check()).rejects.toThrow("CloudPayments");
+      expect(invoice.status).toBe("open");
+      expect(intent.status).toBe("processing");
     },
   );
+
+  it("preserves a concurrent webhook confirmation while the lookup is running", async () => {
+    const { check, provider, intent, invoice } = fixture();
+    provider.mockImplementation(async () => {
+      invoice.status = "paid";
+      intent.status = "succeeded";
+      return Response.json({ Success: true, Model: [] });
+    });
+    await expect(check()).resolves.toMatchObject({
+      data: { status: "succeeded" },
+    });
+    expect(invoice.status).toBe("paid");
+  });
 });

@@ -1,7 +1,5 @@
-import {
-  Service as FreeSubscription,
-  type IExecuteProps,
-} from "../billing/free-subscription";
+import { Service as FreeSubscription } from "../../startup/billing/free-subscription";
+import type { IExecuteProps } from "../billing/free-subscription";
 
 export type {
   IConstructorProps,

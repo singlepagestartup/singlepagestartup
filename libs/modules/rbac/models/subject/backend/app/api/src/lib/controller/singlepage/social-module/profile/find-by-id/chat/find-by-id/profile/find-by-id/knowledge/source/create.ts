@@ -1,5 +1,5 @@
 import { getHttpErrorType } from "@sps/backend-utils";
-import { KnowledgeService } from "@sps/knowledge/backend/app/api/src/lib/service";
+import { Service as KnowledgeService } from "@sps/knowledge/backend/app/api/src/lib/service";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../../../../../../service";

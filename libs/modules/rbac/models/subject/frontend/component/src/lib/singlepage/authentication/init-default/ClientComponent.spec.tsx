@@ -15,6 +15,7 @@ import { Component } from "./ClientComponent";
 
 const authenticationRefreshMock = jest.fn();
 const authenticationInitMock = jest.fn();
+const authenticationMeMock = jest.fn();
 const clearAuthenticationTokensMock = jest.fn();
 const decodeTokenMock = jest.fn();
 const initRefetchMock = jest.fn();
@@ -27,6 +28,7 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
     authenticationRefresh: (...args: unknown[]) =>
       authenticationRefreshMock(...args),
     authenticationInit: (...args: unknown[]) => authenticationInitMock(...args),
+    authenticationMe: (...args: unknown[]) => authenticationMeMock(...args),
   },
   clearAuthenticationTokens: (...args: unknown[]) =>
     clearAuthenticationTokensMock(...args),
@@ -61,6 +63,7 @@ describe("Given: authentication init bootstrap", () => {
     document.cookie = "rbac.subject.jwt=; Max-Age=0; path=/";
     authenticationRefreshMock.mockReset();
     authenticationInitMock.mockReset();
+    authenticationMeMock.mockReset();
     clearAuthenticationTokensMock.mockReset();
     decodeTokenMock.mockReset();
     initRefetchMock.mockReset();
@@ -131,6 +134,10 @@ describe("Given: authentication init bootstrap", () => {
     expect(initRefetchMock).not.toHaveBeenCalled();
     expect(refreshMutateMock).not.toHaveBeenCalled();
     expect(clearAuthenticationTokensMock).not.toHaveBeenCalled();
+    expect(authenticationMeMock).toHaveBeenCalledWith({
+      subjectId: "subject-1",
+      reactQueryOptions: { enabled: true, retry: false },
+    });
   });
 
   /**

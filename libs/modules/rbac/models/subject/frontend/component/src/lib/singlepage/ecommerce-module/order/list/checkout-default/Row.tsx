@@ -7,7 +7,7 @@ import { INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG } from "@sps/shared-utils";
 import { Icon, Select } from "@sps/ui-adapter";
 import { Component as EcommerceModuleProduct } from "@sps/ecommerce/models/product/frontend/component";
 import { Component as EcommerceModuleOrder } from "@sps/ecommerce/models/order/frontend/component";
-import { Component as DeleteDefault } from "../../delete-default";
+import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import type { IRowProps, IQuantityProps, ICurrencyProps } from "./interface";
 
 function Currency(props: ICurrencyProps) {
@@ -107,7 +107,13 @@ function Quantity(props: IQuantityProps) {
   const [error, setError] = useState("");
   const change = useCallback(
     async (quantity: number) => {
-      if (update.isPending || quantity < 1) return;
+      if (
+        update.isPending ||
+        quantity < 1 ||
+        quantity > props.maxLineQuantity
+      ) {
+        return;
+      }
       setError("");
       try {
         await update.mutateAsync({
@@ -129,11 +135,12 @@ function Quantity(props: IQuantityProps) {
       props.subjectId,
       props.orderId,
       props.line.id,
+      props.maxLineQuantity,
     ],
   );
   const decrease = useCallback(() => {
-    void change(props.line.quantity - 1);
-  }, [change, props.line.quantity]);
+    void change(Math.min(props.line.quantity - 1, props.maxLineQuantity));
+  }, [change, props.line.quantity, props.maxLineQuantity]);
   const increase = useCallback(() => {
     void change(props.line.quantity + 1);
   }, [change, props.line.quantity]);
@@ -164,7 +171,11 @@ function Quantity(props: IQuantityProps) {
         <button
           type="button"
           aria-label="Увеличить количество"
-          disabled={locked || update.isPending}
+          disabled={
+            locked ||
+            update.isPending ||
+            props.line.quantity >= props.maxLineQuantity
+          }
           onClick={increase}
           className="grid size-11 place-items-center rounded-lg hover:bg-card disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-foreground"
         >
@@ -180,9 +191,10 @@ function Quantity(props: IQuantityProps) {
   );
 }
 export const Component = memo(function Row(props: IRowProps) {
+  const details = props.ecommerceModuleOrder.cartDetails;
   return (
     <li className="min-w-0 space-y-4 py-5 first:pt-0 last:pb-0">
-      {props.ecommerceModuleOrder.cartDetails?.lines.map((line) =>
+      {details?.lines.map((line) =>
         line.product ? (
           <EcommerceModuleProduct
             key={line.id}
@@ -196,6 +208,7 @@ export const Component = memo(function Row(props: IRowProps) {
               subjectId={props.subject.id}
               orderId={props.ecommerceModuleOrder.id}
               line={line}
+              maxLineQuantity={details.maxLineQuantity}
               language={props.language}
             />
           </EcommerceModuleProduct>
@@ -220,7 +233,7 @@ export const Component = memo(function Row(props: IRowProps) {
           ecommerceModuleOrder={props.ecommerceModuleOrder}
           language={props.language}
         />
-        <DeleteDefault
+        <Subject
           isServer={false}
           variant="ecommerce-module-order-delete-default"
           data={props.subject}

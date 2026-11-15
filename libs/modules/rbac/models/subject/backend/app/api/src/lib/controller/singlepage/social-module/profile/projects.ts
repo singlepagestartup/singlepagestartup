@@ -2,7 +2,7 @@ import { getHttpErrorType } from "@sps/backend-utils";
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import type { Service } from "../../../../service";
-import { Service as Projects } from "../../../../service/singlepage/social-module/profile/projects";
+import { Service as Projects } from "../../../../service/startup/social-module/profile/projects";
 
 export class Handler {
   constructor(readonly service: Service) {}

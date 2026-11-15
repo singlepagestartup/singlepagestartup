@@ -8,12 +8,18 @@ import {
 import { inject, injectable } from "inversify";
 import { Apps } from "./apps";
 
-export type IApp = IModuleApp<Apps>;
+export interface IApp extends IModuleApp<Apps> {
+  resolveSubjectId(token: string): Promise<string>;
+}
 
 @injectable()
 export class App extends ModuleApp<Apps> implements IApp {
   constructor(@inject(DI.IExceptionFilter) exceptionFilter: IExceptionFilter) {
     super(exceptionFilter, () => new Apps());
+  }
+
+  async resolveSubjectId(token: string): Promise<string> {
+    return this.apps.resolveSubjectId(token);
   }
 
   protected override configureApps(): void {

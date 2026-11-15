@@ -19,13 +19,13 @@ const isDebug =
 const sessionExpiredMessage = "Session expired. Please sign in again.";
 const authenticationStorageEvent = "sps-rbac-auth-storage-change";
 const invalidCredentialsPattern = /invalid credentials/i;
+const revokedTokenPattern = /token revoked/i;
 const sessionStatePattern =
   /unauthorized|token required|no session|authorization error|no subject provided in the token|invalid token issued/i;
 
 function dispatchBrowserAuthorizationStateChange() {
   const browserWindow = browserGlobals.window as
-    | { dispatchEvent: (event: Event) => void }
-    | undefined;
+    { dispatchEvent: (event: Event) => void } | undefined;
 
   if (!browserWindow) {
     return;
@@ -91,6 +91,14 @@ function shouldTreatAsExpiredSession(props: {
     return false;
   }
 
+  /**
+   * Logout revokes every token of the subject, the stored refresh token
+   * included, so waiting for a refresh cannot recover this session.
+   */
+  if (revokedTokenPattern.test(props.message)) {
+    return true;
+  }
+
   if (hasBrowserRefreshToken()) {
     return false;
   }
@@ -104,6 +112,7 @@ async function util<T>(props: {
   res: Response;
   catchErrors?: boolean;
   silentErrorStatuses?: number[];
+  onUnauthorized?: () => void;
 }): Promise<T | undefined> {
   if (!props.res.ok) {
     let errorJson;
@@ -182,12 +191,16 @@ async function util<T>(props: {
         cause: errorPayload,
       });
     } else {
-      const shouldClearAuthorizationState = shouldTreatAsExpiredSession({
-        status: errorPayload.status,
-        message: errorPayload.message,
-      });
+      const shouldClearAuthorizationState =
+        !props.onUnauthorized &&
+        shouldTreatAsExpiredSession({
+          status: errorPayload.status,
+          message: errorPayload.message,
+        });
 
-      if (shouldClearAuthorizationState) {
+      if (errorPayload.status === 401 && props.onUnauthorized) {
+        props.onUnauthorized();
+      } else if (shouldClearAuthorizationState) {
         clearBrowserAuthorizationState();
       }
 

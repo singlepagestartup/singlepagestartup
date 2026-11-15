@@ -11,17 +11,17 @@ const allowedMcpServerIdsSchema = z
 export const insertSchema = createInsertSchema(Table, {
   metadata: entityMetadataSchema.optional(),
 }).extend({
-  title: z.record(z.any()).default({}),
-  subtitle: z.record(z.any()).default({}),
-  description: z.record(z.any()).default({}),
+  title: z.record(z.string(), z.any()).default({}),
+  subtitle: z.record(z.string(), z.any()).default({}),
+  description: z.record(z.string(), z.any()).default({}),
   allowedMcpServerIds: allowedMcpServerIdsSchema,
 });
 export const selectSchema = createSelectSchema(Table, {
   metadata: entityMetadataSchema,
 }).extend({
-  title: z.record(z.any()).default({}),
-  subtitle: z.record(z.any()).default({}),
-  description: z.record(z.any()).default({}),
+  title: z.record(z.string(), z.any()).default({}),
+  subtitle: z.record(z.string(), z.any()).default({}),
+  description: z.record(z.string(), z.any()).default({}),
   allowedMcpServerIds: allowedMcpServerIdsSchema,
 });
 export type ISelectSchema = typeof Table.$inferSelect;

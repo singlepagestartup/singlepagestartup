@@ -8,12 +8,16 @@ import { logger } from "@sps/backend-utils";
 import type {
   IDeliveryState,
   ISelection,
-} from "@sps/broadcast/models/message/backend/app/api/src/lib/service/singlepage/delivery-queue";
+} from "@sps/broadcast/models/channel/backend/app/api/src/lib/service/singlepage/delivery-queue";
 import type { IModel as IAgent } from "@sps/agent/models/agent/sdk/model";
 import type { Repository } from "../../../repository";
-import type { AgentRun, IAgentRunClaim, IAgentRunMarker } from "../agent-run";
+import type {
+  Service as AgentRun,
+  IAgentRunClaim,
+  IAgentRunMarker,
+} from "../agent-run";
 
-export class CronQueue {
+export class Service {
   constructor(
     private readonly repository: Repository,
     private readonly runs: AgentRun,

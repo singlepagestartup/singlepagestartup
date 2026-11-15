@@ -18,7 +18,24 @@ function dispatchAuthenticationStorageEvent() {
   window.dispatchEvent(new Event(AUTHENTICATION_STORAGE_EVENT));
 }
 
-export function persistAuthenticationTokens(props: IProps) {
+export function readAuthenticationTokens() {
+  return {
+    jwt: Cookies.get("rbac.subject.jwt"),
+    refresh: localStorage.getItem("rbac.subject.refresh"),
+  };
+}
+
+export function persistAuthenticationTokens(
+  props: IProps,
+  previous?: ReturnType<typeof readAuthenticationTokens>,
+) {
+  if (previous) {
+    const current = readAuthenticationTokens();
+    if (current.jwt !== previous.jwt || current.refresh !== previous.refresh) {
+      return;
+    }
+  }
+
   localStorage.setItem("rbac.subject.refresh", props.refresh);
 
   let expires: Date | undefined;
@@ -45,12 +62,29 @@ export function persistAuthenticationTokens(props: IProps) {
   dispatchAuthenticationStorageEvent();
 }
 
-export function clearAuthenticationTokens() {
-  localStorage.removeItem("rbac.subject.refresh");
+export function clearRejectedAccessToken(authorization: string | null) {
+  const jwt = Cookies.get("rbac.subject.jwt");
+  if (jwt && authorization === `Bearer ${jwt}`) {
+    removeAuthenticationCookie();
+    dispatchAuthenticationStorageEvent();
+  }
+}
+
+export function clearRejectedRefreshToken(refresh: string) {
+  if (localStorage.getItem("rbac.subject.refresh") === refresh) {
+    clearAuthenticationTokens();
+  }
+}
+
+function removeAuthenticationCookie() {
   Cookies.remove("rbac.subject.jwt", {
     path: "/",
   });
   Cookies.remove("rbac.subject.jwt");
+}
 
+export function clearAuthenticationTokens() {
+  localStorage.removeItem("rbac.subject.refresh");
+  removeAuthenticationCookie();
   dispatchAuthenticationStorageEvent();
 }

@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { injectable } from "inversify";
+import { injectFromBase, injectable } from "inversify";
 import {
   DatabaseRepository,
   consistencyContext,
@@ -10,6 +10,7 @@ import { asc, inArray } from "drizzle-orm";
 import { Table } from "@sps/billing/models/payment-intent/backend/repository/database";
 
 @injectable()
+@injectFromBase()
 export class Repository extends DatabaseRepository<typeof Table> {
   withPaymentIntentLock<T>(
     id: string,

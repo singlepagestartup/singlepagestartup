@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { injectable } from "inversify";
+import { injectFromBase, injectable } from "inversify";
 import {
   CRUDService,
   type FindByIdServiceProps,
@@ -10,9 +10,10 @@ import {
   extractRouteParams,
   SEO_SITEMAP_MAX_CANDIDATES,
 } from "@sps/shared-utils";
-import { RoutingService, type IRouteSource } from "./routing";
+import { Service as RoutingService } from "../startup/routing";
+import type { IRouteSource } from "./routing";
 import type { IPageUrl } from "@sps/host/models/page/sdk/model";
-import { SeoService } from "./seo";
+import { Service as SeoService } from "../startup/seo";
 
 export interface EntityWithUrls extends Record<string, unknown> {
   urls: { url: string }[];
@@ -22,6 +23,7 @@ export interface FindByUrlServiceProps extends Partial<FindByIdServiceProps> {
 }
 
 @injectable()
+@injectFromBase()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   routing = new RoutingService();
   readonly seo = new SeoService({
@@ -34,7 +36,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   protected async routePages() {
-    return (await this.find()).sort(
+    const records = await this.find();
+
+    return records.sort(
       (a, b) =>
         (a.url.match(/\[/g)?.length || 0) - (b.url.match(/\[/g)?.length || 0) ||
         a.id.localeCompare(b.id),

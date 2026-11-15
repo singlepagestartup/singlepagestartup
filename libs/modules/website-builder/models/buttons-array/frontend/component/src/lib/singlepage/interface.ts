@@ -1,5 +1,6 @@
 import { IComponentProps as IHiddenComponentProps } from "@sps/shared-frontend-components/singlepage/hidden/interface";
 import type { IComponentProps as INavigationInline } from "./navigation-inline/interface";
+import type { IComponentProps as IInternationalization } from "./internationalization/interface";
 import type { IComponentProps as INavigation } from "./navigation/interface";
 import type { IComponentProps as IActionsFull } from "./actions-full/interface";
 import type { IComponentProps as IActions } from "./actions/interface";
@@ -20,6 +21,7 @@ import { IComponentProps as IDefaultComponentProps } from "./default/interface";
 export type IComponentProps =
   | IHiddenComponentProps
   | INavigationInline
+  | IInternationalization
   | INavigation
   | IActionsFull
   | IActions

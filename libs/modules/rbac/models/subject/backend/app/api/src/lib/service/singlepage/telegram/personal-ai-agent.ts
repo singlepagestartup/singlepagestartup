@@ -2,7 +2,7 @@ import {
   getTelegramPersonalAiAgentSlug,
   type IModel as IRbacSubject,
 } from "@sps/rbac/models/subject/sdk/model";
-import { Service as Bootstrap } from "../social-module/profile/ai/bootstrap";
+import { Service as Bootstrap } from "../../startup/social-module/profile/ai/bootstrap";
 export type {
   IConstructorProps,
   IResult,

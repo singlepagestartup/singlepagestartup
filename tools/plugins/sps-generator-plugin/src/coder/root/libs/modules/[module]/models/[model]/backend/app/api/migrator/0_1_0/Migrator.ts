@@ -37,14 +37,18 @@ export class Migrator {
       }
     }
 
-    const oldModelImportPath = `${this.parent.coder.parent.project.model.baseName}`;
-    const newModelImportPath = `${this.parent.coder.parent.project.model.absoluteName}`;
+    const backend = this.parent.coder.parent.parent;
+    const oldModelImportPath = `${backend.baseName}-model`;
+    const newModelImportPath = `${backend.absoluteName}/model/root`;
 
     const files = visitAllFiles(
       this.parent.coder.tree,
       baseDirectory,
       (filePath) => {
-        const file = this.parent.coder.tree.read(filePath).toString("utf8");
+        const file = this.parent.coder.tree.read(filePath, "utf8");
+        if (file === null) {
+          throw new Error(`Missing migration input: ${filePath}`);
+        }
 
         const newFile = file.replace(
           new RegExp(oldModelImportPath, "g"),

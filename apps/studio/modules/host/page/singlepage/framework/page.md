@@ -14,7 +14,7 @@ review:
 
 Опишите свою идею ИИ-помощнику. Он поможет выбрать функции, собрать страницы из готовых блоков и добавить ваши тексты и изображения. Опубликуйте проект прямо из чата и получите ссылку, которую можно отправить клиентам.
 
-[Создать продукт](/ai-chat/rbac/subjects/authentication/registration)
+[Создать продукт](/rbac/subject/authentication/email-and-password/registration)
 
 <!-- section: foundation -->
 
@@ -69,7 +69,7 @@ SinglePageStartup — фреймворк с модульной и расширя
 
 Идея, описание бизнеса, сведения о клиентах, функции и оформление сохраняются в документах проекта. Возвращайтесь к ним, дополняйте и используйте в новых задачах. Вам не придётся каждый раз заново объяснять ИИ-помощнику, что вы создаёте.
 
-[Создать продукт](/ai-chat/rbac/subjects/authentication/registration)
+[Создать продукт](/rbac/subject/authentication/email-and-password/registration)
 
 [Тарифы и токены](/ecommerce)
 
@@ -118,7 +118,7 @@ SinglePageStartup — фреймворк с модульной и расширя
 
 Опишите, что хотите предложить клиентам. Вместе с ИИ-помощником выберите функции, посмотрите проект и опубликуйте его через чат.
 
-[Начать](/ai-chat/rbac/subjects/authentication/registration)
+[Начать](/rbac/subject/authentication/email-and-password/registration)
 
 [Посмотреть код](https://github.com/singlepagestartup/singlepagestartup)
 

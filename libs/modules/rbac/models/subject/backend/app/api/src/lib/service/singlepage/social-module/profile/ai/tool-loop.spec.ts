@@ -8,7 +8,7 @@
 
 import {
   SOCIAL_PROFILE_AI_TOOL_LOOP_DEFAULTS,
-  SocialProfileAiToolLoop,
+  Service as SocialProfileAiToolLoop,
   type ISocialProfileAiTool,
   type TSocialProfileAiToolLoopEvent,
 } from "./tool-loop";
@@ -392,7 +392,28 @@ describe("Given: a bounded social.profile AI tool loop", () => {
               },
             },
           ],
-          billing: null,
+          billing: {
+            requestModelId: "primary",
+            responseModelId: "primary",
+            usage: null,
+            pricing: null,
+            usageCostCredits: null,
+            upstreamInferenceCostCredits: null,
+            breakdown: {
+              promptUsd: 0,
+              completionUsd: 0,
+              requestUsd: 0,
+              imageUsd: 0,
+              webSearchUsd: 0,
+              reasoningUsd: 0,
+              cacheReadUsd: 0,
+              cacheWriteUsd: 0,
+              totalUsd: 0,
+              inputImageCount: 0,
+              outputImageCount: 0,
+            },
+            totalUsd: 0,
+          },
         })),
       });
       await jest.advanceTimersByTimeAsync(300_000);

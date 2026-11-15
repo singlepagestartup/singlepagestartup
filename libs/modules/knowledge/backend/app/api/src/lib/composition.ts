@@ -21,8 +21,7 @@ export interface IKnowledgeServices {
   sourcesToFileStorageModuleFiles: SourcesToFilesService;
   fileStorageModule: { file: FileStorageFileService };
 }
-export interface IKnowledgeCompositionProps
-  extends Partial<IKnowledgeServices> {
+export interface IKnowledgeCompositionProps extends Partial<IKnowledgeServices> {
   processing?: boolean;
 }
 function bindTransaction<T extends { repository: object }>(
@@ -73,7 +72,8 @@ export function createKnowledgeServices(
       if (props.processing === false) return;
       try {
         if (material) {
-          const { MaterialService } = await import("./service/materials");
+          const { Service: MaterialService } =
+            await import("./service/materials");
           await new MaterialService({ source: graph.source }).rebuild(sourceId);
         }
         const { KnowledgeIndexer } = await import("./indexer");
@@ -144,8 +144,11 @@ export function createKnowledgeServices(
     scope.sourcesToFileStorageModuleFiles.configure({
       inTransaction,
       fileStorageFile: scope.fileStorageModule.file,
-      mutate: async (operation) =>
-        (await scope.source.mutateFileRelation(operation)).relation,
+      mutate: async (operation) => {
+        const mutation = await scope.source.mutateFileRelation(operation);
+
+        return mutation.relation;
+      },
     });
   };
   configure(graph, false, []);

@@ -43,7 +43,7 @@ jest.mock("@sps/knowledge/backend/app/api/src/lib/configuration", () => {
 
 jest.mock("@sps/knowledge/backend/app/api/src/lib/service", () => {
   return {
-    KnowledgeService: jest.fn().mockImplementation(() => {
+    Service: jest.fn().mockImplementation(() => {
       return {
         learnContent: (...args: unknown[]) =>
           mockKnowledgeLearnContent(...args),

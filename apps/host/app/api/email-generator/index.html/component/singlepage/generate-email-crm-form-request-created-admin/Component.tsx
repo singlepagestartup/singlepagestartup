@@ -7,7 +7,7 @@ import {
   Head,
   Heading,
   Preview,
-} from "@react-email/components";
+} from "react-email";
 
 export function Component(props: IComponentPropsExtended) {
   return (

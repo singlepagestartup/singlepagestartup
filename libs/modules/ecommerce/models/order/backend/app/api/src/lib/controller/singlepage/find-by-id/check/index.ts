@@ -2,6 +2,7 @@ import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../service";
+import { IModel as IOrder } from "@sps/ecommerce/models/order/sdk/model";
 import { api } from "@sps/ecommerce/models/order/sdk/server";
 import { api as billingModulePaymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
 import { getHttpErrorType } from "@sps/backend-utils";
@@ -9,12 +10,20 @@ import { getHttpErrorType } from "@sps/backend-utils";
 export const PAYMENT_INITIALIZATION_GRACE_PERIOD_MS = 5 * 60 * 1000;
 export const PAYMENT_EXPIRATION_PERIOD_MS = 7 * 24 * 60 * 60 * 1000;
 
+export interface IPaymentSucceededProps {
+  order: IOrder;
+}
+
 export class Handler {
   service: Service;
 
   constructor(service: Service) {
     this.service = service;
   }
+
+  protected async onPaymentSucceeded(
+    _props: IPaymentSucceededProps,
+  ): Promise<void> {}
 
   async findPaymentIntentsByIds(ids: string[]): Promise<any[]> {
     const uniqueIds = Array.from(new Set(ids.filter(Boolean)));
@@ -153,6 +162,8 @@ export class Handler {
           );
 
           if (paymentIntentIsSucceeded) {
+            await this.onPaymentSucceeded({ order: entity });
+
             await api.update({
               id: uuid,
               data: {

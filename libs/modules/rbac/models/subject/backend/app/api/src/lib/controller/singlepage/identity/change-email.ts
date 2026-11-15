@@ -4,7 +4,7 @@ import { getHttpErrorType } from "@sps/backend-utils";
 import { applyOutputSchema } from "@sps/shared-backend-api";
 import { z } from "zod";
 import type { Service as SubjectService } from "../../../service";
-import { Service } from "../../../service/singlepage/authentication/email-and-password/change-email";
+import { Service } from "../../../service/startup/authentication/email-and-password/change-email";
 
 export class Handler {
   constructor(readonly service: SubjectService) {}
@@ -26,7 +26,7 @@ export class Handler {
         const parsed = z
           .object({
             email: z.string().optional(),
-            verificationId: z.string().uuid().optional(),
+            verificationId: z.uuid().optional(),
           })
           .strict()
           .safeParse(input);
@@ -34,17 +34,19 @@ export class Handler {
           throw new Error(
             "Validation error. Invalid email verification request",
           );
+        const result = await service.request({
+          subjectId,
+          identityId,
+          data: parsed.data,
+        });
+
         return c.json({
-          data: await service.request({
-            subjectId,
-            identityId,
-            data: parsed.data,
-          }),
+          data: result,
         });
       }
       const parsed = z
         .object({
-          challengeId: z.string().uuid(),
+          challengeId: z.uuid(),
           code: z.string().regex(/^\d{6}$/),
         })
         .strict()

@@ -12,7 +12,10 @@ import {
   type IResult as IParentResult,
 } from "@sps/rbac/models/subject/sdk/server";
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
-import { persistAuthenticationTokens } from "./persist-authentication-tokens";
+import {
+  persistAuthenticationTokens,
+  readAuthenticationTokens,
+} from "./persist-authentication-tokens";
 
 export type IProps = IParentProps["IAuthenticationInitProps"] & {
   reactQueryOptions?: Partial<UseQueryOptions<any>>;
@@ -24,6 +27,7 @@ export function action(props: IProps) {
   return useQuery<IResult>({
     queryKey: [`${route}/authentication/init`],
     queryFn: async () => {
+      const previous = readAuthenticationTokens();
       try {
         const result = await api.authenticationInit({
           ...props,
@@ -38,7 +42,7 @@ export function action(props: IProps) {
           throw new Error("Not Found error. No result");
         }
 
-        persistAuthenticationTokens(result);
+        persistAuthenticationTokens(result, previous);
 
         return result;
       } catch (error: any) {

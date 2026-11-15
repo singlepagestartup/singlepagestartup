@@ -31,6 +31,7 @@ export function ProfileSidebarPanel(props: ProfileSidebarPanelProps) {
     <SocialModuleProfile
       isServer={false}
       variant="chat-profile-sidebar"
+      dataSource="props"
       data={props.profile}
       language={props.language}
       skills={props.skills}

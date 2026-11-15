@@ -10,7 +10,12 @@ export interface IBillingModule {
   currency: IReadService;
   invoice: Pick<
     InvoiceService,
-    "find" | "findById" | "create" | "update" | "lockForSettlement"
+    | "find"
+    | "findById"
+    | "create"
+    | "update"
+    | "lockForSettlement"
+    | "failOpenInvoice"
   >;
   paymentIntentsToInvoices: Pick<
     RelationService,

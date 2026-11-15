@@ -2,7 +2,7 @@ import { getHttpErrorType } from "@sps/backend-utils";
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import type { Service } from "../../../../service";
-import { Service as Profiles } from "../../../../service/singlepage/social-module/profile/collection";
+import { Service as Profiles } from "../../../../service/startup/social-module/profile/collection";
 
 export class Handler {
   constructor(readonly service: Service) {}
@@ -20,10 +20,12 @@ export class Handler {
       } catch {
         throw new Error("Validation error. Invalid profile JSON");
       }
-      return c.json(
-        { data: await new Profiles(this.service).create({ subjectId, data }) },
-        201,
-      );
+      const profile = await new Profiles(this.service).create({
+        subjectId,
+        data,
+      });
+
+      return c.json({ data: profile }, 201);
     } catch (error: unknown) {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });

@@ -12,9 +12,7 @@ const clone = <T>(value: T): T => structuredClone(value);
  * menu on API restart is safer than replaying an editor with stale
  * authorization. Persistent profile data continues to live behind RBAC APIs.
  */
-export class TelegramConversationMemoryStore
-  implements ITelegramConversationStore
-{
+export class Service implements ITelegramConversationStore {
   protected readonly states = new Map<string, ITelegramConversationState>();
   protected readonly tails = new Map<string, Promise<void>>();
 

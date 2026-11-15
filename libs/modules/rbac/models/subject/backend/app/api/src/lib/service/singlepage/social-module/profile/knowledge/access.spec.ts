@@ -8,7 +8,7 @@
 
 import {
   getSocialProfileKnowledgePermissionDescriptors,
-  SocialProfileKnowledgeAccessService,
+  Service as SocialProfileKnowledgeAccessService,
 } from "./access";
 
 class TestSocialProfileKnowledgeAccessService extends SocialProfileKnowledgeAccessService {

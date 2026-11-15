@@ -31,9 +31,12 @@ export async function validateDesignLayoutFiles(
         throw new Error(
           `Design source leaves its layer: ${layout.layer}/${source}`,
         );
-      const info = resolved
-        ? await stat(resolved).catch(() => undefined)
-        : undefined;
+      let info;
+      if (resolved) {
+        info = await stat(resolved).catch(() => undefined);
+      } else {
+        info = undefined;
+      }
       if (!info?.isFile())
         throw new Error(`Missing Design source: ${layout.layer}/${source}`);
     }),

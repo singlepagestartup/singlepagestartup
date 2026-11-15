@@ -102,12 +102,16 @@ export function Component(props: IComponentPropsExtended) {
       Boolean(searchParams.get("code")) ||
       Boolean(searchParams.get("oauthError")));
 
-  const refreshError = refresh.error as unknown as
-    | { status?: unknown }
-    | null
-    | undefined;
-  const refreshErrorStatus =
-    typeof refreshError?.status === "number" ? refreshError.status : undefined;
+  api.authenticationMe({
+    subjectId: tokenDecoded?.subject?.id,
+    reactQueryOptions: {
+      enabled:
+        !isOAuthCallbackPending &&
+        Boolean(tokenDecoded?.subject?.id) &&
+        isAuthenticationTokenValid(tokenDecoded, seconds),
+      retry: false,
+    },
+  });
 
   useEffect(() => {
     if (isOAuthCallbackPending) {
@@ -198,18 +202,6 @@ export function Component(props: IComponentPropsExtended) {
       window.removeEventListener("focus", handleAuthenticationStorageChange);
     };
   }, []);
-
-  useEffect(() => {
-    if (!refresh.isError) {
-      return;
-    }
-
-    if (refreshErrorStatus !== 401) {
-      return;
-    }
-
-    clearAuthenticationTokens();
-  }, [refresh.isError, refreshErrorStatus]);
 
   useEffect(() => {
     if (!refresh.isSuccess && !init.isSuccess) {

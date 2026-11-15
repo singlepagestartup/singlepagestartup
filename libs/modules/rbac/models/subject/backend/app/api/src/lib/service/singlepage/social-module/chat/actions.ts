@@ -1,6 +1,6 @@
 import type { Service as SubjectService } from "../../index";
 import type { IModel, IChatAction } from "@sps/social/models/action/sdk/model";
-import { Service as Presentations } from "./presentations";
+import { Service as Presentations } from "../../../startup/social-module/chat/presentations";
 
 /** The caller must prove Chat access before supplying its selected Actions. */
 export class Service {
