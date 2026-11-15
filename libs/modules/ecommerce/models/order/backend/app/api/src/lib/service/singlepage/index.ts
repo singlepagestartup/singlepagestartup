@@ -1,27 +1,25 @@
-import { Service as CartDetailsService } from "./find-by-id/cart-details";
+import { Service as CartDetailsService } from "../startup/find-by-id/cart-details";
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import { CRUDService, DI } from "@sps/shared-backend-api";
 import { Table } from "@sps/ecommerce/models/order/backend/repository/database";
 import { Repository } from "../../repository";
-import {
-  Service as ClearOldOrdersService,
-  IExecuteProps as IClearOldOrdersExecuteProps,
-} from "./clear-old-orders";
-import {
+import { Service as ClearOldOrdersService } from "../startup/clear-old-orders";
+import type { IExecuteProps as IClearOldOrdersExecuteProps } from "./clear-old-orders";
+import type {
   Service as FindByIdCheckoutAttributesService,
   IExecuteProps as IFindByIdCheckoutAttributesExecuteProps,
 } from "./find-by-id/checkout-attributes";
-import {
+import type {
   Service as FindByIdTotalService,
   IExecuteProps as IFindByIdTotalExecuteProps,
 } from "./find-by-id/total";
-import {
+import type {
   Service as FindByIdQuantityService,
   IExecuteProps as IFindByIdQuantityExecuteProps,
 } from "./find-by-id/quantity";
-import {
-  Service as GetExtendedService,
+import { Service as GetExtendedService } from "../startup/find-by-id/extended";
+import type {
   IExecuteProps as IGetExtendedExecuteProps,
   IResult as IGetExtendedResult,
 } from "./find-by-id/extended";
@@ -38,10 +36,10 @@ import { Service as BillingPaymentIntentsToCurrenciesService } from "@sps/billin
 import { Service as BillingPaymentIntentsToInvoicesService } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/service";
 import { Service as BillingInvoiceService } from "@sps/billing/models/invoice/backend/app/api/src/lib/service";
 import { Service as FileStorageFileService } from "@sps/file-storage/models/file/backend/app/api/src/lib/service";
-import {
-  Service as SubscriptionPeriodService,
-  type IExecuteProps as ISubscriptionPeriodProps,
-  type IFreezeProps as ISubscriptionPeriodFreezeProps,
+import { Service as SubscriptionPeriodService } from "../startup/subscription-period";
+import type {
+  IExecuteProps as ISubscriptionPeriodProps,
+  IFreezeProps as ISubscriptionPeriodFreezeProps,
 } from "./subscription-period";
 
 export type IExtendedEcommerceModuleOrder = IGetExtendedResult;

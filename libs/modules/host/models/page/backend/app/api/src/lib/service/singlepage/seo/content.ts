@@ -6,9 +6,9 @@ import {
   metadataPathValue,
   type IMetadataReference,
 } from "@sps/shared-utils";
-import {
+import type {
   RoutingService,
-  type IRouteRecord,
+  IRouteRecord,
 } from "@sps/host/models/page/backend/app/api/src/lib/service/singlepage/routing";
 import { absoluteHttpUrl, decodeRouteValue, plainText } from "./utils";
 

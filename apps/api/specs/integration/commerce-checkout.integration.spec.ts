@@ -11,6 +11,9 @@ it("persists cart mutations and derives dummy checkout invoices from current pro
   const script = String.raw`
 import assert from "node:assert/strict";
 import {randomUUID} from "node:crypto";
+import { spyOn } from "bun:test";
+import { Service as StartupQuantity } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service/startup/find-by-id/quantity";
+import { Handler as StartupPaymentCheck } from "@sps/ecommerce/models/order/backend/app/api/src/lib/controller/startup/find-by-id/check";
 import {Hono} from "hono";
 import {sign} from "hono/jwt";
 import {sql} from "drizzle-orm";
@@ -109,6 +112,25 @@ try{
   assert.equal((await tx.execute(subjectLock)).length,1,"Cart creation must hold the subject lock in the active transaction");
   let cartList=await carts();assert.equal(cartList.length,1);
   const removedCart=remember("ecommerce/orders",cartList[0]);
+  const projectQuantity = spyOn(StartupQuantity.prototype, "execute").mockResolvedValue(37);
+  try {
+    const quantityResponse = await app.request("/api/ecommerce/orders/" + removedCart.id + "/quantity");
+    assert.equal(quantityResponse.status, 200);
+    assert.equal((await quantityResponse.json()).data, 37);
+    const subjectOrder = service("rbac/subjects").ecommerceModule.order;
+    assert.equal(await subjectOrder.findByIdQuantity({ id: removedCart.id }), 37);
+  } finally {
+    projectQuantity.mockRestore();
+  }
+
+  const projectCheck = spyOn(StartupPaymentCheck.prototype, "execute").mockResolvedValue(Response.json({ data: "project-check" }));
+  try {
+    const response = await app.request("/api/ecommerce/orders/" + removedCart.id + "/check", { method: "POST" });
+    assert.equal(response.status, 200);
+    assert.equal((await response.json()).data, "project-check");
+  } finally {
+    projectCheck.mockRestore();
+  }
   const removedLine=cartList[0].cartDetails.lines[0];
   assert.equal(cartList[0].type,"cart");assert.equal(cartList[0].status,"new");
   assert.deepEqual(cartList[0].cartDetails.storeIds,[store.id]);

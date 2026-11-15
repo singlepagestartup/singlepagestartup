@@ -60,13 +60,13 @@ import {
   TELEGRAM_ASSISTANT_CALLBACK_PREFIX,
   type ITelegramConversationKey,
 } from "./telegram-conversation";
-import {
-  TelegramAssistantConversation,
-  type ITelegramAssistantConversationContext,
-  type ITelegramAssistantConversationTransport,
+import { TelegramAssistantConversation } from "../startup/telegram-assistant-conversation";
+import type {
+  ITelegramAssistantConversationContext,
+  ITelegramAssistantConversationTransport,
 } from "./telegram-assistant-conversation";
-import { CronQueue } from "./cron-queue";
-import { AgentRun } from "./agent-run";
+import { CronQueue } from "../startup/cron-queue";
+import { AgentRun } from "../startup/agent-run";
 
 const activeSubscriptionProductsCheckoutMessage =
   "Checking out order has active subscription products.";

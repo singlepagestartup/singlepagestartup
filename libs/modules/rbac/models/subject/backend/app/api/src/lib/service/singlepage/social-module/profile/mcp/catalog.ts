@@ -3,12 +3,12 @@ import {
   supportedMcpServerDescriptors,
   type IMcpServerDescriptor,
 } from "@sps/social/models/profile/sdk/model";
+import { SinglePageStartupMcpClientService } from "../../../../startup/social-module/profile/mcp/singlepagestartup-client";
 import {
   SINGLEPAGESTARTUP_MCP_SERVER_ID,
   type IMcpToolDefinition,
   type INormalizedMcpToolResult,
   type ISinglePageStartupMcpSession,
-  SinglePageStartupMcpClientService,
 } from "./singlepagestartup-client";
 
 export interface IProfileMcpServerCatalogItem extends IMcpServerDescriptor {

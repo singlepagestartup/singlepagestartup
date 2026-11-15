@@ -12,10 +12,10 @@ import { Service as AttributesToBillingModuleCurrenciesService } from "@sps/ecom
 import { Service as ProductsToFileStorageModuleFilesService } from "@sps/ecommerce/relations/products-to-file-storage-module-files/backend/app/api/src/lib/service";
 import { Service as BillingCurrencyService } from "@sps/billing/models/currency/backend/app/api/src/lib/service";
 import { Service as FileStorageFileService } from "@sps/file-storage/models/file/backend/app/api/src/lib/service";
-import {
-  Service as GetExtendedService,
-  type IExecuteProps as IFindByIdExtendedExecuteProps,
-  type IResult as IFindByIdExtendedResult,
+import { Service as GetExtendedService } from "../startup/get-extended";
+import type {
+  IExecuteProps as IFindByIdExtendedExecuteProps,
+  IResult as IFindByIdExtendedResult,
 } from "./get-extended";
 
 export type IExtendedEcommerceModuleProduct = IFindByIdExtendedResult;

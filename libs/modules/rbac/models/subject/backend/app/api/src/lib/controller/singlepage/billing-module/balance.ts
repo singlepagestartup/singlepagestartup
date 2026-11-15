@@ -2,7 +2,7 @@ import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { getHttpErrorType } from "@sps/backend-utils";
 import type { Service as SubjectService } from "../../../service";
-import { Service as Balance } from "../../../service/singlepage/billing/balance";
+import { Service as Balance } from "../../../service/startup/billing/balance";
 
 export class Handler {
   constructor(readonly service: SubjectService) {}

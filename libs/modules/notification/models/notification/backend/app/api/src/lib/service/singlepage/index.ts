@@ -3,7 +3,8 @@ import {
   type IBroadcastModule,
   type ITemplateService,
 } from "../../di";
-import { Service as Delivery, type IDeliveryProgress } from "./delivery";
+import { Service as Delivery } from "../startup/delivery";
+import type { IDeliveryProgress } from "./delivery";
 import { Repository } from "../../repository";
 import "reflect-metadata";
 import { readFile } from "node:fs/promises";

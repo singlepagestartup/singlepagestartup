@@ -6,10 +6,8 @@ import { Repository } from "../../repository";
 import { Service as ChatService } from "@sps/social/models/chat/backend/app/api/src/lib/service";
 import { Service as ProfilesToChatsService } from "@sps/social/relations/profiles-to-chats/backend/app/api/src/lib/service";
 import { ProfileDI } from "../../di";
-import {
-  Service as Authors,
-  type IDependencies as IAuthorDependencies,
-} from "./authors";
+import { Service as Authors } from "../startup/authors";
+import type { IDependencies as IAuthorDependencies } from "./authors";
 import type {
   IAuthorFindParams,
   IAuthorFilters,

@@ -20,7 +20,7 @@ import { Service as BillingPaymentIntentsToInvoicesService } from "@sps/billing/
 import { Service as BillingInvoiceService } from "@sps/billing/models/invoice/backend/app/api/src/lib/service";
 import { Service as FileStorageFileService } from "@sps/file-storage/models/file/backend/app/api/src/lib/service";
 import {
-  Service as FindByIdCheckoutAttributesService,
+  type Service as FindByIdCheckoutAttributesService,
   isSupportedOrderInterval,
   isSupportedOrderType,
   type IResult as IFindByIdCheckoutAttributesResult,

@@ -132,6 +132,6 @@ separate checkout validation; an omitted cart amount is not a zero-price grant.
 
 ## Payment success extension
 
-The payment check handler calls protected `onPaymentSucceeded({ order })` before persisting `paid`. The default hook does nothing. Projects extend the Startup handler for domain effects, using idempotent SDK operations: a failed hook leaves the order retryable. Keep payment confirmation independent of notification delivery.
+The payment check route uses `controller/startup/find-by-id/check/index.ts`. Override its protected `onPaymentSucceeded({ order })` method to run project logic before persisting `paid`. The default hook does nothing. A failed hook leaves the order in `paying`, so a subsequent check can repeat the operation. Use idempotent SDK operations and keep payment confirmation independent of notification delivery.
 
 Runtime SDK create calls generate IDs. For partial retries, find an existing side effect by a stable unique key, such as a slug, and use the returned ID in relations. Include all required relation fields when updating a link.

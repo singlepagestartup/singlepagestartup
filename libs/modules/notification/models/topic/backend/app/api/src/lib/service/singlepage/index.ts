@@ -1,8 +1,6 @@
 import "reflect-metadata";
-import {
-  Service as BoundedDelivery,
-  type ISendBoundedNotification,
-} from "./bounded-delivery";
+import { Service as BoundedDelivery } from "../startup/bounded-delivery";
+import type { ISendBoundedNotification } from "./bounded-delivery";
 import { inject, injectable } from "inversify";
 import { CRUDService, DI } from "@sps/shared-backend-api";
 import { Table } from "@sps/notification/models/topic/backend/repository/database";
