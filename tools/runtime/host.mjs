@@ -4,12 +4,20 @@ import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 
 /** Browser SDKs must not detect Node's experimental localStorage during SSR. */
-export function hostEnvironment(environment = process.env) {
+export function hostEnvironment(environment = process.env, mode = "dev") {
+  const nodeOptions = [
+    environment.NODE_OPTIONS,
+    "--no-experimental-webstorage",
+  ];
+  const hasHeapLimit = /--max[-_]old[-_]space[-_]size(?:=|\s)/.test(
+    environment.NODE_OPTIONS ?? "",
+  );
+  if (mode === "build" && !hasHeapLimit) {
+    nodeOptions.push("--max-old-space-size=8192");
+  }
   return {
     ...environment,
-    NODE_OPTIONS: [environment.NODE_OPTIONS, "--no-experimental-webstorage"]
-      .filter(Boolean)
-      .join(" "),
+    NODE_OPTIONS: nodeOptions.filter(Boolean).join(" "),
   };
 }
 
@@ -18,8 +26,10 @@ if (
   resolve(process.argv[1]) === fileURLToPath(import.meta.url)
 ) {
   const mode = process.argv[2];
-  if (mode !== "dev" && mode !== "start") {
-    console.error("Usage: node tools/runtime/host.mjs dev|start [Nx options]");
+  if (mode !== "dev" && mode !== "start" && mode !== "build") {
+    console.error(
+      "Usage: node tools/runtime/host.mjs dev|start|build [Nx options]",
+    );
     process.exitCode = 1;
   } else {
     const root = fileURLToPath(new URL("../../", import.meta.url));
@@ -34,7 +44,7 @@ if (
         `host:next:${mode}`,
         ...process.argv.slice(3),
       ],
-      { cwd: root, env: hostEnvironment(), stdio: "inherit" },
+      { cwd: root, env: hostEnvironment(process.env, mode), stdio: "inherit" },
     );
     for (const signal of ["SIGINT", "SIGTERM"]) {
       process.once(signal, () => child.kill(signal));

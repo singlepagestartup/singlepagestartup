@@ -134,11 +134,15 @@ reuse. Deploy the matching application version when restoring old variants.
 
 ## Host startup
 
-`npm run host:dev` and `npm run host:start` use host.mjs to run their existing Nx
+`npm run host:dev`, `npm run host:start` and `npm run host:build` use host.mjs to run their existing Nx
 targets. The launcher disables experimental Node WebStorage during SSR and
 preserves inherited NODE_OPTIONS, including the production heap limit.
 Browser storage remains available in the browser. Wallet SDKs otherwise detect
 Node 24 localStorage and can reject startup with getItem is not a function.
+
+Production builds default to an 8 GiB Node heap. Set
+`NODE_OPTIONS=--max-old-space-size=<MiB>` to choose a different limit. The launcher
+preserves an explicit heap limit, including the Docker image's 16 GiB setting.
 
 Check with `node --test tools/runtime/host.test.mjs`.
 
