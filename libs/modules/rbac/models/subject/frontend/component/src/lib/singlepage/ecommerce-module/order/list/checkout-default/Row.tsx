@@ -81,6 +81,7 @@ function Currency(props: ICurrencyProps) {
               : item.title,
         }))}
         className="h-9 min-h-9 w-auto max-w-full gap-2 rounded-lg bg-card px-2.5 py-1 text-xs shadow-none"
+        contentClassName="w-max min-w-[var(--radix-select-trigger-width)] max-w-[var(--radix-select-content-available-width)] whitespace-nowrap [&_[role=option]>span:last-child]:truncate"
       />
       {error && (
         <p role="alert" className="text-sm text-destructive">

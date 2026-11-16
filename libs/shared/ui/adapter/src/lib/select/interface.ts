@@ -9,6 +9,7 @@ export interface IComponentProps extends SelectPrimitive.SelectProps {
   ui: "shadcn";
   id?: string;
   className?: string;
+  contentClassName?: string;
   placeholder?: string;
   "aria-label"?: string;
   "aria-invalid"?: boolean;
