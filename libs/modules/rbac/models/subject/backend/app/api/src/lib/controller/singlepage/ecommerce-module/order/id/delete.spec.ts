@@ -51,6 +51,8 @@ function createContext(params: Record<string, string | undefined>) {
 
 function createService() {
   return {
+    ecommerceModuleOrderMutateCart: (...args: unknown[]) =>
+      orderDeleteMock(...args),
     ecommerceModuleOrderAssertAccess: jest.fn().mockResolvedValue(undefined),
     findById: jest.fn().mockResolvedValue({ id: "subject-1" }),
     ecommerceModule: {
@@ -99,10 +101,11 @@ describe("Given: ecommerce order delete handler", () => {
 
     await handler.execute(context, jest.fn());
 
-    expect(ordersToProductsDeleteMock).toHaveBeenCalledTimes(2);
-    expect(orderDeleteMock).toHaveBeenCalledWith(
-      expect.objectContaining({ id: "order-1" }),
-    );
+    expect(ordersToProductsDeleteMock).not.toHaveBeenCalled();
+    expect(orderDeleteMock).toHaveBeenCalledWith({
+      subjectId: "subject-1",
+      orderId: "order-1",
+    });
     expect(context.json).toHaveBeenCalledWith({
       data: expect.objectContaining({ id: "subject-1" }),
     });

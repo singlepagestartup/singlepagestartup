@@ -88,6 +88,12 @@ export class Service implements IRevocationDependencies {
       )
     )
       return false;
+    if (
+      ["canceling", "canceled"].includes(order.status) &&
+      !order.subscriptionPeriodInvoiceId
+    ) {
+      return false;
+    }
     const now = Date.now();
     for (const owner of owners)
       if (owner.ecommerceModuleOrderId !== scope.orderId) {

@@ -51,6 +51,9 @@ function createContext(
 
 function createService(subjectOrderIds = [firstOrderId, secondOrderId]) {
   return {
+    ecommerceModule: {
+      order: { find: (...args: unknown[]) => orderFindMock(...args) },
+    },
     findById: jest.fn().mockResolvedValue({ id: "subject-1" }),
     deanonymize: jest.fn().mockResolvedValue(undefined),
     subjectsToEcommerceModuleOrders: {
@@ -132,7 +135,7 @@ describe("Given: ecommerce order checkout handler", () => {
     expect(service.deanonymize).not.toHaveBeenCalled();
   });
 
-  it("When: payload is valid Then: order comments are patched and checkout service is called", async () => {
+  it("When: payload is valid Then: comments are delegated to the atomic checkout claim", async () => {
     const service = createService();
     const handler = new Handler(service);
 
@@ -188,7 +191,7 @@ describe("Given: ecommerce order checkout handler", () => {
       },
     });
     expectOrderLookup([firstOrderId, secondOrderId]);
-    expect(orderUpdateMock).toHaveBeenCalledTimes(2);
+    expect(orderUpdateMock).not.toHaveBeenCalled();
     expect(service.ecommerceOrderCheckout).toHaveBeenCalledWith(
       expect.objectContaining({
         id: "subject-1",
@@ -240,7 +243,7 @@ describe("Given: ecommerce order checkout handler", () => {
     await handler.execute(context, jest.fn());
 
     expectOrderLookup([firstOrderId, deletedOrderId]);
-    expect(orderUpdateMock).toHaveBeenCalledTimes(1);
+    expect(orderUpdateMock).not.toHaveBeenCalled();
     expect(service.ecommerceOrderCheckout).toHaveBeenCalledWith(
       expect.objectContaining({
         ecommerceModule: {
@@ -277,13 +280,7 @@ describe("Given: ecommerce order checkout handler", () => {
     await handler.execute(context, jest.fn());
 
     expectOrderLookup([firstOrderId]);
-    expect(orderUpdateMock).toHaveBeenCalledTimes(1);
-    expect(orderUpdateMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        id: firstOrderId,
-        data: { comment: "checkout note" },
-      }),
-    );
+    expect(orderUpdateMock).not.toHaveBeenCalled();
     expect(service.ecommerceOrderCheckout).toHaveBeenCalledWith(
       expect.objectContaining({
         ecommerceModule: {

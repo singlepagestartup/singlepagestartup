@@ -3,8 +3,6 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { authorization, getHttpErrorType, verifyJwt } from "@sps/backend-utils";
 import { Service } from "../../../../../service";
-import { api as ecommerceOrderApi } from "@sps/ecommerce/models/order/sdk/server";
-import { api as ecommerceOrdersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
 
 export class Handler {
   service: Service;
@@ -57,58 +55,9 @@ export class Handler {
         throw new Error("Not Found error. No entity found");
       }
 
-      await this.service.ecommerceModuleOrderAssertAccess({
+      await this.service.ecommerceModuleOrderMutateCart({
         subjectId: id,
         orderId,
-      });
-
-      const order = await this.service.ecommerceModule.order.findById({
-        id: orderId,
-      });
-
-      if (!order) {
-        throw new Error("Not Found error. No order found");
-      }
-
-      if (order.status !== "new") {
-        throw new Error("Not Found error. Order is not in 'new' status");
-      }
-
-      const ordersToProducts =
-        await this.service.ecommerceModule.ordersToProducts.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "orderId",
-                  method: "eq",
-                  value: orderId,
-                },
-              ],
-            },
-          },
-        });
-
-      if (ordersToProducts?.length) {
-        for (const orderToProduct of ordersToProducts) {
-          await ecommerceOrdersToProductsApi.delete({
-            id: orderToProduct.id,
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
-            },
-          });
-        }
-      }
-
-      await ecommerceOrderApi.delete({
-        id: orderId,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
       });
 
       return c.json({

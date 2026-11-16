@@ -15,6 +15,8 @@ export function Component(props: IComponentPropsExtended) {
       totalsPending={props.totalsPending}
       totalsError={props.totalsError}
       purchaseDetails={props.purchaseDetails}
+      actions={props.actions}
+      footer={props.footer}
     />
   );
 }

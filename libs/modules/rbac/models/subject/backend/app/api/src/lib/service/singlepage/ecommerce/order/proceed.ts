@@ -362,14 +362,23 @@ export class Service {
                 });
                 if (!current || current.order.status !== "canceling") return;
                 const extendedOrder = current.extendedOrder;
-                const productsRolesIds = current.productsRolesIds ?? [];
+                const activated = Boolean(
+                  extendedOrder.subscriptionPeriodInvoiceId,
+                );
+                // Payment failure can cancel an order that never granted access.
+                const productsRolesIds = activated
+                  ? (current.productsRolesIds ?? [])
+                  : [];
                 const existingRolesIds = current.existingRolesIds ?? [];
                 const rbacSubjectsToRoles = current.subjectsToRoles ?? [];
 
-                const revokedOrder =
-                  await this.ecommerceModule.order.revokeSubscription({
-                    id: order.id,
-                  });
+                let revokedOrder: IEcommerceModuleOrder | undefined;
+                if (activated) {
+                  revokedOrder =
+                    await this.ecommerceModule.order.revokeSubscription({
+                      id: order.id,
+                    });
+                }
                 const preservedRoles = await this.otherActiveOrderRoles({
                   subjectId: subjectToEcommerceModuleOrder.subjectId,
                   orderId: order.id,
@@ -1003,11 +1012,111 @@ export class Service {
       });
     }
 
+    if (subscription && !activated && !free) {
+      await this.requestOtherSubscriptionCancellation(props);
+    }
+
     return {
       accepted: true,
       extendedOrder: props.extendedOrder,
       status: updateEcommerceOrderData.status,
     };
+  }
+
+  private async requestOtherSubscriptionCancellation(props: ILifecycleProps) {
+    const ownedOrderIds = await this.ownedOrderIds(
+      props.subjectToEcommerceModuleOrder.subjectId,
+    );
+    const otherIds = ownedOrderIds.filter((id) => id !== props.order.id);
+    if (!otherIds.length) {
+      return;
+    }
+    const now = Date.now();
+    const cancellableStatuses = [
+      "paid",
+      "approving",
+      "packaging",
+      "delivering",
+      "delivered",
+    ];
+    const candidates = await this.ecommerceModule.order.find({
+      params: {
+        filters: {
+          and: [
+            { column: "id", method: "inArray", value: otherIds },
+            { column: "type", method: "eq", value: "history" },
+            {
+              column: "status",
+              method: "inArray",
+              value: cancellableStatuses,
+            },
+            { column: "subscriptionRevokedAt", method: "isNull", value: null },
+            {
+              column: "subscriptionPeriodInvoiceId",
+              method: "isNotNull",
+              value: null,
+            },
+            {
+              column: "subscriptionPeriodEndsAt",
+              method: "gt",
+              value: new Date(now),
+            },
+          ],
+        },
+        orderBy: { and: [{ column: "id", method: "asc" }] },
+      },
+    });
+    const productIds = new Set(
+      props.extendedOrder.ordersToProducts.map((line) => line.productId),
+    );
+    for (const candidate of candidates) {
+      const id = candidate.id;
+      if (!otherIds.includes(id)) {
+        continue;
+      }
+      await this.ecommerceModule.order.lockForLifecycle({ id });
+      const other = await this.ecommerceModule.order.findById({ id });
+      if (
+        !other ||
+        other.type !== "history" ||
+        !cancellableStatuses.includes(other.status) ||
+        other.subscriptionRevokedAt ||
+        !other.subscriptionPeriodInvoiceId ||
+        !other.subscriptionPeriodEndsAt ||
+        new Date(other.subscriptionPeriodEndsAt).getTime() <= now
+      ) {
+        continue;
+      }
+      const owners = await this.subjectsToEcommerceModuleOrders.find({
+        params: {
+          filters: {
+            and: [
+              { column: "ecommerceModuleOrderId", method: "eq", value: id },
+            ],
+          },
+        },
+      });
+      if (
+        !owners.length ||
+        owners.some(
+          (owner) =>
+            owner.subjectId !== props.subjectToEcommerceModuleOrder.subjectId,
+        )
+      ) {
+        continue;
+      }
+      const extended = await this.getExtendedEcommerceModuleOrderById({ id });
+      if (
+        extended.checkoutAttributesByCurrency.type !== "subscription" ||
+        extended.ordersToProducts.some((line) => productIds.has(line.productId))
+      ) {
+        continue;
+      }
+      await this.ecommerceModule.order.update({
+        id,
+        data: { ...other, status: "requested_cancelation" },
+      });
+    }
   }
 
   async delivered(props: ILifecycleProps) {

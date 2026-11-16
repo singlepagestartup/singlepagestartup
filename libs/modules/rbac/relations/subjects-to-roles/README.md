@@ -49,7 +49,8 @@ server-owned revocation marker.
 `deleteForOrderFulfillment` is an internal capability with an exact Subject,
 Order and grant scope. It verifies natural subscription expiry or completion
 or cancellation of an owned Order. Subscription cancellation requires that
-Order's revocation marker. The operation preserves grants required by another
+Order's accepted period invoice and revocation marker. Canceling an unpaid
+attempt preserves the Subject's existing grants. The operation preserves grants required by another
 current subscription. No REST parameter bypasses explicit revocation.
 
 RBAC module initialization configures both the HTTP relation Service and the

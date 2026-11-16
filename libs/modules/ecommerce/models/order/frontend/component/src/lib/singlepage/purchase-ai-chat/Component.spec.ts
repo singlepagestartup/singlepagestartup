@@ -186,6 +186,39 @@ describe("Paid purchase details", () => {
     expect(mockTotal).not.toHaveBeenCalled();
     expect(mockReceiptLinks).not.toHaveBeenCalled();
   });
+  it.each([
+    ["paying", "Ожидает оплаты"],
+    ["failed", "Ошибка оплаты"],
+    ["canceled", "Отменён"],
+    ["canceling", "Отменяется"],
+    ["requested_cancelation", "Запрошена отмена"],
+    ["approving", "На подтверждении"],
+  ])(
+    "renders the real %s status and parent-owned action and confirmation slots",
+    (status, label) => {
+      const html = renderToStaticMarkup(
+        createElement(Component, {
+          isServer: false,
+          variant: "purchase-ai-chat",
+          dataSource: "props",
+          data: {
+            id: "historical-order",
+            createdAt: "2026-11-16",
+            status,
+          } as any,
+          actions: createElement("button", { type: "button" }, "Repeat order"),
+          footer: createElement("p", null, "Replace cart contents?"),
+          purchaseDetails: { totals: [], receipts: [] },
+        }),
+      );
+      expect(html).toContain(label);
+      expect(html).not.toContain("Оплачено");
+      expect(html).toContain("Repeat order");
+      expect(html).toContain("Replace cart contents?");
+      expect(mockTotal).not.toHaveBeenCalled();
+      expect(mockReceiptLinks).not.toHaveBeenCalled();
+    },
+  );
   it("loads totals through the server SDK before rendering a server purchase", async () => {
     const serverApi = jest.requireMock(
       "@sps/ecommerce/models/order/sdk/server",

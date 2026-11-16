@@ -40,6 +40,39 @@ export const Component = memo(function Component(
 ) {
   const language = props.language || internationalization.defaultLanguage.code;
   const ru = language === "ru";
+  const statusLabels: Record<string, string> = ru
+    ? {
+        new: "Новый",
+        paying: "Ожидает оплаты",
+        failed: "Ошибка оплаты",
+        canceling: "Отменяется",
+        requested_cancelation: "Запрошена отмена",
+        canceled: "Отменён",
+        cancelled: "Отменён",
+        expired: "Срок истёк",
+        paid: "Оплачено",
+        approving: "На подтверждении",
+        packaging: "Собирается",
+        delivering: "В пути",
+        delivered: "Доставлен",
+        completed: "Завершён",
+      }
+    : {
+        new: "New",
+        paying: "Awaiting payment",
+        failed: "Payment failed",
+        canceling: "Canceling",
+        requested_cancelation: "Cancellation requested",
+        canceled: "Canceled",
+        cancelled: "Canceled",
+        expired: "Expired",
+        paid: "Paid",
+        approving: "Awaiting approval",
+        packaging: "Packaging",
+        delivering: "Delivering",
+        delivered: "Delivered",
+        completed: "Completed",
+      };
   const currencies = new Map<string, { amount: number; label: string }>();
   props.totals?.forEach(({ total, billingModuleCurrency }) => {
     const previous = currencies.get(billingModuleCurrency.id);
@@ -66,13 +99,7 @@ export const Component = memo(function Component(
         <p className="text-sm font-semibold">
           {ru ? "Покупка услуги" : "Service purchase"}{" "}
           <span className="ml-2 inline-flex rounded-full bg-primary/25 px-2 py-1 text-xs font-medium">
-            {props.data.status === "expired"
-              ? ru
-                ? "Срок истёк"
-                : "Expired"
-              : ru
-                ? "Оплачено"
-                : "Paid"}
+            {statusLabels[props.data.status] ?? props.data.status}
           </span>
         </p>
         <p className="mt-1 text-xs text-muted-foreground">
@@ -153,7 +180,11 @@ export const Component = memo(function Component(
             }
           </OrdersToFileStorageModuleFiles>
         )}
+        {props.actions}
       </div>
+      {props.footer && (
+        <div className="@[640px]:col-span-2">{props.footer}</div>
+      )}
     </li>
   );
 });

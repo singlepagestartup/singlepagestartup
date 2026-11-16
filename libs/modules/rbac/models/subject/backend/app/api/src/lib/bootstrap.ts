@@ -491,7 +491,8 @@ const bindings = new ContainerModule(({ bind }) => {
         currency: new CRUDService<any>(
           new BillingCurrencyRepository(new BillingCurrencyConfiguration()),
         ),
-        paymentIntent: billingPaymentIntentApp.controller.service,
+        paymentIntent: billingPaymentIntentApp.controller
+          .service as BillingPaymentIntentService,
         paymentIntentsToCurrencies:
           billingPaymentIntentsToCurrenciesApp.controller.service,
         invoice: billingInvoiceApp.controller.service,

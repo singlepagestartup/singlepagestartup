@@ -60,6 +60,9 @@ function createService() {
   return {
     orderFind,
     service: {
+      ecommerceModuleOrderRetryableIds: jest
+        .fn()
+        .mockResolvedValue(new Set(["order-1"])),
       subjectsToEcommerceModuleOrders: {
         find: jest
           .fn()
@@ -277,6 +280,7 @@ describe("Subject order history", () => {
           id: "order-1",
           type: "history",
           purchaseDetails: {
+            canRepeatPayment: true,
             totals,
             receipts: [{ id: "receipt", file: "/receipt.pdf" }],
           },

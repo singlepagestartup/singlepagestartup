@@ -500,6 +500,23 @@ describe("durable subscription grant revocation", () => {
       "invoice-b",
     );
   });
+
+  it.each(["one_off", "subscription"])(
+    "preserves existing Roles when canceling an unfulfilled %s purchase",
+    async (type) => {
+      const { service, order, grants } = lifecycle("canceling", true, false);
+      order().checkoutAttributesByCurrency.type = type;
+      const revoke = jest.fn();
+      service.ecommerceModule.order.revokeSubscription = revoke;
+      await service.execute({ subjectId: "subject" });
+      expect(order().status).toBe("canceled");
+      expect(grants()).toEqual([
+        { id: "grant", roleId: "subscriber", subjectId: "subject" },
+      ]);
+      expect(revoke).not.toHaveBeenCalled();
+      expect(mockSubjectsToRolesDelete).not.toHaveBeenCalled();
+    },
+  );
   it("credits a newly accepted paid Pro cycle once and retains existing purchased tokens", async () => {
     const { service, order } = lifecycle("delivering", true);
     (service.collectTopupCurrencies as jest.Mock).mockResolvedValue([

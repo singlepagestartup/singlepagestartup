@@ -39,6 +39,23 @@ export class Service {
             "Validation error. Only an active cart order can change currency",
           );
         }
+        const paymentLinks =
+          await service.ecommerceModule.ordersToBillingModulePaymentIntents.find(
+            {
+              params: {
+                filters: {
+                  and: [
+                    { column: "orderId", method: "eq", value: props.orderId },
+                  ],
+                },
+              },
+            },
+          );
+        if (paymentLinks.length) {
+          throw new Error(
+            "Conflict error. Cart has a payment attempt and cannot be changed",
+          );
+        }
         const lines = await service.ecommerceModule.ordersToProducts.find({
           params: {
             filters: {
@@ -46,8 +63,9 @@ export class Service {
             },
           },
         });
-        if (!lines?.length)
+        if (!lines?.length) {
           throw new Error("Validation error. Order has no products");
+        }
         for (const line of lines) {
           const product = await service.ecommerceModule.product.findById({
             id: line.productId,
@@ -83,8 +101,9 @@ export class Service {
               data: { billingModuleCurrencyId: props.currencyId },
             });
           }
-          for (const link of links.slice(1))
+          for (const link of links.slice(1)) {
             await currencies.delete({ id: link.id });
+          }
         } else {
           await currencies.create({
             data: {

@@ -31,6 +31,7 @@ type IHandlerName =
   | "ecommerceModuleOrderIdTotal"
   | "ecommerceModuleOrderIdUpdate"
   | "ecommerceModuleOrderIdDelete"
+  | "ecommerceModuleOrderRepeat"
   | "ecommerceModuleOrderQuantity"
   | "ecommerceModuleOrderTotal"
   | "ecommerceModuleOrderCheckout";
@@ -43,6 +44,13 @@ interface IRoute {
 }
 
 const perOrderRoutes: IRoute[] = [
+  {
+    name: "POST repeat",
+    method: "POST",
+    path: ({ subjectId, orderId }) =>
+      `/${subjectId}/ecommerce-module/orders/${orderId}/repeat`,
+    handlerName: "ecommerceModuleOrderRepeat",
+  },
   {
     name: "GET quantity",
     method: "GET",

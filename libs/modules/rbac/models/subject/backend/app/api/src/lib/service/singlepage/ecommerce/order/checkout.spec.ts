@@ -70,6 +70,7 @@ function createTestContext(props?: {
   productType?: "subscription" | "one_off";
   productSlug?: string;
   activeOrderStatus?: string;
+  activeOrderSettled?: boolean;
   paymentIntentCreateError?: Error;
   paymentIntentProviderError?: Error;
   checkoutOrderIds?: string[];
@@ -87,6 +88,7 @@ function createTestContext(props?: {
   const checkoutOrders = checkoutOrderIds.map((id) => ({
     id,
     status: "new",
+    type: "cart",
     comment: "",
   }));
 
@@ -96,7 +98,7 @@ function createTestContext(props?: {
 
   const activeSubscriptionOrder = {
     id: "order-active-1",
-    status: props?.activeOrderStatus ?? "paying",
+    status: props?.activeOrderStatus ?? "paid",
     comment: "",
   };
 
@@ -105,6 +107,15 @@ function createTestContext(props?: {
   const ecommerceModule = {
     order: {
       find: jest.fn().mockResolvedValue(checkoutOrders),
+      lockForLifecycle: jest.fn(),
+      update: jest.fn(async (input) => {
+        const order = checkoutOrderById.get(input.id);
+        if (order) {
+          Object.assign(order, input.data);
+        }
+        await mockEcommerceOrderUpdate(input);
+        return order;
+      }),
       findById: jest.fn().mockImplementation(({ id }: { id: string }) => {
         if (id === activeSubscriptionOrder.id) {
           return Promise.resolve(activeSubscriptionOrder);
@@ -219,6 +230,19 @@ function createTestContext(props?: {
   } as any;
 
   const billingModule = {
+    paymentIntent: {
+      find: jest.fn().mockResolvedValue([]),
+      findById: jest.fn().mockResolvedValue({
+        id: "payment-intent-1",
+        status: "requires_payment_method",
+      }),
+      failUnpaidIntent: jest.fn(async (id, status) =>
+        mockBillingModulePaymentIntentUpdate({
+          id,
+          data: { status: "failed" },
+        }),
+      ),
+    },
     currency: {
       find: jest.fn().mockResolvedValue([]),
     },
@@ -243,6 +267,10 @@ function createTestContext(props?: {
 
   const subjectsToEcommerceModuleOrders = {
     find: jest.fn().mockResolvedValue([
+      ...checkoutOrders.map((order) => ({
+        subjectId: subject.id,
+        ecommerceModuleOrderId: order.id,
+      })),
       {
         id: "stemo-1",
         subjectId: subject.id,
@@ -252,6 +280,18 @@ function createTestContext(props?: {
   } as any;
 
   const service = new Service({
+    repository: {
+      withSubjectLock: jest.fn(async (_scope, operation) => operation()),
+    },
+    settledOrderIds: jest.fn(
+      async ({ orderIds }) =>
+        new Set(
+          props?.activeOrderSettled &&
+            orderIds.includes(activeSubscriptionOrder.id)
+            ? [activeSubscriptionOrder.id]
+            : [],
+        ),
+    ),
     findById,
     ecommerceModule,
     billingModule,
@@ -396,7 +436,7 @@ describe("Given: subject starts checkout for a product", () => {
         expect.objectContaining({
           id: checkoutOrders[0].id,
           data: expect.objectContaining({
-            status: "canceled",
+            status: "new",
           }),
         }),
       );
@@ -407,7 +447,7 @@ describe("Given: subject starts checkout for a product", () => {
      *
      * Given: a Telegram Star checkout attempts to buy a subscription product already active on the subject.
      * When: the checkout service evaluates active subscription products.
-     * Then: checkout is rejected with the same validation error and the new checkout order is canceled.
+     * Then: checkout is rejected with the same validation error and the new checkout order returns to the cart.
      */
     it("Then: telegram-star checkout is rejected with active subscription validation error", async () => {
       const { service, checkoutOrders } = createTestContext({
@@ -432,7 +472,7 @@ describe("Given: subject starts checkout for a product", () => {
         expect.objectContaining({
           id: checkoutOrders[0].id,
           data: expect.objectContaining({
-            status: "canceled",
+            status: "new",
           }),
         }),
       );
@@ -480,7 +520,7 @@ describe("Given: subject starts checkout for a product", () => {
   });
 
   describe("When: active subscription has another product", () => {
-    it("Then: previous subscription moves to requested_cancelation and checkout continues", async () => {
+    it("Then: a failed attempt leaves the previous subscription unchanged", async () => {
       const { service, checkoutOrders, activeSubscriptionOrder } =
         createTestContext({
           activeOrderProductId: "product-other",
@@ -499,14 +539,10 @@ describe("Given: subject starts checkout for a product", () => {
         }),
       ).rejects.toThrow("stop-after-check");
 
-      expect(mockEcommerceOrderUpdate).toHaveBeenCalledWith(
-        expect.objectContaining({
-          id: activeSubscriptionOrder.id,
-          data: expect.objectContaining({
-            status: "requested_cancelation",
-          }),
-        }),
+      expect(mockEcommerceOrderUpdate).not.toHaveBeenCalledWith(
+        expect.objectContaining({ id: activeSubscriptionOrder.id }),
       );
+      expect(checkoutOrders[0]).toMatchObject({ type: "cart", status: "new" });
     });
   });
 
@@ -516,9 +552,9 @@ describe("Given: subject starts checkout for a product", () => {
      *
      * Given: a validated cart is ready for payment.
      * When: the external payment provider rejects invoice creation.
-     * Then: checkout publishes paying first and compensates the order and payment intent.
+     * Then: checkout preserves the pending order and payment intent for settlement.
      */
-    it("Then: checkout marks the attempt paying before compensating provider failure", async () => {
+    it("Then: a provider timeout preserves the pending attempt for late settlement", async () => {
       const { service, checkoutOrders } = createTestContext({
         activeOrderProductId: "product-other",
         paymentIntentProviderError: new Error("provider-failure"),
@@ -543,34 +579,12 @@ describe("Given: subject starts checkout for a product", () => {
         (call) => call?.[0]?.id === checkoutOrders[0].id,
       );
 
-      expect(checkoutOrderUpdates).toEqual(
-        expect.arrayContaining([
-          [
-            expect.objectContaining({
-              data: expect.objectContaining({
-                status: "paying",
-                type: "history",
-              }),
-            }),
-          ],
-          [
-            expect.objectContaining({
-              data: expect.objectContaining({
-                status: "canceled",
-                type: "history",
-              }),
-            }),
-          ],
-        ]),
-      );
-      expect(mockBillingModulePaymentIntentUpdate).toHaveBeenCalledWith(
-        expect.objectContaining({
-          id: "payment-intent-1",
-          data: expect.objectContaining({
-            status: "failed",
-          }),
-        }),
-      );
+      expect(checkoutOrderUpdates).toHaveLength(1);
+      expect(checkoutOrders[0]).toMatchObject({
+        type: "history",
+        status: "paying",
+      });
+      expect(mockBillingModulePaymentIntentUpdate).not.toHaveBeenCalled();
 
       const payingUpdateCall =
         mockEcommerceOrderUpdate.mock.invocationCallOrder[
@@ -791,4 +805,241 @@ describe("Given: subject starts checkout for a product", () => {
       expect(hasPayingStatusUpdate).toBe(true);
     });
   });
+});
+
+describe("Retrying a pending subscription", () => {
+  beforeEach(() => jest.clearAllMocks());
+  it("allows the same product when the original paying history has no settlement", async () => {
+    const { service, checkoutOrders, activeSubscriptionOrder } =
+      createTestContext({
+        activeOrderProductId: "product-target",
+        activeOrderStatus: "paying",
+      });
+    await expect(
+      service.execute({
+        id: "subject-1",
+        provider: "stripe",
+        email: "owner@example.test",
+        ecommerceModule: { orders: [{ id: checkoutOrders[0].id }] },
+      }),
+    ).resolves.toHaveProperty("billingModule.invoices");
+    expect(activeSubscriptionOrder.status).toBe("paying");
+    expect(mockBillingModulePaymentIntentProvider).toHaveBeenCalledTimes(1);
+  });
+  it("still blocks the same product when a paying history has settled", async () => {
+    const { service, checkoutOrders } = createTestContext({
+      activeOrderProductId: "product-target",
+      activeOrderStatus: "paying",
+      activeOrderSettled: true,
+    });
+    await expect(
+      service.execute({
+        id: "subject-1",
+        provider: "stripe",
+        email: "owner@example.test",
+        ecommerceModule: { orders: [{ id: checkoutOrders[0].id }] },
+      }),
+    ).rejects.toThrow("active subscription products");
+    expect(mockBillingModulePaymentIntentProvider).not.toHaveBeenCalled();
+    expect(checkoutOrders[0]).toMatchObject({ type: "cart", status: "new" });
+  });
+  it("does not overwrite a successful late settlement while compensating a provider timeout", async () => {
+    const { service, checkoutOrders } = createTestContext({
+      productType: "one_off",
+      paymentIntentProviderError: new Error("timeout"),
+    });
+    mockBillingModulePaymentIntentProvider.mockImplementationOnce(async () => {
+      Object.assign(checkoutOrders[0], { type: "history", status: "paid" });
+      throw new Error("timeout");
+    });
+    await expect(
+      service.execute({
+        id: "subject-1",
+        provider: "stripe",
+        email: "owner@example.test",
+        ecommerceModule: { orders: [{ id: checkoutOrders[0].id }] },
+      }),
+    ).rejects.toThrow("timeout");
+    expect(checkoutOrders[0].status).toBe("paid");
+    expect(mockBillingModulePaymentIntentUpdate).not.toHaveBeenCalled();
+  });
+});
+
+it("unlinks only its unexposed failed intent before restoring an editable cart", async () => {
+  jest.clearAllMocks();
+  const { service, checkoutOrders } = createTestContext({
+    productType: "one_off",
+    checkoutOrderIds: ["first", "second"],
+    currencyByOrderId: { first: "usd", second: "eur" },
+  });
+  const intent = { id: "safe-intent", status: "requires_payment_method" };
+  let links: {
+    id: string;
+    orderId: string;
+    billingModulePaymentIntentId: string;
+  }[] = [];
+  (
+    service.billingModule.paymentIntentsToInvoices.find as jest.Mock
+  ).mockResolvedValue([]);
+  (
+    service.billingModule.paymentIntent.findById as jest.Mock
+  ).mockImplementation(async () => intent);
+  (
+    service.billingModule.paymentIntent.failUnpaidIntent as jest.Mock
+  ).mockImplementation(async () => {
+    intent.status = "failed";
+  });
+  (
+    service.ecommerceModule.ordersToBillingModulePaymentIntents
+      .find as jest.Mock
+  ).mockImplementation(async () => [...links]);
+  service.ecommerceModule.ordersToBillingModulePaymentIntents.delete = jest.fn(
+    async ({ id }) => {
+      links = links.filter((link) => link.id !== id);
+    },
+  );
+  mockBillingModulePaymentIntentCreate
+    .mockResolvedValueOnce({ ...intent, amount: 100 })
+    .mockRejectedValueOnce(new Error("create-failed"));
+  mockOrdersToBillingModulePaymentIntentsCreate.mockImplementationOnce(
+    async ({ data }) => {
+      const link = { id: "safe-link", ...data };
+      links.push(link);
+      return link;
+    },
+  );
+  await expect(
+    service.execute({
+      id: "subject-1",
+      provider: "stripe",
+      email: "owner@example.test",
+      ecommerceModule: { orders: checkoutOrders.map(({ id }) => ({ id })) },
+    }),
+  ).rejects.toThrow("create-failed");
+  expect(intent.status).toBe("failed");
+  expect(links).toEqual([]);
+  expect(
+    checkoutOrders.every(
+      (order) => order.type === "cart" && order.status === "new",
+    ),
+  ).toBe(true);
+  expect(mockBillingModulePaymentIntentProvider).not.toHaveBeenCalled();
+});
+
+it("keeps issued and uncertain invoices while restoring only an unexposed order in a multi-currency checkout", async () => {
+  jest.clearAllMocks();
+  const { service, checkoutOrders } = createTestContext({
+    productType: "one_off",
+    checkoutOrderIds: ["first", "second", "third"],
+    currencyByOrderId: { first: "usd", second: "eur", third: "rub" },
+  });
+  const intents = new Map(
+    ["first", "second", "third"].map((id) => [
+      `intent-${id}`,
+      { id: `intent-${id}`, amount: 100, status: "requires_payment_method" },
+    ]),
+  );
+  let links: {
+    id: string;
+    orderId: string;
+    billingModulePaymentIntentId: string;
+  }[] = [];
+  (
+    service.billingModule.paymentIntentsToInvoices.find as jest.Mock
+  ).mockResolvedValue([]);
+  (
+    service.billingModule.paymentIntent.findById as jest.Mock
+  ).mockImplementation(async ({ id }) => intents.get(id));
+  (
+    service.billingModule.paymentIntent.failUnpaidIntent as jest.Mock
+  ).mockImplementation(async (id) => {
+    intents.get(id)!.status = "failed";
+  });
+  (
+    service.ecommerceModule.ordersToBillingModulePaymentIntents
+      .find as jest.Mock
+  ).mockImplementation(async (query) => {
+    const intentIds = query.params.filters.and.find(
+      (filter) => filter.column === "billingModulePaymentIntentId",
+    )?.value;
+    return links.filter(
+      (link) =>
+        !intentIds || intentIds.includes(link.billingModulePaymentIntentId),
+    );
+  });
+  const deleteLink = jest.fn(async ({ id }) => {
+    links = links.filter((link) => link.id !== id);
+  });
+  service.ecommerceModule.ordersToBillingModulePaymentIntents.delete =
+    deleteLink;
+  for (const intent of intents.values()) {
+    mockBillingModulePaymentIntentCreate.mockResolvedValueOnce(intent);
+  }
+  mockOrdersToBillingModulePaymentIntentsCreate.mockImplementation(
+    async ({ data }) => {
+      const link = { id: `link-${data.orderId}`, ...data };
+      links.push(link);
+      return link;
+    },
+  );
+  mockBillingModulePaymentIntentProvider
+    .mockResolvedValueOnce({})
+    .mockRejectedValueOnce(new Error("second-timeout"));
+  await expect(
+    service.execute({
+      id: "subject-1",
+      provider: "stripe",
+      email: "owner@example.test",
+      ecommerceModule: { orders: checkoutOrders.map(({ id }) => ({ id })) },
+    }),
+  ).rejects.toThrow("second-timeout");
+  expect(checkoutOrders[0]).toMatchObject({
+    type: "history",
+    status: "paying",
+  });
+  expect(checkoutOrders[1]).toMatchObject({
+    type: "history",
+    status: "paying",
+  });
+  expect(checkoutOrders[2]).toMatchObject({ type: "cart", status: "new" });
+  expect([...intents.values()].map((intent) => intent.status)).toEqual([
+    "requires_payment_method",
+    "requires_payment_method",
+    "failed",
+  ]);
+  expect(deleteLink.mock.calls).toEqual([[{ id: "link-third" }]]);
+  expect(links.map((link) => link.orderId)).toEqual(["first", "second"]);
+});
+
+it("validates every requested order before claiming any cart", async () => {
+  jest.clearAllMocks();
+  const { service, checkoutOrders } = createTestContext({
+    productType: "one_off",
+    checkoutOrderIds: ["first", "empty"],
+  });
+  (
+    service.ecommerceModule.ordersToProducts.find as jest.Mock
+  ).mockResolvedValue([
+    {
+      id: "line-first",
+      orderId: "first",
+      productId: "product-target",
+      quantity: 1,
+    },
+  ]);
+  await expect(
+    service.execute({
+      id: "subject-1",
+      provider: "stripe",
+      email: "owner@example.test",
+      ecommerceModule: { orders: checkoutOrders.map(({ id }) => ({ id })) },
+    }),
+  ).rejects.toThrow("Every checkout order must have products");
+  expect(mockEcommerceOrderUpdate).not.toHaveBeenCalled();
+  expect(mockBillingModulePaymentIntentCreate).not.toHaveBeenCalled();
+  expect(
+    checkoutOrders.every(
+      (order) => order.type === "cart" && order.status === "new",
+    ),
+  ).toBe(true);
 });

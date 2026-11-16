@@ -153,6 +153,7 @@ function Settings(props: ISettingsProps) {
               language={props.language}
               isServer={false}
               variant="me-ecommerce-module-order-list-ai-chat"
+              dataSource="props"
               data={props.data}
             />
           )}

@@ -18,6 +18,8 @@ import type { IModel as IBillingModuleCurrency } from "@sps/billing/models/curre
 import type { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
 
 export interface IPurchaseDetails {
+  /** Whether the Subject may retry an unfinished payment by replacing the cart. */
+  canRepeatPayment?: boolean;
   unpriced?: IUnpricedOrderToProduct[];
   totals: { total: number; billingModuleCurrency: IBillingModuleCurrency }[];
   receipts: IFileStorageModuleFile[];

@@ -134,6 +134,10 @@ export class Handler {
         const purchases: (IEcommerceModuleOrder & {
           purchaseDetails: IPurchaseDetails;
         })[] = [];
+        const retryableIds =
+          await this.service.ecommerceModuleOrderRetryableIds({
+            orders: ownedOrders,
+          });
         for (const order of ownedOrders) {
           const totals = await this.service.ecommerceModule.order.findByIdTotal(
             { id: order.id },
@@ -177,6 +181,7 @@ export class Handler {
           purchases.push({
             ...order,
             purchaseDetails: {
+              canRepeatPayment: retryableIds.has(order.id),
               totals: totals.totals,
               receipts,
               ...(totals.unpriced.length ? { unpriced: totals.unpriced } : {}),

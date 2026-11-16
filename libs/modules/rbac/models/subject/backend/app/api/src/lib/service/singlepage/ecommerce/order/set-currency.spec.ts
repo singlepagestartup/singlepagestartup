@@ -27,6 +27,9 @@ function fixture() {
     ecommerceModuleOrderAssertAccess: jest.fn().mockResolvedValue(undefined),
     ecommerceModuleResolveOrderCurrency: jest.fn().mockResolvedValue("usd"),
     ecommerceModule: {
+      ordersToBillingModulePaymentIntents: {
+        find: jest.fn().mockResolvedValue([]),
+      },
       order: {
         lockForLifecycle: jest.fn(),
         findById: jest.fn().mockResolvedValue({ type: "cart", status: "new" }),
@@ -129,4 +132,14 @@ it("retains the Initial Free restriction", async () => {
     "cannot be changed through a cart",
   );
   expect(currencies.update).not.toHaveBeenCalled();
+});
+
+it("preserves the currency of a cart with a recorded payment attempt", async () => {
+  const { service, currencies, operation } = fixture();
+  service.ecommerceModule.ordersToBillingModulePaymentIntents.find.mockResolvedValue(
+    [{ billingModulePaymentIntentId: "intent" }],
+  );
+  await expect(operation.execute(props)).rejects.toThrow("payment attempt");
+  expect(currencies.update).not.toHaveBeenCalled();
+  expect(currencies.create).not.toHaveBeenCalled();
 });

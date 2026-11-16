@@ -54,6 +54,8 @@ function createContext(
 
 function createService() {
   return {
+    ecommerceModuleOrderMutateCart: (...args: unknown[]) =>
+      orderUpdateMock(...args),
     ecommerceModuleOrderSetCurrency: jest.fn().mockResolvedValue(undefined),
     ecommerceModuleOrderAssertAccess: jest.fn().mockResolvedValue(undefined),
     findById: jest.fn().mockResolvedValue({ id: "subject-1" }),
@@ -151,8 +153,9 @@ describe("Given: ecommerce order update handler", () => {
 
     expect(orderUpdateMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        id: "order-1",
-        data: updatePayload,
+        subjectId: "subject-1",
+        orderId: "order-1",
+        lines: updatePayload.ordersToProducts,
       }),
     );
     expect(context.json).toHaveBeenCalledWith({
@@ -178,16 +181,11 @@ describe("Given: ecommerce order update handler", () => {
       },
     );
     await new Handler(service).execute(context, jest.fn());
-    expect(service.ecommerceModuleOrderAssertAccess).toHaveBeenCalledWith({
+    expect(orderUpdateMock).toHaveBeenCalledWith({
       subjectId: "subject-1",
       orderId: "order-1",
-      lineIds: ["otp-1"],
+      lines: [{ id: "otp-1", quantity: 2 }],
     });
-    expect(orderUpdateMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: { ordersToProducts: [{ id: "otp-1", quantity: 2 }] },
-      }),
-    );
   });
 });
 
