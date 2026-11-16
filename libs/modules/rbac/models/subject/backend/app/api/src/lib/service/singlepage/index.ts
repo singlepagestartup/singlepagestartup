@@ -303,6 +303,15 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return new RetryableOrderIds(this).execute(props);
   }
 
+  async ecommerceModuleOrderPurchasePayments(
+    props: IRetryableOrderIdsProps & { subjectId: string },
+  ) {
+    return new RetryableOrderIds(this).purchasePayments(
+      props,
+      this.subjectsToEcommerceModuleOrders,
+    );
+  }
+
   async ecommerceModuleOrderSettledIds(props: { orderIds: string[] }) {
     return new RetryableOrderIds(this).settledIds(props);
   }

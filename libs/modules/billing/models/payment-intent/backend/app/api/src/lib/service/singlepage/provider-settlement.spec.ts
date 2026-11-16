@@ -26,9 +26,13 @@ jest.mock("@sps/shared-utils", () => ({
 jest.mock("@sps/billing/models/invoice/sdk/server", () => ({
   api: { find: jest.fn(), findById: jest.fn(), update: jest.fn() },
 }));
+const mockRetrieveSession = jest.fn();
+const mockRetrieveInvoice = jest.fn();
 jest.mock("stripe", () => ({
   __esModule: true,
   default: jest.fn().mockImplementation(() => ({
+    checkout: { sessions: { retrieve: mockRetrieveSession } },
+    invoices: { retrieve: mockRetrieveInvoice },
     subscriptions: {
       retrieve: jest
         .fn()
@@ -45,7 +49,10 @@ function fixture(provider: string) {
     provider,
     providerId: "456",
   };
-  const service = new Service({} as any, {} as any);
+  const service = new Service(
+    {} as any,
+    { invoice: { find: invoiceApi.find } } as any,
+  );
   const settle = jest
     .spyOn(service, "settlePayment")
     .mockResolvedValue({ ...invoice, status: "paid" } as any);
@@ -150,6 +157,57 @@ it("Stripe waits for a paid Checkout Session, including a delayed payment", asyn
   expect(invoiceApi.update).not.toHaveBeenCalled();
 });
 
+it.each([
+  ["cs_test_old", "checkout.session", "open", false],
+  ["cs_test_closed", "checkout.session", "expired", true],
+  ["in_old", "invoice", "open", false],
+  ["in_bad_debt", "invoice", "uncollectible", false],
+  ["in_void", "invoice", "void", true],
+])(
+  "uses provider state for old Stripe invoice %s",
+  async (providerId, object, status, terminal) => {
+    const { service, settle, invoice } = fixture("stripe");
+    const expire = jest.spyOn(service, "expireInvoice").mockResolvedValue();
+    service.billingModule.invoice = {
+      findById: jest.fn().mockResolvedValue(invoice),
+    } as any;
+    const retrieve =
+      object === "invoice" ? mockRetrieveInvoice : mockRetrieveSession;
+    retrieve.mockResolvedValue({
+      id: providerId,
+      object,
+      status,
+      payment_status: "unpaid",
+    });
+    await service.checkStripeInvoice({
+      ...invoice,
+      providerId,
+      createdAt: new Date(0),
+    } as any);
+    expect(retrieve).toHaveBeenCalledWith(providerId);
+    expect(expire).toHaveBeenCalledTimes(terminal ? 1 : 0);
+    if (terminal) {
+      expect(expire).toHaveBeenCalledWith({
+        invoiceId: invoice.id,
+        provider: "stripe",
+        providerId,
+      });
+    }
+    expect(settle).not.toHaveBeenCalled();
+  },
+);
+it("leaves a Stripe attempt open on an inconclusive lookup", async () => {
+  const { service, invoice } = fixture("stripe");
+  const expire = jest.spyOn(service, "expireInvoice");
+  mockRetrieveSession.mockRejectedValueOnce(new Error("Stripe unavailable"));
+  await expect(
+    service.checkStripeInvoice({
+      ...invoice,
+      providerId: "cs_test_wait",
+    } as any),
+  ).rejects.toThrow("Stripe unavailable");
+  expect(expire).not.toHaveBeenCalled();
+});
 it("0xProcessing delegates only a signed successful payment", async () => {
   const f = fixture("0xprocessing");
   const data = {

@@ -1,7 +1,10 @@
 import type { IModel as IOrder } from "@sps/ecommerce/models/order/sdk/model";
 import type { IModel as IOrderIntent } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/model";
 import type { IModel as IIntentInvoice } from "@sps/billing/relations/payment-intents-to-invoices/sdk/model";
+import type { IModel as IPaymentIntent } from "@sps/billing/models/payment-intent/sdk/model";
+import type { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
 import type { IReadService } from "../../../../di";
+import type { Service as SubjectService } from "../../index";
 
 export interface IExecuteProps {
   orders: Pick<
@@ -25,110 +28,242 @@ interface IConstructorProps {
   >;
 }
 
+interface IBillingRecords {
+  orderIntents: IOrderIntent[];
+  intents: IPaymentIntent[];
+  invoiceLinks: IIntentInvoice[];
+  invoices: IInvoice[];
+}
+
+function byIds(column: string, ids: string[]) {
+  return {
+    params: {
+      filters: {
+        and: [{ column, method: "inArray" as const, value: [...new Set(ids)] }],
+      },
+    },
+  };
+}
+
+function unfinished({ orders }: IExecuteProps) {
+  return orders.filter(
+    (order) =>
+      order.type === "history" &&
+      ["paying", "canceling", "canceled", "failed"].includes(order.status) &&
+      !order.subscriptionPeriodInvoiceId &&
+      !order.subscriptionPeriodStartsAt &&
+      !order.subscriptionPeriodEndsAt,
+  );
+}
+
+function settledOrders(records: IBillingRecords) {
+  // Billing may settle before the order status advances.
+  const paid = new Set(
+    records.invoices
+      .filter((invoice) => invoice.status === "paid")
+      .map((invoice) => invoice.id),
+  );
+  const settled = new Set(
+    records.intents
+      .filter((intent) => intent.status === "succeeded")
+      .map((intent) => intent.id),
+  );
+  for (const link of records.invoiceLinks) {
+    if (paid.has(link.invoiceId)) {
+      settled.add(link.paymentIntentId);
+    }
+  }
+  return new Set(
+    records.orderIntents
+      .filter((link) => settled.has(link.billingModulePaymentIntentId))
+      .map((link) => link.orderId),
+  );
+}
+
 export class Service {
   constructor(private readonly dependencies: IConstructorProps) {}
 
-  async execute({ orders }: IExecuteProps): Promise<Set<string>> {
-    const retryable = new Set(
-      orders
-        .filter(
-          (order) =>
-            order.type === "history" &&
-            ["paying", "canceling", "canceled", "failed"].includes(
-              order.status,
-            ) &&
-            !order.subscriptionPeriodInvoiceId &&
-            !order.subscriptionPeriodStartsAt &&
-            !order.subscriptionPeriodEndsAt,
-        )
-        .map((order) => order.id),
-    );
-    const settled = await this.settledIds({ orderIds: [...retryable] });
-    for (const id of settled) {
-      retryable.delete(id);
+  private async billingRecords(orderIds: string[]): Promise<IBillingRecords> {
+    const records: IBillingRecords = {
+      orderIntents: [],
+      intents: [],
+      invoiceLinks: [],
+      invoices: [],
+    };
+    if (!orderIds.length) {
+      return records;
     }
-    return retryable;
+    const { ecommerceModule, billingModule } = this.dependencies;
+    records.orderIntents =
+      await ecommerceModule.ordersToBillingModulePaymentIntents.find(
+        byIds("orderId", orderIds),
+      );
+    if (!records.orderIntents.length) {
+      return records;
+    }
+    const intentIds = records.orderIntents.map(
+      (link) => link.billingModulePaymentIntentId,
+    );
+    [records.intents, records.invoiceLinks] = await Promise.all([
+      billingModule.paymentIntent.find(byIds("id", intentIds)),
+      billingModule.paymentIntentsToInvoices.find(
+        byIds("paymentIntentId", intentIds),
+      ),
+    ]);
+    if (records.invoiceLinks.length) {
+      records.invoices = await billingModule.invoice.find(
+        byIds(
+          "id",
+          records.invoiceLinks.map((link) => link.invoiceId),
+        ),
+      );
+    }
+    return records;
   }
 
   async settledIds({ orderIds }: { orderIds: string[] }): Promise<Set<string>> {
-    const settled = new Set<string>();
-    if (!orderIds.length) {
-      return settled;
-    }
-    const { ecommerceModule, billingModule } = this.dependencies;
-    const orderIntents: IOrderIntent[] =
-      await ecommerceModule.ordersToBillingModulePaymentIntents.find({
-        params: {
-          filters: {
-            and: [{ column: "orderId", method: "inArray", value: orderIds }],
-          },
-        },
-      });
-    if (!orderIntents.length) {
-      return settled;
+    const records = await this.billingRecords(orderIds);
+    return settledOrders(records);
+  }
+
+  async execute(props: IExecuteProps): Promise<Set<string>> {
+    const ids = unfinished(props).map((order) => order.id);
+    const settled = await this.settledIds({ orderIds: ids });
+    return new Set(ids.filter((id) => !settled.has(id)));
+  }
+
+  async purchasePayments(
+    props: IExecuteProps & { subjectId: string },
+    owners: Pick<SubjectService["subjectsToEcommerceModuleOrders"], "find">,
+  ) {
+    const orders = unfinished(props);
+    const records = await this.billingRecords(orders.map((order) => order.id));
+    const settled = settledOrders(records);
+    const retryableIds = new Set(
+      orders.filter((order) => !settled.has(order.id)).map((order) => order.id),
+    );
+    const pendingIds = new Set(
+      orders
+        .filter(
+          (order) => order.status === "paying" && retryableIds.has(order.id),
+        )
+        .map((order) => order.id),
+    );
+    const paymentUrls = await this.openPaymentUrls(
+      records,
+      pendingIds,
+      props.subjectId,
+      owners,
+    );
+    return { retryableIds, paymentUrls };
+  }
+
+  private async openPaymentUrls(
+    records: IBillingRecords,
+    pendingIds: Set<string>,
+    subjectId: string,
+    owners: Pick<SubjectService["subjectsToEcommerceModuleOrders"], "find">,
+  ) {
+    const paymentUrls = new Map<string, string>();
+    const open = records.invoices.filter(
+      (invoice) =>
+        invoice.status === "open" &&
+        Boolean(invoice.provider) &&
+        invoice.provider !== "dummy" &&
+        URL.canParse(invoice.paymentUrl) &&
+        /^https?:\/\//i.test(invoice.paymentUrl),
+    );
+    if (!pendingIds.size || !open.length) {
+      return paymentUrls;
     }
 
-    // Billing can record the payment before the order check advances its status.
-    const intentIds = [
-      ...new Set(orderIntents.map((link) => link.billingModulePaymentIntentId)),
-    ];
-    const [succeededIntents, invoiceLinks]: [
-      { id: string }[],
-      IIntentInvoice[],
-    ] = await Promise.all([
-      billingModule.paymentIntent.find({
-        params: {
-          filters: {
-            and: [
-              { column: "id", method: "inArray", value: intentIds },
-              { column: "status", method: "eq", value: "succeeded" },
-            ],
-          },
-        },
-      }),
-      billingModule.paymentIntentsToInvoices.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "paymentIntentId",
-                method: "inArray",
-                value: intentIds,
-              },
-            ],
-          },
-        },
-      }),
-    ]);
-    const settledIntentIds = new Set(
-      succeededIntents.map((intent) => intent.id),
+    // A single invoice may charge several orders. Follow every link back to its owner
+    // before exposing the provider URL, including links outside the history response.
+    const { billingModule, ecommerceModule } = this.dependencies;
+    const invoiceIntents: IIntentInvoice[] =
+      await billingModule.paymentIntentsToInvoices.find(
+        byIds(
+          "invoiceId",
+          open.map((invoice) => invoice.id),
+        ),
+      );
+    const actionable = new Set(
+      records.intents
+        .filter((intent) =>
+          [
+            "requires_payment_method",
+            "requires_action",
+            "requires_confirmation",
+          ].includes(intent.status),
+        )
+        .map((intent) => intent.id),
     );
-    if (invoiceLinks.length) {
-      const invoiceIds = [
-        ...new Set(invoiceLinks.map((link) => link.invoiceId)),
-      ];
-      const paidInvoices: { id: string }[] = await billingModule.invoice.find({
-        params: {
-          filters: {
-            and: [
-              { column: "id", method: "inArray", value: invoiceIds },
-              { column: "status", method: "eq", value: "paid" },
-            ],
-          },
-        },
-      });
-      const paidIds = new Set(paidInvoices.map((invoice) => invoice.id));
-      for (const link of invoiceLinks) {
-        if (paidIds.has(link.invoiceId)) {
-          settledIntentIds.add(link.paymentIntentId);
+    const intentIds = invoiceIntents.map((link) => link.paymentIntentId);
+    if (!intentIds.length) {
+      return paymentUrls;
+    }
+    const linkedOrders: IOrderIntent[] =
+      await ecommerceModule.ordersToBillingModulePaymentIntents.find(
+        byIds("billingModulePaymentIntentId", intentIds),
+      );
+    const orderIds = linkedOrders.map((link) => link.orderId);
+    if (!orderIds.length) {
+      return paymentUrls;
+    }
+    const ownership = await owners.find(
+      byIds("ecommerceModuleOrderId", orderIds),
+    );
+    const exclusive = new Set(
+      ownership
+        .filter((link) => link.subjectId === subjectId)
+        .map((link) => link.ecommerceModuleOrderId),
+    );
+    for (const link of ownership) {
+      if (link.subjectId !== subjectId) {
+        exclusive.delete(link.ecommerceModuleOrderId);
+      }
+    }
+
+    const ordersByIntent = Map.groupBy(
+      linkedOrders,
+      (link) => link.billingModulePaymentIntentId,
+    );
+    const intentsByInvoice = Map.groupBy(
+      invoiceIntents,
+      (link) => link.invoiceId,
+    );
+    const ambiguous = new Set<string>();
+    for (const invoice of open) {
+      const intents = intentsByInvoice.get(invoice.id) ?? [];
+      const coveredOrders = new Set(
+        intents.flatMap((intent) =>
+          (ordersByIntent.get(intent.paymentIntentId) ?? []).map(
+            (link) => link.orderId,
+          ),
+        ),
+      );
+      const canPay =
+        intents.every(
+          ({ paymentIntentId }) =>
+            actionable.has(paymentIntentId) &&
+            ordersByIntent.has(paymentIntentId),
+        ) &&
+        [...coveredOrders].every(
+          (id) => pendingIds.has(id) && exclusive.has(id),
+        );
+      if (!canPay) {
+        continue;
+      }
+      for (const id of coveredOrders) {
+        if (paymentUrls.has(id)) {
+          ambiguous.add(id);
         }
+        paymentUrls.set(id, invoice.paymentUrl);
       }
     }
-    for (const link of orderIntents) {
-      if (settledIntentIds.has(link.billingModulePaymentIntentId)) {
-        settled.add(link.orderId);
-      }
+    for (const id of ambiguous) {
+      paymentUrls.delete(id);
     }
-    return settled;
+    return paymentUrls;
   }
 }

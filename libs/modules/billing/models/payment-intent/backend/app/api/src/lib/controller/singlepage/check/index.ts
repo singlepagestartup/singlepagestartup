@@ -102,7 +102,9 @@ export class Handler {
 
       const expiresBefore = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
       for (const invoice of invoices) {
-        if (invoice.provider === "cloudpayments") {
+        if (invoice.provider === "stripe") {
+          await this.service.checkStripeInvoice(invoice);
+        } else if (invoice.provider === "cloudpayments") {
           await this.service.checkCloudpaymentsInvoice(invoice);
         } else if (new Date(invoice.createdAt) < expiresBefore) {
           await this.service.expireInvoice({

@@ -20,6 +20,8 @@ import type { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/
 export interface IPurchaseDetails {
   /** Whether the Subject may retry an unfinished payment by replacing the cart. */
   canRepeatPayment?: boolean;
+  /** Existing hosted payment page for an open invoice owned by this Subject. */
+  paymentUrl?: string;
   unpriced?: IUnpricedOrderToProduct[];
   totals: { total: number; billingModuleCurrency: IBillingModuleCurrency }[];
   receipts: IFileStorageModuleFile[];

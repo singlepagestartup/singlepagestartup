@@ -134,21 +134,30 @@ export class Handler {
         const purchases: (IEcommerceModuleOrder & {
           purchaseDetails: IPurchaseDetails;
         })[] = [];
-        const retryableIds =
-          await this.service.ecommerceModuleOrderRetryableIds({
+        const { retryableIds, paymentUrls } =
+          await this.service.ecommerceModuleOrderPurchasePayments({
+            subjectId: id,
             orders: ownedOrders,
           });
-        for (const order of ownedOrders) {
-          const totals = await this.service.ecommerceModule.order.findByIdTotal(
-            { id: order.id },
-          );
-          const links =
+        const receiptOrderIds = ownedOrders
+          .filter((order) => !retryableIds.has(order.id))
+          .map((order) => order.id);
+        let receiptLinks: {
+          orderId: string;
+          fileStorageModuleFileId: string;
+        }[] = [];
+        if (receiptOrderIds.length) {
+          receiptLinks =
             await this.service.ecommerceModule.ordersToFileStorageModuleFiles.find(
               {
                 params: {
                   filters: {
                     and: [
-                      { column: "orderId", method: "eq", value: order.id },
+                      {
+                        column: "orderId",
+                        method: "inArray",
+                        value: receiptOrderIds,
+                      },
                       {
                         column: "variant",
                         method: "eq",
@@ -159,29 +168,42 @@ export class Handler {
                 },
               },
             );
-          const receiptIds = (links || []).map(
-            (link) => link.fileStorageModuleFileId,
-          );
-          let files;
-          if (receiptIds.length) {
-            files = await this.service.fileStorageModule.file.find({
+        }
+        const linksByOrder = Map.groupBy(receiptLinks, (link) => link.orderId);
+        const receiptIds = [
+          ...new Set(receiptLinks.map((link) => link.fileStorageModuleFileId)),
+        ];
+        const filesById = new Map<
+          string,
+          IPurchaseDetails["receipts"][number]
+        >();
+        if (receiptIds.length) {
+          const files: IPurchaseDetails["receipts"] =
+            await this.service.fileStorageModule.file.find({
               params: {
                 filters: {
                   and: [{ column: "id", method: "inArray", value: receiptIds }],
                 },
               },
             });
-          } else {
-            files = [];
+          for (const file of files) {
+            if (file.file?.trim()) {
+              filesById.set(file.id, file);
+            }
           }
-          const receipts = receiptIds.flatMap((id) => {
-            const file = files?.find((file) => file.id === id);
-            return file ? [file] : [];
-          });
+        }
+        for (const order of ownedOrders) {
+          const totals = await this.service.ecommerceModule.order.findByIdTotal(
+            { id: order.id },
+          );
+          const receipts = (linksByOrder.get(order.id) ?? []).flatMap(
+            (link) => filesById.get(link.fileStorageModuleFileId) ?? [],
+          );
           purchases.push({
             ...order,
             purchaseDetails: {
               canRepeatPayment: retryableIds.has(order.id),
+              paymentUrl: paymentUrls.get(order.id),
               totals: totals.totals,
               receipts,
               ...(totals.unpriced.length ? { unpriced: totals.unpriced } : {}),
