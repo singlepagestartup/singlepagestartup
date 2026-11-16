@@ -3,10 +3,12 @@
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import { IComponentPropsExtended } from "./interface";
 import { ShoppingCart } from "lucide-react";
+import { Icon } from "@sps/ui-adapter";
 import {
   Sheet,
   SheetTrigger,
   SheetContent,
+  SheetClose,
   SheetTitle,
   SheetDescription,
 } from "@sps/shared-ui-shadcn";
@@ -51,13 +53,19 @@ export function Component(props: IComponentPropsExtended) {
       </SheetTrigger>
       <SheetContent
         side="right"
-        closeLabel={ru ? "Закрыть корзину" : "Close cart"}
+        showCloseButton={false}
         className="flex h-dvh w-full min-w-0 flex-col gap-0 rounded-l-3xl bg-card p-0 font-default text-foreground sm:max-w-lg"
       >
         <header className="flex h-20 shrink-0 items-center justify-between border-b border-border px-6">
           <SheetTitle className="text-2xl font-semibold">
             {ru ? "Корзина" : "Cart"}
           </SheetTitle>
+          <SheetClose
+            aria-label={ru ? "Закрыть корзину" : "Close cart"}
+            className="inline-flex size-12 shrink-0 items-center justify-center rounded-xl border border-border bg-card text-foreground hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+          >
+            <Icon name="x" size={24} />
+          </SheetClose>
         </header>
         <SheetDescription className="sr-only">
           {ru
