@@ -137,11 +137,6 @@ describe("Given: a checkout email belongs to a subject", () => {
               method: "inArray",
               value: ["identity-existing"],
             },
-            {
-              column: "email",
-              method: "eq",
-              value: "same@example.com",
-            },
           ],
         },
       },
@@ -149,4 +144,24 @@ describe("Given: a checkout email belongs to a subject", () => {
     expect(mockIdentityCreate).not.toHaveBeenCalled();
     expect(mockSubjectsToIdentitiesCreate).not.toHaveBeenCalled();
   });
+});
+
+it("uses an edited receipt email for the order without adding it as an account identity", async () => {
+  mockIdentityCreate.mockClear();
+  const login = {
+    id: "login",
+    provider: "email_and_password",
+    email: "login@example.test",
+  };
+  const service = new Service({
+    findById: jest.fn().mockResolvedValue({ id: "buyer" }),
+    subjectsToIdentities: {
+      find: jest.fn().mockResolvedValue([{ identityId: "login" }]),
+    } as any,
+    identity: {
+      find: jest.fn().mockResolvedValue([login]),
+    } as any,
+  });
+  await service.execute({ id: "buyer", email: "receipt@example.test" });
+  expect(mockIdentityCreate).not.toHaveBeenCalled();
 });

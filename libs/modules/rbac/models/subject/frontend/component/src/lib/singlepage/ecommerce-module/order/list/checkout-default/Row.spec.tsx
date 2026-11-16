@@ -12,13 +12,11 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   },
 }));
 jest.mock("@tanstack/react-query", () => ({
+  ...jest.requireActual("@tanstack/react-query"),
   useQueryClient: () => ({ invalidateQueries: mockInvalidate }),
 }));
 jest.mock("@sps/rbac/models/subject/sdk/model", () => ({
   route: "/api/rbac/subjects",
-}));
-jest.mock("@sps/shared-utils", () => ({
-  INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG: "free-subscription",
 }));
 jest.mock("@sps/ui-adapter", () => ({
   Icon: () => null,
@@ -46,13 +44,21 @@ jest.mock("@sps/ui-adapter", () => ({
   ),
 }));
 jest.mock("@sps/ecommerce/models/product/frontend/component", () => ({
-  Component: ({ children }: any) => <div>{children}</div>,
+  Component: ({ children, priceSlot }: any) => (
+    <article>
+      {priceSlot}
+      {children}
+    </article>
+  ),
 }));
-jest.mock("@sps/ecommerce/models/order/frontend/component", () => ({
-  Component: () => null,
+const mockFindOrder = jest.fn();
+jest.mock("server-only", () => ({}), { virtual: true });
+jest.mock("@sps/ecommerce/models/order/sdk/client", () => ({
+  Provider: ({ children }: any) => children,
+  api: { findById: (...args: unknown[]) => mockFindOrder(...args) },
 }));
 jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
-  Component: () => null,
+  Component: ({ label }: any) => <button type="button">{label}</button>,
 }));
 const props: any = {
   subject: { id: "owner" },
@@ -71,12 +77,23 @@ const props: any = {
     },
   },
   language: "ru",
-  index: 0,
-  form: {},
 };
 beforeEach(() => {
   mockUpdate.mockReset().mockResolvedValue({});
   mockInvalidate.mockReset().mockResolvedValue(undefined);
+});
+it("renders the Ecommerce Order cart card with the Subject snapshot and no second order read", () => {
+  const { container } = render(<Component {...props} />);
+  const card = container.querySelector(
+    '[data-module="ecommerce"][data-model="order"][data-variant="cart-card-default"]',
+  );
+  expect(card?.getAttribute("data-id")).toBe("order");
+  expect(
+    card?.contains(
+      screen.getByRole("button", { name: "Увеличить количество" }),
+    ),
+  ).toBe(true);
+  expect(mockFindOrder).not.toHaveBeenCalled();
 });
 it("updates only the selected line and reloads the authorized cart totals", async () => {
   render(<Component {...props} />);
@@ -126,7 +143,12 @@ it("changes only the selected order currency and waits for the authorized cart r
     },
   };
   const view = render(<Component {...currencyProps} />);
-  expect(screen.getByText("10 $")).toBeTruthy();
+  expect(screen.getByText("10 $").closest("article")).toBeTruthy();
+  expect(
+    screen
+      .getByRole("button", { name: "Удалить из корзины: Курс" })
+      .closest("article"),
+  ).toBeTruthy();
   expect(screen.queryByText("100 ₽")).toBeNull();
   fireEvent.change(screen.getByLabelText("Валюта оплаты"), {
     target: { value: "rub" },
@@ -155,6 +177,44 @@ it("changes only the selected order currency and waits for the authorized cart r
   );
   expect(screen.getByText("100 ₽")).toBeTruthy();
   expect(screen.queryByText("10 $")).toBeNull();
+});
+it("keeps the price and remove action attached to the order when several products share it", () => {
+  const details = props.ecommerceModuleOrder.cartDetails;
+  render(
+    <Component
+      {...props}
+      language="en"
+      ecommerceModuleOrder={{
+        ...props.ecommerceModuleOrder,
+        cartDetails: {
+          ...details,
+          billingModuleCurrencyId: "usd",
+          availableCurrencyIds: ["usd"],
+          totals: [
+            {
+              total: 3,
+              billingModuleCurrency: { id: "usd", slug: "usd", symbol: "$" },
+            },
+            {
+              total: 6,
+              billingModuleCurrency: { id: "usd", slug: "usd", symbol: "$" },
+            },
+          ],
+          lines: [details.lines[0], { ...details.lines[0], id: "second" }],
+        },
+      }}
+    />,
+  );
+  expect(screen.getAllByRole("article")).toHaveLength(2);
+  expect(screen.getByText("9 $").closest("article")).toBeNull();
+  expect(
+    screen
+      .getByRole("button", { name: "Remove item group" })
+      .closest("article"),
+  ).toBeNull();
+  expect(
+    screen.getAllByRole("button", { name: "Increase quantity" }),
+  ).toHaveLength(2);
 });
 it("requires an explicit choice when a legacy selection is no longer priced", () => {
   render(

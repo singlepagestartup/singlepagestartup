@@ -10,7 +10,13 @@
  * Then: single invoice redirects immediately, while multiple invoices render payment links.
  */
 
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 
 const mutateAsyncMock = jest.fn();
 let updatingCartCount = 0;
@@ -46,6 +52,7 @@ jest.mock("next/link", () => ({
 
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   api: {
+    identityFind: () => ({ data: [] }),
     ecommerceModuleOrderUpdate: () => ({
       mutateAsync: jest.fn(),
       isPending: false,
@@ -83,6 +90,7 @@ jest.mock("@sps/shared-ui-shadcn", () => ({
 jest.mock("@sps/ui-adapter", () => ({
   FormField: ({ name }: any) => <div data-testid={`field-${name}`} />,
   Select: () => null,
+  Icon: () => null,
 }));
 
 jest.mock(
@@ -97,23 +105,10 @@ jest.mock(
   }),
 );
 
-jest.mock("@sps/ecommerce/models/order/frontend/component", () => ({
-  Component: ({ variant, children, apiProps }: any) => {
-    if (variant === "find") {
-      ecommerceModuleOrderApiPropsMock(apiProps);
-      return children ? children({ data: [{ id: "order-1" }] }) : null;
-    }
-
-    if (variant === "cart-default") {
-      return <div data-testid="cart-order">{children}</div>;
-    }
-
-    if (variant === "form-field-default") {
-      return <input data-testid="order-id-field" readOnly={true} />;
-    }
-
-    return null;
-  },
+jest.mock("server-only", () => ({}), { virtual: true });
+jest.mock("@sps/ecommerce/models/order/sdk/client", () => ({
+  Provider: ({ children }: any) => children,
+  api: { findById: jest.fn() },
 }));
 
 jest.mock("../../update-default", () => ({
@@ -182,6 +177,31 @@ describe("Given: order list checkout component", () => {
     });
   });
 
+  it("places the delivery choices directly above the total and hides them for an empty cart", () => {
+    cartOrders.push({ ...cartOrders[0], id: "order-2" });
+    const props = {
+      isServer: false,
+      variant: "ecommerce-module-order-list-checkout-default" as const,
+      data: { id: "subject-1" } as any,
+      language: "en",
+    };
+    const view = render(<Component {...props} />);
+    const delivery = screen.getByRole("group", { name: "Delivery" });
+    expect(delivery.nextElementSibling?.querySelector("h3")).toBe(
+      screen.getByRole("heading", { name: "Total" }),
+    );
+    expect(
+      screen.getByRole("radio", { name: "Pickup", checked: true }),
+    ).toBeTruthy();
+    expect(screen.getByRole("radio", { name: "Courier" })).toBeTruthy();
+    expect(screen.getAllByRole("radio")).toHaveLength(2);
+    expect(delivery.querySelector('input[type="text"]')).toBeNull();
+    expect(screen.getByText("200 ₽")).toBeTruthy();
+    cartOrders = [];
+    view.rerender(<Component {...props} />);
+    expect(screen.queryByRole("group", { name: "Delivery" })).toBeNull();
+  });
+
   it("When: checkout returns one invoice Then: browser redirects to payment URL", async () => {
     mutateAsyncMock.mockResolvedValue({
       billingModule: {
@@ -212,7 +232,7 @@ describe("Given: order list checkout component", () => {
     });
   });
 
-  it("When: checkout returns multiple invoices Then: payment links are rendered instead of redirect", async () => {
+  it("keeps every payment link after checkout moves the orders out of the cart", async () => {
     mutateAsyncMock.mockResolvedValue({
       billingModule: {
         invoices: [
@@ -222,14 +242,13 @@ describe("Given: order list checkout component", () => {
       },
     });
 
-    render(
-      <Component
-        isServer={false}
-        variant="ecommerce-module-order-list-checkout-default"
-        data={{ id: "subject-1" } as any}
-        language="en"
-      />,
-    );
+    const props = {
+      isServer: false,
+      variant: "ecommerce-module-order-list-checkout-default" as const,
+      data: { id: "subject-1" } as any,
+      language: "en",
+    };
+    const view = render(<Component {...props} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Proceed to payment" }));
 
@@ -245,6 +264,11 @@ describe("Given: order list checkout component", () => {
       ).toBe(true);
     });
 
+    cartOrders = [];
+    view.rerender(<Component {...props} />);
+    expect(
+      screen.getAllByRole("link").map((link) => link.getAttribute("href")),
+    ).toEqual(["https://pay.local/one", "https://pay.local/two"]);
     expect(window.location.href).toBe(checkoutPage);
   });
 
@@ -353,4 +377,113 @@ describe("Given: order list checkout component", () => {
     expect(mutateAsyncMock).not.toHaveBeenCalled();
     expect(screen.getAllByText("100 ₽")).toHaveLength(2);
   });
+  it("clears payment links when the subject changes", async () => {
+    mutateAsyncMock.mockResolvedValue({
+      billingModule: {
+        invoices: [
+          { paymentUrl: "https://pay.local/subject-a-one" },
+          { paymentUrl: "https://pay.local/subject-a-two" },
+        ],
+      },
+    });
+    const props = {
+      isServer: false,
+      variant: "ecommerce-module-order-list-checkout-default" as const,
+      data: { id: "subject-1" } as any,
+      language: "en",
+    };
+    const view = render(<Component {...props} />);
+    fireEvent.click(screen.getByRole("button", { name: "Proceed to payment" }));
+    await waitFor(() =>
+      expect(
+        screen.getAllByRole("link", { name: "Proceed to payment" }),
+      ).toHaveLength(2),
+    );
+    view.rerender(<Component {...props} data={{ id: "subject-2" } as any} />);
+    expect(
+      screen.queryAllByRole("link", { name: "Proceed to payment" }),
+    ).toHaveLength(0);
+    expect(
+      screen.getByRole("button", { name: "Proceed to payment" }),
+    ).toBeTruthy();
+  });
+  it.each(["account switch", "unmount"])(
+    "ignores a late payment redirect after %s",
+    async (change) => {
+      let resolve!: (value: unknown) => void;
+      mutateAsyncMock.mockImplementationOnce(
+        () =>
+          new Promise((done) => {
+            resolve = done;
+          }),
+      );
+      const props = {
+        isServer: false,
+        variant: "ecommerce-module-order-list-checkout-default" as const,
+        data: { id: "subject-1" } as any,
+        language: "en",
+      };
+      const view = render(<Component {...props} />);
+      fireEvent.click(
+        screen.getByRole("button", { name: "Proceed to payment" }),
+      );
+      expect(mutateAsyncMock).toHaveBeenCalledWith({
+        id: "subject-1",
+        data: submitPayload,
+      });
+      if (change === "account switch") {
+        view.rerender(
+          <Component {...props} data={{ id: "subject-2" } as any} />,
+        );
+      } else {
+        view.unmount();
+      }
+      await act(async () =>
+        resolve({
+          billingModule: {
+            invoices: [{ paymentUrl: `${checkoutPage}#stale` }],
+          },
+        }),
+      );
+      expect(window.location.href).toBe(checkoutPage);
+      expect(screen.queryByRole("alert")).toBeNull();
+      expect(
+        screen.queryAllByRole("link", { name: "Proceed to payment" }),
+      ).toHaveLength(0);
+    },
+  );
+  it.each(["account switch", "unmount"])(
+    "ignores a late checkout rejection after %s",
+    async (change) => {
+      let reject!: (reason: Error) => void;
+      mutateAsyncMock.mockImplementationOnce(
+        () =>
+          new Promise((_, fail) => {
+            reject = fail;
+          }),
+      );
+      const props = {
+        isServer: false,
+        variant: "ecommerce-module-order-list-checkout-default" as const,
+        data: { id: "subject-1" } as any,
+        language: "en",
+      };
+      const view = render(<Component {...props} />);
+      fireEvent.click(
+        screen.getByRole("button", { name: "Proceed to payment" }),
+      );
+      expect(mutateAsyncMock).toHaveBeenCalledTimes(1);
+      if (change === "account switch") {
+        view.rerender(
+          <Component {...props} data={{ id: "subject-2" } as any} />,
+        );
+      } else {
+        view.unmount();
+      }
+      await act(async () => reject(new Error("Subject A payment failed")));
+      expect(screen.queryByRole("alert")).toBeNull();
+      expect(screen.queryByText(/Subject A payment failed/)).toBeNull();
+      expect(window.location.href).toBe(checkoutPage);
+    },
+  );
 });

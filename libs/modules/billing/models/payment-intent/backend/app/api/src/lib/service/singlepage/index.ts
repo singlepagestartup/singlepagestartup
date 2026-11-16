@@ -1,10 +1,13 @@
 import { z } from "zod";
 import { Service as Settlement } from "../startup/settlement";
 import { Service as PaykeeperSettlement } from "../startup/paykeeper-settlement";
-import type { IExecuteProps as ISettlementProps } from "./settlement";
+import type {
+  IExecuteProps as ISettlementProps,
+  IExpireProps,
+} from "./settlement";
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
-import { CRUDService, DI } from "@sps/shared-backend-api";
+import { CRUDService, DI, consistencyContext } from "@sps/shared-backend-api";
 import { Table } from "@sps/billing/models/payment-intent/backend/repository/database";
 import { Repository } from "../../repository";
 import Stripe from "stripe";
@@ -85,6 +88,123 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }).execute(props);
   }
 
+  protected async subscriptionRenewalContext(props: { id: string }) {
+    const intent = await this.findById(props);
+    if (!intent) {
+      throw new Error("Not Found error. Payment intent not found");
+    }
+    if (intent.type !== "subscription" || intent.amount === 0) {
+      return;
+    }
+    const links = await this.billingModule.paymentIntentsToInvoices.find({
+      params: {
+        filters: {
+          and: [{ column: "paymentIntentId", method: "eq", value: intent.id }],
+        },
+      },
+    });
+    const invoices = await this.billingModule.invoice.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "id",
+              method: "inArray",
+              value: links.map((link) => link.invoiceId),
+            },
+            { column: "status", method: "eq", value: "paid" },
+          ],
+        },
+      },
+    });
+    const paid = invoices.filter(
+      (invoice) =>
+        links.some((link) => link.invoiceId === invoice.id) &&
+        invoice.status === "paid",
+    );
+    if (!paid.length) {
+      throw new Error(
+        "Validation error. Recurring payment has no confirmed provider invoice",
+      );
+    }
+    const localProviders = [
+      "cloudpayments",
+      "tiptoppay",
+      "0xprocessing",
+      "payselection",
+      "paykeeper",
+      "telegram-star",
+      "dummy",
+    ];
+    if (
+      paid.every((invoice) => localProviders.includes(invoice.provider ?? ""))
+    ) {
+      return;
+    }
+    return { intent, paid };
+  }
+
+  async hasProviderManagedSubscriptionRenewal(props: { id: string }) {
+    const context = await this.subscriptionRenewalContext(props);
+    return Boolean(context);
+  }
+
+  /** Stops future provider charges without changing confirmed Invoice history. */
+  async stopSubscriptionRenewal(props: { id: string }) {
+    const context = await this.subscriptionRenewalContext(props);
+    if (!context) {
+      return;
+    }
+    const { intent, paid } = context;
+    if (paid.some((invoice) => invoice.provider !== "stripe")) {
+      throw new Error(
+        "Configuration error. Recurring payment provider cannot stop renewal automatically",
+      );
+    }
+    if (!STRIPE_SECRET_KEY) {
+      throw new Error("Configuration error. Stripe secret key not found");
+    }
+    if (consistencyContext.getStore()?.database) {
+      throw new Error(
+        "Conflict error. Provider cancellation requires a committed transaction",
+      );
+    }
+    const stripe = new Stripe(STRIPE_SECRET_KEY);
+    const subscriptionIds = new Set<string>();
+    for (const invoice of paid) {
+      if (!invoice.providerId) {
+        throw new Error(
+          "Validation error. Stripe invoice provider ID is missing",
+        );
+      }
+      const remote = await stripe.invoices.retrieve(invoice.providerId);
+      const reference = remote.parent?.subscription_details?.subscription;
+      const subscriptionId =
+        reference ??
+        ("subscription" in remote ? remote.subscription : undefined);
+      if (typeof subscriptionId !== "string") {
+        throw new Error(
+          "Validation error. Stripe invoice subscription is missing",
+        );
+      }
+      subscriptionIds.add(subscriptionId);
+    }
+    for (const id of subscriptionIds) {
+      const subscription = await stripe.subscriptions.retrieve(id);
+      if (subscription.metadata?.paymentIntentId !== intent.id) {
+        throw new Error(
+          "Permission error. Stripe subscription belongs to another payment intent",
+        );
+      }
+      if (
+        subscription.status !== "canceled" &&
+        !subscription.cancel_at_period_end
+      ) {
+        await stripe.subscriptions.update(id, { cancel_at_period_end: true });
+      }
+    }
+  }
+
   async settleFreePayment(id: string, provider: string) {
     return this.repository.withPaymentIntentLock(id, async () => {
       const intent = await this.findById({ id });
@@ -148,11 +268,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     });
   }
 
-  expireInvoice(props: {
-    invoiceId: string;
-    provider: string | null;
-    expiresBefore: Date;
-  }) {
+  expireInvoice(props: IExpireProps) {
     return new Settlement({
       repository: this.repository,
       service: this,
@@ -264,6 +380,80 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         return operation(invoice);
       },
     );
+  }
+
+  private async applyStripePaymentStatus(
+    invoice: IInvoice,
+    remote: Stripe.Checkout.Session | Stripe.Invoice,
+    options: { failedAsyncPayment?: boolean; paymentIntentId?: string } = {},
+  ) {
+    if (invoice.provider !== "stripe" || invoice.providerId !== remote.id) {
+      throw new Error("Conflict error. Stripe invoice reference changed");
+    }
+    const reference = {
+      invoiceId: invoice.id,
+      provider: "stripe" as const,
+      providerId: remote.id,
+    };
+    const session = remote.object === "checkout.session";
+    if (
+      (session &&
+        remote.status === "complete" &&
+        (remote.payment_status === "paid" ||
+          remote.payment_status === "no_payment_required")) ||
+      (!session && remote.status === "paid")
+    ) {
+      const amount = session ? remote.amount_total : remote.amount_paid;
+      if (amount === null) {
+        throw new Error("Validation error. Stripe amount is missing");
+      }
+      return this.settlePayment({
+        ...reference,
+        amount: amount / 100,
+        paymentIntentId: options.paymentIntentId,
+      });
+    }
+    if (
+      (session &&
+        (remote.status === "expired" ||
+          (remote.status === "complete" && options.failedAsyncPayment))) ||
+      (!session && remote.status === "void")
+    ) {
+      await this.expireInvoice(reference);
+      const current = await this.billingModule.invoice.findById({
+        id: invoice.id,
+      });
+      if (!current) {
+        throw new Error("Not Found error. Invoice not found");
+      }
+      return current;
+    } else if (session && remote.status === "complete" && invoice.paymentUrl) {
+      // Checkout is closed to the buyer while an asynchronous payment is pending.
+      return new Settlement({
+        repository: this.repository,
+        service: this,
+      }).closeStripePaymentPage(reference);
+    }
+    return invoice;
+  }
+
+  async checkStripeInvoice(invoice: IInvoice) {
+    if (invoice.status !== "open" || !invoice.providerId) {
+      return;
+    }
+    if (!STRIPE_SECRET_KEY) {
+      throw new Error("Configuration error. Stripe secret key not found");
+    }
+    const stripe = new Stripe(STRIPE_SECRET_KEY);
+    if (invoice.providerId.startsWith("cs_")) {
+      const session = await stripe.checkout.sessions.retrieve(
+        invoice.providerId,
+      );
+      await this.applyStripePaymentStatus(invoice, session);
+    } else if (invoice.providerId.startsWith("in_")) {
+      const remote = await stripe.invoices.retrieve(invoice.providerId);
+      await this.applyStripePaymentStatus(invoice, remote);
+    }
   }
 
   async stripe(
@@ -462,22 +652,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       const data = props.data.data.object;
 
       if (data.object === "checkout.session") {
-        const invoices = await invoiceApi.find({
+        const invoices = await this.billingModule.invoice.find({
           params: {
             filters: {
               and: [
-                {
-                  column: "providerId",
-                  method: "eq",
-                  value: data.id,
-                },
+                { column: "provider", method: "eq", value: "stripe" },
+                { column: "providerId", method: "eq", value: data.id },
               ],
-            },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
             },
           },
         });
@@ -488,22 +669,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
         if (invoices.length !== 1)
           throw new Error("Conflict error. Multiple invoices found");
-        const invoice = invoices[0];
-        if (
-          data.status === "complete" &&
-          (data.payment_status === "paid" ||
-            data.payment_status === "no_payment_required")
-        ) {
-          if (data.amount_total === null)
-            throw new Error("Validation error. Stripe amount is missing");
-          return this.settlePayment({
-            invoiceId: invoice.id,
-            provider: "stripe",
-            providerId: data.id,
-            amount: data.amount_total / 100,
-          });
-        }
-        return invoice;
+        return this.applyStripePaymentStatus(invoices[0], data, {
+          failedAsyncPayment:
+            props.data.type === "checkout.session.async_payment_failed",
+        });
       } else if (data.object === "invoice") {
         const reference = data.parent?.subscription_details?.subscription;
         const subscriptionId =
@@ -523,17 +692,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
               providerId: data.id,
               amount: data.amount_due / 100,
             },
-            async (invoice) => {
-              if (data.status === "paid")
-                return this.settlePayment({
-                  invoiceId: invoice.id,
-                  provider: "stripe",
-                  providerId: data.id,
-                  paymentIntentId: intentId,
-                  amount: data.amount_paid / 100,
-                });
-              return invoice;
-            },
+            (invoice) =>
+              this.applyStripePaymentStatus(invoice, data, {
+                paymentIntentId: intentId,
+              }),
           );
         }
       }

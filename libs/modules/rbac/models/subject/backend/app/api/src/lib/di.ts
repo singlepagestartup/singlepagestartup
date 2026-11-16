@@ -1,3 +1,4 @@
+import type { Service as PaymentIntentService } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/service";
 import type { IOrderLineTotals } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
 import type { Service as BroadcastChannelService } from "@sps/broadcast/models/channel/backend/app/api/src/lib/service";
 import type { Service as NotificationTopicService } from "@sps/notification/models/topic/backend/app/api/src/lib/service";
@@ -34,13 +35,16 @@ export interface IExtendedReadService extends IReadService {
 export interface IEcommerceOrderReadService
   extends
     IExtendedReadService,
-    ICreateService,
+    ICreateDeleteService,
     Pick<
       EcommerceOrderService,
       | "acceptSubscriptionPeriod"
       | "freezeSubscriptionPeriod"
       | "assertSubscriptionPayment"
+      | "hasSharedSubscriptionRenewal"
+      | "stopSubscriptionRenewal"
       | "lockForLifecycle"
+      | "transitionPaymentStatus"
       | "revokeSubscription"
       | "update"
     > {
@@ -57,7 +61,8 @@ export interface IEcommerceOrderReadService
   }) => Promise<any>;
 }
 
-export interface IEcommerceOrdersToProductsService extends ICreateService {
+export interface IEcommerceOrdersToProductsService
+  extends ICreateDeleteService, IUpdateService {
   getTotal: (props: { id: string }) => Promise<IOrderLineTotals>;
 }
 
@@ -104,7 +109,7 @@ export interface IEcommerceModule {
   storesToOrders: ICreateService;
   ordersToProducts: IEcommerceOrdersToProductsService;
   ordersToBillingModuleCurrencies: ICreateDeleteService & IUpdateService;
-  ordersToBillingModulePaymentIntents: ICreateService;
+  ordersToBillingModulePaymentIntents: ICreateDeleteService;
   ordersToFileStorageModuleFiles: IReadService;
   productsToAttributes: IReadService;
   productsToFileStorageModuleFiles: IReadService;
@@ -114,7 +119,8 @@ export interface IEcommerceModule {
 
 export interface IBillingModule {
   currency: IReadService;
-  paymentIntent: ICreateUpdateService;
+  paymentIntent: ICreateUpdateService &
+    Pick<PaymentIntentService, "failUnpaidIntent">;
   paymentIntentsToCurrencies: ICreateService;
   invoice: ICreateUpdateService;
   paymentIntentsToInvoices: ICreateService;

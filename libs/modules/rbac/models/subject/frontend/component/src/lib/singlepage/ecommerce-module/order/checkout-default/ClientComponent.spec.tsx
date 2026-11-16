@@ -18,6 +18,7 @@ const useFormMock = jest.fn();
 const submitPayload = {
   provider: "stripe",
   email: "subject@example.com",
+  comment: "Please use the side entrance.",
   ecommerceModule: {
     orders: [{ id: "order-1" }],
   },
@@ -32,6 +33,7 @@ jest.mock("@sps/shared-frontend-client-utils", () => ({
 
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   api: {
+    identityFind: () => ({ data: [] }),
     ecommerceModuleOrderCheckout: () => ({
       mutateAsync: mutateAsyncMock,
       isPending: false,
@@ -97,6 +99,7 @@ describe("Given: order checkout-default action component", () => {
       />,
     );
 
+    expect(screen.getByTestId("field-comment")).toBeTruthy();
     fireEvent.click(
       screen.getByRole("button", { name: "Continue to payment" }),
     );

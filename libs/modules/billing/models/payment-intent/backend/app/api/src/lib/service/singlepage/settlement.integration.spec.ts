@@ -529,6 +529,50 @@ it("settles one invoice covering multiple intents in a stable lock order", async
   );
 });
 
+it("closes a completed Stripe checkout page while the asynchronous payment can still settle", async () => {
+  const f = await fixture("stripe");
+  const providerId = "cs_test_" + randomUUID();
+  const pending = await f.invoices.update({
+    id: f.invoice.id,
+    data: {
+      ...f.invoice,
+      providerId,
+      paymentUrl: "https://checkout.example/session",
+    },
+  });
+  expect(pending).toBeTruthy();
+  const object = {
+    object: "checkout.session",
+    id: providerId,
+    status: "complete",
+    payment_status: "unpaid",
+    amount_total: 10000,
+  };
+  await f.service.stripe({
+    action: "webhook",
+    data: { data: { object } },
+  } as any);
+  expect(await f.invoices.findById({ id: f.invoice.id })).toMatchObject({
+    status: "open",
+    paymentUrl: "",
+  });
+  await f.service.expireInvoice({
+    invoiceId: f.invoice.id,
+    provider: "stripe",
+    expiresBefore: new Date(Date.now() + 1000),
+  });
+  expect((await f.invoices.findById({ id: f.invoice.id }))?.status).toBe(
+    "open",
+  );
+  await f.service.stripe({
+    action: "webhook",
+    data: { data: { object: { ...object, payment_status: "paid" } } },
+  } as any);
+  expect((await f.service.findById({ id: f.intent.id }))?.status).toBe(
+    "succeeded",
+  );
+});
+
 it("creates and settles a recurring Stripe invoice once across concurrent webhook deliveries", async () => {
   const f = await fixture("stripe");
   mockSubscriptionIntentId = f.intent.id;

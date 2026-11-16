@@ -1,24 +1,24 @@
 import { FindServiceProps } from "@sps/shared-backend-api";
-import { api as orderApi } from "@sps/ecommerce/models/order/sdk/server";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { logger } from "@sps/backend-utils";
-import { Service as OrdersToBillingModulePaymentIntentsService } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api/src/lib/service";
 
 export type IExecuteProps = {};
 
 type IConstructorProps = {
   find: (props?: FindServiceProps) => Promise<any[]>;
-  ordersToBillingModulePaymentIntents: OrdersToBillingModulePaymentIntentsService;
+  deleteCanceledWithoutPayment: (props: {
+    id: string;
+    createdBefore: Date;
+  }) => Promise<unknown>;
 };
 
 export class Service {
   find: IConstructorProps["find"];
-  ordersToBillingModulePaymentIntents: OrdersToBillingModulePaymentIntentsService;
+  deleteCanceledWithoutPayment: IConstructorProps["deleteCanceledWithoutPayment"];
 
   constructor(props: IConstructorProps) {
     this.find = props.find;
-    this.ordersToBillingModulePaymentIntents =
-      props.ordersToBillingModulePaymentIntents;
+    this.deleteCanceledWithoutPayment = props.deleteCanceledWithoutPayment;
   }
 
   async execute(_props: IExecuteProps) {
@@ -29,6 +29,7 @@ export class Service {
         throw new Error("Configuration error. RBAC_SECRET_KEY is not defined");
       }
 
+      const createdBefore = new Date(Date.now() - 1000 * 60 * 60 * 24 * 7);
       const oldOrders = await this.find({
         params: {
           filters: {
@@ -36,12 +37,17 @@ export class Service {
               {
                 column: "createdAt",
                 method: "lt",
-                value: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7),
+                value: createdBefore,
               },
               {
                 column: "status",
                 method: "eq",
                 value: "canceled",
+              },
+              {
+                column: "paymentFailureCanceledAt",
+                method: "isNull",
+                value: "",
               },
             ],
           },
@@ -50,32 +56,9 @@ export class Service {
 
       if (oldOrders?.length) {
         for (const oldOrder of oldOrders) {
-          const orderToBillingPaymentIntents =
-            await this.ordersToBillingModulePaymentIntents.find({
-              params: {
-                filters: {
-                  and: [
-                    {
-                      column: "orderId",
-                      method: "eq",
-                      value: oldOrder.id,
-                    },
-                  ],
-                },
-              },
-            });
-
-          if (orderToBillingPaymentIntents?.length) {
-            continue;
-          }
-
-          await orderApi.delete({
+          await this.deleteCanceledWithoutPayment({
             id: oldOrder.id,
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
-            },
+            createdBefore,
           });
         }
       }

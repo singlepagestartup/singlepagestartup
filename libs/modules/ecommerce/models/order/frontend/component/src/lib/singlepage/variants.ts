@@ -15,6 +15,7 @@ import { Component as AdminV2SidebarItem } from "./admin-v2/sidebar-item";
 import { Component as Default } from "./default";
 import { Component as Create } from "./create";
 import { Component as Delete } from "./delete";
+import { Component as CartCardDefault } from "./cart-card-default";
 import { Component as CartDefault } from "./cart-default";
 import { Component as FormFieldDefault } from "./form-field-default";
 
@@ -37,5 +38,6 @@ export const variants = {
   create: Create,
   delete: Delete,
   "cart-default": CartDefault,
+  "cart-card-default": CartCardDefault,
   "form-field-default": FormFieldDefault,
 };

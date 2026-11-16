@@ -5,7 +5,6 @@ import { api } from "@sps/rbac/models/subject/sdk/client";
 import { route } from "@sps/rbac/models/subject/sdk/model";
 import { INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG } from "@sps/shared-utils";
 import { Icon, Select } from "@sps/ui-adapter";
-import { Component as EcommerceModuleProduct } from "@sps/ecommerce/models/product/frontend/component";
 import { Component as EcommerceModuleOrder } from "@sps/ecommerce/models/order/frontend/component";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import type { IRowProps, IQuantityProps, ICurrencyProps } from "./interface";
@@ -59,14 +58,10 @@ function Currency(props: ICurrencyProps) {
       props.language,
     ],
   );
-  const amount = details?.totals
-    .filter((total) => total.billingModuleCurrency.id === selected)
-    .reduce((sum, total) => sum + total.total, 0);
-  const currency = options.find((item) => item.id === selected);
   const id = `order-currency-${props.ecommerceModuleOrder.id}`;
   return (
-    <div className="space-y-2">
-      <label htmlFor={id} className="block text-sm font-medium">
+    <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+      <label htmlFor={id} className="text-xs font-medium text-muted-foreground">
         {props.language === "ru" ? "Валюта оплаты" : "Payment currency"}
       </label>
       <Select
@@ -80,18 +75,14 @@ function Currency(props: ICurrencyProps) {
         }
         options={options.map((item) => ({
           value: item.id,
-          label: `${item.title} (${item.symbol})`,
+          label:
+            item.slug && /^[a-z]{3}$/i.test(item.slug)
+              ? `${item.slug.toUpperCase()} · ${item.symbol}`
+              : item.title,
         }))}
-        className="min-w-48 rounded-xl"
+        className="h-9 min-h-9 w-auto max-w-full gap-2 rounded-lg bg-card px-2.5 py-1 text-xs shadow-none"
+        contentClassName="w-max min-w-[var(--radix-select-trigger-width)] max-w-[var(--radix-select-content-available-width)] whitespace-nowrap [&_[role=option]>span:last-child]:truncate"
       />
-      {currency && (
-        <p className="text-sm font-semibold">
-          {new Intl.NumberFormat(props.language === "ru" ? "ru-RU" : "en-US", {
-            maximumFractionDigits: 2,
-          }).format(amount ?? 0)}{" "}
-          {currency.symbol}
-        </p>
-      )}
       {error && (
         <p role="alert" className="text-sm text-destructive">
           {error}
@@ -102,6 +93,7 @@ function Currency(props: ICurrencyProps) {
 }
 
 function Quantity(props: IQuantityProps) {
+  const ru = props.language === "ru";
   const update = api.ecommerceModuleOrderUpdate({});
   const queries = useQueryClient();
   const [error, setError] = useState("");
@@ -125,7 +117,11 @@ function Quantity(props: IQuantityProps) {
           queryKey: [`${route}/${props.subjectId}/ecommerce-module/orders`],
         });
       } catch {
-        setError("Не удалось изменить количество. Попробуйте ещё раз.");
+        setError(
+          ru
+            ? "Не удалось изменить количество. Попробуйте ещё раз."
+            : "Could not change the quantity. Please try again.",
+        );
       }
     },
     [
@@ -136,6 +132,7 @@ function Quantity(props: IQuantityProps) {
       props.orderId,
       props.line.id,
       props.maxLineQuantity,
+      ru,
     ],
   );
   const decrease = useCallback(() => {
@@ -150,36 +147,36 @@ function Quantity(props: IQuantityProps) {
     <div>
       <div
         role="group"
-        aria-label={`Количество: ${props.line.product?.title?.[props.language] || props.line.product?.slug || "товар"}`}
-        className="inline-flex items-center gap-1 rounded-xl bg-muted p-1"
+        aria-label={`${ru ? "Количество" : "Quantity"}: ${props.line.product?.title?.[props.language] || props.line.product?.slug || ""}`}
+        className="inline-flex items-center gap-0.5 rounded-xl bg-muted p-1"
       >
         <button
           type="button"
-          aria-label="Уменьшить количество"
+          aria-label={ru ? "Уменьшить количество" : "Decrease quantity"}
           disabled={locked || update.isPending || props.line.quantity <= 1}
           onClick={decrease}
-          className="grid size-11 place-items-center rounded-lg hover:bg-card disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-foreground"
+          className="grid size-9 place-items-center rounded-lg bg-card text-foreground hover:bg-primary/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground disabled:bg-transparent disabled:opacity-40"
         >
-          <Icon name="minus" size={20} />
+          <Icon name="minus" />
         </button>
         <output
           aria-live="polite"
-          className="min-w-7 text-center text-sm font-semibold"
+          className="min-w-5 text-center text-sm font-semibold tabular-nums"
         >
           {props.line.quantity}
         </output>
         <button
           type="button"
-          aria-label="Увеличить количество"
+          aria-label={ru ? "Увеличить количество" : "Increase quantity"}
           disabled={
             locked ||
             update.isPending ||
             props.line.quantity >= props.maxLineQuantity
           }
           onClick={increase}
-          className="grid size-11 place-items-center rounded-lg hover:bg-card disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-foreground"
+          className="grid size-9 place-items-center rounded-lg bg-card text-foreground hover:bg-primary/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground disabled:bg-transparent disabled:opacity-40"
         >
-          <Icon name="plus" size={20} />
+          <Icon name="plus" />
         </button>
       </div>
       {error && (
@@ -192,56 +189,67 @@ function Quantity(props: IQuantityProps) {
 }
 export const Component = memo(function Row(props: IRowProps) {
   const details = props.ecommerceModuleOrder.cartDetails;
+  const ru = props.language === "ru";
+  const lines = details?.lines ?? [];
+  const onlyProduct = lines.length === 1 ? lines[0].product : null;
+  const productTitle =
+    onlyProduct?.title?.[props.language] ||
+    onlyProduct?.title?.en ||
+    onlyProduct?.slug;
+  let removeLabel;
+  if (productTitle) {
+    removeLabel = ru
+      ? `Удалить из корзины: ${productTitle}`
+      : `Remove from cart: ${productTitle}`;
+  } else if (lines.length > 1) {
+    removeLabel = ru ? "Удалить группу товаров" : "Remove item group";
+  }
+  const remove = (
+    <Subject
+      isServer={false}
+      variant="ecommerce-module-order-delete-default"
+      dataSource="props"
+      data={props.subject}
+      ecommerceModuleOrder={props.ecommerceModuleOrder}
+      language={props.language}
+      iconOnly={!!onlyProduct}
+      label={removeLabel}
+    />
+  );
   return (
-    <li className="min-w-0 space-y-4 py-5 first:pt-0 last:pb-0">
-      {details?.lines.map((line) =>
-        line.product ? (
-          <EcommerceModuleProduct
-            key={line.id}
-            isServer={false}
-            variant="cart-default"
-            dataSource="props"
-            data={line.product}
+    <li className="min-w-0">
+      <EcommerceModuleOrder
+        isServer={false}
+        variant="cart-card-default"
+        dataSource="props"
+        data={props.ecommerceModuleOrder}
+        language={props.language}
+        cartDetails={details}
+        quantitySlots={
+          details &&
+          Object.fromEntries(
+            lines.map((line) => [
+              line.id,
+              <Quantity
+                key={line.id}
+                subjectId={props.subject.id}
+                orderId={props.ecommerceModuleOrder.id}
+                line={line}
+                maxLineQuantity={details.maxLineQuantity}
+                language={props.language}
+              />,
+            ]),
+          )
+        }
+        removeSlot={remove}
+        currencySlot={
+          <Currency
+            subject={props.subject}
+            ecommerceModuleOrder={props.ecommerceModuleOrder}
             language={props.language}
-          >
-            <Quantity
-              subjectId={props.subject.id}
-              orderId={props.ecommerceModuleOrder.id}
-              line={line}
-              maxLineQuantity={details.maxLineQuantity}
-              language={props.language}
-            />
-          </EcommerceModuleProduct>
-        ) : (
-          <p key={line.id}>Товар недоступен</p>
-        ),
-      )}
-      <div className="hidden">
-        <EcommerceModuleOrder
-          isServer={false}
-          variant="form-field-default"
-          dataSource="props"
-          data={props.ecommerceModuleOrder}
-          formFieldName={`ecommerceModule.orders.${props.index}.id`}
-          entityFieldName="id"
-          form={props.form}
-        />
-      </div>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Currency
-          subject={props.subject}
-          ecommerceModuleOrder={props.ecommerceModuleOrder}
-          language={props.language}
-        />
-        <Subject
-          isServer={false}
-          variant="ecommerce-module-order-delete-default"
-          data={props.subject}
-          ecommerceModuleOrder={props.ecommerceModuleOrder}
-          language="ru"
-          className="w-auto px-3"
-        />
-      </div>
+          />
+        }
+      />
     </li>
   );
 });

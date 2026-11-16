@@ -3,7 +3,6 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../service";
 import { getHttpErrorType } from "@sps/backend-utils";
-import { api as ecommerceModuleOrderApi } from "@sps/ecommerce/models/order/sdk/server";
 
 export class Handler {
   service: Service;
@@ -103,46 +102,26 @@ export class Handler {
       const ecommerceModuleOrderIds = subjectsToEcommerceModuleOrders.map(
         (link) => link.ecommerceModuleOrderId,
       );
-      const ecommerceModuleOrders = await ecommerceModuleOrderApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "id",
-                method: "inArray",
-                value: ecommerceModuleOrderIds,
-              },
-            ],
+      const ecommerceModuleOrders =
+        await this.service.ecommerceModule.order.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "id",
+                  method: "inArray",
+                  value: ecommerceModuleOrderIds,
+                },
+              ],
+            },
           },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
-      });
+        });
 
       if (!ecommerceModuleOrders?.length) {
         throw new Error("Not Found error. No ecommerce module orders found");
       }
 
       await this.service.deanonymize({ id, email: data.email });
-
-      if (data.comment !== undefined) {
-        for (const order of ecommerceModuleOrders) {
-          await ecommerceModuleOrderApi.update({
-            id: order.id,
-            data: { comment: data.comment },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                "Cache-Control": "no-store",
-              },
-            },
-          });
-        }
-      }
 
       const result = await this.service.ecommerceOrderCheckout({
         id,

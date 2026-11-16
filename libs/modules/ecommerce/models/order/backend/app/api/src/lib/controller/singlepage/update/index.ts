@@ -40,7 +40,7 @@ export class Handler {
 
       const data = JSON.parse(body["data"]);
 
-      let entity = await this.service.update({ id: uuid, data });
+      const entity = await this.service.update({ id: uuid, data });
 
       if (data.ordersToProducts) {
         const ordersToProducts = await this.service.ordersToProducts.find({
@@ -88,57 +88,38 @@ export class Handler {
         });
       }
 
-      if (entity?.status === "paid" && previousEntity?.status === "paying") {
-        const ordersToBillingModuleCurrencies =
-          await this.service.ordersToBillingModuleCurrencies.find({
-            params: {
-              filters: {
-                and: [
-                  {
-                    column: "orderId",
-                    method: "eq",
-                    value: uuid,
-                  },
-                ],
-              },
-            },
-          });
+      await this.onPaymentStatusUpdated({ previousEntity, entity });
 
-        if (!ordersToBillingModuleCurrencies?.length) {
-          throw new Error(
-            "Not Found error. Orders to billing module currencies not found",
-          );
-        }
+      return c.json({
+        data: entity,
+      });
+    } catch (error: any) {
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
+    }
+  }
 
-        const billingCurrencies =
-          await this.service.billingModule.currency.find({
-            params: {
-              filters: {
-                and: [
-                  {
-                    column: "id",
-                    method: "inArray",
-                    value: ordersToBillingModuleCurrencies.map(
-                      (order) => order.billingModuleCurrencyId,
-                    ),
-                  },
-                ],
-              },
-            },
-          });
-
-        if (!billingCurrencies?.length) {
-          throw new Error("Not Found error. Billing currencies not found");
-        }
-
-        const checkoutAttributesByCurrency =
-          await this.service.findByIdCheckoutAttributesByCurrency({
-            id: uuid,
-            billingModuleCurrencyId:
-              ordersToBillingModuleCurrencies[0].billingModuleCurrencyId,
-          });
-
-        const ordersToProducts = await this.service.ordersToProducts.find({
+  async onPaymentStatusUpdated({
+    previousEntity,
+    entity,
+  }: {
+    previousEntity: Awaited<ReturnType<Service["findById"]>>;
+    entity: Awaited<ReturnType<Service["findById"]>>;
+  }) {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Configuration error. RBAC secret key not found");
+    }
+    const uuid = entity?.id;
+    if (!uuid) {
+      return;
+    }
+    if (
+      entity?.status === "paid" &&
+      previousEntity &&
+      ["paying", "canceling", "canceled"].includes(previousEntity.status)
+    ) {
+      const ordersToBillingModuleCurrencies =
+        await this.service.ordersToBillingModuleCurrencies.find({
           params: {
             filters: {
               and: [
@@ -152,241 +133,277 @@ export class Handler {
           },
         });
 
-        if (!ordersToProducts?.length) {
-          throw new Error("Not Found error. Orders to products not found");
-        }
+      if (!ordersToBillingModuleCurrencies?.length) {
+        throw new Error(
+          "Not Found error. Orders to billing module currencies not found",
+        );
+      }
 
-        const products = await this.service.product.find({
+      const billingCurrencies = await this.service.billingModule.currency.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "id",
+                method: "inArray",
+                value: ordersToBillingModuleCurrencies.map(
+                  (order) => order.billingModuleCurrencyId,
+                ),
+              },
+            ],
+          },
+        },
+      });
+
+      if (!billingCurrencies?.length) {
+        throw new Error("Not Found error. Billing currencies not found");
+      }
+
+      const checkoutAttributesByCurrency =
+        await this.service.findByIdCheckoutAttributesByCurrency({
+          id: uuid,
+          billingModuleCurrencyId:
+            ordersToBillingModuleCurrencies[0].billingModuleCurrencyId,
+        });
+
+      const ordersToProducts = await this.service.ordersToProducts.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "orderId",
+                method: "eq",
+                value: uuid,
+              },
+            ],
+          },
+        },
+      });
+
+      if (!ordersToProducts?.length) {
+        throw new Error("Not Found error. Orders to products not found");
+      }
+
+      const products = await this.service.product.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "id",
+                method: "inArray",
+                value: ordersToProducts.map(
+                  (orderToProduct) => orderToProduct.productId,
+                ),
+              },
+            ],
+          },
+        },
+      });
+
+      if (!products?.length) {
+        throw new Error("Not Found error. Products not found");
+      }
+
+      const fileStorageReceiptTemplateFiles =
+        await this.service.fileStorageModule.file.find({
           params: {
             filters: {
               and: [
                 {
-                  column: "id",
-                  method: "inArray",
-                  value: ordersToProducts.map(
-                    (orderToProduct) => orderToProduct.productId,
-                  ),
+                  column: "variant",
+                  method: "ilike",
+                  value: "generate-template-ecommerce-order-receipt-",
                 },
               ],
             },
           },
         });
 
-        if (!products?.length) {
-          throw new Error("Not Found error. Products not found");
-        }
+      if (fileStorageReceiptTemplateFiles?.length) {
+        for (const fileStorageReceiptTemplateFile of fileStorageReceiptTemplateFiles) {
+          const receiptFile = await fileStorageFileApi.generate({
+            data: {
+              adminTitle: `Ecommerce Module | Order ${entity.id} | Receipt`,
+              generateData: {
+                variant: fileStorageReceiptTemplateFile.variant,
+                width: fileStorageReceiptTemplateFile.width,
+                height: fileStorageReceiptTemplateFile.height,
+                ecommerce: {
+                  order: {
+                    ...entity,
+                    checkoutAttributesByCurrency,
+                    ordersToProducts: ordersToProducts.map((orderToProduct) => {
+                      return {
+                        ...orderToProduct,
+                        product: products.find(
+                          (product) => product.id === orderToProduct.productId,
+                        ),
+                      };
+                    }),
+                    ordersToBillingModuleCurrencies:
+                      ordersToBillingModuleCurrencies.map(
+                        (orderToBillingModuleCurrency) => {
+                          return {
+                            ...orderToBillingModuleCurrency,
+                            billingModuleCurrency: billingCurrencies.find(
+                              (billingCurrency) =>
+                                billingCurrency.id ===
+                                orderToBillingModuleCurrency.billingModuleCurrencyId,
+                            ),
+                          };
+                        },
+                      ),
+                  },
+                },
+                fileStorage: {
+                  file: fileStorageReceiptTemplateFile,
+                },
+              },
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+            },
+          });
 
-        const fileStorageReceiptTemplateFiles =
+          await ordersToFileStorageModuleFilesApi.create({
+            data: {
+              orderId: uuid,
+              fileStorageModuleFileId: receiptFile.id,
+              variant: "receipt-default",
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+            },
+          });
+        }
+      }
+
+      const productsToFileStorageModuleFiles =
+        await this.service.productsToFileStorageModuleFiles.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "productId",
+                  method: "inArray",
+                  value: products.map((products) => products.id),
+                },
+                {
+                  column: "variant",
+                  method: "eq",
+                  value: "attachment-default",
+                },
+              ],
+            },
+          },
+        });
+
+      if (productsToFileStorageModuleFiles?.length) {
+        const fileStorageModuleFiles =
           await this.service.fileStorageModule.file.find({
             params: {
               filters: {
                 and: [
                   {
-                    column: "variant",
-                    method: "ilike",
-                    value: "generate-template-ecommerce-order-receipt-",
+                    column: "id",
+                    method: "inArray",
+                    value: productsToFileStorageModuleFiles.map(
+                      (productToFileStorageModuleFile) => {
+                        return productToFileStorageModuleFile.fileStorageModuleFileId;
+                      },
+                    ),
                   },
                 ],
               },
             },
           });
 
-        if (fileStorageReceiptTemplateFiles?.length) {
-          for (const fileStorageReceiptTemplateFile of fileStorageReceiptTemplateFiles) {
-            const receiptFile = await fileStorageFileApi.generate({
-              data: {
-                adminTitle: `Ecommerce Module | Order ${entity.id} | Receipt`,
-                generateData: {
-                  variant: fileStorageReceiptTemplateFile.variant,
-                  width: fileStorageReceiptTemplateFile.width,
-                  height: fileStorageReceiptTemplateFile.height,
-                  ecommerce: {
-                    order: {
-                      ...entity,
-                      checkoutAttributesByCurrency,
-                      ordersToProducts: ordersToProducts.map(
-                        (orderToProduct) => {
-                          return {
-                            ...orderToProduct,
-                            product: products.find(
-                              (product) =>
-                                product.id === orderToProduct.productId,
-                            ),
-                          };
-                        },
-                      ),
-                      ordersToBillingModuleCurrencies:
-                        ordersToBillingModuleCurrencies.map(
-                          (orderToBillingModuleCurrency) => {
+        if (fileStorageModuleFiles?.length) {
+          for (const fileStorageModuleFile of fileStorageModuleFiles) {
+            if (fileStorageModuleFile.variant === "default") {
+              await ordersToFileStorageModuleFilesApi.create({
+                data: {
+                  orderId: uuid,
+                  fileStorageModuleFileId: fileStorageModuleFile.id,
+                  variant: "attachment-default",
+                },
+                options: {
+                  headers: {
+                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                  },
+                },
+              });
+            } else if (
+              fileStorageModuleFile.variant.includes("generate-template-")
+            ) {
+              const generatedFile = await fileStorageFileApi.generate({
+                data: {
+                  generateData: {
+                    variant: fileStorageModuleFile.variant,
+                    width: fileStorageModuleFile.width,
+                    height: fileStorageModuleFile.height,
+                    ecommerce: {
+                      order: {
+                        ...entity,
+                        checkoutAttributesByCurrency,
+                        ordersToProducts: ordersToProducts.map(
+                          (orderToProduct) => {
                             return {
-                              ...orderToBillingModuleCurrency,
-                              billingModuleCurrency: billingCurrencies.find(
-                                (billingCurrency) =>
-                                  billingCurrency.id ===
-                                  orderToBillingModuleCurrency.billingModuleCurrencyId,
+                              ...orderToProduct,
+                              product: products.find(
+                                (product) =>
+                                  product.id === orderToProduct.productId,
                               ),
                             };
                           },
                         ),
-                    },
-                  },
-                  fileStorage: {
-                    file: fileStorageReceiptTemplateFile,
-                  },
-                },
-              },
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                },
-              },
-            });
-
-            await ordersToFileStorageModuleFilesApi.create({
-              data: {
-                orderId: uuid,
-                fileStorageModuleFileId: receiptFile.id,
-                variant: "receipt-default",
-              },
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                },
-              },
-            });
-          }
-        }
-
-        const productsToFileStorageModuleFiles =
-          await this.service.productsToFileStorageModuleFiles.find({
-            params: {
-              filters: {
-                and: [
-                  {
-                    column: "productId",
-                    method: "inArray",
-                    value: products.map((products) => products.id),
-                  },
-                  {
-                    column: "variant",
-                    method: "eq",
-                    value: "attachment-default",
-                  },
-                ],
-              },
-            },
-          });
-
-        if (productsToFileStorageModuleFiles?.length) {
-          const fileStorageModuleFiles =
-            await this.service.fileStorageModule.file.find({
-              params: {
-                filters: {
-                  and: [
-                    {
-                      column: "id",
-                      method: "inArray",
-                      value: productsToFileStorageModuleFiles.map(
-                        (productToFileStorageModuleFile) => {
-                          return productToFileStorageModuleFile.fileStorageModuleFileId;
-                        },
-                      ),
-                    },
-                  ],
-                },
-              },
-            });
-
-          if (fileStorageModuleFiles?.length) {
-            for (const fileStorageModuleFile of fileStorageModuleFiles) {
-              if (fileStorageModuleFile.variant === "default") {
-                await ordersToFileStorageModuleFilesApi.create({
-                  data: {
-                    orderId: uuid,
-                    fileStorageModuleFileId: fileStorageModuleFile.id,
-                    variant: "attachment-default",
-                  },
-                  options: {
-                    headers: {
-                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                    },
-                  },
-                });
-              } else if (
-                fileStorageModuleFile.variant.includes("generate-template-")
-              ) {
-                const generatedFile = await fileStorageFileApi.generate({
-                  data: {
-                    generateData: {
-                      variant: fileStorageModuleFile.variant,
-                      width: fileStorageModuleFile.width,
-                      height: fileStorageModuleFile.height,
-                      ecommerce: {
-                        order: {
-                          ...entity,
-                          checkoutAttributesByCurrency,
-                          ordersToProducts: ordersToProducts.map(
-                            (orderToProduct) => {
+                        ordersToBillingModuleCurrencies:
+                          ordersToBillingModuleCurrencies.map(
+                            (orderToBillingModuleCurrency) => {
                               return {
-                                ...orderToProduct,
-                                product: products.find(
-                                  (product) =>
-                                    product.id === orderToProduct.productId,
+                                ...orderToBillingModuleCurrency,
+                                billingModuleCurrency: billingCurrencies.find(
+                                  (billingCurrency) =>
+                                    billingCurrency.id ===
+                                    orderToBillingModuleCurrency.billingModuleCurrencyId,
                                 ),
                               };
                             },
                           ),
-                          ordersToBillingModuleCurrencies:
-                            ordersToBillingModuleCurrencies.map(
-                              (orderToBillingModuleCurrency) => {
-                                return {
-                                  ...orderToBillingModuleCurrency,
-                                  billingModuleCurrency: billingCurrencies.find(
-                                    (billingCurrency) =>
-                                      billingCurrency.id ===
-                                      orderToBillingModuleCurrency.billingModuleCurrencyId,
-                                  ),
-                                };
-                              },
-                            ),
-                        },
-                      },
-                      fileStorage: {
-                        file: fileStorageModuleFile,
                       },
                     },
-                  },
-                  options: {
-                    headers: {
-                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                    fileStorage: {
+                      file: fileStorageModuleFile,
                     },
                   },
-                });
+                },
+                options: {
+                  headers: {
+                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                  },
+                },
+              });
 
-                await ordersToFileStorageModuleFilesApi.create({
-                  data: {
-                    orderId: uuid,
-                    fileStorageModuleFileId: generatedFile.id,
-                    variant: "attachment-default",
+              await ordersToFileStorageModuleFilesApi.create({
+                data: {
+                  orderId: uuid,
+                  fileStorageModuleFileId: generatedFile.id,
+                  variant: "attachment-default",
+                },
+                options: {
+                  headers: {
+                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
                   },
-                  options: {
-                    headers: {
-                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                    },
-                  },
-                });
-              }
+                },
+              });
             }
           }
         }
       }
-
-      return c.json({
-        data: entity,
-      });
-    } catch (error: any) {
-      const { status, message, details } = getHttpErrorType(error);
-      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

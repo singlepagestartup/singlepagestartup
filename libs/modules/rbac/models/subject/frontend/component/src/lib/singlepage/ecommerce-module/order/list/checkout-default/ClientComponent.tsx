@@ -9,9 +9,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FormField } from "@sps/ui-adapter";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import type { ICartDetails } from "@sps/ecommerce/models/order/sdk/model";
+import { ReceiptEmail } from "../../checkout-default/ReceiptEmail";
+import { CheckoutForm } from "../../checkout-default/CheckoutForm";
 import { Component as Row } from "./Row";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { OrderComment } from "../../checkout-default/OrderComment";
+import { Delivery } from "./Delivery";
 import { useIsFetching, useIsMutating } from "@tanstack/react-query";
 import { route } from "@sps/rbac/models/subject/sdk/model";
 
@@ -25,18 +29,29 @@ const providers = [
 ] as const;
 
 export function Component(props: IComponentPropsExtended) {
+  return (
+    <Checkout
+      key={props.data.id}
+      data={props.data}
+      language={props.language}
+      variant={props.variant}
+      isServer={false}
+    />
+  );
+}
+
+function Checkout(props: IComponentPropsExtended) {
   const text =
     props.language === "ru"
       ? {
           invalidProvider: "Выберите способ оплаты.",
           invalidEmail: "Введите корректный email для чека.",
-          noOrders: "В корзине нет заказов для оформления.",
           paymentLinkError:
             "Не удалось получить ссылку на оплату. Попробуйте ещё раз.",
           checkoutError: "Не удалось оформить заказ. Попробуйте ещё раз.",
-          invalidForm: "Проверьте email для чека и данные заказа.",
           emptyCart: "В корзине пока нет товаров.",
           total: "Итого",
+          pricedItems: "Товары с ценой",
           unpriced:
             "У некоторых товаров нет цены. Удалите их из корзины перед оплатой.",
           invalidCurrency: "Выберите валюту оплаты для каждого заказа.",
@@ -49,12 +64,11 @@ export function Component(props: IComponentPropsExtended) {
       : {
           invalidProvider: "Choose a payment method.",
           invalidEmail: "Enter a valid email address for your receipt.",
-          noOrders: "There are no orders to check out.",
           paymentLinkError: "Could not get a payment link. Please try again.",
           checkoutError: "Could not place your order. Please try again.",
-          invalidForm: "Check your receipt email and order details.",
           emptyCart: "Your cart is empty.",
           total: "Total",
+          pricedItems: "Priced items",
           unpriced:
             "Some products have no price. Remove them from your cart before paying.",
           invalidCurrency: "Choose a payment currency for each order.",
@@ -78,19 +92,19 @@ export function Component(props: IComponentPropsExtended) {
         text.invalidProvider,
       ),
     email: z.string().trim().email(text.invalidEmail),
-    ecommerceModule: z.object({
-      orders: z
-        .array(
-          z.object({
-            id: z.string(),
-          }),
-        )
-        .min(1, text.noOrders),
-    }),
+    comment: z.string().trim().optional(),
   });
 
   const [paymentUrls, setPaymentUrls] = useState<string[]>([]);
   const [error, setError] = useState("");
+  const lifecycle = useRef<symbol | null>(null);
+  useEffect(() => {
+    const current = Symbol();
+    lifecycle.current = current;
+    return () => {
+      if (lifecycle.current === current) lifecycle.current = null;
+    };
+  }, []);
 
   const ecommerceModuleOrderCheckout = api.ecommerceModuleOrderCheckout({});
   const updatingCart =
@@ -111,40 +125,67 @@ export function Component(props: IComponentPropsExtended) {
     defaultValues: {
       provider: "stripe",
       email: "",
-      ecommerceModule: {
-        orders: [],
-      },
+      comment: "",
     },
   });
 
-  async function onSubmit(data: z.infer<typeof formSchema>) {
+  async function onSubmit(
+    data: z.infer<typeof formSchema>,
+    orders: { id: string }[],
+  ) {
+    const currentLifecycle = lifecycle.current;
+    if (!currentLifecycle) return;
     setError("");
-    ecommerceModuleOrderCheckout
-      .mutateAsync({
+    try {
+      const res = await ecommerceModuleOrderCheckout.mutateAsync({
         id: props.data.id,
-        data,
-      })
-      .then((res) => {
-        const paymentUrls = res.billingModule.invoices.map(
-          (invoice) => invoice.paymentUrl,
-        );
-        if (!paymentUrls.length || paymentUrls.some((url) => !url)) {
-          setError(text.paymentLinkError);
-          return;
-        }
-        if (paymentUrls.length > 1) {
-          setPaymentUrls(paymentUrls);
-        } else {
-          window.location.href = paymentUrls[0];
-        }
-      })
-      .catch((cause: unknown) =>
-        setError(
-          cause instanceof Error && cause.message
-            ? `${text.checkoutError} ${cause.message}`
-            : text.checkoutError,
-        ),
+        data: {
+          provider: data.provider,
+          email: data.email,
+          ...(data.comment ? { comment: data.comment } : {}),
+          ecommerceModule: { orders: orders.map(({ id }) => ({ id })) },
+        },
+      });
+      if (lifecycle.current !== currentLifecycle) return;
+      const paymentUrls = res.billingModule.invoices.map(
+        (invoice) => invoice.paymentUrl,
       );
+      if (!paymentUrls.length || paymentUrls.some((url) => !url)) {
+        setError(text.paymentLinkError);
+        return;
+      }
+      if (paymentUrls.length > 1) {
+        setPaymentUrls(paymentUrls);
+      } else {
+        window.location.href = paymentUrls[0];
+      }
+    } catch (cause) {
+      if (lifecycle.current !== currentLifecycle) return;
+      setError(
+        cause instanceof Error && cause.message
+          ? `${text.checkoutError} ${cause.message}`
+          : text.checkoutError,
+      );
+    }
+  }
+
+  if (paymentUrls.length) {
+    return (
+      <div className="flex flex-col gap-2 px-6 py-5">
+        {paymentUrls.map((paymentUrl) => (
+          <Button
+            key={paymentUrl}
+            variant="primary"
+            className="min-h-11 w-full shrink-0 rounded-xl"
+            asChild={true}
+          >
+            <Link href={paymentUrl} target="_blank">
+              {text.checkout}
+            </Link>
+          </Button>
+        ))}
+      </div>
+    );
   }
 
   return (
@@ -155,7 +196,7 @@ export function Component(props: IComponentPropsExtended) {
       data-variant={props.data.variant}
       {...form}
     >
-      <div className="flex h-full min-h-0 w-full flex-col">
+      <div className="flex h-full min-h-0 w-full flex-col overflow-y-auto">
         <Subject
           isServer={false}
           variant="ecommerce-module-order-list-default"
@@ -201,90 +242,89 @@ export function Component(props: IComponentPropsExtended) {
             }
             return (
               <>
-                <ul className="min-h-0 flex-1 divide-y divide-border overflow-y-auto px-6 py-6">
-                  {orders.map((order, index) => (
-                    <Row
-                      key={order.id}
-                      subject={props.data}
-                      ecommerceModuleOrder={order}
-                      index={index}
-                      form={form}
-                      language={props.language}
-                    />
-                  ))}
-                </ul>
-                <div className="shrink-0 space-y-3 border-t border-border px-6 py-5">
-                  <h3 className="text-sm font-medium text-muted-foreground">
-                    {text.total}
-                  </h3>
-                  {[...totals.values()].map((total) => (
-                    <p
-                      key={total.billingModuleCurrency.id}
-                      className="text-2xl font-semibold"
-                    >
-                      {new Intl.NumberFormat(
-                        props.language === "ru" ? "ru-RU" : "en-US",
-                        {
-                          maximumFractionDigits: 2,
-                        },
-                      ).format(total.total)}{" "}
-                      {total.billingModuleCurrency.symbol}
-                    </p>
-                  ))}
-                  {hasUnpriced && (
-                    <p role="alert" className="text-sm text-destructive">
-                      {text.unpriced}
-                    </p>
-                  )}
-                  {!hasUnpriced && hasInvalidCurrency && (
-                    <p role="alert" className="text-sm text-destructive">
-                      {text.invalidCurrency}
-                    </p>
-                  )}
-                  <FormField
-                    ui="shadcn"
-                    type="select"
-                    name="provider"
-                    form={form}
-                    label={text.provider}
-                    placeholder={text.providerPlaceholder}
-                    options={providers.map((provider) => [provider, provider])}
+                <div className="flex-1 px-4 py-5 sm:px-6 [@media(min-height:740px)]:min-h-36 [@media(min-height:740px)]:overflow-y-auto">
+                  <ul className="space-y-3">
+                    {orders.map((order) => (
+                      <Row
+                        key={order.id}
+                        subject={props.data}
+                        ecommerceModuleOrder={order}
+                        language={props.language}
+                      />
+                    ))}
+                  </ul>
+                </div>
+                <div className="shrink-0 space-y-4 border-t border-border bg-card px-4 py-4 sm:px-6 sm:py-5">
+                  <Delivery
+                    language={props.language}
+                    currencySlug={
+                      totals.size === 1
+                        ? totals.values().next().value?.billingModuleCurrency
+                            .slug
+                        : undefined
+                    }
                   />
-                  <FormField
-                    ui="shadcn"
-                    type="text"
-                    name="email"
+                  <CheckoutForm
+                    className="space-y-3"
+                    noValidate
                     form={form}
-                    label={text.email}
-                    placeholder="name@example.com"
-                  />
-                  {error && (
-                    <p role="alert" className="text-sm text-destructive">
-                      {error}
-                    </p>
-                  )}
-                  {paymentUrls.length ? (
-                    <div className="flex flex-col gap-2">
-                      {paymentUrls.map((paymentUrl, index) => {
-                        return (
-                          <Button
-                            key={index}
-                            variant="primary"
-                            className="flex min-h-11 w-full shrink-0 rounded-xl"
-                            asChild={true}
+                    onSubmit={form.handleSubmit(
+                      (values) => onSubmit(values, orders),
+                      () => setError(""),
+                    )}
+                  >
+                    <div className="flex flex-wrap items-baseline justify-between gap-2">
+                      <h3 className="text-base font-semibold">
+                        {hasUnpriced ? text.pricedItems : text.total}
+                      </h3>
+                      <div className="text-right tabular-nums">
+                        {[...totals.values()].map((total) => (
+                          <p
+                            key={total.billingModuleCurrency.id}
+                            className="text-2xl font-semibold"
                           >
-                            <Link href={paymentUrl} target="_blank">
-                              {text.checkout}
-                            </Link>
-                          </Button>
-                        );
-                      })}
+                            {new Intl.NumberFormat(
+                              props.language === "ru" ? "ru-RU" : "en-US",
+                              {
+                                maximumFractionDigits: 2,
+                              },
+                            ).format(total.total)}{" "}
+                            {total.billingModuleCurrency.symbol}
+                          </p>
+                        ))}
+                      </div>
                     </div>
-                  ) : (
+                    {hasUnpriced && (
+                      <p role="alert" className="text-sm text-destructive">
+                        {text.unpriced}
+                      </p>
+                    )}
+                    {!hasUnpriced && hasInvalidCurrency && (
+                      <p role="alert" className="text-sm text-destructive">
+                        {text.invalidCurrency}
+                      </p>
+                    )}
+                    <FormField
+                      ui="shadcn"
+                      type="select"
+                      name="provider"
+                      form={form}
+                      label={text.provider}
+                      placeholder={text.providerPlaceholder}
+                      options={providers.map((provider) => [
+                        provider,
+                        provider,
+                      ])}
+                    />
+                    <ReceiptEmail
+                      subject={props.data}
+                      form={form}
+                      label={text.email}
+                      placeholder="name@example.com"
+                    />
+                    <OrderComment form={form} language={props.language} />
                     <Button
-                      onClick={form.handleSubmit(onSubmit, () =>
-                        setError(text.invalidForm),
-                      )}
+                      type="submit"
                       variant="primary"
                       className="flex min-h-11 w-full shrink-0 rounded-xl"
                       disabled={
@@ -299,12 +339,17 @@ export function Component(props: IComponentPropsExtended) {
                         ? text.checkingOut
                         : text.checkout}
                     </Button>
-                  )}
+                  </CheckoutForm>
                 </div>
               </>
             );
           }}
         </Subject>
+        {error && (
+          <p role="alert" className="px-6 pb-5 text-sm text-destructive">
+            {error}
+          </p>
+        )}
       </div>
     </Form>
   );

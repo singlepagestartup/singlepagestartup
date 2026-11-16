@@ -32,15 +32,24 @@ const Placeholder = () => {
 };
 
 export const Component = (props: IComponentProps) => {
-  if (props.type === "text" || props.type === "password") {
+  if (
+    props.type === "text" ||
+    props.type === "email" ||
+    props.type === "password"
+  ) {
+    const value =
+      typeof props.field.value === "string" ? props.field.value : "";
     return (
       <FormControl>
         <Input
           placeholder={props.placeholder}
           disabled={props.disabled}
           {...props.field}
-          value={typeof props.field.value === "string" ? props.field.value : ""}
+          value={
+            props.type === "email" ? value || props.suggestedEmail || "" : value
+          }
           type={props.type}
+          autoComplete={props.type === "email" ? "email" : undefined}
           className={props.className}
         />
       </FormControl>

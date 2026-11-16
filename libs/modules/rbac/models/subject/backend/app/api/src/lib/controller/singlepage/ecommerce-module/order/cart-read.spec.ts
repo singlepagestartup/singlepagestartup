@@ -33,6 +33,8 @@ jest.mock("hono/jwt", () => ({
   verify: (...args: unknown[]) => verifyMock(...args),
 }));
 
+import { Service as OrderPurchaseDetails } from "../../../../service/startup/ecommerce/order/purchase-details";
+import type { IExecuteProps as IPurchaseDetailsProps } from "../../../../service/singlepage/ecommerce/order/purchase-details";
 import { Handler as ListHandler } from "./list";
 import { Handler as QuantityHandler } from "./quantity";
 import { Handler as TotalHandler } from "./total";
@@ -60,6 +62,12 @@ function createService() {
   return {
     orderFind,
     service: {
+      ecommerceModuleOrderPurchaseDetails(props: IPurchaseDetailsProps) {
+        return new OrderPurchaseDetails({ service: this }).execute(props);
+      },
+      ecommerceModuleOrderPurchasePayments: jest
+        .fn()
+        .mockResolvedValue({ retryableIds: new Set(), paymentUrls: new Map() }),
       subjectsToEcommerceModuleOrders: {
         find: jest
           .fn()
@@ -215,10 +223,48 @@ describe("Subject order history", () => {
     expect(orderFind).not.toHaveBeenCalled();
   });
 
+  it("exposes the existing invoice to the paying order owner without looking up receipt files", async () => {
+    const { service, orderFind } = createService();
+    const order = { id: "order-1", type: "history", status: "paying" };
+    orderFind.mockResolvedValue([order, { id: "foreign" }]);
+    const paymentUrl = "https://checkout.example/invoice-1";
+    service.ecommerceModuleOrderPurchasePayments.mockResolvedValue({
+      retryableIds: new Set([order.id]),
+      paymentUrls: new Map([[order.id, paymentUrl]]),
+    });
+    service.ecommerceModule.order.findByIdTotal.mockResolvedValue({
+      totals: [],
+      unpriced: [],
+    });
+    const result = await new ListHandler(service).execute(
+      createContext({
+        includePurchaseDetails: "true",
+        filters: { and: [{ column: "type", method: "eq", value: "history" }] },
+      }),
+      jest.fn(),
+    );
+    expect(service.ecommerceModuleOrderPurchasePayments).toHaveBeenCalledWith({
+      subjectId: "subject-1",
+      orders: [order],
+    });
+    expect(result).toEqual({
+      data: [
+        {
+          ...order,
+          purchaseDetails: {
+            canRepeatPayment: true,
+            paymentUrl,
+            totals: [],
+            receipts: [],
+          },
+        },
+      ],
+    });
+  });
   it("enriches only owned purchases with zero totals and linked receipt files", async () => {
     const { service, orderFind } = createService();
     orderFind.mockResolvedValue([
-      { id: "order-1", type: "history" },
+      { id: "order-1", type: "history", status: "paid" },
       { id: "foreign-order" },
     ]);
     const totals = [
@@ -234,7 +280,9 @@ describe("Subject order history", () => {
     service.ecommerceModule.ordersToFileStorageModuleFiles = {
       find: jest
         .fn()
-        .mockResolvedValue([{ fileStorageModuleFileId: "receipt" }]),
+        .mockResolvedValue([
+          { orderId: "order-1", fileStorageModuleFileId: "receipt" },
+        ]),
     };
     service.fileStorageModule = {
       file: {
@@ -265,7 +313,7 @@ describe("Subject order history", () => {
       params: {
         filters: {
           and: [
-            { column: "orderId", method: "eq", value: "order-1" },
+            { column: "orderId", method: "inArray", value: ["order-1"] },
             { column: "variant", method: "eq", value: "receipt-default" },
           ],
         },
@@ -276,7 +324,9 @@ describe("Subject order history", () => {
         {
           id: "order-1",
           type: "history",
+          status: "paid",
           purchaseDetails: {
+            canRepeatPayment: false,
             totals,
             receipts: [{ id: "receipt", file: "/receipt.pdf" }],
           },

@@ -13,4 +13,5 @@ export const fields = {
   subscriptionPeriodEndsAt: pgCore.timestamp("subscription_period_ends_at"),
   subscriptionPeriodInvoiceId: pgCore.uuid("subscription_period_invoice_id"),
   subscriptionRevokedAt: pgCore.timestamp("subscription_revoked_at"),
+  paymentFailureCanceledAt: pgCore.timestamp("payment_failure_canceled_at"),
 };

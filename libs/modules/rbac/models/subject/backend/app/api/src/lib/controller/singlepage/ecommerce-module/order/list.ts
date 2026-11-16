@@ -6,7 +6,6 @@ import { Service } from "../../../../service";
 import { withConsistencySnapshot } from "@sps/shared-backend-api";
 import type {
   IModel as IEcommerceModuleOrder,
-  IPurchaseDetails,
   ICartDetails,
 } from "@sps/ecommerce/models/order/sdk/model";
 
@@ -107,7 +106,9 @@ export class Handler {
           })[] = [];
           for (const order of ownedOrders) {
             // Defense against OR filters: private cart expansion never includes historical orders.
-            if (order.type !== "cart" || order.status !== "new") continue;
+            if (order.type !== "cart" || order.status !== "new") {
+              continue;
+            }
             const stores =
               await this.service.ecommerceModule.storesToOrders.find({
                 params: {
@@ -116,12 +117,14 @@ export class Handler {
                   },
                 },
               });
+            const cartDetails =
+              await this.service.ecommerceModule.order.findByIdCartDetails({
+                id: order.id,
+              });
             carts.push({
               ...order,
               cartDetails: {
-                ...(await this.service.ecommerceModule.order.findByIdCartDetails(
-                  { id: order.id },
-                )),
+                ...cartDetails,
                 storeIds: (stores ?? []).map(
                   (link: { storeId: string }) => link.storeId,
                 ),
@@ -130,59 +133,14 @@ export class Handler {
           }
           return c.json({ data: carts });
         }
-        if (!includePurchaseDetails) return c.json({ data: ownedOrders });
-        const purchases: (IEcommerceModuleOrder & {
-          purchaseDetails: IPurchaseDetails;
-        })[] = [];
-        for (const order of ownedOrders) {
-          const totals = await this.service.ecommerceModule.order.findByIdTotal(
-            { id: order.id },
-          );
-          const links =
-            await this.service.ecommerceModule.ordersToFileStorageModuleFiles.find(
-              {
-                params: {
-                  filters: {
-                    and: [
-                      { column: "orderId", method: "eq", value: order.id },
-                      {
-                        column: "variant",
-                        method: "eq",
-                        value: "receipt-default",
-                      },
-                    ],
-                  },
-                },
-              },
-            );
-          const receiptIds = (links || []).map(
-            (link) => link.fileStorageModuleFileId,
-          );
-          let files;
-          if (receiptIds.length) {
-            files = await this.service.fileStorageModule.file.find({
-              params: {
-                filters: {
-                  and: [{ column: "id", method: "inArray", value: receiptIds }],
-                },
-              },
-            });
-          } else {
-            files = [];
-          }
-          const receipts = receiptIds.flatMap((id) => {
-            const file = files?.find((file) => file.id === id);
-            return file ? [file] : [];
-          });
-          purchases.push({
-            ...order,
-            purchaseDetails: {
-              totals: totals.totals,
-              receipts,
-              ...(totals.unpriced.length ? { unpriced: totals.unpriced } : {}),
-            },
-          });
+        if (!includePurchaseDetails) {
+          return c.json({ data: ownedOrders });
         }
+        const purchases =
+          await this.service.ecommerceModuleOrderPurchaseDetails({
+            subjectId: id,
+            orders: ownedOrders,
+          });
         return c.json({ data: purchases });
       });
     } catch (error: any) {

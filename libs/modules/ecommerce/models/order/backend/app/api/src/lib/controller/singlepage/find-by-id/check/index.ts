@@ -3,9 +3,8 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../service";
 import { IModel as IOrder } from "@sps/ecommerce/models/order/sdk/model";
-import { api } from "@sps/ecommerce/models/order/sdk/server";
-import { api as billingModulePaymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
 import { getHttpErrorType } from "@sps/backend-utils";
+import { Handler as UpdateHandler } from "../../update";
 
 export const PAYMENT_INITIALIZATION_GRACE_PERIOD_MS = 5 * 60 * 1000;
 export const PAYMENT_EXPIRATION_PERIOD_MS = 7 * 24 * 60 * 60 * 1000;
@@ -43,12 +42,20 @@ export class Handler {
     return paymentIntents.filter((paymentIntent) => Boolean(paymentIntent));
   }
 
+  private async transitionPaymentStatus(order: IOrder, status: "canceling") {
+    await this.service.transitionPaymentStatus({
+      id: order.id,
+      status,
+      expectedStatus: order.status,
+      expectedUpdatedAt: order.updatedAt,
+    });
+  }
+
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
         throw new Error("Configuration error. RBAC secret key not found");
       }
-      const rbacSecretKey = RBAC_SECRET_KEY;
 
       const uuid = c.req.param("uuid");
 
@@ -64,213 +71,84 @@ export class Handler {
         throw new Error("Not Found error. Order not found");
       }
 
-      if (entity.status === "paying") {
+      const recoverablePaymentFailure =
+        entity.type === "history" &&
+        Boolean(entity.paymentFailureCanceledAt) &&
+        ["canceling", "canceled"].includes(entity.status) &&
+        !entity.subscriptionPeriodInvoiceId &&
+        !entity.subscriptionPeriodStartsAt &&
+        !entity.subscriptionPeriodEndsAt &&
+        !entity.subscriptionRevokedAt;
+
+      if (entity.status === "paying" || recoverablePaymentFailure) {
         const updatedAt = new Date(entity.updatedAt).getTime();
         const paymentInitializationExpired =
           updatedAt < Date.now() - PAYMENT_INITIALIZATION_GRACE_PERIOD_MS;
         const expiredPayment =
           updatedAt < Date.now() - PAYMENT_EXPIRATION_PERIOD_MS;
-
-        if (expiredPayment) {
-          await api.update({
-            id: uuid,
-            data: {
-              ...entity,
-              status: "canceling",
-              type: "history",
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        const orderIntents =
+          await this.service.ordersToBillingModulePaymentIntents.find({
+            params: {
+              filters: {
+                and: [{ column: "orderId", method: "eq", value: uuid }],
               },
             },
           });
-        } else {
-          const ordersToBillingModulePaymentIntents =
-            await this.service.ordersToBillingModulePaymentIntents.find({
-              params: {
-                filters: {
-                  and: [
-                    {
-                      column: "orderId",
-                      method: "eq",
-                      value: uuid,
-                    },
-                  ],
-                },
-              },
-            });
-
-          if (!ordersToBillingModulePaymentIntents?.length) {
-            if (paymentInitializationExpired) {
-              await api.update({
-                id: uuid,
-                data: {
-                  ...entity,
-                  status: "canceling",
-                  type: "history",
-                },
-                options: {
-                  headers: {
-                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                  },
-                },
-              });
-            }
-
-            return c.json({
-              data: {
-                ok: true,
-              },
+        const paymentIntents = await this.findPaymentIntentsByIds(
+          (orderIntents ?? []).map((link) => link.billingModulePaymentIntentId),
+        );
+        // Confirmation wins even after the recovery timeout or unpaid cleanup.
+        if (paymentIntents.some((intent) => intent.status === "succeeded")) {
+          const paid = await this.service.completePaymentStatus({
+            id: entity.id,
+            expectedStatus: entity.status,
+            expectedUpdatedAt: entity.updatedAt,
+            onPaymentSucceeded: (order) => this.onPaymentSucceeded({ order }),
+          });
+          if (paid) {
+            await new UpdateHandler(this.service).onPaymentStatusUpdated({
+              previousEntity: entity,
+              entity: paid,
             });
           }
-
-          const paymentIntents = await this.findPaymentIntentsByIds(
-            ordersToBillingModulePaymentIntents.map(
-              (order) => order.billingModulePaymentIntentId,
-            ),
-          );
-
-          if (!paymentIntents?.length) {
-            if (paymentInitializationExpired) {
-              await api.update({
-                id: uuid,
-                data: {
-                  ...entity,
-                  status: "canceling",
-                  type: "history",
-                },
-                options: {
-                  headers: {
-                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                  },
-                },
-              });
-            }
-
-            return c.json({
-              data: {
-                ok: true,
-              },
-            });
-          }
-
-          const paymentIntentIsSucceeded = paymentIntents.find(
-            (paymentIntent) => {
-              return paymentIntent.status === "succeeded";
-            },
-          );
-
-          if (paymentIntentIsSucceeded) {
-            await this.onPaymentSucceeded({ order: entity });
-
-            await api.update({
-              id: uuid,
-              data: {
-                ...entity,
-                status: "paid",
-                type: "history",
-              },
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                },
-              },
-            });
-
-            return c.json({
-              data: {
-                ok: true,
-              },
-            });
-          }
-
-          const paymentIntentIsFailed = paymentIntents.every(
-            (paymentIntent) => {
-              return ["failed", "canceled"].includes(paymentIntent.status);
-            },
-          );
-
-          if (paymentIntentIsFailed) {
-            await api.update({
-              id: uuid,
-              data: {
-                ...entity,
-                status: "canceling",
-                type: "history",
-              },
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                },
-              },
-            });
-
-            return c.json({
-              data: {
-                ok: true,
-              },
-            });
-          }
-
-          const paymentIntentsToInvoices =
-            await this.service.billingModule.paymentIntentsToInvoices.find({
-              params: {
-                filters: {
-                  and: [
-                    {
-                      column: "paymentIntentId",
-                      method: "inArray",
-                      value: paymentIntents.map(
-                        (paymentIntent) => paymentIntent.id,
-                      ),
-                    },
-                  ],
-                },
-              },
-            });
-
-          if (
-            paymentInitializationExpired &&
-            !paymentIntentsToInvoices?.length
-          ) {
-            await Promise.allSettled(
-              paymentIntents.map((paymentIntent) => {
-                return billingModulePaymentIntentApi.update({
-                  id: paymentIntent.id,
-                  data: {
-                    ...paymentIntent,
-                    status: "failed",
-                  },
-                  options: {
-                    headers: {
-                      "X-RBAC-SECRET-KEY": rbacSecretKey,
-                    },
-                  },
-                });
-              }),
+        } else if (entity.status === "paying") {
+          const allFailed =
+            paymentIntents.length > 0 &&
+            paymentIntents.every((intent) =>
+              ["failed", "canceled"].includes(intent.status),
             );
-
-            await api.update({
-              id: uuid,
-              data: {
-                ...entity,
-                status: "canceling",
-                type: "history",
-              },
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                },
-              },
-            });
+          if (expiredPayment || allFailed) {
+            await this.transitionPaymentStatus(entity, "canceling");
+          } else if (paymentInitializationExpired) {
+            const invoiceLinks = paymentIntents.length
+              ? await this.service.billingModule.paymentIntentsToInvoices.find({
+                  params: {
+                    filters: {
+                      and: [
+                        {
+                          column: "paymentIntentId",
+                          method: "inArray",
+                          value: paymentIntents.map((intent) => intent.id),
+                        },
+                      ],
+                    },
+                  },
+                })
+              : [];
+            if (!invoiceLinks?.length) {
+              await Promise.all(
+                paymentIntents.map((intent) =>
+                  this.service.billingModule.paymentIntent.failUninitializedPaymentIntent(
+                    intent.id,
+                    new Date(
+                      Date.now() - PAYMENT_INITIALIZATION_GRACE_PERIOD_MS,
+                    ),
+                  ),
+                ),
+              );
+              await this.transitionPaymentStatus(entity, "canceling");
+            }
           }
-
-          return c.json({
-            data: {
-              ok: true,
-            },
-          });
         }
       } else if (
         ["delivering", "requested_cancelation"].includes(entity.status)

@@ -24,6 +24,10 @@ export type TTypedProps =
       type: "text";
     }
   | {
+      type: "email";
+      suggestedEmail?: string;
+    }
+  | {
       type: "password";
     }
   | {

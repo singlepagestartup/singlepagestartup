@@ -47,6 +47,17 @@ export function action(props: IProps) {
       topics: Array.from(
         new Set([
           "ecommerce.orders",
+          ...(props.params?.includePurchaseDetails
+            ? [
+                "rbac.subjects-to-ecommerce-module-orders",
+                "ecommerce.orders-to-billing-module-payment-intents",
+                "billing.payment-intents",
+                "billing.payment-intents-to-invoices",
+                "billing.invoices",
+                "ecommerce.orders-to-file-storage-module-files",
+                "file-storage.files",
+              ]
+            : []),
           ...(props.params?.includeCartDetails
             ? [
                 "ecommerce.orders-to-products",

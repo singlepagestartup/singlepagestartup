@@ -27,6 +27,8 @@ export async function Component(props: IComponentPropsExtended) {
       children={props.children}
       totals={totals}
       totalsError={totalsError}
+      actions={props.actions}
+      footer={props.footer}
     />
   );
 }

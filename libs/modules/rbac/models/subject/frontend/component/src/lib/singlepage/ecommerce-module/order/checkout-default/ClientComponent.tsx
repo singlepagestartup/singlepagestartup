@@ -7,6 +7,9 @@ import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ReceiptEmail } from "./ReceiptEmail";
+import { CheckoutForm } from "./CheckoutForm";
+import { OrderComment } from "./OrderComment";
 import { FormField } from "@sps/ui-adapter";
 import { cn } from "@sps/shared-frontend-client-utils";
 
@@ -37,6 +40,7 @@ const formSchema = z.object({
       "Invalid provider",
     ),
   email: z.email(),
+  comment: z.string().trim().optional(),
   ecommerceModule: z.object({
     orders: z.array(
       z.object({
@@ -55,6 +59,7 @@ export function Component(props: IComponentPropsExtended) {
     defaultValues: {
       provider: "stripe",
       email: "",
+      comment: "",
       ecommerceModule: {
         orders: [
           {
@@ -65,12 +70,12 @@ export function Component(props: IComponentPropsExtended) {
     },
   });
 
-  async function onSubmit(data: z.infer<typeof formSchema>) {
+  async function onSubmit({ comment, ...data }: z.infer<typeof formSchema>) {
     setError("");
     try {
       const result = await ecommerceModuleOrderCheckout.mutateAsync({
         id: props.data.id,
-        data,
+        data: { ...data, ...(comment ? { comment } : {}) },
       });
       const paymentUrl = result.billingModule.invoices[0]?.paymentUrl;
       if (!paymentUrl)
@@ -106,7 +111,8 @@ export function Component(props: IComponentPropsExtended) {
         <summary className="cursor-pointer px-4 py-3 text-sm font-semibold">
           {props.language === "ru" ? "Оформить корзину" : "Checkout cart"}
         </summary>
-        <form
+        <CheckoutForm
+          form={form}
           onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-3 border-t border-border p-4"
         >
@@ -118,13 +124,12 @@ export function Component(props: IComponentPropsExtended) {
             placeholder="Select provider"
             options={providers.map((provider) => [provider, provider])}
           />
-          <FormField
-            ui="shadcn"
-            type="text"
-            name="email"
+          <ReceiptEmail
+            subject={props.data}
             form={form}
             placeholder="Email for invoice"
           />
+          <OrderComment form={form} language={props.language} />
           {error && (
             <p role="alert" className="text-sm text-destructive">
               {error}
@@ -140,7 +145,7 @@ export function Component(props: IComponentPropsExtended) {
               ? "Перейти к оплате"
               : "Continue to payment"}
           </Button>
-        </form>
+        </CheckoutForm>
       </details>
     </Form>
   );

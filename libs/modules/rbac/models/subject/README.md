@@ -28,6 +28,8 @@ former `ecommerce-module-product-cart-default` and
 compositions should select the corresponding `me` variant and pass
 `dataSource="props"` when they already own the current Subject.
 
+When a visitor signs in to an existing account by password, wallet, or OAuth, the API merges the open guest cart into the account cart using the visitor’s access token. The account cart keeps distinct products from both sessions. For a product in both carts, the most recently updated line supplies the quantity. An exact timestamp tie keeps the account line. History and orders with a payment attempt keep their owners.
+
 ### Duplicate products in an open cart
 
 The Subject order-create route permits one open cart Order per Product for that
@@ -164,6 +166,20 @@ The checkout sheet reads its lines with `includeCartDetails` on the Subject orde
 `POST /api/rbac/subjects/[rbac.subjects.id]/ecommerce-module/orders/checkout` and `POST /api/rbac/subjects/[rbac.subjects.id]/ecommerce-module/products/[ecommerce.products.id]/checkout` require an access token for the Subject in the URL. The browser sends the current Subject's token through the client SDK. The Agent's Telegram checkout callback signs a token for the user who pressed the button. Subscription renewal calls the product checkout service in-process.
 
 Order checkout selects the requested orders linked to that Subject through `subjects-to-ecommerce-module-orders`. The checkout skips deleted or foreign orders in a mixed request. If no matching order exists, it returns 404 before recording the email, updating comments or starting payment.
+
+In the cart and direct checkout forms, the receipt email defaults to an email linked to the current Subject. The buyer can edit it before submitting. Checkout sends the displayed address to the payment provider. An edited receipt address on a signed-in account does not change its login or add an identity.
+
+### Retry an unpaid order
+
+In **Account settings → Purchases**, the buyer can repeat an unpaid order. After confirmation, the Subject's open cart is replaced with the original products and quantities. Checkout uses current prices and lets the buyer choose a payment method. The original order and its invoices stay in history. An earlier payment still being processed by the provider may also settle.
+
+`POST /api/rbac/subjects/:id/ecommerce-module/orders/:orderId/repeat` takes the buyer's access token and returns `{ data: { orderIds: [...] } }`. The service locks the Subject and the affected orders, checks sole ownership and validates the lines, store and currency before replacing the cart in one transaction. A cart with a linked payment attempt is protected from replacement.
+
+The purchase history response includes `purchaseDetails.canRepeatPayment`. An unpaid history order may be `paying`, `canceling`, `canceled` or the legacy `failed`. A succeeded intent, a paid invoice or a recorded subscription period makes it ineligible. The repeat endpoint checks these conditions again before writing.
+
+Checkout claims the cart, prepares payment intents and links each intent to its orders in one Subject transaction. A failure during preparation rolls back that transaction. Provider calls start after commit. If a provider times out, the committed orders remain in history for reconciliation or retry. A subsequent cart replacement therefore keeps the buyer's latest selections.
+
+To resume an existing invoice, the server follows its links through Billing to every order it covers. Checkout returns the invoice only when the buyer selected the complete group. New subscriptions receive separate payment intents so each renewal can be stopped independently.
 
 ## Authentication API
 
@@ -598,6 +614,8 @@ The Agent runs the Subject order check regularly. Before granting a product role
 
 A confirmed one-off order moves from `paid` to `approving`. A subscription moves to `delivering` when its first period is accepted. Each renewal requires a newer paid Invoice on a successful intent for that order. A removed role stays revoked. An initial Free subscription uses the same payment check with its zero-amount settlement.
 
+Canceling an unpaid attempt preserves the Subject's existing role grants. When a paid subscription replaces another plan, the previous plan is marked for cancellation after the new plan's first paid period is accepted. Its existing paid period keeps its original end date.
+
 ### Recording an offline payment
 
 After verifying the payment, record the paid Invoice and its successful Payment Intent in Billing. The intent must be linked to the Order and its payment currency, with the amount and terms of that purchase. The Invoice must be linked to that intent. If the order already has these records, update their statuses. The regular order check can advance a paying order to `paid`, and the Subject check can then grant the purchase.
@@ -717,7 +735,7 @@ Public author URLs use `/authors/<Social Profile UUID>`. Social's `authors`, `au
 - `ecommerce-module-order-delete-default`: delete order action.
 - `ecommerce-module-order-checkout-default`: order checkout flow.
 - `ecommerce-module-order-list-default`: list orders for subject.
-- `me-ecommerce-module-order-list-ai-chat`: the current Subject’s paid purchase history and receipt links. The order collection accepts query filters; without filters it retains the active cart defaults (`type=cart`, `status=new`). Every collection result remains restricted to orders linked to the Subject.
+- `me-ecommerce-module-order-list-ai-chat`: the current Subject’s purchase history, receipt links and payment retry for eligible orders. The order collection accepts query filters. Without filters it returns the active cart (`type=cart`, `status=new`).
 - `ecommerce-module-order-list-orders-to-products-default`: list the lines of the subject's orders with their totals.
 - `ecommerce-module-order-list-checkout-default`: list orders in checkout context.
 - `ecommerce-module-order-list-quantity-default`: list order quantities.

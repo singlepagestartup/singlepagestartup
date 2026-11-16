@@ -3,6 +3,8 @@ import { injectFromBase, injectable } from "inversify";
 import {
   DatabaseRepository,
   trackRepositoryRead,
+  consistencyContext,
+  withConsistencyDatabase,
   type IRepository,
 } from "@sps/shared-backend-api";
 import { Table } from "@sps/ecommerce/models/order/backend/repository/database";
@@ -18,10 +20,33 @@ export interface ISubscriptionPeriodWrite {
   status: IOrder["status"];
 }
 
+export interface IPaymentStatusWrite {
+  before: IOrder;
+  status: "paid" | "canceling" | "canceled";
+}
+
 @injectable()
 @injectFromBase()
 export class Repository extends DatabaseRepository<typeof Table> {
-  async lockForLifecycle(props: { id: string }) {
+  withLifecycleLock<T>(
+    id: string,
+    operation: () => Promise<T>,
+    mode: "update" | "no key update" = "update",
+  ): Promise<T> {
+    const run = async () => {
+      await this.lockForLifecycle({ id, mode });
+      return operation();
+    };
+    if (consistencyContext.getStore()?.database) {
+      return run();
+    }
+    return this.db.transaction((tx) => withConsistencyDatabase(tx, run));
+  }
+
+  async lockForLifecycle(props: {
+    id: string;
+    mode?: "update" | "no key update";
+  }) {
     await trackRepositoryRead(Table, this.db, {
       and: [{ column: "id", method: "eq", value: props.id }],
     });
@@ -29,7 +54,7 @@ export class Repository extends DatabaseRepository<typeof Table> {
       .select({ id: Table.id })
       .from(Table)
       .where(eq(Table.id, props.id))
-      .for("update");
+      .for(props.mode ?? "update");
   }
   revokeSubscription(props: { id: string }) {
     return super.consumeFirstByField(
@@ -76,18 +101,19 @@ export class Repository extends DatabaseRepository<typeof Table> {
       },
     );
   }
-  private get protectedPeriodFields() {
+  private get protectedLifecycleFields() {
     return [
       "subscriptionPeriodStartsAt",
       "subscriptionPeriodEndsAt",
       "subscriptionPeriodInvoiceId",
       "subscriptionRevokedAt",
+      "paymentFailureCanceledAt",
     ] as const;
   }
 
   private writableData(data: Record<string, unknown>, record?: IOrder) {
     const writable = { ...data };
-    for (const field of this.protectedPeriodFields) {
+    for (const field of this.protectedLifecycleFields) {
       if (!(field in writable)) continue;
       const supplied = writable[field];
       const persisted = record?.[field] ?? null;
@@ -101,9 +127,14 @@ export class Repository extends DatabaseRepository<typeof Table> {
                 new Date(persisted).getTime());
       if (supplied !== undefined && !equal)
         throw new Error(
-          "Validation error. Subscription period fields are server managed",
+          "Validation error. Order lifecycle fields are server managed",
         );
       delete writable[field];
+    }
+    // An ordinary cancellation is an explicit instruction to stop delivery.
+    // Only the payment lifecycle capability preserves automatic failure recovery.
+    if (["canceling", "canceled"].includes(String(writable.status))) {
+      writable.paymentFailureCanceledAt = null;
     }
     return writable;
   }
@@ -140,6 +171,42 @@ export class Repository extends DatabaseRepository<typeof Table> {
     );
   }
 
+  writePaymentStatus({ before, status }: IPaymentStatusWrite) {
+    let paymentFailureCanceledAt = before.paymentFailureCanceledAt;
+    if (status === "paid") {
+      paymentFailureCanceledAt = null;
+    } else if (status === "canceling") {
+      const unfulfilled =
+        !before.subscriptionPeriodInvoiceId &&
+        !before.subscriptionPeriodStartsAt &&
+        !before.subscriptionPeriodEndsAt &&
+        !before.subscriptionRevokedAt;
+      paymentFailureCanceledAt = unfulfilled ? new Date() : null;
+    }
+    return super.consumeFirstByField(
+      "id",
+      before.id,
+      { status, type: "history", paymentFailureCanceledAt },
+      {
+        and: [
+          { column: "status", method: "eq", value: before.status },
+          { column: "updatedAt", method: "gte", value: before.updatedAt },
+          {
+            column: "updatedAt",
+            method: "lt",
+            value: new Date(new Date(before.updatedAt).getTime() + 1),
+          },
+          ...this.protectedLifecycleFields.map((column) => ({
+            column,
+            method:
+              before[column] == null ? ("isNull" as const) : ("eq" as const),
+            value: before[column],
+          })),
+        ],
+      },
+    );
+  }
+
   /** Internal capability; generic CRUD cannot write its protected columns. */
   writeSubscriptionPeriod(props: ISubscriptionPeriodWrite) {
     const and: NonNullable<
@@ -153,7 +220,7 @@ export class Repository extends DatabaseRepository<typeof Table> {
         method: "lt",
         value: new Date(new Date(props.before.updatedAt).getTime() + 1),
       },
-      ...this.protectedPeriodFields.map((column) => ({
+      ...this.protectedLifecycleFields.map((column) => ({
         column,
         method:
           props.before[column] == null ? ("isNull" as const) : ("eq" as const),

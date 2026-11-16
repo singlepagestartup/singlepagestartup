@@ -20,6 +20,7 @@ export interface IProps {
   data: {
     email: string;
     provider: string;
+    ecommerceModule: { orders: { id: string }[] };
     comment?: string;
   };
 }

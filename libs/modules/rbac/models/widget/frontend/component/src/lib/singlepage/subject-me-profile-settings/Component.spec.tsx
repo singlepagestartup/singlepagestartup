@@ -7,6 +7,7 @@
  */
 import { fireEvent, render, screen } from "@testing-library/react";
 const logout = jest.fn();
+const mockSubjectProps = jest.fn();
 jest.mock("client-only", () => ({}), { virtual: true });
 jest.mock("server-only", () => ({}), { virtual: true });
 jest.mock("next/navigation", () => ({
@@ -25,10 +26,12 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   api: { authenticationLogout: () => ({ mutate: logout }) },
 }));
 jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
-  Component: (props: any) =>
-    props.variant === "authentication-me-default"
+  Component: (props: any) => {
+    mockSubjectProps(props);
+    return props.variant === "authentication-me-default"
       ? props.children({ data: { id: "subject" }, authenticated: true })
-      : null,
+      : null;
+  },
 }));
 import { Component as Widget } from "@sps/rbac/models/widget/frontend/component";
 jest.mock("@sps/rbac/models/widget/frontend/component", () => ({
@@ -62,4 +65,25 @@ it("retains Russian in Data and privacy links and sign-out redirect", () => {
   expect(logout).toHaveBeenCalledWith({
     redirectTo: "/ru/rbac/subject/authentication/email-and-password",
   });
+});
+it("passes the authenticated Subject to purchase history without a second Subject reader", () => {
+  render(
+    <Widget
+      {...({
+        isServer: false,
+        variant: "subject-me-profile-settings",
+        language: "ru",
+        data: { id: "settings" },
+      } as any)}
+    />,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Покупки" }));
+  expect(mockSubjectProps).toHaveBeenLastCalledWith(
+    expect.objectContaining({
+      variant: "me-ecommerce-module-order-list-ai-chat",
+      isServer: false,
+      dataSource: "props",
+      data: { id: "subject" },
+    }),
+  );
 });

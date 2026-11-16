@@ -1009,7 +1009,7 @@ paths:
       tags:
         - "rbac-subject"
       summary: Checkout orders
-      description: Checkout all orders for a subject
+      description: Checkout the specified cart orders for the current subject
       parameters:
         - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
       requestBody:
@@ -1022,7 +1022,7 @@ paths:
                 data:
                   type: string
                   description: JSON string
-                  example: '{"email": "user@example.com", "provider": "stripe"}'
+                  example: '{"email": "user@example.com", "provider": "stripe", "ecommerceModule": {"orders": [{"id": "24de3713-5ad4-45f3-82e2-bcc631b9cd93"}]}}'
               required:
                 - data
       responses:

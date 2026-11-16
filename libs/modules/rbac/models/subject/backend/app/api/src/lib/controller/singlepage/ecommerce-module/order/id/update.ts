@@ -1,6 +1,5 @@
 import {
   ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds,
-  INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
   RBAC_JWT_SECRET,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
@@ -8,7 +7,6 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { authorization, getHttpErrorType, verifyJwt } from "@sps/backend-utils";
 import { Service } from "../../../../../service";
-import { api as ecommerceOrderApi } from "@sps/ecommerce/models/order/sdk/server";
 import { z } from "zod";
 
 export class Handler {
@@ -111,56 +109,15 @@ export class Handler {
         throw new Error("Not Found error. No entity found");
       }
 
-      await this.service.ecommerceModuleOrderAssertAccess({
+      await this.service.ecommerceModuleOrderMutateCart({
         subjectId: id,
         orderId,
-        lineIds: data.ordersToProducts.map((line: { id: string }) => line.id),
-      });
-
-      const order = await this.service.ecommerceModule.order.findById({
-        id: orderId,
-      });
-
-      if (!order) {
-        throw new Error("Not Found error. No order found");
-      }
-
-      if (order.status !== "new") {
-        throw new Error("Not Found error. Order is not in 'new' status");
-      }
-
-      const lines = await this.service.ecommerceModule.ordersToProducts.find({
-        params: {
-          filters: {
-            and: [{ column: "orderId", method: "eq", value: orderId }],
-          },
-        },
-      });
-      for (const line of lines) {
-        const product = await this.service.ecommerceModule.product.findById({
-          id: line.productId,
-        });
-        if (product?.slug === INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG)
-          throw new Error(
-            "Permission error. Initial Free cannot be changed through a cart",
-          );
-      }
-
-      await ecommerceOrderApi.update({
-        id: orderId,
-        data: {
-          ordersToProducts: data.ordersToProducts.map(
-            (line: { id: string; quantity: number }) => ({
-              id: line.id,
-              quantity: line.quantity,
-            }),
-          ),
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
+        lines: data.ordersToProducts.map(
+          (line: { id: string; quantity: number }) => ({
+            id: line.id,
+            quantity: line.quantity,
+          }),
+        ),
       });
 
       return c.json({

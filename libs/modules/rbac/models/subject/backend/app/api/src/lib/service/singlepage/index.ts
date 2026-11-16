@@ -1,4 +1,9 @@
 import type { Service as SecurityNotifications } from "./security-notifications";
+import { Service as MutateCart } from "../startup/ecommerce/order/mutate-cart";
+import type { IExecuteProps as IMutateCartProps } from "./ecommerce/order/mutate-cart";
+import { Service as MergeGuestCart } from "../startup/ecommerce/order/merge-guest-cart";
+import { Service as RepeatOrder } from "../startup/ecommerce/order/repeat";
+import type { IExecuteProps as IRepeatOrderProps } from "./ecommerce/order/repeat";
 import { Service as CreateCartOrder } from "../startup/ecommerce/order/create";
 import type { IExecuteProps as ICreateCartOrderProps } from "./ecommerce/order/create";
 import { Service as FindOpenCartOrderWithProduct } from "../startup/ecommerce/order/find-open-cart-order-with-product";
@@ -7,6 +12,10 @@ import { Service as SetOrderCurrency } from "../startup/ecommerce/order/set-curr
 import type { IExecuteProps as ISetOrderCurrencyProps } from "./ecommerce/order/set-currency";
 import { Service as ResolveOrderCurrency } from "../startup/ecommerce/order/resolve-currency";
 import type { IExecuteProps as IResolveOrderCurrencyProps } from "./ecommerce/order/resolve-currency";
+import { Service as OrderPurchaseDetails } from "../startup/ecommerce/order/purchase-details";
+import type { IExecuteProps as IOrderPurchaseDetailsProps } from "./ecommerce/order/purchase-details";
+import { Service as RetryableOrderIds } from "../startup/ecommerce/order/retryable-ids";
+import type { IExecuteProps as IRetryableOrderIdsProps } from "./ecommerce/order/retryable-ids";
 import { Service as FreezeSubscriptionPeriod } from "../startup/ecommerce/order/freeze-subscription-period";
 import type { IExecuteProps as IFreezeSubscriptionPeriodProps } from "./ecommerce/order/freeze-subscription-period";
 import { Service as ChatParticipants } from "../startup/social-module/chat/participants";
@@ -255,6 +264,20 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return revocation;
   }
 
+  async ecommerceModuleOrderMutateCart(props: IMutateCartProps) {
+    return new MutateCart({
+      repository: this.repository,
+      service: this,
+    }).execute(props);
+  }
+
+  async ecommerceModuleOrderRepeat(props: IRepeatOrderProps) {
+    return new RepeatOrder({
+      repository: this.repository,
+      service: this,
+    }).execute(props);
+  }
+
   async ecommerceModuleOrderCreate(props: ICreateCartOrderProps) {
     return new CreateCartOrder({
       repository: this.repository,
@@ -276,6 +299,24 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       ecommerceModule: this.ecommerceModule,
       billingModule: this.billingModule,
     }).execute(props);
+  }
+
+  async ecommerceModuleOrderRetryableIds(props: IRetryableOrderIdsProps) {
+    return new RetryableOrderIds(this).execute(props);
+  }
+
+  async ecommerceModuleOrderPurchaseDetails(props: IOrderPurchaseDetailsProps) {
+    return new OrderPurchaseDetails({ service: this }).execute(props);
+  }
+
+  async ecommerceModuleOrderPurchasePayments(
+    props: IRetryableOrderIdsProps & { subjectId: string },
+  ) {
+    return new RetryableOrderIds(this).purchasePayments(props);
+  }
+
+  async ecommerceModuleOrderSettledIds(props: { orderIds: string[] }) {
+    return new RetryableOrderIds(this).settledIds(props);
   }
 
   async ecommerceModuleOrderSetCurrency(props: ISetOrderCurrencyProps) {
@@ -449,26 +490,36 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }).execute(props);
   }
 
-  async authenticationLoginAndPassowrd(
-    props: IAuthenticationEmailAndPasswordExecuteProps,
-  ) {
+  async authenticationLoginAndPassowrd({
+    guestToken,
+    ...props
+  }: IAuthenticationEmailAndPasswordExecuteProps & { guestToken?: string }) {
     const authentication = await new AuthenticationEmailAndPassword(
       this.repository,
     ).execute(props);
 
-    const result = await this.completeUserAuthentication(authentication);
+    const result = await this.completeUserAuthentication(
+      authentication,
+      guestToken,
+    );
 
     return result;
   }
 
-  async authenticationEthereumVirtualMachine(
-    props: IAuthenticationEthereumVirtualMachineExecuteProps,
-  ) {
+  async authenticationEthereumVirtualMachine({
+    guestToken,
+    ...props
+  }: IAuthenticationEthereumVirtualMachineExecuteProps & {
+    guestToken?: string;
+  }) {
     const authentication = await new AuthenticationEthereumVirtualMachine(
       this.repository,
     ).execute(props);
 
-    const result = await this.completeUserAuthentication(authentication);
+    const result = await this.completeUserAuthentication(
+      authentication,
+      guestToken,
+    );
 
     return result;
   }
@@ -483,14 +534,18 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return new AuthenticationOAuthCallback(this.repository).execute(props);
   }
 
-  async authenticationOAuthExchange(
-    props: IAuthenticationOAuthExchangeExecuteProps,
-  ) {
+  async authenticationOAuthExchange({
+    guestToken,
+    ...props
+  }: IAuthenticationOAuthExchangeExecuteProps & { guestToken?: string }) {
     const authentication = await new AuthenticationOAuthExchange(
       this.repository,
     ).execute(props);
 
-    const result = await this.completeUserAuthentication(authentication);
+    const result = await this.completeUserAuthentication(
+      authentication,
+      guestToken,
+    );
 
     return result;
   }
@@ -547,6 +602,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
   protected async completeUserAuthentication<T extends { jwt: string }>(
     result: T,
+    guestToken?: string,
   ): Promise<T> {
     if (!RBAC_JWT_SECRET)
       throw new Error("Configuration error. RBAC_JWT_SECRET not set");
@@ -558,6 +614,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       );
     await this.socialModuleProfileOwnershipEnsure({ subjectId });
     await this.freeSubscriptionEnsure({ subjectId });
+    if (guestToken) {
+      await new MergeGuestCart(this).execute({ subjectId, guestToken });
+    }
     return result;
   }
 
@@ -632,6 +691,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
   async ecommerceOrderCheckout(props: IEcommerceOrderCheckoutExecuteProps) {
     return new EcommerceOrderCheckout({
+      repository: this.repository,
+      settledOrderIds: (input) => this.ecommerceModuleOrderSettledIds(input),
       findById: ({ id }) => this.findById({ id }),
       ecommerceModule: this.ecommerceModule,
       billingModule: this.billingModule,

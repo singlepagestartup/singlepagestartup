@@ -10,7 +10,7 @@
  * Then: unauthorized users do not see cart UI, while authorized users see sheet and quantity badge behavior.
  */
 
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 
 let authSubject: any = { id: "subject-1" };
 let quantityValue: number | null = 0;
@@ -18,17 +18,6 @@ let quantityValue: number | null = 0;
 jest.mock("lucide-react", () => ({
   ShoppingCart: () => <svg data-testid="cart-icon" />,
   X: () => <svg />,
-}));
-
-jest.mock("@sps/shared-ui-shadcn", () => ({
-  Sheet: ({ children }: any) => <div>{children}</div>,
-  SheetTrigger: ({ children }: any) => <div>{children}</div>,
-  Portal: ({ children }: any) => <div>{children}</div>,
-  Overlay: () => null,
-  SheetContent: ({ children }: any) => <div>{children}</div>,
-  SheetTitle: ({ children }: any) => <div>{children}</div>,
-  SheetDescription: ({ children }: any) => <div>{children}</div>,
-  Close: ({ children }: any) => <button>{children}</button>,
 }));
 
 jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
@@ -91,7 +80,19 @@ describe("Given: me ecommerce cart widget", () => {
 
     expect(screen.queryByTestId("cart-icon")).not.toBeNull();
     expect(screen.queryByText("3")).not.toBeNull();
+    const trigger = screen.getByRole("button", { name: "Open cart" });
+    fireEvent.click(trigger);
+    const dialog = screen.getByRole("dialog", { name: "Cart" });
+    const close = within(dialog).getByRole("button", { name: "Close cart" });
+    expect(
+      close
+        .closest("header")
+        ?.contains(within(dialog).getByRole("heading", { name: "Cart" })),
+    ).toBe(true);
+    expect(within(dialog).getAllByRole("button")).toHaveLength(1);
     expect(screen.getByTestId("checkout-panel").dataset.source).toBe("props");
+    fireEvent.click(close);
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
 
   it("When: auth subject exists and quantity is zero Then: quantity badge is hidden", () => {

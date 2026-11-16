@@ -49,9 +49,11 @@ const sheetVariants = cva(
 );
 
 interface SheetContentProps
-  extends React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content>,
+  extends
+    React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content>,
     VariantProps<typeof sheetVariants> {
   closeLabel?: string;
+  showCloseButton?: boolean;
 }
 
 const SheetContent = React.forwardRef<
@@ -59,7 +61,14 @@ const SheetContent = React.forwardRef<
   SheetContentProps
 >(
   (
-    { side = "right", className, children, closeLabel = "Close", ...props },
+    {
+      side = "right",
+      className,
+      children,
+      closeLabel = "Close",
+      showCloseButton = true,
+      ...props
+    },
     ref,
   ) => (
     <SheetPortal>
@@ -69,10 +78,12 @@ const SheetContent = React.forwardRef<
         className={cn(sheetVariants({ side }), className)}
         {...props}
       >
-        <SheetPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
-          <X className="h-4 w-4" />
-          <span className="sr-only">{closeLabel}</span>
-        </SheetPrimitive.Close>
+        {showCloseButton && (
+          <SheetPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
+            <X className="h-4 w-4" />
+            <span className="sr-only">{closeLabel}</span>
+          </SheetPrimitive.Close>
+        )}
         {children}
       </SheetPrimitive.Content>
     </SheetPortal>

@@ -4,6 +4,7 @@ import { Component as ClientComponent } from "./ClientComponent";
 export function Component(props: IComponentPropsExtended) {
   return (
     <ClientComponent
+      key={props.data.id}
       isServer={props.isServer}
       variant={props.variant}
       className={props.className}

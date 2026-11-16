@@ -500,6 +500,23 @@ describe("durable subscription grant revocation", () => {
       "invoice-b",
     );
   });
+
+  it.each(["one_off", "subscription"])(
+    "preserves existing Roles when canceling an unfulfilled %s purchase",
+    async (type) => {
+      const { service, order, grants } = lifecycle("canceling", true, false);
+      order().checkoutAttributesByCurrency.type = type;
+      const revoke = jest.fn();
+      service.ecommerceModule.order.revokeSubscription = revoke;
+      await service.execute({ subjectId: "subject" });
+      expect(order().status).toBe("canceled");
+      expect(grants()).toEqual([
+        { id: "grant", roleId: "subscriber", subjectId: "subject" },
+      ]);
+      expect(revoke).not.toHaveBeenCalled();
+      expect(mockSubjectsToRolesDelete).not.toHaveBeenCalled();
+    },
+  );
   it("credits a newly accepted paid Pro cycle once and retains existing purchased tokens", async () => {
     const { service, order } = lifecycle("delivering", true);
     (service.collectTopupCurrencies as jest.Mock).mockResolvedValue([
@@ -686,6 +703,8 @@ function createService(props?: {
         find: ecommerceModuleOrderFind,
         findByIdExtended: jest.fn(),
         lockForLifecycle: async () => undefined,
+        hasSharedSubscriptionRenewal: jest.fn().mockResolvedValue(false),
+        stopSubscriptionRenewal: jest.fn().mockResolvedValue(undefined),
         update: (...args: unknown[]) => mockEcommerceOrderUpdate(...args),
       },
     } as any,
@@ -725,6 +744,285 @@ function createService(props?: {
     subjectsToEcommerceModuleOrdersFind,
   };
 }
+
+describe("settled subscription retry cycles", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date("2026-10-23T10:00:00Z"));
+  });
+  afterEach(() => jest.useRealTimers());
+
+  function cycles(sharedOrderId?: string) {
+    const { service } = createService();
+    const orders = new Map<string, any>();
+    for (const [id, createdAt] of [
+      ["original", "2026-10-21T10:00:00Z"],
+      ["retry", "2026-10-22T10:00:00Z"],
+    ]) {
+      orders.set(id, {
+        id,
+        createdAt: new Date(createdAt),
+        updatedAt: new Date(createdAt),
+        type: "history",
+        status: "paid",
+        subscriptionPeriodInvoiceId: null,
+        subscriptionPeriodStartsAt: null,
+        subscriptionPeriodEndsAt: null,
+        checkoutAttributesByCurrency: {
+          type: "subscription",
+          interval: "day",
+          amount: 100,
+        },
+        ordersToProducts: [
+          {
+            productId: "pro",
+            quantity: 1,
+            product: { id: "pro", productsToAttributes: [] },
+          },
+        ],
+        ordersToFileStorageModuleFiles: [],
+        ordersToBillingModulePaymentIntents: [
+          {
+            billingModulePaymentIntent: {
+              id: `${id}-intent`,
+              type: "one_off",
+              amount: 100,
+              status: "succeeded",
+              paymentIntentsToCurrencies: [{ currency: { id: "money" } }],
+              paymentIntentsToInvoices: [
+                {
+                  invoice: {
+                    id: `${id}-invoice`,
+                    status: "paid",
+                    provider: "dummy",
+                    amount: 100,
+                    createdAt: new Date(createdAt),
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      });
+    }
+    const matches = (row: any, props: any) =>
+      (props?.params?.filters?.and ?? []).every((filter: any) => {
+        const value = row[filter.column];
+        if (filter.method === "eq") {
+          return value === filter.value;
+        }
+        if (filter.method === "inArray") {
+          return filter.value.includes(value);
+        }
+        if (filter.method === "isNull") {
+          return value == null;
+        }
+        if (filter.method === "isNotNull") {
+          return value != null;
+        }
+        if (filter.method === "gt") {
+          return value > filter.value;
+        }
+        return true;
+      });
+    const owners = Array.from(orders.keys()).map((id) => ({
+      subjectId: "subject",
+      ecommerceModuleOrderId: id,
+    }));
+    service.subjectsToEcommerceModuleOrders.find = jest.fn(
+      async (props) => owners.filter((row) => matches(row, props)) as any,
+    );
+    service.ecommerceModule.order.find = jest.fn(async (props) =>
+      Array.from(orders.values()).filter((row) => matches(row, props)),
+    );
+    service.ecommerceModule.order.findById = jest.fn(async ({ id }) =>
+      orders.get(id),
+    );
+    service.ecommerceModule.order.findByIdExtended = jest.fn(async ({ id }) =>
+      orders.get(id),
+    );
+    service.ecommerceModule.order.update = jest.fn(async ({ id, data }) => {
+      const next = { ...orders.get(id), ...data };
+      orders.set(id, next);
+      return next;
+    });
+    service.ecommerceModule.order.hasSharedSubscriptionRenewal = jest.fn(
+      async ({ id }) => id === sharedOrderId,
+    );
+    const period = new PeriodService({
+      findByIdExtended: async ({ id }) => orders.get(id),
+      findById: async ({ id }) => orders.get(id),
+      writeSubscriptionPeriod: async ({
+        id,
+        before,
+        startsAt,
+        endsAt,
+        invoiceId,
+        status,
+      }) => {
+        if (
+          before.subscriptionPeriodInvoiceId !==
+          orders.get(id).subscriptionPeriodInvoiceId
+        ) {
+          return undefined;
+        }
+        const next = {
+          ...orders.get(id),
+          subscriptionPeriodStartsAt: startsAt,
+          subscriptionPeriodEndsAt: endsAt,
+          subscriptionPeriodInvoiceId: invoiceId,
+          status,
+        };
+        orders.set(id, next);
+        return next;
+      },
+    });
+    service.ecommerceModule.order.assertSubscriptionPayment = (props) =>
+      period.assertPayment(props);
+    service.ecommerceModule.order.acceptSubscriptionPeriod = (props) =>
+      period.execute(props);
+    let grants: any[] = [];
+    service.subjectsToRoles.find = jest.fn(async () => grants);
+    service.subjectsToRoles.create = jest.fn(async ({ data }) => {
+      const grant = { id: "grant", ...data };
+      grants.push(grant);
+      return grant as any;
+    });
+    service.rolesToEcommerceModuleProducts.find = jest
+      .fn()
+      .mockResolvedValue([
+        { ecommerceModuleProductId: "pro", roleId: "subscriber" },
+      ]);
+    let balance: any;
+    service.subjectsToBillingModuleCurrencies.find = jest.fn(async () =>
+      balance ? [balance] : [],
+    );
+    service.subjectsToBillingModuleCurrencies.create = jest.fn(
+      async ({ data }) => {
+        balance = { id: "balance", ...data };
+        return balance;
+      },
+    );
+    service.subjectsToBillingModuleCurrencies.updateAmountIfUnchanged = jest.fn(
+      async ({ amount }) => {
+        balance = { ...balance, amount };
+        return balance;
+      },
+    );
+    jest.spyOn(service, "collectTopupCurrencies").mockResolvedValue([
+      {
+        billingModuleCurrencyId: "token",
+        billingModuleCurrency: { id: "token" } as any,
+        amount: "5000",
+      },
+    ]);
+    jest.spyOn(service, "notifyAdmin").mockResolvedValue(undefined);
+    jest.spyOn(service, "notifyOrderOwner").mockResolvedValue(undefined);
+    const fulfill = (id: string) =>
+      service.fromPaidStatus({
+        order: orders.get(id),
+        extendedOrder: orders.get(id),
+        subjectToEcommerceModuleOrder: {
+          subjectId: "subject",
+          ecommerceModuleOrderId: id,
+        },
+      });
+    return {
+      service,
+      orders,
+      fulfill,
+      balance: () => balance,
+      grants: () => grants,
+    };
+  }
+
+  it.each([
+    ["original", "retry"],
+    ["retry", "original"],
+  ])(
+    "accounts for both paid invoices when %s settles before %s",
+    async (first, second) => {
+      const f = cycles();
+      await f.fulfill(first);
+      await f.fulfill(second);
+      await f.service.execute({ subjectId: "subject" });
+      await f.fulfill(first);
+      await f.fulfill(second);
+      expect(f.grants()).toHaveLength(1);
+      expect(f.balance().amount).toBe("10000");
+      expect(f.orders.get("original")).toMatchObject({
+        status: "requested_cancelation",
+        subscriptionPeriodInvoiceId: "original-invoice",
+        subscriptionPeriodEndsAt: new Date("2026-10-24T10:00:00Z"),
+      });
+      expect(f.orders.get("retry")).toMatchObject({
+        status: "delivering",
+        subscriptionPeriodInvoiceId: "retry-invoice",
+        subscriptionPeriodEndsAt: new Date("2026-10-24T10:00:00Z"),
+      });
+      expect(
+        f.service.ecommerceModule.order.stopSubscriptionRenewal,
+      ).toHaveBeenCalledWith({ id: "original" });
+      expect(mockSubjectProductCheckout).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(["expired", "delivered"])(
+    "stops the older contract even when local coverage has ended (%s)",
+    async (status) => {
+      const f = cycles();
+      await f.fulfill("original");
+      const original = f.orders.get("original");
+      original.status = status;
+      original.subscriptionPeriodEndsAt = new Date(Date.now() - 1000);
+      original.ordersToBillingModulePaymentIntents[0].billingModulePaymentIntent.type =
+        "subscription";
+      original.ordersToBillingModulePaymentIntents[0].billingModulePaymentIntent.paymentIntentsToInvoices[0].invoice.provider =
+        "stripe";
+      await f.fulfill("retry");
+      expect(f.orders.get("original").status).toBe("canceling");
+      expect(f.orders.get("retry").status).toBe("delivering");
+      expect(
+        f.service.ecommerceModule.order.stopSubscriptionRenewal,
+      ).toHaveBeenCalledWith({ id: "original" });
+      expect(f.grants()).toHaveLength(1);
+      expect(f.balance().amount).toBe("10000");
+    },
+  );
+
+  it("keeps a legacy shared recurring contract and stops the independent retry", async () => {
+    const f = cycles("original");
+    await f.fulfill("retry");
+    await f.fulfill("original");
+    expect(f.orders.get("original").status).toBe("delivering");
+    expect(f.orders.get("retry").status).toBe("requested_cancelation");
+    expect(
+      f.service.ecommerceModule.order.stopSubscriptionRenewal,
+    ).toHaveBeenCalledWith({ id: "retry" });
+    expect(
+      f.service.ecommerceModule.order.stopSubscriptionRenewal,
+    ).not.toHaveBeenCalledWith({ id: "original" });
+    expect(f.balance().amount).toBe("10000");
+  });
+
+  it("retries a failed provider cancellation without repeating paid value", async () => {
+    const f = cycles();
+    await f.fulfill("original");
+    (
+      f.service.ecommerceModule.order.stopSubscriptionRenewal as jest.Mock
+    ).mockRejectedValueOnce(new Error("Provider unavailable"));
+    await f.fulfill("retry");
+    expect(f.orders.get("original").status).toBe("requested_cancelation");
+    expect(f.balance().amount).toBe("10000");
+    await f.service.execute({ subjectId: "subject" });
+    expect(
+      f.service.ecommerceModule.order.stopSubscriptionRenewal,
+    ).toHaveBeenCalledTimes(2);
+    expect(f.balance().amount).toBe("10000");
+    expect(f.grants()).toHaveLength(1);
+  });
+});
 
 describe("Given: unscoped RBAC ecommerce order proceed execution", () => {
   beforeEach(() => {

@@ -127,6 +127,6 @@ package. See the [shadcn introduction](https://ui.shadcn.com/docs).
 
 `DialogContent` and `SheetContent` accept an optional `closeLabel` for the hidden
 close-button text. The default remains `Close`; portal, focus, dismissal and
-Radix props keep their existing contracts. The cart uses `SheetContent` with a
-Russian label and local layout classes. This extension needs to be retained or
-reconciled when importing a new upstream version.
+Radix props keep their existing contracts. The cart sets `showCloseButton={false}`
+on `SheetContent` and places a localized `SheetClose` beside its title. Preserve
+both options when updating the upstream components.

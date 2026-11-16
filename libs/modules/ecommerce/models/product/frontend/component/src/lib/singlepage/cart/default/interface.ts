@@ -8,16 +8,18 @@ import { ReactNode } from "react";
 
 export const variant = "cart-default" as const;
 
-export interface IComponentProps
-  extends IParentComponentProps<IModel, typeof variant> {
+export interface IComponentProps extends IParentComponentProps<
+  IModel,
+  typeof variant
+> {
   language: string;
+  priceSlot?: ReactNode;
   middleSlot?: ReactNode;
   children?: ReactNode;
 }
 
-export interface IComponentPropsExtended
-  extends IParentComponentPropsExtended<
-    IModel,
-    typeof variant,
-    IComponentProps
-  > {}
+export interface IComponentPropsExtended extends IParentComponentPropsExtended<
+  IModel,
+  typeof variant,
+  IComponentProps
+> {}

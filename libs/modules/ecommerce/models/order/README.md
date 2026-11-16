@@ -19,6 +19,9 @@ Orders store cart and checkout information, including status and metadata.
 - `subscriptionPeriodInvoiceId`: nullable accepted paid Invoice anchor.
 - `subscriptionRevokedAt`: nullable server time of explicit Role revocation;
   ordinary updates cannot set or clear it.
+- `paymentFailureCanceledAt`: nullable server time identifying an automatic
+  unpaid-payment cancellation. Ordinary writes cannot set it; an explicit
+  cancellation clears it.
 
 ## Subscription delivery period
 
@@ -39,6 +42,21 @@ unrelated Order update do not change the deadline. Access expires at
 deadline. Explicit Role deletion stamps `subscriptionRevokedAt` on affected
 owned subscription Orders. Proceed, repeated paid transitions, recreated Roles
 and automatic renewal cannot restore those Orders.
+
+When an original checkout and its retry both settle for the same Product,
+Proceed accepts each Order's Invoice and configured Token allocation once.
+Each Order keeps its own paid period; those periods may overlap and are not
+combined into consecutive months. The newest accepted Order by creation time,
+then ID, keeps renewal. The older Order requests cancellation and retains its
+paid access until its original deadline. Settlement order and repeated checks
+do not change that selection.
+
+A legacy provider-managed Payment Intent shared by several Orders keeps renewal
+so cancellation cannot stop other Products. An independent retry requests
+cancellation instead. New subscription checkouts use one Payment Intent per
+Order. Two legacy shared contracts cannot be split automatically; their
+cancellation fails explicitly for operator reconciliation. Provider cancellation
+runs after delivery commits, and pending requests retry through Proceed.
 
 Extended Order reads preserve existing payment terms when a Product's prices
 or offered currencies change. The latest paid Invoice on a successful Payment
@@ -80,6 +98,7 @@ does not change the period.
 
 - `default`: order card wrapper with header and child content.
 - `cart-default`: cart layout showing products, quantities, and totals. Pass the owner-scoped lines as `ordersToProducts` in customer views. Standalone use reads the lines with the permissions of the caller.
+- `cart-card-default` displays a cart order from the Subject’s loaded `cartDetails`. Pass the order with `dataSource="props"`, quantity controls keyed by line ID, and currency and removal controls as JSX slots. A grouped order shows its subtotal and removal action once.
 - `orders-to-products-quantity-default`: renders quantities from order-product relations.
 - `purchase-ai-chat`: purchase history row. The shared record reader loads the
   Order; local `client.tsx`/`server.tsx` readers load SDK totals and pass typed
@@ -134,4 +153,26 @@ separate checkout validation; an omitted cart amount is not a zero-price grant.
 
 The payment check route uses `controller/startup/find-by-id/check/index.ts`. Override its protected `onPaymentSucceeded({ order })` method to run project logic before persisting `paid`. The default hook does nothing. A failed hook leaves the order in `paying`, so a subsequent check can repeat the operation. Use idempotent SDK operations and keep payment confirmation independent of notification delivery.
 
+The checker locks and re-reads the Order before invoking the hook. Concurrent
+checks cannot invoke it after another check succeeds or explicit cancellation
+wins. The hook runs inside the Order transaction; use local services for work
+in that transaction. A hook must not update its own locked Order through
+self-HTTP, because that separate request waits for the hook's transaction.
+The payment lock permits a separate request to create a child relation that
+references the Order without updating it.
+Receipts and attachments run after the paid transition commits.
+
 Runtime SDK create calls generate IDs. For partial retries, find an existing side effect by a stable unique key, such as a slug, and use the returned ID in relations. Include all required relation fields when updating a link.
+
+Automatic payment failures retain `paymentFailureCanceledAt` through
+`canceling` and `canceled`. A later confirmed payment advances that unfulfilled,
+unrevoked Order to `paid` through the normal check, including the project hook,
+receipts and fulfillment. Confirmation takes precedence over the recovery
+timeout. Conditional status writes preserve a concurrent explicit cancellation
+or completed delivery. The scheduled checker scans these marked failures in a
+separate bounded queue that rotates by ID. Explicit cancellations and legacy
+unmarked canceled Orders require reconciliation; their cancellation cause
+cannot be inferred from payment status alone.
+Scheduled deletion retains marked payment failures and Orders with payment
+links, and rechecks status under the lifecycle lock before deleting an old
+unpaid cancellation.

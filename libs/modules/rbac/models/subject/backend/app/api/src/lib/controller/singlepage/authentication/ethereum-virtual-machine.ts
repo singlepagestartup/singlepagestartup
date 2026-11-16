@@ -1,7 +1,7 @@
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
-import { getHttpErrorType } from "@sps/backend-utils";
+import { authorization, getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -21,6 +21,7 @@ export class Handler {
       const data = JSON.parse(body["data"]);
 
       const entity = await this.service.authenticationEthereumVirtualMachine({
+        guestToken: authorization(c),
         data,
       });
 

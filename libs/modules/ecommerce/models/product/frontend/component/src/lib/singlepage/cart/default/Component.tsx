@@ -21,66 +21,75 @@ export const Component = memo(function Component(
       data-model="product"
       data-id={props.data.id}
       data-variant={props.variant}
-      className={cn("flex w-full min-w-0 flex-col gap-3", props.className)}
+      className={cn(
+        "grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-3 sm:gap-4",
+        props.className,
+      )}
     >
-      <div className="flex min-w-0 items-start gap-4">
-        <div className="size-20 shrink-0 overflow-hidden rounded-xl bg-muted [&_[data-model=file]]:size-full [&_img]:size-full [&_img]:object-cover">
-          <ProductsToFileStorageModuleFiles
-            isServer={props.isServer}
-            variant="find"
-            apiProps={{
-              params: {
-                filters: {
-                  and: [
-                    { column: "productId", method: "eq", value: props.data.id },
-                    { column: "variant", method: "eq", value: "default" },
-                  ],
-                },
-                orderBy: {
-                  and: [
-                    { column: "orderIndex", method: "asc" },
-                    { column: "id", method: "asc" },
-                  ],
-                },
-                limit: 1,
+      <div className="size-14 overflow-hidden rounded-xl bg-muted sm:size-16 [&_[data-model=file]]:size-full [&_img]:size-full [&_img]:object-cover">
+        <ProductsToFileStorageModuleFiles
+          isServer={props.isServer}
+          variant="find"
+          apiProps={{
+            params: {
+              filters: {
+                and: [
+                  { column: "productId", method: "eq", value: props.data.id },
+                  { column: "variant", method: "eq", value: "default" },
+                ],
               },
-            }}
-          >
-            {({ data: links }) =>
-              links?.length ? (
-                links.map((link) => (
-                  <ProductsToFileStorageModuleFiles
-                    key={link.id}
-                    isServer={props.isServer}
-                    variant="default"
-                    dataSource="props"
-                    data={link}
-                    language={props.language}
-                  />
-                ))
-              ) : (
-                <span className="grid size-full place-items-center text-muted-foreground">
-                  <Icon name="file-text" size={24} />
-                </span>
-              )
-            }
-          </ProductsToFileStorageModuleFiles>
-        </div>
-        <h3 className="min-w-0 flex-1 wrap-break-word text-base font-semibold leading-snug">
-          <Link
-            href={href}
-            className="rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
-          >
-            {props.data.title?.[props.language] ||
-              props.data.title?.en ||
-              props.data.slug}
-          </Link>
-        </h3>
+              orderBy: {
+                and: [
+                  { column: "orderIndex", method: "asc" },
+                  { column: "id", method: "asc" },
+                ],
+              },
+              limit: 1,
+            },
+          }}
+        >
+          {({ data: links }) =>
+            links?.length ? (
+              links.map((link) => (
+                <ProductsToFileStorageModuleFiles
+                  key={link.id}
+                  isServer={props.isServer}
+                  variant="default"
+                  dataSource="props"
+                  data={link}
+                  language={props.language}
+                />
+              ))
+            ) : (
+              <span className="grid size-full place-items-center bg-primary-foreground text-primary">
+                <Icon name="package" size={24} />
+              </span>
+            )
+          }
+        </ProductsToFileStorageModuleFiles>
       </div>
-      {props.middleSlot}
-      {props.children ? (
-        <div className="min-w-0 space-y-3">{props.children}</div>
-      ) : null}
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+          <h3 className="min-w-0 flex-1 basis-28 wrap-anywhere text-base font-semibold leading-snug tracking-tight">
+            <Link
+              href={href}
+              className="rounded hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+            >
+              {props.data.title?.[props.language] ||
+                props.data.title?.en ||
+                props.data.slug}
+            </Link>
+          </h3>
+          {props.priceSlot}
+        </div>
+        {props.data.type === "subscription" && (
+          <p className="mt-1 text-xs text-muted-foreground">
+            {props.language === "ru" ? "Подписка" : "Subscription"}
+          </p>
+        )}
+        {props.middleSlot}
+        {props.children && <div className="mt-2 min-w-0">{props.children}</div>}
+      </div>
     </article>
   );
 });

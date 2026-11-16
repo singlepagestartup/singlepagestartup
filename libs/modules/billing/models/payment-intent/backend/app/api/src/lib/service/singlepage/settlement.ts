@@ -16,6 +16,11 @@ export interface IExecuteProps {
   }) => void;
 }
 
+export type IExpireProps = { invoiceId: string } & (
+  | { provider: string | null; expiresBefore: Date; providerId?: never }
+  | { provider: "stripe"; providerId: string; expiresBefore?: never }
+);
+
 interface IConstructorProps {
   repository: Pick<Repository, "withPaymentIntentLocks">;
   service: Pick<PaymentIntentService, "findById" | "update" | "billingModule">;
@@ -155,15 +160,41 @@ export class Service {
     });
   }
 
-  expire(props: {
+  async closeStripePaymentPage(props: {
     invoiceId: string;
-    provider: string | null;
-    expiresBefore: Date;
-  }): Promise<void> {
+    providerId: string;
+  }) {
+    const { service } = this.dependencies;
+    return this.withInvoice(
+      { ...props, provider: "stripe" },
+      async (invoice) => {
+        if (
+          invoice.providerId !== props.providerId ||
+          invoice.status !== "open" ||
+          !invoice.paymentUrl
+        ) {
+          return invoice;
+        }
+        const updated = await service.billingModule.invoice.update({
+          id: invoice.id,
+          data: { ...invoice, paymentUrl: "" },
+        });
+        if (!updated) {
+          throw new Error("Not Found error. Invoice not found");
+        }
+        return updated;
+      },
+    );
+  }
+
+  expire(props: IExpireProps): Promise<void> {
     const { service } = this.dependencies;
     return this.withInvoice(props, async (invoice, intents) => {
       if (
-        new Date(invoice.createdAt) >= props.expiresBefore ||
+        (props.provider === "stripe" &&
+          (!props.providerId || props.providerId !== invoice.providerId)) ||
+        (props.expiresBefore &&
+          new Date(invoice.createdAt) >= props.expiresBefore) ||
         ["paid", "canceled"].includes(invoice.status) ||
         intents.some(
           (intent) =>

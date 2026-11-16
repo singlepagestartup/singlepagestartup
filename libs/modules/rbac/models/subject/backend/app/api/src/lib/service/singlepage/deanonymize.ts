@@ -58,9 +58,8 @@ export class Service {
       },
     });
 
-    let identities;
     if (subjectsToIdentities?.length) {
-      identities = await this.identity.find({
+      const identities = await this.identity.find({
         params: {
           filters: {
             and: [
@@ -69,44 +68,43 @@ export class Service {
                 method: "inArray",
                 value: subjectsToIdentities.map((item) => item.identityId),
               },
-              {
-                column: "email",
-                method: "eq",
-                value: props.email,
-              },
             ],
           },
         },
       });
-    } else {
-      identities = [];
+      if (
+        identities?.some(
+          (identity) =>
+            identity.provider !== "email" || identity.email === props.email,
+        )
+      ) {
+        return entity;
+      }
     }
 
-    if (!identities?.length) {
-      const identity = await identityApi.create({
-        data: {
-          email: props.email,
-          provider: "email",
+    const identity = await identityApi.create({
+      data: {
+        email: props.email,
+        provider: "email",
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
         },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
+      },
+    });
 
-      await subjectsToIdentitiesApi.create({
-        data: {
-          subjectId: props.id,
-          identityId: identity.id,
+    await subjectsToIdentitiesApi.create({
+      data: {
+        subjectId: props.id,
+        identityId: identity.id,
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
         },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
-    }
+      },
+    });
 
     return entity;
   }

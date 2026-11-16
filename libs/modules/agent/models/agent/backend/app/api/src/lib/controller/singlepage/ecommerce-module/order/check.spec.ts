@@ -104,4 +104,70 @@ describe("Given: agent ecommerce order check execution", () => {
       },
     });
   });
+
+  it("rotates automatic failure recovery independently of a full current-order batch", async () => {
+    const failed = Array.from(
+      { length: ECOMMERCE_ORDER_CHECK_BATCH_LIMIT + 1 },
+      (_, index) => ({
+        id: `failed-${String(index).padStart(3, "0")}`,
+        status: "canceled",
+        type: "history",
+        paymentFailureCanceledAt: "2026-11-16T00:00:00Z",
+      }),
+    );
+    const find = jest.fn().mockImplementation(async ({ params }) => {
+      const recovery = params.filters.and.some(
+        (filter: any) => filter.column === "paymentFailureCanceledAt",
+      );
+      if (!recovery) {
+        return Array.from(
+          { length: ECOMMERCE_ORDER_CHECK_BATCH_LIMIT },
+          (_, index) => ({ id: `paying-${index}` }),
+        );
+      }
+      const after = params.filters.and.find(
+        (filter: any) => filter.column === "id",
+      )?.value;
+      return failed
+        .filter((order) => !after || order.id > after)
+        .slice(0, params.limit);
+    });
+    const service = { ecommerceModule: { order: { find } } } as any;
+    await new Handler(service).execute(createContext(), undefined);
+    expect(mockEcommerceOrderCheck).not.toHaveBeenCalledWith(
+      expect.objectContaining({ id: failed.at(-1)!.id }),
+    );
+    mockEcommerceOrderCheck.mockClear();
+    await new Handler(service).execute(createContext(), undefined);
+    expect(mockEcommerceOrderCheck).toHaveBeenCalledWith(
+      expect.objectContaining({ id: failed.at(-1)!.id }),
+    );
+    expect(find).toHaveBeenLastCalledWith({
+      params: {
+        filters: {
+          and: [
+            { column: "type", method: "eq", value: "history" },
+            {
+              column: "status",
+              method: "inArray",
+              value: ["canceling", "canceled"],
+            },
+            {
+              column: "paymentFailureCanceledAt",
+              method: "isNotNull",
+              value: null,
+            },
+            { column: "id", method: "gt", value: failed[99].id },
+          ],
+        },
+        limit: ECOMMERCE_ORDER_CHECK_BATCH_LIMIT,
+        orderBy: { and: [{ column: "id", method: "asc" }] },
+      },
+    });
+    mockEcommerceOrderCheck.mockClear();
+    await new Handler(service).execute(createContext(), undefined);
+    expect(mockEcommerceOrderCheck).toHaveBeenCalledWith(
+      expect.objectContaining({ id: failed[0].id }),
+    );
+  });
 });

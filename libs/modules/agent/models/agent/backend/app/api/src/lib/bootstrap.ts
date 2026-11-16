@@ -1,4 +1,6 @@
 import { app as broadcastChannelApp } from "@sps/broadcast/models/channel/backend/app/api";
+import { app as ecommerceOrderApp } from "@sps/ecommerce/models/order/backend/app/api";
+import type { Service as EcommerceOrderService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service";
 import type { Service as BroadcastChannelService } from "@sps/broadcast/models/channel/backend/app/api/src/lib/service";
 import { Container, ContainerModule } from "inversify";
 import {
@@ -69,8 +71,6 @@ import { Repository as RbacSubjectsToRolesRepository } from "@sps/rbac/relations
 import { Configuration as RbacSubjectsToRolesConfiguration } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/configuration";
 import { Repository as RbacRolesToEcommerceModuleProductsRepository } from "@sps/rbac/relations/roles-to-ecommerce-module-products/backend/app/api/src/lib/repository";
 import { Configuration as RbacRolesToEcommerceModuleProductsConfiguration } from "@sps/rbac/relations/roles-to-ecommerce-module-products/backend/app/api/src/lib/configuration";
-import { Repository as EcommerceOrderRepository } from "@sps/ecommerce/models/order/backend/app/api/src/lib/repository";
-import { Configuration as EcommerceOrderConfiguration } from "@sps/ecommerce/models/order/backend/app/api/src/lib/configuration";
 import { Repository as EcommerceProductRepository } from "@sps/ecommerce/models/product/backend/app/api/src/lib/repository";
 import { Configuration as EcommerceProductConfiguration } from "@sps/ecommerce/models/product/backend/app/api/src/lib/configuration";
 import { Repository as EcommerceAttributeRepository } from "@sps/ecommerce/models/attribute/backend/app/api/src/lib/repository";
@@ -228,9 +228,7 @@ const bindings = new ContainerModule(({ bind }) => {
   bind<IEcommerceModule>(AgentDI.IEcommerceModule)
     .toDynamicValue(() => {
       return {
-        order: new CRUDService<any>(
-          new EcommerceOrderRepository(new EcommerceOrderConfiguration()),
-        ),
+        order: ecommerceOrderApp.controller.service as EcommerceOrderService,
         product: new CRUDService<any>(
           new EcommerceProductRepository(new EcommerceProductConfiguration()),
         ),

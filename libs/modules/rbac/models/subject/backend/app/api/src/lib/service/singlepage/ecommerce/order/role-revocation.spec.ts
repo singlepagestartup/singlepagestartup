@@ -99,3 +99,18 @@ it("allows verified completed one-off fulfillment", async () => {
     }),
   ).toBe(true);
 });
+
+it.each(["canceling", "canceled"])(
+  "rejects Role removal for an unfulfilled %s purchase",
+  async (status) => {
+    const { orders, revocation } = fixture();
+    orders.get("matching").status = status;
+    expect(
+      await revocation.canFulfill(grant, {
+        id: "grant",
+        subjectId: "subject",
+        orderId: "matching",
+      }),
+    ).toBe(false);
+  },
+);

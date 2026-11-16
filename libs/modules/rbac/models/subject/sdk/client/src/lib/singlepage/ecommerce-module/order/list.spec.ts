@@ -59,4 +59,28 @@ describe("Subject order collection cache", () => {
       source: "purchases",
     });
   });
+  it("refreshes purchase payment eligibility when Billing changes", () => {
+    action({
+      id: "subject",
+      params: { includePurchaseDetails: true },
+      reactQueryOptions: {
+        meta: { topics: ["custom.purchase"], source: "purchases" },
+      },
+    });
+    const { meta } = mockUseQuery.mock.calls[0][0];
+    expect(meta.source).toBe("purchases");
+    expect(meta.topics).toEqual(
+      expect.arrayContaining([
+        "ecommerce.orders",
+        "rbac.subjects-to-ecommerce-module-orders",
+        "ecommerce.orders-to-billing-module-payment-intents",
+        "billing.payment-intents",
+        "billing.payment-intents-to-invoices",
+        "billing.invoices",
+        "ecommerce.orders-to-file-storage-module-files",
+        "file-storage.files",
+        "custom.purchase",
+      ]),
+    );
+  });
 });

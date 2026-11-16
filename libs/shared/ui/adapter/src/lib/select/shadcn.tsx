@@ -11,6 +11,7 @@ export const Component = forwardRef<HTMLButtonElement, IComponentProps>(
       ui,
       id,
       className,
+      contentClassName,
       placeholder,
       options,
       "aria-label": ariaLabel,
@@ -53,7 +54,10 @@ export const Component = forwardRef<HTMLButtonElement, IComponentProps>(
             align="start"
             sideOffset={6}
             collisionPadding={12}
-            className="z-50 max-h-[var(--radix-select-content-available-height)] w-[var(--radix-select-trigger-width)] overflow-hidden rounded-lg border border-border bg-card font-default text-foreground shadow-md"
+            className={cn(
+              "z-50 max-h-[var(--radix-select-content-available-height)] w-[var(--radix-select-trigger-width)] overflow-hidden rounded-lg border border-border bg-card font-default text-foreground shadow-md",
+              contentClassName,
+            )}
           >
             <SelectPrimitive.ScrollUpButton className="flex h-7 items-center justify-center">
               <Icon name="caret-down" className="rotate-180" />
