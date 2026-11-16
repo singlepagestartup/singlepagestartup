@@ -79,3 +79,8 @@ RBAC может использовать Social и Ecommerce; Ecommerce не и�
 Local PostgreSQL and HTTP test listeners require network access outside the sandbox.
 After an EPERM or local connection failure, rerun the same scoped verification with
 the required access. Keep the repository configuration and test endpoint unchanged.
+
+For local CLI and test subprocesses, prepend the project's `node_modules/.bin`
+to PATH. The installed project Bun 1.4.4 supports the current Undici dependency;
+system Bun 1.3.6 does not. Scripts outside the checkout additionally need
+`--tsconfig-override tsconfig.base.json` for DI decorator metadata.

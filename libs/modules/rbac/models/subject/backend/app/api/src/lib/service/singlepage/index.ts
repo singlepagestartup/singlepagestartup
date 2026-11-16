@@ -2,6 +2,8 @@ import type { IContext as IRenewalCheckoutContext } from "./ecommerce/order/reso
 import { Service as ResolveEcommerceProfile } from "../startup/ecommerce/order/resolve-profile";
 import { Service as MergeGuestCart } from "../startup/ecommerce/order/merge-guest-cart";
 import { Service as CompleteCartHandoff } from "../startup/ecommerce/order/complete-cart-handoff";
+import { Service as RepeatOrder } from "../startup/ecommerce/order/repeat";
+import type { IExecuteProps as IRepeatOrderProps } from "./ecommerce/order/repeat";
 import { Service as SubjectsToBillingModulePaymentIntentsService } from "@sps/rbac/relations/subjects-to-billing-module-payment-intents/backend/app/api/src/lib/service";
 import type { Service as SecurityNotifications } from "./security-notifications";
 import { Service as CreateCartOrder } from "../startup/ecommerce/order/create";
@@ -292,6 +294,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
   async ecommerceModuleOrderCreate(props: ICreateCartOrderProps) {
     return new CreateCartOrder({
+      repository: this.repository,
+      service: this,
+    }).execute(props);
+  }
+
+  async ecommerceModuleOrderRepeat(props: IRepeatOrderProps) {
+    return new RepeatOrder({
       repository: this.repository,
       service: this,
     }).execute(props);

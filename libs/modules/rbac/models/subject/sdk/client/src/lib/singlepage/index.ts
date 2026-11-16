@@ -148,6 +148,11 @@ import {
   type IResult as IEcommerceModuleOrderCreateResult,
 } from "./ecommerce-module/order/create";
 import {
+  action as ecommerceModuleOrderRepeat,
+  type IProps as IEcommerceModuleOrderRepeatProps,
+  type IResult as IEcommerceModuleOrderRepeatResult,
+} from "./ecommerce-module/order/repeat";
+import {
   action as ecommerceModuleOrderTotal,
   type IProps as IEcommerceModuleOrderTotalProps,
   type IResult as IEcommerceModuleOrderTotalResult,
@@ -475,6 +480,7 @@ export type IProps = {
 
   IEcommerceModuleProductCheckoutProps: IEcommerceModuleProductCheckoutProps;
   IEcommerceModuleOrderCreateProps: IEcommerceModuleOrderCreateProps;
+  IEcommerceModuleOrderRepeatProps: IEcommerceModuleOrderRepeatProps;
   IEcommerceModuleOrderUpdateProps: IEcommerceModuleOrderUpdateProps;
   IEcommerceModuleOrderCheckoutProps: IEcommerceModuleOrderCheckoutProps;
   IEcommerceModuleOrderDeleteProps: IEcommerceModuleOrderDeleteProps;
@@ -566,6 +572,7 @@ export type IResult = {
 
   IEcommerceModuleProductCheckoutResult: IEcommerceModuleProductCheckoutResult;
   IEcommerceModuleOrderCreateResult: IEcommerceModuleOrderCreateResult;
+  IEcommerceModuleOrderRepeatResult: IEcommerceModuleOrderRepeatResult;
   IEcommerceModuleOrderUpdateResult: IEcommerceModuleOrderUpdateResult;
   IEcommerceModuleOrderCheckoutResult: IEcommerceModuleOrderCheckoutResult;
   IEcommerceModuleOrderDeleteResult: IEcommerceModuleOrderDeleteResult;
@@ -659,6 +666,7 @@ export const api = {
 
   ecommerceModuleProductCheckout,
   ecommerceModuleOrderCreate,
+  ecommerceModuleOrderRepeat,
   ecommerceModuleOrderUpdate,
   ecommerceModuleOrderCheckout,
   ecommerceModuleOrderDelete,

@@ -67,6 +67,7 @@ import { Handler as EcommerceModuleProductsEnforce } from "./ecommerce-module/pr
 import { Handler as EcommerceModuleOrderCreate } from "./ecommerce-module/order/create";
 import { Handler as EcommerceModuleOrderIdUpdate } from "./ecommerce-module/order/id/update";
 import { Handler as EcommerceModuleOrderIdDelete } from "./ecommerce-module/order/id/delete";
+import { Handler as EcommerceModuleOrderIdRepeat } from "./ecommerce-module/order/id/repeat";
 import { Handler as EcommerceModuleOrderList } from "./ecommerce-module/order/list";
 import { Handler as EcommerceModuleOrderTotal } from "./ecommerce-module/order/total";
 import { Handler as EcommerceModuleOrderQuantity } from "./ecommerce-module/order/quantity";
@@ -481,6 +482,12 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "GET",
         path: "/:id/social-module/profiles/:socialModuleProfileId/ecommerce-module/orders/:orderId/quantity",
         handler: this.ecommerceModuleOrderIdQuantity,
+        middlewares: [new RequestSubjectIdOwner().init({ requireJwt: true })],
+      },
+      {
+        method: "POST",
+        path: "/:id/social-module/profiles/:socialModuleProfileId/ecommerce-module/orders/:orderId/repeat",
+        handler: this.ecommerceModuleOrderIdRepeat,
         middlewares: [new RequestSubjectIdOwner().init({ requireJwt: true })],
       },
       {
@@ -1128,6 +1135,10 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
 
   async ecommerceModuleOrderIdDelete(c: Context, next: any): Promise<Response> {
     return new EcommerceModuleOrderIdDelete(this.service).execute(c, next);
+  }
+
+  async ecommerceModuleOrderIdRepeat(c: Context, next: any): Promise<Response> {
+    return new EcommerceModuleOrderIdRepeat(this.service).execute(c, next);
   }
 
   async ecommerceModuleProductIdCheckout(

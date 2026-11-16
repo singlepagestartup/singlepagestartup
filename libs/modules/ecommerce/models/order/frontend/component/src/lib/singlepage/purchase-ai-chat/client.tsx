@@ -22,6 +22,8 @@ export function Component(props: IComponentPropsExtended) {
       totals={totals.data}
       totalsPending={totals.isPending}
       totalsError={totals.isError}
+      actions={props.actions}
+      footer={props.footer}
     />
   );
 }

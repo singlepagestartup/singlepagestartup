@@ -155,3 +155,80 @@ it("keeps the same product independent across profiles and rejects cross-profile
   expect((await list(profileA))[0].cartDetails.lines[0].quantity).toBe(3);
   expect((await list(profileB))[0].cartDetails.lines[0].quantity).toBe(5);
 });
+
+it("repeats a historical order into a replacement cart without changing the source or another profile", async () => {
+  const source = (await list(profileA)).find(
+    (order: any) => order.type === "cart" && order.status === "new",
+  );
+  await expectOk({
+    method: "PATCH",
+    path: `/api/ecommerce/orders/${source.id}`,
+    includeSecret: true,
+    data: { type: "history", status: "paying" },
+  });
+  expect((await add(profileA, 7)).status).toBe(200);
+  const replacement = (await list(profileA)).find(
+    (order: any) => order.type === "cart" && order.status === "new",
+  );
+  const repeatPath = (profileId: string) =>
+    `/api/rbac/subjects/${subjectId}/social-module/profiles/${profileId}/ecommerce-module/orders/${source.id}/repeat`;
+  const unauthenticated = await requestApi({
+    method: "POST",
+    path: repeatPath(profileA),
+  });
+  expect(unauthenticated.status).toBe(400);
+  const foreign = await requestApi({
+    method: "POST",
+    path: repeatPath(profileB),
+    token,
+  });
+  expect(foreign.status).toBe(403);
+  expect((await list(profileB))[0].cartDetails.lines[0].quantity).toBe(5);
+
+  const repeated = await expectOk({
+    method: "POST",
+    path: repeatPath(profileA),
+    token,
+  });
+  expect(repeated.payload.data.orderIds).toHaveLength(1);
+  const orders = await list(profileA);
+  const cart = orders.filter(
+    (order: any) => order.type === "cart" && order.status === "new",
+  );
+  expect(cart).toHaveLength(1);
+  expect(cart[0].id).toBe(repeated.payload.data.orderIds[0]);
+  expect(cart[0].id).not.toBe(replacement.id);
+  expect(cart[0].id).not.toBe(source.id);
+  expect(cart[0].cartDetails.lines[0].productId).toBe(fixtures.productId);
+  expect(cart[0].cartDetails.lines[0].quantity).toBe(3);
+  const historyFilters = new URLSearchParams({
+    "filters[and][0][column]": "type",
+    "filters[and][0][method]": "eq",
+    "filters[and][0][value]": "history",
+    includePurchaseDetails: "true",
+  });
+  const history = await expectOk({
+    method: "GET",
+    path: `${cartPath(profileA)}&${historyFilters.toString()}`,
+    token,
+  });
+  expect(
+    history.payload.data.find((order: any) => order.id === source.id),
+  ).toMatchObject({
+    type: "history",
+    status: "paying",
+  });
+  expect((await list(profileB))[0].cartDetails.lines[0].quantity).toBe(5);
+
+  const repeatedAgain = await expectOk({
+    method: "POST",
+    path: repeatPath(profileA),
+    token,
+  });
+  const finalCart = (await list(profileA)).filter(
+    (order: any) => order.type === "cart" && order.status === "new",
+  );
+  expect(finalCart).toHaveLength(1);
+  expect(finalCart[0].id).toBe(repeatedAgain.payload.data.orderIds[0]);
+  expect(finalCart[0].cartDetails.lines[0].quantity).toBe(3);
+});

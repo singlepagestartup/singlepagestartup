@@ -16,7 +16,7 @@ import { FormField } from "@sps/ui-adapter";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import type { ICartDetails } from "@sps/ecommerce/models/order/sdk/model";
 import { Component as Row } from "./Row";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useIsFetching, useIsMutating } from "@tanstack/react-query";
 import { route } from "@sps/rbac/models/subject/sdk/model";
@@ -112,6 +112,14 @@ function Checkout(props: ICheckoutComponentProps) {
 
   const [paymentUrls, setPaymentUrls] = useState<string[]>([]);
   const [error, setError] = useState("");
+  const lifecycle = useRef<symbol | null>(null);
+  useEffect(() => {
+    const current = Symbol();
+    lifecycle.current = current;
+    return () => {
+      if (lifecycle.current === current) lifecycle.current = null;
+    };
+  }, [props.data.id, socialModuleProfileId]);
 
   const ecommerceModuleOrderCheckout = api.ecommerceModuleOrderCheckout({});
   const updatingCart =
@@ -150,34 +158,36 @@ function Checkout(props: ICheckoutComponentProps) {
   });
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
+    const currentLifecycle = lifecycle.current;
+    if (!currentLifecycle) return;
     setError("");
-    ecommerceModuleOrderCheckout
-      .mutateAsync({
+    try {
+      const res = await ecommerceModuleOrderCheckout.mutateAsync({
         id: props.data.id,
         params: { socialModuleProfileId },
         data,
-      })
-      .then((res) => {
-        const paymentUrls = res.billingModule.invoices.map(
-          (invoice) => invoice.paymentUrl,
-        );
-        if (!paymentUrls.length || paymentUrls.some((url) => !url)) {
-          setError(text.paymentLinkError);
-          return;
-        }
-        if (paymentUrls.length > 1) {
-          setPaymentUrls(paymentUrls);
-        } else {
-          window.location.href = paymentUrls[0];
-        }
-      })
-      .catch((cause: unknown) =>
-        setError(
-          cause instanceof Error && cause.message
-            ? `${text.checkoutError} ${cause.message}`
-            : text.checkoutError,
-        ),
+      });
+      if (lifecycle.current !== currentLifecycle) return;
+      const paymentUrls = res.billingModule.invoices.map(
+        (invoice) => invoice.paymentUrl,
       );
+      if (!paymentUrls.length || paymentUrls.some((url) => !url)) {
+        setError(text.paymentLinkError);
+        return;
+      }
+      if (paymentUrls.length > 1) {
+        setPaymentUrls(paymentUrls);
+      } else {
+        window.location.href = paymentUrls[0];
+      }
+    } catch (cause) {
+      if (lifecycle.current !== currentLifecycle) return;
+      setError(
+        cause instanceof Error && cause.message
+          ? `${text.checkoutError} ${cause.message}`
+          : text.checkoutError,
+      );
+    }
   }
 
   return (

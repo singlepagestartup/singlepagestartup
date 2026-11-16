@@ -26,6 +26,27 @@ fulfilment uses that account for roles, balance and purchase notifications.
 `initialFreeSubscriptionGrantedAt` keeps Initial Free issuance recorded after
 a completed order is removed.
 
+Purchase history offers **Repeat order**. After confirmation, the operation
+replaces the selected profile's open cart with the source order's products and
+quantities. It validates current product, store and currency availability and
+commits the replacement in one transaction. The original order and payment
+records remain in history. An awaiting payment remains payable; the confirmation
+explains that the repeated order is a separate purchase. Normal checkout then
+uses current prices and lets the buyer choose an available payment method.
+Initial Free cannot be repeated.
+An open cart with any existing payment attempt cannot be replaced; its payment
+graph must remain available for late settlement.
+
+Use the Subject SDK:
+
+```ts
+ecommerceModuleOrderRepeat({ id, orderId, params: { socialModuleProfileId } });
+```
+
+The operation requires the
+explicit owning profile and returns the new cart `orderIds`. Its client mutation
+reconciles only the matching Subject/profile cart aggregates.
+
 ## Layering Boundary
 
 - RBAC subject is the orchestration layer for authenticated ecommerce cart/product flows.

@@ -5,7 +5,7 @@ repository: singlepagestartup
 created_at: 2026-11-16T00:01:23Z
 last_updated: 2026-11-16T10:19:52Z
 status: active
-current_phase: complete
+current_phase: implement
 ---
 
 # Process Log: ISSUE-407 — Привязать заказы к social.profile и разделить корзины профилей одного аккаунта
@@ -19,9 +19,9 @@ current_phase: complete
 - Create: completed
 - Research: completed
 - Plan: completed
-- Implement: completed
-- Current phase: complete
-- Next step: code review PR #408 и ручная проверка внешних платёжных провайдеров.
+- Implement: in_progress
+- Current phase: implement
+- Next step: повтор заказа из истории, проверка замены корзины и обновление PR #408.
 
 ## Phase Notes
 
@@ -44,13 +44,15 @@ current_phase: complete
 
 ### Implement
 
+- Review follow-up: пользователь разрешил восстановление корзины из заказа с полной заменой текущих товаров. Реализуется отдельная операция повторения с новым заказом; исходная оплата сохраняется. Для ожидающего платежа интерфейс объясняет, что старый счёт продолжает действовать.
+
 - Summary: реализованы связь профиля с заказом, выбор дополнительных профилей в меню, изоляция корзины и кэша, объединение гостевой корзины и фиксация покупателя оплаты.
 - Outputs: [журнал реализации](../../handoffs/singlepagestartup/ISSUE-407-progress.md), [PR #408](https://github.com/singlepagestartup/singlepagestartup/pull/408). Статус Code Review подтверждён штатным helper.
 - Notes: проверены пересечение checkout с переносом корзины и регистрация гостя одновременно с переносом. Внешние платёжные провайдеры проверяются при review.
 
 ## Incident Log
 
-<!-- incident-count: 9 -->
+<!-- incident-count: 16 -->
 
 ### Incident 1 — Доступ из песочницы к сетевым сервисам
 
@@ -129,6 +131,64 @@ current_phase: complete
 - **Symptom**: SDK Permission не содержит dump, а HTTP /dump обрабатывается как ID.
 - **Fix**: Permissions созданы владеющим SDK, затем экспортированы штатным dump владеющего service в CLI. В репозиторий включены только предназначенные новые разрешения.
 - **Preventive Action**: использовать стандартный процесс dump в CLI.
+
+### Incident 10 — CLI вне настроек проекта
+
+- **Phase**: Implement
+- **Occurrences**: 3
+- **Symptom**: системный Bun 1.3.6 падает на Undici, а CLI из `/tmp` без tsconfig не находит metadata декораторов DI.
+- **Root Cause**: команды вне npm не получают установленный в проекте runtime и TypeScript-конфигурацию.
+- **Fix**: использовать `node_modules/.bin/bun` 1.4.4; CLI запускать с `--tsconfig-override tsconfig.base.json`. Для дочерних процессов интеграционных тестов добавить проектный `node_modules/.bin` в начало PATH.
+- **Preventive Action**: для отдельных CLI явно задавать runtime и конфигурацию проекта.
+
+### Incident 11 — Валюта не гарантирует возможность checkout
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Root Cause**: resolver валюты проверяет связь с ценой, но не проверяет совместимость типов товаров, периодов и количества цен.
+- **Fix**: до замены корзины вызывать штатную проверку checkout attributes исходного заказа в сохранённой валюте.
+- **Preventive Action**: перед необратимым шагом покупки применять полный контракт checkout.
+
+### Incident 12 — Failed Payment Intent может получить поздний счёт
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Root Cause**: статус `failed` без Invoice не является окончательной отменой; Billing может создать счёт и подтвердить оплату позднее.
+- **Fix**: повтор не удаляет текущую корзину, если у неё есть хотя бы одна платёжная связь.
+- **Preventive Action**: сохранять граф платежа до подтверждённого Billing запрета последующей оплаты.
+
+### Incident 13 — Отсутствующая запись CRUD возвращает undefined
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: новые проверки удаления ожидали `null`, фактически получали `undefined`.
+- **Root Cause**: тестовый fixture неверно описывал контракт `findById`.
+- **Fix**: проверки отсутствия записи ожидают `undefined`; результат ошибки конкурентной операции по-прежнему сравнивается с `null`.
+- **Preventive Action**: сверять ожидания интеграционных тестов с возвращаемым значением владеющего репозитория.
+
+### Incident 14 — Отсутствующий JWT возвращает Validation error
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Root Cause**: сценарий ожидал 401, тогда как существующий RequestSubjectIdOwner с requireJwt возвращает 400 для отсутствующего токена.
+- **Fix**: API-проверка использует фактический контракт middleware и отдельно проверяет 403 для заказа другого профиля.
+- **Preventive Action**: сверять точные ответы пограничных проверок с владеющим middleware.
+
+### Incident 15 — Поздний checkout перенаправляет после смены профиля
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Root Cause**: прежний callback формы оплаты выполняет перенаправление после размонтирования, даже когда выбран другой профиль.
+- **Fix**: побочные эффекты ответа ограничиваются жизненным циклом формы и исходным аккаунтом/профилем. Добавлена проверка отложенного ответа.
+- **Preventive Action**: проверять не только кэш и восстановление корзины, но и перенаправление при асинхронном checkout.
+
+### Incident 16 — Пустой аккумулятор fixture вывел never[]
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Root Cause**: пустой массив без типа в profileOrders выводится как never[] и скрывает поля Order в тестах.
+- **Fix**: аккумулятор и результат типизированы владеющей моделью Order. TypeScript снова показывает только исходные 60 диагностик.
+- **Preventive Action**: явно указывать тип результата и накопительного массива в fixture.
 
 ## Reusable Learnings
 

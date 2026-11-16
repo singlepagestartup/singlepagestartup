@@ -2,16 +2,26 @@ import { Component as Subject } from "../../../../../..";
 import type { Meta, StoryObj } from "@storybook/react";
 import { AccountProvider } from "../../../../account/Account";
 import { aiChatAccount } from "../../../../account/fixture";
+import type { IRepeatState } from "./interface";
 function Component({
   showTokens = true,
   empty = false,
-}: { showTokens?: boolean; empty?: boolean } = {}) {
+  repeatState = "idle",
+  repeatOutcome = "success",
+}: {
+  showTokens?: boolean;
+  empty?: boolean;
+  repeatState?: IRepeatState;
+  repeatOutcome?: "success" | "error";
+} = {}) {
   return (
     <AccountProvider account={aiChatAccount}>
       <Subject
         variant="me-ecommerce-module-order-list-ai-chat"
         showTokens={showTokens}
         empty={empty}
+        repeatState={repeatState}
+        repeatOutcome={repeatOutcome}
       />
     </AccountProvider>
   );
@@ -28,4 +38,16 @@ export const Default: StoryObj<typeof meta> = {};
 export const Empty: StoryObj<typeof meta> = { args: { empty: true } };
 export const WithoutTokens: StoryObj<typeof meta> = {
   args: { showTokens: false },
+};
+export const RepeatConfirmation: StoryObj<typeof meta> = {
+  args: { repeatState: "confirmation", showTokens: false },
+};
+export const Repeating: StoryObj<typeof meta> = {
+  args: { repeatState: "pending", showTokens: false },
+};
+export const RepeatSuccess: StoryObj<typeof meta> = {
+  args: { repeatState: "success", showTokens: false },
+};
+export const RepeatError: StoryObj<typeof meta> = {
+  args: { repeatState: "error", repeatOutcome: "error", showTokens: false },
 };

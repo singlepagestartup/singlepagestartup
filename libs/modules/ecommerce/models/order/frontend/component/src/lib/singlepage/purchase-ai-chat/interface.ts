@@ -8,15 +8,21 @@ import type {
 } from "@sps/ecommerce/models/order/sdk/model";
 
 import type { IResult } from "@sps/ecommerce/models/order/sdk/server";
+import type { ReactNode } from "react";
 
 export const variant = "purchase-ai-chat" as const;
 export interface IComponentProps extends IParent<IModel, typeof variant> {
   language?: string;
   purchaseDetails?: IPurchaseDetails;
+  actions?: ReactNode;
+  footer?: ReactNode;
 }
 
-export interface IComponentPropsExtended
-  extends IParentExtended<IModel, typeof variant, IComponentProps> {
+export interface IComponentPropsExtended extends IParentExtended<
+  IModel,
+  typeof variant,
+  IComponentProps
+> {
   totals?: IResult["ITotalResult"];
   totalsPending?: boolean;
   totalsError?: boolean;
