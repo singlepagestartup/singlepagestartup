@@ -1,7 +1,7 @@
 ---
 repository: singlepagestartup
 issue_number: 407
-status: In Dev
+status: Code Review
 created: 2026-11-16
 ---
 
@@ -11,7 +11,7 @@ created: 2026-11-16
 
 **URL**: https://github.com/singlepagestartup/singlepagestartup/issues/407
 **Issue**: #407
-**Status**: In Dev
+**Status**: Code Review
 **Created**: 2026-11-16
 **Priority**: medium
 **Size**: large

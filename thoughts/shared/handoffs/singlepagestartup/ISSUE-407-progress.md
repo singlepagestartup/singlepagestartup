@@ -2,14 +2,15 @@
 issue_number: 407
 start_date: 2026-11-16T08:16:54Z
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-407.md
-status: in_progress
+status: complete
+completed_date: 2026-11-16
 ---
 
 # Implementation Progress #407
 
 ## Phase Progress
 
-- Review follow-up: implement Repeat order to replace the selected profile's cart from history, preserving original payment records. User authorized this fallback for another payment attempt. Studio, API, SDK and UI are implemented and verified; updating PR #408 and its review status remains.
+- Review follow-up: implement Repeat order to replace the selected profile's cart from history, preserving original payment records. User authorized this fallback for another payment attempt. Studio, API, SDK and UI are implemented and verified. Commit `39443d8d15` is in PR #408, and Code Review is verified.
 
 - Studio: implemented. Storybook build and browser switching verified.
 - Schema: implemented. Generated migrations applied and Consistency check passed.
@@ -139,6 +140,8 @@ status: in_progress
 - Full RBAC PostgreSQL integration: 14 suites, 53 tests passed. Real API #407: 2 tests passed with HTTP cache enabled.
 - Checkout/history guard regression: 3 suites, 24 tests passed. ESLint: 30 changed TypeScript files passed. TypeScript: 60 unchanged baseline diagnostics, zero new or changed-file errors. Module dependencies and code placement passed.
 
+### Initial implementation verification
+
 - RBAC units: 229 suites passed and 1 baseline suite failed. 1340 tests passed. Three existing Admin snapshot assertions failed.
 - RBAC PostgreSQL integration: 13 suites, 38 tests passed, including both checkout/merge race orderings.
 - Social PostgreSQL integration: 4 suites, 6 tests passed, including unique order ownership and restricted profile deletion.
@@ -158,13 +161,14 @@ status: in_progress
 Orders now belong to Social profiles. The menu selects existing profiles in per-account session storage.
 Guest carts merge automatically by product with the most recent added line winning.
 Payment Intents retain the original buyer for subsequent fulfilment.
+History can replace the profile cart for a fresh checkout while preserving the original payment. Late checkout responses do not redirect a newly selected profile.
 GPT-6.1 Sol agents use xhigh effort.
 
 ## Pull Request
 
 [PR #408](https://github.com/singlepagestartup/singlepagestartup/pull/408). Issue status verified as Code Review.
 
-**Last updated**: 2026-11-16T10:19:52Z
+**Last updated**: 2026-11-16T11:59:39Z
 
 ## Final Status
 
