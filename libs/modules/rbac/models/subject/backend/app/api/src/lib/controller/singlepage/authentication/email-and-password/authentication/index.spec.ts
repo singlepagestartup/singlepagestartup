@@ -47,6 +47,7 @@ describe("Given: a browser signs in with an email and a password", () => {
 
     const response = await hono.request("/authentication", {
       method: "POST",
+      headers: { Authorization: "Bearer visitor-access" },
       body,
     });
 
@@ -57,6 +58,7 @@ describe("Given: a browser signs in with an email and a password", () => {
     expect(response.headers.get("set-cookie")).toBeNull();
     expect(service.authenticationLoginAndPassowrd).toHaveBeenCalledWith({
       data: credentials,
+      guestToken: "visitor-access",
       type: "authentication",
     });
   });

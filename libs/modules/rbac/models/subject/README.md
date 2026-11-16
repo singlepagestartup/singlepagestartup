@@ -28,6 +28,8 @@ former `ecommerce-module-product-cart-default` and
 compositions should select the corresponding `me` variant and pass
 `dataSource="props"` when they already own the current Subject.
 
+When a visitor signs in to an existing account by password, wallet, or OAuth, the API merges the open guest cart into the account cart using the visitor’s access token. The account cart keeps distinct products from both sessions. For a product in both carts, the most recently updated line supplies the quantity. An exact timestamp tie keeps the account line. History and orders with a payment attempt keep their owners.
+
 ### Duplicate products in an open cart
 
 The Subject order-create route permits one open cart Order per Product for that

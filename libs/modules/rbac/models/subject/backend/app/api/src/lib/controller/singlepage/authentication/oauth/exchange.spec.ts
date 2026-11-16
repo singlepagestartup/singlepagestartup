@@ -21,6 +21,7 @@ jest.mock("@sps/shared-utils", () => ({
 }));
 
 jest.mock("@sps/backend-utils", () => ({
+  authorization: jest.requireActual("@sps/backend-utils").authorization,
   getHttpErrorType: (error: Error) => ({
     status: 400,
     message: error.message,
@@ -39,6 +40,7 @@ import { Handler } from "./exchange";
 function createContext(body?: Record<string, string>) {
   return {
     req: {
+      header: jest.fn(() => "Bearer visitor-access"),
       parseBody: jest.fn().mockResolvedValue(body ?? {}),
     },
     header: jest.fn(),
@@ -84,6 +86,7 @@ describe("Given: the exchange controller redeems an OAuth code", () => {
     await handler.execute(createContext(), undefined);
 
     expect(service.authenticationOAuthExchange).toHaveBeenCalledWith({
+      guestToken: "visitor-access",
       code: "action-exchange",
     });
   });
@@ -127,6 +130,7 @@ describe("Given: the exchange controller redeems an OAuth code", () => {
     );
 
     expect(service.authenticationOAuthExchange).toHaveBeenCalledWith({
+      guestToken: "visitor-access",
       code: "action-exchange",
     });
   });

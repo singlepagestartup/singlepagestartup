@@ -62,7 +62,7 @@ export interface IEcommerceOrderReadService
 }
 
 export interface IEcommerceOrdersToProductsService
-  extends ICreateService, IUpdateService {
+  extends ICreateDeleteService, IUpdateService {
   getTotal: (props: { id: string }) => Promise<IOrderLineTotals>;
 }
 

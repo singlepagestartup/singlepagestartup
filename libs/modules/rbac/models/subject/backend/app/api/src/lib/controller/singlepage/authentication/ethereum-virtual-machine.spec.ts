@@ -47,6 +47,7 @@ describe("Given: a browser signs in with a wallet", () => {
 
     const response = await hono.request("/ethereum-virtual-machine", {
       method: "POST",
+      headers: { Authorization: "Bearer visitor-access" },
       body,
     });
 
@@ -56,6 +57,7 @@ describe("Given: a browser signs in with a wallet", () => {
     });
     expect(response.headers.get("set-cookie")).toBeNull();
     expect(service.authenticationEthereumVirtualMachine).toHaveBeenCalledWith({
+      guestToken: "visitor-access",
       data: signed,
     });
   });

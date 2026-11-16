@@ -3,7 +3,7 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../service";
 import { deleteCookie, getCookie } from "hono/cookie";
-import { getHttpErrorType } from "@sps/backend-utils";
+import { authorization, getHttpErrorType } from "@sps/backend-utils";
 import { exchangeCodeCookieName } from "./cookie";
 
 export class Handler {
@@ -25,6 +25,7 @@ export class Handler {
 
       try {
         entity = await this.service.authenticationOAuthExchange({
+          guestToken: authorization(c),
           code,
         });
       } catch (error: any) {

@@ -7,7 +7,11 @@ import { randomUUID } from "node:crypto";
 import { Hono } from "hono";
 import { CRUDService, consistencyContext } from "@sps/shared-backend-api";
 import { getPostgresClient } from "@sps/shared-backend-database-config";
-import { logger } from "@sps/backend-utils";
+import { logger, signJwt } from "@sps/backend-utils";
+import { RBAC_JWT_SECRET } from "@sps/shared-utils";
+import { Service as PasswordAuthentication } from "../../../startup/authentication/email-and-password";
+import { Handler as PasswordLogin } from "../../../../controller/singlepage/authentication/email-and-password/authentication";
+import { Service as MergeGuestCart } from "./merge-guest-cart";
 import { bootstrap as bootstrapOrder } from "@sps/ecommerce/models/order/backend/app/api/src/lib/bootstrap";
 import { Service as SubjectService } from "../../index";
 import { Repository as SubjectRepository } from "../../../../repository";
@@ -1089,3 +1093,198 @@ it.each(["source-first", "retry-first"])(
     ).toBe("10000");
   },
 );
+
+async function accessToken(
+  subjectId: string,
+  type: "access" | "refresh" = "access",
+) {
+  return signJwt({ subjectId, type, lifetimeInSeconds: 600 }, RBAC_JWT_SECRET!);
+}
+
+it("keeps the account product and adds two guest top-ups on password sign-in", async () => {
+  const f = await fixture();
+  const accountProduct = await f.createAlternativeProduct();
+  const pro = await f.createCart(accountProduct.id);
+  const guestCart = await f.createCart(undefined, f.stranger.id);
+  const [line] = (await f.graph(guestCart.id)).products;
+  await f.subject.ecommerceModuleOrderMutateCart({
+    subjectId: f.stranger.id,
+    orderId: guestCart.id,
+    lines: [{ id: line.id, quantity: 2 }],
+  });
+  const guestToken = await accessToken(f.stranger.id);
+  const tokens = {
+    jwt: await accessToken(f.buyer.id),
+    refresh: await accessToken(f.buyer.id, "refresh"),
+  };
+  const authenticate = jest
+    .spyOn(PasswordAuthentication.prototype, "execute")
+    .mockResolvedValue(tokens);
+  jest
+    .spyOn(f.subject, "socialModuleProfileOwnershipEnsure")
+    .mockResolvedValue(undefined as any);
+  jest.spyOn(f.subject, "freeSubscriptionEnsure").mockResolvedValue(undefined);
+  const handler = new PasswordLogin(f.subject);
+  const http = new Hono().post("/login", (c, next) => handler.execute(c, next));
+  const login = () => {
+    const body = new FormData();
+    body.set(
+      "data",
+      JSON.stringify({ login: "visitor@example.test", password: "fixture" }),
+    );
+    return http.request("/login", {
+      method: "POST",
+      body,
+      headers: { Authorization: "Bearer " + guestToken },
+    });
+  };
+  authenticate.mockRejectedValueOnce(
+    new Error("Authentication error. Invalid credentials"),
+  );
+  expect((await login()).status).not.toBe(201);
+  expect((await f.graph(guestCart.id)).owners[0].subjectId).toBe(f.stranger.id);
+  expect((await login()).status).toBe(201);
+  expect((await login()).status).toBe(201);
+  expect(
+    (await f.cartsFor()).map((cart: { id: string }) => cart.id).sort(),
+  ).toEqual([guestCart.id, pro.id].sort());
+  const transferred = await f.graph(guestCart.id);
+  expect(transferred.owners).toHaveLength(1);
+  expect(transferred.owners[0].subjectId).toBe(f.buyer.id);
+  expect(transferred.products).toEqual([
+    expect.objectContaining({ id: line.id, quantity: 2 }),
+  ]);
+  expect((await f.graph(pro.id)).products[0]).toMatchObject({
+    productId: accountProduct.id,
+    quantity: 1,
+  });
+  expect(await f.cartsFor(f.stranger.id)).toHaveLength(0);
+});
+
+it.each(["guest", "account", "tie"])(
+  "keeps the latest quantity for duplicates (%s) across concurrent logins",
+  async (latest) => {
+    const f = await fixture();
+    const account = await f.createCart();
+    const guest = await f.createCart(undefined, f.stranger.id);
+    const [accountLine] = (await f.graph(account.id)).products;
+    const [guestLine] = (await f.graph(guest.id)).products;
+    const earlier = new Date("2026-01-01T00:00:00Z");
+    const later = new Date("2026-01-02T00:00:00Z");
+    await f.lines.repository.updateFirstByField("id", guestLine.id, {
+      quantity: 2,
+      updatedAt: latest === "account" ? earlier : later,
+    });
+    await f.lines.repository.updateFirstByField("id", accountLine.id, {
+      quantity: 3,
+      updatedAt: latest === "guest" ? earlier : later,
+    });
+    const props = {
+      guestToken: await accessToken(f.stranger.id),
+      subjectId: f.buyer.id,
+    };
+    await Promise.all([
+      new MergeGuestCart(f.subject).execute(props),
+      new MergeGuestCart(f.subject).execute(props),
+    ]);
+    const [cart] = await f.cartsFor();
+    expect(await f.cartsFor()).toHaveLength(1);
+    expect((await f.graph(cart.id)).products).toEqual([
+      expect.objectContaining({ quantity: latest === "guest" ? 2 : 3 }),
+    ]);
+    expect(await f.cartsFor(f.stranger.id)).toHaveLength(0);
+  },
+);
+
+it("leaves a guest's payment with its owner while transferring an independent open order", async () => {
+  const f = await fixture();
+  const history = await f.createCart(undefined, f.stranger.id);
+  await f.attachPayment(history.id);
+  const open = await f.createCart(undefined, f.stranger.id);
+  await new MergeGuestCart(f.subject).execute({
+    guestToken: await accessToken(f.stranger.id),
+    subjectId: f.buyer.id,
+  });
+  expect((await f.graph(history.id)).owners[0].subjectId).toBe(f.stranger.id);
+  expect((await f.graph(open.id)).owners[0].subjectId).toBe(f.buyer.id);
+  expect(await f.grantRows()).toHaveLength(0);
+});
+
+it("preserves a cart with a payment attempt and ignores sessions that do not prove an anonymous visitor", async () => {
+  const f = await fixture();
+  const cart = await f.createCart(undefined, f.stranger.id);
+  const merge = new MergeGuestCart(f.subject);
+  const valid = await accessToken(f.stranger.id);
+  const props = { subjectId: f.buyer.id, guestToken: valid };
+  await merge.execute({
+    ...props,
+    guestToken: await accessToken(f.stranger.id, "refresh"),
+  });
+  await merge.execute({ ...props, guestToken: "invalid" });
+  const identities = jest
+    .spyOn(f.subject.subjectsToIdentities, "find")
+    .mockResolvedValueOnce([{ subjectId: f.stranger.id }] as any);
+  await merge.execute(props);
+  identities.mockRestore();
+  expect((await f.graph(cart.id)).owners[0].subjectId).toBe(f.stranger.id);
+  await f.attachPayment(cart.id);
+  await f.order.update({ id: cart.id, data: { type: "cart", status: "new" } });
+  await merge.execute(props);
+  expect((await f.graph(cart.id)).owners[0].subjectId).toBe(f.stranger.id);
+});
+
+it("rolls back a duplicate removal when changing the owner fails and allows retry", async () => {
+  const f = await fixture();
+  const account = await f.createCart();
+  const guest = await f.createCart(undefined, f.stranger.id);
+  const [userLine] = (await f.graph(account.id)).products;
+  await f.lines.repository.updateFirstByField("id", userLine.id, {
+    updatedAt: new Date("2025-01-01"),
+  });
+  const merge = new MergeGuestCart(f.subject);
+  const props = {
+    subjectId: f.buyer.id,
+    guestToken: await accessToken(f.stranger.id),
+  };
+  const update = jest
+    .spyOn(f.subject.subjectsToEcommerceModuleOrders, "update")
+    .mockRejectedValueOnce(new Error("fixture write failed"));
+  await expect(merge.execute(props)).rejects.toThrow("fixture write failed");
+  update.mockRestore();
+  expect((await f.graph(account.id)).products).toHaveLength(1);
+  expect((await f.graph(guest.id)).owners[0].subjectId).toBe(f.stranger.id);
+  await merge.execute(props);
+  expect((await f.graph(guest.id)).owners[0].subjectId).toBe(f.buyer.id);
+});
+
+it("keeps both selections when the account already started paying for the same product", async () => {
+  const f = await fixture();
+  const account = await f.createCart();
+  const guest = await f.createCart(undefined, f.stranger.id);
+  await f.attachPayment(account.id);
+  await f.order.update({
+    id: account.id,
+    data: { type: "cart", status: "new" },
+  });
+  await new MergeGuestCart(f.subject).execute({
+    subjectId: f.buyer.id,
+    guestToken: await accessToken(f.stranger.id),
+  });
+  expect((await f.graph(account.id)).owners[0].subjectId).toBe(f.buyer.id);
+  expect((await f.graph(guest.id)).owners[0].subjectId).toBe(f.stranger.id);
+  expect((await f.graph(guest.id)).products).toHaveLength(1);
+});
+
+it("does not move a cart after the guest session has logged out", async () => {
+  const f = await fixture();
+  const cart = await f.createCart(undefined, f.stranger.id);
+  const guestToken = await accessToken(f.stranger.id);
+  await f.subject.repository.updateFirstByField("id", f.stranger.id, {
+    tokensValidAfter: new Date(),
+  });
+  await new MergeGuestCart(f.subject).execute({
+    subjectId: f.buyer.id,
+    guestToken,
+  });
+  expect((await f.graph(cart.id)).owners[0].subjectId).toBe(f.stranger.id);
+});

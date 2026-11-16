@@ -1,6 +1,7 @@
 import type { Service as SecurityNotifications } from "./security-notifications";
 import { Service as MutateCart } from "../startup/ecommerce/order/mutate-cart";
 import type { IExecuteProps as IMutateCartProps } from "./ecommerce/order/mutate-cart";
+import { Service as MergeGuestCart } from "../startup/ecommerce/order/merge-guest-cart";
 import { Service as RepeatOrder } from "../startup/ecommerce/order/repeat";
 import type { IExecuteProps as IRepeatOrderProps } from "./ecommerce/order/repeat";
 import { Service as CreateCartOrder } from "../startup/ecommerce/order/create";
@@ -477,26 +478,36 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }).execute(props);
   }
 
-  async authenticationLoginAndPassowrd(
-    props: IAuthenticationEmailAndPasswordExecuteProps,
-  ) {
+  async authenticationLoginAndPassowrd({
+    guestToken,
+    ...props
+  }: IAuthenticationEmailAndPasswordExecuteProps & { guestToken?: string }) {
     const authentication = await new AuthenticationEmailAndPassword(
       this.repository,
     ).execute(props);
 
-    const result = await this.completeUserAuthentication(authentication);
+    const result = await this.completeUserAuthentication(
+      authentication,
+      guestToken,
+    );
 
     return result;
   }
 
-  async authenticationEthereumVirtualMachine(
-    props: IAuthenticationEthereumVirtualMachineExecuteProps,
-  ) {
+  async authenticationEthereumVirtualMachine({
+    guestToken,
+    ...props
+  }: IAuthenticationEthereumVirtualMachineExecuteProps & {
+    guestToken?: string;
+  }) {
     const authentication = await new AuthenticationEthereumVirtualMachine(
       this.repository,
     ).execute(props);
 
-    const result = await this.completeUserAuthentication(authentication);
+    const result = await this.completeUserAuthentication(
+      authentication,
+      guestToken,
+    );
 
     return result;
   }
@@ -511,14 +522,18 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return new AuthenticationOAuthCallback(this.repository).execute(props);
   }
 
-  async authenticationOAuthExchange(
-    props: IAuthenticationOAuthExchangeExecuteProps,
-  ) {
+  async authenticationOAuthExchange({
+    guestToken,
+    ...props
+  }: IAuthenticationOAuthExchangeExecuteProps & { guestToken?: string }) {
     const authentication = await new AuthenticationOAuthExchange(
       this.repository,
     ).execute(props);
 
-    const result = await this.completeUserAuthentication(authentication);
+    const result = await this.completeUserAuthentication(
+      authentication,
+      guestToken,
+    );
 
     return result;
   }
@@ -575,6 +590,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
   protected async completeUserAuthentication<T extends { jwt: string }>(
     result: T,
+    guestToken?: string,
   ): Promise<T> {
     if (!RBAC_JWT_SECRET)
       throw new Error("Configuration error. RBAC_JWT_SECRET not set");
@@ -586,6 +602,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       );
     await this.socialModuleProfileOwnershipEnsure({ subjectId });
     await this.freeSubscriptionEnsure({ subjectId });
+    if (guestToken) {
+      await new MergeGuestCart(this).execute({ subjectId, guestToken });
+    }
     return result;
   }
 
