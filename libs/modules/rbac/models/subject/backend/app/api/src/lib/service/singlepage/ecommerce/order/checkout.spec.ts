@@ -16,8 +16,14 @@ const mockBillingModulePaymentIntentProvider = jest.fn();
 const mockOrdersToBillingModulePaymentIntentsCreate = jest.fn();
 const mockOrdersToBillingModulePaymentIntentsDelete = jest.fn();
 const mockBroadcastChannelPushMessage = jest.fn();
+const mockObserverChannelFind = jest.fn();
+const mockObserverMessageFind = jest.fn();
+const mockObserverMessageDelete = jest.fn();
+const mockObserverFetch = jest.fn();
+const mockObserverError = jest.fn();
 
 jest.mock("@sps/shared-utils", () => ({
+  ...jest.requireActual("@sps/shared-utils"),
   RBAC_SECRET_KEY: "test-rbac-secret",
   NEXT_PUBLIC_API_SERVICE_URL: "http://localhost:4000",
   INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG: "free-subscription",
@@ -35,10 +41,6 @@ jest.mock("@sps/ecommerce/models/order/sdk/server", () => ({
 
 jest.mock("@sps/billing/models/payment-intent/sdk/server", () => ({
   api: {
-    create: (...args: unknown[]) =>
-      mockBillingModulePaymentIntentCreate(...args),
-    update: (...args: unknown[]) =>
-      mockBillingModulePaymentIntentUpdate(...args),
     provider: (...args: unknown[]) =>
       mockBillingModulePaymentIntentProvider(...args),
   },
@@ -48,8 +50,6 @@ jest.mock(
   "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/server",
   () => ({
     api: {
-      create: (...args: unknown[]) =>
-        mockOrdersToBillingModulePaymentIntentsCreate(...args),
       delete: (...args: unknown[]) =>
         mockOrdersToBillingModulePaymentIntentsDelete(...args),
     },
@@ -60,9 +60,33 @@ jest.mock("@sps/broadcast/models/channel/sdk/server", () => ({
   api: {
     pushMessage: (...args: unknown[]) =>
       mockBroadcastChannelPushMessage(...args),
+    find: (...args: unknown[]) => mockObserverChannelFind(...args),
+    messageFind: (...args: unknown[]) => mockObserverMessageFind(...args),
   },
 }));
 
+jest.mock("@sps/broadcast/models/message/sdk/server", () => ({
+  api: { delete: (...args: unknown[]) => mockObserverMessageDelete(...args) },
+}));
+
+jest.mock("@sps/backend-utils", () => ({
+  fetchOutboundUrl: (...args: unknown[]) => mockObserverFetch(...args),
+  getHttpErrorType: (error: Error) => ({ status: 500, message: error.message }),
+  logger: { error: (...args: unknown[]) => mockObserverError(...args) },
+}));
+
+jest.mock(
+  "@sps/ecommerce/models/order/backend/app/api/src/lib/controller/singlepage/update",
+  () => ({
+    Handler: class {
+      async onPaymentStatusUpdated() {}
+    },
+  }),
+);
+
+import { Hono } from "hono";
+import { Middleware as ObserverMiddleware } from "../../../../../../../../../../../../../middlewares/src/lib/observer";
+import { Handler as OrderCheckHandler } from "@sps/ecommerce/models/order/backend/app/api/src/lib/controller/singlepage/find-by-id/check";
 import { Service } from "./checkout";
 
 function createTestContext(props?: {
@@ -226,11 +250,16 @@ function createTestContext(props?: {
     },
     ordersToBillingModulePaymentIntents: {
       find: jest.fn().mockResolvedValue([]),
+      create: jest.fn((input) =>
+        mockOrdersToBillingModulePaymentIntentsCreate(input),
+      ),
     },
   } as any;
 
   const billingModule = {
     paymentIntent: {
+      create: jest.fn((input) => mockBillingModulePaymentIntentCreate(input)),
+      update: jest.fn((input) => mockBillingModulePaymentIntentUpdate(input)),
       find: jest.fn().mockResolvedValue([]),
       findById: jest.fn().mockResolvedValue({
         id: "payment-intent-1",
@@ -279,10 +308,28 @@ function createTestContext(props?: {
     ]),
   } as any;
 
+  let transactionActive = false;
+  const repository = {
+    withSubjectLock: jest.fn(async (_scope, operation) => {
+      if (transactionActive) {
+        return operation();
+      }
+      const snapshot = structuredClone(checkoutOrders);
+      transactionActive = true;
+      try {
+        return await operation();
+      } catch (error) {
+        for (const [index, order] of checkoutOrders.entries()) {
+          Object.assign(order, snapshot[index]);
+        }
+        throw error;
+      } finally {
+        transactionActive = false;
+      }
+    }),
+  };
   const service = new Service({
-    repository: {
-      withSubjectLock: jest.fn(async (_scope, operation) => operation()),
-    },
+    repository,
     settledOrderIds: jest.fn(
       async ({ orderIds }) =>
         new Set(
@@ -353,6 +400,8 @@ function createTestContext(props?: {
     service,
     checkoutOrders,
     activeSubscriptionOrder,
+    repository,
+    transactionActive: () => transactionActive,
   };
 }
 
@@ -432,14 +481,7 @@ describe("Given: subject starts checkout for a product", () => {
         "Validation error. Checking out order has active subscription products.",
       );
 
-      expect(mockEcommerceOrderUpdate).toHaveBeenCalledWith(
-        expect.objectContaining({
-          id: checkoutOrders[0].id,
-          data: expect.objectContaining({
-            status: "new",
-          }),
-        }),
-      );
+      expect(checkoutOrders[0]).toMatchObject({ type: "cart", status: "new" });
     });
 
     /**
@@ -468,14 +510,7 @@ describe("Given: subject starts checkout for a product", () => {
         "Validation error. Checking out order has active subscription products.",
       );
 
-      expect(mockEcommerceOrderUpdate).toHaveBeenCalledWith(
-        expect.objectContaining({
-          id: checkoutOrders[0].id,
-          data: expect.objectContaining({
-            status: "new",
-          }),
-        }),
-      );
+      expect(checkoutOrders[0]).toMatchObject({ type: "cart", status: "new" });
     });
 
     /**
@@ -604,6 +639,7 @@ describe("Given: subject starts checkout for a product", () => {
       const { service, checkoutOrders } = createTestContext({
         activeOrderProductId: "product-other",
         checkoutOrderIds: ["order-checkout-1", "order-checkout-2"],
+        productType: "one_off",
       });
 
       const result = await service.execute({
@@ -637,6 +673,7 @@ describe("Given: subject starts checkout for a product", () => {
   it("keeps different currencies in separate payments while combining matching orders", async () => {
     const { service, checkoutOrders } = createTestContext({
       activeOrderProductId: "product-other",
+      productType: "one_off",
       checkoutOrderIds: ["usd-1", "rub-1", "usd-2"],
       currencyByOrderId: { "usd-1": "usd", "rub-1": "rub", "usd-2": "usd" },
     });
@@ -744,7 +781,7 @@ describe("Given: subject starts checkout for a product", () => {
         provider: "paykeeper",
         ecommerceModule: { orders: [{ id }] },
       });
-      expect(mockBroadcastChannelPushMessage).toHaveBeenCalledTimes(1);
+      expect(mockBroadcastChannelPushMessage).toHaveBeenCalledTimes(2);
       expect(
         JSON.parse(
           mockBroadcastChannelPushMessage.mock.calls[0][0].data.payload,
@@ -773,7 +810,7 @@ describe("Given: subject starts checkout for a product", () => {
         },
       });
 
-      expect(mockBroadcastChannelPushMessage).toHaveBeenCalledTimes(2);
+      expect(mockBroadcastChannelPushMessage).toHaveBeenCalledTimes(3);
 
       const firstMessagePayload = JSON.parse(
         mockBroadcastChannelPushMessage.mock.calls[0]?.[0]?.data?.payload,
@@ -865,49 +902,20 @@ describe("Retrying a pending subscription", () => {
   });
 });
 
-it("unlinks only its unexposed failed intent before restoring an editable cart", async () => {
+it("rolls back the claimed cart when local payment preparation fails", async () => {
   jest.clearAllMocks();
-  const { service, checkoutOrders } = createTestContext({
+  const { service, checkoutOrders, transactionActive } = createTestContext({
     productType: "one_off",
-    checkoutOrderIds: ["first", "second"],
-    currencyByOrderId: { first: "usd", second: "eur" },
+    paymentIntentCreateError: new Error("create-failed"),
   });
-  const intent = { id: "safe-intent", status: "requires_payment_method" };
-  let links: {
-    id: string;
-    orderId: string;
-    billingModulePaymentIntentId: string;
-  }[] = [];
-  (
-    service.billingModule.paymentIntentsToInvoices.find as jest.Mock
-  ).mockResolvedValue([]);
-  (
-    service.billingModule.paymentIntent.findById as jest.Mock
-  ).mockImplementation(async () => intent);
-  (
-    service.billingModule.paymentIntent.failUnpaidIntent as jest.Mock
-  ).mockImplementation(async () => {
-    intent.status = "failed";
+  mockBillingModulePaymentIntentCreate.mockImplementationOnce(async () => {
+    expect(transactionActive()).toBe(true);
+    expect(checkoutOrders[0]).toMatchObject({
+      type: "history",
+      status: "paying",
+    });
+    throw new Error("create-failed");
   });
-  (
-    service.ecommerceModule.ordersToBillingModulePaymentIntents
-      .find as jest.Mock
-  ).mockImplementation(async () => [...links]);
-  service.ecommerceModule.ordersToBillingModulePaymentIntents.delete = jest.fn(
-    async ({ id }) => {
-      links = links.filter((link) => link.id !== id);
-    },
-  );
-  mockBillingModulePaymentIntentCreate
-    .mockResolvedValueOnce({ ...intent, amount: 100 })
-    .mockRejectedValueOnce(new Error("create-failed"));
-  mockOrdersToBillingModulePaymentIntentsCreate.mockImplementationOnce(
-    async ({ data }) => {
-      const link = { id: "safe-link", ...data };
-      links.push(link);
-      return link;
-    },
-  );
   await expect(
     service.execute({
       id: "subject-1",
@@ -916,17 +924,12 @@ it("unlinks only its unexposed failed intent before restoring an editable cart",
       ecommerceModule: { orders: checkoutOrders.map(({ id }) => ({ id })) },
     }),
   ).rejects.toThrow("create-failed");
-  expect(intent.status).toBe("failed");
-  expect(links).toEqual([]);
-  expect(
-    checkoutOrders.every(
-      (order) => order.type === "cart" && order.status === "new",
-    ),
-  ).toBe(true);
+  expect(checkoutOrders[0]).toMatchObject({ type: "cart", status: "new" });
   expect(mockBillingModulePaymentIntentProvider).not.toHaveBeenCalled();
+  expect(mockBroadcastChannelPushMessage).not.toHaveBeenCalled();
 });
 
-it("keeps issued and uncertain invoices while restoring only an unexposed order in a multi-currency checkout", async () => {
+it("keeps every committed history recoverable after a multi-currency provider failure", async () => {
   jest.clearAllMocks();
   const { service, checkoutOrders } = createTestContext({
     productType: "one_off",
@@ -1001,14 +1004,21 @@ it("keeps issued and uncertain invoices while restoring only an unexposed order 
     type: "history",
     status: "paying",
   });
-  expect(checkoutOrders[2]).toMatchObject({ type: "cart", status: "new" });
+  expect(checkoutOrders[2]).toMatchObject({
+    type: "history",
+    status: "paying",
+  });
   expect([...intents.values()].map((intent) => intent.status)).toEqual([
     "requires_payment_method",
     "requires_payment_method",
     "failed",
   ]);
-  expect(deleteLink.mock.calls).toEqual([[{ id: "link-third" }]]);
-  expect(links.map((link) => link.orderId)).toEqual(["first", "second"]);
+  expect(deleteLink).not.toHaveBeenCalled();
+  expect(links.map((link) => link.orderId)).toEqual([
+    "first",
+    "second",
+    "third",
+  ]);
 });
 
 it("validates every requested order before claiming any cart", async () => {
@@ -1042,4 +1052,379 @@ it("validates every requested order before claiming any cart", async () => {
       (order) => order.type === "cart" && order.status === "new",
     ),
   ).toBe(true);
+});
+
+it("creates a separate recurring intent for each subscription order", async () => {
+  jest.clearAllMocks();
+  const { service, checkoutOrders, transactionActive } = createTestContext({
+    activeOrderProductId: "product-other",
+    checkoutOrderIds: ["first", "second"],
+    productType: "subscription",
+  });
+  mockBillingModulePaymentIntentCreate
+    .mockResolvedValueOnce({ id: "first-intent", amount: 100 })
+    .mockResolvedValueOnce({ id: "second-intent", amount: 100 });
+  mockBillingModulePaymentIntentProvider.mockImplementation(async () => {
+    expect(transactionActive()).toBe(false);
+    return {};
+  });
+  await service.execute({
+    id: "subject-1",
+    provider: "stripe",
+    email: "owner@example.test",
+    ecommerceModule: { orders: checkoutOrders.map(({ id }) => ({ id })) },
+  });
+  expect(mockBillingModulePaymentIntentCreate).toHaveBeenCalledTimes(2);
+  expect(mockBillingModulePaymentIntentUpdate).not.toHaveBeenCalled();
+  expect(mockOrdersToBillingModulePaymentIntentsCreate.mock.calls).toEqual([
+    [
+      {
+        data: {
+          orderId: "first",
+          billingModulePaymentIntentId: "first-intent",
+        },
+      },
+    ],
+    [
+      {
+        data: {
+          orderId: "second",
+          billingModulePaymentIntentId: "second-intent",
+        },
+      },
+    ],
+  ]);
+  expect(mockBillingModulePaymentIntentProvider).toHaveBeenCalledTimes(2);
+  expect(
+    mockBillingModulePaymentIntentProvider.mock.calls.map(([input]) =>
+      input.data.metadata.ecommerceModule.orders.map(
+        (order: { id: string }) => order.id,
+      ),
+    ),
+  ).toEqual([["first"], ["second"]]);
+});
+
+it("registers timeout recovery after commit and before calling the provider", async () => {
+  jest.clearAllMocks();
+  const { service, checkoutOrders, transactionActive } = createTestContext({
+    productType: "one_off",
+    paymentIntentProviderError: new Error("timeout"),
+  });
+  mockBroadcastChannelPushMessage.mockImplementation(async () => {
+    expect(transactionActive()).toBe(false);
+    return { ok: true };
+  });
+  await expect(
+    service.execute({
+      id: "subject-1",
+      provider: "stripe",
+      email: "owner@example.test",
+      ecommerceModule: { orders: checkoutOrders.map(({ id }) => ({ id })) },
+    }),
+  ).rejects.toThrow("timeout");
+  expect(mockBroadcastChannelPushMessage).toHaveBeenCalledTimes(3);
+  expect(
+    mockBroadcastChannelPushMessage.mock.invocationCallOrder[1],
+  ).toBeLessThan(
+    mockBillingModulePaymentIntentProvider.mock.invocationCallOrder[0],
+  );
+  expect(checkoutOrders[0]).toMatchObject({
+    type: "history",
+    status: "paying",
+  });
+});
+
+it("fails every unexposed intent when recovery observer registration fails", async () => {
+  jest.clearAllMocks();
+  const { service, checkoutOrders } = createTestContext({
+    productType: "one_off",
+    checkoutOrderIds: ["first", "second"],
+    currencyByOrderId: { first: "usd", second: "eur" },
+  });
+  mockBillingModulePaymentIntentCreate
+    .mockResolvedValueOnce({ id: "first-intent", amount: 100 })
+    .mockResolvedValueOnce({ id: "second-intent", amount: 100 });
+  (
+    service.billingModule.paymentIntent.findById as jest.Mock
+  ).mockImplementation(async ({ id }) => ({
+    id,
+    status: "requires_payment_method",
+  }));
+  mockBroadcastChannelPushMessage.mockRejectedValueOnce(
+    new Error("observer-failed"),
+  );
+  await expect(
+    service.execute({
+      id: "subject-1",
+      provider: "stripe",
+      email: "owner@example.test",
+      ecommerceModule: { orders: checkoutOrders.map(({ id }) => ({ id })) },
+    }),
+  ).rejects.toThrow("observer-failed");
+  expect(mockBillingModulePaymentIntentProvider).not.toHaveBeenCalled();
+  expect(mockBillingModulePaymentIntentUpdate.mock.calls).toEqual([
+    [{ id: "first-intent", data: { status: "failed" } }],
+    [{ id: "second-intent", data: { status: "failed" } }],
+  ]);
+  expect(checkoutOrders).toEqual([
+    expect.objectContaining({ id: "first", type: "history", status: "paying" }),
+    expect.objectContaining({
+      id: "second",
+      type: "history",
+      status: "paying",
+    }),
+  ]);
+});
+
+it.each([
+  { resume: false, paymentStatus: "succeeded", orderStatus: "paid" },
+  { resume: false, paymentStatus: "failed", orderStatus: "canceling" },
+  { resume: true, paymentStatus: "succeeded", orderStatus: "paid" },
+])(
+  "dispatches Subject fulfillment from a direct Order check, resume=$resume, payment=$paymentStatus",
+  async ({ resume, paymentStatus, orderStatus }) => {
+    jest.clearAllMocks();
+    const { service, checkoutOrders, transactionActive } = createTestContext({
+      productType: "one_off",
+    });
+    const order = checkoutOrders[0];
+    if (resume) {
+      (
+        service.ecommerceModule.ordersToBillingModulePaymentIntents
+          .find as jest.Mock
+      ).mockResolvedValue([
+        {
+          id: "legacy-link",
+          orderId: order.id,
+          billingModulePaymentIntentId: "payment-intent-1",
+        },
+      ]);
+      (service.billingModule.paymentIntent.find as jest.Mock).mockResolvedValue(
+        [{ id: "payment-intent-1", status: "processing" }],
+      );
+      (service.billingModule.invoice.find as jest.Mock).mockResolvedValue([
+        {
+          id: "invoice-1",
+          status: "open",
+          provider: "paykeeper",
+          paymentUrl: "https://pay.test/invoice-1",
+        },
+      ]);
+    }
+    await service.execute({
+      id: "subject-1",
+      provider: "stripe",
+      email: "owner@example.test",
+      ecommerceModule: { orders: [{ id: order.id }] },
+    });
+    const messages = mockBroadcastChannelPushMessage.mock.calls.map(
+      ([input], index) => ({
+        id: `observer-${index}`,
+        payload: input.data.payload,
+      }),
+    );
+    expect(
+      messages.map((message) => JSON.parse(message.payload).trigger),
+    ).toEqual([
+      {
+        type: "request",
+        method: "POST",
+        url: `http://localhost:4000/api/billing/payment-intents/${resume ? "paykeeper" : "stripe"}/webhook`,
+      },
+      {
+        type: "request",
+        method: "PATCH",
+        url: `http://localhost:4000/api/ecommerce/orders/${order.id}`,
+      },
+      {
+        type: "request",
+        method: "POST",
+        url: `http://localhost:4000/api/ecommerce/orders/${order.id}/check`,
+      },
+    ]);
+    if (resume) {
+      expect(mockBillingModulePaymentIntentProvider).not.toHaveBeenCalled();
+      expect(mockBillingModulePaymentIntentCreate).not.toHaveBeenCalled();
+    }
+    mockObserverChannelFind.mockResolvedValue([{ id: "observer-channel" }]);
+    mockObserverMessageFind.mockResolvedValue(messages);
+    let completePipeline!: () => void;
+    const pipelineCompleted = new Promise<void>((resolve) => {
+      completePipeline = resolve;
+    });
+    mockObserverMessageDelete.mockImplementation(async () => {
+      completePipeline();
+      return {};
+    });
+    const subjectFulfillment = jest.fn(async () => {
+      expect(transactionActive()).toBe(false);
+      expect(order.status).toBe(orderStatus);
+    });
+    const app = new Hono();
+    app.use(new ObserverMiddleware().init());
+    app.post("/api/rbac/subjects/subject-1/check", async (context) => {
+      await subjectFulfillment();
+      return context.json({ data: { ok: true } });
+    });
+    const check = new OrderCheckHandler({
+      findById: async () => ({ ...order, updatedAt: new Date().toISOString() }),
+      ordersToBillingModulePaymentIntents: {
+        find: async () => [
+          { billingModulePaymentIntentId: "payment-intent-1" },
+        ],
+      },
+      billingModule: {
+        paymentIntent: {
+          findById: async () => ({
+            id: "payment-intent-1",
+            status: paymentStatus,
+          }),
+        },
+      },
+      completePaymentStatus: async () => {
+        Object.assign(order, { status: "paid" });
+        return { ...order };
+      },
+      transitionPaymentStatus: async () => {
+        Object.assign(order, { status: "canceling" });
+        return { ...order };
+      },
+    } as any);
+    app.post("/api/ecommerce/orders/:uuid/check", (context, next) =>
+      check.execute(context, next),
+    );
+    mockObserverFetch.mockImplementation((url, init) => app.request(url, init));
+    const response = await app.request(
+      `/api/ecommerce/orders/${order.id}/check`,
+      { method: "POST" },
+    );
+    await pipelineCompleted;
+    expect(response.status).toBe(200);
+    expect(subjectFulfillment).toHaveBeenCalledTimes(1);
+    expect(mockObserverFetch).toHaveBeenCalledWith(
+      "http://localhost:4000/api/rbac/subjects/subject-1/check",
+      expect.objectContaining({
+        method: "POST",
+        headers: { "X-RBAC-SECRET-KEY": "test-rbac-secret" },
+      }),
+      { allowServiceOrigins: true },
+    );
+    expect(mockObserverMessageDelete).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "observer-2" }),
+    );
+    expect(mockEcommerceOrderUpdate).toHaveBeenCalledTimes(1);
+    expect(mockObserverError).not.toHaveBeenCalled();
+  },
+);
+
+it("fulfills through the webhook pipeline after an earlier pending check consumed its observer", async () => {
+  jest.clearAllMocks();
+  const { service, checkoutOrders } = createTestContext({
+    productType: "one_off",
+  });
+  const order = checkoutOrders[0];
+  await service.execute({
+    id: "subject-1",
+    provider: "stripe",
+    email: "owner@example.test",
+    ecommerceModule: { orders: [{ id: order.id }] },
+  });
+  let messages = mockBroadcastChannelPushMessage.mock.calls.map(
+    ([input], index) => ({
+      id: `observer-${index}`,
+      payload: input.data.payload,
+    }),
+  );
+  expect(
+    JSON.parse(messages[0].payload).pipe.map(
+      (step: { url: string }) => step.url,
+    ),
+  ).toEqual([
+    `http://localhost:4000/api/ecommerce/orders/${order.id}/check`,
+    "http://localhost:4000/api/rbac/subjects/subject-1/check",
+  ]);
+  mockObserverChannelFind.mockResolvedValue([{ id: "observer-channel" }]);
+  mockObserverMessageFind.mockImplementation(async () => [...messages]);
+  let earlyCheckComplete!: () => void;
+  const earlyCheckCompleted = new Promise<void>((resolve) => {
+    earlyCheckComplete = resolve;
+  });
+  let webhookComplete!: () => void;
+  const webhookCompleted = new Promise<void>((resolve) => {
+    webhookComplete = resolve;
+  });
+  let webhookStepCount = 0;
+  mockObserverMessageDelete.mockImplementation(async ({ id }) => {
+    messages = messages.filter((message) => message.id !== id);
+    if (id === "observer-2") {
+      earlyCheckComplete();
+    }
+    if (id === "observer-0") {
+      webhookStepCount += 1;
+      if (webhookStepCount === 2) {
+        webhookComplete();
+      }
+    }
+    return {};
+  });
+  let paymentStatus = "processing";
+  const fulfillment = jest.fn();
+  const subjectCheckStatuses: string[] = [];
+  const app = new Hono();
+  app.use(new ObserverMiddleware().init());
+  app.post("/api/rbac/subjects/subject-1/check", (context) => {
+    subjectCheckStatuses.push(order.status);
+    if (order.status === "paid") {
+      fulfillment();
+    }
+    return context.json({ data: { ok: true } });
+  });
+  const check = new OrderCheckHandler({
+    findById: async () => ({ ...order, updatedAt: new Date().toISOString() }),
+    ordersToBillingModulePaymentIntents: {
+      find: async () => [{ billingModulePaymentIntentId: "payment-intent-1" }],
+    },
+    billingModule: {
+      paymentIntent: {
+        findById: async () => ({
+          id: "payment-intent-1",
+          status: paymentStatus,
+        }),
+      },
+    },
+    completePaymentStatus: async () => {
+      Object.assign(order, { status: "paid" });
+      return { ...order };
+    },
+  } as any);
+  app.post("/api/ecommerce/orders/:uuid/check", (context, next) =>
+    check.execute(context, next),
+  );
+  app.post("/api/billing/payment-intents/stripe/webhook", (context) =>
+    context.json({ data: { ok: true } }),
+  );
+  mockObserverFetch.mockImplementation((url, init) => app.request(url, init));
+  const early = await app.request(`/api/ecommerce/orders/${order.id}/check`, {
+    method: "POST",
+  });
+  await earlyCheckCompleted;
+  expect(early.status).toBe(200);
+  expect(order.status).toBe("paying");
+  expect(fulfillment).not.toHaveBeenCalled();
+  expect(messages.map((message) => message.id)).toEqual([
+    "observer-0",
+    "observer-1",
+  ]);
+  paymentStatus = "succeeded";
+  const webhook = await app.request(
+    "/api/billing/payment-intents/stripe/webhook",
+    { method: "POST" },
+  );
+  await webhookCompleted;
+  expect(webhook.status).toBe(200);
+  expect(order.status).toBe("paid");
+  expect(subjectCheckStatuses).toEqual(["paying", "paid"]);
+  expect(fulfillment).toHaveBeenCalledTimes(1);
+  expect(mockEcommerceOrderUpdate).toHaveBeenCalledTimes(1);
+  expect(mockObserverError).not.toHaveBeenCalled();
 });

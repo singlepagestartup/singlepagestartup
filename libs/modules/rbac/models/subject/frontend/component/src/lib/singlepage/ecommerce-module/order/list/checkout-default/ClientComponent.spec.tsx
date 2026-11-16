@@ -218,7 +218,7 @@ describe("Given: order list checkout component", () => {
     });
   });
 
-  it("When: checkout returns multiple invoices Then: payment links are rendered instead of redirect", async () => {
+  it("keeps every payment link after checkout moves the orders out of the cart", async () => {
     mutateAsyncMock.mockResolvedValue({
       billingModule: {
         invoices: [
@@ -228,14 +228,13 @@ describe("Given: order list checkout component", () => {
       },
     });
 
-    render(
-      <Component
-        isServer={false}
-        variant="ecommerce-module-order-list-checkout-default"
-        data={{ id: "subject-1" } as any}
-        language="en"
-      />,
-    );
+    const props = {
+      isServer: false,
+      variant: "ecommerce-module-order-list-checkout-default" as const,
+      data: { id: "subject-1" } as any,
+      language: "en",
+    };
+    const view = render(<Component {...props} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Proceed to payment" }));
 
@@ -251,6 +250,11 @@ describe("Given: order list checkout component", () => {
       ).toBe(true);
     });
 
+    cartOrders = [];
+    view.rerender(<Component {...props} />);
+    expect(
+      screen.getAllByRole("link").map((link) => link.getAttribute("href")),
+    ).toEqual(["https://pay.local/one", "https://pay.local/two"]);
     expect(window.location.href).toBe(checkoutPage);
   });
 

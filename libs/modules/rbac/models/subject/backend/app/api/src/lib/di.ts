@@ -41,7 +41,10 @@ export interface IEcommerceOrderReadService
       | "acceptSubscriptionPeriod"
       | "freezeSubscriptionPeriod"
       | "assertSubscriptionPayment"
+      | "hasSharedSubscriptionRenewal"
+      | "stopSubscriptionRenewal"
       | "lockForLifecycle"
+      | "transitionPaymentStatus"
       | "revokeSubscription"
       | "update"
     > {

@@ -139,6 +139,63 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return this.subscriptionPeriodService().assertPayment(props);
   }
 
+  /** A shared recurring contract must survive when another Product still needs it. */
+  async hasSharedSubscriptionRenewal(props: { id: string }) {
+    const order = await this.findByIdExtended(props);
+    const intentIds: string[] = [];
+    for (const {
+      billingModulePaymentIntent: intent,
+    } of order.ordersToBillingModulePaymentIntents) {
+      if (intent.type !== "subscription" || intent.amount === 0) {
+        continue;
+      }
+      if (
+        await this.billingModule.paymentIntent.hasProviderManagedSubscriptionRenewal(
+          { id: intent.id },
+        )
+      ) {
+        intentIds.push(intent.id);
+      }
+    }
+    if (!intentIds.length) {
+      return false;
+    }
+    const links = await this.ordersToBillingModulePaymentIntents.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "billingModulePaymentIntentId",
+              method: "inArray",
+              value: intentIds,
+            },
+          ],
+        },
+      },
+    });
+    return links.some(
+      (link) =>
+        intentIds.includes(link.billingModulePaymentIntentId) &&
+        link.orderId !== props.id,
+    );
+  }
+
+  async stopSubscriptionRenewal(props: { id: string }) {
+    const order = await this.findByIdExtended(props);
+    if (await this.hasSharedSubscriptionRenewal(props)) {
+      throw new Error(
+        "Conflict error. Shared recurring payment requires reconciliation before cancellation",
+      );
+    }
+    for (const {
+      billingModulePaymentIntent: intent,
+    } of order.ordersToBillingModulePaymentIntents) {
+      await this.billingModule.paymentIntent.stopSubscriptionRenewal({
+        id: intent.id,
+      });
+    }
+  }
+
   async revokeSubscription(props: { id: string }) {
     const order = await this.findByIdExtended(props);
     if (
@@ -151,6 +208,121 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
   async lockForLifecycle(props: { id: string }) {
     return this.repository.lockForLifecycle(props);
+  }
+
+  async transitionPaymentStatus(props: {
+    id: string;
+    expectedStatus: string;
+    expectedUpdatedAt: string | Date;
+    status: "canceling" | "canceled";
+  }) {
+    const order = await this.findById({ id: props.id });
+    if (
+      !order ||
+      order.status !== props.expectedStatus ||
+      new Date(order.updatedAt).getTime() !==
+        new Date(props.expectedUpdatedAt).getTime()
+    ) {
+      return undefined;
+    }
+    const recoverable =
+      order.type === "history" &&
+      Boolean(order.paymentFailureCanceledAt) &&
+      !order.subscriptionPeriodInvoiceId &&
+      !order.subscriptionPeriodStartsAt &&
+      !order.subscriptionPeriodEndsAt &&
+      !order.subscriptionRevokedAt;
+    const allowed =
+      (props.status === "canceling" && order.status === "paying") ||
+      (props.status === "canceled" &&
+        order.status === "canceling" &&
+        recoverable);
+    if (!allowed) {
+      return undefined;
+    }
+    return this.repository.writePaymentStatus({
+      before: order,
+      status: props.status,
+    });
+  }
+
+  async completePaymentStatus(props: {
+    id: string;
+    expectedStatus: string;
+    expectedUpdatedAt: string | Date;
+    onPaymentSucceeded: (
+      order: (typeof Table)["$inferSelect"],
+    ) => Promise<void>;
+  }) {
+    return this.repository.withLifecycleLock(
+      props.id,
+      async () => {
+        const order = await this.findById({ id: props.id });
+        if (
+          !order ||
+          order.subscriptionRevokedAt ||
+          order.status !== props.expectedStatus ||
+          new Date(order.updatedAt).getTime() !==
+            new Date(props.expectedUpdatedAt).getTime() ||
+          (order.status !== "paying" &&
+            (!order.paymentFailureCanceledAt ||
+              !["canceling", "canceled"].includes(order.status) ||
+              order.type !== "history" ||
+              order.subscriptionPeriodInvoiceId ||
+              order.subscriptionPeriodStartsAt ||
+              order.subscriptionPeriodEndsAt ||
+              order.subscriptionRevokedAt))
+        ) {
+          return undefined;
+        }
+        // The row lock gives one check ownership before project effects run.
+        // Hook failure rolls back and leaves the original payment state retryable.
+        await props.onPaymentSucceeded(order);
+        const afterHook = await this.findById({ id: props.id });
+        if (
+          !afterHook ||
+          afterHook.status !== order.status ||
+          afterHook.subscriptionRevokedAt ||
+          new Date(afterHook.paymentFailureCanceledAt ?? 0).getTime() !==
+            new Date(order.paymentFailureCanceledAt ?? 0).getTime()
+        ) {
+          return undefined;
+        }
+        return this.repository.writePaymentStatus({
+          before: afterHook,
+          status: "paid",
+        });
+      },
+      "no key update",
+    );
+  }
+
+  async deleteCanceledWithoutPayment(props: {
+    id: string;
+    createdBefore: Date;
+  }) {
+    return this.repository.withLifecycleLock(props.id, async () => {
+      const order = await this.findById({ id: props.id });
+      if (
+        !order ||
+        order.status !== "canceled" ||
+        order.paymentFailureCanceledAt ||
+        new Date(order.createdAt) >= props.createdBefore
+      ) {
+        return undefined;
+      }
+      const paymentLinks = await this.ordersToBillingModulePaymentIntents.find({
+        params: {
+          filters: {
+            and: [{ column: "orderId", method: "eq", value: props.id }],
+          },
+        },
+      });
+      if (paymentLinks.length) {
+        return undefined;
+      }
+      return this.delete({ id: props.id });
+    });
   }
 
   async expireSubscriptionPeriod(props: {
@@ -207,8 +379,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   async clearOldOrders(props: IClearOldOrdersExecuteProps) {
     return new ClearOldOrdersService({
       find: (findProps) => this.find(findProps),
-      ordersToBillingModulePaymentIntents:
-        this.ordersToBillingModulePaymentIntents,
+      deleteCanceledWithoutPayment: (input) =>
+        this.deleteCanceledWithoutPayment(input),
     }).execute(props);
   }
 

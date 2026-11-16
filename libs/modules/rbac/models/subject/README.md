@@ -173,6 +173,10 @@ In **Account settings → Purchases**, the buyer can repeat an unpaid order. Aft
 
 The purchase history response includes `purchaseDetails.canRepeatPayment`. An unpaid history order may be `paying`, `canceling`, `canceled` or the legacy `failed`. A succeeded intent, a paid invoice or a recorded subscription period makes it ineligible. The repeat endpoint checks these conditions again before writing.
 
+Checkout claims the cart, prepares payment intents and links each intent to its orders in one Subject transaction. A failure during preparation rolls back that transaction. Provider calls start after commit. If a provider times out, the committed orders remain in history for reconciliation or retry. A subsequent cart replacement therefore keeps the buyer's latest selections.
+
+To resume an existing invoice, the server follows its links through Billing to every order it covers. Checkout returns the invoice only when the buyer selected the complete group. New subscriptions receive separate payment intents so each renewal can be stopped independently.
+
 ## Authentication API
 
 - `GET /rbac/subjects/authentication/init`: initialize anonymous/authenticated session tokens.

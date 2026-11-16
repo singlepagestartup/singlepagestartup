@@ -1,6 +1,9 @@
 import type { IModel as IOrder } from "@sps/ecommerce/models/order/sdk/model";
 import type { Service as SubjectService } from "../../index";
 import type { Repository } from "../../../../repository";
+import type { IModel as IOrderIntent } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/model";
+import type { IModel as IIntentInvoice } from "@sps/billing/relations/payment-intents-to-invoices/sdk/model";
+import type { IModel as IPaymentIntent } from "@sps/billing/models/payment-intent/sdk/model";
 import type { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
 import type { IBillingModule, IEcommerceModule } from "../../../../di";
 
@@ -105,7 +108,7 @@ export class Service {
         const filters = {
           and: [{ column: "orderId", method: "inArray", value: orderIds }],
         };
-        const paymentLinks =
+        const paymentLinks: IOrderIntent[] =
           await ecommerceModule.ordersToBillingModulePaymentIntents.find({
             params: { filters },
           });
@@ -127,13 +130,14 @@ export class Service {
               ),
             ),
           ];
-          const intents = await billingModule.paymentIntent.find({
-            params: {
-              filters: {
-                and: [{ column: "id", method: "inArray", value: intentIds }],
+          const intents: IPaymentIntent[] =
+            await billingModule.paymentIntent.find({
+              params: {
+                filters: {
+                  and: [{ column: "id", method: "inArray", value: intentIds }],
+                },
               },
-            },
-          });
+            });
           const invoiceLinks =
             await billingModule.paymentIntentsToInvoices.find({
               params: {
@@ -169,25 +173,27 @@ export class Service {
           const openInvoices = invoices.filter((invoice) =>
             ["open", "draft"].includes(invoice.status),
           );
-          const allFailed = intentIds.every((id) =>
-            intents.some(
-              (intent: { id: string; status: string }) =>
-                intent.id === id &&
-                ["failed", "canceled"].includes(intent.status),
-            ),
-          );
-          if (openInvoices.length || !allFailed) {
+          const unresolvedIntentIds = intentIds.filter((id) => {
+            const intent = intents.find((entry) => entry.id === id);
+            return !intent || !["failed", "canceled"].includes(intent.status);
+          });
+          if (openInvoices.length || unresolvedIntentIds.length) {
+            const [invoice] = openInvoices;
             if (
-              orderIds.length !== 1 ||
-              !openInvoices.some((invoice) => Boolean(invoice.paymentUrl))
+              openInvoices.length !== 1 ||
+              !invoice.paymentUrl ||
+              intents.length !== intentIds.length ||
+              !(await this.invoiceCoversSelection(
+                invoice.id,
+                orderIds,
+                unresolvedIntentIds,
+              ))
             ) {
               throw new Error(
                 "Conflict error. Cart has an unresolved payment attempt",
               );
             }
-            existingInvoices = openInvoices.filter((invoice) =>
-              Boolean(invoice.paymentUrl),
-            );
+            existingInvoices = [invoice];
           }
         }
         if (props.expectedLines) {
@@ -252,6 +258,58 @@ export class Service {
         }
         return { invoices: existingInvoices };
       },
+    );
+  }
+
+  private async invoiceCoversSelection(
+    invoiceId: string,
+    orderIds: string[],
+    unresolvedIntentIds: string[],
+  ): Promise<boolean> {
+    const { ecommerceModule, billingModule } = this.dependencies;
+    // Follow the invoice back to every intent and order it will settle.
+    // The forward lookup only sees links for orders selected in the cart.
+    const intentLinks: IIntentInvoice[] =
+      await billingModule.paymentIntentsToInvoices.find({
+        params: {
+          filters: {
+            and: [{ column: "invoiceId", method: "eq", value: invoiceId }],
+          },
+        },
+      });
+    const invoiceIntents = new Set(
+      intentLinks.map((link) => link.paymentIntentId),
+    );
+    if (
+      !invoiceIntents.size ||
+      invoiceIntents.size !== unresolvedIntentIds.length ||
+      !unresolvedIntentIds.every((id) => invoiceIntents.has(id))
+    ) {
+      return false;
+    }
+
+    const orderLinks: IOrderIntent[] =
+      await ecommerceModule.ordersToBillingModulePaymentIntents.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "billingModulePaymentIntentId",
+                method: "inArray",
+                value: [...invoiceIntents],
+              },
+            ],
+          },
+        },
+      });
+    const invoiceOrders = new Set(orderLinks.map((link) => link.orderId));
+    const linkedIntents = new Set(
+      orderLinks.map((link) => link.billingModulePaymentIntentId),
+    );
+    return (
+      linkedIntents.size === invoiceIntents.size &&
+      invoiceOrders.size === orderIds.length &&
+      orderIds.every((id) => invoiceOrders.has(id))
     );
   }
 }

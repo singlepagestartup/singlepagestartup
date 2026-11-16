@@ -55,6 +55,7 @@ export interface IPaidFulfillmentEffect {
   accepted: true;
   extendedOrder: IExtendedEcommerceModuleOrder;
   status: string;
+  subscriptionCancellationOrderIds?: string[];
 }
 
 type ISubjectsToEcommerceModuleOrder = Awaited<
@@ -340,7 +341,17 @@ export class Service {
                 },
               });
             }
+            if (extendedOrder.status === "requested_cancelation") {
+              await this.ecommerceModule.order.stopSubscriptionRenewal({
+                id: order.id,
+              });
+            }
           } else if (extendedOrder.status === "canceling") {
+            if (extendedOrder.subscriptionPeriodInvoiceId) {
+              await this.ecommerceModule.order.stopSubscriptionRenewal({
+                id: order.id,
+              });
+            }
             await this.repository.withOrderDelivery(
               {
                 subjectId: subjectToEcommerceModuleOrder.subjectId,
@@ -360,8 +371,37 @@ export class Service {
                     ecommerceModuleOrderId: order.id,
                   },
                 });
-                if (!current || current.order.status !== "canceling") return;
+                if (!current || current.order.status !== "canceling") {
+                  return;
+                }
                 const extendedOrder = current.extendedOrder;
+                if (
+                  extendedOrder.paymentFailureCanceledAt &&
+                  !extendedOrder.subscriptionRevokedAt &&
+                  !extendedOrder.subscriptionPeriodInvoiceId &&
+                  !extendedOrder.subscriptionPeriodStartsAt &&
+                  !extendedOrder.subscriptionPeriodEndsAt
+                ) {
+                  // A late settlement is completed by the ordinary Order check,
+                  // including the project's payment hook and receipt side effects.
+                  const confirmed =
+                    extendedOrder.ordersToBillingModulePaymentIntents.some(
+                      ({ billingModulePaymentIntent: intent }) =>
+                        intent.paymentIntentsToInvoices.some(({ invoice }) =>
+                          isConfirmedInvoice(intent, invoice),
+                        ),
+                    );
+                  if (confirmed) {
+                    return;
+                  }
+                  await this.ecommerceModule.order.transitionPaymentStatus({
+                    id: order.id,
+                    expectedStatus: current.order.status,
+                    expectedUpdatedAt: current.order.updatedAt,
+                    status: "canceled",
+                  });
+                  return;
+                }
                 const activated = Boolean(
                   extendedOrder.subscriptionPeriodInvoiceId,
                 );
@@ -753,6 +793,16 @@ export class Service {
   }
 
   async dispatchPaidEffects(result: IPaidFulfillmentEffect) {
+    for (const id of result.subscriptionCancellationOrderIds ?? []) {
+      try {
+        await this.ecommerceModule.order.stopSubscriptionRenewal({ id });
+      } catch (error) {
+        logger.error("RBAC subscription provider cancellation is pending", {
+          orderId: id,
+          error,
+        });
+      }
+    }
     await this.notifyAdmin({
       extendedEcommerceModuleOrder: result.extendedOrder,
       status: result.status,
@@ -880,6 +930,7 @@ export class Service {
         expectedInvoiceId: props.order.subscriptionPeriodInvoiceId ?? null,
       });
       if (!period.accepted) return;
+      props = { ...props, order: period.order };
     }
 
     const rbacSubjectsToSocialModuleProfiles =
@@ -1002,7 +1053,7 @@ export class Service {
     if (
       props.extendedOrder.checkoutAttributesByCurrency.type == "subscription"
     ) {
-      updateEcommerceOrderData.status = "delivering";
+      updateEcommerceOrderData.status = props.order.status;
     }
 
     if (!subscription) {
@@ -1012,24 +1063,33 @@ export class Service {
       });
     }
 
-    if (subscription && !activated && !free) {
-      await this.requestOtherSubscriptionCancellation(props);
+    let subscriptionCancellationOrderIds: string[] = [];
+    if (subscription && !free) {
+      subscriptionCancellationOrderIds =
+        await this.requestOtherSubscriptionCancellation(props, !activated);
+      if (subscriptionCancellationOrderIds.includes(props.order.id)) {
+        updateEcommerceOrderData.status = "requested_cancelation";
+      }
     }
 
     return {
       accepted: true,
       extendedOrder: props.extendedOrder,
       status: updateEcommerceOrderData.status,
+      subscriptionCancellationOrderIds,
     };
   }
 
-  private async requestOtherSubscriptionCancellation(props: ILifecycleProps) {
+  private async requestOtherSubscriptionCancellation(
+    props: ILifecycleProps,
+    cancelOtherProducts: boolean,
+  ) {
     const ownedOrderIds = await this.ownedOrderIds(
       props.subjectToEcommerceModuleOrder.subjectId,
     );
     const otherIds = ownedOrderIds.filter((id) => id !== props.order.id);
     if (!otherIds.length) {
-      return;
+      return [];
     }
     const now = Date.now();
     const cancellableStatuses = [
@@ -1038,28 +1098,21 @@ export class Service {
       "packaging",
       "delivering",
       "delivered",
+      "requested_cancelation",
     ];
+    const renewableStatuses = [...cancellableStatuses, "expired"];
     const candidates = await this.ecommerceModule.order.find({
       params: {
         filters: {
           and: [
             { column: "id", method: "inArray", value: otherIds },
             { column: "type", method: "eq", value: "history" },
-            {
-              column: "status",
-              method: "inArray",
-              value: cancellableStatuses,
-            },
+            { column: "status", method: "inArray", value: renewableStatuses },
             { column: "subscriptionRevokedAt", method: "isNull", value: null },
             {
               column: "subscriptionPeriodInvoiceId",
               method: "isNotNull",
               value: null,
-            },
-            {
-              column: "subscriptionPeriodEndsAt",
-              method: "gt",
-              value: new Date(now),
             },
           ],
         },
@@ -1069,6 +1122,12 @@ export class Service {
     const productIds = new Set(
       props.extendedOrder.ordersToProducts.map((line) => line.productId),
     );
+    const cancellations = new Set<string>();
+    const currentShared =
+      await this.ecommerceModule.order.hasSharedSubscriptionRenewal({
+        id: props.order.id,
+      });
+    let currentSuperseded = false;
     for (const candidate of candidates) {
       const id = candidate.id;
       if (!otherIds.includes(id)) {
@@ -1079,11 +1138,10 @@ export class Service {
       if (
         !other ||
         other.type !== "history" ||
-        !cancellableStatuses.includes(other.status) ||
+        !renewableStatuses.includes(other.status) ||
         other.subscriptionRevokedAt ||
         !other.subscriptionPeriodInvoiceId ||
-        !other.subscriptionPeriodEndsAt ||
-        new Date(other.subscriptionPeriodEndsAt).getTime() <= now
+        !other.subscriptionPeriodEndsAt
       ) {
         continue;
       }
@@ -1106,17 +1164,64 @@ export class Service {
         continue;
       }
       const extended = await this.getExtendedEcommerceModuleOrderById({ id });
-      if (
-        extended.checkoutAttributesByCurrency.type !== "subscription" ||
+      if (extended.checkoutAttributesByCurrency.type !== "subscription") {
+        continue;
+      }
+      const sameProducts =
+        extended.ordersToProducts.length ===
+          props.extendedOrder.ordersToProducts.length &&
+        extended.ordersToProducts.every((line) =>
+          productIds.has(line.productId),
+        );
+      if (sameProducts) {
+        const otherShared =
+          await this.ecommerceModule.order.hasSharedSubscriptionRenewal({ id });
+        const otherIsNewer =
+          new Date(other.createdAt).getTime() >
+            new Date(props.order.createdAt).getTime() ||
+          (new Date(other.createdAt).getTime() ===
+            new Date(props.order.createdAt).getTime() &&
+            id > props.order.id);
+        if (
+          (otherShared && !currentShared) ||
+          (otherShared === currentShared && otherIsNewer)
+        ) {
+          currentSuperseded = true;
+          continue;
+        }
+        if (otherShared) {
+          continue;
+        }
+      } else if (
+        !cancelOtherProducts ||
         extended.ordersToProducts.some((line) => productIds.has(line.productId))
       ) {
         continue;
       }
+      const coverageEnded =
+        other.status === "expired" ||
+        new Date(other.subscriptionPeriodEndsAt).getTime() <= now;
+      if (coverageEnded && !sameProducts) {
+        continue;
+      }
+      // A locally expired subscription may still have a live provider contract.
       await this.ecommerceModule.order.update({
         id,
-        data: { ...other, status: "requested_cancelation" },
+        data: {
+          ...other,
+          status: coverageEnded ? "canceling" : "requested_cancelation",
+        },
       });
+      cancellations.add(id);
     }
+    if (currentSuperseded && !currentShared) {
+      await this.ecommerceModule.order.update({
+        id: props.order.id,
+        data: { ...props.order, status: "requested_cancelation" },
+      });
+      cancellations.add(props.order.id);
+    }
+    return Array.from(cancellations);
   }
 
   async delivered(props: ILifecycleProps) {

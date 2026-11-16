@@ -15,6 +15,7 @@ export const ECOMMERCE_ORDER_CHECK_STATUSES = [
 
 export class Handler {
   service: Service;
+  private static readonly recoveryCursors = new WeakMap<Service, string>();
 
   constructor(service: Service) {
     this.service = service;
@@ -51,8 +52,52 @@ export class Handler {
         },
       });
 
-      if (currentOrders?.length) {
-        for (const order of currentOrders) {
+      // A separate rotating queue keeps terminal payment failures discoverable
+      // without delaying the current paying/subscription batch.
+      const recoveryRead = (after?: string) => {
+        const and: any[] = [
+          { column: "type", method: "eq", value: "history" },
+          {
+            column: "status",
+            method: "inArray",
+            value: ["canceling", "canceled"],
+          },
+          {
+            column: "paymentFailureCanceledAt",
+            method: "isNotNull",
+            value: null,
+          },
+        ];
+        if (after) {
+          and.push({ column: "id", method: "gt", value: after });
+        }
+        return this.service.ecommerceModule.order.find({
+          params: {
+            filters: { and },
+            limit: ECOMMERCE_ORDER_CHECK_BATCH_LIMIT,
+            orderBy: { and: [{ column: "id", method: "asc" }] },
+          },
+        });
+      };
+      const cursor = Handler.recoveryCursors.get(this.service);
+      let recoveryOrders = await recoveryRead(cursor);
+      if (!recoveryOrders?.length && cursor) {
+        recoveryOrders = await recoveryRead();
+      }
+      if (recoveryOrders?.length) {
+        Handler.recoveryCursors.set(this.service, recoveryOrders.at(-1)!.id);
+      }
+      const orders = [
+        ...new Map(
+          [...(currentOrders ?? []), ...(recoveryOrders ?? [])].map((order) => [
+            order.id,
+            order,
+          ]),
+        ).values(),
+      ];
+
+      if (orders.length) {
+        for (const order of orders) {
           try {
             await ecommerceModuleOrderApi.check({
               id: order.id,

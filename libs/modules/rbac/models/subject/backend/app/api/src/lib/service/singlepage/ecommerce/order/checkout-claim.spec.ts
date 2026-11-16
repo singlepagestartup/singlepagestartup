@@ -188,6 +188,76 @@ it.each(["missing-link", "mixed"])(
   },
 );
 
+it.each(["one shared intent", "one invoice covering two intents"])(
+  "resumes a grouped legacy invoice only for the exact selection with %s",
+  async (scenario) => {
+    const f = fixture();
+    const secondIntent =
+      scenario === "one shared intent" ? "intent" : "second-intent";
+    const orderLinks = [
+      { orderId: "a", billingModulePaymentIntentId: "intent" },
+      { orderId: "b", billingModulePaymentIntentId: secondIntent },
+    ];
+    const intentIds = [
+      ...new Set(orderLinks.map((row) => row.billingModulePaymentIntentId)),
+    ];
+    const invoiceLinks = intentIds.map((paymentIntentId) => ({
+      paymentIntentId,
+      invoiceId: "invoice",
+    }));
+    const invoice = {
+      id: "invoice",
+      status: "open",
+      paymentUrl: "https://pay.test",
+      amount: 200,
+    };
+    function filterRows(
+      rows: Record<string, string>[],
+      {
+        params,
+      }: {
+        params: {
+          filters: {
+            and: { column: string; method: string; value: string | string[] }[];
+          };
+        };
+      },
+    ) {
+      const { column, method, value } = params.filters.and[0];
+      return rows.filter((row) =>
+        method === "eq" ? row[column] === value : value.includes(row[column]),
+      );
+    }
+    f.ecommerceModule.ordersToBillingModulePaymentIntents.find.mockImplementation(
+      async (props) => filterRows(orderLinks, props),
+    );
+    f.billingModule.paymentIntentsToInvoices.find.mockImplementation(
+      async (props) => filterRows(invoiceLinks, props),
+    );
+    f.billingModule.paymentIntent.find.mockImplementation(async (props) =>
+      filterRows(
+        intentIds.map((id) => ({ id, status: "requires_action" })),
+        props,
+      ),
+    );
+    f.billingModule.invoice.find.mockResolvedValue([invoice]);
+
+    await expect(
+      f.operation.execute({ subjectId: "subject", orderIds: ["a"] }),
+    ).rejects.toThrow("unresolved payment");
+    expect(f.ecommerceModule.order.update).not.toHaveBeenCalled();
+
+    await expect(f.operation.execute(f.props)).resolves.toEqual({
+      invoices: [invoice],
+    });
+    expect(
+      f.orders.every(
+        (order) => order.type === "history" && order.status === "paying",
+      ),
+    ).toBe(true);
+  },
+);
+
 it("preserves failed intent links while allowing a cart with no live invoices to start a fresh attempt", async () => {
   const f = fixture();
   f.ecommerceModule.ordersToBillingModulePaymentIntents.find.mockResolvedValue([

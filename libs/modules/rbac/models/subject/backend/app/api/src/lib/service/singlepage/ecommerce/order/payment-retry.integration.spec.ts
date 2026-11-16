@@ -2,9 +2,10 @@
  * PostgreSQL coverage for failed purchases, repeated carts and Subject Roles.
  * Payment confirmation, order reads and fulfillment use the owning services.
  */
+import { api as channelApi } from "@sps/broadcast/models/channel/sdk/server";
 import { randomUUID } from "node:crypto";
 import { Hono } from "hono";
-import { CRUDService } from "@sps/shared-backend-api";
+import { CRUDService, consistencyContext } from "@sps/shared-backend-api";
 import { getPostgresClient } from "@sps/shared-backend-database-config";
 import { logger } from "@sps/backend-utils";
 import { bootstrap as bootstrapOrder } from "@sps/ecommerce/models/order/backend/app/api/src/lib/bootstrap";
@@ -14,6 +15,8 @@ import { Configuration as SubjectConfiguration } from "../../../../configuration
 import { Service as Proceed } from "./proceed";
 import { Service as Grants } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/service";
 import { Service as Balances } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/app/api/src/lib/service";
+import { Handler as PaymentCheck } from "@sps/ecommerce/models/order/backend/app/api/src/lib/controller/startup/find-by-id/check";
+import { Handler as OrderUpdate } from "@sps/ecommerce/models/order/backend/app/api/src/lib/controller/singlepage/update";
 
 const paths = {
   store: "@sps/ecommerce/models/store",
@@ -124,7 +127,10 @@ async function fixture(type = "one_off") {
     data: { slug: `retry-store-${suffix}` },
   });
   const role = await services.role.create({
-    data: { slug: `retry-role-${suffix}`, title: "Purchased fixture role" },
+    data: {
+      slug: `retry-role-${suffix}`,
+      title: `Purchased fixture role ${suffix}`,
+    },
   });
   await services.productRoles.create({
     data: { roleId: role.id, ecommerceModuleProductId: item.id },
@@ -380,6 +386,58 @@ it.each(["processing", "failed"])(
   },
 );
 
+it("resumes a shared legacy invoice only when checkout includes every billed order", async () => {
+  const f = await fixture();
+  const observe = jest
+    .spyOn(channelApi, "pushMessage")
+    .mockResolvedValue(undefined);
+  const first = await f.createCart();
+  await f.order.update({
+    id: first.id,
+    data: { type: "history", status: "paying" },
+  });
+  const second = await f.createCart((await f.createAlternativeProduct()).id);
+  await f.order.update({ id: first.id, data: { type: "cart", status: "new" } });
+
+  const intent = await f.intents.create({
+    data: { amount: 200, status: "processing", type: "one_off" },
+  });
+  const invoice = await f.invoices.create({
+    data: {
+      amount: 200,
+      status: "open",
+      provider: "dummy",
+      paymentUrl: "https://pay.test/grouped",
+    },
+  });
+  await f.order.billingModule.paymentIntentsToInvoices.create({
+    data: { paymentIntentId: intent.id, invoiceId: invoice.id },
+  });
+  for (const order of [first, second]) {
+    await f.order.ordersToBillingModulePaymentIntents.create({
+      data: { orderId: order.id, billingModulePaymentIntentId: intent.id },
+    });
+  }
+
+  const checkout = (orderIds: string[]) =>
+    f.subject.ecommerceOrderCheckout({
+      id: f.buyer.id,
+      provider: "dummy",
+      email: "buyer@example.test",
+      ecommerceModule: { orders: orderIds.map((id) => ({ id })) },
+    });
+  await expect(checkout([first.id])).rejects.toThrow("unresolved payment");
+  expect(observe).not.toHaveBeenCalled();
+  expect((await f.cartsFor()).map((order) => order.id).sort()).toEqual(
+    [first.id, second.id].sort(),
+  );
+  const result = await checkout([first.id, second.id]);
+  expect(result.billingModule.invoices.map((entry) => entry.id)).toEqual([
+    invoice.id,
+  ]);
+  expect(await f.cartsFor()).toHaveLength(0);
+});
+
 it("keeps an existing one-off Role when an unpaid purchase is canceled", async () => {
   const f = await fixture();
   const membership = await f.services.grants.create({
@@ -462,6 +520,120 @@ it.each(["one_off", "subscription"])(
   },
 );
 
+it("rolls back local payment preparation and leaves the original cart editable", async () => {
+  const f = await fixture();
+  const cart = await f.createCart();
+  const original = await f.graph(cart.id);
+  const relations =
+    f.subject.ecommerceModule.ordersToBillingModulePaymentIntents;
+  const create = relations.create.bind(relations);
+  let intentId: string | undefined;
+  jest.spyOn(relations, "create").mockImplementationOnce(async (props) => {
+    const link = await create(props);
+    intentId = link.billingModulePaymentIntentId;
+    throw new Error("local-preparation-failed");
+  });
+  await expect(
+    f.subject.ecommerceOrderCheckout({
+      id: f.buyer.id,
+      provider: "stripe",
+      email: "buyer@example.test",
+      ecommerceModule: { orders: [{ id: cart.id }] },
+    }),
+  ).rejects.toThrow("local-preparation-failed");
+  expect(await f.graph(cart.id)).toEqual(original);
+  expect(await relations.find(where("orderId", cart.id))).toEqual([]);
+  expect(intentId).toBeTruthy();
+  expect(await f.intents.findById({ id: intentId! })).toBeUndefined();
+  expect(globalThis.fetch).not.toHaveBeenCalled();
+});
+
+it.each(["repeat", "add"])(
+  "serializes a concurrent %s behind failed local preparation and preserves the later empty cart",
+  async (mutation) => {
+    const f = await fixture();
+    const source = await f.createCart();
+    await f.attachPayment(source.id, "failed", "failed");
+    await f.check(source.id);
+    const cart = await f.createCart();
+    const original = await f.graph(cart.id);
+    let announcePreparation!: () => void;
+    const preparationEntered = new Promise<void>((resolve) => {
+      announcePreparation = resolve;
+    });
+    let releasePreparation!: () => void;
+    const preparationRelease = new Promise<void>((resolve) => {
+      releasePreparation = resolve;
+    });
+    const relations =
+      f.subject.ecommerceModule.ordersToBillingModulePaymentIntents;
+    const create = relations.create.bind(relations);
+    jest.spyOn(relations, "create").mockImplementationOnce(async (props) => {
+      await create(props);
+      announcePreparation();
+      await preparationRelease;
+      throw new Error("local-preparation-failed");
+    });
+    const checkout = f.subject
+      .ecommerceOrderCheckout({
+        id: f.buyer.id,
+        provider: "stripe",
+        email: "buyer@example.test",
+        ecommerceModule: { orders: [{ id: cart.id }] },
+      })
+      .catch((error) => error);
+    await preparationEntered;
+    let mutationComplete = false;
+    const laterMutation = (
+      mutation === "repeat"
+        ? f.subject.ecommerceModuleOrderRepeat({
+            subjectId: f.buyer.id,
+            orderId: source.id,
+          })
+        : f.subject.ecommerceModuleOrderCreate({
+            subjectId: f.buyer.id,
+            productId: original.products[0].productId,
+            storeId: original.stores[0].storeId,
+            billingModuleCurrencyId:
+              original.currencies[0].billingModuleCurrencyId,
+            quantity: 1,
+          })
+    ).then(
+      (result) => {
+        mutationComplete = true;
+        return result;
+      },
+      (error) => {
+        mutationComplete = true;
+        return error;
+      },
+    );
+    // A separate request still sees the committed cart while preparation holds its lock.
+    expect(await f.graph(cart.id)).toEqual(original);
+    expect(mutationComplete).toBe(false);
+    releasePreparation();
+    expect(await checkout).toEqual(new Error("local-preparation-failed"));
+    const result = await laterMutation;
+    if (mutation === "repeat") {
+      expect(result.orderIds).toHaveLength(1);
+      expect(await f.order.findById({ id: cart.id })).toBeUndefined();
+    } else {
+      expect(result).toEqual(
+        new Error("Conflict error. Product is already in the cart"),
+      );
+      expect(await f.graph(cart.id)).toEqual(original);
+    }
+    const carts = await f.cartsFor();
+    expect(carts).toHaveLength(1);
+    await f.subject.ecommerceModuleOrderMutateCart({
+      subjectId: f.buyer.id,
+      orderId: carts[0].id,
+    });
+    expect(await f.cartsFor()).toEqual([]);
+    expect(await f.order.findById({ id: cart.id })).toBeUndefined();
+  },
+);
+
 it("rejects repeat after Billing confirms payment before the Order check runs", async () => {
   const f = await fixture();
   const original = await f.createCart();
@@ -507,7 +679,7 @@ it("preserves the successful one-off retry Role when late confirmation precedes 
   await f.settle(failed.invoice.id);
   await f.check(source.id);
   await f.proceed.execute({ subjectId: f.buyer.id });
-  expect((await f.order.findById({ id: source.id })).status).toBe("canceled");
+  expect((await f.order.findById({ id: source.id })).status).toBe("approving");
   expect((await f.grantRows()).map((row: any) => row.id)).toEqual([grant.id]);
   expect(await f.grantRows(f.stranger.id)).toHaveLength(0);
   await expect(
@@ -516,6 +688,178 @@ it("preserves the successful one-off retry Role when late confirmation precedes 
       orderId: source.id,
     }),
   ).rejects.toThrow("Only an unpaid history order can be repeated");
+});
+
+it.each([
+  ["one_off", false],
+  ["one_off", true],
+  ["subscription", false],
+  ["subscription", true],
+])(
+  "fulfills a late confirmed %s source once after cleanup=%s",
+  async (type, cleanupBeforeConfirmation) => {
+    const f = await fixture(type as string);
+    const source = await f.createCart();
+    const failed = await f.attachPayment(source.id, "failed", "failed");
+    await f.check(source.id);
+    if (cleanupBeforeConfirmation) {
+      await f.proceed.execute({ subjectId: f.buyer.id });
+    }
+    const failedSource = await f.order.findById({ id: source.id });
+    expect(failedSource.status).toBe(
+      cleanupBeforeConfirmation ? "canceled" : "canceling",
+    );
+    expect(failedSource.paymentFailureCanceledAt).toBeTruthy();
+    expect(await f.grantRows()).toHaveLength(0);
+    await f.settle(failed.invoice.id);
+    await Promise.all([
+      f.check(source.id),
+      f.proceed.execute({ subjectId: f.buyer.id }),
+    ]);
+    await f.check(source.id);
+    await f.proceed.execute({ subjectId: f.buyer.id });
+    const delivered = await f.order.findById({ id: source.id });
+    expect(delivered.status).toBe(
+      type === "subscription" ? "delivering" : "approving",
+    );
+    expect(delivered.paymentFailureCanceledAt).toBeNull();
+    expect(await f.grantRows()).toHaveLength(1);
+    expect(await f.grantRows(f.stranger.id)).toHaveLength(0);
+    await f.settle(failed.invoice.id);
+    await f.check(source.id);
+    await f.proceed.execute({ subjectId: f.buyer.id });
+    expect(await f.order.findById({ id: source.id })).toEqual(delivered);
+    expect(await f.grantRows()).toHaveLength(1);
+    if (type === "subscription") {
+      expect(delivered.subscriptionPeriodInvoiceId).toBe(failed.invoice.id);
+    }
+  },
+);
+
+it.each(["canceling", "canceled"])(
+  "leaves explicit and unmarked legacy %s orders canceled after late settlement",
+  async (status) => {
+    const f = await fixture("subscription");
+    const source = await f.createCart();
+    const failed = await f.attachPayment(source.id, "failed", "failed");
+    await f.check(source.id);
+    await f.order.update({ id: source.id, data: { status } });
+    expect(
+      (await f.order.findById({ id: source.id })).paymentFailureCanceledAt,
+    ).toBeNull();
+    await f.settle(failed.invoice.id);
+    await f.check(source.id);
+    await f.proceed.execute({ subjectId: f.buyer.id });
+    expect((await f.order.findById({ id: source.id })).status).toBe("canceled");
+    expect(await f.grantRows()).toHaveLength(0);
+  },
+);
+
+it("preserves explicit cancellation when a stale late-payment check tries to publish paid", async () => {
+  const f = await fixture();
+  const source = await f.createCart();
+  const failed = await f.attachPayment(source.id, "failed", "failed");
+  await f.check(source.id);
+  await f.proceed.execute({ subjectId: f.buyer.id });
+  await f.settle(failed.invoice.id);
+  const transition = f.order.completePaymentStatus.bind(f.order);
+  jest
+    .spyOn(f.order, "completePaymentStatus")
+    .mockImplementationOnce(async (props: any) => {
+      await f.order.update({ id: source.id, data: { status: "canceled" } });
+      return transition(props);
+    });
+  const hook = jest.spyOn(PaymentCheck.prototype as any, "onPaymentSucceeded");
+  const receipts = jest.spyOn(OrderUpdate.prototype, "onPaymentStatusUpdated");
+  await f.check(source.id);
+  await f.proceed.execute({ subjectId: f.buyer.id });
+  expect((await f.order.findById({ id: source.id })).status).toBe("canceled");
+  expect(await f.grantRows()).toHaveLength(0);
+  expect(hook).not.toHaveBeenCalled();
+  expect(receipts).not.toHaveBeenCalled();
+});
+
+it("runs one successful project hook and receipt pass for simultaneous late-payment checks", async () => {
+  const f = await fixture("subscription");
+  const source = await f.createCart();
+  const failed = await f.attachPayment(source.id, "failed", "failed");
+  await f.check(source.id);
+  await f.proceed.execute({ subjectId: f.buyer.id });
+  await f.settle(failed.invoice.id);
+  const hook = jest.spyOn(PaymentCheck.prototype as any, "onPaymentSucceeded");
+  const receipts = jest.spyOn(OrderUpdate.prototype, "onPaymentStatusUpdated");
+  await Promise.all(Array.from({ length: 4 }, () => f.check(source.id)));
+  expect(hook).toHaveBeenCalledTimes(1);
+  expect(receipts).toHaveBeenCalledTimes(1);
+  await f.proceed.execute({ subjectId: f.buyer.id });
+  expect(await f.grantRows()).toHaveLength(1);
+});
+
+it("allows the project hook to create an Order child through an independent database connection", async () => {
+  const f = await fixture();
+  const source = await f.createCart();
+  const payment = await f.attachPayment(source.id);
+  await f.settle(payment.invoice.id);
+  const [line] = await f.lines.find(where("orderId", source.id));
+  const hook = jest.spyOn(PaymentCheck.prototype as any, "onPaymentSucceeded");
+  hook.mockImplementationOnce(async () => {
+    const context = consistencyContext.getStore();
+    await consistencyContext.run({ ...context, database: undefined }, () =>
+      f.lines.create({
+        data: { orderId: source.id, productId: line.productId, quantity: 1 },
+      }),
+    );
+    await f.order.update({
+      id: source.id,
+      data: { comment: "Project payment hook finished" },
+    });
+  });
+  await f.check(source.id);
+  expect(await f.lines.find(where("orderId", source.id))).toHaveLength(2);
+  expect(await f.order.findById({ id: source.id })).toMatchObject({
+    status: "paid",
+    comment: "Project payment hook finished",
+  });
+});
+
+it("retains automatically canceled payment history during cleanup and rejects stale cleanup after recovery", async () => {
+  const f = await fixture();
+  const source = await f.createCart();
+  const failed = await f.attachPayment(source.id, "failed", "failed");
+  await f.check(source.id);
+  await f.proceed.execute({ subjectId: f.buyer.id });
+  const cleanup = {
+    id: source.id,
+    createdBefore: new Date(Date.now() + 10000),
+  };
+  await f.order.deleteCanceledWithoutPayment(cleanup);
+  expect((await f.order.findById({ id: source.id })).status).toBe("canceled");
+  await f.settle(failed.invoice.id);
+  await f.check(source.id);
+  await f.order.deleteCanceledWithoutPayment(cleanup);
+  expect((await f.order.findById({ id: source.id })).status).toBe("paid");
+  await f.proceed.execute({ subjectId: f.buyer.id });
+  expect(await f.grantRows()).toHaveLength(1);
+});
+
+it("does not restore an unpaid subscription revoked before its late payment", async () => {
+  const f = await fixture("subscription");
+  const membership = await f.services.grants.create({
+    data: { subjectId: f.buyer.id, roleId: f.role.id },
+  });
+  const source = await f.createCart();
+  const failed = await f.attachPayment(source.id, "failed", "failed");
+  await f.check(source.id);
+  await f.proceed.execute({ subjectId: f.buyer.id });
+  await f.services.grants.delete({ id: membership.id });
+  expect(
+    (await f.order.findById({ id: source.id })).subscriptionRevokedAt,
+  ).toBeTruthy();
+  await f.settle(failed.invoice.id);
+  await f.check(source.id);
+  await f.proceed.execute({ subjectId: f.buyer.id });
+  expect((await f.order.findById({ id: source.id })).status).toBe("canceled");
+  expect(await f.grantRows()).toHaveLength(0);
 });
 
 it.each([false, true])(
@@ -666,3 +1010,82 @@ it("restores the replaced cart and its lines when the last currency relation fai
   expect(await f.graph(source.id)).toEqual(sourceGraph);
   expect(await f.graph(foreignCart.id)).toEqual(foreignGraph);
 });
+
+it.each(["source-first", "retry-first"])(
+  "keeps one renewable subscription and credits both paid retries with %s settlement",
+  async (sequence) => {
+    const f = await fixture("subscription");
+    const source = await f.createCart();
+    const token = await f.order.billingModule.currency.create({
+      data: {
+        slug: `retry-token-${randomUUID()}`,
+        title: "Token",
+        symbol: "T",
+      },
+    });
+    const topupKey = await f.order.product.attributeKey.create({
+      data: { slug: `retry-topup-${randomUUID()}`, type: "topup" },
+    });
+    const topup = await f.order.product.attribute.create({
+      data: { number: "5000" },
+    });
+    const [line] = await f.lines.find(where("orderId", source.id));
+    await f.order.product.productsToAttributes.create({
+      data: { productId: line.productId, attributeId: topup.id },
+    });
+    await f.order.product.attributeKeysToAttributes.create({
+      data: { attributeKeyId: topupKey.id, attributeId: topup.id },
+    });
+    await f.order.product.attributesToBillingModuleCurrencies.create({
+      data: { attributeId: topup.id, billingModuleCurrencyId: token.id },
+    });
+    const originalPayment = await f.attachPayment(
+      source.id,
+      "failed",
+      "failed",
+    );
+    await f.check(source.id);
+    const repeated = await f.subject.ecommerceModuleOrderRepeat({
+      subjectId: f.buyer.id,
+      orderId: source.id,
+    });
+    const [retryId] = repeated.orderIds;
+    const retryPayment = await f.attachPayment(retryId);
+    const attempts = [
+      { orderId: source.id, invoiceId: originalPayment.invoice.id },
+      { orderId: retryId, invoiceId: retryPayment.invoice.id },
+    ];
+    if (sequence === "retry-first") {
+      attempts.reverse();
+    }
+    for (const attempt of attempts) {
+      await f.settle(attempt.invoiceId);
+      await f.check(attempt.orderId);
+      await f.proceed.execute({ subjectId: f.buyer.id });
+    }
+    for (const attempt of attempts) {
+      await f.settle(attempt.invoiceId);
+      await f.check(attempt.orderId);
+      await f.proceed.execute({ subjectId: f.buyer.id });
+    }
+    const original = await f.order.findById({ id: source.id });
+    const retry = await f.order.findById({ id: retryId });
+    expect(original.status).toBe("requested_cancelation");
+    expect(retry.status).toBe("delivering");
+    expect(original.subscriptionPeriodInvoiceId).toBe(
+      originalPayment.invoice.id,
+    );
+    expect(retry.subscriptionPeriodInvoiceId).toBe(retryPayment.invoice.id);
+    expect(original.subscriptionRevokedAt).toBeNull();
+    expect(retry.subscriptionRevokedAt).toBeNull();
+    expect(await f.grantRows()).toHaveLength(1);
+    const balances = await f.services.balances.find(
+      where("subjectId", f.buyer.id),
+    );
+    expect(
+      balances.find(
+        (balance: any) => balance.billingModuleCurrencyId === token.id,
+      ).amount,
+    ).toBe("10000");
+  },
+);

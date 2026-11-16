@@ -34,6 +34,7 @@ describe("server managed subscription period", () => {
     "subscriptionPeriodEndsAt",
     "subscriptionPeriodInvoiceId",
     "subscriptionRevokedAt",
+    "paymentFailureCanceledAt",
   ])(
     "rejects injected %s on create/update/conditional writes",
     async (field) => {
@@ -72,6 +73,19 @@ describe("server managed subscription period", () => {
       status: "delivering",
       updatedAt: record.updatedAt,
       comment: "changed",
+    });
+  });
+
+  it("clears automatic recovery when a caller explicitly cancels the order", async () => {
+    repository.findFirstByField = jest.fn().mockResolvedValue({
+      ...record,
+      status: "canceled",
+      paymentFailureCanceledAt: new Date(),
+    });
+    await repository.updateFirstByField("id", "order", { status: "canceled" });
+    expect(update).toHaveBeenCalledWith("id", "order", {
+      status: "canceled",
+      paymentFailureCanceledAt: null,
     });
   });
 

@@ -169,6 +169,25 @@ function Checkout(props: IComponentPropsExtended) {
     }
   }
 
+  if (paymentUrls.length) {
+    return (
+      <div className="flex flex-col gap-2 px-6 py-5">
+        {paymentUrls.map((paymentUrl) => (
+          <Button
+            key={paymentUrl}
+            variant="primary"
+            className="min-h-11 w-full shrink-0 rounded-xl"
+            asChild={true}
+          >
+            <Link href={paymentUrl} target="_blank">
+              {text.checkout}
+            </Link>
+          </Button>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <Form
       data-module="rbac"
@@ -280,53 +299,34 @@ function Checkout(props: IComponentPropsExtended) {
                     label={text.email}
                     placeholder="name@example.com"
                   />
-                  {error && (
-                    <p role="alert" className="text-sm text-destructive">
-                      {error}
-                    </p>
-                  )}
-                  {paymentUrls.length ? (
-                    <div className="flex flex-col gap-2">
-                      {paymentUrls.map((paymentUrl, index) => {
-                        return (
-                          <Button
-                            key={index}
-                            variant="primary"
-                            className="flex min-h-11 w-full shrink-0 rounded-xl"
-                            asChild={true}
-                          >
-                            <Link href={paymentUrl} target="_blank">
-                              {text.checkout}
-                            </Link>
-                          </Button>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <Button
-                      onClick={form.handleSubmit(onSubmit, () =>
-                        setError(text.invalidForm),
-                      )}
-                      variant="primary"
-                      className="flex min-h-11 w-full shrink-0 rounded-xl"
-                      disabled={
-                        ecommerceModuleOrderCheckout.isPending ||
-                        hasUnpriced ||
-                        hasInvalidCurrency ||
-                        updatingCart ||
-                        refreshingCart
-                      }
-                    >
-                      {ecommerceModuleOrderCheckout.isPending
-                        ? text.checkingOut
-                        : text.checkout}
-                    </Button>
-                  )}
+                  <Button
+                    onClick={form.handleSubmit(onSubmit, () =>
+                      setError(text.invalidForm),
+                    )}
+                    variant="primary"
+                    className="flex min-h-11 w-full shrink-0 rounded-xl"
+                    disabled={
+                      ecommerceModuleOrderCheckout.isPending ||
+                      hasUnpriced ||
+                      hasInvalidCurrency ||
+                      updatingCart ||
+                      refreshingCart
+                    }
+                  >
+                    {ecommerceModuleOrderCheckout.isPending
+                      ? text.checkingOut
+                      : text.checkout}
+                  </Button>
                 </div>
               </>
             );
           }}
         </Subject>
+        {error && (
+          <p role="alert" className="px-6 pb-5 text-sm text-destructive">
+            {error}
+          </p>
+        )}
       </div>
     </Form>
   );

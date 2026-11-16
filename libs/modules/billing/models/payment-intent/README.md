@@ -33,6 +33,20 @@ that runs without real payments; `apps/api/create_env.sh` lists it for local
 development. The check is `Service.isProviderAllowed`, which a project can
 override in its `startup` service.
 
+The internal `stopSubscriptionRenewal` capability stops future Stripe charges
+with `cancel_at_period_end`, after checking the subscription's Payment Intent
+metadata. It preserves paid Invoices and the current paid period. Already
+canceled Stripe subscriptions and repeated calls are safe. Provider failures
+leave Order cancellation pending for the next Proceed check.
+
+The standard CloudPayments, TipTopPay, 0xProcessing, Payselection, PayKeeper,
+Telegram Stars and dummy adapters create individual payments, even when an
+older intent retains `type = subscription`. They have no remote renewal contract
+to cancel. One-off intents and zero-price payments also require no provider
+cancellation. A custom adapter with recurring charges must override
+`subscriptionRenewalContext` and `stopSubscriptionRenewal` in its owning startup
+service. Unknown recurring providers fail explicitly and remain pending.
+
 ## PayKeeper webhook identifiers
 
 ## Atomic payment confirmation

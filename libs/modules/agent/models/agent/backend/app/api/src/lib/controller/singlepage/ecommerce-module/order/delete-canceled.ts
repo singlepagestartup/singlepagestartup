@@ -3,7 +3,6 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../service";
 import { getHttpErrorType, logger } from "@sps/backend-utils";
-import { api as ecommerceModuleOrderApi } from "@sps/ecommerce/models/order/sdk/server";
 
 export class Handler {
   service: Service;
@@ -19,6 +18,7 @@ export class Handler {
       }
 
       logger.info("Ecommerce module order delete canceled started");
+      const createdBefore = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
 
       const canceledOrders = await this.service.ecommerceModule.order.find({
         params: {
@@ -30,11 +30,14 @@ export class Handler {
                 value: "canceled",
               },
               {
+                column: "paymentFailureCanceledAt",
+                method: "isNull",
+                value: null,
+              },
+              {
                 column: "createdAt",
                 method: "lt",
-                value: new Date(
-                  Date.now() - 2 * 24 * 60 * 60 * 1000,
-                ).toISOString(),
+                value: createdBefore.toISOString(),
               },
             ],
           },
@@ -44,14 +47,12 @@ export class Handler {
       if (canceledOrders?.length) {
         for (const order of canceledOrders) {
           try {
-            await ecommerceModuleOrderApi.delete({
-              id: order.id,
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                },
+            await this.service.ecommerceModule.order.deleteCanceledWithoutPayment(
+              {
+                id: order.id,
+                createdBefore,
               },
-            });
+            );
           } catch (error: any) {
             // logger.error("Ecommerce module order check failed", {
             //   error: error,

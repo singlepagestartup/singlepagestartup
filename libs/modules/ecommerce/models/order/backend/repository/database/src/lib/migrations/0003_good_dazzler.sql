@@ -1,0 +1,1 @@
+ALTER TABLE "sps_ee_order" ADD COLUMN "payment_failure_canceled_at" timestamp;

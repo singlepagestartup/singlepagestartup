@@ -9,6 +9,13 @@
 const mockOrderUpdate = jest.fn();
 const mockOrderExpire = jest.fn();
 const mockPaymentIntentUpdate = jest.fn();
+const mockOrderComplete = jest.fn();
+
+jest.mock("../../update", () => ({
+  Handler: class {
+    onPaymentStatusUpdated = jest.fn();
+  },
+}));
 
 jest.mock("@sps/shared-utils", () => ({
   RBAC_SECRET_KEY: "test-rbac-secret",
@@ -63,6 +70,7 @@ describe("Given: a delivering subscription with an hourly interval", () => {
     };
     const service = {
       findById: jest.fn().mockResolvedValue(order),
+      completePaymentStatus: mockOrderComplete,
       expireSubscriptionPeriod: mockOrderExpire,
       findByIdCheckoutAttributesByCurrency: jest.fn().mockResolvedValue({
         amount: 1,
@@ -137,6 +145,8 @@ describe("Given: a paying order is waiting for payment initialization", () => {
     const paymentIntents = props.paymentIntents ?? {};
     const service = {
       findById: jest.fn().mockResolvedValue(order),
+      completePaymentStatus: mockOrderComplete,
+      transitionPaymentStatus: mockOrderUpdate,
       expireSubscriptionPeriod: mockOrderExpire,
       findByIdCheckoutAttributesByCurrency: jest.fn(),
       ordersToBillingModuleCurrencies: {
@@ -147,6 +157,7 @@ describe("Given: a paying order is waiting for payment initialization", () => {
       },
       billingModule: {
         paymentIntent: {
+          failUninitializedPaymentIntent: mockPaymentIntentUpdate,
           findById: jest.fn().mockImplementation(({ id }: { id: string }) => {
             return Promise.resolve(paymentIntents[id]);
           }),
@@ -226,31 +237,34 @@ describe("Given: a paying order is waiting for payment initialization", () => {
 
     await new Handler(service as any).execute(context as any, undefined);
 
-    expect(mockPaymentIntentUpdate).toHaveBeenCalledWith({
-      id: paymentIntent.id,
-      data: {
-        ...paymentIntent,
-        status: "failed",
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": "test-rbac-secret",
-        },
-      },
-    });
+    expect(mockPaymentIntentUpdate).toHaveBeenCalledWith(
+      paymentIntent.id,
+      new Date(Date.now() - PAYMENT_INITIALIZATION_GRACE_PERIOD_MS),
+    );
     expect(mockOrderUpdate).toHaveBeenCalledWith({
       id: order.id,
-      data: {
-        ...order,
-        status: "canceling",
-        type: "history",
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": "test-rbac-secret",
-        },
-      },
+      status: "canceling",
+      expectedStatus: order.status,
+      expectedUpdatedAt: order.updatedAt,
     });
+  });
+
+  it("accepts confirmed payment before applying the seven-day recovery timeout", async () => {
+    const { context, order, service } = createPayingContext({
+      updatedAt: "2026-07-01T00:00:00.000Z",
+      orderToPaymentIntents: [{ billingModulePaymentIntentId: "late" }],
+      paymentIntents: { late: { id: "late", status: "succeeded" } },
+    });
+    await new Handler(service as any).execute(context as any, undefined);
+    expect(mockOrderUpdate).not.toHaveBeenCalled();
+    expect(mockOrderComplete).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: order.id,
+        expectedStatus: "paying",
+        expectedUpdatedAt: order.updatedAt,
+        onPaymentSucceeded: expect.any(Function),
+      }),
+    );
   });
 });
 

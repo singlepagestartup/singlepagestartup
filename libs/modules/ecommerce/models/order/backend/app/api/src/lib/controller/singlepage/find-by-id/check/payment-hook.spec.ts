@@ -6,6 +6,11 @@
  */
 const mockUpdate = jest.fn();
 const mockHook = jest.fn();
+jest.mock("../../update", () => ({
+  Handler: class {
+    onPaymentStatusUpdated = jest.fn();
+  },
+}));
 jest.mock("@sps/shared-utils", () => ({ RBAC_SECRET_KEY: "test-key" }));
 jest.mock("@sps/backend-utils", () => ({
   getHttpErrorType: (error: Error) => ({ status: 500, message: error.message }),
@@ -31,6 +36,14 @@ function fixture(status = "succeeded") {
   };
   const service = {
     findById: jest.fn().mockResolvedValue(order),
+    completePaymentStatus: jest
+      .fn()
+      .mockImplementation(async ({ onPaymentSucceeded }) => {
+        await onPaymentSucceeded(order);
+        const paid = { ...order, status: "paid" };
+        await mockUpdate({ data: paid });
+        return paid;
+      }),
     ordersToBillingModuleCurrencies: { find: jest.fn().mockResolvedValue([]) },
     ordersToBillingModulePaymentIntents: {
       find: jest

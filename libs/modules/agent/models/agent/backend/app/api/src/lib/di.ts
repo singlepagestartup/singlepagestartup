@@ -1,5 +1,6 @@
 import type { Service as BroadcastChannelService } from "@sps/broadcast/models/channel/backend/app/api/src/lib/service";
 import type { Service as BroadcastMessageService } from "@sps/broadcast/models/message/backend/app/api/src/lib/service";
+import type { Service as EcommerceOrderService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service";
 export interface IReadService {
   find: (props?: any) => Promise<any>;
   findById: (props: { id: string }) => Promise<any>;
@@ -42,7 +43,8 @@ export interface IRbacModule {
 }
 
 export interface IEcommerceModule {
-  order: IReadService;
+  order: IReadService &
+    Pick<EcommerceOrderService, "deleteCanceledWithoutPayment">;
   product: IReadService;
   attribute: IReadService;
   attributeKey: IReadService;
