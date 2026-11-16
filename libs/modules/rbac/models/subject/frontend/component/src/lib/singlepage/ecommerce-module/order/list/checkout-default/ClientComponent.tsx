@@ -16,6 +16,7 @@ import {
 import { Component as Row } from "./Row";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { Truck } from "lucide-react";
 import { useIsFetching, useIsMutating } from "@tanstack/react-query";
 import { route } from "@sps/rbac/models/subject/sdk/model";
 
@@ -51,6 +52,10 @@ function Checkout(props: IComponentPropsExtended) {
           checkoutError: "Не удалось оформить заказ. Попробуйте ещё раз.",
           emptyCart: "В корзине пока нет товаров.",
           total: "Итого",
+          pricedItems: "Товары с ценой",
+          delivery: "Доставка",
+          deliveryNote:
+            "Для цифровых товаров адрес не нужен. Доставка физических товаров пока недоступна.",
           unpriced:
             "У некоторых товаров нет цены. Удалите их из корзины перед оплатой.",
           invalidCurrency: "Выберите валюту оплаты для каждого заказа.",
@@ -67,6 +72,10 @@ function Checkout(props: IComponentPropsExtended) {
           checkoutError: "Could not place your order. Please try again.",
           emptyCart: "Your cart is empty.",
           total: "Total",
+          pricedItems: "Priced items",
+          delivery: "Delivery",
+          deliveryNote:
+            "Digital items do not need a shipping address. Shipping for physical items is currently unavailable.",
           unpriced:
             "Some products have no price. Remove them from your cart before paying.",
           invalidCurrency: "Choose a payment currency for each order.",
@@ -190,7 +199,7 @@ function Checkout(props: IComponentPropsExtended) {
       data-variant={props.data.variant}
       {...form}
     >
-      <div className="flex h-full min-h-0 w-full flex-col">
+      <div className="flex h-full min-h-0 w-full flex-col overflow-y-auto">
         <Subject
           isServer={false}
           variant="ecommerce-module-order-list-default"
@@ -236,18 +245,36 @@ function Checkout(props: IComponentPropsExtended) {
             }
             return (
               <>
-                <ul className="min-h-0 flex-1 divide-y divide-border overflow-y-auto px-6 py-6">
-                  {orders.map((order) => (
-                    <Row
-                      key={order.id}
-                      subject={props.data}
-                      ecommerceModuleOrder={order}
-                      language={props.language}
+                <div className="min-h-28 flex-1 overflow-y-auto px-4 py-5 sm:px-6">
+                  <ul className="space-y-3">
+                    {orders.map((order) => (
+                      <Row
+                        key={order.id}
+                        subject={props.data}
+                        ecommerceModuleOrder={order}
+                        language={props.language}
+                      />
+                    ))}
+                  </ul>
+                  <section
+                    className="mt-5 flex items-start gap-3 border-t border-border pt-4"
+                    aria-label={text.delivery}
+                  >
+                    <Truck
+                      aria-hidden="true"
+                      className="mt-0.5 size-5 shrink-0 text-muted-foreground"
+                      strokeWidth={1.5}
                     />
-                  ))}
-                </ul>
+                    <div className="min-w-0">
+                      <h3 className="text-sm font-semibold">{text.delivery}</h3>
+                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                        {text.deliveryNote}
+                      </p>
+                    </div>
+                  </section>
+                </div>
                 <form
-                  className="shrink-0 space-y-3 border-t border-border px-6 py-5"
+                  className="shrink-0 space-y-3 border-t border-border px-4 py-4 sm:px-6 sm:py-5"
                   noValidate
                   onSubmitCapture={(event) => syncReceiptEmail(event, form)}
                   onSubmit={form.handleSubmit(
@@ -255,23 +282,27 @@ function Checkout(props: IComponentPropsExtended) {
                     () => setError(""),
                   )}
                 >
-                  <h3 className="text-sm font-medium text-muted-foreground">
-                    {text.total}
-                  </h3>
-                  {[...totals.values()].map((total) => (
-                    <p
-                      key={total.billingModuleCurrency.id}
-                      className="text-2xl font-semibold"
-                    >
-                      {new Intl.NumberFormat(
-                        props.language === "ru" ? "ru-RU" : "en-US",
-                        {
-                          maximumFractionDigits: 2,
-                        },
-                      ).format(total.total)}{" "}
-                      {total.billingModuleCurrency.symbol}
-                    </p>
-                  ))}
+                  <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <h3 className="text-base font-semibold">
+                      {hasUnpriced ? text.pricedItems : text.total}
+                    </h3>
+                    <div className="text-right tabular-nums">
+                      {[...totals.values()].map((total) => (
+                        <p
+                          key={total.billingModuleCurrency.id}
+                          className="text-2xl font-semibold"
+                        >
+                          {new Intl.NumberFormat(
+                            props.language === "ru" ? "ru-RU" : "en-US",
+                            {
+                              maximumFractionDigits: 2,
+                            },
+                          ).format(total.total)}{" "}
+                          {total.billingModuleCurrency.symbol}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
                   {hasUnpriced && (
                     <p role="alert" className="text-sm text-destructive">
                       {text.unpriced}

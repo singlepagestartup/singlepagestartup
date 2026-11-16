@@ -189,6 +189,26 @@ describe("Given: order list checkout component", () => {
     });
   });
 
+  it("shows delivery once for a nonempty cart without adding a shipping option, price or required field", () => {
+    cartOrders.push({ ...cartOrders[0], id: "order-2" });
+    const props = {
+      isServer: false,
+      variant: "ecommerce-module-order-list-checkout-default" as const,
+      data: { id: "subject-1" } as any,
+      language: "en",
+    };
+    const view = render(<Component {...props} />);
+    const delivery = screen.getByRole("region", { name: "Delivery" });
+    expect(delivery.textContent).toContain(
+      "Digital items do not need a shipping address",
+    );
+    expect(delivery.querySelector("input,select,button,a")).toBeNull();
+    expect(screen.getByText("200 ₽")).toBeTruthy();
+    cartOrders = [];
+    view.rerender(<Component {...props} />);
+    expect(screen.queryByRole("region", { name: "Delivery" })).toBeNull();
+  });
+
   it("When: checkout returns one invoice Then: browser redirects to payment URL", async () => {
     mutateAsyncMock.mockResolvedValue({
       billingModule: {

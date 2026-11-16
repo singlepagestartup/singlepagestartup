@@ -9,16 +9,19 @@ import { IModel as IEcommerceModuleStore } from "@sps/ecommerce/models/store/sdk
 
 export const variant = "ecommerce-module-order-delete-default" as const;
 
-export interface IComponentProps
-  extends IParentComponentProps<IModel, typeof variant> {
+export interface IComponentProps extends IParentComponentProps<
+  IModel,
+  typeof variant
+> {
   language: string;
+  label?: string;
+  iconOnly?: boolean;
   ecommerceModuleOrder: IEcommerceModuleOrder;
   ecommerceModuleStore?: IEcommerceModuleStore;
 }
 
-export interface IComponentPropsExtended
-  extends IParentComponentPropsExtended<
-    IModel,
-    typeof variant,
-    IComponentProps
-  > {}
+export interface IComponentPropsExtended extends IParentComponentPropsExtended<
+  IModel,
+  typeof variant,
+  IComponentProps
+> {}

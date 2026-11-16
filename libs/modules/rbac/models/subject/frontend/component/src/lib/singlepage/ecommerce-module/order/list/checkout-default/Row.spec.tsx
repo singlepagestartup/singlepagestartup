@@ -46,13 +46,18 @@ jest.mock("@sps/ui-adapter", () => ({
   ),
 }));
 jest.mock("@sps/ecommerce/models/product/frontend/component", () => ({
-  Component: ({ children }: any) => <div>{children}</div>,
+  Component: ({ children, priceSlot }: any) => (
+    <article>
+      {priceSlot}
+      {children}
+    </article>
+  ),
 }));
 jest.mock("@sps/ecommerce/models/order/frontend/component", () => ({
   Component: () => null,
 }));
 jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
-  Component: () => null,
+  Component: ({ label }: any) => <button type="button">{label}</button>,
 }));
 const props: any = {
   subject: { id: "owner" },
@@ -124,7 +129,12 @@ it("changes only the selected order currency and waits for the authorized cart r
     },
   };
   const view = render(<Component {...currencyProps} />);
-  expect(screen.getByText("10 $")).toBeTruthy();
+  expect(screen.getByText("10 $").closest("article")).toBeTruthy();
+  expect(
+    screen
+      .getByRole("button", { name: "Удалить из корзины: Курс" })
+      .closest("article"),
+  ).toBeTruthy();
   expect(screen.queryByText("100 ₽")).toBeNull();
   fireEvent.change(screen.getByLabelText("Валюта оплаты"), {
     target: { value: "rub" },
@@ -153,6 +163,44 @@ it("changes only the selected order currency and waits for the authorized cart r
   );
   expect(screen.getByText("100 ₽")).toBeTruthy();
   expect(screen.queryByText("10 $")).toBeNull();
+});
+it("keeps the price and remove action attached to the order when several products share it", () => {
+  const details = props.ecommerceModuleOrder.cartDetails;
+  render(
+    <Component
+      {...props}
+      language="en"
+      ecommerceModuleOrder={{
+        ...props.ecommerceModuleOrder,
+        cartDetails: {
+          ...details,
+          billingModuleCurrencyId: "usd",
+          availableCurrencyIds: ["usd"],
+          totals: [
+            {
+              total: 3,
+              billingModuleCurrency: { id: "usd", slug: "usd", symbol: "$" },
+            },
+            {
+              total: 6,
+              billingModuleCurrency: { id: "usd", slug: "usd", symbol: "$" },
+            },
+          ],
+          lines: [details.lines[0], { ...details.lines[0], id: "second" }],
+        },
+      }}
+    />,
+  );
+  expect(screen.getAllByRole("article")).toHaveLength(2);
+  expect(screen.getByText("9 $").closest("article")).toBeNull();
+  expect(
+    screen
+      .getByRole("button", { name: "Remove item group" })
+      .closest("article"),
+  ).toBeNull();
+  expect(
+    screen.getAllByRole("button", { name: "Increase quantity" }),
+  ).toHaveLength(2);
 });
 it("requires an explicit choice when a legacy selection is no longer priced", () => {
   render(
