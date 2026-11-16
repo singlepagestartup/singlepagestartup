@@ -423,10 +423,12 @@ it("resumes a shared legacy invoice only when checkout includes every billed ord
     });
   }
 
+  const comment = "Please call before arrival.\nUse the side entrance.";
   const checkout = (orderIds: string[]) =>
     f.subject.ecommerceOrderCheckout({
       id: f.buyer.id,
       provider: "dummy",
+      comment,
       email: "buyer@example.test",
       ecommerceModule: { orders: orderIds.map((id) => ({ id })) },
     });
@@ -440,6 +442,9 @@ it("resumes a shared legacy invoice only when checkout includes every billed ord
     invoice.id,
   ]);
   expect(await f.cartsFor()).toHaveLength(0);
+  for (const id of [first.id, second.id]) {
+    expect((await f.order.findById({ id })).comment).toBe(comment);
+  }
 });
 
 it("keeps an existing one-off Role when an unpaid purchase is canceled", async () => {

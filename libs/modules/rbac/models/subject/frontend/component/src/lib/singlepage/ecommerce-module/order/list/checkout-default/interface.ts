@@ -41,3 +41,8 @@ export interface ICurrencyProps extends Pick<
   IRowProps,
   "subject" | "ecommerceModuleOrder" | "language"
 > {}
+
+export interface IDeliveryProps {
+  language: string;
+  currencySlug?: string;
+}

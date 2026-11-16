@@ -16,7 +16,8 @@ import {
 import { Component as Row } from "./Row";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Truck } from "lucide-react";
+import { OrderComment } from "../../checkout-default/OrderComment";
+import { Delivery } from "./Delivery";
 import { useIsFetching, useIsMutating } from "@tanstack/react-query";
 import { route } from "@sps/rbac/models/subject/sdk/model";
 
@@ -53,9 +54,6 @@ function Checkout(props: IComponentPropsExtended) {
           emptyCart: "В корзине пока нет товаров.",
           total: "Итого",
           pricedItems: "Товары с ценой",
-          delivery: "Доставка",
-          deliveryNote:
-            "Для цифровых товаров адрес не нужен. Доставка физических товаров пока недоступна.",
           unpriced:
             "У некоторых товаров нет цены. Удалите их из корзины перед оплатой.",
           invalidCurrency: "Выберите валюту оплаты для каждого заказа.",
@@ -73,9 +71,6 @@ function Checkout(props: IComponentPropsExtended) {
           emptyCart: "Your cart is empty.",
           total: "Total",
           pricedItems: "Priced items",
-          delivery: "Delivery",
-          deliveryNote:
-            "Digital items do not need a shipping address. Shipping for physical items is currently unavailable.",
           unpriced:
             "Some products have no price. Remove them from your cart before paying.",
           invalidCurrency: "Choose a payment currency for each order.",
@@ -99,6 +94,7 @@ function Checkout(props: IComponentPropsExtended) {
         text.invalidProvider,
       ),
     email: z.string().trim().email(text.invalidEmail),
+    comment: z.string().trim().optional(),
   });
 
   const [paymentUrls, setPaymentUrls] = useState<string[]>([]);
@@ -131,6 +127,7 @@ function Checkout(props: IComponentPropsExtended) {
     defaultValues: {
       provider: "stripe",
       email: "",
+      comment: "",
     },
   });
 
@@ -145,7 +142,9 @@ function Checkout(props: IComponentPropsExtended) {
       const res = await ecommerceModuleOrderCheckout.mutateAsync({
         id: props.data.id,
         data: {
-          ...data,
+          provider: data.provider,
+          email: data.email,
+          ...(data.comment ? { comment: data.comment } : {}),
           ecommerceModule: { orders: orders.map(({ id }) => ({ id })) },
         },
       });
@@ -245,7 +244,7 @@ function Checkout(props: IComponentPropsExtended) {
             }
             return (
               <>
-                <div className="min-h-28 flex-1 overflow-y-auto px-4 py-5 sm:px-6">
+                <div className="flex-1 px-4 py-5 sm:px-6 [@media(min-height:740px)]:min-h-36 [@media(min-height:740px)]:overflow-y-auto">
                   <ul className="space-y-3">
                     {orders.map((order) => (
                       <Row
@@ -256,95 +255,94 @@ function Checkout(props: IComponentPropsExtended) {
                       />
                     ))}
                   </ul>
-                  <section
-                    className="mt-5 flex items-start gap-3 border-t border-border pt-4"
-                    aria-label={text.delivery}
-                  >
-                    <Truck
-                      aria-hidden="true"
-                      className="mt-0.5 size-5 shrink-0 text-muted-foreground"
-                      strokeWidth={1.5}
-                    />
-                    <div className="min-w-0">
-                      <h3 className="text-sm font-semibold">{text.delivery}</h3>
-                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                        {text.deliveryNote}
-                      </p>
-                    </div>
-                  </section>
                 </div>
-                <form
-                  className="shrink-0 space-y-3 border-t border-border px-4 py-4 sm:px-6 sm:py-5"
-                  noValidate
-                  onSubmitCapture={(event) => syncReceiptEmail(event, form)}
-                  onSubmit={form.handleSubmit(
-                    (values) => onSubmit(values, orders),
-                    () => setError(""),
-                  )}
-                >
-                  <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <h3 className="text-base font-semibold">
-                      {hasUnpriced ? text.pricedItems : text.total}
-                    </h3>
-                    <div className="text-right tabular-nums">
-                      {[...totals.values()].map((total) => (
-                        <p
-                          key={total.billingModuleCurrency.id}
-                          className="text-2xl font-semibold"
-                        >
-                          {new Intl.NumberFormat(
-                            props.language === "ru" ? "ru-RU" : "en-US",
-                            {
-                              maximumFractionDigits: 2,
-                            },
-                          ).format(total.total)}{" "}
-                          {total.billingModuleCurrency.symbol}
-                        </p>
-                      ))}
-                    </div>
-                  </div>
-                  {hasUnpriced && (
-                    <p role="alert" className="text-sm text-destructive">
-                      {text.unpriced}
-                    </p>
-                  )}
-                  {!hasUnpriced && hasInvalidCurrency && (
-                    <p role="alert" className="text-sm text-destructive">
-                      {text.invalidCurrency}
-                    </p>
-                  )}
-                  <FormField
-                    ui="shadcn"
-                    type="select"
-                    name="provider"
-                    form={form}
-                    label={text.provider}
-                    placeholder={text.providerPlaceholder}
-                    options={providers.map((provider) => [provider, provider])}
-                  />
-                  <ReceiptEmail
-                    subject={props.data}
-                    form={form}
-                    label={text.email}
-                    placeholder="name@example.com"
-                  />
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    className="flex min-h-11 w-full shrink-0 rounded-xl"
-                    disabled={
-                      ecommerceModuleOrderCheckout.isPending ||
-                      hasUnpriced ||
-                      hasInvalidCurrency ||
-                      updatingCart ||
-                      refreshingCart
+                <div className="shrink-0 space-y-4 border-t border-border bg-card px-4 py-4 sm:px-6 sm:py-5">
+                  <Delivery
+                    language={props.language}
+                    currencySlug={
+                      totals.size === 1
+                        ? totals.values().next().value?.billingModuleCurrency
+                            .slug
+                        : undefined
                     }
+                  />
+                  <form
+                    className="space-y-3"
+                    noValidate
+                    onSubmitCapture={(event) => syncReceiptEmail(event, form)}
+                    onSubmit={form.handleSubmit(
+                      (values) => onSubmit(values, orders),
+                      () => setError(""),
+                    )}
                   >
-                    {ecommerceModuleOrderCheckout.isPending
-                      ? text.checkingOut
-                      : text.checkout}
-                  </Button>
-                </form>
+                    <div className="flex flex-wrap items-baseline justify-between gap-2">
+                      <h3 className="text-base font-semibold">
+                        {hasUnpriced ? text.pricedItems : text.total}
+                      </h3>
+                      <div className="text-right tabular-nums">
+                        {[...totals.values()].map((total) => (
+                          <p
+                            key={total.billingModuleCurrency.id}
+                            className="text-2xl font-semibold"
+                          >
+                            {new Intl.NumberFormat(
+                              props.language === "ru" ? "ru-RU" : "en-US",
+                              {
+                                maximumFractionDigits: 2,
+                              },
+                            ).format(total.total)}{" "}
+                            {total.billingModuleCurrency.symbol}
+                          </p>
+                        ))}
+                      </div>
+                    </div>
+                    {hasUnpriced && (
+                      <p role="alert" className="text-sm text-destructive">
+                        {text.unpriced}
+                      </p>
+                    )}
+                    {!hasUnpriced && hasInvalidCurrency && (
+                      <p role="alert" className="text-sm text-destructive">
+                        {text.invalidCurrency}
+                      </p>
+                    )}
+                    <FormField
+                      ui="shadcn"
+                      type="select"
+                      name="provider"
+                      form={form}
+                      label={text.provider}
+                      placeholder={text.providerPlaceholder}
+                      options={providers.map((provider) => [
+                        provider,
+                        provider,
+                      ])}
+                    />
+                    <ReceiptEmail
+                      subject={props.data}
+                      form={form}
+                      label={text.email}
+                      placeholder="name@example.com"
+                    />
+                    <OrderComment form={form} language={props.language} />
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      className="flex min-h-11 w-full shrink-0 rounded-xl"
+                      disabled={
+                        ecommerceModuleOrderCheckout.isPending ||
+                        hasUnpriced ||
+                        hasInvalidCurrency ||
+                        updatingCart ||
+                        refreshingCart
+                      }
+                    >
+                      {ecommerceModuleOrderCheckout.isPending
+                        ? text.checkingOut
+                        : text.checkout}
+                    </Button>
+                  </form>
+                </div>
               </>
             );
           }}

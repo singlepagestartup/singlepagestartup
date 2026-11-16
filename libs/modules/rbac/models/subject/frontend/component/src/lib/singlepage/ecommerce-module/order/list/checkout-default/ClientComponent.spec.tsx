@@ -189,7 +189,7 @@ describe("Given: order list checkout component", () => {
     });
   });
 
-  it("shows delivery once for a nonempty cart without adding a shipping option, price or required field", () => {
+  it("places the delivery choices directly above the total and hides them for an empty cart", () => {
     cartOrders.push({ ...cartOrders[0], id: "order-2" });
     const props = {
       isServer: false,
@@ -198,15 +198,20 @@ describe("Given: order list checkout component", () => {
       language: "en",
     };
     const view = render(<Component {...props} />);
-    const delivery = screen.getByRole("region", { name: "Delivery" });
-    expect(delivery.textContent).toContain(
-      "Digital items do not need a shipping address",
+    const delivery = screen.getByRole("group", { name: "Delivery" });
+    expect(delivery.nextElementSibling?.querySelector("h3")).toBe(
+      screen.getByRole("heading", { name: "Total" }),
     );
-    expect(delivery.querySelector("input,select,button,a")).toBeNull();
+    expect(
+      screen.getByRole("radio", { name: "Pickup", checked: true }),
+    ).toBeTruthy();
+    expect(screen.getByRole("radio", { name: "Courier" })).toBeTruthy();
+    expect(screen.getAllByRole("radio")).toHaveLength(2);
+    expect(delivery.querySelector('input[type="text"]')).toBeNull();
     expect(screen.getByText("200 ₽")).toBeTruthy();
     cartOrders = [];
     view.rerender(<Component {...props} />);
-    expect(screen.queryByRole("region", { name: "Delivery" })).toBeNull();
+    expect(screen.queryByRole("group", { name: "Delivery" })).toBeNull();
   });
 
   it("When: checkout returns one invoice Then: browser redirects to payment URL", async () => {

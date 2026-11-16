@@ -8,6 +8,7 @@ import { useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ReceiptEmail, syncReceiptEmail } from "./ReceiptEmail";
+import { OrderComment } from "./OrderComment";
 import { FormField } from "@sps/ui-adapter";
 import { cn } from "@sps/shared-frontend-client-utils";
 
@@ -38,6 +39,7 @@ const formSchema = z.object({
       "Invalid provider",
     ),
   email: z.email(),
+  comment: z.string().trim().optional(),
   ecommerceModule: z.object({
     orders: z.array(
       z.object({
@@ -56,6 +58,7 @@ export function Component(props: IComponentPropsExtended) {
     defaultValues: {
       provider: "stripe",
       email: "",
+      comment: "",
       ecommerceModule: {
         orders: [
           {
@@ -66,12 +69,12 @@ export function Component(props: IComponentPropsExtended) {
     },
   });
 
-  async function onSubmit(data: z.infer<typeof formSchema>) {
+  async function onSubmit({ comment, ...data }: z.infer<typeof formSchema>) {
     setError("");
     try {
       const result = await ecommerceModuleOrderCheckout.mutateAsync({
         id: props.data.id,
-        data,
+        data: { ...data, ...(comment ? { comment } : {}) },
       });
       const paymentUrl = result.billingModule.invoices[0]?.paymentUrl;
       if (!paymentUrl)
@@ -125,6 +128,7 @@ export function Component(props: IComponentPropsExtended) {
             form={form}
             placeholder="Email for invoice"
           />
+          <OrderComment form={form} language={props.language} />
           {error && (
             <p role="alert" className="text-sm text-destructive">
               {error}

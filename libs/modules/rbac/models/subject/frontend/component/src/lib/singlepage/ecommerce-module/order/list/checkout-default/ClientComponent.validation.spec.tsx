@@ -32,8 +32,14 @@ jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
           availableCurrencyIds: ["usd", "rub"],
           billingModuleCurrencyId: currencyId,
           totals: [
-            { total: 10, billingModuleCurrency: { id: "usd", symbol: "$" } },
-            { total: 100, billingModuleCurrency: { id: "rub", symbol: "₽" } },
+            {
+              total: 10,
+              billingModuleCurrency: { id: "usd", slug: "usd", symbol: "$" },
+            },
+            {
+              total: 100,
+              billingModuleCurrency: { id: "rub", slug: "rub", symbol: "₽" },
+            },
           ],
         },
       })),
@@ -199,4 +205,79 @@ it("preserves an explicit edit or deletion when account email loads later and cl
   expect(
     (screen.getByLabelText("Email для чека") as HTMLInputElement).value,
   ).toBe("");
+});
+
+it("sends the order comment and keeps the preview address local when switching between courier and pickup", async () => {
+  checkout.mockResolvedValue({ billingModule: { invoices: [] } });
+  render(<Component {...props} />);
+  fireEvent.click(screen.getByRole("radio", { name: "Курьер" }));
+  fireEvent.change(screen.getByRole("textbox", { name: "Город" }), {
+    target: { value: "Тула" },
+  });
+  fireEvent.change(screen.getByRole("textbox", { name: "Адрес доставки" }), {
+    target: { value: "Тестовая, 1" },
+  });
+  fireEvent.click(screen.getByRole("radio", { name: "Самовывоз" }));
+  expect(screen.queryByRole("textbox", { name: "Адрес доставки" })).toBeNull();
+  expect(screen.queryByRole("textbox", { name: "Город" })).toBeNull();
+  fireEvent.click(screen.getByRole("radio", { name: "Курьер" }));
+  expect(
+    (
+      screen.getByRole("textbox", {
+        name: "Адрес доставки",
+      }) as HTMLInputElement
+    ).value,
+  ).toBe("Тестовая, 1");
+  fireEvent.change(screen.getByLabelText("Комментарий к заказу"), {
+    target: { value: "  Первая строка\nВторая строка  " },
+  });
+  fireEvent.change(screen.getByLabelText("Email для чека"), {
+    target: { value: "buyer@example.test" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Перейти к оплате" }));
+  await waitFor(() =>
+    expect(checkout).toHaveBeenCalledWith({
+      id: "subject",
+      data: {
+        provider: "stripe",
+        email: "buyer@example.test",
+        comment: "Первая строка\nВторая строка",
+        ecommerceModule: { orders: [{ id: "order" }] },
+      },
+    }),
+  );
+});
+
+it("resets the delivery selection, address and order comment when the signed-in subject changes", () => {
+  const view = render(<Component {...props} />);
+  fireEvent.click(screen.getByRole("radio", { name: "Курьер" }));
+  fireEvent.change(screen.getByLabelText("Адрес доставки"), {
+    target: { value: "Тестовая, 1" },
+  });
+  fireEvent.change(screen.getByLabelText("Комментарий к заказу"), {
+    target: { value: "Первый заказ" },
+  });
+  view.rerender(<Component {...props} data={{ id: "next-subject" } as any} />);
+  expect(
+    (screen.getByLabelText("Комментарий к заказу") as HTMLTextAreaElement)
+      .value,
+  ).toBe("");
+  expect(
+    screen.getByRole("radio", { name: "Самовывоз", checked: true }),
+  ).toBeTruthy();
+  fireEvent.click(screen.getByRole("radio", { name: "Курьер" }));
+  expect(
+    (screen.getByLabelText("Адрес доставки") as HTMLInputElement).value,
+  ).toBe("");
+});
+
+it("updates the sample courier rate when the selected cart currency changes", () => {
+  const view = render(<Component {...props} />);
+  const courier = screen.getByRole("radio", { name: "Курьер" });
+  expect(courier.closest("label")?.textContent).toContain("300 ₽");
+  currencyId = "usd";
+  view.rerender(<Component {...props} />);
+  expect(courier.closest("label")?.textContent).toContain("4 $");
+  fireEvent.click(courier);
+  expect(screen.getByText("10 $")).toBeTruthy();
 });

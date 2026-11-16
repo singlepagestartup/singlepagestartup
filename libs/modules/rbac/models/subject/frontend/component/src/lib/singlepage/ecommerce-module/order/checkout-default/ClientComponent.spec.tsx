@@ -18,6 +18,7 @@ const useFormMock = jest.fn();
 const submitPayload = {
   provider: "stripe",
   email: "subject@example.com",
+  comment: "Please use the side entrance.",
   ecommerceModule: {
     orders: [{ id: "order-1" }],
   },
@@ -98,6 +99,7 @@ describe("Given: order checkout-default action component", () => {
       />,
     );
 
+    expect(screen.getByTestId("field-comment")).toBeTruthy();
     fireEvent.click(
       screen.getByRole("button", { name: "Continue to payment" }),
     );
