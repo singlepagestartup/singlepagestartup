@@ -71,8 +71,6 @@ const props: any = {
     },
   },
   language: "ru",
-  index: 0,
-  form: {},
 };
 beforeEach(() => {
   mockUpdate.mockReset().mockResolvedValue({});

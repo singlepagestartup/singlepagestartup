@@ -4,6 +4,7 @@ const mockCheckout = jest.fn();
 const mockCart = jest.fn();
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   api: {
+    identityFind: () => ({ data: [] }),
     ecommerceModuleProductCheckout: () => ({
       mutateAsync: mockCheckout,
       isPending: false,

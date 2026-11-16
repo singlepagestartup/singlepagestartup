@@ -52,6 +52,7 @@ jest.mock("next/link", () => ({
 
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   api: {
+    identityFind: () => ({ data: [] }),
     ecommerceModuleOrderUpdate: () => ({
       mutateAsync: jest.fn(),
       isPending: false,

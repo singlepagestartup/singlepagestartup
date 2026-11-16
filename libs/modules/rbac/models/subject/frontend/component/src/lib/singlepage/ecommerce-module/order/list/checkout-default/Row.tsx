@@ -6,7 +6,6 @@ import { route } from "@sps/rbac/models/subject/sdk/model";
 import { INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG } from "@sps/shared-utils";
 import { Icon, Select } from "@sps/ui-adapter";
 import { Component as EcommerceModuleProduct } from "@sps/ecommerce/models/product/frontend/component";
-import { Component as EcommerceModuleOrder } from "@sps/ecommerce/models/order/frontend/component";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import type { IRowProps, IQuantityProps, ICurrencyProps } from "./interface";
 
@@ -216,17 +215,6 @@ export const Component = memo(function Row(props: IRowProps) {
           <p key={line.id}>Товар недоступен</p>
         ),
       )}
-      <div className="hidden">
-        <EcommerceModuleOrder
-          isServer={false}
-          variant="form-field-default"
-          dataSource="props"
-          data={props.ecommerceModuleOrder}
-          formFieldName={`ecommerceModule.orders.${props.index}.id`}
-          entityFieldName="id"
-          form={props.form}
-        />
-      </div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Currency
           subject={props.subject}

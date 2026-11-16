@@ -167,6 +167,8 @@ The checkout sheet reads its lines with `includeCartDetails` on the Subject orde
 
 Order checkout selects the requested orders linked to that Subject through `subjects-to-ecommerce-module-orders`. The checkout skips deleted or foreign orders in a mixed request. If no matching order exists, it returns 404 before recording the email, updating comments or starting payment.
 
+In the cart and direct checkout forms, the receipt email defaults to an email linked to the current Subject. The buyer can edit it before submitting. Checkout sends the displayed address to the payment provider. An edited receipt address on a signed-in account does not change its login or add an identity.
+
 ### Retry an unpaid order
 
 In **Account settings → Purchases**, the buyer can repeat an unpaid order. After confirmation, the Subject's open cart is replaced with the original products and quantities. Checkout uses current prices and lets the buyer choose a payment method. The original order and its invoices stay in history. An earlier payment still being processed by the provider may also settle.

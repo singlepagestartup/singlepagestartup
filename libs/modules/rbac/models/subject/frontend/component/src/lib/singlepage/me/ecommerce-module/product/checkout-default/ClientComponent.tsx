@@ -5,6 +5,10 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import { Button, Form } from "@sps/shared-ui-shadcn";
+import {
+  ReceiptEmail,
+  syncReceiptEmail,
+} from "../../../../ecommerce-module/order/checkout-default/ReceiptEmail";
 import { FormField } from "@sps/ui-adapter";
 import { Component as Product } from "@sps/ecommerce/models/product/frontend/component";
 import { cn } from "@sps/shared-frontend-client-utils";
@@ -125,6 +129,7 @@ export function Component(props: IComponentPropsExtended) {
       <div className="border-t border-border p-4">
         <Form {...form}>
           <form
+            onSubmitCapture={(event) => syncReceiptEmail(event, form)}
             onSubmit={form.handleSubmit(submit)}
             className="min-w-0 space-y-4"
             noValidate
@@ -176,10 +181,8 @@ export function Component(props: IComponentPropsExtended) {
               options={providers.map((provider) => [provider, provider])}
               inputClassName="rounded-xl"
             />
-            <FormField
-              ui="shadcn"
-              type="text"
-              name="email"
+            <ReceiptEmail
+              subject={props.data}
               form={form}
               label={
                 props.language === "ru" ? "Email для счёта" : "Email for a bill"

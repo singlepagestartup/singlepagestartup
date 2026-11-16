@@ -32,6 +32,7 @@ jest.mock("@sps/shared-frontend-client-utils", () => ({
 
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   api: {
+    identityFind: () => ({ data: [] }),
     ecommerceModuleOrderCheckout: () => ({
       mutateAsync: mutateAsyncMock,
       isPending: false,

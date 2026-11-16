@@ -1,10 +1,11 @@
 /** @jest-environment jsdom */
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import type * as ReactHookForm from "react-hook-form";
 const checkout = jest.fn();
 let pending = 0;
 let fetching = 0;
 let currencyId = "rub";
+let identityRows: { provider: string; email: string }[] = [];
+let orderIds = ["order"];
 jest.mock("@tanstack/react-query", () => ({
   useIsMutating: () => pending,
   useIsFetching: () => fetching,
@@ -14,64 +15,31 @@ jest.mock("@sps/rbac/models/subject/sdk/model", () => ({
 }));
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   api: {
+    identityFind: () => ({ data: identityRows }),
     ecommerceModuleOrderCheckout: () => ({
       mutateAsync: checkout,
       isPending: false,
     }),
   },
 }));
-jest.mock("@sps/shared-ui-shadcn", () => ({
-  Form: (props: any) => {
-    const { FormProvider } =
-      jest.requireActual<typeof ReactHookForm>("react-hook-form");
-    return <FormProvider {...props}>{props.children}</FormProvider>;
-  },
-  Button: ({ children, variant, ...props }: any) => (
-    <button {...props}>{children}</button>
-  ),
-}));
-jest.mock("@sps/ui-adapter", () => ({
-  FormField: (props: any) =>
-    props.name === "email" ? (
-      <label>
-        {props.label}
-        <input aria-label={props.label} {...props.form.register(props.name)} />
-        <span>{props.form.formState.errors[props.name]?.message}</span>
-      </label>
-    ) : (
-      <select aria-label={props.label} {...props.form.register(props.name)}>
-        <option value="stripe">stripe</option>
-      </select>
-    ),
-}));
 jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
   Component: ({ children }: any) =>
     children({
-      data: [
-        {
-          id: "order",
-          cartDetails: {
-            lines: [],
-            availableCurrencyIds: ["usd", "rub"],
-            billingModuleCurrencyId: currencyId,
-            totals: [
-              { total: 10, billingModuleCurrency: { id: "usd", symbol: "$" } },
-              { total: 100, billingModuleCurrency: { id: "rub", symbol: "₽" } },
-            ],
-          },
+      data: orderIds.map((id) => ({
+        id,
+        cartDetails: {
+          lines: [],
+          availableCurrencyIds: ["usd", "rub"],
+          billingModuleCurrencyId: currencyId,
+          totals: [
+            { total: 10, billingModuleCurrency: { id: "usd", symbol: "$" } },
+            { total: 100, billingModuleCurrency: { id: "rub", symbol: "₽" } },
+          ],
         },
-      ],
+      })),
     }),
 }));
-jest.mock("./Row", () => ({
-  Component: ({ form, index, ecommerceModuleOrder }: any) => (
-    <input
-      type="hidden"
-      defaultValue={ecommerceModuleOrder.id}
-      {...form.register(`ecommerceModule.orders.${index}.id`)}
-    />
-  ),
-}));
+jest.mock("./Row", () => ({ Component: () => null }));
 import { Component } from "./ClientComponent";
 const props = {
   isServer: false,
@@ -84,18 +52,18 @@ beforeEach(() => {
   pending = 0;
   fetching = 0;
   currencyId = "rub";
+  identityRows = [];
+  orderIds = ["order"];
 });
 it.each([
   {
     language: "ru",
     button: "Перейти к оплате",
-    summary: "Проверьте email для чека и данные заказа.",
     emailError: "Введите корректный email для чека.",
   },
   {
     language: "en",
     button: "Proceed to payment",
-    summary: "Check your receipt email and order details.",
     emailError: "Enter a valid email address for your receipt.",
   },
 ])(
@@ -103,8 +71,7 @@ it.each([
   async (test) => {
     render(<Component {...props} language={test.language} />);
     fireEvent.click(screen.getByRole("button", { name: test.button }));
-    expect((await screen.findByRole("alert")).textContent).toBe(test.summary);
-    expect(screen.getByText(test.emailError)).toBeTruthy();
+    expect(await screen.findByText(test.emailError)).toBeTruthy();
     expect(checkout).not.toHaveBeenCalled();
   },
 );
@@ -162,4 +129,74 @@ it("blocks checkout when the saved currency is no longer available", () => {
       .getByRole("button", { name: "Перейти к оплате" })
       .hasAttribute("disabled"),
   ).toBe(true);
+});
+
+it("prefills the account email and submits the edited address with the currently displayed orders", async () => {
+  identityRows = [
+    { provider: "email", email: "previous@example.com" },
+    { provider: "email_and_password", email: "account@example.com" },
+  ];
+  checkout.mockResolvedValue({ billingModule: { invoices: [] } });
+  const view = render(<Component {...props} />);
+  const field = screen.getByLabelText("Email для чека") as HTMLInputElement;
+  await waitFor(() => expect(field.value).toBe("account@example.com"));
+  fireEvent.change(field, { target: { value: "receipt@example.com" } });
+  orderIds = ["second", "third"];
+  view.rerender(<Component {...props} />);
+  fireEvent.click(screen.getByRole("button", { name: "Перейти к оплате" }));
+  await waitFor(() =>
+    expect(checkout).toHaveBeenCalledWith({
+      id: "subject",
+      data: {
+        provider: "stripe",
+        email: "receipt@example.com",
+        ecommerceModule: { orders: [{ id: "second" }, { id: "third" }] },
+      },
+    }),
+  );
+});
+it("submits the suggested email when the buyer leaves it unchanged", async () => {
+  identityRows = [
+    { provider: "email_and_password", email: "account@example.com" },
+  ];
+  checkout.mockResolvedValue({ billingModule: { invoices: [] } });
+  render(<Component {...props} />);
+  fireEvent.click(screen.getByRole("button", { name: "Перейти к оплате" }));
+  await waitFor(() =>
+    expect(checkout).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ email: "account@example.com" }),
+      }),
+    ),
+  );
+});
+it("submits an address filled by the browser without an input event", async () => {
+  checkout.mockResolvedValue({ billingModule: { invoices: [] } });
+  render(<Component {...props} />);
+  const field = screen.getByLabelText("Email для чека") as HTMLInputElement;
+  field.value = "browser@example.com";
+  fireEvent.click(screen.getByRole("button", { name: "Перейти к оплате" }));
+  await waitFor(() =>
+    expect(checkout).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ email: "browser@example.com" }),
+      }),
+    ),
+  );
+});
+it("preserves an explicit edit or deletion when account email loads later and clears it when the subject changes", async () => {
+  const view = render(<Component {...props} />);
+  const field = screen.getByLabelText("Email для чека") as HTMLInputElement;
+  fireEvent.change(field, { target: { value: "edited@example.com" } });
+  fireEvent.change(field, { target: { value: "" } });
+  identityRows = [{ provider: "google", email: "later@example.com" }];
+  view.rerender(<Component {...props} />);
+  expect(field.value).toBe("");
+  identityRows = [];
+  view.rerender(
+    <Component {...props} data={{ id: "second-subject" } as any} />,
+  );
+  expect(
+    (screen.getByLabelText("Email для чека") as HTMLInputElement).value,
+  ).toBe("");
 });

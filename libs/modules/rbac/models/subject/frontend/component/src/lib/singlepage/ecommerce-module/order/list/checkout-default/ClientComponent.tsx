@@ -9,6 +9,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FormField } from "@sps/ui-adapter";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import type { ICartDetails } from "@sps/ecommerce/models/order/sdk/model";
+import {
+  ReceiptEmail,
+  syncReceiptEmail,
+} from "../../checkout-default/ReceiptEmail";
 import { Component as Row } from "./Row";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -42,11 +46,9 @@ function Checkout(props: IComponentPropsExtended) {
       ? {
           invalidProvider: "Выберите способ оплаты.",
           invalidEmail: "Введите корректный email для чека.",
-          noOrders: "В корзине нет заказов для оформления.",
           paymentLinkError:
             "Не удалось получить ссылку на оплату. Попробуйте ещё раз.",
           checkoutError: "Не удалось оформить заказ. Попробуйте ещё раз.",
-          invalidForm: "Проверьте email для чека и данные заказа.",
           emptyCart: "В корзине пока нет товаров.",
           total: "Итого",
           unpriced:
@@ -61,10 +63,8 @@ function Checkout(props: IComponentPropsExtended) {
       : {
           invalidProvider: "Choose a payment method.",
           invalidEmail: "Enter a valid email address for your receipt.",
-          noOrders: "There are no orders to check out.",
           paymentLinkError: "Could not get a payment link. Please try again.",
           checkoutError: "Could not place your order. Please try again.",
-          invalidForm: "Check your receipt email and order details.",
           emptyCart: "Your cart is empty.",
           total: "Total",
           unpriced:
@@ -90,15 +90,6 @@ function Checkout(props: IComponentPropsExtended) {
         text.invalidProvider,
       ),
     email: z.string().trim().email(text.invalidEmail),
-    ecommerceModule: z.object({
-      orders: z
-        .array(
-          z.object({
-            id: z.string(),
-          }),
-        )
-        .min(1, text.noOrders),
-    }),
   });
 
   const [paymentUrls, setPaymentUrls] = useState<string[]>([]);
@@ -131,20 +122,23 @@ function Checkout(props: IComponentPropsExtended) {
     defaultValues: {
       provider: "stripe",
       email: "",
-      ecommerceModule: {
-        orders: [],
-      },
     },
   });
 
-  async function onSubmit(data: z.infer<typeof formSchema>) {
+  async function onSubmit(
+    data: z.infer<typeof formSchema>,
+    orders: { id: string }[],
+  ) {
     const currentLifecycle = lifecycle.current;
     if (!currentLifecycle) return;
     setError("");
     try {
       const res = await ecommerceModuleOrderCheckout.mutateAsync({
         id: props.data.id,
-        data,
+        data: {
+          ...data,
+          ecommerceModule: { orders: orders.map(({ id }) => ({ id })) },
+        },
       });
       if (lifecycle.current !== currentLifecycle) return;
       const paymentUrls = res.billingModule.invoices.map(
@@ -243,18 +237,24 @@ function Checkout(props: IComponentPropsExtended) {
             return (
               <>
                 <ul className="min-h-0 flex-1 divide-y divide-border overflow-y-auto px-6 py-6">
-                  {orders.map((order, index) => (
+                  {orders.map((order) => (
                     <Row
                       key={order.id}
                       subject={props.data}
                       ecommerceModuleOrder={order}
-                      index={index}
-                      form={form}
                       language={props.language}
                     />
                   ))}
                 </ul>
-                <div className="shrink-0 space-y-3 border-t border-border px-6 py-5">
+                <form
+                  className="shrink-0 space-y-3 border-t border-border px-6 py-5"
+                  noValidate
+                  onSubmitCapture={(event) => syncReceiptEmail(event, form)}
+                  onSubmit={form.handleSubmit(
+                    (values) => onSubmit(values, orders),
+                    () => setError(""),
+                  )}
+                >
                   <h3 className="text-sm font-medium text-muted-foreground">
                     {text.total}
                   </h3>
@@ -291,18 +291,14 @@ function Checkout(props: IComponentPropsExtended) {
                     placeholder={text.providerPlaceholder}
                     options={providers.map((provider) => [provider, provider])}
                   />
-                  <FormField
-                    ui="shadcn"
-                    type="text"
-                    name="email"
+                  <ReceiptEmail
+                    subject={props.data}
                     form={form}
                     label={text.email}
                     placeholder="name@example.com"
                   />
                   <Button
-                    onClick={form.handleSubmit(onSubmit, () =>
-                      setError(text.invalidForm),
-                    )}
+                    type="submit"
                     variant="primary"
                     className="flex min-h-11 w-full shrink-0 rounded-xl"
                     disabled={
@@ -317,7 +313,7 @@ function Checkout(props: IComponentPropsExtended) {
                       ? text.checkingOut
                       : text.checkout}
                   </Button>
-                </div>
+                </form>
               </>
             );
           }}

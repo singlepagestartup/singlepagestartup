@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ReceiptEmail, syncReceiptEmail } from "./ReceiptEmail";
 import { FormField } from "@sps/ui-adapter";
 import { cn } from "@sps/shared-frontend-client-utils";
 
@@ -107,6 +108,7 @@ export function Component(props: IComponentPropsExtended) {
           {props.language === "ru" ? "Оформить корзину" : "Checkout cart"}
         </summary>
         <form
+          onSubmitCapture={(event) => syncReceiptEmail(event, form)}
           onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-3 border-t border-border p-4"
         >
@@ -118,10 +120,8 @@ export function Component(props: IComponentPropsExtended) {
             placeholder="Select provider"
             options={providers.map((provider) => [provider, provider])}
           />
-          <FormField
-            ui="shadcn"
-            type="text"
-            name="email"
+          <ReceiptEmail
+            subject={props.data}
             form={form}
             placeholder="Email for invoice"
           />
