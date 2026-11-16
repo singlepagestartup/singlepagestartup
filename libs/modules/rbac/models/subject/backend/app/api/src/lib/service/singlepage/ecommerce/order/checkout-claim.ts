@@ -200,20 +200,9 @@ export class Service {
           const lines = await ecommerceModule.ordersToProducts.find({
             params: { filters },
           });
-          const snapshot = (rows: ILineSnapshot[]) =>
-            rows
-              .map((row) =>
-                [
-                  row.id,
-                  row.orderId,
-                  row.productId,
-                  row.quantity,
-                  String(row.updatedAt ?? ""),
-                ].join("|"),
-              )
-              .sort()
-              .join("\n");
-          if (snapshot(lines) !== snapshot(props.expectedLines)) {
+          if (
+            this.lineSnapshot(lines) !== this.lineSnapshot(props.expectedLines)
+          ) {
             throw new Error(
               "Conflict error. Cart quantities changed during checkout",
             );
@@ -224,19 +213,10 @@ export class Service {
             await ecommerceModule.ordersToBillingModuleCurrencies.find({
               params: { filters },
             });
-          const snapshot = (rows: ICurrencySnapshot[]) =>
-            rows
-              .map((row) =>
-                [
-                  row.id,
-                  row.orderId,
-                  row.billingModuleCurrencyId,
-                  String(row.updatedAt ?? ""),
-                ].join("|"),
-              )
-              .sort()
-              .join("\n");
-          if (snapshot(currencies) !== snapshot(props.expectedCurrencies)) {
+          if (
+            this.currencySnapshot(currencies) !==
+            this.currencySnapshot(props.expectedCurrencies)
+          ) {
             throw new Error(
               "Conflict error. Cart currency changed during checkout",
             );
@@ -259,6 +239,35 @@ export class Service {
         return { invoices: existingInvoices };
       },
     );
+  }
+
+  private lineSnapshot(rows: ILineSnapshot[]): string {
+    return rows
+      .map((row) =>
+        [
+          row.id,
+          row.orderId,
+          row.productId,
+          row.quantity,
+          String(row.updatedAt ?? ""),
+        ].join("|"),
+      )
+      .sort()
+      .join("\n");
+  }
+
+  private currencySnapshot(rows: ICurrencySnapshot[]): string {
+    return rows
+      .map((row) =>
+        [
+          row.id,
+          row.orderId,
+          row.billingModuleCurrencyId,
+          String(row.updatedAt ?? ""),
+        ].join("|"),
+      )
+      .sort()
+      .join("\n");
   }
 
   private async invoiceCoversSelection(

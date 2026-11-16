@@ -4,7 +4,7 @@ import type { IModel as IIntentInvoice } from "@sps/billing/relations/payment-in
 import type { IModel as IPaymentIntent } from "@sps/billing/models/payment-intent/sdk/model";
 import type { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
 import type { IReadService } from "../../../../di";
-import type { Service as SubjectService } from "../../index";
+import type { Service as SubjectsToOrdersService } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/service";
 
 export interface IExecuteProps {
   orders: Pick<
@@ -19,6 +19,7 @@ export interface IExecuteProps {
 }
 
 interface IConstructorProps {
+  subjectsToEcommerceModuleOrders: Pick<SubjectsToOrdersService, "find">;
   ecommerceModule: {
     ordersToBillingModulePaymentIntents: Pick<IReadService, "find">;
   };
@@ -35,110 +36,24 @@ interface IBillingRecords {
   invoices: IInvoice[];
 }
 
-function byIds(column: string, ids: string[]) {
-  return {
-    params: {
-      filters: {
-        and: [{ column, method: "inArray" as const, value: [...new Set(ids)] }],
-      },
-    },
-  };
-}
-
-function unfinished({ orders }: IExecuteProps) {
-  return orders.filter(
-    (order) =>
-      order.type === "history" &&
-      ["paying", "canceling", "canceled", "failed"].includes(order.status) &&
-      !order.subscriptionPeriodInvoiceId &&
-      !order.subscriptionPeriodStartsAt &&
-      !order.subscriptionPeriodEndsAt,
-  );
-}
-
-function settledOrders(records: IBillingRecords) {
-  // Billing may settle before the order status advances.
-  const paid = new Set(
-    records.invoices
-      .filter((invoice) => invoice.status === "paid")
-      .map((invoice) => invoice.id),
-  );
-  const settled = new Set(
-    records.intents
-      .filter((intent) => intent.status === "succeeded")
-      .map((intent) => intent.id),
-  );
-  for (const link of records.invoiceLinks) {
-    if (paid.has(link.invoiceId)) {
-      settled.add(link.paymentIntentId);
-    }
-  }
-  return new Set(
-    records.orderIntents
-      .filter((link) => settled.has(link.billingModulePaymentIntentId))
-      .map((link) => link.orderId),
-  );
-}
-
 export class Service {
   constructor(private readonly dependencies: IConstructorProps) {}
 
-  private async billingRecords(orderIds: string[]): Promise<IBillingRecords> {
-    const records: IBillingRecords = {
-      orderIntents: [],
-      intents: [],
-      invoiceLinks: [],
-      invoices: [],
-    };
-    if (!orderIds.length) {
-      return records;
-    }
-    const { ecommerceModule, billingModule } = this.dependencies;
-    records.orderIntents =
-      await ecommerceModule.ordersToBillingModulePaymentIntents.find(
-        byIds("orderId", orderIds),
-      );
-    if (!records.orderIntents.length) {
-      return records;
-    }
-    const intentIds = records.orderIntents.map(
-      (link) => link.billingModulePaymentIntentId,
-    );
-    [records.intents, records.invoiceLinks] = await Promise.all([
-      billingModule.paymentIntent.find(byIds("id", intentIds)),
-      billingModule.paymentIntentsToInvoices.find(
-        byIds("paymentIntentId", intentIds),
-      ),
-    ]);
-    if (records.invoiceLinks.length) {
-      records.invoices = await billingModule.invoice.find(
-        byIds(
-          "id",
-          records.invoiceLinks.map((link) => link.invoiceId),
-        ),
-      );
-    }
-    return records;
-  }
-
   async settledIds({ orderIds }: { orderIds: string[] }): Promise<Set<string>> {
     const records = await this.billingRecords(orderIds);
-    return settledOrders(records);
+    return this.settledOrderIds(records);
   }
 
   async execute(props: IExecuteProps): Promise<Set<string>> {
-    const ids = unfinished(props).map((order) => order.id);
+    const ids = this.unfinishedOrders(props).map((order) => order.id);
     const settled = await this.settledIds({ orderIds: ids });
     return new Set(ids.filter((id) => !settled.has(id)));
   }
 
-  async purchasePayments(
-    props: IExecuteProps & { subjectId: string },
-    owners: Pick<SubjectService["subjectsToEcommerceModuleOrders"], "find">,
-  ) {
-    const orders = unfinished(props);
+  async purchasePayments(props: IExecuteProps & { subjectId: string }) {
+    const orders = this.unfinishedOrders(props);
     const records = await this.billingRecords(orders.map((order) => order.id));
-    const settled = settledOrders(records);
+    const settled = this.settledOrderIds(records);
     const retryableIds = new Set(
       orders.filter((order) => !settled.has(order.id)).map((order) => order.id),
     );
@@ -153,16 +68,99 @@ export class Service {
       records,
       pendingIds,
       props.subjectId,
-      owners,
     );
     return { retryableIds, paymentUrls };
+  }
+
+  private filterByIds(column: string, ids: string[]) {
+    return {
+      params: {
+        filters: {
+          and: [
+            { column, method: "inArray" as const, value: [...new Set(ids)] },
+          ],
+        },
+      },
+    };
+  }
+
+  private unfinishedOrders({ orders }: IExecuteProps) {
+    return orders.filter(
+      (order) =>
+        order.type === "history" &&
+        ["paying", "canceling", "canceled", "failed"].includes(order.status) &&
+        !order.subscriptionPeriodInvoiceId &&
+        !order.subscriptionPeriodStartsAt &&
+        !order.subscriptionPeriodEndsAt,
+    );
+  }
+
+  private settledOrderIds(records: IBillingRecords) {
+    // Billing may settle before the order status advances.
+    const paid = new Set(
+      records.invoices
+        .filter((invoice) => invoice.status === "paid")
+        .map((invoice) => invoice.id),
+    );
+    const settled = new Set(
+      records.intents
+        .filter((intent) => intent.status === "succeeded")
+        .map((intent) => intent.id),
+    );
+    for (const link of records.invoiceLinks) {
+      if (paid.has(link.invoiceId)) {
+        settled.add(link.paymentIntentId);
+      }
+    }
+    return new Set(
+      records.orderIntents
+        .filter((link) => settled.has(link.billingModulePaymentIntentId))
+        .map((link) => link.orderId),
+    );
+  }
+
+  private async billingRecords(orderIds: string[]): Promise<IBillingRecords> {
+    const records: IBillingRecords = {
+      orderIntents: [],
+      intents: [],
+      invoiceLinks: [],
+      invoices: [],
+    };
+    if (!orderIds.length) {
+      return records;
+    }
+    const { ecommerceModule, billingModule } = this.dependencies;
+    records.orderIntents =
+      await ecommerceModule.ordersToBillingModulePaymentIntents.find(
+        this.filterByIds("orderId", orderIds),
+      );
+    if (!records.orderIntents.length) {
+      return records;
+    }
+    const intentIds = records.orderIntents.map(
+      (link) => link.billingModulePaymentIntentId,
+    );
+    [records.intents, records.invoiceLinks] = await Promise.all([
+      billingModule.paymentIntent.find(this.filterByIds("id", intentIds)),
+      billingModule.paymentIntentsToInvoices.find(
+        this.filterByIds("paymentIntentId", intentIds),
+      ),
+    ]);
+    if (records.invoiceLinks.length) {
+      records.invoices = await billingModule.invoice.find(
+        this.filterByIds(
+          "id",
+          records.invoiceLinks.map((link) => link.invoiceId),
+        ),
+      );
+    }
+    return records;
   }
 
   private async openPaymentUrls(
     records: IBillingRecords,
     pendingIds: Set<string>,
     subjectId: string,
-    owners: Pick<SubjectService["subjectsToEcommerceModuleOrders"], "find">,
   ) {
     const paymentUrls = new Map<string, string>();
     const open = records.invoices.filter(
@@ -182,7 +180,7 @@ export class Service {
     const { billingModule, ecommerceModule } = this.dependencies;
     const invoiceIntents: IIntentInvoice[] =
       await billingModule.paymentIntentsToInvoices.find(
-        byIds(
+        this.filterByIds(
           "invoiceId",
           open.map((invoice) => invoice.id),
         ),
@@ -204,15 +202,16 @@ export class Service {
     }
     const linkedOrders: IOrderIntent[] =
       await ecommerceModule.ordersToBillingModulePaymentIntents.find(
-        byIds("billingModulePaymentIntentId", intentIds),
+        this.filterByIds("billingModulePaymentIntentId", intentIds),
       );
     const orderIds = linkedOrders.map((link) => link.orderId);
     if (!orderIds.length) {
       return paymentUrls;
     }
-    const ownership = await owners.find(
-      byIds("ecommerceModuleOrderId", orderIds),
-    );
+    const ownership =
+      await this.dependencies.subjectsToEcommerceModuleOrders.find(
+        this.filterByIds("ecommerceModuleOrderId", orderIds),
+      );
     const exclusive = new Set(
       ownership
         .filter((link) => link.subjectId === subjectId)

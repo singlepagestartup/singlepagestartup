@@ -33,6 +33,8 @@ jest.mock("hono/jwt", () => ({
   verify: (...args: unknown[]) => verifyMock(...args),
 }));
 
+import { Service as OrderPurchaseDetails } from "../../../../service/startup/ecommerce/order/purchase-details";
+import type { IExecuteProps as IPurchaseDetailsProps } from "../../../../service/singlepage/ecommerce/order/purchase-details";
 import { Handler as ListHandler } from "./list";
 import { Handler as QuantityHandler } from "./quantity";
 import { Handler as TotalHandler } from "./total";
@@ -60,6 +62,9 @@ function createService() {
   return {
     orderFind,
     service: {
+      ecommerceModuleOrderPurchaseDetails(props: IPurchaseDetailsProps) {
+        return new OrderPurchaseDetails({ service: this }).execute(props);
+      },
       ecommerceModuleOrderPurchasePayments: jest
         .fn()
         .mockResolvedValue({ retryableIds: new Set(), paymentUrls: new Map() }),

@@ -6,7 +6,6 @@ import { Service } from "../../../../service";
 import { withConsistencySnapshot } from "@sps/shared-backend-api";
 import type {
   IModel as IEcommerceModuleOrder,
-  IPurchaseDetails,
   ICartDetails,
 } from "@sps/ecommerce/models/order/sdk/model";
 
@@ -107,7 +106,9 @@ export class Handler {
           })[] = [];
           for (const order of ownedOrders) {
             // Defense against OR filters: private cart expansion never includes historical orders.
-            if (order.type !== "cart" || order.status !== "new") continue;
+            if (order.type !== "cart" || order.status !== "new") {
+              continue;
+            }
             const stores =
               await this.service.ecommerceModule.storesToOrders.find({
                 params: {
@@ -116,12 +117,14 @@ export class Handler {
                   },
                 },
               });
+            const cartDetails =
+              await this.service.ecommerceModule.order.findByIdCartDetails({
+                id: order.id,
+              });
             carts.push({
               ...order,
               cartDetails: {
-                ...(await this.service.ecommerceModule.order.findByIdCartDetails(
-                  { id: order.id },
-                )),
+                ...cartDetails,
                 storeIds: (stores ?? []).map(
                   (link: { storeId: string }) => link.storeId,
                 ),
@@ -130,86 +133,14 @@ export class Handler {
           }
           return c.json({ data: carts });
         }
-        if (!includePurchaseDetails) return c.json({ data: ownedOrders });
-        const purchases: (IEcommerceModuleOrder & {
-          purchaseDetails: IPurchaseDetails;
-        })[] = [];
-        const { retryableIds, paymentUrls } =
-          await this.service.ecommerceModuleOrderPurchasePayments({
+        if (!includePurchaseDetails) {
+          return c.json({ data: ownedOrders });
+        }
+        const purchases =
+          await this.service.ecommerceModuleOrderPurchaseDetails({
             subjectId: id,
             orders: ownedOrders,
           });
-        const receiptOrderIds = ownedOrders
-          .filter((order) => !retryableIds.has(order.id))
-          .map((order) => order.id);
-        let receiptLinks: {
-          orderId: string;
-          fileStorageModuleFileId: string;
-        }[] = [];
-        if (receiptOrderIds.length) {
-          receiptLinks =
-            await this.service.ecommerceModule.ordersToFileStorageModuleFiles.find(
-              {
-                params: {
-                  filters: {
-                    and: [
-                      {
-                        column: "orderId",
-                        method: "inArray",
-                        value: receiptOrderIds,
-                      },
-                      {
-                        column: "variant",
-                        method: "eq",
-                        value: "receipt-default",
-                      },
-                    ],
-                  },
-                },
-              },
-            );
-        }
-        const linksByOrder = Map.groupBy(receiptLinks, (link) => link.orderId);
-        const receiptIds = [
-          ...new Set(receiptLinks.map((link) => link.fileStorageModuleFileId)),
-        ];
-        const filesById = new Map<
-          string,
-          IPurchaseDetails["receipts"][number]
-        >();
-        if (receiptIds.length) {
-          const files: IPurchaseDetails["receipts"] =
-            await this.service.fileStorageModule.file.find({
-              params: {
-                filters: {
-                  and: [{ column: "id", method: "inArray", value: receiptIds }],
-                },
-              },
-            });
-          for (const file of files) {
-            if (file.file?.trim()) {
-              filesById.set(file.id, file);
-            }
-          }
-        }
-        for (const order of ownedOrders) {
-          const totals = await this.service.ecommerceModule.order.findByIdTotal(
-            { id: order.id },
-          );
-          const receipts = (linksByOrder.get(order.id) ?? []).flatMap(
-            (link) => filesById.get(link.fileStorageModuleFileId) ?? [],
-          );
-          purchases.push({
-            ...order,
-            purchaseDetails: {
-              canRepeatPayment: retryableIds.has(order.id),
-              paymentUrl: paymentUrls.get(order.id),
-              totals: totals.totals,
-              receipts,
-              ...(totals.unpriced.length ? { unpriced: totals.unpriced } : {}),
-            },
-          });
-        }
         return c.json({ data: purchases });
       });
     } catch (error: any) {

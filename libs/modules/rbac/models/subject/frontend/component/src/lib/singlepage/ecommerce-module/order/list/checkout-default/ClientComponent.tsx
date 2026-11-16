@@ -9,10 +9,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FormField } from "@sps/ui-adapter";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import type { ICartDetails } from "@sps/ecommerce/models/order/sdk/model";
-import {
-  ReceiptEmail,
-  syncReceiptEmail,
-} from "../../checkout-default/ReceiptEmail";
+import { ReceiptEmail } from "../../checkout-default/ReceiptEmail";
+import { CheckoutForm } from "../../checkout-default/CheckoutForm";
 import { Component as Row } from "./Row";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -266,10 +264,10 @@ function Checkout(props: IComponentPropsExtended) {
                         : undefined
                     }
                   />
-                  <form
+                  <CheckoutForm
                     className="space-y-3"
                     noValidate
-                    onSubmitCapture={(event) => syncReceiptEmail(event, form)}
+                    form={form}
                     onSubmit={form.handleSubmit(
                       (values) => onSubmit(values, orders),
                       () => setError(""),
@@ -341,7 +339,7 @@ function Checkout(props: IComponentPropsExtended) {
                         ? text.checkingOut
                         : text.checkout}
                     </Button>
-                  </form>
+                  </CheckoutForm>
                 </div>
               </>
             );

@@ -1,12 +1,7 @@
 "use client";
 
-import type { ComponentProps } from "react";
 import { FormField } from "@sps/ui-adapter";
-
-interface IOrderCommentProps {
-  language: string;
-  form: ComponentProps<typeof FormField>["form"];
-}
+import type { IOrderCommentProps } from "./interface";
 
 export function OrderComment({ language, form }: IOrderCommentProps) {
   return (

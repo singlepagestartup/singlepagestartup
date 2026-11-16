@@ -13,6 +13,7 @@ function history(id: string, status: string): IExecuteProps["orders"][number] {
 
 function setup() {
   const reader = () => ({ find: jest.fn().mockResolvedValue([]) });
+  const subjectsToEcommerceModuleOrders = reader();
   const ecommerceModule = { ordersToBillingModulePaymentIntents: reader() };
   const billingModule = {
     paymentIntent: reader(),
@@ -20,7 +21,12 @@ function setup() {
     invoice: reader(),
   };
   return {
-    service: new Service({ ecommerceModule, billingModule }),
+    service: new Service({
+      ecommerceModule,
+      billingModule,
+      subjectsToEcommerceModuleOrders,
+    }),
+    subjectsToEcommerceModuleOrders,
     ecommerceModule,
     billingModule,
   };
@@ -104,7 +110,12 @@ describe("continuing an existing hosted invoice", () => {
     orphanIntent = false,
     secondInvoice = false,
   } = {}) {
-    const { service, billingModule, ecommerceModule } = setup();
+    const {
+      service,
+      billingModule,
+      ecommerceModule,
+      subjectsToEcommerceModuleOrders,
+    } = setup();
     const order = history("mine", orderStatus);
     const orderIntent = {
       orderId: order.id,
@@ -143,20 +154,18 @@ describe("continuing an existing hosted invoice", () => {
           : invoiceLinks,
       );
     const owner = { subjectId: "subject", ecommerceModuleOrderId: order.id };
-    const owners = {
-      find: jest
-        .fn()
-        .mockResolvedValue(
-          otherOwner ? [owner, { ...owner, subjectId: "other" }] : [owner],
-        ),
-    };
-    return service.purchasePayments(
-      { subjectId: "subject", orders: [order] },
-      owners,
+    subjectsToEcommerceModuleOrders.find.mockResolvedValue(
+      otherOwner ? [owner, { ...owner, subjectId: "other" }] : [owner],
     );
+    return service.purchasePayments({ subjectId: "subject", orders: [order] });
   }
   it("shows a single invoice shared by two pending orders of the same subject", async () => {
-    const { service, billingModule, ecommerceModule } = setup();
+    const {
+      service,
+      billingModule,
+      ecommerceModule,
+      subjectsToEcommerceModuleOrders,
+    } = setup();
     const orders = ["first", "second"].map((id) => history(id, "paying"));
     const orderIntents = orders.map(({ id }) => ({
       orderId: id,
@@ -179,18 +188,16 @@ describe("continuing an existing hosted invoice", () => {
     billingModule.invoice.find.mockResolvedValue([
       { id: "shared", status: "open", provider: "stripe", paymentUrl: url },
     ]);
-    const owners = {
-      find: jest.fn().mockResolvedValue(
-        orders.map(({ id }) => ({
-          subjectId: "subject",
-          ecommerceModuleOrderId: id,
-        })),
-      ),
-    };
-    const actions = await service.purchasePayments(
-      { subjectId: "subject", orders },
-      owners,
+    subjectsToEcommerceModuleOrders.find.mockResolvedValue(
+      orders.map(({ id }) => ({
+        subjectId: "subject",
+        ecommerceModuleOrderId: id,
+      })),
     );
+    const actions = await service.purchasePayments({
+      subjectId: "subject",
+      orders,
+    });
     expect([...actions.paymentUrls]).toEqual([
       ["first", url],
       ["second", url],

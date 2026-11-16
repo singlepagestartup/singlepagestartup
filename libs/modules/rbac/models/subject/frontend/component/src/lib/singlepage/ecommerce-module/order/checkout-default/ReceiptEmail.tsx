@@ -1,17 +1,9 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
-import type { UseFormReturn } from "react-hook-form";
+import { useState } from "react";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import { FormField } from "@sps/ui-adapter";
-
-interface IReceiptEmailProps {
-  subject: { id: string; authenticated?: boolean };
-  form: UseFormReturn<any>;
-  label?: string;
-  placeholder: string;
-  inputClassName?: string;
-}
+import type { IReceiptEmailProps } from "./interface";
 
 export function ReceiptEmail({ subject, form, ...field }: IReceiptEmailProps) {
   const identities = api.identityFind({
@@ -41,15 +33,4 @@ export function ReceiptEmail({ subject, form, ...field }: IReceiptEmailProps) {
       />
     </div>
   );
-}
-
-// A browser can fill the visible input without notifying React Hook Form.
-export function syncReceiptEmail(
-  event: FormEvent<HTMLFormElement>,
-  form: UseFormReturn<any>,
-) {
-  const email = new FormData(event.currentTarget).get("email");
-  if (typeof email === "string" && email !== form.getValues("email")) {
-    form.setValue("email", email, { shouldDirty: true });
-  }
 }

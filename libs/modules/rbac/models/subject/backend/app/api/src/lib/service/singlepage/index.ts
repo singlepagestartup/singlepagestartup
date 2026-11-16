@@ -12,6 +12,8 @@ import { Service as SetOrderCurrency } from "../startup/ecommerce/order/set-curr
 import type { IExecuteProps as ISetOrderCurrencyProps } from "./ecommerce/order/set-currency";
 import { Service as ResolveOrderCurrency } from "../startup/ecommerce/order/resolve-currency";
 import type { IExecuteProps as IResolveOrderCurrencyProps } from "./ecommerce/order/resolve-currency";
+import { Service as OrderPurchaseDetails } from "../startup/ecommerce/order/purchase-details";
+import type { IExecuteProps as IOrderPurchaseDetailsProps } from "./ecommerce/order/purchase-details";
 import { Service as RetryableOrderIds } from "../startup/ecommerce/order/retryable-ids";
 import type { IExecuteProps as IRetryableOrderIdsProps } from "./ecommerce/order/retryable-ids";
 import { Service as FreezeSubscriptionPeriod } from "../startup/ecommerce/order/freeze-subscription-period";
@@ -303,13 +305,14 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return new RetryableOrderIds(this).execute(props);
   }
 
+  async ecommerceModuleOrderPurchaseDetails(props: IOrderPurchaseDetailsProps) {
+    return new OrderPurchaseDetails({ service: this }).execute(props);
+  }
+
   async ecommerceModuleOrderPurchasePayments(
     props: IRetryableOrderIdsProps & { subjectId: string },
   ) {
-    return new RetryableOrderIds(this).purchasePayments(
-      props,
-      this.subjectsToEcommerceModuleOrders,
-    );
+    return new RetryableOrderIds(this).purchasePayments(props);
   }
 
   async ecommerceModuleOrderSettledIds(props: { orderIds: string[] }) {

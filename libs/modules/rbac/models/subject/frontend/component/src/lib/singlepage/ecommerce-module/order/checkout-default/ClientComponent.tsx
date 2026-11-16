@@ -7,7 +7,8 @@ import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ReceiptEmail, syncReceiptEmail } from "./ReceiptEmail";
+import { ReceiptEmail } from "./ReceiptEmail";
+import { CheckoutForm } from "./CheckoutForm";
 import { OrderComment } from "./OrderComment";
 import { FormField } from "@sps/ui-adapter";
 import { cn } from "@sps/shared-frontend-client-utils";
@@ -110,8 +111,8 @@ export function Component(props: IComponentPropsExtended) {
         <summary className="cursor-pointer px-4 py-3 text-sm font-semibold">
           {props.language === "ru" ? "Оформить корзину" : "Checkout cart"}
         </summary>
-        <form
-          onSubmitCapture={(event) => syncReceiptEmail(event, form)}
+        <CheckoutForm
+          form={form}
           onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-3 border-t border-border p-4"
         >
@@ -144,7 +145,7 @@ export function Component(props: IComponentPropsExtended) {
               ? "Перейти к оплате"
               : "Continue to payment"}
           </Button>
-        </form>
+        </CheckoutForm>
       </details>
     </Form>
   );
