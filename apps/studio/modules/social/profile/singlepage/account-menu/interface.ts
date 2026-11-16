@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { IAIChatUserProfile } from "../scope/ai-chat/project/models";
 
 export const variant = "account-menu";
@@ -18,6 +19,7 @@ export interface IAccountMenuProps {
   chatsHref?: string;
   settingsTarget?: "_top";
   onNavigate?: () => void;
+  profileSwitcher?: ReactNode;
   onSignOut?: () => void;
 }
 

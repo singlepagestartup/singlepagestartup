@@ -1,8 +1,13 @@
 "use client";
 import Link from "next/link";
+
+import { useRouter } from "next/navigation";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { ChevronDown, LogOut, Settings } from "lucide-react";
-import { api as subjectApi } from "@sps/rbac/models/subject/sdk/client";
+import { ChevronDown, LogOut, Settings, UserCircle } from "lucide-react";
+import {
+  api as subjectApi,
+  selectSocialModuleProfile,
+} from "@sps/rbac/models/subject/sdk/client";
 import { Component as SocialModuleProfile } from "@sps/social/models/profile/frontend/component";
 import type {
   IComponentPropsExtended,
@@ -19,9 +24,11 @@ export function Component(props: IComponentPropsExtended) {
     <AccountMenu
       language={props.language}
       settingsSelected={props.settingsSelected}
+      socialModuleProfileId={props.socialModuleProfileId}
       subjectId={props.data.id}
       subjectSlug={props.data.slug}
       profile={props.accountProfile}
+      accountProfiles={props.accountProfiles}
       accountIdentities={props.accountIdentities}
       accountAvatar={props.accountAvatar}
       accountBalance={props.accountBalance}
@@ -81,7 +88,10 @@ function AccountMenu({
   accountIdentities,
   accountAvatar,
   accountBalance,
+  accountProfiles,
+  socialModuleProfileId,
 }: IAccountMenuProps) {
+  const router = useRouter();
   const localeBase = `/${language}`;
   const logout = subjectApi.authenticationLogout({});
   const name =
@@ -187,6 +197,37 @@ function AccountMenu({
                     : "Sign out"}
               </button>
             </DropdownMenu.Item>
+            {(accountProfiles?.length || 0) > 1 && (
+              <>
+                <DropdownMenu.Separator className="my-1 h-px bg-border" />
+                {accountProfiles
+                  ?.filter((item) => item.id !== profile?.id)
+                  .map((item) => (
+                    <DropdownMenu.Item asChild key={item.id}>
+                      <button
+                        type="button"
+                        aria-pressed={item.id === profile?.id}
+                        onClick={() => {
+                          selectSocialModuleProfile(subjectId, item.id);
+                          if (
+                            socialModuleProfileId &&
+                            socialModuleProfileId !== item.id
+                          )
+                            router.push(`${localeBase}/ai-chat/projects`);
+                        }}
+                        className={`${menuItemClassName} w-full`}
+                      >
+                        <UserCircle className="size-5 shrink-0" />
+                        <span className="min-w-0 flex-1 truncate text-left">
+                          {item.title?.[language] ||
+                            item.title?.en ||
+                            item.slug}
+                        </span>
+                      </button>
+                    </DropdownMenu.Item>
+                  ))}
+              </>
+            )}
           </DropdownMenu.Content>
         </DropdownMenu.Portal>
       </DropdownMenu.Root>

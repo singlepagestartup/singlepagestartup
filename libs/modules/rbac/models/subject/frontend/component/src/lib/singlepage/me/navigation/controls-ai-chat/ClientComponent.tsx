@@ -40,6 +40,7 @@ export function Component(props: IComponentProps) {
             <Subject
               isServer={false}
               variant="me-account-ai-chat"
+              socialModuleProfileId={profileId}
               data={data}
               language={language}
               settingsSelected={props.settingsSelected}

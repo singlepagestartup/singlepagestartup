@@ -5,6 +5,7 @@ export function Component(props: IComponentPropsExtended) {
   return (
     <ClientComponent
       accountProfile={props.accountProfile}
+      accountProfiles={props.accountProfiles}
       accountIdentities={props.accountIdentities}
       accountAvatar={props.accountAvatar}
       accountBalance={props.accountBalance}
@@ -15,6 +16,7 @@ export function Component(props: IComponentPropsExtended) {
       children={props.children}
       language={props.language}
       settingsSelected={props.settingsSelected}
+      socialModuleProfileId={props.socialModuleProfileId}
     />
   );
 }

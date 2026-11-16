@@ -2,11 +2,11 @@ import { Service } from "./access";
 describe("Current Subject cart ownership", () => {
   function setup() {
     return {
-      subjectsToOrders: {
+      profilesToOrders: {
         find: jest
           .fn()
           .mockResolvedValue([
-            { subjectId: "me", ecommerceModuleOrderId: "mine" },
+            { profileId: "profile-a", ecommerceModuleOrderId: "mine" },
           ]),
       },
       ordersToProducts: {
@@ -19,6 +19,7 @@ describe("Current Subject cart ownership", () => {
     await expect(
       new Service(dependencies as any).execute({
         subjectId: "me",
+        socialModuleProfileId: "profile-a",
         orderId: "other",
         lineIds: ["other-line"],
       }),
@@ -30,6 +31,7 @@ describe("Current Subject cart ownership", () => {
     await expect(
       new Service(dependencies as any).execute({
         subjectId: "me",
+        socialModuleProfileId: "profile-a",
         orderId: "mine",
         lineIds: ["other-line"],
       }),
@@ -39,6 +41,7 @@ describe("Current Subject cart ownership", () => {
     await expect(
       new Service(setup() as any).execute({
         subjectId: "me",
+        socialModuleProfileId: "profile-a",
         orderId: "mine",
         lineIds: ["my-line"],
       }),

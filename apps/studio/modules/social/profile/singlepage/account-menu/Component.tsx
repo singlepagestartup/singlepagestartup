@@ -32,6 +32,7 @@ export function Component({
   chatsHref,
   onNavigate,
   onSignOut,
+  profileSwitcher,
 }: IComponentProps = {}) {
   const [avatarFailed, setAvatarFailed] = useState(false);
   useEffect(() => setAvatarFailed(false), [data.avatar]);
@@ -180,6 +181,7 @@ export function Component({
               Выйти
             </button>
           </DropdownMenu.Item>
+          {profileSwitcher}
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
     </DropdownMenu.Root>

@@ -37,6 +37,9 @@ lower module. Intra-module dependencies must also avoid circular imports.
   a lower component can expose a slot without importing that consumer.
 - Host composes lower modules' widgets, including Analytic widgets. Analytic
   does not import Host page, layout or widget implementations.
+- Social owns profile-to-order relations. RBAC composes profile access checks,
+  cart operations and the payment purchaser. Ecommerce owns orders and their
+  payment associations.
 - RBAC subject operations orchestrate lower domain capabilities with the
   caller's access scope. The global permission resolver retains its narrow
   authorization role; the module order does not move domain rules into it.

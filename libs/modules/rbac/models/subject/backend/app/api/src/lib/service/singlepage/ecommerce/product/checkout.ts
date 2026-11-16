@@ -1,18 +1,16 @@
+import { Service as RenewalProfile } from "../../../startup/ecommerce/order/resolve-renewal-profile";
+import type { IContext as IRenewalContext } from "../order/resolve-renewal-profile";
 import type { Service as SubjectService } from "../../index";
 import {
   ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds,
   INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
-import { api as ecommerceOrdersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
-import { api as ecommerceOrderApi } from "@sps/ecommerce/models/order/sdk/server";
-import { api as ecommerceStoresToOrdersToApi } from "@sps/ecommerce/relations/stores-to-orders/sdk/server";
-import { api as ecommerceOrdersToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/server";
-import { api as subjectsToEcommerceModuleOrdersApi } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/sdk/server";
 
 export interface IExecuteProps {
   id: string;
   productId: string;
+  socialModuleProfileId?: string;
   data: {
     provider: string;
     email?: string;
@@ -24,7 +22,12 @@ export interface IExecuteProps {
   };
 }
 
-export type ICheckout = (props: IExecuteProps) => Promise<unknown>;
+export interface IInternalContext extends IRenewalContext {}
+
+export type ICheckout = (
+  props: IExecuteProps,
+  context?: IInternalContext,
+) => Promise<unknown>;
 
 export interface IConstructorProps {
   service: Pick<
@@ -35,13 +38,25 @@ export interface IConstructorProps {
     | "ecommerceModule"
     | "billingModule"
     | "ecommerceOrderCheckout"
+    | "subjectsToBillingModulePaymentIntents"
+    | "socialModule"
+    | "repository"
+    | "ecommerceModuleResolveProfile"
   >;
 }
 
 export class Service {
   constructor(readonly service: IConstructorProps["service"]) {}
 
-  async execute({ id, productId, data }: IExecuteProps) {
+  async execute(
+    {
+      id,
+      productId,
+      data,
+      socialModuleProfileId: requestedProfileId,
+    }: IExecuteProps,
+    context?: IInternalContext,
+  ) {
     if (!RBAC_SECRET_KEY)
       throw new Error("Configuration error. RBAC_SECRET_KEY not set");
     if (!id || !productId || !data || typeof data !== "object")
@@ -57,6 +72,22 @@ export class Service {
       throw new Error(
         `Validation error. Quantity must be an integer between ${quantityBounds.min} and ${quantityBounds.max}`,
       );
+    }
+
+    let socialModuleProfileId: string;
+    if (context) {
+      socialModuleProfileId = await new RenewalProfile(this.service).execute({
+        renewalOrderId: context.renewalOrderId,
+        subjectId: id,
+        socialModuleProfileId: requestedProfileId,
+        productIds: [productId],
+      });
+    } else {
+      socialModuleProfileId = await this.service.ecommerceModuleResolveProfile({
+        subjectId: id,
+        socialModuleProfileId: requestedProfileId,
+        createIfMissing: true,
+      });
     }
 
     const product = await this.service.ecommerceModule.product.findById({
@@ -175,73 +206,51 @@ export class Service {
       }
     }
 
-    const order = await ecommerceOrderApi.create({
-      data: { comment: data.comment },
-      options: {
-        headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY },
-      },
-    });
-
-    await subjectsToEcommerceModuleOrdersApi.create({
-      data: {
-        subjectId: id,
-        ecommerceModuleOrderId: order.id,
-      },
-      options: {
-        headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY },
-      },
-    });
-
-    await ecommerceOrdersToProductsApi.create({
-      data: {
-        productId,
-        orderId: order.id,
-        quantity,
-      },
-      options: {
-        headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY },
-      },
-    });
-
-    await ecommerceStoresToOrdersToApi.create({
-      data: {
-        storeId,
-        orderId: order.id,
-      },
-      options: {
-        headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY },
-      },
-    });
-
-    const ordersToBillingModuleCurrencies =
-      await ecommerceOrdersToBillingModuleCurrenciesApi.create({
-        data: {
-          orderId: order.id,
-          billingModuleCurrencyId: billingModuleCurrencyId,
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+    const order = await this.service.repository.withProfileLock(
+      { profileId: socialModuleProfileId },
+      async () => {
+        const createdOrder = await this.service.ecommerceModule.order.create({
+          data: { comment: data.comment },
+        });
+        await this.service.socialModule.profilesToEcommerceModuleOrders.create({
+          data: {
+            profileId: socialModuleProfileId,
+            ecommerceModuleOrderId: createdOrder.id,
           },
-        },
-      });
+        });
+        await this.service.ecommerceModule.ordersToProducts.create({
+          data: { productId, orderId: createdOrder.id, quantity },
+        });
+        await this.service.ecommerceModule.storesToOrders.create({
+          data: { storeId, orderId: createdOrder.id },
+        });
+        await this.service.ecommerceModule.ordersToBillingModuleCurrencies.create(
+          {
+            data: { orderId: createdOrder.id, billingModuleCurrencyId },
+          },
+        );
+        return createdOrder;
+      },
+    );
 
-    if (!ordersToBillingModuleCurrencies) {
-      throw new Error(
-        "Not Found error. No orders to billing module currencies found",
-      );
-    }
-
-    const result = await this.service.ecommerceOrderCheckout({
+    const checkoutProps = {
       id,
+      socialModuleProfileId,
       email: data.email,
       account: data.account,
       provider: data.provider,
-      ecommerceModule: {
-        orders: [{ id: order.id }],
-      },
+      ecommerceModule: { orders: [{ id: order.id }] },
       comment: data.comment,
-    });
+    };
+    let result: unknown;
+    if (context) {
+      result = await this.service.ecommerceOrderCheckout(
+        checkoutProps,
+        context,
+      );
+    } else {
+      result = await this.service.ecommerceOrderCheckout(checkoutProps);
+    }
 
     return result;
   }

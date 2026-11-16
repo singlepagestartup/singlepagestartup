@@ -1,0 +1,9 @@
+{
+  "id": "5dfa1dcf-efb5-4c1c-8d51-f95261bcaaeb",
+  "createdAt": "2026-11-16T08:28:02.593Z",
+  "updatedAt": "2026-11-16T08:28:02.593Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "DELETE",
+  "path": "/api/rbac/subjects/[rbac.subjects.id]/social-module/profiles/[social.profiles.id]/ecommerce-module/orders/[ecommerce.orders.id]"
+}

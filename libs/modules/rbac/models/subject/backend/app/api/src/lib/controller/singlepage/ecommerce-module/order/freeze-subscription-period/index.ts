@@ -21,6 +21,13 @@ export class Handler {
       const order =
         await this.service.ecommerceModuleOrderFreezeSubscriptionPeriod({
           id,
+          socialModuleProfileId:
+            await this.service.ecommerceModuleResolveProfile({
+              subjectId: id,
+              socialModuleProfileId:
+                c.req.param("socialModuleProfileId") ??
+                c.req.query("socialModuleProfileId"),
+            }),
           ecommerceModuleOrderId,
           data: { expectedUpdatedAt: data.expectedUpdatedAt },
         });

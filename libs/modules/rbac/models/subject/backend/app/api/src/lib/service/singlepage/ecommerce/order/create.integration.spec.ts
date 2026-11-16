@@ -11,6 +11,8 @@ import { getPostgresClient } from "@sps/shared-backend-database-config";
 import { Repository as SubjectRepository } from "../../../../repository";
 import { Configuration as SubjectConfiguration } from "../../../../configuration";
 import { Service as Create } from "./create";
+import { Service as CheckoutClaim } from "./checkout-claim";
+import { Service as MergeGuestCart } from "./merge-guest-cart";
 import { Service as FindOpenCart } from "./find-open-cart-order-with-product";
 
 const paths = {
@@ -18,7 +20,9 @@ const paths = {
   store: "@sps/ecommerce/models/store",
   currency: "@sps/billing/models/currency",
   order: "@sps/ecommerce/models/order",
-  owners: "@sps/rbac/relations/subjects-to-ecommerce-module-orders",
+  owners: "@sps/social/relations/profiles-to-ecommerce-module-orders",
+  profile: "@sps/social/models/profile",
+  principalProfiles: "@sps/rbac/relations/subjects-to-social-module-profiles",
   lines: "@sps/ecommerce/relations/orders-to-products",
   stores: "@sps/ecommerce/relations/stores-to-orders",
   currencies: "@sps/ecommerce/relations/orders-to-billing-module-currencies",
@@ -48,7 +52,10 @@ async function fixture() {
       `${path}/backend/app/api/src/lib/configuration`
     );
     const repository = new Repository(new Configuration());
-    const service = new CRUDService(repository);
+    const service = new CRUDService(repository) as any;
+    if (key === "order") {
+      service.lockForLifecycle = repository.lockForLifecycle.bind(repository);
+    }
     const create = service.create.bind(service);
     service.create = async (props: any) => {
       const entity = await create(props);
@@ -60,6 +67,9 @@ async function fixture() {
     };
     services[key] = service;
   }
+  const profile = await services.profile.create({
+    data: { slug: `profile-${suffix}` },
+  });
   const product = await services.product.create({
     data: { slug: `pr264-${suffix}` },
   });
@@ -77,16 +87,22 @@ async function fixture() {
   } as any;
   const find = new FindOpenCart({
     ecommerceModule,
-    subjectsToEcommerceModuleOrders: services.owners,
+    profilesToEcommerceModuleOrders: services.owners,
   });
   const dependencies = {
     ecommerceModule,
-    subjectsToEcommerceModuleOrders: services.owners,
+    socialModule: { profilesToEcommerceModuleOrders: services.owners },
+    ecommerceModuleResolveProfile: async (scope: {
+      socialModuleProfileId?: string;
+    }) => scope.socialModuleProfileId ?? profile.id,
     ecommerceModuleFindOpenCartOrderWithProduct: find.execute.bind(find),
     ecommerceModuleResolveOrderCurrency: jest
       .fn()
       .mockResolvedValue(currency.id),
   };
+  await services.principalProfiles.create({
+    data: { subjectId: subject.id, socialModuleProfileId: profile.id },
+  });
   const create = new Create({ repository: subjects, service: dependencies });
   const otherInstance = new Create({
     repository: new SubjectRepository(new SubjectConfiguration()),
@@ -94,6 +110,7 @@ async function fixture() {
   });
   const props = {
     subjectId: subject.id,
+    socialModuleProfileId: profile.id,
     productId: product.id,
     storeId: store.id,
     quantity: 2,
@@ -102,7 +119,7 @@ async function fixture() {
     services.owners.find({
       params: {
         filters: {
-          and: [{ column: "subjectId", method: "eq", value: subject.id }],
+          and: [{ column: "profileId", method: "eq", value: profile.id }],
         },
       },
     });
@@ -189,5 +206,266 @@ it("allows a repeat purchase after history transition and an independent Subject
   });
   if (!other.id) throw new Error("Fixture Subject has no ID");
   cleanup.push(() => f.subjects.deleteFirstByField("id", other.id));
-  await f.otherInstance.execute({ ...f.props, subjectId: other.id });
+  const otherProfile = await f.services.profile.create({
+    data: { slug: `profile-other-${randomUUID()}` },
+  });
+  await f.otherInstance.execute({
+    ...f.props,
+    subjectId: other.id,
+    socialModuleProfileId: otherProfile.id,
+  });
 });
+
+it.each([false, true])(
+  "merges complete cart orders atomically; target wins equal timestamps (%s)",
+  async (equalTime) => {
+    const f = await fixture();
+    const target = await f.subjects.insert({
+      slug: `issue407-target-${randomUUID()}`,
+    });
+    cleanup.push(() => f.subjects.deleteFirstByField("id", target.id));
+    const targetProfile = await f.services.profile.create({
+      data: { slug: `issue407-target-profile-${randomUUID()}` },
+    });
+    await f.services.principalProfiles.create({
+      data: { subjectId: target.id, socialModuleProfileId: targetProfile.id },
+    });
+    await f.create.execute(f.props);
+    await f.create.execute({
+      ...f.props,
+      subjectId: target.id,
+      socialModuleProfileId: targetProfile.id,
+      quantity: 5,
+    });
+    const [sourceOwner] = await f.owners();
+    const [targetOwner] = await f.services.owners.find({
+      params: {
+        filters: {
+          and: [{ column: "profileId", method: "eq", value: targetProfile.id }],
+        },
+      },
+    });
+    const sourceLines = await f.services.lines.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "orderId",
+              method: "eq",
+              value: sourceOwner.ecommerceModuleOrderId,
+            },
+          ],
+        },
+      },
+    });
+    const targetLines = await f.services.lines.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "orderId",
+              method: "eq",
+              value: targetOwner.ecommerceModuleOrderId,
+            },
+          ],
+        },
+      },
+    });
+    await f.services.lines.update({
+      id: sourceLines[0].id,
+      data: { createdAt: new Date("2025-01-02T00:00:00Z") },
+    });
+    await f.services.lines.update({
+      id: targetLines[0].id,
+      data: {
+        createdAt: new Date(
+          equalTime ? "2025-01-02T00:00:00Z" : "2025-01-01T00:00:00Z",
+        ),
+      },
+    });
+    const distinct = await f.services.product.create({
+      data: { slug: `issue407-distinct-${randomUUID()}` },
+    });
+    await f.create.execute({ ...f.props, productId: distinct.id });
+    const service = {
+      ...f.dependencies,
+      repository: f.subjects,
+      findById: ({ id }: { id: string }) =>
+        f.subjects.findFirstByField("id", id),
+      subjectsToIdentities: { find: async () => [] },
+      subjectsToSocialModuleProfiles: f.services.principalProfiles,
+      socialModuleProfileOwnershipEnsure: async () => ({
+        profile: targetProfile,
+      }),
+    };
+    const merge = new MergeGuestCart(service as any);
+    const scope = {
+      sourceSubjectId: f.props.subjectId,
+      subjectId: target.id,
+      socialModuleProfileId: targetProfile.id,
+    };
+    if (!equalTime) {
+      const failure = jest
+        .spyOn(f.services.owners, "update")
+        .mockRejectedValueOnce(new Error("fixture merge failure"));
+      await expect(merge.execute(scope)).rejects.toThrow(
+        "fixture merge failure",
+      );
+      expect(await f.owners()).toHaveLength(2);
+      const originalTargetLine = await f.services.lines.findById({
+        id: targetLines[0].id,
+      });
+      expect(originalTargetLine.quantity).toBe(5);
+      failure.mockRestore();
+    }
+    await merge.execute(scope);
+    await merge.execute(scope);
+    expect(await f.owners()).toHaveLength(0);
+    const retained = await f.services.owners.find({
+      params: {
+        filters: {
+          and: [{ column: "profileId", method: "eq", value: targetProfile.id }],
+        },
+      },
+    });
+    expect(retained).toHaveLength(2);
+    const lines = await f.services.lines.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "orderId",
+              method: "inArray",
+              value: retained.map((owner: any) => owner.ecommerceModuleOrderId),
+            },
+          ],
+        },
+      },
+    });
+    expect(lines).toHaveLength(2);
+    expect(
+      lines.find((line: any) => line.productId === f.props.productId).quantity,
+    ).toBe(equalTime ? 5 : 2);
+    expect(lines.some((line: any) => line.productId === distinct.id)).toBe(
+      true,
+    );
+  },
+);
+
+it.each(["checkout", "merge"])(
+  "serializes cart merge against checkout claim when %s obtains the profile lock first",
+  async (first) => {
+    const f = await fixture();
+    const target = await f.subjects.insert({
+      slug: `issue407-checkout-target-${randomUUID()}`,
+    });
+    cleanup.push(() => f.subjects.deleteFirstByField("id", target.id));
+    const targetProfile = await f.services.profile.create({
+      data: { slug: `issue407-checkout-profile-${randomUUID()}` },
+    });
+    await f.services.principalProfiles.create({
+      data: { subjectId: target.id, socialModuleProfileId: targetProfile.id },
+    });
+    await f.create.execute(f.props);
+    const [owner] = await f.owners();
+    let entered!: () => void;
+    let release!: () => void;
+    const locked = new Promise<void>((resolve) => {
+      entered = resolve;
+    });
+    const released = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const claimRepository = {
+      withProfileLock: <T>(
+        scope: { profileId: string },
+        operation: () => Promise<T>,
+      ) =>
+        f.subjects.withProfileLock(scope, async () => {
+          if (first === "checkout") {
+            entered();
+            await released;
+          }
+          return operation();
+        }),
+    };
+    const mergeRepository = {
+      withSubjectLock: f.subjects.withSubjectLock.bind(f.subjects),
+      withProfilesLock: (
+        scope: { profileIds: string[] },
+        operation: () => Promise<void>,
+      ) =>
+        f.subjects.withProfilesLock(scope, async () => {
+          if (first === "merge") {
+            entered();
+            await released;
+          }
+          return operation();
+        }),
+    };
+    const claim = new CheckoutClaim({
+      repository: claimRepository,
+      ecommerceModule: f.dependencies.ecommerceModule,
+      socialModule: f.dependencies.socialModule,
+    });
+    const merge = new MergeGuestCart({
+      ...f.dependencies,
+      repository: mergeRepository,
+      findById: ({ id }: { id: string }) =>
+        f.subjects.findFirstByField("id", id),
+      subjectsToIdentities: { find: async () => [] },
+      subjectsToSocialModuleProfiles: f.services.principalProfiles,
+      socialModuleProfileOwnershipEnsure: async () => ({
+        profile: targetProfile,
+      }),
+    } as any);
+    const claimOperation = () =>
+      claim.execute({
+        profileId: f.props.socialModuleProfileId,
+        orderIds: [owner.ecommerceModuleOrderId],
+      });
+    const mergeOperation = () =>
+      merge.execute({
+        sourceSubjectId: f.props.subjectId,
+        subjectId: target.id,
+        socialModuleProfileId: targetProfile.id,
+      });
+    const firstPromise =
+      first === "checkout" ? claimOperation() : mergeOperation();
+    await locked;
+    const secondOutcome = (
+      first === "checkout" ? mergeOperation() : claimOperation()
+    ).then(
+      () => null,
+      (error) => error,
+    );
+    release();
+    await firstPromise;
+    const outcome = await secondOutcome;
+    const [retainedOwner] = await f.services.owners.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "ecommerceModuleOrderId",
+              method: "eq",
+              value: owner.ecommerceModuleOrderId,
+            },
+          ],
+        },
+      },
+    });
+    const order = await f.services.order.findById({
+      id: owner.ecommerceModuleOrderId,
+    });
+    if (first === "checkout") {
+      expect(outcome).toBeNull();
+      expect(retainedOwner.profileId).toBe(f.props.socialModuleProfileId);
+      expect(order).toMatchObject({ type: "history", status: "paying" });
+    } else {
+      expect(outcome?.message).toContain("no longer belongs");
+      expect(retainedOwner.profileId).toBe(targetProfile.id);
+      expect(order).toMatchObject({ type: "cart", status: "new" });
+    }
+  },
+);

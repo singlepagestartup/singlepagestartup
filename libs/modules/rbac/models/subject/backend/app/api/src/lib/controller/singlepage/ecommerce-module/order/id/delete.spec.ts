@@ -43,6 +43,7 @@ import { Handler } from "./delete";
 function createContext(params: Record<string, string | undefined>) {
   return {
     req: {
+      query: jest.fn(),
       param: (name: string) => params[name],
     },
     json: jest.fn((payload: unknown) => payload),
@@ -51,16 +52,22 @@ function createContext(params: Record<string, string | undefined>) {
 
 function createService() {
   return {
+    ecommerceModuleResolveProfile: jest.fn().mockResolvedValue("profile-a"),
+    repository: {
+      withProfileLock: jest.fn(async (_scope, operation) => operation()),
+    },
     ecommerceModuleOrderAssertAccess: jest.fn().mockResolvedValue(undefined),
     findById: jest.fn().mockResolvedValue({ id: "subject-1" }),
     ecommerceModule: {
       order: {
+        delete: orderDeleteMock,
         findById: jest.fn().mockResolvedValue({
           id: "order-1",
           status: "new",
         }),
       },
       ordersToProducts: {
+        delete: ordersToProductsDeleteMock,
         find: jest.fn().mockResolvedValue([
           { id: "otp-1", orderId: "order-1" },
           { id: "otp-2", orderId: "order-1" },

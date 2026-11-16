@@ -1,8 +1,10 @@
 "use client";
+import { useActiveSocialModuleProfile } from "@sps/rbac/models/subject/sdk/client";
 import type { IComponentPropsExtended } from "./interface";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import { cn } from "@sps/shared-frontend-client-utils";
 export function Component(props: IComponentPropsExtended) {
+  const { socialModuleProfileId } = useActiveSocialModuleProfile(props.data.id);
   return (
     <div
       data-module="rbac"
@@ -12,6 +14,7 @@ export function Component(props: IComponentPropsExtended) {
       className={cn("w-full flex flex-col", props.className)}
     >
       <Subject
+        key={socialModuleProfileId || "guest"}
         isServer={false}
         variant="ecommerce-module-order-list-default"
         data={props.data}

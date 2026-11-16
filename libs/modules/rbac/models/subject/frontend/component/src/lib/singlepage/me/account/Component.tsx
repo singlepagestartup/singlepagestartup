@@ -8,6 +8,7 @@ export function Component(props: IComponentPropsExtended) {
       isServer={false}
       variant={props.variant}
       language={props.language}
+      socialModuleProfileId={props.socialModuleProfileId}
       className={props.className}
       data={props.data}
       authenticated={props.authenticated}

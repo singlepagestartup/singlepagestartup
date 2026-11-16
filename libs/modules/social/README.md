@@ -56,6 +56,7 @@ Both normal OpenRouter chats and `social.chat.variant="knowledge"` use Sources l
 | [profiles-to-attributes](./relations/profiles-to-attributes/README.md)                                         | Link profiles to attributes                                     |
 | [profiles-to-chats](./relations/profiles-to-chats/README.md)                                                   | Link profiles to chats                                          |
 | [profiles-to-ecommerce-module-products](./relations/profiles-to-ecommerce-module-products/README.md)           | Link profiles to products                                       |
+| [profiles-to-ecommerce-module-orders](./relations/profiles-to-ecommerce-module-orders/README.md)               | Assign each order to its profile                                |
 | [profiles-to-blog-module-articles](./relations/profiles-to-blog-module-articles/README.md)                     | Link profiles to Blog articles                                  |
 | [profiles-to-file-storage-module-files](./relations/profiles-to-file-storage-module-files/README.md)           | Attach files to profiles                                        |
 | [profiles-to-knowledge-module-sources](./relations/profiles-to-knowledge-module-sources/README.md)             | Link profiles to Knowledge Sources                              |

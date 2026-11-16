@@ -4,6 +4,28 @@
 
 Subjects represent visitors, registered accounts and actors, and connect identities, roles and application-specific flows.
 
+## Orders for the selected profile
+
+Cart and purchase SDK requests carry `socialModuleProfileId`. RBAC verifies
+the current Subject and its access to that profile before resolving an Order
+through Social `profiles-to-ecommerce-module-orders`. A second profile has an
+independent cart, including when it purchases the same Product.
+
+The account menu lists other accessible profiles below Sign out. With one profile
+the switch section is hidden. The selection is scoped to the Subject in the
+browser tab's session storage.
+
+After authentication, a proven guest session's open cart merges automatically
+into the selected profile. Unique products remain, and equal products retain
+the most recently added line and its quantity. An exact timestamp tie keeps the
+destination line.
+
+Payment Intents record `variant="purchaser"` in
+`subjects-to-billing-module-payment-intents` before provider checkout. Background
+fulfilment uses that account for roles, balance and purchase notifications.
+`initialFreeSubscriptionGrantedAt` keeps Initial Free issuance recorded after
+a completed order is removed.
+
 ## Layering Boundary
 
 - RBAC subject is the orchestration layer for authenticated ecommerce cart/product flows.
@@ -30,19 +52,19 @@ compositions should select the corresponding `me` variant and pass
 
 ### Duplicate products in an open cart
 
-The Subject order-create route permits one open cart Order per Product for that
-Subject. An open cart has `type="cart"` and `status="new"`. Store and selected
+The Subject order-create route permits one open cart Order per Product for the selected
+Profile. An open cart has `type="cart"` and `status="new"`. Store and selected
 currency do not partition the cart. A repeat add returns HTTP 409 with
 `Conflict error. Product is already in the cart`; quantity changes use the
 existing Subject order-update route.
 
 `ecommerceModuleOrderCreate` uses the existing Subject repository's
-`withSubjectLock` transaction. The duplicate lookup, currency resolution and all
+`withProfileLock` transaction. The duplicate lookup, currency resolution and all
 Order graph writes run under the same PostgreSQL lock, including requests from
 different API processes. A relation failure rolls back the graph. The lookup
-narrows from Subject links to active cart Orders and then to their Product
+narrows from Profile links to active cart Orders and then to their Product
 lines through the owning services. History and cancelled Orders do not block
-another purchase, and another Subject has an independent cart.
+another purchase, and another Profile has an independent cart.
 
 The guard covers this Subject operation. Generic administrative writes retain
 their existing behavior, and existing duplicate carts require explicit data
@@ -70,8 +92,8 @@ configuration remains the one from main; retired route files are not restored.
 
 ### Current-Subject cart reads
 
-`GET /api/rbac/subjects/:id/ecommerce-module/orders?includeCartDetails=true`
-returns only that Subject's active cart orders, including `cartDetails.lines`
+`GET /api/rbac/subjects/:id/ecommerce-module/orders?socialModuleProfileId=:profileId&includeCartDetails=true`
+returns only the selected Profile's active cart orders, including `cartDetails.lines`
 (with Product records), `cartDetails.totals`, `cartDetails.storeIds`,
 `cartDetails.availableCurrencyIds` and the saved
 `cartDetails.billingModuleCurrencyId`. Available currencies are the intersection
@@ -98,12 +120,12 @@ Cart routes use RequestSubjectIdOwner first. Order-ID routes additionally use
 RequestSubjectOwnsEcommerceModuleOrder. Reading the quantity or total, updating and
 deleting a single order all require the owner's access JWT, even with an operator
 secret. The owning Subject service verifies the
-Subject–Order link and, for quantity edits, every submitted Order–Product line.
+Subject–Profile and Profile–Order links and, for quantity edits, every submitted Order–Product line.
 A caller's own Subject ID alone does not authorize changes to another order.
 
 ### Changing a cart currency
 
-`PATCH /api/rbac/subjects/:id/ecommerce-module/orders/:orderId` accepts
+`PATCH /api/rbac/subjects/:id/ecommerce-module/orders/:orderId?socialModuleProfileId=:profileId` accepts
 `{ "billingModule": { "currency": { "id": "<UUID>" } } }` as its `data` payload.
 Send currency and `ordersToProducts` quantity edits in separate requests. The
 Subject service checks ownership, locks the Order and requires an active

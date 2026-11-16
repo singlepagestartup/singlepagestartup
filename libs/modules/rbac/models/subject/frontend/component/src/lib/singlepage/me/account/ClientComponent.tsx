@@ -31,6 +31,7 @@ export function Component(props: IComponentPropsExtended) {
       variant="me-account-ai-chat"
       data={props.data}
       language={language}
+      socialModuleProfileId={props.socialModuleProfileId}
       className={props.className}
     />
   );

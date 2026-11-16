@@ -24,6 +24,10 @@ export interface IComponentPropsExtended extends IParentComponentPropsExtended<
   IComponentProps
 > {}
 
+export interface ICheckoutComponentProps extends IComponentPropsExtended {
+  socialModuleProfileId?: string;
+}
+
 export interface IRowProps {
   subject: IModel;
   ecommerceModuleOrder: ISubjectSdkResult["IEcommerceModuleOrderListResult"][number];

@@ -1,4 +1,9 @@
 import {
+  action as socialModuleProfileEnsure,
+  type IProps as ISocialModuleProfileEnsureProps,
+  type IResult as ISocialModuleProfileEnsureResult,
+} from "./social-module/profile/ensure";
+import {
   action as blogModuleArticleCreate,
   type IProps as IBlogModuleArticleCreateProps,
   type IResult as IBlogModuleArticleCreateResult,
@@ -491,6 +496,7 @@ import {
 } from "./host-cache/revalidate";
 
 export type IProps = {
+  ISocialModuleProfileEnsureProps: ISocialModuleProfileEnsureProps;
   IPermissionDefaultsProps: IPermissionDefaultsProps;
   IHostCacheRevalidateProps: IHostCacheRevalidateProps;
   IBlogModuleArticleCreateProps: IBlogModuleArticleCreateProps;
@@ -595,6 +601,7 @@ export type IProps = {
 };
 
 export type IResult = {
+  ISocialModuleProfileEnsureResult: ISocialModuleProfileEnsureResult;
   IPermissionDefaultsResult: IPermissionDefaultsResult;
   IHostCacheRevalidateResult: IHostCacheRevalidateResult;
   IBlogModuleArticleCreateResult: IBlogModuleArticleCreateResult;
@@ -699,6 +706,7 @@ export type IResult = {
 };
 
 export const api = {
+  socialModuleProfileEnsure,
   permissionDefaults,
   hostCacheRevalidate,
   blogModuleArticleCreate,

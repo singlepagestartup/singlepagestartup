@@ -1,4 +1,10 @@
-import { Service as SubjectsToEcommerceModuleOrdersService } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/service";
+import { consistencyContext } from "@sps/shared-backend-api";
+import { Service as CheckoutClaim } from "../../../startup/ecommerce/order/checkout-claim";
+import type { Repository } from "../../../../repository";
+import { Service as RenewalProfile } from "../../../startup/ecommerce/order/resolve-renewal-profile";
+import type { IContext as IRenewalContext } from "./resolve-renewal-profile";
+import type { Service as SubjectService } from "../../index";
+import { Service as PaymentPurchaser } from "../../../startup/ecommerce/order/payment-purchaser";
 import {
   INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
   NEXT_PUBLIC_API_SERVICE_URL,
@@ -23,6 +29,7 @@ export const ACTIVE_SUBSCRIPTION_ORDER_STATUSES = [
 export type IExecuteProps =
   | {
       id: string;
+      socialModuleProfileId?: string;
       email?: string;
       provider: string;
       account?: string | null;
@@ -40,6 +47,7 @@ export type IExecuteProps =
     }
   | {
       id: string;
+      socialModuleProfileId?: string;
       account?: string | null;
       provider: "telegram-star";
       comment?: string;
@@ -56,27 +64,44 @@ export type IExecuteProps =
     };
 
 type IConstructorProps = {
+  repository: Pick<Repository, "withProfileLock">;
   findById: ({ id }: { id: string }) => Promise<any>;
   ecommerceModule: IEcommerceModule;
   billingModule: IBillingModule;
-  subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService;
+  resolveProfile: SubjectService["ecommerceModuleResolveProfile"];
+  assertAccess: SubjectService["ecommerceModuleOrderAssertAccess"];
+  socialModule: SubjectService["socialModule"];
+  subjectsToBillingModulePaymentIntents: SubjectService["subjectsToBillingModulePaymentIntents"];
 };
 
 export class Service {
+  repository: Pick<Repository, "withProfileLock">;
   findById: ({ id }: { id: string }) => Promise<any>;
   ecommerceModule: IEcommerceModule;
   billingModule: IBillingModule;
-  subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService;
+  resolveProfile: SubjectService["ecommerceModuleResolveProfile"];
+  assertAccess: SubjectService["ecommerceModuleOrderAssertAccess"];
+  socialModule: SubjectService["socialModule"];
+  subjectsToBillingModulePaymentIntents: SubjectService["subjectsToBillingModulePaymentIntents"];
 
   constructor(props: IConstructorProps) {
+    this.repository = props.repository;
     this.findById = props.findById;
     this.ecommerceModule = props.ecommerceModule;
     this.billingModule = props.billingModule;
-    this.subjectsToEcommerceModuleOrders =
-      props.subjectsToEcommerceModuleOrders;
+    this.socialModule = props.socialModule;
+    this.subjectsToBillingModulePaymentIntents =
+      props.subjectsToBillingModulePaymentIntents;
+    this.resolveProfile = props.resolveProfile;
+    this.assertAccess = props.assertAccess;
   }
 
-  async execute(props: IExecuteProps) {
+  async execute(props: IExecuteProps, context?: IRenewalContext) {
+    if (consistencyContext.getStore()?.database) {
+      throw new Error(
+        "Conflict error. Checkout must start outside an existing database transaction",
+      );
+    }
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC_SECRET_KEY is required");
     }
@@ -88,6 +113,59 @@ export class Service {
 
     if (!entity) {
       throw new Error("Not Found error. No entity found");
+    }
+
+    let socialModuleProfileId: string | undefined;
+    if (context) {
+      socialModuleProfileId = props.socialModuleProfileId;
+    } else {
+      socialModuleProfileId = await this.resolveProfile({
+        subjectId: props.id,
+        socialModuleProfileId: props.socialModuleProfileId,
+      });
+    }
+    if (!socialModuleProfileId) {
+      throw new Error(
+        "Validation error. Subscription renewal profile is required",
+      );
+    }
+    const requestedOrderIds = [
+      ...new Set(props.ecommerceModule.orders.map((order) => order.id)),
+    ];
+    if (!requestedOrderIds.length) {
+      throw new Error("Validation error. At least one order is required");
+    }
+    for (const orderId of requestedOrderIds) {
+      if (context) {
+        const owners =
+          await this.socialModule.profilesToEcommerceModuleOrders.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "ecommerceModuleOrderId",
+                    method: "eq",
+                    value: orderId,
+                  },
+                ],
+              },
+            },
+          });
+        if (
+          owners.length !== 1 ||
+          owners[0].profileId !== socialModuleProfileId
+        ) {
+          throw new Error(
+            "Permission error. Renewal order belongs to another profile",
+          );
+        }
+      } else {
+        await this.assertAccess({
+          subjectId: props.id,
+          socialModuleProfileId,
+          orderId,
+        });
+      }
     }
 
     const ecommerceModuleOrders = await this.ecommerceModule.order.find({
@@ -110,6 +188,12 @@ export class Service {
       throw new Error("Not Found error. No ecommerce module orders found");
     }
 
+    if (ecommerceModuleOrders.length !== requestedOrderIds.length) {
+      throw new Error(
+        "Permission error. Every requested order must belong to the selected profile",
+      );
+    }
+
     const ordersToProducts = await this.ecommerceModule.ordersToProducts.find({
       params: {
         filters: {
@@ -126,6 +210,20 @@ export class Service {
 
     if (!ordersToProducts?.length) {
       throw new Error("Not Found error. No orders to products found");
+    }
+    if (context) {
+      await new RenewalProfile({
+        socialModule: this.socialModule,
+        ecommerceModule: this.ecommerceModule,
+        billingModule: this.billingModule,
+        subjectsToBillingModulePaymentIntents:
+          this.subjectsToBillingModulePaymentIntents,
+      }).execute({
+        renewalOrderId: context.renewalOrderId,
+        subjectId: props.id,
+        socialModuleProfileId,
+        productIds: ordersToProducts.map((line) => line.productId),
+      });
     }
 
     const ecommerceModuleProducts = await this.ecommerceModule.product.find({
@@ -439,16 +537,47 @@ export class Service {
         },
       });
 
+    const purchaser = new PaymentPurchaser({
+      socialModule: this.socialModule,
+      ecommerceModule: this.ecommerceModule,
+      purchasers: this.subjectsToBillingModulePaymentIntents,
+    });
     if (ordersToBillingModulePaymentIntents?.length) {
-      for (const orderToBillingModulePaymentIntent of ordersToBillingModulePaymentIntents) {
-        await ecommerceModuleOrdersToBillingModulePaymentIntentsApi.delete({
-          id: orderToBillingModulePaymentIntent.id,
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-          },
-        });
+      for (const order of ecommerceModuleOrders) {
+        if (
+          ordersToBillingModulePaymentIntents.some(
+            (link) => link.orderId === order.id,
+          )
+        ) {
+          const priorIntentIds = ordersToBillingModulePaymentIntents
+            .filter((link) => link.orderId === order.id)
+            .map((link) => link.billingModulePaymentIntentId);
+          const priorInvoices =
+            await this.billingModule.paymentIntentsToInvoices.find({
+              params: {
+                filters: {
+                  and: [
+                    {
+                      column: "paymentIntentId",
+                      method: "inArray",
+                      value: priorIntentIds,
+                    },
+                  ],
+                },
+              },
+            });
+          if (priorInvoices?.length) {
+            throw new Error(
+              "Conflict error. Order already has a submitted payment",
+            );
+          }
+          const previousPurchaser = await purchaser.resolveOrder(order.id);
+          if (previousPurchaser.subjectId !== props.id) {
+            throw new Error(
+              "Permission error. Only the recorded purchaser can repeat checkout",
+            );
+          }
+        }
       }
     }
 
@@ -461,247 +590,252 @@ export class Service {
         interval?: string;
       };
     }[] = [];
-    const checkoutStartedOrderIds = new Set<string>();
+    const providerAttemptedIntentIds = new Set<string>();
     const compensateFailedCheckout = async (error: unknown): Promise<never> => {
-      await Promise.allSettled(
-        billingModulePaymentIntents.map(({ billingModulePaymentIntent }) => {
-          return billingModulePaymentIntentApi.update({
-            id: billingModulePaymentIntent.id,
-            data: {
-              ...billingModulePaymentIntent,
-              status: "failed",
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": rbacSecretKey,
-              },
-            },
-          });
-        }),
-      );
-
-      await Promise.allSettled(
-        ecommerceModuleOrders
-          .filter((order) => checkoutStartedOrderIds.has(order.id))
-          .map((order) => {
-            return ecommerceModuleOrderApi.update({
-              id: order.id,
-              data: {
-                ...order,
-                status: "canceled",
-                type: "history",
-              },
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": rbacSecretKey,
-                  "Cache-Control": "no-store",
-                },
-              },
-            });
-          }),
-      );
-
-      throw error;
-    };
-
-    for (const order of ecommerceModuleOrders) {
-      const checkoutOrderProductIds = new Set(
-        ordersToProducts
-          .filter((orderToProduct) => {
-            return orderToProduct.orderId === order["id"];
-          })
-          .map((orderToProduct) => {
-            return orderToProduct.productId;
-          })
-          .filter((productId): productId is string => Boolean(productId)),
-      );
-
-      if (!checkoutOrderProductIds.size) {
-        throw new Error(
-          "Not Found error. No checkout products found for order: " +
-            order["id"],
+      const protectedOrderIds = new Set<string>();
+      for (const intent of billingModulePaymentIntents) {
+        let exposed = providerAttemptedIntentIds.has(
+          intent.billingModulePaymentIntent.id,
         );
-      }
-
-      const billingModuleCurrencyId = ordersToBillingModuleCurrencies.find(
-        (orderToBillingModuleCurrency) =>
-          orderToBillingModuleCurrency.orderId === order["id"],
-      )?.billingModuleCurrencyId;
-
-      if (!billingModuleCurrencyId) {
-        throw new Error(
-          "Not Found error. No billing module currency id found for order: " +
-            order["id"],
-        );
-      }
-
-      const { amount, type, interval } =
-        await this.ecommerceModule.order.findByIdCheckoutAttributesByCurrency({
-          id: order["id"],
-          billingModuleCurrencyId,
-        });
-
-      try {
-        if (type === "subscription") {
-          const subjectToEcommerceModuleOrders =
-            await this.subjectsToEcommerceModuleOrders.find({
+        try {
+          const invoices =
+            await this.billingModule.paymentIntentsToInvoices.find({
               params: {
                 filters: {
                   and: [
                     {
-                      column: "subjectId",
+                      column: "paymentIntentId",
                       method: "eq",
-                      value: props.id,
+                      value: intent.billingModulePaymentIntent.id,
                     },
                   ],
                 },
               },
             });
+          exposed ||= Boolean(invoices?.length);
+          if (!exposed) {
+            const failed =
+              await this.billingModule.paymentIntent.failUninitializedPaymentIntent(
+                intent.billingModulePaymentIntent.id,
+                new Date(Date.now() + 1),
+              );
+            exposed = failed?.status !== "failed";
+          }
+        } catch {
+          // An uncertain payment outcome must remain protected from cart merge and retry.
+          exposed = true;
+        }
+        if (exposed) {
+          for (const id of intent.orderIds) {
+            protectedOrderIds.add(id);
+          }
+        }
+      }
+      await this.repository.withProfileLock(
+        { profileId: socialModuleProfileId },
+        async () => {
+          for (const order of ecommerceModuleOrders) {
+            if (protectedOrderIds.has(order.id)) {
+              continue;
+            }
+            await this.ecommerceModule.order.lockForLifecycle({ id: order.id });
+            const current = await this.ecommerceModule.order.findById({
+              id: order.id,
+            });
+            if (current?.type === "history" && current.status === "paying") {
+              await this.ecommerceModule.order.update({
+                id: order.id,
+                data: { ...current, status: "new", type: "cart" },
+              });
+            }
+          }
+        },
+      );
+      throw error;
+    };
 
-          if (subjectToEcommerceModuleOrders?.length) {
-            for (const subjectToEcommerceModuleOrder of subjectToEcommerceModuleOrders) {
-              const ecommerceModuleOrder =
-                await this.ecommerceModule.order.findById({
-                  id: subjectToEcommerceModuleOrder.ecommerceModuleOrderId,
-                });
+    await new CheckoutClaim({
+      repository: this.repository,
+      ecommerceModule: this.ecommerceModule,
+      socialModule: this.socialModule,
+    }).execute({
+      profileId: socialModuleProfileId,
+      orderIds: requestedOrderIds,
+      expectedLines: ordersToProducts,
+      expectedCurrencies: ordersToBillingModuleCurrencies,
+      comment: props.comment,
+    });
+    try {
+      if (ordersToBillingModulePaymentIntents?.length) {
+        for (const orderToBillingModulePaymentIntent of ordersToBillingModulePaymentIntents) {
+          await ecommerceModuleOrdersToBillingModulePaymentIntentsApi.delete({
+            id: orderToBillingModulePaymentIntent.id,
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+            },
+          });
+        }
+      }
 
-              if (!ecommerceModuleOrder) {
-                continue;
-              }
+      for (const order of ecommerceModuleOrders) {
+        const checkoutOrderProductIds = new Set(
+          ordersToProducts
+            .filter((orderToProduct) => {
+              return orderToProduct.orderId === order["id"];
+            })
+            .map((orderToProduct) => {
+              return orderToProduct.productId;
+            })
+            .filter((productId): productId is string => Boolean(productId)),
+        );
 
-              if (
-                ecommerceModuleOrders
-                  .map((order) => order.id)
-                  .includes(ecommerceModuleOrder.id)
-              ) {
-                continue;
-              }
+        if (!checkoutOrderProductIds.size) {
+          throw new Error(
+            "Not Found error. No checkout products found for order: " +
+              order["id"],
+          );
+        }
 
-              if (
-                !ACTIVE_SUBSCRIPTION_ORDER_STATUSES.includes(
-                  ecommerceModuleOrder.status,
-                )
-              ) {
-                continue;
-              }
+        const billingModuleCurrencyId = ordersToBillingModuleCurrencies.find(
+          (orderToBillingModuleCurrency) =>
+            orderToBillingModuleCurrency.orderId === order["id"],
+        )?.billingModuleCurrencyId;
 
-              const ecommerceModuleOrderCheckoutAttributes =
-                await this.ecommerceModule.order.findByIdCheckoutAttributes({
+        if (!billingModuleCurrencyId) {
+          throw new Error(
+            "Not Found error. No billing module currency id found for order: " +
+              order["id"],
+          );
+        }
+
+        const { amount, type, interval } =
+          await this.ecommerceModule.order.findByIdCheckoutAttributesByCurrency(
+            {
+              id: order["id"],
+              billingModuleCurrencyId,
+            },
+          );
+
+        try {
+          if (type === "subscription") {
+            const subjectToEcommerceModuleOrders =
+              await this.socialModule.profilesToEcommerceModuleOrders.find({
+                params: {
+                  filters: {
+                    and: [
+                      {
+                        column: "profileId",
+                        method: "eq",
+                        value: socialModuleProfileId,
+                      },
+                    ],
+                  },
+                },
+              });
+
+            if (subjectToEcommerceModuleOrders?.length) {
+              for (const subjectToEcommerceModuleOrder of subjectToEcommerceModuleOrders) {
+                const ecommerceModuleOrder =
+                  await this.ecommerceModule.order.findById({
+                    id: subjectToEcommerceModuleOrder.ecommerceModuleOrderId,
+                  });
+
+                if (!ecommerceModuleOrder) {
+                  continue;
+                }
+
+                if (
+                  ecommerceModuleOrders
+                    .map((order) => order.id)
+                    .includes(ecommerceModuleOrder.id)
+                ) {
+                  continue;
+                }
+
+                if (
+                  !ACTIVE_SUBSCRIPTION_ORDER_STATUSES.includes(
+                    ecommerceModuleOrder.status,
+                  )
+                ) {
+                  continue;
+                }
+
+                const ecommerceModuleOrderCheckoutAttributes =
+                  await this.ecommerceModule.order.findByIdCheckoutAttributes({
+                    id: ecommerceModuleOrder.id,
+                  });
+
+                if (
+                  ecommerceModuleOrderCheckoutAttributes.type !== "subscription"
+                ) {
+                  continue;
+                }
+
+                const existingOrdersToProducts =
+                  await this.ecommerceModule.ordersToProducts.find({
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "orderId",
+                            method: "eq",
+                            value: ecommerceModuleOrder.id,
+                          },
+                        ],
+                      },
+                    },
+                  });
+
+                if (
+                  existingOrdersToProducts?.some((orderToProduct) => {
+                    return checkoutOrderProductIds.has(
+                      orderToProduct.productId,
+                    );
+                  })
+                ) {
+                  throw new Error(
+                    "Validation error. Checking out order has active subscription products.",
+                  );
+                }
+
+                await ecommerceModuleOrderApi.update({
                   id: ecommerceModuleOrder.id,
-                });
-
-              if (
-                ecommerceModuleOrderCheckoutAttributes.type !== "subscription"
-              ) {
-                continue;
-              }
-
-              const existingOrdersToProducts =
-                await this.ecommerceModule.ordersToProducts.find({
-                  params: {
-                    filters: {
-                      and: [
-                        {
-                          column: "orderId",
-                          method: "eq",
-                          value: ecommerceModuleOrder.id,
-                        },
-                      ],
+                  data: {
+                    ...ecommerceModuleOrder,
+                    status: "requested_cancelation",
+                  },
+                  options: {
+                    headers: {
+                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                      "Cache-Control": "no-store",
                     },
                   },
                 });
-
-              if (
-                existingOrdersToProducts?.some((orderToProduct) => {
-                  return checkoutOrderProductIds.has(orderToProduct.productId);
-                })
-              ) {
-                throw new Error(
-                  "Validation error. Checking out order has active subscription products.",
-                );
               }
-
-              await ecommerceModuleOrderApi.update({
-                id: ecommerceModuleOrder.id,
-                data: {
-                  ...ecommerceModuleOrder,
-                  status: "requested_cancelation",
-                },
-                options: {
-                  headers: {
-                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                    "Cache-Control": "no-store",
-                  },
-                },
-              });
             }
           }
-        }
-      } catch (error) {
-        if (error?.["message"]) {
-          if (
-            error["message"].includes(
-              "Checking out order has active subscription products.",
-            )
-          ) {
-            for (const ecommerceModuleOrder of ecommerceModuleOrders) {
-              await ecommerceModuleOrderApi.update({
-                id: ecommerceModuleOrder.id,
-                data: {
-                  ...ecommerceModuleOrder,
-                  status: "canceled",
-                  type: "history",
-                },
-                options: {
-                  headers: {
-                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                    "Cache-Control": "no-store",
-                  },
-                },
-              });
-            }
-            await compensateFailedCheckout(error);
-          }
+        } catch (error) {
+          throw error;
         }
 
-        await compensateFailedCheckout(error);
-      }
+        const existingBillingModulePaymentIntentWithSameBillingModuleCurrencyAndCheckoutAttributes =
+          billingModulePaymentIntents.find(
+            (billingModulePaymentIntent) =>
+              billingModulePaymentIntent.billingModuleCurrencyId ===
+                billingModuleCurrencyId &&
+              billingModulePaymentIntent.checkoutAttributesByCurrency.type ===
+                type &&
+              billingModulePaymentIntent.checkoutAttributesByCurrency
+                .interval === interval,
+          );
 
-      await ecommerceModuleOrderApi
-        .update({
-          id: order["id"],
-          data: {
-            ...order,
-            status: "paying",
-            type: "history",
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": rbacSecretKey,
-              "Cache-Control": "no-store",
-            },
-          },
-        })
-        .catch(compensateFailedCheckout);
-      checkoutStartedOrderIds.add(order["id"]);
-
-      const existingBillingModulePaymentIntentWithSameBillingModuleCurrencyAndCheckoutAttributes =
-        billingModulePaymentIntents.find(
-          (billingModulePaymentIntent) =>
-            billingModulePaymentIntent.billingModuleCurrencyId ===
-              billingModuleCurrencyId &&
-            billingModulePaymentIntent.checkoutAttributesByCurrency.type ===
-              type &&
-            billingModulePaymentIntent.checkoutAttributesByCurrency.interval ===
-              interval,
-        );
-
-      if (
-        existingBillingModulePaymentIntentWithSameBillingModuleCurrencyAndCheckoutAttributes
-      ) {
-        const updatedBillingModulePaymentIntent =
-          await billingModulePaymentIntentApi
-            .update({
+        if (
+          existingBillingModulePaymentIntentWithSameBillingModuleCurrencyAndCheckoutAttributes
+        ) {
+          const updatedBillingModulePaymentIntent =
+            await billingModulePaymentIntentApi.update({
               id: existingBillingModulePaymentIntentWithSameBillingModuleCurrencyAndCheckoutAttributes
                 .billingModulePaymentIntent.id,
               data: {
@@ -716,31 +850,29 @@ export class Service {
                   "X-RBAC-SECRET-KEY": rbacSecretKey,
                 },
               },
-            })
-            .catch(compensateFailedCheckout);
+            });
 
-        billingModulePaymentIntents.splice(
-          billingModulePaymentIntents.indexOf(
-            existingBillingModulePaymentIntentWithSameBillingModuleCurrencyAndCheckoutAttributes,
-          ),
-          1,
-        );
+          billingModulePaymentIntents.splice(
+            billingModulePaymentIntents.indexOf(
+              existingBillingModulePaymentIntentWithSameBillingModuleCurrencyAndCheckoutAttributes,
+            ),
+            1,
+          );
 
-        billingModulePaymentIntents.push({
-          orderIds: [
-            ...existingBillingModulePaymentIntentWithSameBillingModuleCurrencyAndCheckoutAttributes.orderIds,
-            order.id,
-          ],
-          billingModulePaymentIntent: updatedBillingModulePaymentIntent,
-          billingModuleCurrencyId,
-          checkoutAttributesByCurrency: {
-            type,
-            interval,
-          },
-        });
+          billingModulePaymentIntents.push({
+            orderIds: [
+              ...existingBillingModulePaymentIntentWithSameBillingModuleCurrencyAndCheckoutAttributes.orderIds,
+              order.id,
+            ],
+            billingModulePaymentIntent: updatedBillingModulePaymentIntent,
+            billingModuleCurrencyId,
+            checkoutAttributesByCurrency: {
+              type,
+              interval,
+            },
+          });
 
-        await ecommerceModuleOrdersToBillingModulePaymentIntentsApi
-          .create({
+          await ecommerceModuleOrdersToBillingModulePaymentIntentsApi.create({
             data: {
               orderId: order["id"],
               billingModulePaymentIntentId:
@@ -751,39 +883,41 @@ export class Service {
                 "X-RBAC-SECRET-KEY": rbacSecretKey,
               },
             },
-          })
-          .catch(compensateFailedCheckout);
+          });
 
-        continue;
-      }
+          continue;
+        }
 
-      const billingModulePaymentIntent = await billingModulePaymentIntentApi
-        .create({
-          data: {
-            amount,
-            interval,
-            type,
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": rbacSecretKey,
+        const billingModulePaymentIntent =
+          await billingModulePaymentIntentApi.create({
+            data: {
+              amount,
+              interval,
+              type,
             },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": rbacSecretKey,
+              },
+            },
+          });
+
+        billingModulePaymentIntents.push({
+          orderIds: [order.id],
+          billingModulePaymentIntent,
+          billingModuleCurrencyId,
+          checkoutAttributesByCurrency: {
+            type,
+            interval,
           },
-        })
-        .catch(compensateFailedCheckout);
+        });
 
-      billingModulePaymentIntents.push({
-        orderIds: [order.id],
-        billingModulePaymentIntent,
-        billingModuleCurrencyId,
-        checkoutAttributesByCurrency: {
-          type,
-          interval,
-        },
-      });
+        await purchaser.assign({
+          subjectId: props.id,
+          paymentIntentId: billingModulePaymentIntent.id,
+        });
 
-      await ecommerceModuleOrdersToBillingModulePaymentIntentsApi
-        .create({
+        await ecommerceModuleOrdersToBillingModulePaymentIntentsApi.create({
           data: {
             orderId: order["id"],
             billingModulePaymentIntentId: billingModulePaymentIntent.id,
@@ -793,14 +927,16 @@ export class Service {
               "X-RBAC-SECRET-KEY": rbacSecretKey,
             },
           },
-        })
-        .catch(compensateFailedCheckout);
-    }
+        });
+      }
 
-    const settledFreeOrderIds = new Set<string>();
-    for (const billingModulePaymentIntent of billingModulePaymentIntents) {
-      await billingModulePaymentIntentApi
-        .provider({
+      const settledFreeOrderIds = new Set<string>();
+      for (const billingModulePaymentIntent of billingModulePaymentIntents) {
+        // A rejected HTTP call can still have reached the provider on the server.
+        providerAttemptedIntentIds.add(
+          billingModulePaymentIntent.billingModulePaymentIntent.id,
+        );
+        await billingModulePaymentIntentApi.provider({
           id: billingModulePaymentIntent.billingModulePaymentIntent.id,
           data: {
             provider: props.provider,
@@ -812,34 +948,65 @@ export class Service {
               "X-RBAC-SECRET-KEY": rbacSecretKey,
             },
           },
-        })
-        .catch(compensateFailedCheckout);
-      if (billingModulePaymentIntent.billingModulePaymentIntent.amount === 0) {
-        for (const orderId of billingModulePaymentIntent.orderIds) {
-          settledFreeOrderIds.add(orderId);
+        });
+        if (
+          billingModulePaymentIntent.billingModulePaymentIntent.amount === 0
+        ) {
+          for (const orderId of billingModulePaymentIntent.orderIds) {
+            settledFreeOrderIds.add(orderId);
+          }
         }
       }
-    }
 
-    for (const order of ecommerceModuleOrders) {
-      if (!settledFreeOrderIds.has(order.id)) {
+      for (const order of ecommerceModuleOrders) {
+        if (!settledFreeOrderIds.has(order.id)) {
+          await broadcastModuleChannelApi.pushMessage({
+            data: {
+              slug: "observer",
+              payload: JSON.stringify({
+                expiresAt: new Date(
+                  Date.now() + 1000 * 60 * 60 * 24,
+                ).toISOString(),
+                trigger: {
+                  type: "request",
+                  method: "POST",
+                  url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/billing/payment-intents/${props.provider}/webhook`,
+                },
+                pipe: [
+                  {
+                    type: "request",
+                    method: "POST",
+                    url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/ecommerce/orders/${order["id"]}/check`,
+                    headers: {
+                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                    },
+                  },
+                ],
+              }),
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+            },
+          });
+        }
+
         await broadcastModuleChannelApi.pushMessage({
           data: {
+            expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(),
             slug: "observer",
             payload: JSON.stringify({
-              expiresAt: new Date(
-                Date.now() + 1000 * 60 * 60 * 24,
-              ).toISOString(),
               trigger: {
                 type: "request",
-                method: "POST",
-                url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/billing/payment-intents/${props.provider}/webhook`,
+                method: "PATCH",
+                url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/ecommerce/orders/${order["id"]}`,
               },
               pipe: [
                 {
                   type: "request",
                   method: "POST",
-                  url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/ecommerce/orders/${order["id"]}/check`,
+                  url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/rbac/subjects/${props.id}/check`,
                   headers: {
                     "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
                   },
@@ -853,56 +1020,48 @@ export class Service {
             },
           },
         });
+        if (settledFreeOrderIds.has(order.id)) {
+          await ecommerceModuleOrderApi.check({
+            id: order.id,
+            data: {},
+            options: { headers: { "X-RBAC-SECRET-KEY": rbacSecretKey } },
+          });
+        }
       }
 
-      await broadcastModuleChannelApi.pushMessage({
-        data: {
-          expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(),
-          slug: "observer",
-          payload: JSON.stringify({
-            trigger: {
-              type: "request",
-              method: "PATCH",
-              url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/ecommerce/orders/${order["id"]}`,
-            },
-            pipe: [
-              {
-                type: "request",
-                method: "POST",
-                url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/rbac/subjects/${props.id}/check`,
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+      const billingModulePaymentIntentsToInvoices =
+        await this.billingModule.paymentIntentsToInvoices.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "paymentIntentId",
+                  method: "inArray",
+                  value: billingModulePaymentIntents.map(
+                    (billingModulePaymentIntent) =>
+                      billingModulePaymentIntent.billingModulePaymentIntent.id,
+                  ),
                 },
-              },
-            ],
-          }),
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              ],
+            },
           },
-        },
-      });
-      if (settledFreeOrderIds.has(order.id)) {
-        await ecommerceModuleOrderApi.check({
-          id: order.id,
-          data: {},
-          options: { headers: { "X-RBAC-SECRET-KEY": rbacSecretKey } },
         });
-      }
-    }
 
-    const billingModulePaymentIntentsToInvoices =
-      await this.billingModule.paymentIntentsToInvoices.find({
+      if (!billingModulePaymentIntentsToInvoices?.length) {
+        throw new Error(
+          "Not Found error. No billing-module payment intent to invoices found",
+        );
+      }
+
+      const billingModuleInvoices = await this.billingModule.invoice.find({
         params: {
           filters: {
             and: [
               {
-                column: "paymentIntentId",
+                column: "id",
                 method: "inArray",
-                value: billingModulePaymentIntents.map(
-                  (billingModulePaymentIntent) =>
-                    billingModulePaymentIntent.billingModulePaymentIntent.id,
+                value: billingModulePaymentIntentsToInvoices.map(
+                  (item) => item.invoiceId,
                 ),
               },
             ],
@@ -910,32 +1069,13 @@ export class Service {
         },
       });
 
-    if (!billingModulePaymentIntentsToInvoices?.length) {
-      throw new Error(
-        "Not Found error. No billing-module payment intent to invoices found",
-      );
-    }
-
-    const billingModuleInvoices = await this.billingModule.invoice.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "id",
-              method: "inArray",
-              value: billingModulePaymentIntentsToInvoices.map(
-                (item) => item.invoiceId,
-              ),
-            },
-          ],
+      return {
+        billingModule: {
+          invoices: billingModuleInvoices,
         },
-      },
-    });
-
-    return {
-      billingModule: {
-        invoices: billingModuleInvoices,
-      },
-    };
+      };
+    } catch (error) {
+      return compensateFailedCheckout(error);
+    }
   }
 }

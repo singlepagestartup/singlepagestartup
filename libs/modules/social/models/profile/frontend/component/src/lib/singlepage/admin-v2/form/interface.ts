@@ -36,6 +36,9 @@ export type IComponentProps = IParentComponentProps<IModel, typeof variant> & {
   profilesToActions?: (
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;
+  profilesToEcommerceModuleOrders?: (
+    props: ISpsComponentBase & { data?: IModel },
+  ) => ReactNode;
   profilesToEcommerceModuleProducts?: (
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;

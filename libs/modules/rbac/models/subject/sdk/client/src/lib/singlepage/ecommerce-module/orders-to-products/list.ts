@@ -16,6 +16,7 @@ import {
   consistencyQueryKey,
 } from "@sps/shared-frontend-client-api";
 import { useEffect } from "react";
+import { useActiveSocialModuleProfile } from "../../social-module/profile/active-selection";
 
 export type IProps =
   IParentProps["IEcommerceModuleOrdersToProductsListProps"] & {
@@ -27,6 +28,16 @@ export type IResult =
   IParentResult["IEcommerceModuleOrdersToProductsListResult"];
 
 export function action(props: IProps) {
+  const active = useActiveSocialModuleProfile(
+    props.id,
+    props.params?.socialModuleProfileId,
+    props.options,
+  );
+  const params = {
+    ...props.params,
+    socialModuleProfileId:
+      props.params?.socialModuleProfileId || active.socialModuleProfileId,
+  };
   const queryKey = `${route}/${props.id}/ecommerce-module/orders-to-products`;
   // Preserve order invalidation while accepting additional caller topics.
   const { meta: userMeta, ...restReactQueryOptions } =
@@ -38,12 +49,12 @@ export function action(props: IProps) {
   }, [queryKey]);
 
   return useQuery<IResult>({
-    queryKey: consistencyQueryKey(queryKey, props.params, clientHost),
     meta: {
       ...(userMeta ?? {}),
       topics: Array.from(
         new Set([
           "ecommerce.orders",
+          "social.profiles-to-ecommerce-module-orders",
           "ecommerce.orders-to-products",
           "rbac.subjects-to-ecommerce-module-orders",
           "ecommerce.products",
@@ -54,8 +65,10 @@ export function action(props: IProps) {
       ),
     },
     queryFn: async () => {
+      if (!params.socialModuleProfileId) return [];
       const result = await api.ecommerceModuleOrdersToProductsList({
         ...props,
+        params,
         options: {
           ...props.options,
           headers: saturateHeaders(props.options?.headers),
@@ -66,7 +79,7 @@ export function action(props: IProps) {
       globalActionsStore.getState().addAction({
         type: "query",
         name: `${route}/${props.id}/ecommerce-module/orders-to-products`,
-        props: { params: props.params },
+        props: { params },
         result,
         timestamp: Date.now(),
         requestId: createId(),
@@ -80,5 +93,8 @@ export function action(props: IProps) {
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     ...restReactQueryOptions,
+    queryKey: consistencyQueryKey(queryKey, params, clientHost),
+    enabled: active.isSuccess && (restReactQueryOptions.enabled ?? true),
+    placeholderData: undefined,
   });
 }

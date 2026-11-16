@@ -33,8 +33,12 @@ describe("paid order atomic fulfillment", () => {
   const cleanup: (() => Promise<unknown>)[] = [];
   afterAll(async () => {
     const [removeSubject, ...otherRemovals] = cleanup;
-    if (removeSubject) await removeSubject();
-    for (const remove of otherRemovals.reverse()) await remove();
+    if (removeSubject) {
+      await removeSubject();
+    }
+    for (const remove of otherRemovals.reverse()) {
+      await remove();
+    }
     await getPostgresClient().end();
   });
 
@@ -132,7 +136,14 @@ describe("paid order atomic fulfillment", () => {
     });
     const service = new Service(
       subjects,
-      { attribute: { find: async () => [] } } as any,
+      {
+        attribute: { find: async () => [] },
+        profilesToEcommerceModuleOrders: {
+          find: async () => [
+            { profileId: "profile", ecommerceModuleOrderId: activeOrderId },
+          ],
+        },
+      } as any,
       {
         order: {
           lockForLifecycle: (props) => orders.lockForLifecycle(props),
@@ -148,6 +159,11 @@ describe("paid order atomic fulfillment", () => {
           },
           update: ({ id, data }) => orders.updateFirstByField("id", id, data),
         },
+        ordersToBillingModulePaymentIntents: {
+          find: async () => [
+            { orderId: activeOrderId, billingModulePaymentIntentId: "payment" },
+          ],
+        },
       } as any,
       { template: { find: async () => [] } } as any,
       {} as any,
@@ -159,7 +175,11 @@ describe("paid order atomic fulfillment", () => {
       } as any,
       {
         find: async () => [
-          { subjectId: subject.id, ecommerceModuleOrderId: activeOrderId },
+          {
+            subjectId: subject.id,
+            variant: "purchaser",
+            billingModulePaymentIntentId: "payment",
+          },
         ],
       } as any,
       grants,

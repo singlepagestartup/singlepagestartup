@@ -95,19 +95,27 @@ const cartRoutes: IRoute[] = [
 ];
 
 const subjectsToEcommerceModuleOrders = [
-  { subjectId: "subject-owner", ecommerceModuleOrderId: "order-owner" },
-  { subjectId: "subject-other", ecommerceModuleOrderId: "order-other" },
+  { profileId: "profile-owner", ecommerceModuleOrderId: "order-owner" },
+  { profileId: "profile-other", ecommerceModuleOrderId: "order-other" },
 ];
 
 function createService() {
   const access = new EcommerceOrderAccess({
-    subjectsToOrders: {
+    profilesToOrders: {
       find: jest.fn().mockResolvedValue(subjectsToEcommerceModuleOrders),
     },
     ordersToProducts: { find: jest.fn() },
   });
   return {
-    ecommerceModuleOrderAssertAccess: jest.fn(access.execute.bind(access)),
+    ecommerceModuleOrderAssertAccess: jest.fn((props) =>
+      access.execute({
+        ...props,
+        socialModuleProfileId:
+          props.subjectId === "subject-owner"
+            ? "profile-owner"
+            : "profile-other",
+      }),
+    ),
   };
 }
 

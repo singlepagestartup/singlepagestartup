@@ -41,15 +41,41 @@ export class Handler {
         throw new Error("Validation error. Only order owner can update order");
       }
 
+      const requestedProfileId =
+        c.req.param("socialModuleProfileId") ??
+        c.req.query("socialModuleProfileId");
+      if (!requestedProfileId) {
+        const profiles = await this.service.subjectsToSocialModuleProfiles.find(
+          {
+            params: {
+              filters: {
+                and: [{ column: "subjectId", method: "eq", value: id }],
+              },
+              limit: 1,
+            },
+          },
+        );
+        if (!profiles.length) {
+          return c.json({ data: 0 });
+        }
+      }
+
+      const socialModuleProfileId =
+        await this.service.ecommerceModuleResolveProfile({
+          subjectId: id,
+          socialModuleProfileId:
+            c.req.param("socialModuleProfileId") ??
+            c.req.query("socialModuleProfileId"),
+        });
       const subjectsToEcommerceModuleOrders =
-        await this.service.subjectsToEcommerceModuleOrders.find({
+        await this.service.socialModule.profilesToEcommerceModuleOrders.find({
           params: {
             filters: {
               and: [
                 {
-                  column: "subjectId",
+                  column: "profileId",
                   method: "eq",
-                  value: id,
+                  value: socialModuleProfileId,
                 },
               ],
             },

@@ -1,3 +1,8 @@
+import type { IContext as IRenewalCheckoutContext } from "./ecommerce/order/resolve-renewal-profile";
+import { Service as ResolveEcommerceProfile } from "../startup/ecommerce/order/resolve-profile";
+import { Service as MergeGuestCart } from "../startup/ecommerce/order/merge-guest-cart";
+import { Service as CompleteCartHandoff } from "../startup/ecommerce/order/complete-cart-handoff";
+import { Service as SubjectsToBillingModulePaymentIntentsService } from "@sps/rbac/relations/subjects-to-billing-module-payment-intents/backend/app/api/src/lib/service";
 import type { Service as SecurityNotifications } from "./security-notifications";
 import { Service as CreateCartOrder } from "../startup/ecommerce/order/create";
 import type { IExecuteProps as ICreateCartOrderProps } from "./ecommerce/order/create";
@@ -178,6 +183,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   subjectsToIdentities: SubjectsToIdentitiesService;
   subjectsToSocialModuleProfiles: SubjectsToSocialModuleProfilesService;
   subjectsToRoles: SubjectsToRolesService;
+  subjectsToBillingModulePaymentIntents: SubjectsToBillingModulePaymentIntentsService;
   subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService;
   subjectsToBillingModuleCurrencies: SubjectsToBillingModuleCurrenciesService;
 
@@ -212,6 +218,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     subjectsToSocialModuleProfiles: SubjectsToSocialModuleProfilesService,
     @inject(SubjectDI.ISubjectsToRolesService)
     subjectsToRoles: SubjectsToRolesService,
+    @inject(SubjectDI.ISubjectsToBillingModulePaymentIntentsService)
+    subjectsToBillingModulePaymentIntents: SubjectsToBillingModulePaymentIntentsService,
     @inject(SubjectDI.ISubjectsToEcommerceModuleOrdersService)
     subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService,
     @inject(SubjectDI.ISubjectsToBillingModuleCurrenciesService)
@@ -239,6 +247,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     this.subjectsToIdentities = subjectsToIdentities;
     this.subjectsToSocialModuleProfiles = subjectsToSocialModuleProfiles;
     this.subjectsToRoles = subjectsToRoles;
+    this.subjectsToBillingModulePaymentIntents =
+      subjectsToBillingModulePaymentIntents;
     this.subjectsToEcommerceModuleOrders = subjectsToEcommerceModuleOrders;
     this.subjectsToBillingModuleCurrencies = subjectsToBillingModuleCurrencies;
     this.blogModule = blogModule;
@@ -255,6 +265,31 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return revocation;
   }
 
+  async ecommerceModuleResolveProfile(props: {
+    subjectId: string;
+    socialModuleProfileId?: string;
+    createIfMissing?: boolean;
+  }) {
+    return new ResolveEcommerceProfile(this).execute(props);
+  }
+
+  async ecommerceModuleMergeGuestCart(props: {
+    sourceSubjectId: string;
+    subjectId: string;
+    socialModuleProfileId?: string;
+  }) {
+    return new MergeGuestCart(this).execute(props);
+  }
+
+  async ecommerceModuleCompleteCartHandoff(props: {
+    token: string;
+    guestSessionToken?: string;
+    socialModuleProfileId?: string;
+    socialModuleProfileSelections?: Record<string, string>;
+  }) {
+    return new CompleteCartHandoff(this).execute(props);
+  }
+
   async ecommerceModuleOrderCreate(props: ICreateCartOrderProps) {
     return new CreateCartOrder({
       repository: this.repository,
@@ -267,7 +302,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   ): Promise<string | null> {
     return new FindOpenCartOrderWithProduct({
       ecommerceModule: this.ecommerceModule,
-      subjectsToEcommerceModuleOrders: this.subjectsToEcommerceModuleOrders,
+      profilesToEcommerceModuleOrders:
+        this.socialModule.profilesToEcommerceModuleOrders,
     }).execute(props);
   }
 
@@ -284,9 +320,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
   async ecommerceModuleOrderAssertAccess(props: IEcommerceOrderAccessProps) {
     return new EcommerceOrderAccess({
-      subjectsToOrders: this.subjectsToEcommerceModuleOrders,
+      profilesToOrders: this.socialModule.profilesToEcommerceModuleOrders,
       ordersToProducts: this.ecommerceModule.ordersToProducts,
-    }).execute(props);
+    }).execute({
+      ...props,
+      socialModuleProfileId: await this.ecommerceModuleResolveProfile(props),
+    });
   }
 
   async ecommerceModuleOrderFreezeSubscriptionPeriod(
@@ -454,10 +493,17 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   ) {
     const authentication = await new AuthenticationEmailAndPassword(
       this.repository,
+      this,
     ).execute(props);
 
     const result = await this.completeUserAuthentication(authentication);
 
+    await this.ecommerceModuleCompleteCartHandoff({
+      token: authentication.jwt,
+      guestSessionToken: props.data.guestSessionToken,
+      socialModuleProfileId: props.data.socialModuleProfileId,
+      socialModuleProfileSelections: props.data.socialModuleProfileSelections,
+    });
     return result;
   }
 
@@ -466,10 +512,17 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   ) {
     const authentication = await new AuthenticationEthereumVirtualMachine(
       this.repository,
+      this,
     ).execute(props);
 
     const result = await this.completeUserAuthentication(authentication);
 
+    await this.ecommerceModuleCompleteCartHandoff({
+      token: authentication.jwt,
+      guestSessionToken: props.data.guestSessionToken,
+      socialModuleProfileId: props.data.socialModuleProfileId,
+      socialModuleProfileSelections: props.data.socialModuleProfileSelections,
+    });
     return result;
   }
 
@@ -480,7 +533,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   async authenticationOAuthCallback(
     props: IAuthenticationOAuthCallbackExecuteProps,
   ) {
-    return new AuthenticationOAuthCallback(this.repository).execute(props);
+    return new AuthenticationOAuthCallback(this.repository, {
+      mergeGuestCart: (scope) => this.ecommerceModuleMergeGuestCart(scope),
+      linkIdentityToSubject: (scope) =>
+        this.repository.withSubjectLock({ subjectId: scope.subjectId }, () =>
+          this.subjectsToIdentities.create({ data: scope }),
+        ),
+    }).execute(props);
   }
 
   async authenticationOAuthExchange(
@@ -572,8 +631,14 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       repository: this.repository,
       ecommerceModule: this.ecommerceModule,
       billingModule: this.billingModule,
-      subjectsToEcommerceModuleOrders: this.subjectsToEcommerceModuleOrders,
+      socialModule: this.socialModule,
+      subjectsToBillingModulePaymentIntents:
+        this.subjectsToBillingModulePaymentIntents,
       subjectsToIdentities: this.subjectsToIdentities,
+      ensurePersonalProfile: (scope) =>
+        this.socialModuleProfileOwnershipEnsure(scope),
+      legacySubjectsToEcommerceModuleOrders:
+        this.subjectsToEcommerceModuleOrders,
       fulfillPaidOrderInTransaction: (scope) =>
         this.ecommerceOrderProceedService.fulfillPaidOrderInTransaction(scope),
       dispatchPaidEffects: (effect) =>
@@ -630,20 +695,34 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }).execute(props);
   }
 
-  async ecommerceOrderCheckout(props: IEcommerceOrderCheckoutExecuteProps) {
+  async ecommerceOrderCheckout(
+    props: IEcommerceOrderCheckoutExecuteProps,
+    context?: IRenewalCheckoutContext,
+  ) {
     return new EcommerceOrderCheckout({
+      repository: this.repository,
       findById: ({ id }) => this.findById({ id }),
       ecommerceModule: this.ecommerceModule,
       billingModule: this.billingModule,
-      subjectsToEcommerceModuleOrders: this.subjectsToEcommerceModuleOrders,
-    }).execute(props);
+      socialModule: this.socialModule,
+      subjectsToBillingModulePaymentIntents:
+        this.subjectsToBillingModulePaymentIntents,
+      resolveProfile: (scope) => this.ecommerceModuleResolveProfile(scope),
+      assertAccess: (scope) => this.ecommerceModuleOrderAssertAccess(scope),
+    }).execute(props, context);
   }
 
   async crmModuleFormRequestCreate(props: ICrmFormRequestCreateProps) {
     return this.getCrmFormRequestCreateService().execute(props);
   }
 
-  async ecommerceProductCheckout(props: IEcommerceProductCheckoutProps) {
+  async ecommerceProductCheckout(
+    props: IEcommerceProductCheckoutProps,
+    context?: IRenewalCheckoutContext,
+  ) {
+    if (context) {
+      return this.getEcommerceProductCheckoutService().execute(props, context);
+    }
     return this.getEcommerceProductCheckoutService().execute(props);
   }
 
@@ -656,12 +735,22 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   async ecommerceOrdersToProductsList(
-    props: IEcommerceOrdersToProductsListExecuteProps,
+    props: Omit<
+      IEcommerceOrdersToProductsListExecuteProps,
+      "socialModuleProfileId"
+    > & { socialModuleProfileId?: string },
   ) {
     return new EcommerceOrdersToProductsList({
       ecommerceModule: this.ecommerceModule,
-      subjectsToEcommerceModuleOrders: this.subjectsToEcommerceModuleOrders,
-    }).execute(props);
+      profilesToEcommerceModuleOrders:
+        this.socialModule.profilesToEcommerceModuleOrders,
+    }).execute({
+      ...props,
+      socialModuleProfileId: await this.ecommerceModuleResolveProfile({
+        subjectId: props.id,
+        socialModuleProfileId: props.socialModuleProfileId,
+      }),
+    });
   }
 
   async socialModuleChatSubjectsWithSocialModuleProfiles(

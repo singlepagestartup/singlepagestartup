@@ -1,3 +1,4 @@
+import type { Service as BillingPaymentIntentService } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/service";
 import type { IOrderLineTotals } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
 import type { Service as BroadcastChannelService } from "@sps/broadcast/models/channel/backend/app/api/src/lib/service";
 import type { Service as NotificationTopicService } from "@sps/notification/models/topic/backend/app/api/src/lib/service";
@@ -44,6 +45,7 @@ export interface IEcommerceOrderReadService
       | "revokeSubscription"
       | "update"
     > {
+  delete: (props: { id: string }) => Promise<any>;
   findByIdCartDetails: (props: { id: string }) => Promise<ICartDetails>;
   findByIdTotal: (props: { id: string }) => Promise<any>;
   findByIdQuantity: (props: { id: string }) => Promise<any>;
@@ -57,7 +59,9 @@ export interface IEcommerceOrderReadService
   }) => Promise<any>;
 }
 
-export interface IEcommerceOrdersToProductsService extends ICreateService {
+export interface IEcommerceOrdersToProductsService
+  extends ICreateService, IUpdateService {
+  delete: (props: { id: string }) => Promise<any>;
   getTotal: (props: { id: string }) => Promise<IOrderLineTotals>;
 }
 
@@ -77,6 +81,7 @@ export interface ISocialModule {
   action: IReadService;
   attribute: IReadService;
   attributeKey: IReadService;
+  profilesToEcommerceModuleOrders: ICreateDeleteService & IUpdateService;
   profilesToChats: IReadService;
   profilesToSkills: ICreateDeleteService;
   profilesToKnowledgeModuleSources: ICreateService;
@@ -114,7 +119,8 @@ export interface IEcommerceModule {
 
 export interface IBillingModule {
   currency: IReadService;
-  paymentIntent: ICreateUpdateService;
+  paymentIntent: ICreateUpdateService &
+    Pick<BillingPaymentIntentService, "failUninitializedPaymentIntent">;
   paymentIntentsToCurrencies: ICreateService;
   invoice: ICreateUpdateService;
   paymentIntentsToInvoices: ICreateService;
@@ -191,6 +197,9 @@ export const SubjectDI = {
   ),
   ISubjectsToSocialModuleProfilesService: Symbol.for(
     "rbac.subject.subjects-to-social-module-profiles.service",
+  ),
+  ISubjectsToBillingModulePaymentIntentsService: Symbol.for(
+    "rbac.subject.subjects-to-billing-module-payment-intents.service",
   ),
   ISubjectsToEcommerceModuleOrdersService: Symbol.for(
     "rbac.subject.subjects-to-ecommerce-module-orders.service",

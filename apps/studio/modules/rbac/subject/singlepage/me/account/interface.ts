@@ -13,6 +13,9 @@ export interface ISubjectAccountProps {
     free: number;
     purchased: number;
   } | null;
+  profiles?: { id: string; title: string; avatar?: string }[];
+  activeProfileId?: string;
+  onSelectProfile?: (profileId: string) => void;
   onNavigate?: () => void;
 }
 

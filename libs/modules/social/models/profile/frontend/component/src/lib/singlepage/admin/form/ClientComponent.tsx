@@ -82,6 +82,13 @@ export function Component(props: IComponentPropsExtended) {
       status={status}
     >
       <div className="flex flex-col gap-6">
+        {" "}
+        {props.profilesToEcommerceModuleOrders
+          ? props.profilesToEcommerceModuleOrders({
+              data: props.data,
+              isServer: props.isServer,
+            })
+          : null}
         <MetadataField form={form} />
         <FormField
           ui="shadcn"
@@ -166,7 +173,6 @@ export function Component(props: IComponentPropsExtended) {
           control={form.control}
           storedIdentifiers={props.data?.allowedMcpServerIds}
         />
-
         {props.profilesToBlogModuleArticles?.({
           data: props.data,
           isServer: false,

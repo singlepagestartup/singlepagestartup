@@ -4,6 +4,10 @@
 
 Links subjects to billing payment intents.
 
+`variant="purchaser"` records the authenticated buyer before provider checkout.
+A partial unique index allows one purchaser per Payment Intent. Order fulfilment,
+renewal and notifications use this account even after another profile is selected.
+
 ## Fields
 
 - `id`: unique identifier (UUID).

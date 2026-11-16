@@ -1894,6 +1894,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       throw new Error("Configuration error. RBAC_SECRET_KEY is missing.");
     }
 
+    if (!props.messageFromSocialModuleProfile?.id) {
+      throw new Error("Validation error. Telegram sender profile is required");
+    }
+
     const extendedEcommerceModuleProduct =
       await this.extendedEcommerceModuleProduct({
         id: props.ecommerceModuleProductId,
@@ -1930,6 +1934,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     try {
       await rbacModuleSubjectApi.ecommerceModuleProductCheckout({
         id: messageFromSubject.id,
+        socialModuleProfileId: props.messageFromSocialModuleProfile.id,
         productId: extendedEcommerceModuleProduct.id,
         data: {
           provider: "telegram-star",

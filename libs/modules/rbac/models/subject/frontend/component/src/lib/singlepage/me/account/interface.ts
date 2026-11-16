@@ -6,6 +6,7 @@ export const variant = "me-account" as const;
 export interface IComponentProps extends ISpsComponentBase {
   variant: typeof variant;
   language: string;
+  socialModuleProfileId?: string;
   /** authenticationMe supplies a verified current Subject, including guest state. */
   apiProps?: IAuthenticationProps["apiProps"];
 }

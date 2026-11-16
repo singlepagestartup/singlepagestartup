@@ -104,7 +104,7 @@ function createStateAction(props?: {
 }
 
 function mockGoogleProfileResponses() {
-  (global.fetch as jest.Mock)
+  (global.fetch as unknown as jest.Mock)
     .mockResolvedValueOnce({
       ok: true,
       json: async () => ({ access_token: "google-access-token" }),
@@ -134,7 +134,7 @@ describe("Given: a completed Google sign-in returns to the callback", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    global.fetch = jest.fn();
+    global.fetch = jest.fn() as unknown as typeof fetch;
     mockGoogleProfileResponses();
 
     mockActionFindById.mockResolvedValue(createStateAction());
@@ -296,4 +296,22 @@ describe("Given: a completed Google sign-in returns to the callback", () => {
     expect(claim.data.consumedAt).toEqual(expect.any(String));
     expect(claim.data.payload.oauth.consumedAt).toEqual(expect.any(String));
   });
+});
+
+it("delegates identity attachment to the locked local owner when provided", async () => {
+  mockSubjectsToIdentitiesCreate.mockClear();
+  const linkIdentityToSubject = jest.fn(async () => undefined);
+  const service = new Service({} as any, {
+    mergeGuestCart: jest.fn(),
+    linkIdentityToSubject,
+  });
+  await (service as any).linkIdentityToSubject({
+    subjectId: "guest",
+    identityId: "google-identity",
+  });
+  expect(linkIdentityToSubject).toHaveBeenCalledWith({
+    subjectId: "guest",
+    identityId: "google-identity",
+  });
+  expect(mockSubjectsToIdentitiesCreate).not.toHaveBeenCalled();
 });

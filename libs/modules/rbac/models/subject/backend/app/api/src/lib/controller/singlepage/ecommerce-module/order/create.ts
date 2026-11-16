@@ -108,6 +108,9 @@ export class Handler {
 
       await this.service.ecommerceModuleOrderCreate({
         subjectId: id,
+        socialModuleProfileId:
+          c.req.param("socialModuleProfileId") ??
+          c.req.query("socialModuleProfileId"),
         productId,
         storeId,
         quantity,

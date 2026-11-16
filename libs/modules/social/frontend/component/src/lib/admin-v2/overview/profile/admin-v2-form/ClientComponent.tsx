@@ -15,6 +15,8 @@ import { Component as ProfilesToKnowledgeModuleSources } from "@sps/social/relat
 import { Component as ProfilesToMessages } from "@sps/social/relations/profiles-to-messages/frontend/component";
 import { Component as ProfilesToSkills } from "@sps/social/relations/profiles-to-skills/frontend/component";
 import { Component as ProfilesToWebsiteBuilderModuleWidgets } from "@sps/social/relations/profiles-to-website-builder-module-widgets/frontend/component";
+import { Component as ProfilesToEcommerceModuleOrders } from "@sps/social/relations/profiles-to-ecommerce-module-orders/frontend/component";
+import { Component as EcommerceModuleOrder } from "@sps/ecommerce/models/order/frontend/component";
 import { Component as EcommerceProduct } from "@sps/ecommerce/models/product/frontend/component";
 import { Component as FileStorageFile } from "@sps/file-storage/models/file/frontend/component";
 import { Component as KnowledgeSource } from "@sps/knowledge/models/source/frontend/component";
@@ -453,6 +455,33 @@ export function Component(props: IComponentProps) {
           />
         );
       }}
+      profilesToEcommerceModuleOrders={({ data }) =>
+        data ? (
+          <ProfilesToEcommerceModuleOrders
+            isServer={false}
+            variant="admin-v2-table"
+            leftModelAdminFormLabel="Profile"
+            rightModelAdminFormLabel="Order"
+            leftModelAdminForm={renderProfileForm}
+            rightModelAdminForm={({ data: relation }) =>
+              relation ? (
+                <EcommerceModuleOrder
+                  isServer={false}
+                  variant="admin-v2-form"
+                  data={{ id: relation.ecommerceModuleOrderId } as any}
+                />
+              ) : null
+            }
+            apiProps={{
+              params: {
+                filters: {
+                  and: [{ column: "profileId", method: "eq", value: data.id }],
+                },
+              },
+            }}
+          />
+        ) : null
+      }
       profilesToEcommerceModuleProducts={({ data }) => {
         if (!data) {
           return;

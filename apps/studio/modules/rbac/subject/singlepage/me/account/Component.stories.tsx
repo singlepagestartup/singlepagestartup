@@ -42,3 +42,13 @@ export const FractionalBalance: StoryObj<typeof meta> = {
 export const BeforeFirstArticle: StoryObj<typeof meta> = {
   args: { authorPublished: false },
 };
+
+export const MultipleProfiles: StoryObj<typeof meta> = {
+  args: {
+    showTokens: true,
+    profiles: [
+      { id: "personal", title: "Личный профиль" },
+      { id: "studio", title: "Студия" },
+    ],
+  },
+};

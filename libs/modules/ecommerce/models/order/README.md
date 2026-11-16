@@ -135,3 +135,10 @@ separate checkout validation; an omitted cart amount is not a zero-price grant.
 The payment check route uses `controller/startup/find-by-id/check/index.ts`. Override its protected `onPaymentSucceeded({ order })` method to run project logic before persisting `paid`. The default hook does nothing. A failed hook leaves the order in `paying`, so a subsequent check can repeat the operation. Use idempotent SDK operations and keep payment confirmation independent of notification delivery.
 
 Runtime SDK create calls generate IDs. For partial retries, find an existing side effect by a stable unique key, such as a slug, and use the returned ID in relations. Include all required relation fields when updating a link.
+
+## Profile ownership
+
+Personal cart and order requests carry `socialModuleProfileId` through RBAC.
+Social owns `profiles-to-ecommerce-module-orders`; each order has one profile.
+Payment and invoice associations retain the order ID. RBAC records the purchaser
+on the Payment Intent before provider checkout for subsequent fulfilment.

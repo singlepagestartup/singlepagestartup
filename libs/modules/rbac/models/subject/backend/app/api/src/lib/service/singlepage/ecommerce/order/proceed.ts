@@ -20,7 +20,8 @@ import {
   type ISocialModule,
 } from "../../../../di";
 import { Service as SubjectsToSocialModuleProfilesService } from "@sps/rbac/relations/subjects-to-social-module-profiles/backend/app/api/src/lib/service";
-import { Service as SubjectsToEcommerceModuleOrdersService } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/service";
+import { Service as SubjectsToBillingModulePaymentIntentsService } from "@sps/rbac/relations/subjects-to-billing-module-payment-intents/backend/app/api/src/lib/service";
+import { Service as PaymentPurchaser } from "../../../startup/ecommerce/order/payment-purchaser";
 import { Service as SubjectsToRolesService } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/service";
 import { Service as SubjectsToBillingModuleCurrenciesService } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/app/api/src/lib/service";
 import { Service as SubjectsToIdentitiesService } from "@sps/rbac/relations/subjects-to-identities/backend/app/api/src/lib/service";
@@ -56,10 +57,6 @@ export interface IPaidFulfillmentEffect {
   extendedOrder: IExtendedEcommerceModuleOrder;
   status: string;
 }
-
-type ISubjectsToEcommerceModuleOrder = Awaited<
-  ReturnType<SubjectsToEcommerceModuleOrdersService["find"]>
->[number];
 
 type IFindFilter = NonNullable<
   NonNullable<FindServiceProps["params"]>["filters"]
@@ -97,27 +94,6 @@ function getBoundedUniqueOrders(orders: IEcommerceModuleOrder[]) {
   };
 }
 
-function groupSubjectOrderRelationsByOrderId(
-  subjectsToEcommerceModuleOrders: ISubjectsToEcommerceModuleOrder[],
-) {
-  const result = new Map<string, ISubjectsToEcommerceModuleOrder[]>();
-
-  for (const subjectToEcommerceModuleOrder of subjectsToEcommerceModuleOrders) {
-    const orderId = subjectToEcommerceModuleOrder.ecommerceModuleOrderId;
-
-    if (!orderId) {
-      continue;
-    }
-
-    result.set(orderId, [
-      ...(result.get(orderId) ?? []),
-      subjectToEcommerceModuleOrder,
-    ]);
-  }
-
-  return result;
-}
-
 @injectable()
 export class Service {
   repository: Repository;
@@ -127,7 +103,7 @@ export class Service {
   identity: IdentityService;
   role: RoleService;
   rolesToEcommerceModuleProducts: RolesToEcommerceModuleProductsService;
-  subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService;
+  subjectsToBillingModulePaymentIntents: SubjectsToBillingModulePaymentIntentsService;
   subjectsToRoles: SubjectsToRolesService;
   subjectsToSocialModuleProfiles: SubjectsToSocialModuleProfilesService;
   subjectsToBillingModuleCurrencies: SubjectsToBillingModuleCurrenciesService;
@@ -149,8 +125,8 @@ export class Service {
     @inject(SubjectDI.IRoleService) role: RoleService,
     @inject(SubjectDI.IRolesToEcommerceModuleProductsService)
     rolesToEcommerceModuleProducts: RolesToEcommerceModuleProductsService,
-    @inject(SubjectDI.ISubjectsToEcommerceModuleOrdersService)
-    subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService,
+    @inject(SubjectDI.ISubjectsToBillingModulePaymentIntentsService)
+    subjectsToBillingModulePaymentIntents: SubjectsToBillingModulePaymentIntentsService,
     @inject(SubjectDI.ISubjectsToRolesService)
     subjectsToRoles: SubjectsToRolesService,
     @inject(SubjectDI.ISubjectsToSocialModuleProfilesService)
@@ -169,7 +145,8 @@ export class Service {
     this.identity = identity;
     this.role = role;
     this.rolesToEcommerceModuleProducts = rolesToEcommerceModuleProducts;
-    this.subjectsToEcommerceModuleOrders = subjectsToEcommerceModuleOrders;
+    this.subjectsToBillingModulePaymentIntents =
+      subjectsToBillingModulePaymentIntents;
     this.subjectsToRoles = subjectsToRoles;
     this.subjectsToSocialModuleProfiles = subjectsToSocialModuleProfiles;
     this.subjectsToBillingModuleCurrencies = subjectsToBillingModuleCurrencies;
@@ -184,7 +161,9 @@ export class Service {
     const scopeFilters: IFindFilter[] = [];
     if (props.subjectId) {
       const scopedOrderIds = await this.ownedOrderIds(props.subjectId);
-      if (!scopedOrderIds.length) return;
+      if (!scopedOrderIds.length) {
+        return;
+      }
       scopeFilters.push({
         column: "id",
         method: "inArray",
@@ -202,38 +181,6 @@ export class Service {
       return;
     }
 
-    const relationFilters: IFindFilter[] = [
-      {
-        column: "ecommerceModuleOrderId",
-        method: "inArray",
-        value: orderIds,
-      },
-    ];
-
-    if (props.subjectId) {
-      relationFilters.unshift({
-        column: "subjectId",
-        method: "eq",
-        value: props.subjectId,
-      });
-    }
-
-    const subjectsToEcommerceModuleOrders =
-      await this.subjectsToEcommerceModuleOrders.find({
-        params: {
-          filters: {
-            and: relationFilters,
-          },
-        },
-      });
-
-    if (!subjectsToEcommerceModuleOrders?.length) {
-      return;
-    }
-
-    const subjectsToEcommerceModuleOrdersByOrderId =
-      groupSubjectOrderRelationsByOrderId(subjectsToEcommerceModuleOrders);
-
     for (const order of orders) {
       if (this.processingOrderIds.has(order.id)) {
         continue;
@@ -242,181 +189,184 @@ export class Service {
       this.processingOrderIds.add(order.id);
 
       try {
+        const subjectToEcommerceModuleOrder =
+          await this.paymentPurchaser.resolveOrder(order.id);
+        if (
+          props.subjectId &&
+          subjectToEcommerceModuleOrder.subjectId !== props.subjectId
+        ) {
+          continue;
+        }
         const extendedOrder = await this.getExtendedEcommerceModuleOrderById({
           id: order.id,
         });
-
-        const matchingSubjectsToEcommerceModuleOrders =
-          subjectsToEcommerceModuleOrdersByOrderId.get(order.id) ?? [];
-
-        for (const subjectToEcommerceModuleOrder of matchingSubjectsToEcommerceModuleOrders) {
-          const rbacSubjectsToRoles = await this.subjectsToRoles.find({
-            params: {
-              filters: {
-                and: [
-                  {
-                    column: "subjectId",
-                    method: "eq",
-                    value: subjectToEcommerceModuleOrder.subjectId,
-                  },
-                ],
-              },
-            },
-          });
-
-          const existingRolesIds = rbacSubjectsToRoles?.map(
-            (rbacSubjectToRole) => rbacSubjectToRole.roleId,
-          );
-
-          const productsRolesIds = await this.getProductsRolesIds({
-            productIds:
-              extendedOrder.ordersToProducts
-                ?.map((orderToProduct) => orderToProduct.productId)
-                .filter((productId): productId is string =>
-                  Boolean(productId),
-                ) ?? [],
-          });
-
-          if (extendedOrder.status && extendedOrder.status === "delivered") {
-            if (
-              extendedOrder.subscriptionPeriodInvoiceId &&
-              productsRolesIds.every((roleId) =>
-                existingRolesIds?.includes(roleId),
-              )
-            ) {
-              const renewal = await this.renewSubscription({
-                order: extendedOrder,
-                extendedOrder,
-                subjectToEcommerceModuleOrder: {
-                  subjectId: subjectToEcommerceModuleOrder.subjectId,
-                  ecommerceModuleOrderId: order.id,
+        const rbacSubjectsToRoles = await this.subjectsToRoles.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "subjectId",
+                  method: "eq",
+                  value: subjectToEcommerceModuleOrder.subjectId,
                 },
-              });
-              if (renewal?.accepted) continue;
-            }
-            await this.delivered({
-              order: extendedOrder,
-              extendedOrder,
-              subjectToEcommerceModuleOrder: {
-                subjectId: subjectToEcommerceModuleOrder.subjectId,
-                ecommerceModuleOrderId:
-                  subjectToEcommerceModuleOrder.ecommerceModuleOrderId,
-              },
-              existingRolesIds,
-              productsRolesIds,
-              subjectsToRoles: rbacSubjectsToRoles,
-            });
-          } else if (["paid", "expired"].includes(extendedOrder.status)) {
-            await this.fromPaidStatus({
-              order: extendedOrder,
-              extendedOrder,
-              subjectToEcommerceModuleOrder: {
-                subjectId: subjectToEcommerceModuleOrder.subjectId,
-                ecommerceModuleOrderId:
-                  subjectToEcommerceModuleOrder.ecommerceModuleOrderId,
-              },
-              existingRolesIds,
-              productsRolesIds,
-            });
-          } else if (
-            ["delivering", "requested_cancelation"].includes(
-              extendedOrder.status,
+              ],
+            },
+          },
+        });
+
+        const existingRolesIds = rbacSubjectsToRoles?.map(
+          (rbacSubjectToRole) => rbacSubjectToRole.roleId,
+        );
+
+        const productsRolesIds = await this.getProductsRolesIds({
+          productIds:
+            extendedOrder.ordersToProducts
+              ?.map((orderToProduct) => orderToProduct.productId)
+              .filter((productId): productId is string => Boolean(productId)) ??
+            [],
+        });
+
+        if (extendedOrder.status && extendedOrder.status === "delivered") {
+          if (
+            extendedOrder.subscriptionPeriodInvoiceId &&
+            productsRolesIds.every((roleId) =>
+              existingRolesIds?.includes(roleId),
             )
           ) {
-            // A removed grant is a durable revocation. Ordinary proceed never repairs it.
-            if (
-              !extendedOrder.subscriptionRevokedAt &&
-              extendedOrder.subscriptionPeriodInvoiceId &&
-              productsRolesIds.every((roleId) =>
-                existingRolesIds?.includes(roleId),
-              )
-            ) {
-              await this.renewSubscription({
-                order: extendedOrder,
-                extendedOrder,
+            const renewal = await this.renewSubscription({
+              order: extendedOrder,
+              extendedOrder,
+              subjectToEcommerceModuleOrder: {
+                subjectId: subjectToEcommerceModuleOrder.subjectId,
+                ecommerceModuleOrderId: order.id,
+              },
+            });
+            if (renewal?.accepted) {
+              continue;
+            }
+          }
+          await this.delivered({
+            order: extendedOrder,
+            extendedOrder,
+            subjectToEcommerceModuleOrder: {
+              subjectId: subjectToEcommerceModuleOrder.subjectId,
+              ecommerceModuleOrderId:
+                subjectToEcommerceModuleOrder.ecommerceModuleOrderId,
+            },
+            existingRolesIds,
+            productsRolesIds,
+            subjectsToRoles: rbacSubjectsToRoles,
+          });
+        } else if (["paid", "expired"].includes(extendedOrder.status)) {
+          await this.fromPaidStatus({
+            order: extendedOrder,
+            extendedOrder,
+            subjectToEcommerceModuleOrder: {
+              subjectId: subjectToEcommerceModuleOrder.subjectId,
+              ecommerceModuleOrderId:
+                subjectToEcommerceModuleOrder.ecommerceModuleOrderId,
+            },
+            existingRolesIds,
+            productsRolesIds,
+          });
+        } else if (
+          ["delivering", "requested_cancelation"].includes(extendedOrder.status)
+        ) {
+          // A removed grant is a durable revocation. Ordinary proceed never repairs it.
+          if (
+            !extendedOrder.subscriptionRevokedAt &&
+            extendedOrder.subscriptionPeriodInvoiceId &&
+            productsRolesIds.every((roleId) =>
+              existingRolesIds?.includes(roleId),
+            )
+          ) {
+            await this.renewSubscription({
+              order: extendedOrder,
+              extendedOrder,
+              subjectToEcommerceModuleOrder: {
+                subjectId: subjectToEcommerceModuleOrder.subjectId,
+                ecommerceModuleOrderId: order.id,
+              },
+            });
+          }
+        } else if (extendedOrder.status === "canceling") {
+          await this.repository.withOrderDelivery(
+            {
+              subjectId: subjectToEcommerceModuleOrder.subjectId,
+              orderId: order.id,
+            },
+            async () => {
+              await this.ecommerceModule.order.lockForLifecycle({
+                id: order.id,
+              });
+              const current = await this.freshLifecycleProps({
+                order,
+                extendedOrder: await this.getExtendedEcommerceModuleOrderById({
+                  id: order.id,
+                }),
                 subjectToEcommerceModuleOrder: {
                   subjectId: subjectToEcommerceModuleOrder.subjectId,
                   ecommerceModuleOrderId: order.id,
                 },
               });
-            }
-          } else if (extendedOrder.status === "canceling") {
-            await this.repository.withOrderDelivery(
-              {
+              if (!current || current.order.status !== "canceling") {
+                return;
+              }
+              const extendedOrder = current.extendedOrder;
+              const productsRolesIds = current.productsRolesIds ?? [];
+              const existingRolesIds = current.existingRolesIds ?? [];
+              const rbacSubjectsToRoles = current.subjectsToRoles ?? [];
+
+              const revokedOrder =
+                await this.ecommerceModule.order.revokeSubscription({
+                  id: order.id,
+                });
+              const preservedRoles = await this.otherActiveOrderRoles({
                 subjectId: subjectToEcommerceModuleOrder.subjectId,
                 orderId: order.id,
-              },
-              async () => {
-                await this.ecommerceModule.order.lockForLifecycle({
-                  id: order.id,
-                });
-                const current = await this.freshLifecycleProps({
-                  order,
-                  extendedOrder: await this.getExtendedEcommerceModuleOrderById(
-                    { id: order.id },
-                  ),
-                  subjectToEcommerceModuleOrder: {
-                    subjectId: subjectToEcommerceModuleOrder.subjectId,
-                    ecommerceModuleOrderId: order.id,
-                  },
-                });
-                if (!current || current.order.status !== "canceling") return;
-                const extendedOrder = current.extendedOrder;
-                const productsRolesIds = current.productsRolesIds ?? [];
-                const existingRolesIds = current.existingRolesIds ?? [];
-                const rbacSubjectsToRoles = current.subjectsToRoles ?? [];
+                existingRolesIds: existingRolesIds ?? [],
+              });
+              const toRemoveRolesIds = productsRolesIds?.filter(
+                (productRoleId) =>
+                  productRoleId &&
+                  existingRolesIds?.includes(productRoleId) &&
+                  !preservedRoles.has(productRoleId),
+              );
 
-                const revokedOrder =
-                  await this.ecommerceModule.order.revokeSubscription({
-                    id: order.id,
-                  });
-                const preservedRoles = await this.otherActiveOrderRoles({
-                  subjectId: subjectToEcommerceModuleOrder.subjectId,
-                  orderId: order.id,
-                  existingRolesIds: existingRolesIds ?? [],
-                });
-                const toRemoveRolesIds = productsRolesIds?.filter(
-                  (productRoleId) =>
-                    productRoleId &&
-                    existingRolesIds?.includes(productRoleId) &&
-                    !preservedRoles.has(productRoleId),
-                );
-
-                if (existingRolesIds?.length) {
-                  for (const existingRoleId of existingRolesIds) {
-                    if (!toRemoveRolesIds.includes(existingRoleId)) {
-                      continue;
-                    }
-
-                    const toRemoveSubjectToRole = rbacSubjectsToRoles?.find(
-                      (rbacSubjectToRole) => {
-                        return rbacSubjectToRole.roleId === existingRoleId;
-                      },
-                    );
-
-                    if (!toRemoveSubjectToRole) {
-                      continue;
-                    }
-
-                    await this.subjectsToRoles.deleteForOrderFulfillment({
-                      id: toRemoveSubjectToRole.id,
-                      subjectId: subjectToEcommerceModuleOrder.subjectId,
-                      orderId: order.id,
-                    });
+              if (existingRolesIds?.length) {
+                for (const existingRoleId of existingRolesIds) {
+                  if (!toRemoveRolesIds.includes(existingRoleId)) {
+                    continue;
                   }
-                }
 
-                await this.ecommerceModule.order.update({
-                  id: order.id,
-                  data: {
-                    ...extendedOrder,
-                    ...revokedOrder,
-                    status: "canceled",
-                  },
-                });
-              },
-            );
-          }
+                  const toRemoveSubjectToRole = rbacSubjectsToRoles?.find(
+                    (rbacSubjectToRole) => {
+                      return rbacSubjectToRole.roleId === existingRoleId;
+                    },
+                  );
+
+                  if (!toRemoveSubjectToRole) {
+                    continue;
+                  }
+
+                  await this.subjectsToRoles.deleteForOrderFulfillment({
+                    id: toRemoveSubjectToRole.id,
+                    subjectId: subjectToEcommerceModuleOrder.subjectId,
+                    orderId: order.id,
+                  });
+                }
+              }
+
+              await this.ecommerceModule.order.update({
+                id: order.id,
+                data: {
+                  ...extendedOrder,
+                  ...revokedOrder,
+                  status: "canceled",
+                },
+              });
+            },
+          );
         }
       } catch (error: any) {
         logger.error("RBAC ecommerce order proceed failed", {
@@ -431,30 +381,16 @@ export class Service {
     }
   }
 
+  private get paymentPurchaser() {
+    return new PaymentPurchaser({
+      purchasers: this.subjectsToBillingModulePaymentIntents,
+      ecommerceModule: this.ecommerceModule,
+      socialModule: this.socialModule,
+    });
+  }
+
   private async ownedOrderIds(subjectId: string): Promise<string[]> {
-    const ids = new Set<string>();
-    let offset = 0;
-    let hasMore = true;
-    while (hasMore) {
-      const page = await this.subjectsToEcommerceModuleOrders.find({
-        params: {
-          filters: {
-            and: [{ column: "subjectId", method: "eq", value: subjectId }],
-          },
-          limit: ECOMMERCE_ORDER_PROCEED_BATCH_LIMIT,
-          offset,
-          orderBy: { and: [{ column: "id", method: "asc" }] },
-        },
-      });
-      for (const link of page ?? []) {
-        if (link.subjectId === subjectId && link.ecommerceModuleOrderId) {
-          ids.add(link.ecommerceModuleOrderId);
-        }
-      }
-      hasMore = page?.length === ECOMMERCE_ORDER_PROCEED_BATCH_LIMIT;
-      offset += ECOMMERCE_ORDER_PROCEED_BATCH_LIMIT;
-    }
-    return Array.from(ids);
+    return this.paymentPurchaser.orderIdsForSubject(subjectId);
   }
 
   private async candidateOrders(
@@ -556,46 +492,52 @@ export class Service {
     >();
     for (const line of props.extendedOrder.ordersToProducts) {
       const quantity = Number(line.quantity ?? 1);
-      if (!Number.isSafeInteger(quantity) || quantity <= 0)
+      if (!Number.isSafeInteger(quantity) || quantity <= 0) {
         throw new Error(
           "Validation error. Topup quantity must be a positive integer",
         );
+      }
       for (const { attribute } of line.product.productsToAttributes ?? []) {
         if (
           !attribute.attributeKeysToAttribute?.some(
             (link) => link.attributeKey?.type === "topup",
           )
-        )
+        ) {
           continue;
+        }
         const amount = Number(attribute.number);
         if (
           typeof attribute.number !== "string" ||
           !attribute.number.trim() ||
           !Number.isFinite(amount) ||
           amount <= 0
-        )
+        ) {
           throw new Error(
             "Validation error. Topup amount must be finite and positive",
           );
+        }
         const links = attribute.attributesToBillingModuleCurrencies ?? [];
-        if (!links.length)
+        if (!links.length) {
           throw new Error("Configuration error. Topup currency is missing");
+        }
         const seen = new Set<string>();
         for (const link of links) {
           if (
             !link.billingModuleCurrency ||
             seen.has(link.billingModuleCurrencyId)
-          )
+          ) {
             throw new Error(
               "Configuration error. Topup currency is missing or duplicated",
             );
+          }
           seen.add(link.billingModuleCurrencyId);
           const previous = currencies.get(link.billingModuleCurrencyId);
           const total = Number(previous?.amount ?? 0) + amount * quantity;
-          if (!Number.isFinite(total) || total <= 0)
+          if (!Number.isFinite(total) || total <= 0) {
             throw new Error(
               "Validation error. Topup total must be finite and positive",
             );
+          }
           currencies.set(link.billingModuleCurrencyId, {
             billingModuleCurrencyId: link.billingModuleCurrencyId,
             billingModuleCurrency: link.billingModuleCurrency,
@@ -636,14 +578,17 @@ export class Service {
   }
 
   private async freeDeliveryEligible(props: ILifecycleProps) {
-    if (!this.isInitialFree(props.extendedOrder)) return true;
+    if (!this.isInitialFree(props.extendedOrder)) {
+      return true;
+    }
     if (
       props.extendedOrder.ordersToProducts.length !== 1 ||
       Number(props.extendedOrder.ordersToProducts[0].quantity ?? 1) !== 1
-    )
+    ) {
       throw new Error(
         "Validation error. Initial Free must contain exactly one unit of its internal Product",
       );
+    }
     const identities = await this.subjectsToIdentities.find({
       params: {
         filters: {
@@ -657,29 +602,21 @@ export class Service {
         },
       },
     });
-    if (!identities.length)
+    if (!identities.length) {
       throw new Error(
         "Permission error. Initial Free requires a registered Subject",
       );
-    const owned = await this.subjectsToEcommerceModuleOrders.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "subjectId",
-              method: "eq",
-              value: props.subjectToEcommerceModuleOrder.subjectId,
-            },
-          ],
-        },
-      },
-    });
-    const ids = owned
-      .filter(
-        (link) =>
-          link.subjectId === props.subjectToEcommerceModuleOrder.subjectId,
-      )
-      .map((link) => link.ecommerceModuleOrderId);
+    }
+    const subject = await this.repository.findFirstByField(
+      "id",
+      props.subjectToEcommerceModuleOrder.subjectId,
+    );
+    if (!subject || subject.initialFreeSubscriptionGrantedAt) {
+      return false;
+    }
+    const ids = await this.ownedOrderIds(
+      props.subjectToEcommerceModuleOrder.subjectId,
+    );
     const lines = await this.ecommerceModule.ordersToProducts.find({
       params: {
         filters: {
@@ -708,8 +645,9 @@ export class Service {
           (order.subscriptionPeriodInvoiceId ||
             !["new", "paying", "paid"].includes(order.status)),
       )
-    )
+    ) {
       return false;
+    }
     candidates.sort(
       (a, b) =>
         new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime() ||
@@ -739,7 +677,9 @@ export class Service {
         ecommerceModuleOrderId: scope.orderId,
       },
     });
-    if (!current || !["paid", "expired"].includes(current.order.status)) return;
+    if (!current || !["paid", "expired"].includes(current.order.status)) {
+      return;
+    }
     return this.applyPaidStatus(current);
   }
 
@@ -762,7 +702,9 @@ export class Service {
     const result = await this.repository.withOrderDelivery(scope, () =>
       this.fulfillPaidOrderInTransaction(scope),
     );
-    if (result) await this.dispatchPaidEffects(result);
+    if (result) {
+      await this.dispatchPaidEffects(result);
+    }
   }
 
   private async applyPaidStatus(
@@ -795,14 +737,17 @@ export class Service {
       free &&
       (props.extendedOrder.checkoutAttributesByCurrency.amount !== 0 ||
         paidInvoices.some((invoice) => invoice!.amount !== 0))
-    )
+    ) {
       throw new Error(
         "Validation error. Initial Free settlement must be zero-priced",
       );
+    }
     const subscription =
       props.extendedOrder.checkoutAttributesByCurrency.type === "subscription";
     const activated = Boolean(props.order.subscriptionPeriodInvoiceId);
-    if (subscription && props.order.subscriptionRevokedAt) return;
+    if (subscription && props.order.subscriptionRevokedAt) {
+      return;
+    }
     const resumeExpired =
       activated &&
       props.order.status === "expired" &&
@@ -814,16 +759,18 @@ export class Service {
       props.productsRolesIds?.some(
         (roleId) => !props.existingRolesIds?.includes(roleId),
       )
-    )
+    ) {
       return;
+    }
 
     if (
       subscription &&
       !(await this.ecommerceModule.order.assertSubscriptionPayment({
         id: props.order.id,
       }))
-    )
+    ) {
       return;
+    }
 
     const newRolesIds = props.productsRolesIds?.filter(
       (productRoleId) =>
@@ -864,13 +811,16 @@ export class Service {
         props.productsRolesIds?.some(
           (roleId) => !freshGrants.some((grant) => grant.roleId === roleId),
         )
-      )
+      ) {
         return;
+      }
       const period = await this.ecommerceModule.order.acceptSubscriptionPeriod({
         id: props.order.id,
         expectedInvoiceId: props.order.subscriptionPeriodInvoiceId ?? null,
       });
-      if (!period.accepted) return;
+      if (!period.accepted) {
+        return;
+      }
     }
 
     const rbacSubjectsToSocialModuleProfiles =
@@ -925,10 +875,11 @@ export class Service {
       (topupCurrencies.length !== 1 ||
         topupCurrencies[0].billingModuleCurrency.slug !== "token" ||
         Number(topupCurrencies[0].amount) !== 3000)
-    )
+    ) {
       throw new Error(
         "Configuration error. Initial Free requires exactly 3000 Token credits",
       );
+    }
     if (topupCurrencies.length) {
       const subjectsToBillingModuleCurrencies =
         await this.subjectsToBillingModuleCurrencies.find({
@@ -972,10 +923,11 @@ export class Service {
                 ),
               },
             );
-          if (!credited)
+          if (!credited) {
             throw new Error(
               "Conflict error. Subject balance changed during order delivery",
             );
+          }
         } else {
           await this.subjectsToBillingModuleCurrencies.create({
             data: {
@@ -1003,6 +955,15 @@ export class Service {
       });
     }
 
+    if (free) {
+      await this.repository.updateFirstByField(
+        "id",
+        props.subjectToEcommerceModuleOrder.subjectId,
+        {
+          initialFreeSubscriptionGrantedAt: new Date(),
+        },
+      );
+    }
     return {
       accepted: true,
       extendedOrder: props.extendedOrder,
@@ -1021,11 +982,15 @@ export class Service {
           id: props.order.id,
         });
         const current = await this.freshLifecycleProps(props);
-        if (!current || current.order.status !== "delivered") return undefined;
+        if (!current || current.order.status !== "delivered") {
+          return undefined;
+        }
         return this.applyDeliveredStatus(current);
       },
     );
-    if (checkout) await checkout();
+    if (checkout) {
+      await checkout();
+    }
   }
 
   private async applyDeliveredStatus(props: ILifecycleProps) {
@@ -1150,6 +1115,9 @@ export class Service {
     ) {
       const provider = firstInvoice.provider;
       const currency = firstCurrency;
+      const purchaser = await this.paymentPurchaser.resolveOrder(
+        props.order.id,
+      );
 
       if (
         provider &&
@@ -1157,85 +1125,73 @@ export class Service {
         props.extendedOrder.checkoutAttributesByCurrency.amount === 0
       ) {
         return () =>
-          this.ecommerceProductCheckout({
-            id: props.subjectToEcommerceModuleOrder.subjectId,
-            productId: props.extendedOrder.ordersToProducts[0].productId,
-            data: { provider, billingModule: { currency } },
-          });
-        return;
+          this.ecommerceProductCheckout(
+            {
+              id: props.subjectToEcommerceModuleOrder.subjectId,
+              socialModuleProfileId: purchaser.profileId,
+              productId: props.extendedOrder.ordersToProducts[0].productId,
+              data: { provider, billingModule: { currency } },
+            },
+            { renewalOrderId: props.order.id },
+          );
       }
 
       if (provider === "telegram-star") {
-        const subjectToSocialModuleProfiles =
-          await this.subjectsToSocialModuleProfiles.find({
-            params: {
-              filters: {
-                and: [
-                  {
-                    column: "subjectId",
-                    method: "eq",
-                    value: props.subjectToEcommerceModuleOrder.subjectId,
-                  },
-                ],
-              },
+        const links = await this.subjectsToIdentities.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "subjectId",
+                  method: "eq",
+                  value: purchaser.subjectId,
+                },
+              ],
             },
-          });
-
-        if (subjectToSocialModuleProfiles?.length) {
-          const socialModuleProfilesToChats =
-            await this.socialModule.profilesToChats.find({
-              params: {
-                filters: {
-                  and: [
-                    {
-                      column: "profileId",
-                      method: "inArray",
-                      value: subjectToSocialModuleProfiles.map((entity) => {
-                        return entity.socialModuleProfileId;
-                      }),
-                    },
-                  ],
+          },
+        });
+        if (!links.length) {
+          return undefined;
+        }
+        const identities = await this.identity.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "id",
+                  method: "inArray",
+                  value: links.map((link) => link.identityId),
+                },
+                { column: "provider", method: "eq", value: "telegram" },
+              ],
+            },
+          },
+        });
+        const accounts = [
+          ...new Set(
+            identities
+              .filter(
+                (identity) =>
+                  identity.provider === "telegram" && !!identity.account,
+              )
+              .map((identity) => identity.account),
+          ),
+        ];
+        if (accounts.length === 1) {
+          return () =>
+            this.ecommerceProductCheckout(
+              {
+                id: purchaser.subjectId,
+                socialModuleProfileId: purchaser.profileId,
+                productId: props.extendedOrder.ordersToProducts[0].productId,
+                data: {
+                  provider,
+                  billingModule: { currency },
+                  account: accounts[0],
                 },
               },
-            });
-
-          if (socialModuleProfilesToChats?.length) {
-            const telegramChats = await this.socialModule.chat.find({
-              params: {
-                filters: {
-                  and: [
-                    {
-                      column: "id",
-                      method: "inArray",
-                      value: socialModuleProfilesToChats.map((entity) => {
-                        return entity.chatId;
-                      }),
-                    },
-                    {
-                      column: "variant",
-                      method: "eq",
-                      value: "telegram",
-                    },
-                  ],
-                },
-              },
-            });
-
-            if (telegramChats?.length && telegramChats.length === 1) {
-              return () =>
-                this.ecommerceProductCheckout({
-                  id: props.subjectToEcommerceModuleOrder.subjectId,
-                  productId: props.extendedOrder.ordersToProducts[0].productId,
-                  data: {
-                    provider,
-                    billingModule: {
-                      currency,
-                    },
-                    account: telegramChats[0].sourceSystemId,
-                  },
-                });
-            }
-          }
+              { renewalOrderId: props.order.id },
+            );
         }
       }
     }
@@ -1270,24 +1226,10 @@ export class Service {
         },
       });
 
-    const subjectsToEcommerceModuleOrders =
-      await this.subjectsToEcommerceModuleOrders.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "ecommerceModuleOrderId",
-                method: "eq",
-                value: props.extendedEcommerceModuleOrder.id,
-              },
-            ],
-          },
-        },
-      });
-
-    if (!subjectsToEcommerceModuleOrders?.length) {
-      return;
-    }
+    const purchaser = await this.paymentPurchaser.resolveOrder(
+      props.extendedEcommerceModuleOrder.id,
+    );
+    const subjectsToEcommerceModuleOrders = [purchaser];
 
     const subjectsToIdentities = await this.subjectsToIdentities.find({
       params: {
@@ -1580,7 +1522,9 @@ export class Service {
   }
 
   private async renewSubscription(props: ILifecycleProps) {
-    if (this.isInitialFree(props.extendedOrder)) return;
+    if (this.isInitialFree(props.extendedOrder)) {
+      return;
+    }
     const result = await this.repository.withOrderDelivery(
       {
         subjectId: props.subjectToEcommerceModuleOrder.subjectId,
@@ -1601,44 +1545,25 @@ export class Service {
           current.productsRolesIds?.some(
             (roleId) => !current.existingRolesIds?.includes(roleId),
           )
-        )
+        ) {
           return;
+        }
         return this.applyPaidStatus(current);
       },
     );
-    if (result) await this.dispatchPaidEffects(result);
+    if (result) {
+      await this.dispatchPaidEffects(result);
+    }
     return result;
   }
 
   private async freshLifecycleProps(
     props: ILifecycleProps,
   ): Promise<ILifecycleProps | undefined> {
-    const ownership = await this.subjectsToEcommerceModuleOrders.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "subjectId",
-              method: "eq",
-              value: props.subjectToEcommerceModuleOrder.subjectId,
-            },
-            {
-              column: "ecommerceModuleOrderId",
-              method: "eq",
-              value: props.order.id,
-            },
-          ],
-        },
-      },
-    });
-    if (
-      !ownership.some(
-        (link) =>
-          link.subjectId === props.subjectToEcommerceModuleOrder.subjectId &&
-          link.ecommerceModuleOrderId === props.order.id,
-      )
-    )
+    const purchaser = await this.paymentPurchaser.resolveOrder(props.order.id);
+    if (purchaser.subjectId !== props.subjectToEcommerceModuleOrder.subjectId) {
       return undefined;
+    }
     const extendedOrder = await this.getExtendedEcommerceModuleOrderById({
       id: props.order.id,
     });
@@ -1703,26 +1628,15 @@ export class Service {
     orderId: string;
     existingRolesIds: string[];
   }): Promise<Set<string>> {
-    if (!props.existingRolesIds.length) return new Set();
-    const owned = await this.subjectsToEcommerceModuleOrders.find({
-      params: {
-        filters: {
-          and: [{ column: "subjectId", method: "eq", value: props.subjectId }],
-        },
-      },
-    });
-    const ids = Array.from(
-      new Set(
-        owned
-          .filter(
-            (link) =>
-              link.subjectId === props.subjectId &&
-              link.ecommerceModuleOrderId !== props.orderId,
-          )
-          .map((link) => link.ecommerceModuleOrderId),
-      ),
+    if (!props.existingRolesIds.length) {
+      return new Set();
+    }
+    const ids = (await this.ownedOrderIds(props.subjectId)).filter(
+      (id) => id !== props.orderId,
     );
-    if (!ids.length) return new Set();
+    if (!ids.length) {
+      return new Set();
+    }
     const now = Date.now();
     const otherOrders = await this.ecommerceModule.order.find({
       params: {
@@ -1757,7 +1671,9 @@ export class Service {
           new Date(order.subscriptionPeriodEndsAt).getTime() > now,
       )
       .map((order) => order.id);
-    if (!activeIds.length) return new Set();
+    if (!activeIds.length) {
+      return new Set();
+    }
     const lines = await this.ecommerceModule.ordersToProducts.find({
       params: {
         filters: {
@@ -1774,8 +1690,9 @@ export class Service {
       if (
         required.length &&
         required.every((roleId) => props.existingRolesIds.includes(roleId))
-      )
+      ) {
         required.forEach((roleId) => roles.add(roleId));
+      }
     }
     return roles;
   }

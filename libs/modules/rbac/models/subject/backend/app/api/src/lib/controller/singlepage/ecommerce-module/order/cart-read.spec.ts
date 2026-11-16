@@ -60,10 +60,18 @@ function createService() {
   return {
     orderFind,
     service: {
-      subjectsToEcommerceModuleOrders: {
+      subjectsToSocialModuleProfiles: {
         find: jest
           .fn()
-          .mockResolvedValue([{ ecommerceModuleOrderId: "order-1" }]),
+          .mockResolvedValue([{ socialModuleProfileId: "profile-a" }]),
+      },
+      ecommerceModuleResolveProfile: jest.fn().mockResolvedValue("profile-a"),
+      socialModule: {
+        profilesToEcommerceModuleOrders: {
+          find: jest
+            .fn()
+            .mockResolvedValue([{ ecommerceModuleOrderId: "order-1" }]),
+        },
       },
       ecommerceModule: {
         order: {
@@ -208,7 +216,9 @@ describe("Subject order history", () => {
 
   it("returns an empty list without querying orders when the subject has no links", async () => {
     const { service, orderFind } = createService();
-    service.subjectsToEcommerceModuleOrders.find.mockResolvedValue([]);
+    service.socialModule.profilesToEcommerceModuleOrders.find.mockResolvedValue(
+      [],
+    );
     expect(
       await new ListHandler(service).execute(createContext(), jest.fn()),
     ).toEqual({ data: [] });
@@ -299,10 +309,12 @@ describe("Private cart projection", () => {
       { id: "foreign", type: "cart", status: "new" },
       { id: "old", type: "history", status: "paid" },
     ]);
-    service.subjectsToEcommerceModuleOrders.find.mockResolvedValue([
-      { ecommerceModuleOrderId: "order-1" },
-      { ecommerceModuleOrderId: "old" },
-    ]);
+    service.socialModule.profilesToEcommerceModuleOrders.find.mockResolvedValue(
+      [
+        { ecommerceModuleOrderId: "order-1" },
+        { ecommerceModuleOrderId: "old" },
+      ],
+    );
     service.ecommerceModule.order.findByIdCartDetails = jest
       .fn()
       .mockResolvedValue({
@@ -349,7 +361,9 @@ describe("Private cart projection", () => {
         jest.fn(),
       ),
     ).rejects.toThrow();
-    expect(service.subjectsToEcommerceModuleOrders.find).not.toHaveBeenCalled();
+    expect(
+      service.socialModule.profilesToEcommerceModuleOrders.find,
+    ).not.toHaveBeenCalled();
   });
 });
 
@@ -362,7 +376,7 @@ describe("Empty cart total response", () => {
     "keeps the total envelope when subject order links exist: %s",
     async (hasLinks) => {
       const { service } = createService();
-      service.subjectsToEcommerceModuleOrders.find.mockResolvedValue(
+      service.socialModule.profilesToEcommerceModuleOrders.find.mockResolvedValue(
         hasLinks ? [{ ecommerceModuleOrderId: "order-1" }] : [],
       );
       expect(
@@ -371,3 +385,22 @@ describe("Empty cart total response", () => {
     },
   );
 });
+
+it.each([ListHandler, QuantityHandler, TotalHandler])(
+  "returns an empty guest cart without creating a profile or entering snapshot work",
+  async (HandlerClass) => {
+    authorizationMock.mockReturnValue("token");
+    verifyMock.mockResolvedValue({ subject: { id: "subject-1" } });
+    const { service } = createService();
+    service.subjectsToSocialModuleProfiles.find.mockResolvedValue([]);
+    const context = createContext();
+    await new HandlerClass(service).execute(context, jest.fn());
+    expect(service.ecommerceModuleResolveProfile).not.toHaveBeenCalled();
+    expect(
+      service.socialModule.profilesToEcommerceModuleOrders.find,
+    ).not.toHaveBeenCalled();
+    expect(service.ecommerceModule.order.find).not.toHaveBeenCalled();
+    const response = context.json.mock.calls[0][0];
+    expect(response.data).toEqual(HandlerClass === QuantityHandler ? 0 : []);
+  },
+);

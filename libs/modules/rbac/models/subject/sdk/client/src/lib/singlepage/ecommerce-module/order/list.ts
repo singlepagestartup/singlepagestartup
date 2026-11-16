@@ -16,6 +16,7 @@ import {
   consistencyQueryKey,
 } from "@sps/shared-frontend-client-api";
 import { useEffect } from "react";
+import { useActiveSocialModuleProfile } from "../../social-module/profile/active-selection";
 
 export type IProps = IParentProps["IEcommerceModuleOrderListProps"] & {
   reactQueryOptions?: Partial<UseQueryOptions<any>>;
@@ -25,6 +26,16 @@ export type IProps = IParentProps["IEcommerceModuleOrderListProps"] & {
 export type IResult = IParentResult["IEcommerceModuleOrderListResult"];
 
 export function action(props: IProps) {
+  const active = useActiveSocialModuleProfile(
+    props.id,
+    props.params?.socialModuleProfileId,
+    props.options,
+  );
+  const params = {
+    ...props.params,
+    socialModuleProfileId:
+      props.params?.socialModuleProfileId || active.socialModuleProfileId,
+  };
   const queryKey = `${route}/${props.id}/ecommerce-module/orders`;
   // Preserve order invalidation while accepting additional caller topics.
   const { meta: userMeta, ...restReactQueryOptions } =
@@ -36,7 +47,6 @@ export function action(props: IProps) {
   }, [queryKey]);
 
   return useQuery<IResult>({
-    queryKey: consistencyQueryKey(queryKey, props.params, clientHost),
     // Canonical realtime subscription (issue #195): hand-written SDK
     // queries MUST declare meta.topics — the topic branch disables the
     // legacy route fallback whenever any topic subscriber matches, so a
@@ -47,6 +57,7 @@ export function action(props: IProps) {
       topics: Array.from(
         new Set([
           "ecommerce.orders",
+          "social.profiles-to-ecommerce-module-orders",
           ...(props.params?.includeCartDetails
             ? [
                 "ecommerce.orders-to-products",
@@ -61,8 +72,10 @@ export function action(props: IProps) {
       ),
     },
     queryFn: async () => {
+      if (!params.socialModuleProfileId) return [];
       const result = await api.ecommerceModuleOrderList({
         ...props,
+        params,
         options: {
           ...props.options,
           headers: saturateHeaders(props.options?.headers),
@@ -73,7 +86,7 @@ export function action(props: IProps) {
       globalActionsStore.getState().addAction({
         type: "query",
         name: `${route}/${props.id}/ecommerce-module/orders`,
-        props: { params: props.params },
+        props: { params },
         result,
         timestamp: Date.now(),
         requestId: createId(),
@@ -87,5 +100,8 @@ export function action(props: IProps) {
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     ...restReactQueryOptions,
+    queryKey: consistencyQueryKey(queryKey, params, clientHost),
+    enabled: active.isSuccess && (restReactQueryOptions.enabled ?? true),
+    placeholderData: undefined,
   });
 }

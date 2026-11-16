@@ -71,6 +71,7 @@ function createContext(
 ) {
   return {
     req: {
+      query: jest.fn(),
       param: (name: string) => params[name],
       parseBody: jest.fn().mockResolvedValue(body),
     },
@@ -80,6 +81,13 @@ function createContext(
 
 function createService() {
   const service = {
+    ecommerceModuleResolveProfile: jest.fn().mockResolvedValue("profile-a"),
+    repository: {
+      withProfileLock: jest.fn(async (_scope, operation) => operation()),
+    },
+    socialModule: {
+      profilesToEcommerceModuleOrders: { create: subjectsToOrdersCreateMock },
+    },
     findById: jest.fn().mockResolvedValue({ id: "subject-1" }),
     deanonymize: jest.fn().mockResolvedValue(undefined),
     ecommerceOrderCheckout: jest.fn().mockResolvedValue({
@@ -87,6 +95,12 @@ function createService() {
       checkoutUrl: "https://example.test/pay",
     }),
     ecommerceModule: {
+      order: { create: orderCreateMock },
+      ordersToProducts: { create: ordersToProductsCreateMock },
+      storesToOrders: { create: storesToOrdersCreateMock },
+      ordersToBillingModuleCurrencies: {
+        create: ordersToBillingCurrenciesCreateMock,
+      },
       product: {
         findById: jest
           .fn()

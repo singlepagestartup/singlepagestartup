@@ -9,8 +9,13 @@ import {
 
 export const variant = "admin-form" as const;
 
-export interface IComponentProps
-  extends IParentComponentProps<IModel, typeof variant> {
+export interface IComponentProps extends IParentComponentProps<
+  IModel,
+  typeof variant
+> {
+  profilesToEcommerceModuleOrders?: (
+    props: ISpsComponentBase & { data?: IModel },
+  ) => ReactNode;
   profilesToBlogModuleArticles?: (
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;
@@ -39,9 +44,8 @@ export interface IComponentProps
   ) => ReactNode;
 }
 
-export interface IComponentPropsExtended
-  extends IParentComponentPropsExtended<
-    IModel,
-    typeof variant,
-    IComponentProps
-  > {}
+export interface IComponentPropsExtended extends IParentComponentPropsExtended<
+  IModel,
+  typeof variant,
+  IComponentProps
+> {}

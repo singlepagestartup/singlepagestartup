@@ -27,6 +27,12 @@ jest.mock("@sps/shared-frontend-client-api", () => ({
   queryClient: {},
   subscription: jest.fn(),
 }));
+jest.mock("../../social-module/profile/active-selection", () => ({
+  useActiveSocialModuleProfile: () => ({
+    socialModuleProfileId: "profile-1",
+    isSuccess: true,
+  }),
+}));
 import { action } from "./list";
 
 describe("Subject order collection cache", () => {
@@ -42,7 +48,7 @@ describe("Subject order collection cache", () => {
     const [cart, history] = mockUseQuery.mock.calls.map(([options]) => options);
     expect(cart.queryKey).toEqual([
       "/api/rbac/subjects/subject/ecommerce-module/orders",
-      undefined,
+      "socialModuleProfileId=profile-1",
       { principal: "", host: "http://localhost:4000" },
     ]);
     expect(history.queryKey).not.toEqual(cart.queryKey);
@@ -55,7 +61,11 @@ describe("Subject order collection cache", () => {
       },
     });
     expect(mockUseQuery.mock.calls[0][0].meta).toEqual({
-      topics: ["ecommerce.orders", "billing.payment-intents"],
+      topics: [
+        "ecommerce.orders",
+        "social.profiles-to-ecommerce-module-orders",
+        "billing.payment-intents",
+      ],
       source: "purchases",
     });
   });

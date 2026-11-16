@@ -12,11 +12,6 @@ export default async function Server(props: IComponentProps) {
     subjectApi
       .socialModuleProfileFind({
         id: props.data.id,
-        params: {
-          filters: {
-            and: [{ column: "variant", method: "eq", value: "default" }],
-          },
-        },
         options,
       })
       .catch(() => undefined),
@@ -27,7 +22,10 @@ export default async function Server(props: IComponentProps) {
       .billingModuleBalance({ id: props.data.id, options })
       .catch(() => undefined),
   ]);
-  const profile = profiles?.[0];
+  const profile =
+    profiles?.find((item) => item.id === props.socialModuleProfileId) ||
+    profiles?.find((item) => item.variant === "default") ||
+    profiles?.[0];
   let avatar;
   if (profile) {
     avatar = await subjectApi
@@ -44,6 +42,7 @@ export default async function Server(props: IComponentProps) {
     <ChildComponent
       {...props}
       accountProfile={profile}
+      accountProfiles={profiles}
       accountIdentities={identities}
       accountAvatar={avatar}
       accountBalance={balance}

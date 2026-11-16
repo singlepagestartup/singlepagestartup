@@ -219,13 +219,13 @@ describe.each([
     return createApp(service).request(route, { method: "POST", headers, body });
   }
 
-  it.each([
+  it.each<{ name: string; headers: Record<string, string> }>([
     { name: "no credential", headers: {} },
     {
       name: "only the operator secret",
       headers: { "X-RBAC-SECRET-KEY": "test-rbac-secret-key" },
     },
-  ] as const)(
+  ])(
     "When: the client sends $name Then: refuses checkout before the handler",
     async ({ headers }) => {
       const service = createService();
@@ -288,6 +288,14 @@ describe("Given: the order lines route of a subject", () => {
 
   async function requestOrdersToProducts(subjectId?: string) {
     return createApp({
+      subjectsToSocialModuleProfiles: {
+        find: jest.fn().mockResolvedValue([
+          {
+            subjectId: "subject-owner",
+            socialModuleProfileId: "profile-owned",
+          },
+        ]),
+      },
       ecommerceOrdersToProductsList: mockEcommerceOrdersToProductsList,
     }).request(ordersToProductsPath, {
       headers: await createHeaders(subjectId),

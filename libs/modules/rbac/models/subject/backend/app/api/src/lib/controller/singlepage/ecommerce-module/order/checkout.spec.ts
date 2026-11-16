@@ -42,6 +42,7 @@ function createContext(
 ) {
   return {
     req: {
+      query: jest.fn(),
       param: (name: string) => params[name],
       parseBody: jest.fn().mockResolvedValue(body),
     },
@@ -51,6 +52,14 @@ function createContext(
 
 function createService(subjectOrderIds = [firstOrderId, secondOrderId]) {
   return {
+    ecommerceModuleResolveProfile: jest.fn().mockResolvedValue("profile-a"),
+    ecommerceModuleOrderAssertAccess: jest.fn(async ({ orderId }) => {
+      if (!subjectOrderIds.includes(orderId)) {
+        throw new Error(
+          "Permission error. Order does not belong to the selected profile",
+        );
+      }
+    }),
     findById: jest.fn().mockResolvedValue({ id: "subject-1" }),
     deanonymize: jest.fn().mockResolvedValue(undefined),
     subjectsToEcommerceModuleOrders: {
@@ -132,7 +141,7 @@ describe("Given: ecommerce order checkout handler", () => {
     expect(service.deanonymize).not.toHaveBeenCalled();
   });
 
-  it("When: payload is valid Then: order comments are patched and checkout service is called", async () => {
+  it("When: payload is valid Then: checkout service receives comments for the atomic claim", async () => {
     const service = createService();
     const handler = new Handler(service);
 
@@ -169,26 +178,18 @@ describe("Given: ecommerce order checkout handler", () => {
       id: "subject-1",
       email: "user@example.test",
     });
-    expect(service.subjectsToEcommerceModuleOrders.find).toHaveBeenCalledWith({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "subjectId",
-              method: "eq",
-              value: "subject-1",
-            },
-            {
-              column: "ecommerceModuleOrderId",
-              method: "inArray",
-              value: [firstOrderId, secondOrderId],
-            },
-          ],
-        },
-      },
-    });
+    for (const orderId of [firstOrderId, secondOrderId]) {
+      expect(service.ecommerceModuleOrderAssertAccess).toHaveBeenCalledWith({
+        subjectId: "subject-1",
+        socialModuleProfileId: "profile-a",
+        orderId,
+      });
+    }
+    expect(
+      service.ecommerceModuleOrderAssertAccess.mock.invocationCallOrder[1],
+    ).toBeLessThan(service.deanonymize.mock.invocationCallOrder[0]);
     expectOrderLookup([firstOrderId, secondOrderId]);
-    expect(orderUpdateMock).toHaveBeenCalledTimes(2);
+    expect(orderUpdateMock).not.toHaveBeenCalled();
     expect(service.ecommerceOrderCheckout).toHaveBeenCalledWith(
       expect.objectContaining({
         id: "subject-1",
@@ -212,7 +213,7 @@ describe("Given: ecommerce order checkout handler", () => {
    * When: the checkout request is handled.
    * Then: only existing orders are updated and passed to the checkout service.
    */
-  it("When: payload contains a deleted order id Then: stale order ids are ignored", async () => {
+  it("When: payload contains a deleted order id Then: missing orders reject the complete checkout", async () => {
     const service = createService([firstOrderId, deletedOrderId]);
     const handler = new Handler(service);
     const context = createContext(
@@ -237,17 +238,13 @@ describe("Given: ecommerce order checkout handler", () => {
       },
     ]);
 
-    await handler.execute(context, jest.fn());
-
-    expectOrderLookup([firstOrderId, deletedOrderId]);
-    expect(orderUpdateMock).toHaveBeenCalledTimes(1);
-    expect(service.ecommerceOrderCheckout).toHaveBeenCalledWith(
-      expect.objectContaining({
-        ecommerceModule: {
-          orders: [{ id: firstOrderId }],
-        },
-      }),
+    await expect(handler.execute(context, jest.fn())).rejects.toThrow(
+      "No ecommerce module orders found",
     );
+    expectOrderLookup([firstOrderId, deletedOrderId]);
+    expect(service.deanonymize).not.toHaveBeenCalled();
+    expect(orderUpdateMock).not.toHaveBeenCalled();
+    expect(service.ecommerceOrderCheckout).not.toHaveBeenCalled();
   });
 
   /**
@@ -274,23 +271,13 @@ describe("Given: ecommerce order checkout handler", () => {
       },
     );
 
-    await handler.execute(context, jest.fn());
-
-    expectOrderLookup([firstOrderId]);
-    expect(orderUpdateMock).toHaveBeenCalledTimes(1);
-    expect(orderUpdateMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        id: firstOrderId,
-        data: { comment: "checkout note" },
-      }),
+    await expect(handler.execute(context, jest.fn())).rejects.toThrow(
+      "Permission error",
     );
-    expect(service.ecommerceOrderCheckout).toHaveBeenCalledWith(
-      expect.objectContaining({
-        ecommerceModule: {
-          orders: [{ id: firstOrderId }],
-        },
-      }),
-    );
+    expect(orderFindMock).not.toHaveBeenCalled();
+    expect(service.deanonymize).not.toHaveBeenCalled();
+    expect(orderUpdateMock).not.toHaveBeenCalled();
+    expect(service.ecommerceOrderCheckout).not.toHaveBeenCalled();
   });
 
   /**
@@ -317,7 +304,7 @@ describe("Given: ecommerce order checkout handler", () => {
     );
 
     await expect(handler.execute(context, jest.fn())).rejects.toThrow(
-      "No ecommerce module orders found",
+      "Permission error",
     );
     expect(orderFindMock).not.toHaveBeenCalled();
     expect(service.deanonymize).not.toHaveBeenCalled();

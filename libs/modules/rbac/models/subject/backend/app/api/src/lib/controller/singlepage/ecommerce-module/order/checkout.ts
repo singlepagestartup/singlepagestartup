@@ -76,33 +76,21 @@ export class Handler {
         throw new Error("Not Found error. No entity found with id:" + id);
       }
 
-      const subjectsToEcommerceModuleOrders =
-        await this.service.subjectsToEcommerceModuleOrders.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "subjectId",
-                  method: "eq",
-                  value: id,
-                },
-                {
-                  column: "ecommerceModuleOrderId",
-                  method: "inArray",
-                  value: requestedOrderIds,
-                },
-              ],
-            },
-          },
+      const socialModuleProfileId =
+        await this.service.ecommerceModuleResolveProfile({
+          subjectId: id,
+          socialModuleProfileId:
+            c.req.param("socialModuleProfileId") ??
+            c.req.query("socialModuleProfileId"),
         });
-
-      if (!subjectsToEcommerceModuleOrders?.length) {
-        throw new Error("Not Found error. No ecommerce module orders found");
+      for (const orderId of requestedOrderIds) {
+        await this.service.ecommerceModuleOrderAssertAccess({
+          subjectId: id,
+          socialModuleProfileId,
+          orderId,
+        });
       }
-
-      const ecommerceModuleOrderIds = subjectsToEcommerceModuleOrders.map(
-        (link) => link.ecommerceModuleOrderId,
-      );
+      const ecommerceModuleOrderIds = [...new Set(requestedOrderIds)];
       const ecommerceModuleOrders = await ecommerceModuleOrderApi.find({
         params: {
           filters: {
@@ -123,29 +111,18 @@ export class Handler {
         },
       });
 
-      if (!ecommerceModuleOrders?.length) {
+      if (
+        !ecommerceModuleOrders?.length ||
+        ecommerceModuleOrders.length !== ecommerceModuleOrderIds.length
+      ) {
         throw new Error("Not Found error. No ecommerce module orders found");
       }
 
       await this.service.deanonymize({ id, email: data.email });
 
-      if (data.comment !== undefined) {
-        for (const order of ecommerceModuleOrders) {
-          await ecommerceModuleOrderApi.update({
-            id: order.id,
-            data: { comment: data.comment },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                "Cache-Control": "no-store",
-              },
-            },
-          });
-        }
-      }
-
       const result = await this.service.ecommerceOrderCheckout({
         id,
+        socialModuleProfileId,
         email: data.email,
         provider: data.provider,
         ecommerceModule: {

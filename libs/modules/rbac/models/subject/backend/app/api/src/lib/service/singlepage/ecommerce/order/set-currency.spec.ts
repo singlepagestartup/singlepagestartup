@@ -24,6 +24,12 @@ function fixture() {
     delete: jest.fn(),
   };
   const service = {
+    repository: {
+      withProfileLock: jest.fn(async (_scope, operation) =>
+        transaction(operation),
+      ),
+    },
+    ecommerceModuleResolveProfile: jest.fn().mockResolvedValue("profile-a"),
     ecommerceModuleOrderAssertAccess: jest.fn().mockResolvedValue(undefined),
     ecommerceModuleResolveOrderCurrency: jest.fn().mockResolvedValue("usd"),
     ecommerceModule: {
@@ -48,6 +54,7 @@ it("replaces the legacy currency only after validating the active owned cart", a
   expect(transaction).toHaveBeenCalledTimes(1);
   expect(service.ecommerceModuleOrderAssertAccess).toHaveBeenCalledWith({
     subjectId: "owner",
+    socialModuleProfileId: "profile-a",
     orderId: "order",
   });
   expect(service.ecommerceModule.order.lockForLifecycle).toHaveBeenCalledWith({

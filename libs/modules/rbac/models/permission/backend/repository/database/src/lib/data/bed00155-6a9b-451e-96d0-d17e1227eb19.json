@@ -1,0 +1,9 @@
+{
+  "id": "bed00155-6a9b-451e-96d0-d17e1227eb19",
+  "createdAt": "2026-11-16T08:28:02.573Z",
+  "updatedAt": "2026-11-16T08:28:02.573Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "PATCH",
+  "path": "/api/rbac/subjects/[rbac.subjects.id]/social-module/profiles/[social.profiles.id]/ecommerce-module/orders/[ecommerce.orders.id]"
+}

@@ -9,6 +9,7 @@ export default function Client(props: IComponentProps) {
       isServer={false}
       variant={props.variant}
       language={props.language}
+      socialModuleProfileId={props.socialModuleProfileId}
       className={props.className}
       authenticated={false}
     />
@@ -26,6 +27,7 @@ export default function Client(props: IComponentProps) {
           isServer={false}
           variant={props.variant}
           language={props.language}
+          socialModuleProfileId={props.socialModuleProfileId}
           className={props.className}
           data={data}
           authenticated={authenticated}

@@ -1,14 +1,18 @@
+import { Service as PaymentPurchaser } from "../../../startup/ecommerce/order/payment-purchaser";
 import type { Service as SubjectService } from "../../index";
 
 export interface IExecuteProps {
   id: string;
   ecommerceModuleOrderId: string;
+  socialModuleProfileId: string;
   data: { expectedUpdatedAt: string };
 }
 export interface IConstructorProps {
   service: Pick<
     SubjectService,
-    | "subjectsToEcommerceModuleOrders"
+    | "socialModule"
+    | "subjectsToBillingModulePaymentIntents"
+    | "ecommerceModuleOrderAssertAccess"
     | "subjectsToRoles"
     | "rolesToEcommerceModuleProducts"
     | "ecommerceModule"
@@ -20,38 +24,30 @@ export class Service {
   constructor(private readonly dependencies: IConstructorProps) {}
 
   async execute(props: IExecuteProps) {
-    const ownerLinks =
-      await this.dependencies.service.subjectsToEcommerceModuleOrders.find({
-        params: {
-          filters: {
-            and: [
-              { column: "subjectId", method: "eq", value: props.id },
-              {
-                column: "ecommerceModuleOrderId",
-                method: "eq",
-                value: props.ecommerceModuleOrderId,
-              },
-            ],
-          },
-        },
-      });
-    if (
-      !ownerLinks.some(
-        (link) =>
-          link.subjectId === props.id &&
-          link.ecommerceModuleOrderId === props.ecommerceModuleOrderId,
-      )
-    )
+    await this.dependencies.service.ecommerceModuleOrderAssertAccess({
+      subjectId: props.id,
+      socialModuleProfileId: props.socialModuleProfileId,
+      orderId: props.ecommerceModuleOrderId,
+    });
+    const purchaser = await new PaymentPurchaser({
+      purchasers:
+        this.dependencies.service.subjectsToBillingModulePaymentIntents,
+      ecommerceModule: this.dependencies.service.ecommerceModule,
+      socialModule: this.dependencies.service.socialModule,
+    }).resolveOrder(props.ecommerceModuleOrderId);
+    if (purchaser.profileId !== props.socialModuleProfileId) {
       throw new Error(
-        "Permission error. Subscription order does not belong to this subject",
+        "Permission error. Subscription order does not belong to this profile",
       );
+    }
     const order =
       await this.dependencies.service.ecommerceModule.order.findByIdExtended({
         id: props.ecommerceModuleOrderId,
       });
     const productIds = order.ordersToProducts.map((line) => line.productId);
-    if (!productIds.length)
+    if (!productIds.length) {
       throw new Error("Validation error. Subscription order has no products");
+    }
     const [requirements, grants] = await Promise.all([
       this.dependencies.service.rolesToEcommerceModuleProducts.find({
         params: {
@@ -69,7 +65,9 @@ export class Service {
       this.dependencies.service.subjectsToRoles.find({
         params: {
           filters: {
-            and: [{ column: "subjectId", method: "eq", value: props.id }],
+            and: [
+              { column: "subjectId", method: "eq", value: purchaser.subjectId },
+            ],
           },
         },
       }),
@@ -84,13 +82,15 @@ export class Service {
         (link) =>
           !grants.some(
             (grant) =>
-              grant.subjectId === props.id && grant.roleId === link.roleId,
+              grant.subjectId === purchaser.subjectId &&
+              grant.roleId === link.roleId,
           ),
       )
-    )
+    ) {
       throw new Error(
         "Permission error. Legacy subscription has no current complete product grant",
       );
+    }
     return this.dependencies.service.ecommerceModule.order.freezeSubscriptionPeriod(
       {
         id: props.ecommerceModuleOrderId,

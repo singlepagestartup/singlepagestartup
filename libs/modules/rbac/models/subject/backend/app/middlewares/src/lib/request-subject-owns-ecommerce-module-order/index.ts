@@ -5,6 +5,7 @@ export interface IMiddlewareGeneric {}
 export interface IService {
   ecommerceModuleOrderAssertAccess(props: {
     subjectId: string;
+    socialModuleProfileId?: string;
     orderId: string;
   }): Promise<void>;
 }
@@ -21,6 +22,9 @@ export class Middleware {
           );
         await this.service.ecommerceModuleOrderAssertAccess({
           subjectId,
+          socialModuleProfileId:
+            c.req.param("socialModuleProfileId") ??
+            c.req.query("socialModuleProfileId"),
           orderId,
         });
         await next();

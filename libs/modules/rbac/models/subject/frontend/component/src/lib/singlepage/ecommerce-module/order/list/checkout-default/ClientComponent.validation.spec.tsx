@@ -13,6 +13,7 @@ jest.mock("@sps/rbac/models/subject/sdk/model", () => ({
   route: "/api/rbac/subjects",
 }));
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
+  useActiveSocialModuleProfile: () => ({ socialModuleProfileId: "profile" }),
   api: {
     ecommerceModuleOrderCheckout: () => ({
       mutateAsync: checkout,
@@ -118,6 +119,7 @@ it("shows the API rejection after a valid form submission", async () => {
   await waitFor(() =>
     expect(checkout).toHaveBeenCalledWith({
       id: "subject",
+      params: { socialModuleProfileId: "profile" },
       data: expect.objectContaining({
         email: "test@example.test",
         ecommerceModule: { orders: [{ id: "order" }] },

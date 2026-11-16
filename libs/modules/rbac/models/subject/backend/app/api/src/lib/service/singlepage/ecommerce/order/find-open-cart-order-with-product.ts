@@ -1,41 +1,47 @@
 import { type IEcommerceModule } from "../../../../di";
-import type { Service as SubjectsToEcommerceModuleOrdersService } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/service";
+import type { Service as ProfilesToEcommerceModuleOrdersService } from "@sps/social/relations/profiles-to-ecommerce-module-orders/backend/app/api/src/lib/service";
 
 export interface IExecuteProps {
-  subjectId: string;
+  socialModuleProfileId: string;
   productId: string;
 }
 
 interface IConstructorProps {
   ecommerceModule: IEcommerceModule;
-  subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService;
+  profilesToEcommerceModuleOrders: Pick<
+    ProfilesToEcommerceModuleOrdersService,
+    "find"
+  >;
 }
 
 /**
- * Finds the subject's open cart order that already holds a product.
+ * Finds the profile's open cart order that already holds a product.
  *
  * An open cart is `type: "cart"` with `status: "new"`, the same key every cart
  * read uses, so the guard refuses exactly what the badge, the total and the
  * order list would have shown twice. Checkout moves an order to
  * `type: "history"`, which is what lets the same product be bought again.
  *
- * The narrowing runs subject-first. Asking `orders-to-products` for a product
+ * The narrowing runs profile-first. Asking `orders-to-products` for a product
  * before knowing which orders matter would scan every cart in the system that
  * holds it.
  */
 export class Service {
   ecommerceModule: IEcommerceModule;
-  subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService;
+  profilesToEcommerceModuleOrders: Pick<
+    ProfilesToEcommerceModuleOrdersService,
+    "find"
+  >;
 
   constructor(props: IConstructorProps) {
     this.ecommerceModule = props.ecommerceModule;
-    this.subjectsToEcommerceModuleOrders =
-      props.subjectsToEcommerceModuleOrders;
+    this.profilesToEcommerceModuleOrders =
+      props.profilesToEcommerceModuleOrders;
   }
 
   async execute(props: IExecuteProps): Promise<string | null> {
     const openCartOrderIds = await this.findOpenCartOrderIds({
-      subjectId: props.subjectId,
+      socialModuleProfileId: props.socialModuleProfileId,
     });
 
     if (!openCartOrderIds.length) {
@@ -65,24 +71,24 @@ export class Service {
   }
 
   private async findOpenCartOrderIds(props: {
-    subjectId: string;
+    socialModuleProfileId: string;
   }): Promise<string[]> {
-    const subjectsToEcommerceModuleOrders =
-      await this.subjectsToEcommerceModuleOrders.find({
+    const profilesToEcommerceModuleOrders =
+      await this.profilesToEcommerceModuleOrders.find({
         params: {
           filters: {
             and: [
               {
-                column: "subjectId",
+                column: "profileId",
                 method: "eq",
-                value: props.subjectId,
+                value: props.socialModuleProfileId,
               },
             ],
           },
         },
       });
 
-    if (!subjectsToEcommerceModuleOrders?.length) {
+    if (!profilesToEcommerceModuleOrders?.length) {
       return [];
     }
 
@@ -93,10 +99,10 @@ export class Service {
             {
               column: "id",
               method: "inArray",
-              value: subjectsToEcommerceModuleOrders.map(
-                (subjectToEcommerceModuleOrder: {
+              value: profilesToEcommerceModuleOrders.map(
+                (profileToEcommerceModuleOrder: {
                   ecommerceModuleOrderId: string;
-                }) => subjectToEcommerceModuleOrder.ecommerceModuleOrderId,
+                }) => profileToEcommerceModuleOrder.ecommerceModuleOrderId,
               ),
             },
             {

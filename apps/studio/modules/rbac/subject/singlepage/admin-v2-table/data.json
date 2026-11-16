@@ -36,6 +36,12 @@
         "nullable": false
       },
       {
+        "key": "initialFreeSubscriptionGrantedAt",
+        "label": "Initial Free Subscription Granted At",
+        "kind": "timestamp",
+        "nullable": true
+      },
+      {
         "key": "tokensValidAfter",
         "label": "Tokens Valid After",
         "kind": "timestamp",
@@ -50,6 +56,7 @@
       "updatedAt": "2026-01-01T00:00:00.000Z",
       "variant": "default",
       "slug": "subject-example-1",
+      "initialFreeSubscriptionGrantedAt": null,
       "tokensValidAfter": null
     },
     {
@@ -58,6 +65,7 @@
       "updatedAt": "2026-01-01T00:00:00.000Z",
       "variant": "default",
       "slug": "subject-example-2",
+      "initialFreeSubscriptionGrantedAt": null,
       "tokensValidAfter": null
     },
     {
@@ -66,6 +74,7 @@
       "updatedAt": "2026-01-01T00:00:00.000Z",
       "variant": "default",
       "slug": "subject-example-3",
+      "initialFreeSubscriptionGrantedAt": null,
       "tokensValidAfter": null
     }
   ]

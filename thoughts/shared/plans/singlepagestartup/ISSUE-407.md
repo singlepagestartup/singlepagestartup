@@ -3,7 +3,7 @@ date: 2026-11-16T07:34:25Z
 issue_number: 407
 repository: singlepagestartup
 topic: "Заказы и корзина выбранного social.profile"
-status: in_review
+status: approved
 ---
 
 # План реализации #407. Заказы и корзина выбранного профиля
@@ -38,7 +38,7 @@ status: in_review
 
 Настроить создание заказов с профилем-владельцем в новой схеме. Единственный доступный профиль выбирается автоматически. Обновление прежних проектов и удаление в них выполненных заказов — отдельная операция владельцев проектов. Для внедрения новой схемы команда распределения старых заказов по профилям не требуется.
 
-- [ ] **Автоматически.** После регистрации новой цели выполнить `npx nx run @sps/social:relations:profiles-to-ecommerce-module-orders:repository-generate`, `npx nx run api:db:migrate` и `npx nx run @sps/providers-db:consistency-check` на тестовой БД. Интеграционные тесты проверяют независимость заказов A и B, отказ при попытке назначить заказу второго владельца и откат незавершённого создания заказа.
+- [x] **Автоматически.** После регистрации новой цели выполнить `npx nx run @sps/social:relations:profiles-to-ecommerce-module-orders:repository-generate`, `npx nx run api:db:migrate` и `npx nx run @sps/providers-db:consistency-check` на тестовой БД. Интеграционные тесты проверяют независимость заказов A и B, отказ при попытке назначить заказу второго владельца и откат незавершённого создания заказа.
 - [ ] **Вручную.** На чистой тестовой установке оформить покупку в единственном профиле, затем добавить тестовую фикстуру второго доступного профиля. Каждый новый заказ виден только у того профиля, в котором его оформили.
 
 ## Этап 3. Перевести API, оплату и фоновые операции на профиль
@@ -55,7 +55,7 @@ status: in_review
 
 В рабочем меню `me-account-ai-chat`, которое использует и витрина, вывести дополнительные профили под пунктом «Выйти». Хранить `socialModuleProfileId` в `sessionStorage` текущей вкладки отдельно для каждого `subjectId`. При входе восстановить доступный профиль этого аккаунта, иначе выбрать личный. При переключении, выходе или отзыве доступа обновить выбор и связанные запросы. Кнопки товара, корзина и «Покупки» получают ID от общего компонента, который ведёт этот выбор. На профильных страницах Host согласует именованный сегмент URL с выбранным доступным профилем. Переход по ссылке и переключение в меню должны приводить к одному и тому же профилю для экрана и запросов. Для Telegram Stars использовать известный профиль отправителя. Сервер проверяет принадлежность профиля аккаунту независимо от клиентского хранилища. Ключи React Query, мутации и подписки учитывают профиль. Поздний ответ A обновляет только кэш A. В админке заказы показывает профиль-владелец. Обновить README и примеры SDK. [Общее меню витрины](https://github.com/singlepagestartup/singlepagestartup/blob/ec863071e53b551f7430bb2fdc88fbfa640e11cf/libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me/account/ClientComponent.tsx#L31) · [Пункт выхода и конец меню](https://github.com/singlepagestartup/singlepagestartup/blob/ec863071e53b551f7430bb2fdc88fbfa640e11cf/libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me/account-ai-chat/ClientComponent.tsx#L169) · [Навигация AI Chat](https://github.com/singlepagestartup/singlepagestartup/blob/ec863071e53b551f7430bb2fdc88fbfa640e11cf/libs/modules/host/relations/widgets-to-external-widgets/frontend/component/src/lib/singlepage/default/website-builder/widget/singlepage/navbar-ai-chat/Component.tsx#L16) · [Корзина витрины](https://github.com/singlepagestartup/singlepagestartup/blob/ec863071e53b551f7430bb2fdc88fbfa640e11cf/libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me/ecommerce-module/cart-default/client.tsx#L10) · [Серверный SDK](https://github.com/singlepagestartup/singlepagestartup/blob/ec863071e53b551f7430bb2fdc88fbfa640e11cf/libs/modules/rbac/models/subject/sdk/server/src/lib/singlepage/ecommerce-module/order/list.ts#L53) · [Кэш и события](https://github.com/singlepagestartup/singlepagestartup/blob/ec863071e53b551f7430bb2fdc88fbfa640e11cf/libs/modules/rbac/models/subject/sdk/client/src/lib/singlepage/ecommerce-module/order/list.ts#L28) · [Telegram Stars](https://github.com/singlepagestartup/singlepagestartup/blob/ec863071e53b551f7430bb2fdc88fbfa640e11cf/libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/index.ts#L1931) · [Админформа Subject](https://github.com/singlepagestartup/singlepagestartup/blob/ec863071e53b551f7430bb2fdc88fbfa640e11cf/libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/admin-v2/form/ClientComponent.tsx#L67).
 
-- [ ] **Автоматически.** Добавить сценарии API и клиентской корзины с двумя профилями в `apps/api/specs/scenario/singlepagestartup/issue-407/` и выполнить `npm run test:scenario:issue -- singlepagestartup 407` и `npm run check:module-dependencies`. Проверить переключение A → B → A с прогретым кэшем, ответ A после переключения на B, пересчёт после мутации и соответствие чеков профилю, восстановление выбора после перезагрузки, выход и смену аккаунта. При нажатии на товар запрос сразу содержит ID активного профиля.
+- [x] **Автоматически.** Добавить сценарии API и клиентской корзины с двумя профилями в `apps/api/specs/scenario/singlepagestartup/issue-407/` и выполнить `npm run test:scenario:issue -- singlepagestartup 407` и `npm run check:module-dependencies`. Проверить переключение A → B → A с прогретым кэшем, ответ A после переключения на B, пересчёт после мутации и соответствие чеков профилю, восстановление выбора после перезагрузки, выход и смену аккаунта. При нажатии на товар запрос сразу содержит ID активного профиля.
 - [ ] **Вручную.** В одном профиле открыть меню и проверить отсутствие нижнего блока. В аккаунте с двумя уже доступными профилями переключиться через меню, оформить заказ A и проверить корзину B после перезагрузки. При входе гостя в существующий аккаунт убедиться, что сохранились уникальные позиции обеих корзин и количество последней добавленной совпадающей позиции. Пройти тестовую покупку через Telegram Stars.
 
 ## Выпуск и откат
@@ -69,5 +69,9 @@ status: in_review
 ## Материалы
 
 [Задача #407](https://github.com/singlepagestartup/singlepagestartup/issues/407) · [Локальный тикет](../../tickets/singlepagestartup/ISSUE-407.md) · [Исследование](../../research/singlepagestartup/ISSUE-407.md) · [Исследование в карточке](https://github.com/singlepagestartup/singlepagestartup/issues/407#issuecomment-6903689683) · [Границы модулей](https://github.com/singlepagestartup/singlepagestartup/blob/ec863071e53b551f7430bb2fdc88fbfa640e11cf/.agents/contracts/engineering/module-dependencies.md#L30).
+
+## Проверка реализации
+
+Миграции, Consistency, интеграционные тесты и сценарий API прошли. В общем RBAC-наборе прошли 1340 тестов, три исходные проверки Admin snapshots падают. TypeScript не сообщает ошибок в изменённых файлах. В Studio прошли сборка и 160 тестов, общая команда останавливается на существующих дубликатах инструкций. Проверка браузером подтвердила меню одного и двух профилей. Внешние платёжные провайдеры остаются для ручной проверки при review.
 
 <!-- Last synced at: 2026-11-16T08:03:52Z -->

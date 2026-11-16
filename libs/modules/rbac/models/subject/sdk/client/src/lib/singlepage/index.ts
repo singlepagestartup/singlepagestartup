@@ -722,3 +722,8 @@ export const api = {
   socialModuleChatFindByIdAgentSubjectSearch,
   socialModuleChatFindByIdProfileDelete,
 };
+
+export {
+  useActiveSocialModuleProfile,
+  selectSocialModuleProfile,
+} from "./social-module/profile/active-selection";

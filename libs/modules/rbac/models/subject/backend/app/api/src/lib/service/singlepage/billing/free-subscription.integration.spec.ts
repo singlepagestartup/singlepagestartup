@@ -19,7 +19,9 @@ const paths = {
   invoice: "@sps/billing/models/invoice",
   identity: "@sps/rbac/models/identity",
   role: "@sps/rbac/models/role",
-  owners: "@sps/rbac/relations/subjects-to-ecommerce-module-orders",
+  profile: "@sps/social/models/profile",
+  owners: "@sps/social/relations/profiles-to-ecommerce-module-orders",
+  purchasers: "@sps/rbac/relations/subjects-to-billing-module-payment-intents",
   identities: "@sps/rbac/relations/subjects-to-identities",
   lines: "@sps/ecommerce/relations/orders-to-products",
   stores: "@sps/ecommerce/relations/stores-to-orders",
@@ -35,7 +37,9 @@ const paths = {
 const cleanup: (() => Promise<unknown>)[] = [];
 afterEach(async () => {
   jest.restoreAllMocks();
-  for (const remove of cleanup.splice(0).reverse()) await remove();
+  for (const remove of cleanup.splice(0).reverse()) {
+    await remove();
+  }
 });
 afterAll(async () => {
   await getPostgresClient().end();
@@ -69,13 +73,17 @@ async function fixture() {
     service.create = async (props: any) => {
       const entity = await create(props);
       cleanup.push(async () => {
-        if (await repository.findFirstByField("id", entity.id))
+        if (await repository.findFirstByField("id", entity.id)) {
           await repository.deleteFirstByField("id", entity.id);
+        }
       });
       return entity;
     };
     services[key] = service;
   }
+  const profile = await services.profile.create({
+    data: { slug: `issue407-personal-${suffix}` },
+  });
   const identity = await services.identity.create({
     data: { email: `issue376-${suffix}@example.invalid`, provider: "email" },
   });
@@ -217,13 +225,16 @@ async function fixture() {
   };
   const proceed = new Proceed(
     subjectRepository,
-    { attribute: { find: async () => [] } } as any,
+    {
+      attribute: { find: async () => [] },
+      profilesToEcommerceModuleOrders: services.owners,
+    } as any,
     ecommerceModule,
     { template: { find: async () => [] } } as any,
     services.identity,
     services.role,
     services.productRoles,
-    services.owners,
+    services.purchasers,
     services.grants,
     { find: async () => [] } as any,
     services.balances,
@@ -239,7 +250,9 @@ async function fixture() {
     repository: subjectRepository,
     ecommerceModule,
     subjectsToIdentities: services.identities,
-    subjectsToEcommerceModuleOrders: services.owners,
+    socialModule: { profilesToEcommerceModuleOrders: services.owners },
+    subjectsToBillingModulePaymentIntents: services.purchasers,
+    ensurePersonalProfile: async () => ({ profile }),
     billingModule: {
       currency: services.currency,
       paymentIntent: services.intent,
@@ -273,7 +286,7 @@ async function fixture() {
       data: { type: "history", status: "paid" },
     });
     await services.owners.create({
-      data: { subjectId: subject.id, ecommerceModuleOrderId: order.id },
+      data: { profileId: profile.id, ecommerceModuleOrderId: order.id },
     });
     await services.lines.create({
       data: { orderId: order.id, productId: product.id, quantity: 1 },
@@ -286,6 +299,13 @@ async function fixture() {
     });
     const intent = await services.intent.create({
       data: { amount: 0, status: intentStatus, type: "one_off" },
+    });
+    await services.purchasers.create({
+      data: {
+        subjectId: subject.id,
+        variant: "purchaser",
+        billingModulePaymentIntentId: intent.id,
+      },
     });
     await services.orderIntents.create({
       data: { orderId: order.id, billingModulePaymentIntentId: intent.id },
@@ -303,6 +323,7 @@ async function fixture() {
   };
   return {
     subject,
+    profile,
     free,
     freeProduct,
     freeProjection,
@@ -358,6 +379,22 @@ it("waits for the linked payment intent to succeed before granting a paid pack",
     "approving",
   );
   expect(Number((await f.balance()).amount)).toBe(before + 100);
+});
+
+it("retains the account's Free grant marker after the delivered order is removed", async () => {
+  const f = await fixture();
+  await f.free.execute({ id: f.subject.id });
+  const [line] = await f.services.lines.find({
+    params: {
+      filters: {
+        and: [{ column: "productId", method: "eq", value: f.freeProduct.id }],
+      },
+    },
+  });
+  await f.services.order.delete({ id: line.orderId });
+  expect(await f.free.execute({ id: f.subject.id })).toBeNull();
+  expect((await f.balance()).amount).toBe("3000");
+  expect(f.dispatch).toHaveBeenCalledTimes(1);
 });
 
 it("serializes Free and ordinary delivery, survives unknown response and rejects a duplicate legacy gift", async () => {
@@ -427,7 +464,7 @@ it.each(["graph", "settlement", "balance"])(
   "rolls real graph, Invoice, Role and balance back after a %s failure, then retries once",
   async (phase) => {
     const f = await fixture();
-    if (phase === "balance")
+    if (phase === "balance") {
       await f.services.balances.create({
         data: {
           subjectId: f.subject.id,
@@ -435,6 +472,7 @@ it.each(["graph", "settlement", "balance"])(
           amount: "700",
         },
       });
+    }
     const target =
       phase === "graph"
         ? f.services.lines
@@ -456,13 +494,14 @@ it.each(["graph", "settlement", "balance"])(
     const owned = await f.services.owners.find({
       params: {
         filters: {
-          and: [{ column: "subjectId", method: "eq", value: f.subject.id }],
+          and: [{ column: "profileId", method: "eq", value: f.profile.id }],
         },
       },
     });
     expect(owned).toHaveLength(0);
-    if (phase === "balance") expect((await f.balance()).amount).toBe("700");
-    else {
+    if (phase === "balance") {
+      expect((await f.balance()).amount).toBe("700");
+    } else {
       expect(await f.balance()).toBeUndefined();
       expect(await target.findById({ id: failedEntity.id })).toBeUndefined();
     }
@@ -508,7 +547,7 @@ it("resumes a real existing paid zero graph and survives an unknown committed re
   const links = await f.services.owners.find({
     params: {
       filters: {
-        and: [{ column: "subjectId", method: "eq", value: f.subject.id }],
+        and: [{ column: "profileId", method: "eq", value: f.profile.id }],
       },
     },
   });

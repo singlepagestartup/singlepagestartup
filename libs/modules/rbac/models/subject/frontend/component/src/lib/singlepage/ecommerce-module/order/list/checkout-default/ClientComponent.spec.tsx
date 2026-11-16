@@ -13,6 +13,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 const mutateAsyncMock = jest.fn();
+let activeProfile = "profile";
 let updatingCartCount = 0;
 let fetchingCartCount = 0;
 jest.mock("@tanstack/react-query", () => ({
@@ -45,6 +46,9 @@ jest.mock("next/link", () => ({
 }));
 
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
+  useActiveSocialModuleProfile: () => ({
+    socialModuleProfileId: activeProfile,
+  }),
   api: {
     ecommerceModuleOrderUpdate: () => ({
       mutateAsync: jest.fn(),
@@ -164,6 +168,7 @@ describe("Given: order list checkout component", () => {
         },
       },
     ];
+    activeProfile = "profile";
     updatingCartCount = 0;
     fetchingCartCount = 0;
     mutateAsyncMock.mockReset();
@@ -203,6 +208,7 @@ describe("Given: order list checkout component", () => {
     await waitFor(() => {
       expect(mutateAsyncMock).toHaveBeenCalledWith({
         id: "subject-1",
+        params: { socialModuleProfileId: "profile" },
         data: submitPayload,
       });
     });
@@ -352,5 +358,36 @@ describe("Given: order list checkout component", () => {
     fireEvent.click(button);
     expect(mutateAsyncMock).not.toHaveBeenCalled();
     expect(screen.getAllByText("100 ₽")).toHaveLength(2);
+  });
+  it("clears payment links when the active profile changes", async () => {
+    mutateAsyncMock.mockResolvedValue({
+      billingModule: {
+        invoices: [
+          { paymentUrl: "https://pay.local/profile-a-one" },
+          { paymentUrl: "https://pay.local/profile-a-two" },
+        ],
+      },
+    });
+    const props = {
+      isServer: false,
+      variant: "ecommerce-module-order-list-checkout-default" as const,
+      data: { id: "subject-1" } as any,
+      language: "en",
+    };
+    const view = render(<Component {...props} />);
+    fireEvent.click(screen.getByRole("button", { name: "Proceed to payment" }));
+    await waitFor(() =>
+      expect(
+        screen.getAllByRole("link", { name: "Proceed to payment" }),
+      ).toHaveLength(2),
+    );
+    activeProfile = "profile-b";
+    view.rerender(<Component {...props} />);
+    expect(
+      screen.queryAllByRole("link", { name: "Proceed to payment" }),
+    ).toHaveLength(0);
+    expect(
+      screen.getByRole("button", { name: "Proceed to payment" }),
+    ).toBeTruthy();
   });
 });

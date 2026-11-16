@@ -61,6 +61,7 @@ function createContext(productId = "product-unpriced", quantity = 1) {
   return {
     req: {
       param: (name: string) => (name === "id" ? "subject-1" : undefined),
+      query: jest.fn(),
       parseBody: jest.fn().mockResolvedValue({
         data: JSON.stringify({
           productId,
@@ -103,6 +104,12 @@ function createService(props?: {
   const service: any = {
     ecommerceModuleResolveOrderCurrency,
     ecommerceModuleFindOpenCartOrderWithProduct,
+    ecommerceModuleResolveProfile: jest.fn().mockResolvedValue("profile-1"),
+    socialModule: {
+      profilesToEcommerceModuleOrders: {
+        create: subjectsToEcommerceModuleOrdersCreateMock,
+      },
+    },
     findById: jest.fn().mockResolvedValue({ id: "subject-1" }),
     subjectsToEcommerceModuleOrders: {
       find: jest.fn().mockResolvedValue([]),
@@ -134,7 +141,7 @@ function createService(props?: {
   };
   service.ecommerceModuleOrderCreate = (props: any) =>
     new CreateCartOrder({
-      repository: { withSubjectLock: async (_scope, operation) => operation() },
+      repository: { withProfileLock: async (_scope, operation) => operation() },
       service,
     }).execute(props);
 
@@ -392,7 +399,7 @@ describe("Given: a subject adding a product it may already hold", () => {
     await handler.execute(createContext(PRICED_PRODUCT), jest.fn());
 
     expect(ecommerceModuleFindOpenCartOrderWithProduct).toHaveBeenCalledWith({
-      subjectId: "subject-1",
+      socialModuleProfileId: "profile-1",
       productId: PRICED_PRODUCT,
     });
     expect(orderCreateMock).toHaveBeenCalled();

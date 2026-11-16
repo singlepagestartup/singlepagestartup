@@ -12,7 +12,17 @@ export class Handler {
       const subjectId = c.req.param("id");
       if (!subjectId)
         throw new Error("Validation error. Subject id is required");
-      await this.service.socialModuleProfileOwnershipEnsure({ subjectId });
+      const identities = await this.service.subjectsToIdentities.find({
+        params: {
+          filters: {
+            and: [{ column: "subjectId", method: "eq", value: subjectId }],
+          },
+          limit: 1,
+        },
+      });
+      if (identities.length) {
+        await this.service.socialModuleProfileOwnershipEnsure({ subjectId });
+      }
       const data = await withConsistencySnapshot(() =>
         new Profiles(this.service).find({
           subjectId,

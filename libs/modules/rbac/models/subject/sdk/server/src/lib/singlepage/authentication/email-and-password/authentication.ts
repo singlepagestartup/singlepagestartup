@@ -14,6 +14,9 @@ export interface IProps {
   };
   options?: Partial<NextRequestOptions>;
   data: {
+    guestSessionToken?: string;
+    socialModuleProfileId?: string;
+    socialModuleProfileSelections?: Record<string, string>;
     login: string;
     password: string;
   };

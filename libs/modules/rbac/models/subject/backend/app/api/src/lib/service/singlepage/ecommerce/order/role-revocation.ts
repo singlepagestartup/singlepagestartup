@@ -1,10 +1,12 @@
 import type { IRevocationDependencies } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/service/singlepage";
+import { Service as PaymentPurchaser } from "../../../startup/ecommerce/order/payment-purchaser";
 import type { Service as SubjectService } from "../../index";
 
 export interface IConstructorProps {
   service: Pick<
     SubjectService,
-    | "subjectsToEcommerceModuleOrders"
+    | "subjectsToBillingModulePaymentIntents"
+    | "socialModule"
     | "rolesToEcommerceModuleProducts"
     | "ecommerceModule"
   >;
@@ -12,17 +14,16 @@ export interface IConstructorProps {
 
 export class Service implements IRevocationDependencies {
   constructor(readonly service: IConstructorProps["service"]) {}
+  private get paymentPurchaser() {
+    return new PaymentPurchaser({
+      purchasers: this.service.subjectsToBillingModulePaymentIntents,
+      ecommerceModule: this.service.ecommerceModule,
+      socialModule: this.service.socialModule,
+    });
+  }
   async revoke(grant: Parameters<IRevocationDependencies["revoke"]>[0]) {
     const [owners, requirements] = await Promise.all([
-      this.service.subjectsToEcommerceModuleOrders.find({
-        params: {
-          filters: {
-            and: [
-              { column: "subjectId", method: "eq", value: grant.subjectId },
-            ],
-          },
-        },
-      }),
+      this.paymentPurchaser.orderIdsForSubject(grant.subjectId),
       this.service.rolesToEcommerceModuleProducts.find({
         params: {
           filters: {
@@ -34,18 +35,23 @@ export class Service implements IRevocationDependencies {
     const products = new Set(
       requirements.map((link) => link.ecommerceModuleProductId),
     );
-    for (const owner of owners) {
+    for (const orderId of owners) {
+      const purchaser = await this.paymentPurchaser.resolveOrder(orderId);
+      if (purchaser.subjectId !== grant.subjectId) {
+        continue;
+      }
       const order = await this.service.ecommerceModule.order.findByIdExtended({
-        id: owner.ecommerceModuleOrderId,
+        id: orderId,
       });
       if (
         order?.ordersToProducts?.some((line: { productId: string }) =>
           products.has(line.productId),
         )
-      )
+      ) {
         await this.service.ecommerceModule.order.revokeSubscription({
-          id: owner.ecommerceModuleOrderId,
+          id: orderId,
         });
+      }
     }
   }
   async canFulfill(
@@ -53,15 +59,7 @@ export class Service implements IRevocationDependencies {
     scope: Parameters<IRevocationDependencies["canFulfill"]>[1],
   ) {
     const [owners, requirements] = await Promise.all([
-      this.service.subjectsToEcommerceModuleOrders.find({
-        params: {
-          filters: {
-            and: [
-              { column: "subjectId", method: "eq", value: scope.subjectId },
-            ],
-          },
-        },
-      }),
+      this.paymentPurchaser.orderIdsForSubject(scope.subjectId),
       this.service.rolesToEcommerceModuleProducts.find({
         params: {
           filters: {
@@ -70,8 +68,16 @@ export class Service implements IRevocationDependencies {
         },
       }),
     ]);
-    if (!owners.some((owner) => owner.ecommerceModuleOrderId === scope.orderId))
+    if (!owners.includes(scope.orderId)) {
       return false;
+    }
+    const purchaser = await this.paymentPurchaser.resolveOrder(scope.orderId);
+    if (
+      purchaser.subjectId !== scope.subjectId ||
+      grant.subjectId !== scope.subjectId
+    ) {
+      return false;
+    }
     const order = await this.service.ecommerceModule.order.findByIdExtended({
       id: scope.orderId,
     });
@@ -86,14 +92,15 @@ export class Service implements IRevocationDependencies {
       !order.ordersToProducts.some((line: { productId: string }) =>
         products.has(line.productId),
       )
-    )
+    ) {
       return false;
+    }
     const now = Date.now();
-    for (const owner of owners)
-      if (owner.ecommerceModuleOrderId !== scope.orderId) {
+    for (const orderId of owners) {
+      if (orderId !== scope.orderId) {
         const active =
           await this.service.ecommerceModule.order.findByIdExtended({
-            id: owner.ecommerceModuleOrderId,
+            id: orderId,
           });
         if (
           active &&
@@ -104,9 +111,15 @@ export class Service implements IRevocationDependencies {
           active.ordersToProducts.some((line: { productId: string }) =>
             products.has(line.productId),
           )
-        )
-          return false;
+        ) {
+          const activePurchaser =
+            await this.paymentPurchaser.resolveOrder(orderId);
+          if (activePurchaser.subjectId === scope.subjectId) {
+            return false;
+          }
+        }
       }
+    }
     const attributes =
       await this.service.ecommerceModule.order.findByIdCheckoutAttributes({
         id: scope.orderId,

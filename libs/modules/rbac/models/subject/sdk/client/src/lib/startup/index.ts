@@ -11,6 +11,8 @@ export {
   clearAuthenticationTokens,
   persistAuthenticationTokens,
   queryClient,
+  useActiveSocialModuleProfile,
+  selectSocialModuleProfile,
 } from "../singlepage";
 
 export type IProps = IParentProps & {};

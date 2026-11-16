@@ -15,6 +15,8 @@ export interface IProps {
   options?: Partial<NextRequestOptions>;
   provider: string;
   data?: {
+    guestSessionToken?: string;
+    socialModuleProfileSelections?: Record<string, string>;
     flow?: "signin" | "link";
     redirectTo?: string;
   };

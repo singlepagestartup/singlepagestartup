@@ -6,12 +6,24 @@ describe("legacy subscription freeze ownership", () => {
       .fn()
       .mockResolvedValue({ accepted: true });
     const service: any = {
-      subjectsToEcommerceModuleOrders: {
-        find: jest
-          .fn()
-          .mockResolvedValue([
-            { subjectId: "subject", ecommerceModuleOrderId: "order" },
-          ]),
+      ecommerceModuleOrderAssertAccess: jest.fn(async () => undefined),
+      socialModule: {
+        profilesToEcommerceModuleOrders: {
+          find: jest
+            .fn()
+            .mockResolvedValue([
+              { profileId: "profile", ecommerceModuleOrderId: "order" },
+            ]),
+        },
+      },
+      subjectsToBillingModulePaymentIntents: {
+        find: jest.fn().mockResolvedValue([
+          {
+            subjectId: "subject",
+            variant: "purchaser",
+            billingModulePaymentIntentId: "payment",
+          },
+        ]),
       },
       subjectsToRoles: {
         find: jest
@@ -26,6 +38,13 @@ describe("legacy subscription freeze ownership", () => {
           ]),
       },
       ecommerceModule: {
+        ordersToBillingModulePaymentIntents: {
+          find: jest
+            .fn()
+            .mockResolvedValue([
+              { orderId: "order", billingModulePaymentIntentId: "payment" },
+            ]),
+        },
         order: {
           findByIdExtended: jest.fn().mockResolvedValue({
             ordersToProducts: [{ productId: "product" }],
@@ -43,6 +62,7 @@ describe("legacy subscription freeze ownership", () => {
   const input = {
     id: "subject",
     ecommerceModuleOrderId: "order",
+    socialModuleProfileId: "profile",
     data: { expectedUpdatedAt: "2026-10-22T10:00:00Z" },
   };
   it("passes only exact order and expected prior clock to the lower writer", async () => {
@@ -53,13 +73,30 @@ describe("legacy subscription freeze ownership", () => {
       expectedUpdatedAt: input.data.expectedUpdatedAt,
     });
   });
-  it("rejects another subject's order", async () => {
+  it("rejects another profile's order", async () => {
     const { service, action, freezeSubscriptionPeriod } = fixture();
-    service.subjectsToEcommerceModuleOrders.find.mockResolvedValue([
-      { subjectId: "other", ecommerceModuleOrderId: "order" },
-    ]);
+    service.socialModule.profilesToEcommerceModuleOrders.find.mockResolvedValue(
+      [{ profileId: "other", ecommerceModuleOrderId: "order" }],
+    );
     await expect(action.execute(input)).rejects.toThrow("does not belong");
     expect(freezeSubscriptionPeriod).not.toHaveBeenCalled();
+  });
+  it("uses the original purchaser's grants after profile management changes", async () => {
+    const { service, action, freezeSubscriptionPeriod } = fixture();
+    await action.execute({ ...input, id: "new-manager" });
+    expect(service.ecommerceModuleOrderAssertAccess).toHaveBeenCalledWith({
+      subjectId: "new-manager",
+      socialModuleProfileId: "profile",
+      orderId: "order",
+    });
+    expect(service.subjectsToRoles.find).toHaveBeenCalledWith({
+      params: {
+        filters: {
+          and: [{ column: "subjectId", method: "eq", value: "subject" }],
+        },
+      },
+    });
+    expect(freezeSubscriptionPeriod).toHaveBeenCalledTimes(1);
   });
   it.each([
     { grants: [] },

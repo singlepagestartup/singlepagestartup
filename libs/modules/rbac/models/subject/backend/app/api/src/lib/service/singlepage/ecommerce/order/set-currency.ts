@@ -1,16 +1,17 @@
-import { getDrizzle } from "@sps/shared-backend-database-config";
-import { withConsistencyDatabase } from "@sps/shared-backend-api";
 import { INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG } from "@sps/shared-utils";
 import type { Service as SubjectService } from "../../index";
 
 export interface IExecuteProps {
   subjectId: string;
+  socialModuleProfileId?: string;
   orderId: string;
   currencyId: string;
 }
 export interface IConstructorProps {
   service: Pick<
     SubjectService,
+    | "repository"
+    | "ecommerceModuleResolveProfile"
     | "ecommerceModule"
     | "ecommerceModuleOrderAssertAccess"
     | "ecommerceModuleResolveOrderCurrency"
@@ -22,10 +23,14 @@ export class Service {
 
   async execute(props: IExecuteProps): Promise<void> {
     const { service } = this.dependencies;
-    await getDrizzle({}).transaction((tx) =>
-      withConsistencyDatabase(tx, async () => {
+    const socialModuleProfileId =
+      await service.ecommerceModuleResolveProfile(props);
+    await service.repository.withProfileLock(
+      { profileId: socialModuleProfileId },
+      async () => {
         await service.ecommerceModuleOrderAssertAccess({
           subjectId: props.subjectId,
+          socialModuleProfileId,
           orderId: props.orderId,
         });
         await service.ecommerceModule.order.lockForLifecycle({
@@ -93,7 +98,7 @@ export class Service {
             },
           });
         }
-      }),
+      },
     );
   }
 }

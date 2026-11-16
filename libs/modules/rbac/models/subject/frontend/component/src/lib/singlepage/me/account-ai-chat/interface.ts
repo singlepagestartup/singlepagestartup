@@ -11,9 +11,14 @@ export const variant = "me-account-ai-chat" as const;
 export interface IComponentProps extends IParent<IModel, typeof variant> {
   language?: string;
   settingsSelected?: boolean;
+  socialModuleProfileId?: string;
 }
-export interface IComponentPropsExtended
-  extends IParentExtended<IModel, typeof variant, IComponentProps> {
+export interface IComponentPropsExtended extends IParentExtended<
+  IModel,
+  typeof variant,
+  IComponentProps
+> {
+  accountProfiles?: IResult["ISocialModuleProfileFindResult"];
   accountProfile?: IResult["ISocialModuleProfileFindResult"][number];
   accountIdentities?: IResult["IIdentityFindResult"];
   accountAvatar?: IResult["ISocialModuleProfileFindByIdAvatarFindResult"];
@@ -38,14 +43,14 @@ export interface IAccountTokenBalanceProps {
   language: string;
 }
 
-export interface IAccountMenuProps
-  extends Pick<
-    IComponentPropsExtended,
-    "accountIdentities" | "accountAvatar" | "accountBalance"
-  > {
+export interface IAccountMenuProps extends Pick<
+  IComponentPropsExtended,
+  "accountIdentities" | "accountAvatar" | "accountBalance" | "accountProfiles"
+> {
   subjectId: string;
   subjectSlug: string;
   language?: string;
   settingsSelected?: boolean;
+  socialModuleProfileId?: string;
   profile?: IProfile;
 }

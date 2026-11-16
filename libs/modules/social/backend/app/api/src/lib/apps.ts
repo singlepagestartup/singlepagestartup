@@ -1,3 +1,4 @@
+import { app as profilesToEcommerceModuleOrders } from "@sps/social/relations/profiles-to-ecommerce-module-orders/backend/app/api";
 import { app as widgetsToWebsiteBuilderModuleWidgets } from "@sps/social/relations/widgets-to-website-builder-module-widgets/backend/app/api";
 import { app as skillsToKnowledgeModuleSources } from "@sps/social/relations/skills-to-knowledge-module-sources/backend/app/api";
 import { app as messagesToKnowledgeModuleSources } from "@sps/social/relations/messages-to-knowledge-module-sources/backend/app/api";
@@ -39,6 +40,11 @@ export class Apps {
   }
 
   bindApps() {
+    this.apps.push({
+      type: "relation",
+      route: "/profiles-to-ecommerce-module-orders",
+      app: profilesToEcommerceModuleOrders,
+    });
     this.apps.push({
       type: "relation",
       route: "/widgets-to-website-builder-module-widgets",

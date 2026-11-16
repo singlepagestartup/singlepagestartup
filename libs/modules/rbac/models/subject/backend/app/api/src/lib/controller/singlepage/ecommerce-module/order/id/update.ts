@@ -8,7 +8,6 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { authorization, getHttpErrorType, verifyJwt } from "@sps/backend-utils";
 import { Service } from "../../../../../service";
-import { api as ecommerceOrderApi } from "@sps/ecommerce/models/order/sdk/server";
 import { z } from "zod";
 
 export class Handler {
@@ -74,6 +73,9 @@ export class Handler {
         }
         await this.service.ecommerceModuleOrderSetCurrency({
           subjectId: id,
+          socialModuleProfileId:
+            c.req.param("socialModuleProfileId") ??
+            c.req.query("socialModuleProfileId"),
           orderId,
           currencyId: currency.data,
         });
@@ -111,63 +113,71 @@ export class Handler {
         throw new Error("Not Found error. No entity found");
       }
 
-      await this.service.ecommerceModuleOrderAssertAccess({
-        subjectId: id,
-        orderId,
-        lineIds: data.ordersToProducts.map((line: { id: string }) => line.id),
-      });
-
-      const order = await this.service.ecommerceModule.order.findById({
-        id: orderId,
-      });
-
-      if (!order) {
-        throw new Error("Not Found error. No order found");
-      }
-
-      if (order.status !== "new") {
-        throw new Error("Not Found error. Order is not in 'new' status");
-      }
-
-      const lines = await this.service.ecommerceModule.ordersToProducts.find({
-        params: {
-          filters: {
-            and: [{ column: "orderId", method: "eq", value: orderId }],
-          },
-        },
-      });
-      for (const line of lines) {
-        const product = await this.service.ecommerceModule.product.findById({
-          id: line.productId,
+      const socialModuleProfileId =
+        await this.service.ecommerceModuleResolveProfile({
+          subjectId: id,
+          socialModuleProfileId:
+            c.req.param("socialModuleProfileId") ??
+            c.req.query("socialModuleProfileId"),
         });
-        if (product?.slug === INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG)
-          throw new Error(
-            "Permission error. Initial Free cannot be changed through a cart",
-          );
-      }
+      return await this.service.repository.withProfileLock(
+        { profileId: socialModuleProfileId },
+        async () => {
+          await this.service.ecommerceModuleOrderAssertAccess({
+            subjectId: id,
+            socialModuleProfileId,
+            orderId,
+            lineIds: data.ordersToProducts.map(
+              (line: { id: string }) => line.id,
+            ),
+          });
 
-      await ecommerceOrderApi.update({
-        id: orderId,
-        data: {
-          ordersToProducts: data.ordersToProducts.map(
-            (line: { id: string; quantity: number }) => ({
+          const order = await this.service.ecommerceModule.order.findById({
+            id: orderId,
+          });
+
+          if (!order) {
+            throw new Error("Not Found error. No order found");
+          }
+
+          if (order.status !== "new") {
+            throw new Error("Not Found error. Order is not in 'new' status");
+          }
+
+          const lines =
+            await this.service.ecommerceModule.ordersToProducts.find({
+              params: {
+                filters: {
+                  and: [{ column: "orderId", method: "eq", value: orderId }],
+                },
+              },
+            });
+          for (const line of lines) {
+            const product = await this.service.ecommerceModule.product.findById(
+              {
+                id: line.productId,
+              },
+            );
+            if (product?.slug === INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG)
+              throw new Error(
+                "Permission error. Initial Free cannot be changed through a cart",
+              );
+          }
+
+          for (const line of data.ordersToProducts) {
+            await this.service.ecommerceModule.ordersToProducts.update({
               id: line.id,
-              quantity: line.quantity,
-            }),
-          ),
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
+              data: { quantity: line.quantity },
+            });
+          }
 
-      return c.json({
-        data: {
-          ...entity,
+          return c.json({
+            data: {
+              ...entity,
+            },
+          });
         },
-      });
+      );
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });

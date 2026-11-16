@@ -32,6 +32,7 @@ type TOAuthStatePayload = {
     provider?: string;
     flow?: TOAuthFlow;
     sourceSubjectId?: string | null;
+    socialModuleProfileSelections?: Record<string, string>;
     redirectTo?: string;
     consumedAt?: string | null;
   };
@@ -69,7 +70,20 @@ export type IResult = {
 export class Service {
   repository: IRepository;
 
-  constructor(repository: IRepository) {
+  constructor(
+    repository: IRepository,
+    readonly cartHandoff?: {
+      linkIdentityToSubject?: (props: {
+        subjectId: string;
+        identityId: string;
+      }) => Promise<unknown>;
+      mergeGuestCart: (props: {
+        sourceSubjectId: string;
+        subjectId: string;
+        socialModuleProfileId?: string;
+      }) => Promise<void>;
+    },
+  ) {
     this.repository = repository;
   }
 
@@ -256,6 +270,38 @@ export class Service {
       await this.assignRegistrationRolesIfMissing({
         subjectId: targetSubjectId,
       });
+    }
+
+    if (
+      flow === "signin" &&
+      sourceSubjectId &&
+      sourceSubjectId !== targetSubjectId &&
+      this.cartHandoff
+    ) {
+      const sourceIdentities = await rbacSubjectsToIdentitiesApi.find({
+        params: {
+          filters: {
+            and: [
+              { column: "subjectId", method: "eq", value: sourceSubjectId },
+            ],
+          },
+          limit: 1,
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
+          },
+        },
+      });
+      if (!sourceIdentities?.length) {
+        await this.cartHandoff.mergeGuestCart({
+          sourceSubjectId,
+          subjectId: targetSubjectId,
+          socialModuleProfileId:
+            payload.oauth?.socialModuleProfileSelections?.[targetSubjectId],
+        });
+      }
     }
 
     const exchangeAction = await rbacActionApi.create({
@@ -606,6 +652,10 @@ export class Service {
     }
 
     try {
+      if (this.cartHandoff?.linkIdentityToSubject) {
+        await this.cartHandoff.linkIdentityToSubject(props);
+        return;
+      }
       await rbacSubjectsToIdentitiesApi.create({
         data: {
           subjectId: props.subjectId,

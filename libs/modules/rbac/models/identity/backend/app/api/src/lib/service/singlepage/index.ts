@@ -150,7 +150,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
   }
 
-  async emailAndPassowrd(props: IEmailAndPassword): Promise<IModel> {
+  async emailAndPassowrd(
+    props: IEmailAndPassword,
+    context?: { local: true },
+  ): Promise<IModel> {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC_SECRET_KEY is required");
     }
@@ -162,7 +165,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
 
     if (props.data.type === "registration") {
-      const identities = await api.find({
+      const find = (query: Parameters<typeof api.find>[0]) => {
+        if (context?.local) {
+          return this.find({ params: query?.params });
+        }
+        return api.find(query);
+      };
+      const identities = await find({
         params: {
           filters: {
             and: [
@@ -202,7 +211,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
        * reason to refuse and becomes a reason to link, after both sides are
        * proven; keeping this would then block a legitimate second identity.
        */
-      const claimedElsewhere = await api.find({
+      const claimedElsewhere = await find({
         params: {
           filters: {
             and: [
@@ -238,19 +247,21 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
       const saltedPassword = await bcrypt.hash(props.data.password, salt);
 
-      const identity = await api.create({
-        data: {
-          email: props.data.login.toLowerCase(),
-          password: saltedPassword,
-          provider: "email_and_password",
-          salt,
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
+      const data = {
+        email: props.data.login.toLowerCase(),
+        password: saltedPassword,
+        provider: "email_and_password",
+        salt,
+      };
+      let identity;
+      if (context?.local) {
+        identity = await this.create({ data });
+      } else {
+        identity = await api.create({
+          data,
+          options: { headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY } },
+        });
+      }
 
       return identity;
     }

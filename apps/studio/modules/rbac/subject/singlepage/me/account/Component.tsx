@@ -1,4 +1,6 @@
 "use client";
+import { useState } from "react";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import type { IComponentProps, ISubjectAccountProps } from "./interface";
 export type { ISubjectAccountProps } from "./interface";
 
@@ -27,8 +29,16 @@ export function Component({
   page,
   balance,
   onNavigate,
+  profiles = [],
+  activeProfileId,
+  onSelectProfile,
 }: IComponentProps = {}) {
   const session = useStudioAccount();
+  const [selectedProfileId, setSelectedProfileId] = useState(profiles[0]?.id);
+  const activeProfile =
+    profiles.find(
+      (profile) => profile.id === (activeProfileId ?? selectedProfileId),
+    ) ?? profiles[0];
   const authenticated = signedIn ?? (user ? true : session.signedIn);
   const data = user
     ? {
@@ -73,7 +83,7 @@ export function Component({
     >
       <SocialModuleProfile
         variant="account-menu"
-        data={data}
+        data={activeProfile ? { ...data, ...activeProfile } : data}
         email={user?.email ?? session.account.email ?? aiChatAccount.email}
         balance={balance === undefined ? session.account.balance : balance}
         showTokens={showTokens}
@@ -97,6 +107,33 @@ export function Component({
         page={page}
         onNavigate={onNavigate}
         onSignOut={session.signOut}
+        profileSwitcher={
+          profiles.length > 1 ? (
+            <>
+              <DropdownMenu.Separator className="my-1 h-px bg-border" />
+              {profiles
+                .filter((profile) => profile.id !== activeProfile?.id)
+                .map((profile) => (
+                  <DropdownMenu.Item asChild key={profile.id}>
+                    <button
+                      type="button"
+                      aria-pressed={profile.id === activeProfile?.id}
+                      className="flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-left text-sm outline-none data-highlighted:bg-muted"
+                      onClick={() => {
+                        setSelectedProfileId(profile.id);
+                        onSelectProfile?.(profile.id);
+                      }}
+                    >
+                      <Icon name="user-circle" />
+                      <span className="min-w-0 flex-1 truncate">
+                        {profile.title}
+                      </span>
+                    </button>
+                  </DropdownMenu.Item>
+                ))}
+            </>
+          ) : undefined
+        }
       />
     </div>
   );

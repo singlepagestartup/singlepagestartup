@@ -51,6 +51,7 @@ function createContext(params?: Record<string, string | undefined>) {
 
   return {
     req: {
+      query: jest.fn(),
       param: (name: string) => resolvedParams[name],
     },
     json: jest.fn((payload: unknown) => payload),
@@ -113,6 +114,7 @@ describe("Given: a subject reads the total of a single order", () => {
 
     expect(service.ecommerceModuleOrderAssertAccess).toHaveBeenCalledWith({
       subjectId: SUBJECT_ID,
+      socialModuleProfileId: undefined,
       orderId: ORDER_ID,
     });
     expect(context.json).toHaveBeenCalledWith({

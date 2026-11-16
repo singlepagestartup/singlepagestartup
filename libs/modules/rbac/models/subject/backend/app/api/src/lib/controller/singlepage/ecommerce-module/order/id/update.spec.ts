@@ -45,6 +45,7 @@ function createContext(
 ) {
   return {
     req: {
+      query: jest.fn(),
       param: (name: string) => params[name],
       parseBody: jest.fn().mockResolvedValue(body),
     },
@@ -54,11 +55,16 @@ function createContext(
 
 function createService() {
   return {
+    ecommerceModuleResolveProfile: jest.fn().mockResolvedValue("profile-a"),
+    repository: {
+      withProfileLock: jest.fn(async (_scope, operation) => operation()),
+    },
     ecommerceModuleOrderSetCurrency: jest.fn().mockResolvedValue(undefined),
     ecommerceModuleOrderAssertAccess: jest.fn().mockResolvedValue(undefined),
     findById: jest.fn().mockResolvedValue({ id: "subject-1" }),
     ecommerceModule: {
       ordersToProducts: {
+        update: orderUpdateMock,
         find: jest
           .fn()
           .mockResolvedValue([{ id: "otp-1", productId: "product-1" }]),
@@ -151,8 +157,8 @@ describe("Given: ecommerce order update handler", () => {
 
     expect(orderUpdateMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        id: "order-1",
-        data: updatePayload,
+        id: "otp-1",
+        data: { quantity: 3 },
       }),
     );
     expect(context.json).toHaveBeenCalledWith({
@@ -180,12 +186,13 @@ describe("Given: ecommerce order update handler", () => {
     await new Handler(service).execute(context, jest.fn());
     expect(service.ecommerceModuleOrderAssertAccess).toHaveBeenCalledWith({
       subjectId: "subject-1",
+      socialModuleProfileId: "profile-a",
       orderId: "order-1",
       lineIds: ["otp-1"],
     });
     expect(orderUpdateMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: { ordersToProducts: [{ id: "otp-1", quantity: 2 }] },
+        data: { quantity: 2 },
       }),
     );
   });
@@ -213,6 +220,7 @@ describe("Cart currency requests", () => {
     );
     expect(service.ecommerceModuleOrderSetCurrency).toHaveBeenCalledWith({
       subjectId: "subject-1",
+      socialModuleProfileId: undefined,
       orderId: "order-1",
       currencyId,
     });

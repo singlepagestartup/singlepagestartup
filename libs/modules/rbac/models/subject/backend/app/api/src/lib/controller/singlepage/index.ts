@@ -1,3 +1,4 @@
+import { Handler as SocialModuleProfileEnsure } from "./social-module/profile/ensure";
 import { Handler as BlogArticleCreate } from "./blog/article/create";
 import { Handler as FreezeSubscriptionPeriod } from "./ecommerce-module/order/freeze-subscription-period";
 import { Handler as SubjectProfileAvatarUpdate } from "./social-module/profile/find-by-id/avatar/update";
@@ -141,6 +142,12 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       isAdmin: (subjectId) => this.service.isAdmin(subjectId),
     });
     this.bindHttpRoutes([
+      {
+        method: "POST",
+        path: "/:id/social-module/profiles/ensure",
+        handler: (c) => new SocialModuleProfileEnsure(this.service).execute(c),
+        middlewares: [new RequestSubjectIdOwner().init({ requireJwt: true })],
+      },
       {
         method: "GET",
         path: "/permission-defaults",
@@ -433,6 +440,72 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "POST",
         path: "/:uuid/notify",
         handler: this.notify,
+      },
+      {
+        method: "POST",
+        path: "/:id/social-module/profiles/:socialModuleProfileId/ecommerce-module/orders",
+        handler: this.ecommerceModuleOrderCreate,
+        middlewares: [new RequestSubjectIdOwner().init({ requireJwt: true })],
+      },
+      {
+        method: "GET",
+        path: "/:id/social-module/profiles/:socialModuleProfileId/ecommerce-module/orders/quantity",
+        handler: this.ecommerceModuleOrderQuantity,
+        middlewares: [new RequestSubjectIdOwner().init({ requireJwt: true })],
+      },
+      {
+        method: "GET",
+        path: "/:id/social-module/profiles/:socialModuleProfileId/ecommerce-module/orders/total",
+        handler: this.ecommerceModuleOrderTotal,
+        middlewares: [new RequestSubjectIdOwner().init({ requireJwt: true })],
+      },
+      {
+        method: "GET",
+        path: "/:id/social-module/profiles/:socialModuleProfileId/ecommerce-module/orders-to-products",
+        handler: this.ecommerceModuleOrdersToProductsList,
+        middlewares: [new RequestSubjectIdOwner().init({ requireJwt: true })],
+      },
+      {
+        method: "GET",
+        path: "/:id/social-module/profiles/:socialModuleProfileId/ecommerce-module/orders",
+        handler: this.ecommerceModuleOrderList,
+        middlewares: [new RequestSubjectIdOwner().init({ requireJwt: true })],
+      },
+      {
+        method: "POST",
+        path: "/:id/social-module/profiles/:socialModuleProfileId/ecommerce-module/orders/checkout",
+        handler: this.ecommerceModuleOrderCheckout,
+        middlewares: [new RequestSubjectIdOwner().init({ requireJwt: true })],
+      },
+      {
+        method: "GET",
+        path: "/:id/social-module/profiles/:socialModuleProfileId/ecommerce-module/orders/:orderId/quantity",
+        handler: this.ecommerceModuleOrderIdQuantity,
+        middlewares: [new RequestSubjectIdOwner().init({ requireJwt: true })],
+      },
+      {
+        method: "GET",
+        path: "/:id/social-module/profiles/:socialModuleProfileId/ecommerce-module/orders/:orderId/total",
+        handler: this.ecommerceModuleOrderIdTotal,
+        middlewares: [new RequestSubjectIdOwner().init({ requireJwt: true })],
+      },
+      {
+        method: "PATCH",
+        path: "/:id/social-module/profiles/:socialModuleProfileId/ecommerce-module/orders/:orderId",
+        handler: this.ecommerceModuleOrderIdUpdate,
+        middlewares: [new RequestSubjectIdOwner().init({ requireJwt: true })],
+      },
+      {
+        method: "DELETE",
+        path: "/:id/social-module/profiles/:socialModuleProfileId/ecommerce-module/orders/:orderId",
+        handler: this.ecommerceModuleOrderIdDelete,
+        middlewares: [new RequestSubjectIdOwner().init({ requireJwt: true })],
+      },
+      {
+        method: "POST",
+        path: "/:id/social-module/profiles/:socialModuleProfileId/ecommerce-module/products/:productId/checkout",
+        handler: this.ecommerceModuleProductIdCheckout,
+        middlewares: [new RequestSubjectIdOwner().init({ requireJwt: true })],
       },
       {
         method: "POST",

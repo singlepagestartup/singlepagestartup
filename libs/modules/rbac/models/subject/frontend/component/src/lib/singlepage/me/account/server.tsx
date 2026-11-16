@@ -16,6 +16,7 @@ export default async function Server(props: IComponentProps) {
           isServer={false}
           variant={props.variant}
           language={props.language}
+          socialModuleProfileId={props.socialModuleProfileId}
           className={props.className}
           skeleton={props.skeleton}
         />
@@ -26,6 +27,7 @@ export default async function Server(props: IComponentProps) {
           isServer
           variant={props.variant}
           language={props.language}
+          socialModuleProfileId={props.socialModuleProfileId}
           className={props.className}
           data={data}
           authenticated={authenticated}

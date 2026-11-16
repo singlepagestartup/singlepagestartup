@@ -1,0 +1,1 @@
+ALTER TABLE "sps_rc_subject" ADD COLUMN "initial_free_subscription_granted_at" timestamp;

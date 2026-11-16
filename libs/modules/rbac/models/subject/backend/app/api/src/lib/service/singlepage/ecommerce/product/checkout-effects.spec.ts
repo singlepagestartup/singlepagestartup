@@ -166,11 +166,42 @@ it("keeps nested mutation effects when Product checkout runs without its outer H
   await new Promise((resolve) => setTimeout(resolve, 5));
   const find = jest.fn(async () => []);
   const service = new Service({
+    ecommerceModuleResolveProfile: jest.fn(async () => "profile-a"),
+    repository: {
+      withProfileLock: async (
+        _scope: unknown,
+        operation: () => Promise<unknown>,
+      ) => operation(),
+    },
+    socialModule: {
+      profilesToEcommerceModuleOrders: {
+        create: (props: any) =>
+          mockWrite("/api/rbac/subjects-to-ecommerce-module-orders", props),
+      },
+    },
     findById: jest.fn(async () => ({ id: "subject" })),
     subjectsToIdentities: {
       find: jest.fn(async () => [{ identityId: "identity" }]),
     },
     ecommerceModule: {
+      order: {
+        create: (props: any) => mockWrite("/api/ecommerce/orders", props),
+      },
+      ordersToProducts: {
+        create: (props: any) =>
+          mockWrite("/api/ecommerce/orders-to-products", props),
+      },
+      storesToOrders: {
+        create: (props: any) =>
+          mockWrite("/api/ecommerce/stores-to-orders", props),
+      },
+      ordersToBillingModuleCurrencies: {
+        create: (props: any) =>
+          mockWrite(
+            "/api/ecommerce/orders-to-billing-module-currencies",
+            props,
+          ),
+      },
       product: {
         findById: jest.fn(async () => ({
           id: "product",

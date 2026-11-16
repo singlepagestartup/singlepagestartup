@@ -9,6 +9,15 @@ function fixture() {
   const tables: Record<string, any[]> = {
     order: [],
     owners: [],
+    purchasers: [],
+    legacyOwners: [],
+    subjects: [
+      {
+        id: "owner",
+        variant: "default",
+        initialFreeSubscriptionGrantedAt: null,
+      },
+    ],
     lines: [],
     stores: [],
     currencies: [],
@@ -94,13 +103,26 @@ function fixture() {
         return result;
       }),
       lockOrderDelivery: jest.fn(async () => undefined),
+      findFirstByField: jest.fn(async (_field, id) =>
+        tables.subjects.find((row) => row.id === id),
+      ),
+      updateFirstByField: jest.fn(async (_field, id, data) => {
+        const subject = tables.subjects.find((row) => row.id === id);
+        Object.assign(subject, data);
+        return subject;
+      }),
     },
     subjectsToIdentities: {
       find: jest.fn(async () => [
         { subjectId: "owner", identityId: "identity" },
       ]),
     },
-    subjectsToEcommerceModuleOrders: crud("owners"),
+    socialModule: { profilesToEcommerceModuleOrders: crud("owners") },
+    subjectsToBillingModulePaymentIntents: crud("purchasers"),
+    legacySubjectsToEcommerceModuleOrders: crud("legacyOwners"),
+    ensurePersonalProfile: jest.fn(async () => ({
+      profile: { id: "personal-profile" },
+    })),
     ecommerceModule: {
       order,
       product: {
@@ -122,11 +144,14 @@ function fixture() {
     fulfillPaidOrderInTransaction: jest.fn(async ({ orderId }) => {
       expect(inTransaction).toBe(true);
       expect(tables.invoices[0].status).toBe("paid");
-      if (failFulfillment === "settlement")
+      if (failFulfillment === "settlement") {
         throw new Error("settlement failure");
+      }
       tables.balances.push({ amount: "3000" });
       tables.grants.push({ roleId: "free-role" });
-      if (failFulfillment === "balance") throw new Error("balance failure");
+      if (failFulfillment === "balance") {
+        throw new Error("balance failure");
+      }
       const current = tables.order.find((row) => row.id === orderId);
       Object.assign(current, {
         status: "delivering",
@@ -183,8 +208,53 @@ it("serializes simultaneous authentication retries into one complete gift graph"
     service.activate({ id: "owner" }),
   ]);
   expect(results.filter(Boolean)).toHaveLength(1);
-  for (const name of Object.keys(tables)) expect(tables[name]).toHaveLength(1);
+  for (const name of Object.keys(tables).filter(
+    (name) => name !== "legacyOwners",
+  )) {
+    expect(tables[name]).toHaveLength(1);
+  }
   expect(dependencies.fulfillPaidOrderInTransaction).toHaveBeenCalledTimes(1);
+});
+
+it("keeps the gift on the personal profile and records the account as purchaser", async () => {
+  const { service, tables } = fixture();
+  await service.execute({ id: "owner" });
+  expect(tables.owners).toEqual([
+    expect.objectContaining({
+      profileId: "personal-profile",
+      ecommerceModuleOrderId: tables.order[0].id,
+    }),
+  ]);
+  expect(tables.purchasers).toEqual([
+    expect.objectContaining({
+      subjectId: "owner",
+      variant: "purchaser",
+      billingModulePaymentIntentId: tables.intents[0].id,
+    }),
+  ]);
+  expect(tables.subjects[0].initialFreeSubscriptionGrantedAt).toBeInstanceOf(
+    Date,
+  );
+});
+
+it("does not repeat a grant after its order is removed", async () => {
+  const { service, tables, dependencies } = fixture();
+  await service.execute({ id: "owner" });
+  tables.order.length = 0;
+  tables.owners.length = 0;
+  tables.lines.length = 0;
+  expect(await service.execute({ id: "owner" })).toBeNull();
+  expect(dependencies.fulfillPaidOrderInTransaction).toHaveBeenCalledTimes(1);
+});
+
+it("rejects a guest account even if a profile is available", async () => {
+  const { service, tables, dependencies } = fixture();
+  tables.subjects[0].variant = "anonymous";
+  await expect(service.execute({ id: "owner" })).rejects.toThrow(
+    "registered Subject",
+  );
+  expect(dependencies.ensurePersonalProfile).not.toHaveBeenCalled();
+  expect(tables.order).toEqual([]);
 });
 
 it.each([
@@ -199,7 +269,7 @@ it.each([
   async (status) => {
     const { service, tables, dependencies } = fixture();
     tables.order.push({ id: "old-free", status });
-    tables.owners.push({
+    tables.legacyOwners.push({
       subjectId: "owner",
       ecommerceModuleOrderId: "old-free",
     });
@@ -213,7 +283,7 @@ it.each([
 it("an unrelated Pro cart does not replace an initial Free grant", async () => {
   const { service, tables } = fixture();
   tables.order.push({ id: "pro-cart", status: "new" });
-  tables.owners.push({
+  tables.legacyOwners.push({
     subjectId: "owner",
     ecommerceModuleOrderId: "pro-cart",
   });
@@ -226,7 +296,7 @@ it("an unrelated Pro cart does not replace an initial Free grant", async () => {
 it("resumes one existing zero-price graph without replacing its saved IDs", async () => {
   const { service, tables } = fixture();
   tables.order.push({ id: "partial-order", status: "paying" });
-  tables.owners.push({
+  tables.legacyOwners.push({
     subjectId: "owner",
     ecommerceModuleOrderId: "partial-order",
   });
@@ -277,7 +347,12 @@ it.each(["settlement", "balance"] as const)(
     await expect(service.execute({ id: "owner" })).rejects.toThrow(
       `${phase} failure`,
     );
-    expect(Object.values(tables).every((rows) => rows.length === 0)).toBe(true);
+    expect(
+      Object.entries(tables)
+        .filter(([name]) => name !== "subjects")
+        .every(([, rows]) => rows.length === 0),
+    ).toBe(true);
+    expect(tables.subjects[0].initialFreeSubscriptionGrantedAt).toBeNull();
     expect(dependencies.dispatchPaidEffects).not.toHaveBeenCalled();
   },
 );
@@ -290,7 +365,12 @@ it("rolls back when a graph link fails", async () => {
   await expect(service.execute({ id: "owner" })).rejects.toThrow(
     "link failure",
   );
-  expect(Object.values(tables).every((rows) => rows.length === 0)).toBe(true);
+  expect(
+    Object.entries(tables)
+      .filter(([name]) => name !== "subjects")
+      .every(([, rows]) => rows.length === 0),
+  ).toBe(true);
+  expect(tables.subjects[0].initialFreeSubscriptionGrantedAt).toBeNull();
 });
 
 it("does not credit again after an unknown committed response", async () => {
@@ -310,7 +390,7 @@ it("rejects multiple unaccepted pending Free histories, a nonzero price and gues
   const first = fixture();
   for (const id of ["a", "b"]) {
     first.tables.order.push({ id, status: "paying" });
-    first.tables.owners.push({
+    first.tables.legacyOwners.push({
       subjectId: "owner",
       ecommerceModuleOrderId: id,
     });

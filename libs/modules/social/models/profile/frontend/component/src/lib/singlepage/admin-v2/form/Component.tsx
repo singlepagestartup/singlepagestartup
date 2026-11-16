@@ -24,6 +24,7 @@ export function Component(props: IComponentPropsExtended) {
       profilesToEcommerceModuleProducts={
         props.profilesToEcommerceModuleProducts
       }
+      profilesToEcommerceModuleOrders={props.profilesToEcommerceModuleOrders}
       panelDepth={props.panelDepth}
       isTop={props.isTop}
     />

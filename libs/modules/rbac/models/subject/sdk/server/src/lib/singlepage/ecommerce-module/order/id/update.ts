@@ -14,6 +14,7 @@ export interface IProps {
   tag?: string;
   revalidate?: number;
   params?: {
+    socialModuleProfileId?: string;
     [key: string]: any;
   };
   options?: Partial<NextRequestOptions>;

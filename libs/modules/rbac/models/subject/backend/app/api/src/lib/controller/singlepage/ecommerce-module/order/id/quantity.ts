@@ -31,6 +31,9 @@ export class Handler {
         // reveal which order ids exist.
         await this.service.ecommerceModuleOrderAssertAccess({
           subjectId: id,
+          socialModuleProfileId:
+            c.req.param("socialModuleProfileId") ??
+            c.req.query("socialModuleProfileId"),
           orderId,
         });
 

@@ -1,3 +1,6 @@
+import { randomUUID } from "node:crypto";
+import type { IRegistrationService } from "./email-and-password";
+import { Service as SubjectMe } from "../me";
 import { IRepository } from "@sps/shared-backend-api";
 import {
   RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS,
@@ -16,6 +19,9 @@ import { api } from "@sps/rbac/models/subject/sdk/server";
 
 export type IExecuteProps = {
   data: {
+    guestSessionToken?: string;
+    socialModuleProfileId?: string;
+    socialModuleProfileSelections?: Record<string, string>;
     message: string;
     signature: Hex;
     address: Address;
@@ -26,7 +32,10 @@ export type IExecuteProps = {
 export class Service {
   repository: IRepository;
 
-  constructor(repository: IRepository) {
+  constructor(
+    repository: IRepository,
+    readonly registrationService?: IRegistrationService,
+  ) {
     this.repository = repository;
   }
 
@@ -89,6 +98,19 @@ export class Service {
       },
     });
 
+    if (
+      !identities?.length &&
+      props.data.guestSessionToken &&
+      this.registrationService
+    ) {
+      const subject = await this.register(props);
+      return this.tokens(subject.id);
+    }
+    if (!identities?.length && props.data.guestSessionToken) {
+      throw new Error(
+        "Configuration error. Guest registration requires local owning services",
+      );
+    }
     if (!identities?.length) {
       const identity = await identityApi.create({
         data: {
@@ -103,14 +125,8 @@ export class Service {
       });
 
       const subject = await api.create({
-        data: {
-          name: identity.account,
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
+        data: { name: identity.account },
+        options: { headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY } },
       });
 
       const subjectsToIdentities = await subjectsToIdentitiesApi.create({
@@ -245,24 +261,117 @@ export class Service {
       throw new Error("Not Found error. No subject found");
     }
 
+    return this.tokens(subject.id);
+  }
+
+  private async register(props: IExecuteProps) {
+    const service = this.registrationService!;
+    let guestSubject;
+    if (props.data.guestSessionToken) {
+      const source = await new SubjectMe({
+        findById: (scope) => service.findById(scope),
+      }).execute({ token: props.data.guestSessionToken });
+      if (source?.variant === "default") {
+        const links = await service.subjectsToIdentities.find({
+          params: {
+            filters: {
+              and: [{ column: "subjectId", method: "eq", value: source.id }],
+            },
+            limit: 1,
+          },
+        });
+        if (!links.length) {
+          guestSubject = source;
+        }
+      }
+    }
+    const subjectId = guestSubject?.id ?? randomUUID();
+    return service.repository.withSubjectLock({ subjectId }, async () => {
+      let subject;
+      if (guestSubject) {
+        subject = await service.findById({ id: guestSubject.id });
+        const links = await service.subjectsToIdentities.find({
+          params: {
+            filters: {
+              and: [{ column: "subjectId", method: "eq", value: subjectId }],
+            },
+            limit: 1,
+          },
+        });
+        if (!subject || subject.variant !== "default" || links.length) {
+          throw new Error(
+            "Conflict error. This session already has an account",
+          );
+        }
+      }
+      const roles = await service.role.find({
+        params: {
+          filters: {
+            and: [
+              ...(props.roles?.length
+                ? [
+                    {
+                      column: "slug",
+                      method: "inArray" as const,
+                      value: props.roles.map((role) => role.slug),
+                    },
+                  ]
+                : []),
+              {
+                column: "availableOnRegistration",
+                method: "eq" as const,
+                value: true,
+              },
+            ],
+          },
+        },
+      });
+      if (!roles.length) {
+        throw new Error("Not Found error. No roles found");
+      }
+      const identity = await service.identity.create({
+        data: {
+          account: props.data.address.toLowerCase(),
+          provider: "ethereum_virtual_machine",
+        },
+      });
+      if (!subject) {
+        subject = await service.create({ data: { id: subjectId } });
+      }
+      await service.subjectsToIdentities.create({
+        data: { identityId: identity.id, subjectId: subject.id },
+      });
+      for (const role of roles) {
+        await service.subjectsToRoles.create({
+          data: { roleId: role.id, subjectId: subject.id },
+        });
+      }
+      return subject;
+    });
+  }
+
+  private async tokens(subjectId: string) {
+    if (!RBAC_JWT_SECRET) {
+      throw new Error(
+        "Configuration error. RBAC_JWT_SECRET is not defined in the service",
+      );
+    }
     const jwtToken = await signJwt(
       {
-        subjectId: subject.id,
+        subjectId,
         type: "access",
         lifetimeInSeconds: RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
       },
       RBAC_JWT_SECRET,
     );
-
     const refreshToken = await signJwt(
       {
-        subjectId: subject.id,
+        subjectId,
         type: "refresh",
         lifetimeInSeconds: RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS,
       },
       RBAC_JWT_SECRET,
     );
-
     return { jwt: jwtToken, refresh: refreshToken };
   }
 }

@@ -1,18 +1,18 @@
 "use client";
 import { Skeleton } from "./Skeleton";
 import "client-only";
-import { api as subjectApi } from "@sps/rbac/models/subject/sdk/client";
+import {
+  api as subjectApi,
+  useActiveSocialModuleProfile,
+} from "@sps/rbac/models/subject/sdk/client";
 import { Component as ChildComponent } from "./Component";
 import type { IComponentProps } from "./interface";
 export default function Client(props: IComponentProps) {
-  const profiles = subjectApi.socialModuleProfileFind({
-    options: props.apiProps?.options,
-    id: props.data.id,
-    params: {
-      filters: { and: [{ column: "variant", method: "eq", value: "default" }] },
-    },
-    reactQueryOptions: { retry: false },
-  });
+  const profiles = useActiveSocialModuleProfile(
+    props.data.id,
+    props.socialModuleProfileId,
+    props.apiProps?.options,
+  );
   const identities = subjectApi.identityFind({
     options: props.apiProps?.options
       ? { ...props.apiProps.options, next: { ...props.apiProps.options.next } }
@@ -25,7 +25,7 @@ export default function Client(props: IComponentProps) {
     options: props.apiProps?.options,
     id: props.data.id,
   });
-  const profile = profiles.data?.[0];
+  const profile = profiles.profile;
   const avatar = subjectApi.socialModuleProfileFindByIdAvatarFind({
     options: props.apiProps?.options,
     id: props.data.id,
@@ -43,6 +43,7 @@ export default function Client(props: IComponentProps) {
     <ChildComponent
       {...props}
       accountProfile={profile}
+      accountProfiles={profiles.profiles}
       accountIdentities={identities.data}
       accountAvatar={avatar.data}
       accountBalance={balance.data}

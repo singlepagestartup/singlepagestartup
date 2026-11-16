@@ -21,13 +21,42 @@ export class Repository extends DatabaseRepository<typeof Table> {
       );
       return operation();
     };
-    if (consistencyContext.getStore()?.database) return run();
+    if (consistencyContext.getStore()?.database) {
+      return run();
+    }
+    return this.db.transaction((tx) => withConsistencyDatabase(tx, run));
+  }
+
+  withProfileLock<T>(
+    scope: { profileId: string },
+    operation: () => Promise<T>,
+  ): Promise<T> {
+    return this.withProfilesLock({ profileIds: [scope.profileId] }, operation);
+  }
+
+  withProfilesLock<T>(
+    scope: { profileIds: string[] },
+    operation: () => Promise<T>,
+  ): Promise<T> {
+    const run = async () => {
+      // Stable ordering prevents two concurrent guest handoffs deadlocking.
+      for (const profileId of [...new Set(scope.profileIds)].sort()) {
+        await this.db.execute(
+          sql`SELECT pg_advisory_xact_lock(hashtext(${`rbac.cart.profile:${profileId}`}))`,
+        );
+      }
+      return operation();
+    };
+    if (consistencyContext.getStore()?.database) {
+      return run();
+    }
     return this.db.transaction((tx) => withConsistencyDatabase(tx, run));
   }
 
   async lockOrderDelivery(scope: { subjectId: string; orderId: string }) {
-    if (!consistencyContext.getStore()?.database)
+    if (!consistencyContext.getStore()?.database) {
       throw new Error("Order delivery lock requires an owner transaction");
+    }
     await this.db.execute(
       sql`SELECT pg_advisory_xact_lock(hashtext(${`rbac.order-delivery.subject:${scope.subjectId}`}))`,
     );

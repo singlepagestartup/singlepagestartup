@@ -20,15 +20,53 @@ function fixture() {
     ],
   ]);
   const service = {
-    subjectsToEcommerceModuleOrders: {
-      find: jest.fn(async () =>
-        [...orders.keys()].map((id) => ({ ecommerceModuleOrderId: id })),
+    subjectsToBillingModulePaymentIntents: {
+      find: jest.fn(async (props) =>
+        [...orders.keys()]
+          .map((id) => ({
+            subjectId: "subject",
+            variant: "purchaser",
+            billingModulePaymentIntentId: `payment-${id}`,
+          }))
+          .filter((row) =>
+            props.params.filters.and.every((filter: any) =>
+              filter.method === "inArray"
+                ? filter.value.includes(row[filter.column])
+                : row[filter.column] === filter.value,
+            ),
+          ),
       ),
+    },
+    socialModule: {
+      profilesToEcommerceModuleOrders: {
+        find: jest.fn(async (props) => [
+          {
+            profileId: `profile-${props.params.filters.and[0].value}`,
+            ecommerceModuleOrderId: props.params.filters.and[0].value,
+          },
+        ]),
+      },
     },
     rolesToEcommerceModuleProducts: {
       find: jest.fn(async () => [{ ecommerceModuleProductId: "product" }]),
     },
     ecommerceModule: {
+      ordersToBillingModulePaymentIntents: {
+        find: jest.fn(async (props) =>
+          [...orders.keys()]
+            .map((id) => ({
+              orderId: id,
+              billingModulePaymentIntentId: `payment-${id}`,
+            }))
+            .filter((row) =>
+              props.params.filters.and.every((filter: any) =>
+                filter.method === "inArray"
+                  ? filter.value.includes(row[filter.column])
+                  : row[filter.column] === filter.value,
+              ),
+            ),
+        ),
+      },
       order: {
         findByIdExtended: jest.fn(async ({ id }) => orders.get(id)),
         revokeSubscription: jest.fn(async () => {}),
@@ -42,13 +80,23 @@ const grant = { id: "grant", roleId: "role", subjectId: "subject" } as any;
 it("revokes only the subject's orders containing a product linked to the removed role", async () => {
   const { service, revocation } = fixture();
   await revocation.revoke(grant);
-  expect(service.subjectsToEcommerceModuleOrders.find).toHaveBeenCalledWith({
-    params: {
-      filters: {
-        and: [{ column: "subjectId", method: "eq", value: "subject" }],
+  expect(
+    service.subjectsToBillingModulePaymentIntents.find,
+  ).toHaveBeenCalledWith(
+    expect.objectContaining({
+      params: {
+        filters: {
+          and: [
+            { column: "subjectId", method: "eq", value: "subject" },
+            { column: "variant", method: "eq", value: "purchaser" },
+          ],
+        },
+        limit: 100,
+        offset: 0,
+        orderBy: { and: [{ column: "id", method: "asc" }] },
       },
-    },
-  });
+    }),
+  );
   expect(
     service.ecommerceModule.order.revokeSubscription,
   ).toHaveBeenCalledTimes(1);

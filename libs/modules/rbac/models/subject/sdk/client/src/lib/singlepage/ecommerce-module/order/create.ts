@@ -15,6 +15,8 @@ import {
   type IResult as IParentResult,
 } from "@sps/rbac/models/subject/sdk/server";
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
+import { ensureActiveSocialModuleProfile } from "../../social-module/profile/active-selection";
+import { queryClient } from "@sps/shared-frontend-client-api";
 
 export type IProps = {
   reactQueryOptions?: Partial<UseMutationOptions<any, DefaultError, any>>;
@@ -33,8 +35,13 @@ export function action(props: IProps) {
       mutationFunctionProps: IParentProps["IEcommerceModuleOrderCreateProps"],
     ) => {
       try {
+        const socialModuleProfileId = await ensureActiveSocialModuleProfile(
+          mutationFunctionProps.id,
+          mutationFunctionProps.params?.socialModuleProfileId,
+        );
         const result = await api.ecommerceModuleOrderCreate({
           ...mutationFunctionProps,
+          params: { ...mutationFunctionProps.params, socialModuleProfileId },
           options: {
             ...mutationFunctionProps.options,
             headers: saturateHeaders(mutationFunctionProps.options?.headers),
@@ -42,6 +49,21 @@ export function action(props: IProps) {
           host: clientHost,
         });
 
+        await queryClient.invalidateQueries({
+          predicate: (query) => {
+            const [path, serializedParams] = query.queryKey;
+            return (
+              typeof path === "string" &&
+              path.startsWith(
+                `${route}/${mutationFunctionProps.id}/ecommerce-module/`,
+              ) &&
+              typeof serializedParams === "string" &&
+              new URLSearchParams(serializedParams).get(
+                "socialModuleProfileId",
+              ) === socialModuleProfileId
+            );
+          },
+        });
         return result;
       } catch (error: any) {
         toast.error(error.message);

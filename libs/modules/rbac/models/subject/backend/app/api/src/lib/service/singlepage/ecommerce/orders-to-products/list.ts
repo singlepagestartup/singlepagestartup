@@ -1,12 +1,13 @@
 import { type IQueryBuilderFilter } from "@sps/shared-backend-api";
 import { logger } from "@sps/backend-utils";
-import { Service as SubjectsToEcommerceModuleOrdersService } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/service";
+import { Service as ProfilesToEcommerceModuleOrdersService } from "@sps/social/relations/profiles-to-ecommerce-module-orders/backend/app/api/src/lib/service";
 import { IModel as IEcommerceModuleOrdersToProducts } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
 import { type IResult as IEcommerceModuleOrdersToProductsResult } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
 import { type IEcommerceModule } from "../../../../di";
 
 export type IExecuteProps = {
   id: string;
+  socialModuleProfileId: string;
   filters?: IQueryBuilderFilter[];
 };
 
@@ -16,17 +17,23 @@ export type IResult = (IEcommerceModuleOrdersToProducts & {
 
 type IConstructorProps = {
   ecommerceModule: IEcommerceModule;
-  subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService;
+  profilesToEcommerceModuleOrders: Pick<
+    ProfilesToEcommerceModuleOrdersService,
+    "find"
+  >;
 };
 
 export class Service {
   ecommerceModule: IEcommerceModule;
-  subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService;
+  profilesToEcommerceModuleOrders: Pick<
+    ProfilesToEcommerceModuleOrdersService,
+    "find"
+  >;
 
   constructor(props: IConstructorProps) {
     this.ecommerceModule = props.ecommerceModule;
-    this.subjectsToEcommerceModuleOrders =
-      props.subjectsToEcommerceModuleOrders;
+    this.profilesToEcommerceModuleOrders =
+      props.profilesToEcommerceModuleOrders;
   }
 
   /**
@@ -38,22 +45,22 @@ export class Service {
    * product does not hide the rest of the cart.
    */
   async execute(props: IExecuteProps): Promise<IResult> {
-    const subjectsToEcommerceModuleOrders =
-      await this.subjectsToEcommerceModuleOrders.find({
+    const profilesToEcommerceModuleOrders =
+      await this.profilesToEcommerceModuleOrders.find({
         params: {
           filters: {
             and: [
               {
-                column: "subjectId",
+                column: "profileId",
                 method: "eq",
-                value: props.id,
+                value: props.socialModuleProfileId,
               },
             ],
           },
         },
       });
 
-    if (!subjectsToEcommerceModuleOrders?.length) {
+    if (!profilesToEcommerceModuleOrders?.length) {
       return [];
     }
 
@@ -65,9 +72,9 @@ export class Service {
               {
                 column: "orderId",
                 method: "inArray",
-                value: subjectsToEcommerceModuleOrders.map(
-                  (subjectToEcommerceModuleOrder) =>
-                    subjectToEcommerceModuleOrder.ecommerceModuleOrderId,
+                value: profilesToEcommerceModuleOrders.map(
+                  (profileToEcommerceModuleOrder) =>
+                    profileToEcommerceModuleOrder.ecommerceModuleOrderId,
                 ),
               },
               ...(props.filters ?? []),

@@ -1,0 +1,136 @@
+{
+  "id": "817c3536-dc5f-4767-9fc6-3cf8d1ae44e4",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.sl_ps_to_ee_me_os_1ne": {
+      "name": "sl_ps_to_ee_me_os_1ne",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "variant": {
+          "name": "variant",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'default'"
+        },
+        "order_index": {
+          "name": "order_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "class_name": {
+          "name": "class_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pe_id": {
+          "name": "pe_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ee_me_or_id": {
+          "name": "ee_me_or_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "social_profile_orders_profile_idx": {
+          "name": "social_profile_orders_profile_idx",
+          "columns": [
+            {
+              "expression": "pe_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "sl_ps_to_ee_me_os_1ne_pe_id_sl_profile_id_fk": {
+          "name": "sl_ps_to_ee_me_os_1ne_pe_id_sl_profile_id_fk",
+          "tableFrom": "sl_ps_to_ee_me_os_1ne",
+          "tableTo": "sl_profile",
+          "columnsFrom": [
+            "pe_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "sl_ps_to_ee_me_os_1ne_ee_me_or_id_sps_ee_order_id_fk": {
+          "name": "sl_ps_to_ee_me_os_1ne_ee_me_or_id_sps_ee_order_id_fk",
+          "tableFrom": "sl_ps_to_ee_me_os_1ne",
+          "tableTo": "sps_ee_order",
+          "columnsFrom": [
+            "ee_me_or_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "sl_ps_to_ee_me_os_1ne_ee_me_or_id_unique": {
+          "name": "sl_ps_to_ee_me_os_1ne_ee_me_or_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "ee_me_or_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

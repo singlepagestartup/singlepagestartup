@@ -19,6 +19,7 @@ export type IExecuteProps = {
   data?: {
     flow?: "signin" | "link";
     redirectTo?: string;
+    socialModuleProfileSelections?: Record<string, string>;
   };
 };
 
@@ -73,6 +74,8 @@ export class Service {
             provider: props.provider,
             flow,
             sourceSubjectId: sourceSubjectId || null,
+            socialModuleProfileSelections:
+              props.data?.socialModuleProfileSelections,
             // Validated here as well as at the callback, so a target that will
             // never be honoured is not carried around in the database.
             redirectTo: this.normalizeRedirectPath(props.data?.redirectTo),

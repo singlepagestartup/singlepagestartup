@@ -15,7 +15,12 @@ import {
   type IResult as IParentResult,
 } from "@sps/rbac/models/subject/sdk/server";
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
-import { persistAuthenticationTokens } from "./persist-authentication-tokens";
+import {
+  persistAuthenticationTokens,
+  readAuthenticationTokens,
+} from "./persist-authentication-tokens";
+
+import { readSocialModuleProfileSelections } from "../social-module/profile/active-selection";
 
 export type IProps = {
   reactQueryOptions?: Partial<UseMutationOptions<any, DefaultError, any>>;
@@ -37,6 +42,11 @@ export function action(props: IProps) {
       try {
         const result = await api.authenticationEthereumVirtualMachine({
           ...mutationFunctionProps,
+          data: {
+            guestSessionToken: readAuthenticationTokens().jwt,
+            socialModuleProfileSelections: readSocialModuleProfileSelections(),
+            ...mutationFunctionProps.data,
+          },
           options: {
             ...mutationFunctionProps.options,
             headers: saturateHeaders(mutationFunctionProps.options?.headers),

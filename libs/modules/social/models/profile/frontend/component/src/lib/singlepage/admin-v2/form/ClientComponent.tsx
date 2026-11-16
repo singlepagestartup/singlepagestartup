@@ -79,6 +79,11 @@ export function Component(props: IComponentPropsExtended) {
   const relationSections = useMemo(() => {
     return [
       {
+        id: "profiles-to-ecommerce-module-orders",
+        title: "Orders",
+        render: props.profilesToEcommerceModuleOrders,
+      },
+      {
         id: "profiles-to-blog-module-articles",
         title: "Articles",
         render: props.profilesToBlogModuleArticles,
@@ -148,6 +153,7 @@ export function Component(props: IComponentPropsExtended) {
     props.profilesToChats,
     props.profilesToActions,
     props.profilesToEcommerceModuleProducts,
+    props.profilesToEcommerceModuleOrders,
   ]);
 
   const [activeMainTab, setActiveMainTab] = useState<"details" | "relations">(

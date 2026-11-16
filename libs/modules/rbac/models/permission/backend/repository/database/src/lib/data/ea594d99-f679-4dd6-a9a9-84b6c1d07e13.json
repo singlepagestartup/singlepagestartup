@@ -1,0 +1,9 @@
+{
+  "id": "ea594d99-f679-4dd6-a9a9-84b6c1d07e13",
+  "createdAt": "2026-11-16T08:28:02.390Z",
+  "updatedAt": "2026-11-16T08:28:02.390Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "POST",
+  "path": "/api/rbac/subjects/[rbac.subjects.id]/social-module/profiles/[social.profiles.id]/ecommerce-module/orders"
+}

@@ -1,8 +1,9 @@
 "use client";
 import { memo, useCallback, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { api } from "@sps/rbac/models/subject/sdk/client";
-import { route } from "@sps/rbac/models/subject/sdk/model";
+import {
+  api,
+  useActiveSocialModuleProfile,
+} from "@sps/rbac/models/subject/sdk/client";
 import { INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG } from "@sps/shared-utils";
 import { Icon, Select } from "@sps/ui-adapter";
 import { Component as EcommerceModuleProduct } from "@sps/ecommerce/models/product/frontend/component";
@@ -11,8 +12,10 @@ import { Component as Subject } from "@sps/rbac/models/subject/frontend/componen
 import type { IRowProps, IQuantityProps, ICurrencyProps } from "./interface";
 
 function Currency(props: ICurrencyProps) {
+  const { socialModuleProfileId } = useActiveSocialModuleProfile(
+    props.subject.id,
+  );
   const update = api.ecommerceModuleOrderUpdate({});
-  const queries = useQueryClient();
   const [error, setError] = useState("");
   const details = props.ecommerceModuleOrder.cartDetails;
   const available = details?.availableCurrencyIds ?? [];
@@ -37,10 +40,8 @@ function Currency(props: ICurrencyProps) {
         await update.mutateAsync({
           id: props.subject.id,
           orderId: props.ecommerceModuleOrder.id,
+          params: { socialModuleProfileId },
           data: { billingModule: { currency: { id: currencyId } } },
-        });
-        await queries.invalidateQueries({
-          queryKey: [`${route}/${props.subject.id}/ecommerce-module/orders`],
         });
       } catch {
         setError(
@@ -51,9 +52,9 @@ function Currency(props: ICurrencyProps) {
       }
     },
     [
+      socialModuleProfileId,
       update.mutateAsync,
       update.isPending,
-      queries,
       props.subject.id,
       props.ecommerceModuleOrder.id,
       props.language,
@@ -102,8 +103,10 @@ function Currency(props: ICurrencyProps) {
 }
 
 function Quantity(props: IQuantityProps) {
+  const { socialModuleProfileId } = useActiveSocialModuleProfile(
+    props.subjectId,
+  );
   const update = api.ecommerceModuleOrderUpdate({});
-  const queries = useQueryClient();
   const [error, setError] = useState("");
   const change = useCallback(
     async (quantity: number) => {
@@ -119,19 +122,17 @@ function Quantity(props: IQuantityProps) {
         await update.mutateAsync({
           id: props.subjectId,
           orderId: props.orderId,
+          params: { socialModuleProfileId },
           data: { ordersToProducts: [{ id: props.line.id, quantity }] },
-        });
-        await queries.invalidateQueries({
-          queryKey: [`${route}/${props.subjectId}/ecommerce-module/orders`],
         });
       } catch {
         setError("Не удалось изменить количество. Попробуйте ещё раз.");
       }
     },
     [
+      socialModuleProfileId,
       update.mutateAsync,
       update.isPending,
-      queries,
       props.subjectId,
       props.orderId,
       props.line.id,

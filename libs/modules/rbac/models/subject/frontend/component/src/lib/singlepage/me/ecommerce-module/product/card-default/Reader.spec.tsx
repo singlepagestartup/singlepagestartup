@@ -247,6 +247,7 @@ const suppliedSubject: ISubject = {
   id: "loaded-current-subject",
   slug: "loaded-current-subject",
   tokensValidAfter: null,
+  initialFreeSubscriptionGrantedAt: null,
 };
 const loadedProps = {
   isServer: false,

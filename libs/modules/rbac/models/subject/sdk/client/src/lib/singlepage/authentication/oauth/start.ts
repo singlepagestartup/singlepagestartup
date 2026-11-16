@@ -16,6 +16,9 @@ import {
 } from "@sps/rbac/models/subject/sdk/server";
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
 
+import { readAuthenticationTokens } from "../persist-authentication-tokens";
+import { readSocialModuleProfileSelections } from "../../social-module/profile/active-selection";
+
 export type IProps = {
   reactQueryOptions?: Partial<UseMutationOptions<any, DefaultError, any>>;
   mute?: boolean;
@@ -36,6 +39,11 @@ export function action(props: IProps) {
       try {
         const result = await api.authenticationOAuthStart({
           ...mutationFunctionProps,
+          data: {
+            guestSessionToken: readAuthenticationTokens().jwt,
+            socialModuleProfileSelections: readSocialModuleProfileSelections(),
+            ...mutationFunctionProps.data,
+          },
           options: {
             ...mutationFunctionProps.options,
             headers: saturateHeaders(mutationFunctionProps.options?.headers),

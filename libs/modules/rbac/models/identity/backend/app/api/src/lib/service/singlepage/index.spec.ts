@@ -450,3 +450,61 @@ describe("Given: a password sign-in for an address", () => {
     ).resolves.toMatchObject({ id: "identity-owner" });
   });
 });
+
+it("registers through local owning reads and writes when its caller owns a transaction", async () => {
+  mockFind.mockClear();
+  mockCreate.mockClear();
+  const localFind = jest.fn(async () => []);
+  const localCreate = jest.fn(async ({ data }) => ({
+    id: "local-identity",
+    ...data,
+  }));
+  const service = Object.assign(new Service({} as any), {
+    find: localFind,
+    create: localCreate,
+  });
+  const identity = await service.emailAndPassowrd(
+    {
+      data: {
+        type: "registration",
+        login: "Local@Example.com",
+        password: "local-password",
+      },
+    },
+    { local: true },
+  );
+  expect(identity.email).toBe("local@example.com");
+  expect(await bcrypt.compare("local-password", identity.password!)).toBe(true);
+  expect(localFind).toHaveBeenCalledTimes(2);
+  expect(localCreate).toHaveBeenCalledTimes(1);
+  expect(mockFind).not.toHaveBeenCalled();
+  expect(mockCreate).not.toHaveBeenCalled();
+});
+
+it("preserves the verified-provider email guard during local registration", async () => {
+  const localFind = jest.fn(async (props: any) =>
+    props.params.filters.and.some(
+      (filter: IFilter) => filter.method === "inArray",
+    )
+      ? [{ id: "google", provider: "oauth_google" }]
+      : [],
+  );
+  const localCreate = jest.fn();
+  const service = Object.assign(new Service({} as any), {
+    find: localFind,
+    create: localCreate,
+  });
+  await expect(
+    service.emailAndPassowrd(
+      {
+        data: {
+          type: "registration",
+          login: "Owner@example.com",
+          password: "test-password",
+        },
+      },
+      { local: true },
+    ),
+  ).rejects.toThrow("already used to sign in with another method");
+  expect(localCreate).not.toHaveBeenCalled();
+});

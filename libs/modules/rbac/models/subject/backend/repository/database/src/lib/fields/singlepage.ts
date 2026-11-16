@@ -11,6 +11,10 @@ export const fields = {
     .notNull()
     .unique()
     .$defaultFn(() => randomWordsGenerator({ type: "slug" })),
+  initialFreeSubscriptionGrantedAt: pgCore.timestamp(
+    "initial_free_subscription_granted_at",
+    { mode: "date" },
+  ),
   /**
    * Revocation mark written by logout. A token of this subject signed in or
    * before the second of this instant is refused; tokens signed later are

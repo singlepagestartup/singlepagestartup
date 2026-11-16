@@ -2,17 +2,14 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { Component } from "./Row";
 const mockUpdate = jest.fn();
-const mockInvalidate = jest.fn();
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
+  useActiveSocialModuleProfile: () => ({ socialModuleProfileId: "profile" }),
   api: {
     ecommerceModuleOrderUpdate: () => ({
       mutateAsync: mockUpdate,
       isPending: false,
     }),
   },
-}));
-jest.mock("@tanstack/react-query", () => ({
-  useQueryClient: () => ({ invalidateQueries: mockInvalidate }),
 }));
 jest.mock("@sps/rbac/models/subject/sdk/model", () => ({
   route: "/api/rbac/subjects",
@@ -76,7 +73,6 @@ const props: any = {
 };
 beforeEach(() => {
   mockUpdate.mockReset().mockResolvedValue({});
-  mockInvalidate.mockReset().mockResolvedValue(undefined);
 });
 it("updates only the selected line and reloads the authorized cart totals", async () => {
   render(<Component {...props} />);
@@ -84,13 +80,9 @@ it("updates only the selected line and reloads the authorized cart totals", asyn
   await waitFor(() =>
     expect(mockUpdate).toHaveBeenCalledWith({
       id: "owner",
+      params: { socialModuleProfileId: "profile" },
       orderId: "order",
       data: { ordersToProducts: [{ id: "line", quantity: 3 }] },
-    }),
-  );
-  await waitFor(() =>
-    expect(mockInvalidate).toHaveBeenCalledWith({
-      queryKey: ["/api/rbac/subjects/owner/ecommerce-module/orders"],
     }),
   );
 });
@@ -100,7 +92,6 @@ it("shows an update failure without replacing the saved quantity or totals", asy
   fireEvent.click(screen.getByRole("button", { name: "Уменьшить количество" }));
   expect(await screen.findByRole("alert")).toBeTruthy();
   expect(screen.getByText("2")).toBeTruthy();
-  expect(mockInvalidate).not.toHaveBeenCalled();
 });
 
 it("changes only the selected order currency and waits for the authorized cart refresh", async () => {
@@ -134,13 +125,11 @@ it("changes only the selected order currency and waits for the authorized cart r
   await waitFor(() =>
     expect(mockUpdate).toHaveBeenCalledWith({
       id: "owner",
+      params: { socialModuleProfileId: "profile" },
       orderId: "order",
       data: { billingModule: { currency: { id: "rub" } } },
     }),
   );
-  expect(mockInvalidate).toHaveBeenCalledWith({
-    queryKey: ["/api/rbac/subjects/owner/ecommerce-module/orders"],
-  });
   view.rerender(
     <Component
       {...currencyProps}
@@ -212,6 +201,7 @@ it.each([2, 6])(
     await waitFor(() =>
       expect(mockUpdate).toHaveBeenCalledWith({
         id: "owner",
+        params: { socialModuleProfileId: "profile" },
         orderId: "order",
         data: {
           ordersToProducts: [{ id: "line", quantity: expectedQuantity }],

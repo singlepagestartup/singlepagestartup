@@ -11,6 +11,8 @@ import { Component as ProfilesToActions } from "@sps/social/relations/profiles-t
 import { Component as ProfilesToEcommerceModuleProducts } from "@sps/social/relations/profiles-to-ecommerce-module-products/frontend/component";
 import { Component as ProfilesToSkills } from "@sps/social/relations/profiles-to-skills/frontend/component";
 
+import { Component as ProfilesToEcommerceModuleOrders } from "@sps/social/relations/profiles-to-ecommerce-module-orders/frontend/component";
+
 export function Component() {
   return (
     <ParentComponent
@@ -22,6 +24,31 @@ export function Component() {
             isServer={false}
             data={props.data}
             variant="admin-form"
+            profilesToEcommerceModuleOrders={({ data, isServer }) => {
+              if (!data) {
+                return;
+              }
+
+              return (
+                <ProfilesToEcommerceModuleOrders
+                  isServer={isServer}
+                  variant="admin-table"
+                  apiProps={{
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "profileId",
+                            method: "eq",
+                            value: data.id,
+                          },
+                        ],
+                      },
+                    },
+                  }}
+                />
+              );
+            }}
             profilesToBlogModuleArticles={({ data }) => {
               if (!data) {
                 return null;

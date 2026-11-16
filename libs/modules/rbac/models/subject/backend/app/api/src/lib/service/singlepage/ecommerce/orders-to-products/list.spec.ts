@@ -18,11 +18,11 @@ const total = [
 ];
 
 function createService(props?: {
-  subjectsToEcommerceModuleOrders?: Record<string, unknown>[];
+  profilesToEcommerceModuleOrders?: Record<string, unknown>[];
   ordersToProducts?: Record<string, unknown>[];
 }) {
-  const subjectsToEcommerceModuleOrdersFind = jest.fn().mockResolvedValue(
-    props?.subjectsToEcommerceModuleOrders ?? [
+  const profilesToEcommerceModuleOrdersFind = jest.fn().mockResolvedValue(
+    props?.profilesToEcommerceModuleOrders ?? [
       { subjectId: "subject-1", ecommerceModuleOrderId: "order-1" },
       { subjectId: "subject-1", ecommerceModuleOrderId: "order-2" },
     ],
@@ -45,14 +45,14 @@ function createService(props?: {
         getTotal: ordersToProductsGetTotal,
       },
     } as any,
-    subjectsToEcommerceModuleOrders: {
-      find: subjectsToEcommerceModuleOrdersFind,
+    profilesToEcommerceModuleOrders: {
+      find: profilesToEcommerceModuleOrdersFind,
     } as any,
   });
 
   return {
     service,
-    subjectsToEcommerceModuleOrdersFind,
+    profilesToEcommerceModuleOrdersFind,
     ordersToProductsFind,
     ordersToProductsGetTotal,
   };
@@ -69,17 +69,20 @@ describe("Given: the order lines of a subject", () => {
   it("When: lines are requested Then: reads only the subject's orders and adds each line's totals", async () => {
     const {
       service,
-      subjectsToEcommerceModuleOrdersFind,
+      profilesToEcommerceModuleOrdersFind,
       ordersToProductsFind,
       ordersToProductsGetTotal,
     } = createService();
 
-    const result = await service.execute({ id: "subject-1" });
+    const result = await service.execute({
+      socialModuleProfileId: "subject-1",
+      id: "subject-1",
+    });
 
-    expect(subjectsToEcommerceModuleOrdersFind).toHaveBeenCalledWith({
+    expect(profilesToEcommerceModuleOrdersFind).toHaveBeenCalledWith({
       params: {
         filters: {
-          and: [{ column: "subjectId", method: "eq", value: "subject-1" }],
+          and: [{ column: "profileId", method: "eq", value: "subject-1" }],
         },
       },
     });
@@ -116,7 +119,11 @@ describe("Given: the order lines of a subject", () => {
       { column: "productId", method: "eq", value: "product-1" },
     ] as any;
 
-    await service.execute({ id: "subject-1", filters: callerFilters });
+    await service.execute({
+      socialModuleProfileId: "subject-1",
+      id: "subject-1",
+      filters: callerFilters,
+    });
 
     expect(ordersToProductsFind).toHaveBeenCalledWith({
       params: {
@@ -142,9 +149,11 @@ describe("Given: the order lines of a subject", () => {
    */
   it("When: the subject has no orders Then: answers no lines", async () => {
     const { service, ordersToProductsFind, ordersToProductsGetTotal } =
-      createService({ subjectsToEcommerceModuleOrders: [] });
+      createService({ profilesToEcommerceModuleOrders: [] });
 
-    await expect(service.execute({ id: "subject-1" })).resolves.toEqual([]);
+    await expect(
+      service.execute({ socialModuleProfileId: "subject-1", id: "subject-1" }),
+    ).resolves.toEqual([]);
     expect(ordersToProductsFind).not.toHaveBeenCalled();
     expect(ordersToProductsGetTotal).not.toHaveBeenCalled();
   });
@@ -160,7 +169,9 @@ describe("Given: the order lines of a subject", () => {
       ordersToProducts: [],
     });
 
-    await expect(service.execute({ id: "subject-1" })).resolves.toEqual([]);
+    await expect(
+      service.execute({ socialModuleProfileId: "subject-1", id: "subject-1" }),
+    ).resolves.toEqual([]);
     expect(ordersToProductsGetTotal).not.toHaveBeenCalled();
   });
 
@@ -190,7 +201,9 @@ describe("Given: the order lines of a subject", () => {
       return { totals: total, unpriced: [] };
     });
 
-    await expect(service.execute({ id: "subject-1" })).resolves.toEqual([
+    await expect(
+      service.execute({ socialModuleProfileId: "subject-1", id: "subject-1" }),
+    ).resolves.toEqual([
       { id: "line-1", orderId: "order-1", productId: "product-1", total },
       { id: "line-2", orderId: "order-2", productId: "product-2", total: [] },
     ]);

@@ -9,6 +9,7 @@
 const toastErrorMock = jest.fn();
 const ecommerceModuleOrderCreateMock = jest.fn();
 let capturedMutationOptions: any;
+const invalidateQueriesMock = jest.fn();
 
 jest.mock("@tanstack/react-query", () => ({
   useMutation: (options: unknown) => {
@@ -51,6 +52,14 @@ jest.mock("@paralleldrive/cuid2", () => ({
   createId: () => "request-id",
 }));
 
+jest.mock("../../social-module/profile/active-selection", () => ({
+  ensureActiveSocialModuleProfile: async () => "profile-1",
+}));
+jest.mock("@sps/shared-frontend-client-api", () => ({
+  queryClient: {
+    invalidateQueries: (...args: unknown[]) => invalidateQueriesMock(...args),
+  },
+}));
 import { action } from "./create";
 
 const NO_PRICE_ERROR =
@@ -104,5 +113,27 @@ describe("Given: a visitor adds a product the API refuses to put in the cart", (
     ).resolves.toEqual({ id: "subject-1" });
 
     expect(toastErrorMock).not.toHaveBeenCalled();
+    expect(ecommerceModuleOrderCreateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        params: { socialModuleProfileId: "profile-1" },
+      }),
+    );
+    const { predicate } = invalidateQueriesMock.mock.calls[0][0];
+    expect(
+      predicate({
+        queryKey: [
+          "/api/rbac/subjects/subject-1/ecommerce-module/orders",
+          "socialModuleProfileId=profile-1",
+        ],
+      }),
+    ).toBe(true);
+    expect(
+      predicate({
+        queryKey: [
+          "/api/rbac/subjects/subject-1/ecommerce-module/orders",
+          "socialModuleProfileId=profile-2",
+        ],
+      }),
+    ).toBe(false);
   });
 });

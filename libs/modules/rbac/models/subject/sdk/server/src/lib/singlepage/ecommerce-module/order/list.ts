@@ -17,6 +17,7 @@ export interface IProps {
   tag?: string;
   revalidate?: number;
   params?: {
+    socialModuleProfileId?: string;
     includePurchaseDetails?: boolean;
     includeCartDetails?: boolean;
     [key: string]: any;

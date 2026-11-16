@@ -129,6 +129,7 @@ describe("Given: a Telegram user presses the checkout button of a product", () =
     expect(mockedEcommerceModuleProductCheckout).toHaveBeenCalledWith(
       expect.objectContaining({
         id: "message-subject",
+        socialModuleProfileId: "sender-profile",
         options: {
           headers: {
             Authorization: "Bearer message-subject-jwt",
@@ -136,6 +137,16 @@ describe("Given: a Telegram user presses the checkout button of a product", () =
         },
       }),
     );
+  });
+  it("rejects checkout without an authenticated sender profile", async () => {
+    const service = createService();
+    await expect(
+      service.telegramBotEcommerceModuleProductFindByIdCheckout({
+        ...createCallbackProps(),
+        messageFromSocialModuleProfile: null,
+      }),
+    ).rejects.toThrow("sender profile is required");
+    expect(mockedEcommerceModuleProductCheckout).not.toHaveBeenCalled();
   });
 });
 
@@ -174,6 +185,7 @@ describe("Given: Telegram subscription checkout duplicate handling", () => {
 
     expect(mockedEcommerceModuleProductCheckout).toHaveBeenCalledWith({
       id: "message-subject",
+      socialModuleProfileId: "sender-profile",
       productId: "product-subscription",
       data: {
         provider: "telegram-star",

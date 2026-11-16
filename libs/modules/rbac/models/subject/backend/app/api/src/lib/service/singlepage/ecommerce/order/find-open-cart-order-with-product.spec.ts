@@ -36,10 +36,10 @@ function createTestContext(props?: {
     { orderId: OPEN_CART_ORDER_ID, productId: PRODUCT_ID },
   ];
 
-  const subjectsToEcommerceModuleOrders = {
+  const profilesToEcommerceModuleOrders = {
     find: jest.fn().mockResolvedValue(
       subjectOrderIds.map((ecommerceModuleOrderId) => ({
-        subjectId: SUBJECT_ID,
+        socialModuleProfileId: SUBJECT_ID,
         ecommerceModuleOrderId,
       })),
     ),
@@ -56,8 +56,8 @@ function createTestContext(props?: {
 
   return {
     ecommerceModule,
-    subjectsToEcommerceModuleOrders,
-    service: new Service({ ecommerceModule, subjectsToEcommerceModuleOrders }),
+    profilesToEcommerceModuleOrders,
+    service: new Service({ ecommerceModule, profilesToEcommerceModuleOrders }),
   };
 }
 
@@ -73,7 +73,10 @@ describe("Given: a subject and a product the add-to-cart flow is about to write"
     const { service } = createTestContext();
 
     await expect(
-      service.execute({ subjectId: SUBJECT_ID, productId: PRODUCT_ID }),
+      service.execute({
+        socialModuleProfileId: SUBJECT_ID,
+        productId: PRODUCT_ID,
+      }),
     ).resolves.toBe(OPEN_CART_ORDER_ID);
   });
 
@@ -90,7 +93,10 @@ describe("Given: a subject and a product the add-to-cart flow is about to write"
     });
 
     await expect(
-      service.execute({ subjectId: SUBJECT_ID, productId: PRODUCT_ID }),
+      service.execute({
+        socialModuleProfileId: SUBJECT_ID,
+        productId: PRODUCT_ID,
+      }),
     ).resolves.toBeNull();
 
     expect(ecommerceModule.order.find).not.toHaveBeenCalled();
@@ -111,7 +117,10 @@ describe("Given: a subject and a product the add-to-cart flow is about to write"
     });
 
     await expect(
-      service.execute({ subjectId: SUBJECT_ID, productId: PRODUCT_ID }),
+      service.execute({
+        socialModuleProfileId: SUBJECT_ID,
+        productId: PRODUCT_ID,
+      }),
     ).resolves.toBeNull();
 
     expect(ecommerceModule.ordersToProducts.find).not.toHaveBeenCalled();
@@ -128,7 +137,10 @@ describe("Given: a subject and a product the add-to-cart flow is about to write"
     const { service } = createTestContext({ ordersToProducts: [] });
 
     await expect(
-      service.execute({ subjectId: SUBJECT_ID, productId: PRODUCT_ID }),
+      service.execute({
+        socialModuleProfileId: SUBJECT_ID,
+        productId: PRODUCT_ID,
+      }),
     ).resolves.toBeNull();
   });
 
@@ -140,15 +152,18 @@ describe("Given: a subject and a product the add-to-cart flow is about to write"
    * Then: orders are read by the subject's own order ids, type cart and status new.
    */
   it("When: the service runs Then: orders are filtered by the subject's ids, cart type and new status", async () => {
-    const { service, ecommerceModule, subjectsToEcommerceModuleOrders } =
+    const { service, ecommerceModule, profilesToEcommerceModuleOrders } =
       createTestContext();
 
-    await service.execute({ subjectId: SUBJECT_ID, productId: PRODUCT_ID });
+    await service.execute({
+      socialModuleProfileId: SUBJECT_ID,
+      productId: PRODUCT_ID,
+    });
 
-    expect(subjectsToEcommerceModuleOrders.find).toHaveBeenCalledWith({
+    expect(profilesToEcommerceModuleOrders.find).toHaveBeenCalledWith({
       params: {
         filters: {
-          and: [{ column: "subjectId", method: "eq", value: SUBJECT_ID }],
+          and: [{ column: "profileId", method: "eq", value: SUBJECT_ID }],
         },
       },
     });
@@ -185,7 +200,10 @@ describe("Given: a subject and a product the add-to-cart flow is about to write"
       ],
     });
 
-    await service.execute({ subjectId: SUBJECT_ID, productId: PRODUCT_ID });
+    await service.execute({
+      socialModuleProfileId: SUBJECT_ID,
+      productId: PRODUCT_ID,
+    });
 
     expect(ecommerceModule.ordersToProducts.find).toHaveBeenCalledWith({
       params: {

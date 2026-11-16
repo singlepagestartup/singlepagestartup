@@ -1,7 +1,13 @@
 "use client";
 
-import { IComponentPropsExtended } from "./interface";
-import { api } from "@sps/rbac/models/subject/sdk/client";
+import {
+  IComponentPropsExtended,
+  type ICheckoutComponentProps,
+} from "./interface";
+import {
+  api,
+  useActiveSocialModuleProfile,
+} from "@sps/rbac/models/subject/sdk/client";
 import { Button, Form } from "@sps/shared-ui-shadcn";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -25,6 +31,21 @@ const providers = [
 ] as const;
 
 export function Component(props: IComponentPropsExtended) {
+  const { socialModuleProfileId } = useActiveSocialModuleProfile(props.data.id);
+  return (
+    <Checkout
+      key={`${props.data.id}:${socialModuleProfileId || "guest"}`}
+      data={props.data}
+      language={props.language}
+      variant={props.variant}
+      isServer={false}
+      socialModuleProfileId={socialModuleProfileId}
+    />
+  );
+}
+
+function Checkout(props: ICheckoutComponentProps) {
+  const socialModuleProfileId = props.socialModuleProfileId;
   const text =
     props.language === "ru"
       ? {
@@ -97,12 +118,23 @@ export function Component(props: IComponentPropsExtended) {
     useIsMutating({
       mutationKey: [`${route}/:id/ecommerce-module/orders/:orderId`],
       predicate: (mutation) =>
-        (mutation.state.variables as { id?: unknown } | undefined)?.id ===
-        props.data.id,
+        (
+          mutation.state.variables as
+            | { id?: unknown; params?: { socialModuleProfileId?: string } }
+            | undefined
+        )?.id === props.data.id &&
+        (
+          mutation.state.variables as
+            { params?: { socialModuleProfileId?: string } } | undefined
+        )?.params?.socialModuleProfileId === socialModuleProfileId,
     }) > 0;
   const refreshingCart =
     useIsFetching({
       queryKey: [`${route}/${props.data.id}/ecommerce-module/orders`],
+      predicate: (query) =>
+        typeof query.queryKey[1] === "string" &&
+        new URLSearchParams(query.queryKey[1]).get("socialModuleProfileId") ===
+          socialModuleProfileId,
     }) > 0;
 
   const form = useForm({
@@ -122,6 +154,7 @@ export function Component(props: IComponentPropsExtended) {
     ecommerceModuleOrderCheckout
       .mutateAsync({
         id: props.data.id,
+        params: { socialModuleProfileId },
         data,
       })
       .then((res) => {

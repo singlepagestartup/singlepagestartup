@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "rbac_payment_intent_purchaser_unique" ON "sps_rc_ss_to_bg_me_pt_is_fv3" USING btree ("bg_me_pt_it_id") WHERE "sps_rc_ss_to_bg_me_pt_is_fv3"."variant" = 'purchaser';

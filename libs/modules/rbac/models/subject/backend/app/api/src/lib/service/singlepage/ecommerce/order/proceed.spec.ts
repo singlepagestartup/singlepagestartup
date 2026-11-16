@@ -156,7 +156,7 @@ describe("durable subscription grant revocation", () => {
       ],
     };
     const { service } = createService();
-    service.subjectsToEcommerceModuleOrders.find = jest
+    service.testPurchaserOrders.find = jest
       .fn()
       .mockResolvedValue([
         { subjectId: "subject", ecommerceModuleOrderId: "subscription" },
@@ -182,8 +182,9 @@ describe("durable subscription grant revocation", () => {
         if (
           before.subscriptionPeriodInvoiceId !==
           order.subscriptionPeriodInvoiceId
-        )
+        ) {
           return undefined;
+        }
         order = {
           ...order,
           subscriptionPeriodStartsAt: startsAt,
@@ -213,6 +214,65 @@ describe("durable subscription grant revocation", () => {
     jest.spyOn(service, "notifyOrderOwner").mockResolvedValue(undefined);
     return { service, accept, order: () => order, grants: () => grants };
   }
+
+  it("grants, credits and notifies the captured buyer of an assistant profile order", async () => {
+    const { service, order } = lifecycle("paid", false, false);
+    const getter = Object.getOwnPropertyDescriptor(service, "paymentPurchaser")
+      ?.get as jest.Mock;
+    getter.mockRestore();
+    service.socialModule.profilesToEcommerceModuleOrders = {
+      find: jest.fn(async () => [
+        { profileId: "assistant", ecommerceModuleOrderId: "subscription" },
+      ]),
+    } as any;
+    service.ecommerceModule.ordersToBillingModulePaymentIntents = {
+      find: jest.fn(async () => [
+        { orderId: "subscription", billingModulePaymentIntentId: "payment" },
+      ]),
+    } as any;
+    service.subjectsToBillingModulePaymentIntents.find = jest.fn(async () => [
+      {
+        subjectId: "subject",
+        variant: "purchaser",
+        billingModulePaymentIntentId: "payment",
+      },
+    ]) as any;
+    service.subjectsToIdentities.find = jest.fn(async () => [
+      { subjectId: "subject", identityId: "identity" },
+    ]) as any;
+    service.identity.find = jest.fn(async () => [
+      { id: "identity", email: "buyer@example.invalid" },
+    ]) as any;
+    service.notificationModule.template.find = jest.fn(async () => [
+      { id: "receipt-template" },
+    ]);
+    (service.notifyOrderOwner as jest.Mock).mockRestore();
+    (service.collectTopupCurrencies as jest.Mock).mockResolvedValue([
+      {
+        billingModuleCurrencyId: "tokens",
+        billingModuleCurrency: { id: "tokens", slug: "token" },
+        amount: "100",
+      },
+    ]);
+    await service.execute({});
+    expect(order().status).toBe("delivering");
+    expect(mockSubjectsToRolesCreate).toHaveBeenCalledWith({
+      data: { subjectId: "subject", roleId: "subscriber" },
+    });
+    expect(mockSubjectsToBillingModuleCurrenciesCreate).toHaveBeenCalledWith({
+      data: {
+        subjectId: "subject",
+        billingModuleCurrencyId: "tokens",
+        amount: "100",
+      },
+    });
+    expect(mockSubjectNotify).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "subject" }),
+    );
+    expect(mockSubjectNotify).not.toHaveBeenCalledWith(
+      expect.objectContaining({ id: "agent" }),
+    );
+  });
 
   it.each(["delivering", "requested_cancelation", "paid", "delivered"])(
     "does not regrant or reactivate revoked %s orders even with a new paid invoice",
@@ -326,10 +386,12 @@ describe("durable subscription grant revocation", () => {
 
   it("does not issue the initial Role before a paid invoice has been verified", async () => {
     const { service, order, grants } = lifecycle("paid", false, false);
-    for (const link of order().ordersToBillingModulePaymentIntents)
+    for (const link of order().ordersToBillingModulePaymentIntents) {
       for (const relation of link.billingModulePaymentIntent
-        .paymentIntentsToInvoices)
+        .paymentIntentsToInvoices) {
         relation.invoice.status = "open";
+      }
+    }
     await service.execute({ subjectId: "subject" });
     expect(mockSubjectsToRolesCreate).not.toHaveBeenCalled();
     expect(grants()).toEqual([]);
@@ -410,15 +472,13 @@ describe("durable subscription grant revocation", () => {
         subjectId: "subject",
         ecommerceModuleOrderId: "subscription",
       };
-      service.subjectsToEcommerceModuleOrders.find = jest
-        .fn()
-        .mockResolvedValue([
-          currentLink,
-          {
-            subjectId: kind === "unowned" ? "other" : "subject",
-            ecommerceModuleOrderId: "other-order",
-          },
-        ] as any);
+      service.testPurchaserOrders.find = jest.fn().mockResolvedValue([
+        currentLink,
+        {
+          subjectId: kind === "unowned" ? "other" : "subject",
+          ecommerceModuleOrderId: "other-order",
+        },
+      ] as any);
       const other = {
         ...order(),
         id: "other-order",
@@ -465,12 +525,13 @@ describe("durable subscription grant revocation", () => {
             : [{ roleId: "subscriber", ecommerceModuleProductId: "product" }],
       ) as any;
       await service.execute({ subjectId: "subject" });
-      if (kind === "active")
+      if (kind === "active") {
         expect(mockSubjectsToRolesDelete).not.toHaveBeenCalled();
-      else
+      } else {
         expect(mockSubjectsToRolesDelete).toHaveBeenCalledWith(
           expect.objectContaining({ id: "grant" }),
         );
+      }
       expect(mockSubjectsToRolesCreate).not.toHaveBeenCalled();
     },
   );
@@ -651,19 +712,21 @@ function createService(props?: {
   const ecommerceModuleOrderFind = jest
     .fn()
     .mockResolvedValue(props?.candidateOrders ?? []);
-  const subjectsToEcommerceModuleOrdersFind = jest.fn();
+  const purchaserOrdersFind = jest.fn();
   const subjectsToSocialModuleProfilesFind = jest
     .fn()
     .mockResolvedValue(props?.subjectsToSocialModuleProfiles ?? []);
 
   for (const result of props?.relationFindResults ?? [[]]) {
-    subjectsToEcommerceModuleOrdersFind.mockResolvedValueOnce(result);
+    purchaserOrdersFind.mockResolvedValueOnce(result);
   }
 
-  subjectsToEcommerceModuleOrdersFind.mockResolvedValue([]);
+  purchaserOrdersFind.mockResolvedValue([]);
 
   const service = new Service(
     {
+      findFirstByField: jest.fn(async (_field, id) => ({ id })),
+      updateFirstByField: jest.fn(async () => undefined),
       lockOrderDelivery: async () => undefined,
       withOrderDelivery: async (
         _scope: unknown,
@@ -695,7 +758,7 @@ function createService(props?: {
     { find: jest.fn().mockResolvedValue([]) } as any,
     { find: jest.fn().mockResolvedValue([]) } as any,
     { find: jest.fn().mockResolvedValue([]) } as any,
-    { find: subjectsToEcommerceModuleOrdersFind } as any,
+    { find: purchaserOrdersFind } as any,
     {
       find: jest.fn().mockResolvedValue([]),
       create: (...args: unknown[]) => mockSubjectsToRolesCreate(...args),
@@ -719,10 +782,76 @@ function createService(props?: {
     mockSubjectProductCheckout,
   );
 
+  const testService = service as Service & {
+    testPurchaserOrders: { find: jest.Mock };
+  };
+  testService.testPurchaserOrders = { find: purchaserOrdersFind };
+  jest.spyOn(service as any, "paymentPurchaser", "get").mockReturnValue({
+    orderIdsForSubject: async (subjectId: string) => {
+      const ids = new Set<string>();
+      let offset = 0;
+      let hasMore = true;
+      while (hasMore) {
+        const links = await testService.testPurchaserOrders.find({
+          params: {
+            filters: {
+              and: [{ column: "subjectId", method: "eq", value: subjectId }],
+            },
+            limit: ECOMMERCE_ORDER_PROCEED_BATCH_LIMIT,
+            offset,
+            orderBy: { and: [{ column: "id", method: "asc" }] },
+          },
+        });
+        for (const link of links) {
+          if (link.subjectId === subjectId) {
+            ids.add(link.ecommerceModuleOrderId);
+          }
+        }
+        hasMore = links.length === ECOMMERCE_ORDER_PROCEED_BATCH_LIMIT;
+        offset += ECOMMERCE_ORDER_PROCEED_BATCH_LIMIT;
+      }
+      return [...ids];
+    },
+    resolveOrder: async (orderId: string) => {
+      const links = await testService.testPurchaserOrders.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "ecommerceModuleOrderId",
+                method: "inArray",
+                value: [orderId],
+              },
+            ],
+          },
+        },
+      });
+      const subjects = [
+        ...new Set(
+          links
+            .filter((link) => link.ecommerceModuleOrderId === orderId)
+            .map((link) => link.subjectId),
+        ),
+      ];
+      if (subjects.length > 1) {
+        throw new Error("Ambiguous purchaser fixture");
+      }
+      return {
+        subjectId: subjects[0] ?? "subject",
+        profileId: "profile",
+        ecommerceModuleOrderId: orderId,
+      };
+    },
+  });
+  service.repository.findFirstByField = jest.fn(async () => ({
+    id: "subject",
+    variant: "default",
+  }));
+  service.repository.updateFirstByField = jest.fn(async () => ({}));
   return {
     ecommerceModuleOrderFind,
-    service,
-    subjectsToEcommerceModuleOrdersFind,
+    service: testService,
+    purchaserOrdersFind,
   };
 }
 
@@ -739,11 +868,8 @@ describe("Given: unscoped RBAC ecommerce order proceed execution", () => {
    * Then: the first query uses actionable statuses, batch limit, and stable ID ordering.
    */
   it("Then: selects actionable orders with a fixed deterministic batch", async () => {
-    const {
-      ecommerceModuleOrderFind,
-      service,
-      subjectsToEcommerceModuleOrdersFind,
-    } = createService();
+    const { ecommerceModuleOrderFind, service, purchaserOrdersFind } =
+      createService();
 
     await service.execute({});
 
@@ -769,209 +895,66 @@ describe("Given: unscoped RBAC ecommerce order proceed execution", () => {
         },
       },
     });
-    expect(subjectsToEcommerceModuleOrdersFind).not.toHaveBeenCalled();
+    expect(purchaserOrdersFind).not.toHaveBeenCalled();
   });
 
-  /**
-   * BDD Scenario: unscoped relation lookup is bounded by selected order ids.
-   *
-   * Given: candidate order selection returns two actionable orders.
-   * When: ecommerce order proceed runs without a subject id.
-   * Then: relation lookup runs after order selection and receives only those order ids.
-   */
-  it("Then: fetches relations after candidate orders by selected order ids", async () => {
-    const {
-      ecommerceModuleOrderFind,
-      service,
-      subjectsToEcommerceModuleOrdersFind,
-    } = createService({
-      candidateOrders: [
-        { id: "order-1", status: "paid" },
-        { id: "order-2", status: "delivering" },
-      ],
-      relationFindResults: [[]],
-    });
-
-    await service.execute({});
-
-    expect(subjectsToEcommerceModuleOrdersFind).toHaveBeenCalledWith({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "ecommerceModuleOrderId",
-              method: "inArray",
-              value: ["order-1", "order-2"],
-            },
-          ],
-        },
-      },
-    });
-    expect(ecommerceModuleOrderFind.mock.invocationCallOrder[0]).toBeLessThan(
-      subjectsToEcommerceModuleOrdersFind.mock.invocationCallOrder[0],
-    );
-    expect(subjectsToEcommerceModuleOrdersFind).not.toHaveBeenCalledWith({});
-  });
-
-  /**
-   * BDD Scenario: duplicate and excessive candidate orders are normalized.
-   *
-   * Given: candidate order selection returns duplicates and more rows than the batch limit.
-   * When: ecommerce order proceed prepares the relation handoff.
-   * Then: relation ids are deduped and capped at the configured batch size.
-   */
-  it("Then: dedupes selected order ids and caps relation inArray size", async () => {
+  it("resolves purchasers only for deduplicated orders within the batch limit", async () => {
     const candidateOrders = [
       { id: "order-1", status: "paid" },
       { id: "order-1", status: "paid" },
       ...Array.from(
         { length: ECOMMERCE_ORDER_PROCEED_BATCH_LIMIT + 5 },
-        (_, index) => ({
-          id: `order-${index + 2}`,
-          status: "paid",
-        }),
+        (_, index) => ({ id: `order-${index + 2}`, status: "paid" }),
       ),
     ];
-
-    const { service, subjectsToEcommerceModuleOrdersFind } = createService({
-      candidateOrders,
-      relationFindResults: [[]],
-    });
-
+    const { service, ecommerceModuleOrderFind, purchaserOrdersFind } =
+      createService({ candidateOrders });
     await service.execute({});
-
-    const selectedOrderIds =
-      subjectsToEcommerceModuleOrdersFind.mock.calls[0][0].params.filters.and[0]
-        .value;
-
-    expect(selectedOrderIds).toHaveLength(ECOMMERCE_ORDER_PROCEED_BATCH_LIMIT);
-    expect(new Set(selectedOrderIds).size).toBe(selectedOrderIds.length);
-    expect(selectedOrderIds).not.toContain(
-      `order-${ECOMMERCE_ORDER_PROCEED_BATCH_LIMIT + 2}`,
+    const ids = purchaserOrdersFind.mock.calls.flatMap(
+      ([props]) => props.params.filters.and[0].value,
+    );
+    expect(ids).toHaveLength(ECOMMERCE_ORDER_PROCEED_BATCH_LIMIT);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(ecommerceModuleOrderFind.mock.invocationCallOrder[0]).toBeLessThan(
+      purchaserOrdersFind.mock.invocationCallOrder[0],
     );
   });
 
-  /**
-   * BDD Scenario: concurrent lifecycle execution skips an order already in progress.
-   *
-   * Given: another request is already processing the selected order in the singleton service.
-   * When: ecommerce order proceed selects the same order again.
-   * Then: no order relations or lifecycle side effects are executed by the second request.
-   */
-  it("Then: skips an order whose lifecycle processing is already in progress", async () => {
-    const { service, subjectsToEcommerceModuleOrdersFind } = createService({
-      candidateOrders: [{ id: "order-1", status: "delivered" }],
+  it("does not select an unscoped batch when the requested buyer has no purchases", async () => {
+    const { service, ecommerceModuleOrderFind } = createService();
+    await service.execute({ subjectId: "buyer" });
+    expect(ecommerceModuleOrderFind).not.toHaveBeenCalled();
+  });
+
+  it("rejects a candidate if its captured purchaser differs from the scoped buyer", async () => {
+    const { service } = createService({
+      candidateOrders: [{ id: "order", status: "paid" }],
       relationFindResults: [
-        [
-          {
-            id: "relation-1",
-            subjectId: "subject-1",
-            ecommerceModuleOrderId: "order-1",
-          },
-        ],
+        [{ subjectId: "buyer", ecommerceModuleOrderId: "order" }],
+        [{ subjectId: "other", ecommerceModuleOrderId: "order" }],
       ],
     });
+    await service.execute({ subjectId: "buyer" });
+    expect(
+      service.ecommerceModule.order.findByIdExtended,
+    ).not.toHaveBeenCalled();
+  });
 
+  it("does not resolve a buyer while the order is already processing", async () => {
+    const { service, purchaserOrdersFind } = createService({
+      candidateOrders: [{ id: "order-1", status: "delivered" }],
+    });
     (service as any).processingOrderIds.add("order-1");
-
     await service.execute({});
-
-    expect(subjectsToEcommerceModuleOrdersFind).toHaveBeenCalledTimes(1);
-    expect(mockEcommerceOrderUpdate).not.toHaveBeenCalled();
+    expect(purchaserOrdersFind).not.toHaveBeenCalled();
     expect(mockSubjectProductCheckout).not.toHaveBeenCalled();
   });
 });
 
-describe("Given: scoped RBAC ecommerce order proceed execution", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  /**
-   * BDD Scenario: scoped relation lookup remains subject constrained.
-   *
-   * Given: a subject id is provided to ecommerce order proceed.
-   * When: the subject has no order relations.
-   * Then: the relation lookup filters by subject id and no unscoped order batch runs.
-   */
-  it("Then: filters the initial relation lookup by subject id", async () => {
-    const {
-      ecommerceModuleOrderFind,
-      service,
-      subjectsToEcommerceModuleOrdersFind,
-    } = createService({
-      relationFindResults: [[]],
-    });
-
-    await service.execute({ subjectId: "subject-1" });
-
-    expect(subjectsToEcommerceModuleOrdersFind).toHaveBeenCalledWith({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "subjectId",
-              method: "eq",
-              value: "subject-1",
-            },
-          ],
-        },
-        limit: ECOMMERCE_ORDER_PROCEED_BATCH_LIMIT,
-        offset: 0,
-        orderBy: { and: [{ column: "id", method: "asc" }] },
-      },
-    });
-    expect(ecommerceModuleOrderFind).not.toHaveBeenCalled();
-  });
-
-  /**
-   * BDD Scenario: scoped relation handoff includes subject and selected orders.
-   *
-   * Given: a subject has duplicate order relations and one selected candidate order.
-   * When: ecommerce order proceed resolves relations for processing.
-   * Then: the bounded relation lookup includes subject id and selected order id filters.
-   */
-  it("Then: keeps subject id on the bounded relation lookup", async () => {
-    const { service, subjectsToEcommerceModuleOrdersFind } = createService({
-      candidateOrders: [{ id: "order-1", status: "paid" }],
-      relationFindResults: [
-        [
-          {
-            id: "relation-1",
-            subjectId: "subject-1",
-            ecommerceModuleOrderId: "order-1",
-          },
-          {
-            id: "relation-2",
-            subjectId: "subject-1",
-            ecommerceModuleOrderId: "order-1",
-          },
-        ],
-        [],
-      ],
-    });
-
-    await service.execute({ subjectId: "subject-1" });
-
-    expect(subjectsToEcommerceModuleOrdersFind.mock.calls[1][0]).toEqual({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "subjectId",
-              method: "eq",
-              value: "subject-1",
-            },
-            {
-              column: "ecommerceModuleOrderId",
-              method: "inArray",
-              value: ["order-1"],
-            },
-          ],
-        },
-      },
-    });
-  });
+it("does not query candidates for a buyer with no payment history", async () => {
+  const { service, ecommerceModuleOrderFind } = createService();
+  await service.execute({ subjectId: "subject-1" });
+  expect(ecommerceModuleOrderFind).not.toHaveBeenCalled();
 });
 
 describe("bounded fair order scheduling", () => {
@@ -1017,21 +1000,19 @@ describe("bounded fair order scheduling", () => {
       service.ecommerceModule.order.findByIdExtended = jest.fn(async ({ id }) =>
         dataset.find((order) => order.id === id),
       );
-      service.subjectsToEcommerceModuleOrders.find = jest.fn(
-        async (props: any) => {
-          const selected = props.params.filters.and.find(
-            (filter: any) => filter.column === "ecommerceModuleOrderId",
-          );
-          return selected
-            ? links.filter((link) =>
-                selected.value.includes(link.ecommerceModuleOrderId),
-              )
-            : links.slice(
-                props.params.offset,
-                props.params.offset + props.params.limit,
-              );
-        },
-      ) as any;
+      service.testPurchaserOrders.find = jest.fn(async (props: any) => {
+        const selected = props.params.filters.and.find(
+          (filter: any) => filter.column === "ecommerceModuleOrderId",
+        );
+        return selected
+          ? links.filter((link) =>
+              selected.value.includes(link.ecommerceModuleOrderId),
+            )
+          : links.slice(
+              props.params.offset,
+              props.params.offset + props.params.limit,
+            );
+      }) as any;
       const paid = jest
         .spyOn(service, "fromPaidStatus")
         .mockResolvedValue(undefined);
@@ -1050,10 +1031,11 @@ describe("bounded fair order scheduling", () => {
       expect(paid.mock.calls.length).toBeLessThanOrEqual(
         ECOMMERCE_ORDER_PROCEED_BATCH_LIMIT,
       );
-      if (scoped)
+      if (scoped) {
         expect(find.mock.calls[0][0].params.filters.and[0].value).toHaveLength(
           151,
         );
+      }
     },
   );
 });
@@ -1148,26 +1130,20 @@ describe("Given: an expired Telegram Stars subscription order", () => {
    */
   it("Then: creates a new Telegram Stars checkout for the same subscription", async () => {
     const { service } = createService({
-      subjectsToSocialModuleProfiles: [
-        {
-          socialModuleProfileId: "profile-1",
-          subjectId: "subject-1",
-        },
-      ],
-      socialModuleProfilesToChats: [
-        {
-          profileId: "profile-1",
-          chatId: "chat-1",
-        },
-      ],
-      socialModuleChats: [
-        {
-          id: "chat-1",
-          sourceSystemId: "telegram-account-1",
-          variant: "telegram",
-        },
+      relationFindResults: [
+        [{ subjectId: "subject-1", ecommerceModuleOrderId: "order-1" }],
       ],
     });
+    service.subjectsToIdentities.find = jest.fn(async () => [
+      { subjectId: "subject-1", identityId: "telegram-identity" },
+    ]) as any;
+    service.identity.find = jest.fn(async () => [
+      {
+        id: "telegram-identity",
+        provider: "telegram",
+        account: "telegram-account-1",
+      },
+    ]) as any;
 
     jest
       .spyOn(service as any, "freshLifecycleProps")
@@ -1233,20 +1209,25 @@ describe("Given: an expired Telegram Stars subscription order", () => {
         id: "order-1",
       }),
     );
-    expect(mockSubjectProductCheckout).toHaveBeenCalledWith({
-      id: "subject-1",
-      productId: "product-1",
-      data: {
-        provider: "telegram-star",
-        billingModule: {
-          currency: {
-            id: "currency-telegram-star",
-            slug: "telegram-star",
+    expect(service.subjectsToSocialModuleProfiles.find).not.toHaveBeenCalled();
+    expect(mockSubjectProductCheckout).toHaveBeenCalledWith(
+      {
+        id: "subject-1",
+        socialModuleProfileId: "profile",
+        productId: "product-1",
+        data: {
+          provider: "telegram-star",
+          billingModule: {
+            currency: {
+              id: "currency-telegram-star",
+              slug: "telegram-star",
+            },
           },
+          account: "telegram-account-1",
         },
-        account: "telegram-account-1",
       },
-    });
+      { renewalOrderId: "order-1" },
+    );
   });
 });
 
@@ -1283,8 +1264,8 @@ describe("quantity-aware additive token collection", () => {
     ]);
   });
   it("does not suppress a newly paid Pro Order because the same Product is already delivering", async () => {
-    const { service, subjectsToEcommerceModuleOrdersFind } = createService();
-    subjectsToEcommerceModuleOrdersFind.mockResolvedValue([
+    const { service, purchaserOrdersFind } = createService();
+    purchaserOrdersFind.mockResolvedValue([
       { subjectId: "subject", ecommerceModuleOrderId: "old-delivering-pro" },
     ]);
     const result = await service.collectTopupCurrencies({
@@ -1303,7 +1284,7 @@ describe("quantity-aware additive token collection", () => {
       } as any,
     });
     expect(result[0].amount).toBe("5000");
-    expect(subjectsToEcommerceModuleOrdersFind).not.toHaveBeenCalled();
+    expect(purchaserOrdersFind).not.toHaveBeenCalled();
   });
   it.each([0, -1, 1.5, Infinity])(
     "rejects invalid paid quantity %s",

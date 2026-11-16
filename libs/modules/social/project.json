@@ -9,13 +9,8 @@
     "jest:test": {},
     "jest:integration": {
       "executor": "nx:run-commands",
-      "outputs": [
-        "{projectRoot}/coverage"
-      ],
-      "inputs": [
-        "{projectRoot}/**/*",
-        "^default"
-      ],
+      "outputs": ["{projectRoot}/coverage"],
+      "inputs": ["{projectRoot}/**/*", "^default"],
       "options": {
         "command": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config ./libs/modules/social/jest.integration.config.ts --passWithNoTests",
         "cwd": ".",
@@ -159,6 +154,9 @@
           },
           {
             "command": "nx run @sps/social:relations:widgets-to-website-builder-module-widgets:repository-generate"
+          },
+          {
+            "command": "nx run @sps/social:relations:profiles-to-ecommerce-module-orders:repository-generate"
           }
         ]
       }
@@ -267,6 +265,9 @@
           },
           {
             "command": "nx run @sps/social:relations:widgets-to-website-builder-module-widgets:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/social:relations:profiles-to-ecommerce-module-orders:repository-migrate"
           }
         ]
       }
@@ -1164,6 +1165,36 @@
         "parallel": false,
         "envFile": "apps/api/.env",
         "cwd": "libs/modules/social/relations/widgets-to-website-builder-module-widgets/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "relations:profiles-to-ecommerce-module-orders:repository-generate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/social/relations/profiles-to-ecommerce-module-orders/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "relations:profiles-to-ecommerce-module-orders:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/social/relations/profiles-to-ecommerce-module-orders/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"

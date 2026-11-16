@@ -3,6 +3,7 @@ import type { Service as SubjectService } from "../../index";
 
 export interface IExecuteProps {
   subjectId: string;
+  socialModuleProfileId?: string;
   productId: string;
   storeId: string;
   quantity: number;
@@ -10,14 +11,19 @@ export interface IExecuteProps {
 }
 
 interface IConstructorProps {
-  repository: Pick<Repository, "withSubjectLock">;
+  repository: Pick<Repository, "withProfileLock">;
   service: Pick<
     SubjectService,
     | "ecommerceModule"
-    | "subjectsToEcommerceModuleOrders"
+    | "ecommerceModuleResolveProfile"
     | "ecommerceModuleFindOpenCartOrderWithProduct"
     | "ecommerceModuleResolveOrderCurrency"
-  >;
+  > & {
+    socialModule: Pick<
+      SubjectService["socialModule"],
+      "profilesToEcommerceModuleOrders"
+    >;
+  };
 }
 
 export class Service {
@@ -25,12 +31,16 @@ export class Service {
 
   async execute(props: IExecuteProps): Promise<void> {
     const { repository, service } = this.dependencies;
-    await repository.withSubjectLock(
-      { subjectId: props.subjectId },
+    const socialModuleProfileId = await service.ecommerceModuleResolveProfile({
+      ...props,
+      createIfMissing: true,
+    });
+    await repository.withProfileLock(
+      { profileId: socialModuleProfileId },
       async () => {
         const existingOrderId =
           await service.ecommerceModuleFindOpenCartOrderWithProduct({
-            subjectId: props.subjectId,
+            socialModuleProfileId,
             productId: props.productId,
           });
         if (existingOrderId) {
@@ -43,9 +53,9 @@ export class Service {
           });
         const order = await service.ecommerceModule.order.create({ data: {} });
         if (!order) throw new Error("Not Found error. No order found");
-        await service.subjectsToEcommerceModuleOrders.create({
+        await service.socialModule.profilesToEcommerceModuleOrders.create({
           data: {
-            subjectId: props.subjectId,
+            profileId: socialModuleProfileId,
             ecommerceModuleOrderId: order.id,
           },
         });

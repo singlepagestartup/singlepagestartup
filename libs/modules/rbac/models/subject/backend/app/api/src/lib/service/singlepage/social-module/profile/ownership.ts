@@ -3,6 +3,7 @@ import type { Repository } from "../../../../repository";
 
 export interface IEnsureProps {
   subjectId: string;
+  allowGuest?: boolean;
 }
 
 export class Service {
@@ -35,19 +36,19 @@ export class Service {
     }
   }
 
-  async ensure({ subjectId }: IEnsureProps) {
+  async ensure({ subjectId, allowGuest }: IEnsureProps) {
     return (this.service.repository as Repository).withSubjectLock(
       { subjectId },
-      () => this.ensureLocked({ subjectId }),
+      () => this.ensureLocked({ subjectId, allowGuest }),
     );
   }
 
-  private async ensureLocked({ subjectId }: IEnsureProps) {
+  private async ensureLocked({ subjectId, allowGuest }: IEnsureProps) {
     const subject = await this.service.findById({ id: subjectId });
     if (
       !subject ||
       subject.variant === "agent" ||
-      subject.variant === "anonymous"
+      (!allowGuest && subject.variant === "anonymous" && !allowGuest)
     )
       throw new Error("Authorization error. A registered Subject is required");
     const identities = await this.service.subjectsToIdentities.find({
@@ -57,7 +58,7 @@ export class Service {
         },
       },
     });
-    if (!identities.length)
+    if (!identities.length && !allowGuest)
       throw new Error("Authorization error. Sign in to manage profiles");
 
     // Existing assistant grants identify the owner independently of shared Chat membership.

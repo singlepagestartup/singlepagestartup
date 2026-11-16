@@ -51,6 +51,9 @@ export class Handler {
       const result = await this.service.ecommerceProductCheckout({
         id,
         productId,
+        socialModuleProfileId:
+          c.req.param("socialModuleProfileId") ||
+          c.req.query("socialModuleProfileId"),
         data,
       });
 

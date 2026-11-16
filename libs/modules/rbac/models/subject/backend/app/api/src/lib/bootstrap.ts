@@ -1,3 +1,5 @@
+import { app as profilesToOrdersApp } from "@sps/social/relations/profiles-to-ecommerce-module-orders/backend/app/api";
+import { app as subjectsToPaymentIntentsApp } from "@sps/rbac/relations/subjects-to-billing-module-payment-intents/backend/app/api";
 import { app as roleApp } from "@sps/rbac/models/role/backend/app/api";
 import { app as broadcastChannelApp } from "@sps/broadcast/models/channel/backend/app/api";
 import type { Service as BroadcastChannelService } from "@sps/broadcast/models/channel/backend/app/api/src/lib/service";
@@ -75,6 +77,7 @@ import { Service as EcommerceOrderProceedService } from "./service/startup/ecomm
 import type {
   ICheckout as IEcommerceProductCheckout,
   IExecuteProps as IEcommerceProductCheckoutProps,
+  IInternalContext as IEcommerceProductCheckoutContext,
 } from "./service/singlepage/ecommerce/product/checkout";
 import { Service as IdentityService } from "@sps/rbac/models/identity/backend/app/api/src/lib/service";
 import { Repository as IdentityRepository } from "@sps/rbac/models/identity/backend/app/api/src/lib/repository";
@@ -222,6 +225,7 @@ const bindings = new ContainerModule(({ bind }) => {
     .toDynamicValue(() => {
       return {
         profile: createSocialProfileService(),
+        profilesToEcommerceModuleOrders: profilesToOrdersApp.controller.service,
         profilesToBlogModuleArticles:
           socialProfilesToArticlesApp.controller.service,
         skill: new CRUDService<any>(
@@ -491,7 +495,8 @@ const bindings = new ContainerModule(({ bind }) => {
         currency: new CRUDService<any>(
           new BillingCurrencyRepository(new BillingCurrencyConfiguration()),
         ),
-        paymentIntent: billingPaymentIntentApp.controller.service,
+        paymentIntent: billingPaymentIntentApp.controller
+          .service as BillingPaymentIntentService,
         paymentIntentsToCurrencies:
           billingPaymentIntentsToCurrenciesApp.controller.service,
         invoice: billingInvoiceApp.controller.service,
@@ -660,6 +665,9 @@ const bindings = new ContainerModule(({ bind }) => {
         ),
     )
     .inSingletonScope();
+  bind(SubjectDI.ISubjectsToBillingModulePaymentIntentsService).toConstantValue(
+    subjectsToPaymentIntentsApp.controller.service,
+  );
   bind<SubjectsToEcommerceModuleOrdersService>(
     SubjectDI.ISubjectsToEcommerceModuleOrdersService,
   )
@@ -696,8 +704,14 @@ const bindings = new ContainerModule(({ bind }) => {
   bind<IEcommerceProductCheckout>(
     SubjectDI.IEcommerceProductCheckout,
   ).toFactory(
-    (context) => (props: IEcommerceProductCheckoutProps) =>
-      context.get<Service>(DI.IService).ecommerceProductCheckout(props),
+    (context) =>
+      (
+        props: IEcommerceProductCheckoutProps,
+        internalContext?: IEcommerceProductCheckoutContext,
+      ) =>
+        context
+          .get<Service>(DI.IService)
+          .ecommerceProductCheckout(props, internalContext),
   );
 });
 

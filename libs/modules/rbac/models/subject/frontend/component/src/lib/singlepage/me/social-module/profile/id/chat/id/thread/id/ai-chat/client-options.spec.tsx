@@ -33,7 +33,21 @@ const mockReads = {
     .fn()
     .mockResolvedValue([]),
 };
-jest.mock("@sps/rbac/models/subject/sdk/client", () => ({ api: mockReads }));
+jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
+  api: mockReads,
+  useActiveSocialModuleProfile: (
+    id: string,
+    _profileId: string | undefined,
+    options: unknown,
+  ) => {
+    const result = mockReads.socialModuleProfileFind({ id, options });
+    return {
+      ...result,
+      profiles: result.data || [],
+      profile: result.data?.[0],
+    };
+  },
+}));
 jest.mock(
   "../../../../../../../../identity/list/settings-ai-chat/Component",
   () => ({
