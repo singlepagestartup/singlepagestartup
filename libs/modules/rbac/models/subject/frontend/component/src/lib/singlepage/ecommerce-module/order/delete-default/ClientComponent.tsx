@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { api } from "@sps/rbac/models/subject/sdk/client";
-import { LoaderCircle, Trash2 } from "lucide-react";
+import { Icon } from "@sps/ui-adapter";
 import { Button } from "@sps/shared-ui-shadcn";
 import { cn } from "@sps/shared-frontend-client-utils";
 import type { IComponentPropsExtended } from "./interface";
@@ -35,16 +35,16 @@ export function Component(props: IComponentPropsExtended) {
         title={props.iconOnly ? label : undefined}
         className={cn(
           props.iconOnly
-            ? "size-10 rounded-full p-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+            ? "size-10 rounded-xl p-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
             : "min-h-10 w-full rounded-xl text-destructive",
           props.className,
         )}
       >
         {props.iconOnly &&
           (remove.isPending ? (
-            <LoaderCircle aria-hidden="true" className="size-4 animate-spin" />
+            <Icon name="spinner-gap" className="motion-safe:animate-spin" />
           ) : (
-            <Trash2 aria-hidden="true" className="size-4" />
+            <Icon name="trash" />
           ))}
         <span className={props.iconOnly ? "sr-only" : undefined}>{action}</span>
       </Button>

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { internationalization } from "@sps/shared-configuration";
 import { saveLanguageContext } from "@sps/shared-utils";
 import { Component as ProductsToFileStorageModuleFiles } from "@sps/ecommerce/relations/products-to-file-storage-module-files/frontend/component";
-import { ShoppingBag } from "lucide-react";
+import { Icon } from "@sps/ui-adapter";
 
 export const Component = memo(function Component(
   props: IComponentPropsExtended,
@@ -22,11 +22,11 @@ export const Component = memo(function Component(
       data-id={props.data.id}
       data-variant={props.variant}
       className={cn(
-        "grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-3",
+        "grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-3 sm:gap-4",
         props.className,
       )}
     >
-      <div className="size-14 overflow-hidden rounded-xl border border-border/60 bg-muted sm:size-16 [&_[data-model=file]]:size-full [&_img]:size-full [&_img]:object-cover">
+      <div className="size-14 overflow-hidden rounded-xl bg-muted sm:size-16 [&_[data-model=file]]:size-full [&_img]:size-full [&_img]:object-cover">
         <ProductsToFileStorageModuleFiles
           isServer={props.isServer}
           variant="find"
@@ -61,12 +61,8 @@ export const Component = memo(function Component(
                 />
               ))
             ) : (
-              <span className="grid size-full place-items-center text-muted-foreground">
-                <ShoppingBag
-                  className="size-6"
-                  aria-hidden="true"
-                  strokeWidth={1.5}
-                />
+              <span className="grid size-full place-items-center bg-primary-foreground text-primary">
+                <Icon name="package" size={24} />
               </span>
             )
           }
@@ -74,7 +70,7 @@ export const Component = memo(function Component(
       </div>
       <div className="min-w-0">
         <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-          <h3 className="min-w-0 flex-1 basis-28 wrap-anywhere text-sm font-semibold leading-snug">
+          <h3 className="min-w-0 flex-1 basis-28 wrap-anywhere text-base font-semibold leading-snug tracking-tight">
             <Link
               href={href}
               className="rounded hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"

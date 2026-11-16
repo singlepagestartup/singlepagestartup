@@ -90,6 +90,7 @@ jest.mock("@sps/shared-ui-shadcn", () => ({
 jest.mock("@sps/ui-adapter", () => ({
   FormField: ({ name }: any) => <div data-testid={`field-${name}`} />,
   Select: () => null,
+  Icon: () => null,
 }));
 
 jest.mock(
@@ -104,23 +105,10 @@ jest.mock(
   }),
 );
 
-jest.mock("@sps/ecommerce/models/order/frontend/component", () => ({
-  Component: ({ variant, children, apiProps }: any) => {
-    if (variant === "find") {
-      ecommerceModuleOrderApiPropsMock(apiProps);
-      return children ? children({ data: [{ id: "order-1" }] }) : null;
-    }
-
-    if (variant === "cart-default") {
-      return <div data-testid="cart-order">{children}</div>;
-    }
-
-    if (variant === "form-field-default") {
-      return <input data-testid="order-id-field" readOnly={true} />;
-    }
-
-    return null;
-  },
+jest.mock("server-only", () => ({}), { virtual: true });
+jest.mock("@sps/ecommerce/models/order/sdk/client", () => ({
+  Provider: ({ children }: any) => children,
+  api: { findById: jest.fn() },
 }));
 
 jest.mock("../../update-default", () => ({

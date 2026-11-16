@@ -12,13 +12,11 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   },
 }));
 jest.mock("@tanstack/react-query", () => ({
+  ...jest.requireActual("@tanstack/react-query"),
   useQueryClient: () => ({ invalidateQueries: mockInvalidate }),
 }));
 jest.mock("@sps/rbac/models/subject/sdk/model", () => ({
   route: "/api/rbac/subjects",
-}));
-jest.mock("@sps/shared-utils", () => ({
-  INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG: "free-subscription",
 }));
 jest.mock("@sps/ui-adapter", () => ({
   Icon: () => null,
@@ -53,8 +51,11 @@ jest.mock("@sps/ecommerce/models/product/frontend/component", () => ({
     </article>
   ),
 }));
-jest.mock("@sps/ecommerce/models/order/frontend/component", () => ({
-  Component: () => null,
+const mockFindOrder = jest.fn();
+jest.mock("server-only", () => ({}), { virtual: true });
+jest.mock("@sps/ecommerce/models/order/sdk/client", () => ({
+  Provider: ({ children }: any) => children,
+  api: { findById: (...args: unknown[]) => mockFindOrder(...args) },
 }));
 jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
   Component: ({ label }: any) => <button type="button">{label}</button>,
@@ -80,6 +81,19 @@ const props: any = {
 beforeEach(() => {
   mockUpdate.mockReset().mockResolvedValue({});
   mockInvalidate.mockReset().mockResolvedValue(undefined);
+});
+it("renders the Ecommerce Order cart card with the Subject snapshot and no second order read", () => {
+  const { container } = render(<Component {...props} />);
+  const card = container.querySelector(
+    '[data-module="ecommerce"][data-model="order"][data-variant="cart-card-default"]',
+  );
+  expect(card?.getAttribute("data-id")).toBe("order");
+  expect(
+    card?.contains(
+      screen.getByRole("button", { name: "Увеличить количество" }),
+    ),
+  ).toBe(true);
+  expect(mockFindOrder).not.toHaveBeenCalled();
 });
 it("updates only the selected line and reloads the authorized cart totals", async () => {
   render(<Component {...props} />);

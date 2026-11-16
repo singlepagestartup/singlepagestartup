@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
-import { Store, Truck } from "lucide-react";
+import { Icon } from "@sps/ui-adapter";
 import { Input } from "@sps/shared-ui-shadcn";
 import type { IDeliveryProps } from "./interface";
 
@@ -20,24 +20,25 @@ export function Delivery({ language, currencySlug }: IDeliveryProps) {
       value: "pickup",
       label: ru ? "Самовывоз" : "Pickup",
       price: undefined,
-      Icon: Store,
     },
     {
       value: "courier",
       label: ru ? "Курьер" : "Courier",
       price: courierPrice,
-      Icon: Truck,
     },
   ] as const;
 
   return (
-    <fieldset className="relative min-w-0 rounded-2xl border border-border bg-muted/30 px-3 pb-3 pt-2.5">
-      <legend className="float-left mb-2.5 w-full text-sm font-semibold">
+    <fieldset className="min-w-0 rounded-2xl border border-border bg-card p-3.5 sm:p-4">
+      <legend className="float-left mb-2.5 w-full text-base font-semibold tracking-tight text-foreground">
         {ru ? "Доставка" : "Delivery"}
       </legend>
-      <div className="clear-both grid grid-cols-2 gap-2">
-        {methods.map(({ value, label, price, Icon }) => (
-          <label key={value} className="relative min-w-0 cursor-pointer">
+      <div className="clear-both grid grid-cols-2 gap-1.5 rounded-2xl bg-muted p-1.5">
+        {methods.map(({ value, label, price }) => (
+          <label
+            key={value}
+            className="group flex min-h-14 min-w-0 cursor-pointer items-center justify-between gap-2 rounded-xl border border-transparent px-3 py-2 text-muted-foreground transition-colors hover:text-foreground has-[:checked]:border-foreground/20 has-[:checked]:bg-card has-[:checked]:text-foreground has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-foreground motion-reduce:transition-none"
+          >
             <input
               type="radio"
               name={group}
@@ -46,44 +47,42 @@ export function Delivery({ language, currencySlug }: IDeliveryProps) {
               onChange={() => setSelected(value)}
               aria-label={label}
               aria-describedby={price ? group + "-" + value : undefined}
-              className="peer sr-only"
+              className="sr-only"
             />
-            <span className="flex h-full min-h-12 items-center gap-2 rounded-xl border border-border bg-card px-2.5 py-2 pr-5 text-foreground transition hover:border-muted-foreground/60 peer-checked:border-foreground peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2">
-              <Icon
-                aria-hidden="true"
-                className="size-4 shrink-0 text-muted-foreground"
-                strokeWidth={1.6}
-              />
-              <span className="min-w-0">
-                <span className="block text-xs font-semibold leading-4">
-                  {label}
-                </span>
-                {price && (
-                  <span
-                    id={group + "-" + value}
-                    className="block text-xs text-muted-foreground"
-                  >
-                    {price}
-                  </span>
-                )}
+            <span className="min-w-0">
+              <span className="block text-sm font-semibold leading-5">
+                {label}
               </span>
+              {price && (
+                <span
+                  id={group + "-" + value}
+                  className="block text-xs text-muted-foreground tabular-nums"
+                >
+                  {price}
+                </span>
+              )}
             </span>
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute right-2.5 top-2.5 hidden size-1.5 rounded-full bg-foreground peer-checked:block"
-            />
+              className="grid size-6 shrink-0 place-items-center rounded-full border border-border bg-card text-primary-foreground group-has-[:checked]:border-transparent group-has-[:checked]:bg-primary"
+            >
+              <Icon
+                name="check"
+                className="size-4 opacity-0 group-has-[:checked]:opacity-100"
+              />
+            </span>
           </label>
         ))}
       </div>
       {selected === "courier" && (
-        <div className="mt-3 grid gap-2">
+        <div className="mt-3 grid gap-3">
           <label className="grid gap-1 text-xs font-medium">
             {ru ? "Город" : "City"}
             <Input
               value={city}
               onChange={(event) => setCity(event.target.value)}
               autoComplete="off"
-              className="h-10 w-full bg-card"
+              className="h-11 w-full rounded-xl bg-card"
             />
           </label>
           <label className="grid gap-1 text-xs font-medium">
@@ -95,7 +94,7 @@ export function Delivery({ language, currencySlug }: IDeliveryProps) {
               placeholder={
                 ru ? "Улица, дом, квартира" : "Street, house number, apartment"
               }
-              className="h-10 w-full bg-card"
+              className="h-11 w-full rounded-xl bg-card"
             />
           </label>
           <p

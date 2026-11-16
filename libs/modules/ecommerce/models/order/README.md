@@ -98,6 +98,7 @@ does not change the period.
 
 - `default`: order card wrapper with header and child content.
 - `cart-default`: cart layout showing products, quantities, and totals. Pass the owner-scoped lines as `ordersToProducts` in customer views. Standalone use reads the lines with the permissions of the caller.
+- `cart-card-default` displays a cart order from the Subject’s loaded `cartDetails`. Pass the order with `dataSource="props"`, quantity controls keyed by line ID, and currency and removal controls as JSX slots. A grouped order shows its subtotal and removal action once.
 - `orders-to-products-quantity-default`: renders quantities from order-product relations.
 - `purchase-ai-chat`: purchase history row. The shared record reader loads the
   Order; local `client.tsx`/`server.tsx` readers load SDK totals and pass typed
