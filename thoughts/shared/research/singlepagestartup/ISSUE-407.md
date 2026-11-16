@@ -13,10 +13,14 @@ last_updated_by: flakecode
 
 # Research: Какие операции с заказами зависят от аккаунта
 
-**Date**: 2026-11-16  
-**Researcher**: flakecode  
-**Git Commit**: `ec863071e53b551f7430bb2fdc88fbfa640e11cf`  
-**Branch**: `main`  
+**Date**: 2026-11-16
+
+**Researcher**: flakecode
+
+**Git Commit**: `ec863071e53b551f7430bb2fdc88fbfa640e11cf`
+
+**Branch**: `main`
+
 **Repository**: singlepagestartup
 
 ## Research Question

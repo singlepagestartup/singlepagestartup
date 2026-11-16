@@ -5,7 +5,7 @@ repository: singlepagestartup
 created_at: 2026-11-16T00:01:23Z
 last_updated: 2026-11-16T10:19:52Z
 status: active
-current_phase: implement
+current_phase: complete
 ---
 
 # Process Log: ISSUE-407 — Привязать заказы к social.profile и разделить корзины профилей одного аккаунта
@@ -19,9 +19,9 @@ current_phase: implement
 - Create: completed
 - Research: completed
 - Plan: completed
-- Implement: in_progress
-- Current phase: implement
-- Next step: создать PR и перевести задачу в Code Review.
+- Implement: completed
+- Current phase: complete
+- Next step: code review PR #408 и ручная проверка внешних платёжных провайдеров.
 
 ## Phase Notes
 
@@ -45,7 +45,7 @@ current_phase: implement
 ### Implement
 
 - Summary: реализованы связь профиля с заказом, выбор дополнительных профилей в меню, изоляция корзины и кэша, объединение гостевой корзины и фиксация покупателя оплаты.
-- Outputs: [журнал реализации](../../handoffs/singlepagestartup/ISSUE-407-progress.md).
+- Outputs: [журнал реализации](../../handoffs/singlepagestartup/ISSUE-407-progress.md), [PR #408](https://github.com/singlepagestartup/singlepagestartup/pull/408). Статус Code Review подтверждён штатным helper.
 - Notes: проверены пересечение checkout с переносом корзины и регистрация гостя одновременно с переносом. Внешние платёжные провайдеры проверяются при review.
 
 ## Incident Log
