@@ -715,7 +715,8 @@ export function Component(props: IComponentPropsExtended) {
                               }
                               onCheckedChange={changeService}
                             >
-                              {checked ? (
+                              {option.receiptMethod === "shipping" ||
+                              option.role === "add-on" ? (
                                 <div className="space-y-3 px-3 pb-3">
                                   {option.receiptMethod === "shipping" ? (
                                     <DeliveryAddress

@@ -43,7 +43,11 @@ export const ServiceCard = memo(function ServiceCard(props: IServiceCardProps) {
     <div
       role="group"
       aria-labelledby={`${props.id}-title`}
-      className="overflow-hidden rounded-xl border border-border has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5"
+      className={`overflow-hidden rounded-xl border transition-colors motion-reduce:transition-none ${
+        props.checked
+          ? "border-primary bg-primary/5 hover:bg-primary/30"
+          : "border-border hover:border-primary hover:bg-primary/20"
+      }`}
     >
       <div className="relative">
         {props.option.role === "delivery" ? (
@@ -66,7 +70,7 @@ export const ServiceCard = memo(function ServiceCard(props: IServiceCardProps) {
         )}
         <label
           htmlFor={props.id}
-          className="block min-w-0 cursor-pointer py-2 pl-10 pr-3 hover:bg-muted/50"
+          className="block min-w-0 cursor-pointer py-2 pl-10 pr-3"
         >
           <span className="grid min-h-7 grid-cols-[minmax(0,1fr)_5rem] items-center gap-x-2 sm:grid-cols-[minmax(0,1fr)_6.5rem]">
             <span className="min-w-0 break-words py-1 text-sm font-medium">

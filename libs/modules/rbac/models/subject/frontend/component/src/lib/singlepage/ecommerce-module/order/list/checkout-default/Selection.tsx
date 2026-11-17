@@ -928,7 +928,8 @@ export function Selection(props: ISelectionProps) {
                         }
                         onCheckedChange={changeService}
                       >
-                        {selected ? (
+                        {option.receiptMethod === "shipping" ||
+                        option.role === "add-on" ? (
                           <div className="space-y-3 px-3 pb-3">
                             {option.receiptMethod === "shipping" ? (
                               <DeliveryAddress
