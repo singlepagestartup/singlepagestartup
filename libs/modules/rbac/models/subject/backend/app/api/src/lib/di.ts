@@ -141,7 +141,7 @@ export interface IEcommerceModule {
 export interface IBillingModule {
   currency: IReadService;
   paymentIntent: ICreateUpdateService &
-    Pick<PaymentIntentService, "failUnpaidIntent">;
+    Pick<PaymentIntentService, "failUnpaidIntent" | "prepareCheckoutDispatch">;
   paymentIntentsToCurrencies: ICreateService;
   invoice: ICreateUpdateService;
   paymentIntentsToInvoices: ICreateService;

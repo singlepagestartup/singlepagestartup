@@ -46,17 +46,38 @@ export class Handler {
 
       const entity = await this.service.findById({ id: uuid });
 
-      const data = JSON.parse(body["data"]);
+      let data = JSON.parse(body["data"]);
 
       if (!data) {
         throw new Error("Validation error. Invalid data");
       }
 
-      logger.debug("provider", provider);
-      logger.debug("data", data);
-
       if (!entity) {
         throw new Error("Not Found error. Payment intent not found");
+      }
+
+      const durableDispatch =
+        entity.checkoutDispatchState &&
+        entity.checkoutDispatchState !== "legacy";
+      if (durableDispatch) {
+        if (
+          entity.checkoutProvider !== provider ||
+          !entity.checkoutCurrencyId ||
+          !entity.checkoutMetadata
+        ) {
+          throw new Error(
+            "Conflict error. Payment attempt provider context does not match",
+          );
+        }
+        data = {
+          currencyId: entity.checkoutCurrencyId,
+          metadata: entity.checkoutMetadata,
+        };
+      }
+      if (!this.service.isProviderAllowed({ provider })) {
+        throw new Error(
+          `Validation error. Provider ${provider} is not allowed`,
+        );
       }
 
       if (!data.currencyId) {
@@ -75,6 +96,53 @@ export class Handler {
         paymentProviderPrecision(provider, currency),
       );
 
+      if (durableDispatch) {
+        const claimed = await this.service.claimCheckoutDispatch({
+          id: entity.id,
+          provider,
+        });
+        if (!claimed) {
+          const links =
+            await this.service.billingModule.paymentIntentsToInvoices.find({
+              params: {
+                filters: {
+                  and: [
+                    {
+                      column: "paymentIntentId",
+                      method: "eq",
+                      value: entity.id,
+                    },
+                  ],
+                },
+              },
+            });
+          const invoices = await this.service.billingModule.invoice.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "id",
+                    method: "inArray",
+                    value: links.map((link) => link.invoiceId),
+                  },
+                ],
+              },
+            },
+          });
+          const invoice = invoices.find(
+            (entry) =>
+              ["open", "draft", "paid"].includes(entry.status) &&
+              entry.paymentUrl,
+          );
+          if (invoice) {
+            return c.json({ data: invoice }, 201);
+          }
+          throw new Error(
+            "Conflict error. Payment dispatch is already in progress or its outcome is unknown",
+          );
+        }
+      }
+
       await paymentIntentsToCurrenciesApi.create({
         data: {
           paymentIntentId: entity.id,
@@ -91,18 +159,15 @@ export class Handler {
 
       let result: any;
 
-      if (!this.service.isProviderAllowed({ provider })) {
-        throw new Error(
-          `Validation error. Provider ${provider} is not allowed`,
-        );
-      }
-
       if (entity.amount === 0) {
         const paidIntent = await this.service.settleFreePayment(
           entity.id,
           provider,
         );
-        return c.json({ data: paidIntent }, 201);
+        if (durableDispatch) {
+          await this.service.markCheckoutExposed({ id: entity.id });
+        }
+        return c.json({ data: this.publicResult(paidIntent) }, 201);
       }
 
       if (provider === "stripe") {
@@ -128,7 +193,7 @@ export class Handler {
           await api.update({
             id: entity.id,
             data: {
-              ...entity,
+              ...(this.publicResult(entity) as Record<string, unknown>),
               type: "one_off",
             },
             options: {
@@ -156,7 +221,7 @@ export class Handler {
           await api.update({
             id: entity.id,
             data: {
-              ...entity,
+              ...(this.publicResult(entity) as Record<string, unknown>),
               type: "one_off",
             },
             options: {
@@ -239,7 +304,7 @@ export class Handler {
           await api.update({
             id: entity.id,
             data: {
-              ...entity,
+              ...(this.publicResult(entity) as Record<string, unknown>),
               type: "one_off",
             },
             options: {
@@ -262,7 +327,7 @@ export class Handler {
           await api.update({
             id: entity.id,
             data: {
-              ...entity,
+              ...(this.publicResult(entity) as Record<string, unknown>),
               type: "one_off",
             },
             options: {
@@ -282,9 +347,12 @@ export class Handler {
         });
       }
 
+      if (durableDispatch) {
+        await this.service.markCheckoutExposed({ id: entity.id });
+      }
       return c.json(
         {
-          data: result,
+          data: this.publicResult(result),
         },
         201,
       );
@@ -292,5 +360,19 @@ export class Handler {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });
     }
+  }
+  private publicResult(result: unknown): unknown {
+    if (!result || typeof result !== "object" || Array.isArray(result)) {
+      return result;
+    }
+    const {
+      checkoutProvider,
+      checkoutCurrencyId,
+      checkoutMetadata,
+      checkoutDispatchState,
+      checkoutDispatchStartedAt,
+      ...output
+    } = result as Record<string, unknown>;
+    return output;
   }
 }

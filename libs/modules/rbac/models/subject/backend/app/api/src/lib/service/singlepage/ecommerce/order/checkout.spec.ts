@@ -336,6 +336,7 @@ function createTestContext(props?: {
 
   const billingModule = {
     paymentIntent: {
+      prepareCheckoutDispatch: jest.fn(),
       create: jest.fn((input) => mockBillingModulePaymentIntentCreate(input)),
       update: jest.fn((input) => mockBillingModulePaymentIntentUpdate(input)),
       find: jest.fn().mockResolvedValue([]),
@@ -1361,6 +1362,7 @@ it.each([
       },
       billingModule: {
         paymentIntent: {
+          prepareCheckoutDispatch: jest.fn(),
           findById: async () => ({
             id: "payment-intent-1",
             status: paymentStatus,
@@ -1472,6 +1474,7 @@ it("fulfills through the webhook pipeline after an earlier pending check consume
     },
     billingModule: {
       paymentIntent: {
+        prepareCheckoutDispatch: jest.fn(),
         findById: async () => ({
           id: "payment-intent-1",
           status: paymentStatus,

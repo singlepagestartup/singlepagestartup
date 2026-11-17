@@ -64,7 +64,9 @@ It writes `Invoice.status = paid` and `PaymentIntent.status = succeeded` through
 the effective owning services in one PostgreSQL transaction. A write failure
 rolls back both statuses. Concurrent deliveries wait for the same records;
 retries preserve already completed statuses and timestamps. A canceled Invoice
-or Payment Intent cannot be revived by a callback. Multiple linked intents
+or Payment Intent without a reservation snapshot cannot be revived by a callback.
+For a new reserved purchase, the host records a late canceled payment as paid
+with `requires_reconciliation` on its Intent and blocks fulfillment. Multiple linked intents
 consume their allocated amount even when already succeeded, preventing a
 retry from allocating that amount again. An invoice that cannot cover all its
 linked intents is rejected without writes.
@@ -157,6 +159,26 @@ and [invoice lookup contract](https://docs.paykeeper.ru/dokumentatsiya-json-api/
 define the external protocol. The merchant account must enable POST notifications
 with this callback URL and the same secret word. Local tests use a loopback
 provider fixture rather than charging an account.
+
+## Checkout dispatch recovery
+
+New Subject checkouts persist `checkoutDispatchState=prepared`, the selected
+provider, currency and original provider metadata in the same transaction as the
+Payment Intent and reserved purchase allocation. The provider route claims that
+row once under its Payment Intent lock, committing `dispatching` before calling
+the adapter. A successful adapter result records `exposed`.
+
+A fresh service can resume `prepared` using the saved context without re-quoting
+or creating another Payment Intent or reservation. Concurrent retries share the
+same dispatch claim. `dispatching` with no invoice has an unknown outcome and
+returns a conflict; a missing invoice alone never authorizes resending. Existing
+invoice links remain reusable, including separate currency invoices and paid
+members of a partially paid selection. Legacy Payment Intents keep the existing
+invoice-based recovery rules.
+
+Generic create, update and conditional-write operations cannot set or change the
+five `checkout*` recovery fields. HTTP provider responses omit those fields;
+recovery reads them through the owning service inside the application.
 
 ## Variants
 

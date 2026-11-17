@@ -2,8 +2,8 @@ import type { IModel as IOrder } from "@sps/ecommerce/models/order/sdk/model";
 import type { Service as SubjectService } from "../../index";
 import type { Repository } from "../../../../repository";
 import type { IModel as IOrderIntent } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/model";
-import type { IModel as IIntentInvoice } from "@sps/billing/relations/payment-intents-to-invoices/sdk/model";
-import type { IModel as IPaymentIntent } from "@sps/billing/models/payment-intent/sdk/model";
+import { moneyMinorUnits } from "@sps/backend-utils";
+import type { IInternalModel as IPaymentIntent } from "@sps/billing/models/payment-intent/sdk/model";
 import type { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
 import type { IBillingModule, IEcommerceModule } from "../../../../di";
 
@@ -48,7 +48,9 @@ export interface IConstructorProps {
 export class Service {
   constructor(readonly dependencies: IConstructorProps) {}
 
-  async execute(props: IExecuteProps): Promise<{ invoices?: IInvoice[] }> {
+  async execute(
+    props: IExecuteProps,
+  ): Promise<{ invoices?: IInvoice[]; preparedPaymentIntentIds?: string[] }> {
     const {
       repository,
       ecommerceModule,
@@ -93,17 +95,25 @@ export class Service {
           const payingHistory =
             props.resumeExisting &&
             order?.type === "history" &&
-            order.status === "paying";
+            [
+              "paying",
+              "paid",
+              "approving",
+              "packaging",
+              "delivering",
+              "delivered",
+            ].includes(order.status);
           if (!order || (!openCart && !payingHistory)) {
             throw new Error(
               "Conflict error. Checkout order is no longer an open cart",
             );
           }
           if (
-            order.subscriptionPeriodInvoiceId ||
-            order.subscriptionPeriodStartsAt ||
-            order.subscriptionPeriodEndsAt ||
-            order.subscriptionRevokedAt
+            !payingHistory &&
+            (order.subscriptionPeriodInvoiceId ||
+              order.subscriptionPeriodStartsAt ||
+              order.subscriptionPeriodEndsAt ||
+              order.subscriptionRevokedAt)
           ) {
             throw new Error(
               "Conflict error. Checkout order has a recorded subscription period",
@@ -121,12 +131,16 @@ export class Service {
         const settledIds = await this.dependencies.settledOrderIds({
           orderIds,
         });
-        if (orderIds.some((id) => settledIds.has(id))) {
+        if (
+          !props.resumeExisting &&
+          orderIds.some((id) => settledIds.has(id))
+        ) {
           throw new Error(
             "Conflict error. Checkout order already has a settled payment",
           );
         }
         let existingInvoices: IInvoice[] | undefined;
+        const preparedPaymentIntentIds: string[] = [];
         if (paymentLinks.length) {
           const intentIds = [
             ...new Set(
@@ -176,32 +190,114 @@ export class Service {
               },
             });
           }
-          const openInvoices = invoices.filter((invoice) =>
-            ["open", "draft"].includes(invoice.status),
+          const invoiceById = new Map(
+            invoices.map((invoice) => [invoice.id, invoice]),
           );
-          const unresolvedIntentIds = intentIds.filter((id) => {
-            const intent = intents.find((entry) => entry.id === id);
-            return !intent || !["failed", "canceled"].includes(intent.status);
-          });
-          if (openInvoices.length || unresolvedIntentIds.length) {
-            const [invoice] = openInvoices;
+          const invoicesByIntentId = new Map<string, IInvoice[]>();
+          for (const link of invoiceLinks) {
+            const invoice = invoiceById.get(link.invoiceId);
+            if (!invoice) {
+              throw new Error(
+                "Conflict error. Cart has an unresolved payment attempt",
+              );
+            }
+            const linked = invoicesByIntentId.get(link.paymentIntentId) ?? [];
+            if (!linked.some((entry) => entry.id === invoice.id)) {
+              linked.push(invoice);
+            }
+            invoicesByIntentId.set(link.paymentIntentId, linked);
+          }
+          for (const intent of intents) {
+            if (!["failed", "canceled"].includes(intent.status)) {
+              continue;
+            }
+            const linked = invoicesByIntentId.get(intent.id) ?? [];
             if (
-              openInvoices.length !== 1 ||
-              !invoice.paymentUrl ||
-              intents.length !== intentIds.length ||
-              !(await this.invoiceCoversSelection(
-                invoice.id,
+              linked.some((invoice) =>
+                ["open", "draft"].includes(invoice.status),
+              )
+            ) {
+              throw new Error(
+                "Conflict error. Cart has an unresolved payment attempt",
+              );
+            }
+          }
+          const activeIntents = intents.filter(
+            (intent) => !["failed", "canceled"].includes(intent.status),
+          );
+          if (intents.length !== intentIds.length) {
+            throw new Error(
+              "Conflict error. Cart has an unresolved payment attempt",
+            );
+          }
+          if (activeIntents.length) {
+            const selectedIntentIds = activeIntents.map((intent) => intent.id);
+            const selectedInvoices = new Map<string, IInvoice>();
+            for (const intent of activeIntents) {
+              const linkedInvoices = invoicesByIntentId.get(intent.id) ?? [];
+              const payable = linkedInvoices.filter((invoice) =>
+                ["open", "draft"].includes(invoice.status),
+              );
+              const paid = linkedInvoices
+                .filter((invoice) => invoice.status === "paid")
+                .sort(
+                  (a, b) =>
+                    new Date(b.createdAt).getTime() -
+                    new Date(a.createdAt).getTime(),
+                );
+              const invoice = payable[0] ?? paid[0];
+              if (payable.length > 1 || (invoice && !invoice.paymentUrl)) {
+                throw new Error(
+                  "Conflict error. Cart has an unresolved payment attempt",
+                );
+              }
+              if (invoice) {
+                selectedInvoices.set(invoice.id, invoice);
+                continue;
+              }
+              const allocations = paymentLinks.filter(
+                (link) => link.billingModulePaymentIntentId === intent.id,
+              );
+              const prepared =
+                intent.checkoutDispatchState === "prepared" &&
+                intent.checkoutProvider &&
+                intent.checkoutCurrencyId &&
+                intent.checkoutMetadata &&
+                allocations.length &&
+                allocations.every(
+                  (link) =>
+                    link.purchaseSnapshot && link.reservationStatus === "held",
+                );
+              const allocatedAmount = allocations.reduce(
+                (total, link) =>
+                  total + moneyMinorUnits(link.purchaseSnapshot?.amount ?? 0),
+                0n,
+              );
+              if (
+                !prepared ||
+                allocatedAmount !== moneyMinorUnits(intent.amount)
+              ) {
+                throw new Error(
+                  "Conflict error. Cart has an unresolved payment attempt; provider outcome is unknown",
+                );
+              }
+              preparedPaymentIntentIds.push(intent.id);
+            }
+            if (
+              !(await this.attemptsCoverSelection(
+                [...selectedInvoices.keys()],
                 orderIds,
-                unresolvedIntentIds,
+                selectedIntentIds,
               ))
             ) {
               throw new Error(
                 "Conflict error. Cart has an unresolved payment attempt",
               );
             }
-            existingInvoices = [invoice];
+            existingInvoices = [...selectedInvoices.values()];
           }
         }
+
         if (props.expectedLines) {
           const lines = await ecommerceModule.ordersToProducts.find({
             params: { filters },
@@ -253,7 +349,12 @@ export class Service {
             },
           });
         }
-        return { invoices: existingInvoices };
+        return {
+          invoices: existingInvoices,
+          ...(preparedPaymentIntentIds.length
+            ? { preparedPaymentIntentIds }
+            : {}),
+        };
       },
     );
   }
@@ -287,33 +388,30 @@ export class Service {
       .join("\n");
   }
 
-  private async invoiceCoversSelection(
-    invoiceId: string,
+  private async attemptsCoverSelection(
+    invoiceIds: string[],
     orderIds: string[],
-    unresolvedIntentIds: string[],
+    selectedIntentIds: string[],
   ): Promise<boolean> {
     const { ecommerceModule, billingModule } = this.dependencies;
-    // Follow the invoice back to every intent and order it will settle.
-    // The forward lookup only sees links for orders selected in the cart.
-    const intentLinks: IIntentInvoice[] =
-      await billingModule.paymentIntentsToInvoices.find({
+    if (invoiceIds.length) {
+      const invoiceLinks = await billingModule.paymentIntentsToInvoices.find({
         params: {
           filters: {
-            and: [{ column: "invoiceId", method: "eq", value: invoiceId }],
+            and: [
+              { column: "invoiceId", method: "inArray", value: invoiceIds },
+            ],
           },
         },
       });
-    const invoiceIntents = new Set(
-      intentLinks.map((link) => link.paymentIntentId),
-    );
-    if (
-      !invoiceIntents.size ||
-      invoiceIntents.size !== unresolvedIntentIds.length ||
-      !unresolvedIntentIds.every((id) => invoiceIntents.has(id))
-    ) {
-      return false;
+      if (
+        invoiceLinks.some(
+          (link) => !selectedIntentIds.includes(link.paymentIntentId),
+        )
+      ) {
+        return false;
+      }
     }
-
     const orderLinks: IOrderIntent[] =
       await ecommerceModule.ordersToBillingModulePaymentIntents.find({
         params: {
@@ -322,20 +420,20 @@ export class Service {
               {
                 column: "billingModulePaymentIntentId",
                 method: "inArray",
-                value: [...invoiceIntents],
+                value: selectedIntentIds,
               },
             ],
           },
         },
       });
-    const invoiceOrders = new Set(orderLinks.map((link) => link.orderId));
+    const linkedOrders = new Set(orderLinks.map((link) => link.orderId));
     const linkedIntents = new Set(
       orderLinks.map((link) => link.billingModulePaymentIntentId),
     );
     return (
-      linkedIntents.size === invoiceIntents.size &&
-      invoiceOrders.size === orderIds.length &&
-      orderIds.every((id) => invoiceOrders.has(id))
+      linkedIntents.size === selectedIntentIds.length &&
+      linkedOrders.size === orderIds.length &&
+      orderIds.every((id) => linkedOrders.has(id))
     );
   }
 }

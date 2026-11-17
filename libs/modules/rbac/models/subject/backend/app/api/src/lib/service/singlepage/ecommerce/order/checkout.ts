@@ -9,6 +9,7 @@ import {
 } from "@sps/shared-utils";
 import { type IBillingModule, type IEcommerceModule } from "../../../../di";
 import { api as ecommerceModuleOrderApi } from "@sps/ecommerce/models/order/sdk/server";
+import type { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
 import { IModel as IBillingModulePaymentIntent } from "@sps/billing/models/payment-intent/sdk/model";
 import { api as billingModulePaymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
 import { api as broadcastModuleChannelApi } from "@sps/broadcast/models/channel/sdk/server";
@@ -180,14 +181,30 @@ export class Service {
         comment: props.comment,
       });
       if (existing.invoices) {
+        const trustedIntent = await this.billingModule.paymentIntent.findById({
+          id: existingPaymentLinks[0].billingModulePaymentIntentId,
+        });
         await this.registerCheckoutObservers({
           orderIds: ecommerceModuleOrders.map((order) => order.id),
           subjectId: props.id,
-          provider: existing.invoices[0]?.provider || props.provider,
+          provider:
+            existing.invoices[0]?.provider ||
+            trustedIntent?.checkoutProvider ||
+            props.provider,
         });
+        await this.resumePreparedCheckout(
+          existing.preparedPaymentIntentIds ?? [],
+        );
+        if (existing.preparedPaymentIntentIds?.length) {
+          return this.existingAttemptInvoices(
+            existing.preparedPaymentIntentIds,
+            existing.invoices,
+          );
+        }
         return { billingModule: { invoices: existing.invoices } };
       }
     }
+
     await new CheckoutLegacy({
       repository: this.dependencies.repository,
       ecommerceModule: this.ecommerceModule,
@@ -1077,6 +1094,22 @@ export class Service {
             { paymentIntentId, lines },
           );
         }
+        for (const attempt of billingModulePaymentIntents) {
+          await this.billingModule.paymentIntent.prepareCheckoutDispatch({
+            id: attempt.billingModulePaymentIntent.id,
+            provider: props.provider,
+            currencyId: attempt.billingModuleCurrencyId,
+            metadata: {
+              ...metadata,
+              ecommerceModule: {
+                ...metadata.ecommerceModule,
+                orders: metadata.ecommerceModule.orders.filter((order) =>
+                  attempt.orderIds.includes(order.id),
+                ),
+              },
+            },
+          });
+        }
         return claim;
       },
     );
@@ -1207,6 +1240,77 @@ export class Service {
       },
     };
   }
+  private async resumePreparedCheckout(ids: string[]) {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Configuration error. RBAC_SECRET_KEY is required");
+    }
+    for (const id of ids) {
+      const intent = await this.billingModule.paymentIntent.findById({ id });
+      if (
+        !intent?.checkoutProvider ||
+        !intent.checkoutCurrencyId ||
+        !intent.checkoutMetadata
+      ) {
+        throw new Error(
+          "Conflict error. Payment attempt has no trusted checkout context",
+        );
+      }
+      await billingModulePaymentIntentApi.provider({
+        id,
+        data: {
+          provider: intent.checkoutProvider,
+          currencyId: intent.checkoutCurrencyId,
+          metadata: intent.checkoutMetadata,
+        },
+        options: { headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY } },
+      });
+    }
+  }
+
+  private async existingAttemptInvoices(
+    ids: string[],
+    existingInvoices: IInvoice[] = [],
+  ) {
+    const links = await this.billingModule.paymentIntentsToInvoices.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "paymentIntentId",
+              method: "inArray",
+              value: [...new Set(ids)],
+            },
+          ],
+        },
+      },
+    });
+    const invoices = await this.billingModule.invoice.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "id",
+              method: "inArray",
+              value: [...new Set(links.map((link) => link.invoiceId))],
+            },
+          ],
+        },
+      },
+    });
+    return {
+      billingModule: {
+        invoices: [
+          ...new Map(
+            [...existingInvoices, ...invoices].map((invoice) => [
+              invoice.id,
+              invoice,
+            ]),
+          ).values(),
+        ],
+      },
+    };
+  }
+
   private async registerCheckoutObservers(scope: {
     orderIds: string[];
     subjectId: string;

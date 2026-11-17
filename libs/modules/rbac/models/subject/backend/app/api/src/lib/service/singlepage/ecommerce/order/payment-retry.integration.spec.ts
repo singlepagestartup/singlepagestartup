@@ -6,6 +6,8 @@ import { api as channelApi } from "@sps/broadcast/models/channel/sdk/server";
 import { api as paymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
 import { randomUUID } from "node:crypto";
 import { Hono } from "hono";
+import { Handler as ProviderHandler } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/controller/singlepage/provider";
+import { Service as Checkout } from "./checkout";
 import { CRUDService, consistencyContext } from "@sps/shared-backend-api";
 import { getPostgresClient } from "@sps/shared-backend-database-config";
 import { logger, signJwt } from "@sps/backend-utils";
@@ -292,7 +294,10 @@ async function fixture(type = "one_off") {
   const http = new Hono().route("/api/ecommerce/orders", orderApp.hono);
   jest.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
     const request = new Request(input as any, init);
-    if (!new URL(request.url).pathname.startsWith("/api/ecommerce/orders")) {
+    if (
+      !new URL(request.url).pathname.startsWith("/api/ecommerce/orders") &&
+      !new URL(request.url).pathname.startsWith("/api/billing/")
+    ) {
       throw new Error(
         `Unexpected fixture request: ${request.method} ${new URL(request.url).pathname}`,
       );
@@ -449,6 +454,10 @@ async function fixture(type = "one_off") {
     return alternative;
   };
   return {
+    http,
+    subjectRepository,
+    price,
+    money,
     buyer,
     stranger,
     subject,
@@ -473,6 +482,248 @@ async function fixture(type = "one_off") {
     store,
   };
 }
+
+async function freshCheckout(f: Awaited<ReturnType<typeof fixture>>) {
+  const { app } = await bootstrapOrder();
+  const freshOrder = app.controller.service as any;
+  const subjectRepository = new SubjectRepository(new SubjectConfiguration());
+  const subjects = new CRUDService(subjectRepository);
+  const ownerPath = paths.owners;
+  const { Repository } = await import(
+    `${ownerPath}/backend/app/api/src/lib/repository`
+  );
+  const { Configuration } = await import(
+    `${ownerPath}/backend/app/api/src/lib/configuration`
+  );
+  const owners = new CRUDService(new Repository(new Configuration()));
+  const ecommerceModule = {
+    ...f.subject.ecommerceModule,
+    order: freshOrder,
+    ordersToProducts: freshOrder.ordersToProducts,
+    ordersToBillingModuleCurrencies: freshOrder.ordersToBillingModuleCurrencies,
+    ordersToBillingModulePaymentIntents:
+      freshOrder.ordersToBillingModulePaymentIntents,
+    storesToProducts: new OfferService(
+      new OfferRepository(new OfferConfiguration()),
+    ),
+  };
+  jest
+    .spyOn(ecommerceModule.storesToProducts, "quoteMany")
+    .mockRejectedValue(new Error("Recovery must not re-quote"));
+  return new Checkout({
+    repository: subjectRepository,
+    findById: ({ id }) => subjects.findById({ id }),
+    settledOrderIds: (input) => f.subject.ecommerceModuleOrderSettledIds(input),
+    ecommerceModule,
+    billingModule: freshOrder.billingModule,
+    subjectsToEcommerceModuleOrders: owners as any,
+  });
+}
+
+async function committedPreparedCheckout(
+  f: Awaited<ReturnType<typeof fixture>>,
+) {
+  const cart = await f.createCart();
+  const input = {
+    id: f.buyer.id,
+    provider: "stripe",
+    email: "original@example.test",
+    comment: "Original buyer terms",
+    ecommerceModule: { orders: [{ id: cart.id }] },
+  };
+  const lock = f.subjectRepository.withSubjectLock.bind(f.subjectRepository);
+  let depth = 0;
+  const crash = jest
+    .spyOn(f.subjectRepository, "withSubjectLock")
+    .mockImplementation(async (scope, run) => {
+      const outer = depth++ === 0;
+      try {
+        const result = await lock(scope, run);
+        if (outer) {
+          throw new Error("simulated-process-stop-after-reservation-commit");
+        }
+        return result;
+      } finally {
+        depth--;
+      }
+    });
+  jest.spyOn(channelApi, "pushMessage").mockResolvedValue({} as any);
+  const provider = jest.spyOn(paymentIntentApi, "provider");
+  await expect(f.subject.ecommerceOrderCheckout(input)).rejects.toThrow(
+    "simulated-process-stop-after-reservation-commit",
+  );
+  crash.mockRestore();
+  expect(provider).not.toHaveBeenCalled();
+  provider.mockRestore();
+  expect(consistencyContext.getStore()?.database).toBeUndefined();
+  const allocations = await f.order.ordersToBillingModulePaymentIntents.find(
+    where("orderId", cart.id),
+  );
+  expect(allocations).toHaveLength(1);
+  const intent = await f.intents.findById({
+    id: allocations[0].billingModulePaymentIntentId,
+  });
+  expect(intent).toMatchObject({
+    checkoutDispatchState: "prepared",
+    checkoutProvider: "stripe",
+    checkoutCurrencyId: f.money.id,
+    amount: 100,
+  });
+  expect(allocations[0]).toMatchObject({
+    reservationStatus: "held",
+    reservationQuantity: 1,
+    purchaseSnapshot: { amount: "100.00", currencyId: f.money.id },
+  });
+  expect(
+    await f.order.billingModule.paymentIntentsToInvoices.find(
+      where("paymentIntentId", intent.id),
+    ),
+  ).toEqual([]);
+  return { cart, input, intent, allocations };
+}
+
+it("recovers a committed unsent reservation through fresh services and sends concurrent retries only once", async () => {
+  const f = await fixture();
+  const saved = await committedPreparedCheckout(f);
+  await f.order.product.attribute.update({
+    id: f.price.id,
+    data: { number: "999" },
+  });
+  const adapter = jest
+    .spyOn(f.intents, "stripe")
+    .mockImplementation(async (props: any) => {
+      expect(props).toMatchObject({
+        entity: { id: saved.intent.id, amount: 100 },
+        email: "original@example.test",
+      });
+      const invoice = await f.invoices.create({
+        data: {
+          amount: props.entity.amount,
+          provider: "stripe",
+          status: "open",
+          paymentUrl: "https://fixture.test/original-allocation",
+        },
+      });
+      await f.order.billingModule.paymentIntentsToInvoices.create({
+        data: { paymentIntentId: props.entity.id, invoiceId: invoice.id },
+      });
+      return invoice;
+    });
+  jest.spyOn(f.intents, "isProviderAllowed").mockReturnValue(true);
+  f.http.post("/api/billing/payment-intents/:uuid/:provider", (c, next) =>
+    new ProviderHandler(f.intents).execute(c, next),
+  );
+  f.http.post("/api/billing/payment-intents-to-currencies", async (c) => {
+    const body = await c.req.parseBody();
+    const result =
+      await f.order.billingModule.paymentIntentsToCurrencies.create({
+        data: JSON.parse(String(body.data)),
+      });
+    return c.json({ data: result }, 201);
+  });
+  const first = await freshCheckout(f);
+  const second = await freshCheckout(f);
+  const altered = {
+    ...saved.input,
+    provider: "paykeeper",
+    email: "changed@example.test",
+    comment: "Changed terms",
+    billingModule: { currency: { id: randomUUID() } },
+  };
+  const concurrent = await Promise.allSettled([
+    first.execute(altered),
+    second.execute(altered),
+  ]);
+  expect(concurrent.some((result) => result.status === "fulfilled")).toBe(true);
+  for (const result of concurrent) {
+    if (result.status === "rejected") {
+      expect(String(result.reason)).toMatch(/in progress|unknown/);
+    }
+  }
+  expect(adapter).toHaveBeenCalledTimes(1);
+  const retry = await (await freshCheckout(f)).execute(altered);
+  expect(retry.billingModule.invoices).toHaveLength(1);
+  expect(retry.billingModule.invoices[0]).toMatchObject({
+    amount: 100,
+    status: "open",
+    provider: "stripe",
+    paymentUrl: "https://fixture.test/original-allocation",
+  });
+  expect(
+    await f.order.ordersToBillingModulePaymentIntents.find(
+      where("orderId", saved.cart.id),
+    ),
+  ).toEqual(saved.allocations);
+  const recovered = await f.intents.findById({ id: saved.intent.id });
+  expect(recovered.checkoutDispatchState).toBe("exposed");
+  expect(recovered.checkoutMetadata).toEqual(saved.intent.checkoutMetadata);
+  expect((await f.order.findById({ id: saved.cart.id })).comment).toBe(
+    "Original buyer terms",
+  );
+  await f.intents.settlePayment({
+    invoiceId: retry.billingModule.invoices[0].id,
+    provider: "stripe",
+    amount: 100,
+  });
+  expect((await f.intents.findById({ id: saved.intent.id })).status).toBe(
+    "succeeded",
+  );
+});
+
+it("preserves an unknown provider outcome after dispatch started instead of inferring unsent from a missing invoice", async () => {
+  const f = await fixture();
+  const saved = await committedPreparedCheckout(f);
+  expect(
+    await f.intents.claimCheckoutDispatch({
+      id: saved.intent.id,
+      provider: "stripe",
+    }),
+  ).toBeTruthy();
+  const provider = jest.spyOn(paymentIntentApi, "provider");
+  await expect((await freshCheckout(f)).execute(saved.input)).rejects.toThrow(
+    "provider outcome is unknown",
+  );
+  expect(provider).not.toHaveBeenCalled();
+  expect(
+    await f.order.ordersToBillingModulePaymentIntents.find(
+      where("orderId", saved.cart.id),
+    ),
+  ).toEqual(saved.allocations);
+  expect(
+    (await f.intents.findById({ id: saved.intent.id })).checkoutDispatchState,
+  ).toBe("dispatching");
+});
+
+it("rejects buyer-written dispatch state and recovery metadata through generic PaymentIntent writes", async () => {
+  const f = await fixture();
+  const saved = await committedPreparedCheckout(f);
+  await expect(
+    f.intents.create({
+      data: {
+        checkoutDispatchState: "prepared",
+        checkoutMetadata: { email: "forged@example.test" },
+      },
+    }),
+  ).rejects.toThrow("server managed");
+  await expect(
+    f.intents.update({
+      id: saved.intent.id,
+      data: {
+        checkoutProvider: "dummy",
+        checkoutMetadata: { email: "forged@example.test" },
+      },
+    }),
+  ).rejects.toThrow("server managed");
+  await expect(
+    f.intents.repository.consumeFirstByField("id", saved.intent.id, {
+      checkoutDispatchState: "prepared",
+      checkoutMetadata: {},
+    }),
+  ).rejects.toThrow("server managed");
+  expect(
+    (await f.intents.findById({ id: saved.intent.id })).checkoutMetadata,
+  ).toEqual(saved.intent.checkoutMetadata);
+});
 
 it("prepares one unambiguous legacy offer for confirmation, then reserves the current purchase", async () => {
   const f = await fixture();

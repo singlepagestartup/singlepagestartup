@@ -3,6 +3,8 @@
 ## Purpose
 
 Orders store cart and checkout information, including status and metadata.
+The cart quantity counts primary line quantities. Attached service lines do not
+increase the badge; a service bought as its own primary line still counts.
 
 ## Fields
 
@@ -27,7 +29,7 @@ Orders store cart and checkout information, including status and metadata.
   next delivery. A unique source-order/invoice pair makes retries return the
   same next-period cart.
 
-## Subscription delivery period
+## Legacy cart and saved payments
 
 An older open cart without an offer cannot pay through a Product price.
 One product with one retail offer is prepared under the Subject and offer locks,
@@ -35,6 +37,8 @@ then requires confirmation of its current quote before a new payment attempt.
 Multiple products, ambiguous offers, missing delivery or unavailable stock leave
 the cart open for correction. Existing durable historical Invoices resume their
 own payment context without a new catalog quote.
+
+## Subscription delivery period
 
 RBAC order proceed calls the internal `acceptSubscriptionPeriod` capability
 after checking the current Subject's ownership and product Role grants. The
@@ -199,3 +203,13 @@ cannot be inferred from payment status alone.
 Scheduled deletion retains marked payment failures and Orders with payment
 links, and rechecks status under the lifecycle lock before deleting an old
 unpaid cancellation.
+
+Checkout can reopen the exact saved payment selection across several currencies.
+It returns the original invoices and their current statuses. A paid currency
+invoice stays paid while an unpaid currency invoice retains its own payment URL;
+selecting only that remaining invoice's complete set of Orders also reuses it.
+Reverse Invoice → Payment Intent → Order checks reject an incomplete selection
+of a shared invoice. Recovery of a committed, unsent purchase uses the saved
+allocation and provider context rather than current catalog prices or retry
+request terms. An unknown provider outcome keeps the attempt and reservation
+pending for reconciliation.

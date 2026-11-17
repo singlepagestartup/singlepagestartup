@@ -11,6 +11,7 @@ import { inject, injectable } from "inversify";
 import { CRUDService, DI, consistencyContext } from "@sps/shared-backend-api";
 import { Table } from "@sps/billing/models/payment-intent/backend/repository/database";
 import { Repository } from "../../repository";
+import type { IPrepareCheckoutDispatch } from "../../repository";
 import Stripe from "stripe";
 import {
   STRIPE_RETURN_URL,
@@ -89,6 +90,28 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       repository: this.repository,
       service: this,
     }).execute(props);
+  }
+
+  async prepareCheckoutDispatch(props: IPrepareCheckoutDispatch) {
+    const prepared = await this.repository.prepareCheckoutDispatch(props);
+    if (!prepared) {
+      throw new Error(
+        "Conflict error. Payment attempt cannot be prepared for dispatch",
+      );
+    }
+    return prepared;
+  }
+
+  claimCheckoutDispatch(props: { id: string; provider: string }) {
+    return this.repository.withPaymentIntentLock(props.id, () =>
+      this.repository.claimCheckoutDispatch(props),
+    );
+  }
+
+  markCheckoutExposed(props: { id: string }) {
+    return this.repository.withPaymentIntentLock(props.id, () =>
+      this.repository.markCheckoutExposed(props.id),
+    );
   }
 
   protected async subscriptionRenewalContext(props: { id: string }) {

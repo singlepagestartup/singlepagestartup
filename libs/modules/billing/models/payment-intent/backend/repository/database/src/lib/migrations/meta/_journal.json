@@ -15,6 +15,13 @@
       "when": 1794872400267,
       "tag": "0001_magical_warlock",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794877692205,
+      "tag": "0002_brief_stature",
+      "breakpoints": true
     }
   ]
 }

@@ -61,6 +61,9 @@ describe("Given: the payment-intent provider handler", () => {
       }),
       findById: jest.fn().mockResolvedValue(paymentIntent),
       dummy: jest.fn(),
+      stripe: jest.fn(),
+      claimCheckoutDispatch: jest.fn().mockResolvedValue(true),
+      markCheckoutExposed: jest.fn(),
       settleFreePayment: jest.fn(),
       billingModule: {
         currency: {
@@ -116,6 +119,42 @@ describe("Given: the payment-intent provider handler", () => {
       expect(fetchMock).not.toHaveBeenCalled();
     },
   );
+
+  it("uses frozen checkout terms and omits recovery fields from a durable provider response", async () => {
+    const service = createService({ allowedProviders: ["stripe"] });
+    const durable = {
+      ...paymentIntent,
+      checkoutDispatchState: "prepared",
+      checkoutProvider: "stripe",
+      checkoutCurrencyId: "original-currency",
+      checkoutMetadata: {
+        email: "original@example.test",
+        ecommerceModule: { orders: [{ id: "private-order" }] },
+      },
+      checkoutDispatchStartedAt: null,
+    };
+    service.findById.mockResolvedValue(durable);
+    service.stripe.mockResolvedValue(durable);
+    const response = await createPayment({ service, provider: "stripe" });
+    expect(response.status).toBe(201);
+    expect(service.billingModule.currency.findById).toHaveBeenCalledWith({
+      id: "original-currency",
+    });
+    expect(service.stripe).toHaveBeenCalledWith(
+      expect.objectContaining({
+        email: "original@example.test",
+        entity: durable,
+      }),
+    );
+    expect(service.claimCheckoutDispatch).toHaveBeenCalledWith({
+      id: paymentIntent.id,
+      provider: "stripe",
+    });
+    expect(service.markCheckoutExposed).toHaveBeenCalledWith({
+      id: paymentIntent.id,
+    });
+    await expect(response.json()).resolves.toEqual({ data: paymentIntent });
+  });
 
   const fetchMock = jest.fn();
   const originalFetch = global.fetch;
