@@ -27,7 +27,7 @@ const attributes = [
 ];
 jest.mock("@sps/shared-utils", () =>
   jest.requireActual(
-    "../../../../../../../../../../shared/utils/src/lib/constants/ecommerce",
+    "../../../../../../../../../../shared/utils/src/lib/constants",
   ),
 );
 jest.mock(
@@ -46,12 +46,11 @@ jest.mock(
   () => ({
     Component: ({ children, apiProps }: any) =>
       children({
-        data: [
-          {
-            id: apiProps.params.filters.and[0].value,
-            attributeKeyId: apiProps.params.filters.and[0].value,
-          },
-        ],
+        data: apiProps.params.filters.and[0].value.map((id: string) => ({
+          id,
+          attributeId: id,
+          attributeKeyId: id,
+        })),
       }),
   }),
 );
@@ -59,8 +58,8 @@ jest.mock("@sps/ecommerce/models/attribute-key/frontend/component", () => ({
   Component: ({ children, variant, apiProps, data, language }: any) =>
     variant === "find" ? (
       children({
-        data: attributeKeys.filter(
-          (key) => key.id === apiProps.params.filters.and[0].value,
+        data: attributeKeys.filter((key) =>
+          apiProps.params.filters.and[0].value.includes(key.id),
         ),
       })
     ) : (
@@ -80,4 +79,35 @@ it("omits internal formula rows and keeps the localized buyer characteristic", (
   expect(screen.getByText("Дуб")).toBeTruthy();
   expect(screen.queryAllByText("—")).toHaveLength(0);
   expect(screen.queryByText("unit_price * quantity")).toBeNull();
+});
+
+it("counts only buyer attributes when collapsing the remaining characteristics", () => {
+  for (let index = 0; index < 3; index += 1) {
+    attributeKeys.push({
+      id: `feature-${index}`,
+      slug: `feature-${index}`,
+      field: "string",
+      title: { ru: `Характеристика ${index}` },
+    });
+    attributes.push({
+      id: `feature-${index}`,
+      attributeId: `feature-${index}`,
+      string: { ru: `Значение ${index}` },
+    });
+  }
+  try {
+    render(
+      <Component
+        data={{ id: "product" } as any}
+        isServer={false}
+        language="ru"
+      />,
+    );
+    expect(screen.getByText("Ещё характеристик: 1")).toBeTruthy();
+    expect(screen.queryAllByText("—")).toHaveLength(0);
+    expect(screen.getByText("Цвет")).toBeTruthy();
+  } finally {
+    attributeKeys.splice(3);
+    attributes.splice(3);
+  }
 });

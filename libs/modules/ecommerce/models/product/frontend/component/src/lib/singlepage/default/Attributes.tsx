@@ -13,72 +13,77 @@ export function Component(props: IProductAttributesProps) {
           params: {
             filters: {
               and: [
-                {
-                  column: "productId",
-                  method: "eq",
-                  value: props.data.id,
-                },
+                { column: "productId", method: "eq", value: props.data.id },
               ],
             },
           },
         }}
       >
-        {({ data }) => {
-          const rows = data?.map((productToAttribute) => {
-            return (
-              <AttributeKeysToAttributes
-                key={productToAttribute.id}
-                isServer={props.isServer}
-                variant="find"
-                apiProps={{
-                  params: {
-                    filters: {
-                      and: [
-                        {
-                          column: "attributeId",
-                          method: "eq",
-                          value: productToAttribute.attributeId,
-                        },
-                      ],
-                    },
+        {({ data: productsToAttributes }) => {
+          if (!productsToAttributes?.length) return null;
+          return (
+            <AttributeKeysToAttributes
+              isServer={props.isServer}
+              variant="find"
+              apiProps={{
+                params: {
+                  filters: {
+                    and: [
+                      {
+                        column: "attributeId",
+                        method: "inArray",
+                        value: productsToAttributes.map(
+                          (link) => link.attributeId,
+                        ),
+                      },
+                    ],
                   },
-                }}
-              >
-                {({ data: attributeKeysToAttributes }) => {
-                  return attributeKeysToAttributes?.map(
-                    (attributeKeyToAttribute) => {
-                      return (
-                        <AttributeKey
-                          key={attributeKeyToAttribute.id}
-                          isServer={props.isServer}
-                          variant="find"
-                          apiProps={{
-                            params: {
-                              filters: {
-                                and: [
-                                  {
-                                    column: "id",
-                                    method: "eq",
-                                    value:
-                                      attributeKeyToAttribute.attributeKeyId,
-                                  },
-                                ],
-                              },
+                },
+              }}
+            >
+              {({ data: attributeKeysToAttributes }) => {
+                if (!attributeKeysToAttributes?.length) return null;
+                return (
+                  <AttributeKey
+                    isServer={props.isServer}
+                    variant="find"
+                    apiProps={{
+                      params: {
+                        filters: {
+                          and: [
+                            {
+                              column: "id",
+                              method: "inArray",
+                              value: attributeKeysToAttributes.map(
+                                (link) => link.attributeKeyId,
+                              ),
                             },
-                          }}
-                        >
-                          {({ data }) => {
-                            return data
-                              ?.filter(
-                                (attributeKey) =>
-                                  !PRODUCT_TECHNICAL_ATTRIBUTE_SLUGS.includes(
-                                    attributeKey.slug,
-                                  ),
-                              )
-                              .map((attributeKey) => {
-                                return (
+                          ],
+                        },
+                      },
+                    }}
+                  >
+                    {({ data: attributeKeys }) => {
+                      const rows = productsToAttributes.flatMap(
+                        (productToAttribute) =>
+                          attributeKeysToAttributes
+                            .filter(
+                              (link) =>
+                                link.attributeId ===
+                                productToAttribute.attributeId,
+                            )
+                            .flatMap((link) =>
+                              (attributeKeys ?? [])
+                                .filter(
+                                  (key) =>
+                                    key.id === link.attributeKeyId &&
+                                    !PRODUCT_TECHNICAL_ATTRIBUTE_SLUGS.includes(
+                                      key.slug,
+                                    ),
+                                )
+                                .map((attributeKey) => (
                                   <div
-                                    key={attributeKey.id}
+                                    key={`${productToAttribute.id}-${attributeKey.id}`}
                                     className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-3 border-b border-border/60 py-2.5 text-sm last:border-0"
                                   >
                                     <AttributeKey
@@ -102,31 +107,29 @@ export function Component(props: IProductAttributesProps) {
                                       language={props.language}
                                     />
                                   </div>
-                                );
-                              });
-                          }}
-                        </AttributeKey>
+                                )),
+                            ),
                       );
-                    },
-                  );
-                }}
-              </AttributeKeysToAttributes>
-            );
-          });
-          if (!rows?.length) return null;
-          if (props.showAll || rows.length <= 3) return rows;
-          return (
-            <>
-              {rows.slice(0, 3)}
-              <details className="group">
-                <summary className="cursor-pointer py-3 text-xs font-medium text-muted-foreground underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2">
-                  {props.language === "ru"
-                    ? `Ещё характеристик: ${rows.length - 3}`
-                    : `Show ${rows.length - 3} more attributes`}
-                </summary>
-                {rows.slice(3)}
-              </details>
-            </>
+                      if (!rows.length) return null;
+                      if (props.showAll || rows.length <= 3) return rows;
+                      return (
+                        <>
+                          {rows.slice(0, 3)}
+                          <details className="group">
+                            <summary className="cursor-pointer py-3 text-xs font-medium text-muted-foreground underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2">
+                              {props.language === "ru"
+                                ? `Ещё характеристик: ${rows.length - 3}`
+                                : `Show ${rows.length - 3} more attributes`}
+                            </summary>
+                            {rows.slice(3)}
+                          </details>
+                        </>
+                      );
+                    }}
+                  </AttributeKey>
+                );
+              }}
+            </AttributeKeysToAttributes>
           );
         }}
       </ProductsToAttributes>
