@@ -7,6 +7,7 @@ export const fields = {
   updatedAt: pgCore.timestamp("updated_at").notNull().defaultNow(),
   variant: pgCore.text("variant").notNull().default("default"),
   isDefault: pgCore.boolean("is_default").notNull().default(false),
+  minorUnitDigits: pgCore.integer("minor_unit_digits"),
   symbol: pgCore.text("symbol").notNull(),
   title: pgCore.text("title").notNull(),
   adminTitle: pgCore

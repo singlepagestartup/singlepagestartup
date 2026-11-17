@@ -1,0 +1,15 @@
+{
+  "id": "2d111738-d57c-473d-9937-6936a87e9f53",
+  "createdAt": "2026-11-17T00:05:36.140Z",
+  "updatedAt": "2026-11-17T00:05:36.140Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "1"
+  },
+  "adminTitle": "pro-formula-version",
+  "slug": "pro-formula-version"
+}

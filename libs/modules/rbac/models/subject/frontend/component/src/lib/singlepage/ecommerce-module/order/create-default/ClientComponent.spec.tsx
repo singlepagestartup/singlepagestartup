@@ -1,87 +1,158 @@
 /** @jest-environment jsdom */
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-const mutateAsync = jest.fn();
-let currencies: { id: string }[] | undefined;
+const mockCreate = jest.fn();
+let mockOffers: any[];
+let mockLoading = false;
+let mockIssues: any[] = [];
+let mockAmount = "5000";
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   api: {
-    ecommerceModuleOrderCreate: () => ({ mutateAsync, isPending: false }),
+    ecommerceModuleOrderCreate: () => ({
+      mutateAsync: mockCreate,
+      isPending: false,
+    }),
   },
+}));
+jest.mock("@sps/ecommerce/relations/stores-to-products/sdk/client", () => ({
+  api: {
+    find: () => ({ data: mockOffers, isPending: mockLoading }),
+    quote: ({ data }: any) => ({
+      data: data.offerId
+        ? {
+            ...data,
+            amount: mockAmount,
+            currencyIds: ["rub"],
+            availableQuantity: 5,
+            issues: mockIssues,
+            charges: [],
+          }
+        : undefined,
+      isFetching: false,
+    }),
+  },
+}));
+jest.mock("@sps/ecommerce/models/store/sdk/client", () => ({
+  api: {
+    find: () => ({
+      data: [
+        { id: "store-a", title: { ru: "Магазин А" } },
+        { id: "store-b", title: { ru: "Магазин Б" } },
+      ],
+    }),
+  },
+}));
+jest.mock("@sps/billing/models/currency/sdk/client", () => ({
+  api: { find: () => ({ data: [{ id: "rub", slug: "rub", symbol: "₽" }] }) },
 }));
 jest.mock("@sps/shared-frontend-client-utils", () => ({
-  cn: (...values: unknown[]) => values.filter(Boolean).join(" "),
+  cn: (...values: any[]) => values.filter(Boolean).join(" "),
 }));
 jest.mock("@sps/shared-ui-shadcn", () => ({
-  Button: ({ children, ...props }: any) => (
+  Button: ({ children, variant, ...props }: any) => (
     <button {...props}>{children}</button>
   ),
-  Form: ({ children }: any) => <>{children}</>,
-}));
-jest.mock("@sps/ui-adapter", () => ({ FormField: () => null }));
-jest.mock("@sps/ecommerce/models/product/frontend/component", () => ({
-  Component: (props: any) => {
-    const React = jest.requireActual<typeof import("react")>("react");
-    React.useEffect(() => {
-      if (currencies !== undefined) props.onCurrenciesResolved(currencies);
-    }, [props.onCurrenciesResolved, currencies]);
-    return null;
-  },
 }));
 import { Component } from "./ClientComponent";
-const props = {
-  variant: "ecommerce-module-order-create-default",
-  language: "ru",
+const props: any = {
   data: { id: "subject" },
+  language: "ru",
+  variant: "ecommerce-module-order-create-default",
   ecommerceModuleProduct: { id: "product" },
-} as any;
+};
 beforeEach(() => {
-  jest.clearAllMocks();
-  currencies = undefined;
-  mutateAsync.mockResolvedValue({});
+  mockCreate.mockReset().mockResolvedValue({});
+  mockOffers = [
+    {
+      id: "offer-a",
+      variant: "default",
+      productId: "product",
+      storeId: "store-a",
+      sku: "A",
+    },
+  ];
+  mockLoading = false;
+  mockIssues = [];
+  mockAmount = "5000";
 });
-it("keeps the control disabled while currencies load", () => {
+it("submits the exact unique retail offer with a supported currency", async () => {
   render(<Component {...props} />);
-  expect(
-    screen
-      .getByRole("button", { name: "Добавить в корзину" })
-      .hasAttribute("disabled"),
-  ).toBe(true);
-});
-it("refuses an unpriced product locally and sends no mutation", async () => {
-  currencies = [];
-  render(<Component {...props} />);
-  const button = await screen.findByRole("button", { name: "Нет цены" });
-  expect(button.hasAttribute("disabled")).toBe(true);
+  const button = screen.getByRole("button", { name: "Добавить в корзину" });
+  await waitFor(() => expect(button.hasAttribute("disabled")).toBe(false));
   fireEvent.click(button);
-  expect(mutateAsync).not.toHaveBeenCalled();
-});
-it("submits a priced product and shows success", async () => {
-  currencies = [{ id: "rub" }];
-  render(<Component {...props} />);
-  fireEvent.click(screen.getByRole("button", { name: "Добавить в корзину" }));
   await waitFor(() =>
-    expect(mutateAsync).toHaveBeenCalledWith({
+    expect(mockCreate).toHaveBeenCalledWith({
       id: "subject",
-      data: expect.objectContaining({ productId: "product", quantity: 1 }),
+      data: {
+        productId: "product",
+        offerId: "offer-a",
+        storeId: "store-a",
+        quantity: 1,
+        billingModuleCurrencyId: "rub",
+      },
     }),
   );
   expect((await screen.findByRole("status")).textContent).toContain(
-    "Товар в корзине.",
+    "Товар в корзине",
   );
 });
-it("shows an API rejection without marking the product added", async () => {
-  currencies = [{ id: "rub" }];
-  mutateAsync.mockRejectedValue(new Error("Price changed"));
+it("requires a store choice when two offers sell the same Product", async () => {
+  mockOffers.push({
+    id: "offer-b",
+    variant: "default",
+    productId: "product",
+    storeId: "store-b",
+    sku: "B",
+  });
   render(<Component {...props} />);
-  fireEvent.click(screen.getByRole("button", { name: "Добавить в корзину" }));
-  expect((await screen.findByRole("alert")).textContent).toContain(
-    "Price changed",
+  const button = screen.getByRole("button", { name: "Добавить в корзину" });
+  expect(button.hasAttribute("disabled")).toBe(true);
+  fireEvent.change(screen.getAllByRole("combobox")[0], {
+    target: { value: "offer-b" },
+  });
+  await waitFor(() => expect(button.hasAttribute("disabled")).toBe(false));
+  fireEvent.click(button);
+  await waitFor(() =>
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          offerId: "offer-b",
+          storeId: "store-b",
+        }),
+      }),
+    ),
   );
-  expect(screen.queryByRole("status")).toBeNull();
 });
-it("does not reuse the previous product price state while another product loads", () => {
-  currencies = [{ id: "rub" }];
+it("blocks stock and configuration errors locally", () => {
+  mockIssues = [
+    { code: "insufficient_stock", offerId: "offer-a", message: "Available 0" },
+  ];
+  render(<Component {...props} />);
+  expect(
+    screen
+      .getByRole("button", { name: "Добавить в корзину" })
+      .hasAttribute("disabled"),
+  ).toBe(true);
+  expect(mockCreate).not.toHaveBeenCalled();
+});
+it("lets the buyer finish delivery selection in the cart", async () => {
+  mockIssues = [
+    {
+      code: "delivery_required",
+      offerId: "offer-a",
+      message: "Choose delivery",
+    },
+  ];
+  render(<Component {...props} />);
+  await waitFor(() =>
+    expect(
+      screen
+        .getByRole("button", { name: "Добавить в корзину" })
+        .hasAttribute("disabled"),
+    ).toBe(false),
+  );
+});
+it("does not reuse a previous Product's loaded offer", () => {
   const view = render(<Component {...props} />);
-  currencies = undefined;
   view.rerender(
     <Component {...props} ecommerceModuleProduct={{ id: "different" }} />,
   );
@@ -91,18 +162,77 @@ it("does not reuse the previous product price state while another product loads"
       .hasAttribute("disabled"),
   ).toBe(true);
 });
+it("shows an API failure without marking the offer added", async () => {
+  mockCreate.mockRejectedValue(new Error("Offer terms changed"));
+  render(<Component {...props} />);
+  const button = screen.getByRole("button", { name: "Добавить в корзину" });
+  await waitFor(() => expect(button.hasAttribute("disabled")).toBe(false));
+  fireEvent.click(button);
+  expect((await screen.findByRole("alert")).textContent).toContain(
+    "Offer terms changed",
+  );
+  expect(screen.queryByRole("status")).toBeNull();
+});
 
-it("submits the selected product after the same form switches products", async () => {
-  currencies = [{ id: "rub" }];
-  const view = render(<Component {...props} />);
-  view.rerender(
-    <Component {...props} ecommerceModuleProduct={{ id: "different" }} />,
-  );
-  fireEvent.click(screen.getByRole("button", { name: "Добавить в корзину" }));
+it("excludes provider offers from the buyer's store selector", async () => {
+  mockOffers.push({
+    id: "provider-offer",
+    variant: "provider",
+    productId: "product",
+    storeId: "store-b",
+    sku: "PROVIDER",
+  });
+  render(<Component {...props} />);
+  expect(screen.queryByRole("option", { name: /PROVIDER/ })).toBeNull();
   await waitFor(() =>
-    expect(mutateAsync).toHaveBeenCalledWith({
-      id: "subject",
-      data: expect.objectContaining({ productId: "different" }),
-    }),
+    expect(
+      screen
+        .getByRole("button", { name: "Добавить в корзину" })
+        .hasAttribute("disabled"),
+    ).toBe(false),
   );
+});
+it("offers a service separately only when its retail offer is standalone", async () => {
+  mockOffers = [
+    {
+      id: "linked-service",
+      variant: "default",
+      productId: "product",
+      storeId: "store-a",
+      sku: "LINKED",
+      settings: { standalone: false },
+    },
+    {
+      id: "standalone-service",
+      variant: "default",
+      productId: "product",
+      storeId: "store-b",
+      sku: "STANDALONE",
+      settings: { standalone: true },
+    },
+  ];
+  render(
+    <Component
+      {...props}
+      ecommerceModuleProduct={{ id: "product", kind: "service" }}
+    />,
+  );
+  expect(screen.queryByRole("option", { name: /LINKED/ })).toBeNull();
+  expect(screen.getByRole("option", { name: /STANDALONE/ })).toBeTruthy();
+  await waitFor(() =>
+    expect(
+      screen
+        .getByRole("button", { name: "Добавить в корзину" })
+        .hasAttribute("disabled"),
+    ).toBe(false),
+  );
+});
+it("renders the quoted amount after a quantity change without calculating money in the browser", () => {
+  const view = render(<Component {...props} />);
+  mockAmount = "1234.56";
+  fireEvent.change(screen.getByLabelText("Количество"), {
+    target: { value: "2" },
+  });
+  expect(screen.getByText(/1234.56/)).toBeTruthy();
+  expect(screen.queryByText(/10000/)).toBeNull();
 });

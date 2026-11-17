@@ -1,5 +1,13 @@
+import type { Service as EcommerceCatalog } from "./ecommerce/catalog";
 import type { Service as SecurityNotifications } from "./security-notifications";
 import { Service as MutateCart } from "../startup/ecommerce/order/mutate-cart";
+import { Service as CartSelection } from "../startup/ecommerce/order/selection";
+import { Service as CartDetails } from "../startup/ecommerce/order/cart-details";
+import type { IExecuteProps as ICartDetailsProps } from "./ecommerce/order/cart-details";
+import type {
+  IExecuteProps as ICartSelectionProps,
+  IQuoteProps as ICartQuoteProps,
+} from "./ecommerce/order/selection";
 import type { IExecuteProps as IMutateCartProps } from "./ecommerce/order/mutate-cart";
 import { Service as MergeGuestCart } from "../startup/ecommerce/order/merge-guest-cart";
 import { Service as RepeatOrder } from "../startup/ecommerce/order/repeat";
@@ -228,6 +236,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     @inject(SubjectDI.IBlogModule) blogModule: IBlogModule,
     @inject(SubjectDI.ISubjectsToBlogModuleArticlesService)
     subjectsToBlogModuleArticles: SubjectsToBlogModuleArticlesService,
+    @inject(SubjectDI.IEcommerceCatalogService)
+    readonly ecommerceCatalog: EcommerceCatalog,
   ) {
     super(repository);
     this.socialModule = socialModule;
@@ -269,6 +279,24 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       repository: this.repository,
       service: this,
     }).execute(props);
+  }
+
+  async ecommerceModuleOrderSelection(props: ICartSelectionProps) {
+    return new CartSelection({
+      repository: this.repository,
+      service: this,
+    }).execute(props);
+  }
+
+  async ecommerceModuleCartQuote(props: ICartQuoteProps) {
+    return new CartSelection({
+      repository: this.repository,
+      service: this,
+    }).quote(props);
+  }
+
+  async ecommerceModuleOrderCartDetails(props: ICartDetailsProps) {
+    return new CartDetails({ service: this }).execute(props);
   }
 
   async ecommerceModuleOrderRepeat(props: IRepeatOrderProps) {

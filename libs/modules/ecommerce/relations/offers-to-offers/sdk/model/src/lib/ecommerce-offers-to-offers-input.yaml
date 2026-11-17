@@ -1,0 +1,3 @@
+type: string
+description: JSON string
+example: '{"variant": "delivery", "orderIndex": 0, "className": "example-class", "sourceOfferId": "00000000-0000-0000-0000-000000000000", "targetOfferId": "00000000-0000-0000-0000-000000000000"}'

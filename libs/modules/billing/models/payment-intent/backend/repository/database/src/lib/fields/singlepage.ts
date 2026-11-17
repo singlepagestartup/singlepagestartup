@@ -5,7 +5,10 @@ export const fields = {
   createdAt: pgCore.timestamp("created_at").notNull().defaultNow(),
   updatedAt: pgCore.timestamp("updated_at").notNull().defaultNow(),
   variant: pgCore.text("variant").notNull().default("default"),
-  amount: pgCore.integer("amount").notNull().default(0),
+  amount: pgCore
+    .numeric("amount", { precision: 24, scale: 8, mode: "number" })
+    .notNull()
+    .default(0),
   status: pgCore.text("status").notNull().default("requires_payment_method"),
   interval: pgCore.text("interval"),
   type: pgCore.text("type").notNull().default("one_off"),

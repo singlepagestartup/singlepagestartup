@@ -3,6 +3,7 @@ import { Component as SharedIcon } from "../../../../shared/icon";
 import type { Meta, StoryObj } from "@storybook/react";
 
 import { defaultProductCardProps } from "./Component";
+import type { IProductCardOffer } from "../../interface";
 
 const meta = {
   id: "modules-ecommerce-models-product-singlepage-card",
@@ -240,5 +241,93 @@ export const RelatedData: Story = {
         alt: "A moment of focus",
       },
     ],
+  },
+};
+
+const wardrobeOffers: IProductCardOffer[] = [
+  {
+    id: "offer-wardrobe-a",
+    storeId: "store-a",
+    storeName: "Store A",
+    sku: "WARDROBE-A",
+    prices: [
+      { id: "rub", code: "RUB", symbol: "₽", amount: 5000 },
+      { id: "usd", code: "USD", symbol: "$", amount: 60 },
+    ],
+    availableQuantity: 3,
+    fulfillmentSummary:
+      "Pickup in Saint Petersburg or delivery from 1,000 ₽. Assembly 2,000 ₽ per unit.",
+  },
+  {
+    id: "offer-wardrobe-b",
+    storeId: "store-b",
+    storeName: "Store B",
+    sku: "WARDROBE-B",
+    prices: [{ id: "rub", code: "RUB", symbol: "₽", amount: 5400 }],
+    availableQuantity: 1,
+    fulfillmentSummary: "Delivery 500 ₽. Assembly 1,500 ₽ per unit.",
+  },
+];
+
+export const StoreOffers: Story = {
+  name: "store offers",
+  args: {
+    id: "product-wardrobe",
+    slug: "wardrobe",
+    title: "Wardrobe",
+    category: "Furniture",
+    badge: "Physical product",
+    showMedia: false,
+    shortDescription:
+      "The same wardrobe and configuration, offered by two stores.",
+    attributes: [
+      {
+        id: "configuration",
+        label: "Configuration",
+        value: "Two doors · oak finish",
+      },
+    ],
+    options: [],
+    offers: wardrobeOffers,
+    initialOfferId: "offer-wardrobe-a",
+    initialCurrencyId: "rub",
+    priceNote:
+      "Product total. Choose delivery and assembly for this item in the cart.",
+  },
+};
+
+export const SharedStockAcrossCurrencies: Story = {
+  name: "stock shared across currencies",
+  args: { ...StoreOffers.args, initialQuantity: 3, initialCurrencyId: "usd" },
+};
+
+export const SoldOutOffer: Story = {
+  name: "sold out offer",
+  args: {
+    ...StoreOffers.args,
+    offers: [{ ...wardrobeOffers[0], availableQuantity: 0 }, wardrobeOffers[1]],
+  },
+};
+
+export const InvalidStock: Story = {
+  name: "invalid stock configuration",
+  args: {
+    ...StoreOffers.args,
+    offers: [
+      {
+        ...wardrobeOffers[0],
+        unavailableReason:
+          "Cannot calculate: the seller’s stock value is invalid.",
+      },
+      wardrobeOffers[1],
+    ],
+  },
+};
+
+export const UnlimitedOffer: Story = {
+  name: "unlimited offer",
+  args: {
+    ...StoreOffers.args,
+    offers: [{ ...wardrobeOffers[0], availableQuantity: null }],
   },
 };

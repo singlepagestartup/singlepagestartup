@@ -6,10 +6,13 @@ import type { IModel as IOrder } from "@sps/ecommerce/models/order/sdk/model";
 import type { IModel as IOrderLine } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
 import type { Repository } from "../../../../repository";
 import type { Service as SubjectService } from "../../index";
+import { randomUUID } from "node:crypto";
+import type { IModel as IPaymentLink } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/model";
 
 export interface IExecuteProps {
   subjectId: string;
   orderId: string;
+  mode?: "next-period";
 }
 
 export interface IResult {
@@ -33,6 +36,9 @@ export class Service {
   constructor(private readonly dependencies: IConstructorProps) {}
 
   async execute(props: IExecuteProps): Promise<IResult> {
+    if (props.mode === "next-period") {
+      return this.nextPeriod(props);
+    }
     const { repository, service } = this.dependencies;
     return repository.withSubjectLock(
       { subjectId: props.subjectId },
@@ -159,6 +165,9 @@ export class Service {
               "Permission error. Initial Free is available only through authentication bootstrap",
             );
           }
+          if (line.offerId) {
+            continue;
+          }
           const resolvedCurrencyId =
             await service.ecommerceModuleResolveOrderCurrency({
               productId: line.productId,
@@ -170,12 +179,14 @@ export class Service {
             );
           }
         }
-        await service.ecommerceModule.order.findByIdCheckoutAttributesByCurrency(
-          {
-            id: source.id,
-            billingModuleCurrencyId,
-          },
-        );
+        if (!lines.some((line) => line.offerId)) {
+          await service.ecommerceModule.order.findByIdCheckoutAttributesByCurrency(
+            {
+              id: source.id,
+              billingModuleCurrencyId,
+            },
+          );
+        }
 
         const replaceable: IOrder[] = [];
         for (const cart of carts) {
@@ -212,19 +223,43 @@ export class Service {
         if (!owner) {
           throw new Error("Not Found error. No order owner found");
         }
-        for (const line of lines) {
+        const createdLineIds = new Map<string, string>();
+        for (const line of [...lines].sort(
+          (left, right) =>
+            Number(Boolean(left.parentLineId)) -
+            Number(Boolean(right.parentLineId)),
+        )) {
+          const parentLineId = line.parentLineId
+            ? createdLineIds.get(line.parentLineId)
+            : null;
+          if (line.parentLineId && !parentLineId) {
+            throw new Error(
+              "Validation error. Source service has no primary item",
+            );
+          }
           const created = await service.ecommerceModule.ordersToProducts.create(
             {
               data: {
                 orderId: order.id,
                 productId: line.productId,
                 quantity: line.quantity,
+                ...(line.offerId
+                  ? {
+                      offerId: line.offerId,
+                      parentLineId,
+                      destination: line.destination,
+                      recurrence: line.recurrence,
+                      quoteVersion: line.quoteVersion,
+                      quoteExpiresAt: line.quoteExpiresAt,
+                    }
+                  : {}),
               },
             },
           );
           if (!created) {
             throw new Error("Not Found error. No orders to products found");
           }
+          createdLineIds.set(line.id, created.id);
         }
         const storeLink = await service.ecommerceModule.storesToOrders.create({
           data: { orderId: order.id, storeId },
@@ -240,6 +275,261 @@ export class Service {
           throw new Error(
             "Not Found error. No orders to billing module currencies found",
           );
+        }
+        return { orderIds: [order.id] };
+      },
+    );
+  }
+
+  private async nextPeriod(props: IExecuteProps): Promise<IResult> {
+    const { repository, service } = this.dependencies;
+    await service.ecommerceModuleOrderAssertAccess(props);
+    const source = await service.ecommerceModule.order.findById({
+      id: props.orderId,
+    });
+    if (
+      !source ||
+      source.type !== "history" ||
+      !source.subscriptionPeriodInvoiceId ||
+      source.subscriptionRevokedAt ||
+      !source.subscriptionPeriodEndsAt ||
+      new Date(source.subscriptionPeriodEndsAt).getTime() > Date.now()
+    ) {
+      throw new Error(
+        "Conflict error. A separately paid subscription period is not due",
+      );
+    }
+    const paymentLinks: IPaymentLink[] =
+      await service.ecommerceModule.ordersToBillingModulePaymentIntents.find({
+        params: {
+          filters: {
+            and: [{ column: "orderId", method: "eq", value: source.id }],
+          },
+        },
+      });
+    const invoiceLinks =
+      await service.billingModule.paymentIntentsToInvoices.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "invoiceId",
+                method: "eq",
+                value: source.subscriptionPeriodInvoiceId,
+              },
+            ],
+          },
+        },
+      });
+    const intentIds = [
+      ...new Set<string>(
+        (invoiceLinks as { paymentIntentId: string }[])
+          .map((link) => link.paymentIntentId)
+          .filter((id) =>
+            paymentLinks.some(
+              (link) => link.billingModulePaymentIntentId === id,
+            ),
+          ),
+      ),
+    ];
+    if (intentIds.length !== 1) {
+      throw new Error(
+        "Conflict error. Saved subscription payment is ambiguous",
+      );
+    }
+    const [intent, invoice] = await Promise.all([
+      service.billingModule.paymentIntent.findById({ id: intentIds[0] }),
+      service.billingModule.invoice.findById({
+        id: source.subscriptionPeriodInvoiceId,
+      }),
+    ]);
+    const snapshots = paymentLinks
+      .filter(
+        (link) =>
+          link.billingModulePaymentIntentId === intentIds[0] &&
+          link.purchaseSnapshot,
+      )
+      .map((link) => link.purchaseSnapshot!);
+    const main = snapshots.find(
+      (snapshot) => snapshot.charge.role === "product",
+    );
+    if (
+      intent?.type !== "one_off" ||
+      intent.status !== "succeeded" ||
+      invoice?.status !== "paid" ||
+      !main ||
+      main.purchaseType !== "subscription" ||
+      !main.interval
+    ) {
+      throw new Error(
+        "Conflict error. Next period requires a confirmed separately paid subscription",
+      );
+    }
+    const prior = await service.ecommerceModule.order.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "subscriptionSourceOrderId",
+              method: "eq",
+              value: source.id,
+            },
+            {
+              column: "subscriptionSourceInvoiceId",
+              method: "eq",
+              value: source.subscriptionPeriodInvoiceId,
+            },
+          ],
+        },
+      },
+    });
+    if (prior.length) {
+      if (prior.length !== 1) {
+        throw new Error(
+          "Conflict error. Next subscription period is ambiguous",
+        );
+      }
+      await service.ecommerceModuleOrderAssertAccess({
+        ...props,
+        orderId: prior[0].id,
+      });
+      return { orderIds: [prior[0].id] };
+    }
+    const primaryId = randomUUID();
+    const selected = snapshots.filter(
+      (snapshot) =>
+        snapshot.charge.role === "product" ||
+        snapshot.charge.recurrence === "each",
+    );
+    const childIds = new Map(
+      selected
+        .filter((snapshot) => snapshot.charge.role !== "product")
+        .map((snapshot) => [snapshot.charge.offerId, randomUUID()]),
+    );
+    const input = {
+      offerId: main.charge.offerId,
+      quantity: main.charge.quantity,
+      currencyId: main.currencyId,
+      lineId: primaryId,
+      destination: main.destination,
+      services: selected
+        .filter((snapshot) => snapshot.charge.role !== "product")
+        .map((snapshot) => ({
+          offerId: snapshot.charge.offerId,
+          quantity: snapshot.charge.quantity,
+          lineId: childIds.get(snapshot.charge.offerId)!,
+        })),
+    };
+    // Delivery routing and current prices resolve before acquiring database locks.
+    const quote = await service.ecommerceModule.storesToProducts.quote(input);
+    if (quote.amount === null || quote.issues.length) {
+      throw new Error(
+        `Conflict error. Next delivery is unavailable: ${JSON.stringify(quote.issues)}`,
+      );
+    }
+    return repository.withSubjectLock(
+      { subjectId: props.subjectId },
+      async () => {
+        await service.ecommerceModule.order.lockForLifecycle({ id: source.id });
+        await service.ecommerceModuleOrderAssertAccess(props);
+        await this.assertExclusiveOwner(props.subjectId, source.id);
+        const current = await service.ecommerceModule.order.findById({
+          id: source.id,
+        });
+        if (
+          !current ||
+          current.subscriptionRevokedAt ||
+          current.subscriptionPeriodInvoiceId !==
+            source.subscriptionPeriodInvoiceId ||
+          !current.subscriptionPeriodEndsAt ||
+          new Date(current.subscriptionPeriodEndsAt).getTime() > Date.now()
+        ) {
+          throw new Error(
+            "Conflict error. Subscription period changed during renewal",
+          );
+        }
+        const existing = await service.ecommerceModule.order.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "subscriptionSourceOrderId",
+                  method: "eq",
+                  value: source.id,
+                },
+                {
+                  column: "subscriptionSourceInvoiceId",
+                  method: "eq",
+                  value: source.subscriptionPeriodInvoiceId,
+                },
+              ],
+            },
+          },
+        });
+        if (existing.length) {
+          if (existing.length !== 1) {
+            throw new Error(
+              "Conflict error. Next subscription period is ambiguous",
+            );
+          }
+          await service.ecommerceModuleOrderAssertAccess({
+            ...props,
+            orderId: existing[0].id,
+          });
+          return { orderIds: [existing[0].id] };
+        }
+        const order = await service.ecommerceModule.order.createNextPeriodCart({
+          sourceOrderId: source.id,
+          sourceInvoiceId: source.subscriptionPeriodInvoiceId!,
+          interval: main.interval!,
+        });
+        await service.subjectsToEcommerceModuleOrders.create({
+          data: {
+            subjectId: props.subjectId,
+            ecommerceModuleOrderId: order.id,
+          },
+        });
+        await service.ecommerceModule.storesToOrders.create({
+          data: { orderId: order.id, storeId: quote.storeId },
+        });
+        await service.ecommerceModule.ordersToBillingModuleCurrencies.create({
+          data: {
+            orderId: order.id,
+            billingModuleCurrencyId: quote.currencyId,
+          },
+        });
+        const charges = [...quote.charges].sort(
+          (left, right) =>
+            Number(left.role !== "product") - Number(right.role !== "product"),
+        );
+        let createdPrimaryId: string | undefined;
+        for (const charge of charges) {
+          const primary = charge.role === "product";
+          if (!primary && !createdPrimaryId) {
+            throw new Error(
+              "Validation error. Next delivery has no primary line",
+            );
+          }
+          const created = await service.ecommerceModule.ordersToProducts.create(
+            {
+              data: {
+                orderId: order.id,
+                productId: charge.productId,
+                offerId: charge.offerId,
+                parentLineId: primary ? null : createdPrimaryId,
+                quantity: charge.quantity,
+                recurrence: charge.recurrence,
+                destination: primary
+                  ? (quote.destination ?? input.destination)
+                  : {},
+                quoteVersion: primary ? quote.version : null,
+                quoteExpiresAt: primary ? new Date(quote.expiresAt) : null,
+              },
+            },
+          );
+          if (primary) {
+            createdPrimaryId = created.id;
+          }
         }
         return { orderIds: [order.id] };
       },

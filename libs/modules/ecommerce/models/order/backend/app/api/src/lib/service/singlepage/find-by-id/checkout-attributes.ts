@@ -20,6 +20,7 @@ export const SUPPORTED_ORDER_INTERVALS = [
   "hour",
   "day",
   "week",
+  "four_weeks",
   "month",
   "year",
 ] as const;
@@ -84,6 +85,46 @@ export class Service {
       throw new Error("Configuration error. RBAC_SECRET_KEY is not defined");
     }
 
+    const orderToProducts = await this.ordersToProducts.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "orderId",
+              method: "eq",
+              value: props.id,
+            },
+          ],
+        },
+      },
+    });
+
+    if (!orderToProducts?.length) {
+      throw new Error("Internal error. Order does not have any products");
+    }
+
+    if (orderToProducts.some((line) => line.offerId)) {
+      const selection = this.ordersToProducts.offerSelection(
+        orderToProducts,
+        props.billingModuleCurrencyId ?? "",
+      );
+      const terms = await this.ordersToProducts.offers.purchaseTerms(
+        selection,
+        Boolean(props.billingModuleCurrencyId),
+      );
+      if (
+        !isSupportedOrderType(terms.type) ||
+        (terms.interval && !isSupportedOrderInterval(terms.interval))
+      ) {
+        throw new Error("Validation error. Unsupported billing schedule");
+      }
+      return {
+        amount: terms.amount,
+        type: terms.type,
+        interval: terms.interval as IOrderInterval | undefined,
+      };
+    }
+
     const priceAttributeKeys = await this.attributeKey.find({
       params: {
         filters: {
@@ -119,24 +160,6 @@ export class Service {
     const intervalAttributeKey = intervalAttributeKeys?.[0];
 
     const priceAttributeKeyIds = priceAttributeKeys.map((key) => key.id);
-
-    const orderToProducts = await this.ordersToProducts.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "orderId",
-              method: "eq",
-              value: props.id,
-            },
-          ],
-        },
-      },
-    });
-
-    if (!orderToProducts?.length) {
-      throw new Error("Internal error. Order does not have any products");
-    }
 
     let amount = 0;
     let type: IResult["type"] | undefined = undefined;

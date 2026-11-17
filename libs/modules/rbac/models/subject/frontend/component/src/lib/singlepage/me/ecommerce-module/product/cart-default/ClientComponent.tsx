@@ -30,38 +30,49 @@ export function Component(props: IComponentPropsExtended) {
               ),
           );
           return orders.length ? (
-            orders.map((order) => (
-              <div
-                key={order.id}
-                className="grid gap-3 rounded-xl border border-border bg-muted/40 p-3"
-              >
-                <Subject
-                  isServer={false}
-                  variant="ecommerce-module-order-update-default"
-                  dataSource="props"
-                  data={props.data}
-                  ecommerceModuleOrder={order}
-                  language={props.language}
-                />
-                <Subject
-                  isServer={false}
-                  variant="ecommerce-module-order-delete-default"
-                  dataSource="props"
-                  data={props.data}
-                  ecommerceModuleOrder={order}
-                  language={props.language}
-                />
-                <Subject
-                  isServer={false}
-                  variant="ecommerce-module-order-checkout-default"
-                  dataSource="props"
-                  ecommerceModuleProduct={props.ecommerceModuleProduct}
-                  data={props.data}
-                  ecommerceModuleOrder={order}
-                  language={props.language}
-                />
-              </div>
-            ))
+            <>
+              {orders.map((order) => (
+                <div
+                  key={order.id}
+                  className="grid gap-3 rounded-xl border border-border bg-muted/40 p-3"
+                >
+                  <Subject
+                    isServer={false}
+                    variant="ecommerce-module-order-update-default"
+                    dataSource="props"
+                    data={props.data}
+                    ecommerceModuleOrder={order}
+                    language={props.language}
+                  />
+                  <Subject
+                    isServer={false}
+                    variant="ecommerce-module-order-delete-default"
+                    dataSource="props"
+                    data={props.data}
+                    ecommerceModuleOrder={order}
+                    language={props.language}
+                  />
+                  <Subject
+                    isServer={false}
+                    variant="ecommerce-module-order-checkout-default"
+                    dataSource="props"
+                    ecommerceModuleProduct={props.ecommerceModuleProduct}
+                    data={props.data}
+                    ecommerceModuleOrder={order}
+                    language={props.language}
+                  />
+                </div>
+              ))}
+              <Subject
+                isServer={false}
+                variant="ecommerce-module-order-create-default"
+                dataSource="props"
+                data={props.data}
+                ecommerceModuleProduct={props.ecommerceModuleProduct}
+                ecommerceModuleStore={props.ecommerceModuleStore}
+                language={props.language}
+              />
+            </>
           ) : (
             <Subject
               isServer={false}

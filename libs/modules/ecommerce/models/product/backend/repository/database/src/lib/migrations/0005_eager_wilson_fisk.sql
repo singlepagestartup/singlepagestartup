@@ -1,0 +1,1 @@
+ALTER TABLE "sps_ee_product" ADD COLUMN "kind" text DEFAULT 'physical' NOT NULL;

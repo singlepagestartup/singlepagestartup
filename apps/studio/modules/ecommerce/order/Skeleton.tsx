@@ -4,7 +4,7 @@ export function Skeleton({
   className = "",
   rows = 3,
 }: ISkeletonProps) {
-  const table = /(?:table|list)/.test(variant ?? "");
+  const table = /(?:table|list|history)/.test(variant ?? "");
   const form = /(?:form|create|update|settings|authentication|checkout)/.test(
     variant ?? "",
   );

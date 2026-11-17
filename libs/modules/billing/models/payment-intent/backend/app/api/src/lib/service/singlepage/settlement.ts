@@ -2,6 +2,7 @@ import type { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
 import type { IModel as IPaymentIntent } from "@sps/billing/models/payment-intent/sdk/model";
 import type { Repository } from "../../repository";
 import type { Service as PaymentIntentService } from "./index";
+import { moneyMinorUnits } from "@sps/backend-utils";
 
 export interface IExecuteProps {
   invoiceId: string;
@@ -16,6 +17,21 @@ export interface IExecuteProps {
   }) => void;
 }
 
+export interface IPaymentLifecycle {
+  settle(props: {
+    invoiceId: string;
+    paymentIntentIds: string[];
+    requiresReconciliation?: boolean;
+  }): Promise<{ reconciliationPaymentIntentIds: string[] }>;
+  canRecordLatePayment?(props: {
+    paymentIntentIds: string[];
+  }): Promise<boolean>;
+  release(props: {
+    invoiceId?: string;
+    paymentIntentIds: string[];
+  }): Promise<void>;
+}
+
 export type IExpireProps = { invoiceId: string } & (
   | { provider: string | null; expiresBefore: Date; providerId?: never }
   | { provider: "stripe"; providerId: string; expiresBefore?: never }
@@ -23,7 +39,10 @@ export type IExpireProps = { invoiceId: string } & (
 
 interface IConstructorProps {
   repository: Pick<Repository, "withPaymentIntentLocks">;
-  service: Pick<PaymentIntentService, "findById" | "update" | "billingModule">;
+  service: Pick<
+    PaymentIntentService,
+    "findById" | "update" | "billingModule" | "paymentLifecycle"
+  >;
 }
 
 export class Service {
@@ -97,31 +116,38 @@ export class Service {
         invoice.providerId !== props.providerId
       )
         throw new Error("Conflict error. Invoice provider ID changed");
-      if (
+      const canceled =
         invoice.status === "canceled" ||
-        intents.some((intent) => intent.status === "canceled")
-      )
-        throw new Error("Conflict error. Payment was canceled");
+        intents.some((intent) => intent.status === "canceled");
       if (
-        !Number.isSafeInteger(props.amount) ||
-        props.amount < 0 ||
-        invoice.amount !== props.amount
-      )
+        canceled &&
+        !(await service.paymentLifecycle?.canRecordLatePayment?.({
+          paymentIntentIds: intents.map((intent) => intent.id),
+        }))
+      ) {
+        throw new Error("Conflict error. Payment was canceled");
+      }
+      const confirmedAmount = moneyMinorUnits(props.amount);
+      if (moneyMinorUnits(invoice.amount) !== confirmedAmount) {
         throw new Error(
           "Validation error. Payment amount does not match the invoice",
         );
-      let remaining = props.amount;
+      }
+      let remaining = confirmedAmount;
       for (const intent of intents) {
-        if (
-          !Number.isSafeInteger(intent.amount) ||
-          intent.amount < 0 ||
-          intent.amount > remaining
-        )
+        const intentAmount = moneyMinorUnits(intent.amount);
+        if (intentAmount > remaining) {
           throw new Error(
             "Validation error. Payment amount does not cover the payment intents",
           );
+        }
         // Already succeeded intents still consume their share on delivery retries.
-        remaining -= intent.amount;
+        remaining -= intentAmount;
+      }
+      if (remaining !== 0n) {
+        throw new Error(
+          "Validation error. Invoice amount differs from its payment intent shares",
+        );
       }
       if (
         props.settledProviderId &&
@@ -132,6 +158,14 @@ export class Service {
           "Conflict error. Invoice is already associated with another payment",
         );
       props.validate?.({ invoice, paymentIntents: intents });
+      const fulfillment = await service.paymentLifecycle?.settle({
+        invoiceId: invoice.id,
+        paymentIntentIds: intents.map((intent) => intent.id),
+        requiresReconciliation: canceled,
+      });
+      const reconciliation = new Set(
+        fulfillment?.reconciliationPaymentIntentIds ?? [],
+      );
       const paid =
         invoice.status === "paid"
           ? invoice
@@ -147,10 +181,13 @@ export class Service {
             });
       if (!paid) throw new Error("Not Found error. Invoice not found");
       for (const intent of intents) {
-        if (intent.status !== "succeeded") {
+        const status = reconciliation.has(intent.id)
+          ? "requires_reconciliation"
+          : "succeeded";
+        if (intent.status !== status) {
           const updated = await service.update({
             id: intent.id,
-            data: { ...intent, status: "succeeded" },
+            data: { ...intent, status },
           });
           if (!updated)
             throw new Error("Not Found error. Payment intent not found");
@@ -248,6 +285,10 @@ export class Service {
         if (!updated) {
           throw new Error("Not Found error. Payment intent not found");
         }
+        await service.paymentLifecycle?.release({
+          invoiceId: invoice.id,
+          paymentIntentIds: [intent.id],
+        });
       }
     });
   }

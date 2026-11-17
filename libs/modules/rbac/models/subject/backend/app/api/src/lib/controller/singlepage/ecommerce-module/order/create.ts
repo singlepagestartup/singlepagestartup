@@ -8,6 +8,7 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { authorization, getHttpErrorType, verifyJwt } from "@sps/backend-utils";
 import { Service } from "../../../../service";
+import { ecommerceCartSelectionSchema } from "@sps/rbac/models/subject/sdk/model";
 
 export class Handler {
   service: Service;
@@ -78,24 +79,16 @@ export class Handler {
         );
       }
 
-      const requestedCurrencyId = data["billingModule"]?.currency?.id;
-
-      let storeId = data.storeId;
-
-      if (!storeId) {
-        const stores = await this.service.ecommerceModule.store.find();
-
-        if (stores?.length === 0) {
-          throw new Error("Not Found error. No stores found");
-        }
-
-        if (stores?.length && stores.length > 1) {
-          throw new Error(
-            "Internal error. Multiple stores found. Pass 'data.storeId'",
-          );
-        }
-
-        storeId = stores?.[0]?.id;
+      const requestedCurrencyId =
+        data["billingModule"]?.currency?.id ?? data.billingModuleCurrencyId;
+      const selectionFields =
+        ecommerceCartSelectionSchema.shape.selections.element.shape;
+      const destination = selectionFields.destination.safeParse(
+        data.destination,
+      );
+      const services = selectionFields.services.safeParse(data.services);
+      if (!destination.success || !services.success) {
+        throw new Error("Validation error. Invalid destination or services");
       }
 
       const entity = await this.service.findById({
@@ -109,9 +102,16 @@ export class Handler {
       await this.service.ecommerceModuleOrderCreate({
         subjectId: id,
         productId,
-        storeId,
+        storeId: data.storeId,
+        offerId: data.offerId,
+        expectedQuoteVersion:
+          typeof data.expectedQuoteVersion === "string"
+            ? data.expectedQuoteVersion
+            : undefined,
         quantity,
         billingModuleCurrencyId: requestedCurrencyId,
+        destination: destination.data,
+        services: services.data,
       });
 
       return c.json({

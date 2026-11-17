@@ -35,7 +35,10 @@ function fixture() {
         findById: jest.fn().mockResolvedValue({ type: "cart", status: "new" }),
       },
       ordersToProducts: {
-        find: jest.fn().mockResolvedValue([{ productId: "product" }]),
+        find: jest
+          .fn()
+          .mockResolvedValue([{ id: "line", productId: "product" }]),
+        update: jest.fn(),
       },
       product: { findById: jest.fn().mockResolvedValue({ slug: "pro" }) },
       ordersToBillingModuleCurrencies: currencies,

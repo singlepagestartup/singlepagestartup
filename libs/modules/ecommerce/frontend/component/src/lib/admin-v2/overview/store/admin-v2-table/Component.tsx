@@ -7,6 +7,7 @@ export function Component(props: IComponentProps) {
       isServer={props.isServer}
       url={props.url}
       variant={props.variant}
+      storeOfferCreate={props.storeOfferCreate}
     />
   );
 }

@@ -30,6 +30,7 @@ import { Service as OrdersToProductsService } from "@sps/ecommerce/relations/ord
 import { Service as OrdersToBillingModuleCurrenciesService } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/backend/app/api/src/lib/service";
 import { Service as OrdersToFileStorageModuleFilesService } from "@sps/ecommerce/relations/orders-to-file-storage-module-files/backend/app/api/src/lib/service";
 import { Service as OrdersToBillingModulePaymentIntentsService } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api/src/lib/service";
+import { moneyFromMinorUnits, moneyMinorUnits } from "@sps/backend-utils";
 
 export type IExecuteProps = {
   id: IEcommerceModuleOrder["id"];
@@ -549,6 +550,40 @@ export class Service {
         throw new Error("Validation error. Stored Invoice amount is invalid");
       if (!isSupportedOrderType(intent.type))
         throw new Error("Validation error. Stored payment type is unsupported");
+      const snapshots = payments
+        .filter(
+          (payment) =>
+            payment.billingModulePaymentIntent.id === intent.id &&
+            payment.purchaseSnapshot,
+        )
+        .map((payment) => payment.purchaseSnapshot!);
+      if (snapshots.length) {
+        const amount = moneyFromMinorUnits(
+          snapshots.reduce(
+            (sum, snapshot) => sum + moneyMinorUnits(snapshot.amount),
+            0n,
+          ),
+        );
+        const snapshot = snapshots[0];
+        const type = snapshot.purchaseType ?? intent.type;
+        const interval = snapshot.interval ?? intent.interval;
+        if (
+          !isSupportedOrderType(type) ||
+          (type === "subscription" &&
+            (!interval || !isSupportedOrderInterval(interval)))
+        ) {
+          throw new Error(
+            "Validation error. Saved purchase terms are unsupported",
+          );
+        }
+        return {
+          amount,
+          type,
+          ...(interval && isSupportedOrderInterval(interval)
+            ? { interval }
+            : {}),
+        };
+      }
       // Commerce Product type owns delivery. Telegram can settle a subscription
       // with a one_off Intent while retaining the saved subscription interval.
       const configured = await this.findByIdCheckoutAttributes.execute({

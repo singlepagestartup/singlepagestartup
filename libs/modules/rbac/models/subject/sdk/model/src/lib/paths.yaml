@@ -1877,3 +1877,84 @@ paths:
                   data:
                     type: integer
                     format: int32
+
+  /rbac/subjects/{id}/ecommerce-module/offers:
+    post:
+      tags: [rbac-subject]
+      summary: Atomically create a seller offer
+      description: Requires the current signed-in Subject. Creates an offer for an existing Product or a new Product with its owner grant, formula, first offer, prices and stock. Store ownership is required; an existing Product keeps its owner.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              additionalProperties: false
+              properties:
+                data:
+                  $ref: ecommerce-catalog-offer-input.yaml
+      responses:
+        "201":
+          description: Product and store offer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      product:
+                        $ref: ../../../../../../../ecommerce/models/product/sdk/model/src/lib/ecommerce-product.yaml
+                      offer:
+                        type: object
+                        description: The stored Store–Product offer with its UUID and unique SKU.
+        "400": { description: Invalid product, prices, stock or store selection }
+        "401": { description: A signed-in Subject is required }
+        "403": { description: The Subject does not own the store }
+  /rbac/subjects/{id}/ecommerce-module/catalogue-attributes:
+    post:
+      tags: [rbac-subject]
+      summary: Set an owned catalogue attribute
+      description: Creates or updates one scoped Store rate, Product formula or offer price/stock. The server verifies all attribute owners; stock changes lock the offer and retain active reservations.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              additionalProperties: false
+              properties:
+                data:
+                  $ref: ecommerce-catalog-attribute-input.yaml
+      responses:
+        "200": { description: Stored Attribute }
+        "400": { description: Invalid or ambiguous attribute, formula or stock }
+        "401": { description: A signed-in Subject is required }
+        "403": { description: Catalogue ownership is required }
+  /rbac/subjects/{id}/ecommerce-module/catalogue-context:
+    get:
+      tags: [rbac-subject]
+      summary: Read the current seller catalogue context
+      description: Returns only writable stores, up to 200 published Product choices and the available currencies. The caller must match the Subject; administrators can choose any store.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200": { description: Stores, products and currencies for the seller form }
+        "401": { description: A signed-in Subject is required }
+        "403": { description: The requested Subject does not match the caller }

@@ -1,5 +1,6 @@
 import {
   paykeeperAmountInMinorUnits,
+  providerMinorUnits,
   type IVerifiedPaykeeperWebhook,
 } from "@sps/backend-utils";
 import type { Repository } from "../../repository";
@@ -16,7 +17,10 @@ export interface IExecuteProps {
 
 interface IConstructorProps {
   repository: Pick<Repository, "withPaymentIntentLocks">;
-  service: Pick<PaymentIntentService, "findById" | "update" | "billingModule">;
+  service: Pick<
+    PaymentIntentService,
+    "findById" | "update" | "billingModule" | "paymentLifecycle"
+  >;
 }
 
 export class Service {
@@ -43,8 +47,8 @@ export class Service {
           (providerInvoice.clientid ?? "") !== event.clientid ||
           paykeeperAmountInMinorUnits(String(providerInvoice.pay_amount)) !==
             event.amountInMinorUnits ||
-          invoice.amount * 100 !== event.amountInMinorUnits ||
-          intent.amount * 100 !== event.amountInMinorUnits
+          providerMinorUnits(invoice.amount) !== event.amountInMinorUnits ||
+          providerMinorUnits(intent.amount) !== event.amountInMinorUnits
         )
           throw new Error(
             "Validation error. PayKeeper payment does not match the invoice",

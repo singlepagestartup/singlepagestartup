@@ -1,0 +1,29 @@
+{
+  "$schema": "../../../../../block.schema.json",
+  "id": "ecommerce.order.history-default",
+  "title": "Ecommerce Order / History Default",
+  "description": "Purchase history with saved service charges, invoice shares and independent currency states.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "ecommerce",
+    "entityType": "model",
+    "entity": "order",
+    "variant": "history-default"
+  },
+  "files": { "component": "Component.tsx", "story": "Component.stories.tsx" },
+  "contentSlots": [
+    { "name": "orders", "type": "list", "required": true },
+    { "name": "invoices", "type": "list", "required": true },
+    { "name": "expanded", "type": "boolean", "required": false }
+  ],
+  "figma": {
+    "componentName": "ecommerce.order",
+    "pageName": "ecommerce",
+    "variantName": "history-default",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

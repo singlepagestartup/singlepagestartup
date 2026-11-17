@@ -7,7 +7,12 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
 import { api } from "@sps/billing/models/payment-intent/sdk/server";
-import { getHttpErrorType, logger } from "@sps/backend-utils";
+import {
+  getHttpErrorType,
+  logger,
+  providerMinorUnits,
+} from "@sps/backend-utils";
+import { paymentProviderPrecision } from "@sps/billing/models/payment-intent/sdk/model";
 import { api as paymentIntentsToCurrenciesApi } from "@sps/billing/relations/payment-intents-to-currencies/sdk/server";
 
 export class Handler {
@@ -65,6 +70,10 @@ export class Handler {
       if (!currency) {
         throw new Error("Not Found error. Currency not found");
       }
+      providerMinorUnits(
+        entity.amount,
+        paymentProviderPrecision(provider, currency),
+      );
 
       await paymentIntentsToCurrenciesApi.create({
         data: {

@@ -8,6 +8,7 @@ import { Icon, Select } from "@sps/ui-adapter";
 import { Component as EcommerceModuleOrder } from "@sps/ecommerce/models/order/frontend/component";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import type { IRowProps, IQuantityProps, ICurrencyProps } from "./interface";
+import { Selection } from "./Selection";
 
 function Currency(props: ICurrencyProps) {
   const update = api.ecommerceModuleOrderUpdate({});
@@ -190,7 +191,7 @@ function Quantity(props: IQuantityProps) {
 export const Component = memo(function Row(props: IRowProps) {
   const details = props.ecommerceModuleOrder.cartDetails;
   const ru = props.language === "ru";
-  const lines = details?.lines ?? [];
+  const lines = details?.lines.filter((line) => !line.parentLineId) ?? [];
   const onlyProduct = lines.length === 1 ? lines[0].product : null;
   const productTitle =
     onlyProduct?.title?.[props.language] ||
@@ -226,28 +227,47 @@ export const Component = memo(function Row(props: IRowProps) {
         language={props.language}
         cartDetails={details}
         quantitySlots={
-          details &&
+          details && !details.offers
+            ? Object.fromEntries(
+                lines.map((line) => [
+                  line.id,
+                  <Quantity
+                    key={line.id}
+                    subjectId={props.subject.id}
+                    orderId={props.ecommerceModuleOrder.id}
+                    line={line}
+                    maxLineQuantity={details.maxLineQuantity}
+                    language={props.language}
+                  />,
+                ]),
+              )
+            : undefined
+        }
+        removeSlot={remove}
+        currencySlot={
+          !details?.offers && (
+            <Currency
+              subject={props.subject}
+              ecommerceModuleOrder={props.ecommerceModuleOrder}
+              language={props.language}
+            />
+          )
+        }
+        selectionSlots={
+          details?.offers &&
           Object.fromEntries(
             lines.map((line) => [
               line.id,
-              <Quantity
-                key={line.id}
-                subjectId={props.subject.id}
-                orderId={props.ecommerceModuleOrder.id}
+              <Selection
+                key={`${line.id}:${String(line.selectionUpdatedAt)}`}
                 line={line}
-                maxLineQuantity={details.maxLineQuantity}
+                details={details}
+                subject={props.subject}
+                ecommerceModuleOrder={props.ecommerceModuleOrder}
                 language={props.language}
               />,
             ]),
           )
-        }
-        removeSlot={remove}
-        currencySlot={
-          <Currency
-            subject={props.subject}
-            ecommerceModuleOrder={props.ecommerceModuleOrder}
-            language={props.language}
-          />
         }
       />
     </li>

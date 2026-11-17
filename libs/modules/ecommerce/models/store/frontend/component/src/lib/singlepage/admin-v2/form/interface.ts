@@ -10,6 +10,7 @@ import { ISpsComponentBase } from "@sps/ui-adapter";
 export const variant = "admin-v2-form" as const;
 
 export type IComponentProps = IParentComponentProps<IModel, typeof variant> & {
+  offerCreate?: ReactNode;
   storesToAttributes?: (
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;

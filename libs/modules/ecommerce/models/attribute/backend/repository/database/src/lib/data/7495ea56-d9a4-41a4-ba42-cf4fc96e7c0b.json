@@ -1,0 +1,15 @@
+{
+  "id": "7495ea56-d9a4-41a4-ba42-cf4fc96e7c0b",
+  "createdAt": "2026-11-17T00:05:36.303Z",
+  "updatedAt": "2026-11-17T00:05:36.303Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "unit_price * quantity"
+  },
+  "adminTitle": "ai-chat-tokens-3000-rub-price-formula",
+  "slug": "ai-chat-tokens-3000-rub-price-formula"
+}

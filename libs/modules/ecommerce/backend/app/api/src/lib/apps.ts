@@ -1,3 +1,4 @@
+import { app as offersToOffersApp } from "@sps/ecommerce/relations/offers-to-offers/backend/app/api";
 import { app as categoriesToWebsiteBuilderModuleWidgets } from "@sps/ecommerce/relations/categories-to-website-builder-module-widgets/backend/app/api";
 import { DefaultApp } from "@sps/shared-backend-api";
 import { app as widgetApp } from "@sps/ecommerce/models/widget/backend/app/api";
@@ -164,6 +165,11 @@ export class Apps {
       type: "relation",
       route: "/attributes-to-billing-module-currencies",
       app: attributesToBillingModuleCurrenciesApp,
+    });
+    this.apps.push({
+      type: "relation",
+      route: "/offers-to-offers",
+      app: offersToOffersApp,
     });
   }
 }

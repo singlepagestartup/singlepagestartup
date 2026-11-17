@@ -26,6 +26,7 @@ export interface IExecuteProps {
   comment?: string;
   expectedLines?: ILineSnapshot[];
   expectedCurrencies?: ICurrencySnapshot[];
+  resumeExisting?: boolean;
 }
 export interface IConstructorProps {
   repository: Pick<Repository, "withSubjectLock">;
@@ -88,7 +89,12 @@ export class Service {
             );
           }
           const order = await ecommerceModule.order.findById({ id });
-          if (!order || order.type !== "cart" || order.status !== "new") {
+          const openCart = order?.type === "cart" && order.status === "new";
+          const payingHistory =
+            props.resumeExisting &&
+            order?.type === "history" &&
+            order.status === "paying";
+          if (!order || (!openCart && !payingHistory)) {
             throw new Error(
               "Conflict error. Checkout order is no longer an open cart",
             );
@@ -223,7 +229,18 @@ export class Service {
           }
         }
         // Every order has been rechecked before the first claim is written.
+        if (
+          lockedOrders.some((order) => order.type === "history") &&
+          !existingInvoices
+        ) {
+          throw new Error(
+            "Conflict error. Historical order has no existing payable invoice",
+          );
+        }
         for (const order of lockedOrders) {
+          if (order.type === "history") {
+            continue;
+          }
           await ecommerceModule.order.update({
             id: order.id,
             data: {

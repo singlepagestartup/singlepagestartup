@@ -4,6 +4,7 @@ import type { Service as SubjectsToEcommerceModuleOrdersService } from "@sps/rba
 export interface IExecuteProps {
   subjectId: string;
   productId: string;
+  offerId?: string;
 }
 
 interface IConstructorProps {
@@ -56,6 +57,9 @@ export class Service {
               method: "eq",
               value: props.productId,
             },
+            ...(props.offerId
+              ? [{ column: "offerId", method: "eq", value: props.offerId }]
+              : []),
           ],
         },
       },

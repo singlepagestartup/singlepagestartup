@@ -1,0 +1,77 @@
+type: object
+required: [offerId, productId, storeId, currencyId, quantity, amount, availableQuantity, currencyIds, serviceOptions, charges, issues, version, expiresAt]
+properties:
+  offerId: { type: string, format: uuid }
+  productId: { type: string, format: uuid }
+  storeId: { type: string, format: uuid }
+  currencyId: { type: string }
+  quantity: { type: integer, minimum: 1 }
+  amount:
+    type: string
+    nullable: true
+    description: Total in major currency units. A null amount means the selection cannot be purchased.
+  availableQuantity:
+    type: integer
+    nullable: true
+    minimum: 0
+    description: Available after reservations. Null means the offer has unlimited stock.
+  currencyIds:
+    type: array
+    items: { type: string, format: uuid }
+  serviceOptions:
+    type: array
+    items:
+      type: object
+      required: [offerId, productId, title, role, currencyIds]
+      properties:
+        offerId: { type: string, format: uuid }
+        productId: { type: string, format: uuid }
+        title: { type: string }
+        role: { type: string, enum: [delivery, add-on] }
+        receiptMethod: { type: string, enum: [shipping, pickup, electronic] }
+        pickupPointIds: { type: array, items: { type: string } }
+        regionIds: { type: array, items: { type: string } }
+        currencyIds: { type: array, items: { type: string, format: uuid } }
+  charges:
+    type: array
+    items:
+      type: object
+      required: [offerId, productId, storeId, providerStoreId, role, recurrence, quantity, amount, formula, formulaVersion, inputs, stockQuantity, availableQuantity]
+      properties:
+        offerId: { type: string, format: uuid }
+        productId: { type: string, format: uuid }
+        storeId: { type: string, format: uuid }
+        providerStoreId: { type: string, format: uuid }
+        role: { type: string, enum: [product, delivery, add-on] }
+        recurrence: { type: string, enum: [first, each] }
+        quantity: { type: integer, minimum: 1 }
+        amount: { type: string }
+        stockQuantity: { type: integer, minimum: 0, nullable: true }
+        availableQuantity: { type: integer, minimum: 0, nullable: true }
+        formula: { type: string }
+        formulaVersion: { type: string }
+        inputs: { type: object, additionalProperties: { type: string } }
+  issues:
+    type: array
+    items:
+      type: object
+      required: [code, offerId, message]
+      properties:
+        code: { type: string }
+        offerId: { type: string, format: uuid }
+        message: { type: string }
+        available: { type: integer, minimum: 0 }
+  destination:
+    type: object
+    properties:
+      address: { type: string }
+      region: { type: string }
+      pickupPointId: { type: string }
+      coordinates:
+        type: object
+        required: [latitude, longitude]
+        properties:
+          latitude: { type: number, minimum: -90, maximum: 90 }
+          longitude: { type: number, minimum: -180, maximum: 180 }
+  version: { type: string }
+  expiresAt: { type: string, format: date-time }

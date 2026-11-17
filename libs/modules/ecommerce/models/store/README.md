@@ -4,6 +4,8 @@
 
 Stores represent collections of products with localized metadata and attributes.
 
+Seller rates such as `dispatch_fee` and `rate_per_km` are Store attributes. An offer links a Store to a Product and owns the price and stock for that configuration. Store variants `service` and `delivery` identify service and delivery businesses.
+
 ## Fields
 
 - `id`: unique identifier (UUID).

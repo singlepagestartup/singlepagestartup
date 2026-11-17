@@ -7,7 +7,7 @@
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
 
-it("persists cart mutations and derives dummy checkout invoices from current product data", () => {
+it("persists cart mutations and derives dummy checkout invoices from the selected store offer", () => {
   const script = String.raw`
 import assert from "node:assert/strict";
 import {randomUUID} from "node:crypto";
@@ -82,6 +82,13 @@ try{
   const foreign=remember("rbac/subjects",await create("rbac/subjects",{slug:prefix+"-foreign"}));
   const store=remember("ecommerce/stores",await create("ecommerce/stores",{slug:prefix+"-store",title:{en:"Integration store"}}));
   const product=remember("ecommerce/products",await create("ecommerce/products",{slug:prefix+"-product",type:"one_off",title:{en:"Current integration product"}}));
+  const offer=remember("ecommerce/stores-to-products",await create("ecommerce/stores-to-products",{productId:product.id,storeId:store.id,sku:prefix+"-offer"}));
+  for(const [slug,text] of [["price_formula","unit_price * quantity"],["formula_version","1"]]){
+   const key=(await find("ecommerce/attribute-keys",[eq("slug",slug)]))[0]||remember("ecommerce/attribute-keys",await create("ecommerce/attribute-keys",{slug,type:"default",field:"string"}));
+   const value=remember("ecommerce/attributes",await create("ecommerce/attributes",{slug:prefix+"-"+slug,string:{en:text}}));
+   await create("ecommerce/attribute-keys-to-attributes",{attributeKeyId:key.id,attributeId:value.id});
+   await create("ecommerce/products-to-attributes",{productId:product.id,attributeId:value.id});
+  }
   const currencies=[];
   for(const name of ["a","b"])currencies.push(remember("billing/currencies",await create("billing/currencies",{slug:prefix+"-"+name,title:"Integration "+name,symbol:name.toUpperCase()})));
   const priceKeys=await find("ecommerce/attribute-keys",[eq("type","price")]);
@@ -91,6 +98,7 @@ try{
    const attribute=remember("ecommerce/attributes",await create("ecommerce/attributes",{slug:prefix+"-price-"+index,number:String(index?175:100)}));prices.push(attribute);
    await create("ecommerce/attribute-keys-to-attributes",{attributeKeyId:priceKey.id,attributeId:attribute.id});
    priceProductLinks.push(await create("ecommerce/products-to-attributes",{productId:product.id,attributeId:attribute.id,orderIndex:index}));
+   await create("ecommerce/stores-to-products-to-attributes",{storesToProductsId:offer.id,attributeId:attribute.id,orderIndex:index});
    await create("ecommerce/attributes-to-billing-module-currencies",{attributeId:attribute.id,billingModuleCurrencyId:currencies[index].id});
   }
   const specificationKey=remember("ecommerce/attribute-keys",await create("ecommerce/attribute-keys",{slug:prefix+"-specification",type:"default",field:"string",title:{en:"Specification"}}));
@@ -102,7 +110,7 @@ try{
   const options={headers:{Authorization:"Bearer "+token,"Cache-Control":"no-store"}};
   const ownerProps={id:subject.id,options};
   const carts=()=>subjectApi.ecommerceModuleOrderList({...ownerProps,params:{includeCartDetails:true}});
-  const createCart=()=>subjectApi.ecommerceModuleOrderCreate({...ownerProps,data:{productId:product.id,storeId:store.id,quantity:2,billingModule:{currency:{id:currencies[0].id}}}});
+  const createCart=()=>subjectApi.ecommerceModuleOrderCreate({...ownerProps,data:{productId:product.id,offerId:offer.id,storeId:store.id,quantity:2,billingModule:{currency:{id:currencies[0].id}}}});
   await createCart();
   const subjectLock=sql.join([
    sql.raw("SELECT 1 FROM pg_locks WHERE locktype = 'advisory' AND granted AND pid = pg_backend_pid() AND objsubid = 1 AND objid::bigint = (hashtext("),
@@ -134,7 +142,7 @@ try{
   const removedLine=cartList[0].cartDetails.lines[0];
   assert.equal(cartList[0].type,"cart");assert.equal(cartList[0].status,"new");
   assert.deepEqual(cartList[0].cartDetails.storeIds,[store.id]);
-  assert.equal(removedLine.orderId,removedCart.id);assert.equal(removedLine.productId,product.id);assert.equal(removedLine.quantity,2);assert.equal(removedLine.product.id,product.id);
+  assert.equal(removedLine.offerId,offer.id);assert(removedLine.quoteVersion);assert(removedLine.quoteExpiresAt);assert.equal(removedLine.orderId,removedCart.id);assert.equal(removedLine.productId,product.id);assert.equal(removedLine.quantity,2);assert.equal(removedLine.product.id,product.id);
   const cartOwnerLink=(await find("rbac/subjects-to-ecommerce-module-orders",[eq("ecommerceModuleOrderId",removedCart.id)]))[0];assert.equal(cartOwnerLink.subjectId,subject.id);
   const cartCurrencyLink=(await find("ecommerce/orders-to-billing-module-currencies",[eq("orderId",removedCart.id)]))[0];assert.equal(cartCurrencyLink.billingModuleCurrencyId,currencies[0].id);
   await subjectApi.ecommerceModuleOrderUpdate({...ownerProps,orderId:removedCart.id,data:{ordersToProducts:[{id:removedLine.id,quantity:4}]}});
@@ -161,20 +169,30 @@ try{
   const email=prefix+"@example.test";
   const identity=remember("rbac/identities",await create("rbac/identities",{provider:"email",email}));
   await create("rbac/subjects-to-identities",{subjectId:subject.id,identityId:identity.id});
-  assert.deepEqual(await service("ecommerce/orders").findByIdCheckoutAttributesByCurrency({id:checkoutCart.id,billingModuleCurrencyId:currencies[0].id}),{type:"one_off",interval:undefined,amount:500});
+  const checkoutAttributes=await service("ecommerce/orders").findByIdCheckoutAttributesByCurrency({id:checkoutCart.id,billingModuleCurrencyId:currencies[0].id});assert.equal(checkoutAttributes.type,"one_off");assert.equal(checkoutAttributes.interval,undefined);assert.equal(Number(checkoutAttributes.amount),500);
+  const observersBeforeReprice=observer.length;
+  await assert.rejects(subjectApi.ecommerceModuleOrderCheckout({...ownerProps,data:{email,provider:"dummy",ecommerceModule:{orders:[{id:checkoutCart.id}]}}}),/Checkout price changed/);
+  assert.equal(observer.length,observersBeforeReprice,"A rejected price change must not register observers");
+  assert.equal((await find("ecommerce/orders-to-billing-module-payment-intents",[eq("orderId",checkoutCart.id)])).length,0,"A changed price must not create a payment attempt");
+  const refreshed=(await carts()).find(order=>order.id===checkoutCart.id);assert(refreshed);
+  const refreshedLine=refreshed.cartDetails.lines.find(line=>line.id===checkoutLine.id);assert(refreshedLine);
+  const selection={offerId:offer.id,quantity:4,currencyId:currencies[0].id,destination:refreshedLine.destination,services:[]};
+  const preview=await subjectApi.ecommerceModuleOrderSelection({...ownerProps,orderId:checkoutCart.id,data:{action:"preview",lineId:checkoutLine.id,selections:[selection]}});
+  assert.equal(preview.quotes[0].amount,"500.00");
+  await subjectApi.ecommerceModuleOrderSelection({...ownerProps,orderId:checkoutCart.id,data:{action:"apply",lineId:checkoutLine.id,selections:[selection],expectedVersions:preview.quotes.map(quote=>quote.version),expectedSelectionUpdatedAt:new Date(refreshedLine.selectionUpdatedAt).toISOString()}});
   const checkout=await subjectApi.ecommerceModuleOrderCheckout({...ownerProps,data:{email,provider:"dummy",comment:"Saved cart checkout",ecommerceModule:{orders:[{id:checkoutCart.id}]}}});
   assert.equal(checkout.billingModule.invoices.length,1);
   const verifyCheckout=async({result,orderId,currencyId,quantity,amount,lineId,comment})=>{
    const invoice=remember("billing/invoices",result.billingModule.invoices[0]);
-   assert.equal(invoice.provider,"dummy");assert.equal(invoice.status,"open");assert.equal(invoice.amount,amount);assert(invoice.providerId);assert.equal(invoice.paymentUrl,NEXT_PUBLIC_HOST_SERVICE_URL);
-   const savedInvoice=await byId("billing/invoices",invoice.id);assert.equal(savedInvoice.amount,amount);assert.equal(savedInvoice.paymentUrl,NEXT_PUBLIC_HOST_SERVICE_URL);
+   assert.equal(invoice.provider,"dummy");assert.equal(invoice.status,"open");assert.equal(Number(invoice.amount),amount);assert(invoice.providerId);assert.equal(invoice.paymentUrl,NEXT_PUBLIC_HOST_SERVICE_URL);
+   const savedInvoice=await byId("billing/invoices",invoice.id);assert.equal(Number(savedInvoice.amount),amount);assert.equal(savedInvoice.paymentUrl,NEXT_PUBLIC_HOST_SERVICE_URL);
    const order=await byId("ecommerce/orders",orderId);assert.equal(order.type,"history");assert.equal(order.status,"paying");assert.equal(order.comment,comment);
-   const lines=await find("ecommerce/orders-to-products",[eq("orderId",orderId)]);assert.equal(lines.length,1);assert.equal(lines[0].productId,product.id);assert.equal(lines[0].quantity,quantity);if(lineId)assert.equal(lines[0].id,lineId);
+   const lines=await find("ecommerce/orders-to-products",[eq("orderId",orderId)]);assert.equal(lines.length,1);assert.equal(lines[0].offerId,offer.id);assert.equal(lines[0].productId,product.id);assert.equal(lines[0].quantity,quantity);if(lineId)assert.equal(lines[0].id,lineId);
    assert.equal((await find("ecommerce/stores-to-orders",[eq("orderId",orderId)]))[0].storeId,store.id);
    assert.equal((await find("ecommerce/orders-to-billing-module-currencies",[eq("orderId",orderId)]))[0].billingModuleCurrencyId,currencyId);
    assert.equal((await find("rbac/subjects-to-ecommerce-module-orders",[eq("ecommerceModuleOrderId",orderId)]))[0].subjectId,subject.id);
    const orderIntent=(await find("ecommerce/orders-to-billing-module-payment-intents",[eq("orderId",orderId)]));assert.equal(orderIntent.length,1);
-   const intent=remember("billing/payment-intents",await byId("billing/payment-intents",orderIntent[0].billingModulePaymentIntentId));assert.equal(intent.amount,amount);assert.equal(intent.type,"one_off");
+   const intent=remember("billing/payment-intents",await byId("billing/payment-intents",orderIntent[0].billingModulePaymentIntentId));assert.equal(Number(intent.amount),amount);assert.equal(intent.type,"one_off");
    const intentCurrency=await find("billing/payment-intents-to-currencies",[eq("paymentIntentId",intent.id)]);assert.equal(intentCurrency.length,1);assert.equal(intentCurrency[0].currencyId,currencyId);
    const intentInvoice=await find("billing/payment-intents-to-invoices",[eq("paymentIntentId",intent.id)]);assert.equal(intentInvoice.length,1);assert.equal(intentInvoice[0].invoiceId,invoice.id);
    const payload=providers.find(value=>value.currencyId===currencyId);assert(payload,"Real provider request must include selected currency");assert.equal(payload.provider,"dummy");
@@ -194,7 +212,13 @@ try{
   const quickInvoice=await verifyCheckout({result:quick,orderId:quickOrder.id,currencyId:currencies[1].id,quantity:3,amount:675,comment:"One click checkout"});
   assert.notEqual(quickInvoice.id,cartInvoice.id);assert.notEqual(quickOrder.id,checkoutCart.id);
   assert.equal((await find("rbac/subjects-to-identities",[eq("subjectId",subject.id)])).length,1,"Existing identity must be reused without notification");
-  assert.equal(observer.length,4,"Only the two observer transports per checkout should be captured");
+  assert.equal(observer.length,6,"Each successful order registers provider, patch and check observers");
+  const triggers=observer.map(message=>JSON.parse(message.payload).trigger);
+  assert.equal(triggers.filter(trigger=>trigger.method==="POST"&&trigger.url.endsWith("/api/billing/payment-intents/dummy/webhook")).length,2);
+  for(const orderId of [checkoutCart.id,quickOrder.id]){
+   assert.equal(triggers.filter(trigger=>trigger.method==="PATCH"&&trigger.url.endsWith("/api/ecommerce/orders/"+orderId)).length,1);
+   assert.equal(triggers.filter(trigger=>trigger.method==="POST"&&trigger.url.endsWith("/api/ecommerce/orders/"+orderId+"/check")).length,1);
+  }
   assert.equal(providers.length,2,"Both actual provider handlers must be called");
   // Dummy schedules its own webhook transport after ten seconds. Capture both
   // before teardown so no pending timer can contact a running local API later.

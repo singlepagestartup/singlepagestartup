@@ -1,66 +1,63 @@
 "use client";
-
-import { route, clientHost } from "@sps/rbac/models/subject/sdk/model";
 import {
-  DefaultError,
   useMutation,
-  UseMutationOptions,
+  type DefaultError,
+  type UseMutationOptions,
 } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { globalActionsStore } from "@sps/shared-frontend-client-store";
-import { createId } from "@paralleldrive/cuid2";
+import { route, clientHost } from "@sps/rbac/models/subject/sdk/model";
 import {
   api,
   type IProps as IParentProps,
   type IResult as IParentResult,
 } from "@sps/rbac/models/subject/sdk/server";
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
-
-export type IProps = {
-  reactQueryOptions?: Partial<UseMutationOptions<any, DefaultError, any>>;
-};
-
-export type IResult = IParentResult["IEcommerceModuleOrderCreateResult"];
-
-export function action(props: IProps) {
-  return useMutation<
-    IParentResult["IEcommerceModuleOrderUpdateResult"],
-    DefaultError,
-    IParentProps["IEcommerceModuleOrderUpdateProps"]
-  >({
+import { queryClient } from "@sps/shared-frontend-client-api";
+import { globalActionsStore } from "@sps/shared-frontend-client-store";
+import { createId } from "@paralleldrive/cuid2";
+import { toast } from "sonner";
+type IVariables = IParentProps["IEcommerceModuleOrderUpdateProps"];
+export type IResult = IParentResult["IEcommerceModuleOrderUpdateResult"];
+export interface IProps {
+  reactQueryOptions?: Partial<
+    UseMutationOptions<IResult, DefaultError, IVariables>
+  >;
+}
+export function action(props: IProps = {}) {
+  const { onSuccess, ...options } = props.reactQueryOptions ?? {};
+  return useMutation<IResult, DefaultError, IVariables>({
+    ...options,
     mutationKey: [`${route}/:id/ecommerce-module/orders/:orderId`],
-    mutationFn: async (
-      mutationFunctionProps: IParentProps["IEcommerceModuleOrderUpdateProps"],
-    ) => {
-      try {
-        const result = await api.ecommerceModuleOrderUpdate({
-          ...mutationFunctionProps,
+    mutationFn: async (variables) => {
+      const result = await api
+        .ecommerceModuleOrderUpdate({
+          ...variables,
+          host: variables.host ?? clientHost,
           options: {
-            ...mutationFunctionProps.options,
-            headers: saturateHeaders(mutationFunctionProps.options?.headers),
+            ...variables.options,
+            headers: saturateHeaders(variables.options?.headers),
           },
-          host: clientHost,
+        })
+        .catch((error) => {
+          toast.error(error instanceof Error ? error.message : String(error));
+          throw error;
         });
-
-        return result;
-      } catch (error: any) {
-        toast.error(error.message);
-
-        throw error;
-      }
-    },
-    onSuccess(data) {
+      // This aggregate operation returns a Subject, so reconcile the scoped Order
+      // collection instead of patching incomplete Order rows into its cache.
+      await queryClient.invalidateQueries({
+        queryKey: [`${route}/${variables.id}/ecommerce-module/orders`],
+      });
       globalActionsStore.getState().addAction({
         type: "mutation",
-        name: `${route}/:id/ecommerce-module/orders/:orderId`,
-        props: this,
-        result: data,
+        name: `${route}/${variables.id}/ecommerce-module/orders/:orderId`,
+        props: { id: variables.id },
+        result: { id: result.id },
         timestamp: Date.now(),
         requestId: createId(),
       });
-
-      return data;
+      return result;
     },
-    ...props?.reactQueryOptions,
+    async onSuccess(...args) {
+      await onSuccess?.(...args);
+    },
   });
 }

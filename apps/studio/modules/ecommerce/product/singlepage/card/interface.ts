@@ -15,6 +15,18 @@ export interface IProductCardPrice {
   interval?: string;
 }
 
+export interface IProductCardOffer {
+  id: string;
+  storeId: string;
+  storeName: string;
+  sku: string;
+  prices: IProductCardPrice[];
+  /** Null or omitted means that this offer has no stock limit. */
+  availableQuantity?: number | null;
+  unavailableReason?: string;
+  fulfillmentSummary: string;
+}
+
 export interface IProductCardOptionValue {
   id: string;
   label: string;
@@ -38,6 +50,8 @@ export interface IProductCardPaymentMethod {
 
 export interface IProductCardSelection {
   productId: string;
+  offerId?: string;
+  storeId?: string;
   quantity: number;
   currencyId: string;
   optionValues: Record<string, string>;
@@ -80,6 +94,8 @@ export interface ProductCardProps {
   visibleAttributeCount?: number;
   options?: IProductCardOption[];
   prices?: IProductCardPrice[];
+  offers?: IProductCardOffer[];
+  initialOfferId?: string;
   priceNote?: string;
   paymentMethods?: IProductCardPaymentMethod[];
   initialCurrencyId?: string;

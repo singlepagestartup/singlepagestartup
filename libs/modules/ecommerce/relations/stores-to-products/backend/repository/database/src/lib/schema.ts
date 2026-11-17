@@ -2,6 +2,24 @@ import * as pgCore from "drizzle-orm/pg-core";
 import { Table as Store } from "@sps/ecommerce/models/store/backend/repository/database";
 import { Table as Product } from "@sps/ecommerce/models/product/backend/repository/database";
 
+export interface IOfferSettings {
+  standalone?: boolean;
+  requiredDelivery?: boolean;
+  receiptMethod?: "shipping" | "pickup" | "electronic";
+  regionIds?: string[];
+  pickupPointIds?: string[];
+  origin?: { latitude: number; longitude: number };
+  routeProfile?: "drive" | "truck" | "bicycle";
+  quoteMinutes?: number;
+  packages?: Array<{
+    count: number;
+    length_cm?: string;
+    width_cm?: string;
+    height_cm?: string;
+    weight_kg?: string;
+  }>;
+}
+
 export const moduleName = "sps_ee";
 export const table = "ss_to_ps_vn7";
 
@@ -14,6 +32,12 @@ export const Table = pgTable(table, {
   variant: pgCore.text("variant").notNull().default("default"),
   orderIndex: pgCore.integer("order_index").notNull().default(0),
   className: pgCore.text("class_name"),
+  configurationKey: pgCore.text("configuration_key").notNull().default(""),
+  settings: pgCore
+    .jsonb("settings")
+    .$type<IOfferSettings>()
+    .notNull()
+    .default({}),
   sku: pgCore.text("sku").notNull().unique(),
   storeId: pgCore
     .uuid("se_id")

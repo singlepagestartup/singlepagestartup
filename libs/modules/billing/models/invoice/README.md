@@ -14,7 +14,7 @@ Invoices track payable amounts and statuses for completed or pending transaction
 - `paymentUrl`: payment URL used for checkout flows.
 - `successUrl`: redirect URL after successful payment.
 - `cancelUrl`: redirect URL after cancelled payment.
-- `amount`: invoice amount as integer.
+- `amount`: exact decimal amount in the currency's main units, stored as `numeric(24,8)`. The SDK retains its number type; existing integer amounts keep their value.
 - `providerId`: provider-specific identifier.
 - `provider`: payment provider name.
 

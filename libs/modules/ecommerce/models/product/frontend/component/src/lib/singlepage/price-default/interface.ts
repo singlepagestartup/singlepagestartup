@@ -8,15 +8,28 @@ import { IModel as IBillingModuleCurrency } from "@sps/billing/models/currency/s
 
 export const variant = "price-default" as const;
 
-export interface IComponentProps
-  extends IParentComponentProps<IModel, typeof variant> {
+export interface IComponentProps extends IParentComponentProps<
+  IModel,
+  typeof variant
+> {
   billingModuleCurrencyId?: IBillingModuleCurrency["id"];
+  offerId?: string;
+  quantity?: number;
   language: string;
 }
 
-export interface IComponentPropsExtended
-  extends IParentComponentPropsExtended<
-    IModel,
-    typeof variant,
-    IComponentProps
-  > {}
+export interface IComponentPropsExtended extends IParentComponentPropsExtended<
+  IModel,
+  typeof variant,
+  IComponentProps
+> {}
+
+export interface IPriceClientProps {
+  productId: string;
+  productKind: IModel["kind"];
+  offerId?: string;
+  quantity?: number;
+  currencyId?: string;
+  language: string;
+  className?: string;
+}

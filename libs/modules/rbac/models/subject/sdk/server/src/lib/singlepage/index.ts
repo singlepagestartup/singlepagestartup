@@ -1,4 +1,15 @@
 import {
+  context as ecommerceModuleCatalogContext,
+  type IContextProps as IEcommerceModuleCatalogContextProps,
+  type IContextResult as IEcommerceModuleCatalogContextResult,
+  offerCreate as ecommerceModuleOfferCreate,
+  attributeSet as ecommerceModuleCatalogAttributeSet,
+  type IOfferCreateProps as IEcommerceModuleOfferCreateProps,
+  type IAttributeSetProps as IEcommerceModuleCatalogAttributeSetProps,
+  type IOfferCreateResult as IEcommerceModuleOfferCreateResult,
+  type IAttributeSetResult as IEcommerceModuleCatalogAttributeSetResult,
+} from "./ecommerce-module/catalog";
+import {
   action as blogModuleArticleCreate,
   type IProps as IBlogModuleArticleCreateProps,
   type IResult as IBlogModuleArticleCreateResult,
@@ -106,6 +117,11 @@ import {
   type IProps as IEcommerceModuleProductCheckoutProps,
   type IResult as IEcommerceModuleProductCheckoutResult,
 } from "./ecommerce-module/product/checkout";
+import {
+  action as ecommerceModuleOrderSelection,
+  type IProps as IEcommerceModuleOrderSelectionProps,
+  type IResult as IEcommerceModuleOrderSelectionResult,
+} from "./ecommerce-module/order/selection";
 import {
   action as ecommerceModuleOrderRepeat,
   type IProps as IEcommerceModuleOrderRepeatProps,
@@ -496,6 +512,9 @@ import {
 } from "./host-cache/revalidate";
 
 export type IProps = {
+  IEcommerceModuleCatalogContextProps: IEcommerceModuleCatalogContextProps;
+  IEcommerceModuleOfferCreateProps: IEcommerceModuleOfferCreateProps;
+  IEcommerceModuleCatalogAttributeSetProps: IEcommerceModuleCatalogAttributeSetProps;
   IPermissionDefaultsProps: IPermissionDefaultsProps;
   IHostCacheRevalidateProps: IHostCacheRevalidateProps;
   IBlogModuleArticleCreateProps: IBlogModuleArticleCreateProps;
@@ -520,6 +539,7 @@ export type IProps = {
 
   IEcommerceModuleProductCheckoutProps: IEcommerceModuleProductCheckoutProps;
   IEcommerceModuleOrderCreateProps: IEcommerceModuleOrderCreateProps;
+  IEcommerceModuleOrderSelectionProps: IEcommerceModuleOrderSelectionProps;
   IEcommerceModuleOrderRepeatProps: IEcommerceModuleOrderRepeatProps;
   IEcommerceModuleOrderUpdateProps: IEcommerceModuleOrderUpdateProps;
   IEcommerceModuleOrderDeleteProps: IEcommerceModuleOrderDeleteProps;
@@ -601,6 +621,9 @@ export type IProps = {
 };
 
 export type IResult = {
+  IEcommerceModuleCatalogContextResult: IEcommerceModuleCatalogContextResult;
+  IEcommerceModuleOfferCreateResult: IEcommerceModuleOfferCreateResult;
+  IEcommerceModuleCatalogAttributeSetResult: IEcommerceModuleCatalogAttributeSetResult;
   IPermissionDefaultsResult: IPermissionDefaultsResult;
   IHostCacheRevalidateResult: IHostCacheRevalidateResult;
   IBlogModuleArticleCreateResult: IBlogModuleArticleCreateResult;
@@ -625,6 +648,7 @@ export type IResult = {
 
   IEcommerceModuleProductCheckoutResult: IEcommerceModuleProductCheckoutResult;
   IEcommerceModuleOrderCreateResult: IEcommerceModuleOrderCreateResult;
+  IEcommerceModuleOrderSelectionResult: IEcommerceModuleOrderSelectionResult;
   IEcommerceModuleOrderRepeatResult: IEcommerceModuleOrderRepeatResult;
   IEcommerceModuleOrderUpdateResult: IEcommerceModuleOrderUpdateResult;
   IEcommerceModuleOrderDeleteResult: IEcommerceModuleOrderDeleteResult;
@@ -706,6 +730,9 @@ export type IResult = {
 };
 
 export const api = {
+  ecommerceModuleCatalogContext,
+  ecommerceModuleOfferCreate,
+  ecommerceModuleCatalogAttributeSet,
   permissionDefaults,
   hostCacheRevalidate,
   blogModuleArticleCreate,
@@ -728,6 +755,7 @@ export const api = {
 
   ecommerceModuleProductCheckout,
   ecommerceModuleOrderCreate,
+  ecommerceModuleOrderSelection,
   ecommerceModuleOrderRepeat,
   ecommerceModuleOrderUpdate,
   ecommerceModuleOrderDelete,

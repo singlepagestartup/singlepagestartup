@@ -1,4 +1,5 @@
 import { Service as CheckoutClaim } from "../../../startup/ecommerce/order/checkout-claim";
+import { Service as CheckoutLegacy } from "../../../startup/ecommerce/order/checkout-legacy";
 import type { Repository } from "../../../../repository";
 import { Service as SubjectsToEcommerceModuleOrdersService } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/service";
 import {
@@ -11,6 +12,14 @@ import { api as ecommerceModuleOrderApi } from "@sps/ecommerce/models/order/sdk/
 import { IModel as IBillingModulePaymentIntent } from "@sps/billing/models/payment-intent/sdk/model";
 import { api as billingModulePaymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
 import { api as broadcastModuleChannelApi } from "@sps/broadcast/models/channel/sdk/server";
+import { addMoney, moneyNumber, providerMinorUnits } from "@sps/backend-utils";
+import { isSupportedOrderInterval } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service/singlepage/find-by-id/checkout-attributes";
+import { paymentProviderPrecision } from "@sps/billing/models/payment-intent/sdk/model";
+import type {
+  IOfferQuote,
+  IOfferQuoteInput,
+} from "@sps/ecommerce/relations/stores-to-products/sdk/model";
+import type { IReservationLine } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api/src/lib/service/singlepage/reservation";
 
 export const ACTIVE_SUBSCRIPTION_ORDER_STATUSES = [
   "paying",
@@ -131,6 +140,63 @@ export class Service {
     if (!ordersToProducts?.length) {
       throw new Error("Not Found error. No orders to products found");
     }
+    if (
+      ecommerceModuleOrders.some(
+        (order) =>
+          !ordersToProducts.some(
+            (line) => line.orderId === order.id && line.productId,
+          ),
+      )
+    ) {
+      throw new Error(
+        "Validation error. Every checkout order must have products",
+      );
+    }
+    const existingPaymentLinks =
+      await this.ecommerceModule.ordersToBillingModulePaymentIntents.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "orderId",
+                method: "inArray",
+                value: ecommerceModuleOrders.map((order) => order.id),
+              },
+            ],
+          },
+        },
+      });
+    if (existingPaymentLinks.length) {
+      const existing = await new CheckoutClaim({
+        repository: this.dependencies.repository,
+        ecommerceModule: this.ecommerceModule,
+        billingModule: this.billingModule,
+        subjectsToEcommerceModuleOrders: this.subjectsToEcommerceModuleOrders,
+        settledOrderIds: this.dependencies.settledOrderIds,
+      }).execute({
+        subjectId: props.id,
+        orderIds: ecommerceModuleOrders.map((order) => order.id),
+        resumeExisting: true,
+        comment: props.comment,
+      });
+      if (existing.invoices) {
+        await this.registerCheckoutObservers({
+          orderIds: ecommerceModuleOrders.map((order) => order.id),
+          subjectId: props.id,
+          provider: existing.invoices[0]?.provider || props.provider,
+        });
+        return { billingModule: { invoices: existing.invoices } };
+      }
+    }
+    await new CheckoutLegacy({
+      repository: this.dependencies.repository,
+      ecommerceModule: this.ecommerceModule,
+      owners: this.subjectsToEcommerceModuleOrders,
+    }).execute({
+      subjectId: props.id,
+      orders: ecommerceModuleOrders,
+      lines: ordersToProducts,
+    });
 
     const ecommerceModuleProducts = await this.ecommerceModule.product.find({
       params: {
@@ -179,7 +245,8 @@ export class Service {
         },
       });
 
-    if (!ecommerceModuleProductsToAttributes?.length) {
+    const offerBacked = ordersToProducts.every((line) => line.offerId);
+    if (!ecommerceModuleProductsToAttributes?.length && !offerBacked) {
       throw new Error(
         "Not Found error. No ecommerce module products to attributes found",
       );
@@ -203,7 +270,7 @@ export class Service {
         },
       });
 
-    if (!ecommerceModuleAttributesKeysToAttributes?.length) {
+    if (!ecommerceModuleAttributesKeysToAttributes?.length && !offerBacked) {
       throw new Error(
         "Not Found error. No ecommerce module attributes keys to attributes found",
       );
@@ -233,7 +300,7 @@ export class Service {
       );
     }
 
-    if (!ecommerceModuleAttributesKeys?.length) {
+    if (!ecommerceModuleAttributesKeys?.length && !offerBacked) {
       throw new Error(
         "Not Found error. No ecommerce module attributes keys found",
       );
@@ -258,7 +325,7 @@ export class Service {
       },
     );
 
-    if (!ecommerceModuleAttributes?.length) {
+    if (!ecommerceModuleAttributes?.length && !offerBacked) {
       throw new Error("Not Found error. No ecommerce module attributes found");
     }
 
@@ -437,18 +504,27 @@ export class Service {
         interval?: string;
       }
     >();
+    const orderQuotes = new Map<
+      string,
+      { input: IOfferQuoteInput; quote: IOfferQuote }
+    >();
+    const separatePeriodOrderIds = new Set<string>();
+    const offerSelections: {
+      order: (typeof ecommerceModuleOrders)[number];
+      main: (typeof ordersToProducts)[number];
+      input: IOfferQuoteInput;
+    }[] = [];
     for (const order of ecommerceModuleOrders) {
-      if (
-        !ordersToProducts.some(
-          (line) => line.orderId === order.id && line.productId,
-        )
-      ) {
+      const lines = ordersToProducts.filter(
+        (line) => line.orderId === order.id,
+      );
+      if (!lines.length) {
         throw new Error(
           "Validation error. Every checkout order must have products",
         );
       }
       const currencyLinks = ordersToBillingModuleCurrencies.filter(
-        (link: { orderId: string }) => link.orderId === order.id,
+        (link) => link.orderId === order.id,
       );
       if (
         currencyLinks.length !== 1 ||
@@ -458,13 +534,252 @@ export class Service {
           "Validation error. Checkout order must have one currency",
         );
       }
-      const attributes =
-        await this.ecommerceModule.order.findByIdCheckoutAttributesByCurrency({
-          id: order.id,
-          billingModuleCurrencyId: currencyLinks[0].billingModuleCurrencyId,
-        });
-      checkoutAttributesByOrderId.set(order.id, attributes);
+      const primary = lines.filter((line) => !line.parentLineId);
+      if (!primary.some((line) => line.offerId)) {
+        const attributes =
+          await this.ecommerceModule.order.findByIdCheckoutAttributesByCurrency(
+            {
+              id: order.id,
+              billingModuleCurrencyId: currencyLinks[0].billingModuleCurrencyId,
+            },
+          );
+        checkoutAttributesByOrderId.set(order.id, attributes);
+        continue;
+      }
+      if (
+        primary.length !== 1 ||
+        !primary[0].offerId ||
+        lines.some((line) => !line.offerId)
+      ) {
+        throw new Error(
+          "Validation error. An offer order must contain one primary item and its services",
+        );
+      }
+      const main = primary[0];
+      offerSelections.push({
+        order,
+        main,
+        input: {
+          offerId: main.offerId!,
+          quantity: main.quantity,
+          currencyId: currencyLinks[0].billingModuleCurrencyId,
+          lineId: main.id,
+          destination: main.destination,
+          services: lines
+            .filter((line) => line.parentLineId === main.id)
+            .map((line) => ({
+              offerId: line.offerId!,
+              quantity: line.quantity,
+              lineId: line.id,
+            })),
+        },
+      });
     }
+    const previews = offerSelections.length
+      ? await this.ecommerceModule.storesToProducts.quoteMany(
+          offerSelections.map((selection) => selection.input),
+        )
+      : [];
+    if (previews.length !== offerSelections.length) {
+      throw new Error(
+        "Configuration error. Checkout quote batch is incomplete",
+      );
+    }
+    const intervalKeyIds = new Set(
+      ecommerceModuleAttributesKeys
+        .filter((key) => key.type === "interval")
+        .map((key) => key.id),
+    );
+    for (const [index, selection] of offerSelections.entries()) {
+      const { order, main, input } = selection;
+      const quote = previews[index];
+      if (quote.amount === null || quote.issues.length) {
+        throw new Error(
+          `Conflict error. Checkout quote is unavailable: ${JSON.stringify(quote.issues)}`,
+        );
+      }
+      if (main.quoteVersion && main.quoteVersion !== quote.version) {
+        throw new Error(
+          `Conflict error. Checkout price changed: ${JSON.stringify({ orderId: order.id, lineId: main.id, amount: quote.amount, currencyId: quote.currencyId, charges: quote.charges, version: quote.version, expiresAt: quote.expiresAt })}`,
+        );
+      }
+      const currency = billingModuleCurrencies.find(
+        (entry) => entry.id === input.currencyId,
+      );
+      if (!currency) {
+        throw new Error("Not Found error. Checkout currency is unavailable");
+      }
+      providerMinorUnits(
+        quote.amount,
+        paymentProviderPrecision(props.provider, currency),
+      );
+      const primaryProduct = ecommerceModuleProducts.find(
+        (product) => product.id === main.productId,
+      );
+      const type = order.subscriptionSourceOrderId
+        ? "subscription"
+        : primaryProduct?.type;
+      if (type !== "one_off" && type !== "subscription") {
+        throw new Error(
+          "Validation error. Checkout product has unsupported payment terms",
+        );
+      }
+      let interval: string | undefined;
+      if (type === "subscription") {
+        const intervalValues = new Set<string>();
+        for (const link of ecommerceModuleProductsToAttributes.filter(
+          (row) => row.productId === main.productId,
+        )) {
+          const isInterval = ecommerceModuleAttributesKeysToAttributes.some(
+            (row) =>
+              row.attributeId === link.attributeId &&
+              intervalKeyIds.has(row.attributeKeyId),
+          );
+          if (isInterval) {
+            const value = ecommerceModuleAttributes.find(
+              (row) => row.id === link.attributeId,
+            );
+            const term = value?.string?.en ?? value?.string?.ru;
+            if (term) {
+              intervalValues.add(term);
+            }
+          }
+        }
+        interval = order.subscriptionSourceInterval ?? [...intervalValues][0];
+        if (
+          !interval ||
+          (!order.subscriptionSourceInterval && intervalValues.size !== 1) ||
+          !isSupportedOrderInterval(interval)
+        ) {
+          throw new Error(
+            "Validation error. Subscription interval is missing or unsupported",
+          );
+        }
+      }
+      checkoutAttributesByOrderId.set(order.id, {
+        amount: moneyNumber(quote.amount),
+        type,
+        interval,
+      });
+      if (
+        type === "subscription" &&
+        (primaryProduct?.kind === "physical" ||
+          quote.charges.some(
+            (charge) =>
+              charge.stockQuantity !== null || charge.recurrence === "first",
+          ) ||
+          order.subscriptionSourceOrderId)
+      ) {
+        separatePeriodOrderIds.add(order.id);
+      }
+      orderQuotes.set(order.id, { input, quote });
+    }
+    const pendingReservations = new Map<string, IReservationLine[]>();
+    const checkoutStoreIds = [
+      ...new Set(
+        [...orderQuotes.values()].flatMap(({ quote }) =>
+          quote.charges.flatMap((charge) => [
+            charge.storeId,
+            charge.providerStoreId,
+          ]),
+        ),
+      ),
+    ];
+    const checkoutStores = checkoutStoreIds.length
+      ? await this.ecommerceModule.store.find({
+          params: {
+            filters: {
+              and: [
+                { column: "id", method: "inArray", value: checkoutStoreIds },
+              ],
+            },
+          },
+        })
+      : [];
+    const storeTitle = (id: string) => {
+      const store = checkoutStores.find((entry) => entry.id === id);
+      return store?.title?.en ?? store?.title?.ru ?? store?.adminTitle ?? id;
+    };
+    const createPaymentLinks = async (
+      orderId: string,
+      paymentIntentId: string,
+    ) => {
+      const selected = orderQuotes.get(orderId);
+      if (!selected) {
+        await this.ecommerceModule.ordersToBillingModulePaymentIntents.create({
+          data: { orderId, billingModulePaymentIntentId: paymentIntentId },
+        });
+        return;
+      }
+      const lines = ordersToProducts.filter((line) => line.orderId === orderId);
+      const reservations: IReservationLine[] = selected.quote.charges.map(
+        (charge) => {
+          const line =
+            lines.find((entry) => entry.id === charge.lineId) ??
+            lines.find(
+              (entry) =>
+                entry.offerId === charge.offerId &&
+                (charge.role === "product"
+                  ? !entry.parentLineId
+                  : Boolean(entry.parentLineId)),
+            );
+          if (!line) {
+            throw new Error(
+              "Validation error. Quoted charge has no selected order line",
+            );
+          }
+          const product = ecommerceModuleProducts.find(
+            (entry) => entry.id === charge.productId,
+          );
+          const title =
+            product?.title?.en ??
+            product?.title?.ru ??
+            product?.adminTitle ??
+            charge.productId;
+          return {
+            orderId,
+            orderLineId: line.id,
+            offerId: charge.offerId,
+            quantity: charge.quantity,
+            snapshot: {
+              version: 1,
+              currencyId: selected.input.currencyId,
+              amount: charge.amount,
+              orderAmount: selected.quote.amount!,
+              purchaseType: checkoutAttributesByOrderId.get(orderId)!.type as
+                "one_off" | "subscription",
+              interval: checkoutAttributesByOrderId.get(orderId)!.interval,
+              parentLineId: line.parentLineId ?? null,
+              quoteVersion: selected.quote.version,
+              quoteExpiresAt: selected.quote.expiresAt,
+              charge: {
+                ...charge,
+                title,
+                storeTitle: storeTitle(charge.storeId),
+                providerStoreTitle: storeTitle(charge.providerStoreId),
+              },
+              destination:
+                selected.quote.destination ?? selected.input.destination ?? {},
+            },
+          };
+        },
+      );
+      pendingReservations.set(paymentIntentId, [
+        ...(pendingReservations.get(paymentIntentId) ?? []),
+        ...reservations,
+      ]);
+      const metadataOrder = metadata.ecommerceModule.orders.find(
+        (entry: { id: string }) => entry.id === orderId,
+      );
+      if (metadataOrder) {
+        metadataOrder.purchaseCharges = reservations.map((entry) => ({
+          title: entry.snapshot.charge.title,
+          amount: entry.snapshot.amount,
+          quantity: entry.quantity,
+          role: entry.snapshot.charge.role,
+        }));
+      }
+    };
     const billingModulePaymentIntents: {
       orderIds: string[];
       billingModulePaymentIntent: IBillingModulePaymentIntent;
@@ -494,12 +809,48 @@ export class Service {
         if (claim.invoices) {
           return claim;
         }
+        if (orderQuotes.size) {
+          await this.ecommerceModule.ordersToBillingModulePaymentIntents.lockOffers(
+            {
+              offerIds: [...orderQuotes.values()].flatMap(({ quote }) =>
+                quote.charges.map((charge) => charge.offerId),
+              ),
+            },
+          );
+          const selections = [...orderQuotes.entries()];
+          const refreshed =
+            await this.ecommerceModule.storesToProducts.quotesUnderLock(
+              selections.map(([, selected]) => selected.input),
+              selections.map(([, selected]) => selected.quote),
+            );
+          if (refreshed.length !== selections.length) {
+            throw new Error(
+              "Configuration error. Locked checkout quote batch is incomplete",
+            );
+          }
+          for (const [index, [orderId, selected]] of selections.entries()) {
+            const fresh = refreshed[index];
+            if (
+              fresh.amount === null ||
+              fresh.issues.length ||
+              fresh.version !== selected.quote.version
+            ) {
+              throw new Error(
+                `Conflict error. Checkout quote changed: ${JSON.stringify({ orderId, amount: fresh.amount, currencyId: fresh.currencyId, issues: fresh.issues, version: fresh.version, expiresAt: fresh.expiresAt })}`,
+              );
+            }
+            selected.quote = fresh;
+          }
+        }
 
         for (const order of ecommerceModuleOrders) {
           const checkoutOrderProductIds = new Set(
             ordersToProducts
               .filter((orderToProduct) => {
-                return orderToProduct.orderId === order["id"];
+                return (
+                  orderToProduct.orderId === order["id"] &&
+                  !orderToProduct.parentLineId
+                );
               })
               .map((orderToProduct) => {
                 return orderToProduct.productId;
@@ -564,6 +915,15 @@ export class Service {
                 ) {
                   continue;
                 }
+                if (
+                  order.subscriptionSourceOrderId === ecommerceModuleOrder.id &&
+                  ecommerceModuleOrder.subscriptionPeriodEndsAt &&
+                  new Date(
+                    ecommerceModuleOrder.subscriptionPeriodEndsAt,
+                  ).getTime() <= Date.now()
+                ) {
+                  continue;
+                }
 
                 if (
                   !ACTIVE_SUBSCRIPTION_ORDER_STATUSES.includes(
@@ -615,8 +975,9 @@ export class Service {
 
                 if (
                   existingOrdersToProducts?.some((orderToProduct) => {
-                    return checkoutOrderProductIds.has(
-                      orderToProduct.productId,
+                    return (
+                      !orderToProduct.parentLineId &&
+                      checkoutOrderProductIds.has(orderToProduct.productId)
                     );
                   })
                 ) {
@@ -649,10 +1010,11 @@ export class Service {
                   .billingModulePaymentIntent.id,
                 data: {
                   ...existingBillingModulePaymentIntentWithSameBillingModuleCurrencyAndCheckoutAttributes.billingModulePaymentIntent,
-                  amount:
-                    amount +
+                  amount: addMoney(
+                    amount,
                     existingBillingModulePaymentIntentWithSameBillingModuleCurrencyAndCheckoutAttributes
                       .billingModulePaymentIntent.amount,
+                  ),
                 },
               });
 
@@ -676,14 +1038,9 @@ export class Service {
               },
             });
 
-            await this.ecommerceModule.ordersToBillingModulePaymentIntents.create(
-              {
-                data: {
-                  orderId: order["id"],
-                  billingModulePaymentIntentId:
-                    updatedBillingModulePaymentIntent.id,
-                },
-              },
+            await createPaymentLinks(
+              order.id,
+              updatedBillingModulePaymentIntent.id,
             );
 
             continue;
@@ -694,7 +1051,11 @@ export class Service {
               data: {
                 amount,
                 interval,
-                type,
+                type:
+                  separatePeriodOrderIds.has(order.id) &&
+                  type === "subscription"
+                    ? "one_off"
+                    : type,
               },
             });
 
@@ -708,16 +1069,14 @@ export class Service {
             },
           });
 
-          await this.ecommerceModule.ordersToBillingModulePaymentIntents.create(
-            {
-              data: {
-                orderId: order["id"],
-                billingModulePaymentIntentId: billingModulePaymentIntent.id,
-              },
-            },
-          );
+          await createPaymentLinks(order.id, billingModulePaymentIntent.id);
         }
 
+        for (const [paymentIntentId, lines] of pendingReservations) {
+          await this.ecommerceModule.ordersToBillingModulePaymentIntents.reserveCharges(
+            { paymentIntentId, lines },
+          );
+        }
         return claim;
       },
     );
@@ -753,92 +1112,12 @@ export class Service {
         .filter((attempt) => attempt.billingModulePaymentIntent.amount === 0)
         .flatMap((attempt) => attempt.orderIds),
     );
-    const observerProvider = claim.invoices?.[0]?.provider || props.provider;
-    for (const order of ecommerceModuleOrders) {
-      if (!settledFreeOrderIds.has(order.id)) {
-        await broadcastModuleChannelApi
-          .pushMessage({
-            data: {
-              slug: "observer",
-              payload: JSON.stringify({
-                expiresAt: new Date(
-                  Date.now() + 1000 * 60 * 60 * 24,
-                ).toISOString(),
-                trigger: {
-                  type: "request",
-                  method: "POST",
-                  url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/billing/payment-intents/${observerProvider}/webhook`,
-                },
-                pipe: [
-                  {
-                    type: "request",
-                    method: "POST",
-                    url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/ecommerce/orders/${order["id"]}/check`,
-                    headers: {
-                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                    },
-                  },
-                  {
-                    type: "request",
-                    method: "POST",
-                    url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/rbac/subjects/${props.id}/check`,
-                    headers: {
-                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                    },
-                  },
-                ],
-              }),
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
-            },
-          })
-          .catch(preserveFailedCheckout);
-      }
-
-      const subjectCheckTriggers = [
-        {
-          method: "PATCH",
-          url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/ecommerce/orders/${order.id}`,
-        },
-        {
-          method: "POST",
-          url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/ecommerce/orders/${order.id}/check`,
-        },
-      ];
-      for (const trigger of subjectCheckTriggers) {
-        await broadcastModuleChannelApi
-          .pushMessage({
-            data: {
-              expiresAt: new Date(
-                Date.now() + 1000 * 60 * 60 * 24,
-              ).toISOString(),
-              slug: "observer",
-              payload: JSON.stringify({
-                trigger: { type: "request", ...trigger },
-                pipe: [
-                  {
-                    type: "request",
-                    method: "POST",
-                    url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/rbac/subjects/${props.id}/check`,
-                    headers: {
-                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                    },
-                  },
-                ],
-              }),
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
-            },
-          })
-          .catch(preserveFailedCheckout);
-      }
-    }
+    await this.registerCheckoutObservers({
+      orderIds: ecommerceModuleOrders.map((order) => order.id),
+      subjectId: props.id,
+      provider: claim.invoices?.[0]?.provider || props.provider,
+      freeOrderIds: settledFreeOrderIds,
+    }).catch(preserveFailedCheckout);
 
     if (claim.invoices) {
       return { billingModule: { invoices: claim.invoices } };
@@ -927,5 +1206,95 @@ export class Service {
         invoices: billingModuleInvoices,
       },
     };
+  }
+  private async registerCheckoutObservers(scope: {
+    orderIds: string[];
+    subjectId: string;
+    provider: string;
+    freeOrderIds?: Set<string>;
+  }) {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Configuration error. RBAC_SECRET_KEY is required");
+    }
+    const rbacSecretKey = RBAC_SECRET_KEY;
+    for (const orderId of scope.orderIds) {
+      if (!scope.freeOrderIds?.has(orderId)) {
+        await broadcastModuleChannelApi.pushMessage({
+          data: {
+            slug: "observer",
+            payload: JSON.stringify({
+              expiresAt: new Date(
+                Date.now() + 1000 * 60 * 60 * 24,
+              ).toISOString(),
+              trigger: {
+                type: "request",
+                method: "POST",
+                url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/billing/payment-intents/${scope.provider}/webhook`,
+              },
+              pipe: [
+                {
+                  type: "request",
+                  method: "POST",
+                  url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/ecommerce/orders/${orderId}/check`,
+                  headers: {
+                    "X-RBAC-SECRET-KEY": rbacSecretKey,
+                  },
+                },
+                {
+                  type: "request",
+                  method: "POST",
+                  url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/rbac/subjects/${scope.subjectId}/check`,
+                  headers: {
+                    "X-RBAC-SECRET-KEY": rbacSecretKey,
+                  },
+                },
+              ],
+            }),
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": rbacSecretKey,
+            },
+          },
+        });
+      }
+
+      const subjectCheckTriggers = [
+        {
+          method: "PATCH",
+          url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/ecommerce/orders/${orderId}`,
+        },
+        {
+          method: "POST",
+          url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/ecommerce/orders/${orderId}/check`,
+        },
+      ];
+      for (const trigger of subjectCheckTriggers) {
+        await broadcastModuleChannelApi.pushMessage({
+          data: {
+            expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(),
+            slug: "observer",
+            payload: JSON.stringify({
+              trigger: { type: "request", ...trigger },
+              pipe: [
+                {
+                  type: "request",
+                  method: "POST",
+                  url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/rbac/subjects/${scope.subjectId}/check`,
+                  headers: {
+                    "X-RBAC-SECRET-KEY": rbacSecretKey,
+                  },
+                },
+              ],
+            }),
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": rbacSecretKey,
+            },
+          },
+        });
+      }
+    }
   }
 }

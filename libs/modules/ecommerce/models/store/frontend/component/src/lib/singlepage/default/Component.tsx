@@ -16,7 +16,11 @@ import {
 } from "@sps/shared-ui-shadcn";
 import { saveLanguageContext } from "@sps/shared-utils";
 
-export function Component(props: IComponentPropsExtended) {
+export function Component(
+  props: Omit<IComponentPropsExtended, "variant"> & {
+    variant: "default" | "service" | "delivery";
+  },
+) {
   const href = saveLanguageContext(
     `/ecommerce/stores/${props.data.slug}`,
     props.language,

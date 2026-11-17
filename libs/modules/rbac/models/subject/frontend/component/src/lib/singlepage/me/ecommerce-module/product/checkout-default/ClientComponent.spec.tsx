@@ -71,6 +71,45 @@ jest.mock("@sps/ecommerce/models/product/frontend/component", () => ({
     );
   },
 }));
+jest.mock("@sps/ecommerce/relations/stores-to-products/sdk/client", () => ({
+  api: {
+    find: () => ({
+      data: [
+        {
+          id: "offer",
+          variant: "default",
+          productId: "product",
+          storeId: "store",
+          sku: "SKU",
+        },
+      ],
+    }),
+    quote: ({ data }: any) => ({
+      data: {
+        ...data,
+        amount: "100",
+        currencyIds: ["currency-usd", "currency-eur"],
+        issues: [],
+        charges: [],
+        availableQuantity: null,
+      },
+      isFetching: false,
+    }),
+  },
+}));
+jest.mock("@sps/ecommerce/models/store/sdk/client", () => ({
+  api: { find: () => ({ data: [{ id: "store", title: { en: "Store" } }] }) },
+}));
+jest.mock("@sps/billing/models/currency/sdk/client", () => ({
+  api: {
+    find: () => ({
+      data: [
+        { id: "currency-usd", slug: "usd", symbol: "$" },
+        { id: "currency-eur", slug: "eur", symbol: "€" },
+      ],
+    }),
+  },
+}));
 import { Component } from "./ClientComponent";
 import { Component as CreateCart } from "../../../../ecommerce-module/order/create-default/ClientComponent";
 const props = {
@@ -164,7 +203,8 @@ it("uses the existing cart operation and keeps the selected currency, quantity a
         quantity: 2,
         productId: "product",
         storeId: "store",
-        billingModule: { currency: { id: "currency-usd" } },
+        offerId: "offer",
+        billingModuleCurrencyId: "currency-usd",
       },
     }),
   );

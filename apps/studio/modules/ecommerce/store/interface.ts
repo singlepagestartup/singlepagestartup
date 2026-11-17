@@ -14,3 +14,10 @@ export interface ISkeletonProps {
   className?: string;
   rows?: number;
 }
+
+export type {
+  IOfferStore,
+  IOfferProduct,
+  IOfferPackage,
+  IStoreOfferDraft,
+} from "./singlepage/offer-editor/interface";

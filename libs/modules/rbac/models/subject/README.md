@@ -28,47 +28,52 @@ former `ecommerce-module-product-cart-default` and
 compositions should select the corresponding `me` variant and pass
 `dataSource="props"` when they already own the current Subject.
 
-When a visitor signs in to an existing account by password, wallet, or OAuth, the API merges the open guest cart into the account cart using the visitor’s access token. The account cart keeps distinct products from both sessions. For a product in both carts, the most recently updated line supplies the quantity. An exact timestamp tie keeps the account line. History and orders with a payment attempt keep their owners.
+When a visitor signs in to an existing account by password, wallet, or OAuth, the API merges the open guest cart into the account cart using the visitor’s access token. The account cart keeps distinct products from both sessions. For a Product in both carts, the most recent buyer selection supplies the complete group of offers, split orders, destinations and child services. An exact timestamp tie keeps the account group. History and orders with a payment attempt keep their owners.
 
-### Duplicate products in an open cart
+### Offers in an open cart
 
-The Subject order-create route permits one open cart Order per Product for that
-Subject. An open cart has `type="cart"` and `status="new"`. Store and selected
-currency do not partition the cart. A repeat add returns HTTP 409 with
-`Conflict error. Product is already in the cart`; quantity changes use the
-existing Subject order-update route.
+A new cart Order has one primary `orders-to-products` line with an exact retail
+`offerId`. Selected delivery and add-on services are child lines in the same
+Order. The primary stores its destination, accepted quote version and expiry,
+and `selectionUpdatedAt`, which changes only for buyer edits. Child recurrence
+comes from the server quote; clients cannot change it.
 
-`ecommerceModuleOrderCreate` uses the existing Subject repository's
-`withSubjectLock` transaction. The duplicate lookup, currency resolution and all
-Order graph writes run under the same PostgreSQL lock, including requests from
-different API processes. A relation failure rolls back the graph. The lookup
-narrows from Subject links to active cart Orders and then to their Product
-lines through the owning services. History and cancelled Orders do not block
-another purchase, and another Subject has an independent cart.
+`ecommerceModuleOrderCreate` accepts `offerId`, quantity and currency. A legacy
+Product-only request resolves one eligible retail offer; zero or several offers
+require an explicit choice. Repeating the same offer returns HTTP 409. Another
+store's offer for the same Product can have its own Order. Writes share the
+Subject lock and transaction, including stock checks across the buyer's other
+editable lines. Opening a cart does not reserve stock.
 
-The guard covers this Subject operation. Generic administrative writes retain
-their existing behavior, and existing duplicate carts require explicit data
-reconciliation; this change does not delete them.
+`POST /api/rbac/subjects/:id/ecommerce-module/orders/:orderId/selection` accepts
+`action: "preview" | "apply"`, the primary `lineId`, and `selections`. Each selection
+contains `offerId`, quantity, `currencyId`, destination and selected service offer
+IDs with quantities. One selection replaces that Order's choice. Multiple
+selections split its original quantity into independent Orders. Preview returns
+full quotes without writes. Apply requires their `expectedVersions` and the
+stored `expectedSelectionUpdatedAt`; changed terms, expiry or another buyer edit
+require a fresh preview. Store and configuration compatibility, sole ownership,
+active-cart state and payment attempts are checked again before writes.
 
-### Product pricing before cart creation
+Quote routing runs before the write transaction. Under the Subject and offer
+locks, apply validates the original quote evidence again and checks aggregate
+quantities against stock remaining after active reservations. Failed graph
+writes roll back the complete selection. Currency and store links retain their
+IDs when the selection still uses them.
 
-The Subject order-create handler resolves a currency from the Product's price
-attribute links before opening its existing write transaction. A Product with no
-price currency or a requested currency outside that set returns 400 without
-creating an Order or its associations. The default billing currency wins when
-it is supported; otherwise the first supported currency is used.
+### Pricing before cart creation
 
-The current order-create form consumes the Product currency selector's
-`onCurrenciesResolved` callback. It stays disabled while loading and displays
-«Нет цены» / “No price” for an empty result, including empty intermediate
-relations. Switching Products resets the form's Product and currency inputs.
-Legacy unpriced cart rows remain removable; the cart shows a warning and blocks
-checkout without dropping the amounts of priced rows.
+Prices and compatible currencies come from the selected offer's quote, including
+its chosen services. A draft may retain an incomplete delivery, address or pickup
+choice; it cannot proceed to payment until those fields are complete. Stock,
+configuration and incompatible-currency issues reject the add before writes.
+Product cards select an offer, currency and quantity through public SDKs. Direct
+Product checkout uses the same atomic create operation and requires a complete
+quote. Product-only Buy now remains available when exactly one retail offer is
+eligible. Its cart line stores the agreed offer and quote conditions.
 
-Single-order total and quantity handlers reuse `ecommerceModuleOrderAssertAccess`
-and the registered ownership middleware. They check ownership before reading an
-Order; foreign and unknown IDs return the same 403. The existing HTTP cache
-configuration remains the one from main; retired route files are not restored.
+The quantity, total and single-order handlers retain their ownership checks.
+Foreign and unknown Order IDs return the same 403 before private data is read.
 
 ### Current-Subject cart reads
 
@@ -76,8 +81,9 @@ configuration remains the one from main; retired route files are not restored.
 returns only that Subject's active cart orders, including `cartDetails.lines`
 (with Product records), `cartDetails.totals`, `cartDetails.storeIds`,
 `cartDetails.availableCurrencyIds` and the saved
-`cartDetails.billingModuleCurrencyId`. Available currencies are the intersection
-of the current price currencies across all lines of each Order. Owner
+`cartDetails.billingModuleCurrencyId`. The projection includes `offerQuotes` and compatible retail `offers` with their
+Store records. Available currencies are the quote intersection for each Order
+and its selected services. Owner
 scope and active-cart restrictions are enforced even with caller filters.
 The projection runs in withConsistencySnapshot; the lower Ecommerce
 findByIdCartDetails capability owns line/product loading and amount calculation.
@@ -109,11 +115,11 @@ A caller's own Subject ID alone does not authorize changes to another order.
 `{ "billingModule": { "currency": { "id": "<UUID>" } } }` as its `data` payload.
 Send currency and `ordersToProducts` quantity edits in separate requests. The
 Subject service checks ownership, locks the Order and requires an active
-`cart` with status `new`. Every line must currently offer the requested currency;
+`cart` with status `new`. Every primary offer with its selected services must support the requested currency;
 Initial Free is excluded. Validation precedes writes in one transaction. The
 service creates a missing currency link or updates the existing link and removes
 legacy duplicates. It does not create a payment or invoice. Checkout continues
-to calculate against the saved Order currency and current Product prices.
+to calculate against the saved Order currency and current server offer quotes.
 
 ## Authorization Layering
 
@@ -1116,3 +1122,33 @@ shown only after checkout returns them.
 ## Order notification recipients
 
 Order processing resolves its service through `service/startup/ecommerce/order/proceed`. Override protected `getAdminNotificationSubjectIds()` there to select a project channel; the shared default selects unique admin subjects. A dedicated notification recipient does not need an admin role. Configure service actors with `variant="agent"` and an identity through runtime SDKs.
+
+## Seller catalogue
+
+A signed-in Subject creates an offer through `ecommerceModuleOfferCreate`
+(`POST /:id/ecommerce-module/offers`). The operation accepts either an existing
+Product or a new Product, its formula, prices, stock and offer settings. It assigns
+new ownership from the caller and writes the graph in one transaction. A Store
+owner can sell another owner's Product without gaining permission to edit its
+shared description or formula. Administrators can manage either record.
+
+`ecommerceModuleCatalogAttributeSet` creates or updates one owned Store rate,
+Product formula or offer price/stock. Stock values are exact non-negative
+integers; a missing value means unlimited stock. Updates and removals lock the
+relevant offers and retain outstanding reservations. Used offers stop new sales
+with `variant="hidden"`; their invoices and purchase history remain available.
+Physical deletion of a referenced offer is refused.
+
+Admin v2 exposes creation in Ecommerce → Product and Store → Create offer.
+“Edit existing offers, rates and services” edits prices, stock/unlimited,
+coefficients, formula/version, box counts/dimensions/gross weight, receipt rules
+and delivery/add-on/provider links. The RBAC Widget owns the current Subject,
+form and mutations; Host supplies it to the Ecommerce admin through explicit
+slots. The existing Store–Product admin form also edits configuration and
+packaging without changing the offer endpoints.
+
+The raw Order collection/count and raw order-line/payment-attempt registries
+require administrator or operator access. Exact owned Order reads are private
+and uncached; checkout, cart and purchase history use authenticated Subject
+operations. Raw registry data, including purchase destinations and snapshots,
+is never a public catalogue response.

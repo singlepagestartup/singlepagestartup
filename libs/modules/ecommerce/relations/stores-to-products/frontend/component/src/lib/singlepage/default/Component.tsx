@@ -6,7 +6,7 @@ export function Component(props: IComponentPropsExtended) {
   return (
     <div
       data-module="ecommerce"
-      data-relation="categories-to-products"
+      data-relation="stores-to-products"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
       className={cn("w-full flex", props.data.className, props.className)}
@@ -29,10 +29,10 @@ export function Component(props: IComponentPropsExtended) {
         }}
       >
         {({ data }) => {
-          return data?.map((entity, index) => {
+          return data?.map((entity) => {
             return (
               <Product
-                key={index}
+                key={entity.id}
                 isServer={props.isServer}
                 variant={entity.variant as any}
                 data={entity}

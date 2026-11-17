@@ -70,6 +70,7 @@ jest.mock("@sps/broadcast/models/message/sdk/server", () => ({
 }));
 
 jest.mock("@sps/backend-utils", () => ({
+  ...jest.requireActual("@sps/backend-utils"),
   fetchOutboundUrl: (...args: unknown[]) => mockObserverFetch(...args),
   getHttpErrorType: (error: Error) => ({ status: 500, message: error.message }),
   logger: { error: (...args: unknown[]) => mockObserverError(...args) },
@@ -174,6 +175,9 @@ function createTestContext(props?: {
               orderId: checkoutOrder.id,
               productId: "product-target",
               quantity: 1,
+              offerId: "offer-target",
+              parentLineId: null,
+              destination: {},
             })),
           );
         }
@@ -198,6 +202,7 @@ function createTestContext(props?: {
           id: "product-target",
           slug: props?.productSlug ?? "paid-product",
           type: productType,
+          kind: "digital",
         },
       ]),
     },
@@ -208,6 +213,15 @@ function createTestContext(props?: {
           productId: "product-target",
           attributeId: "attribute-price-1",
         },
+        ...(interval
+          ? [
+              {
+                id: "pta-interval",
+                productId: "product-target",
+                attributeId: "attribute-interval",
+              },
+            ]
+          : []),
       ]),
     },
     attributeKeysToAttributes: {
@@ -217,6 +231,15 @@ function createTestContext(props?: {
           attributeId: "attribute-price-1",
           attributeKeyId: "attribute-key-price-1",
         },
+        ...(interval
+          ? [
+              {
+                id: "aka-interval",
+                attributeId: "attribute-interval",
+                attributeKeyId: "key-interval",
+              },
+            ]
+          : []),
       ]),
     },
     attributeKey: {
@@ -225,6 +248,7 @@ function createTestContext(props?: {
           id: "attribute-key-price-1",
           type: "price",
         },
+        ...(interval ? [{ id: "key-interval", type: "interval" }] : []),
       ]),
     },
     attribute: {
@@ -233,6 +257,9 @@ function createTestContext(props?: {
           id: "attribute-price-1",
           number: "100",
         },
+        ...(interval
+          ? [{ id: "attribute-interval", string: { en: interval } }]
+          : []),
       ]),
     },
     attributesToBillingModuleCurrencies: {
@@ -253,6 +280,57 @@ function createTestContext(props?: {
       create: jest.fn((input) =>
         mockOrdersToBillingModulePaymentIntentsCreate(input),
       ),
+      lockOffers: jest.fn(),
+      reserveCharges: jest.fn(async ({ paymentIntentId, lines }) => {
+        for (const line of lines) {
+          await mockOrdersToBillingModulePaymentIntentsCreate({
+            data: {
+              orderId: line.orderId,
+              billingModulePaymentIntentId: paymentIntentId,
+            },
+          });
+        }
+      }),
+    },
+    store: {
+      find: jest
+        .fn()
+        .mockResolvedValue([{ id: "store-1", title: { en: "Seller" } }]),
+    },
+    storesToProducts: {
+      quoteMany: jest.fn(async (inputs) =>
+        inputs.map((input) => ({
+          offerId: input.offerId,
+          productId: "product-target",
+          storeId: "store-1",
+          currencyId: input.currencyId,
+          quantity: input.quantity,
+          amount: "100",
+          issues: [],
+          currencyIds: [input.currencyId],
+          serviceOptions: [],
+          version: "v1",
+          expiresAt: new Date(Date.now() + 60_000).toISOString(),
+          charges: [
+            {
+              offerId: input.offerId,
+              productId: "product-target",
+              storeId: "store-1",
+              providerStoreId: "store-1",
+              lineId: input.lineId,
+              role: "product",
+              recurrence: "each",
+              quantity: input.quantity,
+              stockQuantity: null,
+              amount: "100",
+              formula: "unit_price * quantity",
+              formulaVersion: "v1",
+              inputs: {},
+            },
+          ],
+        })),
+      ),
+      quotesUnderLock: jest.fn(async (_inputs, previews) => previews),
     },
   } as any;
 
@@ -273,7 +351,17 @@ function createTestContext(props?: {
       ),
     },
     currency: {
-      find: jest.fn().mockResolvedValue([]),
+      find: jest
+        .fn()
+        .mockResolvedValue(
+          [
+            ...new Set(
+              checkoutOrders.map(
+                (order) => props?.currencyByOrderId?.[order.id] ?? "currency-1",
+              ),
+            ),
+          ].map((id) => ({ id, slug: "usd", symbol: "$" })),
+        ),
     },
     paymentIntentsToInvoices: {
       find: jest.fn().mockResolvedValue([
@@ -753,15 +841,13 @@ describe("Given: subject starts checkout for a product", () => {
       });
 
       expect(
-        service.ecommerceModule.order.findByIdCheckoutAttributesByCurrency,
+        service.ecommerceModule.storesToProducts.quoteMany,
       ).toHaveBeenCalledTimes(1);
       expect(
-        service.ecommerceModule.order.findByIdCheckoutAttributesByCurrency,
-      ).toHaveBeenCalledWith(
-        expect.objectContaining({
-          id: checkoutOrders[0].id,
-        }),
-      );
+        service.ecommerceModule.storesToProducts.quoteMany,
+      ).toHaveBeenCalledWith([
+        expect.objectContaining({ lineId: "otp-checkout-1" }),
+      ]);
     });
   });
 

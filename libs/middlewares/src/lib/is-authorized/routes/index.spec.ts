@@ -13,6 +13,22 @@ describe("is-authorized allowed routes", () => {
   const matcher = createAllowedRoutesMatcher();
   const uuid = "3f2504e0-4f89-11d3-9a0c-0305e82c3301";
 
+  it("allows the public read-only quote without opening offer writes", () => {
+    const path = `/api/ecommerce/stores-to-products/${uuid}`;
+    expect(matcher.matches(`${path}/quote`, "POST")).toBe(true);
+    expect(matcher.matches(`${path}/quote`, "PATCH")).toBe(false);
+    expect(matcher.matches(path, "POST")).toBe(false);
+    expect(matcher.matches(path, "PATCH")).toBe(false);
+    expect(matcher.matches(`${path}/quote/other`, "POST")).toBe(false);
+    expect(matcher.matches(`/other${path}/quote`, "POST")).toBe(false);
+    expect(
+      matcher.matches(
+        "/api/ecommerce/stores-to-products/not-an-id/quote",
+        "POST",
+      ),
+    ).toBe(false);
+  });
+
   /**
    * BDD Scenario: Public framework endpoints are allowed for their methods.
    */

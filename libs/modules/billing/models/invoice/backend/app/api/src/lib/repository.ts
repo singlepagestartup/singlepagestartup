@@ -8,6 +8,7 @@ import {
 } from "@sps/shared-backend-api";
 import { eq } from "drizzle-orm";
 import { Table } from "@sps/billing/models/invoice/backend/repository/database";
+import { moneyNumber } from "@sps/backend-utils";
 
 @injectable()
 @injectFromBase()
@@ -27,7 +28,11 @@ export class Repository extends DatabaseRepository<typeof Table> {
   override insert(data: Record<string, unknown>) {
     if (data.createdAt !== undefined)
       throw new Error("Validation error. Invoice createdAt is server assigned");
-    return super.insert({ ...data });
+    const writable = { ...data };
+    if (writable.amount !== undefined) {
+      writable.amount = moneyNumber(writable.amount as string | number);
+    }
+    return super.insert(writable);
   }
 
   private async immutableData(
@@ -36,6 +41,9 @@ export class Repository extends DatabaseRepository<typeof Table> {
     data: Record<string, unknown>,
   ) {
     const writable = { ...data };
+    if (writable.amount !== undefined) {
+      writable.amount = moneyNumber(writable.amount as string | number);
+    }
     if (writable.createdAt !== undefined) {
       const record = await this.findFirstByField(field, value);
       if (

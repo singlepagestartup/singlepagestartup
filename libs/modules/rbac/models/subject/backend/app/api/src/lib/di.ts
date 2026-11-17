@@ -1,5 +1,6 @@
 import type { Service as PaymentIntentService } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/service";
 import type { IOrderLineTotals } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
+import type { Service as OrderPaymentRelationService } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api/src/lib/service";
 import type { Service as BroadcastChannelService } from "@sps/broadcast/models/channel/backend/app/api/src/lib/service";
 import type { Service as NotificationTopicService } from "@sps/notification/models/topic/backend/app/api/src/lib/service";
 import type { Service as NotificationService } from "@sps/notification/models/notification/backend/app/api/src/lib/service";
@@ -8,6 +9,7 @@ import type { ICartDetails } from "@sps/ecommerce/models/order/sdk/model";
 import type { Service as CrmFormService } from "@sps/crm/models/form/backend/app/api/src/lib/service";
 import type { Service as CrmRequestService } from "@sps/crm/models/request/backend/app/api/src/lib/service";
 import type { Service as SocialProfileService } from "@sps/social/models/profile/backend/app/api/src/lib/service";
+import type { Service as EcommerceOfferService } from "@sps/ecommerce/relations/stores-to-products/backend/app/api/src/lib/service";
 export interface IReadService {
   find: (props?: any) => Promise<any>;
   findById: (props: { id: string }) => Promise<any>;
@@ -39,6 +41,7 @@ export interface IEcommerceOrderReadService
     Pick<
       EcommerceOrderService,
       | "acceptSubscriptionPeriod"
+      | "createNextPeriodCart"
       | "freezeSubscriptionPeriod"
       | "assertSubscriptionPayment"
       | "hasSharedSubscriptionRenewal"
@@ -106,10 +109,28 @@ export interface IEcommerceModule {
   product: IExtendedReadService;
   attribute: IReadService;
   attributeKey: IReadService;
-  storesToOrders: ICreateService;
+  storesToOrders: ICreateDeleteService & IUpdateService;
+  storesToProducts: IReadService &
+    Pick<
+      EcommerceOfferService,
+      | "quote"
+      | "quoteMany"
+      | "quoteUnderLock"
+      | "quotesUnderLock"
+      | "offersForProduct"
+    >;
   ordersToProducts: IEcommerceOrdersToProductsService;
   ordersToBillingModuleCurrencies: ICreateDeleteService & IUpdateService;
-  ordersToBillingModulePaymentIntents: ICreateDeleteService;
+  ordersToBillingModulePaymentIntents: ICreateDeleteService &
+    Pick<
+      OrderPaymentRelationService,
+      | "withOfferLocks"
+      | "lockOffers"
+      | "reservedQuantities"
+      | "reserveCharges"
+      | "settleReservations"
+      | "releaseReservations"
+    >;
   ordersToFileStorageModuleFiles: IReadService;
   productsToAttributes: IReadService;
   productsToFileStorageModuleFiles: IReadService;
@@ -168,6 +189,9 @@ export interface IBroadcastModule {
 }
 
 export const SubjectDI = {
+  IEcommerceCatalogService: Symbol.for(
+    "rbac.subject.ecommerce-catalog.service",
+  ),
   ISecurityNotificationsService: Symbol.for(
     "rbac.subject.security-notifications.service",
   ),

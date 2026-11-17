@@ -14,7 +14,7 @@ import {
 export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/ecommerce/stores";
-export const variants = ["hidden", "default"];
+export const variants = ["hidden", "default", "delivery", "service"];
 export const query = {};
 export const options = {
   next: {

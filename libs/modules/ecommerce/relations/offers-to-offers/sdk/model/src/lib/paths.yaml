@@ -1,0 +1,126 @@
+paths:
+  /ecommerce/offers-to-offers:
+    get:
+      tags:
+        - "ecommerce-offers-to-offers"
+      summary: Get all entities
+      description: Retrieve a list of all entities with optional filtering, sorting and pagination
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/offset.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/limit.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/order-by.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/filters.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/middleware/no-cache.yaml"
+      responses:
+        "200":
+          description: List of entities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "ecommerce-offers-to-offers.yaml"
+
+    post:
+      tags:
+        - "ecommerce-offers-to-offers"
+      summary: Create a new entity
+      description: Create a new entity
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: "ecommerce-offers-to-offers-input.yaml"
+              required:
+                - data
+      responses:
+        "201":
+          description: Created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "ecommerce-offers-to-offers.yaml"
+
+  /ecommerce/offers-to-offers/count:
+    get:
+      tags:
+        - "ecommerce-offers-to-offers"
+      summary: Count entities
+      description: Retrieve a count of all entities with optional filtering
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/filters.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/middleware/no-cache.yaml"
+      responses:
+        "200":
+          description: Count of entities
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    type: integer
+
+  /ecommerce/offers-to-offers/{id}:
+    get:
+      tags:
+        - "ecommerce-offers-to-offers"
+      summary: Get by ID
+      description: Retrieve a specific entity by its ID
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/middleware/no-cache.yaml"
+      responses:
+        "200":
+          description: Found successfully
+          content:
+            application/json:
+              schema:
+                $ref: "ecommerce-offers-to-offers.yaml"
+
+    patch:
+      tags:
+        - "ecommerce-offers-to-offers"
+      summary: Update entity
+      description: Update a specific entity
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: "ecommerce-offers-to-offers-input.yaml"
+              required:
+                - data
+      responses:
+        "200":
+          description: Updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "ecommerce-offers-to-offers.yaml"
+
+    delete:
+      tags:
+        - "ecommerce-offers-to-offers"
+      summary: Delete entity
+      description: Delete a specific entity
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      responses:
+        "204":
+          description: Deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "ecommerce-offers-to-offers.yaml"

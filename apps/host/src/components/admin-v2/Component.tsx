@@ -1,8 +1,6 @@
 import { cn } from "@sps/shared-frontend-client-utils";
-import {
-  AdminV2Overview as EcommerceAdminV2Overview,
-  AdminV2SidebarModuleItem as EcommerceAdminV2SidebarModuleItem,
-} from "@sps/ecommerce/frontend/component";
+import { AdminV2SidebarModuleItem as EcommerceAdminV2SidebarModuleItem } from "@sps/ecommerce/frontend/component";
+import { Component as EcommerceAdminV2Overview } from "./ecommerce";
 import {
   AdminV2Overview as AgentAdminV2Overview,
   AdminV2SidebarModuleItem as AgentAdminV2SidebarModuleItem,

@@ -4,6 +4,8 @@
 
 Products represent sellable items with localized content, attributes, and media attachments.
 
+A Product’s `kind` describes physical goods, digital goods or services. Its `type` selects one-time or subscription billing. Available delivery methods and add-ons come from the selected store offer.
+
 ## Fields
 
 - `id`: unique identifier (UUID).

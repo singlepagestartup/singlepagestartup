@@ -8,10 +8,31 @@ import {
 } from "@sps/shared-backend-api";
 import { asc, inArray } from "drizzle-orm";
 import { Table } from "@sps/billing/models/payment-intent/backend/repository/database";
+import { moneyNumber } from "@sps/backend-utils";
 
 @injectable()
 @injectFromBase()
 export class Repository extends DatabaseRepository<typeof Table> {
+  override insert(data: Record<string, unknown>) {
+    const writable = { ...data };
+    if (writable.amount !== undefined) {
+      writable.amount = moneyNumber(writable.amount as string | number);
+    }
+    return super.insert(writable);
+  }
+
+  override updateFirstByField(
+    field: string,
+    value: unknown,
+    data: Record<string, unknown>,
+  ) {
+    const writable = { ...data };
+    if (writable.amount !== undefined) {
+      writable.amount = moneyNumber(writable.amount as string | number);
+    }
+    return super.updateFirstByField(field, value, writable);
+  }
+
   withPaymentIntentLock<T>(
     id: string,
     operation: () => Promise<T>,

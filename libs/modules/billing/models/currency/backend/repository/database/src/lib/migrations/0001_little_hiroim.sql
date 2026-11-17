@@ -1,0 +1,1 @@
+ALTER TABLE "sps_bg_currency" ADD COLUMN "minor_unit_digits" integer;

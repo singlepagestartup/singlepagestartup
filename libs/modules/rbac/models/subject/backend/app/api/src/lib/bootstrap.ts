@@ -1,3 +1,21 @@
+import { app as catalogSubjectsToEcommerceModuleOrdersApp } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api";
+import { Service as EcommerceCatalog } from "./service/startup/ecommerce/catalog";
+import type { IConstructorProps as ICatalogDependencies } from "./service/singlepage/ecommerce/catalog";
+import { app as catalogStoreApp } from "@sps/ecommerce/models/store/backend/app/api";
+import { app as catalogProductApp } from "@sps/ecommerce/models/product/backend/app/api";
+import { app as catalogAttributeApp } from "@sps/ecommerce/models/attribute/backend/app/api";
+import { app as catalogAttributeKeyApp } from "@sps/ecommerce/models/attribute-key/backend/app/api";
+import { app as catalogCurrencyApp } from "@sps/billing/models/currency/backend/app/api";
+import { app as catalogStoresToProductsApp } from "@sps/ecommerce/relations/stores-to-products/backend/app/api";
+import { app as catalogOffersToOffersApp } from "@sps/ecommerce/relations/offers-to-offers/backend/app/api";
+import { app as catalogStoresToAttributesApp } from "@sps/ecommerce/relations/stores-to-attributes/backend/app/api";
+import { app as catalogProductsToAttributesApp } from "@sps/ecommerce/relations/products-to-attributes/backend/app/api";
+import { app as catalogStoresToProductsToAttributesApp } from "@sps/ecommerce/relations/stores-to-products-to-attributes/backend/app/api";
+import { app as catalogAttributeKeysToAttributesApp } from "@sps/ecommerce/relations/attribute-keys-to-attributes/backend/app/api";
+import { app as catalogAttributesToBillingModuleCurrenciesApp } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/backend/app/api";
+import { app as catalogSubjectsToEcommerceModuleStoresApp } from "@sps/rbac/relations/subjects-to-ecommerce-module-stores/backend/app/api";
+import { app as catalogSubjectsToEcommerceModuleProductsApp } from "@sps/rbac/relations/subjects-to-ecommerce-module-products/backend/app/api";
+import { app as catalogSubjectsToRoles } from "@sps/rbac/relations/subjects-to-roles/backend/app/api";
 import { app as roleApp } from "@sps/rbac/models/role/backend/app/api";
 import { app as broadcastChannelApp } from "@sps/broadcast/models/channel/backend/app/api";
 import type { Service as BroadcastChannelService } from "@sps/broadcast/models/channel/backend/app/api/src/lib/service";
@@ -52,6 +70,7 @@ import { app as ecommerceStoreApp } from "@sps/ecommerce/models/store/backend/ap
 import { app as ecommerceStoresToOrdersApp } from "@sps/ecommerce/relations/stores-to-orders/backend/app/api";
 import { app as ecommerceOrdersToCurrenciesApp } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/backend/app/api";
 import { app as ecommerceOrdersToPaymentIntentsApp } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api";
+import { app as ecommerceStoresToProductsApp } from "@sps/ecommerce/relations/stores-to-products/backend/app/api";
 import {
   SubjectDI,
   type IBlogModule,
@@ -204,6 +223,72 @@ import { Repository as CrmFormsToRequestsRepository } from "@sps/crm/relations/f
 import { Configuration as CrmFormsToRequestsConfiguration } from "@sps/crm/relations/forms-to-requests/backend/app/api/src/lib/configuration";
 
 const bindings = new ContainerModule(({ bind }) => {
+  bind<EcommerceCatalog>(SubjectDI.IEcommerceCatalogService)
+    .toDynamicValue(
+      () =>
+        new EcommerceCatalog({
+          repository: new Repository(new Configuration()),
+          entities: {
+            "orders-to-products": new CRUDService(
+              new EcommerceOrdersToProductsRepository(
+                new EcommerceOrdersToProductsConfiguration(),
+              ),
+            ),
+            "orders-to-billing-module-payment-intents":
+              ecommerceOrdersToPaymentIntentsApp.controller.service,
+            "subjects-to-ecommerce-module-orders":
+              catalogSubjectsToEcommerceModuleOrdersApp.controller.service,
+            stores: catalogStoreApp.controller.service,
+            products: catalogProductApp.controller.service,
+            attributes: catalogAttributeApp.controller.service,
+            "attribute-keys": catalogAttributeKeyApp.controller.service,
+            currencies: catalogCurrencyApp.controller.service,
+            "stores-to-products": catalogStoresToProductsApp.controller.service,
+            "offers-to-offers": catalogOffersToOffersApp.controller.service,
+            "stores-to-attributes":
+              catalogStoresToAttributesApp.controller.service,
+            "products-to-attributes":
+              catalogProductsToAttributesApp.controller.service,
+            "stores-to-products-to-attributes":
+              catalogStoresToProductsToAttributesApp.controller.service,
+            "attribute-keys-to-attributes":
+              catalogAttributeKeysToAttributesApp.controller.service,
+            "attributes-to-billing-module-currencies":
+              catalogAttributesToBillingModuleCurrenciesApp.controller.service,
+            "subjects-to-ecommerce-module-stores":
+              catalogSubjectsToEcommerceModuleStoresApp.controller.service,
+            "subjects-to-ecommerce-module-products":
+              catalogSubjectsToEcommerceModuleProductsApp.controller.service,
+          } as unknown as ICatalogDependencies["entities"],
+          isAdmin: async (subjectId) => {
+            const roles = await roleApp.controller.service.find({
+              params: {
+                filters: {
+                  and: [{ column: "slug", method: "eq", value: "admin" }],
+                },
+              },
+            });
+            const ids = roles.map((role) => role.id);
+            const links = await catalogSubjectsToRoles.controller.service.find({
+              params: {
+                filters: {
+                  and: [
+                    { column: "subjectId", method: "eq", value: subjectId },
+                  ],
+                },
+              },
+            });
+            return links.some(
+              (link) =>
+                link.subjectId === subjectId && ids.includes(link.roleId),
+            );
+          },
+          stock: ecommerceOrdersToPaymentIntentsApp.controller
+            .service as unknown as ICatalogDependencies["stock"],
+        }),
+    )
+    .inSingletonScope();
+
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
   bind<App>(DI.IApp).to(App);
   bind<Controller>(DI.IController).to(Controller);
@@ -340,7 +425,8 @@ const bindings = new ContainerModule(({ bind }) => {
       const ordersToBillingModuleCurrencies =
         ecommerceOrdersToCurrenciesApp.controller.service;
       const ordersToBillingModulePaymentIntents =
-        ecommerceOrdersToPaymentIntentsApp.controller.service;
+        ecommerceOrdersToPaymentIntentsApp.controller
+          .service as unknown as IEcommerceModule["ordersToBillingModulePaymentIntents"];
       const ordersToFileStorageModuleFiles = new CRUDService<any>(
         new EcommerceOrdersToFileStorageModuleFilesRepository(
           new EcommerceOrdersToFileStorageModuleFilesConfiguration(),
@@ -471,6 +557,8 @@ const bindings = new ContainerModule(({ bind }) => {
         store,
         order,
         product,
+        storesToProducts: ecommerceStoresToProductsApp.controller
+          .service as unknown as IEcommerceModule["storesToProducts"],
         attribute,
         attributeKey,
         storesToOrders,

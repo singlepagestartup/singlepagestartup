@@ -7,7 +7,7 @@ export const Component = memo(function CartCard(
   props: IComponentPropsExtended,
 ) {
   const details = props.cartDetails;
-  const lines = details?.lines ?? [];
+  const lines = details?.lines.filter((line) => !line.parentLineId) ?? [];
   const singleProduct = lines.length === 1 && Boolean(lines[0].product);
   const ru = props.language === "ru";
   const currencyId = details?.billingModuleCurrencyId;
@@ -59,6 +59,7 @@ export const Component = memo(function CartCard(
                 {ru ? "Товар недоступен" : "Item unavailable"}
               </p>
             )}
+            {props.selectionSlots?.[line.id]}
           </li>
         ))}
       </ul>

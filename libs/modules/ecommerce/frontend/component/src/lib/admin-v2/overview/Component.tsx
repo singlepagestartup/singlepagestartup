@@ -22,6 +22,9 @@ export function Component(props: IComponentProps) {
   return (
     <main className="flex-1 overflow-auto bg-background p-6">
       <div className="mx-auto max-w-7xl space-y-4">
+        {isAdminRoute(props.url, "ecommerce", "product")
+          ? props.offerCreate
+          : null}
         {isOverviewRoute ? (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             <Product variant="admin-v2-card" isServer={props.isServer} />
@@ -63,6 +66,7 @@ export function Component(props: IComponentProps) {
           variant="admin-v2-table"
           isServer={props.isServer}
           url={props.url}
+          storeOfferCreate={props.storeOfferCreate}
         />
         <Widget
           variant="admin-v2-table"

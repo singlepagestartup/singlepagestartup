@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Links orders to products, including quantity information.
+Links one primary Product and its selected services to an Order, including the exact offers and quantities. Split primary items have separate Orders.
 
 ## Fields
 
@@ -15,6 +15,12 @@ Links orders to products, including quantity information.
 - `className`: optional CSS class name.
 - `orderId`: linked order ID.
 - `productId`: linked product ID.
+- `offerId`: exact retail Store–Product offer; nullable for historical rows.
+- `parentLineId`: primary line for a selected service; primary lines have no parent.
+- `destination`: address, region, pickup point and optional coordinates on the primary.
+- `recurrence`: `first` or `each`, copied from the service quote.
+- `selectionUpdatedAt`: timestamp of the buyer's last selection edit.
+- `quoteVersion`, `quoteExpiresAt`: accepted conditions on the primary line.
 
 ## Prices and API reads
 

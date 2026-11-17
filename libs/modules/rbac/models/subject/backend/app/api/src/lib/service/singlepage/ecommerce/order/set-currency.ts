@@ -22,6 +22,37 @@ export class Service {
 
   async execute(props: IExecuteProps): Promise<void> {
     const { service } = this.dependencies;
+    await service.ecommerceModuleOrderAssertAccess({
+      subjectId: props.subjectId,
+      orderId: props.orderId,
+    });
+    const preparedLines = await service.ecommerceModule.ordersToProducts.find({
+      params: {
+        filters: {
+          and: [{ column: "orderId", method: "eq", value: props.orderId }],
+        },
+      },
+    });
+    for (const line of preparedLines.filter(
+      (line: { parentLineId?: string | null; offerId?: string | null }) =>
+        !line.parentLineId && line.offerId,
+    )) {
+      await service.ecommerceModuleResolveOrderCurrency({
+        productId: line.productId,
+        offerId: line.offerId,
+        billingModuleCurrencyId: props.currencyId,
+        destination: line.destination,
+        services: preparedLines
+          .filter(
+            (child: { parentLineId?: string | null }) =>
+              child.parentLineId === line.id,
+          )
+          .map((child: { offerId: string; quantity: number }) => ({
+            offerId: child.offerId,
+            quantity: child.quantity,
+          })),
+      });
+    }
     await getDrizzle({}).transaction((tx) =>
       withConsistencyDatabase(tx, async () => {
         await service.ecommerceModuleOrderAssertAccess({
@@ -66,7 +97,9 @@ export class Service {
         if (!lines?.length) {
           throw new Error("Validation error. Order has no products");
         }
-        for (const line of lines) {
+        for (const line of lines.filter(
+          (line: { parentLineId?: string | null }) => !line.parentLineId,
+        )) {
           const product = await service.ecommerceModule.product.findById({
             id: line.productId,
           });
@@ -78,10 +111,27 @@ export class Service {
               "Permission error. This product cannot be changed through a cart",
             );
           }
-          await service.ecommerceModuleResolveOrderCurrency({
-            productId: line.productId,
-            billingModuleCurrencyId: props.currencyId,
-          });
+          if (line.offerId) {
+            const prepared = preparedLines.find(
+              (entry: { id: string }) => entry.id === line.id,
+            );
+            if (
+              !prepared ||
+              prepared.offerId !== line.offerId ||
+              prepared.quantity !== line.quantity ||
+              new Date(prepared.selectionUpdatedAt).getTime() !==
+                new Date(line.selectionUpdatedAt).getTime()
+            ) {
+              throw new Error(
+                "Conflict error. Cart selection changed. Retry the currency choice",
+              );
+            }
+          } else {
+            await service.ecommerceModuleResolveOrderCurrency({
+              productId: line.productId,
+              billingModuleCurrencyId: props.currencyId,
+            });
+          }
         }
         // Validate every line before the first write; normalize legacy duplicate links.
         const currencies =
@@ -109,6 +159,18 @@ export class Service {
             data: {
               orderId: props.orderId,
               billingModuleCurrencyId: props.currencyId,
+            },
+          });
+        }
+        for (const line of lines.filter(
+          (line: { parentLineId?: string | null }) => !line.parentLineId,
+        )) {
+          await service.ecommerceModule.ordersToProducts.update({
+            id: line.id,
+            data: {
+              selectionUpdatedAt: new Date(),
+              quoteVersion: null,
+              quoteExpiresAt: null,
             },
           });
         }

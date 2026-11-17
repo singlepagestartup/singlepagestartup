@@ -139,6 +139,7 @@
     "cron-parser": "^5.10.6",
     "date-fns": "^4.4.0",
     "dayjs": "^1.11.23",
+    "decimal.js": "^10.6.0",
     "dotenv-cli": "^11.1.0",
     "drizzle-orm": "^0.45.4",
     "drizzle-zod": "^0.8.3",

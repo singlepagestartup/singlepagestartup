@@ -207,27 +207,9 @@ it("preserves an explicit edit or deletion when account email loads later and cl
   ).toBe("");
 });
 
-it("sends the order comment and keeps the preview address local when switching between courier and pickup", async () => {
+it("sends the trimmed comment and receipt email with the exact owned order IDs", async () => {
   checkout.mockResolvedValue({ billingModule: { invoices: [] } });
   render(<Component {...props} />);
-  fireEvent.click(screen.getByRole("radio", { name: "Курьер" }));
-  fireEvent.change(screen.getByRole("textbox", { name: "Город" }), {
-    target: { value: "Тула" },
-  });
-  fireEvent.change(screen.getByRole("textbox", { name: "Адрес доставки" }), {
-    target: { value: "Тестовая, 1" },
-  });
-  fireEvent.click(screen.getByRole("radio", { name: "Самовывоз" }));
-  expect(screen.queryByRole("textbox", { name: "Адрес доставки" })).toBeNull();
-  expect(screen.queryByRole("textbox", { name: "Город" })).toBeNull();
-  fireEvent.click(screen.getByRole("radio", { name: "Курьер" }));
-  expect(
-    (
-      screen.getByRole("textbox", {
-        name: "Адрес доставки",
-      }) as HTMLInputElement
-    ).value,
-  ).toBe("Тестовая, 1");
   fireEvent.change(screen.getByLabelText("Комментарий к заказу"), {
     target: { value: "  Первая строка\nВторая строка  " },
   });
@@ -248,12 +230,8 @@ it("sends the order comment and keeps the preview address local when switching b
   );
 });
 
-it("resets the delivery selection, address and order comment when the signed-in subject changes", () => {
+it("clears the order comment when the acting Subject changes", () => {
   const view = render(<Component {...props} />);
-  fireEvent.click(screen.getByRole("radio", { name: "Курьер" }));
-  fireEvent.change(screen.getByLabelText("Адрес доставки"), {
-    target: { value: "Тестовая, 1" },
-  });
   fireEvent.change(screen.getByLabelText("Комментарий к заказу"), {
     target: { value: "Первый заказ" },
   });
@@ -262,22 +240,16 @@ it("resets the delivery selection, address and order comment when the signed-in 
     (screen.getByLabelText("Комментарий к заказу") as HTMLTextAreaElement)
       .value,
   ).toBe("");
-  expect(
-    screen.getByRole("radio", { name: "Самовывоз", checked: true }),
-  ).toBeTruthy();
-  fireEvent.click(screen.getByRole("radio", { name: "Курьер" }));
-  expect(
-    (screen.getByLabelText("Адрес доставки") as HTMLInputElement).value,
-  ).toBe("");
+  expect(screen.queryByRole("radio", { name: "Курьер" })).toBeNull();
 });
 
-it("updates the sample courier rate when the selected cart currency changes", () => {
+it("uses only the saved currency's server amount in the footer", () => {
   const view = render(<Component {...props} />);
-  const courier = screen.getByRole("radio", { name: "Курьер" });
-  expect(courier.closest("label")?.textContent).toContain("300 ₽");
+  expect(screen.getByText("100 ₽")).toBeTruthy();
+  expect(screen.queryByText("300 ₽")).toBeNull();
   currencyId = "usd";
   view.rerender(<Component {...props} />);
-  expect(courier.closest("label")?.textContent).toContain("4 $");
-  fireEvent.click(courier);
   expect(screen.getByText("10 $")).toBeTruthy();
+  expect(screen.queryByText("100 ₽")).toBeNull();
+  expect(screen.queryByText("4 $")).toBeNull();
 });

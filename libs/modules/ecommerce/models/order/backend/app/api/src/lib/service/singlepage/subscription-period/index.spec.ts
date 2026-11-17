@@ -205,7 +205,7 @@ describe("confirmed subscription period", () => {
     ).rejects.toThrow("Incomplete");
   });
 
-  it.each(["minute", "hour", "day", "week", "month", "year"])(
+  it.each(["minute", "hour", "day", "week", "four_weeks", "month", "year"])(
     "supports the existing calendar interval %s",
     (interval) => {
       expect(intervalEnd(new Date(), interval).getTime()).toBeGreaterThan(

@@ -1,4 +1,4 @@
-import type { CartItem } from "../../shared";
+import type { CartItem, CartPurchaseScenario } from "../../shared";
 
 export const variant = "drawer-default";
 
@@ -13,6 +13,7 @@ export interface CartDrawerDefaultProps {
   onDecrease?: (item: CartItem) => void;
   onIncrease?: (item: CartItem) => void;
   onRemove?: (item: CartItem) => void;
+  purchaseScenario?: CartPurchaseScenario;
 }
 
 type IVariantInputs = NonNullable<Partial<CartDrawerDefaultProps>>;
@@ -22,3 +23,9 @@ export interface IComponentProps extends Omit<IVariantInputs, "variant"> {
 }
 
 export interface IComponentPropsExtended extends IComponentProps {}
+
+export interface IPurchaseDrawerProps {
+  scenario: CartPurchaseScenario;
+  isOpen: boolean;
+  onClose?: () => void;
+}

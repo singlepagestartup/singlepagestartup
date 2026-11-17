@@ -1,0 +1,1 @@
+ALTER TABLE "sps_bg_invoice" ALTER COLUMN "amount" SET DATA TYPE numeric(24, 8);

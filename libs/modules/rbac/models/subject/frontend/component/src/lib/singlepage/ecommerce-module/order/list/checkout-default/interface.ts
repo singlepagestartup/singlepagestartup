@@ -46,3 +46,8 @@ export interface IDeliveryProps {
   language: string;
   currencySlug?: string;
 }
+
+export interface ISelectionProps extends IRowProps {
+  line: ICartDetails["lines"][number];
+  details: ICartDetails;
+}

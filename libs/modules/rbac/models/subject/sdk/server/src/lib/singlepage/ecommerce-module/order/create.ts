@@ -7,6 +7,7 @@ import {
 } from "@sps/shared-utils";
 import QueryString from "qs";
 import { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
+import type { IEcommerceCartSelection } from "@sps/rbac/models/subject/sdk/model";
 
 export interface IProps {
   id: string;
@@ -22,6 +23,11 @@ export interface IProps {
     storeId?: string;
     quantity: number;
     billingModuleCurrencyId?: string;
+    billingModule?: { currency: { id?: string } };
+    offerId?: string;
+    expectedQuoteVersion?: string;
+    destination?: IEcommerceCartSelection["destination"];
+    services?: IEcommerceCartSelection["services"];
   };
 }
 

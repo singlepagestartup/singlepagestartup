@@ -38,24 +38,6 @@ export class Service {
       throw new Error("Configuration error. RBAC_SECRET_KEY is not defined");
     }
 
-    const priceAttributeKeys = await this.attributeKey.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "type",
-              method: "eq",
-              value: "price",
-            },
-          ],
-        },
-      },
-    });
-
-    if (!priceAttributeKeys?.length) {
-      throw new Error("Not Found error. Price attribute key not found");
-    }
-
     const orderToProducts = await this.ordersToProducts.find({
       params: {
         filters: {
@@ -72,6 +54,28 @@ export class Service {
 
     if (!orderToProducts?.length) {
       throw new Error("Not Found error. Order does not have any products");
+    }
+
+    if (orderToProducts.some((line) => line.offerId)) {
+      return this.ordersToProducts.offerTotals(orderToProducts);
+    }
+
+    const priceAttributeKeys = await this.attributeKey.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "type",
+              method: "eq",
+              value: "price",
+            },
+          ],
+        },
+      },
+    });
+
+    if (!priceAttributeKeys?.length) {
+      throw new Error("Not Found error. Price attribute key not found");
     }
 
     const totals: IExecuteResult["totals"] = [];

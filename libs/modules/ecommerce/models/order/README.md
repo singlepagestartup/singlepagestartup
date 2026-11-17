@@ -22,8 +22,19 @@ Orders store cart and checkout information, including status and metadata.
 - `paymentFailureCanceledAt`: nullable server time identifying an automatic
   unpaid-payment cancellation. Ordinary writes cannot set it; an explicit
   cancellation clears it.
+- `subscriptionSourceOrderId`, `subscriptionSourceInvoiceId`,
+  `subscriptionSourceInterval`: server-managed source of a separately paid
+  next delivery. A unique source-order/invoice pair makes retries return the
+  same next-period cart.
 
 ## Subscription delivery period
+
+An older open cart without an offer cannot pay through a Product price.
+One product with one retail offer is prepared under the Subject and offer locks,
+then requires confirmation of its current quote before a new payment attempt.
+Multiple products, ambiguous offers, missing delivery or unavailable stock leave
+the cart open for correction. Existing durable historical Invoices resume their
+own payment context without a new catalog quote.
 
 RBAC order proceed calls the internal `acceptSubscriptionPeriod` capability
 after checking the current Subject's ownership and product Role grants. The
@@ -63,6 +74,18 @@ or offered currencies change. The latest paid Invoice on a successful Payment
 Intent in the Order's currency supplies the amount and interval. Creation time
 and then Invoice ID determine the order. The Product type still selects delivery.
 A Telegram `one_off` payment can settle a subscription with its saved interval.
+New purchase snapshots supply each Order's own charges and share of a common
+Invoice. History retains seller, fulfiller, destination and service quantities
+after catalog changes. Older shared Invoices without an allocation show their
+total once with the related Orders.
+
+Physical or stock-limited offer subscriptions use a separately paid period.
+After the accepted period ends, Subject repeat with `mode: next-period` adds
+one new cart Order and preserves other cart contents. It copies the purchased
+offer and services scheduled for every delivery, omits first-only services and
+requests a current quote before payment. Automated providers remain available
+for compatible subscriptions. `four_weeks` is a 28-day period; Stripe represents
+it as four weekly intervals where automatic renewal is supported.
 While payment is pending, the customer can still see the saved terms from a
 paid Invoice or a sole open Invoice. Reading the Order leaves its accepted
 period unchanged. Starting or renewing a period requires a confirmed payment.

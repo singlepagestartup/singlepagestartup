@@ -4,6 +4,7 @@ import { Service as PaykeeperSettlement } from "../startup/paykeeper-settlement"
 import type {
   IExecuteProps as ISettlementProps,
   IExpireProps,
+  IPaymentLifecycle,
 } from "./settlement";
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
@@ -45,7 +46,8 @@ import { Service as Paykeeper } from "../startup/paykeeper";
 import type { IServiceProceedProps as IPaykeeperProceedProps } from "./paykeeper";
 import { Service as TelegramStar } from "../startup/telegram-star";
 import type { IServiceProceedProps as ITelegramStarProps } from "./telegram-star";
-import { logger } from "@sps/backend-utils";
+import { logger, moneyNumber, providerMinorUnits } from "@sps/backend-utils";
+import { currencyPrecision } from "@sps/billing/models/currency/sdk/model";
 import { PaymentIntentDI, type IBillingModule } from "../../di";
 
 interface IStripeInvoiceProps {
@@ -61,6 +63,7 @@ interface IStripeInvoiceProps {
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   declare repository: Repository;
   billingModule: IBillingModule;
+  paymentLifecycle?: IPaymentLifecycle;
 
   constructor(
     @inject(DI.IRepository) repository: Repository,
@@ -322,11 +325,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         const intent = await this.findById({ id: props.paymentIntentId });
         if (!intent)
           throw new Error("Not Found error. Payment intent not found");
-        if (
-          !props.providerId ||
-          !Number.isSafeInteger(props.amount) ||
-          props.amount < 0
-        )
+        if (!props.providerId || moneyNumber(props.amount) < 0)
           throw new Error("Validation error. Invalid Stripe invoice");
         const invoices = await this.billingModule.invoice.find({
           params: {
@@ -409,7 +408,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       }
       return this.settlePayment({
         ...reference,
-        amount: amount / 100,
+        amount: amount / 10 ** currencyPrecision(remote.currency ?? "usd"),
         paymentIntentId: options.paymentIntentId,
       });
     }
@@ -491,6 +490,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       if (props.entity.amount < 0) {
         throw new Error("Validation error. Amount cannot be negative");
       }
+      const stripeMinorAmount = providerMinorUnits(
+        props.entity.amount,
+        currencyPrecision(props.currency),
+      );
+      const recurringInterval =
+        props.entity.interval === "four_weeks" ? "week" : props.entity.interval;
+      const recurringCount = props.entity.interval === "four_weeks" ? 4 : 1;
 
       let stripeProduct: any;
       let stripePrice: any;
@@ -513,9 +519,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           stripeProduct = await stripe.products.create({
             name: `${props.entity.amount}`,
             default_price_data: {
-              unit_amount: +props.entity.amount * 100,
-              currency: "usd",
-              recurring: { interval: props.entity.interval as any },
+              unit_amount: stripeMinorAmount,
+              currency: props.currency,
+              recurring: {
+                interval: recurringInterval as any,
+                interval_count: recurringCount,
+              },
             },
           });
         } else {
@@ -532,7 +541,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         const filteredPrices = priceQuery.data.filter((price) => {
           return (
             price.recurring &&
-            price.recurring.interval === props.entity.interval
+            price.recurring.interval === recurringInterval &&
+            price.recurring.interval_count === recurringCount &&
+            price.unit_amount === stripeMinorAmount
           );
         });
 
@@ -540,9 +551,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           stripePrice = filteredPrices[0];
         } else {
           stripePrice = await stripe.prices.create({
-            unit_amount: +props.entity.amount * 100,
+            unit_amount: stripeMinorAmount,
             currency: props.currency,
-            recurring: { interval: props.entity.interval as any },
+            recurring: {
+              interval: recurringInterval as any,
+              interval_count: recurringCount,
+            },
             product: stripeProduct.id,
           });
         }
@@ -565,15 +579,18 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           throw new Error("Not Found error. Customer not found");
         }
 
-        checkout = await stripe.subscriptions.create({
-          customer: customer.id,
-          items: [{ price: stripePrice.id }],
-          payment_behavior: "default_incomplete",
-          expand: ["latest_invoice.payment_intent"],
-          metadata: {
-            ...props.metadata,
+        checkout = await stripe.subscriptions.create(
+          {
+            customer: customer.id,
+            items: [{ price: stripePrice.id }],
+            payment_behavior: "default_incomplete",
+            expand: ["latest_invoice.payment_intent"],
+            metadata: {
+              ...props.metadata,
+            },
           },
-        });
+          { idempotencyKey: `sps:${props.entity.id}:subscription` },
+        );
       } else {
         stripeProduct = await stripe.products.search({
           query: `name:'${props.entity.amount}' AND active:'true'`,
@@ -594,27 +611,34 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           limit: 100,
         });
 
-        if (prices.data.length) {
-          stripePrice = prices.data[0];
+        const matchingPrice = prices.data.find(
+          (price) =>
+            price.unit_amount === stripeMinorAmount && !price.recurring,
+        );
+        if (matchingPrice) {
+          stripePrice = matchingPrice;
         } else {
           stripePrice = await stripe.prices.create({
-            unit_amount: +props.entity.amount * 100,
+            unit_amount: stripeMinorAmount,
             currency: props.currency,
             product: stripeProduct.id,
           });
         }
 
-        checkout = await stripe.checkout.sessions.create({
-          line_items: [{ price: stripePrice.id, quantity: 1 }],
-          mode: "payment",
-          customer_email: props.email,
-          success_url: `${STRIPE_RETURN_URL}`,
-          cancel_url: `${STRIPE_RETURN_URL}`,
-          metadata: {
-            email: props.metadata.email,
-            paymentIntentId: props.metadata.paymentIntentId,
+        checkout = await stripe.checkout.sessions.create(
+          {
+            line_items: [{ price: stripePrice.id, quantity: 1 }],
+            mode: "payment",
+            customer_email: props.email,
+            success_url: `${STRIPE_RETURN_URL}`,
+            cancel_url: `${STRIPE_RETURN_URL}`,
+            metadata: {
+              email: props.metadata.email,
+              paymentIntentId: props.metadata.paymentIntentId,
+            },
           },
-        });
+          { idempotencyKey: `sps:${props.entity.id}:checkout` },
+        );
       }
 
       if (!checkout) {
@@ -690,7 +714,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             {
               paymentIntentId: intentId,
               providerId: data.id,
-              amount: data.amount_due / 100,
+              amount:
+                data.amount_due /
+                10 ** currencyPrecision(data.currency ?? "usd"),
             },
             (invoice) =>
               this.applyStripePaymentStatus(invoice, data, {
@@ -736,14 +762,27 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   async failUnpaidIntent(id: string, expectedStatus: string) {
-    await this.repository.consumeFirstByField(
-      "id",
-      id,
-      { status: "failed" },
-      {
-        and: [{ column: "status", method: "eq", value: expectedStatus }],
-      },
-    );
+    await this.repository.withPaymentIntentLock(id, async () => {
+      const current = await this.findById({ id });
+      if (
+        !current ||
+        current.status !== expectedStatus ||
+        ["succeeded", "requires_reconciliation", "canceled"].includes(
+          current.status,
+        )
+      ) {
+        return;
+      }
+      await this.repository.consumeFirstByField(
+        "id",
+        id,
+        { status: "failed" },
+        {
+          and: [{ column: "status", method: "eq", value: expectedStatus }],
+        },
+      );
+      await this.paymentLifecycle?.release({ paymentIntentIds: [id] });
+    });
   }
 
   async cloudpayments(props: ICloudpaymentsProceedProps) {

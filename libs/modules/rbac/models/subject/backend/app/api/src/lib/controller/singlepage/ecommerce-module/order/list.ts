@@ -109,26 +109,14 @@ export class Handler {
             if (order.type !== "cart" || order.status !== "new") {
               continue;
             }
-            const stores =
-              await this.service.ecommerceModule.storesToOrders.find({
-                params: {
-                  filters: {
-                    and: [{ column: "orderId", method: "eq", value: order.id }],
-                  },
-                },
-              });
             const cartDetails =
-              await this.service.ecommerceModule.order.findByIdCartDetails({
-                id: order.id,
+              await this.service.ecommerceModuleOrderCartDetails({
+                subjectId: id,
+                orderId: order.id,
               });
             carts.push({
               ...order,
-              cartDetails: {
-                ...cartDetails,
-                storeIds: (stores ?? []).map(
-                  (link: { storeId: string }) => link.storeId,
-                ),
-              },
+              cartDetails,
             });
           }
           return c.json({ data: carts });

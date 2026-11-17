@@ -14,6 +14,7 @@ export interface IComponentProps extends IParentProps<IModel, typeof variant> {
   language: string;
   cartDetails: ICartDetails | undefined;
   quantitySlots?: Record<string, ReactNode>;
+  selectionSlots?: Record<string, ReactNode>;
   currencySlot?: ReactNode;
   removeSlot?: ReactNode;
 }

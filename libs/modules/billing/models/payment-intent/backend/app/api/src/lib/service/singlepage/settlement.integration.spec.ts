@@ -19,6 +19,8 @@ import {
   Service as Settlement,
   type IExecuteProps,
 } from "./paykeeper-settlement";
+import { paymentProviderPrecision } from "@sps/billing/models/payment-intent/sdk/model";
+import { providerMinorUnits } from "@sps/backend-utils";
 
 jest.mock("@sps/shared-utils", () => ({
   ...jest.requireActual("@sps/shared-utils"),
@@ -183,6 +185,29 @@ it("does not revive a canceled Payment Intent", async () => {
   );
   expect((await f.invoices.findById({ id: f.invoice.id }))?.status).toBe(
     "open",
+  );
+});
+
+it("settles an exact three-place amount through dummy when PayKeeper cannot represent it", async () => {
+  const currency = { slug: "bhd", minorUnitDigits: 3 };
+  expect(() =>
+    providerMinorUnits(
+      "1.005",
+      paymentProviderPrecision("paykeeper", currency),
+    ),
+  ).toThrow();
+  expect(
+    providerMinorUnits("1.005", paymentProviderPrecision("dummy", currency)),
+  ).toBe(1005);
+  const f = await fixture("dummy", 1.005);
+  await f.service.settlePayment({
+    invoiceId: f.invoice.id,
+    provider: "dummy",
+    amount: 1.005,
+  });
+  expect((await f.invoices.findById({ id: f.invoice.id }))?.amount).toBe(1.005);
+  expect((await f.service.findById({ id: f.intent.id }))?.status).toBe(
+    "succeeded",
   );
 });
 

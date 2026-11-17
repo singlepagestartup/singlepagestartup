@@ -271,7 +271,8 @@ export class Service {
 
           const productsRolesIds = await this.getProductsRolesIds({
             productIds:
-              extendedOrder.ordersToProducts
+              this.purchasedPrimaryLines(extendedOrder)
+                ?.filter((line) => !line.parentLineId)
                 ?.map((orderToProduct) => orderToProduct.productId)
                 .filter((productId): productId is string =>
                   Boolean(productId),
@@ -603,7 +604,10 @@ export class Service {
         amount: string;
       }
     >();
-    for (const line of props.extendedOrder.ordersToProducts) {
+    for (const line of this.purchasedPrimaryLines(props.extendedOrder)) {
+      if (line.parentLineId) {
+        continue;
+      }
       const quantity = Number(line.quantity ?? 1);
       if (!Number.isSafeInteger(quantity) || quantity <= 0)
         throw new Error(
@@ -676,6 +680,33 @@ export class Service {
         subjectId: props.subjectId,
       },
     );
+  }
+
+  private purchasedPrimaryLines(order: IExtendedEcommerceModuleOrder) {
+    const payments = order.ordersToBillingModulePaymentIntents ?? [];
+    const snapshots = payments.filter((payment) => payment.purchaseSnapshot);
+    if (!snapshots.length) {
+      return order.ordersToProducts.filter((line) => !line.parentLineId);
+    }
+    const purchased = new Map<string, number>();
+    for (const payment of snapshots) {
+      const intent = payment.billingModulePaymentIntent;
+      if (
+        payment.orderLineId &&
+        payment.purchaseSnapshot?.charge.role === "product" &&
+        intent.paymentIntentsToInvoices.some(({ invoice }) =>
+          isConfirmedInvoice(intent, invoice),
+        )
+      ) {
+        purchased.set(
+          payment.orderLineId,
+          payment.purchaseSnapshot.charge.quantity,
+        );
+      }
+    }
+    return order.ordersToProducts
+      .filter((line) => purchased.has(line.id))
+      .map((line) => ({ ...line, quantity: purchased.get(line.id)! }));
   }
 
   private isInitialFree(order: IExtendedEcommerceModuleOrder) {
@@ -1120,7 +1151,9 @@ export class Service {
       },
     });
     const productIds = new Set(
-      props.extendedOrder.ordersToProducts.map((line) => line.productId),
+      this.purchasedPrimaryLines(props.extendedOrder).map(
+        (line) => line.productId,
+      ),
     );
     const cancellations = new Set<string>();
     const currentShared =
@@ -1870,7 +1903,9 @@ export class Service {
       },
     });
     const productsRolesIds = await this.getProductsRolesIds({
-      productIds: extendedOrder.ordersToProducts.map((line) => line.productId),
+      productIds: this.purchasedPrimaryLines(extendedOrder)
+        .filter((line) => !line.parentLineId)
+        .map((line) => line.productId),
     });
     return {
       ...props,
@@ -1982,7 +2017,7 @@ export class Service {
     const roles = new Set<string>();
     for (const id of activeIds) {
       const productIds = lines
-        .filter((line) => line.orderId === id)
+        .filter((line) => line.orderId === id && !line.parentLineId)
         .map((line) => line.productId);
       const required = await this.getProductsRolesIds({ productIds });
       if (

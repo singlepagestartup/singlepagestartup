@@ -108,6 +108,9 @@ export class Repository extends DatabaseRepository<typeof Table> {
       "subscriptionPeriodInvoiceId",
       "subscriptionRevokedAt",
       "paymentFailureCanceledAt",
+      "subscriptionSourceOrderId",
+      "subscriptionSourceInvoiceId",
+      "subscriptionSourceInterval",
     ] as const;
   }
 
@@ -117,14 +120,18 @@ export class Repository extends DatabaseRepository<typeof Table> {
       if (!(field in writable)) continue;
       const supplied = writable[field];
       const persisted = record?.[field] ?? null;
-      const equal =
-        field === "subscriptionPeriodInvoiceId"
-          ? supplied === persisted
-          : (supplied == null && persisted == null) ||
-            (supplied != null &&
-              persisted != null &&
-              new Date(supplied as string).getTime() ===
-                new Date(persisted).getTime());
+      const equal = [
+        "subscriptionPeriodInvoiceId",
+        "subscriptionSourceOrderId",
+        "subscriptionSourceInvoiceId",
+        "subscriptionSourceInterval",
+      ].includes(field)
+        ? supplied === persisted
+        : (supplied == null && persisted == null) ||
+          (supplied != null &&
+            persisted != null &&
+            new Date(supplied as string).getTime() ===
+              new Date(persisted).getTime());
       if (supplied !== undefined && !equal)
         throw new Error(
           "Validation error. Order lifecycle fields are server managed",
@@ -141,6 +148,25 @@ export class Repository extends DatabaseRepository<typeof Table> {
 
   override insert(data: Record<string, unknown>) {
     return super.insert(this.writableData(data));
+  }
+
+  createNextPeriodCart(props: {
+    sourceOrderId: string;
+    sourceInvoiceId: string;
+    interval: string;
+  }) {
+    if (!consistencyContext.getStore()?.database) {
+      throw new Error(
+        "Conflict error. Next-period cart requires an owner transaction",
+      );
+    }
+    return super.insert({
+      type: "cart",
+      status: "new",
+      subscriptionSourceOrderId: props.sourceOrderId,
+      subscriptionSourceInvoiceId: props.sourceInvoiceId,
+      subscriptionSourceInterval: props.interval,
+    });
   }
 
   override async updateFirstByField(

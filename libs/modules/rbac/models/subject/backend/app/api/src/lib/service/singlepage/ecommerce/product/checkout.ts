@@ -1,14 +1,10 @@
 import type { Service as SubjectService } from "../../index";
+import type { IEcommerceCartSelection } from "@sps/rbac/models/subject/sdk/model";
 import {
   ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds,
   INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
-  RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
-import { api as ecommerceOrdersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
-import { api as ecommerceOrderApi } from "@sps/ecommerce/models/order/sdk/server";
-import { api as ecommerceStoresToOrdersToApi } from "@sps/ecommerce/relations/stores-to-orders/sdk/server";
-import { api as ecommerceOrdersToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/server";
-import { api as subjectsToEcommerceModuleOrdersApi } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/sdk/server";
+import { z } from "zod";
 
 export interface IExecuteProps {
   id: string;
@@ -20,37 +16,36 @@ export interface IExecuteProps {
     quantity?: number;
     comment?: string;
     storeId?: string;
+    offerId?: string;
+    destination?: IEcommerceCartSelection["destination"];
+    services?: IEcommerceCartSelection["services"];
     billingModule?: { currency?: { id?: string } };
   };
 }
-
 export type ICheckout = (props: IExecuteProps) => Promise<unknown>;
-
 export interface IConstructorProps {
   service: Pick<
     SubjectService,
     | "findById"
-    | "deanonymize"
     | "subjectsToIdentities"
     | "ecommerceModule"
     | "billingModule"
+    | "ecommerceModuleOrderCreate"
     | "ecommerceOrderCheckout"
   >;
 }
 
 export class Service {
   constructor(readonly service: IConstructorProps["service"]) {}
-
   async execute({ id, productId, data }: IExecuteProps) {
-    if (!RBAC_SECRET_KEY)
-      throw new Error("Configuration error. RBAC_SECRET_KEY not set");
-    if (!id || !productId || !data || typeof data !== "object")
+    if (!id || !productId || !data || typeof data !== "object") {
       throw new Error(
         "Validation error. Subject, Product and data are required",
       );
+    }
     const quantity = data.quantity ?? 1;
     if (
-      !Number.isInteger(quantity) ||
+      !Number.isSafeInteger(quantity) ||
       quantity < quantityBounds.min ||
       quantity > quantityBounds.max
     ) {
@@ -58,191 +53,120 @@ export class Service {
         `Validation error. Quantity must be an integer between ${quantityBounds.min} and ${quantityBounds.max}`,
       );
     }
-
     const product = await this.service.ecommerceModule.product.findById({
       id: productId,
     });
-    if (!product) throw new Error("Not Found error. Product not found");
-    if (product.slug === INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG)
+    if (!product) {
+      throw new Error("Not Found error. Product not found");
+    }
+    if (product.slug === INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG) {
       throw new Error(
         "Permission error. Initial Free is available only through authentication bootstrap",
       );
-    let storeId = data.storeId;
-    let billingModuleCurrencyId = data["billingModule"]?.currency?.id;
-
-    if (!storeId) {
-      const stores = await this.service.ecommerceModule.store.find();
-
-      if (stores?.length === 0) {
-        throw new Error("Not Found error. No stores found");
-      }
-
-      if (stores?.length && stores.length > 1) {
-        throw new Error(
-          "Internal error. Multiple stores found. Pass 'data.storeId'",
-        );
-      }
-
-      storeId = stores?.[0]?.id;
     }
-
-    const entity = await this.service.findById({ id });
-
-    if (!entity) {
-      throw new Error("Not Found error. No entity found with id:" + id);
-    }
-
-    if (data.provider !== "telegram-star" && data.email) {
-      await this.service.deanonymize({ id, email: data.email });
-    } else if (data.provider !== "telegram-star") {
-      const identities = await this.service.subjectsToIdentities.find({
-        params: {
-          filters: {
-            and: [{ column: "subjectId", method: "eq", value: id }],
-          },
-          limit: 1,
-        },
+    const offers =
+      await this.service.ecommerceModule.storesToProducts.offersForProduct({
+        productId,
+        ...(data.storeId ? { storeId: data.storeId } : {}),
       });
-      if (!identities.length)
-        throw new Error("Validation error. Email is required for checkout.");
+    let offer;
+    if (data.offerId) {
+      offer = offers.find((candidate) => candidate.id === data.offerId);
+    } else if (offers.length === 1) {
+      offer = offers[0];
     }
-
-    const ecommerceModuleProductsToAttributes =
-      await this.service.ecommerceModule.productsToAttributes.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "productId",
-                method: "eq",
-                value: productId,
-              },
-            ],
-          },
-        },
-      });
-
-    const attributesToBillingModuleCurrencies =
-      await this.service.ecommerceModule.attributesToBillingModuleCurrencies.find(
-        {
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "attributeId",
-                  method: "inArray",
-                  value:
-                    ecommerceModuleProductsToAttributes?.map(
-                      (productToAttribute) => productToAttribute.attributeId,
-                    ) || [],
-                },
-              ],
-            },
-          },
-        },
+    if (!offer) {
+      throw new Error(
+        "Validation error. Choose one available store offer before checkout",
       );
-
+    }
+    let currencyId = data.billingModule?.currency?.id ?? "";
+    let quote = await this.service.ecommerceModule.storesToProducts.quote({
+      offerId: offer.id,
+      quantity,
+      currencyId,
+      destination: data.destination,
+      services: data.services,
+    });
+    if (!currencyId) {
+      const defaults = await this.service.billingModule.currency.find({
+        params: {
+          filters: {
+            and: [{ column: "isDefault", method: "eq", value: true }],
+          },
+        },
+      });
+      currencyId =
+        defaults.find((currency: { id: string }) =>
+          quote.currencyIds.includes(currency.id),
+        )?.id ??
+        quote.currencyIds[0] ??
+        "";
+      if (currencyId) {
+        quote = await this.service.ecommerceModule.storesToProducts.quote({
+          offerId: offer.id,
+          quantity,
+          currencyId,
+          destination: data.destination,
+          services: data.services,
+        });
+      }
+    }
     if (
-      attributesToBillingModuleCurrencies?.length &&
-      !billingModuleCurrencyId
+      !currencyId ||
+      quote.amount === null ||
+      quote.issues.length ||
+      !quote.currencyIds.includes(currencyId)
     ) {
-      const defaultBillingModuleCurrency =
-        await this.service.billingModule.currency.find({
+      throw new Error(
+        `Validation error. Complete the offer selection in the cart before checkout. ${quote.issues.map((issue) => issue.message).join("; ")}`,
+      );
+    }
+    const entity = await this.service.findById({ id });
+    if (!entity) {
+      throw new Error("Not Found error. Subject not found");
+    }
+    if (data.provider !== "telegram-star") {
+      if (
+        data.email &&
+        !z.string().trim().email().safeParse(data.email).success
+      ) {
+        throw new Error("Validation error. Receipt email must be valid");
+      }
+      if (!data.email) {
+        const identities = await this.service.subjectsToIdentities.find({
           params: {
             filters: {
-              and: [
-                {
-                  column: "isDefault",
-                  method: "eq",
-                  value: true,
-                },
-              ],
+              and: [{ column: "subjectId", method: "eq", value: id }],
             },
+            limit: 1,
           },
         });
-
-      if (defaultBillingModuleCurrency?.length) {
-        billingModuleCurrencyId = attributesToBillingModuleCurrencies.find(
-          (attributeToBillingModuleCurrency) =>
-            attributeToBillingModuleCurrency.billingModuleCurrencyId ===
-            defaultBillingModuleCurrency[0].id,
-        )?.billingModuleCurrencyId;
-
-        if (!billingModuleCurrencyId) {
-          billingModuleCurrencyId =
-            attributesToBillingModuleCurrencies[0]?.billingModuleCurrencyId;
+        if (!identities.length) {
+          throw new Error("Validation error. Email is required for checkout.");
         }
       }
     }
-
-    const order = await ecommerceOrderApi.create({
-      data: { comment: data.comment },
-      options: {
-        headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY },
-      },
+    const created = await this.service.ecommerceModuleOrderCreate({
+      subjectId: id,
+      productId,
+      offerId: offer.id,
+      expectedQuoteVersion: quote.version,
+      storeId: offer.storeId,
+      quantity,
+      billingModuleCurrencyId: currencyId,
+      destination: data.destination,
+      services: data.services,
+      comment: data.comment,
     });
-
-    await subjectsToEcommerceModuleOrdersApi.create({
-      data: {
-        subjectId: id,
-        ecommerceModuleOrderId: order.id,
-      },
-      options: {
-        headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY },
-      },
-    });
-
-    await ecommerceOrdersToProductsApi.create({
-      data: {
-        productId,
-        orderId: order.id,
-        quantity,
-      },
-      options: {
-        headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY },
-      },
-    });
-
-    await ecommerceStoresToOrdersToApi.create({
-      data: {
-        storeId,
-        orderId: order.id,
-      },
-      options: {
-        headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY },
-      },
-    });
-
-    const ordersToBillingModuleCurrencies =
-      await ecommerceOrdersToBillingModuleCurrenciesApi.create({
-        data: {
-          orderId: order.id,
-          billingModuleCurrencyId: billingModuleCurrencyId,
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
-
-    if (!ordersToBillingModuleCurrencies) {
-      throw new Error(
-        "Not Found error. No orders to billing module currencies found",
-      );
-    }
-
     const result = await this.service.ecommerceOrderCheckout({
       id,
       email: data.email,
       account: data.account,
       provider: data.provider,
-      ecommerceModule: {
-        orders: [{ id: order.id }],
-      },
+      ecommerceModule: { orders: [{ id: created.orderId }] },
       comment: data.comment,
     });
-
     return result;
   }
 }

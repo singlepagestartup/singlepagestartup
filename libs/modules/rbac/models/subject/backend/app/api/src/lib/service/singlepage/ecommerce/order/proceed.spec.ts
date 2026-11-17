@@ -1580,6 +1580,43 @@ describe("quantity-aware additive token collection", () => {
       },
     ]);
   });
+  it("uses saved paid primary quantities and excludes services or unbilled child records", async () => {
+    const { service } = createService();
+    const result = await service.collectTopupCurrencies({
+      extendedOrder: {
+        ordersToProducts: [
+          {
+            id: "bought",
+            quantity: 99,
+            product: { productsToAttributes: [topup("100")] },
+          },
+          {
+            id: "service",
+            parentLineId: "bought",
+            quantity: 1,
+            product: { productsToAttributes: [topup("999")] },
+          },
+          {
+            id: "unbilled",
+            quantity: 1,
+            product: { productsToAttributes: [topup("999")] },
+          },
+        ],
+        ordersToBillingModulePaymentIntents: [
+          {
+            orderLineId: "bought",
+            purchaseSnapshot: { charge: { role: "product", quantity: 2 } },
+            billingModulePaymentIntent: {
+              status: "succeeded",
+              paymentIntentsToInvoices: [{ invoice: { status: "paid" } }],
+            },
+          },
+        ],
+      } as any,
+      subjectToEcommerceModuleOrder: { subjectId: "subject" } as any,
+    });
+    expect(result[0].amount).toBe("200");
+  });
   it("does not suppress a newly paid Pro Order because the same Product is already delivering", async () => {
     const { service, subjectsToEcommerceModuleOrdersFind } = createService();
     subjectsToEcommerceModuleOrdersFind.mockResolvedValue([

@@ -20,9 +20,16 @@ export function Component(props: IComponentPropsExtended) {
   const emailRef = useRef<HTMLInputElement>(null);
   const [expanded, setExpanded] = useState(false);
   const [currencyId, setCurrencyId] = useState(props.initialCurrencyId);
-  const maxQuantity = Math.max(1, props.maxQuantity ?? 99);
+  const [offerId, setOfferId] = useState(props.initialOfferId);
+  const offer =
+    props.offers?.find((item) => item.id === offerId) ?? props.offers?.[0];
+  const prices = offer?.prices ?? props.prices;
+  const maxQuantity = Math.max(
+    0,
+    Math.min(props.maxQuantity ?? 99, offer?.availableQuantity ?? 99),
+  );
   const [quantity, setQuantity] = useState(
-    Math.min(maxQuantity, Math.max(1, props.initialQuantity ?? 1)),
+    Math.max(1, Math.min(maxQuantity, props.initialQuantity ?? 1)),
   );
   const [optionValues, setOptionValues] = useState(
     props.initialOptionValues ?? {},
@@ -37,8 +44,7 @@ export function Component(props: IComponentPropsExtended) {
   const [added, setAdded] = useState(false);
   const [error, setError] = useState<string>();
   const [orderPreview, setOrderPreview] = useState<IProductCardCheckout>();
-  const price =
-    props.prices.find((item) => item.id === currencyId) ?? props.prices[0];
+  const price = prices.find((item) => item.id === currencyId) ?? prices[0];
   const methods = props.paymentMethods.filter(
     (method) =>
       !method.currencyIds || (price && method.currencyIds.includes(price.id)),
@@ -65,9 +71,13 @@ export function Component(props: IComponentPropsExtended) {
         )) *
       quantity
     : 0;
-  const available = props.available !== false;
+  const available =
+    props.available !== false && maxQuantity > 0 && !offer?.unavailableReason;
   const canPurchase =
-    available && Boolean(price) && selectedOptions.every(({ value }) => value);
+    available &&
+    quantity <= maxQuantity &&
+    Boolean(price) &&
+    selectedOptions.every(({ value }) => value);
   const visibleCount = Math.max(0, props.visibleAttributeCount ?? 3);
   const visibleAttributes = expanded
     ? props.attributes
@@ -101,6 +111,7 @@ export function Component(props: IComponentPropsExtended) {
   function selection(): IProductCardSelection {
     return {
       productId: props.id ?? props.slug,
+      ...(offer ? { offerId: offer.id, storeId: offer.storeId } : {}),
       quantity,
       currencyId: price!.id,
       optionValues: selectedOptionValues,
@@ -281,6 +292,43 @@ export function Component(props: IComponentPropsExtended) {
           </section>
         )}
 
+        {props.offers?.length ? (
+          <fieldset disabled={Boolean(pending)} className="min-w-0 space-y-2">
+            <legend className="mb-2 text-xs font-medium">Sold by</legend>
+            <div className="grid gap-2">
+              {props.offers.map((item) => (
+                <label key={item.id} className="relative">
+                  <input
+                    type="radio"
+                    name={`${instanceId}-offer`}
+                    className="peer sr-only"
+                    checked={offer?.id === item.id}
+                    onChange={() => {
+                      setOfferId(item.id);
+                      clearFeedback();
+                    }}
+                  />
+                  <span className="grid cursor-pointer gap-1 rounded-xl border border-border p-3 text-sm peer-checked:border-foreground peer-checked:bg-muted peer-focus-visible:ring-2 peer-focus-visible:ring-ring">
+                    <span className="font-semibold">{item.storeName}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {item.fulfillmentSummary}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      SKU {item.sku} ·{" "}
+                      {item.unavailableReason ??
+                        (item.availableQuantity === 0
+                          ? "Sold out"
+                          : item.availableQuantity == null
+                            ? "Available to order"
+                            : `${item.availableQuantity} available`)}
+                    </span>
+                  </span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        ) : null}
+
         {props.options.map((option) => (
           <fieldset
             key={option.id}
@@ -332,7 +380,7 @@ export function Component(props: IComponentPropsExtended) {
                     Currency
                   </legend>
                   <div className="inline-flex flex-wrap gap-1 rounded-xl bg-muted p-1">
-                    {props.prices.map((item) => (
+                    {prices.map((item) => (
                       <label key={item.id} className="relative">
                         <input
                           type="radio"
@@ -404,6 +452,27 @@ export function Component(props: IComponentPropsExtended) {
                   </div>
                 </fieldset>
               </div>
+
+              {offer && (
+                <p
+                  role="status"
+                  className={twMerge(
+                    "text-sm",
+                    !available || quantity > maxQuantity
+                      ? "text-destructive"
+                      : "text-muted-foreground",
+                  )}
+                >
+                  {offer.unavailableReason ??
+                    (maxQuantity === 0
+                      ? "Sold out at this store. Choose another seller."
+                      : quantity > maxQuantity
+                        ? `Only ${maxQuantity} available. Reduce the quantity or choose another seller.`
+                        : offer.availableQuantity == null
+                          ? "This offer has no quantity limit."
+                          : `Up to ${maxQuantity} available for this order.`)}
+                </p>
+              )}
 
               <div className="space-y-1">
                 <div
@@ -497,7 +566,11 @@ export function Component(props: IComponentPropsExtended) {
             </div>
           ) : (
             <div className="flex items-center justify-between gap-4">
-              <span className="text-xl font-semibold">{props.priceLabel}</span>
+              <span className="text-xl font-semibold">
+                {offer
+                  ? "No price configured for this offer."
+                  : props.priceLabel}
+              </span>
               <a
                 href={href}
                 target={props.target}

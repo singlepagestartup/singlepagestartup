@@ -36,3 +36,4 @@ export * from "./lib/knowledge-content";
 
 export { consistencyRequestOptions } from "./lib/consistency-response/request-options";
 export * from "./lib/metadata";
+export * from "./lib/currency-precision";

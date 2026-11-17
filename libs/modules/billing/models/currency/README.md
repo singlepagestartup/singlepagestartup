@@ -15,6 +15,12 @@ Currencies define symbols, titles, and default settings used across billing flow
 - `title`: display title.
 - `adminTitle`: title used in admin UI.
 - `slug`: URL-friendly unique identifier.
+- `minorUnitDigits`: optional configured decimal precision, from zero to eight.
+
+The public SDK model exports `currencyPrecision(currency)`. It accepts a slug
+or a record with `slug` and optional `minorUnitDigits`. Unconfigured currencies
+use two decimal places; Telegram Stars use zero. A provider may support fewer
+places than the currency configuration and rejects an unrepresentable amount.
 
 ## Variants
 

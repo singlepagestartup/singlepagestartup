@@ -4,6 +4,13 @@
 
 Links subjects to ecommerce products.
 
+`variant="owner"` grants permission to edit the shared Product description and
+versioned price formula. Each Product has one owner grant; an administrator can
+edit any Product. The server assigns a new Product to its authenticated creator.
+Creating another store’s offer for the Product does not create an owner grant.
+Existing `default` associations retain their presentation and purchase behavior.
+Raw ownership changes require an administrator or the trusted operator credential.
+
 ## Fields
 
 - `id`: unique identifier (UUID).

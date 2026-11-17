@@ -7,6 +7,7 @@
  */
 
 const toastErrorMock = jest.fn();
+const invalidateMock = jest.fn();
 const ecommerceModuleOrderCreateMock = jest.fn();
 let capturedMutationOptions: any;
 
@@ -51,6 +52,11 @@ jest.mock("@paralleldrive/cuid2", () => ({
   createId: () => "request-id",
 }));
 
+jest.mock("@sps/shared-frontend-client-api", () => ({
+  queryClient: {
+    invalidateQueries: (...args: unknown[]) => invalidateMock(...args),
+  },
+}));
 import { action } from "./create";
 
 const NO_PRICE_ERROR =
@@ -104,5 +110,8 @@ describe("Given: a visitor adds a product the API refuses to put in the cart", (
     ).resolves.toEqual({ id: "subject-1" });
 
     expect(toastErrorMock).not.toHaveBeenCalled();
+    expect(invalidateMock).toHaveBeenCalledWith({
+      queryKey: ["/api/rbac/subjects/subject-1/ecommerce-module/orders"],
+    });
   });
 });

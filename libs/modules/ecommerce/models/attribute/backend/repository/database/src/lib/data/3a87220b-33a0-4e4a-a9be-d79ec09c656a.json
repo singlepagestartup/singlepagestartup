@@ -1,0 +1,15 @@
+{
+  "id": "3a87220b-33a0-4e4a-a9be-d79ec09c656a",
+  "createdAt": "2026-11-17T00:05:36.021Z",
+  "updatedAt": "2026-11-17T00:05:36.021Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "unit_price * quantity"
+  },
+  "adminTitle": "website-price-formula",
+  "slug": "website-price-formula"
+}

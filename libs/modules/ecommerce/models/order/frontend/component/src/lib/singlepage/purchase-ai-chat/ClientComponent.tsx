@@ -105,12 +105,26 @@ export const Component = memo(function Component(
 ) {
   const language = props.language || internationalization.defaultLanguage.code;
   const ru = language === "ru";
-  const status =
-    statuses[
-      props.data.status === "cancelled" ? "canceled" : props.data.status
-    ];
+  const savedCharges = props.purchaseDetails?.charges ?? [];
+  const primaryCharge = savedCharges.find(
+    (snapshot) => snapshot.charge.role === "product",
+  );
+  const invoiceShares = props.purchaseDetails?.invoiceShares ?? [];
+  const legacyShared = invoiceShares.some(
+    (share) => share.amount === null && !share.showSharedTotal,
+  );
+  const status = props.purchaseDetails?.requiresReconciliation
+    ? {
+        ru: "Платёж на проверке",
+        en: "Payment under review",
+        color: "bg-muted text-foreground",
+      }
+    : statuses[
+        props.data.status === "cancelled" ? "canceled" : props.data.status
+      ];
   const paymentUrl =
-    props.data.status === "paying"
+    props.data.status === "paying" &&
+    !props.purchaseDetails?.requiresReconciliation
       ? props.purchaseDetails?.paymentUrl
       : undefined;
   const currencies = new Map<string, { amount: number; label: string }>();
@@ -137,7 +151,8 @@ export const Component = memo(function Component(
     >
       <div>
         <p className="text-sm font-semibold">
-          {ru ? "Покупка услуги" : "Service purchase"}{" "}
+          {primaryCharge?.charge.title ??
+            (ru ? "Покупка услуги" : "Service purchase")}{" "}
           <span
             className={`ml-2 inline-flex rounded-full px-2 py-1 text-xs font-medium ${status?.color ?? "bg-muted text-muted-foreground"}`}
           >
@@ -154,15 +169,22 @@ export const Component = memo(function Component(
             ? ru
               ? "Загрузка суммы…"
               : "Loading total…"
-            : props.totalsError || !currencies.size
+            : legacyShared
               ? ru
-                ? "Сумма недоступна"
-                : "Total unavailable"
-              : Array.from(currencies, ([id, value]) => (
-                  <span key={id} className="block">
-                    {value.amount.toLocaleString(language)} {value.label}
-                  </span>
-                ))}
+                ? "В общем счёте"
+                : "Included in shared invoice"
+              : props.totalsError || !currencies.size
+                ? ru
+                  ? "Сумма недоступна"
+                  : "Total unavailable"
+                : Array.from(currencies, ([id, value]) => (
+                    <span key={id} className="block">
+                      {value.amount.toLocaleString(language, {
+                        maximumFractionDigits: 8,
+                      })}{" "}
+                      {value.label}
+                    </span>
+                  ))}
         </span>
         {paymentUrl && (
           <a
@@ -234,6 +256,72 @@ export const Component = memo(function Component(
         )}
         {props.actions}
       </div>
+      {invoiceShares.length > 0 ? (
+        <div className="space-y-1 text-xs text-muted-foreground @[640px]:col-span-2">
+          {invoiceShares.map((share) => (
+            <p key={share.invoiceId} className="break-words">
+              {ru ? "Счёт" : "Invoice"} {share.invoiceId}
+              {share.orderIds.length > 1
+                ? ` · ${ru ? "Общий для заказов" : "Shared by orders"}: ${share.orderIds.join(", ")}`
+                : ""}
+              {share.amount === null
+                ? ` · ${ru ? "Доли заказов не сохранены" : "Individual shares were not saved"}`
+                : ""}
+            </p>
+          ))}
+        </div>
+      ) : null}
+      {savedCharges.length > 0 ? (
+        <details className="group min-w-0 rounded-xl border border-border p-4 @[640px]:col-span-2">
+          <summary className="cursor-pointer text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground">
+            {ru ? "Товар и услуги" : "Item and services"}
+          </summary>
+          {primaryCharge?.destination.address ||
+          primaryCharge?.destination.pickupPointId ? (
+            <p className="mt-3 text-sm text-muted-foreground">
+              {primaryCharge.destination.address ??
+                `${ru ? "Самовывоз" : "Pickup"}: ${primaryCharge.destination.pickupPointId}`}
+            </p>
+          ) : null}
+          <ul className="mt-4 space-y-3">
+            {savedCharges.map((snapshot) => (
+              <li
+                key={`${snapshot.charge.offerId}:${snapshot.parentLineId ?? "primary"}`}
+                className={`flex justify-between gap-4 text-sm ${snapshot.charge.role === "product" ? "font-medium" : "ml-4 border-l border-border pl-4"}`}
+              >
+                <div>
+                  <p>
+                    {snapshot.charge.title ??
+                      (snapshot.charge.role === "product"
+                        ? ru
+                          ? "Товар"
+                          : "Item"
+                        : ru
+                          ? "Услуга"
+                          : "Service")}{" "}
+                    × {snapshot.charge.quantity}
+                  </p>
+                  <p className="mt-1 text-xs font-normal text-muted-foreground">
+                    {snapshot.charge.storeTitle}
+                    {snapshot.charge.providerStoreId !== snapshot.charge.storeId
+                      ? ` · ${ru ? "Исполнитель" : "Fulfilled by"}: ${snapshot.charge.providerStoreTitle ?? snapshot.charge.providerStoreId}`
+                      : ""}
+                    {snapshot.purchaseType === "subscription"
+                      ? ` · ${snapshot.charge.recurrence === "first" ? (ru ? "Только первая поставка" : "First delivery only") : ru ? "Каждая поставка" : "Every delivery"}`
+                      : ""}
+                  </p>
+                </div>
+                <span className="shrink-0 tabular-nums">
+                  {Number(snapshot.amount).toLocaleString(language, {
+                    maximumFractionDigits: 8,
+                  })}{" "}
+                  {currencies.get(snapshot.currencyId)?.label ?? ""}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
       {props.footer && (
         <div className="@[640px]:col-span-2">{props.footer}</div>
       )}

@@ -12,9 +12,12 @@ import { Repository as SubjectRepository } from "../../../../repository";
 import { Configuration as SubjectConfiguration } from "../../../../configuration";
 import { Service as Create } from "./create";
 import { Service as FindOpenCart } from "./find-open-cart-order-with-product";
+import { Service as CartSelection } from "./selection";
 
 const paths = {
   product: "@sps/ecommerce/models/product",
+  offers: "@sps/ecommerce/relations/stores-to-products",
+  payments: "@sps/ecommerce/relations/orders-to-billing-module-payment-intents",
   store: "@sps/ecommerce/models/store",
   currency: "@sps/billing/models/currency",
   order: "@sps/ecommerce/models/order",
@@ -48,7 +51,7 @@ async function fixture() {
       `${path}/backend/app/api/src/lib/configuration`
     );
     const repository = new Repository(new Configuration());
-    const service = new CRUDService(repository);
+    const service: any = new CRUDService(repository);
     const create = service.create.bind(service);
     service.create = async (props: any) => {
       const entity = await create(props);
@@ -58,6 +61,10 @@ async function fixture() {
       });
       return entity;
     };
+    if (key === "payments") {
+      service.lockOffers = (props: { offerIds: string[] }) =>
+        repository.lockOffers(props);
+    }
     services[key] = service;
   }
   const product = await services.product.create({
@@ -69,8 +76,37 @@ async function fixture() {
   const currency = await services.currency.create({
     data: { slug: `pr264-${suffix}`, title: "Cart test", symbol: "test" },
   });
+  const offer = await services.offers.create({
+    data: {
+      productId: product.id,
+      storeId: store.id,
+      sku: `issue414-${suffix}`,
+    },
+  });
+  services.offers.offersForProduct = async ({
+    productId,
+  }: {
+    productId: string;
+  }) => (productId === product.id ? [offer] : []);
+  services.offers.quote = jest.fn(async (input: any) => ({
+    ...input,
+    productId: product.id,
+    storeId: store.id,
+    amount: "100",
+    availableQuantity: null,
+    currencyIds: [currency.id],
+    serviceOptions: [],
+    charges: [],
+    issues: [],
+    version: "fixture-v1",
+    expiresAt: new Date(Date.now() + 60_000).toISOString(),
+  }));
+  services.offers.quotesUnderLock = async (_inputs: any[], previews: any[]) =>
+    previews;
   const ecommerceModule = {
     order: services.order,
+    storesToProducts: services.offers,
+    ordersToBillingModulePaymentIntents: services.payments,
     ordersToProducts: services.lines,
     storesToOrders: services.stores,
     ordersToBillingModuleCurrencies: services.currencies,
@@ -79,7 +115,8 @@ async function fixture() {
     ecommerceModule,
     subjectsToEcommerceModuleOrders: services.owners,
   });
-  const dependencies = {
+  const dependencies: any = {
+    billingModule: { currency: services.currency },
     ecommerceModule,
     subjectsToEcommerceModuleOrders: services.owners,
     ecommerceModuleFindOpenCartOrderWithProduct: find.execute.bind(find),
@@ -87,6 +124,10 @@ async function fixture() {
       .fn()
       .mockResolvedValue(currency.id),
   };
+  dependencies.ecommerceModuleCartQuote = (props: any) =>
+    new CartSelection({ repository: subjects, service: dependencies }).quote(
+      props,
+    );
   const create = new Create({ repository: subjects, service: dependencies });
   const otherInstance = new Create({
     repository: new SubjectRepository(new SubjectConfiguration()),
@@ -97,6 +138,7 @@ async function fixture() {
     productId: product.id,
     storeId: store.id,
     quantity: 2,
+    billingModuleCurrencyId: currency.id,
   };
   const owners = () =>
     services.owners.find({
@@ -117,7 +159,7 @@ async function fixture() {
   };
 }
 
-it("serializes concurrent adds across service instances and rejects an existing line before pricing", async () => {
+it("serializes concurrent adds of the same offer across service instances", async () => {
   const f = await fixture();
   const results = await Promise.allSettled([
     f.create.execute(f.props),
@@ -143,9 +185,10 @@ it("serializes concurrent adds across service instances and rejects an existing 
     expect(rows).toHaveLength(1);
     if (key === "lines") expect(rows[0].quantity).toBe(2);
   }
-  f.dependencies.ecommerceModuleResolveOrderCurrency.mockRejectedValue(
-    new Error("price removed"),
-  );
+  f.services.offers.quote.mockResolvedValue({
+    currencyIds: [],
+    issues: [{ code: "configuration", message: "price removed" }],
+  });
   await expect(f.create.execute(f.props)).rejects.toThrow(
     "Conflict error. Product is already in the cart",
   );

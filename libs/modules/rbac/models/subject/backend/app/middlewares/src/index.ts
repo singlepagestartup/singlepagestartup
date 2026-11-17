@@ -3,6 +3,11 @@ export {
   type IMiddlewareGeneric as IRequestSubjectIdOwnerMiddlewareGeneric,
 } from "./lib/request-subject-is-owner";
 export { Middleware as RequestAuthenticatedAdmin } from "./lib/request-authenticated-admin";
+export {
+  Middleware as RequestEcommerceCatalogWrite,
+  guardedRoutes as ecommerceCatalogGuardedRoutes,
+  privateOrderRoutes,
+} from "./lib/request-ecommerce-catalog-write";
 export { Middleware as RequestSubjectReadAccess } from "./lib/request-subject-read-access";
 export {
   Middleware as RequestSubjectOwnsIdentity,

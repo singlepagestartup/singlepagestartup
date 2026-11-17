@@ -135,6 +135,14 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return this.subscriptionPeriodService().execute(props);
   }
 
+  createNextPeriodCart(props: {
+    sourceOrderId: string;
+    sourceInvoiceId: string;
+    interval: string;
+  }) {
+    return this.repository.createNextPeriodCart(props);
+  }
+
   async assertSubscriptionPayment(props: { id: string }) {
     return this.subscriptionPeriodService().assertPayment(props);
   }
@@ -387,16 +395,61 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   async findByIdCheckoutAttributes(
     props: IFindByIdCheckoutAttributesExecuteProps,
   ) {
+    const saved = await this.savedCheckoutContext(props.id);
+    if (saved) {
+      return saved.checkoutAttributesByCurrency;
+    }
     return this.findByIdCheckoutAttributesService.execute(props);
   }
 
   async findByIdCheckoutAttributesByCurrency(
     props: IFindByIdCheckoutAttributesExecuteProps,
   ) {
+    const saved = await this.savedCheckoutContext(props.id);
+    if (saved) {
+      return saved.checkoutAttributesByCurrency;
+    }
     return this.findByIdCheckoutAttributesService.execute(props);
   }
 
+  private async savedCheckoutContext(id: string) {
+    const order = await this.findById({ id });
+    if (order?.type !== "history") {
+      return;
+    }
+    const payments = await this.ordersToBillingModulePaymentIntents.find({
+      params: {
+        filters: { and: [{ column: "orderId", method: "eq", value: id }] },
+      },
+    });
+    if (!payments.some((payment) => payment.purchaseSnapshot)) {
+      return;
+    }
+    const extended = await this.findByIdExtended({ id });
+    return extended;
+  }
+
   async findByIdTotal(props: IFindByIdTotalExecuteProps) {
+    const saved = await this.savedCheckoutContext(props.id);
+    if (saved) {
+      const currency =
+        saved.ordersToBillingModuleCurrencies[0]?.billingModuleCurrency;
+      if (!currency) {
+        throw new Error(
+          "Validation error. Saved purchase currency is unavailable",
+        );
+      }
+      return {
+        totals: [
+          {
+            total: saved.checkoutAttributesByCurrency.amount,
+            billingModuleCurrency: currency,
+          },
+        ],
+        availableCurrencyIds: [currency.id],
+        unpriced: [],
+      };
+    }
     return this.findByIdTotalService.execute(props);
   }
 

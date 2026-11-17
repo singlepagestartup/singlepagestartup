@@ -10,7 +10,7 @@ Payment intents represent an upcoming or in-progress payment with amount and sta
 - `createdAt`: creation timestamp.
 - `updatedAt`: last update timestamp.
 - `variant`: display variant.
-- `amount`: payment amount as integer.
+- `amount`: decimal payment amount in main currency units, stored as `numeric(24,8)` with the existing numeric SDK field.
 - `status`: payment status (default: `requires_payment_method`).
 - `interval`: recurring interval (optional).
 - `type`: payment type (default: `one_off`).
@@ -69,15 +69,23 @@ consume their allocated amount even when already succeeded, preventing a
 retry from allocating that amount again. An invoice that cannot cover all its
 linked intents is rejected without writes.
 
-The existing integer amount schema remains in force. A provider confirmation
-must match the saved invoice amount; decimals are never truncated or used to
-replace it. CloudPayments and TipTopPay use `Amount`, which represents the
+Amounts are compared as exact scaled integers. A provider confirmation must
+match the saved invoice and its Payment Intent shares. Unsupported precision
+is rejected before payment creation; it is never truncated. CloudPayments and TipTopPay use `Amount`, which represents the
 original purchase amount, rather than the card's `PaymentAmount`. Stripe
 Checkout requires a completed session with `payment_status = paid` or
 `no_payment_required`; completing an unpaid session does not settle it.
 Recurring Stripe invoice creation, association and settlement share the same
 transaction and Payment Intent lock. Pending out-of-order events do not
 reset an existing paid invoice.
+
+`paymentProviderPrecision(provider, currency)` is the shared boundary used by
+checkout and provider creation. Dummy keeps the configured currency precision;
+Telegram Stars require integers. The current external adapters accept two
+decimal places. Stripe rejects a differently configured currency because its
+current conversion does not implement that currency's minor units. An amount
+such as `1.005` can use an exact supported provider instead of being truncated
+for PayKeeper.
 
 Telegram Stars binds the successful charge ID under the lock; a different
 charge cannot replace it. For a zero-price checkout, the creation handler reads
@@ -130,8 +138,8 @@ API and checks its paid status, invoice ID, payment ID, order ID, client and
 amount. Both stored billing amounts must match. Mismatches and unpaid/canceled
 payments receive no success acknowledgment. This integration creates RUB
 payments only; selecting another currency is rejected before creating an Invoice.
-Billing amounts retain the existing integer schema; received decimals are
-compared exactly in minor units and are never truncated into a matching amount.
+PayKeeper amounts support two decimal places and are compared exactly in minor
+units. Received decimals are never truncated into a matching amount.
 
 The owning Payment Intent and Invoice services settle both records in one
 PostgreSQL transaction, locking the Payment Intent before the Invoice. A failed

@@ -6,6 +6,14 @@ export const table = "order";
 
 const pgTable = pgCore.pgTableCreator((name) => `${moduleName}_${name}`);
 
-export const Table = pgTable(table, {
-  ...fields,
-});
+export const Table = pgTable(
+  table,
+  {
+    ...fields,
+  },
+  (table) => [
+    pgCore
+      .uniqueIndex("sps_ee_order_subscription_next_period_unique")
+      .on(table.subscriptionSourceOrderId, table.subscriptionSourceInvoiceId),
+  ],
+);

@@ -15,7 +15,6 @@ import { Component as Row } from "./Row";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { OrderComment } from "../../checkout-default/OrderComment";
-import { Delivery } from "./Delivery";
 import { useIsFetching, useIsMutating } from "@tanstack/react-query";
 import { route } from "@sps/rbac/models/subject/sdk/model";
 
@@ -52,8 +51,7 @@ function Checkout(props: IComponentPropsExtended) {
           emptyCart: "В корзине пока нет товаров.",
           total: "Итого",
           pricedItems: "Товары с ценой",
-          unpriced:
-            "У некоторых товаров нет цены. Удалите их из корзины перед оплатой.",
+          unpriced: "Завершите выбор и исправьте ошибки в отмеченных заказах.",
           invalidCurrency: "Выберите валюту оплаты для каждого заказа.",
           provider: "Способ оплаты",
           providerPlaceholder: "Выберите способ оплаты",
@@ -70,7 +68,7 @@ function Checkout(props: IComponentPropsExtended) {
           total: "Total",
           pricedItems: "Priced items",
           unpriced:
-            "Some products have no price. Remove them from your cart before paying.",
+            "Complete the selection and resolve the issues in the marked orders.",
           invalidCurrency: "Choose a payment currency for each order.",
           provider: "Payment method",
           providerPlaceholder: "Choose a payment method",
@@ -117,6 +115,13 @@ function Checkout(props: IComponentPropsExtended) {
   const refreshingCart =
     useIsFetching({
       queryKey: [`${route}/${props.data.id}/ecommerce-module/orders`],
+    }) > 0;
+  const changingSelection =
+    useIsMutating({
+      mutationKey: [`${route}/:id/ecommerce-module/orders/:orderId/selection`],
+      predicate: (mutation) =>
+        (mutation.state.variables as { id?: string } | undefined)?.id ===
+        props.data.id,
     }) > 0;
 
   const form = useForm({
@@ -255,15 +260,6 @@ function Checkout(props: IComponentPropsExtended) {
                   </ul>
                 </div>
                 <div className="shrink-0 space-y-4 border-t border-border bg-card px-4 py-4 sm:px-6 sm:py-5">
-                  <Delivery
-                    language={props.language}
-                    currencySlug={
-                      totals.size === 1
-                        ? totals.values().next().value?.billingModuleCurrency
-                            .slug
-                        : undefined
-                    }
-                  />
                   <CheckoutForm
                     className="space-y-3"
                     noValidate
@@ -332,6 +328,7 @@ function Checkout(props: IComponentPropsExtended) {
                         hasUnpriced ||
                         hasInvalidCurrency ||
                         updatingCart ||
+                        changingSelection ||
                         refreshingCart
                       }
                     >

@@ -50,6 +50,7 @@ export function Component(props: IComponentPropsExtended) {
 
   const relationSections = useMemo(() => {
     return [
+      { id: "create-offer", title: "Create offer", content: props.offerCreate },
       {
         id: "stores-to-attributes",
         title: "Attributes",
@@ -84,6 +85,7 @@ export function Component(props: IComponentPropsExtended) {
       } => Boolean(section.content),
     );
   }, [
+    props.offerCreate,
     props.storesToAttributes,
     props.storesToProducts,
     props.storesToOrders,

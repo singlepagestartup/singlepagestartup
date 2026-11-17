@@ -177,7 +177,7 @@ describe("Given: order list checkout component", () => {
     });
   });
 
-  it("places the delivery choices directly above the total and hides them for an empty cart", () => {
+  it("shows the sum of both server orders and hides checkout for an empty cart", () => {
     cartOrders.push({ ...cartOrders[0], id: "order-2" });
     const props = {
       isServer: false,
@@ -186,20 +186,16 @@ describe("Given: order list checkout component", () => {
       language: "en",
     };
     const view = render(<Component {...props} />);
-    const delivery = screen.getByRole("group", { name: "Delivery" });
-    expect(delivery.nextElementSibling?.querySelector("h3")).toBe(
-      screen.getByRole("heading", { name: "Total" }),
-    );
-    expect(
-      screen.getByRole("radio", { name: "Pickup", checked: true }),
-    ).toBeTruthy();
-    expect(screen.getByRole("radio", { name: "Courier" })).toBeTruthy();
-    expect(screen.getAllByRole("radio")).toHaveLength(2);
-    expect(delivery.querySelector('input[type="text"]')).toBeNull();
+    expect(screen.getByRole("heading", { name: "Total" })).toBeTruthy();
     expect(screen.getByText("200 ₽")).toBeTruthy();
+    expect(screen.queryByRole("group", { name: "Delivery" })).toBeNull();
+    expect(screen.queryByRole("radio", { name: "Courier" })).toBeNull();
     cartOrders = [];
     view.rerender(<Component {...props} />);
-    expect(screen.queryByRole("group", { name: "Delivery" })).toBeNull();
+    expect(screen.queryByRole("heading", { name: "Total" })).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Proceed to payment" }),
+    ).toBeNull();
   });
 
   it("When: checkout returns one invoice Then: browser redirects to payment URL", async () => {
@@ -370,7 +366,7 @@ describe("Given: order list checkout component", () => {
         language="ru"
       />,
     );
-    expect(screen.getByRole("alert").textContent).toContain("нет цены");
+    expect(screen.getByRole("alert").textContent).toContain("исправьте ошибки");
     const button = screen.getByRole("button", { name: "Перейти к оплате" });
     expect(button.hasAttribute("disabled")).toBe(true);
     fireEvent.click(button);

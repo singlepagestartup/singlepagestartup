@@ -1,3 +1,8 @@
+import type { IOrderLineTotals } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
+import { Repository as OfferRepository } from "@sps/ecommerce/relations/stores-to-products/backend/app/api/src/lib/repository";
+import { Configuration as OfferConfiguration } from "@sps/ecommerce/relations/stores-to-products/backend/app/api/src/lib/configuration";
+import { Service as OfferService } from "@sps/ecommerce/relations/stores-to-products/backend/app/api/src/lib/service";
+import type { IOfferQuoteInput } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import { CRUDService, DI } from "@sps/shared-backend-api";
@@ -45,9 +50,97 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       attributesToBillingModuleCurrencies;
   }
 
+  private offerService?: OfferService;
+  get offers() {
+    this.offerService ??= new OfferService(
+      new OfferRepository(new OfferConfiguration()),
+    );
+    return this.offerService;
+  }
+
+  offerSelection(
+    lines: (typeof Table.$inferSelect)[],
+    currencyId: string,
+  ): IOfferQuoteInput {
+    const mains = lines.filter((line) => !line.parentLineId);
+    const main = mains[0];
+    if (
+      mains.length !== 1 ||
+      !main?.offerId ||
+      lines.some(
+        (line) =>
+          !line.offerId || (line.parentLineId && line.parentLineId !== main.id),
+      )
+    ) {
+      throw new Error(
+        "Conflict error. Choose a retail offer for each cart position",
+      );
+    }
+    return {
+      lineId: main.id,
+      offerId: main.offerId,
+      currencyId,
+      quantity: main.quantity,
+      destination: main.destination,
+      services: lines
+        .filter((line) => line.parentLineId === main.id)
+        .sort((a, b) => a.id.localeCompare(b.id))
+        .map((line) => ({
+          lineId: line.id,
+          offerId: line.offerId!,
+          quantity: line.quantity,
+        })),
+    };
+  }
+
+  async offerTotals(lines: (typeof Table.$inferSelect)[], lineId?: string) {
+    const input = this.offerSelection(lines, "");
+    const quotes = await this.offers.quoteCurrencies(input);
+    const totals: IOrderLineTotals["totals"] = [];
+    for (const { quote, currency } of quotes) {
+      if (quote.amount === null) {
+        continue;
+      }
+      const amount = lineId
+        ? quote.charges.find((charge) => charge.lineId === lineId)?.amount
+        : quote.amount;
+      if (amount !== undefined) {
+        totals.push({ total: Number(amount), billingModuleCurrency: currency });
+      }
+    }
+    const unpriced: IOrderLineTotals["unpriced"] = [];
+    if (!totals.length) {
+      const primary = lines.find(
+        (line) => line.id === (lineId ?? input.lineId),
+      )!;
+      unpriced.push({
+        ordersToProductsId: primary.id,
+        productId: primary.productId,
+        reason:
+          quotes[0]?.quote.issues[0]?.message ?? "No available offer price",
+      });
+    }
+    return {
+      totals,
+      unpriced,
+      availableCurrencyIds: quotes[0]?.quote.currencyIds ?? [],
+    };
+  }
+
   async getTotal(props: IGetTotalExecuteProps) {
+    const entity = await this.findById({ id: props.id });
+    if (entity?.offerId) {
+      const lines = await this.find({
+        params: {
+          filters: {
+            and: [{ column: "orderId", method: "eq", value: entity.orderId }],
+          },
+        },
+      });
+      return this.offerTotals(lines, entity.id);
+    }
     return new GetTotalService({
-      findById: ({ id }) => this.findById({ id }),
+      findById: async () => entity,
       product: this.product,
       billingModule: this.product.billingModule,
       attribute: this.attribute,

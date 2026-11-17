@@ -2,6 +2,11 @@ allOf:
   - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/relation.yaml"
   - type: object
     properties:
+      configurationKey:
+        type: string
+      settings:
+        type: object
+        description: Delivery rules and package measurements for this retail offer.
       sku:
         type: string
         description: Sku

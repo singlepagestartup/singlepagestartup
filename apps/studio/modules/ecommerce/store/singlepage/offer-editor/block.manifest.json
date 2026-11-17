@@ -1,0 +1,24 @@
+{
+  "id": "ecommerce.store.offer-editor",
+  "title": "Ecommerce Store / Offer editor",
+  "description": "Seller offer creation, product ownership, stock, rates and packaging states.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "ecommerce",
+    "entityType": "model",
+    "entity": "store",
+    "variant": "offer-editor"
+  },
+  "files": { "component": "Component.tsx", "story": "Component.stories.tsx" },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "ecommerce.store",
+    "pageName": "ecommerce",
+    "variantName": "offer-editor",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

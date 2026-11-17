@@ -19,12 +19,13 @@ export function Component(props: IComponentProps) {
       <ParentComponent
         isServer={false}
         variant="admin-v2-table"
-        adminForm={(props) => {
+        adminForm={(formProps) => {
           return (
             <AdminForm
               isServer={false}
-              data={props.data}
+              data={formProps.data}
               variant="admin-v2-form"
+              storeOfferCreate={props.storeOfferCreate}
             />
           );
         }}
