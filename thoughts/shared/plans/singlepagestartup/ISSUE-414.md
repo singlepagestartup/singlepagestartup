@@ -3,7 +3,7 @@ date: 2026-11-17T01:50:23+03:00
 issue_number: 414
 repository: singlepagestartup
 topic: "Предложения магазинов, остатки и услуги для каждой позиции корзины"
-status: in_review
+status: implemented
 ---
 
 # План реализации #414. Предложения магазинов, остатки и услуги в корзине
