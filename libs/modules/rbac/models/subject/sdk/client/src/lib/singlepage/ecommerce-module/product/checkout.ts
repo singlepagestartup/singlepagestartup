@@ -15,25 +15,29 @@ import {
   type IResult as IParentResult,
 } from "@sps/rbac/models/subject/sdk/server";
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
+import {
+  queryClient,
+  invalidateRouteQueries,
+} from "@sps/shared-frontend-client-api";
 
-export type IProps = {
-  reactQueryOptions?: Partial<UseMutationOptions<any, DefaultError, any>>;
-};
+type IVariables = IParentProps["IEcommerceModuleProductCheckoutProps"];
+
+export interface IProps {
+  reactQueryOptions?: Partial<
+    UseMutationOptions<IResult, DefaultError, IVariables>
+  >;
+}
 
 export type IResult = IParentResult["IEcommerceModuleProductCheckoutResult"];
 
 export function action(props: IProps) {
-  return useMutation<
-    IResult,
-    DefaultError,
-    IParentProps["IEcommerceModuleProductCheckoutProps"]
-  >({
+  return useMutation<IResult, DefaultError, IVariables>({
+    ...props.reactQueryOptions,
     mutationKey: [`${route}/:id/ecommerce-module/products/:productId/checkout`],
-    mutationFn: async (
-      mutationFunctionProps: IParentProps["IEcommerceModuleProductCheckoutProps"],
-    ) => {
+    mutationFn: async (mutationFunctionProps: IVariables) => {
+      let result: IResult;
       try {
-        const result = await api.ecommerceModuleProductCheckout({
+        result = await api.ecommerceModuleProductCheckout({
           ...mutationFunctionProps,
           options: {
             ...mutationFunctionProps.options,
@@ -41,26 +45,33 @@ export function action(props: IProps) {
           },
           host: clientHost,
         });
-
-        return result;
       } catch (error: any) {
+        // Checkout may retain a newly created cart or a pending payment attempt.
+        await invalidateRouteQueries(
+          queryClient,
+          `${route}/${mutationFunctionProps.id}/ecommerce-module/orders`,
+        ).catch(() => undefined);
         toast.error(error.message);
 
         throw error;
       }
-    },
-    onSuccess(data) {
+      await invalidateRouteQueries(
+        queryClient,
+        `${route}/${mutationFunctionProps.id}/ecommerce-module/orders`,
+      ).catch(() => undefined);
       globalActionsStore.getState().addAction({
         type: "mutation",
-        name: `${route}/:id/ecommerce-module/products/:productId/checkout`,
-        props: this,
-        result: data,
+        name: `${route}/${mutationFunctionProps.id}/ecommerce-module/products/${mutationFunctionProps.productId ?? mutationFunctionProps.data.productId}/checkout`,
+        props: { id: mutationFunctionProps.id },
+        result: {
+          invoiceIds: result.billingModule.invoices.map(
+            (invoice) => invoice.id,
+          ),
+        },
         timestamp: Date.now(),
         requestId: createId(),
       });
-
-      return data;
+      return result;
     },
-    ...props?.reactQueryOptions,
   });
 }

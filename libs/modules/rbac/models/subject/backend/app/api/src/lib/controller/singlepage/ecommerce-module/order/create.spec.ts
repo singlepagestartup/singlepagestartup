@@ -18,6 +18,7 @@ jest.mock("@sps/backend-utils", () => ({
 import { ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds } from "@sps/shared-utils";
 import { Handler } from "./create";
 import { Service as CreateCartOrder } from "../../../../service/singlepage/ecommerce/order/create";
+import { Service as OfferQuotes } from "@sps/ecommerce/relations/stores-to-products/backend/app/api/src/lib/service";
 
 function fixture() {
   const writes = {
@@ -69,6 +70,7 @@ function fixture() {
       storesToProducts: {
         offersForProduct: jest.fn().mockResolvedValue([offer]),
         quote,
+        findById: jest.fn(),
         quotesUnderLock: async (_inputs: any[], previews: any[]) => previews,
       },
       order: { create: writes.order },
@@ -225,5 +227,144 @@ it("rejects another subject's access token before writes", async () => {
   await expect(
     new Handler(f.service).execute(f.context(), undefined),
   ).rejects.toThrow("Only order owner");
+  f.noWrites();
+});
+
+it("stores exactly the quoted destination, quantity, currency and selected service graph once", async () => {
+  const f = fixture();
+  const serviceId = "7341680e-08e1-4984-bc97-c8072d3d968a";
+  const quote = f.quote.getMockImplementation()!;
+  f.quote.mockImplementation(
+    async (selection) =>
+      ({
+        ...(await quote(selection)),
+        serviceOptions: [{ offerId: serviceId }],
+        charges: [
+          { offerId: serviceId, role: "delivery", recurrence: "first" },
+        ],
+      }) as any,
+  );
+  f.service.ecommerceModule.storesToProducts.findById.mockResolvedValue({
+    id: serviceId,
+    productId: "delivery-product",
+  });
+  const destination = {
+    address: "City Street 10",
+    region: "Area",
+    coordinates: { latitude: 60, longitude: 30 },
+  };
+  const services = [{ offerId: serviceId, quantity: 1 }];
+  await new Handler(f.service).execute(
+    f.context({
+      offerId: "offer-a",
+      quantity: 2,
+      billingModuleCurrencyId: "currency-rub",
+      destination,
+      services,
+      expectedQuoteVersion: "terms-1",
+      comment: "Call first",
+    }),
+    undefined,
+  );
+  expect(f.quote).toHaveBeenCalledWith({
+    offerId: "offer-a",
+    quantity: 2,
+    currencyId: "currency-rub",
+    destination,
+    services,
+  });
+  expect(f.writes.order).toHaveBeenCalledTimes(1);
+  expect(f.writes.order).toHaveBeenCalledWith({
+    data: { comment: "Call first" },
+  });
+  expect(f.writes.line).toHaveBeenCalledTimes(2);
+  expect(f.writes.line).toHaveBeenNthCalledWith(1, {
+    data: expect.objectContaining({
+      productId: "product",
+      offerId: "offer-a",
+      quantity: 2,
+      destination,
+      quoteVersion: "terms-1",
+    }),
+  });
+  expect(f.writes.line).toHaveBeenNthCalledWith(2, {
+    data: expect.objectContaining({
+      productId: "delivery-product",
+      offerId: serviceId,
+      parentLineId: "primary",
+      quantity: 1,
+      recurrence: "first",
+    }),
+  });
+  expect(f.writes.currency).toHaveBeenCalledWith({
+    data: { orderId: "order-new", billingModuleCurrencyId: "currency-rub" },
+  });
+});
+
+it("rejects stale page terms before any graph writes", async () => {
+  const f = fixture();
+  await expect(
+    new Handler(f.service).execute(
+      f.context({ expectedQuoteVersion: "old-terms" }),
+      undefined,
+    ),
+  ).rejects.toThrow("Offer terms changed");
+  f.noWrites();
+});
+
+it("rejects a malformed quote version instead of silently discarding it", async () => {
+  const f = fixture();
+  await expect(
+    new Handler(f.service).execute(
+      f.context({ expectedQuoteVersion: 123 }),
+      undefined,
+    ),
+  ).rejects.toThrow("Invalid order purchase selection");
+  expect(f.quote).not.toHaveBeenCalled();
+  f.noWrites();
+});
+
+it("leaves the graph untouched when locked quote validation detects changed terms", async () => {
+  const f = fixture();
+  f.service.ecommerceModule.storesToProducts.quotesUnderLock = jest
+    .fn()
+    .mockRejectedValue(new Error("Conflict error. Offer conditions changed"));
+  await expect(
+    new Handler(f.service).execute(
+      f.context({ expectedQuoteVersion: "terms-1" }),
+      undefined,
+    ),
+  ).rejects.toThrow("Offer conditions changed");
+  f.noWrites();
+});
+
+it("checks page-accepted terms again through the real locked-quote comparison before graph writes", async () => {
+  const f = fixture();
+  let current = await f.quote({
+    offerId: "offer-a",
+    quantity: 1,
+    currencyId: "currency-rub",
+  });
+  const quotes: OfferQuotes = Object.create(OfferQuotes.prototype);
+  const calculate = jest.fn(async () => [current]);
+  Object.defineProperty(quotes, "calculateMany", { value: calculate });
+  f.service.ecommerceModule.storesToProducts.quote = quotes.quote.bind(quotes);
+  f.service.ecommerceModule.storesToProducts.quotesUnderLock =
+    quotes.quotesUnderLock.bind(quotes);
+  f.service.ecommerceModule.ordersToBillingModulePaymentIntents.lockOffers.mockImplementation(
+    async () => {
+      current = { ...current, version: "terms-2" };
+    },
+  );
+  await expect(
+    new Handler(f.service).execute(
+      f.context({
+        billingModuleCurrencyId: "currency-rub",
+        expectedQuoteVersion: "terms-1",
+      }),
+      undefined,
+    ),
+  ).rejects.toThrow("Offer conditions changed");
+  expect(calculate).toHaveBeenCalledTimes(2);
   f.noWrites();
 });

@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Checkbox } from "@sps/shared-ui-shadcn";
 import { Select } from "@sps/ui-adapter";
@@ -16,6 +23,7 @@ import {
 import type { IOfferServiceOption } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 import type { ISelectionProps } from "./interface";
 import { DeliveryAddress } from "./DeliveryAddress";
+import { ServiceCard } from "./ServiceCard";
 
 interface ITransferredService {
   productId: string;
@@ -715,6 +723,25 @@ export function Selection(props: ISelectionProps) {
   const productAmountReady =
     currentAmount && productCharge?.quantity === quantity;
   const selectedCurrencySymbol = currencySymbol(draft.currencyId);
+  const changeService = useCallback(
+    (offerId: string, checked: boolean) => {
+      const option = options.find((option) => option.offerId === offerId);
+      if (!option) return;
+      edit((current) => {
+        const services = { ...current.services };
+        if (option.role === "delivery" && checked) {
+          for (const delivery of options.filter(
+            (item) => item.role === "delivery",
+          ))
+            delete services[delivery.offerId];
+        }
+        if (checked) services[offerId] = "1";
+        else delete services[offerId];
+        return { ...current, services };
+      });
+    },
+    [options, available],
+  );
 
   return (
     <fieldset className="min-w-0 space-y-3">
@@ -831,114 +858,27 @@ export function Selection(props: ISelectionProps) {
                 : undefined;
             const amount = charge?.amount ?? preview?.amount ?? fixedFallback;
             const from = !charge && preview?.kind === "from";
-            const title =
-              option.titles?.[props.language] ||
-              option.title ||
-              option.productId;
             const serviceId = `${controlId}-${option.offerId}`;
             return (
-              <div
+              <ServiceCard
                 key={option.offerId}
-                role="group"
-                aria-labelledby={`${serviceId}-title`}
-                className="overflow-hidden rounded-xl border border-border has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5"
+                id={serviceId}
+                language={props.language}
+                option={option}
+                checked={selected}
+                amount={amount}
+                from={from}
+                currencySymbol={selectedCurrencySymbol}
+                tariff={tariff}
+                distanceKm={charge?.inputs.distance_km}
+                pending={
+                  pending ||
+                  closePending.current ||
+                  Boolean(discovery.isFetching) ||
+                  (validDiscoveryQuantity && quantity !== discoveryQuantity)
+                }
+                onCheckedChange={changeService}
               >
-                <div className="relative">
-                  <Checkbox
-                    id={serviceId}
-                    aria-labelledby={`${serviceId}-title`}
-                    aria-describedby={`${serviceId}-price`}
-                    className="absolute left-3 top-6 size-5 rounded-md border-2 border-muted-foreground bg-card focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 data-[state=checked]:border-primary"
-                    checked={selected}
-                    onCheckedChange={(value) => {
-                      const checked = value === true;
-                      edit((current) => {
-                        const services = { ...current.services };
-                        if (option.role === "delivery" && checked) {
-                          for (const delivery of options.filter(
-                            (item) => item.role === "delivery",
-                          )) {
-                            delete services[delivery.offerId];
-                          }
-                        }
-                        if (checked) services[option.offerId] = "1";
-                        else delete services[option.offerId];
-                        return { ...current, services };
-                      });
-                    }}
-                  />
-                  <label
-                    htmlFor={serviceId}
-                    className="block min-w-0 cursor-pointer p-3 pl-11 hover:bg-muted/50"
-                  >
-                    <span className="grid min-h-11 grid-cols-[minmax(0,1fr)_6.5rem] items-center gap-x-2 sm:grid-cols-[minmax(0,1fr)_7.5rem]">
-                      <span className="min-w-0 break-words py-3 text-sm font-medium">
-                        <span id={`${serviceId}-title`}>{title}</span>
-                        {option.receiptMethod === "pickup"
-                          ? ru
-                            ? " · самовывоз"
-                            : " · pickup"
-                          : option.receiptMethod === "electronic"
-                            ? ru
-                              ? " · электронная выдача"
-                              : " · electronic fulfillment"
-                            : ""}
-                      </span>
-                      <span
-                        id={`${serviceId}-price`}
-                        className="min-w-0 break-words text-right text-sm font-semibold tabular-nums"
-                      >
-                        {amount !== undefined
-                          ? `${from ? (ru ? "от " : "from ") : ""}${formatCurrencyAmount(amount, props.language)} ${selectedCurrencySymbol}`
-                          : pending ||
-                              closePending.current ||
-                              discovery.isFetching ||
-                              (validDiscoveryQuantity &&
-                                quantity !== discoveryQuantity)
-                            ? "…"
-                            : ru
-                              ? "По расчёту"
-                              : "Calculated"}
-                      </span>
-                    </span>
-                    {option.receiptMethod === "shipping" ? (
-                      <span className="block space-y-1 text-xs text-muted-foreground">
-                        {tariff ? (
-                          <span className="block">
-                            {tariff.basis === "fixed"
-                              ? ru
-                                ? "Фиксированная стоимость"
-                                : "Fixed price"
-                              : tariff.basis === "distance"
-                                ? ru
-                                  ? "По расстоянию"
-                                  : "By distance"
-                                : ru
-                                  ? "Расчётный тариф"
-                                  : "Calculated tariff"}
-                          </span>
-                        ) : null}
-                        {tariff?.basis === "distance" &&
-                          charge?.inputs.distance_km && (
-                            <span className="block">
-                              {ru ? "Маршрут" : "Route"} ·{" "}
-                              {new Intl.NumberFormat(ru ? "ru-RU" : "en-US", {
-                                maximumFractionDigits: 3,
-                              }).format(Number(charge.inputs.distance_km))}{" "}
-                              {ru ? "км" : "km"}
-                            </span>
-                          )}
-                        <span className="block">
-                          {option.regionIds?.length
-                            ? `${ru ? "Зона доставки" : "Delivery area"}: ${option.regionIds.join(", ")}`
-                            : ru
-                              ? "Зона доставки не указана"
-                              : "Delivery area is not specified"}
-                        </span>
-                      </span>
-                    ) : null}
-                  </label>
-                </div>
                 {selected ? (
                   <div className="space-y-3 px-3 pb-3">
                     {option.receiptMethod === "shipping" ? (
@@ -1013,7 +953,7 @@ export function Selection(props: ISelectionProps) {
                     ) : null}
                   </div>
                 ) : null}
-              </div>
+              </ServiceCard>
             );
           })}
         </fieldset>

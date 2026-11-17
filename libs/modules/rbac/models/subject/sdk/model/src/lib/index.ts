@@ -5,6 +5,7 @@ export {
   type IArticleCreateResult,
 } from "./blog-article-create";
 export * from "./ecommerce-cart-selection";
+export * from "./ecommerce-product-purchase";
 export {
   type IInsertSchema,
   type ISelectSchema as IModel,

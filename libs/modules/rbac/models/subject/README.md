@@ -73,9 +73,11 @@ Prices and compatible currencies come from the selected offer's quote, including
 its chosen services. A draft may retain an incomplete delivery, address or pickup
 choice; it cannot proceed to payment until those fields are complete. Stock,
 configuration and incompatible-currency issues reject the add before writes.
-Product cards select an offer, currency and quantity through public SDKs. Direct
-Product checkout uses the same atomic create operation and requires a complete
-quote. Product-only Buy now remains available when exactly one retail offer is
+The product form quotes the selected offer, quantity, currency, services and
+destination. Add to cart and one-step checkout submit the same selection and
+quote version. One-step checkout requires a complete quote and pays for that
+order alone. When the offer is already in the cart, the page edits its saved
+order with the same controls and receipt as the cart drawer. Product-only Buy now remains available when exactly one retail offer is
 eligible. Its cart line stores the agreed offer and quote conditions.
 
 The quantity, total and single-order handlers retain their ownership checks.

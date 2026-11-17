@@ -40,7 +40,18 @@ export function action(props: IProps = {}) {
             headers: saturateHeaders(variables.options?.headers),
           },
         })
-        .catch((error) => {
+        .catch(async (error) => {
+          if (
+            error instanceof Error &&
+            /^(?:Conflict error\.\s*)?Product is already in the cart\.?$/.test(
+              error.message,
+            )
+          ) {
+            await invalidateRouteQueries(
+              queryClient,
+              `${route}/${variables.id}/ecommerce-module/orders`,
+            ).catch(() => undefined);
+          }
           toast.error(error instanceof Error ? error.message : String(error));
           throw error;
         });

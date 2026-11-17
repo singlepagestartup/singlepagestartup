@@ -1,11 +1,22 @@
 /** @jest-environment jsdom */
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { useState } from "react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 const mockCreate = jest.fn();
+const mockRefetch = jest.fn();
+const mockQuoteRead = jest.fn();
 let mockOffers: any[];
 let mockLoading = false;
 let mockIssues: any[] = [];
 let mockAmount = "5000";
 let mockServices: any[] = [];
+let mockQuotedCurrency: string | undefined;
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   api: {
     ecommerceModuleOrderCreate: () => ({
@@ -16,21 +27,45 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
 }));
 jest.mock("@sps/ecommerce/relations/stores-to-products/sdk/client", () => ({
   api: {
-    find: () => ({ data: mockOffers, isPending: mockLoading }),
-    quote: ({ data }: any) => ({
-      data: data.offerId
-        ? {
-            ...data,
-            amount: mockAmount,
-            currencyIds: ["rub"],
-            availableQuantity: 5,
-            serviceOptions: mockServices,
-            issues: mockIssues,
-            charges: [],
-          }
-        : undefined,
-      isFetching: false,
+    find: () => ({
+      data: mockOffers,
+      isPending: mockLoading,
+      refetch: mockRefetch,
     }),
+    quote: ({ data }: any) => {
+      mockQuoteRead(data);
+      return {
+        data: data.offerId
+          ? {
+              ...data,
+              currencyId: mockQuotedCurrency ?? data.currencyId,
+              amount: mockAmount,
+              currencyIds: ["rub"],
+              availableQuantity: 5,
+              serviceOptions: mockServices,
+              issues: mockIssues,
+              version: JSON.stringify(data),
+              charges: [
+                {
+                  offerId: data.offerId,
+                  role: "product",
+                  quantity: data.quantity,
+                  amount: mockAmount,
+                },
+                ...(data.services ?? []).map((service: any) => ({
+                  ...service,
+                  role: service.offerId.startsWith("delivery")
+                    ? "delivery"
+                    : "add-on",
+                  amount: "123.45",
+                })),
+              ],
+            }
+          : undefined,
+        isFetching: false,
+        refetch: mockRefetch,
+      };
+    },
   },
 }));
 jest.mock("@sps/ecommerce/models/store/sdk/client", () => ({
@@ -79,6 +114,26 @@ jest.mock("@sps/shared-ui-shadcn", () => ({
     <button {...props}>{children}</button>
   ),
   Input: (props: any) => <input {...props} />,
+  Checkbox: ({ checked, onCheckedChange, ...props }: any) => (
+    <input
+      {...props}
+      type="checkbox"
+      checked={checked}
+      onChange={(event) => onCheckedChange(event.target.checked)}
+    />
+  ),
+}));
+jest.mock("../list/checkout-default/DeliveryAddress", () => ({
+  DeliveryAddress: ({ id, label, value, onChange }: any) => (
+    <div>
+      <label htmlFor={id}>{label}</label>
+      <input
+        id={id}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      />
+    </div>
+  ),
 }));
 import { Component } from "./ClientComponent";
 const props: any = {
@@ -89,6 +144,8 @@ const props: any = {
 };
 beforeEach(() => {
   mockCreate.mockReset().mockResolvedValue({});
+  mockRefetch.mockReset().mockResolvedValue({});
+  mockQuoteRead.mockClear();
   mockOffers = [
     {
       id: "offer-a",
@@ -102,6 +159,7 @@ beforeEach(() => {
   mockIssues = [];
   mockAmount = "5000";
   mockServices = [];
+  mockQuotedCurrency = undefined;
 });
 it("submits the exact unique retail offer with a supported currency", async () => {
   render(<Component {...props} />);
@@ -109,20 +167,20 @@ it("submits the exact unique retail offer with a supported currency", async () =
   await waitFor(() => expect(button.hasAttribute("disabled")).toBe(false));
   fireEvent.click(button);
   await waitFor(() =>
-    expect(mockCreate).toHaveBeenCalledWith({
-      id: "subject",
-      data: {
-        productId: "product",
-        offerId: "offer-a",
-        storeId: "store-a",
-        quantity: 1,
-        billingModuleCurrencyId: "rub",
-      },
-    }),
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "subject",
+        data: expect.objectContaining({
+          productId: "product",
+          offerId: "offer-a",
+          storeId: "store-a",
+          quantity: 1,
+          billingModuleCurrencyId: "rub",
+        }),
+      }),
+    ),
   );
-  expect((await screen.findByRole("status")).textContent).toContain(
-    "Товар в корзине",
-  );
+  expect(await screen.findByText("Товар в корзине.")).toBeTruthy();
 });
 it("requires a store choice when two offers sell the same Product", async () => {
   mockOffers.push({
@@ -135,7 +193,7 @@ it("requires a store choice when two offers sell the same Product", async () => 
   render(<Component {...props} />);
   const button = screen.getByRole("button", { name: "Добавить в корзину" });
   expect(button.hasAttribute("disabled")).toBe(true);
-  fireEvent.change(screen.getAllByRole("combobox")[0], {
+  fireEvent.change(screen.getByLabelText("Магазин"), {
     target: { value: "offer-b" },
   });
   await waitFor(() => expect(button.hasAttribute("disabled")).toBe(false));
@@ -163,23 +221,44 @@ it("blocks stock and configuration errors locally", () => {
   ).toBe(true);
   expect(mockCreate).not.toHaveBeenCalled();
 });
-it("lets the buyer finish delivery selection in the cart", async () => {
-  mockIssues = [
-    {
-      code: "delivery_required",
-      offerId: "offer-a",
-      message: "Choose delivery",
-    },
-  ];
-  render(<Component {...props} />);
-  await waitFor(() =>
+it.each(["delivery_required", "address_required", "pickup_required"])(
+  "allows %s as an incomplete cart draft while withholding payment",
+  async (code) => {
+    mockIssues = [
+      {
+        code,
+        offerId: "offer-a",
+        message: "Choose delivery",
+      },
+    ];
+    const slot = jest.fn((_configuration: any, _actions: any) => null);
+    render(<Component {...props} checkoutSlot={slot} />);
+    await waitFor(() =>
+      expect(
+        screen
+          .getByRole("button", { name: "Добавить в корзину" })
+          .hasAttribute("disabled"),
+      ).toBe(false),
+    );
+    expect(slot.mock.calls.at(-1)![0]).toBeUndefined();
     expect(
-      screen
-        .getByRole("button", { name: "Добавить в корзину" })
-        .hasAttribute("disabled"),
-    ).toBe(false),
-  );
-});
+      screen.getByText(
+        "Получение, адрес и услуги можно уточнить в корзине. Для оплаты завершите выбор.",
+      ),
+    ).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Добавить в корзину" }));
+    await waitFor(() =>
+      expect(mockCreate.mock.calls[0][0].data).toMatchObject({
+        offerId: "offer-a",
+        billingModuleCurrencyId: "rub",
+        quantity: 1,
+        destination: {},
+        services: [],
+        expectedQuoteVersion: expect.any(String),
+      }),
+    );
+  },
+);
 it("does not reuse a previous Product's loaded offer", () => {
   const view = render(<Component {...props} />);
   view.rerender(
@@ -200,7 +279,8 @@ it("shows an API failure without marking the offer added", async () => {
   expect((await screen.findByRole("alert")).textContent).toContain(
     "Offer terms changed",
   );
-  expect(screen.queryByRole("status")).toBeNull();
+  expect(screen.queryByText("Товар в корзине.")).toBeNull();
+  await waitFor(() => expect(mockRefetch).toHaveBeenCalledTimes(1));
 });
 
 it("excludes provider offers from the buyer's store selector", async () => {
@@ -256,13 +336,19 @@ it("offers a service separately only when its retail offer is standalone", async
     ).toBe(false),
   );
 });
-it("renders the quoted amount after a quantity change without calculating money in the browser", () => {
+it("renders the quoted amount after a quantity change without calculating money in the browser", async () => {
   const view = render(<Component {...props} />);
   mockAmount = "1234.56";
   fireEvent.change(screen.getByLabelText("Количество"), {
     target: { value: "2" },
   });
-  expect(screen.getByText(/1\s234,56/)).toBeTruthy();
+  await waitFor(() =>
+    expect(
+      within(screen.getByRole("region", { name: "Расчёт" })).getAllByText(
+        /1\s234,56/,
+      ).length,
+    ).toBeGreaterThan(0),
+  );
   expect(screen.queryByText(/10000/)).toBeNull();
 });
 
@@ -289,24 +375,28 @@ it.each([
   (amount, expected) => {
     mockAmount = amount;
     render(<Component {...props} />);
-    expect(screen.getByText(expected)).toBeTruthy();
+    expect(
+      within(screen.getByRole("region", { name: "Расчёт" })).getAllByText(
+        expected,
+      ).length,
+    ).toBeGreaterThan(0);
   },
 );
 
-it("names the selected offer's localized optional services as choices in the cart", () => {
+it("offers localized real services directly on the product page", () => {
   mockServices = [
     {
       offerId: "service",
       title: "Consultation",
       titles: { ru: "Консультация", en: "Consultation" },
+      role: "add-on",
+      currencyIds: ["rub"],
     },
   ];
   render(<Component {...props} />);
-  expect(
-    screen.getByText("В корзине можно выбрать: Консультация."),
-  ).toBeTruthy();
+  expect(screen.getByRole("checkbox", { name: "Консультация" })).toBeTruthy();
   expect(screen.queryByText(/Consultation/)).toBeNull();
-  expect(screen.queryByRole("checkbox")).toBeNull();
+  expect(screen.queryByText(/В корзине можно выбрать/)).toBeNull();
 });
 
 it("removes a previous offer's service hint when choosing another store", () => {
@@ -322,4 +412,296 @@ it("removes a previous offer's service hint when choosing another store", () => 
     target: { value: "other-offer" },
   });
   expect(screen.queryByText(/Consultation/)).toBeNull();
+});
+
+it("uses one exact configured selection for inline service/address controls, cart creation and the separate payment slot", async () => {
+  mockServices = [
+    {
+      offerId: "assembly-a",
+      productId: "assembly",
+      role: "add-on",
+      title: "Сборка",
+      currencyIds: ["rub"],
+      pricePreview: { kind: "from", amount: "123.45" },
+    },
+    {
+      offerId: "delivery-a",
+      productId: "delivery",
+      role: "delivery",
+      receiptMethod: "shipping",
+      title: "Доставка",
+      regionIds: ["Москва"],
+      currencyIds: ["rub"],
+      pricePreview: { kind: "fixed", amount: "1000" },
+    },
+  ];
+  const slot = jest.fn((_configuration: any) => (
+    <button type="button">Payment slot</button>
+  ));
+  render(<Component {...props} checkoutSlot={slot} />);
+  expect(
+    screen.getByRole("button", { name: "Payment slot" }).closest("form"),
+  ).toBeNull();
+  const groups = screen.getAllByRole("group");
+  expect(
+    groups.find((group) =>
+      group.getAttribute("aria-labelledby")?.endsWith("delivery-a-title"),
+    ),
+  ).toBeTruthy();
+  fireEvent.change(screen.getByLabelText("Количество"), {
+    target: { value: "2" },
+  });
+  fireEvent.click(screen.getByRole("checkbox", { name: "Доставка" }));
+  const delivery = within(screen.getByRole("group", { name: "Доставка" }));
+  expect(delivery.getByText("Зона доставки: Москва")).toBeTruthy();
+  expect(screen.queryByLabelText("Регион")).toBeNull();
+  fireEvent.change(delivery.getByLabelText("Адрес доставки"), {
+    target: { value: "Москва, Тверская 1" },
+  });
+  fireEvent.click(screen.getByRole("checkbox", { name: "Сборка" }));
+  fireEvent.change(screen.getByLabelText("Количество единиц услуги"), {
+    target: { value: "2" },
+  });
+  expect(
+    screen
+      .getByRole("button", { name: "Добавить в корзину" })
+      .hasAttribute("disabled"),
+  ).toBe(true);
+  await waitFor(() =>
+    expect(
+      screen
+        .getByRole("button", { name: "Добавить в корзину" })
+        .hasAttribute("disabled"),
+    ).toBe(false),
+  );
+  const configuration = slot.mock.calls.at(-1)![0];
+  expect(configuration.selection).toEqual({
+    offerId: "offer-a",
+    currencyId: "rub",
+    quantity: 2,
+    destination: { address: "Москва, Тверская 1" },
+    services: [
+      { offerId: "delivery-a", quantity: 1 },
+      { offerId: "assembly-a", quantity: 2 },
+    ],
+  });
+  expect(configuration.expectedQuoteVersion).toBe(configuration.quote.version);
+  fireEvent.click(screen.getByRole("button", { name: "Добавить в корзину" }));
+  await waitFor(() =>
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          destination: configuration.selection.destination,
+          services: configuration.selection.services,
+          expectedQuoteVersion: configuration.expectedQuoteVersion,
+        }),
+      }),
+    ),
+  );
+});
+
+it("puts pickup parameters inside their selected service and includes the real pickup identifier", async () => {
+  mockServices = [
+    {
+      offerId: "pickup-a",
+      productId: "pickup",
+      role: "delivery",
+      receiptMethod: "pickup",
+      title: "Самовывоз",
+      pickupPointIds: ["pickup-1"],
+      currencyIds: ["rub"],
+      pricePreview: { kind: "fixed", amount: "0" },
+    },
+  ];
+  render(<Component {...props} />);
+  fireEvent.click(screen.getByRole("checkbox", { name: "Самовывоз" }));
+  fireEvent.change(
+    within(screen.getByRole("group", { name: "Самовывоз" })).getByLabelText(
+      "Точка самовывоза",
+    ),
+    { target: { value: "pickup-1" } },
+  );
+  await waitFor(() =>
+    expect(
+      screen
+        .getByRole("button", { name: "Добавить в корзину" })
+        .hasAttribute("disabled"),
+    ).toBe(false),
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Добавить в корзину" }));
+  await waitFor(() =>
+    expect(mockCreate.mock.calls[0][0].data.destination).toEqual({
+      pickupPointId: "pickup-1",
+    }),
+  );
+});
+
+it("suppresses an empty excluded offer form and keeps only different fresh offers", async () => {
+  const view = render(<Component {...props} excludedOfferIds={["offer-a"]} />);
+  expect(
+    screen.queryByRole("button", { name: "Добавить в корзину" }),
+  ).toBeNull();
+  expect(screen.queryByText("Нет доступных предложений.")).toBeNull();
+  mockOffers = [
+    ...mockOffers,
+    { ...mockOffers[0], id: "offer-b", storeId: "store-b" },
+  ];
+  view.rerender(<Component {...props} excludedOfferIds={["offer-a"]} />);
+  expect(screen.getByText("Другое предложение")).toBeTruthy();
+  expect(screen.queryByRole("option", { name: "Магазин А" })).toBeNull();
+});
+
+it("keeps the selected address editor usable when the server filters delivery out for an unsupported destination", async () => {
+  const shipping = {
+    offerId: "delivery-a",
+    productId: "delivery",
+    role: "delivery",
+    receiptMethod: "shipping",
+    title: "Доставка",
+    currencyIds: ["rub"],
+  };
+  mockServices = [shipping];
+  const view = render(<Component {...props} />);
+  fireEvent.click(screen.getByRole("checkbox", { name: "Доставка" }));
+  mockServices = [];
+  mockIssues = [
+    {
+      offerId: "delivery-a",
+      code: "unavailable",
+      message: "Delivery is unavailable in this region",
+    },
+  ];
+  view.rerender(<Component {...props} />);
+  expect(screen.getByLabelText("Адрес доставки")).toBeTruthy();
+  expect(
+    screen
+      .getByRole("button", { name: "Добавить в корзину" })
+      .hasAttribute("disabled"),
+  ).toBe(true);
+  mockServices = [shipping];
+  mockIssues = [];
+  fireEvent.change(screen.getByLabelText("Адрес доставки"), {
+    target: { value: "Исправленный адрес" },
+  });
+  await waitFor(() =>
+    expect(
+      screen
+        .getByRole("button", { name: "Добавить в корзину" })
+        .hasAttribute("disabled"),
+    ).toBe(false),
+  );
+  expect(mockQuoteRead.mock.calls.at(-1)![0].destination).toEqual({
+    address: "Исправленный адрес",
+  });
+});
+
+it("does not mark a newly selected merchant added when an earlier merchant's request finishes", async () => {
+  mockOffers.push({ ...mockOffers[0], id: "offer-b", storeId: "store-b" });
+  let finish!: (value: object) => void;
+  mockCreate.mockReturnValue(
+    new Promise((resolve) => {
+      finish = resolve;
+    }),
+  );
+  render(<Component {...props} />);
+  fireEvent.change(screen.getByLabelText("Магазин"), {
+    target: { value: "offer-a" },
+  });
+  await waitFor(() =>
+    expect(
+      screen
+        .getByRole("button", { name: "Добавить в корзину" })
+        .hasAttribute("disabled"),
+    ).toBe(false),
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Добавить в корзину" }));
+  fireEvent.change(screen.getByLabelText("Магазин"), {
+    target: { value: "offer-b" },
+  });
+  await act(async () => {
+    finish({});
+  });
+  expect(screen.queryByText("Товар в корзине.")).toBeNull();
+  expect(mockCreate).toHaveBeenCalledTimes(1);
+  expect(mockCreate.mock.calls[0][0].data.offerId).toBe("offer-a");
+});
+
+it("keeps the payment slot mounted at the same tree position when cart refresh excludes every offer", async () => {
+  let mounts = 0;
+  function PaymentProbe({ hidden }: { hidden: boolean }) {
+    const [id] = useState(() => ++mounts);
+    const [outcome, setOutcome] = useState("");
+    return (
+      <div data-testid="payment-probe" data-mount={id} data-hidden={hidden}>
+        <button onClick={() => setOutcome("invoice-link")}>
+          Start payment
+        </button>
+        {outcome}
+      </div>
+    );
+  }
+  const slot = jest.fn((_configuration: any, actions: any) => (
+    <PaymentProbe hidden={actions.hideWhenIdle} />
+  ));
+  const view = render(<Component {...props} checkoutSlot={slot} />);
+  fireEvent.click(screen.getByRole("button", { name: "Start payment" }));
+  view.rerender(
+    <Component {...props} excludedOfferIds={["offer-a"]} checkoutSlot={slot} />,
+  );
+  expect(screen.getByTestId("payment-probe").getAttribute("data-mount")).toBe(
+    "1",
+  );
+  expect(screen.getByTestId("payment-probe").getAttribute("data-hidden")).toBe(
+    "true",
+  );
+  expect(screen.getByText("invoice-link")).toBeTruthy();
+  expect(
+    screen.queryByRole("button", { name: "Добавить в корзину" }),
+  ).toBeNull();
+  expect(slot.mock.calls.at(-1)![0]).toBeUndefined();
+});
+
+it("never adds an incomplete draft against a retained quote for a different currency", async () => {
+  mockQuotedCurrency = "usd";
+  mockIssues = [
+    {
+      code: "delivery_required",
+      offerId: "offer-a",
+      message: "Choose delivery",
+    },
+  ];
+  const slot = jest.fn((_configuration: any, _actions: any) => null);
+  render(<Component {...props} checkoutSlot={slot} />);
+  await waitFor(() =>
+    expect((screen.getByLabelText("Валюта") as HTMLSelectElement).value).toBe(
+      "rub",
+    ),
+  );
+  expect(
+    screen
+      .getByRole("button", { name: "Добавить в корзину" })
+      .hasAttribute("disabled"),
+  ).toBe(true);
+  expect(slot.mock.calls.at(-1)![0]).toBeUndefined();
+  expect(mockCreate).not.toHaveBeenCalled();
+});
+
+it("keeps a fresh secondary offer collapsed behind an accessible explicit action", async () => {
+  mockOffers.push({ ...mockOffers[0], id: "offer-b", storeId: "store-b" });
+  const slot = jest.fn((_configuration: any, _actions: any) => null);
+  render(
+    <Component {...props} excludedOfferIds={["offer-a"]} checkoutSlot={slot} />,
+  );
+  const action = screen.getByRole("button", { name: "Другое предложение" });
+  expect(action.getAttribute("aria-expanded")).toBe("false");
+  expect(
+    screen.queryByRole("button", { name: "Добавить в корзину" }),
+  ).toBeNull();
+  expect(slot.mock.calls.at(-1)![1].hideWhenIdle).toBe(true);
+  fireEvent.click(action);
+  expect(action.getAttribute("aria-expanded")).toBe("true");
+  expect(
+    screen.getByRole("button", { name: "Добавить в корзину" }),
+  ).toBeTruthy();
+  expect(slot.mock.calls.at(-1)![1].hideWhenIdle).toBe(false);
 });

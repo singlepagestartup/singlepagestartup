@@ -22,6 +22,9 @@ export default async function Server(props: IComponentProps) {
           skeleton={props.skeleton}
           ecommerceModuleProduct={props.ecommerceModuleProduct}
           ecommerceModuleStore={props.ecommerceModuleStore}
+          purchaseConfiguration={props.purchaseConfiguration}
+          hideWhenIdle={props.hideWhenIdle}
+          onQuoteStale={props.onQuoteStale}
         />
       }
     >

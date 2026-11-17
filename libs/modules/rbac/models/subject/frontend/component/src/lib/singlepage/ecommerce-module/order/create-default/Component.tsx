@@ -12,6 +12,8 @@ export function Component(props: IComponentPropsExtended) {
       className={props.className}
       ecommerceModuleProduct={props.ecommerceModuleProduct}
       ecommerceModuleStore={props.ecommerceModuleStore}
+      excludedOfferIds={props.excludedOfferIds}
+      checkoutSlot={props.checkoutSlot}
     />
   );
 }

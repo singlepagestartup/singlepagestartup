@@ -62,12 +62,7 @@ export function Component(props: IContentProps) {
                 <Subject
                   isServer={false}
                   variant="me-ecommerce-module-product-cart-default"
-                  ecommerceModuleProduct={product}
-                  language={props.language}
-                />
-                <Subject
-                  isServer={false}
-                  variant="me-ecommerce-module-product-checkout-default"
+                  withOneStepCheckout
                   ecommerceModuleProduct={product}
                   language={props.language}
                 />

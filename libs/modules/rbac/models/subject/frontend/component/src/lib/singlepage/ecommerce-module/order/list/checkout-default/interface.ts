@@ -1,6 +1,8 @@
 import type { IModel } from "@sps/rbac/models/subject/sdk/model";
 import type { IResult as ISubjectSdkResult } from "@sps/rbac/models/subject/sdk/server";
 import type { ICartDetails } from "@sps/ecommerce/models/order/sdk/model";
+import type { IOfferServiceOption } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
+import type { ReactNode } from "react";
 import type {
   IComponentProps as IParentComponentProps,
   IComponentPropsExtended as IParentComponentPropsExtended,
@@ -73,4 +75,19 @@ export interface IDeliveryAddressProps {
   value: string;
   className: string;
   onChange: (address: string, selected?: boolean) => void;
+}
+
+export interface IServiceCardProps {
+  id: string;
+  language: string;
+  option: IOfferServiceOption;
+  checked: boolean;
+  amount?: string;
+  from?: boolean;
+  currencySymbol: string;
+  pending: boolean;
+  tariff?: IOfferServiceOption["deliveryTariff"];
+  distanceKm?: string;
+  onCheckedChange: (offerId: string, checked: boolean) => void;
+  children?: ReactNode;
 }

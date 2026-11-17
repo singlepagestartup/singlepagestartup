@@ -39,16 +39,7 @@ export function Component(props: IComponentPropsExtended) {
           ecommerceModuleStore={props.ecommerceModuleStore}
           language={props.language}
           variant="me-ecommerce-module-product-cart-default"
-          dataSource="props"
-          data={props.data}
-          className="w-full"
-        />
-        <Subject
-          isServer={props.isServer}
-          ecommerceModuleProduct={props.ecommerceModuleProduct}
-          ecommerceModuleStore={props.ecommerceModuleStore}
-          language={props.language}
-          variant="me-ecommerce-module-product-checkout-default"
+          withOneStepCheckout
           dataSource="props"
           data={props.data}
           className="w-full"

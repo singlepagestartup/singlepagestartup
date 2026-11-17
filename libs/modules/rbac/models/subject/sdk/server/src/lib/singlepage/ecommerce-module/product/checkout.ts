@@ -1,4 +1,8 @@
-import { serverHost, route, IModel } from "@sps/rbac/models/subject/sdk/model";
+import {
+  serverHost,
+  route,
+  type IEcommerceProductCheckoutInput,
+} from "@sps/rbac/models/subject/sdk/model";
 import {
   NextRequestOptions,
   prepareFormDataToSend,
@@ -7,8 +11,6 @@ import {
 } from "@sps/shared-utils";
 import QueryString from "qs";
 import { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
-import { IModel as ICurrency } from "@sps/billing/models/currency/sdk/model";
-import type { IEcommerceCartSelection } from "@sps/rbac/models/subject/sdk/model";
 
 export interface IProps {
   id: string;
@@ -20,22 +22,7 @@ export interface IProps {
     [key: string]: any;
   };
   options?: Partial<NextRequestOptions>;
-  data: {
-    provider: string;
-    email?: string;
-    productId?: string;
-    offerId?: string;
-    storeId?: string;
-    quantity?: number;
-    destination?: IEcommerceCartSelection["destination"];
-    services?: IEcommerceCartSelection["services"];
-    billingModule?: {
-      currency: {
-        id?: ICurrency["id"];
-      };
-    };
-    account?: string | null;
-  };
+  data: IEcommerceProductCheckoutInput;
 }
 
 export type IResult = {

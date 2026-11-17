@@ -71,6 +71,7 @@ export function Component(props: IComponentPropsExtended) {
   });
 
   async function onSubmit({ comment, ...data }: z.infer<typeof formSchema>) {
+    if (props.disabled || ecommerceModuleOrderCheckout.isPending) return;
     setError("");
     try {
       const result = await ecommerceModuleOrderCheckout.mutateAsync({
@@ -109,7 +110,9 @@ export function Component(props: IComponentPropsExtended) {
         )}
       >
         <summary className="cursor-pointer px-4 py-3 text-sm font-semibold">
-          {props.language === "ru" ? "Оформить корзину" : "Checkout cart"}
+          {props.language === "ru"
+            ? "Оплатить этот заказ"
+            : "Pay for this order"}
         </summary>
         <CheckoutForm
           form={form}
@@ -121,13 +124,19 @@ export function Component(props: IComponentPropsExtended) {
             type="select"
             name="provider"
             form={form}
-            placeholder="Select provider"
+            label={props.language === "ru" ? "Способ оплаты" : "Payment method"}
+            placeholder={
+              props.language === "ru"
+                ? "Выберите способ оплаты"
+                : "Select a payment method"
+            }
             options={providers.map((provider) => [provider, provider])}
           />
           <ReceiptEmail
             subject={props.data}
             form={form}
-            placeholder="Email for invoice"
+            label={props.language === "ru" ? "Email для чека" : "Receipt email"}
+            placeholder="name@example.com"
           />
           <OrderComment form={form} language={props.language} />
           {error && (
@@ -139,7 +148,7 @@ export function Component(props: IComponentPropsExtended) {
             type="submit"
             variant="primary"
             className="min-h-11 w-full rounded-xl"
-            disabled={ecommerceModuleOrderCheckout.isPending}
+            disabled={props.disabled || ecommerceModuleOrderCheckout.isPending}
           >
             {props.language === "ru"
               ? "Перейти к оплате"

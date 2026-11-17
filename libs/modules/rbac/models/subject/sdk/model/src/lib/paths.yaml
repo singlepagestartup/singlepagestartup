@@ -897,7 +897,7 @@ paths:
       tags:
         - "rbac-subject"
       summary: Checkout product
-      description: Create checkout for a product
+      description: Re-quote one configured retail offer, create its order and check out only that order. Existing cart orders are not included. An offer already in the cart must be purchased through its saved order checkout.
       parameters:
         - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
         - name: productId
@@ -915,8 +915,16 @@ paths:
               properties:
                 data:
                   type: string
-                  description: JSON string
-                  example: '{"productId": "00000000-0000-0000-0000-000000000000"}'
+                  description: >-
+                    Serialized JSON with provider and optional email, account, offerId,
+                    storeId, quantity, expectedQuoteVersion, comment, destination and services.
+                    destination contains address, region, pickupPointId and optional coordinates
+                    {latitude, longitude}. services is an array of {offerId, quantity}.
+                    Currency is billingModule.currency.id; billingModuleCurrencyId is also accepted.
+                    Supply expectedQuoteVersion from the exact product-page quote to reject changed
+                    terms before writes. Legacy calls may omit the offer when only one is available
+                    and omit currency to use an available default.
+                  example: '{"provider":"stripe","email":"buyer@example.com","offerId":"00000000-0000-0000-0000-000000000001","quantity":2,"billingModule":{"currency":{"id":"00000000-0000-0000-0000-000000000002"}},"destination":{"address":"City Street 10"},"services":[{"offerId":"00000000-0000-0000-0000-000000000003","quantity":1}],"expectedQuoteVersion":"server-quote-version"}'
               required:
                 - data
       responses:
@@ -927,13 +935,20 @@ paths:
               schema:
                 type: object
                 properties:
-                  billingModule:
+                  data:
                     type: object
                     properties:
-                      invoices:
-                        type: array
-                        items:
-                          $ref: "../../../../../../../../../libs/modules/billing/models/invoice/sdk/model/src/lib/billing-invoice.yaml"
+                      billingModule:
+                        type: object
+                        properties:
+                          invoices:
+                            type: array
+                            items:
+                              $ref: "../../../../../../../../../libs/modules/billing/models/invoice/sdk/model/src/lib/billing-invoice.yaml"
+        "400":
+          description: Invalid or incomplete offer, quantity, currency, destination or service selection.
+        "409":
+          description: Quoted terms changed or this offer is already in the cart.
 
   /rbac/subjects/{id}/ecommerce-module/orders:
     get:
@@ -957,7 +972,7 @@ paths:
       tags:
         - "rbac-subject"
       summary: Create order
-      description: Create ecommerce order for a subject
+      description: Re-quote and atomically add one exact retail offer with its selected services to the subject's cart. Existing callers may omit the offer when only one is available. Duplicate copies of the same offer are refused.
       parameters:
         - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
       requestBody:
@@ -969,8 +984,17 @@ paths:
               properties:
                 data:
                   type: string
-                  description: JSON string
-                  example: '{"productId": "00000000-0000-0000-0000-000000000000", "storeId": "00000000-0000-0000-0000-000000000000", "quantity": 1, "billingModuleCurrencyId": "00000000-0000-0000-0000-000000000000"}'
+                  description: >-
+                    Serialized JSON with productId and optional offerId, storeId, quantity,
+                    billingModuleCurrencyId (or billingModule.currency.id), expectedQuoteVersion,
+                    destination, services and comment. destination contains address, region,
+                    pickupPointId and optional coordinates {latitude, longitude}.
+                    services is an array of {offerId, quantity}. A supplied expectedQuoteVersion
+                    must match the re-quoted selection before graph writes. The stored primary
+                    line preserves the exact offer, destination and quantity; selected services
+                    become child lines in the same order. Legacy incomplete delivery selections
+                    may remain editable cart drafts.
+                  example: '{"productId":"00000000-0000-0000-0000-000000000000","offerId":"00000000-0000-0000-0000-000000000001","quantity":2,"billingModuleCurrencyId":"00000000-0000-0000-0000-000000000002","destination":{"address":"City Street 10"},"services":[{"offerId":"00000000-0000-0000-0000-000000000003","quantity":1}],"expectedQuoteVersion":"server-quote-version"}'
               required:
                 - data
       responses:
@@ -1909,14 +1933,22 @@ paths:
                     properties:
                       quotes: &cartSelectionQuotes
                         type: array
-                        items: { $ref: "../../../../../../../../../libs/modules/ecommerce/relations/stores-to-products/sdk/model/src/lib/offer-quote.yaml" }
+                        items:
+                          {
+                            $ref: "../../../../../../../../../libs/modules/ecommerce/relations/stores-to-products/sdk/model/src/lib/offer-quote.yaml",
+                          }
                       comparisonQuotes: *cartSelectionQuotes
-                      orderIds: { type: array, items: { type: string, format: uuid } }
+                      orderIds:
+                        { type: array, items: { type: string, format: uuid } }
                       applied: { type: boolean }
                       selectionUpdatedAt: { type: string, format: date-time }
         "400": { description: Invalid cart selection }
         "403": { description: Cart access denied }
-        "409": { description: Cart revision, payment state or offer conditions changed }
+        "409":
+          {
+            description: Cart revision,
+            payment state or offer conditions changed,
+          }
   /rbac/subjects/{id}/ecommerce-module/offers:
     post:
       tags: [rbac-subject]
@@ -1954,7 +1986,8 @@ paths:
                       offer:
                         type: object
                         description: The stored Store–Product offer with its UUID and unique SKU.
-        "400": { description: Invalid product, prices, stock or store selection }
+        "400":
+          { description: Invalid product, prices, stock or store selection }
         "401": { description: A signed-in Subject is required }
         "403": { description: The Subject does not own the store }
   /rbac/subjects/{id}/ecommerce-module/catalogue-attributes:
@@ -1994,6 +2027,7 @@ paths:
           required: true
           schema: { type: string, format: uuid }
       responses:
-        "200": { description: Stores, products and currencies for the seller form }
+        "200":
+          { description: Stores, products and currencies for the seller form }
         "401": { description: A signed-in Subject is required }
         "403": { description: The requested Subject does not match the caller }

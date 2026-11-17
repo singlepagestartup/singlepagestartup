@@ -4,6 +4,7 @@ jest.mock("@sps/shared-utils", () => ({
   RBAC_SECRET_KEY: "test-secret",
 }));
 jest.mock("@sps/backend-utils", () => ({
+  ...jest.requireActual("@sps/backend-utils"),
   getHttpErrorType: (error: Error) => ({
     status: 400,
     message: error.message,
@@ -20,7 +21,13 @@ function fixture() {
       find: jest.fn().mockResolvedValue([{ identityId: "identity" }]),
     },
     billingModule: {
-      currency: { find: jest.fn().mockResolvedValue([{ id: "rub" }]) },
+      paymentIntent: { isProviderAllowed: jest.fn().mockReturnValue(true) },
+      currency: {
+        find: jest.fn().mockResolvedValue([{ id: "rub" }]),
+        findById: jest
+          .fn()
+          .mockResolvedValue({ id: "rub", slug: "rub", minorUnitDigits: 2 }),
+      },
     },
     ecommerceModule: {
       product: {
@@ -35,6 +42,7 @@ function fixture() {
           amount: "5000",
           currencyIds: ["rub"],
           issues: [],
+          version: "terms-1",
         })),
       },
     },
@@ -114,7 +122,7 @@ it("sends incomplete delivery selection to the cart without creating an unusable
   });
   await expect(
     new Handler(f.service).execute(f.context(), undefined),
-  ).rejects.toThrow("Complete the offer selection in the cart");
+  ).rejects.toThrow("Complete the offer selection");
   expect(f.service.ecommerceModuleOrderCreate).not.toHaveBeenCalled();
 });
 it("requires an anonymous receipt email before creating the Order", async () => {
@@ -146,4 +154,145 @@ it("permits Telegram Star checkout without a receipt Identity", async () => {
     undefined,
   );
   expect(f.service.ecommerceOrderCheckout).toHaveBeenCalledTimes(1);
+});
+
+it("re-quotes and creates exactly the configured item and services, then checks out only its new order", async () => {
+  const f = fixture();
+  const configured = {
+    offerId: "offer-a",
+    storeId: "store-a",
+    quantity: 2,
+    billingModule: { currency: { id: "rub" } },
+    destination: {
+      address: "City Street 10",
+      region: "Area",
+      coordinates: { latitude: 60, longitude: 30 },
+    },
+    services: [
+      { offerId: "7341680e-08e1-4984-bc97-c8072d3d968a", quantity: 1 },
+    ],
+    expectedQuoteVersion: "terms-1",
+    comment: "Call before delivery",
+    email: "buyer@example.test",
+  };
+  await new Handler(f.service).execute(f.context(configured), undefined);
+  expect(f.service.ecommerceModule.storesToProducts.quote).toHaveBeenCalledWith(
+    {
+      offerId: configured.offerId,
+      quantity: configured.quantity,
+      currencyId: "rub",
+      destination: configured.destination,
+      services: configured.services,
+    },
+  );
+  expect(f.service.ecommerceModuleOrderCreate).toHaveBeenCalledTimes(1);
+  expect(f.service.ecommerceModuleOrderCreate).toHaveBeenCalledWith({
+    subjectId: "subject",
+    productId: "product",
+    offerId: "offer-a",
+    storeId: "store-a",
+    quantity: 2,
+    billingModuleCurrencyId: "rub",
+    destination: configured.destination,
+    services: configured.services,
+    expectedQuoteVersion: "terms-1",
+    comment: configured.comment,
+  });
+  expect(f.service.ecommerceOrderCheckout).toHaveBeenCalledTimes(1);
+  expect(f.service.ecommerceOrderCheckout).toHaveBeenCalledWith(
+    expect.objectContaining({
+      ecommerceModule: { orders: [{ id: "created-order" }] },
+      comment: configured.comment,
+    }),
+  );
+});
+
+it("rejects a stale product-page quote before creating or checking out any order", async () => {
+  const f = fixture();
+  await expect(
+    new Handler(f.service).execute(
+      f.context({ expectedQuoteVersion: "old-terms" }),
+      undefined,
+    ),
+  ).rejects.toThrow("Offer terms changed");
+  expect(f.service.ecommerceModuleOrderCreate).not.toHaveBeenCalled();
+  expect(f.service.ecommerceOrderCheckout).not.toHaveBeenCalled();
+});
+
+it.each([
+  { expectedQuoteVersion: 17 },
+  {
+    services: [
+      { offerId: "7341680e-08e1-4984-bc97-c8072d3d968a", quantity: 0 },
+    ],
+  },
+  {
+    destination: {
+      address: "Street",
+      coordinates: { latitude: 200, longitude: 30 },
+    },
+  },
+])(
+  "rejects malformed configured purchases before quote or graph work",
+  async (data) => {
+    const f = fixture();
+    await expect(
+      new Handler(f.service).execute(f.context(data), undefined),
+    ).rejects.toThrow("Invalid product purchase selection");
+    expect(
+      f.service.ecommerceModule.storesToProducts.quote,
+    ).not.toHaveBeenCalled();
+    expect(f.service.ecommerceModuleOrderCreate).not.toHaveBeenCalled();
+  },
+);
+
+it("preserves the same-offer cart duplicate guard and never checks out the existing cart as a fallback", async () => {
+  const f = fixture();
+  f.service.ecommerceModuleOrderCreate.mockRejectedValue(
+    new Error("Conflict error. Product is already in the cart"),
+  );
+  await expect(
+    new Handler(f.service).execute(
+      f.context({ expectedQuoteVersion: "terms-1" }),
+      undefined,
+    ),
+  ).rejects.toThrow("Product is already in the cart");
+  expect(f.service.ecommerceModuleOrderCreate).toHaveBeenCalledTimes(1);
+  expect(f.service.ecommerceOrderCheckout).not.toHaveBeenCalled();
+});
+
+it("rejects a disabled provider before creating any cart graph and allows a corrected retry", async () => {
+  const f = fixture();
+  f.service.billingModule.paymentIntent.isProviderAllowed.mockReturnValueOnce(
+    false,
+  );
+  await expect(
+    new Handler(f.service).execute(
+      f.context({ provider: "disabled" }),
+      undefined,
+    ),
+  ).rejects.toThrow("payment provider is unavailable");
+  expect(f.service.ecommerceModuleOrderCreate).not.toHaveBeenCalled();
+  await new Handler(f.service).execute(
+    f.context({ provider: "stripe" }),
+    undefined,
+  );
+  expect(f.service.ecommerceModuleOrderCreate).toHaveBeenCalledTimes(1);
+});
+
+it("rejects incompatible provider/currency precision before creating any order", async () => {
+  const f = fixture();
+  f.service.billingModule.currency.findById.mockResolvedValue({
+    id: "rub",
+    slug: "custom",
+    minorUnitDigits: 8,
+  });
+  await expect(
+    new Handler(f.service).execute(
+      f.context({ provider: "stripe" }),
+      undefined,
+    ),
+  ).rejects.toThrow("two decimal places");
+  expect(f.service.ecommerceModuleOrderCreate).not.toHaveBeenCalled();
+  expect(f.service.ecommerceOrderCheckout).not.toHaveBeenCalled();
 });

@@ -55,13 +55,18 @@ it("renders product H1 while session-dependent actions are absent", () => {
     );
     expect(html).toContain(variant);
   }
-  for (const variant of [
-    "me-ecommerce-module-product-cart-default",
-    "me-ecommerce-module-product-checkout-default",
-  ])
-    expect(subjectReads).toHaveBeenCalledWith(
-      expect.objectContaining({ variant, isServer: false }),
-    );
+  expect(subjectReads).toHaveBeenCalledWith(
+    expect.objectContaining({
+      variant: "me-ecommerce-module-product-cart-default",
+      isServer: false,
+      withOneStepCheckout: true,
+    }),
+  );
+  expect(subjectReads).not.toHaveBeenCalledWith(
+    expect.objectContaining({
+      variant: "me-ecommerce-module-product-checkout-default",
+    }),
+  );
   expect(reads).toHaveBeenCalledWith({
     params: {
       filters: { and: [{ column: "slug", method: "eq", value: "one" }] },

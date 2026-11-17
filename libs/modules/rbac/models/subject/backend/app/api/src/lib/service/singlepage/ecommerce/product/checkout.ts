@@ -1,26 +1,17 @@
 import type { Service as SubjectService } from "../../index";
-import type { IEcommerceCartSelection } from "@sps/rbac/models/subject/sdk/model";
+import type { IEcommerceProductCheckoutInput } from "@sps/rbac/models/subject/sdk/model";
 import {
   ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds,
   INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
 } from "@sps/shared-utils";
 import { z } from "zod";
+import { providerMinorUnits } from "@sps/backend-utils";
+import { paymentProviderPrecision } from "@sps/billing/models/payment-intent/sdk/model";
 
 export interface IExecuteProps {
   id: string;
   productId: string;
-  data: {
-    provider: string;
-    email?: string;
-    account?: string | null;
-    quantity?: number;
-    comment?: string;
-    storeId?: string;
-    offerId?: string;
-    destination?: IEcommerceCartSelection["destination"];
-    services?: IEcommerceCartSelection["services"];
-    billingModule?: { currency?: { id?: string } };
-  };
+  data: IEcommerceProductCheckoutInput;
 }
 export type ICheckout = (props: IExecuteProps) => Promise<unknown>;
 export interface IConstructorProps {
@@ -53,6 +44,15 @@ export class Service {
         `Validation error. Quantity must be an integer between ${quantityBounds.min} and ${quantityBounds.max}`,
       );
     }
+    if (
+      !this.service.billingModule.paymentIntent.isProviderAllowed({
+        provider: data.provider,
+      })
+    ) {
+      throw new Error(
+        "Validation error. Selected payment provider is unavailable",
+      );
+    }
     const product = await this.service.ecommerceModule.product.findById({
       id: productId,
     });
@@ -80,7 +80,8 @@ export class Service {
         "Validation error. Choose one available store offer before checkout",
       );
     }
-    let currencyId = data.billingModule?.currency?.id ?? "";
+    let currencyId =
+      data.billingModule?.currency?.id ?? data.billingModuleCurrencyId ?? "";
     let quote = await this.service.ecommerceModule.storesToProducts.quote({
       offerId: offer.id,
       quantity,
@@ -113,15 +114,33 @@ export class Service {
       }
     }
     if (
+      data.expectedQuoteVersion &&
+      data.expectedQuoteVersion !== quote.version
+    ) {
+      throw new Error(
+        "Conflict error. Offer terms changed. Review the new price",
+      );
+    }
+    if (
       !currencyId ||
       quote.amount === null ||
       quote.issues.length ||
       !quote.currencyIds.includes(currencyId)
     ) {
       throw new Error(
-        `Validation error. Complete the offer selection in the cart before checkout. ${quote.issues.map((issue) => issue.message).join("; ")}`,
+        `Validation error. Complete the offer selection before checkout. ${quote.issues.map((issue) => issue.message).join("; ")}`,
       );
     }
+    const currency = await this.service.billingModule.currency.findById({
+      id: currencyId,
+    });
+    if (!currency) {
+      throw new Error("Validation error. Checkout currency is unavailable");
+    }
+    providerMinorUnits(
+      quote.amount,
+      paymentProviderPrecision(data.provider, currency),
+    );
     const entity = await this.service.findById({ id });
     if (!entity) {
       throw new Error("Not Found error. Subject not found");

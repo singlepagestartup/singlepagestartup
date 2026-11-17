@@ -131,6 +131,16 @@ it("reconciles both legacy clients after exact-offer Product checkout through th
     subjectsToIdentities: {
       find: jest.fn(async () => [{ identityId: "identity" }]),
     },
+    billingModule: {
+      paymentIntent: { isProviderAllowed: jest.fn(() => true) },
+      currency: {
+        findById: jest.fn(async () => ({
+          id: "currency",
+          slug: "usd",
+          minorUnitDigits: 2,
+        })),
+      },
+    },
     ecommerceModule: {
       product: {
         findById: jest.fn(async () => ({

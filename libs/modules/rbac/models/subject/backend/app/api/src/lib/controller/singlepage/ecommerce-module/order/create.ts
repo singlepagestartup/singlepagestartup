@@ -8,7 +8,7 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { authorization, getHttpErrorType, verifyJwt } from "@sps/backend-utils";
 import { Service } from "../../../../service";
-import { ecommerceCartSelectionSchema } from "@sps/rbac/models/subject/sdk/model";
+import { ecommerceOrderCreateSchema } from "@sps/rbac/models/subject/sdk/model";
 
 export class Handler {
   service: Service;
@@ -49,7 +49,22 @@ export class Handler {
         throw new Error("Validation error. Invalid body");
       }
 
-      const data = JSON.parse(body["data"]);
+      let parsedBody: unknown;
+      try {
+        parsedBody = JSON.parse(body["data"]);
+      } catch {
+        throw new Error("Validation error. Invalid order creation JSON");
+      }
+      const parsed = ecommerceOrderCreateSchema.safeParse(parsedBody);
+      if (!parsed.success) {
+        if (parsed.error.issues.some((issue) => issue.path[0] === "quantity")) {
+          throw new Error(
+            `Validation error. Quantity must be an integer between ${quantityBounds.min} and ${quantityBounds.max}`,
+          );
+        }
+        throw new Error("Validation error. Invalid order purchase selection");
+      }
+      const data = parsed.data;
 
       if (decoded?.["subject"]?.["id"] !== id) {
         throw new Error("Validation error. Only order owner can update order");
@@ -63,34 +78,18 @@ export class Handler {
       const product = await this.service.ecommerceModule.product.findById({
         id: productId,
       });
-      if (!product) throw new Error("Not Found error. Product not found");
-      if (product.slug === INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG)
+      if (!product) {
+        throw new Error("Not Found error. Product not found");
+      }
+      if (product.slug === INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG) {
         throw new Error(
           "Permission error. Initial Free is available only through authentication bootstrap",
         );
-      const quantity = data.quantity ?? 1;
-      if (
-        !Number.isInteger(quantity) ||
-        quantity < quantityBounds.min ||
-        quantity > quantityBounds.max
-      ) {
-        throw new Error(
-          `Validation error. Quantity must be an integer between ${quantityBounds.min} and ${quantityBounds.max}`,
-        );
       }
+      const quantity = data.quantity ?? 1;
 
       const requestedCurrencyId =
         data["billingModule"]?.currency?.id ?? data.billingModuleCurrencyId;
-      const selectionFields =
-        ecommerceCartSelectionSchema.shape.selections.element.shape;
-      const destination = selectionFields.destination.safeParse(
-        data.destination,
-      );
-      const services = selectionFields.services.safeParse(data.services);
-      if (!destination.success || !services.success) {
-        throw new Error("Validation error. Invalid destination or services");
-      }
-
       const entity = await this.service.findById({
         id,
       });
@@ -104,14 +103,12 @@ export class Handler {
         productId,
         storeId: data.storeId,
         offerId: data.offerId,
-        expectedQuoteVersion:
-          typeof data.expectedQuoteVersion === "string"
-            ? data.expectedQuoteVersion
-            : undefined,
+        expectedQuoteVersion: data.expectedQuoteVersion,
         quantity,
         billingModuleCurrencyId: requestedCurrencyId,
-        destination: destination.data,
-        services: services.data,
+        destination: data.destination,
+        services: data.services,
+        comment: data.comment,
       });
 
       return c.json({

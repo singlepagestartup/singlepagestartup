@@ -11,6 +11,7 @@ export function Component(props: IComponentPropsExtended) {
       className={props.className}
       ecommerceModuleStore={props.ecommerceModuleStore}
       language={props.language}
+      withOneStepCheckout={props.withOneStepCheckout}
     />
   );
 }

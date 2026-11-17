@@ -63,10 +63,10 @@ describe("Given: RBAC ecommerce product default component", () => {
     const delegatedVariants = rbacSpy.mock.calls.map((call) => call[0].variant);
 
     expect(delegatedVariants).toEqual(
-      expect.arrayContaining([
-        "me-ecommerce-module-product-cart-default",
-        "me-ecommerce-module-product-checkout-default",
-      ]),
+      expect.arrayContaining(["me-ecommerce-module-product-cart-default"]),
+    );
+    expect(delegatedVariants).not.toContain(
+      "me-ecommerce-module-product-checkout-default",
     );
 
     expect(rbacSpy).toHaveBeenCalledWith(
@@ -75,6 +75,7 @@ describe("Given: RBAC ecommerce product default component", () => {
         dataSource: "props",
         ecommerceModuleProduct: expect.objectContaining({ id: "product-1" }),
         ecommerceModuleStore: expect.objectContaining({ id: "store-1" }),
+        withOneStepCheckout: true,
       }),
     );
 
