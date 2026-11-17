@@ -71,6 +71,7 @@ export * from "./file-preview";
 export * from "./ai-context";
 
 export {
+  INITIAL_FREE_SEEDED_STORE_ID,
   INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
   PRODUCT_TECHNICAL_ATTRIBUTE_SLUGS,
 } from "./ecommerce";

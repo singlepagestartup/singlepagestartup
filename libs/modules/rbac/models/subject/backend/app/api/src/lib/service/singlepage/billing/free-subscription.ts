@@ -1,4 +1,6 @@
 import {
+  ECOMMERCE_INITIAL_FREE_STORE_ID,
+  INITIAL_FREE_SEEDED_STORE_ID,
   INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
@@ -258,16 +260,35 @@ export class Service {
       throw new Error(
         "Configuration error. Initial Free requires exactly 3000 Token credits",
       );
-    const stores = await ecommerceModule.store.find();
-    if (stores.length !== 1)
-      throw new Error(
-        "Configuration error. Initial Free requires exactly one Store",
-      );
+    const storeId = await this.initialFreeStoreId();
     return {
       productId: product.id,
       currencyId: currency.id,
-      storeId: stores[0].id,
+      storeId,
     };
+  }
+
+  private async initialFreeStoreId(): Promise<string> {
+    const { store } = this.dependencies.ecommerceModule;
+    const storeId =
+      ECOMMERCE_INITIAL_FREE_STORE_ID || INITIAL_FREE_SEEDED_STORE_ID;
+    const matching = await store.find({
+      params: {
+        filters: { and: [{ column: "id", method: "eq", value: storeId }] },
+      },
+    });
+    if (matching.length === 1) {
+      return matching[0].id;
+    }
+    if (!ECOMMERCE_INITIAL_FREE_STORE_ID) {
+      const stores = await store.find({ params: { limit: 2 } });
+      if (stores.length === 1) {
+        return stores[0].id;
+      }
+    }
+    throw new Error(
+      "Configuration error. Set ECOMMERCE_INITIAL_FREE_STORE_ID to the Store that issues the initial Free subscription",
+    );
   }
 
   private async ensureOrderGraph(

@@ -981,6 +981,12 @@ or renew the Free allowance. The public HTTP checkout retains its Subject JWT ow
 check. Proceed receives a deferred DI callback so resolving Subject and Proceed
 does not form a constructor cycle, and startup Subject methods remain effective.
 
+The initial Free order belongs to the seeded Single Page Shop. A deployment
+with a different issuing Store can set `ECOMMERCE_INITIAL_FREE_STORE_ID` in
+the API environment. A single custom Store remains the default until a second
+Store is added. Set the variable to the original Store ID before adding another
+seller in that deployment.
+
 The extracted Product service retains model and relation SDK mutations. Their
 API middleware bumps HTTP-cache generations before publishing WebSocket events,
 including when renewal starts from a global/scoped check or another service.

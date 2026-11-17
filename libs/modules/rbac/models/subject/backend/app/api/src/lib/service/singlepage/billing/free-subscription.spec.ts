@@ -1,8 +1,10 @@
 jest.mock("@sps/shared-utils", () => ({
   ...jest.requireActual("@sps/shared-utils"),
+  ECOMMERCE_INITIAL_FREE_STORE_ID: undefined,
   RBAC_SECRET_KEY: "secret",
 }));
 import { withConsistencyDatabase } from "@sps/shared-backend-api";
+import { INITIAL_FREE_SEEDED_STORE_ID } from "@sps/shared-utils";
 import { Service } from "./free-subscription";
 
 function fixture() {
@@ -23,6 +25,7 @@ function fixture() {
   let inTransaction = false;
   let tail = Promise.resolve();
   let failFulfillment: "settlement" | "balance" | undefined;
+  const catalogStores = [{ id: "store" }];
   const crud = (table: string) => ({
     find: jest.fn(async (props?: any) =>
       tables[table].filter((row) =>
@@ -107,7 +110,15 @@ function fixture() {
         find: jest.fn(async () => [product]),
         findByIdExtended: jest.fn(async () => product),
       },
-      store: { find: jest.fn(async () => [{ id: "store" }]) },
+      store: {
+        find: jest.fn(async (props: any) => {
+          const filter = props.params.filters?.and[0];
+          if (filter) {
+            return catalogStores.filter((store) => store.id === filter.value);
+          }
+          return catalogStores.slice(0, props.params.limit);
+        }),
+      },
       ordersToProducts: crud("lines"),
       storesToOrders: crud("stores"),
       ordersToBillingModuleCurrencies: crud("currencies"),
@@ -140,6 +151,7 @@ function fixture() {
   };
   return {
     tables,
+    catalogStores,
     product,
     dependencies,
     service: new Service(dependencies),
@@ -172,6 +184,47 @@ it("uses only direct Services and dispatches effects after its own transaction",
     expect(transport).not.toHaveBeenCalled();
   } finally {
     transport.mockRestore();
+  }
+});
+
+it("keeps the initial Free order at the seeded Store when another seller opens a Store", async () => {
+  const { service, tables, catalogStores } = fixture();
+  catalogStores[0].id = INITIAL_FREE_SEEDED_STORE_ID;
+  await service.execute({ id: "owner" });
+  catalogStores.unshift({ id: "retail-store" });
+  expect(await service.execute({ id: "owner" })).toBeNull();
+  expect(tables.stores.map((link) => link.storeId)).toEqual([
+    INITIAL_FREE_SEEDED_STORE_ID,
+  ]);
+  expect(tables.balances).toHaveLength(1);
+});
+
+it("requires an explicit issuing Store when several custom Stores exist", async () => {
+  const { service, tables, catalogStores } = fixture();
+  catalogStores.push({ id: "retail-store" });
+  await expect(service.execute({ id: "owner" })).rejects.toThrow(
+    "ECOMMERCE_INITIAL_FREE_STORE_ID",
+  );
+  expect(tables.order).toHaveLength(0);
+});
+
+it("requires the configured issuing Store even when another Store is available", async () => {
+  const shared = jest.requireMock("@sps/shared-utils");
+  const configured = jest.replaceProperty(
+    shared,
+    "ECOMMERCE_INITIAL_FREE_STORE_ID",
+    "issuer",
+  );
+  try {
+    const { service, tables, catalogStores } = fixture();
+    await expect(service.execute({ id: "owner" })).rejects.toThrow(
+      "ECOMMERCE_INITIAL_FREE_STORE_ID",
+    );
+    catalogStores.push({ id: "issuer" });
+    await service.execute({ id: "owner" });
+    expect(tables.stores.map((link) => link.storeId)).toEqual(["issuer"]);
+  } finally {
+    configured.restore();
   }
 });
 
