@@ -29,6 +29,20 @@ describe("is-authorized allowed routes", () => {
     ).toBe(false);
   });
 
+  it("allows only POST address suggestions for an exact offer UUID", () => {
+    const path = `/api/ecommerce/stores-to-products/${uuid}/address-suggestions`;
+    expect(matcher.matches(path, "POST")).toBe(true);
+    expect(matcher.matches(path, "GET")).toBe(false);
+    expect(matcher.matches(`${path}/other`, "POST")).toBe(false);
+    expect(matcher.matches(`/prefix${path}`, "POST")).toBe(false);
+    expect(
+      matcher.matches(
+        "/api/ecommerce/stores-to-products/not-an-id/address-suggestions",
+        "POST",
+      ),
+    ).toBe(false);
+  });
+
   /**
    * BDD Scenario: Public framework endpoints are allowed for their methods.
    */

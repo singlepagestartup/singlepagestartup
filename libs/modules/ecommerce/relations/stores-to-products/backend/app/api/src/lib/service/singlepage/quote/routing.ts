@@ -1,5 +1,8 @@
 import { createHash } from "node:crypto";
-import type { IOfferDestination } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
+import type {
+  IOfferDestination,
+  IAddressSuggestionsResult,
+} from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 
 type Point = NonNullable<IOfferDestination["coordinates"]>;
 export interface IGeocodedAddress extends Point {
@@ -8,6 +11,12 @@ export interface IGeocodedAddress extends Point {
 export interface IDeliveryRouting {
   geocode(address: string): Promise<IGeocodedAddress>;
   distance(origin: Point, destination: Point, profile: string): Promise<number>;
+  suggestAddresses?(
+    query: string,
+    language: string,
+    regionIds?: string[],
+    signal?: AbortSignal,
+  ): Promise<IAddressSuggestionsResult>;
 }
 
 function validPoint(point: Point) {
@@ -28,6 +37,117 @@ export class GeoapifyRouting implements IDeliveryRouting {
     private readonly apiKey: () => string | undefined = () =>
       process.env.GEOAPIFY_API_KEY,
   ) {}
+
+  async suggestAddresses(
+    query: string,
+    language: string,
+    regionIds: string[] = [],
+    signal?: AbortSignal,
+  ): Promise<IAddressSuggestionsResult> {
+    const text = query.trim();
+    if (text.length < 3 || text.length > 500 || !/^[a-z]{2}$/i.test(language)) {
+      throw new Error("Invalid address suggestions request");
+    }
+    const apiKey = this.apiKey();
+    if (!apiKey) {
+      throw new Error("Delivery routing provider is unavailable");
+    }
+    const url = new URL("/v1/geocode/autocomplete", "https://api.geoapify.com");
+    url.search = new URLSearchParams({
+      text,
+      lang: language.toLowerCase(),
+      format: "json",
+      limit: "5",
+      apiKey,
+    }).toString();
+    try {
+      const timeout = AbortSignal.timeout(6000);
+      const requestSignal = signal
+        ? AbortSignal.any([signal, timeout])
+        : timeout;
+      const response = await fetch(url, {
+        signal: requestSignal,
+        redirect: "error",
+        cache: "no-store",
+      });
+      if (!response.ok) {
+        throw new Error("Suggestions unavailable");
+      }
+      const value: unknown = await response.json();
+      const results = (value as { results?: unknown[] } | null)?.results;
+      if (!Array.isArray(results)) {
+        throw new Error("Invalid suggestions response");
+      }
+      const addresses: string[] = [];
+      const seen = new Set<string>();
+      const sources = new Set<string>();
+      const allowed = new Set(regionIds);
+      for (const entry of results) {
+        if (!entry || typeof entry !== "object") {
+          continue;
+        }
+        const row = entry as Record<string, unknown>;
+        if (typeof row.formatted !== "string") {
+          continue;
+        }
+        const address = row.formatted.trim();
+        const key = address.toLocaleLowerCase();
+        if (
+          address.length < 3 ||
+          address.length > 500 ||
+          /[\u0000-\u001f\u007f]/.test(address) ||
+          seen.has(key)
+        ) {
+          continue;
+        }
+        const regions = [
+          row.state_code,
+          row.state,
+          row.city,
+          row.country_code,
+        ].filter((region): region is string => typeof region === "string");
+        if (allowed.size && !regions.some((region) => allowed.has(region))) {
+          continue;
+        }
+        seen.add(key);
+        addresses.push(address);
+        if (row.datasource && typeof row.datasource === "object") {
+          const source = (row.datasource as { sourcename?: unknown })
+            .sourcename;
+          if (typeof source === "string") {
+            sources.add(source.toLowerCase());
+          }
+        }
+        if (addresses.length === 5) {
+          break;
+        }
+      }
+      return {
+        suggestions: addresses,
+        attribution: [
+          { label: "Powered by Geoapify", url: "https://www.geoapify.com/" },
+          {
+            label: "© OpenStreetMap contributors",
+            url: "https://www.openstreetmap.org/copyright",
+          },
+          ...([...sources].some((source) => source.includes("openaddresses"))
+            ? [
+                {
+                  label: "© OpenAddresses contributors",
+                  url: "https://openaddresses.io/",
+                },
+              ]
+            : []),
+          ...([...sources].some((source) => source.includes("geonames"))
+            ? [{ label: "GeoNames", url: "https://www.geonames.org/" }]
+            : []),
+        ],
+      };
+    } catch {
+      // Provider errors can contain its credential and the submitted address URL.
+      throw new Error("Delivery address suggestions are unavailable");
+    }
+  }
 
   private async request<T>(
     path: string,

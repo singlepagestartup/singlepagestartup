@@ -218,6 +218,7 @@ export class Service {
           (link.variant === "delivery" || link.variant === "add-on"),
       );
     const currenciesByOffer = new Map<string, string[]>();
+    const formulas = new Map<string, ReturnType<typeof compileTariffFormula>>();
     const supportedCurrencies = (offer: IModel) => {
       const cached = currenciesByOffer.get(offer.id);
       if (cached) {
@@ -230,6 +231,7 @@ export class Service {
           textSetting(productAttrs, "price_formula"),
         );
         textSetting(productAttrs, "formula_version");
+        formulas.set(offer.id, formula);
         const supported = catalog.currencies
           .filter((entry) => {
             try {
@@ -305,15 +307,28 @@ export class Service {
       } catch {
         continue;
       }
+      const receiptMethod =
+        offer.settings.receiptMethod ??
+        (link.variant === "delivery" ? "shipping" : undefined);
+      const formula = formulas.get(offer.id);
+      let deliveryTariff: IOfferServiceOption["deliveryTariff"];
+      if (
+        link.variant === "delivery" &&
+        receiptMethod === "shipping" &&
+        formula &&
+        currency &&
+        currencyIds.includes(currency.id)
+      ) {
+        deliveryTariff = this.deliveryTariff(offer, formula, currency);
+      }
       options.push({
         offerId: offer.id,
         productId: product.id,
         title: product.title?.en || product.adminTitle,
         titles: product.title ?? undefined,
         role: link.variant,
-        receiptMethod:
-          offer.settings.receiptMethod ??
-          (link.variant === "delivery" ? "shipping" : undefined),
+        receiptMethod,
+        deliveryTariff,
         pickupPointIds: offer.settings.pickupPointIds,
         regionIds: offer.settings.regionIds,
         currencyIds,
@@ -555,6 +570,46 @@ export class Service {
       now.getTime() + Math.min(1440, Math.max(1, expiryMinutes)) * 60000,
     ).toISOString();
     return result;
+  }
+
+  private deliveryTariff(
+    offer: IModel,
+    formula: ReturnType<typeof compileTariffFormula>,
+    currency: IOfferCatalog["currencies"][number],
+  ): IOfferServiceOption["deliveryTariff"] {
+    if (formula.variables.includes("distance_km")) {
+      return { basis: "distance" };
+    }
+    const inputs: Record<string, string> = {};
+    const { catalog, precision } = this.deps;
+    for (const name of formula.variables) {
+      if (name === "serviced_qty") {
+        // A delivery selection always contributes one service unit.
+        inputs[name] = "1";
+      } else if (name === "unit_price") {
+        inputs[name] = priceFor(
+          catalog.offerAttributes.get(offer.id) ?? [],
+          currency.id,
+        );
+      } else if (isRuntimeInput(name)) {
+        return { basis: "calculated" };
+      } else {
+        inputs[name] = coefficient(
+          catalog.storeAttributes.get(offer.storeId) ?? [],
+          name,
+          currency.id,
+        );
+      }
+    }
+    try {
+      const fixedAmount = formula
+        .evaluate(inputs)
+        .toFixed(precision(currency), Decimal.ROUND_HALF_UP);
+      return { basis: "fixed", fixedAmount };
+    } catch {
+      // A malformed optional tariff must not prevent purchase of the main item.
+      return undefined;
+    }
   }
 
   private retail(offer: IModel) {

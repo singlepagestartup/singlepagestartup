@@ -233,7 +233,7 @@ export const Component = memo(function Row(props: IRowProps) {
       data={props.subject}
       ecommerceModuleOrder={props.ecommerceModuleOrder}
       language={props.language}
-      iconOnly={!!onlyProduct}
+      iconOnly
       label={removeLabel}
     />
   );

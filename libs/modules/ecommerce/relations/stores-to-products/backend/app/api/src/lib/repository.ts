@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { injectFromBase, injectable } from "inversify";
-import { inArray, type InferSelectModel } from "drizzle-orm";
+import { and, eq, inArray, type InferSelectModel } from "drizzle-orm";
 import { type PgTable, type PgColumn } from "drizzle-orm/pg-core";
 import {
   DatabaseRepository,
@@ -165,6 +165,53 @@ export class Repository extends DatabaseRepository<typeof Table> {
       productAttributes: group(byProduct, (row) => row.productId),
       storeAttributes: group(byStore, (row) => row.storeId),
     };
+  }
+
+  async addressSuggestionsOffer(offerId: string) {
+    await trackRepositoryRead(Table, this.db, {
+      and: [{ column: "id", method: "eq", value: offerId }],
+    });
+    const [offer] = await this.db
+      .select({
+        id: Table.id,
+        productId: Table.productId,
+        variant: Table.variant,
+        settings: Table.settings,
+      })
+      .from(Table)
+      .where(eq(Table.id, offerId));
+    if (!offer) {
+      return undefined;
+    }
+    await trackRepositoryRead(Product, this.db, {
+      and: [{ column: "id", method: "eq", value: offer.productId }],
+    });
+    const [product] = await this.db
+      .select({
+        id: Product.id,
+        kind: Product.kind,
+        variant: Product.variant,
+      })
+      .from(Product)
+      .where(eq(Product.id, offer.productId));
+    let hasDeliveryLink = false;
+    if (!offer.settings.receiptMethod) {
+      await trackRepositoryRead(Link, this.db, {
+        and: [
+          { column: "targetOfferId", method: "eq", value: offerId },
+          { column: "variant", method: "eq", value: "delivery" },
+        ],
+      });
+      const links = await this.db
+        .select({ id: Link.id })
+        .from(Link)
+        .where(
+          and(eq(Link.targetOfferId, offerId), eq(Link.variant, "delivery")),
+        )
+        .limit(1);
+      hasDeliveryLink = links.length > 0;
+    }
+    return { offer, product, hasDeliveryLink };
   }
 }
 export type IOfferCatalog = Awaited<ReturnType<Repository["catalog"]>>;

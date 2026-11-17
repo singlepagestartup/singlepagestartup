@@ -64,3 +64,13 @@ export interface ISelectionProps extends IRowProps {
   onSelectionStateChange?: (lineId: string, blocked: boolean) => void;
   onSelectionPendingChange?: (lineId: string, pending: boolean) => void;
 }
+
+export interface IDeliveryAddressProps {
+  id: string;
+  label: string;
+  offerId: string;
+  language: string;
+  value: string;
+  className: string;
+  onChange: (address: string, selected?: boolean) => void;
+}

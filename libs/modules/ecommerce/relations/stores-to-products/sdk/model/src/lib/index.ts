@@ -1,4 +1,5 @@
 export type * from "./quote";
+export type * from "./address-suggestions";
 export {
   type ISelectSchema as IModel,
   type IInsertSchema,

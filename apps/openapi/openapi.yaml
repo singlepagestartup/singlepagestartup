@@ -844,6 +844,8 @@ paths:
     $ref: "../../libs/modules/ecommerce/relations/stores-to-products/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1stores-to-products"
   /ecommerce/stores-to-products/{id}/quote:
     $ref: "../../libs/modules/ecommerce/relations/stores-to-products/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1stores-to-products~1{id}~1quote"
+  /ecommerce/stores-to-products/{id}/address-suggestions:
+    $ref: "../../libs/modules/ecommerce/relations/stores-to-products/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1stores-to-products~1{id}~1address-suggestions"
   /ecommerce/stores-to-products/count:
     $ref: "../../libs/modules/ecommerce/relations/stores-to-products/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1stores-to-products~1count"
   /ecommerce/stores-to-products/{id}:

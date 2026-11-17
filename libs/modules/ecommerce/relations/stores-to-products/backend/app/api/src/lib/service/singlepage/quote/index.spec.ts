@@ -177,10 +177,26 @@ describe("per-offer quote", () => {
     expect(quote.amount).toBe("6500.00");
     expect(routing.distance).toHaveBeenCalledTimes(1);
     expect(quote.charges[1].inputs.distance_km).toBe("24");
+    expect(
+      quote.serviceOptions.find((option) => option.offerId === "courier")
+        ?.deliveryTariff,
+    ).toEqual({ basis: "distance" });
   });
   it("distinguishes free, unpriced, and a missing required package measurement", async () => {
     const { service, catalog, attr, formula } = fixture();
+    const discover = () =>
+      service.execute({ ...input, services: [], destination: undefined });
+    expect(
+      (await discover()).serviceOptions.find(
+        (option) => option.offerId === "courier",
+      )?.deliveryTariff,
+    ).toEqual({ basis: "fixed", fixedAmount: "1000.00" });
     catalog.offerAttributes.set("courier", [attr("price", "0", "rub")]);
+    expect(
+      (await discover()).serviceOptions.find(
+        (option) => option.offerId === "courier",
+      )?.deliveryTariff,
+    ).toEqual({ basis: "fixed", fixedAmount: "0.00" });
     expect((await service.execute(input)).amount).toBe("7000.00");
     catalog.offerAttributes.set("courier", [attr("price", null, "rub")]);
     expect((await service.execute(input)).amount).toBeNull();
@@ -189,6 +205,11 @@ describe("per-offer quote", () => {
       formula("rate_per_kg * total_weight_kg"),
     );
     catalog.storeAttributes.set("seller", [attr("rate_per_kg", "2.5", "rub")]);
+    expect(
+      (await discover()).serviceOptions.find(
+        (option) => option.offerId === "courier",
+      )?.deliveryTariff,
+    ).toEqual({ basis: "calculated" });
     expect((await service.execute(input)).issues[0]?.message).toContain(
       "package",
     );

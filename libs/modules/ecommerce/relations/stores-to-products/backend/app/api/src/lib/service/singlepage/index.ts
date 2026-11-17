@@ -5,11 +5,13 @@ import { currencyPrecision } from "@sps/billing/models/currency/sdk/model";
 import { Table } from "@sps/ecommerce/relations/stores-to-products/backend/repository/database";
 import { reservedOfferQuantities } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api/src/lib/repository";
 import type {
+  IAddressSuggestionsInput,
   IOfferQuoteInput,
   IOfferQuote,
 } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 import { Repository } from "../../repository";
 import { Service as Quote } from "./quote";
+import { Service as AddressSuggestions } from "./address-suggestions";
 import {
   deliveryRouting,
   QuoteRoutes,
@@ -26,6 +28,16 @@ export class Service extends CRUDService<typeof Table.$inferSelect> {
 
   protected resolveDeliveryRouting(): IDeliveryRouting {
     return deliveryRouting();
+  }
+
+  async addressSuggestions(
+    input: IAddressSuggestionsInput,
+    signal?: AbortSignal,
+  ) {
+    return new AddressSuggestions({
+      repository: this.repository,
+      routing: () => this.resolveDeliveryRouting(),
+    }).execute(input, signal);
   }
 
   async quote(input: IOfferQuoteInput) {

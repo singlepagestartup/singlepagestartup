@@ -30,6 +30,12 @@ properties:
         titles: { type: object, additionalProperties: { type: string } }
         role: { type: string, enum: [delivery, add-on] }
         receiptMethod: { type: string, enum: [shipping, pickup, electronic] }
+        deliveryTariff:
+          type: object
+          required: [basis]
+          properties:
+            basis: { type: string, enum: [fixed, distance, calculated] }
+            fixedAmount: { type: string, description: Fixed delivery charge in the requested currency. }
         pickupPointIds: { type: array, items: { type: string } }
         regionIds: { type: array, items: { type: string } }
         currencyIds: { type: array, items: { type: string, format: uuid } }

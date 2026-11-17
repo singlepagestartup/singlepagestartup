@@ -139,34 +139,83 @@ paths:
               type: object
               required: [currencyId, quantity]
               properties:
-                currencyId: {type: string}
-                quantity: {type: integer, minimum: 1}
+                currencyId: { type: string }
+                quantity: { type: integer, minimum: 1 }
                 destination:
                   type: object
                   properties:
-                    address: {type: string}
-                    pickupPointId: {type: string}
-                    region: {type: string}
+                    address: { type: string }
+                    pickupPointId: { type: string }
+                    region: { type: string }
                 services:
                   type: array
                   items:
                     type: object
                     required: [offerId, quantity]
                     properties:
-                      offerId: {type: string, format: uuid}
-                      quantity: {type: integer, minimum: 1}
+                      offerId: { type: string, format: uuid }
+                      quantity: { type: integer, minimum: 1 }
       responses:
         "200":
           description: Versioned charges, supported currencies, service options, available quantity and validation issues.
           headers:
             Cache-Control:
-              schema: { type: string, example: 'private, no-store' }
+              schema: { type: string, example: "private, no-store" }
           content:
             application/json:
               schema:
                 type: object
                 required: [data]
                 properties:
-                  data: { $ref: 'offer-quote.yaml' }
-        '400': { description: Invalid selection or malformed destination. }
-        '404': { description: Retail offer unavailable. }
+                  data: { $ref: "offer-quote.yaml" }
+        "400": { description: Invalid selection or malformed destination. }
+        "404": { description: Retail offer unavailable. }
+
+  /ecommerce/stores-to-products/{id}/address-suggestions:
+    post:
+      summary: Suggest delivery addresses for a public shipping service offer
+      tags: [ecommerce-stores-to-products]
+      security: []
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [query, language]
+              properties:
+                query: { type: string, minLength: 3, maxLength: 500 }
+                language: { type: string, pattern: "^[a-zA-Z]{2}$" }
+      responses:
+        "200":
+          description: Up to five formatted addresses and provider attribution. No cart changes are made.
+          headers:
+            Cache-Control:
+              schema: { type: string, example: "private, no-store" }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+                    required: [suggestions]
+                    properties:
+                      suggestions:
+                        type: array
+                        maxItems: 5
+                        items: { type: string, maxLength: 500 }
+                      attribution:
+                        type: array
+                        items:
+                          type: object
+                          required: [label, url]
+                          properties:
+                            label: { type: string }
+                            url: { type: string, format: uri }
+        "400": { description: Invalid search text or language. }
+        "404": { description: Public shipping service offer unavailable. }
