@@ -246,7 +246,10 @@ export class Service {
                     new Date(a.createdAt).getTime(),
                 );
               const invoice = payable[0] ?? paid[0];
-              if (payable.length > 1 || (invoice && !invoice.paymentUrl)) {
+              if (
+                payable.length > 1 ||
+                (payable[0] && !payable[0].paymentUrl)
+              ) {
                 throw new Error(
                   "Conflict error. Cart has an unresolved payment attempt",
                 );

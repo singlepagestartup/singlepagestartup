@@ -131,8 +131,8 @@ export class Handler {
           });
           const invoice = invoices.find(
             (entry) =>
-              ["open", "draft", "paid"].includes(entry.status) &&
-              entry.paymentUrl,
+              entry.status === "paid" ||
+              (["open", "draft"].includes(entry.status) && entry.paymentUrl),
           );
           if (invoice) {
             return c.json({ data: invoice }, 201);

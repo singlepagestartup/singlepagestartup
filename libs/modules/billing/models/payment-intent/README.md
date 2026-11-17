@@ -162,6 +162,8 @@ provider fixture rather than charging an account.
 
 ## Checkout dispatch recovery
 
+Owning migration `0002_brief_stature.sql` adds the five private dispatch fields.
+
 New Subject checkouts persist `checkoutDispatchState=prepared`, the selected
 provider, currency and original provider metadata in the same transaction as the
 Payment Intent and reserved purchase allocation. The provider route claims that

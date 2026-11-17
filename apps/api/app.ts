@@ -36,6 +36,7 @@ import { app as ecommerceApp } from "@sps/ecommerce/backend/app/api";
 import { app as notificationApp } from "@sps/notification/backend/app/api";
 import { app as blogApp } from "@sps/blog/backend/app/api";
 import { app as billingApp } from "@sps/billing/backend/app/api";
+import { privatePaymentIntentReadRoutes } from "@sps/billing/models/payment-intent/backend/app/middlewares";
 import { app as websiteBuilderApp } from "@sps/website-builder/backend/app/api";
 import { app as broadcastApp } from "@sps/broadcast/backend/app/api";
 import { app as fileStorageApp } from "@sps/file-storage/backend/app/api";
@@ -86,6 +87,7 @@ const httpCacheMiddleware = new HTTPCacheMiddleware({
     ...controllerGuardedRoutes,
     ...ecommerceCatalogGuardedRoutes,
     ...privateOrderRoutes,
+    ...privatePaymentIntentReadRoutes,
   ],
 });
 

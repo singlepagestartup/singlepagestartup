@@ -8,6 +8,8 @@ import { randomUUID } from "node:crypto";
 import { Hono } from "hono";
 import { Handler as ProviderHandler } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/controller/singlepage/provider";
 import { Service as Checkout } from "./checkout";
+import { Service as RetryableIds } from "./retryable-ids";
+import type { IModel as IOrderOwner } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/sdk/model";
 import { CRUDService, consistencyContext } from "@sps/shared-backend-api";
 import { getPostgresClient } from "@sps/shared-backend-database-config";
 import { logger, signJwt } from "@sps/backend-utils";
@@ -483,7 +485,7 @@ async function fixture(type = "one_off") {
   };
 }
 
-async function freshCheckout(f: Awaited<ReturnType<typeof fixture>>) {
+async function freshCheckout() {
   const { app } = await bootstrapOrder();
   const freshOrder = app.controller.service as any;
   const subjectRepository = new SubjectRepository(new SubjectConfiguration());
@@ -495,9 +497,10 @@ async function freshCheckout(f: Awaited<ReturnType<typeof fixture>>) {
   const { Configuration } = await import(
     `${ownerPath}/backend/app/api/src/lib/configuration`
   );
-  const owners = new CRUDService(new Repository(new Configuration()));
+  const owners = new CRUDService<IOrderOwner>(
+    new Repository(new Configuration()),
+  );
   const ecommerceModule = {
-    ...f.subject.ecommerceModule,
     order: freshOrder,
     ordersToProducts: freshOrder.ordersToProducts,
     ordersToBillingModuleCurrencies: freshOrder.ordersToBillingModuleCurrencies,
@@ -510,11 +513,16 @@ async function freshCheckout(f: Awaited<ReturnType<typeof fixture>>) {
   jest
     .spyOn(ecommerceModule.storesToProducts, "quoteMany")
     .mockRejectedValue(new Error("Recovery must not re-quote"));
+  const paymentRecords = new RetryableIds({
+    subjectsToEcommerceModuleOrders: owners,
+    ecommerceModule,
+    billingModule: freshOrder.billingModule,
+  });
   return new Checkout({
     repository: subjectRepository,
     findById: ({ id }) => subjects.findById({ id }),
-    settledOrderIds: (input) => f.subject.ecommerceModuleOrderSettledIds(input),
-    ecommerceModule,
+    settledOrderIds: (input) => paymentRecords.settledIds(input),
+    ecommerceModule: ecommerceModule as any,
     billingModule: freshOrder.billingModule,
     subjectsToEcommerceModuleOrders: owners as any,
   });
@@ -621,8 +629,8 @@ it("recovers a committed unsent reservation through fresh services and sends con
       });
     return c.json({ data: result }, 201);
   });
-  const first = await freshCheckout(f);
-  const second = await freshCheckout(f);
+  const first = await freshCheckout();
+  const second = await freshCheckout();
   const altered = {
     ...saved.input,
     provider: "paykeeper",
@@ -641,7 +649,7 @@ it("recovers a committed unsent reservation through fresh services and sends con
     }
   }
   expect(adapter).toHaveBeenCalledTimes(1);
-  const retry = await (await freshCheckout(f)).execute(altered);
+  const retry = await (await freshCheckout()).execute(altered);
   expect(retry.billingModule.invoices).toHaveLength(1);
   expect(retry.billingModule.invoices[0]).toMatchObject({
     amount: 100,
@@ -680,7 +688,7 @@ it("preserves an unknown provider outcome after dispatch started instead of infe
     }),
   ).toBeTruthy();
   const provider = jest.spyOn(paymentIntentApi, "provider");
-  await expect((await freshCheckout(f)).execute(saved.input)).rejects.toThrow(
+  await expect((await freshCheckout()).execute(saved.input)).rejects.toThrow(
     "provider outcome is unknown",
   );
   expect(provider).not.toHaveBeenCalled();
@@ -720,6 +728,9 @@ it("rejects buyer-written dispatch state and recovery metadata through generic P
       checkoutMetadata: {},
     }),
   ).rejects.toThrow("server managed");
+  await expect(
+    f.intents.update({ id: saved.intent.id, data: { amount: 101 } }),
+  ).rejects.toThrow("amount is immutable");
   expect(
     (await f.intents.findById({ id: saved.intent.id })).checkoutMetadata,
   ).toEqual(saved.intent.checkoutMetadata);

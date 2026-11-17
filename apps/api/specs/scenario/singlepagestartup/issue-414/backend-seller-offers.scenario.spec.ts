@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { sign } from "hono/jwt";
+import qs from "qs";
 import { api as subjectApi } from "@sps/rbac/models/subject/sdk/server";
 import { api as identityApi } from "@sps/rbac/models/identity/sdk/server";
 import { api as subjectsToIdentitiesApi } from "@sps/rbac/relations/subjects-to-identities/sdk/server";
@@ -19,6 +20,7 @@ import { api as linesApi } from "@sps/ecommerce/relations/orders-to-products/sdk
 import { api as attemptsApi } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/server";
 import { api as intentApi } from "@sps/billing/models/payment-intent/sdk/server";
 import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
+import { api as intentInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
 import type {
   ICatalogCreateOfferInput,
   ICatalogCreateOfferResult,
@@ -181,7 +183,7 @@ afterAll(async () => {
   }
 });
 
-it("groups two RUB orders, preserves their shares, and leaves the USD invoice open after local RUB settlement", async () => {
+it("reuses mixed-currency checkout invoices and resumes only USD after local RUB settlement", async () => {
   expect(
     getRequiredEnv("ALLOWED_BILLING_SERVICE_PROVIDERS").split(","),
   ).toContain("dummy");
@@ -317,45 +319,155 @@ it("groups two RUB orders, preserves their shares, and leaves the USD invoice op
       orderApi.delete({ id: order.id, options: operator() }),
     );
   }
+  const checkoutInput = {
+    email: buyer.email,
+    provider: "dummy",
+    ecommerceModule: { orders: orderIds.map((id) => ({ id })) },
+  };
   const checkout = await subjectApi.ecommerceModuleOrderCheckout({
     id: buyer.id,
     options: buyer.options,
-    data: {
-      email: buyer.email,
-      provider: "dummy",
-      ecommerceModule: { orders: orderIds.map((id) => ({ id })) },
-    },
+    data: checkoutInput,
   });
   const invoices = checkout.billingModule.invoices;
   expect(
     invoices.map((invoice) => Number(invoice.amount)).sort((a, b) => a - b),
   ).toEqual([20, 11000]);
   expect(invoices.every((invoice) => invoice.status === "open")).toBe(true);
-  const attempts = await attemptsApi.find({
-    params: {
-      filters: {
-        and: [{ column: "orderId", method: "inArray", value: orderIds }],
+  async function readAttempts() {
+    const rows = await attemptsApi.find({
+      params: {
+        filters: {
+          and: [{ column: "orderId", method: "inArray", value: orderIds }],
+        },
       },
-    },
-    options: operator(),
-  });
-  if (!attempts) {
-    throw new Error("Fixture attempts did not return a collection");
+      options: operator(),
+    });
+    if (!rows) {
+      throw new Error("Fixture attempts did not return a collection");
+    }
+    return rows;
   }
+  const attempts = await readAttempts();
+  const reservationState = (rows: typeof attempts) =>
+    rows
+      .map((row) => ({
+        id: row.id,
+        orderId: row.orderId,
+        paymentIntentId: row.billingModulePaymentIntentId,
+        offerId: row.offerId,
+        quantity: row.reservationQuantity,
+        status: row.reservationStatus,
+        snapshot: row.purchaseSnapshot,
+      }))
+      .sort((left, right) => left.id.localeCompare(right.id));
+  const invoiceLinks = (rows: typeof invoices) =>
+    rows
+      .map((invoice) => ({ id: invoice.id, paymentUrl: invoice.paymentUrl }))
+      .sort((left, right) => left.id.localeCompare(right.id));
   cleanup.unshift(async () => {
-    for (const attempt of attempts) {
+    const currentAttempts = await readAttempts();
+    const intentIds = [
+      ...new Set(
+        currentAttempts.map((attempt) => attempt.billingModulePaymentIntentId),
+      ),
+    ];
+    const linkedInvoices = intentIds.length
+      ? await intentInvoicesApi.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "paymentIntentId",
+                  method: "inArray",
+                  value: intentIds,
+                },
+              ],
+            },
+          },
+          options: operator(),
+        })
+      : [];
+    for (const attempt of currentAttempts) {
       await attemptsApi.delete({ id: attempt.id, options: operator() });
     }
-    for (const id of new Set(
-      attempts.map((attempt) => attempt.billingModulePaymentIntentId),
-    )) {
+    for (const id of intentIds) {
       await intentApi.delete({ id, options: operator() });
     }
-    for (const invoice of invoices) {
-      await invoiceApi.delete({ id: invoice.id, options: operator() });
+    for (const id of new Set([
+      ...invoices.map((invoice) => invoice.id),
+      ...(linkedInvoices ?? []).map((link) => link.invoiceId),
+    ])) {
+      await invoiceApi.delete({ id, options: operator() });
     }
   });
   expect(attempts).toHaveLength(5);
+  const intentIds = [
+    ...new Set(attempts.map((attempt) => attempt.billingModulePaymentIntentId)),
+  ];
+  const privateIntentFields = [
+    "checkoutProvider",
+    "checkoutCurrencyId",
+    "checkoutMetadata",
+    "checkoutDispatchState",
+    "checkoutDispatchStartedAt",
+  ];
+  const intentQuery = qs.stringify({
+    filters: { and: [{ column: "id", method: "inArray", value: intentIds }] },
+  });
+  for (const headers of [
+    undefined,
+    buyer.options.headers,
+    operator().headers,
+  ]) {
+    for (const target of [
+      `/api/billing/payment-intents?${intentQuery}`,
+      `/api/billing/payment-intents/${intentIds[0]}`,
+    ]) {
+      const response = await fetch(`${getApiUrl()}${target}`, { headers });
+      expect(response.status).toBe(200);
+      expect(response.headers.get("Cache-Control")).toBe("private, no-store");
+      const body = (await response.json()) as {
+        data: Record<string, unknown> | Record<string, unknown>[];
+      };
+      const records = Array.isArray(body.data) ? body.data : [body.data];
+      expect(records.length).toBe(target.includes("?") ? 2 : 1);
+      for (const record of records) {
+        expect(intentIds).toContain(record.id);
+        expect(record).toEqual(
+          expect.objectContaining({
+            amount: expect.any(Number),
+            status: expect.any(String),
+            type: "one_off",
+          }),
+        );
+        for (const field of privateIntentFields) {
+          expect(record).not.toHaveProperty(field);
+        }
+      }
+    }
+  }
+  for (const headers of [undefined, buyer.options.headers]) {
+    const query = qs.stringify({
+      filters: { and: [{ column: "checkoutMetadata", method: "isNotNull" }] },
+    });
+    const response = await fetch(
+      `${getApiUrl()}/api/billing/payment-intents/count?${query}`,
+      { headers },
+    );
+    expect(response.status).toBe(400);
+  }
+  const repeatedCheckout = await subjectApi.ecommerceModuleOrderCheckout({
+    id: buyer.id,
+    options: buyer.options,
+    data: checkoutInput,
+  });
+  expect(invoiceLinks(repeatedCheckout.billingModule.invoices)).toEqual(
+    invoiceLinks(invoices),
+  );
+  expect(reservationState(await readAttempts())).toEqual(
+    reservationState(attempts),
+  );
   for (const target of [
     "/api/ecommerce/orders",
     "/api/ecommerce/orders-to-products",
@@ -427,6 +539,40 @@ it("groups two RUB orders, preserves their shares, and leaves the USD invoice op
     (invoice) => Number(invoice.amount) === 11000,
   )!;
   const usdInvoice = invoices.find((invoice) => Number(invoice.amount) === 20)!;
+  expect(typeof usdInvoice.paymentUrl).toBe("string");
+  expect(usdInvoice.paymentUrl).not.toBe("");
+  const usdAttempts = attempts.filter(
+    (attempt) => attempt.purchaseSnapshot?.currencyId === usd.id,
+  );
+  expect(usdAttempts).toHaveLength(1);
+  const usdOrderIds = [
+    ...new Set(usdAttempts.map((attempt) => attempt.orderId)),
+  ];
+  expect(usdOrderIds).toHaveLength(1);
+  const usdInvoiceLinks = await intentInvoicesApi.find({
+    params: {
+      filters: {
+        and: [{ column: "invoiceId", method: "eq", value: usdInvoice.id }],
+      },
+    },
+    options: operator(),
+  });
+  expect(usdInvoiceLinks).toHaveLength(1);
+  const usdIntentId = usdInvoiceLinks![0].paymentIntentId;
+  expect(
+    usdAttempts.every(
+      (attempt) => attempt.billingModulePaymentIntentId === usdIntentId,
+    ),
+  ).toBe(true);
+  expect([
+    ...new Set(
+      attempts
+        .filter(
+          (attempt) => attempt.billingModulePaymentIntentId === usdIntentId,
+        )
+        .map((attempt) => attempt.orderId),
+    ),
+  ]).toEqual(usdOrderIds);
   await offerApi.update({
     id: main.offer.id,
     data: { variant: "hidden" },
@@ -458,6 +604,28 @@ it("groups two RUB orders, preserves their shares, and leaves the USD invoice op
     (await invoiceApi.findById({ id: usdInvoice.id, options: operator() }))
       ?.status,
   ).toBe("open");
+  const afterPartialSettlement = await readAttempts();
+  const resumedUsd = await subjectApi.ecommerceModuleOrderCheckout({
+    id: buyer.id,
+    options: buyer.options,
+    data: {
+      ...checkoutInput,
+      ecommerceModule: { orders: usdOrderIds.map((id) => ({ id })) },
+    },
+  });
+  expect(invoiceLinks(resumedUsd.billingModule.invoices)).toEqual(
+    invoiceLinks([usdInvoice]),
+  );
+  expect(
+    resumedUsd.billingModule.invoices.map((invoice) => Number(invoice.amount)),
+  ).toEqual([20]);
+  expect(reservationState(await readAttempts())).toEqual(
+    reservationState(afterPartialSettlement),
+  );
+  expect(
+    (await invoiceApi.findById({ id: rubInvoice.id, options: operator() }))
+      ?.status,
+  ).toBe("paid");
   const purchases = await subjectApi.ecommerceModuleOrderList({
     id: buyer.id,
     options: buyer.options,

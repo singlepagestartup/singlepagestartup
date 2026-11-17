@@ -3,6 +3,7 @@ import {
   Table,
   insertSchema,
   selectSchema,
+  outputSchema,
   dataDirectory,
 } from "@sps/billing/models/payment-intent/backend/repository/database";
 import { injectable } from "inversify";
@@ -16,6 +17,7 @@ export class Configuration extends ParentConfiguration {
         Table: Table,
         insertSchema,
         selectSchema,
+        outputSchema,
         dump: {
           active: false,
           type: "json",

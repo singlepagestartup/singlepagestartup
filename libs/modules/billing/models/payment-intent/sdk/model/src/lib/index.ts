@@ -1,8 +1,12 @@
+import type { z } from "zod";
+import type { outputSchema } from "@sps/billing/models/payment-intent/backend/repository/database";
+export type IModel = z.infer<typeof outputSchema>;
 export {
   type IInsertSchema,
-  type ISelectSchema as IModel,
+  type ISelectSchema as IInternalModel,
   insertSchema,
   selectSchema,
+  outputSchema,
 } from "@sps/billing/models/payment-intent/backend/repository/database";
 import {
   API_SERVICE_URL,

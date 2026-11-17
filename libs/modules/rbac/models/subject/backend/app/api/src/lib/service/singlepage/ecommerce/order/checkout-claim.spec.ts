@@ -274,3 +274,36 @@ it("preserves failed intent links while allowing a cart with no live invoices to
   });
   expect(f.ecommerceModule.order.update).toHaveBeenCalledTimes(2);
 });
+
+it("reopens an exact selection with separate currency invoices and preserves a paid free invoice without a payment URL", async () => {
+  const f = fixture();
+  Object.assign(f.orders[0], { type: "history", status: "paid" });
+  Object.assign(f.orders[1], { type: "history", status: "paying" });
+  f.settledOrderIds.mockResolvedValue(new Set(["b"]));
+  f.ecommerceModule.ordersToBillingModulePaymentIntents.find.mockResolvedValue([
+    { orderId: "a", billingModulePaymentIntentId: "usd-intent" },
+    { orderId: "b", billingModulePaymentIntentId: "rub-intent" },
+  ]);
+  f.billingModule.paymentIntent.find.mockResolvedValue([
+    { id: "rub-intent", status: "succeeded" },
+    { id: "usd-intent", status: "requires_payment_method" },
+  ]);
+  f.billingModule.paymentIntentsToInvoices.find.mockResolvedValue([
+    { paymentIntentId: "rub-intent", invoiceId: "rub-invoice" },
+    { paymentIntentId: "usd-intent", invoiceId: "usd-invoice" },
+  ]);
+  const invoices = [
+    { id: "rub-invoice", status: "paid", amount: 0, paymentUrl: null },
+    {
+      id: "usd-invoice",
+      status: "open",
+      amount: 20,
+      paymentUrl: "https://pay.test/usd",
+    },
+  ];
+  f.billingModule.invoice.find.mockResolvedValue(invoices);
+  await expect(
+    f.operation.execute({ ...f.props, resumeExisting: true }),
+  ).resolves.toEqual({ invoices });
+  expect(f.ecommerceModule.order.update).not.toHaveBeenCalled();
+});

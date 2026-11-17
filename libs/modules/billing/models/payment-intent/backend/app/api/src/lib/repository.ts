@@ -69,11 +69,13 @@ export class Repository extends DatabaseRepository<typeof Table> {
       writable.amount = moneyNumber(writable.amount as string | number);
       if (
         record &&
-        ["dispatching", "exposed"].includes(record.checkoutDispatchState) &&
+        ["prepared", "dispatching", "exposed"].includes(
+          record.checkoutDispatchState,
+        ) &&
         writable.amount !== record.amount
       ) {
         throw new Error(
-          "Conflict error. Dispatched checkout amount is immutable",
+          "Conflict error. Prepared checkout amount is immutable",
         );
       }
     }
