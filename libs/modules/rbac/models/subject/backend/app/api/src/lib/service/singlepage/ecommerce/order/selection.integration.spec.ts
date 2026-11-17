@@ -294,6 +294,49 @@ async function fixture() {
   };
 }
 
+it("saves the clicked services with the current price and chains edits by the persisted revision", async () => {
+  const f = await fixture();
+  const { order, primary } = await f.order(1);
+  const first = f.selected(0, 1);
+  const originalRevision = new Date(primary.selectionUpdatedAt).toISOString();
+  const save = (
+    expectedSelectionUpdatedAt: string,
+    selections: IEcommerceCartSelection[],
+  ) =>
+    f.operation().execute({
+      subjectId: f.subject.id,
+      orderId: order.id,
+      data: {
+        action: "save",
+        lineId: primary.id,
+        selections,
+        expectedSelectionUpdatedAt,
+      },
+    });
+  const result = await save(originalRevision, [first]);
+  expect(result.applied).toBe(true);
+  expect(result.quotes[0].charges).toHaveLength(3);
+  const saved = await f.services.line.findById({ id: primary.id });
+  expect(result.selectionUpdatedAt).toBe(
+    new Date(saved.selectionUpdatedAt).toISOString(),
+  );
+  expect(result.selectionUpdatedAt).not.toBe(originalRevision);
+  const withoutServices = { ...first, services: [] };
+  await expect(save(originalRevision, [withoutServices])).rejects.toThrow(
+    "Cart selection changed",
+  );
+  f.stock(0);
+  const invalid = await save(result.selectionUpdatedAt!, [withoutServices]);
+  expect(invalid.applied).toBe(false);
+  expect(invalid.quotes[0].issues.length).toBeGreaterThan(0);
+  expect(await f.services.line.find(f.byOrder(order.id))).toHaveLength(3);
+  f.stock(100);
+  const last = await save(result.selectionUpdatedAt!, [withoutServices]);
+  expect(last.applied).toBe(true);
+  expect(last.quotes[0].charges).toHaveLength(1);
+  expect(await f.services.line.find(f.byOrder(order.id))).toHaveLength(1);
+});
+
 it("splits one primary into independent orders and saves each service under its parent", async () => {
   const f = await fixture();
   const source = await f.order(2);

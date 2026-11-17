@@ -46,17 +46,23 @@ Subject lock and transaction, including stock checks across the buyer's other
 editable lines. Opening a cart does not reserve stock.
 
 `POST /api/rbac/subjects/:id/ecommerce-module/orders/:orderId/selection` accepts
-`action: "preview" | "apply"`, the primary `lineId`, and `selections`. Each selection
+`action: "save" | "preview" | "apply"`, the primary `lineId`, and `selections`. Each selection
 contains `offerId`, quantity, `currencyId`, destination and selected service offer
 IDs with quantities. One selection replaces that Order's choice. Multiple
-selections split its original quantity into independent Orders. Preview returns
+selections split its original quantity into independent Orders. The cart uses
+`save` when a buyer changes a service, store, quantity, currency or destination.
+The server quotes that selection, checks `expectedSelectionUpdatedAt` and writes
+the order in one request. The response contains the itemized quotes and the
+updated primary line timestamp for the next edit. An incomplete or unavailable
+selection returns its quote issues with `applied: false` and leaves the saved order intact.
+Preview returns
 full quotes without writes. Apply requires their `expectedVersions` and the
 stored `expectedSelectionUpdatedAt`; changed terms, expiry or another buyer edit
 require a fresh preview. Store and configuration compatibility, sole ownership,
 active-cart state and payment attempts are checked again before writes.
 
 Quote routing runs before the write transaction. Under the Subject and offer
-locks, apply validates the original quote evidence again and checks aggregate
+locks, both write actions validate the original quote evidence again and check aggregate
 quantities against stock remaining after active reservations. Failed graph
 writes roll back the complete selection. Currency and store links retain their
 IDs when the selection still uses them.

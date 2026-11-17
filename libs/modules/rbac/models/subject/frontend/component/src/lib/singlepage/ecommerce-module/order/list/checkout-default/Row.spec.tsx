@@ -60,6 +60,18 @@ jest.mock("@sps/ecommerce/models/order/sdk/client", () => ({
 jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
   Component: ({ label }: any) => <button type="button">{label}</button>,
 }));
+jest.mock("./Selection", () => ({
+  Selection: ({ line, onSelectionStateChange }: any) => (
+    <div data-testid={`selection-${line.id}`}>
+      <input
+        aria-label={`Draft ${line.id}`}
+        defaultValue="saved"
+        onChange={() => onSelectionStateChange?.(line.id, true)}
+      />
+      <span>Itemized receipt</span>
+    </div>
+  ),
+}));
 const props: any = {
   subject: { id: "owner" },
   ecommerceModuleOrder: {
@@ -280,3 +292,108 @@ it.each([2, 6])(
     );
   },
 );
+
+it("keeps the itemized receipt below the product and removes its redundant header total", () => {
+  const line = {
+    ...props.ecommerceModuleOrder.cartDetails.lines[0],
+    productId: "product",
+    offerId: "offer",
+  };
+  render(
+    <Component
+      {...props}
+      ecommerceModuleOrder={{
+        id: "order",
+        cartDetails: {
+          ...props.ecommerceModuleOrder.cartDetails,
+          lines: [line],
+          offers: [{ id: "offer", productId: "product", variant: "default" }],
+          offerQuotes: [{ offerId: "offer", productId: "product" }],
+          billingModuleCurrencyId: "rub",
+          availableCurrencyIds: ["rub"],
+          totals: [
+            { total: 100, billingModuleCurrency: { id: "rub", symbol: "₽" } },
+          ],
+        },
+      }}
+    />,
+  );
+  const article = screen.getByRole("article");
+  const receipt = screen.getByText("Itemized receipt");
+  expect(
+    article.compareDocumentPosition(receipt) & Node.DOCUMENT_POSITION_FOLLOWING,
+  ).toBeTruthy();
+  expect(screen.queryByText("100 ₽")).toBeNull();
+});
+
+it("keeps legacy and special-offer amounts visible when there is no itemized quote", () => {
+  render(
+    <Component
+      {...props}
+      ecommerceModuleOrder={{
+        ...props.ecommerceModuleOrder,
+        cartDetails: {
+          ...props.ecommerceModuleOrder.cartDetails,
+          offers: [],
+          offerQuotes: [],
+          billingModuleCurrencyId: "rub",
+          availableCurrencyIds: ["rub"],
+          totals: [
+            { total: 100, billingModuleCurrency: { id: "rub", symbol: "₽" } },
+          ],
+        },
+      }}
+    />,
+  );
+  expect(screen.getByText("100 ₽").closest("article")).toBeTruthy();
+});
+
+it("preserves a live draft across server timestamps and reports its own order and line", () => {
+  const onOrderSelectionStateChange = jest.fn();
+  const order = {
+    ...props.ecommerceModuleOrder,
+    cartDetails: {
+      ...props.ecommerceModuleOrder.cartDetails,
+      offers: [],
+      lines: [
+        {
+          ...props.ecommerceModuleOrder.cartDetails.lines[0],
+          selectionUpdatedAt: "first",
+        },
+      ],
+    },
+  };
+  const view = render(
+    <Component
+      {...props}
+      ecommerceModuleOrder={order}
+      onOrderSelectionStateChange={onOrderSelectionStateChange}
+    />,
+  );
+  fireEvent.change(screen.getByLabelText("Draft line"), {
+    target: { value: "latest draft" },
+  });
+  expect(onOrderSelectionStateChange).toHaveBeenCalledWith(
+    "order",
+    "line",
+    true,
+  );
+  view.rerender(
+    <Component
+      {...props}
+      onOrderSelectionStateChange={onOrderSelectionStateChange}
+      ecommerceModuleOrder={{
+        ...order,
+        cartDetails: {
+          ...order.cartDetails,
+          lines: [
+            { ...order.cartDetails.lines[0], selectionUpdatedAt: "second" },
+          ],
+        },
+      }}
+    />,
+  );
+  expect((screen.getByLabelText("Draft line") as HTMLInputElement).value).toBe(
+    "latest draft",
+  );
+});

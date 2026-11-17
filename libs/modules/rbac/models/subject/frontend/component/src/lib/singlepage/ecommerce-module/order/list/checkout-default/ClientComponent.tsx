@@ -1,6 +1,6 @@
 "use client";
 
-import { IComponentPropsExtended } from "./interface";
+import type { IComponentPropsExtended, IRowProps } from "./interface";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import { Button, Form } from "@sps/shared-ui-shadcn";
 import { currencyPrecision } from "@sps/shared-utils";
@@ -13,7 +13,7 @@ import type { ICartDetails } from "@sps/ecommerce/models/order/sdk/model";
 import { ReceiptEmail } from "../../checkout-default/ReceiptEmail";
 import { CheckoutForm } from "../../checkout-default/CheckoutForm";
 import { Component as Row } from "./Row";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { OrderComment } from "../../checkout-default/OrderComment";
 import { useIsFetching, useIsMutating } from "@tanstack/react-query";
@@ -36,6 +36,7 @@ export function Component(props: IComponentPropsExtended) {
       language={props.language}
       variant={props.variant}
       isServer={false}
+      onSelectionPendingChange={props.onSelectionPendingChange}
     />
   );
 }
@@ -51,6 +52,7 @@ function Checkout(props: IComponentPropsExtended) {
           checkoutError: "Не удалось оформить заказ. Попробуйте ещё раз.",
           emptyCart: "В корзине пока нет товаров.",
           total: "Итого",
+          savedTotal: "Сохранённая сумма",
           pricedItems: "Товары с ценой",
           unpriced: "Завершите выбор и исправьте ошибки в отмеченных заказах.",
           invalidCurrency: "Выберите валюту оплаты для каждого заказа.",
@@ -67,6 +69,7 @@ function Checkout(props: IComponentPropsExtended) {
           checkoutError: "Could not place your order. Please try again.",
           emptyCart: "Your cart is empty.",
           total: "Total",
+          savedTotal: "Saved total",
           pricedItems: "Priced items",
           unpriced:
             "Complete the selection and resolve the issues in the marked orders.",
@@ -96,6 +99,75 @@ function Checkout(props: IComponentPropsExtended) {
 
   const [paymentUrls, setPaymentUrls] = useState<string[]>([]);
   const [error, setError] = useState("");
+  const blockedSelections = useRef(new Map<string, Set<string>>());
+  const pendingSelections = useRef(new Map<string, Set<string>>());
+  const reportedPending = useRef(false);
+  const selectionPendingListener = useRef(props.onSelectionPendingChange);
+  selectionPendingListener.current = props.onSelectionPendingChange;
+  const [, setSelectionRevision] = useState(0);
+  const checkoutSnapshot = useRef<{
+    orders: IRowProps["ecommerceModuleOrder"][];
+    blocked: boolean;
+  } | null>(null);
+  const publishSelectionPending = useCallback(() => {
+    const pending = (checkoutSnapshot.current?.orders ?? []).some((order) =>
+      order.cartDetails?.lines.some(
+        (line) =>
+          !line.parentLineId &&
+          pendingSelections.current.get(order.id)?.has(line.id),
+      ),
+    );
+    if (pending === reportedPending.current) return;
+    reportedPending.current = pending;
+    selectionPendingListener.current?.(pending);
+  }, []);
+  const onOrderSelectionPendingChange = useCallback(
+    (orderId: string, lineId: string, pending: boolean) => {
+      const lines = pendingSelections.current.get(orderId);
+      if (Boolean(lines?.has(lineId)) === pending) return;
+      if (pending) {
+        const next = lines ?? new Set<string>();
+        next.add(lineId);
+        pendingSelections.current.set(orderId, next);
+      } else if (lines) {
+        lines.delete(lineId);
+        if (!lines.size) pendingSelections.current.delete(orderId);
+      }
+      publishSelectionPending();
+    },
+    [publishSelectionPending],
+  );
+  useEffect(() => {
+    publishSelectionPending();
+  });
+  useEffect(() => () => selectionPendingListener.current?.(false), []);
+  const onOrderSelectionStateChange = useCallback(
+    (orderId: string, lineId: string, blocked: boolean) => {
+      const lines = blockedSelections.current.get(orderId);
+      if (Boolean(lines?.has(lineId)) === blocked) return;
+      if (blocked) {
+        const next = lines ?? new Set<string>();
+        next.add(lineId);
+        blockedSelections.current.set(orderId, next);
+      } else if (lines) {
+        lines.delete(lineId);
+        if (!lines.size) blockedSelections.current.delete(orderId);
+      }
+      setSelectionRevision((revision) => revision + 1);
+    },
+    [],
+  );
+  const hasBlockedSelections = useCallback(
+    (orders: IRowProps["ecommerceModuleOrder"][]) =>
+      orders.some((order) =>
+        order.cartDetails?.lines.some(
+          (line) =>
+            !line.parentLineId &&
+            blockedSelections.current.get(order.id)?.has(line.id),
+        ),
+      ),
+    [],
+  );
   const lifecycle = useRef<symbol | null>(null);
   useEffect(() => {
     const current = Symbol();
@@ -135,12 +207,16 @@ function Checkout(props: IComponentPropsExtended) {
     },
   });
 
-  async function onSubmit(
-    data: z.infer<typeof formSchema>,
-    orders: { id: string }[],
-  ) {
+  async function onSubmit(data: z.infer<typeof formSchema>) {
     const currentLifecycle = lifecycle.current;
-    if (!currentLifecycle) return;
+    const snapshot = checkoutSnapshot.current;
+    if (
+      !currentLifecycle ||
+      !snapshot?.orders.length ||
+      snapshot.blocked ||
+      hasBlockedSelections(snapshot.orders)
+    )
+      return;
     setError("");
     try {
       const res = await ecommerceModuleOrderCheckout.mutateAsync({
@@ -149,7 +225,9 @@ function Checkout(props: IComponentPropsExtended) {
           provider: data.provider,
           email: data.email,
           ...(data.comment ? { comment: data.comment } : {}),
-          ecommerceModule: { orders: orders.map(({ id }) => ({ id })) },
+          ecommerceModule: {
+            orders: snapshot.orders.map(({ id }) => ({ id })),
+          },
         },
       });
       if (lifecycle.current !== currentLifecycle) return;
@@ -211,12 +289,14 @@ function Checkout(props: IComponentPropsExtended) {
           apiProps={{ params: { includeCartDetails: true } }}
         >
           {({ data: orders }) => {
-            if (!orders.length)
+            if (!orders.length) {
+              checkoutSnapshot.current = { orders, blocked: true };
               return (
                 <p className="px-6 py-12 text-sm text-muted-foreground">
                   {text.emptyCart}
                 </p>
               );
+            }
             // Combine server-calculated amounts from the same authorized snapshot as the rows.
             const hasUnpriced = orders.some(
               (order) => order.cartDetails?.unpriced?.length,
@@ -228,6 +308,23 @@ function Checkout(props: IComponentPropsExtended) {
                   order.cartDetails.billingModuleCurrencyId,
                 ),
             );
+            const checkoutBlocked =
+              ecommerceModuleOrderCheckout.isPending ||
+              hasUnpriced ||
+              hasInvalidCurrency ||
+              updatingCart ||
+              changingSelection ||
+              refreshingCart;
+            checkoutSnapshot.current = {
+              orders,
+              blocked: checkoutBlocked,
+            };
+            const hasUnappliedSelection = hasBlockedSelections(orders);
+            const showingSavedTotal =
+              hasUnappliedSelection ||
+              updatingCart ||
+              changingSelection ||
+              refreshingCart;
             const totals = new Map<string, ICartDetails["totals"][number]>();
             for (const order of orders) {
               for (const total of order.cartDetails?.totals ?? []) {
@@ -248,7 +345,7 @@ function Checkout(props: IComponentPropsExtended) {
             }
             return (
               <>
-                <div className="flex-1 px-4 py-5 sm:px-6 [@media(min-height:740px)]:min-h-36 [@media(min-height:740px)]:overflow-y-auto">
+                <div className="shrink-0 px-4 py-5 sm:flex-1 sm:px-6 [@media(min-width:640px)_and_(min-height:740px)]:min-h-36 [@media(min-width:640px)_and_(min-height:740px)]:overflow-y-auto">
                   <ul className="space-y-3">
                     {orders.map((order) => (
                       <Row
@@ -256,6 +353,12 @@ function Checkout(props: IComponentPropsExtended) {
                         subject={props.data}
                         ecommerceModuleOrder={order}
                         language={props.language}
+                        onOrderSelectionStateChange={
+                          onOrderSelectionStateChange
+                        }
+                        onOrderSelectionPendingChange={
+                          onOrderSelectionPendingChange
+                        }
                       />
                     ))}
                   </ul>
@@ -265,34 +368,8 @@ function Checkout(props: IComponentPropsExtended) {
                     className="space-y-3"
                     noValidate
                     form={form}
-                    onSubmit={form.handleSubmit(
-                      (values) => onSubmit(values, orders),
-                      () => setError(""),
-                    )}
+                    onSubmit={form.handleSubmit(onSubmit, () => setError(""))}
                   >
-                    <div className="flex flex-wrap items-baseline justify-between gap-2">
-                      <h3 className="text-base font-semibold">
-                        {hasUnpriced ? text.pricedItems : text.total}
-                      </h3>
-                      <div className="text-right tabular-nums">
-                        {[...totals.values()].map((total) => (
-                          <p
-                            key={total.billingModuleCurrency.id}
-                            className="text-2xl font-semibold"
-                          >
-                            {new Intl.NumberFormat(
-                              props.language === "ru" ? "ru-RU" : "en-US",
-                              {
-                                maximumFractionDigits: currencyPrecision(
-                                  total.billingModuleCurrency,
-                                ),
-                              },
-                            ).format(total.total)}{" "}
-                            {total.billingModuleCurrency.symbol}
-                          </p>
-                        ))}
-                      </div>
-                    </div>
                     {hasUnpriced && (
                       <p role="alert" className="text-sm text-destructive">
                         {text.unpriced}
@@ -322,18 +399,42 @@ function Checkout(props: IComponentPropsExtended) {
                       placeholder="name@example.com"
                     />
                     <OrderComment form={form} language={props.language} />
+                    <div
+                      aria-live="polite"
+                      aria-busy={showingSavedTotal}
+                      className="flex flex-wrap items-baseline justify-between gap-2 border-t border-border pt-3"
+                    >
+                      <h3 className="text-base font-semibold">
+                        {showingSavedTotal
+                          ? text.savedTotal
+                          : hasUnpriced
+                            ? text.pricedItems
+                            : text.total}
+                      </h3>
+                      <div className="text-right tabular-nums">
+                        {[...totals.values()].map((total) => (
+                          <p
+                            key={total.billingModuleCurrency.id}
+                            className="text-2xl font-semibold"
+                          >
+                            {new Intl.NumberFormat(
+                              props.language === "ru" ? "ru-RU" : "en-US",
+                              {
+                                maximumFractionDigits: currencyPrecision(
+                                  total.billingModuleCurrency,
+                                ),
+                              },
+                            ).format(total.total)}{" "}
+                            {total.billingModuleCurrency.symbol}
+                          </p>
+                        ))}
+                      </div>
+                    </div>
                     <Button
                       type="submit"
                       variant="primary"
                       className="flex min-h-11 w-full shrink-0 rounded-xl"
-                      disabled={
-                        ecommerceModuleOrderCheckout.isPending ||
-                        hasUnpriced ||
-                        hasInvalidCurrency ||
-                        updatingCart ||
-                        changingSelection ||
-                        refreshingCart
-                      }
+                      disabled={checkoutBlocked || hasUnappliedSelection}
                     >
                       {ecommerceModuleOrderCheckout.isPending
                         ? text.checkingOut

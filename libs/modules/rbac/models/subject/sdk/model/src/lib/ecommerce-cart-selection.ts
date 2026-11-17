@@ -3,7 +3,7 @@ import type { IOfferQuote } from "@sps/ecommerce/relations/stores-to-products/sd
 
 export const ecommerceCartSelectionSchema = z
   .object({
-    action: z.enum(["preview", "apply"]),
+    action: z.enum(["preview", "apply", "save"]),
     lineId: z.string().uuid(),
     selections: z
       .array(
@@ -58,4 +58,6 @@ export interface IEcommerceCartSelectionResult {
   comparisonQuotes?: IOfferQuote[];
   orderIds: string[];
   applied: boolean;
+  /** Revision of the original primary line after an immediate save. */
+  selectionUpdatedAt?: string;
 }

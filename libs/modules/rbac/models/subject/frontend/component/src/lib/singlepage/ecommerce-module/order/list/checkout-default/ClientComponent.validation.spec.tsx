@@ -1,11 +1,26 @@
 /** @jest-environment jsdom */
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 const checkout = jest.fn();
 let pending = 0;
 let fetching = 0;
 let currencyId = "rub";
 let identityRows: { provider: string; email: string }[] = [];
 let orderIds = ["order"];
+let linesByOrder: Record<string, { id: string }[]> = {};
+const selectionCallbacks = new Map<
+  string,
+  (lineId: string, blocked: boolean) => void
+>();
+const pendingCallbacks = new Map<
+  string,
+  (lineId: string, pending: boolean) => void
+>();
 jest.mock("@tanstack/react-query", () => ({
   useIsMutating: () => pending,
   useIsFetching: () => fetching,
@@ -28,7 +43,7 @@ jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
       data: orderIds.map((id) => ({
         id,
         cartDetails: {
-          lines: [],
+          lines: linesByOrder[id] ?? [],
           availableCurrencyIds: ["usd", "rub"],
           billingModuleCurrencyId: currencyId,
           totals: [
@@ -45,7 +60,21 @@ jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
       })),
     }),
 }));
-jest.mock("./Row", () => ({ Component: () => null }));
+jest.mock("./Row", () => ({
+  Component: ({
+    ecommerceModuleOrder,
+    onOrderSelectionStateChange,
+    onOrderSelectionPendingChange,
+  }: any) => {
+    selectionCallbacks.set(ecommerceModuleOrder.id, (lineId, blocked) =>
+      onOrderSelectionStateChange(ecommerceModuleOrder.id, lineId, blocked),
+    );
+    pendingCallbacks.set(ecommerceModuleOrder.id, (lineId, pending) =>
+      onOrderSelectionPendingChange(ecommerceModuleOrder.id, lineId, pending),
+    );
+    return <li data-testid={`order-${ecommerceModuleOrder.id}`} />;
+  },
+}));
 import { Component } from "./ClientComponent";
 const props = {
   isServer: false,
@@ -60,6 +89,9 @@ beforeEach(() => {
   currencyId = "rub";
   identityRows = [];
   orderIds = ["order"];
+  linesByOrder = {};
+  selectionCallbacks.clear();
+  pendingCallbacks.clear();
 });
 it.each([
   {
@@ -123,6 +155,8 @@ it.each(["mutation", "refresh"])("blocks checkout during a cart %s", (mode) => {
   render(<Component {...props} />);
   const button = screen.getByRole("button", { name: "Перейти к оплате" });
   expect(button.hasAttribute("disabled")).toBe(true);
+  expect(screen.getByText("Сохранённая сумма")).toBeTruthy();
+  expect(screen.queryByRole("heading", { name: "Итого" })).toBeNull();
   fireEvent.click(button);
   expect(checkout).not.toHaveBeenCalled();
 });
@@ -252,4 +286,101 @@ it("uses only the saved currency's server amount in the footer", () => {
   expect(screen.getByText("10 $")).toBeTruthy();
   expect(screen.queryByText("100 ₽")).toBeNull();
   expect(screen.queryByText("4 $")).toBeNull();
+});
+
+it("places the cart total after all rows and form fields directly before the payment action", () => {
+  render(<Component {...props} />);
+  const total = screen.getByText("100 ₽").closest('[aria-live="polite"]')!;
+  const button = screen.getByRole("button", { name: "Перейти к оплате" });
+  expect(total.nextElementSibling).toBe(button);
+  for (const before of [
+    screen.getByTestId("order-order"),
+    screen.getByLabelText("Email для чека"),
+    screen.getByLabelText("Комментарий к заказу"),
+  ]) {
+    expect(
+      before.compareDocumentPosition(total) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  }
+});
+
+it("keeps checkout blocked until every current row's latest selection has applied", () => {
+  orderIds = ["one", "two"];
+  linesByOrder = { one: [{ id: "same-line" }], two: [{ id: "same-line" }] };
+  render(<Component {...props} />);
+  const button = screen.getByRole("button", { name: "Перейти к оплате" });
+  act(() => {
+    selectionCallbacks.get("one")!("same-line", true);
+    selectionCallbacks.get("two")!("same-line", true);
+  });
+  expect(button.hasAttribute("disabled")).toBe(true);
+  act(() => selectionCallbacks.get("one")!("same-line", false));
+  expect(button.hasAttribute("disabled")).toBe(true);
+  act(() => selectionCallbacks.get("two")!("same-line", false));
+  expect(button.hasAttribute("disabled")).toBe(false);
+  expect(screen.getByRole("heading", { name: "Итого" })).toBeTruthy();
+});
+
+it("reports persistence pending until all current rows settle, independently of invalid-draft checkout blocking", () => {
+  orderIds = ["one", "two"];
+  linesByOrder = { one: [{ id: "line" }], two: [{ id: "line" }] };
+  const onSelectionPendingChange = jest.fn();
+  render(
+    <Component
+      {...props}
+      onSelectionPendingChange={onSelectionPendingChange}
+    />,
+  );
+  act(() => {
+    selectionCallbacks.get("one")!("line", true);
+    pendingCallbacks.get("one")!("line", true);
+    pendingCallbacks.get("two")!("line", true);
+  });
+  expect(onSelectionPendingChange.mock.calls).toEqual([[true]]);
+  act(() => pendingCallbacks.get("one")!("line", false));
+  expect(onSelectionPendingChange.mock.calls).toEqual([[true]]);
+  act(() => pendingCallbacks.get("two")!("line", false));
+  expect(onSelectionPendingChange.mock.calls).toEqual([[true], [false]]);
+  expect(
+    screen
+      .getByRole("button", { name: "Перейти к оплате" })
+      .hasAttribute("disabled"),
+  ).toBe(true);
+  expect(screen.getByText("Сохранённая сумма")).toBeTruthy();
+});
+
+it("rejects direct form submission while a local invalid, pending or failed draft blocks a row", async () => {
+  linesByOrder = { order: [{ id: "draft-line" }] };
+  render(<Component {...props} />);
+  fireEvent.change(screen.getByLabelText("Email для чека"), {
+    target: { value: "test@example.test" },
+  });
+  act(() => selectionCallbacks.get("order")!("draft-line", true));
+  await act(async () => {
+    fireEvent.submit(screen.getByLabelText("Email для чека").closest("form")!);
+  });
+  expect(checkout).not.toHaveBeenCalled();
+});
+
+it("ignores blocked selections on removed rows and resets them when the Subject changes", () => {
+  orderIds = ["one", "two"];
+  linesByOrder = { one: [{ id: "line" }], two: [{ id: "line" }] };
+  const view = render(<Component {...props} />);
+  act(() => selectionCallbacks.get("one")!("line", true));
+  orderIds = ["two"];
+  view.rerender(<Component {...props} />);
+  expect(
+    screen
+      .getByRole("button", { name: "Перейти к оплате" })
+      .hasAttribute("disabled"),
+  ).toBe(false);
+  act(() => selectionCallbacks.get("two")!("line", true));
+  const oldCallback = selectionCallbacks.get("two")!;
+  view.rerender(<Component {...props} data={{ id: "next-subject" }} />);
+  act(() => oldCallback("line", true));
+  expect(
+    screen
+      .getByRole("button", { name: "Перейти к оплате" })
+      .hasAttribute("disabled"),
+  ).toBe(false);
 });

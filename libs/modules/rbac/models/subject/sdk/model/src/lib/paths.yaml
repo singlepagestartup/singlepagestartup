@@ -1878,6 +1878,45 @@ paths:
                     type: integer
                     format: int32
 
+  /rbac/subjects/{id}/ecommerce-module/orders/{orderId}/selection:
+    post:
+      tags: [rbac-subject]
+      summary: Price and save the current buyer's cart selection
+      parameters: *a1
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data:
+                  type: string
+                  description: JSON containing action (save, preview or apply), the primary lineId, and selections with offerId, quantity, currencyId, optional destination and services. A write requires the primary line's expectedSelectionUpdatedAt. Apply also requires expectedVersions from a preview.
+      responses:
+        "200":
+          description: Itemized server quotes. An incomplete save returns quote issues and applied=false. A successful save returns the revision to use for the next edit.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+                    required: [quotes, orderIds, applied]
+                    properties:
+                      quotes: &cartSelectionQuotes
+                        type: array
+                        items: { $ref: "../../../../../../../../../libs/modules/ecommerce/relations/stores-to-products/sdk/model/src/lib/offer-quote.yaml" }
+                      comparisonQuotes: *cartSelectionQuotes
+                      orderIds: { type: array, items: { type: string, format: uuid } }
+                      applied: { type: boolean }
+                      selectionUpdatedAt: { type: string, format: date-time }
+        "400": { description: Invalid cart selection }
+        "403": { description: Cart access denied }
+        "409": { description: Cart revision, payment state or offer conditions changed }
   /rbac/subjects/{id}/ecommerce-module/offers:
     post:
       tags: [rbac-subject]

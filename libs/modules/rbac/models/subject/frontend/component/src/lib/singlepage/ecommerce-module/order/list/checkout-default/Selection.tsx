@@ -1,21 +1,43 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Checkbox } from "@sps/shared-ui-shadcn";
 import { Select } from "@sps/ui-adapter";
 import { formatCurrencyAmount } from "@sps/shared-frontend-client-utils";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import { api as offerApi } from "@sps/ecommerce/relations/stores-to-products/sdk/client";
 import { api as currencyApi } from "@sps/billing/models/currency/sdk/client";
-import type {
-  IEcommerceCartSelection,
-  IEcommerceCartSelectionResult,
+import {
+  route,
+  type IEcommerceCartSelection,
+  type IEcommerceCartSelectionResult,
 } from "@sps/rbac/models/subject/sdk/model";
-import type {
-  IOfferQuote,
-  IOfferServiceOption,
-} from "@sps/ecommerce/relations/stores-to-products/sdk/model";
+import type { IOfferServiceOption } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 import type { ISelectionProps } from "./interface";
+
+interface ITransferredService {
+  productId: string;
+  role: string;
+  quantity: string;
+  title: string;
+}
+
+interface IDraft {
+  offerId: string;
+  currencyId: string;
+  quantity: string;
+  address: string;
+  region: string;
+  pickup: string;
+  services: Record<string, string>;
+  missing: ITransferredService[];
+  transfer: ITransferredService[] | null;
+  split: boolean;
+  splitQuantity: string;
+  secondAddress: string;
+  secondRegion: string;
+}
 
 const input =
   "min-h-11 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground disabled:opacity-50";
@@ -35,44 +57,59 @@ export function Selection(props: ISelectionProps) {
   const children = props.details.lines.filter(
     (line) => line.parentLineId === props.line.id && line.offerId,
   );
-  const [offerId, setOfferId] = useState(
-    props.line.offerId ?? original?.offerId ?? "",
+
+  function savedDraft(): IDraft {
+    return {
+      offerId: props.line.offerId ?? original?.offerId ?? "",
+      currencyId: props.details.billingModuleCurrencyId ?? "",
+      quantity: String(props.line.quantity),
+      address: props.line.destination?.address ?? "",
+      region: props.line.destination?.region ?? "",
+      pickup: props.line.destination?.pickupPointId ?? "",
+      services: Object.fromEntries(
+        children.map((child) => [child.offerId!, String(child.quantity)]),
+      ),
+      missing: [],
+      transfer: null,
+      split: false,
+      splitQuantity: "1",
+      secondAddress: "",
+      secondRegion: props.line.destination?.region ?? "",
+    };
+  }
+
+  const [draft, setDraftState] = useState<IDraft>(savedDraft);
+  const draftValue = useRef(draft);
+  const [readyRevision, setReadyRevision] = useState(0);
+  const [pending, setPending] = useState(false);
+  const [splitting, setSplitting] = useState(false);
+  const [awaitingRefresh, setAwaitingRefresh] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshError, setRefreshError] = useState("");
+  const [receipt, setReceipt] = useState<IEcommerceCartSelectionResult | null>(
+    null,
   );
-  const [currencyId, setCurrencyId] = useState(
-    props.details.billingModuleCurrencyId ?? "",
-  );
-  const [quantity, setQuantity] = useState(props.line.quantity);
-  const [address, setAddress] = useState(props.line.destination?.address ?? "");
-  const [region, setRegion] = useState(props.line.destination?.region ?? "");
-  const [pickup, setPickup] = useState(
-    props.line.destination?.pickupPointId ?? "",
-  );
-  const [services, setServices] = useState<Record<string, number>>(() =>
-    Object.fromEntries(
-      children.map((child) => [child.offerId!, child.quantity]),
-    ),
-  );
-  const [transfer, setTransfer] = useState<{
-    target: string;
-    services: {
-      productId: string;
-      role: string;
-      quantity: number;
-      title: string;
-    }[];
-  } | null>(null);
-  const [missing, setMissing] = useState<string[]>([]);
-  const [dropMissing, setDropMissing] = useState(false);
-  const [split, setSplit] = useState(false);
-  const [splitQuantity, setSplitQuantity] = useState(1);
-  const [secondAddress, setSecondAddress] = useState(address);
-  const [secondRegion, setSecondRegion] = useState(region);
-  const [preview, setPreview] = useState<{
-    result: IEcommerceCartSelectionResult;
-    selections: IEcommerceCartSelection[];
-  } | null>(null);
   const [error, setError] = useState("");
-  const requestSequence = useRef(0);
+  const revision = useRef(0);
+  const appliedRevision = useRef(0);
+  const attemptedRevision = useRef(0);
+  const saving = useRef(false);
+  const savingPersistable = useRef(false);
+  const mounted = useRef(false);
+  const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const splitRevision = useRef<number | null>(null);
+  const conflict = useRef(false);
+  const refresh = useRef<{ revision: number; timestamp: string } | null>(null);
+  const selectionUpdatedAt = useRef(
+    new Date(props.line.selectionUpdatedAt).toISOString(),
+  );
+  const observedSelectionUpdatedAt = useRef(selectionUpdatedAt.current);
+  const callback = useRef(props.onSelectionStateChange);
+  callback.current = props.onSelectionStateChange;
+  const pendingCallback = useRef(props.onSelectionPendingChange);
+  pendingCallback.current = props.onSelectionPendingChange;
+  const blocked = useRef(false);
+  const closePending = useRef(false);
   const knownOptions = useRef(
     new Map<string, IOfferServiceOption>(
       (original?.serviceOptions ?? []).map((option) => [
@@ -82,9 +119,7 @@ export function Selection(props: ISelectionProps) {
     ),
   );
   const selectionMutation = api.ecommerceModuleOrderSelection({});
-  const applying =
-    selectionMutation.isPending &&
-    selectionMutation.variables?.data.action === "apply";
+  const queries = useQueryClient();
   const choices = (props.details.offers ?? []).filter(
     (offer) =>
       offer.productId === props.line.productId &&
@@ -92,21 +127,28 @@ export function Selection(props: ISelectionProps) {
       (props.line.product?.kind !== "service" ||
         offer.settings?.standalone === true),
   );
+  const quantity = Number(draft.quantity);
   const discovery = offerApi.quote({
-    data: { offerId, quantity, currencyId },
+    data: {
+      offerId: draft.offerId,
+      // Discovery only supplies available options; save quotes the full draft.
+      quantity: 1,
+      currencyId: draft.currencyId,
+    },
     reactQueryOptions: {
       enabled:
-        Boolean(offerId) && Number.isSafeInteger(quantity) && quantity > 0,
+        Boolean(draft.offerId) &&
+        Number.isSafeInteger(quantity) &&
+        quantity > 0,
     },
   });
   const available =
-    discovery.data?.offerId === offerId ? discovery.data : undefined;
+    discovery.data?.offerId === draft.offerId
+      ? discovery.data
+      : original?.offerId === draft.offerId
+        ? original
+        : undefined;
   const options = available?.serviceOptions ?? [];
-  useEffect(() => {
-    for (const option of available?.serviceOptions ?? []) {
-      knownOptions.current.set(option.offerId, option);
-    }
-  }, [available]);
   const currencyIds =
     available?.currencyIds ?? props.details.availableCurrencyIds ?? [];
   const currencies = currencyApi.find({
@@ -117,12 +159,8 @@ export function Selection(props: ISelectionProps) {
     },
     reactQueryOptions: { enabled: currencyIds.length > 0 },
   });
-  const effectiveServices = Object.entries(services).filter(
-    ([id, count]) =>
-      count > 0 && options.some((option) => option.offerId === id),
-  );
   const selectedOptions = options.filter(
-    (option) => (services[option.offerId] ?? 0) > 0,
+    (option) => draft.services[option.offerId] !== undefined,
   );
   const shipping = selectedOptions.some(
     (option) => option.receiptMethod === "shipping",
@@ -137,279 +175,473 @@ export function Selection(props: ISelectionProps) {
         .flatMap((option) => option.regionIds ?? []),
     ),
   ];
-  const unknownServices = children
-    .filter(
-      (child) =>
-        (services[child.offerId!] ?? 0) > 0 &&
-        available &&
-        !options.some((option) => option.offerId === child.offerId),
+  const unknownServices = available
+    ? Object.keys(draft.services).filter(
+        (id) => !options.some((option) => option.offerId === id),
+      )
+    : [];
+  const unavailableServices = [
+    ...new Set([
+      ...draft.missing.map((selected) => selected.title),
+      ...unknownServices.map((id) => {
+        const option = knownOptions.current.get(id);
+        const child = children.find((line) => line.offerId === id);
+        return (
+          option?.titles?.[props.language] ||
+          option?.title ||
+          child?.product?.title?.[props.language] ||
+          child?.product?.slug ||
+          child?.productId ||
+          id
+        );
+      }),
+    ]),
+  ];
+
+  function reportBlocked(value: boolean) {
+    if (blocked.current === value) return;
+    blocked.current = value;
+    callback.current?.(props.line.id, value);
+  }
+
+  function reportPending(value: boolean) {
+    if (closePending.current === value) return;
+    closePending.current = value;
+    pendingCallback.current?.(props.line.id, value);
+  }
+
+  function setDraft(update: (current: IDraft) => IDraft) {
+    const next = update(draftValue.current);
+    draftValue.current = next;
+    setDraftState(next);
+    return next;
+  }
+
+  function canPersist(next: IDraft, includeSplit: boolean) {
+    const count = Number(next.quantity);
+    if (
+      !next.offerId ||
+      !next.currencyId ||
+      !Number.isSafeInteger(count) ||
+      count < 1 ||
+      count > (props.details.maxLineQuantity ?? Number.MAX_SAFE_INTEGER) ||
+      Object.values(next.services).some(
+        (quantity) =>
+          !Number.isSafeInteger(Number(quantity)) || Number(quantity) < 1,
+      ) ||
+      next.missing.length > 0 ||
+      (next.split && !includeSplit)
     )
-    .map(
-      (child) =>
-        child.product?.title?.[props.language] ||
-        child.product?.slug ||
-        child.productId,
+      return false;
+    if (next.transfer) return true;
+    const metadata =
+      available?.offerId === next.offerId ? available : undefined;
+    if (!metadata) return draft.offerId !== next.offerId || !discovery.isError;
+    if (
+      !metadata.currencyIds.includes(next.currencyId) ||
+      Object.keys(next.services).some(
+        (id) =>
+          !metadata.serviceOptions.some((option) => option.offerId === id),
+      )
+    )
+      return false;
+    const selected = metadata.serviceOptions.filter(
+      (option) => next.services[option.offerId] !== undefined,
     );
-  const unavailableServices = [...new Set([...missing, ...unknownServices])];
+    const delivers = selected.some(
+      (option) => option.receiptMethod === "shipping",
+    );
+    const collects = selected.find(
+      (option) => option.receiptMethod === "pickup",
+    );
+    if (
+      (delivers && !next.address.trim()) ||
+      (collects && !collects.pickupPointIds?.includes(next.pickup)) ||
+      (choices.find((offer) => offer.id === next.offerId)?.settings
+        ?.requiredDelivery &&
+        !selected.some((option) => option.role === "delivery"))
+    )
+      return false;
+    return (
+      !includeSplit ||
+      (Number.isSafeInteger(Number(next.splitQuantity)) &&
+        Number(next.splitQuantity) > 0 &&
+        Number(next.splitQuantity) < count &&
+        count === props.line.quantity &&
+        (!delivers ||
+          (Boolean(next.secondAddress.trim()) &&
+            next.secondAddress.trim() !== next.address.trim())))
+    );
+  }
+
+  useLayoutEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      if (debounce.current) clearTimeout(debounce.current);
+      callback.current?.(props.line.id, false);
+      pendingCallback.current?.(props.line.id, false);
+    };
+  }, [props.line.id]);
 
   useEffect(() => {
-    requestSequence.current += 1;
-    setPreview(null);
-  }, [
-    offerId,
-    currencyId,
-    quantity,
-    address,
-    region,
-    pickup,
-    services,
-    dropMissing,
-    split,
-    splitQuantity,
-    secondAddress,
-    secondRegion,
-  ]);
-  useEffect(
-    () => () => {
-      requestSequence.current += 1;
-    },
-    [],
-  );
+    for (const option of available?.serviceOptions ?? []) {
+      knownOptions.current.set(option.offerId, option);
+    }
+  }, [available]);
+
   useEffect(() => {
-    if (!transfer || !available || available.offerId !== transfer.target)
-      return;
-    const matched: Record<string, number> = {};
-    const unavailable: string[] = [];
-    for (const selected of transfer.services) {
+    if (!draft.transfer || !available) return;
+    const matched: Record<string, string> = {};
+    const missing: ITransferredService[] = [];
+    for (const selected of draft.transfer) {
       const targets = available.serviceOptions.filter(
         (option) =>
           option.productId === selected.productId &&
           option.role === selected.role,
       );
-      if (targets.length === 1) matched[targets[0].offerId] = selected.quantity;
-      else unavailable.push(selected.title);
+      if (targets.length === 1) {
+        matched[targets[0].offerId] = selected.quantity;
+      } else {
+        missing.push(selected);
+      }
     }
-    setServices(matched);
-    setMissing(unavailable);
-    setDropMissing(false);
-    setTransfer(null);
-  }, [transfer, available]);
+    setDraft((current) =>
+      current.transfer === draft.transfer
+        ? { ...current, services: matched, missing, transfer: null }
+        : current,
+    );
+  }, [draft.transfer, available]);
 
-  function changeSeller(next: string) {
-    const preserved = Object.entries(services)
-      .filter(([, count]) => count > 0)
-      .map(([id, count]) => {
-        const option = knownOptions.current.get(id);
-        const child = children.find((child) => child.offerId === id);
-        return {
-          productId: option?.productId ?? child?.productId ?? id,
-          role: option?.role ?? "unknown",
-          quantity: count,
-          title:
-            option?.titles?.[props.language] ??
-            option?.title ??
-            child?.product?.title?.[props.language] ??
-            child?.productId ??
-            id,
-        };
-      });
-    setTransfer({ target: next, services: preserved });
-    setOfferId(next);
-    setPreview(null);
+  // A cart refetch must not replace edits made while its save was in flight.
+  useEffect(() => {
+    const next = new Date(props.line.selectionUpdatedAt).toISOString();
+    if (next === observedSelectionUpdatedAt.current) return;
+    observedSelectionUpdatedAt.current = next;
+    if (
+      saving.current ||
+      refresh.current ||
+      revision.current !== appliedRevision.current
+    )
+      return;
+    selectionUpdatedAt.current = next;
+    setDraft((current) => (current.split ? current : savedDraft()));
+    setReceipt(null);
+  }, [props.line.selectionUpdatedAt]);
+
+  useEffect(() => {
+    const expected = refresh.current;
+    if (!expected || saving.current) return;
+    const latest = expected.revision === revision.current;
+    const received = new Date(props.line.selectionUpdatedAt).toISOString();
+    if (received !== expected.timestamp) {
+      if (
+        new Date(received).getTime() > new Date(expected.timestamp).getTime()
+      ) {
+        refresh.current = null;
+        setAwaitingRefresh(false);
+        if (latest) {
+          appliedRevision.current = expected.revision - 1;
+          conflict.current = true;
+          setError(
+            ru
+              ? "Позиция изменилась в другом окне. Проверьте параметры и повторите сохранение."
+              : "This item changed in another window. Review your choices and retry saving.",
+          );
+        }
+      }
+      return;
+    }
+    refresh.current = null;
+    setAwaitingRefresh(false);
+    setRefreshError("");
+    if (latest) {
+      setReceipt(null);
+      if (!draft.split) reportBlocked(false);
+    }
+  }, [props.line.selectionUpdatedAt, awaitingRefresh, pending, draft.split]);
+
+  function edit(
+    update: (current: IDraft) => IDraft,
+    wait = false,
+    submitSplit = false,
+  ) {
+    const nextRevision = ++revision.current;
+    if (debounce.current) clearTimeout(debounce.current);
+    splitRevision.current = submitSplit ? nextRevision : null;
+    reportBlocked(true);
+    conflict.current = false;
     setError("");
+    setRefreshError("");
+    setReceipt(null);
+    const next = setDraft(update);
+    reportPending(savingPersistable.current || canPersist(next, submitSplit));
+    if (wait) {
+      debounce.current = setTimeout(() => {
+        if (mounted.current) setReadyRevision(nextRevision);
+      }, 350);
+    } else {
+      setReadyRevision(nextRevision);
+    }
   }
 
-  function selections(): IEcommerceCartSelection[] {
+  function changeSeller(offerId: string) {
+    if (offerId === draft.offerId) return;
+    edit((current) => {
+      const preserved = current.transfer ?? [
+        ...Object.entries(current.services).map(([id, count]) => {
+          const option = knownOptions.current.get(id);
+          const child = children.find((line) => line.offerId === id);
+          return {
+            productId: option?.productId ?? child?.productId ?? id,
+            role: option?.role ?? "unknown",
+            quantity: count,
+            title:
+              option?.titles?.[props.language] ||
+              option?.title ||
+              child?.product?.title?.[props.language] ||
+              child?.productId ||
+              id,
+          };
+        }),
+        ...current.missing,
+      ];
+      return {
+        ...current,
+        offerId,
+        services: {},
+        missing: [],
+        transfer: preserved,
+        pickup: "",
+      };
+    });
+  }
+
+  function selections(includeSplit: boolean): IEcommerceCartSelection[] {
     const destination = shipping
-      ? { address, ...(region ? { region } : {}) }
+      ? {
+          address: draft.address,
+          ...(draft.region ? { region: draft.region } : {}),
+        }
       : pickupOption
-        ? { pickupPointId: pickup }
+        ? { pickupPointId: draft.pickup }
         : {};
-    const selected = effectiveServices.map(([id, count]) => ({
-      offerId: id,
-      quantity: count,
-    }));
+    const services = Object.entries(draft.services)
+      .filter(([id]) => options.some((option) => option.offerId === id))
+      .map(([offerId, count]) => ({ offerId, quantity: Number(count) }));
     const first = {
-      offerId,
+      offerId: draft.offerId,
       quantity,
-      currencyId,
+      currencyId: draft.currencyId,
       destination,
-      services: selected,
+      services,
     };
-    if (!split) return [first];
-    const remaining = quantity - splitQuantity;
-    const firstServices = selected
-      .map((selected) => ({
-        ...selected,
-        quantity:
-          options.find((option) => option.offerId === selected.offerId)
-            ?.role === "delivery"
-            ? selected.quantity
-            : Math.min(selected.quantity, remaining),
-      }))
-      .filter((selected) => selected.quantity > 0);
-    const secondServices = selected
-      .map((selected) => ({
-        ...selected,
-        quantity:
-          options.find((option) => option.offerId === selected.offerId)
-            ?.role === "delivery"
-            ? selected.quantity
-            : Math.max(0, selected.quantity - remaining),
-      }))
-      .filter((selected) => selected.quantity > 0);
+    if (!includeSplit) return [first];
+    const secondQuantity = Number(draft.splitQuantity);
+    const remaining = quantity - secondQuantity;
     return [
-      { ...first, quantity: remaining, services: firstServices },
       {
         ...first,
-        quantity: splitQuantity,
+        quantity: remaining,
+        services: services
+          .map((selected) => ({
+            ...selected,
+            quantity:
+              options.find((option) => option.offerId === selected.offerId)
+                ?.role === "delivery"
+                ? selected.quantity
+                : Math.min(selected.quantity, remaining),
+          }))
+          .filter((selected) => selected.quantity > 0),
+      },
+      {
+        ...first,
+        quantity: secondQuantity,
         destination: shipping
           ? {
-              address: secondAddress,
-              ...(secondRegion ? { region: secondRegion } : {}),
+              address: draft.secondAddress,
+              ...(draft.secondRegion ? { region: draft.secondRegion } : {}),
             }
           : destination,
-        services: secondServices,
+        services: services
+          .map((selected) => ({
+            ...selected,
+            quantity:
+              options.find((option) => option.offerId === selected.offerId)
+                ?.role === "delivery"
+                ? selected.quantity
+                : Math.max(0, selected.quantity - remaining),
+          }))
+          .filter((selected) => selected.quantity > 0),
       },
     ];
   }
 
-  async function compare() {
-    const sequence = ++requestSequence.current;
-    const requested = selections();
-    setError("");
-    try {
-      const result = await selectionMutation.mutateAsync({
-        id: props.subject.id,
-        orderId: props.ecommerceModuleOrder.id,
-        data: {
-          action: "preview",
-          lineId: props.line.id,
-          selections: requested,
-        },
-      });
-      if (sequence === requestSequence.current)
-        setPreview({ result, selections: requested });
-    } catch (cause) {
-      if (sequence === requestSequence.current)
-        setError(
-          cause instanceof Error
-            ? cause.message
-            : ru
-              ? "Не удалось сравнить предложения."
-              : "Could not compare offers.",
-        );
-    }
-  }
-
-  async function apply() {
-    if (!preview) return;
-    const sequence = ++requestSequence.current;
-    setError("");
-    try {
-      await selectionMutation.mutateAsync({
-        id: props.subject.id,
-        orderId: props.ecommerceModuleOrder.id,
-        data: {
-          action: "apply",
-          lineId: props.line.id,
-          selections: preview.selections,
-          expectedVersions: preview.result.quotes.map((quote) => quote.version),
-          expectedSelectionUpdatedAt: new Date(
-            props.line.selectionUpdatedAt,
-          ).toISOString(),
-        },
-      });
-      if (sequence === requestSequence.current) setPreview(null);
-    } catch (cause) {
-      if (sequence !== requestSequence.current) return;
-      const message = cause instanceof Error ? cause.message : "";
-      if (/Offer terms changed|Quote expired/.test(message)) {
-        await compare();
-        setError(
-          ru
-            ? "Условия изменились. Проверьте новый расчёт и подтвердите его ещё раз."
-            : "Terms changed. Review and confirm the refreshed quote.",
-        );
-      } else
-        setError(
-          message ||
-            (ru
-              ? "Не удалось сохранить выбор."
-              : "Could not save the selection."),
-        );
-    }
-  }
-
-  function cancel() {
-    requestSequence.current += 1;
-    setPreview(null);
-    setOfferId(props.line.offerId ?? original?.offerId ?? "");
-    setCurrencyId(props.details.billingModuleCurrencyId ?? "");
-    setQuantity(props.line.quantity);
-    setAddress(props.line.destination?.address ?? "");
-    setRegion(props.line.destination?.region ?? "");
-    setPickup(props.line.destination?.pickupPointId ?? "");
-    setServices(
-      Object.fromEntries(
-        children.map((child) => [child.offerId!, child.quantity]),
-      ),
+  const validQuantities =
+    Number.isSafeInteger(quantity) &&
+    quantity > 0 &&
+    quantity <= (props.details.maxLineQuantity ?? Number.MAX_SAFE_INTEGER) &&
+    Object.values(draft.services).every(
+      (count) => Number.isSafeInteger(Number(count)) && Number(count) > 0,
     );
-    setMissing([]);
-    setDropMissing(false);
-    setSplit(false);
-    setTransfer(null);
-    setError("");
-  }
+  const validSplit =
+    validQuantities &&
+    Number.isSafeInteger(Number(draft.splitQuantity)) &&
+    Number(draft.splitQuantity) > 0 &&
+    Number(draft.splitQuantity) < quantity &&
+    quantity === props.line.quantity &&
+    (!shipping ||
+      (Boolean(draft.secondAddress.trim()) &&
+        draft.secondAddress.trim() !== draft.address.trim()));
+  const validInput =
+    Boolean(draft.offerId && draft.currencyId && available) &&
+    validQuantities &&
+    !draft.transfer &&
+    unavailableServices.length === 0;
 
-  function amounts(quote: IOfferQuote) {
-    const symbol =
-      currencies.data?.find((currency) => currency.id === quote.currencyId)
-        ?.symbol ?? quote.currencyId;
-    return (
-      <dl className="space-y-1 text-xs">
-        {quote.charges.map((charge) => {
-          const option =
-            quote.serviceOptions.find(
-              (option) => option.offerId === charge.offerId,
-            ) ?? knownOptions.current.get(charge.offerId);
-          const title =
-            charge.role === "product"
-              ? props.line.product?.title?.[props.language] ||
-                props.line.product?.title?.en ||
-                (ru ? "Товар" : "Product")
-              : option?.titles?.[props.language] ||
-                option?.title ||
-                (charge.role === "delivery"
-                  ? ru
-                    ? "Получение"
-                    : "Fulfillment"
-                  : ru
-                    ? "Услуга"
-                    : "Service");
-          return (
-            <div key={charge.offerId} className="flex justify-between gap-2">
-              <dt className="min-w-0">
-                {title} × {charge.quantity}
-              </dt>
-              <dd className="shrink-0 tabular-nums">
-                {formatCurrencyAmount(charge.amount, props.language)} {symbol}
-              </dd>
-            </div>
+  useEffect(() => {
+    reportPending(
+      savingPersistable.current ||
+        (revision.current > attemptedRevision.current &&
+          canPersist(draft, splitRevision.current === revision.current)),
+    );
+  }, [draft, readyRevision, pending, available, discovery.isError]);
+
+  useEffect(() => {
+    const currentRevision = revision.current;
+    const includeSplit = splitRevision.current === currentRevision;
+    if (
+      !mounted.current ||
+      saving.current ||
+      currentRevision === 0 ||
+      readyRevision !== currentRevision ||
+      attemptedRevision.current >= currentRevision ||
+      !validInput ||
+      (draft.split && (!includeSplit || !validSplit))
+    ) {
+      return;
+    }
+    const requested = selections(includeSplit);
+    attemptedRevision.current = currentRevision;
+    saving.current = true;
+    savingPersistable.current = canPersist(draft, includeSplit);
+    reportPending(savingPersistable.current);
+    setPending(true);
+    setSplitting(includeSplit);
+
+    async function save() {
+      try {
+        const result = await selectionMutation.mutateAsync({
+          id: props.subject.id,
+          orderId: props.ecommerceModuleOrder.id,
+          data: {
+            action: "save",
+            lineId: props.line.id,
+            selections: requested,
+            expectedSelectionUpdatedAt: selectionUpdatedAt.current,
+          },
+        });
+        if (!mounted.current) return;
+        if (result.applied && result.selectionUpdatedAt) {
+          selectionUpdatedAt.current = result.selectionUpdatedAt;
+          refresh.current = {
+            revision: currentRevision,
+            timestamp: result.selectionUpdatedAt,
+          };
+          setAwaitingRefresh(true);
+        }
+        if (includeSplit && result.applied) {
+          // Newly created orders render their own receipts after SDK refetch.
+          // Rebase queued ordinary edits onto this order's remaining quantity.
+          const first = requested[0];
+          setDraft((current) => ({
+            ...current,
+            split: false,
+            quantity:
+              current.quantity === draft.quantity
+                ? String(first.quantity)
+                : current.quantity,
+            services:
+              JSON.stringify(current.services) ===
+              JSON.stringify(draft.services)
+                ? Object.fromEntries(
+                    (first.services ?? []).map((selected) => [
+                      selected.offerId,
+                      String(selected.quantity),
+                    ]),
+                  )
+                : current.services,
+            secondAddress: "",
+          }));
+          splitRevision.current = null;
+        }
+        if (currentRevision !== revision.current) return;
+        setReceipt(result);
+        conflict.current = false;
+        if (result.applied) {
+          appliedRevision.current = currentRevision;
+        }
+      } catch (cause) {
+        if (!mounted.current || currentRevision !== revision.current) return;
+        const message = cause instanceof Error ? cause.message : "";
+        conflict.current = /Cart selection changed/i.test(message);
+        setError(
+          conflict.current
+            ? ru
+              ? "Позиция изменилась в другом окне. Проверьте параметры и повторите сохранение."
+              : "This item changed in another window. Review your choices and retry saving."
+            : message ||
+                (ru
+                  ? "Не удалось сохранить выбор."
+                  : "Could not save the selection."),
+        );
+      } finally {
+        saving.current = false;
+        savingPersistable.current = false;
+        if (mounted.current) {
+          reportPending(
+            revision.current > attemptedRevision.current &&
+              canPersist(
+                draftValue.current,
+                splitRevision.current === revision.current,
+              ),
           );
-        })}
-        <div className="flex justify-between gap-2 border-t border-border pt-1 font-semibold">
-          <dt>{ru ? "Итого" : "Total"}</dt>
-          <dd className="shrink-0 tabular-nums">
-            {quote.amount === null
-              ? ru
-                ? "Нужен выбор"
-                : "Selection needed"
-              : `${formatCurrencyAmount(quote.amount, props.language)} ${symbol}`}
-          </dd>
-        </div>
-      </dl>
-    );
+          setPending(false);
+          setSplitting(false);
+        }
+      }
+    }
+    void save();
+  }, [draft, readyRevision, pending, validInput, validSplit]);
+
+  function retry() {
+    if (conflict.current) {
+      selectionUpdatedAt.current = new Date(
+        props.line.selectionUpdatedAt,
+      ).toISOString();
+    }
+    edit((current) => current, false, draft.split);
+  }
+
+  async function refreshCart() {
+    setRefreshing(true);
+    setRefreshError("");
+    try {
+      await queries.invalidateQueries(
+        { queryKey: [`${route}/${props.subject.id}/ecommerce-module/orders`] },
+        { throwOnError: true },
+      );
+    } catch {
+      if (mounted.current) {
+        setRefreshError(
+          ru
+            ? "Не удалось обновить корзину. Попробуйте ещё раз."
+            : "Could not refresh the cart. Please retry.",
+        );
+      }
+    } finally {
+      if (mounted.current) setRefreshing(false);
+    }
   }
 
   function storeTitle(id: string) {
@@ -425,105 +657,42 @@ export function Selection(props: ISelectionProps) {
       : title;
   }
 
-  function quoteSummary(quote: IOfferQuote) {
-    function amount(value: string | null) {
-      return value?.includes(".")
-        ? value.replace(/0+$/, "").replace(/\.$/, "")
-        : value;
-    }
-    return JSON.stringify({
-      offerId: quote.offerId,
-      currencyId: quote.currencyId,
-      quantity: quote.quantity,
-      amount: amount(quote.amount),
-      charges: quote.charges
-        .map((charge) => [
-          charge.offerId,
-          charge.quantity,
-          amount(charge.amount),
-        ])
-        .sort(),
-      issues: quote.issues,
-    });
-  }
-
-  function destinationDetails(destination: IOfferQuote["destination"]) {
-    const text = [
-      destination?.address,
-      destination?.region,
-      destination?.pickupPointId,
-    ]
-      .filter(Boolean)
-      .join(", ");
-    return text ? (
-      <p className="mt-2 break-words text-xs text-muted-foreground">{text}</p>
-    ) : null;
-  }
-
-  const savedOfferId = props.line.offerId ?? original?.offerId ?? "";
-  const savedStore = choices.find(
-    (offer) => offer.id === savedOfferId,
-  )?.storeId;
-  const selectedStore = choices.find((offer) => offer.id === offerId)?.storeId;
-  const storeChanged =
-    savedStore && selectedStore
-      ? savedStore !== selectedStore
-      : savedOfferId !== offerId;
-  const servicesChanged =
-    JSON.stringify([...effectiveServices].sort()) !==
-    JSON.stringify(
-      children.map((child) => [child.offerId!, child.quantity]).sort(),
-    );
-  const proposedDestination = selections()[0].destination;
-  const destinationChanged = (
-    ["address", "region", "pickupPointId"] as const
-  ).some(
-    (key) =>
-      (props.line.destination?.[key] ?? "") !==
-      (proposedDestination?.[key] ?? ""),
-  );
-  const selectionChanged =
-    savedOfferId !== offerId ||
-    currencyId !== props.details.billingModuleCurrencyId ||
-    quantity !== props.line.quantity ||
-    servicesChanged ||
-    destinationChanged ||
-    split;
-  const sameSelectionAndPrice =
-    !selectionChanged &&
+  const unsaved = revision.current !== appliedRevision.current;
+  const currentReceipt =
+    receipt?.quotes[0] ?? (!unsaved ? original : undefined);
+  const receiptIssues =
+    receipt?.quotes.flatMap((quote) => quote.issues) ??
+    (!unsaved ? (original?.issues ?? []) : []);
+  const symbol =
+    currencies.data?.find(
+      (currency) => currency.id === currentReceipt?.currencyId,
+    )?.symbol ??
+    currentReceipt?.currencyId ??
+    "";
+  const unavailableCurrency =
+    Boolean(draft.currencyId && available) &&
+    !currencyIds.includes(draft.currencyId);
+  const priceStale = Boolean(
+    !receipt?.applied &&
     original &&
-    original.amount !== null &&
-    original.issues.length === 0 &&
-    preview?.result.quotes.length === 1 &&
-    quoteSummary(original) === quoteSummary(preview.result.quotes[0]);
-  // Cart details contain live prices; only the saved version records consent.
-  const unchanged =
-    sameSelectionAndPrice &&
-    Boolean(props.line.offerId) &&
-    props.line.quoteVersion === preview?.result.quotes[0].version;
-  const reconfirm = sameSelectionAndPrice && !unchanged;
-  const comparisonQuotes = storeChanged
-    ? (preview?.result.comparisonQuotes?.filter(
-        (quote) =>
-          !original ||
-          destinationChanged ||
-          quoteSummary(quote) !== quoteSummary(original),
-      ) ?? [])
-    : [];
+    props.line.offerId &&
+    props.line.quoteVersion !== original.version,
+  );
+  useEffect(() => {
+    if (priceStale || unavailableCurrency) reportBlocked(true);
+  }, [priceStale, unavailableCurrency]);
+  const receiptReady =
+    !unsaved &&
+    !draft.split &&
+    !awaitingRefresh &&
+    !priceStale &&
+    !unavailableCurrency &&
+    currentReceipt?.amount !== null &&
+    currentReceipt?.amount !== undefined &&
+    receiptIssues.length === 0;
 
-  const validQuantities =
-    Number.isSafeInteger(quantity) &&
-    quantity > 0 &&
-    (!split ||
-      (Number.isSafeInteger(splitQuantity) &&
-        splitQuantity > 0 &&
-        splitQuantity < quantity &&
-        quantity === props.line.quantity));
   return (
-    <fieldset
-      disabled={applying}
-      className="mt-4 min-w-0 space-y-3 border-t border-border pt-4"
-    >
+    <fieldset className="mt-4 min-w-0 space-y-3 border-t border-border pt-4">
       <p className="text-xs text-muted-foreground">
         {ru
           ? "Магазин, адрес и услуги этого заказа"
@@ -535,9 +704,8 @@ export function Selection(props: ISelectionProps) {
           ui="shadcn"
           id={`${controlId}-store`}
           className={input}
-          value={offerId}
+          value={draft.offerId}
           onValueChange={changeSeller}
-          disabled={applying}
           placeholder={ru ? "Выберите магазин" : "Choose a store"}
           options={choices.map((offer) => ({
             value: offer.id,
@@ -552,9 +720,13 @@ export function Selection(props: ISelectionProps) {
             className={input}
             type="number"
             min={1}
+            max={props.details.maxLineQuantity}
             step={1}
-            value={quantity}
-            onChange={(event) => setQuantity(Number(event.target.value))}
+            value={draft.quantity}
+            onChange={(event) => {
+              const quantity = event.target.value;
+              edit((current) => ({ ...current, quantity }), true);
+            }}
           />
         </label>
         <div className="grid gap-1 text-xs font-medium">
@@ -565,9 +737,12 @@ export function Selection(props: ISelectionProps) {
             ui="shadcn"
             id={`${controlId}-currency`}
             className={input}
-            value={currencyId}
-            onValueChange={setCurrencyId}
-            disabled={applying}
+            value={
+              currencyIds.includes(draft.currencyId) ? draft.currencyId : ""
+            }
+            onValueChange={(currencyId) =>
+              edit((current) => ({ ...current, currencyId }))
+            }
             placeholder={ru ? "Выберите валюту" : "Choose currency"}
             options={currencyIds.map((id) => ({
               value: id,
@@ -593,24 +768,26 @@ export function Selection(props: ISelectionProps) {
             >
               <label
                 htmlFor={`${controlId}-${option.offerId}`}
-                className="flex min-h-14 w-full cursor-pointer items-center gap-3 p-3 text-sm hover:bg-muted/50 has-[:disabled]:cursor-wait"
+                className="flex min-h-14 w-full cursor-pointer items-center gap-3 p-3 text-sm hover:bg-muted/50"
               >
                 <Checkbox
                   id={`${controlId}-${option.offerId}`}
                   className="size-5 rounded-md border-2 border-muted-foreground bg-card focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 data-[state=checked]:border-primary"
-                  checked={(services[option.offerId] ?? 0) > 0}
-                  disabled={applying}
+                  checked={draft.services[option.offerId] !== undefined}
                   onCheckedChange={(value) => {
                     const checked = value === true;
-                    setServices((current) => {
-                      const next = { ...current };
-                      if (option.role === "delivery" && checked)
+                    edit((current) => {
+                      const services = { ...current.services };
+                      if (option.role === "delivery" && checked) {
                         for (const delivery of options.filter(
                           (item) => item.role === "delivery",
-                        ))
-                          delete next[delivery.offerId];
-                      next[option.offerId] = checked ? 1 : 0;
-                      return next;
+                        )) {
+                          delete services[delivery.offerId];
+                        }
+                      }
+                      if (checked) services[option.offerId] = "1";
+                      else delete services[option.offerId];
+                      return { ...current, services };
                     });
                   }}
                 />
@@ -629,7 +806,7 @@ export function Selection(props: ISelectionProps) {
                       : ""}
                 </span>
               </label>
-              {(services[option.offerId] ?? 0) > 0 &&
+              {draft.services[option.offerId] !== undefined &&
               option.role === "add-on" ? (
                 <label className="grid gap-1 px-3 pb-3 text-xs">
                   {ru ? "Количество единиц услуги" : "Service quantity"}
@@ -639,13 +816,20 @@ export function Selection(props: ISelectionProps) {
                     min={1}
                     max={quantity}
                     step={1}
-                    value={services[option.offerId]}
-                    onChange={(event) =>
-                      setServices((current) => ({
-                        ...current,
-                        [option.offerId]: Number(event.target.value),
-                      }))
-                    }
+                    value={draft.services[option.offerId]}
+                    onChange={(event) => {
+                      const count = event.target.value;
+                      edit(
+                        (current) => ({
+                          ...current,
+                          services: {
+                            ...current.services,
+                            [option.offerId]: count,
+                          },
+                        }),
+                        true,
+                      );
+                    }}
                   />
                 </label>
               ) : null}
@@ -653,15 +837,34 @@ export function Selection(props: ISelectionProps) {
           ))}
         </fieldset>
       ) : null}
+      {!available && discovery.isError ? (
+        <div className="space-y-2">
+          <p role="alert" className="text-xs text-destructive">
+            {ru
+              ? "Не удалось загрузить параметры магазина."
+              : "Could not load the store options."}
+          </p>
+          <button
+            type="button"
+            className={button}
+            onClick={() => void discovery.refetch()}
+          >
+            {ru ? "Повторить загрузку" : "Retry loading"}
+          </button>
+        </div>
+      ) : null}
       {shipping ? (
         <div className="space-y-3">
           <label className="grid gap-1 text-xs">
             {ru ? "Адрес доставки" : "Delivery address"}
             <input
               className={input}
-              value={address}
+              value={draft.address}
               autoComplete="street-address"
-              onChange={(event) => setAddress(event.target.value)}
+              onChange={(event) => {
+                const address = event.target.value;
+                edit((current) => ({ ...current, address }), true);
+              }}
             />
           </label>
           <div className="grid gap-1 text-xs">
@@ -673,9 +876,10 @@ export function Selection(props: ISelectionProps) {
                 ui="shadcn"
                 id={`${controlId}-region`}
                 className={input}
-                value={region}
-                onValueChange={setRegion}
-                disabled={applying}
+                value={draft.region}
+                onValueChange={(region) =>
+                  edit((current) => ({ ...current, region }))
+                }
                 placeholder={ru ? "Выберите регион" : "Choose a region"}
                 options={regionIds.map((id) => ({ value: id, label: id }))}
               />
@@ -683,8 +887,11 @@ export function Selection(props: ISelectionProps) {
               <input
                 id={`${controlId}-region`}
                 className={input}
-                value={region}
-                onChange={(event) => setRegion(event.target.value)}
+                value={draft.region}
+                onChange={(event) => {
+                  const region = event.target.value;
+                  edit((current) => ({ ...current, region }), true);
+                }}
               />
             )}
           </div>
@@ -699,9 +906,10 @@ export function Selection(props: ISelectionProps) {
             ui="shadcn"
             id={`${controlId}-pickup`}
             className={input}
-            value={pickup}
-            onValueChange={setPickup}
-            disabled={applying}
+            value={draft.pickup}
+            onValueChange={(pickup) =>
+              edit((current) => ({ ...current, pickup }))
+            }
             placeholder={
               ru ? "Выберите точку магазина" : "Choose a store location"
             }
@@ -728,17 +936,25 @@ export function Selection(props: ISelectionProps) {
             <Checkbox
               id={`${controlId}-remove-services`}
               className="size-5 rounded-md border-2 border-destructive bg-card focus-visible:ring-foreground"
-              checked={dropMissing}
-              disabled={applying}
-              onCheckedChange={(checked) => setDropMissing(checked === true)}
+              checked={false}
+              onCheckedChange={(checked) => {
+                if (checked !== true) return;
+                edit((current) => ({
+                  ...current,
+                  missing: [],
+                  services: Object.fromEntries(
+                    Object.entries(current.services).filter(([id]) =>
+                      options.some((option) => option.offerId === id),
+                    ),
+                  ),
+                }));
+              }}
             />
-            {ru
-              ? "Подтверждаю отказ от этих услуг"
-              : "I agree to remove these services"}
+            {ru ? "Убрать недоступные услуги" : "Remove unavailable services"}
           </label>
         </div>
       ) : null}
-      {props.line.quantity >= 2 ? (
+      {quantity >= 2 || draft.split ? (
         <label
           htmlFor={`${controlId}-split`}
           className="flex min-h-11 cursor-pointer items-center gap-3 text-xs"
@@ -746,15 +962,20 @@ export function Selection(props: ISelectionProps) {
           <Checkbox
             id={`${controlId}-split`}
             className="size-5 rounded-md border-2 border-muted-foreground bg-card focus-visible:ring-foreground"
-            checked={split}
-            disabled={applying}
-            onCheckedChange={(checked) => setSplit(checked === true)}
+            checked={draft.split}
+            disabled={splitting}
+            onCheckedChange={(checked) =>
+              edit((current) => ({ ...current, split: checked === true }))
+            }
           />
           {ru ? "Разделить по адресам" : "Split by destination"}
         </label>
       ) : null}
-      {split ? (
-        <div className="space-y-3 rounded-xl border border-border p-3">
+      {draft.split ? (
+        <fieldset
+          disabled={splitting}
+          className="space-y-3 rounded-xl border border-border p-3"
+        >
           <label className="grid gap-1 text-xs">
             {ru
               ? "Количество во втором заказе"
@@ -765,8 +986,11 @@ export function Selection(props: ISelectionProps) {
               min={1}
               max={quantity - 1}
               step={1}
-              value={splitQuantity}
-              onChange={(event) => setSplitQuantity(Number(event.target.value))}
+              value={draft.splitQuantity}
+              onChange={(event) => {
+                const splitQuantity = event.target.value;
+                edit((current) => ({ ...current, splitQuantity }), true);
+              }}
             />
           </label>
           {shipping ? (
@@ -775,221 +999,212 @@ export function Selection(props: ISelectionProps) {
                 {ru ? "Адрес второго заказа" : "Second order address"}
                 <input
                   className={input}
-                  value={secondAddress}
-                  onChange={(event) => setSecondAddress(event.target.value)}
+                  value={draft.secondAddress}
+                  onChange={(event) => {
+                    const secondAddress = event.target.value;
+                    edit((current) => ({ ...current, secondAddress }), true);
+                  }}
                 />
               </label>
               <label className="grid gap-1 text-xs">
                 {ru ? "Регион второго заказа" : "Second order region"}
                 <input
                   className={input}
-                  value={secondRegion}
-                  onChange={(event) => setSecondRegion(event.target.value)}
+                  value={draft.secondRegion}
+                  onChange={(event) => {
+                    const secondRegion = event.target.value;
+                    edit((current) => ({ ...current, secondRegion }), true);
+                  }}
                 />
               </label>
             </>
           ) : null}
           <p className="text-xs text-muted-foreground">
             {ru
-              ? "Доставка рассчитывается для каждого заказа. Проверьте количество услуг в сравнении."
-              : "Fulfillment is priced per order. Review service quantities in the comparison."}
+              ? "Будут созданы два заказа. Доставка рассчитывается для каждого заказа."
+              : "This creates two orders. Fulfillment is priced for each order."}
           </p>
-        </div>
+          <button
+            type="button"
+            className={button}
+            disabled={!validInput || !validSplit || pending}
+            onClick={() => edit((current) => current, false, true)}
+          >
+            {ru ? "Разделить заказ" : "Split order"}
+          </button>
+        </fieldset>
       ) : null}
-      {props.details.unpriced
-        ?.filter((issue) => issue.ordersToProductsId === props.line.id)
-        .map((issue, index) => (
-          <p key={index} role="alert" className="text-xs text-destructive">
-            {issue.reason}
-          </p>
-        ))}
-      {error ? (
+      {!validQuantities ? (
         <p role="alert" className="text-xs text-destructive">
-          {error}
+          {ru
+            ? "Укажите целое положительное количество."
+            : "Enter a positive whole quantity."}
         </p>
       ) : null}
-      <button
-        type="button"
-        className={`${button} w-full`}
-        disabled={
-          !offerId ||
-          !currencyId ||
-          !validQuantities ||
-          Boolean(transfer) ||
-          (unavailableServices.length > 0 && !dropMissing) ||
-          (selectionMutation.isPending &&
-            selectionMutation.variables?.data.action === "apply")
-        }
-        onClick={() => void compare()}
-      >
-        {selectionMutation.isPending
-          ? ru
-            ? "Рассчитываем…"
-            : "Calculating…"
-          : ru
-            ? selectionChanged
-              ? "Посмотреть новую цену"
-              : "Проверить цену"
-            : selectionChanged
-              ? "Review new price"
-              : "Check price"}
-      </button>
-      {preview ? (
-        <section
-          aria-label={
-            ru ? "Сравнение перед сохранением" : "Comparison before saving"
-          }
-          className="space-y-3 rounded-xl border border-primary/30 bg-primary/5 p-3"
-        >
-          <h3 className="text-sm font-semibold">
-            {unchanged
-              ? ru
-                ? "Выбор и стоимость не изменились"
-                : "Selection and price are unchanged"
-              : reconfirm
-                ? ru
-                  ? "Подтвердите актуальный расчёт"
-                  : "Confirm the current quote"
-                : storeChanged
-                  ? ru
-                    ? "Смена магазина"
-                    : "Store change"
-                  : ru
-                    ? "Изменения перед сохранением"
-                    : "Changes before saving"}
-          </h3>
-          {original && !sameSelectionAndPrice ? (
-            <div className="rounded-xl border border-border bg-card p-3">
-              <p className="text-xs text-muted-foreground">
-                {ru ? "Сейчас" : "Current selection"}
-              </p>
-              <p className="mb-2 text-sm font-medium">
-                {storeTitle(savedOfferId)}
-              </p>
-              {amounts(original)}
-              {destinationDetails(props.line.destination)}
-            </div>
-          ) : null}
-          {preview.result.quotes.map((quote, index) => (
-            <div
-              key={`${quote.offerId}-${index}`}
-              className="rounded-xl border border-border bg-card p-3"
-            >
-              <p className="text-xs text-muted-foreground">
-                {sameSelectionAndPrice
-                  ? ru
-                    ? "Текущий выбор"
-                    : "Current selection"
-                  : ru
-                    ? "После подтверждения"
-                    : "After confirmation"}
-              </p>
-              <p className="mb-2 text-sm font-medium">
-                {storeTitle(quote.offerId)}
-              </p>
-              {preview.result.quotes.length > 1 ? (
-                <p className="mb-2 text-xs">
-                  {ru ? "Заказ" : "Order"} {index + 1} · {quote.quantity}
-                </p>
-              ) : null}
-              {amounts(quote)}
-              {destinationDetails(
-                quote.destination ?? preview.selections[index]?.destination,
-              )}
-              {quote.issues.map((issue) => (
-                <p
-                  key={`${issue.code}-${issue.offerId}`}
-                  role="alert"
-                  className="mt-2 text-xs text-destructive"
-                >
-                  {issue.message}
-                </p>
-              ))}
-            </div>
-          ))}
-          {comparisonQuotes.length ? (
-            <details className="rounded-xl border border-border bg-card p-3 text-xs">
-              <summary className="cursor-pointer font-medium">
-                {ru
-                  ? "Текущий магазин при новых параметрах"
-                  : "Current store with the new parameters"}
-              </summary>
-              <p className="mt-2 text-muted-foreground">
-                {ru
-                  ? "Тот же товар, количество, адрес и доступные услуги в текущем магазине."
-                  : "The same product, quantity, destination and available services at the current store."}
-              </p>
-              {comparisonQuotes.map((quote, index) => (
-                <div key={`${quote.offerId}-${index}`} className="mt-3">
-                  <p className="mb-2 font-medium">
-                    {storeTitle(quote.offerId)}
-                  </p>
-                  {preview.result.quotes.length > 1 ? (
-                    <p className="mb-2">
-                      {ru ? "Заказ" : "Order"} {index + 1}
-                    </p>
-                  ) : null}
-                  {amounts(quote)}
-                  {destinationDetails(quote.destination)}
-                  {quote.issues.map((issue) => (
-                    <p
-                      key={`${issue.code}-${issue.offerId}`}
-                      role="alert"
-                      className="mt-2 text-destructive"
-                    >
-                      {issue.message}
-                    </p>
-                  ))}
-                </div>
-              ))}
-            </details>
-          ) : null}
-          <p className="text-xs text-muted-foreground">
-            {unchanged
-              ? ru
-                ? "Расчёт проверен. Текущий выбор сохранён."
-                : "Price checked. Your current selection is saved."
-              : reconfirm
-                ? ru
-                  ? "Цена не изменилась. Подтвердите актуальные условия перед оплатой."
-                  : "The price is unchanged. Confirm the current terms before checkout."
-                : ru
-                  ? "Изменения сохранятся после подтверждения. Отмена сохранит прежний выбор."
-                  : "Changes are saved after confirmation. Cancel keeps the previous selection."}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              className={button}
-              onClick={cancel}
-              disabled={selectionMutation.isPending}
-            >
-              {unchanged
-                ? ru
-                  ? "Закрыть расчёт"
-                  : "Close price check"
-                : ru
-                  ? "Отмена"
-                  : "Cancel"}
-            </button>
-            {!unchanged ? (
-              <button
-                type="button"
-                className={`${button} bg-primary text-primary-foreground hover:bg-primary/90`}
-                onClick={() => void apply()}
-                disabled={
-                  selectionMutation.isPending ||
-                  preview.result.quotes.some(
-                    (quote) => quote.amount === null || quote.issues.length > 0,
-                  )
-                }
-              >
-                {ru ? "Подтвердить выбор" : "Confirm selection"}
-              </button>
-            ) : null}
-          </div>
-        </section>
+      {unavailableCurrency ? (
+        <p role="alert" className="text-xs text-destructive">
+          {ru
+            ? "Выбранная валюта недоступна. Выберите другую валюту."
+            : "The selected currency is unavailable. Choose another currency."}
+        </p>
       ) : null}
+      {error ? (
+        <div className="space-y-2">
+          <p role="alert" className="text-xs text-destructive">
+            {error}
+          </p>
+          <button
+            type="button"
+            className={button}
+            disabled={pending}
+            onClick={retry}
+          >
+            {ru ? "Повторить сохранение" : "Retry saving"}
+          </button>
+        </div>
+      ) : null}
+      {priceStale && !unsaved && !awaitingRefresh ? (
+        <div className="space-y-2">
+          <p className="text-xs text-muted-foreground">
+            {ru
+              ? "Цена или условия изменились."
+              : "The price or terms have changed."}
+          </p>
+          <button
+            type="button"
+            className={button}
+            onClick={() => edit((current) => current)}
+          >
+            {ru ? "Обновить цену" : "Refresh price"}
+          </button>
+        </div>
+      ) : null}
+      {(awaitingRefresh || conflict.current) && !pending ? (
+        <div className="space-y-2">
+          {refreshError ? (
+            <p role="alert" className="text-xs text-destructive">
+              {refreshError}
+            </p>
+          ) : null}
+          <button
+            type="button"
+            className={button}
+            disabled={refreshing}
+            onClick={() => void refreshCart()}
+          >
+            {ru ? "Обновить корзину" : "Refresh cart"}
+          </button>
+        </div>
+      ) : null}
+      <section
+        aria-label={ru ? "Расчёт" : "Receipt"}
+        aria-busy={
+          pending ||
+          awaitingRefresh ||
+          (unsaved && readyRevision !== revision.current)
+        }
+        className="space-y-2 rounded-xl border border-border bg-card p-3"
+      >
+        <h3 className="text-sm font-semibold">{ru ? "Расчёт" : "Receipt"}</h3>
+        <p role="status" className="text-xs text-muted-foreground">
+          {pending || (unsaved && readyRevision !== revision.current)
+            ? ru
+              ? "Сохраняем…"
+              : "Saving…"
+            : awaitingRefresh
+              ? ru
+                ? "Обновляем корзину…"
+                : "Refreshing cart…"
+              : unsaved || draft.split || priceStale
+                ? ru
+                  ? "Выбор не сохранён."
+                  : "Selection is not saved."
+                : !receiptReady
+                  ? ru
+                    ? "Завершите выбор."
+                    : "Complete your selection."
+                  : ru
+                    ? "Выбор сохранён."
+                    : "Selection saved."}
+        </p>
+        {receiptIssues.map((issue, index) => (
+          <p
+            key={`${issue.code}-${issue.offerId}-${index}`}
+            role="alert"
+            className="text-xs text-destructive"
+          >
+            {issue.message}
+          </p>
+        ))}
+        {!receipt &&
+          !unsaved &&
+          props.details.unpriced
+            ?.filter((issue) => issue.ordersToProductsId === props.line.id)
+            .map((issue, index) => (
+              <p
+                key={`unpriced-${index}`}
+                role="alert"
+                className="text-xs text-destructive"
+              >
+                {issue.reason}
+              </p>
+            ))}
+        {!currentReceipt ? (
+          <p className="text-xs text-muted-foreground">
+            {ru
+              ? "Выберите магазин и параметры заказа."
+              : "Choose a store and order options."}
+          </p>
+        ) : null}
+        <dl className="space-y-1 text-xs">
+          {currentReceipt?.charges.map((charge) => {
+            const option =
+              currentReceipt.serviceOptions.find(
+                (option) => option.offerId === charge.offerId,
+              ) ?? knownOptions.current.get(charge.offerId);
+            const title =
+              charge.role === "product"
+                ? props.line.product?.title?.[props.language] ||
+                  props.line.product?.title?.en ||
+                  (ru ? "Товар" : "Product")
+                : option?.titles?.[props.language] ||
+                  option?.title ||
+                  (charge.role === "delivery"
+                    ? ru
+                      ? "Получение"
+                      : "Fulfillment"
+                    : ru
+                      ? "Услуга"
+                      : "Service");
+            return (
+              <div key={charge.offerId} className="flex justify-between gap-2">
+                <dt className="min-w-0">
+                  {title} × {charge.quantity}
+                </dt>
+                <dd className="shrink-0 tabular-nums">
+                  {formatCurrencyAmount(charge.amount, props.language)} {symbol}
+                </dd>
+              </div>
+            );
+          })}
+          <div className="flex justify-between gap-2 border-t border-border pt-2 font-semibold">
+            <dt>{ru ? "Итого" : "Total"}</dt>
+            <dd className="shrink-0 tabular-nums">
+              {receiptReady
+                ? `${formatCurrencyAmount(currentReceipt!.amount!, props.language)} ${symbol}`
+                : pending ||
+                    awaitingRefresh ||
+                    (unsaved && readyRevision !== revision.current)
+                  ? ru
+                    ? "Рассчитываем…"
+                    : "Calculating…"
+                  : ru
+                    ? "Нужен выбор"
+                    : "Selection needed"}
+            </dd>
+          </div>
+        </dl>
+      </section>
     </fieldset>
   );
 }

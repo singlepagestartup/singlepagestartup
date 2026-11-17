@@ -193,6 +193,26 @@ export const Component = memo(function Row(props: IRowProps) {
   const ru = props.language === "ru";
   const lines = details?.lines.filter((line) => !line.parentLineId) ?? [];
   const onlyProduct = lines.length === 1 ? lines[0].product : null;
+  const onSelectionStateChange = useCallback(
+    (lineId: string, blocked: boolean) => {
+      props.onOrderSelectionStateChange?.(
+        props.ecommerceModuleOrder.id,
+        lineId,
+        blocked,
+      );
+    },
+    [props.onOrderSelectionStateChange, props.ecommerceModuleOrder.id],
+  );
+  const onSelectionPendingChange = useCallback(
+    (lineId: string, pending: boolean) => {
+      props.onOrderSelectionPendingChange?.(
+        props.ecommerceModuleOrder.id,
+        lineId,
+        pending,
+      );
+    },
+    [props.onOrderSelectionPendingChange, props.ecommerceModuleOrder.id],
+  );
   const productTitle =
     onlyProduct?.title?.[props.language] ||
     onlyProduct?.title?.en ||
@@ -259,12 +279,14 @@ export const Component = memo(function Row(props: IRowProps) {
             lines.map((line) => [
               line.id,
               <Selection
-                key={`${line.id}:${String(line.selectionUpdatedAt)}`}
+                key={line.id}
                 line={line}
                 details={details}
                 subject={props.subject}
                 ecommerceModuleOrder={props.ecommerceModuleOrder}
                 language={props.language}
+                onSelectionStateChange={onSelectionStateChange}
+                onSelectionPendingChange={onSelectionPendingChange}
               />,
             ]),
           )

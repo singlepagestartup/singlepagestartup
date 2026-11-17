@@ -276,17 +276,21 @@ export class Service {
       );
     }
     if (
-      props.data.expectedVersions?.length !== quotes.length ||
-      quotes.some(
-        (quote, index) =>
-          quote.version !== props.data.expectedVersions?.[index],
-      )
+      props.data.action === "apply" &&
+      (props.data.expectedVersions?.length !== quotes.length ||
+        quotes.some(
+          (quote, index) =>
+            quote.version !== props.data.expectedVersions?.[index],
+        ))
     ) {
       throw new Error(
         "Conflict error. Offer terms changed. Preview and confirm the new price",
       );
     }
     if (quotes.some((quote) => quote.amount === null || quote.issues.length)) {
+      if (props.data.action === "save") {
+        return { quotes, orderIds: [], applied: false };
+      }
       throw new Error(
         "Validation error. Complete the selection and resolve quote issues before saving",
       );
@@ -388,6 +392,12 @@ export class Service {
           }
         }
         const orderIds = [props.orderId];
+        const timestamp = new Date(
+          Math.max(
+            Date.now(),
+            new Date(currentPrimary.selectionUpdatedAt).getTime() + 1,
+          ),
+        );
         for (let index = 0; index < props.data.selections.length; index += 1) {
           const selection = props.data.selections[index];
           const quote = quotes[index];
@@ -412,13 +422,21 @@ export class Service {
           }
           await this.persistSelection({
             orderId,
+            timestamp,
             selection,
             quote,
             primary: index === 0 ? currentPrimary : undefined,
             previousLines: index === 0 ? current : [],
           });
         }
-        return { quotes, orderIds, applied: true };
+        return {
+          quotes,
+          orderIds,
+          applied: true,
+          ...(props.data.action === "save" && {
+            selectionUpdatedAt: timestamp.toISOString(),
+          }),
+        };
       },
     );
   }
@@ -555,13 +573,14 @@ export class Service {
 
   private async persistSelection(props: {
     orderId: string;
+    timestamp: Date;
     selection: IEcommerceCartSelection;
     quote: IOfferQuote;
     primary?: ILine;
     previousLines: ILine[];
   }) {
     const { service } = this.dependencies;
-    const timestamp = new Date();
+    const { timestamp } = props;
     const data = {
       orderId: props.orderId,
       productId: props.quote.productId,

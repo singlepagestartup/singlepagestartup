@@ -19,6 +19,17 @@ export const Component = memo(function CartCard(
         )
       : [];
   const hasUnpriced = Boolean(details?.unpriced?.length);
+  const hasSelectionReceipts =
+    lines.length > 0 &&
+    lines.every(
+      (line) =>
+        Boolean(props.selectionSlots?.[line.id]) &&
+        details?.offerQuotes?.some((quote) =>
+          line.offerId
+            ? quote.offerId === line.offerId
+            : quote.productId === line.productId,
+        ),
+    );
   const amount = totals.length ? (
     <span className="max-w-full wrap-anywhere text-right text-lg font-semibold leading-tight tracking-tight text-foreground tabular-nums">
       {new Intl.NumberFormat(props.language, {
@@ -50,7 +61,11 @@ export const Component = memo(function CartCard(
                 dataSource="props"
                 data={line.product}
                 language={props.language}
-                priceSlot={singleProduct && !hasUnpriced ? amount : undefined}
+                priceSlot={
+                  singleProduct && !hasUnpriced && !hasSelectionReceipts
+                    ? amount
+                    : undefined
+                }
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   {props.quantitySlots?.[line.id]}
@@ -68,7 +83,7 @@ export const Component = memo(function CartCard(
       </ul>
       <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 rounded-b-2xl border-t border-border bg-muted px-3.5 py-2 sm:px-4">
         {props.currencySlot}
-        {(!singleProduct || hasUnpriced) && amount && (
+        {!hasSelectionReceipts && (!singleProduct || hasUnpriced) && amount && (
           <span className="flex flex-wrap items-baseline gap-2 text-xs text-muted-foreground">
             {hasUnpriced
               ? ru

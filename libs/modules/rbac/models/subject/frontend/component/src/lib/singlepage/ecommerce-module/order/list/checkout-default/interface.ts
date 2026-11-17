@@ -15,6 +15,7 @@ export interface IComponentProps extends IParentComponentProps<
   typeof variant
 > {
   language: string;
+  onSelectionPendingChange?: (pending: boolean) => void;
 }
 
 export interface IComponentPropsExtended extends IParentComponentPropsExtended<
@@ -27,6 +28,16 @@ export interface IRowProps {
   subject: IModel;
   ecommerceModuleOrder: ISubjectSdkResult["IEcommerceModuleOrderListResult"][number];
   language: string;
+  onOrderSelectionStateChange?: (
+    orderId: string,
+    lineId: string,
+    blocked: boolean,
+  ) => void;
+  onOrderSelectionPendingChange?: (
+    orderId: string,
+    lineId: string,
+    pending: boolean,
+  ) => void;
 }
 
 export interface IQuantityProps {
@@ -50,4 +61,6 @@ export interface IDeliveryProps {
 export interface ISelectionProps extends IRowProps {
   line: ICartDetails["lines"][number];
   details: ICartDetails;
+  onSelectionStateChange?: (lineId: string, blocked: boolean) => void;
+  onSelectionPendingChange?: (lineId: string, pending: boolean) => void;
 }

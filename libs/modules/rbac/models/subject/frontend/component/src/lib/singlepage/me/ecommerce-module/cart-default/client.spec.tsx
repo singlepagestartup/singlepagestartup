@@ -10,10 +10,18 @@
  * Then: unauthorized users do not see cart UI, while authorized users see sheet and quantity badge behavior.
  */
 
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 
 let authSubject: any = { id: "subject-1" };
 let quantityValue: number | null = 0;
+let selectionPendingChange: ((pending: boolean) => void) | undefined;
 
 jest.mock("lucide-react", () => ({
   ShoppingCart: () => <svg data-testid="cart-icon" />,
@@ -31,6 +39,7 @@ jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
     }
 
     if (props.variant === "ecommerce-module-order-list-checkout-default") {
+      selectionPendingChange = props.onSelectionPendingChange;
       return (
         <div data-testid="checkout-panel" data-source={props.dataSource} />
       );
@@ -51,6 +60,7 @@ describe("Given: me ecommerce cart widget", () => {
   beforeEach(() => {
     authSubject = { id: "subject-1" };
     quantityValue = 0;
+    selectionPendingChange = undefined;
   });
 
   it("When: auth subject is missing Then: cart widget is hidden", () => {
@@ -108,5 +118,59 @@ describe("Given: me ecommerce cart widget", () => {
 
     expect(screen.queryByTestId("cart-icon")).not.toBeNull();
     expect(screen.queryByText("0")).toBeNull();
+  });
+
+  it.each(["close button", "Escape"])(
+    "defers %s through pending edits and restores trigger focus once they settle",
+    async (dismiss) => {
+      render(
+        <Component
+          isServer={false}
+          variant="me-ecommerce-module-cart-default"
+          language="en"
+        />,
+      );
+      const trigger = screen.getByRole("button", { name: "Open cart" });
+      fireEvent.click(trigger);
+      act(() => selectionPendingChange!(true));
+      const dialog = screen.getByRole("dialog", { name: "Cart" });
+      const close = within(dialog).getByRole("button", { name: "Close cart" });
+      close.focus();
+      if (dismiss === "Escape") fireEvent.keyDown(close, { key: "Escape" });
+      else fireEvent.click(close);
+      expect(screen.getByRole("dialog", { name: "Cart" })).toBe(dialog);
+      expect(screen.getByRole("status").textContent).toBe("Saving changes…");
+      expect(document.activeElement).toBe(close);
+      act(() => selectionPendingChange!(false));
+      await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+      await waitFor(() => expect(document.activeElement).toBe(trigger));
+    },
+  );
+
+  it("leaves invalid or failed drafts dismissible and ignores late previous-Subject pending signals", () => {
+    const view = render(
+      <Component
+        isServer={false}
+        variant="me-ecommerce-module-cart-default"
+        language="en"
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Open cart" }));
+    act(() => selectionPendingChange!(false));
+    fireEvent.click(screen.getByRole("button", { name: "Close cart" }));
+    expect(screen.queryByRole("dialog")).toBeNull();
+    const oldCallback = selectionPendingChange!;
+    authSubject = { id: "subject-2" };
+    view.rerender(
+      <Component
+        isServer={false}
+        variant="me-ecommerce-module-cart-default"
+        language="en"
+      />,
+    );
+    act(() => oldCallback(true));
+    fireEvent.click(screen.getByRole("button", { name: "Open cart" }));
+    fireEvent.click(screen.getByRole("button", { name: "Close cart" }));
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
 });
