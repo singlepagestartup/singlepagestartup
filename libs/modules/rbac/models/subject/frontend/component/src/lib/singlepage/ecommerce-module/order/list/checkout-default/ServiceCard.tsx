@@ -1,9 +1,55 @@
 "use client";
 
 import { memo, useCallback } from "react";
-import { Checkbox } from "@sps/shared-ui-shadcn";
+import { Checkbox, RadioGroup, RadioGroupItem } from "@sps/shared-ui-shadcn";
 import { formatCurrencyAmount } from "@sps/shared-frontend-client-utils";
-import type { IServiceCardProps } from "./interface";
+import type {
+  IServiceCardProps,
+  IServiceOptionsProps,
+  IServiceNoSelectionProps,
+} from "./interface";
+
+export function ServiceOptions(props: IServiceOptionsProps) {
+  if (props.multiple)
+    return (
+      <div id={props.id} className="grid gap-1.5">
+        {props.children}
+      </div>
+    );
+  return (
+    <RadioGroup
+      id={props.id}
+      aria-labelledby={props.labelId}
+      name={props.selectionName}
+      required={props.required}
+      value={props.value}
+      onValueChange={props.onValueChange}
+      className="gap-1.5"
+    >
+      {props.children}
+    </RadioGroup>
+  );
+}
+
+export function ServiceNoSelection(props: IServiceNoSelectionProps) {
+  return (
+    <div className="relative rounded-xl border border-border hover:bg-muted/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+      <RadioGroupItem
+        id={props.id}
+        value=""
+        className="absolute left-3 top-3.5 size-4 bg-card"
+      />
+      <label
+        htmlFor={props.id}
+        className="flex min-h-11 cursor-pointer items-center py-2 pl-10 pr-3 text-xs"
+      >
+        {props.language === "ru"
+          ? "Не выбирать способ получения"
+          : "No fulfillment selection"}
+      </label>
+    </div>
+  );
+}
 
 export const ServiceCard = memo(function ServiceCard(props: IServiceCardProps) {
   const ru = props.language === "ru";
@@ -24,20 +70,30 @@ export const ServiceCard = memo(function ServiceCard(props: IServiceCardProps) {
       className="overflow-hidden rounded-xl border border-border has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5"
     >
       <div className="relative">
-        <Checkbox
-          id={props.id}
-          aria-labelledby={`${props.id}-title`}
-          aria-describedby={`${props.id}-price`}
-          className="absolute left-3 top-6 size-5 rounded-md border-2 border-muted-foreground bg-card focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 data-[state=checked]:border-primary"
-          checked={props.checked}
-          onCheckedChange={change}
-        />
+        {props.option.role === "delivery" ? (
+          <RadioGroupItem
+            id={props.id}
+            value={props.option.offerId}
+            aria-labelledby={`${props.id}-title`}
+            aria-describedby={`${props.id}-price`}
+            className="absolute left-3 top-3.5 size-4 bg-card"
+          />
+        ) : (
+          <Checkbox
+            id={props.id}
+            aria-labelledby={`${props.id}-title`}
+            aria-describedby={`${props.id}-price`}
+            className="absolute left-3 top-3.5 size-4 rounded-sm border-2 border-muted-foreground bg-card focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 data-[state=checked]:border-primary"
+            checked={props.checked}
+            onCheckedChange={change}
+          />
+        )}
         <label
           htmlFor={props.id}
-          className="block min-w-0 cursor-pointer p-3 pl-11 hover:bg-muted/50"
+          className="block min-w-0 cursor-pointer py-2 pl-10 pr-3 hover:bg-muted/50"
         >
-          <span className="grid min-h-11 grid-cols-[minmax(0,1fr)_6.5rem] items-center gap-x-2 sm:grid-cols-[minmax(0,1fr)_7.5rem]">
-            <span className="min-w-0 break-words py-3 text-sm font-medium">
+          <span className="grid min-h-7 grid-cols-[minmax(0,1fr)_5rem] items-center gap-x-2 sm:grid-cols-[minmax(0,1fr)_6.5rem]">
+            <span className="min-w-0 break-words py-1 text-sm font-medium">
               <span id={`${props.id}-title`}>{title}</span>
               {props.option.receiptMethod === "pickup"
                 ? ru
@@ -63,7 +119,7 @@ export const ServiceCard = memo(function ServiceCard(props: IServiceCardProps) {
             </span>
           </span>
           {props.option.receiptMethod === "shipping" ? (
-            <span className="block space-y-1 text-xs text-muted-foreground">
+            <span className="flex flex-wrap gap-x-2 gap-y-0.5 text-xs leading-4 text-muted-foreground">
               {props.tariff ? (
                 <span className="block">
                   {props.tariff.basis === "fixed"

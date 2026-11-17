@@ -195,6 +195,54 @@ it("serializes concurrent adds of the same offer across service instances", asyn
   expect(await f.owners()).toHaveLength(1);
 });
 
+it("rejects a direct multiple-fulfillment request before creating a cart graph", async () => {
+  const f = await fixture();
+  const selectedServices: { offerId: string; quantity: number }[] = [];
+  for (const method of ["shipping", "pickup"]) {
+    const product = await f.services.product.create({
+      data: { slug: `${method}-${randomUUID()}`, kind: "service" },
+    });
+    const offer = await f.services.offers.create({
+      data: {
+        productId: product.id,
+        storeId: f.props.storeId,
+        sku: `${method}-${randomUUID()}`,
+      },
+    });
+    selectedServices.push({ offerId: offer.id, quantity: 1 });
+  }
+  const originalQuote = f.services.offers.quote.getMockImplementation();
+  f.services.offers.quote.mockImplementation(async (input: any) => ({
+    ...(await originalQuote(input)),
+    amount: null,
+    issues: [
+      {
+        code: "unavailable",
+        offerId: input.services[1].offerId,
+        message: "Choose one delivery method",
+      },
+    ],
+  }));
+  await expect(
+    f.create.execute({
+      ...f.props,
+      services: selectedServices,
+    }),
+  ).rejects.toThrow("Choose one delivery method");
+  expect(await f.owners()).toHaveLength(0);
+  expect(
+    await f.services.lines.find({
+      params: {
+        filters: {
+          and: [
+            { column: "productId", method: "eq", value: f.props.productId },
+          ],
+        },
+      },
+    }),
+  ).toHaveLength(0);
+});
+
 it("rolls back the complete graph on a relation failure and permits a clean retry", async () => {
   const f = await fixture();
   const failedWrite = jest

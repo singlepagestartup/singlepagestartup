@@ -41,6 +41,7 @@ jest.mock("@sps/shared-ui-shadcn", () => ({
   ),
 }));
 jest.mock("@sps/ui-adapter", () => ({
+  Icon: () => null,
   ErrorBoundary: ({ children }: any) => children,
   Select: ({
     id,

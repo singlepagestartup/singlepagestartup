@@ -33,6 +33,8 @@ SPS sends the search text in a POST body. Responses use `Cache-Control: private,
 
 `api.quote` on both relation SDKs returns the component charges, amount, selectable services and currencies, availability, expiry and a version for confirmation. A quote with issues has a null amount. An explicitly free tariff returns zero. The private preview accepts quantity, currency, destination and selected service quantities.
 
+The primary charge includes `unitAmount`, calculated by the server from the product formula for one unit in the selected currency. Quantity-dependent package inputs are recalculated for one unit. A formula that cannot price one unit returns `null`. Older stored quotes may omit this field. Clients show an older charge's amount as a unit price only when its quantity is one. Receipts use each charge's `amount` and the quote total. Display-only `unitAmount` is excluded from the quote version.
+
 The framework seed includes seller prices for five token packages and the Pro subscription. The historical `website` product’s 510 and 590 amounts lack currency links. Assign a currency-specific price to its offer before selling it.
 
 Each token package and Pro also offers two optional demo services from Single Page Shop: accelerated electronic account credit for 20 RUB or 0.25 USD, and AI chat setup for 50 RUB or 0.60 USD per selected unit. Standard token credit remains included in the product price. These demo services do not perform external fulfillment. Their service Products use one-time billing, their offer links charge only the first subscription cycle, and neither needs a postal address. Both prices are available for each service; the main offer still determines which currencies the complete selection supports.

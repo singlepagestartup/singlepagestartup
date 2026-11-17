@@ -35,6 +35,8 @@ export interface IOfferCharge {
   stockQuantity: number | null;
   availableQuantity: number | null;
   amount: string;
+  /** Merchandise price quoted for quantity one. Null means that configuration cannot be priced. */
+  unitAmount?: string | null;
   formula: string;
   formulaVersion: string;
   inputs: Record<string, string>;

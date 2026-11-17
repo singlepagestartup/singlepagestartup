@@ -91,3 +91,32 @@ export interface IServiceCardProps {
   onCheckedChange: (offerId: string, checked: boolean) => void;
   children?: ReactNode;
 }
+
+export interface IServiceOptionsProps {
+  id: string;
+  labelId: string;
+  selectionName: string;
+  multiple: boolean;
+  required: boolean;
+  value: string;
+  onValueChange: (offerId: string) => void;
+  children?: ReactNode;
+}
+
+export interface IServiceNoSelectionProps {
+  id: string;
+  language: string;
+}
+
+export interface IQuantityInputProps {
+  id: string;
+  label: string;
+  contextLabel: string;
+  decreaseLabel: string;
+  increaseLabel: string;
+  value: string;
+  min: number;
+  max: number;
+  disabled?: boolean;
+  onValueChange: (value: string) => void;
+}

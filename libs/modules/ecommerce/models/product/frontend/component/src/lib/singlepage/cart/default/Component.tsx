@@ -87,7 +87,7 @@ export const Component = memo(function Component(
           props.data.shortDescription[props.language] !== TIPTAP_EMPTY_DOC && (
             <TipTap
               value={props.data.shortDescription[props.language] || ""}
-              className="mt-1 text-xs leading-5 text-muted-foreground [&_p]:m-0"
+              className="mt-1 text-xs leading-4 text-muted-foreground [&_p]:m-0 [&_p]:text-xs [&_p]:leading-4"
             />
           )}
         {props.data.type === "subscription" && (

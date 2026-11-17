@@ -12,6 +12,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Checkbox } from "@sps/shared-ui-shadcn";
 import { Select } from "@sps/ui-adapter";
 import { formatCurrencyAmount } from "@sps/shared-frontend-client-utils";
+import { ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds } from "@sps/shared-utils";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import { api as offerApi } from "@sps/ecommerce/relations/stores-to-products/sdk/client";
 import { api as currencyApi } from "@sps/billing/models/currency/sdk/client";
@@ -23,7 +24,8 @@ import {
 import type { IOfferServiceOption } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 import type { ISelectionProps } from "./interface";
 import { DeliveryAddress } from "./DeliveryAddress";
-import { ServiceCard } from "./ServiceCard";
+import { ServiceCard, ServiceOptions, ServiceNoSelection } from "./ServiceCard";
+import { QuantityInput } from "./QuantityInput";
 
 interface ITransferredService {
   productId: string;
@@ -166,6 +168,15 @@ export function Selection(props: ISelectionProps) {
       : original?.offerId === draft.offerId
         ? original
         : undefined;
+  const productQuantityMax = Math.min(
+    props.details.maxLineQuantity ?? quantityBounds.max,
+    available?.availableQuantity ?? quantityBounds.max,
+  );
+  const productTitle =
+    props.line.product?.title?.[props.language] ||
+    props.line.product?.title?.en ||
+    props.line.product?.slug ||
+    (ru ? "Товар" : "Product");
   const options = available?.serviceOptions ?? [];
   const serviceOptions = [...options].sort(
     (first, second) =>
@@ -240,10 +251,12 @@ export function Selection(props: ISelectionProps) {
       !next.currencyId ||
       !Number.isSafeInteger(count) ||
       count < 1 ||
-      count > (props.details.maxLineQuantity ?? Number.MAX_SAFE_INTEGER) ||
+      count > productQuantityMax ||
       Object.values(next.services).some(
         (quantity) =>
-          !Number.isSafeInteger(Number(quantity)) || Number(quantity) < 1,
+          !Number.isSafeInteger(Number(quantity)) ||
+          Number(quantity) < 1 ||
+          Number(quantity) > count,
       ) ||
       next.missing.length > 0 ||
       (next.split && !includeSplit)
@@ -723,8 +736,28 @@ export function Selection(props: ISelectionProps) {
   const productAmountReady =
     currentAmount && productCharge?.quantity === quantity;
   const selectedCurrencySymbol = currencySymbol(draft.currencyId);
+  const requiredDelivery = Boolean(
+    choices.find((offer) => offer.id === draft.offerId)?.settings
+      ?.requiredDelivery,
+  );
   const changeService = useCallback(
     (offerId: string, checked: boolean) => {
+      if (!offerId && !requiredDelivery) {
+        edit((current) => ({
+          ...current,
+          split: false,
+          services: Object.fromEntries(
+            Object.entries(current.services).filter(
+              ([id]) =>
+                !options.some(
+                  (option) =>
+                    option.offerId === id && option.role === "delivery",
+                ),
+            ),
+          ),
+        }));
+        return;
+      }
       const option = options.find((option) => option.offerId === offerId);
       if (!option) return;
       edit((current) => {
@@ -737,30 +770,35 @@ export function Selection(props: ISelectionProps) {
         }
         if (checked) services[offerId] = "1";
         else delete services[offerId];
-        return { ...current, services };
+        return {
+          ...current,
+          services,
+          split:
+            option.role === "delivery" && option.receiptMethod !== "shipping"
+              ? false
+              : current.split,
+        };
       });
     },
-    [options, available],
+    [options, available, requiredDelivery],
   );
 
   return (
     <fieldset className="min-w-0 space-y-3">
-      <div className="grid min-w-0 grid-cols-[4.5rem_minmax(0,1fr)_minmax(0,1fr)] items-end gap-2">
-        <label className="grid gap-1 text-xs font-medium">
-          {ru ? "Количество" : "Quantity"}
-          <input
-            className={`${input} px-2`}
-            type="number"
-            min={1}
-            max={props.details.maxLineQuantity}
-            step={1}
-            value={draft.quantity}
-            onChange={(event) => {
-              const quantity = event.target.value;
-              edit((current) => ({ ...current, quantity }), true);
-            }}
-          />
-        </label>
+      <div className="grid min-w-0 grid-cols-2 items-end gap-2 min-[480px]:grid-cols-[minmax(8rem,1fr)_minmax(0,1fr)_minmax(0,1fr)]">
+        <QuantityInput
+          id={`${controlId}-quantity`}
+          label={ru ? "Количество" : "Quantity"}
+          contextLabel={productTitle}
+          decreaseLabel={`${ru ? "Уменьшить количество товара" : "Decrease product quantity"}: ${productTitle}`}
+          increaseLabel={`${ru ? "Увеличить количество товара" : "Increase product quantity"}: ${productTitle}`}
+          min={quantityBounds.min}
+          max={productQuantityMax}
+          value={draft.quantity}
+          onValueChange={(quantity) => {
+            edit((current) => ({ ...current, quantity }), true);
+          }}
+        />
         <div className="grid min-w-0 gap-1 text-xs font-medium">
           <label htmlFor={`${controlId}-currency`}>
             {ru ? "Валюта" : "Currency"}
@@ -785,19 +823,30 @@ export function Selection(props: ISelectionProps) {
             }))}
           />
         </div>
-        <div className="grid min-w-0 gap-1 text-right">
+        <div className="col-span-2 flex min-w-0 items-center justify-between gap-2 min-[480px]:col-span-1 min-[480px]:grid min-[480px]:justify-normal min-[480px]:gap-1 min-[480px]:text-right">
           <span className="text-xs text-muted-foreground">
-            {ru ? "За товар" : "Product only"}
+            {ru ? "За 1 шт." : "Per item"}
           </span>
           <output
-            aria-label={ru ? "Стоимость товара" : "Product amount"}
-            className="flex min-h-11 items-center justify-end break-words text-sm font-semibold tabular-nums"
+            aria-label={ru ? "Цена за 1 шт." : "Unit price"}
+            className="flex min-h-6 items-center justify-end break-words text-sm font-semibold tabular-nums min-[480px]:min-h-12"
           >
-            {productAmountReady && productCharge
-              ? `${formatCurrencyAmount(productCharge.amount, props.language)} ${selectedCurrencySymbol}`
-              : pending || closePending.current
-                ? "…"
-                : "—"}
+            {(() => {
+              const amount =
+                productCharge?.unitAmount !== undefined
+                  ? productCharge.unitAmount
+                  : productCharge?.quantity === 1
+                    ? productCharge.amount
+                    : undefined;
+              if (
+                productAmountReady &&
+                amount !== null &&
+                amount !== undefined
+              ) {
+                return `${formatCurrencyAmount(amount, props.language)} ${selectedCurrencySymbol}`;
+              }
+              return pending || closePending.current ? "…" : "—";
+            })()}
           </output>
         </div>
       </div>
@@ -817,146 +866,324 @@ export function Selection(props: ISelectionProps) {
         />
       </div>
       {options.length ? (
-        <fieldset className="space-y-2">
-          <legend className="mb-2 text-xs font-medium">
-            {ru
-              ? "Получение и дополнительные услуги"
-              : "Fulfillment and additional services"}
-          </legend>
-          {serviceOptions.map((option) => {
-            const selected = draft.services[option.offerId] !== undefined;
-            const charge =
-              currentAmount && selected
-                ? currentReceipt?.charges.find(
-                    (charge) =>
-                      charge.offerId === option.offerId &&
-                      charge.quantity ===
-                        Number(draft.services[option.offerId]),
-                  )
-                : undefined;
-            const currentOption = currentAmount
-              ? currentReceipt?.serviceOptions.find(
-                  (item) => item.offerId === option.offerId,
-                )
-              : undefined;
-            const tariff =
-              currentOption?.deliveryTariff ??
-              (available?.currencyId === draft.currencyId
-                ? option.deliveryTariff
-                : undefined);
-            const preview =
-              currentOption?.pricePreview ??
-              (validDiscoveryQuantity &&
-              available?.offerId === draft.offerId &&
-              available.currencyId === draft.currencyId &&
-              available.quantity === quantity
-                ? option.pricePreview
-                : undefined);
-            const fixedFallback =
-              option.receiptMethod === "shipping" && tariff?.basis === "fixed"
-                ? tariff.fixedAmount
-                : undefined;
-            const amount = charge?.amount ?? preview?.amount ?? fixedFallback;
-            const from = !charge && preview?.kind === "from";
-            const serviceId = `${controlId}-${option.offerId}`;
+        <div className="space-y-3">
+          {(["delivery", "add-on"] as const).map((role) => {
+            const groupOptions = serviceOptions.filter(
+              (option) => option.role === role,
+            );
+            if (!groupOptions.length) return null;
+            const mandatory = requiredDelivery;
             return (
-              <ServiceCard
-                key={option.offerId}
-                id={serviceId}
-                language={props.language}
-                option={option}
-                checked={selected}
-                amount={amount}
-                from={from}
-                currencySymbol={selectedCurrencySymbol}
-                tariff={tariff}
-                distanceKm={charge?.inputs.distance_km}
-                pending={
-                  pending ||
-                  closePending.current ||
-                  Boolean(discovery.isFetching) ||
-                  (validDiscoveryQuantity && quantity !== discoveryQuantity)
-                }
-                onCheckedChange={changeService}
-              >
-                {selected ? (
-                  <div className="space-y-3 px-3 pb-3">
-                    {option.receiptMethod === "shipping" ? (
-                      <DeliveryAddress
-                        id={`${serviceId}-address`}
-                        label={ru ? "Адрес доставки" : "Delivery address"}
-                        value={draft.address}
-                        offerId={option.offerId}
-                        language={props.language}
-                        className={input}
-                        onChange={(address, selected) =>
-                          edit(
-                            (current) => ({ ...current, address }),
-                            !selected,
+              <fieldset key={role} className="space-y-1.5">
+                <legend
+                  id={controlId + "-" + role + "-legend"}
+                  className="mb-1 text-xs font-medium"
+                >
+                  {role === "delivery"
+                    ? ru
+                      ? "Получение"
+                      : "Fulfillment"
+                    : ru
+                      ? "Дополнительные услуги"
+                      : "Additional services"}
+                </legend>
+                <div className="text-xs leading-4 text-muted-foreground">
+                  {role === "delivery"
+                    ? mandatory
+                      ? ru
+                        ? "Выберите один вариант"
+                        : "Choose one option"
+                      : ru
+                        ? "Необязательно · один вариант"
+                        : "Optional · one option"
+                    : ru
+                      ? "Можно выбрать несколько"
+                      : "Choose any number"}
+                </div>
+                <ServiceOptions
+                  id={controlId + "-" + role + "-options"}
+                  labelId={controlId + "-" + role + "-legend"}
+                  selectionName={controlId + "-fulfillment"}
+                  multiple={role === "add-on"}
+                  required={mandatory}
+                  value={
+                    options.find(
+                      (option) =>
+                        option.role === "delivery" &&
+                        draft.services[option.offerId] !== undefined,
+                    )?.offerId ?? ""
+                  }
+                  onValueChange={(offerId) => changeService(offerId, true)}
+                >
+                  {role === "delivery" && !mandatory ? (
+                    <ServiceNoSelection
+                      id={controlId + "-fulfillment-none"}
+                      language={props.language}
+                    />
+                  ) : null}
+                  {groupOptions.map((option) => {
+                    const selected =
+                      draft.services[option.offerId] !== undefined;
+                    const charge =
+                      currentAmount && selected
+                        ? currentReceipt?.charges.find(
+                            (charge) =>
+                              charge.offerId === option.offerId &&
+                              charge.quantity ===
+                                Number(draft.services[option.offerId]),
                           )
+                        : undefined;
+                    const currentOption = currentAmount
+                      ? currentReceipt?.serviceOptions.find(
+                          (item) => item.offerId === option.offerId,
+                        )
+                      : undefined;
+                    const tariff =
+                      currentOption?.deliveryTariff ??
+                      (available?.currencyId === draft.currencyId
+                        ? option.deliveryTariff
+                        : undefined);
+                    const preview =
+                      currentOption?.pricePreview ??
+                      (validDiscoveryQuantity &&
+                      available?.offerId === draft.offerId &&
+                      available.currencyId === draft.currencyId &&
+                      available.quantity === quantity
+                        ? option.pricePreview
+                        : undefined);
+                    const fixedFallback =
+                      option.receiptMethod === "shipping" &&
+                      tariff?.basis === "fixed"
+                        ? tariff.fixedAmount
+                        : undefined;
+                    const amount =
+                      charge?.amount ?? preview?.amount ?? fixedFallback;
+                    const from = !charge && preview?.kind === "from";
+                    const serviceId = `${controlId}-${option.offerId}`;
+                    return (
+                      <ServiceCard
+                        key={option.offerId}
+                        id={serviceId}
+                        language={props.language}
+                        option={option}
+                        checked={selected}
+                        amount={amount}
+                        from={from}
+                        currencySymbol={selectedCurrencySymbol}
+                        tariff={tariff}
+                        distanceKm={charge?.inputs.distance_km}
+                        pending={
+                          pending ||
+                          closePending.current ||
+                          Boolean(discovery.isFetching) ||
+                          (validDiscoveryQuantity &&
+                            quantity !== discoveryQuantity)
                         }
-                      />
-                    ) : null}
-                    {option.receiptMethod === "pickup" ? (
-                      <div className="grid gap-1 text-xs">
-                        <label htmlFor={`${serviceId}-pickup`}>
-                          {ru ? "Точка самовывоза" : "Pickup point"}
-                        </label>
-                        <Select
-                          ui="shadcn"
-                          id={`${serviceId}-pickup`}
-                          className={input}
-                          value={draft.pickup}
-                          onValueChange={(pickup) =>
-                            edit((current) => ({ ...current, pickup }))
-                          }
-                          placeholder={
-                            ru
-                              ? "Выберите точку магазина"
-                              : "Choose a store location"
-                          }
-                          options={(option.pickupPointIds ?? []).map((id) => ({
-                            value: id,
-                            label: id,
-                          }))}
-                        />
-                      </div>
-                    ) : null}
-                    {option.role === "add-on" ? (
-                      <div className="grid gap-1 text-xs">
-                        <label htmlFor={`${serviceId}-quantity`}>
-                          {ru ? "Количество единиц услуги" : "Service quantity"}
-                        </label>
-                        <input
-                          id={`${serviceId}-quantity`}
-                          type="number"
-                          className={input}
-                          min={1}
-                          max={quantity}
-                          step={1}
-                          value={draft.services[option.offerId]}
-                          onChange={(event) => {
-                            const count = event.target.value;
-                            edit(
-                              (current) => ({
-                                ...current,
-                                services: {
-                                  ...current.services,
-                                  [option.offerId]: count,
-                                },
-                              }),
-                              true,
-                            );
-                          }}
-                        />
-                      </div>
-                    ) : null}
-                  </div>
-                ) : null}
-              </ServiceCard>
+                        onCheckedChange={changeService}
+                      >
+                        {selected ? (
+                          <div className="space-y-3 px-3 pb-3">
+                            {option.receiptMethod === "shipping" ? (
+                              <DeliveryAddress
+                                id={`${serviceId}-address`}
+                                label={
+                                  ru ? "Адрес доставки" : "Delivery address"
+                                }
+                                value={draft.address}
+                                offerId={option.offerId}
+                                language={props.language}
+                                className={input}
+                                onChange={(address, selected) =>
+                                  edit(
+                                    (current) => ({ ...current, address }),
+                                    !selected,
+                                  )
+                                }
+                              />
+                            ) : null}
+                            {option.receiptMethod === "shipping" ? (
+                              <>
+                                {quantity >= 2 || draft.split ? (
+                                  <label
+                                    htmlFor={`${controlId}-split`}
+                                    className="flex min-h-11 cursor-pointer items-center gap-3 text-xs"
+                                  >
+                                    <Checkbox
+                                      id={`${controlId}-split`}
+                                      className="size-5 rounded-md border-2 border-muted-foreground bg-card focus-visible:ring-foreground"
+                                      checked={draft.split}
+                                      disabled={splitting}
+                                      onCheckedChange={(checked) =>
+                                        edit((current) => ({
+                                          ...current,
+                                          split: checked === true,
+                                        }))
+                                      }
+                                    />
+                                    {ru
+                                      ? "Доставить часть на другой адрес"
+                                      : "Deliver some items to another address"}
+                                  </label>
+                                ) : null}
+                                {draft.split ? (
+                                  <fieldset
+                                    disabled={splitting}
+                                    className="space-y-3 rounded-xl border border-border p-3"
+                                  >
+                                    <div className="text-xs leading-4 text-muted-foreground">
+                                      {ru
+                                        ? "Укажите, сколько товаров отправить на второй адрес. Для каждого адреса будет отдельный заказ со своей стоимостью доставки."
+                                        : "Choose how many items to send to the second address. Each address will have a separate order and delivery charge."}
+                                    </div>
+                                    <QuantityInput
+                                      id={`${controlId}-split-quantity`}
+                                      label={
+                                        ru
+                                          ? "Количество на второй адрес"
+                                          : "Quantity for the second address"
+                                      }
+                                      contextLabel={productTitle}
+                                      decreaseLabel={
+                                        ru
+                                          ? "Уменьшить количество на второй адрес"
+                                          : "Decrease second-address quantity"
+                                      }
+                                      increaseLabel={
+                                        ru
+                                          ? "Увеличить количество на второй адрес"
+                                          : "Increase second-address quantity"
+                                      }
+                                      min={1}
+                                      max={quantity - 1}
+                                      disabled={splitting}
+                                      value={draft.splitQuantity}
+                                      onValueChange={(splitQuantity) => {
+                                        edit(
+                                          (current) => ({
+                                            ...current,
+                                            splitQuantity,
+                                          }),
+                                          true,
+                                        );
+                                      }}
+                                    />
+                                    {shippingOption ? (
+                                      <DeliveryAddress
+                                        id={`${controlId}-second-address`}
+                                        label={
+                                          ru
+                                            ? "Адрес второго заказа"
+                                            : "Second order address"
+                                        }
+                                        value={draft.secondAddress}
+                                        offerId={shippingOption.offerId}
+                                        language={props.language}
+                                        className={input}
+                                        onChange={(secondAddress, selected) =>
+                                          edit(
+                                            (current) => ({
+                                              ...current,
+                                              secondAddress,
+                                            }),
+                                            !selected,
+                                          )
+                                        }
+                                      />
+                                    ) : null}
+                                    <button
+                                      type="button"
+                                      className={button}
+                                      disabled={
+                                        !validInput || !validSplit || pending
+                                      }
+                                      onClick={() =>
+                                        edit((current) => current, false, true)
+                                      }
+                                    >
+                                      {ru ? "Разделить заказ" : "Split order"}
+                                    </button>
+                                  </fieldset>
+                                ) : null}
+                              </>
+                            ) : null}
+                            {option.receiptMethod === "pickup" ? (
+                              <div className="grid gap-1 text-xs">
+                                <label htmlFor={`${serviceId}-pickup`}>
+                                  {ru ? "Точка самовывоза" : "Pickup point"}
+                                </label>
+                                <Select
+                                  ui="shadcn"
+                                  id={`${serviceId}-pickup`}
+                                  className={input}
+                                  value={draft.pickup}
+                                  onValueChange={(pickup) =>
+                                    edit((current) => ({ ...current, pickup }))
+                                  }
+                                  placeholder={
+                                    ru
+                                      ? "Выберите точку магазина"
+                                      : "Choose a store location"
+                                  }
+                                  options={(option.pickupPointIds ?? []).map(
+                                    (id) => ({
+                                      value: id,
+                                      label: id,
+                                    }),
+                                  )}
+                                />
+                              </div>
+                            ) : null}
+                            {option.role === "add-on" ? (
+                              <QuantityInput
+                                id={`${serviceId}-quantity`}
+                                label={
+                                  ru
+                                    ? "Количество единиц услуги"
+                                    : "Service quantity"
+                                }
+                                contextLabel={`${option.titles?.[props.language] || option.title || option.productId} · ${productTitle}`}
+                                decreaseLabel={`${ru ? "Уменьшить количество услуги" : "Decrease service quantity"}: ${option.titles?.[props.language] || option.title || option.productId} (${productTitle})`}
+                                increaseLabel={`${ru ? "Увеличить количество услуги" : "Increase service quantity"}: ${option.titles?.[props.language] || option.title || option.productId} (${productTitle})`}
+                                min={quantityBounds.min}
+                                max={Math.max(
+                                  0,
+                                  Math.min(
+                                    Number.isSafeInteger(quantity)
+                                      ? quantity
+                                      : 0,
+                                    charge?.availableQuantity ??
+                                      original?.charges.find(
+                                        (item) =>
+                                          item.offerId === option.offerId,
+                                      )?.availableQuantity ??
+                                      quantityBounds.max,
+                                  ),
+                                )}
+                                value={draft.services[option.offerId]}
+                                onValueChange={(count) => {
+                                  edit(
+                                    (current) => ({
+                                      ...current,
+                                      services: {
+                                        ...current.services,
+                                        [option.offerId]: count,
+                                      },
+                                    }),
+                                    true,
+                                  );
+                                }}
+                              />
+                            ) : null}
+                          </div>
+                        ) : null}
+                      </ServiceCard>
+                    );
+                  })}
+                </ServiceOptions>
+              </fieldset>
             );
           })}
-        </fieldset>
+        </div>
       ) : null}
       {!available && discovery.isError ? (
         <div className="space-y-2">
@@ -1007,73 +1234,6 @@ export function Selection(props: ISelectionProps) {
             {ru ? "Убрать недоступные услуги" : "Remove unavailable services"}
           </label>
         </div>
-      ) : null}
-      {quantity >= 2 || draft.split ? (
-        <label
-          htmlFor={`${controlId}-split`}
-          className="flex min-h-11 cursor-pointer items-center gap-3 text-xs"
-        >
-          <Checkbox
-            id={`${controlId}-split`}
-            className="size-5 rounded-md border-2 border-muted-foreground bg-card focus-visible:ring-foreground"
-            checked={draft.split}
-            disabled={splitting}
-            onCheckedChange={(checked) =>
-              edit((current) => ({ ...current, split: checked === true }))
-            }
-          />
-          {ru ? "Разделить по адресам" : "Split by destination"}
-        </label>
-      ) : null}
-      {draft.split ? (
-        <fieldset
-          disabled={splitting}
-          className="space-y-3 rounded-xl border border-border p-3"
-        >
-          <label className="grid gap-1 text-xs">
-            {ru
-              ? "Количество во втором заказе"
-              : "Quantity in the second order"}
-            <input
-              className={input}
-              type="number"
-              min={1}
-              max={quantity - 1}
-              step={1}
-              value={draft.splitQuantity}
-              onChange={(event) => {
-                const splitQuantity = event.target.value;
-                edit((current) => ({ ...current, splitQuantity }), true);
-              }}
-            />
-          </label>
-          {shippingOption ? (
-            <DeliveryAddress
-              id={`${controlId}-second-address`}
-              label={ru ? "Адрес второго заказа" : "Second order address"}
-              value={draft.secondAddress}
-              offerId={shippingOption.offerId}
-              language={props.language}
-              className={input}
-              onChange={(secondAddress, selected) =>
-                edit((current) => ({ ...current, secondAddress }), !selected)
-              }
-            />
-          ) : null}
-          <p className="text-xs text-muted-foreground">
-            {ru
-              ? "Будут созданы два заказа. Доставка рассчитывается для каждого заказа."
-              : "This creates two orders. Fulfillment is priced for each order."}
-          </p>
-          <button
-            type="button"
-            className={button}
-            disabled={!validInput || !validSplit || pending}
-            onClick={() => edit((current) => current, false, true)}
-          >
-            {ru ? "Разделить заказ" : "Split order"}
-          </button>
-        </fieldset>
       ) : null}
       {!validQuantities ? (
         <p role="alert" className="text-xs text-destructive">

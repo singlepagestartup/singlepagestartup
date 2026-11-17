@@ -4,8 +4,10 @@ import { TIPTAP_EMPTY_DOC } from "@sps/shared-utils";
 import { Component } from "./Component";
 
 jest.mock("@sps/shared-ui-shadcn", () => ({
-  TipTap: ({ value }: any) => (
-    <div data-testid="short-description">{value}</div>
+  TipTap: ({ value, className }: any) => (
+    <div data-testid="short-description" className={className}>
+      {value}
+    </div>
   ),
 }));
 jest.mock("@sps/ui-adapter", () => ({ Icon: () => null }));
@@ -40,6 +42,8 @@ it("keeps the localized description beneath its title and above cart controls", 
     name: "Quantity and currency",
   });
   expect(description.textContent).toBe("Oak chair");
+  expect(description.className).toContain("[&_p]:text-xs");
+  expect(description.className).toContain("[&_p]:leading-4");
   expect(
     title.compareDocumentPosition(description) &
       Node.DOCUMENT_POSITION_FOLLOWING,

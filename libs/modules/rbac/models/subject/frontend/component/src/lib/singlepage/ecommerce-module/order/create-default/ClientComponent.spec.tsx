@@ -15,8 +15,11 @@ let mockOffers: any[];
 let mockLoading = false;
 let mockIssues: any[] = [];
 let mockAmount = "5000";
+let mockUnitAmount: string | null | undefined;
+let mockUnitInput: string | undefined;
 let mockServices: any[] = [];
 let mockQuotedCurrency: string | undefined;
+let mockValidateStock = false;
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   api: {
     ecommerceModuleOrderCreate: () => ({
@@ -43,7 +46,16 @@ jest.mock("@sps/ecommerce/relations/stores-to-products/sdk/client", () => ({
               currencyIds: ["rub"],
               availableQuantity: 5,
               serviceOptions: mockServices,
-              issues: mockIssues,
+              issues:
+                mockValidateStock && data.quantity > 5
+                  ? [
+                      {
+                        code: "stock",
+                        offerId: data.offerId,
+                        message: "Not enough stock",
+                      },
+                    ]
+                  : mockIssues,
               version: JSON.stringify(data),
               charges: [
                 {
@@ -51,6 +63,11 @@ jest.mock("@sps/ecommerce/relations/stores-to-products/sdk/client", () => ({
                   role: "product",
                   quantity: data.quantity,
                   amount: mockAmount,
+                  unitAmount: mockUnitAmount,
+                  inputs:
+                    mockUnitInput === undefined
+                      ? {}
+                      : { unit_price: mockUnitInput },
                 },
                 ...(data.services ?? []).map((service: any) => ({
                   ...service,
@@ -86,6 +103,7 @@ jest.mock("@sps/shared-frontend-client-utils", () => ({
   cn: (...values: any[]) => values.filter(Boolean).join(" "),
 }));
 jest.mock("@sps/ui-adapter", () => ({
+  Icon: () => null,
   Select: ({
     id,
     value,
@@ -110,6 +128,7 @@ jest.mock("@sps/ui-adapter", () => ({
   ),
 }));
 jest.mock("@sps/shared-ui-shadcn", () => ({
+  ...jest.requireActual("@sps/shared-ui-shadcn"),
   Button: ({ children, variant, ...props }: any) => (
     <button {...props}>{children}</button>
   ),
@@ -142,6 +161,13 @@ const props: any = {
   variant: "ecommerce-module-order-create-default",
   ecommerceModuleProduct: { id: "product" },
 };
+beforeAll(() => {
+  global.ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  } as unknown as typeof ResizeObserver;
+});
 beforeEach(() => {
   mockCreate.mockReset().mockResolvedValue({});
   mockRefetch.mockReset().mockResolvedValue({});
@@ -158,8 +184,11 @@ beforeEach(() => {
   mockLoading = false;
   mockIssues = [];
   mockAmount = "5000";
+  mockUnitAmount = undefined;
+  mockUnitInput = undefined;
   mockServices = [];
   mockQuotedCurrency = undefined;
+  mockValidateStock = false;
 });
 it("submits the exact unique retail offer with a supported currency", async () => {
   render(<Component {...props} />);
@@ -352,6 +381,61 @@ it("renders the quoted amount after a quantity change without calculating money 
   expect(screen.queryByText(/10000/)).toBeNull();
 });
 
+it.each(["0", "0.00000001", "123.45678901"])(
+  "shows the server one-item price %s separately from a multi-item receipt",
+  async (unitAmount) => {
+    mockUnitAmount = unitAmount;
+    mockAmount = "9876.54";
+    render(<Component {...props} />);
+    fireEvent.change(screen.getByLabelText("Количество"), {
+      target: { value: "2" },
+    });
+    await waitFor(() =>
+      expect(screen.getByLabelText("Цена за 1 шт.").textContent).toContain(
+        unitAmount.replace(".", ","),
+      ),
+    );
+    expect(screen.getByText("За 1 шт.")).toBeTruthy();
+    expect(
+      within(screen.getByRole("region", { name: "Расчёт" })).getAllByText(
+        /9\s876,54/,
+      ).length,
+    ).toBeGreaterThan(0);
+    expect(screen.getByLabelText("Цена за 1 шт.").textContent).not.toMatch(
+      /9\s876,54/,
+    );
+  },
+);
+
+it("uses only a quantity-one total for old quotes and never divides an old batch total or shows its coefficient", async () => {
+  mockAmount = "10";
+  mockUnitInput = "3.125";
+  const view = render(<Component {...props} />);
+  expect(screen.getByLabelText("Цена за 1 шт.").textContent).toBe("10 ₽");
+  fireEvent.change(screen.getByLabelText("Количество"), {
+    target: { value: "3" },
+  });
+  await waitFor(() =>
+    expect(screen.getByLabelText("Цена за 1 шт.").textContent).toBe("—"),
+  );
+  mockUnitInput = undefined;
+  view.rerender(<Component {...props} />);
+  expect(screen.getByLabelText("Цена за 1 шт.").textContent).toBe("—");
+});
+
+it("hides an explicitly unavailable unit quote and any amount belonging to an old currency", () => {
+  mockUnitInput = "5000";
+  mockUnitAmount = null;
+  const view = render(<Component {...props} />);
+  expect(screen.getByLabelText("Цена за 1 шт.").textContent).toBe("—");
+  mockUnitAmount = "123";
+  mockQuotedCurrency = "usd";
+  view.rerender(<Component {...props} />);
+  expect(screen.getByLabelText("Цена за 1 шт.").textContent).not.toContain(
+    "123",
+  );
+});
+
 it("uses localized store names without exposing a unique offer's technical SKU", () => {
   render(<Component {...props} />);
   expect(screen.getByLabelText("Магазин")).toBeTruthy();
@@ -400,7 +484,15 @@ it("offers localized real services directly on the product page", () => {
 });
 
 it("removes a previous offer's service hint when choosing another store", () => {
-  mockServices = [{ offerId: "service", title: "Consultation" }];
+  mockServices = [
+    {
+      offerId: "service",
+      productId: "service",
+      title: "Consultation",
+      role: "add-on",
+      currencyIds: ["rub"],
+    },
+  ];
   mockOffers.push({ ...mockOffers[0], id: "other-offer", storeId: "store-b" });
   render(<Component {...props} />);
   fireEvent.change(screen.getByLabelText("Магазин"), {
@@ -451,7 +543,7 @@ it("uses one exact configured selection for inline service/address controls, car
   fireEvent.change(screen.getByLabelText("Количество"), {
     target: { value: "2" },
   });
-  fireEvent.click(screen.getByRole("checkbox", { name: "Доставка" }));
+  fireEvent.click(screen.getByRole("radio", { name: "Доставка" }));
   const delivery = within(screen.getByRole("group", { name: "Доставка" }));
   expect(delivery.getByText("Зона доставки: Москва")).toBeTruthy();
   expect(screen.queryByLabelText("Регион")).toBeNull();
@@ -514,7 +606,7 @@ it("puts pickup parameters inside their selected service and includes the real p
     },
   ];
   render(<Component {...props} />);
-  fireEvent.click(screen.getByRole("checkbox", { name: "Самовывоз" }));
+  fireEvent.click(screen.getByRole("radio", { name: "Самовывоз" }));
   fireEvent.change(
     within(screen.getByRole("group", { name: "Самовывоз" })).getByLabelText(
       "Точка самовывоза",
@@ -562,7 +654,7 @@ it("keeps the selected address editor usable when the server filters delivery ou
   };
   mockServices = [shipping];
   const view = render(<Component {...props} />);
-  fireEvent.click(screen.getByRole("checkbox", { name: "Доставка" }));
+  fireEvent.click(screen.getByRole("radio", { name: "Доставка" }));
   mockServices = [];
   mockIssues = [
     {
@@ -704,4 +796,195 @@ it("keeps a fresh secondary offer collapsed behind an accessible explicit action
     screen.getByRole("button", { name: "Добавить в корзину" }),
   ).toBeTruthy();
   expect(slot.mock.calls.at(-1)![1].hideWhenIdle).toBe(false);
+});
+
+it("groups fulfillment radios separately from add-ons and preserves address and service counts while switching", async () => {
+  mockServices = [
+    {
+      offerId: "delivery-a",
+      productId: "delivery",
+      role: "delivery",
+      receiptMethod: "shipping",
+      title: "Доставка",
+      currencyIds: ["rub"],
+    },
+    {
+      offerId: "pickup-a",
+      productId: "pickup",
+      role: "delivery",
+      receiptMethod: "pickup",
+      title: "Самовывоз",
+      pickupPointIds: ["point"],
+      currencyIds: ["rub"],
+    },
+    {
+      offerId: "assembly-a",
+      productId: "assembly",
+      role: "add-on",
+      title: "Сборка",
+      currencyIds: ["rub"],
+    },
+  ];
+  render(<Component {...props} />);
+  const fulfillment = within(
+    screen.getByRole("radiogroup", { name: "Получение" }),
+  );
+  expect(
+    (
+      fulfillment.getByRole("radio", {
+        name: "Не выбирать способ получения",
+      }) as HTMLInputElement
+    ).getAttribute("aria-checked"),
+  ).toBe("true");
+  fireEvent.change(screen.getByLabelText("Количество"), {
+    target: { value: "2" },
+  });
+  fireEvent.click(fulfillment.getByRole("radio", { name: "Доставка" }));
+  fireEvent.change(screen.getByLabelText("Адрес доставки"), {
+    target: { value: "Сохранённый адрес" },
+  });
+  fireEvent.click(screen.getByRole("checkbox", { name: "Сборка" }));
+  fireEvent.change(
+    within(screen.getByRole("group", { name: "Сборка" })).getByRole(
+      "spinbutton",
+    ),
+    { target: { value: "2" } },
+  );
+  fireEvent.click(fulfillment.getByRole("radio", { name: "Самовывоз" }));
+  expect(fulfillment.getAllByRole("radio", { checked: true })).toHaveLength(1);
+  expect(screen.queryByLabelText("Адрес доставки")).toBeNull();
+  fireEvent.click(fulfillment.getByRole("radio", { name: "Доставка" }));
+  expect(
+    (screen.getByLabelText("Адрес доставки") as HTMLInputElement).value,
+  ).toBe("Сохранённый адрес");
+  expect(
+    (
+      within(screen.getByRole("group", { name: "Сборка" })).getByRole(
+        "spinbutton",
+      ) as HTMLInputElement
+    ).value,
+  ).toBe("2");
+  fireEvent.click(
+    fulfillment.getByRole("radio", { name: "Не выбирать способ получения" }),
+  );
+  await waitFor(() =>
+    expect(mockQuoteRead.mock.calls.at(-1)![0].services).toEqual([
+      { offerId: "assembly-a", quantity: 2 },
+    ]),
+  );
+  expect(screen.getByRole("checkbox", { name: "Сборка" })).toBeTruthy();
+});
+
+it("requires exactly one fulfillment choice when the offer marks it mandatory", () => {
+  mockOffers[0].settings = { requiredDelivery: true };
+  mockServices = [
+    {
+      offerId: "delivery-a",
+      productId: "delivery",
+      role: "delivery",
+      receiptMethod: "shipping",
+      title: "Доставка",
+      currencyIds: ["rub"],
+    },
+  ];
+  render(<Component {...props} />);
+  const fulfillment = screen.getByRole("radiogroup", { name: "Получение" });
+  expect(fulfillment.getAttribute("aria-required")).toBe("true");
+  expect(
+    within(fulfillment).queryByRole("radio", {
+      name: "Не выбирать способ получения",
+    }),
+  ).toBeNull();
+  const radio = within(fulfillment).getByRole("radio", {
+    name: "Доставка",
+  }) as HTMLInputElement;
+  fireEvent.click(radio);
+  fireEvent.click(radio);
+  expect(radio.getAttribute("aria-checked")).toBe("true");
+});
+
+it("steps product and service quantities with scoped buttons and arrow keys while retaining direct typing and stock bounds", async () => {
+  mockValidateStock = true;
+  mockServices = [
+    {
+      offerId: "assembly-a",
+      productId: "assembly",
+      title: "Сборка",
+      role: "add-on",
+      currencyIds: ["rub"],
+    },
+  ];
+  render(
+    <Component
+      {...props}
+      ecommerceModuleProduct={{
+        ...props.ecommerceModuleProduct,
+        title: { ru: "Шкаф" },
+      }}
+    />,
+  );
+  const quantity = screen.getByRole("spinbutton", { name: "Количество" });
+  const increase = screen.getByRole("button", {
+    name: "Увеличить количество товара: Шкаф",
+  });
+  const decrease = screen.getByRole("button", {
+    name: "Уменьшить количество товара: Шкаф",
+  });
+  expect(screen.getByRole("group", { name: "Количество: Шкаф" })).toBeTruthy();
+  expect(decrease.hasAttribute("disabled")).toBe(true);
+  fireEvent.click(increase);
+  expect((quantity as HTMLInputElement).value).toBe("2");
+  fireEvent.keyDown(quantity, { key: "ArrowUp" });
+  expect((quantity as HTMLInputElement).value).toBe("3");
+  fireEvent.keyDown(quantity, { key: "ArrowDown" });
+  expect((quantity as HTMLInputElement).value).toBe("2");
+  fireEvent.change(quantity, { target: { value: "6" } });
+  expect((quantity as HTMLInputElement).value).toBe("6");
+  expect(increase.hasAttribute("disabled")).toBe(true);
+  expect(await screen.findByText("Not enough stock")).toBeTruthy();
+  fireEvent.click(decrease);
+  expect((quantity as HTMLInputElement).value).toBe("5");
+  await waitFor(() =>
+    expect(screen.queryByText("Not enough stock")).toBeNull(),
+  );
+  expect(increase.hasAttribute("disabled")).toBe(true);
+  fireEvent.click(screen.getByRole("checkbox", { name: "Сборка" }));
+  const units = screen.getByRole("spinbutton", {
+    name: "Количество единиц услуги",
+  });
+  const serviceIncrease = screen.getByRole("button", {
+    name: "Увеличить количество услуги: Сборка (Шкаф)",
+  });
+  const serviceDecrease = screen.getByRole("button", {
+    name: "Уменьшить количество услуги: Сборка (Шкаф)",
+  });
+  fireEvent.click(serviceIncrease);
+  fireEvent.keyDown(units, { key: "ArrowUp" });
+  fireEvent.keyDown(units, { key: "ArrowDown" });
+  expect((units as HTMLInputElement).value).toBe("2");
+  fireEvent.change(units, { target: { value: "9" } });
+  expect((units as HTMLInputElement).value).toBe("9");
+  expect(serviceIncrease.hasAttribute("disabled")).toBe(true);
+  fireEvent.click(serviceDecrease);
+  expect((units as HTMLInputElement).value).toBe("5");
+  await waitFor(() =>
+    expect(
+      screen
+        .getByRole("button", { name: "Добавить в корзину" })
+        .hasAttribute("disabled"),
+    ).toBe(false),
+  );
+  expect(screen.getByRole("spinbutton", { name: "Количество" })).toBe(quantity);
+  expect(mockCreate).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("button", { name: "Добавить в корзину" }));
+  await waitFor(() =>
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          quantity: 5,
+          services: [{ offerId: "assembly-a", quantity: 5 }],
+        }),
+      }),
+    ),
+  );
 });

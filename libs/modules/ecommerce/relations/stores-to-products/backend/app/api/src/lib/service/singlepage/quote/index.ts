@@ -514,7 +514,7 @@ export class Service {
           .evaluate(inputs)
           .toFixed(precision(currency), Decimal.ROUND_HALF_UP);
         const role = (link?.variant ?? "product") as IOfferCharge["role"];
-        const priced = {
+        const priced: IOfferCharge = {
           offerId: offer.id,
           productId: offer.productId,
           storeId: offer.storeId,
@@ -530,6 +530,14 @@ export class Service {
           formulaVersion,
           inputs,
         };
+        if (!index) {
+          priced.unitAmount = this.unitAmount(
+            compiled,
+            inputs,
+            main,
+            precision(currency),
+          );
+        }
         result.charges.push(priced);
         if (!index) {
           charge = priced;
@@ -594,7 +602,13 @@ export class Service {
           input.destination?.pickupPointId ?? "",
           result.charges
             .map(
-              ({ lineId, stockQuantity, availableQuantity, ...terms }) => terms,
+              ({
+                lineId,
+                stockQuantity,
+                availableQuantity,
+                unitAmount,
+                ...terms
+              }) => terms,
             )
             .sort((a, b) => a.offerId.localeCompare(b.offerId)),
           result.issues,
@@ -606,6 +620,32 @@ export class Service {
       now.getTime() + Math.min(1440, Math.max(1, expiryMinutes)) * 60000,
     ).toISOString();
     return result;
+  }
+
+  private unitAmount(
+    formula: ReturnType<typeof compileTariffFormula>,
+    quotedInputs: Record<string, string>,
+    main: IModel,
+    digits: number,
+  ): string | null {
+    const inputs = { ...quotedInputs };
+    try {
+      for (const name of formula.variables) {
+        if (name === "quantity" || name === "serviced_qty") {
+          inputs[name] = "1";
+        } else if (
+          isRuntimeInput(name) &&
+          name !== "unit_price" &&
+          name !== "distance_km" &&
+          name !== "serviced_subtotal"
+        ) {
+          inputs[name] = packageInput(main, name, 1);
+        }
+      }
+      return formula.evaluate(inputs).toFixed(digits, Decimal.ROUND_HALF_UP);
+    } catch {
+      return null;
+    }
   }
 
   private pricePreview(

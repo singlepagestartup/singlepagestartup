@@ -15,7 +15,7 @@ const input: IOfferQuoteInput = {
     { offerId: "assembly", quantity: 1 },
   ],
 };
-function fixture() {
+function fixture(digits = 2) {
   function attr(
     key: string,
     value: string | null,
@@ -113,7 +113,7 @@ function fixture() {
   const service = new Service({
     catalog,
     held,
-    precision: () => 2,
+    precision: () => digits,
     routing: () => routing,
     now: new Date("2026-11-17T00:00:00Z"),
   });
@@ -148,6 +148,146 @@ function fixture() {
   return { service, catalog, held, routing, attr, formula, addOption };
 }
 describe("per-offer quote", () => {
+  it("rejects two independently valid fulfillment services in a direct request", async () => {
+    const { service, catalog, addOption } = fixture();
+    addOption("pickup", "delivery", "pickup", { rub: "0" }, "unit_price");
+    catalog.offers.get("pickup")!.settings.pickupPointIds = ["point"];
+    const destination = { address: "Test address", pickupPointId: "point" };
+    const one = await service.execute({
+      ...input,
+      destination,
+      services: [{ offerId: "pickup", quantity: 1 }],
+    });
+    expect(one.issues).toEqual([]);
+    expect(one.amount).toBe("5000.00");
+    const two = await service.execute({
+      ...input,
+      destination,
+      services: [
+        { offerId: "courier", quantity: 1 },
+        { offerId: "pickup", quantity: 1 },
+      ],
+    });
+    expect(two.amount).toBeNull();
+    expect(two.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: "unavailable",
+          offerId: "pickup",
+          message: "Choose one delivery method",
+        }),
+      ]),
+    );
+  });
+  it("quotes a one-item amount separately from the merchandise and service totals", async () => {
+    const { service } = fixture();
+    const quote = await service.execute({ ...input, quantity: 2 });
+    expect(quote.charges[0]).toMatchObject({
+      quantity: 2,
+      amount: "10000.00",
+      unitAmount: "5000.00",
+    });
+    expect(quote.charges[1].unitAmount).toBeUndefined();
+    expect(quote.amount).toBe("13000.00");
+  });
+
+  it("calculates quantity-one formula and package inputs rather than dividing a nonlinear total", async () => {
+    const { service, catalog, attr, formula } = fixture();
+    catalog.productAttributes.set(
+      "wardrobe",
+      formula("unit_price * quantity + rate_per_kg * total_weight_kg"),
+    );
+    catalog.storeAttributes.set("seller", [attr("rate_per_kg", "2.5", "rub")]);
+    catalog.offers.get("wardrobe")!.settings.packages = [
+      { count: 2, weight_kg: "2" },
+    ];
+    let quote = await service.execute({ ...input, quantity: 2, services: [] });
+    expect(quote.charges[0]).toMatchObject({
+      amount: "10020.00",
+      unitAmount: "5010.00",
+    });
+    catalog.productAttributes.set(
+      "wardrobe",
+      formula("unit_price * quantity - discount"),
+    );
+    catalog.storeAttributes.set("seller", [attr("discount", "10", "rub")]);
+    quote = await service.execute({ ...input, quantity: 2, services: [] });
+    expect(quote.charges[0]).toMatchObject({
+      amount: "9990.00",
+      unitAmount: "4990.00",
+    });
+  });
+
+  it("retains zero and eight-decimal unit amounts as exact currency strings", async () => {
+    const { service, catalog, attr } = fixture(8);
+    catalog.offerAttributes.set("wardrobe", [
+      attr("price", "0.00000001", "rub"),
+    ]);
+    let quote = await service.execute({ ...input, quantity: 3, services: [] });
+    expect(quote.charges[0]).toMatchObject({
+      amount: "0.00000003",
+      unitAmount: "0.00000001",
+    });
+    catalog.offerAttributes.set("wardrobe", [attr("price", "0", "rub")]);
+    quote = await service.execute({ ...input, quantity: 3, services: [] });
+    expect(quote.charges[0]).toMatchObject({
+      amount: "0.00000000",
+      unitAmount: "0.00000000",
+    });
+  });
+
+  it("quotes the selected currency and rounds the one-item formula at its precision", async () => {
+    const { service, catalog, attr } = fixture();
+    const dollars = await service.execute({
+      ...input,
+      quantity: 2,
+      currencyId: "usd",
+      services: [],
+    });
+    expect(dollars.charges[0]).toMatchObject({
+      amount: "120.00",
+      unitAmount: "60.00",
+    });
+    catalog.offerAttributes.set("wardrobe", [attr("price", "1.005", "rub")]);
+    const roubles = await service.execute({
+      ...input,
+      quantity: 2,
+      services: [],
+    });
+    expect(roubles.charges[0]).toMatchObject({
+      amount: "2.01",
+      unitAmount: "1.01",
+    });
+  });
+
+  it("marks an unpriceable one-item configuration without failing a valid larger purchase", async () => {
+    const { service, catalog, attr, formula } = fixture();
+    catalog.offerAttributes.set("wardrobe", [attr("price", "10", "rub")]);
+    catalog.productAttributes.set(
+      "wardrobe",
+      formula("unit_price * quantity - discount"),
+    );
+    catalog.storeAttributes.set("seller", [attr("discount", "15", "rub")]);
+    const quote = await service.execute({
+      ...input,
+      quantity: 2,
+      services: [],
+    });
+    expect(quote.charges[0]).toMatchObject({
+      amount: "5.00",
+      unitAmount: null,
+    });
+    expect(quote.amount).toBe("5.00");
+  });
+
+  it("keeps derived unit-price display metadata out of purchase consent versions", async () => {
+    const { service } = fixture();
+    const before = await service.execute({ ...input, services: [] });
+    Object.defineProperty(service, "unitAmount", { value: () => "1.23" });
+    const after = await service.execute({ ...input, services: [] });
+    expect(after.charges[0].unitAmount).toBe("1.23");
+    expect(after.version).toBe(before.version);
+  });
   it.each([
     [1, 1, "8000.00"],
     [2, 1, "13000.00"],

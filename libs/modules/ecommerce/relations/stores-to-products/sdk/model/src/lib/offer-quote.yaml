@@ -60,6 +60,10 @@ properties:
         recurrence: { type: string, enum: [first, each] }
         quantity: { type: integer, minimum: 1 }
         amount: { type: string }
+        unitAmount:
+          type: string
+          nullable: true
+          description: Merchandise formula quoted for quantity one in the same currency and configuration. Null means a one-item price is unavailable. Older servers omit this field.
         stockQuantity: { type: integer, minimum: 0, nullable: true }
         availableQuantity: { type: integer, minimum: 0, nullable: true }
         formula: { type: string }

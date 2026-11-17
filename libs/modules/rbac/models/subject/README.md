@@ -83,6 +83,19 @@ eligible. Its cart line stores the agreed offer and quote conditions.
 The quantity, total and single-order handlers retain their ownership checks.
 Foreign and unknown Order IDs return the same 403 before private data is read.
 
+The product editor and cart drawer group delivery, pickup and electronic receipt
+as a single fulfillment selection. Add-ons support multiple selections. An
+optional fulfillment group includes an explicit empty choice. The server rejects
+multiple fulfillment methods before writing a cart. Product and service quantity
+controls support typing, plus/minus buttons and arrow keys within their limits.
+The compact price displays the server's `unitAmount`. The receipt includes
+quantity totals and selected services.
+
+For a saved shipping order with at least two items, the shipping card offers a
+second destination. The buyer assigns a quantity to that address and explicitly
+splits the order. Each resulting order has its own delivery calculation. Selecting
+pickup or electronic receipt clears the pending split.
+
 ### Current-Subject cart reads
 
 `GET /api/rbac/subjects/:id/ecommerce-module/orders?includeCartDetails=true`

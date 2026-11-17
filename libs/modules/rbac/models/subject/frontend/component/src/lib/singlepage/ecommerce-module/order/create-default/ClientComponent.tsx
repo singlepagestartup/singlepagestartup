@@ -8,10 +8,16 @@ import { api as currencyApi } from "@sps/billing/models/currency/sdk/client";
 import { Button } from "@sps/shared-ui-shadcn";
 import { Select } from "@sps/ui-adapter";
 import { cn, formatCurrencyAmount } from "@sps/shared-frontend-client-utils";
+import { ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds } from "@sps/shared-utils";
 import type { IEcommerceCartSelection } from "@sps/rbac/models/subject/sdk/model";
 import type { IOfferServiceOption } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 import { DeliveryAddress } from "../list/checkout-default/DeliveryAddress";
-import { ServiceCard } from "../list/checkout-default/ServiceCard";
+import {
+  ServiceCard,
+  ServiceOptions,
+  ServiceNoSelection,
+} from "../list/checkout-default/ServiceCard";
+import { QuantityInput } from "../list/checkout-default/QuantityInput";
 import type { IComponentPropsExtended, IConfiguredPurchase } from "./interface";
 
 interface IServiceIntent {
@@ -209,6 +215,15 @@ export function Component(props: IComponentPropsExtended) {
       ? props.billingModule.currency
       : undefined);
   const symbol = currency?.symbol ?? "";
+  const productQuantityMax = Math.min(
+    quantityBounds.max,
+    metadata?.availableQuantity ?? quantityBounds.max,
+  );
+  const productTitle =
+    props.ecommerceModuleProduct.title?.[props.language] ||
+    props.ecommerceModuleProduct.title?.en ||
+    props.ecommerceModuleProduct.slug ||
+    (ru ? "Товар" : "Product");
   const returnedServices =
     quote.data?.charges.filter((charge) => charge.role !== "product") ?? [];
   const serviceChargeMatches =
@@ -400,6 +415,22 @@ export function Component(props: IComponentPropsExtended) {
   );
   const changeService = useCallback(
     (offerId: string, checked: boolean) => {
+      if (!offerId && !selected?.settings?.requiredDelivery) {
+        edit((value) => ({
+          ...value,
+          method: "",
+          services: Object.fromEntries(
+            Object.entries(value.services).filter(
+              ([id]) =>
+                !options.some(
+                  (option) =>
+                    option.offerId === id && option.role === "delivery",
+                ),
+            ),
+          ),
+        }));
+        return;
+      }
       const option = options.find((option) => option.offerId === offerId);
       if (!option) return;
       edit((value) => {
@@ -418,7 +449,7 @@ export function Component(props: IComponentPropsExtended) {
         return { ...value, services, method };
       });
     },
-    [options],
+    [options, selected?.settings?.requiredDelivery],
   );
   const allOffersExcluded = Boolean(
     props.excludedOfferIds?.length && !offersQuery.isPending && !offers.length,
@@ -452,21 +483,20 @@ export function Component(props: IComponentPropsExtended) {
           hidden={secondary && !secondaryOpen}
         >
           <form onSubmit={submit} className="space-y-3" noValidate>
-            <div className="grid grid-cols-[4.5rem_minmax(0,1fr)_minmax(0,1fr)] items-end gap-2">
-              <label className="grid gap-1 text-xs font-medium">
-                {ru ? "Количество" : "Quantity"}
-                <input
-                  className={input}
-                  type="number"
-                  min={1}
-                  step={1}
-                  value={draft.quantity}
-                  onChange={(event) => {
-                    const quantity = event.target.value;
-                    edit((value) => ({ ...value, quantity }), true);
-                  }}
-                />
-              </label>
+            <div className="grid min-w-0 grid-cols-2 items-end gap-2 min-[480px]:grid-cols-[minmax(8rem,1fr)_minmax(0,1fr)_minmax(0,1fr)]">
+              <QuantityInput
+                id={`${formId}-quantity`}
+                label={ru ? "Количество" : "Quantity"}
+                contextLabel={productTitle}
+                decreaseLabel={`${ru ? "Уменьшить количество товара" : "Decrease product quantity"}: ${productTitle}`}
+                increaseLabel={`${ru ? "Увеличить количество товара" : "Increase product quantity"}: ${productTitle}`}
+                min={quantityBounds.min}
+                max={productQuantityMax}
+                value={draft.quantity}
+                onValueChange={(quantity) => {
+                  edit((value) => ({ ...value, quantity }), true);
+                }}
+              />
               <div className="grid min-w-0 gap-1 text-xs font-medium">
                 <label htmlFor={`${formId}-currency`}>
                   {ru ? "Валюта" : "Currency"}
@@ -495,19 +525,36 @@ export function Component(props: IComponentPropsExtended) {
                   }
                 />
               </div>
-              <div className="grid gap-1 text-right">
+              <div className="col-span-2 flex min-w-0 items-center justify-between gap-2 min-[480px]:col-span-1 min-[480px]:grid min-[480px]:justify-normal min-[480px]:gap-1 min-[480px]:text-right">
                 <span className="text-xs text-muted-foreground">
-                  {ru ? "За товар" : "Product only"}
+                  {ru ? "За 1 шт." : "Per item"}
                 </span>
                 <output
-                  aria-label={ru ? "Стоимость товара" : "Product amount"}
-                  className="flex min-h-11 items-center justify-end break-words text-sm font-semibold tabular-nums"
+                  aria-label={ru ? "Цена за 1 шт." : "Unit price"}
+                  className="flex min-h-6 items-center justify-end break-words text-sm font-semibold tabular-nums min-[480px]:min-h-12"
                 >
-                  {productCharge
-                    ? `${formatCurrencyAmount(productCharge.amount, props.language)} ${symbol}`
-                    : quote.isFetching || signature !== requestedSignature
+                  {(() => {
+                    const currentCharge =
+                      productCharge &&
+                      productCharge.offerId === selection.offerId &&
+                      productCharge.quantity === selection.quantity;
+                    const amount =
+                      productCharge?.unitAmount !== undefined
+                        ? productCharge.unitAmount
+                        : productCharge?.quantity === 1
+                          ? productCharge.amount
+                          : undefined;
+                    if (
+                      currentCharge &&
+                      amount !== null &&
+                      amount !== undefined
+                    ) {
+                      return `${formatCurrencyAmount(amount, props.language)} ${symbol}`;
+                    }
+                    return quote.isFetching || signature !== requestedSignature
                       ? "…"
-                      : "—"}
+                      : "—";
+                  })()}
                 </output>
               </div>
             </div>
@@ -572,132 +619,217 @@ export function Component(props: IComponentPropsExtended) {
               />
             </div>
             {orderedOptions.length ? (
-              <fieldset className="space-y-2">
-                <legend className="mb-2 text-xs font-medium">
-                  {ru
-                    ? "Получение и дополнительные услуги"
-                    : "Fulfillment and additional services"}
-                </legend>
-                {orderedOptions.map((option) => {
-                  const id = `${formId}-${option.offerId}`;
-                  const checked = draft.services[option.offerId] !== undefined;
-                  const charge = currentQuote?.charges.find(
-                    (charge) =>
-                      charge.offerId === option.offerId &&
-                      charge.quantity ===
-                        Number(draft.services[option.offerId]),
+              <div className="space-y-3">
+                {(["delivery", "add-on"] as const).map((role) => {
+                  const groupOptions = orderedOptions.filter(
+                    (option) => option.role === role,
                   );
-                  const serverOption = metadata?.serviceOptions.find(
-                    (item) => item.offerId === option.offerId,
+                  if (!groupOptions.length) return null;
+                  const mandatory = Boolean(
+                    selected?.settings?.requiredDelivery,
                   );
-                  const preview = priceScope
-                    ? serverOption?.pricePreview
-                    : undefined;
-                  const tariff =
-                    metadata?.currencyId === draft.currencyId
-                      ? serverOption?.deliveryTariff
-                      : undefined;
-                  const amount =
-                    charge?.amount ??
-                    preview?.amount ??
-                    (option.receiptMethod === "shipping" &&
-                    tariff?.basis === "fixed"
-                      ? tariff.fixedAmount
-                      : undefined);
                   return (
-                    <ServiceCard
-                      key={option.offerId}
-                      id={id}
-                      language={props.language}
-                      option={option}
-                      checked={checked}
-                      amount={amount}
-                      from={!charge && preview?.kind === "from"}
-                      currencySymbol={symbol}
-                      tariff={tariff}
-                      distanceKm={charge?.inputs?.distance_km}
-                      pending={
-                        Boolean(quote.isFetching) ||
-                        signature !== requestedSignature
-                      }
-                      onCheckedChange={changeService}
-                    >
-                      {checked ? (
-                        <div className="space-y-3 px-3 pb-3">
-                          {option.receiptMethod === "shipping" ? (
-                            <DeliveryAddress
-                              id={`${id}-address`}
-                              label={ru ? "Адрес доставки" : "Delivery address"}
-                              value={draft.address}
-                              offerId={option.offerId}
+                    <fieldset key={role} className="space-y-1.5">
+                      <legend
+                        id={formId + "-" + role + "-legend"}
+                        className="mb-1 text-xs font-medium"
+                      >
+                        {role === "delivery"
+                          ? ru
+                            ? "Получение"
+                            : "Fulfillment"
+                          : ru
+                            ? "Дополнительные услуги"
+                            : "Additional services"}
+                      </legend>
+                      <div className="text-xs leading-4 text-muted-foreground">
+                        {role === "delivery"
+                          ? mandatory
+                            ? ru
+                              ? "Выберите один вариант"
+                              : "Choose one option"
+                            : ru
+                              ? "Необязательно · один вариант"
+                              : "Optional · one option"
+                          : ru
+                            ? "Можно выбрать несколько"
+                            : "Choose any number"}
+                      </div>
+                      <ServiceOptions
+                        id={formId + "-" + role + "-options"}
+                        labelId={formId + "-" + role + "-legend"}
+                        selectionName={formId + "-fulfillment"}
+                        multiple={role === "add-on"}
+                        required={mandatory}
+                        value={
+                          options.find(
+                            (option) =>
+                              option.role === "delivery" &&
+                              draft.services[option.offerId] !== undefined,
+                          )?.offerId ?? ""
+                        }
+                        onValueChange={(offerId) =>
+                          changeService(offerId, true)
+                        }
+                      >
+                        {role === "delivery" && !mandatory ? (
+                          <ServiceNoSelection
+                            id={formId + "-fulfillment-none"}
+                            language={props.language}
+                          />
+                        ) : null}
+                        {groupOptions.map((option) => {
+                          const id = `${formId}-${option.offerId}`;
+                          const checked =
+                            draft.services[option.offerId] !== undefined;
+                          const charge = currentQuote?.charges.find(
+                            (charge) =>
+                              charge.offerId === option.offerId &&
+                              charge.quantity ===
+                                Number(draft.services[option.offerId]),
+                          );
+                          const serverOption = metadata?.serviceOptions.find(
+                            (item) => item.offerId === option.offerId,
+                          );
+                          const preview = priceScope
+                            ? serverOption?.pricePreview
+                            : undefined;
+                          const tariff =
+                            metadata?.currencyId === draft.currencyId
+                              ? serverOption?.deliveryTariff
+                              : undefined;
+                          const amount =
+                            charge?.amount ??
+                            preview?.amount ??
+                            (option.receiptMethod === "shipping" &&
+                            tariff?.basis === "fixed"
+                              ? tariff.fixedAmount
+                              : undefined);
+                          return (
+                            <ServiceCard
+                              key={option.offerId}
+                              id={id}
                               language={props.language}
-                              className={input}
-                              onChange={(address, selected) =>
-                                edit(
-                                  (value) => ({ ...value, address }),
-                                  !selected,
-                                )
+                              option={option}
+                              checked={checked}
+                              amount={amount}
+                              from={!charge && preview?.kind === "from"}
+                              currencySymbol={symbol}
+                              tariff={tariff}
+                              distanceKm={charge?.inputs?.distance_km}
+                              pending={
+                                Boolean(quote.isFetching) ||
+                                signature !== requestedSignature
                               }
-                            />
-                          ) : null}
-                          {option.receiptMethod === "pickup" ? (
-                            <div className="grid gap-1 text-xs">
-                              <label htmlFor={`${id}-pickup`}>
-                                {ru ? "Точка самовывоза" : "Pickup point"}
-                              </label>
-                              <Select
-                                ui="shadcn"
-                                id={`${id}-pickup`}
-                                className={input}
-                                value={draft.pickup}
-                                placeholder={
-                                  ru
-                                    ? "Выберите точку магазина"
-                                    : "Choose a store location"
-                                }
-                                options={(option.pickupPointIds ?? []).map(
-                                  (id) => ({ value: id, label: id }),
-                                )}
-                                onValueChange={(pickup) =>
-                                  edit((value) => ({ ...value, pickup }))
-                                }
-                              />
-                            </div>
-                          ) : null}
-                          {option.role === "add-on" ? (
-                            <label className="grid gap-1 text-xs">
-                              {ru
-                                ? "Количество единиц услуги"
-                                : "Service quantity"}
-                              <input
-                                className={input}
-                                type="number"
-                                min={1}
-                                max={selection.quantity}
-                                step={1}
-                                value={draft.services[option.offerId]}
-                                onChange={(event) => {
-                                  const quantity = event.target.value;
-                                  edit(
-                                    (value) => ({
-                                      ...value,
-                                      services: {
-                                        ...value.services,
-                                        [option.offerId]: quantity,
-                                      },
-                                    }),
-                                    true,
-                                  );
-                                }}
-                              />
-                            </label>
-                          ) : null}
-                        </div>
-                      ) : null}
-                    </ServiceCard>
+                              onCheckedChange={changeService}
+                            >
+                              {checked ? (
+                                <div className="space-y-3 px-3 pb-3">
+                                  {option.receiptMethod === "shipping" ? (
+                                    <DeliveryAddress
+                                      id={`${id}-address`}
+                                      label={
+                                        ru
+                                          ? "Адрес доставки"
+                                          : "Delivery address"
+                                      }
+                                      value={draft.address}
+                                      offerId={option.offerId}
+                                      language={props.language}
+                                      className={input}
+                                      onChange={(address, selected) =>
+                                        edit(
+                                          (value) => ({ ...value, address }),
+                                          !selected,
+                                        )
+                                      }
+                                    />
+                                  ) : null}
+                                  {option.receiptMethod === "pickup" ? (
+                                    <div className="grid gap-1 text-xs">
+                                      <label htmlFor={`${id}-pickup`}>
+                                        {ru
+                                          ? "Точка самовывоза"
+                                          : "Pickup point"}
+                                      </label>
+                                      <Select
+                                        ui="shadcn"
+                                        id={`${id}-pickup`}
+                                        className={input}
+                                        value={draft.pickup}
+                                        placeholder={
+                                          ru
+                                            ? "Выберите точку магазина"
+                                            : "Choose a store location"
+                                        }
+                                        options={(
+                                          option.pickupPointIds ?? []
+                                        ).map((id) => ({
+                                          value: id,
+                                          label: id,
+                                        }))}
+                                        onValueChange={(pickup) =>
+                                          edit((value) => ({
+                                            ...value,
+                                            pickup,
+                                          }))
+                                        }
+                                      />
+                                    </div>
+                                  ) : null}
+                                  {option.role === "add-on" ? (
+                                    <QuantityInput
+                                      id={`${id}-quantity`}
+                                      label={
+                                        ru
+                                          ? "Количество единиц услуги"
+                                          : "Service quantity"
+                                      }
+                                      contextLabel={`${option.titles?.[props.language] || option.title || option.productId} · ${productTitle}`}
+                                      decreaseLabel={`${ru ? "Уменьшить количество услуги" : "Decrease service quantity"}: ${option.titles?.[props.language] || option.title || option.productId} (${productTitle})`}
+                                      increaseLabel={`${ru ? "Увеличить количество услуги" : "Increase service quantity"}: ${option.titles?.[props.language] || option.title || option.productId} (${productTitle})`}
+                                      min={quantityBounds.min}
+                                      max={Math.max(
+                                        0,
+                                        Math.min(
+                                          Number.isSafeInteger(
+                                            selection.quantity,
+                                          )
+                                            ? selection.quantity
+                                            : 0,
+                                          charge?.availableQuantity ??
+                                            metadata?.charges.find(
+                                              (item) =>
+                                                item.offerId === option.offerId,
+                                            )?.availableQuantity ??
+                                            quantityBounds.max,
+                                        ),
+                                      )}
+                                      value={draft.services[option.offerId]}
+                                      onValueChange={(quantity) => {
+                                        edit(
+                                          (value) => ({
+                                            ...value,
+                                            services: {
+                                              ...value.services,
+                                              [option.offerId]: quantity,
+                                            },
+                                          }),
+                                          true,
+                                        );
+                                      }}
+                                    />
+                                  ) : null}
+                                </div>
+                              ) : null}
+                            </ServiceCard>
+                          );
+                        })}
+                      </ServiceOptions>
+                    </fieldset>
                   );
                 })}
-              </fieldset>
+              </div>
             ) : null}
             {draft.missing.length ? (
               <div className="space-y-2 text-xs text-destructive">
