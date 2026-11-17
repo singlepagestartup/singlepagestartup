@@ -12,7 +12,10 @@ import {
   type IResult as IParentResult,
 } from "@sps/rbac/models/subject/sdk/server";
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
-import { queryClient } from "@sps/shared-frontend-client-api";
+import {
+  queryClient,
+  invalidateRouteQueries,
+} from "@sps/shared-frontend-client-api";
 import { globalActionsStore } from "@sps/shared-frontend-client-store";
 import { createId } from "@paralleldrive/cuid2";
 
@@ -41,13 +44,10 @@ export function action(props: IProps = {}) {
       if (result.applied) {
         // An aggregate mutation returns quotes and IDs, so reconcile its scoped
         // collection instead of inserting incomplete Order or Subject records.
-        await queryClient.invalidateQueries({
-          predicate: (query) =>
-            typeof query.queryKey[0] === "string" &&
-            query.queryKey[0].startsWith(
-              `${route}/${variables.id}/ecommerce-module/`,
-            ),
-        });
+        await invalidateRouteQueries(
+          queryClient,
+          `${route}/${variables.id}/ecommerce-module/orders`,
+        );
         globalActionsStore.getState().addAction({
           type: "mutation",
           name: `${route}/${variables.id}/ecommerce-module/orders/${variables.orderId}/selection`,

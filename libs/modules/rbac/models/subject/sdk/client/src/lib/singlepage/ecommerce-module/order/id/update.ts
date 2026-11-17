@@ -11,7 +11,10 @@ import {
   type IResult as IParentResult,
 } from "@sps/rbac/models/subject/sdk/server";
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
-import { queryClient } from "@sps/shared-frontend-client-api";
+import {
+  queryClient,
+  invalidateRouteQueries,
+} from "@sps/shared-frontend-client-api";
 import { globalActionsStore } from "@sps/shared-frontend-client-store";
 import { createId } from "@paralleldrive/cuid2";
 import { toast } from "sonner";
@@ -43,9 +46,10 @@ export function action(props: IProps = {}) {
         });
       // This aggregate operation returns a Subject, so reconcile the scoped Order
       // collection instead of patching incomplete Order rows into its cache.
-      await queryClient.invalidateQueries({
-        queryKey: [`${route}/${variables.id}/ecommerce-module/orders`],
-      });
+      await invalidateRouteQueries(
+        queryClient,
+        `${route}/${variables.id}/ecommerce-module/orders`,
+      );
       globalActionsStore.getState().addAction({
         type: "mutation",
         name: `${route}/${variables.id}/ecommerce-module/orders/:orderId`,

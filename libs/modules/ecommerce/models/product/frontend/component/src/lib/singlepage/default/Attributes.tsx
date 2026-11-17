@@ -1,3 +1,4 @@
+import { PRODUCT_TECHNICAL_ATTRIBUTE_SLUGS } from "@sps/shared-utils";
 import type { IProductAttributesProps } from "./interface";
 import { Component as ProductsToAttributes } from "@sps/ecommerce/relations/products-to-attributes/frontend/component";
 import { Component as AttributeKeysToAttributes } from "@sps/ecommerce/relations/attribute-keys-to-attributes/frontend/component";
@@ -67,35 +68,42 @@ export function Component(props: IProductAttributesProps) {
                           }}
                         >
                           {({ data }) => {
-                            return data?.map((attributeKey) => {
-                              return (
-                                <div
-                                  key={attributeKey.id}
-                                  className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-3 border-b border-border/60 py-2.5 text-sm last:border-0"
-                                >
-                                  <AttributeKey
-                                    isServer={props.isServer}
-                                    variant="default"
-                                    dataSource="props"
-                                    data={attributeKey}
-                                    language={props.language}
-                                  />
-                                  <ProductsToAttributes
-                                    isServer={props.isServer}
-                                    variant="default"
-                                    dataSource="props"
-                                    data={productToAttribute}
-                                    attributeField={attributeKey.field}
-                                    maximumFractionDigits={
-                                      attributeKey.type === "topup"
-                                        ? 0
-                                        : undefined
-                                    }
-                                    language={props.language}
-                                  />
-                                </div>
-                              );
-                            });
+                            return data
+                              ?.filter(
+                                (attributeKey) =>
+                                  !PRODUCT_TECHNICAL_ATTRIBUTE_SLUGS.includes(
+                                    attributeKey.slug,
+                                  ),
+                              )
+                              .map((attributeKey) => {
+                                return (
+                                  <div
+                                    key={attributeKey.id}
+                                    className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-3 border-b border-border/60 py-2.5 text-sm last:border-0"
+                                  >
+                                    <AttributeKey
+                                      isServer={props.isServer}
+                                      variant="default"
+                                      dataSource="props"
+                                      data={attributeKey}
+                                      language={props.language}
+                                    />
+                                    <ProductsToAttributes
+                                      isServer={props.isServer}
+                                      variant="default"
+                                      dataSource="props"
+                                      data={productToAttribute}
+                                      attributeField={attributeKey.field}
+                                      maximumFractionDigits={
+                                        attributeKey.type === "topup"
+                                          ? 0
+                                          : undefined
+                                      }
+                                      language={props.language}
+                                    />
+                                  </div>
+                                );
+                              });
                           }}
                         </AttributeKey>
                       );

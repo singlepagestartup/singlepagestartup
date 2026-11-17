@@ -68,7 +68,8 @@ and then call the consumer callback. Preserve WebSocket reconciliation for
 other clients, service writes and aggregate consequences.
 
 The helpers are `appendToListQueries`, `patchInListQueries` and
-`removeFromListQueries`. Append is limited to lists without filters, ordering or
+`removeFromListQueries`. Aggregate mutations use `invalidateRouteQueries` to
+reconcile the route and its child readers, including quantity queries. Append is limited to lists without filters, ordering or
 pagination; an unknown membership receives targeted reconciliation. Patch and
 remove affect only IDs already present. Untouched rows retain their references.
 The optional exact append mode owns a one-element legacy key and must not be

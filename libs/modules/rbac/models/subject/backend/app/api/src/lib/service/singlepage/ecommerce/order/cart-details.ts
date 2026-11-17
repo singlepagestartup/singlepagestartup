@@ -143,7 +143,15 @@ export class Service {
           stores.find((store: { id: string }) => store.id === offer.storeId) ??
           null,
       })),
-      unpriced,
+      unpriced: unpriced.filter(
+        (issue, index) =>
+          unpriced.findIndex(
+            (candidate) =>
+              candidate.ordersToProductsId === issue.ordersToProductsId &&
+              candidate.productId === issue.productId &&
+              candidate.reason === issue.reason,
+          ) === index,
+      ),
       storeIds: storeLinks.map((link: { storeId: string }) => link.storeId),
     };
   }

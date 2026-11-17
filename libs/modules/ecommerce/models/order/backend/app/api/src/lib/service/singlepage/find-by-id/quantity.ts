@@ -3,9 +3,9 @@ import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Service as OrdersToProductsService } from "@sps/ecommerce/relations/orders-to-products/backend/app/api/src/lib/service";
 import { OrderDI } from "../../../di";
 
-export type IExecuteProps = {
+export interface IExecuteProps {
   id: string;
-};
+}
 
 @injectable()
 export class Service {
@@ -41,8 +41,8 @@ export class Service {
       throw new Error("Not Found error. Order does not have any products");
     }
 
-    let result = orderToProducts.reduce((acc, orderToProduct) => {
-      return acc + orderToProduct.quantity;
+    const result = orderToProducts.reduce((acc, orderToProduct) => {
+      return orderToProduct.parentLineId ? acc : acc + orderToProduct.quantity;
     }, 0);
 
     return result;

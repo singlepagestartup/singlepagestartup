@@ -4,6 +4,20 @@ import { QueryClient, replaceEqualDeep } from "@tanstack/react-query";
 
 type WithId = { id: string };
 
+/** Reconciles an aggregate route and its child readers, including count queries. */
+export function invalidateRouteQueries(
+  queryClient: QueryClient,
+  route: string,
+): Promise<void> {
+  return queryClient.invalidateQueries({
+    predicate: ({ queryKey }) =>
+      typeof queryKey[0] === "string" &&
+      (queryKey[0] === route ||
+        queryKey[0].startsWith(`${route}/`) ||
+        queryKey[0].startsWith(`${route}?`)),
+  });
+}
+
 function listQueries(queryClient: QueryClient, route: string) {
   return queryClient.getQueryCache().findAll({
     predicate: ({ queryKey }) =>

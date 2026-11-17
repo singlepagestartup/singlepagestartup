@@ -84,3 +84,55 @@ it("keeps an unavailable offer in its own row while quoting the remaining legacy
     }),
   );
 });
+
+it("reports the same incomplete delivery once when both total and offer quote explain it", async () => {
+  const line = {
+    id: "line",
+    productId: "product",
+    offerId: "offer",
+    quantity: 1,
+    destination: {},
+  };
+  const offer = {
+    id: "offer",
+    productId: "product",
+    storeId: "store",
+    variant: "default",
+    settings: {},
+  };
+  const reason = "Select a delivery method";
+  const service: any = {
+    ecommerceModuleOrderAssertAccess: jest.fn(),
+    ecommerceModuleCartQuote: jest.fn().mockResolvedValue([
+      {
+        amount: null,
+        currencyIds: ["rub"],
+        issues: [{ code: "delivery_required", message: reason }],
+      },
+    ]),
+    ecommerceModule: {
+      order: {
+        findByIdCartDetails: jest.fn().mockResolvedValue({
+          lines: [line],
+          unpriced: [
+            { ordersToProductsId: "line", productId: "product", reason },
+          ],
+          billingModuleCurrencyId: "rub",
+        }),
+      },
+      storesToOrders: { find: jest.fn().mockResolvedValue([]) },
+      storesToProducts: {
+        findById: jest.fn().mockResolvedValue(offer),
+        offersForProduct: jest.fn().mockResolvedValue([offer]),
+      },
+      store: { find: jest.fn().mockResolvedValue([]) },
+    },
+  };
+  const details = await new Service({ service }).execute({
+    subjectId: "subject",
+    orderId: "order",
+  });
+  expect(details.unpriced).toEqual([
+    { ordersToProductsId: "line", productId: "product", reason },
+  ]);
+});
