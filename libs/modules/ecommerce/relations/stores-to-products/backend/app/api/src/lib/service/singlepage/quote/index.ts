@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import Decimal from "decimal.js";
 import { compileTariffFormula } from "@sps/backend-utils";
+import { offerSettingsSchema } from "@sps/ecommerce/relations/stores-to-products/backend/repository/database";
 import type { IOfferAttribute, IOfferCatalog } from "../../../repository";
 import type {
   IModel,
@@ -62,6 +63,22 @@ function priceFor(rows: IOfferAttribute[], currencyId: string) {
     ),
     "unit_price",
   );
+}
+
+function servicedSubtotal(
+  amount: string,
+  quantity: number,
+  servicedQuantity: number,
+  digits: number,
+) {
+  const scale = Decimal.pow(10, digits);
+  const units = new Decimal(amount).times(scale);
+  return units
+    .divToInt(quantity)
+    .times(servicedQuantity)
+    .plus(Decimal.min(units.mod(quantity), servicedQuantity))
+    .div(scale)
+    .toFixed();
 }
 
 function coefficient(
@@ -171,6 +188,16 @@ interface IDependencies {
   routing: () => IDeliveryRouting;
   precision: (currency: IOfferCatalog["currencies"][number]) => number;
   now: Date;
+}
+interface IPricePreviewProps {
+  offer: IModel;
+  main: IModel;
+  formula: ReturnType<typeof compileTariffFormula>;
+  currency: IOfferCatalog["currencies"][number];
+  quantity: number;
+  role: IOfferServiceOption["role"];
+  productCharge?: IOfferCharge;
+  available: number | null;
 }
 
 export class Service {
@@ -310,17 +337,6 @@ export class Service {
       const receiptMethod =
         offer.settings.receiptMethod ??
         (link.variant === "delivery" ? "shipping" : undefined);
-      const formula = formulas.get(offer.id);
-      let deliveryTariff: IOfferServiceOption["deliveryTariff"];
-      if (
-        link.variant === "delivery" &&
-        receiptMethod === "shipping" &&
-        formula &&
-        currency &&
-        currencyIds.includes(currency.id)
-      ) {
-        deliveryTariff = this.deliveryTariff(offer, formula, currency);
-      }
       options.push({
         offerId: offer.id,
         productId: product.id,
@@ -328,7 +344,6 @@ export class Service {
         titles: product.title ?? undefined,
         role: link.variant,
         receiptMethod,
-        deliveryTariff,
         pickupPointIds: offer.settings.pickupPointIds,
         regionIds: offer.settings.regionIds,
         currencyIds,
@@ -467,16 +482,12 @@ export class Service {
             if (!charge) {
               throw new Error("Missing main product charge");
             }
-            const units = new Decimal(charge.amount).times(
-              Decimal.pow(10, precision(currency)),
+            inputs[name] = servicedSubtotal(
+              charge.amount,
+              input.quantity,
+              choice.quantity,
+              precision(currency),
             );
-            const perUnit = units.divToInt(input.quantity);
-            const remainder = units.mod(input.quantity);
-            inputs[name] = perUnit
-              .times(choice.quantity)
-              .plus(Decimal.min(remainder, choice.quantity))
-              .div(Decimal.pow(10, precision(currency)))
-              .toFixed();
           } else if (name === "distance_km") {
             const origin =
               settings.origin ??
@@ -542,6 +553,31 @@ export class Service {
         message: "Select a delivery method",
       });
     }
+    if (currency) {
+      for (const option of result.serviceOptions) {
+        const offer = catalog.offers.get(option.offerId);
+        const formula = formulas.get(option.offerId);
+        if (!offer || !formula) {
+          continue;
+        }
+        option.pricePreview = this.pricePreview({
+          offer,
+          main,
+          formula,
+          currency,
+          quantity: input.quantity,
+          role: option.role,
+          productCharge: charge,
+          available: available(offer),
+        });
+        if (option.role === "delivery" && option.receiptMethod === "shipping") {
+          option.deliveryTariff = this.deliveryTariff(
+            formula,
+            option.pricePreview,
+          );
+        }
+      }
+    }
     if (currency && !result.issues.length) {
       result.amount = result.charges
         .reduce((total, item) => total.plus(item.amount), new Decimal(0))
@@ -572,44 +608,137 @@ export class Service {
     return result;
   }
 
+  private pricePreview(
+    props: IPricePreviewProps,
+  ): IOfferServiceOption["pricePreview"] {
+    const { catalog, precision } = this.deps;
+    if (!Number.isSafeInteger(props.quantity) || props.quantity < 1) {
+      return undefined;
+    }
+    const maximum =
+      props.role === "delivery"
+        ? 1
+        : Math.min(props.quantity, props.available ?? props.quantity);
+    if (maximum < 1) {
+      return undefined;
+    }
+    const inputs: Record<string, { min: string; max?: string }> = {};
+    const exact = (value: string) => ({ min: value, max: value });
+    let dynamic = false;
+    try {
+      const providerLink = catalog.providers.find(
+        (link) => link.sourceOfferId === props.offer.id,
+      );
+      const provider =
+        providerLink && catalog.offers.get(providerLink.targetOfferId);
+      if (
+        providerLink &&
+        (!provider ||
+          provider.variant !== "provider" ||
+          provider.productId !== props.offer.productId)
+      ) {
+        return undefined;
+      }
+      for (const name of props.formula.variables) {
+        if (name === "quantity") {
+          dynamic = true;
+          inputs[name] = exact(String(props.quantity));
+        } else if (name === "serviced_qty") {
+          dynamic ||= props.role !== "delivery";
+          inputs[name] = { min: "1", max: String(maximum) };
+        } else if (name === "serviced_subtotal") {
+          if (!props.productCharge) {
+            return undefined;
+          }
+          dynamic = true;
+          inputs[name] = {
+            min: servicedSubtotal(
+              props.productCharge.amount,
+              props.quantity,
+              1,
+              precision(props.currency),
+            ),
+            max: servicedSubtotal(
+              props.productCharge.amount,
+              props.quantity,
+              maximum,
+              precision(props.currency),
+            ),
+          };
+        } else if (name === "distance_km") {
+          const origin =
+            props.offer.settings.origin ??
+            provider?.settings.origin ??
+            props.main.settings.origin;
+          if (
+            !origin ||
+            !offerSettingsSchema.shape.origin.safeParse(origin).success ||
+            !offerSettingsSchema.shape.routeProfile.safeParse(
+              props.offer.settings.routeProfile,
+            ).success
+          ) {
+            return undefined;
+          }
+          dynamic = true;
+          inputs[name] = { min: "0" };
+        } else if (name === "unit_price") {
+          inputs[name] = exact(
+            priceFor(
+              catalog.offerAttributes.get(props.offer.id) ?? [],
+              props.currency.id,
+            ),
+          );
+        } else if (isRuntimeInput(name)) {
+          dynamic = true;
+          inputs[name] = exact(packageInput(props.main, name, props.quantity));
+        } else {
+          inputs[name] = exact(
+            coefficient(
+              catalog.storeAttributes.get(props.offer.storeId) ?? [],
+              name,
+              props.currency.id,
+            ),
+          );
+        }
+      }
+      const range = props.formula.evaluateRange(inputs);
+      if (!range) {
+        return undefined;
+      }
+      const fixed = !dynamic && range.max?.eq(range.min);
+      return {
+        kind: fixed ? "fixed" : "from",
+        amount: range.min.toFixed(
+          precision(props.currency),
+          Decimal.ROUND_HALF_UP,
+        ),
+      };
+    } catch {
+      return undefined;
+    }
+  }
+
   private deliveryTariff(
-    offer: IModel,
     formula: ReturnType<typeof compileTariffFormula>,
-    currency: IOfferCatalog["currencies"][number],
+    preview: IOfferServiceOption["pricePreview"],
   ): IOfferServiceOption["deliveryTariff"] {
     if (formula.variables.includes("distance_km")) {
       return { basis: "distance" };
     }
-    const inputs: Record<string, string> = {};
-    const { catalog, precision } = this.deps;
-    for (const name of formula.variables) {
-      if (name === "serviced_qty") {
-        // A delivery selection always contributes one service unit.
-        inputs[name] = "1";
-      } else if (name === "unit_price") {
-        inputs[name] = priceFor(
-          catalog.offerAttributes.get(offer.id) ?? [],
-          currency.id,
-        );
-      } else if (isRuntimeInput(name)) {
-        return { basis: "calculated" };
-      } else {
-        inputs[name] = coefficient(
-          catalog.storeAttributes.get(offer.storeId) ?? [],
-          name,
-          currency.id,
-        );
-      }
+    if (
+      formula.variables.some(
+        (name) =>
+          isRuntimeInput(name) &&
+          name !== "serviced_qty" &&
+          name !== "unit_price",
+      )
+    ) {
+      return { basis: "calculated" };
     }
-    try {
-      const fixedAmount = formula
-        .evaluate(inputs)
-        .toFixed(precision(currency), Decimal.ROUND_HALF_UP);
-      return { basis: "fixed", fixedAmount };
-    } catch {
-      // A malformed optional tariff must not prevent purchase of the main item.
-      return undefined;
+    if (preview?.kind === "fixed") {
+      return { basis: "fixed", fixedAmount: preview.amount };
     }
+    return undefined;
   }
 
   private retail(offer: IModel) {

@@ -2,13 +2,70 @@ import Decimal from "decimal.js";
 
 const TariffDecimal = Decimal.clone({ precision: 128 });
 
+interface ITariffInputBounds {
+  min: string;
+  max?: string;
+}
+
 export interface ITariffFormula {
   variables: string[];
   evaluate: (inputs: Record<string, string>) => Decimal;
+  evaluateRange: (
+    inputs: Record<string, ITariffInputBounds>,
+  ) => { min: Decimal; max?: Decimal } | undefined;
 }
 
 type Operand =
   { literal: string } | { variable: string } | { operator: string };
+
+interface IDecimalRange {
+  min: Decimal;
+  max: Decimal;
+}
+
+function isInput(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    value.length <= 100 &&
+    /^-?(?:\d+(?:\.\d+)?|\.\d+)$/.test(value)
+  );
+}
+
+function rangeOperation(
+  operator: string,
+  left: IDecimalRange,
+  right: IDecimalRange,
+): IDecimalRange | undefined {
+  if (operator === "+") {
+    return { min: left.min.plus(right.min), max: left.max.plus(right.max) };
+  }
+  if (operator === "-") {
+    return { min: left.min.minus(right.max), max: left.max.minus(right.min) };
+  }
+  if (operator === "/" && right.min.lte(0) && right.max.gte(0)) {
+    return undefined;
+  }
+  const endpoints: Decimal[] = [];
+  for (const a of [left.min, left.max]) {
+    for (const b of [right.min, right.max]) {
+      if (operator === "/") {
+        endpoints.push(a.div(b));
+      } else if (a.isZero() || b.isZero()) {
+        // Infinity denotes an open bound. A known zero times any finite input is zero.
+        endpoints.push(new TariffDecimal(0));
+      } else {
+        endpoints.push(a.times(b));
+      }
+    }
+  }
+  if (endpoints.some((value) => value.isNaN())) {
+    return undefined;
+  }
+  return {
+    min: TariffDecimal.min(...endpoints),
+    max: TariffDecimal.max(...endpoints),
+  };
+}
 
 export function compileTariffFormula(source: string): ITariffFormula {
   if (typeof source !== "string" || !source.trim() || source.length > 1024) {
@@ -82,7 +139,7 @@ export function compileTariffFormula(source: string): ITariffFormula {
   for (const operator of operators.reverse()) {
     output.push({ operator });
   }
-  return {
+  const formula: ITariffFormula = {
     variables: [...variables],
     evaluate(inputs) {
       const values: Decimal[] = [];
@@ -94,11 +151,7 @@ export function compileTariffFormula(source: string): ITariffFormula {
           } else if (Object.hasOwn(inputs, item.variable)) {
             raw = inputs[item.variable];
           }
-          if (
-            typeof raw !== "string" ||
-            !/^-?(?:\d+(?:\.\d+)?|\.\d+)$/.test(raw) ||
-            raw.length > 100
-          ) {
+          if (!isInput(raw)) {
             throw new Error(
               "Missing or invalid input: " +
                 ("variable" in item ? item.variable : item.literal),
@@ -142,5 +195,76 @@ export function compileTariffFormula(source: string): ITariffFormula {
       }
       return amount;
     },
+
+    evaluateRange(inputs) {
+      const lows: Record<string, string> = {};
+      const highs: Record<string, string> = {};
+      const values: IDecimalRange[] = [];
+      for (const item of output) {
+        if ("literal" in item) {
+          const value = new TariffDecimal(item.literal);
+          values.push({ min: value, max: value });
+        } else if ("variable" in item) {
+          const bounds =
+            Object.hasOwn(inputs, item.variable) && inputs[item.variable];
+          if (
+            !bounds ||
+            !isInput(bounds.min) ||
+            (bounds.max !== undefined && !isInput(bounds.max))
+          ) {
+            return undefined;
+          }
+          const min = new TariffDecimal(bounds.min);
+          const max = new TariffDecimal(bounds.max ?? Infinity);
+          if (max.lt(min)) {
+            return undefined;
+          }
+          values.push({ min, max });
+          lows[item.variable] = bounds.min;
+          if (bounds.max !== undefined) {
+            highs[item.variable] = bounds.max;
+          }
+        } else {
+          const right = values.pop()!;
+          if (item.operator === "neg") {
+            values.push({ min: right.max.neg(), max: right.min.neg() });
+            continue;
+          }
+          const result = rangeOperation(item.operator, values.pop()!, right);
+          if (!result) {
+            return undefined;
+          }
+          values.push(result);
+        }
+      }
+      const bound = values[0];
+      if (
+        !bound.min.isFinite() ||
+        bound.min.isNegative() ||
+        bound.min.gt("9007199254740991")
+      ) {
+        return undefined;
+      }
+
+      // A conservative interval can include impossible prices, e.g. q / q for
+      // q in [1, 2]. Advertise a minimum only if actual inputs attain it.
+      for (const candidate of [lows, highs]) {
+        if (variables.size !== Object.keys(candidate).length) {
+          continue;
+        }
+        try {
+          if (formula.evaluate(candidate).eq(bound.min)) {
+            return {
+              min: bound.min,
+              max: bound.max.isFinite() ? bound.max : undefined,
+            };
+          }
+        } catch {
+          // An endpoint can be outside the formula's valid charge domain.
+        }
+      }
+      return undefined;
+    },
   };
+  return formula;
 }

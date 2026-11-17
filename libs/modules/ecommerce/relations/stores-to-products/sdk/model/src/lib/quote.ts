@@ -46,6 +46,10 @@ export interface IOfferServiceOption {
   titles?: Partial<Record<string, string>>;
   role: "delivery" | "add-on";
   receiptMethod?: "shipping" | "pickup" | "electronic";
+  pricePreview?: {
+    kind: "fixed" | "from";
+    amount: string;
+  };
   deliveryTariff?: {
     basis: "fixed" | "distance" | "calculated";
     fixedAmount?: string;

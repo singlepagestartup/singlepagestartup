@@ -21,12 +21,16 @@ import type {
 const mockMutation = jest.fn();
 const mockInvalidate = jest.fn();
 const mockQueryClient = { invalidateQueries: mockInvalidate };
+const mockQuoteRead = jest.fn();
 let mockPublish:
   ((request: any, result: IEcommerceCartSelectionResult) => void) | undefined;
 let mockMissing = false;
 let mockPickup = false;
 let mockCurrencyLoading = false;
 let mockDeliveryTariff: IOfferServiceOption["deliveryTariff"] | undefined;
+let mockExtraOptions:
+  ((quantity: number, currencyId: string) => IOfferServiceOption[]) | undefined;
+let mockRetainedDiscovery: IOfferQuote | undefined;
 let mockSavedSequence = 0;
 const mockDiscovery = new Map<string, IOfferQuote>();
 const savedAt = "2026-11-17T00:00:00.000Z";
@@ -34,6 +38,7 @@ const savedAt = "2026-11-17T00:00:00.000Z";
 const mockOptions = (
   seller: string,
   currencyId = "rub",
+  quantity = 1,
 ): IOfferServiceOption[] => [
   {
     offerId: `delivery-${seller}`,
@@ -75,6 +80,7 @@ const mockOptions = (
           currencyIds: ["rub", "usd"],
         },
       ]),
+  ...(mockExtraOptions?.(quantity, currencyId) ?? []),
 ];
 
 function mockCharge(
@@ -94,8 +100,12 @@ function mockCharge(
         : role === "delivery"
           ? offerId.startsWith("pickup")
             ? "pickup"
-            : "delivery"
-          : "assembly",
+            : offerId.startsWith("electronic")
+              ? "electronic"
+              : "delivery"
+          : offerId.startsWith("setup")
+            ? "setup"
+            : "assembly",
     storeId: offerId.endsWith("-b") ? "store-b" : "store-a",
     providerStoreId: offerId.endsWith("-b") ? "store-b" : "store-a",
     recurrence: "each",
@@ -122,22 +132,38 @@ function mockQuote(
       seller === "a" ? "5000" : "5400",
       selection?.quantity ?? 1,
     ),
-    ...services.map((service) =>
-      mockCharge(
+    ...services.map((service) => {
+      const option = mockOptions(
+        seller,
+        selection?.currencyId,
+        selection?.quantity,
+      ).find((option) => option.offerId === service.offerId);
+      return mockCharge(
         service.offerId,
-        /^(delivery|pickup)/.test(service.offerId) ? "delivery" : "add-on",
-        service.offerId.startsWith("pickup")
-          ? "0"
-          : service.offerId.startsWith("delivery")
-            ? seller === "a"
-              ? "1000"
-              : "500"
-            : seller === "a"
-              ? "2000"
-              : "1500",
+        option?.role ??
+          (/^(delivery|pickup)/.test(service.offerId) ? "delivery" : "add-on"),
+        service.offerId.startsWith("electronic")
+          ? option?.pricePreview?.kind === "fixed"
+            ? option.pricePreview.amount
+            : selection?.currencyId === "usd"
+              ? "1.25"
+              : "20"
+          : service.offerId.startsWith("setup")
+            ? service.quantity === 2
+              ? "125.25"
+              : "75.5"
+            : service.offerId.startsWith("pickup")
+              ? "0"
+              : service.offerId.startsWith("delivery")
+                ? seller === "a"
+                  ? "1000"
+                  : "500"
+                : seller === "a"
+                  ? "2000"
+                  : "1500",
         service.quantity,
-      ),
-    ),
+      );
+    }),
   ];
   const amount = String(
     charges.reduce((sum, charge) => sum + Number(charge.amount), 0),
@@ -153,7 +179,11 @@ function mockQuote(
     expiresAt: "2030-01-01T00:00:00Z",
     currencyIds: ["rub", "usd"],
     availableQuantity: 5,
-    serviceOptions: mockOptions(seller, selection?.currencyId),
+    serviceOptions: mockOptions(
+      seller,
+      selection?.currencyId,
+      selection?.quantity,
+    ),
     issues: [],
     charges,
     destination: selection?.destination,
@@ -203,7 +233,15 @@ jest.mock("@sps/ecommerce/relations/stores-to-products/sdk/client", () => ({
       isFetching: false,
       isError: false,
     }),
-    quote: ({ data }: { data: IEcommerceCartSelection }) => {
+    quote: (args: { data: IEcommerceCartSelection }) => {
+      const { data } = args;
+      mockQuoteRead(args);
+      if (mockRetainedDiscovery)
+        return {
+          data: mockRetainedDiscovery,
+          isFetching: true,
+          isPending: false,
+        };
       const key = JSON.stringify(data);
       if (data.offerId && !mockDiscovery.has(key))
         mockDiscovery.set(key, {
@@ -295,6 +333,9 @@ beforeEach(() => {
   mockPickup = false;
   mockCurrencyLoading = false;
   mockDeliveryTariff = undefined;
+  mockExtraOptions = undefined;
+  mockRetainedDiscovery = undefined;
+  mockQuoteRead.mockReset();
   mockSavedSequence = 0;
   mockDiscovery.clear();
   mockPublish = undefined;
@@ -355,6 +396,72 @@ function renderSelection(initial = props) {
     view.rerender(<Selection {...current} />);
   };
   return view;
+}
+function mockPreviewOptions(
+  quantity: number,
+  currencyId: string,
+): IOfferServiceOption[] {
+  return [
+    {
+      offerId: "electronic-a",
+      productId: "electronic",
+      title: "Электронная доставка",
+      titles: { ru: "Электронная доставка", en: "Electronic delivery" },
+      role: "delivery",
+      receiptMethod: "electronic",
+      currencyIds: ["rub", "usd"],
+      pricePreview: {
+        kind: "fixed",
+        amount:
+          currencyId === "usd"
+            ? quantity === 3
+              ? "1.875"
+              : "1.25"
+            : quantity === 3
+              ? "37.5"
+              : "20",
+      },
+    },
+    {
+      offerId: "setup-a",
+      productId: "setup",
+      title: "Настройка",
+      titles: { ru: "Настройка", en: "Setup" },
+      role: "add-on",
+      currencyIds: ["rub", "usd"],
+      pricePreview: {
+        kind: "from",
+        amount:
+          currencyId === "usd"
+            ? quantity === 3
+              ? "4.125"
+              : "3.5"
+            : quantity === 3
+              ? "60.25"
+              : "50",
+      },
+    },
+  ];
+}
+function servicePreviewProps(quantity = 2) {
+  const quote = mockQuote("a", {
+    offerId: "offer-a",
+    currencyId: "rub",
+    quantity,
+    destination: {},
+    services: [],
+  });
+  const primary = {
+    ...line,
+    quantity,
+    destination: {},
+    quoteVersion: quote.version,
+  };
+  return {
+    ...props,
+    line: primary,
+    details: { ...props.details, offerQuotes: [quote], lines: [primary] },
+  };
 }
 async function settleDebounce() {
   await act(async () => {
@@ -1215,7 +1322,10 @@ it.each([
     expect(screen.queryByLabelText("Регион")).toBeNull();
     if (tariff.basis === "fixed")
       expect(delivery.getByText("2 500 ₽")).toBeTruthy();
-    else expect(delivery.queryByText(/₽/)).toBeNull();
+    else {
+      expect(delivery.queryByText(/₽/)).toBeNull();
+      expect(delivery.getByText("По расчёту")).toBeTruthy();
+    }
     await settleDebounce();
     expect(mockMutation).not.toHaveBeenCalled();
   },
@@ -1392,4 +1502,144 @@ it("shows a loading currency label without exposing its identifier and uses the 
   expect(view.container.textContent).not.toContain(currencyId);
   await settleDebounce();
   expect(mockMutation).not.toHaveBeenCalled();
+});
+
+it("advertises fixed electronic delivery and setup from a minimum before selection, then shows their actual server charges", async () => {
+  mockExtraOptions = mockPreviewOptions;
+  renderSelection(servicePreviewProps());
+  const electronic = within(
+    screen.getByRole("group", { name: "Электронная доставка" }),
+  );
+  const setup = within(screen.getByRole("group", { name: "Настройка" }));
+  const setupTitle = setup.getByText("Настройка");
+  const electronicCheckbox = electronic.getByRole("checkbox", {
+    name: "Электронная доставка",
+  });
+  expect(electronicCheckbox.getAttribute("aria-checked")).toBe("false");
+  expect(electronic.getByText("20 ₽")).toBeTruthy();
+  expect(setup.getByText("от 50 ₽")).toBeTruthy();
+  expect(mockQuoteRead).toHaveBeenCalledWith(
+    expect.objectContaining({
+      data: { offerId: "offer-a", quantity: 2, currencyId: "rub" },
+    }),
+  );
+  expect(mockMutation).not.toHaveBeenCalled();
+  fireEvent.click(electronic.getByText("20 ₽"));
+  expect(electronicCheckbox.getAttribute("aria-checked")).toBe("true");
+  expect(electronic.getByText("20 ₽")).toBeTruthy();
+  await waitFor(() =>
+    expect(receipt().getByText("Электронная доставка × 1")).toBeTruthy(),
+  );
+  expect(
+    electronic.getByRole("checkbox", { name: "Электронная доставка" }),
+  ).toBe(electronicCheckbox);
+  fireEvent.click(setup.getByText("от 50 ₽"));
+  const units = setup.getByRole("spinbutton", {
+    name: "Количество единиц услуги",
+  });
+  await waitFor(() => expect(setup.getByText("75,5 ₽")).toBeTruthy());
+  expect(setup.queryByText("от 50 ₽")).toBeNull();
+  expect(receipt().getByText("Настройка × 1")).toBeTruthy();
+  expect(setup.getByText("Настройка")).toBe(setupTitle);
+  fireEvent.change(units, { target: { value: "2" } });
+  await waitFor(() => expect(setup.getByText("125,25 ₽")).toBeTruthy());
+  expect(
+    setup.getByRole("spinbutton", { name: "Количество единиц услуги" }),
+  ).toBe(units);
+  expect(receipt().getByText("Настройка × 2")).toBeTruthy();
+  expect(mockMutation).toHaveBeenCalledTimes(3);
+});
+
+it.each([
+  ["fixed", "0", "0 ₽"],
+  ["from", "0", "от 0 ₽"],
+  ["fixed", "0.125", "0,125 ₽"],
+  ["from", "0.125", "от 0,125 ₽"],
+] as const)(
+  "preserves a %s preview of %s without hiding zero or rounding fractional amounts",
+  async (kind, amount, label) => {
+    mockExtraOptions = (quantity, currencyId) =>
+      mockPreviewOptions(quantity, currencyId).map((option) =>
+        option.offerId === "setup-a"
+          ? { ...option, pricePreview: { kind, amount } }
+          : option,
+      );
+    renderSelection(servicePreviewProps());
+    const setup = within(screen.getByRole("group", { name: "Настройка" }));
+    expect(setup.getByText(label)).toBeTruthy();
+    expect(
+      setup
+        .getByRole("checkbox", { name: "Настройка" })
+        .getAttribute("aria-checked"),
+    ).toBe("false");
+    expect(
+      setup.queryByRole("spinbutton", { name: "Количество единиц услуги" }),
+    ).toBeNull();
+    await settleDebounce();
+    expect(mockMutation).not.toHaveBeenCalled();
+  },
+);
+
+it("keeps service controls while rejecting previews retained from another currency or quantity", async () => {
+  mockExtraOptions = mockPreviewOptions;
+  const initial = servicePreviewProps();
+  mockRetainedDiscovery = initial.details.offerQuotes[0];
+  const save = deferred<IEcommerceCartSelectionResult>();
+  mockMutation.mockImplementationOnce(() => save.promise);
+  const view = renderSelection(initial);
+  const electronicCheckbox = screen.getByRole("checkbox", {
+    name: "Электронная доставка",
+  });
+  const setupCheckbox = screen.getByRole("checkbox", { name: "Настройка" });
+  const electronic = within(
+    screen.getByRole("group", { name: "Электронная доставка" }),
+  );
+  const setup = within(screen.getByRole("group", { name: "Настройка" }));
+  fireEvent.change(screen.getByRole("spinbutton", { name: "Количество" }), {
+    target: { value: "3" },
+  });
+  expect(electronic.queryByText("20 ₽")).toBeNull();
+  expect(setup.queryByText("от 50 ₽")).toBeNull();
+  await selectOption("Валюта", "USD");
+  expect(electronic.queryByText("20 $")).toBeNull();
+  expect(electronic.queryByText("20 ₽")).toBeNull();
+  expect(setup.queryByText("от 50 $")).toBeNull();
+  expect(setup.queryByText("от 50 ₽")).toBeNull();
+  expect(screen.getByRole("checkbox", { name: "Электронная доставка" })).toBe(
+    electronicCheckbox,
+  );
+  expect(screen.getByRole("checkbox", { name: "Настройка" })).toBe(
+    setupCheckbox,
+  );
+  await waitFor(() =>
+    expect(mockQuoteRead).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: { offerId: "offer-a", quantity: 3, currencyId: "usd" },
+      }),
+    ),
+  );
+  mockRetainedDiscovery = mockQuote("a", {
+    offerId: "offer-a",
+    quantity: 2,
+    currencyId: "usd",
+    destination: {},
+    services: [],
+  });
+  view.rerender(<Selection {...initial} />);
+  expect(electronic.queryByText("1,25 $")).toBeNull();
+  expect(setup.queryByText("от 3,5 $")).toBeNull();
+  mockRetainedDiscovery = undefined;
+  view.rerender(<Selection {...initial} />);
+  expect(electronic.getByText("1,875 $")).toBeTruthy();
+  expect(setup.getByText("от 4,125 $")).toBeTruthy();
+  await waitFor(() => expect(mockMutation).toHaveBeenCalledTimes(1));
+  expect(mockMutation.mock.calls[0][0].data.selections[0]).toEqual(
+    expect.objectContaining({ quantity: 3, currencyId: "usd" }),
+  );
+  await act(async () =>
+    save.resolve(mockResult(mockMutation.mock.calls[0][0].data.selections)),
+  );
+  expect(electronic.getByText("1,875 $")).toBeTruthy();
+  expect(setup.getByText("от 4,125 $")).toBeTruthy();
+  expect(electronic.queryByText("20 $")).toBeNull();
 });

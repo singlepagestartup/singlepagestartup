@@ -30,6 +30,13 @@ properties:
         titles: { type: object, additionalProperties: { type: string } }
         role: { type: string, enum: [delivery, add-on] }
         receiptMethod: { type: string, enum: [shipping, pickup, electronic] }
+        pricePreview:
+          type: object
+          required: [kind, amount]
+          description: Fixed service charge or verified starting price for this offer, merchandise quantity and quote currency.
+          properties:
+            kind: { type: string, enum: [fixed, from] }
+            amount: { type: string, description: Major currency units, rounded with the same precision as the final charge. }
         deliveryTariff:
           type: object
           required: [basis]

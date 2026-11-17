@@ -81,6 +81,9 @@ export function Selection(props: ISelectionProps) {
 
   const [draft, setDraftState] = useState<IDraft>(savedDraft);
   const draftValue = useRef(draft);
+  const [discoveryQuantity, setDiscoveryQuantity] = useState(
+    props.line.quantity,
+  );
   const [readyRevision, setReadyRevision] = useState(0);
   const [pending, setPending] = useState(false);
   const [splitting, setSplitting] = useState(false);
@@ -129,18 +132,24 @@ export function Selection(props: ISelectionProps) {
         offer.settings?.standalone === true),
   );
   const quantity = Number(draft.quantity);
+  const validDiscoveryQuantity =
+    Number.isSafeInteger(quantity) &&
+    quantity > 0 &&
+    quantity <= (props.details.maxLineQuantity ?? Number.MAX_SAFE_INTEGER);
+  useEffect(() => {
+    if (!validDiscoveryQuantity || quantity === discoveryQuantity) return;
+    const timeout = setTimeout(() => setDiscoveryQuantity(quantity), 350);
+    return () => clearTimeout(timeout);
+  }, [quantity, discoveryQuantity, validDiscoveryQuantity]);
   const discovery = offerApi.quote({
     data: {
       offerId: draft.offerId,
-      // Discovery only supplies available options; save quotes the full draft.
-      quantity: 1,
+      // Service previews depend on product quantity; save still quotes the full draft.
+      quantity: discoveryQuantity,
       currencyId: draft.currencyId,
     },
     reactQueryOptions: {
-      enabled:
-        Boolean(draft.offerId) &&
-        Number.isSafeInteger(quantity) &&
-        quantity > 0,
+      enabled: Boolean(draft.offerId) && validDiscoveryQuantity,
     },
   });
   const available =
@@ -789,16 +798,39 @@ export function Selection(props: ISelectionProps) {
           </legend>
           {serviceOptions.map((option) => {
             const selected = draft.services[option.offerId] !== undefined;
-            const charge = currentAmount
-              ? currentReceipt?.charges.find(
-                  (charge) => charge.offerId === option.offerId,
+            const charge =
+              currentAmount && selected
+                ? currentReceipt?.charges.find(
+                    (charge) =>
+                      charge.offerId === option.offerId &&
+                      charge.quantity ===
+                        Number(draft.services[option.offerId]),
+                  )
+                : undefined;
+            const currentOption = currentAmount
+              ? currentReceipt?.serviceOptions.find(
+                  (item) => item.offerId === option.offerId,
                 )
               : undefined;
             const tariff =
-              available?.currencyId === draft.currencyId
+              currentOption?.deliveryTariff ??
+              (available?.currencyId === draft.currencyId
                 ? option.deliveryTariff
+                : undefined);
+            const preview =
+              currentOption?.pricePreview ??
+              (validDiscoveryQuantity &&
+              available?.offerId === draft.offerId &&
+              available.currencyId === draft.currencyId &&
+              available.quantity === quantity
+                ? option.pricePreview
+                : undefined);
+            const fixedFallback =
+              option.receiptMethod === "shipping" && tariff?.basis === "fixed"
+                ? tariff.fixedAmount
                 : undefined;
-            const amount = charge?.amount ?? tariff?.fixedAmount;
+            const amount = charge?.amount ?? preview?.amount ?? fixedFallback;
+            const from = !charge && preview?.kind === "from";
             const title =
               option.titles?.[props.language] ||
               option.title ||
@@ -815,6 +847,7 @@ export function Selection(props: ISelectionProps) {
                   <Checkbox
                     id={serviceId}
                     aria-labelledby={`${serviceId}-title`}
+                    aria-describedby={`${serviceId}-price`}
                     className="absolute left-3 top-6 size-5 rounded-md border-2 border-muted-foreground bg-card focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 data-[state=checked]:border-primary"
                     checked={selected}
                     onCheckedChange={(value) => {
@@ -838,8 +871,8 @@ export function Selection(props: ISelectionProps) {
                     htmlFor={serviceId}
                     className="block min-w-0 cursor-pointer p-3 pl-11 hover:bg-muted/50"
                   >
-                    <span className="flex min-h-11 flex-wrap items-center justify-between gap-x-3 gap-y-1">
-                      <span className="min-w-0 flex-1 py-3 text-sm font-medium">
+                    <span className="grid min-h-11 grid-cols-[minmax(0,1fr)_6.5rem] items-center gap-x-2 sm:grid-cols-[minmax(0,1fr)_7.5rem]">
+                      <span className="min-w-0 break-words py-3 text-sm font-medium">
                         <span id={`${serviceId}-title`}>{title}</span>
                         {option.receiptMethod === "pickup"
                           ? ru
@@ -851,16 +884,22 @@ export function Selection(props: ISelectionProps) {
                               : " · electronic fulfillment"
                             : ""}
                       </span>
-                      {amount !== undefined ? (
-                        <span className="shrink-0 text-sm font-semibold tabular-nums">
-                          {formatCurrencyAmount(amount, props.language)}{" "}
-                          {selectedCurrencySymbol}
-                        </span>
-                      ) : selected && (pending || closePending.current) ? (
-                        <span className="text-xs text-muted-foreground">
-                          {ru ? "Рассчитываем…" : "Calculating…"}
-                        </span>
-                      ) : null}
+                      <span
+                        id={`${serviceId}-price`}
+                        className="min-w-0 break-words text-right text-sm font-semibold tabular-nums"
+                      >
+                        {amount !== undefined
+                          ? `${from ? (ru ? "от " : "from ") : ""}${formatCurrencyAmount(amount, props.language)} ${selectedCurrencySymbol}`
+                          : pending ||
+                              closePending.current ||
+                              discovery.isFetching ||
+                              (validDiscoveryQuantity &&
+                                quantity !== discoveryQuantity)
+                            ? "…"
+                            : ru
+                              ? "По расчёту"
+                              : "Calculated"}
+                      </span>
                     </span>
                     {option.receiptMethod === "shipping" ? (
                       <span className="block space-y-1 text-xs text-muted-foreground">

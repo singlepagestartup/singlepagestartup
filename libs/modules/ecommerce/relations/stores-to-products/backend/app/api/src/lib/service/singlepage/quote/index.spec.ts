@@ -1,6 +1,9 @@
 import { Service } from "./index";
 import type { IOfferAttribute, IOfferCatalog } from "../../../repository";
-import type { IOfferQuoteInput } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
+import type {
+  IOfferQuoteInput,
+  IOfferServiceOption,
+} from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 
 const input: IOfferQuoteInput = {
   offerId: "wardrobe",
@@ -114,7 +117,35 @@ function fixture() {
     routing: () => routing,
     now: new Date("2026-11-17T00:00:00Z"),
   });
-  return { service, catalog, held, routing, attr, formula };
+  function addOption(
+    id: string,
+    role: IOfferServiceOption["role"],
+    receiptMethod: IOfferServiceOption["receiptMethod"],
+    prices: Record<string, string>,
+    expression = "unit_price * serviced_qty",
+  ) {
+    catalog.products.set(id, { ...catalog.products.get("assembly")!, id });
+    catalog.offers.set(id, {
+      ...catalog.offers.get("assembly")!,
+      id,
+      productId: id,
+      settings: { receiptMethod },
+    });
+    catalog.links.push({
+      ...catalog.links[1],
+      sourceOfferId: "wardrobe",
+      targetOfferId: id,
+      variant: role,
+    });
+    catalog.offerAttributes.set(
+      id,
+      Object.entries(prices).map(([currency, value]) =>
+        attr("price", value, currency),
+      ),
+    );
+    catalog.productAttributes.set(id, formula(expression));
+  }
+  return { service, catalog, held, routing, attr, formula, addOption };
 }
 describe("per-offer quote", () => {
   it.each([
@@ -298,5 +329,282 @@ describe("per-offer quote", () => {
     });
     expect(both.charges[1].inputs.serviced_subtotal).toBe("9999.99");
     expect(both.amount).toBe("10999.99");
+  });
+
+  it.each([
+    { currencyId: "rub", delivery: "20.00", addOn: "50.00", pickup: "400.00" },
+    { currencyId: "usd", delivery: "0.25", addOn: "0.60", pickup: "5.00" },
+  ])(
+    "previews the demo electronic, add-on and pickup tariffs in $currencyId without network discovery",
+    async (test) => {
+      const { service, addOption, routing } = fixture();
+      addOption("electronic", "delivery", "electronic", {
+        rub: "20",
+        usd: "0.25",
+      });
+      addOption("setup", "add-on", undefined, { rub: "50", usd: "0.60" });
+      addOption(
+        "pickup",
+        "delivery",
+        "pickup",
+        { rub: "400", usd: "5" },
+        "unit_price",
+      );
+      const quote = await service.execute({
+        ...input,
+        currencyId: test.currencyId,
+        quantity: 1,
+        services: [],
+        destination: undefined,
+      });
+      const option = (id: string) =>
+        quote.serviceOptions.find((entry) => entry.offerId === id)!;
+      expect(option("electronic").pricePreview).toEqual({
+        kind: "fixed",
+        amount: test.delivery,
+      });
+      expect(option("setup").pricePreview).toEqual({
+        kind: "from",
+        amount: test.addOn,
+      });
+      expect(option("pickup").pricePreview).toEqual({
+        kind: "fixed",
+        amount: test.pickup,
+      });
+      expect(routing.geocode).not.toHaveBeenCalled();
+      expect(routing.distance).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([
+    { currencyId: "rub", dispatch: "400", rate: "25", minimum: "400.00" },
+    { currencyId: "usd", dispatch: "5", rate: "0.30", minimum: "5.00" },
+  ])(
+    "proves the distance-tariff minimum in $currencyId without requesting an unknown route",
+    async (test) => {
+      const { service, catalog, attr, formula, routing } = fixture();
+      catalog.productAttributes.set(
+        "courier",
+        formula("dispatch_fee + rate_per_km * distance_km"),
+      );
+      catalog.storeAttributes.set("seller", [
+        attr("dispatch_fee", test.dispatch, test.currencyId),
+        attr("rate_per_km", test.rate, test.currencyId),
+      ]);
+      catalog.offers.get("courier")!.settings.origin = {
+        latitude: 59,
+        longitude: 30,
+      };
+      const quote = await service.execute({
+        ...input,
+        currencyId: test.currencyId,
+        services: [],
+        destination: undefined,
+      });
+      expect(
+        quote.serviceOptions.find((option) => option.offerId === "courier"),
+      ).toMatchObject({
+        pricePreview: { kind: "from", amount: test.minimum },
+        deliveryTariff: { basis: "distance" },
+      });
+      expect(quote.amount).toBe(
+        test.currencyId === "rub" ? "5000.00" : "60.00",
+      );
+      expect(routing.geocode).not.toHaveBeenCalled();
+      expect(routing.distance).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([
+    { currencyId: "rub", amount: "500.00" },
+    { currencyId: "usd", amount: "6.00" },
+  ])(
+    "uses apportioned merchandise value for a percentage preview in $currencyId",
+    async (test) => {
+      const { service, catalog, attr, formula } = fixture();
+      catalog.productAttributes.set(
+        "wardrobe",
+        formula("unit_price * quantity - discount"),
+      );
+      catalog.productAttributes.set(
+        "assembly",
+        formula("assembly_percent * serviced_subtotal / 100"),
+      );
+      catalog.storeAttributes.set("seller", [
+        attr("discount", "0.01", test.currencyId),
+        attr("assembly_percent", "10"),
+      ]);
+      const quote = await service.execute({
+        ...input,
+        currencyId: test.currencyId,
+        quantity: 2,
+        services: [{ offerId: "assembly", quantity: 1 }],
+        destination: undefined,
+      });
+      expect(
+        quote.serviceOptions.find((option) => option.offerId === "assembly")
+          ?.pricePreview,
+      ).toEqual({ kind: "from", amount: test.amount });
+      expect(
+        quote.charges.find((charge) => charge.offerId === "assembly")?.amount,
+      ).toBe(test.amount);
+    },
+  );
+
+  it("previews known package and quantity inputs while retaining their variable tariff label", async () => {
+    const { service, catalog, attr, formula } = fixture();
+    catalog.productAttributes.set(
+      "courier",
+      formula("dispatch_fee + rate_per_kg * total_weight_kg"),
+    );
+    catalog.storeAttributes.set("seller", [
+      attr("dispatch_fee", "400", "rub"),
+      attr("rate_per_kg", "2.5", "rub"),
+    ]);
+    catalog.offers.get("wardrobe")!.settings.packages = [
+      { count: 2, weight_kg: "2.0" },
+      { count: 1, weight_kg: "0.5" },
+    ];
+    const quote = await service.execute({
+      ...input,
+      quantity: 2,
+      services: [],
+      destination: undefined,
+    });
+    expect(
+      quote.serviceOptions.find((option) => option.offerId === "courier"),
+    ).toMatchObject({
+      pricePreview: { kind: "from", amount: "422.50" },
+      deliveryTariff: { basis: "calculated" },
+    });
+    catalog.productAttributes.set("courier", formula("unit_price * quantity"));
+    const byQuantity = await service.execute({
+      ...input,
+      quantity: 2,
+      services: [],
+      destination: undefined,
+    });
+    expect(
+      byQuantity.serviceOptions.find((option) => option.offerId === "courier")
+        ?.pricePreview,
+    ).toEqual({ kind: "from", amount: "2000.00" });
+  });
+
+  it("uses the lowest attainable price for bounded decreasing add-ons and respects service stock", async () => {
+    const { service, catalog, attr, formula, held } = fixture();
+    catalog.productAttributes.set(
+      "assembly",
+      formula("unit_price * (3 - serviced_qty)"),
+    );
+    catalog.offerAttributes.get("assembly")!.push(attr("stock_quantity", "3"));
+    const discover = () =>
+      service.execute({
+        ...input,
+        quantity: 2,
+        services: [],
+        destination: undefined,
+      });
+    expect(
+      (await discover()).serviceOptions.find(
+        (option) => option.offerId === "assembly",
+      )?.pricePreview,
+    ).toEqual({ kind: "from", amount: "2000.00" });
+    held.assembly = 2;
+    expect(
+      (await discover()).serviceOptions.find(
+        (option) => option.offerId === "assembly",
+      )?.pricePreview,
+    ).toEqual({ kind: "from", amount: "4000.00" });
+  });
+
+  it.each([
+    "1000 - distance_km * unit_price",
+    "100 / (distance_km + 1)",
+    "1 / 0",
+    "total_weight_kg * unit_price",
+  ])(
+    "omits unproved or unavailable optional price inputs for %s",
+    async (expression) => {
+      const { service, catalog, formula, routing } = fixture();
+      catalog.productAttributes.set("courier", formula(expression));
+      catalog.offers.get("courier")!.settings.origin = {
+        latitude: 59,
+        longitude: 30,
+      };
+      const quote = await service.execute({
+        ...input,
+        services: [],
+        destination: undefined,
+      });
+      expect(
+        quote.serviceOptions.find((option) => option.offerId === "courier")
+          ?.pricePreview,
+      ).toBeUndefined();
+      expect(quote.amount).toBe("5000.00");
+      expect(quote.issues).toEqual([]);
+      expect(routing.distance).not.toHaveBeenCalled();
+    },
+  );
+
+  it("does not publish a route price with missing or invalid origin configuration", async () => {
+    const { service, catalog, formula, routing } = fixture();
+    catalog.productAttributes.set(
+      "courier",
+      formula("unit_price + distance_km"),
+    );
+    const discover = () =>
+      service.execute({ ...input, services: [], destination: undefined });
+    expect(
+      (await discover()).serviceOptions.find(
+        (option) => option.offerId === "courier",
+      )?.pricePreview,
+    ).toBeUndefined();
+    catalog.offers.get("courier")!.settings.origin = {
+      latitude: 100,
+      longitude: 30,
+    };
+    expect(
+      (await discover()).serviceOptions.find(
+        (option) => option.offerId === "courier",
+      )?.pricePreview,
+    ).toBeUndefined();
+    catalog.offers.get("courier")!.settings.origin = {
+      latitude: 59,
+      longitude: 30,
+    };
+    Object.assign(catalog.offers.get("courier")!.settings, {
+      routeProfile: "unknown",
+    });
+    expect(
+      (await discover()).serviceOptions.find(
+        (option) => option.offerId === "courier",
+      )?.pricePreview,
+    ).toBeUndefined();
+    expect(routing.distance).not.toHaveBeenCalled();
+  });
+
+  it("preserves explicit free delivery previews without treating malformed optional formulas as free", async () => {
+    const { service, catalog, attr, formula } = fixture();
+    catalog.offerAttributes.set("courier", [attr("price", "0", "rub")]);
+    const discover = () =>
+      service.execute({ ...input, services: [], destination: undefined });
+    expect(
+      (await discover()).serviceOptions.find(
+        (option) => option.offerId === "courier",
+      ),
+    ).toMatchObject({
+      pricePreview: { kind: "fixed", amount: "0.00" },
+      deliveryTariff: { basis: "fixed", fixedAmount: "0.00" },
+    });
+    catalog.productAttributes.set(
+      "courier",
+      formula("unit_price + missing_coefficient"),
+    );
+    expect(
+      (await discover()).serviceOptions.find(
+        (option) => option.offerId === "courier",
+      ),
+    ).toBeUndefined();
+    expect((await discover()).amount).toBe("5000.00");
   });
 });
