@@ -436,7 +436,9 @@ it.each(["0", "0.00000001", "123.45678901"])(
         unitAmount.replace(".", ","),
       ),
     );
-    expect(screen.getByText("За 1 шт.")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Цена за 1 шт.").parentElement?.textContent,
+    ).toBe(`${screen.getByLabelText("Цена за 1 шт.").textContent} за 1 шт.`);
     expect(
       within(screen.getByRole("region", { name: "Расчёт" })).getAllByText(
         /9\s876,54/,
@@ -585,7 +587,12 @@ it("uses one exact configured selection for inline service/address controls, car
     target: { value: "2" },
   });
   fireEvent.click(screen.getByRole("radio", { name: "Доставка" }));
-  const delivery = within(screen.getByRole("group", { name: "Доставка" }));
+  const delivery = within(
+    within(screen.getByRole("radiogroup", { name: "Доставка" })).getByRole(
+      "group",
+      { name: "Доставка" },
+    ),
+  );
   expect(delivery.getByText("Зона доставки: Москва")).toBeTruthy();
   expect(screen.queryByLabelText("Регион")).toBeNull();
   fireEvent.change(delivery.getByLabelText("Адрес доставки"), {
@@ -903,6 +910,30 @@ it("shows an eligible creation form without a duplicate other-offer action", () 
   expect(slot.mock.calls.at(-1)![1].hideWhenIdle).toBe(false);
 });
 
+it.each(["ru", "en"])(
+  "uses the localized delivery heading without selection hints in %s",
+  (language) => {
+    mockServices = ["delivery", "add-on"].map((role) => ({
+      offerId: role,
+      productId: role,
+      role,
+      title: role,
+      currencyIds: ["rub"],
+    }));
+    render(<Component {...props} language={language} />);
+    expect(
+      screen.getByRole("radiogroup", {
+        name: language === "ru" ? "Доставка" : "Delivery",
+      }),
+    ).toBeTruthy();
+    expect(
+      screen.queryByText(
+        /Выберите один вариант|Можно выбрать несколько|Choose one option|Choose any number/,
+      ),
+    ).toBeNull();
+  },
+);
+
 it("groups fulfillment radios separately from add-ons and preserves address and service counts while switching", async () => {
   mockServices = [
     {
@@ -932,14 +963,14 @@ it("groups fulfillment radios separately from add-ons and preserves address and 
   ];
   render(<Component {...props} />);
   const fulfillment = within(
-    screen.getByRole("radiogroup", { name: "Получение" }),
+    screen.getByRole("radiogroup", { name: "Доставка" }),
   );
   expect(
     fulfillment.queryByRole("radio", { name: "Не выбирать способ получения" }),
   ).toBeNull();
   expect(
     screen
-      .getByRole("radiogroup", { name: "Получение" })
+      .getByRole("radiogroup", { name: "Доставка" })
       .getAttribute("aria-required"),
   ).toBe("true");
   fireEvent.change(screen.getByLabelText("Количество"), {
@@ -994,7 +1025,7 @@ it("requires exactly one fulfillment choice when the offer marks it mandatory", 
     },
   ];
   render(<Component {...props} />);
-  const fulfillment = screen.getByRole("radiogroup", { name: "Получение" });
+  const fulfillment = screen.getByRole("radiogroup", { name: "Доставка" });
   expect(fulfillment.getAttribute("aria-required")).toBe("true");
   expect(
     within(fulfillment).queryByRole("radio", {
@@ -1187,7 +1218,7 @@ it("uses the server cheapest method and retains an explicit alternative across l
 it("hides fulfillment when the product has no alternative methods", async () => {
   mockSelectedServices = () => [];
   render(<Component {...props} />);
-  expect(screen.queryByRole("radiogroup", { name: "Получение" })).toBeNull();
+  expect(screen.queryByRole("radiogroup", { name: "Доставка" })).toBeNull();
   const add = screen.getByRole("button", { name: "Добавить в корзину" });
   await waitFor(() => expect(add.hasAttribute("disabled")).toBe(false));
   fireEvent.click(add);

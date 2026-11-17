@@ -620,7 +620,9 @@ it.each(["0", "0.00000001", "3333.125"])(
     expect(
       screen.getByLabelText("Цена за 1 шт.").textContent?.replace(/\s/g, ""),
     ).toBe(`${unitAmount.replace(".", ",")}₽`);
-    expect(screen.getByText("За 1 шт.")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Цена за 1 шт.").parentElement?.textContent,
+    ).toBe(`${screen.getByLabelText("Цена за 1 шт.").textContent} за 1 шт.`);
     expect(receipt().getByText("Шкаф × 3")).toBeTruthy();
     expect(receipt().getByText("9 876,54 ₽")).toBeTruthy();
     expect(receipt().getByText("12 876,54 ₽")).toBeTruthy();
@@ -824,14 +826,20 @@ it("debounces rapid quantity and address edits and renders server charge amounts
   ).toContain("3 333,125 ₽");
   expect(receipt().getByText("350,55 ₽")).toBeTruthy();
   expect(
-    within(screen.getByRole("group", { name: "Доставка" })).getByText(
-      "1 350 ₽",
-    ),
+    within(
+      within(screen.getByRole("radiogroup", { name: "Доставка" })).getByRole(
+        "group",
+        { name: "Доставка" },
+      ),
+    ).getByText("1 350 ₽"),
   ).toBeTruthy();
   expect(
-    within(screen.getByRole("group", { name: "Доставка" })).queryByText(
-      "1 000 ₽",
-    ),
+    within(
+      within(screen.getByRole("radiogroup", { name: "Доставка" })).getByRole(
+        "group",
+        { name: "Доставка" },
+      ),
+    ).queryByText("1 000 ₽"),
   ).toBeNull();
   expect(receipt().getByText("Шкаф × 3")).toBeTruthy();
   expect(onSelectionStateChange).toHaveBeenLastCalledWith("line", false);
@@ -1411,7 +1419,12 @@ it.each([
         lines: [savedLine, props.details.lines[2]],
       },
     });
-    const delivery = within(screen.getByRole("group", { name: "Доставка" }));
+    const delivery = within(
+      within(screen.getByRole("radiogroup", { name: "Доставка" })).getByRole(
+        "group",
+        { name: "Доставка" },
+      ),
+    );
     expect(
       delivery
         .getByRole("radio", { name: "Доставка" })
@@ -1436,7 +1449,12 @@ it("keeps shipping address and service quantity fields while collecting pickup a
   mockPickup = true;
   const onSelectionPendingChange = jest.fn();
   renderSelection({ ...props, onSelectionPendingChange });
-  const delivery = within(screen.getByRole("group", { name: "Доставка" }));
+  const delivery = within(
+    within(screen.getByRole("radiogroup", { name: "Доставка" })).getByRole(
+      "group",
+      { name: "Доставка" },
+    ),
+  );
   expect(delivery.getByLabelText("Адрес доставки")).toBeTruthy();
   expect(
     delivery.queryByRole("spinbutton", { name: "Количество единиц услуги" }),
@@ -1848,6 +1866,23 @@ it("isolates page and drawer fulfillment groups while retaining independent add-
   expect(drawerShipping.getAttribute("aria-checked")).toBe("true");
 });
 
+it.each(["ru", "en"])(
+  "uses the localized delivery heading without selection hints in %s",
+  (language) => {
+    renderSelection({ ...props, language });
+    expect(
+      screen.getByRole("radiogroup", {
+        name: language === "ru" ? "Доставка" : "Delivery",
+      }),
+    ).toBeTruthy();
+    expect(
+      screen.queryByText(
+        /Выберите один вариант|Можно выбрать несколько|Choose one option|Choose any number/,
+      ),
+    ).toBeNull();
+  },
+);
+
 it("keeps a required fulfillment radio selected and supports keyboard selection of another method", async () => {
   mockPickup = true;
   const required = {
@@ -1861,7 +1896,7 @@ it("keeps a required fulfillment radio selected and supports keyboard selection 
     },
   };
   renderSelection(required);
-  const group = screen.getByRole("radiogroup", { name: "Получение" });
+  const group = screen.getByRole("radiogroup", { name: "Доставка" });
   expect(group.getAttribute("aria-required")).toBe("true");
   expect(
     within(group).queryByRole("radio", {
@@ -2144,7 +2179,7 @@ it("uses authenticated renewal previews without re-adding a paid first-period fu
   });
   await waitFor(() => expect(mockPreview).toHaveBeenCalledTimes(1));
   expect(mockMutation).not.toHaveBeenCalled();
-  expect(screen.queryByRole("radiogroup", { name: "Получение" })).toBeNull();
+  expect(screen.queryByRole("radiogroup", { name: "Доставка" })).toBeNull();
   expect(screen.queryByLabelText("Адрес доставки")).toBeNull();
   expect(
     mockQuoteRead.mock.calls.every(
@@ -2174,7 +2209,7 @@ it("uses authenticated renewal previews without re-adding a paid first-period fu
     { offerId: "assembly-a", quantity: 1 },
   ]);
   await waitFor(() => expect(receipt().getByText("7 000 ₽")).toBeTruthy());
-  expect(screen.queryByRole("radiogroup", { name: "Получение" })).toBeNull();
+  expect(screen.queryByRole("radiogroup", { name: "Доставка" })).toBeNull();
   expect(
     mockPreview.mock.calls.every(
       ([request]) =>

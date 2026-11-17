@@ -741,8 +741,8 @@ export function Selection(props: ISelectionProps) {
   );
 
   return (
-    <fieldset className="min-w-0 space-y-3">
-      <div className="grid min-w-0 grid-cols-2 items-end gap-2 min-[480px]:grid-cols-[minmax(8rem,1fr)_minmax(0,1fr)_minmax(0,1fr)]">
+    <fieldset className="@container min-w-0 space-y-3">
+      <div className="grid min-w-0 grid-cols-2 items-end gap-x-3 gap-y-2 @[420px]:grid-cols-[minmax(8rem,1fr)_minmax(5rem,1fr)_auto]">
         <QuantityInput
           id={`${controlId}-quantity`}
           label={ru ? "Количество" : "Quantity"}
@@ -780,13 +780,10 @@ export function Selection(props: ISelectionProps) {
             }))}
           />
         </div>
-        <div className="col-span-2 flex min-w-0 items-center justify-between gap-2 min-[480px]:col-span-1 min-[480px]:grid min-[480px]:justify-normal min-[480px]:gap-1 min-[480px]:text-right">
-          <span className="text-xs text-muted-foreground">
-            {ru ? "За 1 шт." : "Per item"}
-          </span>
+        <div className="col-span-2 flex min-w-0 flex-wrap items-baseline justify-end gap-x-1.5 gap-y-0.5 @[420px]:col-span-1 @[420px]:min-h-12 @[420px]:items-center">
           <output
             aria-label={ru ? "Цена за 1 шт." : "Unit price"}
-            className="flex min-h-6 items-center justify-end break-words text-sm font-semibold tabular-nums min-[480px]:min-h-12"
+            className="min-w-0 break-words text-sm font-semibold tabular-nums"
           >
             {(() => {
               const amount =
@@ -804,7 +801,10 @@ export function Selection(props: ISelectionProps) {
               }
               return pending || closePending.current ? "…" : "—";
             })()}
-          </output>
+          </output>{" "}
+          <span className="whitespace-nowrap text-xs text-muted-foreground">
+            {ru ? "за 1 шт." : "per item"}
+          </span>
         </div>
       </div>
       <div className="grid gap-1 text-xs font-medium">
@@ -838,21 +838,12 @@ export function Selection(props: ISelectionProps) {
                 >
                   {role === "delivery"
                     ? ru
-                      ? "Получение"
-                      : "Fulfillment"
+                      ? "Доставка"
+                      : "Delivery"
                     : ru
                       ? "Дополнительные услуги"
                       : "Additional services"}
                 </legend>
-                <div className="text-xs leading-4 text-muted-foreground">
-                  {role === "delivery"
-                    ? ru
-                      ? "Выберите один вариант"
-                      : "Choose one option"
-                    : ru
-                      ? "Можно выбрать несколько"
-                      : "Choose any number"}
-                </div>
                 <ServiceOptions
                   id={controlId + "-" + role + "-options"}
                   labelId={controlId + "-" + role + "-legend"}

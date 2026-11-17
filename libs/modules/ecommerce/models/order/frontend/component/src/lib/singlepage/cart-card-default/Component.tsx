@@ -55,7 +55,7 @@ export const Component = memo(function CartCard(
     >
       <ul className="divide-y divide-border px-3.5 sm:px-4">
         {lines.map((line, index) => (
-          <li key={line.id} className="py-3.5 sm:py-4">
+          <li key={line.id} className="space-y-3 py-3.5 sm:py-4">
             <header className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
               {line.product ? (
                 <Product
