@@ -1,0 +1,11 @@
+{
+  "id": "14f551df-919f-4f2f-bbd0-99ab41133838",
+  "createdAt": "2026-11-17T10:50:44.064Z",
+  "updatedAt": "2026-11-17T10:50:44.064Z",
+  "variant": "delivery",
+  "orderIndex": 0,
+  "className": null,
+  "sourceOfferId": "89bff34b-72e3-4c6b-9151-88e13f051fe3",
+  "targetOfferId": "d7d60645-c371-416b-8601-72d4c04b5e01",
+  "recurrence": "first"
+}

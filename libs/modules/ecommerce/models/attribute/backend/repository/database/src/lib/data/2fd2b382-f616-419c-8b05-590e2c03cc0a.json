@@ -1,0 +1,16 @@
+{
+  "id": "2fd2b382-f616-419c-8b05-590e2c03cc0a",
+  "createdAt": "2026-11-17T10:50:31.976Z",
+  "updatedAt": "2026-11-17T10:50:31.976Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "unit_price",
+    "ru": "unit_price"
+  },
+  "adminTitle": "demo-accelerated-account-credit price_formula",
+  "slug": "demo-accelerated-account-credit-price_formula"
+}

@@ -198,6 +198,29 @@ describe("Given: order list checkout component", () => {
     ).toBeNull();
   });
 
+  it("shows the configured precision on the cart row and footer total", () => {
+    cartOrders[0].cartDetails.totals = [
+      {
+        total: 0.01234567,
+        billingModuleCurrency: {
+          id: "rub",
+          slug: "custom",
+          symbol: "¤",
+          minorUnitDigits: 8,
+        },
+      },
+    ];
+    render(
+      <Component
+        isServer={false}
+        variant="ecommerce-module-order-list-checkout-default"
+        data={{ id: "subject-1" } as any}
+        language="ru"
+      />,
+    );
+    expect(screen.getAllByText("0,01234567 ¤")).toHaveLength(2);
+  });
+
   it("When: checkout returns one invoice Then: browser redirects to payment URL", async () => {
     mutateAsyncMock.mockResolvedValue({
       billingModule: {

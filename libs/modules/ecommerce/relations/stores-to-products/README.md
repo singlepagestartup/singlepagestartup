@@ -27,6 +27,10 @@ An offer with no `stock_quantity` link has unlimited stock. A present link suppl
 
 The framework seed includes seller prices for five token packages and the Pro subscription. The historical `website` product’s 510 and 590 amounts lack currency links. Assign a currency-specific price to its offer before selling it.
 
+Each token package and Pro also offers two optional demo services from Single Page Shop: accelerated electronic account credit for 20 RUB or 0.25 USD, and AI chat setup for 50 RUB or 0.60 USD per selected unit. Standard token credit remains included in the product price. These demo services do not perform external fulfillment. Their service Products use one-time billing, their offer links charge only the first subscription cycle, and neither needs a postal address. Both prices are available for each service; the main offer still determines which currencies the complete selection supports.
+
+The demo services use the existing store, currency and attribute-key seeds. Their snapshots contain no Subject ownership records or local account references. Store owners can manage their offers through the catalogue; shared Product metadata remains subject to the Product ownership rules.
+
 ## Variants
 
 - `provider` records identify the fulfillment store for a linked service.

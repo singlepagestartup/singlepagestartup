@@ -1,5 +1,5 @@
 export interface ICurrencyPrecisionInput {
-  slug: string;
+  slug?: string;
   minorUnitDigits?: number | null;
 }
 
@@ -7,7 +7,7 @@ export function currencyPrecision(
   currency: string | ICurrencyPrecisionInput,
 ): number {
   const slug = typeof currency === "string" ? currency : currency.slug;
-  if (slug.toLowerCase() === "telegram-star") {
+  if (slug?.toLowerCase() === "telegram-star") {
     return 0;
   }
   const configured =

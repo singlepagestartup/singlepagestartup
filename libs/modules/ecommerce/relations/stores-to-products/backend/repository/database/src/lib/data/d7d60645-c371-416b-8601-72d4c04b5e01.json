@@ -1,0 +1,16 @@
+{
+  "id": "d7d60645-c371-416b-8601-72d4c04b5e01",
+  "createdAt": "2026-11-17T10:50:43.765Z",
+  "updatedAt": "2026-11-17T10:50:43.765Z",
+  "variant": "default",
+  "orderIndex": 0,
+  "className": null,
+  "configurationKey": "demo-delivery",
+  "settings": {
+    "standalone": false,
+    "receiptMethod": "electronic"
+  },
+  "sku": "cefd9c25-534e-4b5b-bc52-0c51b5fe2e22",
+  "storeId": "92aefa1f-247b-49a9-b1b9-c8029cc840dc",
+  "productId": "5d79b86d-7ee2-42b1-b840-e7b25165928e"
+}

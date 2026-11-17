@@ -28,3 +28,4 @@ export {
 
 export { useChatScroll, type IChatScrollProps } from "./chat-scroll";
 export { getRichTextPlainText, getRichTextMarkdown } from "./rich-text";
+export { formatCurrencyAmount } from "./currency-amount";

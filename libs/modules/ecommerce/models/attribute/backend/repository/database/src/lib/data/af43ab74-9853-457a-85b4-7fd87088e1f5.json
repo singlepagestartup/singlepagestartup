@@ -1,0 +1,16 @@
+{
+  "id": "af43ab74-9853-457a-85b4-7fd87088e1f5",
+  "createdAt": "2026-11-17T10:50:32.068Z",
+  "updatedAt": "2026-11-17T10:50:32.068Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "1",
+    "ru": "1"
+  },
+  "adminTitle": "demo-accelerated-account-credit formula_version",
+  "slug": "demo-accelerated-account-credit-formula_version"
+}

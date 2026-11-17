@@ -43,6 +43,7 @@ export interface IOfferServiceOption {
   offerId: string;
   productId: string;
   title: string;
+  titles?: Record<string, string>;
   role: "delivery" | "add-on";
   receiptMethod?: "shipping" | "pickup" | "electronic";
   pickupPointIds?: string[];

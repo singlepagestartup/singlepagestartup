@@ -27,6 +27,7 @@ properties:
         offerId: { type: string, format: uuid }
         productId: { type: string, format: uuid }
         title: { type: string }
+        titles: { type: object, additionalProperties: { type: string } }
         role: { type: string, enum: [delivery, add-on] }
         receiptMethod: { type: string, enum: [shipping, pickup, electronic] }
         pickupPointIds: { type: array, items: { type: string } }

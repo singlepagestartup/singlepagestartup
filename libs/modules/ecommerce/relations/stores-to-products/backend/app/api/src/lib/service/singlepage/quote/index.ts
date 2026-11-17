@@ -309,6 +309,7 @@ export class Service {
         offerId: offer.id,
         productId: product.id,
         title: product.title?.en || product.adminTitle,
+        titles: product.title,
         role: link.variant,
         receiptMethod:
           offer.settings.receiptMethod ??

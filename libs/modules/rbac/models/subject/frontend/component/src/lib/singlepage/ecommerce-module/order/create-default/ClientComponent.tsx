@@ -1,15 +1,16 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import { api as offerApi } from "@sps/ecommerce/relations/stores-to-products/sdk/client";
 import { api as storeApi } from "@sps/ecommerce/models/store/sdk/client";
 import { api as currencyApi } from "@sps/billing/models/currency/sdk/client";
-import { Button } from "@sps/shared-ui-shadcn";
-import { cn } from "@sps/shared-frontend-client-utils";
+import { Button, Input } from "@sps/shared-ui-shadcn";
+import { Select } from "@sps/ui-adapter";
+import { cn, formatCurrencyAmount } from "@sps/shared-frontend-client-utils";
 import type { IComponentPropsExtended } from "./interface";
 
 const input =
-  "min-h-11 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
+  "h-12 min-h-12 w-full min-w-0 rounded-lg border border-border bg-card px-4 py-2 text-sm font-normal text-foreground shadow-sm outline-none transition focus-visible:border-foreground focus-visible:ring-[3px] focus-visible:ring-foreground/20 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-60";
 const incompleteCodes = new Set([
   "delivery_required",
   "address_required",
@@ -18,6 +19,7 @@ const incompleteCodes = new Set([
 
 export function Component(props: IComponentPropsExtended) {
   const ru = props.language === "ru";
+  const formId = useId();
   const createOrder = api.ecommerceModuleOrderCreate({});
   const [offerId, setOfferId] = useState("");
   const [currencyId, setCurrencyId] = useState("");
@@ -87,6 +89,29 @@ export function Component(props: IComponentPropsExtended) {
     },
     reactQueryOptions: { enabled: currencyIds.length > 0 },
   });
+  const offerOptions = offers.map((offer) => {
+    const store = stores.data?.find((store) => store.id === offer.storeId);
+    const name =
+      store?.title?.[props.language] ||
+      store?.title?.en ||
+      store?.slug ||
+      (ru ? "Магазин" : "Store");
+    const hasMultipleOffers = offers.some(
+      (candidate) =>
+        candidate.id !== offer.id && candidate.storeId === offer.storeId,
+    );
+    return {
+      value: offer.id,
+      label: hasMultipleOffers ? `${name} · ${offer.sku}` : name,
+    };
+  });
+  const serviceNames = [
+    ...new Set(
+      currentQuote?.serviceOptions.map(
+        (option) => option.titles?.[props.language] || option.title,
+      ) ?? [],
+    ),
+  ];
   useEffect(() => {
     setOfferId("");
     setCurrencyId("");
@@ -160,69 +185,56 @@ export function Component(props: IComponentPropsExtended) {
       className={cn("w-full min-w-0", props.className)}
     >
       <form onSubmit={submit} className="space-y-4" noValidate>
-        <label className="grid gap-1.5 text-xs font-medium">
-          {ru ? "Магазин и предложение" : "Store offer"}
-          <select
-            className={input}
+        <div className="grid gap-1.5 text-xs font-medium">
+          <label htmlFor={`${formId}-store`}>{ru ? "Магазин" : "Store"}</label>
+          <Select
+            ui="shadcn"
+            id={`${formId}-store`}
             value={selected?.id ?? ""}
             disabled={offersQuery.isPending || createOrder.isPending}
-            onChange={(event) => {
-              setOfferId(event.target.value);
+            placeholder={ru ? "Выберите магазин" : "Choose a store"}
+            options={offerOptions}
+            onValueChange={(value) => {
+              setOfferId(value);
               setCurrencyId("");
               setAdded(false);
             }}
-          >
-            <option value="">
-              {ru ? "Выберите магазин" : "Choose a store"}
-            </option>
-            {offers.map((offer) => {
-              const store = stores.data?.find(
-                (store) => store.id === offer.storeId,
-              );
-              return (
-                <option key={offer.id} value={offer.id}>
-                  {store?.title?.[props.language] ||
-                    store?.title?.en ||
-                    store?.slug ||
-                    offer.storeId}{" "}
-                  · {offer.sku}
-                </option>
-              );
-            })}
-          </select>
-        </label>
+          />
+        </div>
         <div className="grid grid-cols-2 gap-3">
-          <label className="grid gap-1.5 text-xs font-medium">
-            {ru ? "Валюта" : "Currency"}
-            <select
-              className={input}
+          <div className="grid gap-1.5 text-xs font-medium">
+            <label htmlFor={`${formId}-currency`}>
+              {ru ? "Валюта" : "Currency"}
+            </label>
+            <Select
+              ui="shadcn"
+              id={`${formId}-currency`}
               value={currencyId}
               disabled={
                 !selected || createOrder.isPending || !currencyIds.length
               }
-              onChange={(event) => {
-                setCurrencyId(event.target.value);
-                setAdded(false);
-              }}
-            >
-              <option value="">
-                {ru ? "Выберите валюту" : "Choose currency"}
-              </option>
-              {currencyIds.map((id) => {
+              placeholder={ru ? "Выберите валюту" : "Choose currency"}
+              options={currencyIds.map((id) => {
                 const currency = currencies.data?.find(
                   (currency) => currency.id === id,
                 );
-                return (
-                  <option key={id} value={id}>
-                    {currency?.slug?.toUpperCase() || currency?.symbol || id}
-                  </option>
-                );
+                return {
+                  value: id,
+                  label:
+                    currency?.slug?.toUpperCase() ||
+                    currency?.symbol ||
+                    (ru ? "Валюта" : "Currency"),
+                };
               })}
-            </select>
-          </label>
+              onValueChange={(value) => {
+                setCurrencyId(value);
+                setAdded(false);
+              }}
+            />
+          </div>
           <label className="grid gap-1.5 text-xs font-medium">
             {ru ? "Количество" : "Quantity"}
-            <input
+            <Input
               type="number"
               className={input}
               min={1}
@@ -238,7 +250,7 @@ export function Component(props: IComponentPropsExtended) {
         </div>
         {displayedAmount !== undefined ? (
           <p className="text-lg font-semibold">
-            {displayedAmount}{" "}
+            {formatCurrencyAmount(displayedAmount, props.language)}{" "}
             {currencies.data?.find(
               (currency) => currency.id === currentQuote?.currencyId,
             )?.symbol ?? ""}
@@ -286,6 +298,12 @@ export function Component(props: IComponentPropsExtended) {
               ? "Добавить в корзину"
               : "Add to cart"}
         </Button>
+        {serviceNames.length ? (
+          <p className="text-xs text-muted-foreground">
+            {ru ? "В корзине можно выбрать" : "Available in your cart"}:{" "}
+            {serviceNames.join(", ")}.
+          </p>
+        ) : null}
         {currentQuote?.issues.some((issue) =>
           incompleteCodes.has(issue.code),
         ) ? (

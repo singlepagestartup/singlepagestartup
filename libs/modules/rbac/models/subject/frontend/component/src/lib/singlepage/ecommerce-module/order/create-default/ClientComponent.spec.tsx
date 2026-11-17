@@ -5,6 +5,7 @@ let mockOffers: any[];
 let mockLoading = false;
 let mockIssues: any[] = [];
 let mockAmount = "5000";
+let mockServices: any[] = [];
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   api: {
     ecommerceModuleOrderCreate: () => ({
@@ -23,6 +24,7 @@ jest.mock("@sps/ecommerce/relations/stores-to-products/sdk/client", () => ({
             amount: mockAmount,
             currencyIds: ["rub"],
             availableQuantity: 5,
+            serviceOptions: mockServices,
             issues: mockIssues,
             charges: [],
           }
@@ -45,12 +47,38 @@ jest.mock("@sps/billing/models/currency/sdk/client", () => ({
   api: { find: () => ({ data: [{ id: "rub", slug: "rub", symbol: "₽" }] }) },
 }));
 jest.mock("@sps/shared-frontend-client-utils", () => ({
+  ...jest.requireActual("@sps/shared-frontend-client-utils"),
   cn: (...values: any[]) => values.filter(Boolean).join(" "),
+}));
+jest.mock("@sps/ui-adapter", () => ({
+  Select: ({
+    id,
+    value,
+    disabled,
+    placeholder,
+    options,
+    onValueChange,
+  }: any) => (
+    <select
+      id={id}
+      value={value}
+      disabled={disabled}
+      onChange={(event) => onValueChange(event.target.value)}
+    >
+      <option value="">{placeholder}</option>
+      {options.map((option: { value: string; label: string }) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+  ),
 }));
 jest.mock("@sps/shared-ui-shadcn", () => ({
   Button: ({ children, variant, ...props }: any) => (
     <button {...props}>{children}</button>
   ),
+  Input: (props: any) => <input {...props} />,
 }));
 import { Component } from "./ClientComponent";
 const props: any = {
@@ -73,6 +101,7 @@ beforeEach(() => {
   mockLoading = false;
   mockIssues = [];
   mockAmount = "5000";
+  mockServices = [];
 });
 it("submits the exact unique retail offer with a supported currency", async () => {
   render(<Component {...props} />);
@@ -183,7 +212,7 @@ it("excludes provider offers from the buyer's store selector", async () => {
     sku: "PROVIDER",
   });
   render(<Component {...props} />);
-  expect(screen.queryByRole("option", { name: /PROVIDER/ })).toBeNull();
+  expect(screen.queryByRole("option", { name: "Магазин Б" })).toBeNull();
   await waitFor(() =>
     expect(
       screen
@@ -217,8 +246,8 @@ it("offers a service separately only when its retail offer is standalone", async
       ecommerceModuleProduct={{ id: "product", kind: "service" }}
     />,
   );
-  expect(screen.queryByRole("option", { name: /LINKED/ })).toBeNull();
-  expect(screen.getByRole("option", { name: /STANDALONE/ })).toBeTruthy();
+  expect(screen.queryByRole("option", { name: "Магазин А" })).toBeNull();
+  expect(screen.getByRole("option", { name: "Магазин Б" })).toBeTruthy();
   await waitFor(() =>
     expect(
       screen
@@ -233,6 +262,64 @@ it("renders the quoted amount after a quantity change without calculating money 
   fireEvent.change(screen.getByLabelText("Количество"), {
     target: { value: "2" },
   });
-  expect(screen.getByText(/1234.56/)).toBeTruthy();
+  expect(screen.getByText(/1\s234,56/)).toBeTruthy();
   expect(screen.queryByText(/10000/)).toBeNull();
+});
+
+it("uses localized store names without exposing a unique offer's technical SKU", () => {
+  render(<Component {...props} />);
+  expect(screen.getByLabelText("Магазин")).toBeTruthy();
+  expect(screen.getByLabelText("Валюта")).toBeTruthy();
+  expect(screen.getByRole("option", { name: "Магазин А" })).toBeTruthy();
+  expect(screen.queryByRole("option", { name: /· A/ })).toBeNull();
+});
+
+it("distinguishes multiple offers from the same store", () => {
+  mockOffers.push({ ...mockOffers[0], id: "other-offer", sku: "B" });
+  render(<Component {...props} />);
+  expect(screen.getByRole("option", { name: "Магазин А · A" })).toBeTruthy();
+  expect(screen.getByRole("option", { name: "Магазин А · B" })).toBeTruthy();
+});
+
+it.each([
+  ["5000.00", /5\s000 ₽/],
+  ["0.00000001", /0,00000001 ₽/],
+])(
+  "renders the quoted amount %s without redundant zeros or rounding",
+  (amount, expected) => {
+    mockAmount = amount;
+    render(<Component {...props} />);
+    expect(screen.getByText(expected)).toBeTruthy();
+  },
+);
+
+it("names the selected offer's localized optional services as choices in the cart", () => {
+  mockServices = [
+    {
+      offerId: "service",
+      title: "Consultation",
+      titles: { ru: "Консультация", en: "Consultation" },
+    },
+  ];
+  render(<Component {...props} />);
+  expect(
+    screen.getByText("В корзине можно выбрать: Консультация."),
+  ).toBeTruthy();
+  expect(screen.queryByText(/Consultation/)).toBeNull();
+  expect(screen.queryByRole("checkbox")).toBeNull();
+});
+
+it("removes a previous offer's service hint when choosing another store", () => {
+  mockServices = [{ offerId: "service", title: "Consultation" }];
+  mockOffers.push({ ...mockOffers[0], id: "other-offer", storeId: "store-b" });
+  render(<Component {...props} />);
+  fireEvent.change(screen.getByLabelText("Магазин"), {
+    target: { value: "offer-a" },
+  });
+  expect(screen.getByText(/Consultation/)).toBeTruthy();
+  mockServices = [];
+  fireEvent.change(screen.getByLabelText("Магазин"), {
+    target: { value: "other-offer" },
+  });
+  expect(screen.queryByText(/Consultation/)).toBeNull();
 });

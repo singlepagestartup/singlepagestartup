@@ -1,6 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
+import { Checkbox } from "@sps/shared-ui-shadcn";
+import { Select } from "@sps/ui-adapter";
+import { formatCurrencyAmount } from "@sps/shared-frontend-client-utils";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import { api as offerApi } from "@sps/ecommerce/relations/stores-to-products/sdk/client";
 import { api as currencyApi } from "@sps/billing/models/currency/sdk/client";
@@ -21,6 +24,7 @@ const button =
 
 export function Selection(props: ISelectionProps) {
   const ru = props.language === "ru";
+  const controlId = useId();
   const original =
     props.details.offerQuotes?.find(
       (quote) => quote.offerId === props.line.offerId,
@@ -78,6 +82,9 @@ export function Selection(props: ISelectionProps) {
     ),
   );
   const selectionMutation = api.ecommerceModuleOrderSelection({});
+  const applying =
+    selectionMutation.isPending &&
+    selectionMutation.variables?.data.action === "apply";
   const choices = (props.details.offers ?? []).filter(
     (offer) =>
       offer.productId === props.line.productId &&
@@ -123,6 +130,13 @@ export function Selection(props: ISelectionProps) {
   const pickupOption = selectedOptions.find(
     (option) => option.receiptMethod === "pickup",
   );
+  const regionIds = [
+    ...new Set(
+      selectedOptions
+        .filter((option) => option.receiptMethod === "shipping")
+        .flatMap((option) => option.regionIds ?? []),
+    ),
+  ];
   const unknownServices = children
     .filter(
       (child) =>
@@ -192,6 +206,7 @@ export function Selection(props: ISelectionProps) {
           role: option?.role ?? "unknown",
           quantity: count,
           title:
+            option?.titles?.[props.language] ??
             option?.title ??
             child?.product?.title?.[props.language] ??
             child?.productId ??
@@ -353,40 +368,148 @@ export function Selection(props: ISelectionProps) {
         ?.symbol ?? quote.currencyId;
     return (
       <dl className="space-y-1 text-xs">
-        {quote.charges.map((charge) => (
-          <div key={charge.offerId} className="flex justify-between gap-2">
-            <dt>
-              {charge.role === "product"
-                ? ru
-                  ? "Товар"
-                  : "Product"
-                : charge.role === "delivery"
+        {quote.charges.map((charge) => {
+          const option =
+            quote.serviceOptions.find(
+              (option) => option.offerId === charge.offerId,
+            ) ?? knownOptions.current.get(charge.offerId);
+          const title =
+            charge.role === "product"
+              ? props.line.product?.title?.[props.language] ||
+                props.line.product?.title?.en ||
+                (ru ? "Товар" : "Product")
+              : option?.titles?.[props.language] ||
+                option?.title ||
+                (charge.role === "delivery"
                   ? ru
                     ? "Получение"
                     : "Fulfillment"
                   : ru
                     ? "Услуга"
-                    : "Service"}{" "}
-              · {charge.quantity}
-            </dt>
-            <dd className="tabular-nums">
-              {charge.amount} {symbol}
-            </dd>
-          </div>
-        ))}
+                    : "Service");
+          return (
+            <div key={charge.offerId} className="flex justify-between gap-2">
+              <dt className="min-w-0">
+                {title} × {charge.quantity}
+              </dt>
+              <dd className="shrink-0 tabular-nums">
+                {formatCurrencyAmount(charge.amount, props.language)} {symbol}
+              </dd>
+            </div>
+          );
+        })}
         <div className="flex justify-between gap-2 border-t border-border pt-1 font-semibold">
           <dt>{ru ? "Итого" : "Total"}</dt>
-          <dd>
+          <dd className="shrink-0 tabular-nums">
             {quote.amount === null
               ? ru
                 ? "Нужен выбор"
                 : "Selection needed"
-              : `${quote.amount} ${symbol}`}
+              : `${formatCurrencyAmount(quote.amount, props.language)} ${symbol}`}
           </dd>
         </div>
       </dl>
     );
   }
+
+  function storeTitle(id: string) {
+    const offer = props.details.offers?.find((offer) => offer.id === id);
+    const title =
+      offer?.store?.title?.[props.language] ||
+      offer?.store?.title?.en ||
+      offer?.store?.slug ||
+      (ru ? "Магазин" : "Store");
+    return offer?.sku &&
+      choices.filter((choice) => choice.storeId === offer.storeId).length > 1
+      ? `${title} · ${offer.sku}`
+      : title;
+  }
+
+  function quoteSummary(quote: IOfferQuote) {
+    function amount(value: string | null) {
+      return value?.includes(".")
+        ? value.replace(/0+$/, "").replace(/\.$/, "")
+        : value;
+    }
+    return JSON.stringify({
+      offerId: quote.offerId,
+      currencyId: quote.currencyId,
+      quantity: quote.quantity,
+      amount: amount(quote.amount),
+      charges: quote.charges
+        .map((charge) => [
+          charge.offerId,
+          charge.quantity,
+          amount(charge.amount),
+        ])
+        .sort(),
+      issues: quote.issues,
+    });
+  }
+
+  function destinationDetails(destination: IOfferQuote["destination"]) {
+    const text = [
+      destination?.address,
+      destination?.region,
+      destination?.pickupPointId,
+    ]
+      .filter(Boolean)
+      .join(", ");
+    return text ? (
+      <p className="mt-2 break-words text-xs text-muted-foreground">{text}</p>
+    ) : null;
+  }
+
+  const savedOfferId = props.line.offerId ?? original?.offerId ?? "";
+  const savedStore = choices.find(
+    (offer) => offer.id === savedOfferId,
+  )?.storeId;
+  const selectedStore = choices.find((offer) => offer.id === offerId)?.storeId;
+  const storeChanged =
+    savedStore && selectedStore
+      ? savedStore !== selectedStore
+      : savedOfferId !== offerId;
+  const servicesChanged =
+    JSON.stringify([...effectiveServices].sort()) !==
+    JSON.stringify(
+      children.map((child) => [child.offerId!, child.quantity]).sort(),
+    );
+  const proposedDestination = selections()[0].destination;
+  const destinationChanged = (
+    ["address", "region", "pickupPointId"] as const
+  ).some(
+    (key) =>
+      (props.line.destination?.[key] ?? "") !==
+      (proposedDestination?.[key] ?? ""),
+  );
+  const selectionChanged =
+    savedOfferId !== offerId ||
+    currencyId !== props.details.billingModuleCurrencyId ||
+    quantity !== props.line.quantity ||
+    servicesChanged ||
+    destinationChanged ||
+    split;
+  const sameSelectionAndPrice =
+    !selectionChanged &&
+    original &&
+    original.amount !== null &&
+    original.issues.length === 0 &&
+    preview?.result.quotes.length === 1 &&
+    quoteSummary(original) === quoteSummary(preview.result.quotes[0]);
+  // Cart details contain live prices; only the saved version records consent.
+  const unchanged =
+    sameSelectionAndPrice &&
+    Boolean(props.line.offerId) &&
+    props.line.quoteVersion === preview?.result.quotes[0].version;
+  const reconfirm = sameSelectionAndPrice && !unchanged;
+  const comparisonQuotes = storeChanged
+    ? (preview?.result.comparisonQuotes?.filter(
+        (quote) =>
+          !original ||
+          destinationChanged ||
+          quoteSummary(quote) !== quoteSummary(original),
+      ) ?? [])
+    : [];
 
   const validQuantities =
     Number.isSafeInteger(quantity) &&
@@ -398,10 +521,7 @@ export function Selection(props: ISelectionProps) {
         quantity === props.line.quantity));
   return (
     <fieldset
-      disabled={
-        selectionMutation.isPending &&
-        selectionMutation.variables?.data.action === "apply"
-      }
+      disabled={applying}
       className="mt-4 min-w-0 space-y-3 border-t border-border pt-4"
     >
       <p className="text-xs text-muted-foreground">
@@ -409,29 +529,22 @@ export function Selection(props: ISelectionProps) {
           ? "Магазин, адрес и услуги этого заказа"
           : "Store, destination and services for this order"}
       </p>
-      <label className="grid gap-1 text-xs font-medium">
-        {ru ? "Магазин" : "Store"}
-        <select
+      <div className="grid gap-1 text-xs font-medium">
+        <label htmlFor={`${controlId}-store`}>{ru ? "Магазин" : "Store"}</label>
+        <Select
+          ui="shadcn"
+          id={`${controlId}-store`}
           className={input}
           value={offerId}
-          onChange={(event) => changeSeller(event.target.value)}
-          disabled={
-            selectionMutation.isPending &&
-            selectionMutation.variables?.data.action === "apply"
-          }
-        >
-          <option value="">{ru ? "Выберите магазин" : "Choose a store"}</option>
-          {choices.map((offer) => (
-            <option key={offer.id} value={offer.id}>
-              {offer.store?.title?.[props.language] ||
-                offer.store?.title?.en ||
-                offer.store?.slug ||
-                offer.storeId}{" "}
-              · {offer.sku}
-            </option>
-          ))}
-        </select>
-      </label>
+          onValueChange={changeSeller}
+          disabled={applying}
+          placeholder={ru ? "Выберите магазин" : "Choose a store"}
+          options={choices.map((offer) => ({
+            value: offer.id,
+            label: storeTitle(offer.id),
+          }))}
+        />
+      </div>
       <div className="grid grid-cols-2 gap-3">
         <label className="grid gap-1 text-xs font-medium">
           {ru ? "Количество" : "Quantity"}
@@ -444,25 +557,27 @@ export function Selection(props: ISelectionProps) {
             onChange={(event) => setQuantity(Number(event.target.value))}
           />
         </label>
-        <label className="grid gap-1 text-xs font-medium">
-          {ru ? "Валюта" : "Currency"}
-          <select
+        <div className="grid gap-1 text-xs font-medium">
+          <label htmlFor={`${controlId}-currency`}>
+            {ru ? "Валюта" : "Currency"}
+          </label>
+          <Select
+            ui="shadcn"
+            id={`${controlId}-currency`}
             className={input}
             value={currencyId}
-            onChange={(event) => setCurrencyId(event.target.value)}
-          >
-            <option value="">
-              {ru ? "Выберите валюту" : "Choose currency"}
-            </option>
-            {currencyIds.map((id) => (
-              <option key={id} value={id}>
-                {currencies.data
+            onValueChange={setCurrencyId}
+            disabled={applying}
+            placeholder={ru ? "Выберите валюту" : "Choose currency"}
+            options={currencyIds.map((id) => ({
+              value: id,
+              label:
+                currencies.data
                   ?.find((currency) => currency.id === id)
-                  ?.slug?.toUpperCase() || id}
-              </option>
-            ))}
-          </select>
-        </label>
+                  ?.slug?.toUpperCase() || id,
+            }))}
+          />
+        </div>
       </div>
       {options.length ? (
         <fieldset className="space-y-2">
@@ -474,15 +589,19 @@ export function Selection(props: ISelectionProps) {
           {options.map((option) => (
             <div
               key={option.offerId}
-              className="rounded-xl border border-border p-3"
+              className="overflow-hidden rounded-xl border border-border has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5"
             >
-              <label className="flex min-h-9 items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  className="size-4 accent-primary"
+              <label
+                htmlFor={`${controlId}-${option.offerId}`}
+                className="flex min-h-14 w-full cursor-pointer items-center gap-3 p-3 text-sm hover:bg-muted/50 has-[:disabled]:cursor-wait"
+              >
+                <Checkbox
+                  id={`${controlId}-${option.offerId}`}
+                  className="size-5 rounded-md border-2 border-muted-foreground bg-card focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 data-[state=checked]:border-primary"
                   checked={(services[option.offerId] ?? 0) > 0}
-                  onChange={(event) => {
-                    const checked = event.target.checked;
+                  disabled={applying}
+                  onCheckedChange={(value) => {
+                    const checked = value === true;
                     setServices((current) => {
                       const next = { ...current };
                       if (option.role === "delivery" && checked)
@@ -495,20 +614,24 @@ export function Selection(props: ISelectionProps) {
                     });
                   }}
                 />
-                {option.title || option.productId}
-                {option.receiptMethod === "pickup"
-                  ? ru
-                    ? " · самовывоз"
-                    : " · pickup"
-                  : option.receiptMethod === "electronic"
+                <span className="min-w-0 flex-1">
+                  {option.titles?.[props.language] ||
+                    option.title ||
+                    option.productId}
+                  {option.receiptMethod === "pickup"
                     ? ru
-                      ? " · электронная выдача"
-                      : " · electronic fulfillment"
-                    : ""}
+                      ? " · самовывоз"
+                      : " · pickup"
+                    : option.receiptMethod === "electronic"
+                      ? ru
+                        ? " · электронная выдача"
+                        : " · electronic fulfillment"
+                      : ""}
+                </span>
               </label>
               {(services[option.offerId] ?? 0) > 0 &&
               option.role === "add-on" ? (
-                <label className="mt-2 grid gap-1 text-xs">
+                <label className="grid gap-1 px-3 pb-3 text-xs">
                   {ru ? "Количество единиц услуги" : "Service quantity"}
                   <input
                     type="number"
@@ -541,34 +664,53 @@ export function Selection(props: ISelectionProps) {
               onChange={(event) => setAddress(event.target.value)}
             />
           </label>
-          <label className="grid gap-1 text-xs">
-            {ru ? "Регион" : "Region"}
-            <input
-              className={input}
-              value={region}
-              onChange={(event) => setRegion(event.target.value)}
-            />
-          </label>
+          <div className="grid gap-1 text-xs">
+            <label htmlFor={`${controlId}-region`}>
+              {ru ? "Регион" : "Region"}
+            </label>
+            {regionIds.length ? (
+              <Select
+                ui="shadcn"
+                id={`${controlId}-region`}
+                className={input}
+                value={region}
+                onValueChange={setRegion}
+                disabled={applying}
+                placeholder={ru ? "Выберите регион" : "Choose a region"}
+                options={regionIds.map((id) => ({ value: id, label: id }))}
+              />
+            ) : (
+              <input
+                id={`${controlId}-region`}
+                className={input}
+                value={region}
+                onChange={(event) => setRegion(event.target.value)}
+              />
+            )}
+          </div>
         </div>
       ) : null}
       {pickupOption ? (
-        <label className="grid gap-1 text-xs">
-          {ru ? "Точка самовывоза" : "Pickup point"}
-          <select
+        <div className="grid gap-1 text-xs">
+          <label htmlFor={`${controlId}-pickup`}>
+            {ru ? "Точка самовывоза" : "Pickup point"}
+          </label>
+          <Select
+            ui="shadcn"
+            id={`${controlId}-pickup`}
             className={input}
             value={pickup}
-            onChange={(event) => setPickup(event.target.value)}
-          >
-            <option value="">
-              {ru ? "Выберите точку магазина" : "Choose a store location"}
-            </option>
-            {pickupOption.pickupPointIds?.map((id) => (
-              <option key={id} value={id}>
-                {id}
-              </option>
-            ))}
-          </select>
-        </label>
+            onValueChange={setPickup}
+            disabled={applying}
+            placeholder={
+              ru ? "Выберите точку магазина" : "Choose a store location"
+            }
+            options={(pickupOption.pickupPointIds ?? []).map((id) => ({
+              value: id,
+              label: id,
+            }))}
+          />
+        </div>
       ) : null}
       {unavailableServices.length ? (
         <div
@@ -579,12 +721,16 @@ export function Selection(props: ISelectionProps) {
             {ru ? "Недоступные услуги" : "Unavailable services"}:{" "}
             {unavailableServices.join(", ")}
           </p>
-          <label className="mt-2 flex min-h-11 items-center gap-2">
-            <input
-              type="checkbox"
-              className="size-4 accent-primary"
+          <label
+            htmlFor={`${controlId}-remove-services`}
+            className="mt-2 flex min-h-11 cursor-pointer items-center gap-3"
+          >
+            <Checkbox
+              id={`${controlId}-remove-services`}
+              className="size-5 rounded-md border-2 border-destructive bg-card focus-visible:ring-foreground"
               checked={dropMissing}
-              onChange={(event) => setDropMissing(event.target.checked)}
+              disabled={applying}
+              onCheckedChange={(checked) => setDropMissing(checked === true)}
             />
             {ru
               ? "Подтверждаю отказ от этих услуг"
@@ -593,12 +739,16 @@ export function Selection(props: ISelectionProps) {
         </div>
       ) : null}
       {props.line.quantity >= 2 ? (
-        <label className="flex min-h-11 items-center gap-2 text-xs">
-          <input
-            type="checkbox"
-            className="size-4 accent-primary"
+        <label
+          htmlFor={`${controlId}-split`}
+          className="flex min-h-11 cursor-pointer items-center gap-3 text-xs"
+        >
+          <Checkbox
+            id={`${controlId}-split`}
+            className="size-5 rounded-md border-2 border-muted-foreground bg-card focus-visible:ring-foreground"
             checked={split}
-            onChange={(event) => setSplit(event.target.checked)}
+            disabled={applying}
+            onCheckedChange={(checked) => setSplit(checked === true)}
           />
           {ru ? "Разделить по адресам" : "Split by destination"}
         </label>
@@ -646,14 +796,6 @@ export function Selection(props: ISelectionProps) {
           </p>
         </div>
       ) : null}
-      {original ? (
-        <div className="rounded-xl bg-muted/50 p-3">
-          <p className="mb-2 text-xs font-medium">
-            {ru ? "Сохранённый выбор" : "Saved selection"}
-          </p>
-          {amounts(original)}
-        </div>
-      ) : null}
       {props.details.unpriced
         ?.filter((issue) => issue.ordersToProductsId === props.line.id)
         .map((issue, index) => (
@@ -685,8 +827,12 @@ export function Selection(props: ISelectionProps) {
             ? "Рассчитываем…"
             : "Calculating…"
           : ru
-            ? "Сравнить полный расчёт"
-            : "Compare full price"}
+            ? selectionChanged
+              ? "Посмотреть новую цену"
+              : "Проверить цену"
+            : selectionChanged
+              ? "Review new price"
+              : "Check price"}
       </button>
       {preview ? (
         <section
@@ -696,37 +842,60 @@ export function Selection(props: ISelectionProps) {
           className="space-y-3 rounded-xl border border-primary/30 bg-primary/5 p-3"
         >
           <h3 className="text-sm font-semibold">
-            {ru
-              ? "Одинаковые количество, адрес и валюта"
-              : "Same quantity, destination and currency"}
+            {unchanged
+              ? ru
+                ? "Выбор и стоимость не изменились"
+                : "Selection and price are unchanged"
+              : reconfirm
+                ? ru
+                  ? "Подтвердите актуальный расчёт"
+                  : "Confirm the current quote"
+                : storeChanged
+                  ? ru
+                    ? "Смена магазина"
+                    : "Store change"
+                  : ru
+                    ? "Изменения перед сохранением"
+                    : "Changes before saving"}
           </h3>
-          {preview.result.comparisonQuotes?.map((quote, index) => (
-            <div
-              key={`previous-${index}`}
-              className="rounded-xl border border-border bg-card p-3"
-            >
-              <p className="mb-2 text-xs font-medium">
-                {ru
-                  ? "Текущий магазин при новом выборе"
-                  : "Current store with the proposed selection"}
+          {original && !sameSelectionAndPrice ? (
+            <div className="rounded-xl border border-border bg-card p-3">
+              <p className="text-xs text-muted-foreground">
+                {ru ? "Сейчас" : "Current selection"}
               </p>
-              {amounts(quote)}
+              <p className="mb-2 text-sm font-medium">
+                {storeTitle(savedOfferId)}
+              </p>
+              {amounts(original)}
+              {destinationDetails(props.line.destination)}
             </div>
-          ))}
-          <p className="text-xs font-medium">
-            {ru ? "Новый выбор" : "New selection"}
-          </p>
+          ) : null}
           {preview.result.quotes.map((quote, index) => (
             <div
               key={`${quote.offerId}-${index}`}
               className="rounded-xl border border-border bg-card p-3"
             >
+              <p className="text-xs text-muted-foreground">
+                {sameSelectionAndPrice
+                  ? ru
+                    ? "Текущий выбор"
+                    : "Current selection"
+                  : ru
+                    ? "После подтверждения"
+                    : "After confirmation"}
+              </p>
+              <p className="mb-2 text-sm font-medium">
+                {storeTitle(quote.offerId)}
+              </p>
               {preview.result.quotes.length > 1 ? (
                 <p className="mb-2 text-xs">
                   {ru ? "Заказ" : "Order"} {index + 1} · {quote.quantity}
                 </p>
               ) : null}
               {amounts(quote)}
+              {destinationDetails(
+                quote.destination ?? preview.selections[index]?.destination,
+              )}
               {quote.issues.map((issue) => (
                 <p
                   key={`${issue.code}-${issue.offerId}`}
@@ -738,10 +907,55 @@ export function Selection(props: ISelectionProps) {
               ))}
             </div>
           ))}
+          {comparisonQuotes.length ? (
+            <details className="rounded-xl border border-border bg-card p-3 text-xs">
+              <summary className="cursor-pointer font-medium">
+                {ru
+                  ? "Текущий магазин при новых параметрах"
+                  : "Current store with the new parameters"}
+              </summary>
+              <p className="mt-2 text-muted-foreground">
+                {ru
+                  ? "Тот же товар, количество, адрес и доступные услуги в текущем магазине."
+                  : "The same product, quantity, destination and available services at the current store."}
+              </p>
+              {comparisonQuotes.map((quote, index) => (
+                <div key={`${quote.offerId}-${index}`} className="mt-3">
+                  <p className="mb-2 font-medium">
+                    {storeTitle(quote.offerId)}
+                  </p>
+                  {preview.result.quotes.length > 1 ? (
+                    <p className="mb-2">
+                      {ru ? "Заказ" : "Order"} {index + 1}
+                    </p>
+                  ) : null}
+                  {amounts(quote)}
+                  {destinationDetails(quote.destination)}
+                  {quote.issues.map((issue) => (
+                    <p
+                      key={`${issue.code}-${issue.offerId}`}
+                      role="alert"
+                      className="mt-2 text-destructive"
+                    >
+                      {issue.message}
+                    </p>
+                  ))}
+                </div>
+              ))}
+            </details>
+          ) : null}
           <p className="text-xs text-muted-foreground">
-            {ru
-              ? "Итоги корзины изменятся после подтверждения. Отмена сохранит прежний выбор."
-              : "Cart totals change after confirmation. Cancel keeps the previous selection."}
+            {unchanged
+              ? ru
+                ? "Расчёт проверен. Текущий выбор сохранён."
+                : "Price checked. Your current selection is saved."
+              : reconfirm
+                ? ru
+                  ? "Цена не изменилась. Подтвердите актуальные условия перед оплатой."
+                  : "The price is unchanged. Confirm the current terms before checkout."
+                : ru
+                  ? "Изменения сохранятся после подтверждения. Отмена сохранит прежний выбор."
+                  : "Changes are saved after confirmation. Cancel keeps the previous selection."}
           </p>
           <div className="flex flex-wrap gap-2">
             <button
@@ -750,21 +964,29 @@ export function Selection(props: ISelectionProps) {
               onClick={cancel}
               disabled={selectionMutation.isPending}
             >
-              {ru ? "Отмена" : "Cancel"}
+              {unchanged
+                ? ru
+                  ? "Закрыть расчёт"
+                  : "Close price check"
+                : ru
+                  ? "Отмена"
+                  : "Cancel"}
             </button>
-            <button
-              type="button"
-              className={`${button} bg-primary text-primary-foreground hover:bg-primary/90`}
-              onClick={() => void apply()}
-              disabled={
-                selectionMutation.isPending ||
-                preview.result.quotes.some(
-                  (quote) => quote.amount === null || quote.issues.length > 0,
-                )
-              }
-            >
-              {ru ? "Подтвердить выбор" : "Confirm selection"}
-            </button>
+            {!unchanged ? (
+              <button
+                type="button"
+                className={`${button} bg-primary text-primary-foreground hover:bg-primary/90`}
+                onClick={() => void apply()}
+                disabled={
+                  selectionMutation.isPending ||
+                  preview.result.quotes.some(
+                    (quote) => quote.amount === null || quote.issues.length > 0,
+                  )
+                }
+              >
+                {ru ? "Подтвердить выбор" : "Confirm selection"}
+              </button>
+            ) : null}
           </div>
         </section>
       ) : null}

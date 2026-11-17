@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { cn } from "@sps/shared-frontend-client-utils";
+import { currencyPrecision } from "@sps/shared-utils";
 import { Component as Product } from "@sps/ecommerce/models/product/frontend/component";
 import type { IComponentPropsExtended } from "./interface";
 
@@ -21,7 +22,9 @@ export const Component = memo(function CartCard(
   const amount = totals.length ? (
     <span className="max-w-full wrap-anywhere text-right text-lg font-semibold leading-tight tracking-tight text-foreground tabular-nums">
       {new Intl.NumberFormat(props.language, {
-        maximumFractionDigits: 2,
+        maximumFractionDigits: currencyPrecision(
+          totals[0].billingModuleCurrency,
+        ),
       }).format(totals.reduce((sum, entry) => sum + entry.total, 0))}{" "}
       {totals[0].billingModuleCurrency.symbol}
     </span>

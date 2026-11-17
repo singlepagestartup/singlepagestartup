@@ -1,0 +1,16 @@
+{
+  "id": "8d7e9b50-d280-41f8-852f-2a7985b51fb2",
+  "createdAt": "2026-11-17T10:50:44.142Z",
+  "updatedAt": "2026-11-17T10:50:44.142Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "unit_price * serviced_qty",
+    "ru": "unit_price * serviced_qty"
+  },
+  "adminTitle": "demo-ai-chat-setup price_formula",
+  "slug": "demo-ai-chat-setup-price_formula"
+}

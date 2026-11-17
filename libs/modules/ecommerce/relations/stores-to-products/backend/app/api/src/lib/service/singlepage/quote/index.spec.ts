@@ -216,10 +216,15 @@ describe("per-offer quote", () => {
   });
   it("keeps unrelated offers in a batch out of the selected product's services", async () => {
     const { service, catalog } = fixture();
+    catalog.products.get("courier")!.title = { en: "Courier", ru: "Курьер" };
     catalog.links[1] = { ...catalog.links[1], sourceOfferId: "other-product" };
     const quote = await service.execute(input);
-    expect(quote.serviceOptions.map((option) => option.offerId)).toEqual([
-      "courier",
+    expect(quote.serviceOptions).toEqual([
+      expect.objectContaining({
+        offerId: "courier",
+        title: "Courier",
+        titles: { en: "Courier", ru: "Курьер" },
+      }),
     ]);
     expect(quote.issues).toContainEqual(
       expect.objectContaining({ offerId: "assembly" }),

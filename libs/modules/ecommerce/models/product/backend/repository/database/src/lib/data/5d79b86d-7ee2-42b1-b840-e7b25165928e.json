@@ -1,0 +1,23 @@
+{
+  "metadata": {},
+  "id": "5d79b86d-7ee2-42b1-b840-e7b25165928e",
+  "createdAt": "2026-11-17T10:50:31.918Z",
+  "updatedAt": "2026-11-17T10:50:31.918Z",
+  "variant": "default",
+  "kind": "service",
+  "type": "one_off",
+  "slug": "demo-accelerated-account-credit",
+  "title": {
+    "en": "Accelerated credit (demo)",
+    "ru": "Ускоренное зачисление (демо)"
+  },
+  "shortDescription": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Optional paid demo tariff for electronic account credit. Standard token credit is included with the purchase. No external service is performed.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Необязательный платный демотариф электронного зачисления в аккаунт. Обычное зачисление токенов входит в покупку. Внешняя услуга не выполняется.\"}]}]}"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Optional paid demo tariff for electronic account credit. Standard token credit is included with the purchase. No external service is performed.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Необязательный платный демотариф электронного зачисления в аккаунт. Обычное зачисление токенов входит в покупку. Внешняя услуга не выполняется.\"}]}]}"
+  },
+  "adminTitle": "Accelerated credit (demo)"
+}

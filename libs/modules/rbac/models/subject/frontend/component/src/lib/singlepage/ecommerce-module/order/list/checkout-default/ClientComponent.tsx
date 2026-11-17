@@ -3,6 +3,7 @@
 import { IComponentPropsExtended } from "./interface";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import { Button, Form } from "@sps/shared-ui-shadcn";
+import { currencyPrecision } from "@sps/shared-utils";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -282,7 +283,9 @@ function Checkout(props: IComponentPropsExtended) {
                             {new Intl.NumberFormat(
                               props.language === "ru" ? "ru-RU" : "en-US",
                               {
-                                maximumFractionDigits: 2,
+                                maximumFractionDigits: currencyPrecision(
+                                  total.billingModuleCurrency,
+                                ),
                               },
                             ).format(total.total)}{" "}
                             {total.billingModuleCurrency.symbol}
